@@ -30,7 +30,6 @@
      [:Service_Term (:Term sk)]
      [:Service_Specific_Name (:ServiceSpecificName sk)]]))
 
-
 (defn- create-science-parameters
   "Creates a SERF Science Parameter representation of a UMM-S Science Keyword element"
   [s]
@@ -60,7 +59,7 @@
   "Converts a UMM-S Addresses to the appropriate SERF Personnel elements as a vector.
   Only takes the first address as required by the schema." 
   [addresses]
-  (let [address (first addresses)]
+  (when-let [address (first addresses)]
     [:Contact_Address 
      [:Address (concat (:StreetAddresses address))]
      [:City (:City address)]
@@ -69,7 +68,7 @@
      [:Country (:Country address)]]))
 
 (defn- create-root-personnel
-  "Converts a UMM-S Responsibility to a SERF Personnel element"
+  "Converts UMM-S Responsibilities to a SERF Personnel element"
   [responsibilities] 
   (for [responsibility responsibilities
         :let [{{:keys [Contacts Addresses Person]} :Party} responsibility]
@@ -104,14 +103,14 @@
 (defn- create-service-provider
   "Converts a UMM-S Responsibilities element to a SERF Service Provider element" 
   [responsibilities]
-  (let [responsibility (first (filter #(= "RESOURCEPROVIDER" (:Role %)) responsibilities))
-        party (:Party responsibility)]
+  (when-first [responsibility (filter #(= "RESOURCEPROVIDER" (:Role %)) responsibilities)]
+  (let [party (:Party responsibility)]
     [:Service_Provider 
      [:Service_Organization 
       [:Short_Name (:ShortName (:OrganizationName party))]
       [:Long_Name (:LongName (:OrganizationName party))]]
      [:Service_Organization_URL (extract-service-organization-url (:RelatedUrls party))] 
-     (create-service-provider-personnel responsibilities)]))
+     (create-service-provider-personnel responsibilities)])))
 
 (defn- create-distributions
   "Creates a SERF Distributions element from a UMM-S Distributions Element"

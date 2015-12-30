@@ -931,7 +931,7 @@
   "Returns input UMM-C record transformed according to the specified transformation for
   metadata-format."
   ([umm-coll metadata-format]
-   (if (or (= metadata-format :umm-json) (= metadata-format :serf))
+   (if (contains? #{:umm-json :serf} metadata-format)
      umm-coll
      (-> umm-coll
          (convert-internal metadata-format)
