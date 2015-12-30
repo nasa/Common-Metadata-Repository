@@ -61,17 +61,28 @@
      [:Minimum_Value (:MinimumValue coord)]
      [:Maximum_Value (:MaximumValue coord)]]))
 
+(defn- coordinate-system
+  "Returns the CoordinateSystem of the given geometry."
+  [geom]
+  (let [{:keys [CoordinateSystem GPolygons BoundingRectangles Lines Points]} geom]
+  (if (and (nil? (:CoordinateSystem geom))
+           (or GPolygons BoundingRectangles Lines Points))
+    u/default-granule-spatial-representation
+    (:CoordinateSystem geom))))
+
 (defn spatial-element
   "Returns DIF10 Spatial_Coverage element from given UMM-C record."
   [c]
   (if-let [sp (:SpatialExtent c)]
     [:Spatial_Coverage
-     [:Spatial_Coverage_Type (umm-spatial-type->dif10-spatial-type (:SpatialCoverageType sp))]
-     [:Granule_Spatial_Representation (:GranuleSpatialRepresentation sp)]
+     ;; TODO: Confirm that Horizontal is the correct default value for SpatialCoverageType
+     [:Spatial_Coverage_Type (get umm-spatial-type->dif10-spatial-type (:SpatialCoverageType sp) "Horizontal")]
+     [:Granule_Spatial_Representation (or (:GranuleSpatialRepresentation sp)
+                                          u/default-granule-spatial-representation)]
      [:Zone_Identifier (-> sp :HorizontalSpatialDomain :ZoneIdentifier)]
      (let [geom (-> sp :HorizontalSpatialDomain :Geometry)]
        [:Geometry
-        [:Coordinate_System (:CoordinateSystem geom)]
+        [:Coordinate_System (coordinate-system geom)]
         (concat
           ;; From most-specific to least specific. This is arbitrary.
           (map polygon-element (:GPolygons geom))
@@ -100,4 +111,4 @@
     ;; Default Spatial_Coverage
     [:Spatial_Coverage
      [:Spatial_Coverage_Type "Horizontal"]
-     [:Granule_Spatial_Representation "CARTESIAN"]]))
+     [:Granule_Spatial_Representation u/default-granule-spatial-representation]]))

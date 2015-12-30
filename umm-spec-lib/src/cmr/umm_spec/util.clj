@@ -11,6 +11,10 @@
   "place holder string value for not provided string field"
   "Not provided")
 
+(def default-granule-spatial-representation
+  "Default value for GranuleSpatialRepresentation"
+  "CARTESIAN")
+
 (defn load-json-resource
   "Loads a json resource from the classpath. The JSON file may contain comments which are ignored"
   [json-resource]

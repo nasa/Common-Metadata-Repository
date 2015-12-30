@@ -1,5 +1,6 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10.spatial
-  (:require [cmr.umm-spec.xml.gen :refer :all]))
+  (:require [cmr.umm-spec.xml.gen :refer :all]
+            [cmr.umm-spec.util :as u]))
 
 (defn echo-point-order
   "Returns a sequence of points in ECHO order (open and clockwise)."
@@ -53,6 +54,15 @@
    (map point-element (:Points line))
    (center-point-of line)])
 
+(defn- coordinate-system
+  "Returns the CoordinateSystem of the given geometry."
+  [geom]
+  (let [{:keys [CoordinateSystem GPolygons BoundingRectangles Lines Points]} geom]
+  (if (and (nil? (:CoordinateSystem geom))
+           (or GPolygons BoundingRectangles Lines Points))
+    u/default-granule-spatial-representation
+    (:CoordinateSystem geom))))
+
 (defn spatial-element
   "Returns ECHO10 Spatial element from given UMM-C record."
   [c]
@@ -64,7 +74,7 @@
         (elements-from horiz :ZoneIdentifier)
         (let [geom (:Geometry horiz)]
           [:Geometry
-           (elements-from geom :CoordinateSystem)
+           [:CoordinateSystem (coordinate-system geom)]
            (map point-element (:Points geom))
            (map bounding-rect-element (:BoundingRectangles geom))
            (map polygon-element (:GPolygons geom))
@@ -76,4 +86,5 @@
       (elements-from (:OrbitParameters sp)
                      :SwathWidth :Period :InclinationAngle
                      :NumberOfOrbits :StartCircularLatitude)]
-     (elements-from sp :GranuleSpatialRepresentation)]))
+     [:GranuleSpatialRepresentation (or (:GranuleSpatialRepresentation sp)
+                                        u/default-granule-spatial-representation)]]))

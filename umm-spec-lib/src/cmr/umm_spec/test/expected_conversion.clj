@@ -302,6 +302,20 @@
                                                "VIEW RELATED INFORMATION"} rel)
                                         [rel])))))))
 
+(defn- geometry-with-coordinate-system
+  [geometry]
+  (when geometry
+    (update-in geometry [:CoordinateSystem] #(if % % "CARTESIAN"))))
+
+(defn- expected-echo10-spatial-extent
+  [spatial-extent]
+  (let [spatial-extent (prune-empty-maps spatial-extent)]
+    (if (get-in spatial-extent [:HorizontalSpatialDomain :Geometry])
+      (update-in spatial-extent
+                 [:HorizontalSpatialDomain :Geometry]
+                 geometry-with-coordinate-system)
+      spatial-extent)))
+
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
@@ -320,7 +334,7 @@
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
       (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons] fix-echo10-polygon)
-      (update-in [:SpatialExtent] prune-empty-maps)
+      (update-in [:SpatialExtent] expected-echo10-spatial-extent)
       (update-in-each [:AdditionalAttributes] assoc :Group nil :MeasurementResolution nil
                       :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
                       :ValueAccuracyExplanation nil :UpdateDate nil)
@@ -466,6 +480,13 @@
   (seq (for [related-url related-urls]
          (assoc related-url :Title nil :FileSize nil :MimeType nil))))
 
+(defn- expected-dif10-spatial-extent
+  [spatial-extent]
+  (-> spatial-extent
+      (update-in [:SpatialCoverageType] #(if % % "HORIZONTAL"))
+      (update-in [:HorizontalSpatialDomain :Geometry] geometry-with-coordinate-system)
+      prune-empty-maps))
+
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
@@ -473,7 +494,7 @@
       (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
-      (update-in [:SpatialExtent] prune-empty-maps)
+      (update-in [:SpatialExtent] expected-dif10-spatial-extent)
       (update-in [:DataDates] fixup-dif10-data-dates)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
@@ -484,10 +505,7 @@
       (update-in-each [:PublicationReferences] dif-publication-reference)
       (update-in [:RelatedUrls] expected-dif10-related-urls)
       ;; DIF 10 required element
-      (update-in [:Abstract] #(or % su/not-provided))
-      ;; The following fields are not supported yet
-      (assoc :Organizations nil
-             :Personnel nil)))
+      (update-in [:Abstract] #(or % su/not-provided))))
 
 ;; ISO 19115-2
 

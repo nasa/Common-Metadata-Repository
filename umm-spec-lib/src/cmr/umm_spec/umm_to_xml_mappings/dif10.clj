@@ -314,8 +314,7 @@
        ;; default Temporal_Coverage element
        [:Temporal_Coverage
         [:Range_DateTime
-         [:Beginning_Date_Time u/not-provided]
-         [:Ending_Date_Time u/not-provided]]])
+         [:Beginning_Date_Time date/default-date-value]]])
 
      (map temporal-coverage-without-temporal-keywords (drop 1 (:TemporalExtents c)))
      (generate-dataset-progress c)
