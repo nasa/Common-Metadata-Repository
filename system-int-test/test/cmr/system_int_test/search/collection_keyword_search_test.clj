@@ -38,6 +38,8 @@
         p3 (dc/platform {:short-name "spoonA"})
         p4 (dc/platform {:short-name "SMAP"
                          :instruments [(dc/instrument {:short-name "SMAP L-BAND RADIOMETER"})]})
+        p5 (dc/platform {:short-name "fo&nA"})
+        p6 (dc/platform {:short-name "spo~nA"})
         pr1 (dc/projects "project-short-name")
         sk1 (dc/science-keyword {:category "Cat1"
                                  :topic "Topic1"
@@ -52,6 +54,13 @@
                                  :variable-level-1 "Level2-1"
                                  :variable-level-2 "Level2-2"
                                  :variable-level-3 "Level2-3"})
+        sk3 (dc/science-keyword {:category "Cat2"
+                                 :topic "Topic1"
+                                 :term "Term1"
+                                 :variable-level-1 "Level3-1"
+                                 :variable-level-2 "Level3-2"
+                                 :variable-level-3 "Level3-3"
+                                 :detailed-variable "S@PER"})
         tdcs1 (dc/two-d "XYZ")
         coll1 (d/ingest "PROV1" (dc/collection
                                   {:entry-title "coll1" :version-description "VersionDescription"}))
@@ -67,8 +76,10 @@
         coll9 (d/ingest "PROV2" (dc/collection {:entry-title "coll9" :science-keywords [sk1 sk2]}))
 
 
-        coll10 (d/ingest "PROV2" (dc/collection {:entry-title "coll10" :spatial-keywords ["in out"]}))
-        coll11 (d/ingest "PROV2" (dc/collection {:entry-title "coll11" :platforms [p2 p3]
+        coll10 (d/ingest "PROV2" (dc/collection {:entry-title "coll10"
+                                                 :spatial-keywords ["in out"]
+                                                 :science-keywords [sk3]}))
+        coll11 (d/ingest "PROV2" (dc/collection {:entry-title "coll11" :platforms [p2 p3 p5 p6]
                                                  :product-specific-attributes [psa5]}))
         coll12 (d/ingest "PROV2" (dc/collection {:entry-title "coll12" :product-specific-attributes [psa1 psa2 psa3 psa4]}))
         coll13 (d/ingest "PROV2" (dc/collection {:entry-title "coll13" :two-d-coordinate-systems [tdcs1]}))
@@ -216,15 +227,23 @@
            ;; - category
            "Cat1" [coll9]
            ;; - topic
-           "Topic1" [coll9]
+           "Topic1" [coll9 coll10]
            ;; - term
-           "Term1" [coll9]
+           "Term1" [coll9 coll10]
            ;; - variable-levels
            "Level2-1" [coll9]
            "Level2-2" [coll9]
            "Level2-3" [coll9]
            ;; - detailed-variable
            "SUPER" [coll9]
+
+            ;; Special characters are escaped before sending to Elastic
+           "ABC~ZYX" []
+           "ABC~" []
+           "spo~nA" [coll11]
+           "fo&nA" [coll11]
+           "A.+&.+C" []
+           "S@PER" [coll10]
 
            ;; search by keywords using wildcard *
            "A*C" [coll2 coll5 coll21]
