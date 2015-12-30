@@ -16,11 +16,11 @@
 
 (def starting-page-num
   "The starting page-num to retrieve collections for the translation test."
-  123)
+  1)
 
 (def search-page-size
   "The page-size used to retrieve collections for the translation test."
-  10)
+  50)
 
 (def collection-search-url
   ; "http://localhost:3003/collections")
@@ -31,8 +31,37 @@
   #{"C1214613964-SCIOPS" ;;Temporal_Coverage Start_Date is 0000-07-01
     "C1214603044-SCIOPS" ;;Online_Resource is not a valid value for 'anyURI'
     "C1215196994-NOAA_NCEI" ;;Temporal_Coverage Start_Date is 0000-01-01
-    "C1214421256-ASF" ;;DIF10 AdditionalAttribute ParameterRangeBegin issue (CMR-2325)
-    "C1214447436-ASF" ;;DIF10 AdditionalAttribute ParameterRangeBegin issue (CMR-2325)
+
+    ;; The following ASF collections all failed with similar spatial validation errors:
+    ;; <errors><error><path>SpatialCoverage/Geometries/0</path><errors><error>Spatial validation error: The shape contained duplicate points. Points 1 [lon=-83.8365106476704 lat=10.2523150519645] and 17 [lon=-83.8365106476704 lat=10.2523150519645] were considered equivalent or very close.</error></errors></error></errors>
+    ;; CMR-2330
+    "C1214421256-ASF"
+    "C1214447436-ASF"
+    "C1214447971-ASF"
+    "C1214435173-ASF"
+    "C1214435382-ASF"
+    "C1214435672-ASF"
+    "C1214435901-ASF"
+    "C1214434814-ASF"
+    "C1214434985-ASF"
+    "C1214439292-ASF"
+    "C1214445358-ASF"
+    "C1214421468-ASF"
+    "C1214434220-ASF"
+    "C1214449277-ASF"
+    "C1214450717-ASF"
+    "C179001728-ASF"
+    "C1213921626-ASF"
+    "C1213921661-ASF"
+    "C1213928843-ASF"
+    "C1213927035-ASF"
+    "C179001730-ASF"
+    "C1213925022-ASF"
+    "C1213926419-ASF"
+    "C1213926777-ASF"
+    "C1213927939-ASF"
+    "C1213928209-ASF"
+
     })
 
 (def valid-formats
@@ -40,17 +69,15 @@
 
 (defn- verify-translation
   [reference]
-  ; (println "------- reference: " reference)
   (let [{:keys [metadata-format metadata concept-id]} reference]
     (when-not (skipped-collections concept-id)
       (doseq [output-format (remove #{metadata-format} valid-formats)]
         (let [{:keys [status headers body]} (ingest/translate-metadata
                                               :collection metadata-format metadata output-format
                                               {:query-params {"skip_umm_validation" "true"}})
-              ; _ (println "-----validate metadata: " body)
               response (client/request
                          {:method :post
-                          :url (url/validate-url "PROV1" :collection "native-id")
+                          :url (url/validate-url "PROV1" :collection concept-id)
                           :body  body
                           :content-type (mt/format->mime-type output-format)
                           :headers {"Cmr-Validate-Keywords" false}
@@ -90,7 +117,7 @@
     (try
       (loop [page-num starting-page-num]
         (let [colls (get-collections search-page-size page-num)]
-          (println "-------------- page-num: " page-num)
+          (info "Translating collections on page-num: " page-num)
           (doseq [coll colls]
             (verify-translation coll))
           (when (>= (count colls) search-page-size)

@@ -120,7 +120,7 @@
      [:DataType (:DataType aa)]
      [:Description (with-default (:Description aa))]
      [:MeasurementResolution (:MeasurementResolution aa)]
-     [:ParameterRangeBegin (with-default (:ParameterRangeBegin aa))]
+     [:ParameterRangeBegin (:ParameterRangeBegin aa)]
      [:ParameterRangeEnd (:ParameterRangeEnd aa)]
      [:ParameterUnitsOfMeasure (:ParameterUnitsOfMeasure aa)]
      [:ParameterValueAccuracy (:ParameterValueAccuracy aa)]
