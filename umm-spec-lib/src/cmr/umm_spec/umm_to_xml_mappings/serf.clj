@@ -3,6 +3,7 @@
   (:require [cmr.umm-spec.xml.gen :refer :all]
             [camel-snake-kebab.core :as csk]
             [cmr.umm-spec.xml-to-umm-mappings.serf :as utx]
+            [cmr.umm-spec.util :refer [without-default-value-of not-provided]]
             [clojure.set :as set]
             [clojure.string :as str]))
 
@@ -153,7 +154,7 @@
   "Creates SERF Source Name elements from a UMM-S Platforms mapping"
   [s]
   (for [platform (:Platforms s) 
-           :when (not= (:ShortName platform) "Not provided")]
+           :when (not= (:ShortName platform) not-provided)]
        [:Source_Name
         [:Short_Name (:ShortName platform)]
         [:Long_Name (:LongName platform)]]))
