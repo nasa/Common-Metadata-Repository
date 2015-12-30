@@ -112,7 +112,8 @@
            (cx/elements-at-path parsed [:result])
            metadatas))))
 
-(deftest ops-collections-translation
+;; Comment out this test so that it will not be run as part of the build.
+#_(deftest ops-collections-translation
   (testing "Translate OPS collections into various supported metadata formats and make sure they pass ingest validation."
     (try
       (loop [page-num starting-page-num]
