@@ -236,7 +236,10 @@
     {:Category (value-of sk "Science_Category")
      :Topic (value-of sk "Science_Topic")
      :Term (value-of sk "Science_Term")
-     :ServiceSpecificName (value-of sk "Service_Specific_Name")}))
+     :VariableLevel1 (value-of sk "Science_Variable_Level_1")
+     :VariableLevel2 (value-of sk "Science_Variable_Level_2")
+     :VariableLevel3 (value-of sk "Science_Variable_Level_3")
+     :DetailedVariable (value-of sk "Science_Detailed_Variable")}))
 
 (defn parse-serf-xml
   "Returns collection map from a SERF XML document."
