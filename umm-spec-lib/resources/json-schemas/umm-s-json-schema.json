@@ -1,6 +1,35 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "definitions": {
+    "ServiceDistributionType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This element describes media options, size, data format, and fees involved in distributing or accessing the data.",
+      "properties": {
+        "DistributionMedia": {
+          "description": "The distribution media of the data or service.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "DistributionSize": {
+          "description": "The size of the distribution package of the data or service.",
+          "type": "string"
+        },
+        "DistributionFormat": {
+          "description": "The distribution format of the data.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Fees": {
+          "description": "The fee for ordering the data or service.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      }
+    },
     "PlatformType": {
       "type": "object",
       "additionalProperties": false,
@@ -90,7 +119,7 @@
         "$ref": "umm-cmn-json-schema.json#/definitions/PurposeType"
       },
       "ServiceLanguage": {
-        "description": "Describes the language used in the preparation, storage, and description of the service It is the language of the information object, not the language used to describe or interact with the metadata record. It does not refer to the language of the metadata.",
+        "description": "Describes the language used in the preparation, storage, and description of the service. It is the language of the information object, not the language used to describe or interact with the metadata record. It does not refer to the language of the metadata.",
         "$ref": "umm-cmn-json-schema.json#/definitions/LanguageType"
       },
       "Responsibilities": {
@@ -189,7 +218,7 @@
         "description": "This entity stores the data’s distinctive attributes (i.e. attributes used to describe the unique characteristics of the service which extend beyond those defined).",
         "type": "array",
         "items": {
-          "$ref": "umm-cmn-json-schema.json#/definitions/DistributionType"
+          "$ref": "umm-s-json-schema.json#/definitions/ServiceDistributionType"
         },
         "minItems": 0
       },

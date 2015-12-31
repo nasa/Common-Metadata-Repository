@@ -20,9 +20,13 @@
             [cmr.umm-spec.test.umm-generators :as umm-gen]
             [cmr.umm-spec.json-schema :as js]))
 
-(def tested-formats
+(def tested-collection-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
   [:dif :dif10 :echo10 :iso19115 :iso-smap])
+
+(def tested-service-formats
+  "Seq of formats to use in round-trip conversion and XML validation tests."
+  [:serf])
 
 (def collection-destination-formats
   "Converting to these formats is tested in the roundrobin test."
@@ -45,6 +49,29 @@
     (is (empty? (core/validate-xml :collection format metadata-xml)))
     (core/parse-metadata :collection format metadata-xml)))
 
+(defn service-xml-round-trip
+  "Returns record after being converted to XML and back to UMM through
+  the given to-xml and to-umm mappings."
+  [record format]
+  (let [metadata-xml (core/generate-metadata :service format record)]
+    ;; validate against xml schema
+    (is (empty? (core/validate-xml :service format metadata-xml)))
+    (core/parse-metadata :service format metadata-xml)))
+
+(comment
+  (println (core/generate-metadata :service :serf expected-conversion/example-service-record))
+)
+
+(deftest roundtrip-example-collection-record
+  (doseq [metadata-format tested-collection-formats]
+    (testing (str metadata-format)
+      (is (= (expected-conversion/convert expected-conversion/example-collection-record metadata-format)
+             (collection-xml-round-trip expected-conversion/example-collection-record metadata-format))))))
+
+(deftest roundtrip-example-service-record
+  (is (= (expected-conversion/convert expected-conversion/example-service-record :serf)
+         (service-xml-round-trip expected-conversion/example-service-record :serf))))
+
 (defn- generate-and-validate-xml
   "Returns a vector of errors (empty if none) from attempting to convert the given UMM record
   to valid XML in the given format."
@@ -62,14 +89,14 @@
       (is (empty? (generate-and-validate-xml :collection dest-format umm-c-record))))))
 
 (deftest roundtrip-example-record
-  (doseq [metadata-format tested-formats]
+  (doseq [metadata-format tested-collection-formats]
     (testing (str metadata-format)
-      (is (= (expected-conversion/convert expected-conversion/example-record metadata-format)
-             (collection-xml-round-trip expected-conversion/example-record metadata-format))))))
+      (is (= (expected-conversion/convert expected-conversion/example-collection-record metadata-format)
+             (collection-xml-round-trip expected-conversion/example-collection-record metadata-format))))))
 
-(defspec roundtrip-generated-records 100
+(defspec roundtrip-generated-collection-records 100
   (for-all [umm-record (gen/no-shrink umm-gen/umm-c-generator)
-            metadata-format (gen/elements tested-formats)]
+            metadata-format (gen/elements tested-collection-formats)]
     (is (= (expected-conversion/convert umm-record metadata-format)
            (collection-xml-round-trip umm-record metadata-format)))))
 
