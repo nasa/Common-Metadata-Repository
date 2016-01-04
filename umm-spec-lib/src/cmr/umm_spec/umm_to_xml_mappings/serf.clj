@@ -71,13 +71,14 @@
   "Converts UMM-S Responsibilities to a SERF Personnel element"
   [responsibilities] 
   (for [responsibility responsibilities
-        :let [{{:keys [Contacts Addresses Person]} :Party} responsibility]
-        :when (not= (:Role responsibility) "RESOURCEPROVIDER")]
+        :let [{{:keys [Contacts Addresses Person]} :Party} responsibility
+              role (get umm-roles->serf-roles (:Role responsibility))]
+        :when (and (not= "SERVICE PROVIDER CONTACT" role) role)]
     [:Personnel 
-     [:Role (get umm-roles->serf-roles (:Role responsibility))]
+     [:Role role]
      [:First_Name (:FirstName Person)]
      [:Middle_Name (:MiddleName Person)]
-     [:Last_Name (:LastName Person)]
+     [:Last_Name (or (:LastName Person) not-provided)]
      (contact-to-serf Contacts)
      (address-to-serf Addresses)]))
 
@@ -88,10 +89,11 @@
         :let [{{:keys [Contacts Addresses Person]} :Party} responsibility]
         :when (= (:Role responsibility) "RESOURCEPROVIDER")]
     [:Personnel 
-     [:Role (get umm-roles->serf-roles (:Role responsibility))]
+     [:Role (or (get umm-roles->serf-roles (:Role responsibility)) not-provided)]
      [:First_Name (:FirstName Person)]
      [:Middle_Name (:MiddleName Person)]
-     [:Last_Name (:LastName Person)]
+     ;;For some reason Last Name is the only thing required by SERF
+     [:Last_Name (or (:LastName Person) not-provided)]
      (contact-to-serf Contacts)
      (address-to-serf Addresses)]))
 
@@ -101,16 +103,24 @@
   (first (:URLs (first (filter #(="SERVICE_ORGANIZATION_URL" (:Description %)) related-urls)))))
 
 (defn- create-service-provider
-  "Converts a UMM-S Responsibilities element to a SERF Service Provider element" 
+  "Converts a UMM-S Responsibilities element to a SERF Service Provider element
+  Required in SERF so if no RESOURCEPROVIDER is found it will generate a default one" 
   [responsibilities]
-  (when-first [responsibility (filter #(= "RESOURCEPROVIDER" (:Role %)) responsibilities)]
+  (if-let [responsibility (first (filter #(= "RESOURCEPROVIDER" (:Role %)) responsibilities))]
   (let [party (:Party responsibility)]
     [:Service_Provider 
      [:Service_Organization 
-      [:Short_Name (:ShortName (:OrganizationName party))]
+      [:Short_Name (or (:ShortName (:OrganizationName party)) not-provided)]
       [:Long_Name (:LongName (:OrganizationName party))]]
      [:Service_Organization_URL (extract-service-organization-url (:RelatedUrls party))] 
-     (create-service-provider-personnel responsibilities)])))
+     (create-service-provider-personnel responsibilities)])
+  ;;Default Case
+  [:Service_Provider 
+     [:Service_Organization 
+      [:Short_Name not-provided]]
+     [:Personnel 
+       [:Role "SERF AUTHOR"]
+       [:Last_Name not-provided]]]))
 
 (defn- create-distributions
   "Creates a SERF Distributions element from a UMM-S Distributions Element"
@@ -181,6 +191,29 @@
   "Inserted Metadata by CMR to account for missing fields"
   #{"Metadata_Name" "Metadata_Version" "IDN_Node"})
 
+(defn- create-publication-references
+  "Creates a SERF Publication_References element from a UMM-S PublicationReferences object"
+  [pub-refs]
+  (for [pub-ref pub-refs]
+    [:Reference
+     [:Author (:Author pub-ref)
+      :Publication_Date (:PublicationDate pub-ref)
+      :Title (:Title pub-ref)
+      :Series (:Series pub-ref)
+      :Edition (:Edition pub-ref)
+      :Volume (:Volume pub-ref)
+      :Issue (:Issue pub-ref)
+      :Report_Number (:ReportNumber pub-ref)
+      :Publication_Place (:PublicationPlace pub-ref)
+      :Publisher (:Publisher pub-ref)
+      :Pages (:Pages pub-ref)
+      :ISBN (:ISBN pub-ref)
+      :DOI (:DOI pub-ref)
+      [:RelatedUrl
+       {:URLs (seq
+                (remove nil? [(:URLs (:RelatedUrls pub-ref))]))}]
+      :Other_Reference_Details (:OtherReferenceDetails pub-ref)]]))
+
 (defn umm-s-to-serf-xml
   "Returns SERF XML structure from UMM collection record s."
   [s]
@@ -202,14 +235,13 @@
      (create-source-names s)
      (create-projects s)
      [:Quality (:Quality s)]
-     [:AccessConstraints (:AccessContstraints s)]
-     [:UseConstraints (:UseConstraints s)]
+     [:Access_Constraints (:AccessContstraints s)]
+     [:Use_Constraints (:UseConstraints s)]
      [:Service_Language (:ServiceLanguage s)]
      (create-distributions s)
      ;;Multimedia Samples should go here in order but we don't have a way to distinguish them from 
      ;;Related URLs. 
-     (for [reference (:PublicationReferences s)]
-       [:Reference reference])
+     (create-publication-references (:PublicationReferences s))
      (create-service-provider (:Responsibilities s))
      [:Summary 
       [:Abstract (:Abstract s)] 
@@ -219,9 +251,9 @@
        [:Parent_SERF (:EntryId ma)])
      (create-idn-node s)
      [:Metadata_Name 
-      (:Value (first (filter #(= "Metadata_Name" (:Name %)) (:AdditionalAttributes s))))]
+      (or (:Value (first (filter #(= "Metadata_Name" (:Name %)) (:AdditionalAttributes s)))) not-provided)]
      [:Metadata_Version 
-      (:Value (first (filter #(= "Metadata_Version" (:Name %)) (:AdditionalAttributes s))))]
+      (or (:Value (first (filter #(= "Metadata_Version" (:Name %)) (:AdditionalAttributes s)))) not-provided)]
      [:SERF_Creation_Date 
       (:Date (first (filter #(= "CREATE" (:Type %)) (:MetadataDates s))))]
      [:Last_SERF_Revision_Date (:Date (first (filter #(= "UPDATE" (:Type %)) (:MetadataDates s))))]

@@ -52,6 +52,9 @@
 ;; This only tests a minimum example record for now. We need to test with larger more complicated
 ;; records. We will do this as part of CMR-1929
 
+(comment 
+  (uj/json->umm js/umm-s-schema (uj/umm->json minimal-example-umm-s-record))
+  )
 (deftest generate-and-parse-umm-s-json
   (testing "minimal umm-s record"
     (let [json (uj/umm->json minimal-example-umm-s-record)

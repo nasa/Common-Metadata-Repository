@@ -651,8 +651,8 @@
              :Personnel nil)))
 
 (defmethod convert-internal :serf
-  [umm-coll _]
-  umm-coll)
+  [umm-service _]
+  umm-service)
 
 ;; ISO 19115-2
 
@@ -920,24 +920,26 @@
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"
-  [record]
-  (reduce (fn [r field]
+  [record metadata-format]
+  (if (contains? #{:serf} metadata-format)
+    record
+    (reduce (fn [r field]
             (assoc r field nil))
           record
-          not-implemented-fields))
+          not-implemented-fields)))
 
 ;;; Public API
 
 (defn convert
-  "Returns input UMM-C record transformed according to the specified transformation for
+  "Returns input UMM-C/S record transformed according to the specified transformation for
   metadata-format."
-  ([umm-coll metadata-format]
-   (if (contains? #{:umm-json :serf} metadata-format)
-     umm-coll
-     (-> umm-coll
+  ([umm-record metadata-format]
+   (if (contains? #{:umm-json} metadata-format)
+     umm-record
+     (-> umm-record
          (convert-internal metadata-format)
-         dissoc-not-implemented-fields)))
-  ([umm-coll src dest]
-   (-> umm-coll
+         (dissoc-not-implemented-fields metadata-format))))
+  ([umm-record src dest]
+   (-> umm-record
        (convert src)
        (convert dest))))
