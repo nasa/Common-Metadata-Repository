@@ -26,7 +26,7 @@
         aca-origin (search-headers "Access-Control-Allow-Origin")
         cmr-hits (search-headers "CMR-Hits")
         cmr-took (search-headers "CMR-Took")
-        search-request-id (search-headers "cmr-request-id")
+        search-request-id (search-headers "CMR-Request-Id")
         req-id-regex #"\w{8}-\w{4}-\w{4}-\w{4}-\w{12}"]
     (is (re-matches #"application\/echo10\+xml.*" content-type))
     (is (= aca-origin "*"))
