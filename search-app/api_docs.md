@@ -185,7 +185,7 @@ These are query parameters specific to collections
   * `Client-Id` - Indicates a name for the client using the CMR API. Specifying this helps Operations monitor query performance per client. It can also make it easier for them to identify your requests if you contact them for assistance.
 
   * The response headers include CMR-Hits and CMR-Took which indicate the number of result hits
-     and the time to build and execute the query, respectively. The cmr-request-id-header returns the unique id generated for the client request. This can be used to help debug client errors.
+     and the time to build and execute the query, respectively. The CMR-Request-Id header returns the unique id generated for the client request. This can be used to help debug client errors.
 
 #### <a name="extensions"></a> Extensions
 

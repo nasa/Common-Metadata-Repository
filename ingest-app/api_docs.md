@@ -77,7 +77,7 @@ The user id header allows specifying the user-id to use when saving or deleting 
 
 ### <a name="response-headers"></a> Reponse Headers
 
-#### <a name="cmr-request-id-header"></a> cmr-request-id
+#### <a name="CMR-Request-Id-header"></a> cmr-request-id
 
 This header returns the unique id assigned to the request. This can be used
 to help debug client errors. The value is a long string of the form

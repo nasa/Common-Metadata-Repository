@@ -25,7 +25,7 @@
 
 (def REQUEST_ID_HEADER
   "The HTTP header field containing the current request id."
-  "cmr-request-id")
+  "CMR-Request-Id")
 
 (defn build-request-context
   "Creates a request context. Takes the current system and an HTTP Request"
