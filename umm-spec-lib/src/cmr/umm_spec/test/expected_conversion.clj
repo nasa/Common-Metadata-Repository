@@ -243,8 +243,8 @@
                                           :RelatedUrls [{:URLs ["http://disc.gsfc.nasa.gov/"]
                                                          :Description "SERVICE_ORGANIZATION_URL"}]}
                                   :Role "RESOURCEPROVIDER"}]
-              :ISOTopicCategories ["CLIMATOLOGY/METEOROLOGY/ATMOSPHERE" 
-                                   "ENVIRONMENT" 
+              :ISOTopicCategories ["CLIMATOLOGY/METEOROLOGY/ATMOSPHERE"
+                                   "ENVIRONMENT"
                                    "IMAGERY/BASE MAPS/EARTH COVER"]
               :Abstract "This is one of the GES DISC's OGC Web Coverage Service (WCS) instances which provides Level 3 Gridded atmospheric data products derived from the Atmospheric Infrared Sounder (AIRS) on board NASA's Aqua spacecraft."
               :ServiceCitation [{:Creator "NASA Goddard Earth Sciences (GES) Data and Information Services Center (DISC)"
@@ -286,7 +286,7 @@
                                      {:Name "IDN_Node"
                                       :Description "Root SERF IDN_Node Object"
                                       :Value "USA/NASA|IDN Test Node 2"}]
-              :EntryId "NASA_GES_DISC_AIRS_Atmosphere_Data_Web_Coverage_Service"                               
+              :EntryId "NASA_GES_DISC_AIRS_Atmosphere_Data_Web_Coverage_Service"
               :ScienceKeywords [{:Category "EARTH SCIENCE"
                                  :Topic "ATMOSPHERE"
                                  :Term "AEROSOLS"}
@@ -321,7 +321,7 @@
               :Distributions [{ :DistributionMedia "Digital",
                                :DistributionSize "<=728MB per request",
                                :DistributionFormat "HTTP",
-                               :Fees "None"}]   
+                               :Fees "None"}]
               :Platforms [{:ShortName "AQUA"
                            :LongName "Earth Observing System, AQUA"
                            :Instruments [{:LongName "Airborne Electromagnetic Profiler"
@@ -329,7 +329,7 @@
                                          {:ShortName "AIRS"
                                           :LongName "Atmospheric Infrared Sounder"}
                                          {:ShortName "AERS"
-                                          :LongName "Atmospheric/Emitted Radiation Sensor"}]}]  
+                                          :LongName "Atmospheric/Emitted Radiation Sensor"}]}]
               :Projects  [{ :ShortName "EOS"
                            :LongName "Earth Observing System"}
                           {:ShortName "EOSDIS"
@@ -648,8 +648,8 @@
 (defn- default-serf-required-additional-attributes
   "Populate a default not-provided value for additional attributes if none exist"
   [aas attribute-name]
-  (if (seq (filter #(= attribute-name (:Name %)) aas)) 
-    aas 
+  (if (seq (filter #(= attribute-name (:Name %)) aas))
+    aas
     (conj aas (cmn/map->AdditionalAttributeType {:Name attribute-name
                                                  :Description (format "Root SERF %s Object" attribute-name)
                                                  :Value su/not-provided}))))
@@ -661,20 +661,39 @@
   (-> aas
       (default-serf-required-additional-attributes "Metadata_Version")
       (default-serf-required-additional-attributes "Metadata_Name")))
-  
+
+(defn- expected-serf-contacts
+  [contacts]
+  (seq (filter #(#{"email" "phone" "fax"} (:Type %)) contacts)))
+
+(defn- fix-organization-name-in-party
+  [resp]
+  (let [{:keys [Role Party]} resp]
+    (if (= "RESOURCEPROVIDER" Role)
+      resp
+      (util/dissoc-in resp [:Party :OrganizationName]))))
+
+(defn- expected-serf-responsibility
+  [resp]
+  (-> resp
+      fix-organization-name-in-party
+      (update-in [:Party :RelatedUrls] expected-related-urls-for-dif-serf)
+      (update-in [:Party :Contacts] expected-serf-contacts)
+      ))
+
 (defmethod convert-internal :serf
   [umm-service _]
-  (-> umm-service 
+  (-> umm-service
       (update-in [:AdditionalAttributes] fix-expected-serf-additional-attributes)
-      (update-in [:RelatedURLs] expected-related-urls-for-dif-serf)
-      ;;(update-in [:RelatedURLs :Party :Responsibilities] expected-related-urls-for-dif-serf)
+      (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
+      (update-in-each [:Responsibilities] expected-serf-responsibility)
       ))
 
 ;; ISO 19115-2
 
 (defn propagate-first
   "Returns coll with the first element's value under k assoc'ed to each element in coll.
-  
+
   Example: (propagate-first :x [{:x 1} {:y 2}]) => [{:x 1} {:x 1 :y 2}]"
   [k coll]
   (let [v (get (first coll) k)]
