@@ -73,7 +73,7 @@
         coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7" :version-id "Laser"}))
         coll8 (d/ingest "PROV2" (dc/collection {:entry-title "coll8" :processing-level-id "PDQ123"}))
 
-        coll9 (d/ingest "PROV2" (dc/collection {:entry-title "coll9" :science-keywords [sk1 sk2]}))
+        coll9 (d/ingest "PROV2" (dc/collection {:entry-title "coll09" :science-keywords [sk1 sk2]}))
 
 
         coll10 (d/ingest "PROV2" (dc/collection {:entry-title "coll10"
@@ -312,10 +312,17 @@
                (println "Expected:" (map :entry-title items))
                (println "Actual:" (map :name (:refs refs))))
              matches?)
-           "Laser spoonA" [coll14 coll9]
-           "La?er spoonA" [coll14 coll9]
-           "L*er spo*A" [coll14 coll9]
-           "L?s* s?o*A" [coll14 coll9]))
+           "Laser spoonA" [coll14 coll9]))
+
+    (testing "sorted search by keywords JSON query."
+      (are [keyword-str items]
+           (let [refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str})
+                 matches? (d/refs-match-order? items refs)]
+             (when-not matches?
+               (println "Expected:" (map :entry-title items))
+               (println "Actual:" (map :name (:refs refs))))
+             matches?)
+           "Laser spoonA" [coll14 coll9]))
 
     (testing "sorted search by keywords with sort keys."
       (are [keyword-str sort-key items]
@@ -329,6 +336,14 @@
            "Laser" "score" [coll14 coll5 coll7 coll9]
            "Laser" "+score" [coll5 coll7 coll9 coll14]
            "Laser" "-score" [coll14 coll5 coll7 coll9]))
+
+    (testing "parameter search by keywords returns score"
+      (let [refs (search/find-refs :collection {:keyword "Laser"})]
+        (is (every? :score (:refs refs)))))
+
+    (testing "JSON keywords search returns score"
+      (let [refs (search/find-refs-with-json-query :collection {} {:keyword "Laser"})]
+        (is (every? :score (:refs refs)))))
 
     (testing "search by multiple keywords returns an error."
       (let [resp (search/find-refs :collection {:provider "PROV1"
