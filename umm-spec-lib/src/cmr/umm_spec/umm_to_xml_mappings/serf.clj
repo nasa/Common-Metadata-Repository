@@ -72,7 +72,7 @@
   [responsibilities] 
   (for [responsibility responsibilities
         :let [{{:keys [Contacts Addresses Person]} :Party} responsibility
-              role (get umm-roles->serf-roles (:Role responsibility))]
+              role (or (get umm-roles->serf-roles (:Role responsibility)) (:Role responsibility))]
         :when (and (not= "SERVICE PROVIDER CONTACT" role) role)]
     [:Personnel 
      [:Role role]
@@ -134,13 +134,15 @@
 (defn- create-related-urls
   "Creates a SERF Related URL element from a UMM-S Document"
   [s]
-  (for [related-url (:RelatedUrls s)] 
-    [:Related_URL [:URL_Content_Type 
-                   [:Type (:Type (:ContentType related-url))]
-                   [:Subtype (:Subtype (:ContentType related-url))]]
-     (for [url (:URLs related-url)]
-       [:URL url])
-     [:Description (:Description related-url)]]))
+  (for [related-url (:RelatedUrls s)]
+       [:Related_URL
+        (when-let [[type subtype] (:Relation related-url)]
+          [:URL_Content_Type
+           [:Type type]
+           [:Subtype subtype]])
+        (for [url (:URLs related-url)]
+          [:URL url])
+        [:Description (:Description related-url)]]))
 
 (defn- create-service-citations
   "Creates a SERF Service Citation element from a UMM-S Service Citation" 
@@ -235,7 +237,7 @@
      (create-source-names s)
      (create-projects s)
      [:Quality (:Quality s)]
-     [:Access_Constraints (:AccessContstraints s)]
+     [:Access_Constraints (:Description (:AccessConstraints s))]
      [:Use_Constraints (:UseConstraints s)]
      [:Service_Language (:ServiceLanguage s)]
      (create-distributions s)

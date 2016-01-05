@@ -86,6 +86,23 @@
             metadata-format (gen/elements tested-service-formats)]
     (is (= (expected-conversion/convert umm-record metadata-format)
            (xml-round-trip :service metadata-format umm-record)))))
+(comment
+  
+      (is (= (expected-conversion/convert user/failing-value :serf)
+           (xml-round-trip :service :serf user/failing-value)))
+      
+            (is (= (:RelatedUrls (expected-conversion/convert user/failing-value :serf))
+           (:RelatedUrls (xml-round-trip :service :serf user/failing-value))))
+            
+  (is (= (:RelatedUrls (expected-conversion/convert expected-conversion/example-service-record :serf))
+    (:RelatedUrls (xml-round-trip :service :serf expected-conversion/example-service-record))))
+  
+(is (= (expected-conversion/convert expected-conversion/example-service-record :serf)
+    (xml-round-trip :service :serf expected-conversion/example-service-record)))
+  
+  (is (= (:RelatedUrls (:Party (last (:Responsibilities (expected-conversion/convert expected-conversion/example-service-record :serf)))))
+    (:RelatedUrls (:Party (last (:Responsibilities (xml-round-trip :service :serf expected-conversion/example-service-record)))))))
+  )
 
 (defn- parse-iso19115-projects-keywords
   "Returns the parsed projects keywords for the given ISO19115-2 xml"

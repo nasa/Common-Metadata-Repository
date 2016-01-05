@@ -190,7 +190,7 @@
                               {:Date "2009-12-04T00:00:00.000Z"
                                :Type "UPDATE"}]
               :ServiceLanguage "English"
-              :AccessConstraints { :Description "Access Constraint"}
+              :AccessConstraints {:Description "Access Constraint"}
               :Responsibilities [{:Party {:Person {:FirstName "FIRSTNAME"
                                                    :LastName "LASTNAME"}
                                           :Contacts [{:Type "email"
@@ -250,12 +250,11 @@
               :ServiceCitation [{:Creator "NASA Goddard Earth Sciences (GES) Data and Information Services Center (DISC)"
                                  :Title "OGC Web Coverage Service (WCS) for accessing Atmospheric Infrared Sounder (AIRS) Data" }]
               :RelatedUrls [{:Description "\n   This Web Coverage Service (WCS) is one of the multiple GES DISC data service instances used to provide gridded Level 3 Atmospheric Infrared Sounder (AIRS) data products. Accessing to this URL will result in a brief description of coverages (i.e., data layers or variables), or a getCapabilities response. A client can request more detailed information about the served coverages by sending a describeCoverage request to the server. Finally, a client can request actual data using a getCoverage request. \n"
-                             :ContentType {:Type "GET SERVICE" :Subtype "GET WEB COVERAGE SERVICE (WCS)"}
-                             :Protocol nil
+                             :Relation ["GET SERVICE" "GET WEB COVERAGE SERVICE (WCS)"]
                              :URLs ["http://acdisc.sci.gsfc.nasa.gov/daac-bin/wcsAIRSL3?Service=WCS&Version=1.0.0&Request=getCapabilities"]
                              :Title nil
                              :MimeType nil
-                             :Caption nil}]
+                             :FileSize nil}]
               :ServiceKeywords [{:Category "EARTH SCIENCE SERVICES"
                                  :Topic "WEB SERVICES"
                                  :Term "DATA APPLICATION SERVICES"}
@@ -518,7 +517,8 @@
                                             :MimeType nil
                                             :FileSize nil))))))
 
-(defn- expected-dif-related-urls
+(defn- expected-related-urls-for-dif-serf
+  "Expected Related URLs for DIF and SERF concepts"
   [related-urls]
   (seq (for [related-url related-urls]
          (assoc related-url :Title nil :FileSize nil :MimeType nil))))
@@ -586,7 +586,7 @@
       (update-in-each [:AdditionalAttributes] assoc :Group "AdditionalAttribute")
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
       (update-in-each [:PublicationReferences] dif-publication-reference)
-      (update-in [:RelatedUrls] expected-dif-related-urls)))
+      (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)))
 
 ;; DIF 10
 (defn dif10-platform
@@ -622,11 +622,6 @@
   [ma]
   (update-in ma [:Type] #(or % "SCIENCE ASSOCIATED")))
 
-(defn- expected-dif10-related-urls
-  [related-urls]
-  (seq (for [related-url related-urls]
-         (assoc related-url :Title nil :FileSize nil :MimeType nil))))
-
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
@@ -643,16 +638,37 @@
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] prune-empty-maps)
       (update-in-each [:PublicationReferences] dif-publication-reference)
-      (update-in [:RelatedUrls] expected-dif10-related-urls)
+      (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
       ;; DIF 10 required element
       (update-in [:Abstract] #(or % su/not-provided))
       ;; The following fields are not supported yet
       (assoc :Organizations nil
              :Personnel nil)))
 
+(defn- default-serf-required-additional-attributes
+  "Populate a default not-provided value for additional attributes if none exist"
+  [aas attribute-name]
+  (if (seq (filter #(= attribute-name (:Name %)) aas)) 
+    aas 
+    (conj aas (cmn/map->AdditionalAttributeType {:Name attribute-name
+                                                 :Description (format "Root SERF %s Object" attribute-name)
+                                                 :Value su/not-provided}))))
+
+(defn- fix-expected-serf-additional-attributes
+  "Check and see if Metadata_Name and Metadata_Version are in serf additional attributes.
+  If not, you need to inject them so that a comparison will work"
+  [aas]
+  (-> aas
+      (default-serf-required-additional-attributes "Metadata_Version")
+      (default-serf-required-additional-attributes "Metadata_Name")))
+  
 (defmethod convert-internal :serf
   [umm-service _]
-  umm-service)
+  (-> umm-service 
+      (update-in [:AdditionalAttributes] fix-expected-serf-additional-attributes)
+      (update-in [:RelatedURLs] expected-related-urls-for-dif-serf)
+      ;;(update-in [:RelatedURLs :Party :Responsibilities] expected-related-urls-for-dif-serf)
+      ))
 
 ;; ISO 19115-2
 

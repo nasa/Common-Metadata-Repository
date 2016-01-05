@@ -71,7 +71,7 @@
 (defn- parse-service-organization-urls
   "Parse a Service Organization URL element into a RelatedURL map" 
   [service-provider role]
-  (when (= role "SERVICE PROVIDER CONTACT")
+  (when (= role "RESOURCEPROVIDER")
     [{:URLs (values-at service-provider "Service_Organization_URL")
       :Description "SERVICE_ORGANIZATION_URL"}]))
 
@@ -79,7 +79,7 @@
   "Constructs a UMM Party element from a SERF Personnel element and a SERF Service_Provider element"
   [person organization service-provider role]
   {:OrganizationName 
-   (when (= role "SERVICE PROVIDER CONTACT") {:ShortName (value-of organization "Short_Name")
+   (when (= role "RESOURCEPROVIDER") {:ShortName (value-of organization "Short_Name")
                                               :LongName (value-of organization "Long_Name")})
    :Person {:FirstName (value-of person "First_Name")
             :MiddleName (value-of person "Middle_Name")
@@ -102,9 +102,10 @@
         personnel (concat root-personnel service-provider-personnel)]
     (for [person personnel
           role (values-at person "Role")]
+      (let [translated-role (or (get serf-roles->umm-roles role) role)]
       ;;TODO: CMR-2298 Fix Responsibilities to have multiple roles. Then adjust accordingly below. 
-      {:Role (get serf-roles->umm-roles role)
-       :Party (parse-party person organization service-provider role)})))
+      {:Role translated-role
+       :Party (parse-party person organization service-provider translated-role)}))))
 
 (defn- parse-service-citations 
   "Parse SERF Service Citations into UMM-S"
@@ -161,18 +162,16 @@
   [doc]
   (for [related-url (select doc "/SERF/Related_URL")]
     {:URLs (values-at related-url "URL")
-     :Protocol (value-of related-url "Protocol")
      :Description (value-of related-url "Description")
-     :ContentType {:Type (value-of related-url "URL_Content_Type/Type")
-                   :Subtype (value-of related-url "URL_Content_Type/Subtype")}
-     :MimeType (value-of related-url "Mime_Type")}))
+     :Relation [(value-of related-url "URL_Content_Type/Type")
+                (value-of related-url "URL_Content_Type/Subtype")]}))
 
 (defn- parse-multimedia-samples
   "Parse a SERF Multimedia Sample element into a RelatedURL map" 
   [doc]
   (for [multimedia-sample (select doc "/SERF/Multimedia_Sample")]
     {:URLs (values-at multimedia-sample "URL")
-     :Protocol (value-of multimedia-sample "Format")
+     :MimeType (value-of multimedia-sample "Format")
      :Description (value-of multimedia-sample "Description")}))
 
 (defn- parse-related-urls
@@ -244,6 +243,7 @@
 (defn parse-serf-xml
   "Returns collection map from a SERF XML document."
   [doc]
+    (cmr.common.dev.capture-reveal/capture-all)
   {:EntryId (value-of doc "/SERF/Entry_ID")
    :EntryTitle (value-of doc "/SERF/Entry_Title")  
    :Abstract (value-of doc "/SERF/Summary/Abstract")
@@ -254,7 +254,7 @@
    :ServiceCitation (parse-service-citations doc)
    :Quality (value-of doc "/SERF/Quality")
    :UseConstraints (value-of doc "/SERF/Use_Constraints")
-   :AccessConstraints {:Description "Access Constraint" :Value (value-of doc "/SERF/Access_Constraints")}
+   :AccessConstraints {:Description (value-of doc "/SERF/Access_Constraints")}
    :MetadataAssociations (parse-metadata-associations doc)
    :PublicationReferences (parse-publication-references doc)
    :ISOTopicCategories (values-at doc "/SERF/ISO_Topic_Category")
