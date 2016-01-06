@@ -31,10 +31,6 @@
     (str concept-id "," revision-id)
     concept-id))
 
-(def supported-formats
-  "Defines the set of supported concept forms, new forms shold be added once it is supported."
-  #{mt/echo10 mt/dif mt/dif10 mt/iso-smap mt/iso mt/edn})
-
 (defmulti concept->elastic-doc
   "Returns elastic json that can be used to insert into Elasticsearch for the given concept"
   (fn [context concept parsed-concept]
@@ -161,57 +157,53 @@
 (defn prepare-batch
   "Convert a batch of concepts into elastic docs for bulk indexing."
   [context concept-batch all-revisions-index?]
-  (let [parseable-batch (filterv #(supported-formats (:format %)) concept-batch)
-        num-skipped (- (count concept-batch) (count parseable-batch))]
-    (when (> num-skipped 0)
-      (debug "Skipping" num-skipped "concepts that are not in a supported format."))
-    (doall
-      ;; Remove nils because some granules may fail with an exception and return nil.
-      (filter identity
-              (pmap (fn [concept]
-                      (try
-                        (let [{:keys [concept-id revision-id]} concept
-                              type (name (concept->type concept))
-                              elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
-                              index-name (idx-set/get-concept-index-name
-                                           context concept-id revision-id all-revisions-index?
-                                           concept)]
-                          (if (:deleted concept)
-                            (merge concept {:_id elastic-id
-                                            :_index index-name
-                                            :_type type
-                                            :_version revision-id
-                                            :_version_type "external_gte"})
-                            (let [parsed-concept (cp/parse-concept concept)
-                                  delete-time (get-in parsed-concept
-                                                      [:data-provider-timestamps :delete-time])
-                                  now (tk/now)
-                                  ttl (when delete-time
-                                        (if (t/after? delete-time now)
-                                          (t/in-millis (t/interval now delete-time))
-                                          0))
-                                  elastic-doc (concept->elastic-doc context concept parsed-concept)
-                                  elastic-doc (if ttl
-                                                (assoc elastic-doc :_ttl ttl)
-                                                elastic-doc)]
-                              (if (or (nil? ttl)
-                                      (> ttl 0))
-                                (merge elastic-doc {:_id elastic-id
-                                                    :_index index-name
-                                                    :_type type
-                                                    :_version revision-id
-                                                    :_version_type "external_gte"})
-                                (info
-                                  (str
-                                    "Skipping expired concept ["
-                                    concept-id
-                                    "] with delete-time ["
-                                    (f/unparse (f/formatters :date-time) delete-time)
-                                    "]"))))))
-                        (catch Throwable e
-                          (error e (str "Skipping failed catalog item. Exception trying to convert concept to elastic doc:"
-                                        (pr-str concept))))))
-                    parseable-batch)))))
+  (doall
+    ;; Remove nils because some granules may fail with an exception and return nil.
+    (filter identity
+            (pmap (fn [concept]
+                    (try
+                      (let [{:keys [concept-id revision-id]} concept
+                            type (name (concept->type concept))
+                            elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
+                            index-name (idx-set/get-concept-index-name
+                                         context concept-id revision-id all-revisions-index?
+                                         concept)]
+                        (if (:deleted concept)
+                          (merge concept {:_id elastic-id
+                                          :_index index-name
+                                          :_type type
+                                          :_version revision-id
+                                          :_version_type "external_gte"})
+                          (let [parsed-concept (cp/parse-concept concept)
+                                delete-time (get-in parsed-concept
+                                                    [:data-provider-timestamps :delete-time])
+                                now (tk/now)
+                                ttl (when delete-time
+                                      (if (t/after? delete-time now)
+                                        (t/in-millis (t/interval now delete-time))
+                                        0))
+                                elastic-doc (concept->elastic-doc context concept parsed-concept)
+                                elastic-doc (if ttl
+                                              (assoc elastic-doc :_ttl ttl)
+                                              elastic-doc)]
+                            (if (or (nil? ttl)
+                                    (> ttl 0))
+                              (merge elastic-doc {:_id elastic-id
+                                                  :_index index-name
+                                                  :_type type
+                                                  :_version revision-id
+                                                  :_version_type "external_gte"})
+                              (info
+                                (str
+                                  "Skipping expired concept ["
+                                  concept-id
+                                  "] with delete-time ["
+                                  (f/unparse (f/formatters :date-time) delete-time)
+                                  "]"))))))
+                      (catch Throwable e
+                        (error e (str "Skipping failed catalog item. Exception trying to convert concept to elastic doc:"
+                                      (pr-str concept))))))
+                  concept-batch))))
 
 (defn bulk-index
   "Save a batch of documents in Elasticsearch."

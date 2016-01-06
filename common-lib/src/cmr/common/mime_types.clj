@@ -12,7 +12,8 @@
   "Defines a map of mime type format keywords to mime types and other format aliases. Each one of these
    has a var defined for it for easy access."
   {:json {:mime-type "application/json"}
-   :umm-json {:mime-type "application/umm+json"}
+   :umm-json {:mime-type "application/umm+json"
+              :aliases [:umm_json]}
    :xml {:mime-type "application/xml"}
    :form-url-encoded {:mime-type "application/x-www-form-urlencoded"}
    :echo10 {:mime-type "application/echo10+xml"}
