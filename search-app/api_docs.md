@@ -57,10 +57,11 @@
     * [Version](#c-version)
     * [Tag parameters](#c-tag-parameters)
     * [Spatial](#c-spatial)
-      * [Polygon](#c-polygon)
-      * [Bounding Box](#c-bounding-box)
-      * [Point](#c-point)
-      * [Line](#c-line)
+        * [Polygon](#c-polygon)
+        * [Bounding Box](#c-bounding-box)
+        * [Point](#c-point)
+        * [Line](#c-line)
+    * [Additional Attribute](#c-additional-attribute)
   * [Sorting Collection Results](#sorting-collection-results)
   * [Retrieving all Revisions of a Collection](#retrieving-all-revisions-of-a-collection)
   * [Granule Search By Parameters](#granule-search-by-parameters)
@@ -72,10 +73,10 @@
     * [Downloadable](#g-downloadable)
     * [Additional attribute](#g-additional-attribute)
     * [Spatial](#g-spatial)
-      * [Polygon](#g-polygon)
-      * [Bounding Box](#g-bounding-box)
-      * [Point](#g-point)
-      * [Line](#g-line)
+        * [Polygon](#g-polygon)
+        * [Bounding Box](#g-bounding-box)
+        * [Point](#g-point)
+        * [Line](#g-line)
     * [Orbit number](#g-orbit-number)
     * [Orbit equator crossing longitude](#g-orbit-equator-crossing-longitude)
     * [Orbit equator crossing date](#g-orbit-equator-crossing-date)
@@ -105,11 +106,11 @@
   * [Document Scoring for Keyword (Free Text) Search](#document-scoring-for-keyword-search)
   * [Facets](#facets)
     * [Facets in XML Responses](#facets-in-xml-responses)
-      * [Flat XML Facets](#flat-xml-facets)
-      * [Hierarchical XML Facets](#hierarchical-xml-facets)
+        * [Flat XML Facets](#flat-xml-facets)
+        * [Hierarchical XML Facets](#hierarchical-xml-facets)
     * [Facets in JSON Responses](#facets-in-json-responses)
-      * [Flat JSON facets](#flat-json-facets)
-      * [Hierarchical JSON facets](#hierarchical-json-facets)
+        * [Flat JSON facets](#flat-json-facets)
+        * [Hierarchical JSON facets](#hierarchical-json-facets)
   * [Search for Tiles](#search-for-tiles)
   * [Retrieve Controlled Keywords](#retrieve-controlled-keywords)
   * [Tagging](#tagging)
@@ -1203,6 +1204,40 @@ Lines are provided as a list of comma separated values representing coordinates 
     curl "%CMR-ENDPOINT%/collections?line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
 
 Note: A query could consist of multiple spatial parameters of different types, two bounding boxes and a polygon for example. If multiple spatial parameters are present, all the parameters irrespective of their type are AND'd in a query. So, if a query contains two bounding boxes and a polygon for example, it will return only those collections which intersect both the bounding boxes and the polygon.
+
+#### <a name="c-additional-attribute"></a> Find collections by additional attribute
+
+Find an attribute attribute with name "PERCENTAGE" only
+
+    curl "%CMR-ENDPOINT%/collections?attribute\[\]=PERCENTAGE"
+
+Find an attribute attribute with name "PERCENTAGE" of type float with value 25.5
+
+    curl "%CMR-ENDPOINT%/collections?attribute\[\]=float,PERCENTAGE,25.5"
+
+Find an attribute attribute with name "PERCENTAGE" of type float in range 25.5 - 30.
+
+    curl "%CMR-ENDPOINT%/collections?attribute\[\]=float,PERCENTAGE,25.5,30"
+
+Find an attribute attribute with name "PERCENTAGE" of type float with min value 25.5.
+
+    curl "%CMR-ENDPOINT%/collections?attribute\[\]=float,PERCENTAGE,25.5,"
+
+Find an attribute attribute with name "PERCENTAGE" of type float with max value 30.
+
+    curl "%CMR-ENDPOINT%/collections?attribute\[\]=float,PERCENTAGE,,30"
+
+Find an additional attribute with name "X,Y,Z" with value 7.
+
+    curl "%CMR-ENDPOINT%/collections?attribute\[\]=float,X\,Y\,Z,7"
+
+Find an additional attribute with name "X\Y\Z" with value 7.
+
+    curl "%CMR-ENDPOINT%/collections?attribute\[\]=float,X\Y\Z,7"
+
+Multiple attributes can be provided. The default is for collections to match all the attribute parameters. This can be changed by specifying `or` option with `options[attribute][or]=true`.
+
+For additional attribute range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[attribute][exclude_boundary]=true`.
 
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 
