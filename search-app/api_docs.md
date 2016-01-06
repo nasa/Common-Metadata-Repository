@@ -2348,12 +2348,10 @@ Example un-healthy response body:
   },
   "index-set" : {
     "ok?" : false,
-    "problem" : {
+    "dependencies" : {
       "elastic_search" : {
         "ok?" : false,
-        "problem" : {
-          "status" : "Inaccessible",
-          "problem" : "Unable to get elasticsearch cluster health, caught exception: Connection refused"
+        "problem" : "Unable to get elasticsearch cluster health, caught exception: Connection refused"
         }
       },
       "echo" : {
