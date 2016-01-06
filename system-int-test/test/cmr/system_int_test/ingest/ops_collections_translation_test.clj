@@ -28,60 +28,9 @@
 
 (def skipped-collections
   "A set of collection concept-ids that will be skipped."
-  #{"C1214613964-SCIOPS" ;;Temporal_Coverage Start_Date is 0000-07-01
-    "C1214603044-SCIOPS" ;;Online_Resource is not a valid value for 'anyURI'
+  #{;; The following collections have invalid Temporal_Coverage date
+    "C1214613964-SCIOPS" ;;Temporal_Coverage Start_Date is 0000-07-01
     "C1215196994-NOAA_NCEI" ;;Temporal_Coverage Start_Date is 0000-01-01
-
-    ;; The following ASF collections all failed with similar spatial validation errors:
-    ;; <errors><error><path>SpatialCoverage/Geometries/0</path><errors><error>Spatial validation error: The shape contained duplicate points. Points 1 [lon=-83.8365106476704 lat=10.2523150519645] and 17 [lon=-83.8365106476704 lat=10.2523150519645] were considered equivalent or very close.</error></errors></error></errors>
-    ;; CMR-2330
-    ; "C1214421256-ASF"
-    ; "C1214447436-ASF"
-    ; "C1214447971-ASF"
-    ; "C1214435173-ASF"
-    ; "C1214435382-ASF"
-    ; "C1214435672-ASF"
-    ; "C1214435901-ASF"
-    ; "C1214434814-ASF"
-    ; "C1214434985-ASF"
-    ; "C1214439292-ASF"
-    ; "C1214445358-ASF"
-    ; "C1214421468-ASF"
-    ; "C1214434220-ASF"
-    ; "C1214449277-ASF"
-    ; "C1214450717-ASF"
-    ; "C179001728-ASF"
-    ; "C1213921626-ASF"
-    ; "C1213921661-ASF"
-    ; "C1213928843-ASF"
-    ; "C1213927035-ASF"
-    ; "C179001730-ASF"
-    ; "C1213925022-ASF"
-    ; "C1213926419-ASF"
-    ; "C1213926777-ASF"
-    ; "C1213927939-ASF"
-    ; "C1213928209-ASF"
-
-    ;; The following collections failed ingest validation, but not xml schema validation.
-    ;; I have changed the validation from ingest validation to xml validation, so we don't need to skip them now.
-    ; "C4695156-LARC_ASDC" ;; iso-smap tiling validation not in umm-lib
-    ; "C5520300-LARC_ASDC" ;; iso-smap tiling validation not in umm-lib
-    ; "C7244490-LARC_ASDC" ;; iso-smap tiling validation not in umm-lib
-    ; "C1000000240-LARC_ASDC" ;; iso-smap tiling validation not in umm-lib
-    ; "C5511253-LARC_ASDC" ;; iso-smap tiling validation not in umm-lib
-    ; "C7146790-LARC_ASDC" ;; iso-smap tiling validation not in umm-lib
-    ; "C7271330-LARC_ASDC" ;; iso-smap tiling validation not in umm-lib
-    ; "C1000000260-LARC_ASDC" ;; iso-smap tiling validation not in umm-lib
-    ; "C5920490-LARC_ASDC" ;; iso-smap tiling validation not in umm-lib
-    ; "C5784291-LARC_ASDC" ;; iso-smap tiling validation not in umm-lib
-    ; "C7092790-LARC_ASDC" ;; iso-smap tiling validation not in umm-lib
-    ; "C4695163-LARC_ASDC" ;; iso-smap tiling validation not in umm-lib
-    ; "C5784292-LARC_ASDC" ;; iso-smap tiling validation not in umm-lib
-    ; "C7299610-LARC_ASDC" ;; iso-smap tiling validation not in umm-lib
-    ; "C1000000300-LARC_ASDC" ;; iso-smap tiling validation not in umm-lib
-    ; "C5862870-LARC_ASDC" ;; iso-smap tiling validation not in umm-lib
-    ; "C5784310-LARC_ASDC" ;; iso-smap tiling validation not in umm-lib
-
     "C1214603072-SCIOPS" ;;The value '<http://www.bioone.org/doi/abs/10.1672/0277-5212%282006%2926%5B528%3AACFEAW%5D2.0.CO%3B2?journalCode=wetl>' of element 'Online_Resource' is not valid.
     "C1214613924-SCIOPS" ;;'0000-01-01T00:00:00.000Z' is not a valid value of union type 'DateOrTimeOrEnumType'
     "C1215196702-NOAA_NCEI" ;;Line 192 - cvc-datatype-valid.1.2.3: '0000-01-01T00:00:00.000Z' is not a valid value of union type 'DateOrTimeOrEnumType'.
@@ -103,6 +52,8 @@
     "C1214613961-SCIOPS" ;;Line 53 - cvc-datatype-valid.1.2.3: '0000-01-01T00:00:00.000Z' is not a valid value of union type 'DateOrTimeOrEnumType'.
     "C1215196984-NOAA_NCEI" ;;Line 53 - cvc-datatype-valid.1.2.3: '0000-01-01T00:00:00.000Z' is not a valid value of union type 'DateOrTimeOrEnumType'.
 
+    ;; The following collections have invalid URL data
+    "C1214603044-SCIOPS" ;;Online_Resource is not a valid value for 'anyURI'
     "C1214603622-SCIOPS" ;;'&lt;http://sofia.usgs.gov/projects/remote_sens/sflsatmap.html&gt;' is not a valid value for 'anyURI'
     "C1214603943-SCIOPS" ;;Line 208 - cvc-datatype-valid.1.2.1: '<http://sofia.usgs.gov/publications/papers/uranium_and_sulfur/>' is not a valid value for 'anyURI'.
     "C1214603330-SCIOPS" ;;Line 132 - cvc-datatype-valid.1.2.1: '<http://fresc.usgs.gov/products/ProductDetails.aspx?ProductNumber=1267>' is not a valid value for 'anyURI'.
@@ -112,6 +63,31 @@
     "C1214595389-SCIOPS" ;;Line 108 - cvc-datatype-valid.1.2.1: 'IPY  http://ipy.antarcticanz.govt.nz/projects/southern-victoria-land-geology/' is not a valid value for 'anyURI'.
     "C1214608487-SCIOPS" ;;Line 303 - cvc-datatype-valid.1.2.1: 'Scanned images: http://atlas.gc.ca/site/english/maps/archives' is not a valid value for 'anyURI'.
     "C1214603723-SCIOPS" ;;Line 132 - cvc-datatype-valid.1.2.1: '<http://sofia.usgs.gov/projects/workplans12/jem.html>' is not a valid value for 'anyURI'.
+
+    ;; The following collections failed ingest validation, but not xml schema validation.
+    ;; I have changed the validation from ingest validation to xml validation, so we don't
+    ;; need to skip them now.
+    ;; All these collections failed ingest validation due to discrepancy between umm-lib and
+    ;; umm-spec-lib. i.e. the iso-smap tiling is not supported in umm-lib. We have decided to push
+    ;; this off until later. It will become obsolete once we switch to umm-spec-lib for ingest
+    ;; validation. See CMR-1869.
+    ; "C4695156-LARC_ASDC"
+    ; "C5520300-LARC_ASDC"
+    ; "C7244490-LARC_ASDC"
+    ; "C1000000240-LARC_ASDC"
+    ; "C5511253-LARC_ASDC"
+    ; "C7146790-LARC_ASDC"
+    ; "C7271330-LARC_ASDC"
+    ; "C1000000260-LARC_ASDC"
+    ; "C5920490-LARC_ASDC"
+    ; "C5784291-LARC_ASDC"
+    ; "C7092790-LARC_ASDC"
+    ; "C4695163-LARC_ASDC"
+    ; "C5784292-LARC_ASDC"
+    ; "C7299610-LARC_ASDC"
+    ; "C1000000300-LARC_ASDC"
+    ; "C5862870-LARC_ASDC"
+    ; "C5784310-LARC_ASDC"
 
     })
 
@@ -194,7 +170,7 @@
           (info "Translating collections on page-num: " page-num)
           (doseq [coll colls]
             (verify-translation-via-schema-validation coll))
-            ; (verify-translation-via-ingest-validation coll))
+          ; (verify-translation-via-ingest-validation coll))
           (when (>= (count colls) search-page-size)
             (recur (+ page-num 1)))))
       (info "Finished OPS collections translation.")
