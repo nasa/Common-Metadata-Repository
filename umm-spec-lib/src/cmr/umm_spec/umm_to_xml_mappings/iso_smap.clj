@@ -91,7 +91,7 @@
             [:gmd:MD_Identifier
              [:gmd:code (char-string (with-default (:Version c)))]
              [:gmd:description [:gco:CharacterString "The ECS Version ID"]]]]]]
-         [:gmd:abstract (char-string (:Abstract c))]
+         [:gmd:abstract (char-string (or (:Abstract c) su/not-provided))]
          [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
          [:gmd:status (generate-collection-progress c)]
          (kws/generate-iso-smap-descriptive-keywords

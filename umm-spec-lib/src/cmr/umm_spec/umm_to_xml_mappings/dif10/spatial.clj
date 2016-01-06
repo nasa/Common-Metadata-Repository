@@ -36,11 +36,11 @@
   [poly]
   [:Polygon
    [:Boundary
-    (map point-element (-> poly :Boundary :Points))]
+    (map point-element (u/open-clockwise-point-order (-> poly :Boundary :Points)))]
    [:Exclusive_Zone
     (for [b (-> poly :ExclusiveZone :Boundaries)]
       [:Boundary
-       (map point-element (:Points b))])]
+       (map point-element (u/open-clockwise-point-order (:Points b)))])]
    [:Center_Point
     (point-contents (:CenterPoint poly))]])
 
@@ -65,18 +65,17 @@
   "Returns the CoordinateSystem of the given geometry."
   [geom]
   (let [{:keys [CoordinateSystem GPolygons BoundingRectangles Lines Points]} geom]
-  (if (and (nil? (:CoordinateSystem geom))
-           (or GPolygons BoundingRectangles Lines Points))
-    u/default-granule-spatial-representation
-    (:CoordinateSystem geom))))
+    (or CoordinateSystem
+        ;; Use default value if CoordinateSystem is not set, but the geometry has any spatial area
+        (when (or GPolygons BoundingRectangles Lines Points)
+          u/default-granule-spatial-representation))))
 
 (defn spatial-element
   "Returns DIF10 Spatial_Coverage element from given UMM-C record."
   [c]
   (if-let [sp (:SpatialExtent c)]
     [:Spatial_Coverage
-     ;; TODO: Confirm that Horizontal is the correct default value for SpatialCoverageType
-     [:Spatial_Coverage_Type (get umm-spatial-type->dif10-spatial-type (:SpatialCoverageType sp) "Horizontal")]
+     [:Spatial_Coverage_Type (umm-spatial-type->dif10-spatial-type (:SpatialCoverageType sp))]
      [:Granule_Spatial_Representation (or (:GranuleSpatialRepresentation sp)
                                           u/default-granule-spatial-representation)]
      [:Zone_Identifier (-> sp :HorizontalSpatialDomain :ZoneIdentifier)]
@@ -102,11 +101,11 @@
      [:Spatial_Info
       (when-let [sys (:TilingIdentificationSystem c)]
         (list
-         [:Spatial_Coverage_Type u/not-provided]
-         [:TwoD_Coordinate_System
-          [:TwoD_Coordinate_System_Name (:TilingIdentificationSystemName sys)]
-          (tiling-system-coord-element sys :Coordinate1)
-          (tiling-system-coord-element sys :Coordinate2)]))]]
+          [:Spatial_Coverage_Type u/not-provided]
+          [:TwoD_Coordinate_System
+           [:TwoD_Coordinate_System_Name (:TilingIdentificationSystemName sys)]
+           (tiling-system-coord-element sys :Coordinate1)
+           (tiling-system-coord-element sys :Coordinate2)]))]]
 
     ;; Default Spatial_Coverage
     [:Spatial_Coverage

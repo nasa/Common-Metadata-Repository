@@ -271,14 +271,14 @@
 
 ;; ECHO 10
 
-(defn fix-echo10-polygon
+(defn fix-echo10-dif10-polygon
   "Because the generated points may not be in valid UMM order (closed and CCW), we need to do some
   fudging here."
   [gpolygon]
   (let [fix-points (fn [points]
                      (-> points
-                         echo10-spatial-gen/echo-point-order
-                         echo10-spatial-parse/umm-point-order))]
+                         su/open-clockwise-point-order
+                         su/umm-point-order))]
     (-> gpolygon
         (update-in [:Boundary :Points] fix-points)
         (update-in-each [:ExclusiveZone :Boundaries] update-in [:Points] fix-points))))
@@ -303,11 +303,13 @@
                                         [rel])))))))
 
 (defn- geometry-with-coordinate-system
+  "Returns the geometry with default CoordinateSystem added if it doesn't have a CoordinateSystem."
   [geometry]
   (when geometry
     (update-in geometry [:CoordinateSystem] #(if % % "CARTESIAN"))))
 
 (defn- expected-echo10-spatial-extent
+  "Returns the expected ECHO10 SpatialExtent for comparison with the umm model."
   [spatial-extent]
   (let [spatial-extent (prune-empty-maps spatial-extent)]
     (if (get-in spatial-extent [:HorizontalSpatialDomain :Geometry])
@@ -333,7 +335,8 @@
       (assoc :Organizations nil)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
-      (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons] fix-echo10-polygon)
+      (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons]
+                      fix-echo10-dif10-polygon)
       (update-in [:SpatialExtent] expected-echo10-spatial-extent)
       (update-in-each [:AdditionalAttributes] assoc :Group nil :MeasurementResolution nil
                       :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
@@ -483,8 +486,8 @@
 (defn- expected-dif10-spatial-extent
   [spatial-extent]
   (-> spatial-extent
-      (update-in [:SpatialCoverageType] #(if % % "HORIZONTAL"))
       (update-in [:HorizontalSpatialDomain :Geometry] geometry-with-coordinate-system)
+      (update-in-each [:HorizontalSpatialDomain :Geometry :GPolygons] fix-echo10-dif10-polygon)
       prune-empty-maps))
 
 (defmethod convert-internal :dif10

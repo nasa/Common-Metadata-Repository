@@ -2,7 +2,7 @@
   "Defines mappings from a UMM record into DIF9 XML"
   (:require [cmr.umm-spec.util :as u]
             [cmr.umm-spec.xml.gen :refer :all]
-            [clojure.set :refer [map-invert]]
+            [clojure.set :as set]
             [camel-snake-kebab.core :as csk]
             [cmr.umm-spec.xml-to-umm-mappings.dif9 :as xtu]))
 
@@ -14,7 +14,7 @@
 
 (def umm-iso-topic-category->dif-iso-topic-category
   "UMM ISOTopicCategory to DIF ISOTopicCategory mapping."
-  (map-invert xtu/dif-iso-topic-category->umm-iso-topic-category))
+  (set/map-invert xtu/dif-iso-topic-category->umm-iso-topic-category))
 
 (defn- generate-short-name-long-name-elements
   "Returns xml elements with the given elem-key as name and sub-elements with Short_Name and

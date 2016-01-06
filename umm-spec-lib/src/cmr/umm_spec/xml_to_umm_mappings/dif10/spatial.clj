@@ -3,7 +3,8 @@
   (:require [clojure.set :as set]
             [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
-            [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as utx]))
+            [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as utx]
+            [cmr.umm-spec.util :as u]))
 
 (def dif10-spatial-type->umm-spatial-type
   (set/map-invert utx/umm-spatial-type->dif10-spatial-type))
@@ -27,9 +28,10 @@
 (defn- parse-polygon
   [el]
   {:CenterPoint (parse-center-point-of el)
-   :Boundary {:Points (map parse-point (select el "Boundary/Point"))}
+   :Boundary {:Points (u/umm-point-order (map parse-point (select el "Boundary/Point")))}
    :ExclusiveZone {:Boundaries (for [boundary (select el "Exclusive_Zone/Boundary")]
-                                 {:Points (map parse-point (select boundary "Point"))})}})
+                                 {:Points (u/umm-point-order
+                                            (map parse-point (select boundary "Point")))})}})
 
 (defn- parse-bounding-rect
   [el]

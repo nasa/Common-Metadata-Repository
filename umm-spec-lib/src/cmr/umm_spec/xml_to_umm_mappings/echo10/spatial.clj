@@ -1,14 +1,8 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10.spatial
   "Defines mappings from ECHO10 XML spatial elements into UMM records"
   (:require [cmr.umm-spec.simple-xpath :refer [select text]]
-            [cmr.umm-spec.xml.parse :refer :all]))
-
-(defn umm-point-order
-  "ECHO polygon points are \"open\" and specified in clockwise order. Returns the sequence of points
-  reversed (counterclockwise) and with the first point appended to the end (closed)."
-  [points]
-  (let [ccw (vec (reverse points))]
-    (conj ccw (first ccw))))
+            [cmr.umm-spec.xml.parse :refer :all]
+            [cmr.umm-spec.util :as u]))
 
 (defn- parse-point
   [el]
@@ -28,9 +22,9 @@
 (defn- parse-polygon
   [el]
   {:CenterPoint (parse-center-point-of el)
-   :Boundary {:Points (umm-point-order (map parse-point (select el "Boundary/Point")))}
+   :Boundary {:Points (u/umm-point-order (map parse-point (select el "Boundary/Point")))}
    :ExclusiveZone {:Boundaries (for [boundary (select el "ExclusiveZone/Boundary")]
-                                 {:Points (umm-point-order (map parse-point (select boundary "Point")))})}})
+                                 {:Points (u/umm-point-order (map parse-point (select boundary "Point")))})}})
 
 (defn- parse-bounding-rect
   [el]

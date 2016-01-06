@@ -122,7 +122,9 @@
      [:DeleteTime (dates/data-delete-date c)]
      [:LongName "dummy-long-name"]
      [:DataSetId (:EntryTitle c)]
-     [:Description (util/trunc (:Abstract c) 12000)]
+     [:Description (if-let [abstract (:Abstract c)]
+                     (util/trunc abstract 12000)
+                     spec-util/not-provided)]
      [:CollectionDataType (:CollectionDataType c)]
      [:Orderable "true"]
      [:Visible "true"]

@@ -106,3 +106,18 @@
     (str/join ", "
               (for [size sizes]
                 (str (:Size size) " " (or (:Unit size) "MB"))))))
+
+(defn open-clockwise-point-order
+  "Returns a sequence of points in open and clockwise order.
+  This is the order used by ECHO10 and DIF10."
+  [points]
+  (reverse (butlast points)))
+
+(defn umm-point-order
+  "ECHO10 and DIF10 polygon points are \"open\" and specified in clockwise order.
+  Returns the sequence of points reversed (counterclockwise) and with the first point
+  appended to the end (closed)."
+  [points]
+  (let [ccw (vec (reverse points))]
+    (conj ccw (first ccw))))
+

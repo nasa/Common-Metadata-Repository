@@ -2,11 +2,6 @@
   (:require [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.util :as u]))
 
-(defn echo-point-order
-  "Returns a sequence of points in ECHO order (open and clockwise)."
-  [points]
-  (reverse (butlast points)))
-
 (defn- point-contents
   "Returns the inner lon/lat elements for an ECHO Point or CenterPoint element from a UMM PointType
   record."
@@ -39,11 +34,11 @@
   [poly]
   [:GPolygon
    [:Boundary
-    (map point-element (echo-point-order (-> poly :Boundary :Points)))]
+    (map point-element (u/open-clockwise-point-order (-> poly :Boundary :Points)))]
    [:ExclusiveZone
     (for [b (-> poly :ExclusiveZone :Boundaries)]
       [:Boundary
-       (map point-element  (echo-point-order (:Points b)))])]
+       (map point-element (u/open-clockwise-point-order (:Points b)))])]
    [:CenterPoint
     (point-contents (:CenterPoint poly))]])
 
@@ -58,10 +53,10 @@
   "Returns the CoordinateSystem of the given geometry."
   [geom]
   (let [{:keys [CoordinateSystem GPolygons BoundingRectangles Lines Points]} geom]
-  (if (and (nil? (:CoordinateSystem geom))
-           (or GPolygons BoundingRectangles Lines Points))
-    u/default-granule-spatial-representation
-    (:CoordinateSystem geom))))
+    (or CoordinateSystem
+        ;; Use default value if CoordinateSystem is not set, but the geometry has any spatial area
+        (when (or GPolygons BoundingRectangles Lines Points)
+          u/default-granule-spatial-representation))))
 
 (defn spatial-element
   "Returns ECHO10 Spatial element from given UMM-C record."
