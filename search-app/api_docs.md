@@ -2,6 +2,8 @@
 
 ***
 
+See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide) for a general guide to developing a client utilizing the CMR Search API.
+
 ### Table of Contents
 
   * [General Request Details](#general-request-details)
