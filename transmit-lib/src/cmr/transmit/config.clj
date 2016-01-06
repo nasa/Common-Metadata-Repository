@@ -37,6 +37,7 @@
 (def-app-conn-config bootstrap 3006)
 (def-app-conn-config cubby 3007)
 (def-app-conn-config virtual-product 3009)
+;; CMR open search is 3010
 
 (defn mins->ms
   "Returns the number of minutes in milliseconds"
