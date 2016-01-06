@@ -102,7 +102,7 @@
         gran-for-iso-smap-coll (dg/granule iso-smap-coll gran-data)]
     (are [exp-errors gran]
          (= exp-errors
-            (flatten (keep (fn [error] (:errors error))
+            (flatten (map (fn [error] (:errors error))
                           (:errors (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true})))))
 
          []
@@ -177,7 +177,7 @@
 
     (are [metadata-format]
          (= []
-            (flatten (keep (fn [error] (:errors error))
+            (flatten (map (fn [error] (:errors error))
                           (:errors (d/ingest "PROV1" coll {:format metadata-format
                                                            :allow-failure? true})))))
          :dif
