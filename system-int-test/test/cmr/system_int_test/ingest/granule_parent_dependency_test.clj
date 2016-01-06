@@ -125,7 +125,7 @@
          gran-for-iso-smap-coll)))
 
 ;; This tests for limitations when changing the format for a collection with granules.
-;; TODO - Based on the test above, we would expect to see errors when saving when saving
+;; TODO - Based on the test above, we would expect to see the same errors seen when saving
 ;; collections in formats that don't support some things referenced by child granules, but we
 ;; do not. This needs to be investigated in CMR-2326.
 (deftest collection-format-change-test
@@ -174,13 +174,22 @@
         _ (d/ingest "PROV1" coll {:format :echo10})
         gran (dg/granule coll gran-data)
         _ (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true})]
+    (index/wait-until-indexed)
 
-    (are [metadata-format]
-         (= []
-            (flatten (map (fn [error] (:errors error))
-                          (:errors (d/ingest "PROV1" coll {:format metadata-format
-                                                           :allow-failure? true})))))
+    (are [exp-errors metadata-format]
+         (= exp-errors
+            (flatten (:errors (d/ingest "PROV1" coll {:format metadata-format
+                                                           :allow-failure? true}))))
+         []
          :dif
+
+         []
          :dif10
+
+         ["Collection additional attribute [a-float] is referenced by existing granules, cannot be removed. Found 1 granules."
+           "Collection changing from GEODETIC granule spatial representation to NO_SPATIAL is not allowed when the collection has granules. Found 1 granules."]
          :iso19115
+
+         ["Collection additional attribute [a-float] is referenced by existing granules, cannot be removed. Found 1 granules."
+           "Collection changing from GEODETIC granule spatial representation to NO_SPATIAL is not allowed when the collection has granules. Found 1 granules."]
          :iso-smap)))

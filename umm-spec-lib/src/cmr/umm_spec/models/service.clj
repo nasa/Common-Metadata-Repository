@@ -13,7 +13,7 @@
    ;; This includes any metadata related dates.
    MetadataDates
 
-   ;; Describes the language used in the preparation, storage, and description of the service It is
+   ;; Describes the language used in the preparation, storage, and description of the service. It is
    ;; the language of the information object, not the language used to describe or interact with the
    ;; metadata record. It does not refer to the language of the metadata.
    ServiceLanguage
@@ -121,6 +121,24 @@
    MetadataAssociations
   ])
 (record-pretty-printer/enable-record-pretty-printing UMM-S)
+
+;; This element describes media options, size, data format, and fees involved in distributing or
+;; accessing the data.
+(defrecord ServiceDistributionType
+  [
+   ;; The distribution media of the data or service.
+   DistributionMedia
+
+   ;; The size of the distribution package of the data or service.
+   DistributionSize
+
+   ;; The distribution format of the data.
+   DistributionFormat
+
+   ;; The fee for ordering the data or service.
+   Fees
+  ])
+(record-pretty-printer/enable-record-pretty-printing ServiceDistributionType)
 
 ;; This element describes the relevant platforms used to acquire the data. Platform types are
 ;; controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human,

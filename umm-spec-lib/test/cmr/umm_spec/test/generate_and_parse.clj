@@ -20,9 +20,13 @@
             [cmr.umm-spec.test.umm-generators :as umm-gen]
             [cmr.umm-spec.json-schema :as js]))
 
-(def tested-formats
+(def tested-collection-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
   [:dif :dif10 :echo10 :iso19115 :iso-smap])
+
+(def tested-service-formats
+  "Seq of formats to use in round-trip conversion and XML validation tests."
+  [:serf])
 
 (def collection-destination-formats
   "Converting to these formats is tested in the roundrobin test."
@@ -36,14 +40,14 @@
    :iso19115 "iso19115.xml"
    :iso-smap "iso_smap.xml"})
 
-(defn collection-xml-round-trip
+(defn xml-round-trip
   "Returns record after being converted to XML and back to UMM through
   the given to-xml and to-umm mappings."
-  [record format]
-  (let [metadata-xml (core/generate-metadata :collection format record)]
+  [concept-type metadata-format record]
+  (let [metadata-xml (core/generate-metadata concept-type metadata-format record)]
     ;; validate against xml schema
-    (is (empty? (core/validate-xml :collection format metadata-xml)))
-    (core/parse-metadata :collection format metadata-xml)))
+    (is (empty? (core/validate-xml concept-type metadata-format metadata-xml)))
+    (core/parse-metadata concept-type metadata-format metadata-xml)))
 
 (defn- generate-and-validate-xml
   "Returns a vector of errors (empty if none) from attempting to convert the given UMM record
@@ -51,6 +55,16 @@
   [concept-type metadata-format record]
   (let [metadata-xml (core/generate-metadata concept-type metadata-format record)]
     (core/validate-xml concept-type metadata-format metadata-xml)))
+
+(deftest roundtrip-example-collection-record
+  (doseq [metadata-format tested-collection-formats]
+    (testing (str metadata-format)
+      (is (= (expected-conversion/convert expected-conversion/example-collection-record metadata-format)
+             (xml-round-trip :collection metadata-format expected-conversion/example-collection-record))))))
+
+(deftest roundtrip-example-service-record
+  (is (= (expected-conversion/convert expected-conversion/example-service-record :serf)
+         (xml-round-trip :service :serf expected-conversion/example-service-record))))
 
 (deftest roundrobin-collection-example-record
   (doseq [[origin-format filename] collection-format-examples
@@ -61,17 +75,18 @@
     (testing (str origin-format " to " dest-format)
       (is (empty? (generate-and-validate-xml :collection dest-format umm-c-record))))))
 
-(deftest roundtrip-example-record
-  (doseq [metadata-format tested-formats]
-    (testing (str metadata-format)
-      (is (= (expected-conversion/convert expected-conversion/example-record metadata-format)
-             (collection-xml-round-trip expected-conversion/example-record metadata-format))))))
-
-(defspec roundtrip-generated-records 100
+(defspec roundtrip-generated-collection-records 100
   (for-all [umm-record (gen/no-shrink umm-gen/umm-c-generator)
-            metadata-format (gen/elements tested-formats)]
+            metadata-format (gen/elements tested-collection-formats)]
     (is (= (expected-conversion/convert umm-record metadata-format)
-           (collection-xml-round-trip umm-record metadata-format)))))
+           (xml-round-trip :collection metadata-format umm-record)))))
+
+;; TODO - Fix these test failures with CMR-2332 and uncomment the test
+#_(defspec roundtrip-generated-service-records 100
+  (for-all [umm-record (gen/no-shrink umm-gen/umm-s-generator)
+            metadata-format (gen/elements tested-service-formats)]
+    (is (= (expected-conversion/convert umm-record metadata-format)
+           (xml-round-trip :service metadata-format umm-record)))))
 
 (defn- parse-iso19115-projects-keywords
   "Returns the parsed projects keywords for the given ISO19115-2 xml"
@@ -105,7 +120,7 @@
   (println (core/generate-metadata :collection :iso-smap user/failing-value))
 
   (is (= (expected-conversion/convert user/failing-value :iso-smap)
-         (collection-xml-round-trip user/failing-value :iso-smap)))
+         (xml-round-trip :collection user/failing-value :iso-smap)))
 
   ;; random XML gen
   (def metadata-format :echo10)
@@ -113,6 +128,12 @@
   (def metadata-format :dif10)
   (def metadata-format :iso19115)
   (def metadata-format :iso-smap)
+  (def metadata-format :serf)
+
+  ;; UMM concept-type
+  (def concept-type :collection)
+  (def concept-type :service)
+
 
   (def sample-record (first (gen/sample (gen/such-that
                                           #(not-any? :Instruments (:Platforms %))
@@ -127,21 +148,18 @@
   ;; Evaluate to print generated metadata from the record selected above.
   (println (core/generate-metadata :collection metadata-format sample-record))
 
-  ;; Evaluate to return the UMM parsed from a XML round trip.
-  (xml-round-trip sample-record metadata-format)
-
   ;; our simple example record
   (core/generate-metadata :collection metadata-format expected-conversion/example-record)
 
   (core/validate-xml :collection metadata-format metadata-xml)
 
   ;; round-trip
-  (collection-xml-round-trip sample-record metadata-format)
+  (xml-round-trip concept-type metadata-format sample-record)
 
   ;; Evaluate to see diff between expected conversion and result of XML round trip.
   (is (= (expected-conversion/convert sample-record metadata-format)
-         (collection-xml-round-trip sample-record metadata-format)))
+         (xml-round-trip concept-type metadata-format sample-record)))
 
   ;; for generated test failures
   (is (= (expected-conversion/convert user/failing-value metadata-format)
-         (collection-xml-round-trip user/failing-value metadata-format))))
+         (xml-round-trip concept-type metadata-format user/failing-value))))
