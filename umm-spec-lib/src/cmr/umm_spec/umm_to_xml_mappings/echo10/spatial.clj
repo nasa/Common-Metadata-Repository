@@ -49,15 +49,6 @@
    (map point-element (:Points line))
    (center-point-of line)])
 
-(defn- coordinate-system
-  "Returns the CoordinateSystem of the given geometry."
-  [geom]
-  (let [{:keys [CoordinateSystem GPolygons BoundingRectangles Lines Points]} geom]
-    (or CoordinateSystem
-        ;; Use default value if CoordinateSystem is not set, but the geometry has any spatial area
-        (when (or GPolygons BoundingRectangles Lines Points)
-          u/default-granule-spatial-representation))))
-
 (defn spatial-element
   "Returns ECHO10 Spatial element from given UMM-C record."
   [c]
@@ -69,7 +60,7 @@
         (elements-from horiz :ZoneIdentifier)
         (let [geom (:Geometry horiz)]
           [:Geometry
-           [:CoordinateSystem (coordinate-system geom)]
+           [:CoordinateSystem (u/coordinate-system geom)]
            (map point-element (:Points geom))
            (map bounding-rect-element (:BoundingRectangles geom))
            (map polygon-element (:GPolygons geom))

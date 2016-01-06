@@ -61,15 +61,6 @@
      [:Minimum_Value (:MinimumValue coord)]
      [:Maximum_Value (:MaximumValue coord)]]))
 
-(defn- coordinate-system
-  "Returns the CoordinateSystem of the given geometry."
-  [geom]
-  (let [{:keys [CoordinateSystem GPolygons BoundingRectangles Lines Points]} geom]
-    (or CoordinateSystem
-        ;; Use default value if CoordinateSystem is not set, but the geometry has any spatial area
-        (when (or GPolygons BoundingRectangles Lines Points)
-          u/default-granule-spatial-representation))))
-
 (defn spatial-element
   "Returns DIF10 Spatial_Coverage element from given UMM-C record."
   [c]
@@ -81,7 +72,7 @@
      [:Zone_Identifier (-> sp :HorizontalSpatialDomain :ZoneIdentifier)]
      (let [geom (-> sp :HorizontalSpatialDomain :Geometry)]
        [:Geometry
-        [:Coordinate_System (coordinate-system geom)]
+        [:Coordinate_System (u/coordinate-system geom)]
         (concat
           ;; From most-specific to least specific. This is arbitrary.
           (map polygon-element (:GPolygons geom))

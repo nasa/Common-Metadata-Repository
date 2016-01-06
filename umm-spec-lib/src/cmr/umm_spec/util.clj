@@ -92,11 +92,11 @@
   and the Unit. Returns nil if the string cannot be parsed into file sizes with units."
   [s]
   (seq
-   (for [[_ num-str unit-str :as results] (re-seq data-size-re
-                                                  (-> s str .toLowerCase))
-         :when (and num-str (not (str/blank? unit-str)))]
-     {:Size (Double. (.replace num-str "," ""))
-      :Unit (-> unit-str str .trim .toUpperCase first (str "B"))})))
+    (for [[_ num-str unit-str :as results] (re-seq data-size-re
+                                                   (-> s str .toLowerCase))
+          :when (and num-str (not (str/blank? unit-str)))]
+      {:Size (Double. (.replace num-str "," ""))
+       :Unit (-> unit-str str .trim .toUpperCase first (str "B"))})))
 
 (defn data-size-str
   "Takes a collection of FileSizeType records which have a Size and a Unit and converts them to a
@@ -121,3 +121,12 @@
   (let [ccw (vec (reverse points))]
     (conj ccw (first ccw))))
 
+(defn coordinate-system
+  "Returns the CoordinateSystem of the given geometry. Returns the default CoordinateSystem if
+  geometry has any spatial area and CoordinateSystem is not present."
+  [geom]
+  (let [{:keys [CoordinateSystem GPolygons BoundingRectangles Lines Points]} geom]
+    (or CoordinateSystem
+        ;; Use default value if CoordinateSystem is not set, but the geometry has any spatial area
+        (when (or GPolygons BoundingRectangles Lines Points)
+          default-granule-spatial-representation))))
