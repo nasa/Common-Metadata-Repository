@@ -28,7 +28,8 @@
 
 (def skipped-collections
   "A set of collection concept-ids that will be skipped."
-  #{;; The following collections have invalid Temporal_Coverage date
+  #{;; The following collections have invalid Temporal_Coverage date.
+    ;; GCMD has been notified and will fix the collections.
     "C1214613964-SCIOPS" ;;Temporal_Coverage Start_Date is 0000-07-01
     "C1215196994-NOAA_NCEI" ;;Temporal_Coverage Start_Date is 0000-01-01
     "C1214603072-SCIOPS" ;;The value '<http://www.bioone.org/doi/abs/10.1672/0277-5212%282006%2926%5B528%3AACFEAW%5D2.0.CO%3B2?journalCode=wetl>' of element 'Online_Resource' is not valid.
@@ -53,6 +54,7 @@
     "C1215196984-NOAA_NCEI" ;;Line 53 - cvc-datatype-valid.1.2.3: '0000-01-01T00:00:00.000Z' is not a valid value of union type 'DateOrTimeOrEnumType'.
 
     ;; The following collections have invalid URL data
+    ;; GCMD has been notified and will fix the collections.
     "C1214603044-SCIOPS" ;;Online_Resource is not a valid value for 'anyURI'
     "C1214603622-SCIOPS" ;;'&lt;http://sofia.usgs.gov/projects/remote_sens/sflsatmap.html&gt;' is not a valid value for 'anyURI'
     "C1214603943-SCIOPS" ;;Line 208 - cvc-datatype-valid.1.2.1: '<http://sofia.usgs.gov/publications/papers/uranium_and_sulfur/>' is not a valid value for 'anyURI'.
@@ -115,11 +117,9 @@
                           :throw-exceptions false
                           :connection-manager (s/conn-mgr)})]
           (when-not (= 200 (:status response))
-            (do
-              (error "Failed validation: " response)
-              (throw (Exception.
-                       (format "Failed validation when translating %s to %s for collection %s. %s"
-                               (name metadata-format) (name output-format) concept-id response))))))))))
+            (is false
+                (format "Failed validation when translating %s to %s for collection %s. %s"
+                        (name metadata-format) (name output-format) concept-id response))))))))
 
 (defn- verify-translation-via-schema-validation
   "Verify the given collection can be translated into other metadata formats and the translated
@@ -133,11 +133,9 @@
                                               :collection metadata-format metadata output-format
                                               {:query-params {"skip_umm_validation" "true"}})]
           (when-let [validation-errs (umm/validate-xml :collection output-format body)]
-            (do
-              (error "Failed xml schema validation: " validation-errs)
-              (throw (Exception.
-                       (format "Failed xml schema validation when translating %s to %s for collection %s. %s"
-                               (name metadata-format) (name output-format) concept-id validation-errs))))))))))
+            (is false
+                (format "Failed xml schema validation when translating %s to %s for collection %s. %s"
+                        (name metadata-format) (name output-format) concept-id validation-errs))))))))
 
 (defn get-collections
   "Returns the collections as a list of maps with concept-id, revision-id, metadata-format and metadata."
@@ -157,23 +155,21 @@
                {:concept-id concept-id
                 :revision-id (when revision-id (Long. ^String revision-id))
                 :metadata-format metadata-format
-                :metadata (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" metadata)}))
+                :metadata metadata}))
            (cx/elements-at-path parsed [:result])
            metadatas))))
 
 ;; Comment out this test so that it will not be run as part of the build.
 #_(deftest ops-collections-translation
-  (testing "Translate OPS collections into various supported metadata formats and make sure they pass ingest validation."
-    (try
-      (loop [page-num starting-page-num]
-        (let [colls (get-collections search-page-size page-num)]
-          (info "Translating collections on page-num: " page-num)
-          (doseq [coll colls]
-            (verify-translation-via-schema-validation coll))
-          ; (verify-translation-via-ingest-validation coll))
-          (when (>= (count colls) search-page-size)
-            (recur (+ page-num 1)))))
-      (info "Finished OPS collections translation.")
-      (catch Throwable e
-        (is false (format "ops-collections-translation failed. %s" e))))))
+  (testing "Translate OPS collections into various supported metadata formats and make sure they pass validation."
+    (loop [page-num starting-page-num]
+      (let [colls (get-collections search-page-size page-num)]
+        (info "Translating collections on page-num: " page-num)
+        (doseq [coll colls]
+          (verify-translation-via-schema-validation coll))
+        ;; We will turn on ingest validation later when ingest is backed by umm-spec-lib
+        ; (verify-translation-via-ingest-validation coll))
+        (when (>= (count colls) search-page-size)
+          (recur (+ page-num 1)))))
+    (info "Finished OPS collections translation.")))
 

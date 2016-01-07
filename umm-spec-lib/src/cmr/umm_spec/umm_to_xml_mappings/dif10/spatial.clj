@@ -36,11 +36,11 @@
   [poly]
   [:Polygon
    [:Boundary
-    (map point-element (u/open-clockwise-point-order (-> poly :Boundary :Points)))]
+    (map point-element (u/closed-counter-clockwise->open-clockwise (-> poly :Boundary :Points)))]
    [:Exclusive_Zone
     (for [b (-> poly :ExclusiveZone :Boundaries)]
       [:Boundary
-       (map point-element (u/open-clockwise-point-order (:Points b)))])]
+       (map point-element (u/closed-counter-clockwise->open-clockwise (:Points b)))])]
    [:Center_Point
     (point-contents (:CenterPoint poly))]])
 

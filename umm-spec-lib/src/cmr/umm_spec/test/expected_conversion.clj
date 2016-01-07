@@ -243,8 +243,8 @@
                                           :RelatedUrls [{:URLs ["http://disc.gsfc.nasa.gov/"]
                                                          :Description "SERVICE_ORGANIZATION_URL"}]}
                                   :Role "RESOURCEPROVIDER"}]
-              :ISOTopicCategories ["CLIMATOLOGY/METEOROLOGY/ATMOSPHERE" 
-                                   "ENVIRONMENT" 
+              :ISOTopicCategories ["CLIMATOLOGY/METEOROLOGY/ATMOSPHERE"
+                                   "ENVIRONMENT"
                                    "IMAGERY/BASE MAPS/EARTH COVER"]
               :Abstract "This is one of the GES DISC's OGC Web Coverage Service (WCS) instances which provides Level 3 Gridded atmospheric data products derived from the Atmospheric Infrared Sounder (AIRS) on board NASA's Aqua spacecraft."
               :ServiceCitation [{:Creator "NASA Goddard Earth Sciences (GES) Data and Information Services Center (DISC)"
@@ -287,7 +287,7 @@
                                      {:Name "IDN_Node"
                                       :Description "Root SERF IDN_Node Object"
                                       :Value "USA/NASA|IDN Test Node 2"}]
-              :EntryId "NASA_GES_DISC_AIRS_Atmosphere_Data_Web_Coverage_Service"                               
+              :EntryId "NASA_GES_DISC_AIRS_Atmosphere_Data_Web_Coverage_Service"
               :ScienceKeywords [{:Category "EARTH SCIENCE"
                                  :Topic "ATMOSPHERE"
                                  :Term "AEROSOLS"}
@@ -322,7 +322,7 @@
               :Distributions [{ :DistributionMedia "Digital",
                                :DistributionSize "<=728MB per request",
                                :DistributionFormat "HTTP",
-                               :Fees "None"}]   
+                               :Fees "None"}]
               :Platforms [{:ShortName "AQUA"
                            :LongName "Earth Observing System, AQUA"
                            :Instruments [{:LongName "Airborne Electromagnetic Profiler"
@@ -330,7 +330,7 @@
                                          {:ShortName "AIRS"
                                           :LongName "Atmospheric Infrared Sounder"}
                                          {:ShortName "AERS"
-                                          :LongName "Atmospheric/Emitted Radiation Sensor"}]}]  
+                                          :LongName "Atmospheric/Emitted Radiation Sensor"}]}]
               :Projects  [{ :ShortName "EOS"
                            :LongName "Earth Observing System"}
                           {:ShortName "EOSDIS"
@@ -438,8 +438,8 @@
   [gpolygon]
   (let [fix-points (fn [points]
                      (-> points
-                         su/open-clockwise-point-order
-                         su/umm-point-order))]
+                         su/closed-counter-clockwise->open-clockwise
+                         su/open-clockwise->closed-counter-clockwise))]
     (-> gpolygon
         (update-in [:Boundary :Points] fix-points)
         (update-in-each [:ExclusiveZone :Boundaries] update-in [:Points] fix-points))))
@@ -679,7 +679,7 @@
 
 (defn propagate-first
   "Returns coll with the first element's value under k assoc'ed to each element in coll.
-  
+
   Example: (propagate-first :x [{:x 1} {:y 2}]) => [{:x 1} {:x 1 :y 2}]"
   [k coll]
   (let [v (get (first coll) k)]

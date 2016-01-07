@@ -107,13 +107,13 @@
               (for [size sizes]
                 (str (:Size size) " " (or (:Unit size) "MB"))))))
 
-(defn open-clockwise-point-order
+(defn closed-counter-clockwise->open-clockwise
   "Returns a sequence of points in open and clockwise order.
   This is the order used by ECHO10 and DIF10."
   [points]
   (reverse (butlast points)))
 
-(defn umm-point-order
+(defn open-clockwise->closed-counter-clockwise
   "ECHO10 and DIF10 polygon points are \"open\" and specified in clockwise order.
   Returns the sequence of points reversed (counterclockwise) and with the first point
   appended to the end (closed)."
@@ -122,8 +122,8 @@
     (conj ccw (first ccw))))
 
 (defn coordinate-system
-  "Returns the CoordinateSystem of the given geometry. Returns the default CoordinateSystem if
-  geometry has any spatial area and CoordinateSystem is not present."
+  "Returns the CoordinateSystem of the given UMM geometry. Returns the default CoordinateSystem if
+  UMM geometry has any spatial area and CoordinateSystem is not present."
   [geom]
   (let [{:keys [CoordinateSystem GPolygons BoundingRectangles Lines Points]} geom]
     (or CoordinateSystem

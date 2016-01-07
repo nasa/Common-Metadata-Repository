@@ -22,9 +22,9 @@
 (defn- parse-polygon
   [el]
   {:CenterPoint (parse-center-point-of el)
-   :Boundary {:Points (u/umm-point-order (map parse-point (select el "Boundary/Point")))}
+   :Boundary {:Points (u/open-clockwise->closed-counter-clockwise (map parse-point (select el "Boundary/Point")))}
    :ExclusiveZone {:Boundaries (for [boundary (select el "ExclusiveZone/Boundary")]
-                                 {:Points (u/umm-point-order (map parse-point (select boundary "Point")))})}})
+                                 {:Points (u/open-clockwise->closed-counter-clockwise (map parse-point (select boundary "Point")))})}})
 
 (defn- parse-bounding-rect
   [el]
