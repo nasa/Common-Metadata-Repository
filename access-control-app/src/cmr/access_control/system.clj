@@ -8,7 +8,8 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.access-control.api.routes :as routes]
             [cmr.common.api.web-server :as web]
-            [cmr.common.config :as cfg :refer [defconfig]]))
+            [cmr.common.config :as cfg :refer [defconfig]]
+            [cmr.common-app.system :as common-sys]))
 
 (defconfig access-control-nrepl-port
   "Port to listen for nREPL connections"
@@ -38,29 +39,12 @@
    :public-conf public-conf
    :relative-root-url (transmit-config/access-control-relative-root-url)})
 
-(defn start
+(def start
   "Performs side effects to initialize the system, acquire resources,
   and start it running. Returns an updated instance of the system."
-  [this]
-  (info "access-control System starting")
-  (let [started-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/start % system))))
-                               this
-                               component-order)]
-    (info "access-control System started")
-    started-system))
+  (common-sys/start-fn "access-control" component-order))
 
-
-(defn stop
+(def stop
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
-  [this]
-  (info "access-control System shutting down")
-  (let [stopped-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/stop % system))))
-                               this
-                               (reverse component-order))]
-    (info "access-control System stopped")
-    stopped-system))
+  (common-sys/stop-fn "access-control" component-order))

@@ -16,7 +16,8 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.acl.core :as acl]
             [cmr.common.config :as cfg]
-            [cmr.message-queue.queue.rabbit-mq :as rmq]))
+            [cmr.message-queue.queue.rabbit-mq :as rmq]
+            [cmr.common-app.system :as common-sys]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
@@ -47,30 +48,12 @@
               :relative-root-url (transmit-config/metadata-db-relative-root-url)}]
      (transmit-config/system-with-connections sys [:echo-rest]))))
 
-(defn start
+(def start
   "Performs side effects to initialize the system, acquire resources,
   and start it running. Returns an updated instance of the system."
-  [this]
-  (info "System starting")
-  (let [started-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/start % system))))
-                               this
-                               component-order)]
+  (common-sys/start-fn "Metadata DB" component-order))
 
-    (info "Metadata DB started")
-    started-system))
-
-
-(defn stop
+(def stop
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
-  [this]
-  (info "System shutting down")
-  (let [stopped-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/stop % system))))
-                               this
-                               (reverse component-order))]
-    (info "Metadata DB stopped")
-    stopped-system))
+  (common-sys/stop-fn "Metadata DB" component-order))

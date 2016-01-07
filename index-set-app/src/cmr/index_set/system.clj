@@ -11,7 +11,8 @@
             [cmr.elastic-utils.config :as es-config]
             [cmr.transmit.config :as transmit-config]
             [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.acl.core :as acl]))
+            [cmr.acl.core :as acl]
+            [cmr.common-app.system :as common-sys]))
 
 (defconfig index-set-port
   "Port index-set application listens on."
@@ -38,29 +39,13 @@
              :relative-root-url (transmit-config/index-set-relative-root-url)}]
     (transmit-config/system-with-connections sys [:echo-rest])))
 
-(defn start
+(def start
   "Performs side effects to initialize the system, acquire resources,
   and start it running. Returns an updated instance of the system."
-  [this]
-  (info "index-set System starting")
-  (let [started-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/start % system))))
-                               this
-                               component-order)]
-    (info "index-set System started")
-    started-system))
+  (common-sys/start-fn "index-set" component-order))
 
-
-(defn stop
+(def stop
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
-  [this]
-  (info "index-set System shutting down")
-  (let [stopped-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/stop % system))))
-                               this
-                               (reverse component-order))]
-    (info "index-set System stopped")
-    stopped-system))
+  (common-sys/stop-fn "index-set" component-order))
+
