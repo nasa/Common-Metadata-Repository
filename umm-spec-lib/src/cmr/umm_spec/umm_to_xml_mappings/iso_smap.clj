@@ -145,4 +145,18 @@
             [:gmd:DS_AssociationTypeCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
                                           :codeListValue "largerWorkCitation"}
              "largerWorkCitation"]]]]
-         [:gmd:language (char-string "eng")]]]]]]))
+         [:gmd:language (char-string "eng")]]]
+       [:gmd:dataQualityInfo
+        [:gmd:DQ_DataQuality
+         [:gmd:scope
+          [:gmd:DQ_Scope
+           [:gmd:level
+            [:gmd:MD_ScopeCode
+             {:codeList (str (:iso iso/code-lists) "#MD_ScopeCode")
+              :codeListValue "series"}
+             "series"]]]]
+         (when-let [quality (:Quality c)]
+           [:gmd:report
+            [:gmd:DQ_QuantitativeAttributeAccuracy
+             [:gmd:evaluationMethodDescription (char-string quality)]
+             [:gmd:result {:gco:nilReason "missing"}]]])]]]]]))

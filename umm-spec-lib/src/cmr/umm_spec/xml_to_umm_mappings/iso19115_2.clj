@@ -38,7 +38,7 @@
 
 (def quality-xpath
   (str data-quality-info-xpath
-       "/gmd:scope/gmd:DQ_Scope/gmd:levelDescription/gmd:MD_ScopeDescription/gmd:other"))
+       "/gmd:report/DQ_QuantitativeAttributeAccuracy/gmd:evaluationMethodDescription"))
 
 (def precision-xpath
   (str data-quality-info-xpath

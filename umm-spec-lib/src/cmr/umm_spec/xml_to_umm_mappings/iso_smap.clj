@@ -7,7 +7,7 @@
             [cmr.umm-spec.util :refer [without-default-value-of]]
             [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]
-            [cmr.umm-spec.iso19115-2-util :refer [umm-date-type-codes]]))
+            [cmr.umm-spec.iso19115-2-util :refer [umm-date-type-codes char-string-value]]))
 
 (def md-identification-base-xpath
   (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata"
@@ -42,6 +42,10 @@
 (def keywords-xpath-str
   "gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString")
 
+(def quality-xpath
+  (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality"
+       "/gmd:report/DQ_QuantitativeAttributeAccuracy/gmd:evaluationMethodDescription"))
+
 (def data-dates-xpath
   (str md-identification-base-xpath "/gmd:citation/gmd:CI_Citation/gmd:date/gmd:CI_Date"))
 
@@ -64,6 +68,7 @@
        :Abstract (value-of short-name-el "gmd:abstract/gco:CharacterString")
        :Purpose (value-of short-name-el "gmd:purpose/gco:CharacterString")
        :CollectionProgress (value-of data-id-el "gmd:status/gmd:MD_ProgressCode")
+       :Quality (char-string-value doc quality-xpath)
        :DataDates (distinct (for [date-el (select doc data-dates-xpath)]
                               {:Date (value-of date-el "gmd:date/gco:DateTime")
                                :Type (get umm-date-type-codes

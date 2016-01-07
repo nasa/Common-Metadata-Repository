@@ -894,8 +894,6 @@
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
       ;; TODO - Implement this as part of CMR-2057
       (update-in-each [:TemporalExtents] assoc :TemporalRangeType nil)
-      ;; TODO - Implement this as part of CMR-1946
-      (assoc :Quality nil)
       ;; Fields not supported by ISO-SMAP
       (assoc :MetadataAssociations nil) ;; Not supported for ISO SMAP
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
