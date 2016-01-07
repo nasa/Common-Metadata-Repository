@@ -8,7 +8,8 @@
                  [compojure "1.4.0"]
                  [ring/ring-core "1.4.0" :exclusions [clj-time]]
                  [ring/ring-json "0.4.0"]]
-  :plugins [[lein-test-out "0.3.1"]]
+  :plugins [[lein-test-out "0.3.1"]
+            [lein-exec "0.3.4"]]
   :repl-options {:init-ns user}
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
@@ -20,7 +21,13 @@
                       (pjstadig.humane-test-output/activate!)]}
    :uberjar {:main cmr.access-control.runner
              :aot :all}}
-  :aliases {;; Prints out documentation on configuration environment variables.
+  :aliases {"generate-docs" ["exec" "-ep" (pr-str '(do
+                                                    (use 'cmr.common-app.api-docs)
+                                                    (generate
+                                                      "CMR Access Control"
+                                                      "api_docs.md"
+                                                      "resources/public/site/access_control_api_docs.html")))]
+            ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs))"]})
 
 

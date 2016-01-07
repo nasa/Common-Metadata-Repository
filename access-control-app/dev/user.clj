@@ -34,7 +34,7 @@
 (defn start
   "Starts the current development system."
   []
-  ;; Starts mock echo
+  ;; Start mock echo
   (alter-var-root
    #'mock-echo-system
    (constantly (mock-echo/start (mock-echo/create-system))))
@@ -58,11 +58,11 @@
 (defn stop
   "Shuts down and destroys the current development system."
   []
-  ;; Starts mock echo
+  ;; Stop mock echo
   (alter-var-root #'mock-echo-system (when-not-nil mock-echo/stop))
-  ;; Start metadata db
+  ;; Stop metadata db
   (alter-var-root #'mdb-system (when-not-nil mdb/stop))
-  ;; Start access control
+  ;; Stop access control
   (alter-var-root #'system (when-not-nil system/stop)))
 
 (defn reset []

@@ -38,6 +38,7 @@
 (def-app-conn-config cubby 3007)
 (def-app-conn-config virtual-product 3009)
 ;; CMR open search is 3010
+(def-app-conn-config access-control 3011)
 
 (defn mins->ms
   "Returns the number of minutes in milliseconds"
@@ -103,6 +104,9 @@
    :ingest {:host (ingest-host)
             :port (ingest-port)
             :context (ingest-relative-root-url)}
+   :access-control {:host (access-control-host)
+                    :port (access-control-port)
+                    :context (access-control-relative-root-url)}
    :search {:host (search-host)
             :port (search-port)
             :context (search-relative-root-url)}

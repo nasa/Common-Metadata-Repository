@@ -14,3 +14,4 @@ pom.xml.asc
 /log
 /.nrepl-port
 testreports.xml
+/resources/public/site/access_control_api_docs.html

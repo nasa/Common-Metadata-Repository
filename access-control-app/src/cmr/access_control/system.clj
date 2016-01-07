@@ -5,25 +5,24 @@
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.nrepl :as nrepl]
+            [cmr.transmit.config :as transmit-config]
             [cmr.access-control.api.routes :as routes]
             [cmr.common.api.web-server :as web]
             [cmr.common.config :as cfg :refer [defconfig]]))
-
-(defconfig access-control-port
-  "Port access-control application listens on."
-  {:default 3011 :type Long})
-
-(defconfig access-control-relative-root-url
-  "Defines a root path that will appear on all requests sent to this application. For
-  example if the relative-root-url is '/cmr-app' and the path for a URL is '/foo' then
-  the full url would be http://host:port/cmr-app/foo. This should be set when this
-  application is deployed in an environment where it is accessed through a VIP."
-  {:default ""})
 
 (defconfig access-control-nrepl-port
   "Port to listen for nREPL connections"
   {:default nil
    :parser cfg/maybe-long})
+
+(defconfig access-control-public-protocol
+  "The protocol to use in documentation examples for the access-control application."
+  {:default "http"})
+
+(def public-conf
+  "Public access-control configuration used for generating example requests in documentation"
+  {:protocol (access-control-public-protocol)
+   :relative-root-url (transmit-config/access-control-relative-root-url)})
 
 (def
   ^{:doc "Defines the order to start the components."
@@ -34,9 +33,10 @@
   "Returns a new instance of the whole application."
   []
   {:log (log/create-logger)
-   :web (web/create-web-server (access-control-port) routes/make-api)
+   :web (web/create-web-server (transmit-config/access-control-port) routes/make-api)
    :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
-   :relative-root-url (access-control-relative-root-url)})
+   :public-conf public-conf
+   :relative-root-url (transmit-config/access-control-relative-root-url)})
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
