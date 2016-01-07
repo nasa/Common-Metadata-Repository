@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- 
+<!--
 The Global Change Master Directory Directory Interchange Format (GCMD DIF).
 
 Syntax:
@@ -9,10 +9,10 @@ Syntax:
 * Written with BBEdit
 * BBEdit #mark syntax used for "function menu" shortcuts on all top level fields
 * Defaults:
-    * http://www.w3.org/TR/xmlschema11-1/#dcl.elt.local 
-    * thus XSD minOccurs defaults to 1 
+    * http://www.w3.org/TR/xmlschema11-1/#dcl.elt.local
+    * thus XSD minOccurs defaults to 1
     * thus XSD maxOccurs defaults to 1
-    
+
 Tools:
 
 >grep '<action>' dif.xsd | sed "s/.*<action>\(.*\)<\/action>.*/\1/g" | sort | uniq -c
@@ -32,7 +32,7 @@ History:
             targetNamespace="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
             xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
             elementFormDefault="qualified">
-    
+
     <xs:include schemaLocation="UmmCommon_1.2.xsd"/>
 
     <!-- *********************************************************** -->
@@ -45,7 +45,7 @@ History:
                 <actions>added, changed, moved, none, removed, renamed</actions>
                 <srcs>UMM, UMM (DIF), UMM (ECHO), UMM (EMS), DIF, ECHO</srcs>
             </xs:appinfo>
-            
+
             <xs:documentation>
                 The GCMD Directory Interchange Format. Description of changes in DIF Version 10.2
             </xs:documentation>
@@ -117,17 +117,17 @@ History:
                 Uniqueness is defined using Originating_Metadata_Node, Entry_ID,
                 and Version and can be represented as:
                 `[Orig_Node]Entry_ID[Version]`
-                
+
                 * Note, version constants:
                     * 'Not applicable' means Not Applicable for the metadata situation and should be ignored
                     * 'Not provided' means Not provided and should be ignored unless record is in review
                 * Also see Parent_Metadata
-                
+
                 | DIF 9    | ECHO 10   | UMM               | DIF 10              | Notes                |
                 | -------- | --------- | ----------------- | ------------------- | -------------------- |
                 | Entry_ID | ShortName | EntryID/ShortName | Entry_ID/Short_Name | No change            |
                 |          | Version   | EntryID/Version   | Entry_ID/Version    | moved from top level |
-                
+
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -135,7 +135,7 @@ History:
             <xs:element name="Version"      type="xs:string"/>
         </xs:sequence>
         <!--xs:restriction base="xs:string"/-->
-        
+
         <!-- proposed attentions for 10.3 -->
         <!--
         <xs:attribute name="uuid" type="UuidType"/>
@@ -145,7 +145,7 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Version -->
-    
+
     <xs:simpleType name="VersionType">
         <xs:annotation>
             <xs:appinfo><details><path>/DIF/Version</path></details></xs:appinfo>
@@ -156,11 +156,11 @@ History:
             </xs:appinfo>
             <xs:documentation>
                 Version identifier of the data collection.
-                
+
                 | DIF 9 | ECHO 10   | UMM               | DIF 10  | Notes                                  |
                 | ----- | --------- | ----------------- | ------- | -------------------------------------- |
                 |   -   | VersionId | Product/VersionId | Version | Added to match similar ECHO field      |
-                
+
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string"/>
@@ -186,7 +186,7 @@ History:
                 | DIF 9 | ECHO 10            | UMM | DIF 10              | Notes                              |
                 | ----- | ------------------ | --- | ------------------- | ---------------------------------- |
                 |   -   | VersionDescription |  -  | Version_Description | Added to match similar ECHO field  |
-                
+
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string"/>
@@ -194,14 +194,14 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Entry_Title -->
-    
+
     <xs:simpleType name="EntryTitleType">
         <xs:annotation>
             <xs:appinfo><details><path>/DIF/Entry_Title</path></details></xs:appinfo>
             <xs:appinfo><action>none</action></xs:appinfo>
             <xs:documentation>
                 /DIF/Entry_Title
-                
+
                 The GCMD product name, same as ECHO LongName.
 
                 *  This attribute will identify the long name associated with the collection. This is the reference name used in describing the scientific contents of the data collection. The long name and version id must be unique for a provider.
@@ -217,7 +217,7 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Dataset_Citation -->
-        
+
     <xs:complexType name="DatasetCitationType">
         <xs:annotation>
             <xs:appinfo><details><path>/DIF/Dataset_Citation</path></details></xs:appinfo>
@@ -229,11 +229,11 @@ History:
                 | Data_Set_Citation | CitationforExternalPublication | CollectionCitation | Dataset_Citation      | Renamed               |
                 |                                                                                                                         |
                 | Dataset_DOI       |               -                | DOI                | Persistent_Identifier | New type, generalized |
-                
-                * Persistent_Identifier (PID) for Data (Examples: DOI, ARK,…)            
+
+                * Persistent_Identifier (PID) for Data (Examples: DOI, ARK,…)
                 * Dataset_DOI : a digital object identifier, use: "doi:10.1000/182" or "ark:/NAAN/Name[Qualifier]"
             </xs:documentation>
-        </xs:annotation> 
+        </xs:annotation>
         <xs:sequence>
             <xs:element name="Dataset_Creator"          type="xs:string"                minOccurs="0"/>
             <xs:element name="Dataset_Editor"           type="xs:string"                minOccurs="0"/>
@@ -250,7 +250,7 @@ History:
             <xs:element name="Online_Resource"          type="xs:anyURI"                minOccurs="0"/><!-- changed from xs:string -->
         </xs:sequence>
     </xs:complexType>
-    
+
     <!-- *********************************************************** -->
     <!-- #mark Personnel -->
     <xs:complexType name="PersonnelType">
@@ -260,33 +260,33 @@ History:
             <xs:appinfo><action>added</action><src>UMM</src><since>10.1</since><note>added Contact Group</note></xs:appinfo>
             <xs:documentation>
                 NOTE: The /DIF/Personnel field not /DIF/Organization/Personnel
-                
+
                 Defines the point of contact for the data set or the metadata.
                 The contact personnel are defined by the Role, which include:
                 Investigator: The person who headed the investigation or experiment that resulted in the acquisition of the data described (i.e., Principal Investigator, Experiment Team Leader)
                 Technical Contact: The person who is knowledgeable about the technical content of the data (quality, processing methods, units, available software for further processing)
                 Metadata Author: The person who is responsible for the content of the Metadata. If the responsibility shifts from the original author to another person, the Metadata Author field should be updated to the new responsible person.
-                
+
                 Changes:
                 Personnel field was changed by moving all fields but Role to a
                 subfield called Contact_Person or Contact_Group which is shared with the
                 Organization field.
-                
+
                 | DIF 9 | ECHO 10      |UMM               | DIF 10           | Note                                        |
                 | ----- | ------------ | ---------------- | ---------------- | ------------------------------------------- |
                 | Role  | Job_Position | Role             | Role             | no change                                   |
                 |   -   |       -      |         -        | Contact_Person/* | All Fields but Role moved to Contact_Person |
-                
+
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
             <xs:element name="Role"             type="PersonnelRoleEnum"    maxOccurs="unbounded"/>
-            
+
             <xs:choice>
                 <xs:element name="Contact_Person"   type="ContactPersonType"    maxOccurs="unbounded"/>
                 <xs:element name="Contact_Group"    type="ContactGroupType"     maxOccurs="unbounded"/>
             </xs:choice>
-            
+
         </xs:sequence>
     </xs:complexType>
 
@@ -297,25 +297,25 @@ History:
 
             <xs:documentation>
                 The Personnel field for the /DIF/Organization field
-                
+
                 | DIF 9 | ECHO 10      | UMM               | DIF 10           | Note                                        |
-                | ----- | ------------ | ----------------- | ---------------- | ------------------------------------------- | 
+                | ----- | ------------ | ----------------- | ---------------- | ------------------------------------------- |
                 | Role  | Job_Position | Role              | Role             | no change                                   |
                 |   -   |       -      |          -        | Contact_Person/* | All Fields but Role moved to Contact_Person |
-                
+
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
             <xs:element name="Role"             type="OrganizationPersonnelRoleEnum"    maxOccurs="unbounded"/>
-            
+
             <xs:choice>
                 <xs:element name="Contact_Person"   type="ContactPersonType"    maxOccurs="unbounded"/>
                 <xs:element name="Contact_Group"    type="ContactGroupType"     maxOccurs="unbounded"/>
             </xs:choice>
-            
+
         </xs:sequence>
     </xs:complexType>
-    
+
     <xs:complexType name="ContactPersonType">
         <xs:annotation>
             <xs:appinfo><details><path>/DIF/Personnel/Contact_Person/Phone</path></details></xs:appinfo>
@@ -323,10 +323,10 @@ History:
             <xs:documentation>
                 * Email moved to the end of list
                 * Phone and Fax were merged into the new Phone field
-                
+
                 | DIF 9            | ECHO 10        | UMM           | DIF 10          | Notes   |
                 | ---------------  | -------------- | ------------- | --------------  | ------- |
-                | Personnel        | ContactPerson  | ContactPerson | Contact_Person  | Renamed | 
+                | Personnel        | ContactPerson  | ContactPerson | Contact_Person  | Renamed |
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -347,7 +347,7 @@ History:
             <xs:documentation>
                 * Email moved to the end of list
                 * Phone and Fax were merged into the new Phone field
-                
+
                 | DIF 9       | ECHO 10        | UMM           | DIF 10        | Notes                                        |
                 | ------------| -------------- | ------------- | ------------  | -------------------------------------------- |
                 | Personnel   | ContactPerson  | ContactPerson | Contact_Group | Added                                        |
@@ -356,7 +356,7 @@ History:
                 | > Address   | > Address      | > Address     | > Address     |                                              |
                 | > Phone     | > Phone        | > Phone       | > Phone       | Fax and Phon in DIF 9 merged with Phone type |
                 | > Email     | > Email        | > Email       | > Email       |                                              |
-                
+
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -373,7 +373,7 @@ History:
             <xs:appinfo><details><path>/DIF/Personnel/Contact_Person/Address</path></details></xs:appinfo>
             <xs:appinfo><action>changed</action><src>UMM</src><since>b</since></xs:appinfo>
             <xs:documentation>
-            
+
                 | DIF 9             | ECHO 10       | UMM           | DIF 10         | Notes   |
                 | ----------------- | ------------- | ------------- | -------------- | ------- |
                 | Address           | StreetAddress | StreetAddress | Street_Address | Renamed |
@@ -381,7 +381,7 @@ History:
                 | Province_or_State | StateProvince | StateProvince | State_Province | Renamed |
                 | Postal_Code       | PostalCode    | PostalCode    | Postal_Code    |         |
                 | Country           | Country       | Country       | Country        |         |
-                               
+
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -401,13 +401,13 @@ History:
                 DIF used discrete fields for different phone numbers (fax,
                 work, etc.) UMM defines a "name-value" style list which
                 should future proof phone numbers.
-                
+
                 * Number : phone number
-                * Type : The type of telephone number provided 
-                
+                * Type : The type of telephone number provided
+
                 | DIF 9    | ECHO 10   | UMM     | DIF 10   | Notes |
                 | -------- | ----------| ------- | -------- | ----- |
-                | Phone    | Phone     | Phone   | Phone    |       | 
+                | Phone    | Phone     | Phone   | Phone    |       |
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -418,7 +418,7 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Discipline -->
-        
+
     <xs:complexType name="DisciplineType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
@@ -428,10 +428,10 @@ History:
                 * group = gov.nasa.gsfc.gcmd
                 * name = discipline
                 * value = orig value
-                
+
                 | DIF 9            | ECHO 10        | UMM           | DIF 10          | Notes   |
                 | ---------------  | -------------- | ------------- | --------------  | ------- |
-                | Discipline       |       -        |       -       |        -        | Removed | 
+                | Discipline       |       -        |       -       |        -        | Removed |
             </xs:documentation>
         </xs:annotation>
         <!--
@@ -446,7 +446,7 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Science Keywords -->
-    
+
     <xs:complexType name="ScienceKeywordsType">
         <xs:annotation>
             <xs:appinfo><details><path>/DIF/Science_Keywords</path></details></xs:appinfo>
@@ -454,7 +454,7 @@ History:
                 <action>changed</action>
                 <src>UMM (DIF)</src>
             </xs:appinfo>
-            
+
             <xs:documentation>
                 | DIF 9      | ECHO 10         | UMM                  | DIF 10           | Notes                                                              |
                 | ---------- | --------------- | -------------------- | ---------------- | ------------------------------------------------------------------ |
@@ -475,13 +475,13 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark ISO Topic Category -->
-    
+
     <xs:complexType name="ISOTopicCategoryType">
         <xs:annotation>
             <xs:appinfo><details><path>/DIF/ISO_Topic_Category</path></details></xs:appinfo>
             <xs:appinfo><action>none</action></xs:appinfo>
             <xs:documentation>
-               
+
                 | DIF 9              | ECHO 10         | UMM                  | DIF 10             | Notes     |
                 | ------------------ | --------------- | -------------------- | ------------------ | --------- |
                 | ISO_Topic_Category |        -        |          -           | ISO_Topic_Category | No change |
@@ -496,7 +496,7 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Ancillary Keyword -->
-    
+
     <xs:simpleType name="AncillaryKeywordType">
         <xs:annotation>
             <xs:appinfo><details><path>/DIF/Ancillary_Keyword</path></details></xs:appinfo>
@@ -515,7 +515,7 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Platform -->
-    
+
     <xs:complexType name="PlatformType">
         <xs:annotation>
             <xs:appinfo><details><path>/DIF/Platform</path></details></xs:appinfo>
@@ -530,7 +530,7 @@ History:
                 software should use "undefined" until it can be confirmed
                 and moved to "not applicable"; "undefined" can be used for
                 cases where either the platform or instrument are unknown.
-                
+
                 | DIF 9            | ECHO            | UMM            | DIF 10        | Notes
                 | ---------------- |-----------------| ---------------|---------------| ----------------------------------------------- |
                 | Source_Name      | Platform        | Platform       | Platform      | Field was renamed                               |
@@ -540,7 +540,7 @@ History:
                 | /DIF/Sensor_Name | Instrument      |       -        |       -       | Moved to Platform                               |
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:element name="Type"             type="PlatformTypeEnum"/>
             <xs:element name="Short_Name"       type="xs:string"/>
@@ -550,7 +550,7 @@ History:
         </xs:sequence>
         <xs:attribute name="uuid" type="UuidType"/>
     </xs:complexType>
-    
+
     <xs:complexType name="InstrumentType">
         <xs:annotation>
             <xs:appinfo><details><path>/DIF/Platform/Instrument</path></details></xs:appinfo>
@@ -571,7 +571,7 @@ History:
                 |      -      | Sensor           | Sensor          | Sensor            | Added from ECHO             |
             </xs:documentation>
         </xs:annotation>
-    
+
         <xs:sequence>
             <xs:element name="Short_Name"       type="xs:string"/>
             <xs:element name="Long_Name"        type="xs:string"          minOccurs="0"/>
@@ -592,20 +592,20 @@ History:
                 <src>UMM (ECHO)</src>
             </xs:appinfo>
             <xs:documentation>
-                
+
                 This entity holds the referential information for collection
                 source/sensor configuration including sensor parameters setting
                 such as technique etc.
-      
+
                 * Short name of the sensor.
                 * Long name of the sensor.
                 * Technique applied for this sensor in the configuration.
-                
+
                 | DIF 9       | ECHO             | UMM             | DIF 10            | Notes                       |
                 | ----------- |------------------|-----------------| ----------------- |---------------------------- |
                 |      -      | Sensor           | Sensor          | Sensor            | Added from ECHO             |
-                
-                
+
+
             </xs:documentation>
         </xs:annotation>
 
@@ -631,13 +631,13 @@ History:
                 * The datatype of the Characteristic/attribute.
                 * Unit is the unit of the Characteristic attribute value.
                 * The value of the Characteristic attribute.
-                
+
                 | DIF 9       | ECHO             | UMM             | DIF 10            | Notes                       |
                 | ----------- |------------------|-----------------| ----------------- |---------------------------- |
                 |      -      | Characteristics  | Characteristics | Characteristics   | Added from ECHO             |
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:element name="Name"         type="xs:string"/>
             <xs:element name="Description"  type="xs:string"/>
@@ -649,7 +649,7 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Temporal_Coverage -->
-        
+
     <xs:complexType name="TemporalCoverageType">
         <xs:annotation>
             <xs:appinfo><details><path>/DIF/Temporal_Coverage</path></details></xs:appinfo>
@@ -657,12 +657,12 @@ History:
             <xs:appinfo><action>rename</action><src>UMM</src><since>c</since><note>added underscore for local consistency</note></xs:appinfo>
             <xs:documentation>
                 Required by UMM-C; DIF and ECHO traditionally did not require.
-                
+
                 This entity contains records which describe the basis of the
                 time system used for a specific collection.
-                
+
                 Changes:
-                
+
                 | DIF 9      | DIF 10               | Notes                                   |
                 | ---------- | -------------------- | --------------------------------------- |
                 | Start_Date | Moved                | See Choices                             |
@@ -673,14 +673,14 @@ History:
                 |     -      | Precision_Of_Seconds | Added from ECHO 10                      |
                 |     -      | Ends_At_Present_Flag | Added from ECHO 10                      |
                 |     -      | Temporal_Info        | Added to hold other ECHO 10 Time Fields |
-                
+
                 * Time_Type: This attribute provides the time system which the values found in temporal subclasses represent.
                 * Date_Type: This attribute specifies the type of date represented by the value in the date attributes of the temporal subclasses.
                 * Temporal_Range_Type: This attribute tells the system and ultimately the end user how temporal coverage is specified for the collection.
                 * Precision_Of_Seconds: The precision (position in number of places to right of decimal point) of seconds used in measurement.
                 * Ends_At_Present_Flag: This attribute will denote that a data collection which covers, temporally, a discontinuous range, currently ends at the present date. This way, the granules, which comprise the data collection, that are continuously being added to inventory need not update the data collection metadata for each one.
                 * TemporalInfo: unknown
-                
+
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -714,23 +714,23 @@ History:
 		        unit and value. Used at the collection level to describe a
 		        collection having granules, which cover a regularly occurring
 		        period.
-                                
+
                 * Name : The name given to the recurring time period. e.g. 'spring - north hemi.'
                 * Start_Date : This attribute provides the date (day and time) of the first occurrence of this regularly occurring period which is relevant to the collection, granule, or event coverage.
                 * End_Date : This attribute provides the date (day and time) of the last occurrence of this regularly occurring period which is relevant to the collection, granule, or event coverage.
                 * Duration_Unit : The unit specification for the period duration.
-                
+
                 Duration_Value : The number of PeriodDurationUnits in the RegularPeriodic period. e.g. the RegularPeriodic event 'Spring-North Hemi' might have a:
                 * PeriodDurationUnit='MONTH',
                 * PeriodDurationValue='3' ,
-                * PeriodCycleDurationUnit='YEAR', 
-                * PeriodCycleDurationValue='1', 
-                
+                * PeriodCycleDurationUnit='YEAR',
+                * PeriodCycleDurationValue='1',
+
                 indicating that Spring-North Hemi lasts for 3 months and has a cycle duration of 1 year. The unit for the attribute is the value of the attribute PeriodDurationValue.
-                
+
                 * Period_Cycle_Duration_Unit : The unit specification of the period cycle duration.
                 * Period_Cycle_Duration_Value  : The value of the attribute.
-                
+
             </xs:documentation>
         </xs:annotation>
       <xs:sequence>
@@ -752,12 +752,12 @@ History:
 
             <xs:documentation>
                 This entity stores the start and end date/time of a collection.
-                
+
                 * BeginningDateTime : The time when the temporal coverage period being described began.
                 * EndingDateTime : The time when the temporal coverage period being described ended.
             </xs:documentation>
         </xs:annotation>
-    
+
         <xs:sequence>
             <xs:element name="Beginning_Date_Time"  type="DateOrTimeOrEnumType"/>
             <xs:element name="Ending_Date_Time"     type="DateOrTimeOrEnumType" minOccurs="0"/>
@@ -771,7 +771,7 @@ History:
             <xs:documentation>
                 * TemporalKeywords : This attribute specifies a word or phrase which serves to summarize the temporal characteristics referenced in the collection.
                 * Temporal_Resolution : UMM still has not decided if this field is to be added here.
-            
+
                 | DIF 9                     | ECHO 10                  | DIF 10                     | Notes                            |
                 | ------------------------- | ------------------------ | -------------------------- | -------------------------------- |
                 |            -              | TemporalKeywords/Keyword | Ancillary_Temporal_Keyword | Added from ECHO                  |
@@ -784,7 +784,7 @@ History:
             <!--xs:element name="Temporal_Resolution"          type="TemporalResolution"   minOccurs="0" maxOccurs="unbounded"/-->
         </xs:sequence>
     </xs:complexType>
-    
+
     <!--
     <xs:complexType name="TemporalResolution">
         <xs:sequence>
@@ -800,7 +800,7 @@ History:
             <xs:appinfo><action>renamed</action><src>UMM</src></xs:appinfo>
             <xs:documentation>
                 Was a top level field in DIF 9 but is now one of the choices within the Temporal_Coverage field.
-            
+
                 | DIF 9                   | ECHO     | UMM                   | DIF 10          | Notes                               |
 		        | ----------------------- |----------| --------------------- | --------------- | ------------------------------------|
 		        | Paleo_Temporal_Coverage |     -    | PaleoTemporalCoverage | Paleo_Date_Time | Moved to Temporal_Coverage choice   |
@@ -834,14 +834,14 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Dataset_Progress -->
-        
+
     <xs:simpleType name="DatasetProgressType">
         <xs:annotation>
             <xs:appinfo><details><path>/DIF/Dataset_Progress</path></details></xs:appinfo>
             <xs:appinfo>
                 <action>renamed</action>
                 <src>GCMD (DIF)</src>
-                
+
             </xs:appinfo>
             <xs:documentation>
                 Describes the production status of the data set regarding its completeness.
@@ -850,29 +850,29 @@ History:
                 * ''Planned'' refers to data sets to be collected in the future and are thus unavailable at the present time.  For Example: The Hydro spacecraft has not been launched, but information on planned data sets may be available.
                 * ''In Work'' refers to data sets currently undergoing production or data that is continuously being collected or updated.  For Example: data from the AIRS instrument on Aqua is being collected continuously.
                 * ''Complete'' refers to data sets in which no updates or further data collection will be made.  For Example: Nimbus-7 SMMR data collection has been completed.
-            
+
                 | DIF 9             | ECHO 10 | UMM                | DIF 10            | Notes                |
                 | ----------------- | ------- | ------------------ | ----------------- | -------------------- |
-                | Data_Set_Progress |    -    | CollectionProgress | Dataset_Progress  | Renamed, set to enum | 
-            
+                | Data_Set_Progress |    -    | CollectionProgress | Dataset_Progress  | Renamed, set to enum |
+
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:restriction base="DatasetProgressEnum"/>
     </xs:simpleType>
 
     <!-- *********************************************************** -->
     <!-- #mark Spatial_Coverage -->
-        
+
     <xs:complexType name="SpatialCoverageType">
         <xs:annotation>
             <xs:appinfo><details>/DIF/Spatial_Coverage</details></xs:appinfo>
             <xs:appinfo><action>changed</action><src>UMM (ECHO)</src><since>b</since></xs:appinfo>
             <xs:appinfo><action>changed</action><src>UMM (ECHO)</src><since>c</since></xs:appinfo>
-            
+
             <xs:documentation>
                 Required by UMM-C, DIF, and ECHO.
-                
+
                 | DIF 9            | ECHO 10                      | DIF 10                         | Notes                                                                 |
                 | ---------------- | ---------------------------- | ------------------------------ | --------------------------------------------------------------------- |
                 |  Southernmost_L**|              -               |               -                | Moved Lat and Long fields to Geometry/Bounding_Rectangle              |
@@ -883,14 +883,14 @@ History:
                 |         -        | OrbitParameters              | Orbit_Parameters               | Added from ECHO Spatial                                               |
                 |         -        | VerticalSpatialDomain        | Vertical_Spatial_Info          | Added from ECHO, inside Vertical_Spatial_Info, use type               |
                 |         -        | SpatialInfo                  | Spatial_Info                   | Added from ECHO fields, composite field                               |
-                
+
                 * Spatial_Coverage_Type : This attribute denotes whether the collection's spatial coverage requires horizontal, vertical, or both in the spatial domain and coordinate system definitions.
                 * Granule_Spatial_Representation : Required if mapping granules to a DIF.
                 * Zone_Identifier : The appropriate numeric or alpha code used to identify the various zones in this grid coordinate system.
-                * Spatial_Info : This composite field stores the reference frame or system from which altitudes (elevations) are measured. 
+                * Spatial_Info : This composite field stores the reference frame or system from which altitudes (elevations) are measured.
                 * todo: future versions should include units for the min and max values.
                 (**Southernmost_Latitude, Westernmost_Longitude, ..., all have "ternmost_L" in the middle.)
-                
+
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -919,13 +919,13 @@ History:
 
                 * Type : This attribute describes the type of the area of vertical space covered by the locality.
                 * Value : This attribute describes the extent of the area of vertical space covered by the granule. Must be accompanied by an Altitude Encoding Method description. The datatype for this attribute is the value of the attribute VerticalSpatialDomainType. The unit for this attribute is the value of either DepthDistanceUnits or AltitudeDistanceUnits.
-            
+
                 | DIF 9        | ECHO 10                     | UMM                    | DIF 10                         | Notes                                                   |
                 | ------------ | ----------------------------|----------------------- | ------------------------------ | ------------------------------------------------------- |
-                |      -       | VerticalSpatialDomain       | VerticalSpatialDomain  | Vertical_Spatial_Info          | Added from ECHO, inside Vertical_Spatial_Info, use type |            
+                |      -       | VerticalSpatialDomain       | VerticalSpatialDomain  | Vertical_Spatial_Info          | Added from ECHO, inside Vertical_Spatial_Info, use type |
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:element name="Type" type="xs:string"/>
             <xs:element name="Value" type="xs:string"/>
@@ -943,10 +943,10 @@ History:
                | ------------ | ---------------------------- | -------------------------------- |------------------------------| --------------------------------------- |
                |      -       |               -              | HorizontalSpatialDomain/Geometry | Geometry                     | Added from ECHO HorizontalSpatialDomain |
                |      -       | Choice maxOccurs="unbounded" | Choice maxOccurs="unbounded"     | Choice maxOccurs="unbounded" | Changed in 10.2 from CMRQ-618           |
-            
+
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:element name="Coordinate_System"    type="CoordinateSystemEnum"/>
             <xs:choice maxOccurs="unbounded">
@@ -969,9 +969,9 @@ History:
             <xs:element name="CenterPoint"  type="Point" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
-    
+
     <!-- #mark _ Bounding_Rectangle -->
-    
+
     <xs:complexType name="BoundingRectangleType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
@@ -979,7 +979,7 @@ History:
             <xs:documentation>
                 Latitude and Longitude points are moved here from the
                 Spatial_Coverage field under DIF 9.
-                
+
                 | DIF 9                 | ECHO 10                 | UMM                     | DIF 10                | Notes                        |
                 | --------------------- | ----------------------- | ----------------------- | --------------------- | ---------------------------- |
                 |           -           | CenterPoint             | CenterPoint             | Center_Point          | Added to match ECHO10 field  |
@@ -987,7 +987,7 @@ History:
                 | Northernmost_Latitude | NorthBoundingCoordinate | NorthBoundingCoordinate | Northernmost_Latitude | Renamed                      |
                 | Westernmost_Longitude | WestBoundingCoordinate  | WestBoundingCoordinate  | Westernmost_Longitude | Renamed                      |
                 | Easternmost_Longitude | EastBoundingCoordinate  | EastBoundingCoordinate  | Easternmost_Longitude | Renamed                      |
-                
+
                 | Minimum_Altitude      |              -          | Minimum_Altitude        | Minimum_Altitude      | Note: should be a number from now on, enforce later                   |
                 | Maximum_Altitude      |              -          | Maximum_Altitude        | Maximum_Altitude      | Note: should be a number from now on, enforce later                   |
                 |           -           |              -          | Altitude_Unit           | Altitude_Unit         | Added because ECHO uses units in the dropped VerticalSystemDefinition |
@@ -1002,7 +1002,7 @@ History:
             <xs:element name="Northernmost_Latitude"    type="xs:string"/>
             <xs:element name="Westernmost_Longitude"    type="xs:string"/>
             <xs:element name="Easternmost_Longitude"    type="xs:string"/>
-            
+
             <xs:element name="Minimum_Altitude"         type="xs:string"    minOccurs="0"/><!-- DIF 9 -->
             <xs:element name="Maximum_Altitude"         type="xs:string"    minOccurs="0"/><!-- DIF 9 -->
             <xs:element name="Altitude_Unit"            type="xs:string"    minOccurs="0"/><!-- DIF 10 -->
@@ -1025,14 +1025,14 @@ History:
                 the characteristics of the reference frame or system from which
                 depths are measured. The additional information in the table are
                 geometry reference data etc.
-                
+
                 | ECHO 10                    | UMM                        | DIF 10                       | Notes                              |
                 | -------------------------- | -------------------------- | ---------------------------- | ---------------------------------- |
                 | SpatialCoverageType        | SpatialCoverageType        | Spatial_Coverage_Type        | Added and renamed from ECHO 10     |
                 | VerticalCoordinateSystem   | VerticalCoordinateSystem   | Vertical_Coordinate_System   | Added and renamed from ECHO 10     |
                 | HorizontalCoordinateSystem | HorizontalCoordinateSystem | Horizontal_Coordinate_System | Added and renamed from ECHO 10     |
                 | TwoDCoordinateSystem       | TwoDCoordinateSystem       | TwoD_Coordinate_System       | Added from top level ECHO 10 field |
-                
+
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -1050,14 +1050,14 @@ History:
 
             <xs:documentation>
                 Added from ECHO 10
-            
+
                 This entity defines the two dimensional coordinate systems for
                 the collection. The two dimensional coordinate system
                 information is an alternative way to express spatial coverage.
                 Granules in the collection that specify two dimensional
                 coordinate data must conform to one of the systems defined by
                 the collection.
-                
+
                 * TwoD_Coordinate_System_Name : Defines the name of the Two Dimensional coordinate System. Must be unique within a collection.
                 * Coordinate1 : Defines the horizontal coordinate.
                 * Coordinate2 : Defines the vertical coordinate.
@@ -1085,7 +1085,7 @@ History:
             <xs:element name="Maximum_Value" minOccurs="0" type="xs:decimal"/>
         </xs:sequence>
     </xs:complexType>
-    
+
     <xs:complexType name="HorizontalCoordinateSystem">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
@@ -1095,7 +1095,7 @@ History:
             <xs:documentation>
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:element name="Geodetic_Model" type="GeodeticModel" minOccurs="0"/>
             <xs:choice minOccurs="0">
@@ -1115,7 +1115,7 @@ History:
             <xs:documentation>
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:element name="GeographicCoordinateUnits"    type="xs:string"    minOccurs="0"/>
             <xs:element name="LatitudeResolution"           type="xs:decimal"   minOccurs="0"/>
@@ -1130,7 +1130,7 @@ History:
             <xs:documentation>
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:element name="Description"              type="xs:string" minOccurs="0"/>
             <xs:element name="GeoReference_Information" type="xs:string" minOccurs="0"/>
@@ -1144,7 +1144,7 @@ History:
             <xs:documentation>
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:element name="Horizontal_DatumName"             type="xs:string"    minOccurs="0"/>
             <xs:element name="Ellipsoid_Name"                   type="xs:string"    minOccurs="0"/>
@@ -1159,7 +1159,7 @@ History:
             <xs:documentation>
             </xs:documentation>
         </xs:annotation>
-        
+
     <xs:complexType name="OrbitParameters">
         <xs:sequence>
             <xs:element name="Swath_Width"              type="xs:decimal"/>
@@ -1177,7 +1177,7 @@ History:
             <xs:documentation>
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:element name="Boundary"         type="Boundary"/>
             <xs:element name="Exclusive_Zone"   type="ExclusiveZone"    minOccurs="0"/>
@@ -1192,7 +1192,7 @@ History:
             <xs:documentation>
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:element name="Point_Longitude"  type="Longitude"/>
             <xs:element name="Point_Latitude"   type="Latitude"/>
@@ -1206,7 +1206,7 @@ History:
             <xs:documentation>
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:restriction base="xs:decimal">
             <xs:minInclusive value="-90.0"/>
             <xs:maxInclusive value="90.0"/>
@@ -1219,7 +1219,7 @@ History:
             <xs:documentation>
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:restriction base="xs:decimal">
             <xs:minInclusive value="-180.0"/>
             <xs:maxInclusive value="180.0"/>
@@ -1260,13 +1260,13 @@ History:
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>none</action></xs:appinfo>
             <xs:documentation>
-            
+
             | DIF 9    | ECHO 10 | UMM            | DIF 10   | Notes         |
             | -------- | ------- | -------------- | -------- | ------------- |
             | Location | Keyword | SpatialKeyword | Location | No change     |
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:element name="Location_Category"        type="xs:string"/>
             <xs:element name="Location_Type"            type="xs:string" minOccurs="0"/>
@@ -1280,25 +1280,25 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Data_Resolution -->
-    
+
     <xs:complexType name="DataResolutionType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>none</action></xs:appinfo>
             <xs:documentation>
-            
+
             | DIF 9               | ECHO 10       | UMM        | DIF 10                   | Note                                               |
             | ------------------- | ------------- | ---------- | ------------------------ | -------------------------------------------------- |
             | Data_Resolution     |       -       | Resolution | Data_Resolution          | No change                                          |
             |
             | Vertical_Resolution | Resolution    | ?          | Vertical_Resolution      | Should be a number in the future, migrate all over |
             |         -           | DistanceUnits | ?          | Vertical_Resolution_Unit |                                                    |
-            
+
             Resolution is /Collection/VerticalCoordinateSystem/AltitudeSystemDefinition/Resolution/
-            
+
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:element name="Latitude_Resolution"          type="xs:string"                     minOccurs="0"/>
             <xs:element name="Longitude_Resolution"         type="xs:string"                     minOccurs="0"/>
@@ -1321,7 +1321,7 @@ History:
             | Horizontal_Resolution_Range |    -    | HorizontalResolutionRange | Horizontal_Resolution_Range | No change      |
             </xs:documentation>
         </xs:annotation>
-        
+
          <xs:simpleContent>
             <xs:extension base="xs:string">
                 <xs:attribute name="uuid" type="UuidType"/>
@@ -1334,14 +1334,14 @@ History:
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>none</action></xs:appinfo>
             <xs:documentation>
-            
+
             | DIF 9                       | ECHO 10 | UMM                     | DIF 10                     | Notes          |
             | --------------------------- | ------- | ------------------------| -------------------------- | -------------  |
             | Vertical_Resolution_Range   |    -    | VerticalResolutionRange | Vertical_Resolution_Range  | No change      |
-            
+
             </xs:documentation>
         </xs:annotation>
-        
+
          <xs:simpleContent>
             <xs:extension base="xs:string">
                 <xs:attribute name="uuid" type="UuidType"/>
@@ -1354,13 +1354,13 @@ History:
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>none</action></xs:appinfo>
             <xs:documentation>
-            
+
             | DIF 9                       | ECHO 10 | UMM                     | DIF 10                     | Notes          |
             | --------------------------- | ------- | ------------------------| -------------------------- | -------------  |
             | Temporal_Resolution_Range   |    -    | TemporalResolutionRange | Temporal_Resolution_Range  | No change      |
             </xs:documentation>
         </xs:annotation>
-        
+
          <xs:simpleContent>
             <xs:extension base="xs:string">
                 <xs:attribute name="uuid" type="UuidType"/>
@@ -1387,17 +1387,17 @@ History:
                 endeavor(s) to which the collection is associated. Scientific
                 endeavors include campaigns, projects, interdisciplinary science
                 investigations, missions, field experiments, etc.
-                
+
                 * DIF 9 sometimes uses "/" in the Short_Name to denote campain
-                
+
                 * UUID is for mapping to the project as a whole, campaign information is specific to this record.
-                
+
                 * Note: Some CMR software maps ECHO 10 Campain directly to DIF 9 Project
-                
+
                 In the future we can map legacy fields as such:
                 * "ARCSS/OAII/SHEBA" goes to Short_Name:ARCSS Campain:SHEBA but will need a review
                 * "GTE/TRACE-P" goes to Short_Name:GTE Campain:TRACE-P
-            
+
                 | DIF 9      | ECHO 10   | UMM       | DIF 10     | Notes                                                                      |
                 | ---------- | --------- | --------- | ---------- | -------------------------------------------------------------------------- |
                 | Project    | Campaign  | Project   | Project    | Renamed Containing field                                                   |
@@ -1407,7 +1407,7 @@ History:
                 | Long_Name  | LongName  | LongName  | Long_Name  |                                                                            |
                 |     -      | StartDate |     -     | Start_Date | Is a datetime in echo ; aircraft may use time but no record currently does |
                 |     -      | EndDate   |     -     | End_Date   | Is a datetime in echo ; aircraft may use time but no record currently does |
-                
+
                 * Short_Name : The unique identifier by which a campaign/project/experiment is known. The campaign/project is the scientific endeavor associated with the acquisition of the collection. Collections may be associated with multiple campaigns.
                 * Campaign : A sub project, or name of recurring activity. ECHO only has Campaigns.
                 * Long_Name : The expanded name of the campaign/experiment (e.g. Global climate observing system).
@@ -1428,20 +1428,20 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Quality  -->
-        
+
     <xs:complexType name="QualityType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>changed</action><src>UMM (DIF)</src></xs:appinfo>
             <xs:documentation>
-            
+
             | DIF 9        | ECHO 10 | UMM         | DIF 10   | Notes          |
             | ------------ | ------- | ------------| -------- | -------------  |
             | Quality      |    -    | Quality     | Quality  | No change      |
-            
+
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:simpleContent>
             <xs:extension base="DisplayableTextTypeBaseType">
                 <xs:attribute type="DisplayableTextEnum" name="mime_type" default="text/markdown"/>
@@ -1451,39 +1451,39 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Access_Constraints -->
-        
+
     <xs:simpleType name="AccessConstraintsType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
-            <xs:appinfo><action>none</action></xs:appinfo>            
+            <xs:appinfo><action>none</action></xs:appinfo>
             <xs:documentation>
-            
+
             | DIF 9               | ECHO 10 | UMM               | DIF 10             | Notes          |
             | ------------------- | ------- | ------------------| ------------------ | -------------  |
             | Access_Constraints  |    -    | AccessConstraints | Access_Constraints | No change      |
-            
+
             </xs:documentation>
         </xs:annotation>
-        
+
          <xs:restriction base="xs:string"/>
     </xs:simpleType>
 
     <!-- *********************************************************** -->
     <!-- #mark Use_Constraints -->
-        
+
     <xs:complexType name="UseConstraintsType">
          <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>changed</action><src>UMM (DIF)</src></xs:appinfo>
             <xs:documentation>
-            
+
             | DIF 9               | ECHO 10 | UMM               | DIF 10             | Notes          |
             | ------------------- | ------- | ------------------| ------------------ | -------------  |
             | Use_Constraints     |    -    | UseConstraints    | Use_Constraints    | No change      |
-            
+
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:simpleContent>
             <xs:extension base="DisplayableTextTypeBaseType">
                 <xs:attribute type="DisplayableTextEnum" name="mime_type" default="text/markdown"/>
@@ -1493,7 +1493,7 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Dataset_Language -->
-        
+
     <xs:simpleType name="DatasetLanguageType">
         <xs:annotation>
             <xs:appinfo><details><path>/DIF/Dataset_Language</path></details></xs:appinfo>
@@ -1501,32 +1501,32 @@ History:
             <xs:appinfo><action>changed</action><src>GCMD (CMRSCI-436)</src><since>10.1</since><note>restriction changed to enum</note></xs:appinfo>
             <xs:documentation>
             DatasetLanguageType enumerations are a sub-set of ISO 639
-            
+
             | DIF 9               | ECHO 10 | UMM               | DIF 10             | Notes          |
             | ------------------- | ------- | ------------------| ------------------ | -------------  |
             | Dataset_Language    |    -    | DataSetLanguage   | Dataset_Language   | No change      |
-            
+
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:restriction base="DatasetLanguageEnum"/>
 
     </xs:simpleType>
 
     <!-- *********************************************************** -->
     <!-- #mark Originating_Center -->
-        
+
     <xs:simpleType name="OriginatingCenterType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
-            <xs:appinfo><action>none</action></xs:appinfo>        
+            <xs:appinfo><action>none</action></xs:appinfo>
              <xs:documentation>
                 Depreciated, use Organization in the future.
-                
+
                 | DIF 9              | ECHO 10 | UMM | DIF 10             | Notes                |
                 | ------------------ | ------- | --- | ------------------ | -------------------- |
                 | Originating_Center |    -    |  -  | Originating_Center | Kept for legacy data |
-                
+
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string"/>
@@ -1534,17 +1534,17 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Organization -->
-        
+
     <xs:complexType name="OrganizationType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>changed</action><src>UMM</src></xs:appinfo>
-            <xs:appinfo><action>changed</action><src>UMM</src><note>Hours_Of_Service incorrectly made required in 10.0.0a.</note></xs:appinfo>        
-            <xs:appinfo><action>changed</action><src>UMM</src><note>Instructions incorrectly made required in 10.0.0a.</note></xs:appinfo>        
+            <xs:appinfo><action>changed</action><src>UMM</src><note>Hours_Of_Service incorrectly made required in 10.0.0a.</note></xs:appinfo>
+            <xs:appinfo><action>changed</action><src>UMM</src><note>Instructions incorrectly made required in 10.0.0a.</note></xs:appinfo>
             <xs:documentation>
                 * Was Data_Center in the DIF
                 * Type is required in UMM
-                
+
                 | DIF 9            | ECHO 10           | UMM                 | DIF 10            | Notes                               |
                 | ---------------- | ----------------- | ------------------- | ----------------- | ------------------------------------|
                 | Data_Center      |         -         | Organization        | Organization      | Changed to match UMM field          |
@@ -1561,8 +1561,8 @@ History:
 
             </xs:documentation>
         </xs:annotation>
-        
-        <xs:sequence>        
+
+        <xs:sequence>
             <xs:element name="Organization_Type"    type="OrganizationTypeEnum"                 maxOccurs="unbounded"/>
             <xs:element name="Organization_Name"    type="OrganizationNameType"/>
             <xs:element name="Hours_Of_Service"     type="xs:string"            minOccurs="0"/>
@@ -1578,11 +1578,11 @@ History:
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>added</action><src>UMM</src></xs:appinfo>
             <xs:documentation>
-            
+
               | DIF 9            | ECHO 10           | UMM                 | DIF 10            | Notes                                   |
               | ---------------- | ----------------- | ------------------- | ----------------- | --------------------------------------- |
               | Data_Center_Name |         -         | OrganizationName    | Organization_Name | Changed to match similar UMM field name |
-            
+
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -1591,22 +1591,22 @@ History:
         </xs:sequence>
         <xs:attribute name="uuid" type="UuidType"/>
     </xs:complexType>
-    
+
     <!-- *********************************************************** -->
     <!-- #mark Distribution -->
-        
+
     <xs:complexType name="DistributionType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>none</action></xs:appinfo>
             <xs:documentation>
                 Field describes media options, size, data format, and fees involved in distributing the data set.
-                
+
               | DIF 9            | ECHO 10           | UMM            | DIF 10       | Notes      |
               | ---------------- | ----------------- | -------------- | ------------ | ---------- |
               | Distribution     |         -         | Distribution   | Distribution | No change  |
               | Fees             | Price             |        -       | Fees         | Not in UMM |
-                
+
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -1619,7 +1619,7 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Multimedia_Sample -->
-        
+
     <xs:complexType name="MultimediaSampleType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
@@ -1627,11 +1627,11 @@ History:
             <xs:documentation>
                 * use of File is discouraged
                 * !!should format be an enum? how hard is this on CMR if we make a change here later?
-                
+
               | DIF 9              | ECHO 10           | UMM            | DIF 10            | Notes     |
               | ------------------ | ----------------- | -------------- | ----------------- | --------- |
               | Multimedia_Sample  |         -         |       -        | Multimedia_Sample | No change |
-              
+
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -1655,7 +1655,7 @@ History:
                 * mixed= "true" : Removed and the field Citation has been added to ease in translation
                 * Citation : the human readable reference; what used to be the Reference tag text
                 * External_Identifier : Was DOI (digital object identifier), use: "doi:10.1000/182" or "ark:/NAAN/Name[Qualifier]"
-                
+
                 | DIF 9                   | ECHO 10 | UMM                   | DIF 10                  | Notes                                                          |
                 | ----------------------- | ------- | --------------------- | ----------------------- | -------------------------------------------------------------- |
                 | mixed="true"            |    -    | mixed="true"          | Citation                | Added to support the removal of the mixed mode, Reference text |
@@ -1664,7 +1664,7 @@ History:
                 | Publication_Place       |    -    | PublicationPlace      | Publication_Place       | Renamed                                                        |
                 | DOI                     |    -    | DOI                   | External_Identifier     | Made into a complex type so that DOI and ARK can be stored     |
                 | Other_Reference_Details |    -    | OtherReferenceDetails | Other_Reference_Details | Renamed                                                        |
-                
+
             </xs:documentation>
         </xs:annotation>
 
@@ -1690,7 +1690,7 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Summary -->
-        
+
     <xs:complexType name="SummaryType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
@@ -1698,23 +1698,23 @@ History:
                 <action>changed</action>
                 <src>DIF</src>
                 <note>Added mime_type for UMM-C support for markdown</note>
-            </xs:appinfo>    
+            </xs:appinfo>
             <xs:documentation>
                 Content can be markdown
-                
+
                 | DIF 9    | ECHO 10        | UMM      | DIF 10   | Notes     |
                 | -------- | -------------- | -------- | -------- | --------- |
                 | Abstract | Description    | Abstract | Abstract | No change |
                 | Purpose  | SuggestedUsage | Purpose  | Purpose  | No change |
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:element name="Abstract" type="DisplayableTextType" minOccurs="0"/>
             <xs:element name="Purpose"  type="DisplayableTextType" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
-    
+
     <xs:complexType name="DisplayableTextType">
         <xs:simpleContent>
             <xs:extension base="DisplayableTextTypeBaseType">
@@ -1722,10 +1722,10 @@ History:
             </xs:extension>
         </xs:simpleContent>
     </xs:complexType>
-        
+
     <!-- *********************************************************** -->
     <!-- #mark Related_URL -->
-        
+
     <xs:complexType name="RelatedURLType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
@@ -1736,7 +1736,7 @@ History:
             <xs:documentation>
                 * Require at least one, the datacenter (organization) url should be used if no other url can be found
                 * Echo uses both OnlineAccessURLs and OnlineResources for this
-                
+
                 | DIF 9            | ECHO 10                                                    |UMM             | DIF 10           | ISO      | Notes
                 | ---------------- | ---------------------------------------------------------- |----------------| ---------------- | -------- | --------------------------------|
                 | URL_Content_Type | OnlineResource/Type                                        | URLContentType | URL_Content_Type |     ?    | No change                       |
@@ -1763,11 +1763,11 @@ History:
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>none</action></xs:appinfo>
             <xs:documentation>
-            
+
             | DIF 9            | ECHO 10               |UMM             | DIF 10           | Notes      |
             | ---------------- | ----------------------|----------------| ---------------- | -----------|
-            | URL_Content_Type | OnlineResource/Type   | URLContentType | URL_Content_Type | No change  | 
-            
+            | URL_Content_Type | OnlineResource/Type   | URLContentType | URL_Content_Type | No change  |
+
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -1779,7 +1779,7 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Parent_Metadata -->
-    
+
     <xs:complexType name="_ParentMetadataType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
@@ -1789,17 +1789,17 @@ History:
             <xs:appinfo><action>changed</action><src>UMM (CMRSCI-437)</src><since>10.2</since><note>From Parent_DIF to Parent_Metadata</note></xs:appinfo>
             <xs:appinfo><action>removed</action><src>UMM (CMR-2073)</src><since>10.2</since><note>Dropped in favor of Metadata_Association</note></xs:appinfo>
             <xs:documentation>
-            
+
             | DIF 9      | ECHO 10 | UMM                 | DIF 10                  | Notes                            |
             | ---------- | ------- | ------------------- | ----------------------- | -------------------------------- |
             | Parent_DIF |    -    | MetadataAssociation | MetadataAssociationType | use type=Parent                  |
             |                                                                                                         |
             | Parent_DIF |    -    | > Paret_DIF         | > Short_Name            | Now a subfield                   |
             |      -     |    -    | > Version           | > Version               | Adding Version as it was missing |
-            
+
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:complexContent>
             <xs:extension base="EntryIDType"/>
         </xs:complexContent>
@@ -1807,7 +1807,7 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark MetadataAssociation -->
-    
+
     <xs:complexType name="MetadataAssociationType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
@@ -1817,7 +1817,7 @@ History:
             <xs:appinfo><action>changed</action><src>UMM (CMRSCI-438)</src><since>10.1</since><note>Type</note></xs:appinfo>
             <xs:appinfo><action>changed</action><src>UMM (CMR-2073)</src><since>10.2</since><note>changed entry id type to match field of same name</note></xs:appinfo>
             <xs:documentation>
-            
+
             | DIF 9        | ECHO 10               | UMM                 | DIF 10                | Notes                      |
             | ------------ | --------------------- | ------------------- | --------------------- | -------------------------- |
             | Parent_DIF   | CollectionAssociation | MetadataAssociation | Metadata_Association  | Added to match UMM         |
@@ -1825,7 +1825,7 @@ History:
             |      -       | > VersionId           |          -          | > Entry_ID/Version    | Added to support ECHO      |
             | >type=Parent | > CollectionType      | > Type              | > Type                | Made an enum               |
             |      -       | > CollectionUse       |          -          | > Description         | not candidate for markdown |
-            
+
             </xs:documentation>
         </xs:annotation>
 
@@ -1838,20 +1838,20 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark IDN_Node -->
-        
+
     <xs:complexType name="IDNNodeType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>none</action></xs:appinfo>
             <xs:documentation>
-            
+
             | DIF 9       | ECHO 10               |UMM       | DIF 10     | Notes      |
             | ------------| ----------------------|--------- | ---------- | ---------- |
             | IDN_Node    |           -           |     -    | IDN_Node   | No change  |
-            
+
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:element name="Short_Name"   type="xs:string"/>
             <xs:element name="Long_Name"    type="xs:string" minOccurs="0"/>
@@ -1861,20 +1861,20 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Additional_Attributes -->
-        
+
     <!-- TODO: how do we tell messured parameters from other additional attributes -->
     <xs:complexType name="AdditionalAttributesType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>added</action><src>UMM (ECHO)</src><since>10.0.0b</since></xs:appinfo>
             <xs:appinfo><action>renamed</action><src>UMM (ECHO)</src><since>10.0.0c</since></xs:appinfo>
-            
+
             <xs:documentation>
                 One of three classes of structures for storing "name-value" style information:
                 * Additional Attributes - granual attributes to be advertised in the collection
                 * Measured Parameters - Parameters measured in the Granuals to be advertised in the collection
                 * Extended Metadata - Collection metadata values, or other external - non granual details - specific to the provider or collection
-                
+
                 | DIF 9             | ECHO 10              | UMM                  | DIF 10                | Notes                                                                             |
                 | ----------------- | -------------------- | -------------------- | --------------------- |-----------------------------------------------------------------------------------|
                 | Extended_Metadata | AdditionalAttributes | AdditionalAttributes | Additional_Attributes | Added to match ECHO field                                                         |
@@ -1882,13 +1882,13 @@ History:
                 | Extended_Metadata |           -          | ExtendedMetadata     | Extended_Metadata     |                                                                                   |
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:element name="Name"                     type="xs:string"/>
             <xs:element name="DataType"                 type="xs:string"/><!-- TODO: should be an enum? -->
             <xs:element name="Description"              type="xs:string"/>
             <xs:element name="MeasurementResolution"    type="xs:string" minOccurs="0" />
-            <xs:element name="ParameterRangeBegin"      type="xs:string"/>
+            <xs:element name="ParameterRangeBegin"      type="xs:string" minOccurs="0" />
             <xs:element name="ParameterRangeEnd"        type="xs:string" minOccurs="0" />
             <xs:element name="ParameterUnitsOfMeasure"  type="xs:string" minOccurs="0" />
             <xs:element name="ParameterValueAccuracy"   type="xs:string" minOccurs="0" />
@@ -1899,7 +1899,7 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Processing_Level_Id -->
-        
+
     <xs:simpleType name="ProcessingLevelIdType">
         <xs:annotation>
             <xs:appinfo><details><path>/DIF/ProductLevelId</path></details></xs:appinfo>
@@ -1907,61 +1907,61 @@ History:
             <xs:appinfo><action>changed</action><src>UMM</src><since>10.1</since></xs:appinfo>
             <xs:appinfo><action>changed</action><src>CMR</src><since>10.2</since><details>changed to ProcessingLevelIdType</details></xs:appinfo>
             <xs:documentation>
-                
+
                 Field renamed after a conversation on:
                 https://wiki.earthdata.nasa.gov/pages/viewpage.action?pageId=49447425
-                
+
                 | DIF 9 | ECHO 10 | UMM               | DIF 10              | Notes                       |
                 | ----- | ------- | ----------------- | ------------------- |---------------------------- |
                 |   -   |    -    | ProcessingLevelId | Processing_Level_Id | Renamed to remove confusion |
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:restriction base="ProductLevelIdEnum"/>
     </xs:simpleType>
 
     <!-- *********************************************************** -->
     <!-- #mark Originating_Metadata_Node -->
-        
+
     <xs:simpleType name="OriginatingMetadataNodeType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>none</action></xs:appinfo>
             <xs:documentation>
-            
+
             | DIF 9                     | ECHO 10 | UMM | DIF 10                    | Notes                                            |
-            | ------------------------- | ------- | --- | ------------------------- | ------------------------------------------------ | 
+            | ------------------------- | ------- | --- | ------------------------- | ------------------------------------------------ |
             | Originating_Metadata_Node |    -    |  -  | Originating_Metadata_Node | With Entry ID and Version make up a unique value |
-            
+
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:restriction base="xs:string"/>
     </xs:simpleType>
 
     <!-- *********************************************************** -->
     <!-- #mark Metadata_Name -->
-        
+
     <xs:simpleType name="MetadataNameType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>none</action><src>UMM</src></xs:appinfo>
             <xs:documentation>Name of the metadata schema used to create the metadata
-            
+
             | DIF 9         | ECHO 10 | UMM | DIF 10        | Notes     |
-            | ------------- | ------- | --- | ------------- | --------- | 
+            | ------------- | ------- | --- | ------------- | --------- |
             | Metadata_Name |    -    |  -  | Metadata_Name | No change |
-            
-            
+
+
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:restriction base="xs:string"/>
     </xs:simpleType>
 
     <!-- *********************************************************** -->
     <!-- #mark Metadata_Version -->
-        
+
     <xs:simpleType name="MetadataVersionType">
         <xs:annotation>
             <xs:appinfo><details><path>/DIF/Metadata_Version</path></details></xs:appinfo>
@@ -1971,59 +1971,59 @@ History:
                 GCMD this has sometimes been used to indicate the version of the
                 Keywords that were used since historically software and keyword
                 changes coincided.
-                
+
                 | DIF 9            | ECHO 10 | UMM              | DIF 10           | Notes     |
-                | ---------------- | ------- | ---------------- | ---------------- | --------- | 
+                | ---------------- | ------- | ---------------- | ---------------- | --------- |
                 | Metadata_Version |    -    | MetadataVersion  | Metadata_Version | No change |
-                
+
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:restriction base="MetadataVersionEnum"/>
     </xs:simpleType>
 
     <!-- *********************************************************** -->
     <!-- #mark DIF_Revision_History -->
-        
+
     <xs:simpleType name="DIFRevisionHistoryType">
         <xs:annotation>
             <xs:appinfo><details><path>/DIF/DIF_Revision_History</path></details></xs:appinfo>
             <xs:appinfo><action>none</action></xs:appinfo>
             <xs:documentation>
-            
+
              | DIF 9                | ECHO 10 | UMM                      | DIF 10               | Notes     |
-             | -------------------- | ------- | ------------------------ | -------------------- | --------- | 
-             | DIF_Revision_History |    -    | MetadataRevisionHistory  | DIF_Revision_History | No change |    
-            
+             | -------------------- | ------- | ------------------------ | -------------------- | --------- |
+             | DIF_Revision_History |    -    | MetadataRevisionHistory  | DIF_Revision_History | No change |
+
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:restriction base="xs:string"/>
     </xs:simpleType>
 
     <!-- *********************************************************** -->
     <!-- #mark Metadata_Dates -->
-    
+
     <xs:complexType name="MetadataDatesType">
         <xs:annotation>
             <xs:appinfo><details><path>/DIF/Metadata_Dates</path></details></xs:appinfo>
             <xs:appinfo><action>added</action><src>UMM (ECHO)</src><since>c</since><note>added containing tag</note></xs:appinfo>
-            
+
             <xs:appinfo><action>moved</action><src>UMM (DIF)</src><since>c</since><note>moved DIF_Creation_Date here</note></xs:appinfo>
             <xs:appinfo><action>moved</action><src>UMM (DIF)</src><since>c</since><note>moved Last_DIF_Revision_Date here</note></xs:appinfo>
             <xs:appinfo><action>moved</action><src>UMM (DIF)</src><since>c</since><note>moved Future_DIF_Review_Date here</note></xs:appinfo>
             <xs:appinfo><action>added</action><src>UMM (DIF)</src><since>c</since><note>added Delete_Date</note></xs:appinfo>
-            
+
             <xs:appinfo><action>renamed</action><src>UMM (DIF)</src><since>c</since><note>renamed InsertTime to Creation_Time</note></xs:appinfo>
             <xs:appinfo><action>renamed</action><src>UMM (DIF)</src><since>c</since><note>renamed LastUpdate to Last_Revision_Time</note></xs:appinfo>
             <xs:appinfo><action>added</action><src>UMM (ECHO)</src><since>c</since><note>added Future_Review_Time</note></xs:appinfo>
             <xs:appinfo><action>renamed</action><src>UMM (ECHO)</src><since>c</since><note>renamed DeleteTime to Delete_Time</note></xs:appinfo>
             <xs:documentation>
-            
+
                 A union of the DIF Metadata event date fields with the three ECHO event time fields.
                 For each event authors can choose to write either a date or datetime field depending on the known or desired resolution.
                 DateTime is preferred but for legacy records may not be available.
-            
+
                 | DIF 9                   | ECHO 10      | UMM                  | DIF 10                 | Notes                            |
                 | ----------------------- | ------------ | -------------------- | ---------------------- | -------------------------------- |
                 | /DIF_Creation_Date      |       -      | MetadataCreationDate | Metadata_Creation      | Metadata Record was created      |
@@ -2034,10 +2034,10 @@ History:
                 |            -            | LastUpdate   |           -          | Data_Last_Revision     | Granular data was updated        |
                 |            -            | RevisionDate |           -          | Data_Future_Review     | Granular data is to be updated   |
                 |            -            | DeleteTime   |           -          | Data_Delete            | Granular data removed            |
-            
+
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:element name="Metadata_Creation"        type="DateOrTimeOrEnumType" />
             <xs:element name="Metadata_Last_Revision"   type="DateOrTimeOrEnumType" />
@@ -2053,32 +2053,32 @@ History:
 
     <!-- *********************************************************** -->
     <!-- #mark Private -->
-        
+
     <xs:simpleType name="PrivateType">
         <xs:annotation>
             <xs:appinfo><details>/DIF/Private</details></xs:appinfo>
             <xs:appinfo><action>changed</action><src>UMM (DIF)</src><since>b</since><note>now uses an enum</note></xs:appinfo>
             <xs:documentation>
-            
+
              | DIF 9   | ECHO 10 | UMM   | DIF 10  | Notes     |
-             | ------- | ------- | ----- | ------- | --------- | 
-             | Private |    -    |   -   | Private | No change |  
-            
+             | ------- | ------- | ----- | ------- | --------- |
+             | Private |    -    |   -   | Private | No change |
+
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:restriction base="PrivateEnum"/>
     </xs:simpleType>
 
     <!-- *********************************************************** -->
     <!-- #mark Extended_Metadata -->
-        
+
     <xs:complexType name="ExtendedMetadataType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>changed</action><src>GCMD</src></xs:appinfo>
             <xs:documentation>
-            
+
                 One of three classes of structures for storing "name-value" style information:
                 * Additional Attributes - granual attributes to be advertised in the collection
                 * Measured Parameters - Parameters measured in the Granuals to be advertised in the collection
@@ -2096,13 +2096,13 @@ History:
                 | > Value           |    -    | > Value           | > Value           | Assume a positive state                  |
 
                 Note:
-                
+
                 * if providing multiple values, the type attribute on __Value__ should be used
                 * __Update_Date__ is only used if the name-value has been updated by an external process and should be ignored in most cases
                 * __Value__ can be assumed, if not provided, to be in the selected/positive state; "true", "on", "active"
 
                 The following groups are reserved:
-                
+
                 | Group              | Owner    |
                 | ------------------ | -------- |
                 | gov.nasa.gsfc.gcmd | GCMD     |
@@ -2111,7 +2111,7 @@ History:
 
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:element name="Metadata" type="Metadata" maxOccurs="unbounded"/>
         </xs:sequence>
@@ -2123,11 +2123,11 @@ History:
             <xs:element name="Name"         type="xs:string"/>
             <xs:element name="Description"  type="xs:string"                 minOccurs="0"/>
             <xs:element name="Type"         type="xs:string"                 minOccurs="0"/>
-            
+
             <!-- Downstream only, system supplied if variable has been updated via software -->
             <!-- will change to xs:dateTime in 10.3-->
             <xs:element name="Update_Date"  type="xs:string"                 minOccurs="0"/>
-            
+
             <xs:element name="Value"        type="ExtendedMetadataValueType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
@@ -2140,7 +2140,7 @@ History:
                 Made a change to allow for any xml to be present in the value. This change was always intended and should allow providers to organize data in a parseable way.
             </xs:documentation>
         </xs:annotation>
-        
+
         <xs:sequence>
             <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>

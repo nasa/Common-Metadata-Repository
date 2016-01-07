@@ -7,6 +7,29 @@
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.json-schema :as js]))
 
+(def dif-iso-topic-category->umm-iso-topic-category
+  "DIF ISOTopicCategory to UMM ISOTopicCategory mapping. Some of the DIF ISOTopicCategory are made
+  up based on intuition and may not be correct. Fix them when identified."
+  {"CLIMATOLOGY/METEOROLOGY/ATMOSPHERE" "climatologyMeteorologyAtmosphere"
+   "ENVIRONMENT" "environment"
+   "FARMING" "farming"
+   "BIOTA" "biota"
+   "BOUNDARIES" "boundaries"
+   "ECONOMY" "economy"
+   "ELEVATION" "elevation"
+   "GEOSCIENTIFIC/INFORMATION" "geoscientificInformation"
+   "HEALTH" "health"
+   "IMAGERY/BASE/MAPS/EARTH/COVER" "imageryBaseMapsEarthCover"
+   "INTELLIGENCE/MILITARY" "intelligenceMilitary"
+   "INLAND/WATERS" "inlandWaters"
+   "LOCATION" "location"
+   "OCEANS" "oceans"
+   "PLANNING/CADASTRE" "planningCadastre"
+   "SOCIETY" "society"
+   "STRUCTURE" "structure"
+   "TRANSPORTATION" "transportation"
+   "UTILITIES/COMMUNICATION" "utilitiesCommunication"})
+
 (defn- parse-mbrs
   "Returns a seq of bounding rectangle maps in the given DIF XML doc."
   [doc]
@@ -51,7 +74,8 @@
    :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
    :Purpose (value-of doc "/DIF/Summary/Purpose")
    :DataLanguage (value-of doc "/DIF/Data_Set_Language")
-   :ISOTopicCategories (values-at doc "DIF/ISO_Topic_Category")
+   :ISOTopicCategories (map dif-iso-topic-category->umm-iso-topic-category
+                            (values-at doc "DIF/ISO_Topic_Category"))
    :TemporalKeywords (values-at doc "/DIF/Data_Resolution/Temporal_Resolution")
    :Projects (for [proj (select doc "/DIF/Project")]
                {:ShortName (value-of proj "Short_Name")

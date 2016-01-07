@@ -5,7 +5,8 @@
             [cmr.umm-spec.util :refer [with-default]]
             [cmr.umm-spec.util :as spec-util]
             [cmr.umm-spec.date-util :as dates]
-            [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as spatial]))
+            [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as spatial]
+            [cmr.common.util :as util]))
 
 (defn characteristic-mapping
   [data]
@@ -121,16 +122,18 @@
      [:DeleteTime (dates/data-delete-date c)]
      [:LongName "dummy-long-name"]
      [:DataSetId (:EntryTitle c)]
-     [:Description (:Abstract c)]
+     [:Description (if-let [abstract (:Abstract c)]
+                     (util/trunc abstract 12000)
+                     spec-util/not-provided)]
      [:CollectionDataType (:CollectionDataType c)]
      [:Orderable "true"]
      [:Visible "true"]
-     [:SuggestedUsage (:Purpose c)]
+     [:SuggestedUsage (util/trunc (:Purpose c) 4000)]
      [:ProcessingLevelId (-> c :ProcessingLevel :Id)]
      [:ProcessingLevelDescription (-> c :ProcessingLevel :ProcessingLevelDescription)]
      [:CollectionState (:CollectionProgress c)]
      [:RestrictionFlag (-> c :AccessConstraints :Value)]
-     [:RestrictionComment (-> c :AccessConstraints :Description)]
+     [:RestrictionComment (util/trunc (-> c :AccessConstraints :Description) 1024)]
      [:Price (when-let [price-str (-> c :Distributions first :Fees)]
                (try (format "%9.2f" (Double. price-str))
                  ;; If price is not a number string just ignore it. ECHO10

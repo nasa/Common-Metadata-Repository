@@ -177,7 +177,7 @@
            (for [responsibility (org-per/responsibility-by-role (:Organizations c) "ORIGINATOR")]
              [:gmd:citedResponsibleParty
               (org-per/generate-responsible-party responsibility)])]]
-         [:gmd:abstract (char-string (:Abstract c))]
+         [:gmd:abstract (char-string (or (:Abstract c) su/not-provided))]
          [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
          [:gmd:status
           (when-let [collection-progress (:CollectionProgress c)]
