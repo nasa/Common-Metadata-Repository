@@ -116,10 +116,9 @@
                           :headers {"Cmr-Validate-Keywords" false}
                           :throw-exceptions false
                           :connection-manager (s/conn-mgr)})]
-          (when-not (= 200 (:status response))
-            (is false
-                (format "Failed validation when translating %s to %s for collection %s. %s"
-                        (name metadata-format) (name output-format) concept-id response))))))))
+          (is (= 200 (:status response))
+              (format "Failed validation when translating %s to %s for collection %s. %s"
+                      (name metadata-format) (name output-format) concept-id response)))))))
 
 (defn- verify-translation-via-schema-validation
   "Verify the given collection can be translated into other metadata formats and the translated
