@@ -21,10 +21,9 @@
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
-(def
-  ^{:doc "Defines the order to start the components."
-    :private true}
-  component-order [:db :log :queue-broker :scheduler :web :nrepl])
+(def ^:private component-order
+  "Defines the order to start the components."
+  [:db :log :queue-broker :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
