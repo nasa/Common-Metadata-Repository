@@ -129,12 +129,6 @@
   {:permissions permissions
    :group-guid group-guid})
 
-(defn grant-all
-  "Creates an ACL in mock echo granting guests and registered users access to catalog items
-  identified by the catalog-item-identity"
-  [context catalog-item-identity]
-  (grant context [guest-ace registered-user-ace] :catalog-item-identity catalog-item-identity))
-
 (defn grant-all-ingest
   "Creates an ACL in mock echo granting guests and registered users access to ingest for the given
   provider."
@@ -158,6 +152,36 @@
            :user-type :guest}]
          :system-object-identity
          {:target tag-acl}))
+
+(defn grant-create-read-groups
+  "Creates an ACL in mock echo granting registered users and guests ability to create and read
+  groups. If a provider id is provided this it permits it for the given provider. If not provided
+  then it is at the system level."
+  ([context]
+   (grant context
+          [{:permissions [:create :read] :user-type :registered}
+           {:permissions [:create :read] :user-type :guest}]
+          :system-object-identity
+          {:target "GROUP"}))
+  ([context provider-guid]
+   (grant context
+          [{:permissions [:create :read] :user-type :registered}
+           {:permissions [:create :read] :user-type :guest}]
+          :provider-object-identity
+          {:target "GROUP"
+           :provider-guid provider-guid})))
+
+;; TODO at a later time we should add a helper function to grant update and delete access to individual groups
+;; That's controlled by the single instance object identity in acls
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Grant functions for Catalog Item ACLS
+
+(defn grant-all
+  "Creates an ACL in mock echo granting guests and registered users access to catalog items
+  identified by the catalog-item-identity"
+  [context catalog-item-identity]
+  (grant context [guest-ace registered-user-ace] :catalog-item-identity catalog-item-identity))
 
 (defn grant-guest
   "Creates an ACL in mock echo granting guests access to catalog items identified by the

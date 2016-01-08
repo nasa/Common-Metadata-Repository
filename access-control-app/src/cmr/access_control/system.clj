@@ -33,11 +33,12 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  {:log (log/create-logger)
-   :web (web/create-web-server (transmit-config/access-control-port) routes/make-api)
-   :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
-   :public-conf public-conf
-   :relative-root-url (transmit-config/access-control-relative-root-url)})
+  (let [sys {:log (log/create-logger)
+             :web (web/create-web-server (transmit-config/access-control-port) routes/make-api)
+             :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
+             :public-conf public-conf
+             :relative-root-url (transmit-config/access-control-relative-root-url)}]
+    (transmit-config/system-with-connections sys [:echo-rest :metadata-db])))
 
 (def start
   "Performs side effects to initialize the system, acquire resources,

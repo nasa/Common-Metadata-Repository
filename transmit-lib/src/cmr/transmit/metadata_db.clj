@@ -1,5 +1,9 @@
 (ns cmr.transmit.metadata-db
-  "Provide functions to invoke metadata db app"
+  "Provide functions to invoke metadata db app.
+  DEPRECATED: The cmr.transmit.metadata-db2 namespace supersedes this one. We should move functions
+  to that namespace using the latest style. Note when using the metadata db2 namespace functions that
+  they do not throw exceptions except in exceptional cases like an invalid status code. A concept
+  not being found is not considered an exceptional case."
   (:require [clj-http.client :as client]
             [clojure.string :as str]
             [cmr.common.services.errors :as errors]
@@ -11,51 +15,29 @@
             [cmr.common.api.context :as ch]
             [ring.util.codec :as codec]
             [cmr.transmit.connection :as conn]
+            [cmr.transmit.metadata-db2 :as mdb2]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.util :as util :refer [defn-timed]]
             [camel-snake-kebab.core :as csk]))
 
-(defn finish-parse-concept
-  "Finishes the parsing of a concept. After a concept has been parsed from JSON some of its fields
-  may still be a String instead of a native clojure types."
-  [concept]
-  (update-in concept [:concept-type] keyword))
-
 (defn-timed get-concept
   "Retrieve the concept with the given concept and revision-id"
   [context concept-id revision-id]
-  (let [conn (config/context->app-connection context :metadata-db)
-        response (client/get (format "%s/concepts/%s/%s" (conn/root-url conn) concept-id revision-id)
-                             (merge
-                               (config/conn-params conn)
-                               {:accept :json
-                                :throw-exceptions false
-                                :headers (ch/context->http-headers context)}))]
-    (if (= 200 (:status response))
-      (finish-parse-concept (json/decode (:body response) true))
+  (or (mdb2/get-concept context concept-id revision-id)
       (errors/throw-service-error
         :not-found
-        (str "Failed to retrieve concept " concept-id "/" revision-id " from metadata-db: " (:body response))))))
+        (str "Failed to retrieve concept " concept-id "/" revision-id " from metadata-db."))))
 
 (defn-timed get-latest-concept
   "Retrieve the latest version of the concept"
   ([context concept-id]
    (get-latest-concept context concept-id true))
   ([context concept-id throw-service-error?]
-   (let [conn (config/context->app-connection context :metadata-db)
-         response (client/get (format "%s/concepts/%s" (conn/root-url conn) concept-id)
-                              (merge
-                                (config/conn-params conn)
-                                {:accept :json
-                                 :throw-exceptions false
-                                 :headers (ch/context->http-headers context)}))
-         status (:status response)]
-     (if (= 200 status)
-       (finish-parse-concept (json/parse-string (:body response) true))
-       (when (and throw-service-error? (= 404 status))
+   (or (mdb2/get-latest-concept context concept-id)
+       (when throw-service-error?
          (errors/throw-service-error
-           :not-found
-           (str "Failed to retrieve concept " concept-id " from metadata-db: " (:body response))))))))
+          :not-found
+          (str "Failed to retrieve concept " concept-id " from metadata-db."))))))
 
 (defn-timed get-concept-id
   "Return the concept-id for the concept matches the given arguments.
@@ -145,7 +127,7 @@
          (errors/throw-service-error :not-found err-msg))
 
        200
-       (map finish-parse-concept (json/decode (:body response) true))
+       (map mdb2/finish-parse-concept (json/decode (:body response) true))
 
        ;; default
        (errors/internal-error! (str "Get latest concept revisions failed. MetadataDb app response status code: "
@@ -166,7 +148,7 @@
                                             :throw-exceptions false}))
         {:keys [status body]} response]
     (case status
-      200 (map finish-parse-concept (json/decode body true))
+      200 (map mdb2/finish-parse-concept (json/decode body true))
       ;; default
       (errors/internal-error!
         (format "%s search failed. status: %s body: %s"
