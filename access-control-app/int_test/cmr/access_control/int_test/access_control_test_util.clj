@@ -10,7 +10,12 @@
             [cmr.mock-echo.client.mock-echo-client :as mock-echo-client]
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.common-app.test.client-util :as common-client-test-util]
-            [cmr.common.mime-types :as mt]))
+            [cmr.common.mime-types :as mt]
+            [cmr.metadata-db.system :as mdb-system]
+            [cmr.metadata-db.config :as mdb-config]
+            [cmr.metadata-db.data.memory-db :as memory]
+            [cmr.message-queue.queue.memory-queue :as mem-queue]
+            [cmr.common.jobs :as jobs]))
 
 (def conn-context-atom
   "An atom containing the cached connection context map."
@@ -24,6 +29,17 @@
                                          {}
                                          [:access-control :echo-rest :metadata-db])}))
   @conn-context-atom)
+
+(defn create-mdb-system
+  "Creates an in memory version of metadata db."
+  []
+  (let [mq (mem-queue/create-memory-queue-broker (mdb-config/rabbit-mq-config))
+        db (memory/create-db)
+        mdb-sys (mdb-system/create-system)]
+    (assoc mdb-sys
+           :queue-broker mq
+           :db db
+           :scheduler (jobs/create-non-running-scheduler))))
 
 (defn int-test-fixtures
   "Returns test fixtures for starting the cubby application and its external dependencies."
@@ -44,7 +60,7 @@
     (common-client-test-util/run-app-fixture
      (conn-context)
      :metadata-db
-     (mdb-system/create-system)
+     (create-mdb-system)
      mdb-system/start
      mdb-system/stop)]))
 
