@@ -22,7 +22,8 @@
             [cmr.common-app.services.kms-fetcher :as kf]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.bootstrap.config :as bootstrap-config]
-            [cmr.acl.core :as acl]))
+            [cmr.acl.core :as acl]
+            [cmr.common-app.system :as common-sys]))
 
 (defconfig db-batch-size
   "Batch size to use when batching database operations."
@@ -85,11 +86,7 @@
         ;; bulk index requests
         started-system (update-in this [:embedded-systems :indexer] idx-system/start)
         started-system (update-in started-system [:embedded-systems :metadata-db] mdb-system/start)
-        started-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/start % system))))
-                               started-system
-                               component-order)]
+        started-system (common-sys/start started-system component-order)]
     (bm/handle-copy-requests started-system)
     (bi/handle-bulk-index-requests started-system)
     (vp/handle-virtual-product-requests started-system)
@@ -102,11 +99,7 @@
   resources. Returns an updated instance of the system."
   [this]
   (info "bootstrap System shutting down")
-  (let [stopped-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/stop % system))))
-                               this
-                               (reverse component-order))
+  (let [stopped-system (common-sys/stop this component-order)
         stopped-system (update-in stopped-system [:embedded-systems :metadata-db] mdb-system/stop)
         stopped-system (update-in stopped-system [:embedded-systems :indexer] idx-system/stop)]
     (info "bootstrap System stopped")
