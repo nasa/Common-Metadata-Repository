@@ -71,19 +71,22 @@
 (defn- parse-service-organization-urls
   "Parse a Service Organization URL element into a RelatedURL map"
   [service-provider role]
-  (when (= role "RESOURCEPROVIDER")
-    [{:URLs (values-at service-provider "Service_Organization_URL")
-      :Description "SERVICE_ORGANIZATION_URL"}]))
+    (when (= role "RESOURCEPROVIDER")
+      [{:URLs (values-at service-provider "Service_Organization_URL")}]))
 
 (defn- parse-party
   "Constructs a UMM Party element from a SERF Personnel element and a SERF Service_Provider element"
   [person organization service-provider role]
   {:OrganizationName
    (when (= role "RESOURCEPROVIDER") {:ShortName (value-of organization "Short_Name")
-                                              :LongName (value-of organization "Long_Name")})
-   :Person {:FirstName (value-of person "First_Name")
-            :MiddleName (value-of person "Middle_Name")
-            :LastName (value-of person "Last_Name")}
+                                      :LongName (value-of organization "Long_Name")})
+   :Person (let [first-name (value-of person "First_Name")
+                 middle-name (value-of person "Middle_Name")
+                 last-name (value-of person "Last_Name")]
+             (when (or first-name middle-name last-name)
+               {:FirstName first-name
+                :MiddleName middle-name
+                :LastName last-name}))
    :Contacts (parse-contacts person)
    :Addresses [{:StreetAddresses (values-at person "Contact_Address/Address")
                 :City (value-of person "Contact_Address/City")
@@ -119,16 +122,8 @@
                    [:RelatedUrl (value-of service-citation "URL")]
                    :Title
                    [:Creator (value-of service-citation "Originators")]
-                   :Editor
-                   :SeriesName
                    :ReleaseDate
-                   :ReleasePlace
-                   :IssueIdentification
-                   [:Publisher (value-of service-citation "Provider")]
-                   :IssueIdentification
-                   :DataPresentationForm
-                   :OtherCitationDetails
-                   [:DOI {:DOI (value-of service-citation "Persistent_Identifier/Identifier")}]]))))
+                   [:Publisher (value-of service-citation "Provider")]]))))
 
 (defn- parse-publication-references
   "Parse SERF Publication References into UMM-S"

@@ -21,6 +21,10 @@
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as echo10-spatial-parse]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]))
 
+(def serf-organization-role 
+  "UMM-S Role that corresponds to SERVICE PROVIDER CONTACT role in SERF"
+  "RESOURCEPROVIDER")
+
 (def example-collection-record
   "An example record with fields supported by most formats."
   (js/parse-umm-c
@@ -205,8 +209,7 @@
                                                        :City "Greenbelt"
                                                        :StateProvince "Maryland"
                                                        :PostalCode "20771"
-                                                       :Country "USA"}]
-                                          :RelatedUrls nil}
+                                                       :Country "USA"}]}
                                   :Role "POINTOFCONTACT"}
                                  {:Party {:Person {:FirstName "FIRSTNAME"
                                                    :LastName "LASTNAME"}
@@ -222,8 +225,7 @@
                                                        :City "Greenbelt"
                                                        :StateProvince "Maryland"
                                                        :PostalCode "20771"
-                                                       :Country "USA"}]
-                                          :RelatedUrls nil}
+                                                       :Country "USA"}]}
                                   :Role "AUTHOR"}
                                  {:Party {:OrganizationName {:ShortName "NASA/GSFC/SED/ESD/GCDC/GESDISC"
                                                              :LongName "Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA" }
@@ -240,8 +242,7 @@
                                                        :StateProvince "MD"
                                                        :PostalCode "20771"
                                                        :Country "U.S.A."}]
-                                          :RelatedUrls [{:URLs ["http://disc.gsfc.nasa.gov/"]
-                                                         :Description "SERVICE_ORGANIZATION_URL"}]}
+                                          :RelatedUrls [{:URLs ["http://disc.gsfc.nasa.gov/"]}]}
                                   :Role "RESOURCEPROVIDER"}]
               :ISOTopicCategories ["CLIMATOLOGY/METEOROLOGY/ATMOSPHERE"
                                    "ENVIRONMENT"
@@ -251,10 +252,7 @@
                                  :Title "OGC Web Coverage Service (WCS) for accessing Atmospheric Infrared Sounder (AIRS) Data" }]
               :RelatedUrls [{:Description "\n   This Web Coverage Service (WCS) is one of the multiple GES DISC data service instances used to provide gridded Level 3 Atmospheric Infrared Sounder (AIRS) data products. Accessing to this URL will result in a brief description of coverages (i.e., data layers or variables), or a getCapabilities response. A client can request more detailed information about the served coverages by sending a describeCoverage request to the server. Finally, a client can request actual data using a getCoverage request. \n"
                              :Relation ["GET SERVICE" "GET WEB COVERAGE SERVICE (WCS)"]
-                             :URLs ["http://acdisc.sci.gsfc.nasa.gov/daac-bin/wcsAIRSL3?Service=WCS&Version=1.0.0&Request=getCapabilities"]
-                             :Title nil
-                             :MimeType nil
-                             :FileSize nil}]
+                             :URLs ["http://acdisc.sci.gsfc.nasa.gov/daac-bin/wcsAIRSL3?Service=WCS&Version=1.0.0&Request=getCapabilities"]}]
               :ServiceKeywords [{:Category "EARTH SCIENCE SERVICES"
                                  :Topic "WEB SERVICES"
                                  :Term "DATA APPLICATION SERVICES"}
@@ -666,27 +664,134 @@
   [contacts]
   (seq (filter #(#{"email" "phone" "fax"} (:Type %)) contacts)))
 
-(defn- fix-organization-name-in-party
+
+
+(defn- make-sure-organization-exists
+  "Make sure a UMM-S Responsibilities element contains at least one role that can correlate
+  to a SERF 'SERVICE PROVIDER CONTACT' role"
+  [resps]
+  (cmr.common.dev.capture-reveal/capture-all)
+  (if (some #(= serf-organization-role (:Role %)) resps)
+    (concat (remove #(= serf-organization-role (:Role %)) resps) 
+          (filter #(= serf-organization-role (:Role %)) resps))
+    (conj resps
+          (cmn/map->ResponsibilityType 
+            {:Role serf-organization-role
+             :Party (cmn/map->PartyType 
+                      {:OrganizationName 
+                       (cmn/map->OrganizationNameType 
+                         {:ShortName su/not-provided})
+                       :Person (cmn/map->PersonType
+                                 {:LastName su/not-provided})})}))))
+
+(defn- expected-person
+  [person]
+  (when-let [{:keys [FirstName MiddleName LastName]} person]
+    (-> person
+        (assoc :Uuid nil :FirstName nil :MiddleName nil)
+        (assoc :LastName (str/join
+                           " " (remove nil? [FirstName MiddleName LastName]))))))
+
+(defn- serf-expected-person
+  [person]
+  (assoc
+    person :Uuid nil
+    :FirstName (:FirstName person)
+    :MiddleName (:MiddleName person)
+    :LastName (or (:LastName person) su/not-provided)))
+
+(defn- remove-organization-role-and-related-urls
+  "Removes an organization-role and related-urls if present from a UMM-S Responsibility"
   [resp]
+  (cmr.common.dev.capture-reveal/capture-all)
+  (-> resp
+  (update-in [:Party :Person] serf-expected-person)
+  (assoc-in [:Party :OrganizationName] nil)
+  (assoc-in [:Party :RelatedUrls] nil)))
+
+(defn- fix-organization-name-in-party
+  "Modifies generated UMM-S Responsibility to conform to SERF rules"
+  [resp]
+  (cmr.common.dev.capture-reveal/capture-all)
   (let [{:keys [Role Party]} resp]
-    (if (= "RESOURCEPROVIDER" Role)
-      resp
-      (util/dissoc-in resp [:Party :OrganizationName]))))
+    ;; SERF only recognizes OrganizationName under a RESOURCEPROVIDER role. 
+    (if (= serf-organization-role Role)
+      (-> resp
+          (assoc-in [:Party :Person :Uuid] nil)
+          (update-in [:Party :OrganizationName] #(or % 
+                                                    (cmn/map->OrganizationNameType 
+                                                      {:ShortName su/not-provided}))))
+      (let [resp (remove-organization-role-and-related-urls resp)]
+        (if (seq (:Person (:Party resp)))
+          resp
+          (-> resp 
+            (assoc-in [:Party] (cmn/map->PersonType {:LastName su/not-provided}))))))))
+
+(defn- serf-expected-addresses 
+  "Modify UMM-S Addresses to conform to SERF rules"
+  [addresses]
+  (when-let [address (first addresses)]
+    (-> address 
+        (assoc :StreetAddresses (seq (take 1 (:StreetAddresses address))))
+        list)))
+
+(defn- remove-party-elements-not-in-serf 
+  "Removes elements in a party element that are not in SERF"
+  [party]
+  (-> party
+      (assoc :ContactInstructions nil :ServiceHours nil)
+      (update-in [:Addresses] serf-expected-addresses)))
 
 (defn- expected-serf-responsibility
   [resp]
+  (cmr.common.dev.capture-reveal/capture resp)
   (-> resp
-      fix-organization-name-in-party
       (update-in [:Party :RelatedUrls] expected-related-urls-for-dif-serf)
+      fix-organization-name-in-party
       (update-in [:Party :Contacts] expected-serf-contacts)
+      (update-in [:Party] remove-party-elements-not-in-serf)
       ))
+
+(defn- filter-unused-serf-datetypes
+  [dates]
+  (seq (remove #(= "DELETE" (:Type %)) dates)))
+
+(defn- filter-unique-serf-dates
+  [dates]
+  (let [dates-by-type (group-by :Type dates)] 
+     (keep #(first (get dates-by-type %))
+           ["CREATE" "UPDATE" "REVIEW"])))
+
+
+(defn- expected-metadata-dates-for-serf
+  [dates]
+  (-> dates
+      filter-unused-serf-datetypes
+      filter-unique-serf-dates 
+      seq))
+   
+
+(defn- expected-serf-service-citation
+  [citation]
+  (assoc citation :DOI nil 
+         :ReleasePlace nil 
+         :SeriesName nil 
+         :DataPresentationForm nil
+         :IssueIdentification nil
+         :Editor nil
+         :ReleaseDate nil))
 
 (defmethod convert-internal :serf
   [umm-service _]
+  (cmr.common.dev.capture-reveal/capture-all)
   (-> umm-service
+      (update-in [:Responsibilities] make-sure-organization-exists)
+      (update-in-each [:Responsibilities] expected-serf-responsibility)
       (update-in [:AdditionalAttributes] fix-expected-serf-additional-attributes)
       (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
-      (update-in-each [:Responsibilities] expected-serf-responsibility)
+      (update-in [:MetadataDates] expected-metadata-dates-for-serf)
+      (update-in-each [:ServiceCitation] expected-serf-service-citation)
+      (update-in-each [:MetadataAssociations] assoc :Description nil :Type nil)
       ))
 
 ;; ISO 19115-2
@@ -793,14 +898,6 @@
       (update-in [:VerticalSpatialDomains] #(take 1 %))
       (update-in-each [:VerticalSpatialDomains] fix-iso-vertical-spatial-domain-values)
       prune-empty-maps))
-
-(defn- expected-person
-  [person]
-  (when-let [{:keys [FirstName MiddleName LastName]} person]
-    (-> person
-        (assoc :Uuid nil :FirstName nil :MiddleName nil)
-        (assoc :LastName (str/join
-                           " " (remove nil? [FirstName MiddleName LastName]))))))
 
 (defn- expected-contacts
   "Returns the contacts with type phone or email"

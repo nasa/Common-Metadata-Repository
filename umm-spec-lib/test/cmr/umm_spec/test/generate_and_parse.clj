@@ -45,6 +45,7 @@
   the given to-xml and to-umm mappings."
   [concept-type metadata-format record]
   (let [metadata-xml (core/generate-metadata concept-type metadata-format record)]
+    ;; (println metadata-xml)
     ;; validate against xml schema
     (is (empty? (core/validate-xml concept-type metadata-format metadata-xml)))
     (core/parse-metadata concept-type metadata-format metadata-xml)))
@@ -91,17 +92,17 @@
       (is (= (expected-conversion/convert user/failing-value :serf)
            (xml-round-trip :service :serf user/failing-value)))
 
-            (is (= (:RelatedUrls (expected-conversion/convert user/failing-value :serf))
-           (:RelatedUrls (xml-round-trip :service :serf user/failing-value))))
+            (is (= (:MetadataDates (expected-conversion/convert user/failing-value :serf))
+           (:MetadataDates (xml-round-trip :service :serf user/failing-value))))
 
-  (is (= (:Responsibilities (expected-conversion/convert expected-conversion/example-service-record :serf))
-    (:Responsibilities (xml-round-trip :service :serf expected-conversion/example-service-record))))
+  (is (= (:MetadataDates (expected-conversion/convert expected-conversion/example-service-record :serf))
+    (:MetadataDates (xml-round-trip :service :serf expected-conversion/example-service-record))))
 
 (is (= (expected-conversion/convert expected-conversion/example-service-record :serf)
     (xml-round-trip :service :serf expected-conversion/example-service-record)))
 
-  (is (= (:RelatedUrls (:Party (last (:Responsibilities (expected-conversion/convert expected-conversion/example-service-record :serf)))))
-    (:RelatedUrls (:Party (last (:Responsibilities (xml-round-trip :service :serf expected-conversion/example-service-record)))))))
+  (is (= (:Responsibilities (:Party (last (:Responsibilities (expected-conversion/convert expected-conversion/example-service-record :serf)))))
+    (:Responsibilities (:Party (last (:Responsibilities (xml-round-trip :service :serf expected-conversion/example-service-record)))))))
   )
 
 (defn- parse-iso19115-projects-keywords

@@ -90,10 +90,6 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
-      "MetadataLanguage": {
-        "description": "The language used in the metadata record.",
-        "$ref": "umm-cmn-json-schema.json#/definitions/LanguageType"
-      },
       "MetadataDates": {
         "description": "This includes any metadata related dates.",
         "type": "array",

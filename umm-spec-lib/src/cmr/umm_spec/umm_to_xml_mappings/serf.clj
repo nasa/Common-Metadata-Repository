@@ -61,7 +61,7 @@
   [addresses]
   (when-let [address (first addresses)]
     [:Contact_Address 
-     [:Address (concat (:StreetAddresses address))]
+     [:Address (first (:StreetAddresses address))]
      [:City (:City address)]
      [:Province_or_State (:StateProvince address)]
      [:Postal_Code (:PostalCode address)]
@@ -71,7 +71,7 @@
   "Converts UMM-S Responsibilities to a SERF Personnel element"
   [responsibilities] 
   (for [responsibility responsibilities
-        :let [{{:keys [Contacts Addresses Person]} :Party} responsibility
+        :let [{{:keys [Contacts Addresses Person OrganizationName]} :Party} responsibility
               role (or (get umm-roles->serf-roles (:Role responsibility)) (:Role responsibility))]
         :when (and (not= "SERVICE PROVIDER CONTACT" role) role)]
     [:Personnel 
@@ -97,11 +97,6 @@
      (contact-to-serf Contacts)
      (address-to-serf Addresses)]))
 
-(defn- extract-service-organization-url
-  "Extracts a SERF Service_Organization_URL from a UMM-S Party RelatedURL Element if one exists."
-  [related-urls]
-  (first (:URLs (first (filter #(="SERVICE_ORGANIZATION_URL" (:Description %)) related-urls)))))
-
 (defn- create-service-provider
   "Converts a UMM-S Responsibilities element to a SERF Service Provider element
   Required in SERF so if no RESOURCEPROVIDER is found it will generate a default one" 
@@ -112,14 +107,14 @@
      [:Service_Organization 
       [:Short_Name (or (:ShortName (:OrganizationName party)) not-provided)]
       [:Long_Name (:LongName (:OrganizationName party))]]
-     [:Service_Organization_URL (extract-service-organization-url (:RelatedUrls party))] 
+     [:Service_Organization_URL (-> party :RelatedUrls first :URLs first)] 
      (create-service-provider-personnel responsibilities)])
   ;;Default Case
   [:Service_Provider 
      [:Service_Organization 
       [:Short_Name not-provided]]
      [:Personnel 
-       [:Role "SERF AUTHOR"]
+       [:Role (get umm-roles->serf-roles "RESOURCEPROVIDER")]
        [:Last_Name not-provided]]]))
 
 (defn- create-distributions
@@ -153,7 +148,7 @@
      [:Title (:Title service-citation)]
      [:Provider (:Publisher service-citation)]
      [:Edition (:Version service-citation)]
-     [:URL (:RelatedURL service-citation)]]))
+     [:URL (first (:URLs (:RelatedUrl service-citation)))]]))
 
 (defn- create-sensors
   "Creates SERF Sensor Elements from a UMM-S Instruments mapping"
@@ -259,6 +254,7 @@
      [:SERF_Creation_Date 
       (:Date (first (filter #(= "CREATE" (:Type %)) (:MetadataDates s))))]
      [:Last_SERF_Revision_Date (:Date (first (filter #(= "UPDATE" (:Type %)) (:MetadataDates s))))]
+     [:Future_SERF_Review_Date (:Date (first (filter #(= "REVIEW" (:Type %)) (:MetadataDates s))))]
      [:Extended_Metadata 
       (for [metadata  (:AdditionalAttributes s)
             :when (not (inserted-metadata (:Name metadata))) ]
