@@ -167,14 +167,14 @@
          [:LongName LongName]
          [:StartDate StartDate]
          [:EndDate EndDate]])]
-     (when-let [sys (:TilingIdentificationSystem c)]
-       [:TwoDCoordinateSystems
+     [:TwoDCoordinateSystems
+      (for [sys (:TilingIdentificationSystems c)]
         [:TwoDCoordinateSystem
          [:TwoDCoordinateSystemName (with-default (:TilingIdentificationSystemName sys))]
          [:Coordinate1
           (elements-from (:Coordinate1 sys) :MinimumValue :MaximumValue)]
          [:Coordinate2
-          (elements-from (:Coordinate2 sys) :MinimumValue :MaximumValue)]]])
+          (elements-from (:Coordinate2 sys) :MinimumValue :MaximumValue)]])]
      (ru/generate-access-urls (:RelatedUrls c))
      (ru/generate-resource-urls (:RelatedUrls c))
      (spatial/spatial-element c)

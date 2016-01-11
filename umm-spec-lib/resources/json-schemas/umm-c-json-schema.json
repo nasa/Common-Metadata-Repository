@@ -438,9 +438,12 @@
     "SpatialExtent": {
       "$ref": "umm-cmn-json-schema.json#/definitions/SpatialExtentType"
     },
-    "TilingIdentificationSystem": {
+    "TilingIdentificationSystems": {
+      "type": "array",
       "description": "Name of the two-dimensional tiling system for the collection.  Previously called TwoDCoordinateSystem.",
-      "$ref": "umm-cmn-json-schema.json#/definitions/TilingIdentificationSystemType"
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/TilingIdentificationSystemType"
+      }
     },
     "SpatialInformation": {
       "description": "The reference frame or system in which altitudes (elevations) are given. The information contains the datum name, distance units and encoding method, which provide the definition for the system. This field also stores the characteristics of the reference frame or system from which depths are measured. The additional information in the field is geometry reference data etc.",
