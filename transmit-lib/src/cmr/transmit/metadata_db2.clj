@@ -102,7 +102,7 @@
   cmr.transmit.http-helper for more info. Default false.
   * http-options - Other http-options to be sent to clj-http."
   ([context concept-id]
-   (get-concept context concept-id nil))
+   (get-latest-concept context concept-id nil))
   ([context concept-id {:keys [is-raw? http-options]}]
    (-> (h/request context :metadata-db
                   {:url-fn #(latest-concept-url % concept-id)

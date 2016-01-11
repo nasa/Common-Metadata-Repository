@@ -51,12 +51,14 @@
      (system/create-system)
      system/start
      system/stop)
+
     (common-client-test-util/run-app-fixture
      (conn-context)
      :echo-rest
      (mock-echo-system/create-system)
      mock-echo-system/start
      mock-echo-system/stop)
+
     (common-client-test-util/run-app-fixture
      (conn-context)
      :metadata-db
