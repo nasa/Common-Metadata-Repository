@@ -38,7 +38,8 @@
   "Finishes the parsing of a concept. After a concept has been parsed from JSON some of its fields
   may still be a String instead of a native clojure types."
   [concept]
-  (update-in concept [:concept-type] keyword))
+  (when concept
+    (update-in concept [:concept-type] keyword)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
