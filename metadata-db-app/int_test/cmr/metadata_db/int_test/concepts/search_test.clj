@@ -64,7 +64,7 @@
              (set errors))))))
 
 (deftest get-concepts-with-one-invalid-id-test-allow-missing
-  (doseq [provider-id ["REG_PROV" #_"SMAL_PROV1"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
     (let [coll1 (util/create-and-save-collection provider-id 1)
           tuples [[(:concept-id coll1) 1]
                   [(:concept-id coll1) 2]
