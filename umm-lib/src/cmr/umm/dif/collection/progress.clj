@@ -13,7 +13,9 @@
     (condp = (string/lower-case prog-str)
       "planned"  :planned
       "in work"  :in-work
-      "complete" :complete)))
+      "complete" :complete
+      "completed" :complete
+      :in-work)))
 
 (defn generate
   "Returns DIF XML element structures for the collection's progress

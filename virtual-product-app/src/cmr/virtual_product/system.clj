@@ -11,7 +11,8 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.virtual-product.services.virtual-product-service :as vps]
             [cmr.virtual-product.config :as config]
-            [cmr.message-queue.queue.rabbit-mq :as rmq]))
+            [cmr.message-queue.queue.rabbit-mq :as rmq]
+            [cmr.common-app.system :as common-sys]))
 
 (defconfig virtual-product-nrepl-port
   "Port to listen for nREPL connections"
@@ -38,27 +39,14 @@
   and start it running. Returns an updated instance of the system."
   [this]
   (info "virtual-product System starting")
-  (let [started-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/start % system))))
-                               this
-                               component-order)]
+  (let [started-system (common-sys/start this component-order)]
 
     (vps/subscribe-to-ingest-events {:system started-system})
 
     (info "virtual-product System started")
     started-system))
 
-
-(defn stop
+(def stop
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
-  [this]
-  (info "virtual-product System shutting down")
-  (let [stopped-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/stop % system))))
-                               this
-                               (reverse component-order))]
-    (info "virtual-product System stopped")
-    stopped-system))
+  (common-sys/stop-fn "virtual product" component-order))

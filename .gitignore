@@ -1,3 +1,5 @@
 */testreports.xml
 /target
 /.lein-*
+.idea/
+*.iml

@@ -107,6 +107,7 @@
       errors/invalid-url-encoding-handler
       errors/exception-handler
       handler/site
+      common-routes/pretty-print-response-handler
       ring-json/wrap-json-body
       ring-json/wrap-json-response))
 

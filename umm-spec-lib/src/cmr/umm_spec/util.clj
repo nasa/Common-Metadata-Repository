@@ -11,6 +11,10 @@
   "place holder string value for not provided string field"
   "Not provided")
 
+(def default-granule-spatial-representation
+  "Default value for GranuleSpatialRepresentation"
+  "CARTESIAN")
+
 (defn load-json-resource
   "Loads a json resource from the classpath. The JSON file may contain comments which are ignored"
   [json-resource]
@@ -88,11 +92,11 @@
   and the Unit. Returns nil if the string cannot be parsed into file sizes with units."
   [s]
   (seq
-   (for [[_ num-str unit-str :as results] (re-seq data-size-re
-                                                  (-> s str .toLowerCase))
-         :when (and num-str (not (str/blank? unit-str)))]
-     {:Size (Double. (.replace num-str "," ""))
-      :Unit (-> unit-str str .trim .toUpperCase first (str "B"))})))
+    (for [[_ num-str unit-str :as results] (re-seq data-size-re
+                                                   (-> s str .toLowerCase))
+          :when (and num-str (not (str/blank? unit-str)))]
+      {:Size (Double. (.replace num-str "," ""))
+       :Unit (-> unit-str str .trim .toUpperCase first (str "B"))})))
 
 (defn data-size-str
   "Takes a collection of FileSizeType records which have a Size and a Unit and converts them to a
@@ -102,3 +106,27 @@
     (str/join ", "
               (for [size sizes]
                 (str (:Size size) " " (or (:Unit size) "MB"))))))
+
+(defn closed-counter-clockwise->open-clockwise
+  "Returns a sequence of points in open and clockwise order.
+  This is the order used by ECHO10 and DIF10."
+  [points]
+  (reverse (butlast points)))
+
+(defn open-clockwise->closed-counter-clockwise
+  "ECHO10 and DIF10 polygon points are \"open\" and specified in clockwise order.
+  Returns the sequence of points reversed (counterclockwise) and with the first point
+  appended to the end (closed)."
+  [points]
+  (let [ccw (vec (reverse points))]
+    (conj ccw (first ccw))))
+
+(defn coordinate-system
+  "Returns the CoordinateSystem of the given UMM geometry. Returns the default CoordinateSystem if
+  UMM geometry has any spatial area and CoordinateSystem is not present."
+  [geom]
+  (let [{:keys [CoordinateSystem GPolygons BoundingRectangles Lines Points]} geom]
+    (or CoordinateSystem
+        ;; Use default value if CoordinateSystem is not set, but the geometry has any spatial area
+        (when (or GPolygons BoundingRectangles Lines Points)
+          default-granule-spatial-representation))))

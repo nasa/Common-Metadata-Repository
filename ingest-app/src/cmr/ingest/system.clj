@@ -21,7 +21,8 @@
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.ingest.api.ingest :as ingest-api]
             [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.ingest.services.providers-cache :as pc]))
+            [cmr.ingest.services.providers-cache :as pc]
+            [cmr.common-app.system :as common-sys]))
 
 (def
   ^{:doc "Defines the order to start the components."
@@ -66,29 +67,14 @@
      (transmit-config/system-with-connections
        sys [:metadata-db :indexer :echo-rest :search :cubby :kms]))))
 
-(defn start
+(def start
   "Performs side effects to initialize the system, acquire resources,
   and start it running. Returns an updated instance of the system."
-  [this]
-  (info "System starting")
-  (let [started-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/start % system))))
-                               this
-                               component-order)]
-    (info "System started")
-    started-system))
+  (common-sys/start-fn "ingest" component-order))
 
-(defn stop
+(def stop
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
-  [this]
-  (info "System shutting down")
-  (let [stopped-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/stop % system))))
-                               this
-                               (reverse component-order))]
-    (info "System stopped")
-    stopped-system))
+  (common-sys/stop-fn "ingest" component-order))
+
 

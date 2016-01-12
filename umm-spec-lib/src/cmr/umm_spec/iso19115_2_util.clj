@@ -54,8 +54,7 @@
     (if (seq long-name) (str short-name keyword-separator long-name) short-name)))
 
 (def extent-xpath
-  (str "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification"
-       "/gmd:extent/gmd:EX_Extent"))
+  "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent")
 
 (defn parse-key-val-str
   "Returns a map of string keys and values from a comma-separated list of equals-separated pairs."
