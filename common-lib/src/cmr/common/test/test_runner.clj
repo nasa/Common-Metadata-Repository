@@ -78,8 +78,8 @@
         success? (= 0 (+ num-failing num-error))]
     (when speak?
       (if success?
-        (du/speak "Samantha" "Congratulations on another successful test run.")
-        (du/speak "Daniel" "Your tests have failed. I said Good day sir!")))
+        (du/speak "Samantha" "Success")
+        (du/speak "Daniel" "Test Failure")))
 
     (println "-------------------------------------------------------------------")
     (println "Slowest Tests:")
@@ -114,6 +114,9 @@
               test-results))
     doall))
 
+(def last-test-results
+  (atom nil))
+
 (defn run-all-tests
   "Runs all the tests in the cmr.
   Options:
@@ -137,6 +140,7 @@
         [took test-results] (u/time-execution
                               (test-results-handler
                                 (concat unittest-results inttest-results)))]
+    (reset! last-test-results test-results)
     (when reset-fn (reset-fn))
     (print-results (assoc (analyze-results test-results)
                           :took took)

@@ -10,6 +10,7 @@
             [cmr.metadata-db.system :as mdb]
             [cmr.mock-echo.system :as mock-echo]
             [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.transmit.config :as transmit-config]
             [cmr.common.dev.util :as d]))
 
 (def system nil)
@@ -26,6 +27,11 @@
 (defn start
   "Starts the current development system."
   []
+
+  (transmit-config/set-access-control-port! 4011)
+  (transmit-config/set-metadata-db-port! 4001)
+  (transmit-config/set-echo-rest-port! 4008)
+
   ;; Start mock echo
   (alter-var-root
    #'mock-echo-system

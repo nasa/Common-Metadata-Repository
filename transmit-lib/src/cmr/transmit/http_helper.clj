@@ -73,3 +73,134 @@
       raw? response
       (= method :get) (handle-raw-fetch-response response)
       :else (handle-raw-update-response response))))
+
+(defmacro defcreator
+  "Creates a function that can be used to send standard requests to create an item using JSON."
+  [fn-name app-name url-fn]
+  `(defn ~fn-name
+     "Sends a request to create the item. Valid options are
+     * :is-raw? - set to true to indicate the raw response should be returned. See
+     cmr.transmit.http-helper for more info. Default false.
+     * token - the user token to use when creating the group. If not set the token in the context will
+     be used.
+     * http-options - Other http-options to be sent to clj-http."
+     ([context# item#]
+      (~fn-name context# item# nil))
+     ([context# item# options#]
+      (let [{is-raw?# :is-raw? token# :token http-options# :http-options} options#
+            token# (or token# (:token context#))
+            headers# (when token# {config/token-header token#})]
+        (h/request context# ~app-name
+                   {:url-fn ~url-fn
+                    :method :post
+                    :raw? is-raw?#
+                    :http-options (merge {:body (json/generate-string item#)
+                                          :content-type :json
+                                          :headers headers#
+                                          :accept :json}
+                                         http-options#)})))))
+
+(defmacro defupdater
+  "Creates a function that can be used to send standard requests to updater an item using JSON. The
+  url-fn will be passed the connection and the concept id"
+  [fn-name app-name url-fn]
+  `(defn ~fn-name
+     "Sends a request to update the item. Valid options are
+     * :is-raw? - set to true to indicate the raw response should be returned. See
+     cmr.transmit.http-helper for more info. Default false.
+     * token - the user token to use when creating the group. If not set the token in the context will
+     be used.
+     * http-options - Other http-options to be sent to clj-http."
+     ([context# concept-id# item#]
+      (~fn-name context# concept-id# item# nil))
+     ([context# concept-id# item# options#]
+      (let [{is-raw?# :is-raw? token# :token http-options# :http-options} options#
+            token# (or token# (:token context#))
+            headers# (when token# {config/token-header token#})]
+        (h/request context# ~app-name
+                   {:url-fn #(~url-fn % concept-id#)
+                    :method :put
+                    :raw? is-raw?#
+                    :http-options (merge {:body (json/generate-string item#)
+                                          :content-type :json
+                                          :headers headers#
+                                          :accept :json}
+                                         http-options#)})))))
+
+(defmacro defdestroyer
+  "Creates a function that can be used to send standard requests to delete an item using JSON. The
+  url-fn will be passed the connection and the concept id"
+  [fn-name app-name url-fn]
+  `(defn ~fn-name
+     "Sends a request to delete an item. Valid options are
+     * :is-raw? - set to true to indicate the raw response should be returned. See
+     cmr.transmit.http-helper for more info. Default false.
+     * token - the user token to use when creating the token. If not set the token in the context will
+     be used.
+     * http-options - Other http-options to be sent to clj-http."
+     ([context# concept-id#]
+      (~fn-name context# concept-id# nil))
+     ([context# concept-id# options#]
+      (let [{is-raw?# :is-raw? token# :token http-options# :http-options} options#
+            token# (or token# (:token context#))
+            headers# (when token# {config/token-header token#})]
+        (h/request context# ~app-name
+                   {:url-fn #(~url-fn % concept-id#)
+                    :method :delete
+                    :raw? is-raw?#
+                    :http-options (merge {:headers headers#
+                                          :accept :json}
+                                         http-options#)})))))
+
+
+(defmacro defgetter
+  "Creates a function that can be used to send standard requests to request an item using JSON. The
+  url-fn will be passed the connection and the concept id"
+  [fn-name app-name url-fn]
+  `(defn ~fn-name
+     "Sends a request to get an item by concept id. Valid options are
+     * :is-raw? - set to true to indicate the raw response should be returned. See
+     cmr.transmit.http-helper for more info. Default false.
+     * token - the user token to use when creating the group. If not set the token in the context will
+     be used.
+     * http-options - Other http-options to be sent to clj-http."
+     ([context# concept-id#]
+      (~fn-name context# concept-id# nil))
+     ([context# concept-id# options#]
+      (let [{is-raw?# :is-raw? token# :token http-options# :http-options} options#
+            token# (or token# (:token context#))
+            headers# (when token# {config/token-header token#})]
+        (h/request context# ~app-name
+                   {:url-fn #(~url-fn % concept-id#)
+                    :method :get
+                    :raw? is-raw?#
+                    :http-options (merge {:headers headers# :accept :json}
+                                         http-options#)})))))
+
+(defmacro defsearcher
+  "Creates a function that can be used to send find items matching parameters."
+  [fn-name app-name url-fn]
+  `(defn ~fn-name
+     "Sends a request to find items by parameters. Valid options are
+     * :is-raw? - set to true to indicate the raw response should be returned. See
+     cmr.transmit.http-helper for more info. Default false.
+     * token - the user token to use when creating the group. If not set the token in the context will
+     be used.
+     * http-options - Other http-options to be sent to clj-http."
+     ([context# params#]
+      (~fn-name context# params# nil))
+     ([context# params# options#]
+      (let [{is-raw?# :is-raw? token# :token http-options# :http-options} options#
+            token# (or token# (:token context#))
+            headers# (when token# {config/token-header token#})]
+        (h/request context# ~app-name
+                   {:url-fn ~url-fn
+                    :method :get
+                    :raw? is-raw?#
+                    :http-options (merge {:headers headers#
+                                          :query-params params#
+                                          :accept :json}
+                                         http-options#)})))))
+
+
+
