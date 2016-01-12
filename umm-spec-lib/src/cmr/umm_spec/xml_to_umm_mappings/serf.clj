@@ -119,7 +119,7 @@
                       [(csk/->PascalCaseKeyword x) (value-of service-citation (str x))]
                       x))
                   [[:Version (value-of service-citation "Edition")]
-                   [:RelatedUrl (value-of service-citation "URL")]
+                   [:RelatedUrl {:URLs [(value-of service-citation "URL")]}]
                    :Title
                    [:Creator (value-of service-citation "Originators")]
                    :ReleaseDate
@@ -145,11 +145,9 @@
                    :Publisher
                    :Pages
                    [:ISBN (value-of pub-ref "ISBN")]
-                   (when (= (value-of pub-ref "Persistent_Identifier/Type") "DOI")
-                     [:DOI {:DOI (value-of pub-ref "Persistent_Identifier/Identifier")}])
+                   [:DOI {:DOI (value-of pub-ref "DOI")}]
                    [:RelatedUrl
-                    {:URLs (seq
-                             (remove nil? [(value-of pub-ref "Online_Resource")]))}]
+                    {:URLs (values-at pub-ref "Online_Resource")}]
                    :Other_Reference_Details]))))
 
 (defn- parse-actual-related-urls

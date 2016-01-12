@@ -45,7 +45,7 @@
   the given to-xml and to-umm mappings."
   [concept-type metadata-format record]
   (let [metadata-xml (core/generate-metadata concept-type metadata-format record)]
-    ;; (println metadata-xml)
+    (println metadata-xml)
     ;; validate against xml schema
     (is (empty? (core/validate-xml concept-type metadata-format metadata-xml)))
     (core/parse-metadata concept-type metadata-format metadata-xml)))

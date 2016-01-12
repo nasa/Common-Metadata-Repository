@@ -354,6 +354,23 @@
     (seq? x)    (seq (keep prune-empty-maps x))
     :else x))
 
+(defn- prune-nil-maps
+  "If x is a map, returns nil if all of the map's values are nil, otherwise returns the map with
+  prune-empty-maps applied to all values. If x is a collection, returns the result of keeping the
+  non-nil results of calling prune-empty-maps on each value in x."
+  [x]
+  (cond
+    (map? x) (let [pruned (reduce (fn [m [k v]]
+                                    (assoc m k (prune-empty-maps v)))
+                                  x
+                                  x)]
+               (when (seq (keep val pruned))
+                 pruned))
+    (vector? x) (when-let [pruned (prune-empty-maps (seq x))]
+                  (vec pruned))
+    (seq? x)    (seq (keep prune-empty-maps x))
+    :else x))
+
 (defmulti ^:private convert-internal
   "Returns UMM collection that would be expected when converting the source UMM-C record into the
   destination XML format and parsing it back to a UMM-C record."
@@ -650,15 +667,23 @@
     aas
     (conj aas (cmn/map->AdditionalAttributeType {:Name attribute-name
                                                  :Description (format "Root SERF %s Object" attribute-name)
-                                                 :Value su/not-provided}))))
+                                                 :Value su/not-provided
+                                                 :Group nil}))))
+(defn- default-serf-additional-attributes
+  "Strips out attributes not required in serf from expected-conversion"
+  [aa]
+  (-> aa
+      (select-keys [:Description :Name :Value :Group :UpdateDate :DataType :Value])
+      (assoc :Name (or (:Name aa) su/not-provided))
+      (cmn/map->AdditionalAttributeType)))
 
 (defn- fix-expected-serf-additional-attributes
   "Check and see if Metadata_Name and Metadata_Version are in serf additional attributes.
   If not, you need to inject them so that a comparison will work"
   [aas]
   (-> aas
-      (default-serf-required-additional-attributes "Metadata_Version")
-      (default-serf-required-additional-attributes "Metadata_Name")))
+      (default-serf-required-additional-attributes "Metadata_Name")
+      (default-serf-required-additional-attributes "Metadata_Version")))
 
 (defn- expected-serf-contacts
   [contacts]
@@ -769,7 +794,11 @@
       filter-unused-serf-datetypes
       filter-unique-serf-dates 
       seq))
-   
+
+(defn- fix-publication-reference-url
+  [some-url]
+  (when some-url
+  (cmn/map->RelatedUrlType {:URLs (->> some-url :URLs (take 1))})))
 
 (defn- expected-serf-service-citation
   [citation]
@@ -779,7 +808,17 @@
          :DataPresentationForm nil
          :IssueIdentification nil
          :Editor nil
-         :ReleaseDate nil))
+         :ReleaseDate nil
+         :RelatedUrl (fix-publication-reference-url (:RelatedUrl citation))))
+
+(defn- convert-to-vector
+  [some-list]
+  (vec some-list))
+
+(defn remove-empty-objects
+  [objects]
+  (cmr.common.dev.capture-reveal/capture-all)
+  (filter #(some val %) objects))
 
 (defmethod convert-internal :serf
   [umm-service _]
@@ -787,11 +826,17 @@
   (-> umm-service
       (update-in [:Responsibilities] make-sure-organization-exists)
       (update-in-each [:Responsibilities] expected-serf-responsibility)
+      (update-in-each [:AdditionalAttributes] default-serf-additional-attributes)
+      (update-in [:AdditionalAttributes] convert-to-vector)
       (update-in [:AdditionalAttributes] fix-expected-serf-additional-attributes)
       (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
       (update-in [:MetadataDates] expected-metadata-dates-for-serf)
       (update-in-each [:ServiceCitation] expected-serf-service-citation)
+      (update-in [:ServiceCitation] remove-empty-objects)
       (update-in-each [:MetadataAssociations] assoc :Description nil :Type nil)
+      (update-in [:AccessConstraints] assoc :Value nil)
+      (update-in-each [:PublicationReferences] assoc-in [:DOI :Authority] nil)
+      (update-in-each [:PublicationReferences] update-in [:RelatedUrl] fix-publication-reference-url)
       ))
 
 ;; ISO 19115-2

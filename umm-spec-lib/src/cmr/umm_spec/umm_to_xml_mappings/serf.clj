@@ -7,7 +7,8 @@
             [clojure.set :as set]
             [cmr.common.util :as util]
             [clojure.string :as str]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [clj-time.format :as time-format]))
 
 (def serf-xml-namespaces
   "Contains a map of the SERF namespaces used when generating SERF XML"
@@ -180,8 +181,8 @@
   "Creates a SERF IDN_Node element from a UMM-S AdditionalAttributes mapping"
   [s]
   (for [idn-node (filter #(= "IDN_Node" (:Name %)) (:AdditionalAttributes s))
-        :let [[:node-short-name :node-long-name] (str/split (:Value idn-node) #"\|")]]
-    [:IDN_Node [:Short_Name node-short-name]
+        :let [[node-short-name node-long-name] (str/split (:Value idn-node) #"\|")]]
+    [:IDN_Node [:Short_Name (or node-short-name not-provided)]
      [:Long_Name node-long-name]]))
 
 (def inserted-metadata
@@ -193,27 +194,26 @@
   [pub-refs]
   (for [pub-ref pub-refs]
     [:Reference
-     [:Author (:Author pub-ref)
-      :Publication_Date (:PublicationDate pub-ref)
-      :Title (:Title pub-ref)
-      :Series (:Series pub-ref)
-      :Edition (:Edition pub-ref)
-      :Volume (:Volume pub-ref)
-      :Issue (:Issue pub-ref)
-      :Report_Number (:ReportNumber pub-ref)
-      :Publication_Place (:PublicationPlace pub-ref)
-      :Publisher (:Publisher pub-ref)
-      :Pages (:Pages pub-ref)
-      :ISBN (:ISBN pub-ref)
-      :DOI (:DOI pub-ref)
-      [:RelatedUrl
-       {:URLs (seq
-                (remove nil? [(:URLs (:RelatedUrls pub-ref))]))}]
-      :Other_Reference_Details (:OtherReferenceDetails pub-ref)]]))
+     [:Author (:Author pub-ref)]
+      [:Publication_Date (:PublicationDate pub-ref)]
+      [:Title (:Title pub-ref)]
+      [:Series (:Series pub-ref)]
+      [:Edition (:Edition pub-ref)]
+      [:Volume (:Volume pub-ref)]
+      [:Issue (:Issue pub-ref)]
+      [:Report_Number (:ReportNumber pub-ref)]
+      [:Publication_Place (:PublicationPlace pub-ref)]
+      [:Publisher (:Publisher pub-ref)]
+      [:Pages (:Pages pub-ref)]
+      [:ISBN (:ISBN pub-ref)]
+      [:DOI (:DOI (:DOI pub-ref))]
+      [:Online_Resource (-> pub-ref :RelatedUrl :URLs first)]
+      [:Other_Reference_Details (:OtherReferenceDetails pub-ref)]]))
 
 (defn umm-s-to-serf-xml
   "Returns SERF XML structure from UMM collection record s."
   [s]
+  (cmr.common.dev.capture-reveal/capture-all)
   (xml
     [:SERF
      serf-xml-namespaces
@@ -257,5 +257,11 @@
      [:Future_SERF_Review_Date (:Date (first (filter #(= "REVIEW" (:Type %)) (:MetadataDates s))))]
      [:Extended_Metadata 
       (for [metadata  (:AdditionalAttributes s)
-            :when (not (inserted-metadata (:Name metadata))) ]
-        [:Metadata (elements-from metadata :Group :Name :Value )])]]))
+            :when (not (inserted-metadata (:Name metadata)))]
+        [:Metadata [:Group (:Group metadata)]
+                    [:Name (or (:Name metadata) not-provided)]
+                    [:Description (:Description metadata)]
+                    [:Type (:DataType metadata)]
+                    [:Update_Date (when-let [date (:UpdateDate metadata)]
+                                    (time-format/unparse (time-format/formatters :date) date))]
+                    [:Value (:Value metadata)]])]]))
