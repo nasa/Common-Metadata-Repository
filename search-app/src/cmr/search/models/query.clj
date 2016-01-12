@@ -34,13 +34,6 @@
    ;; Flag indicates if results should be returned in a way that is ECHO compatible.
    echo-compatible?
 
-   ;; Keywords are included at the top level of the query so they can be used to construct the final
-   ;; resulting function_score query filters. The keyword condition uses these to construct
-   ;; the full text search on the :keyword field, but they are also needed for the filter sections
-   ;; that compute the score. Keeping them here is cleaner than having to search for the
-   ;; keyword condition and pull them from there.
-   keywords
-
    ;; Aggregations to send to elastic. The format of this object matches the shape expected by
    ;; elastisch for aggregations. It should be a map of aggregation names to aggregation types
    ;; with details. See the elastisch documentation for more information (which is somewhat light
@@ -405,21 +398,18 @@
   {:granule {:condition (->MatchAllCondition)
              :page-size default-page-size
              :page-num default-page-num
-             :sort-keys (default-sort-keys :granule)
              :result-format :xml
              :echo-compatible? false
              :all-revisions? false}
    :tag {:condition (->MatchAllCondition)
          :page-size default-page-size
          :page-num default-page-num
-         :sort-keys (default-sort-keys :tag)
          :result-format :json
          :echo-compatible? false
          :all-revisions? false}
    :collection {:condition (->MatchAllCondition)
                 :page-size default-page-size
                 :page-num default-page-num
-                :sort-keys (default-sort-keys :collection)
                 :result-format :xml
                 :echo-compatible? false
                 :all-revisions? false}})

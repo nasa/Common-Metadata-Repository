@@ -332,7 +332,7 @@
                (println "Expected:" (map :entry-title items))
                (println "Actual:" (map :name (:refs refs))))
              matches?)
-           "Laser" "-entry-title" [coll9 coll7 coll5 coll14]
+           "Laser" "-entry-title" [coll7 coll5 coll14 coll9]
            "Laser" "score" [coll14 coll5 coll7 coll9]
            "Laser" "+score" [coll5 coll7 coll9 coll14]
            "Laser" "-score" [coll14 coll5 coll7 coll9]))
