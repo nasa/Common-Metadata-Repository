@@ -77,7 +77,7 @@
 (defn grant-all-group-fixture
   "Creates A test fixture that grants all users the ability to create and modify groups for the given providers"
   [f]
-  ;; TODO update this
+  ;; TODO CMR-2133, CMR-2134 update this when implementing ACLS
   ; (e/grant-all-group (conn-context))
   (f))
 

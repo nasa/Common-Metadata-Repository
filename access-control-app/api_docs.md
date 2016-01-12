@@ -70,14 +70,13 @@ Tags are created by POSTing a JSON representation of a group to `%CMR-ENDPOINT%/
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/groups -d \
 '{
-  "names": "Administrators",
-  "provider-id": "PROV1",
-  "description": "The group of users that manages PROV1's data holdings."
+  "name": "Administrators",
+  "description": "The group of users that manages PROV1s data holdings."
  }'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 48
 
-{"concept-id":"AG1200000000-CMR","revision-id":1}
+{"revision-id":1,"concept-id":"AG1200000000-CMR"}
 ```

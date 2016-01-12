@@ -37,28 +37,9 @@
   ([context is-raw]
    (h/request context :access-control {:url-fn reset-url, :method :post, :raw? is-raw})))
 
-
-;; TODO these are basically identical to the tag functions. Can we refactor somehow to avoid duplication?
-
+; Group CRUD functions
 (h/defcreator create-group :access-control groups-url)
 (h/defsearcher search-for-groups :access-control groups-url)
 (h/defupdater update-group :access-control group-url)
 (h/defdestroyer delete-group :access-control group-url)
 (h/defgetter get-group :access-control group-url)
-
-
-#_(defn search-for-groups
-    "Sends a request to find groups by the given parameters. Valid options are
-    * :is-raw? - set to true to indicate the raw response should be returned. See
-    cmr.transmit.http-helper for more info. Default false.
-    * http-options - Other http-options to be sent to clj-http."
-    ([context params]
-     (search-for-groups context params nil))
-    ([context params {:keys [is-raw? http-options]}]
-     (h/request context :access-control
-                {:url-fn groups-url
-                 :method :get
-                 :raw? is-raw?
-                 :http-options (merge {:accept :json :query-params params}
-                                      http-options)})))
-

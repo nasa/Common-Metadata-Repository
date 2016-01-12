@@ -7,8 +7,6 @@
 (use-fixtures :once (u/int-test-fixtures))
 (use-fixtures :each u/reset-fixture)
 
-;; TODO test groups are unique by name and provider id
-
 ;; TODO CMR-2134, CMR-2133 test creating groups without various permissions
 
 (def field-maxes
@@ -70,14 +68,14 @@
       (u/assert-group-saved group "user1" concept-id revision-id)
 
       (testing "Creation with an already existing name"
-        ;; TODO make this same test for providers
-        ;; TODO Creating a system level group and a provider level group with the same name is ok.
+        ;; TODO CMR-2123 - make this same test for providers
+        ;; TODO CMR-2123 - Creating a system level group and a provider level group with the same name is ok.
         (is (= {:status 409
                 :errors [(format "A system group with name [%s] already exists with concept id %s."
                                  (:name group) concept-id)]}
                (u/create-group token group))))
 
-      ;; TODO uncomment when implementing delete
+      ;; TODO CMR-2131 uncomment when implementing delete
       #_(testing "Creation of previously deleted group"
           (u/delete-group token concept-id)
           (let [new-group (assoc group :legacy-guid "the legacy guid" :description "new description")

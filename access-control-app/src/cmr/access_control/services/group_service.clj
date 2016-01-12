@@ -1,5 +1,5 @@
 (ns cmr.access-control.services.group-service
-    "TODO document this"
+    "Provides functions for creating, updating, deleting, retrieving, and finding groups."
     (:require [cmr.transmit.metadata-db2 :as mdb]
               [cmr.transmit.echo.tokens :as tokens]
               [cmr.common.services.errors :as errors]
@@ -25,7 +25,6 @@
   "Converts a group into a new concept that can be persisted in metadata db."
   [context group]
   {:concept-type :access-group
-   ;; TODO update the group design to indicate that the native id is name and provider id is set if present
    :native-id (:name group)
    ;; Provider id is optional in group. If it is a system level group then it's owned by the CMR.
    :provider-id (group->mdb-provider-id group)
@@ -40,7 +39,8 @@
 ;; Service level functions
 
 (defn create-group
-  "TODO"
+  "Creates the group by saving it to Metadata DB. Returns a map of the concept id and revision id of
+  the created group."
   [context group]
   ;; Check if the group already exists
   (if-let [concept-id (mdb/get-concept-id context

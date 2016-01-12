@@ -57,7 +57,7 @@
 (defn create-group
   "Processes a create group request."
   [context headers body]
-  ;; TODO verify permission in service (dependent on provider level or system level)
+  ;; TODO CMR-2133, CMR-2134 - verify permission in service (dependent on provider level or system level)
   (validate-group-content-type headers)
   (validate-group-json body)
   (->> (json/parse-string body true)
@@ -78,8 +78,8 @@
       admin-api-routes
 
       ;; Add routes for API documentation
-      (api-docs/docs-routes (get-in system [:access-control-public-conf :protocol])
-                            (get-in system [:access-control-public-conf :relative-root-url])
+      (api-docs/docs-routes (get-in system [:public-conf :protocol])
+                            (get-in system [:public-conf :relative-root-url])
                             "public/access_control_index.html")
 
       (context "/groups" []

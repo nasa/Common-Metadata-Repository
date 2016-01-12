@@ -4,9 +4,7 @@
 
   Use the following keybinding in sublime
 
-  TODO update this
-  { \"keys\": [\"alt+super+a\"], \"command\": \"run_command_in_repl\", \"args\": {\"command\": \"(def all-tests-future (future (cmr.common.test-runner/run-all-tests {:fail-fast? true :speak? true} )))\", \"refresh_namespaces\": true}},
-  "
+  { \"keys\": [\"alt+super+a\"], \"command\": \"run_command_in_repl\", \"args\": {\"command\": \"(def all-tests-future (future (cmr.common.test-runner/run-all-tests {:fail-fast? true :speak? true} )))\", \"refresh_namespaces\": true}},"
   (:require [clojure.test :as t]
             [cmr.common.util :as u]
             [cmr.common.dev.util :as du]
