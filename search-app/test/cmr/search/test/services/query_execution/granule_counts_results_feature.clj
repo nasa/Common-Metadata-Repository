@@ -26,6 +26,7 @@
   (q/query {:concept-type :granule
             :page-size 0
             :condition condition
+            :result-format :query-specified
             :aggregations {:granule-counts-by-collection-id
                            {:terms {:field :collection-concept-id
                                     :size num-collection-ids}}}}))

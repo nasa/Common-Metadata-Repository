@@ -24,6 +24,11 @@
   (let [processor (get-elastic-result-item-processor query)]
     (processor context query elastic-result)))
 
+(defmethod elastic-results/elastic-results->query-results [:granule :query-specified]
+  [context query elastic-results]
+  (assoc (elastic-results/default-elastic-results->query-results context query elastic-results)
+         :aggregations (:aggregations elastic-results)))
+
 (doseq [concept-type [:collection :granule :tag]]
 
   (defmethod elastic-search-index/concept-type+result-format->fields [concept-type :query-specified]

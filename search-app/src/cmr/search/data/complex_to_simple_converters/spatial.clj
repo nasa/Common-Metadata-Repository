@@ -9,7 +9,6 @@
             [cmr.spatial.serialize :as srl]
             [cmr.spatial.derived :as d]
             [cmr.spatial.relations :as sr]
-            [camel-snake-kebab.core :as csk]
             [clojure.string :as str])
   (:import gov.nasa.echo_orbits.EchoOrbitsRubyBootstrap))
 
@@ -203,10 +202,7 @@
   (c2s/reduce-query-condition
     [{:keys [shape]} context]
     (let [shape (d/calculate-derived shape)
-          orbital-cond (when (or (= :granule (:query-concept-type context))
-                                 (when-let [query-string (:query-string context)]
-                                   (re-find #"(?i)include_granule_counts=true"
-                                            (csk/->snake_case query-string))))
+          orbital-cond (when (= :granule (:query-concept-type context))
                          (orbital-condition context shape))
           mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
           lr-cond (br->cond "lr" (srl/shape->lr shape))
