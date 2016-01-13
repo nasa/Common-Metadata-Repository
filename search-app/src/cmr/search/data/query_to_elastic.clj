@@ -63,17 +63,17 @@
                  query-string-reserved-characters-regex
                  "\\\\$1")))
 
-(def keywords-in-condition
+(defn- keywords-in-condition
   "Returns a list of keywords if the condition contains a keyword condition or nil if not."
-  (fn [condition]
-    (when (not= (type condition) cmr.search.models.query.NegatedCondition)
-      (or (when (= :keyword (:field condition))
-            (str/split (str/lower-case (:query-str condition)) #" "))
-          ;; Call this function recursively on nested conditions, e.g., AND or OR conditions.
-          (when-let [conds (:conditions condition)]
-            (some #(keywords-in-condition %1) conds))
-          ;; Call this function recursively for a single nested condition.
-          (when-let [con (:condition condition)] (keywords-in-condition con))))))
+  [condition]
+  (when (not= (type condition) cmr.search.models.query.NegatedCondition)
+    (or (when (= :keyword (:field condition))
+          (str/split (str/lower-case (:query-str condition)) #" "))
+        ;; Call this function recursively on nested conditions, e.g., AND or OR conditions.
+        (when-let [conds (:conditions condition)]
+          (some #(keywords-in-condition %1) conds))
+        ;; Call this function recursively for a single nested condition.
+        (when-let [con (:condition condition)] (keywords-in-condition con)))))
 
 (defn- keywords-in-query
   "Returns a list of keywords if the query contains a keyword condition or nil if not.
