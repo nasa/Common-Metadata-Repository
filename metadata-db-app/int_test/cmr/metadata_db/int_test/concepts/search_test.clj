@@ -56,9 +56,9 @@
     (let [coll1 (util/create-and-save-collection provider-id 1)
           tuples [[(:concept-id coll1) 1]
                   [(:concept-id coll1) 2]
-                  ["C2-REG_PROV" 1] ]
+                  ["C2-REG_PROV" 1]]
           {:keys [status errors]} (util/get-concepts tuples)]
-      (is (= 404 status ))
+      (is (= 404 status))
       (is (= #{(msg/concept-with-concept-id-and-rev-id-does-not-exist (:concept-id coll1) 2)
                (msg/concept-with-concept-id-and-rev-id-does-not-exist "C2-REG_PROV" 1)}
              (set errors))))))
@@ -68,9 +68,9 @@
     (let [coll1 (util/create-and-save-collection provider-id 1)
           tuples [[(:concept-id coll1) 1]
                   [(:concept-id coll1) 2]
-                  ["C2-REG_PROV" 1] ]
+                  ["C2-REG_PROV" 1]]
           {:keys [status concepts]} (util/get-concepts tuples true)]
-      (is (= 200 status ))
+      (is (= 200 status))
       (is (= [(:concept-id coll1)] (map :concept-id concepts))))))
 
 (deftest get-latest-by-concept-id
@@ -106,7 +106,7 @@
   (let [coll1 (util/create-and-save-collection "REG_PROV" 1)
         ids [(:concept-id coll1) "C1234-REG_PROV"]
         {:keys [status errors]} (util/get-latest-concepts ids)]
-    (is (= 404 status ))
+    (is (= 404 status))
     (is (= #{(msg/concept-does-not-exist "C1234-REG_PROV")}
            (set errors)))))
 
@@ -114,7 +114,7 @@
   (let [coll1 (util/create-and-save-collection "REG_PROV" 1)
         ids [(:concept-id coll1) "C1234-REG_PROV"]
         {:keys [status concepts]} (util/get-latest-concepts ids true)]
-    (is (= 200 status ))
+    (is (= 200 status))
     (is (= [(:concept-id coll1)] (map :concept-id concepts)))))
 
 (defn- save-collection
@@ -416,7 +416,7 @@
 
               "no metadata"
               [(dissoc group1 :metadata)] {:provider-id "REG_PROV"
-                                          :exclude-metadata true}))
+                                           :exclude-metadata true}))
 
       (testing "all revisions"
         (are2 [rev-count params]
@@ -424,5 +424,5 @@
                  (count (-> (util/find-concepts :access-group params)
                             :concepts)))
               "provider-id, native-id - three revisons"
-              3 {:provider-id "REG_PROV":native-id "native-id 1"})))))
+              3 {:provider-id "REG_PROV" :native-id "native-id 1"})))))
 

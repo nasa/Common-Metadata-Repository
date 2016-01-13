@@ -12,9 +12,7 @@
   [concept-type db provider-id result]
   (some-> (c/db-result->concept-map :default db provider-id result)
           (assoc :concept-type :access-group)
-          (assoc :user-id (:user_id result))
-          ;; groups don't use extra-fields, but the validations require them
-          (assoc :extra-fields {})))
+          (assoc :user-id (:user_id result))))
 
 (defn- group-concept->insert-args
   [concept]

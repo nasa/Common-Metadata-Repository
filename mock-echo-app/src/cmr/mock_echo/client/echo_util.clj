@@ -113,14 +113,24 @@
   [context acl]
   (echo-client/delete-acl context (:id acl)))
 
-(def guest-ace
+(def guest-read-ace
   "A CMR style access control entry granting guests read access."
   {:permissions [:read]
    :user-type :guest})
 
-(def registered-user-ace
+(def registered-user-read-ace
   "A CMR style access control entry granting registered users read access."
   {:permissions [:read]
+   :user-type :registered})
+
+(def guest-read-write-ace
+  "A CMR style access control entry granting guests read and write access."
+  {:permissions [:read :create :update :delete]
+   :user-type :guest})
+
+(def registered-user-read-write-ace
+  "A CMR style access control entry granting registered users read and writeaccess."
+  {:permissions [:read :create :update :delete]
    :user-type :registered})
 
 (defn group-ace
@@ -128,12 +138,6 @@
   [group-guid permissions]
   {:permissions permissions
    :group-guid group-guid})
-
-(defn grant-all
-  "Creates an ACL in mock echo granting guests and registered users access to catalog items
-  identified by the catalog-item-identity"
-  [context catalog-item-identity]
-  (grant context [guest-ace registered-user-ace] :catalog-item-identity catalog-item-identity))
 
 (defn grant-all-ingest
   "Creates an ACL in mock echo granting guests and registered users access to ingest for the given
@@ -159,17 +163,47 @@
          :system-object-identity
          {:target tag-acl}))
 
+(defn grant-create-read-groups
+  "Creates an ACL in mock echo granting registered users and guests ability to create and read
+  groups. If a provider id is provided this it permits it for the given provider. If not provided
+  then it is at the system level."
+  ([context]
+   (grant context
+          [{:permissions [:create :read] :user-type :registered}
+           {:permissions [:create :read] :user-type :guest}]
+          :system-object-identity
+          {:target "GROUP"}))
+  ([context provider-guid]
+   (grant context
+          [{:permissions [:create :read] :user-type :registered}
+           {:permissions [:create :read] :user-type :guest}]
+          :provider-object-identity
+          {:target "GROUP"
+           :provider-guid provider-guid})))
+
+;; TODO at a later time we should add a helper function to grant update and delete access to individual groups
+;; That's controlled by the single instance object identity in acls
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Grant functions for Catalog Item ACLS
+
+(defn grant-all
+  "Creates an ACL in mock echo granting guests and registered users access to catalog items
+  identified by the catalog-item-identity"
+  [context catalog-item-identity]
+  (grant context [guest-read-ace registered-user-read-ace] :catalog-item-identity catalog-item-identity))
+
 (defn grant-guest
   "Creates an ACL in mock echo granting guests access to catalog items identified by the
   catalog-item-identity"
   [context catalog-item-identity]
-  (grant context [guest-ace] :catalog-item-identity catalog-item-identity))
+  (grant context [guest-read-ace] :catalog-item-identity catalog-item-identity))
 
 (defn grant-registered-users
   "Creates an ACL in mock echo granting all registered users access to catalog items identified by
   the catalog-item-identity"
   [context catalog-item-identity]
-  (grant context [registered-user-ace] :catalog-item-identity catalog-item-identity))
+  (grant context [registered-user-read-ace] :catalog-item-identity catalog-item-identity))
 
 (defn grant-group
   "Creates an ACL in mock echo granting users in the group access to catalog items identified by
@@ -183,6 +217,13 @@
   [context group-guid & permission-types]
   (grant context [(group-ace group-guid (or (seq permission-types)
                                             [:read :update]))]
+         :system-object-identity
+         {:target ingest-management-acl}))
+
+(defn grant-all-admin
+  "Creates an ACL in mock echo granting all users read and update for system ingest management."
+  [context]
+  (grant context [guest-read-write-ace registered-user-read-write-ace]
          :system-object-identity
          {:target ingest-management-acl}))
 

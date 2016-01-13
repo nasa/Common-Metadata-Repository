@@ -6,13 +6,11 @@
             [clojure.test :refer (run-all-tests)]
             [clojure.repl :refer :all]
             [cmr.access-control.system :as system]
-            [cmr.common.jobs :as jobs]
+            [cmr.access-control.int-test.access-control-test-util :as int-test-util]
             [cmr.metadata-db.system :as mdb]
-            [cmr.metadata-db.config :as mdb-config]
-            [cmr.metadata-db.data.memory-db :as memory]
-            [cmr.message-queue.queue.memory-queue :as mem-queue]
             [cmr.mock-echo.system :as mock-echo]
             [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.transmit.config :as transmit-config]
             [cmr.common.dev.util :as d]))
 
 (def system nil)
@@ -21,31 +19,36 @@
 
 (def mock-echo-system nil)
 
-(defn create-mdb-system
-  []
-  (let [mq (mem-queue/create-memory-queue-broker (mdb-config/rabbit-mq-config))
-        db (memory/create-db)
-        mdb-sys (mdb/create-system)]
-    (assoc mdb-sys
-           :queue-broker mq
-           :db db
-           :scheduler (jobs/create-non-running-scheduler))))
+(defn disable-access-log
+  "Disables use of the access log in the given system"
+  [system]
+  (assoc-in system [:web :use-access-log?] false))
+
+(def use-external-db?
+  "Set to true to use the Oracle DB"
+  ; true
+  false)
 
 (defn start
   "Starts the current development system."
   []
+
+  (transmit-config/set-access-control-port! 4011)
+  (transmit-config/set-metadata-db-port! 4001)
+  (transmit-config/set-echo-rest-port! 4008)
+
   ;; Start mock echo
   (alter-var-root
    #'mock-echo-system
-   (constantly (mock-echo/start (mock-echo/create-system))))
+   (constantly (-> (mock-echo/create-system) disable-access-log mock-echo/start)))
   ;; Start metadata db
   (alter-var-root
    #'mdb-system
-   (constantly (mdb/start (create-mdb-system))))
+   (constantly (-> (int-test-util/create-mdb-system use-external-db?) disable-access-log mdb/start)))
   ;; Start access control
   (alter-var-root
    #'system
-   (constantly (system/start (system/create-system))))
+   (constantly (-> (system/create-system) disable-access-log system/start)))
 
   (d/touch-user-clj))
 

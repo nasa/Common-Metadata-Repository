@@ -38,7 +38,7 @@
                          :result-set-fetch-size
                          (config/result-set-fetch-size))
               :log (log/create-logger)
-              :web (web/create-web-server (config/metadata-db-port) routes/make-api)
+              :web (web/create-web-server (transmit-config/metadata-db-port) routes/make-api)
               :nrepl (nrepl/create-nrepl-if-configured (config/metadata-db-nrepl-port))
               :parallel-chunk-size (config/parallel-chunk-size)
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}
