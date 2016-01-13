@@ -49,7 +49,7 @@
   ([context]
    (reset context false))
   ([context is-raw]
-   (h/request context :metadata-db {:url-fn reset-url, :method :post, :raw? is-raw})))
+   (h/request context :metadata-db {:url-fn reset-url, :method :post, :is-raw? is-raw})))
 
 (h/defcreator save-concept :metadata-db concepts-url)
 
@@ -61,7 +61,7 @@
    (let [response (h/request context :metadata-db
                              {:url-fn #(concept-id-url % concept-type provider-id native-id)
                               :method :get
-                              :raw? is-raw?
+                              :is-raw? is-raw?
                               :http-options (merge {:accept :json} http-options)})]
      (if is-raw?
        response
@@ -78,7 +78,7 @@
    (-> (h/request context :metadata-db
                   {:url-fn #(concept-revision-url % concept-id revision-id)
                    :method :get
-                   :raw? is-raw?
+                   :is-raw? is-raw?
                    :http-options (merge {:accept :json} http-options)})
        finish-parse-concept)))
 
@@ -93,7 +93,7 @@
    (-> (h/request context :metadata-db
                   {:url-fn #(latest-concept-url % concept-id)
                    :method :get
-                   :raw? is-raw?
+                   :is-raw? is-raw?
                    :http-options (merge {:accept :json} http-options)})
        finish-parse-concept)))
 

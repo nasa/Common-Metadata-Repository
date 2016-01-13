@@ -45,7 +45,7 @@
      (h/request context :search
                 {:url-fn #(tag-associations-by-query-url % concept-id)
                  :method :post
-                 :raw? is-raw?
+                 :is-raw? is-raw?
                  :http-options (merge {:body (json/generate-string query)
                                        :content-type :json
                                        :headers headers
@@ -67,7 +67,7 @@
      (h/request context :search
                 {:url-fn #(tag-associations-by-query-url % concept-id)
                  :method :delete
-                 :raw? is-raw?
+                 :is-raw? is-raw?
                  :http-options (merge {:body (json/generate-string query)
                                        :content-type :json
                                        :headers headers

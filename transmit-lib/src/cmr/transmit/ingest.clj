@@ -40,7 +40,7 @@
      (h/request context :ingest
                 {:url-fn #(concept-ingest-url provider-id concept-type native-id %)
                  :method :put
-                 :raw? is-raw
+                 :is-raw? is-raw
                  :http-options {:body metadata
                                 :content-type (:format concept)
                                 :headers headers
@@ -54,7 +54,7 @@
      (h/request context :ingest
                 {:url-fn #(concept-ingest-url provider-id concept-type native-id %)
                  :method :delete
-                 :raw? is-raw
+                 :is-raw? is-raw
                  :http-options {:headers headers
                                 :accept :json}}))))
 
@@ -62,7 +62,7 @@
   "Returns the health status of the ingest"
   [context]
   (let [{:keys [status body]} (h/request context :ingest
-                                         {:url-fn health-url, :method :get, :raw? true})]
+                                         {:url-fn health-url, :method :get, :is-raw? true})]
     (if (= 200 status)
       {:ok? true :dependencies body}
       {:ok? false :problem body})))

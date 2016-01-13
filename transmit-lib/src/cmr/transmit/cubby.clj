@@ -32,14 +32,14 @@
   ([context]
    (get-keys context false))
   ([context is-raw]
-   (h/request context :cubby {:url-fn keys-url :method :get :raw? is-raw})))
+   (h/request context :cubby {:url-fn keys-url :method :get :is-raw? is-raw})))
 
 (defn get-value
   "Gets the value associated with the given key."
   ([context key-name]
    (get-value context key-name false))
   ([context key-name is-raw]
-   (h/request context :cubby {:url-fn (partial key-url key-name), :method :get, :raw? is-raw})))
+   (h/request context :cubby {:url-fn (partial key-url key-name), :method :get, :is-raw? is-raw})))
 
 (defn set-value
   "Associates a value with the given key."
@@ -48,7 +48,7 @@
   ([context key-name value is-raw]
    (h/request context :cubby {:url-fn (partial key-url key-name)
                               :method :put
-                              :raw? is-raw
+                              :is-raw? is-raw
                               :http-options {:body value}})))
 
 (defn delete-value
@@ -56,27 +56,27 @@
   ([context key-name]
    (delete-value context key-name false))
   ([context key-name is-raw]
-   (h/request context :cubby {:url-fn (partial key-url key-name), :method :delete, :raw? is-raw})))
+   (h/request context :cubby {:url-fn (partial key-url key-name), :method :delete, :is-raw? is-raw})))
 
 (defn delete-all-values
   "Deletes all values"
   ([context]
    (delete-all-values context false))
   ([context is-raw]
-   (h/request context :cubby {:url-fn keys-url, :method :delete, :raw? is-raw})))
+   (h/request context :cubby {:url-fn keys-url, :method :delete, :is-raw? is-raw})))
 
 (defn reset
   "Clears all values in the cache service"
   ([context]
    (reset context false))
   ([context is-raw]
-   (h/request context :cubby {:url-fn reset-url, :method :post, :raw? is-raw})))
+   (h/request context :cubby {:url-fn reset-url, :method :post, :is-raw? is-raw})))
 
 (defn get-cubby-health-fn
   "Returns the health status of cubby"
   [context]
   (let [{:keys [status body]} (h/request context :cubby
-                                         {:url-fn health-url, :method :get, :raw? true})]
+                                         {:url-fn health-url, :method :get, :is-raw? true})]
     (if (= 200 status)
       {:ok? true :dependencies body}
       {:ok? false :problem body})))

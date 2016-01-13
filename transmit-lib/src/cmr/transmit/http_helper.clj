@@ -31,8 +31,8 @@
              body)
      :content-type content-type}))
 
-(defn- handle-raw-fetch-response
-  "Used to convert a raw response when fetching something into the actual result."
+(defn- handle-raw-fetch-or-delete-response
+  "Used to convert a raw response when fetching or deleting something into the actual result."
   [{:keys [status body] :as resp}]
   (cond
     (<= 200 status 299) body
@@ -50,17 +50,44 @@
       (format "Received unexpected status code %s with response %s"
               status (pr-str resp)))))
 
+(defn update-response-handler
+  "Response handler for update requests."
+  [concept-id request {:keys [status body] :as resp}]
+  (cond
+    (<= 200 status 299)
+    body
+
+    (= 404 status)
+    (errors/throw-service-error
+     :not-found (format "Item could not be found with id [%s]" concept-id))
+
+    :else
+    (errors/internal-error!
+      (format "Received unexpected status code %s with response %s"
+              status (pr-str resp)))))
+
+(defn default-response-handler
+  "The default response handler."
+  [request response]
+  (let [{:keys [method is-raw?]} request]
+    (cond
+      is-raw? response
+      (or (= method :get) (= method :delete)) (handle-raw-fetch-or-delete-response response)
+      :else (handle-raw-write-response response))))
+
 (defn request
   "Makes an HTTP request with the given options and parses the response. The arguments in the
   options map have the following effects.
 
   * :url-fn - A function taking a transmit connection and returning the URL to use.
   * :method - the HTTP method. :get, :post, etc.
-  * :raw? - indicates whether the raw HTTP response (as returned by http-response->raw-response ) is
+  * :is-raw? - indicates whether the raw HTTP response (as returned by http-response->raw-response ) is
   desired. Defaults to false.
-  * :http-options - a map of additional HTTP options to send to the clj-http.client/request function."
-  [context app-name {:keys [url-fn method raw? http-options]}]
+  * :http-options - a map of additional HTTP options to send to the clj-http.client/request function.
+  * :response-handler - a function to handle the response. Defaults to default-response-handler"
+  [context app-name {:keys [url-fn method is-raw? http-options response-handler] :as request}]
   (let [conn (config/context->app-connection context app-name)
+        response-handler (or response-handler default-response-handler)
         response (http-response->raw-response
                    (client/request
                      (merge (config/conn-params conn)
@@ -69,10 +96,8 @@
                              :throw-exceptions false
                              :headers {config/token-header (config/echo-system-token)}}
                             http-options)))]
-    (cond
-      raw? response
-      (= method :get) (handle-raw-fetch-response response)
-      :else (handle-raw-write-response response))))
+    (default-response-handler request response)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CRUD Macros
@@ -101,7 +126,7 @@
         (request context# ~app-name
                  {:url-fn ~url-fn
                   :method :post
-                  :raw? is-raw?#
+                  :is-raw? is-raw?#
                   :http-options (merge {:body (json/generate-string item#)
                                         :content-type :json
                                         :headers headers#
@@ -124,26 +149,17 @@
      ([context# concept-id# item# options#]
       (let [{is-raw?# :is-raw? token# :token http-options# :http-options} options#
             token# (or token# (:token context#))
-            headers# (when token# {config/token-header token#})
-            response# (request context# ~app-name
-                               {:url-fn #(~url-fn % concept-id#)
-                                :method :put
-                                :raw? true
-                                :http-options (merge {:body (json/generate-string item#)
-                                                      :content-type :json
-                                                      :headers headers#
-                                                      :accept :json}
-                                                     http-options#)})]
-        (cond
-          is-raw?#
-          response#
-
-          (= 404 (:status response#))
-          (errors/throw-service-error
-           :not-found (format "Item could not be found with id [%s]" concept-id#))
-
-          :else
-          (handle-raw-write-response response#))))))
+            headers# (when token# {config/token-header token#})]
+        (request context# ~app-name
+                 {:url-fn #(~url-fn % concept-id#)
+                  :response-handler (partial update-response-handler concept-id#)
+                  :method :put
+                  :is-raw? true
+                  :http-options (merge {:body (json/generate-string item#)
+                                        :content-type :json
+                                        :headers headers#
+                                        :accept :json}
+                                       http-options#)})))))
 
 (defmacro defdestroyer
   "Creates a function that can be used to send standard requests to delete an item using JSON. The
@@ -165,7 +181,7 @@
         (request context# ~app-name
                  {:url-fn #(~url-fn % concept-id#)
                   :method :delete
-                  :raw? is-raw?#
+                  :is-raw? is-raw?#
                   :http-options (merge {:headers headers#
                                         :accept :json}
                                        http-options#)})))))
@@ -191,7 +207,7 @@
         (request context# ~app-name
                  {:url-fn #(~url-fn % concept-id#)
                   :method :get
-                  :raw? is-raw?#
+                  :is-raw? is-raw?#
                   :http-options (merge {:headers headers# :accept :json}
                                        http-options#)})))))
 
@@ -214,7 +230,7 @@
         (request context# ~app-name
                  {:url-fn ~url-fn
                   :method :get
-                  :raw? is-raw?#
+                  :is-raw? is-raw?#
                   :http-options (merge {:headers headers#
                                         :query-params params#
                                         :accept :json}
