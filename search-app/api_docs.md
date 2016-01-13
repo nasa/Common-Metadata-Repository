@@ -937,7 +937,7 @@ Find collections matching any of the 'archive_center' param values
 
 #### <a name="c-data-center"></a> Find collections by data center
 
-This supports `pattern` and `ignore_case`.
+This supports `pattern`, `and`, and `ignore_case`.
 
 Find collections matching 'data_center' param value
 
