@@ -10,6 +10,8 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
 
   * [/groups](#groups)
     * [POST - Create Group](#create-group)
+  * /groups/:group-id
+      * [GET - Retrieve a group](#retrieve-group)
 
 ***
 
@@ -71,13 +73,15 @@ Groups are used to identify sets of users for the assignment of access privilege
 
 ### <a name="create-group"></a> Create Group
 
-Tags are created by POSTing a JSON representation of a group to `%CMR-ENDPOINT%/groups` along with a valid ECHO token. The response will contain a concept id identifying the group along with the group revision id.
+Groups are created by POSTing a JSON representation of a group to `%CMR-ENDPOINT%/groups` along with a valid ECHO token. The response will contain a concept id identifying the group along with the group revision id.
+
+#### Creating a System Level Group
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/groups -d \
 '{
   "name": "Administrators",
-  "description": "The group of users that manages PROV1s data holdings."
+  "description": "The group of users that manages the CMR."
  }'
 
 HTTP/1.1 200 OK
@@ -86,3 +90,38 @@ Content-Length: 48
 
 {"revision-id":1,"concept-id":"AG1200000000-CMR"}
 ```
+
+#### Creating a Provider Level Group
+
+```
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/groups -d \
+'{
+  "name": "Administrators",
+  "provider-id": "PROV1"
+  "description": "The group of users that manages PROV1s data holdings."
+ }'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 48
+
+{"revision-id":1,"concept-id":"AG1200000001-PROV1"}
+```
+
+#### <a name="retrieve-group"></a> Retrieve Group
+
+A single group can be retrieved by sending a GET request to `%CMR-ENDPOINT%/groups/<concept-id>` where `concept-id` is the concept id of the group returned when it was created.
+
+```
+curl -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/groups/AG1200000000-CMR?pretty=true
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 106
+
+{
+  "name" : "Administrators",
+  "description" : "The group of users that manages PROV1s data holdings."
+}
+```
+

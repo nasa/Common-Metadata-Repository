@@ -5,7 +5,7 @@
               [cmr.access-control.int-test.access-control-test-util :as u]))
 
 (use-fixtures :once (u/int-test-fixtures))
-(use-fixtures :each u/reset-fixture)
+(use-fixtures :each (u/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"}))
 
 ;; TODO CMR-2134, CMR-2133 test creating groups without various permissions
 
@@ -63,23 +63,25 @@
                   valid-user-token
                   (assoc valid-group field long-value)))))))))
 
-(deftest create-group-test
+(deftest create-system-group-test
   (testing "Successful creation"
     (let [group (u/make-group)
           token (e/login (u/conn-context) "user1")
           {:keys [status concept-id revision-id]} (u/create-group token group)]
       (is (= 200 status))
-      (is concept-id)
+      (is (re-matches #"AG\d+-CMR" concept-id) "Incorrect concept id for a system group")
       (is (= 1 revision-id))
       (u/assert-group-saved group "user1" concept-id revision-id)
 
       (testing "Creation with an already existing name"
-        ;; TODO CMR-2123 - make this same test for providers
-        ;; TODO CMR-2123 - Creating a system level group and a provider level group with the same name is ok.
-        (is (= {:status 409
-                :errors [(format "A system group with name [%s] already exists with concept id %s."
-                                 (:name group) concept-id)]}
-               (u/create-group token group))))
+        (testing "Is rejected for another system group"
+          (is (= {:status 409
+                  :errors [(format "A system group with name [%s] already exists with concept id [%s]."
+                                   (:name group) concept-id)]}
+                 (u/create-group token group))))
+
+        (testing "Works for a different provider"
+          (is (= 200 (:status (u/create-group token (assoc group :provider-id "PROV1")))))))
 
       ;; TODO CMR-2131 uncomment when implementing delete
       #_(testing "Creation of previously deleted group"
@@ -102,6 +104,59 @@
       (is (= 200 status))
       (is concept-id)
       (is (= 1 revision-id)))))
+
+(deftest create-provider-group-test
+  (testing "Successful creation"
+    (let [group (assoc (u/make-group) :provider-id "PROV1")
+          token (e/login (u/conn-context) "user1")
+          {:keys [status concept-id revision-id]} (u/create-group token group)]
+      (is (= 200 status))
+      (is (re-matches #"AG\d+-PROV1" concept-id) "Incorrect concept id for a provider group")
+      (is (= 1 revision-id))
+      (u/assert-group-saved group "user1" concept-id revision-id)
+
+      (testing "Creation with an already existing name"
+        (testing "Is rejected for the same provider"
+          (is (= {:status 409
+                  :errors [(format
+                            "A provider group with name [%s] already exists with concept id [%s] for provider [PROV1]."
+                            (:name group) concept-id)]}
+                 (u/create-group token group))))
+
+        (testing "Works for a different provider"
+          (is (= 200 (:status (u/create-group token (assoc group :provider-id "PROV2")))))))))
+  (testing "Creation for a non-existant provider"
+    (is (= {:status 404
+            :errors ["Provider with provider-id [NOT_EXIST] does not exist."]}
+           (u/create-group (e/login (u/conn-context) "user1")
+                           (assoc (u/make-group) :provider-id "NOT_EXIST"))))))
+
+(deftest get-group-test
+  (let [group (u/make-group)
+        token (e/login (u/conn-context) "user1")
+        {:keys [concept-id]} (u/create-group token group)]
+    (testing "Retrieve existing group"
+      (is (= (assoc group :status 200)
+             (u/get-group concept-id))))
+
+    (testing "Retrieve unknown group"
+      (is (= {:status 404
+              :errors ["Group could not be found with concept id [AG100-CMR]"]}
+             (u/get-group "AG100-CMR"))))
+    (testing "Retrieve group with bad concept-id"
+      (is (= {:status 400
+              :errors ["Concept-id [F100-CMR] is not valid."]}
+             (u/get-group "F100-CMR"))))
+    (testing "Retrieve group with bad provider in concept id"
+      (is (= {:status 400
+              :errors ["[T100-PROV1] is not a valid group concept id."]}
+             (u/get-group "T100-PROV1"))))
+    ;; TODO CMR-2131 uncomment when implementing delete
+    #_(testing "Retrieve deleted group"
+        (u/delete-group token concept-id)
+        (is (= {:status 404
+                :errors [(format "Group with concept id [%s] was deleted." concept-id)]}
+               (u/get-group concept-id))))))
 
 
 

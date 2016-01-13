@@ -4,6 +4,7 @@
             [cmr.transmit.config :as config]
             [cmr.transmit.echo.tokens :as tokens]
             [cmr.transmit.metadata-db2 :as mdb]
+            [cmr.transmit.metadata-db :as mdb-old]
             [cmr.access-control.system :as system]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.mock-echo.system :as mock-echo-system]
@@ -69,14 +70,21 @@
      mdb-system/stop)]))
 
 (defn reset-fixture
-  "Test fixture that resets the application before each test."
-  [f]
-  (mock-echo-client/reset (conn-context))
-  (mdb/reset (conn-context))
-  (ac/reset (conn-context))
-  ;; Temporarily granting all admin. Remove this when implementing  CMR-2133, CMR-2134
-  (e/grant-all-admin (conn-context))
-  (f))
+  "Test fixture that resets the application before each test and creates providers listed"
+  ([]
+   (reset-fixture nil))
+  ([provider-map]
+   (fn [f]
+     (mock-echo-client/reset (conn-context))
+     (mdb/reset (conn-context))
+     (ac/reset (conn-context))
+     (doseq [[provider-guid provider-id] provider-map]
+       (mdb-old/create-provider (conn-context) {:provider-id provider-id}))
+     (e/create-providers (conn-context) provider-map)
+     ;; Temporarily granting all admin. Remove this when implementing  CMR-2133, CMR-2134
+     (e/grant-all-admin (conn-context))
+
+     (f))))
 
 (defn grant-all-group-fixture
   "Creates A test fixture that grants all users the ability to create and modify groups for the given providers"
@@ -144,7 +152,7 @@
   (let [concept (mdb/get-concept (conn-context) concept-id revision-id)]
     (is (= {:concept-type :access-group
             :native-id (:name group)
-            :provider-id "CMR"
+            :provider-id (:provider-id group "CMR")
             :format mt/edn
             :metadata (pr-str group)
             :user-id user-id
@@ -159,7 +167,7 @@
   (let [concept (mdb/get-concept (conn-context) concept-id revision-id)]
     (is (= {:concept-type :access-group
             :native-id (:name group)
-            :provider-id "CMR"
+            :provider-id (:provider-id group "CMR")
             :metadata ""
             :format mt/edn
             :user-id user-id

@@ -20,6 +20,13 @@
          :test-paths ["test" "int_test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}
+
+   ;; This profile specifically here for generating documentation. It's faster than using the regular
+   ;; profile. We're not sure why though. There must be something hooking into the regular profile
+   ;; that's running at the end.
+   ;; Generate docs with: lein with-profile docs generate-docs
+   :docs {}
+
    :uberjar {:main cmr.access-control.runner
              :aot :all}}
   :aliases {"generate-docs" ["exec" "-ep" (pr-str '(do

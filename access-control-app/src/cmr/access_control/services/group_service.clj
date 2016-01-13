@@ -1,10 +1,13 @@
 (ns cmr.access-control.services.group-service
     "Provides functions for creating, updating, deleting, retrieving, and finding groups."
     (:require [cmr.transmit.metadata-db2 :as mdb]
+              [cmr.transmit.metadata-db :as mdb-legacy]
               [cmr.transmit.echo.tokens :as tokens]
+              [cmr.common.concepts :as concepts]
               [cmr.common.services.errors :as errors]
               [cmr.common.mime-types :as mt]
-              [cmr.access-control.services.group-service-messages :as msg]))
+              [cmr.access-control.services.group-service-messages :as msg]
+              [clojure.edn :as edn]))
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
@@ -35,6 +38,30 @@
    :revision-id 1
    :format mt/edn})
 
+(defn- fetch-group-concept
+  "Fetches the latest version of a group concept by concept id"
+  [context concept-id]
+  (let [{:keys [concept-type provider-id]} (concepts/parse-concept-id concept-id)]
+    (when (not= :access-group concept-type)
+      (errors/throw-service-error :bad-request (msg/bad-group-concept-id concept-id))))
+
+  (if-let [concept (mdb/get-latest-concept context concept-id false)]
+    (if (:deleted concept)
+      (errors/throw-service-error :not-found (msg/group-deleted concept-id))
+      concept)
+    (errors/throw-service-error :not-found (msg/group-does-not-exist concept-id))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Validations
+
+(defn validate-group-provider-exists
+  "Validates that the groups provider exists."
+  [context {:keys [provider-id]}]
+  (when (and provider-id
+             (not (some #{provider-id} (map :provider-id (mdb-legacy/get-providers context)))))
+    (errors/throw-service-error :not-found (msg/provider-does-not-exist provider-id))))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Service level functions
 
@@ -42,6 +69,7 @@
   "Creates the group by saving it to Metadata DB. Returns a map of the concept id and revision id of
   the created group."
   [context group]
+  (validate-group-provider-exists context group)
   ;; Check if the group already exists
   (if-let [concept-id (mdb/get-concept-id context
                                           :access-group
@@ -66,3 +94,8 @@
 
     ;; The group doesn't exist
     (mdb/save-concept context (group->new-concept context group))))
+
+(defn get-group
+  "Retrieves a group with the given concept id."
+  [context concept-id]
+  (edn/read-string (:metadata (fetch-group-concept context concept-id))))

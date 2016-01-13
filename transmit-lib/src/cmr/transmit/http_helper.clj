@@ -41,7 +41,7 @@
             (format "Received unexpected status code %s with response %s"
                     status (pr-str resp)))))
 
-(defn- handle-raw-update-response
+(defn handle-raw-write-response
   "Handles a raw response to an update request. Any non successful request is considered an error."
   [{:keys [status body] :as resp}]
   (if (<= 200 status 299)
@@ -72,7 +72,7 @@
     (cond
       raw? response
       (= method :get) (handle-raw-fetch-response response)
-      :else (handle-raw-update-response response))))
+      :else (handle-raw-write-response response))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CRUD Macros
@@ -98,15 +98,15 @@
       (let [{is-raw?# :is-raw? token# :token http-options# :http-options} options#
             token# (or token# (:token context#))
             headers# (when token# {config/token-header token#})]
-        (h/request context# ~app-name
-                   {:url-fn ~url-fn
-                    :method :post
-                    :raw? is-raw?#
-                    :http-options (merge {:body (json/generate-string item#)
-                                          :content-type :json
-                                          :headers headers#
-                                          :accept :json}
-                                         http-options#)})))))
+        (request context# ~app-name
+                 {:url-fn ~url-fn
+                  :method :post
+                  :raw? is-raw?#
+                  :http-options (merge {:body (json/generate-string item#)
+                                        :content-type :json
+                                        :headers headers#
+                                        :accept :json}
+                                       http-options#)})))))
 
 (defmacro defupdater
   "Creates a function that can be used to send standard requests to updater an item using JSON. The
@@ -124,16 +124,26 @@
      ([context# concept-id# item# options#]
       (let [{is-raw?# :is-raw? token# :token http-options# :http-options} options#
             token# (or token# (:token context#))
-            headers# (when token# {config/token-header token#})]
-        (h/request context# ~app-name
-                   {:url-fn #(~url-fn % concept-id#)
-                    :method :put
-                    :raw? is-raw?#
-                    :http-options (merge {:body (json/generate-string item#)
-                                          :content-type :json
-                                          :headers headers#
-                                          :accept :json}
-                                         http-options#)})))))
+            headers# (when token# {config/token-header token#})
+            response# (request context# ~app-name
+                               {:url-fn #(~url-fn % concept-id#)
+                                :method :put
+                                :raw? true
+                                :http-options (merge {:body (json/generate-string item#)
+                                                      :content-type :json
+                                                      :headers headers#
+                                                      :accept :json}
+                                                     http-options#)})]
+        (cond
+          is-raw?#
+          response#
+
+          (= 404 (:status response#))
+          (errors/throw-service-error
+           :not-found (format "Item could not be found with id [%s]" concept-id#))
+
+          :else
+          (handle-raw-write-response response#))))))
 
 (defmacro defdestroyer
   "Creates a function that can be used to send standard requests to delete an item using JSON. The
@@ -152,13 +162,13 @@
       (let [{is-raw?# :is-raw? token# :token http-options# :http-options} options#
             token# (or token# (:token context#))
             headers# (when token# {config/token-header token#})]
-        (h/request context# ~app-name
-                   {:url-fn #(~url-fn % concept-id#)
-                    :method :delete
-                    :raw? is-raw?#
-                    :http-options (merge {:headers headers#
-                                          :accept :json}
-                                         http-options#)})))))
+        (request context# ~app-name
+                 {:url-fn #(~url-fn % concept-id#)
+                  :method :delete
+                  :raw? is-raw?#
+                  :http-options (merge {:headers headers#
+                                        :accept :json}
+                                       http-options#)})))))
 
 
 (defmacro defgetter
@@ -178,12 +188,12 @@
       (let [{is-raw?# :is-raw? token# :token http-options# :http-options} options#
             token# (or token# (:token context#))
             headers# (when token# {config/token-header token#})]
-        (h/request context# ~app-name
-                   {:url-fn #(~url-fn % concept-id#)
-                    :method :get
-                    :raw? is-raw?#
-                    :http-options (merge {:headers headers# :accept :json}
-                                         http-options#)})))))
+        (request context# ~app-name
+                 {:url-fn #(~url-fn % concept-id#)
+                  :method :get
+                  :raw? is-raw?#
+                  :http-options (merge {:headers headers# :accept :json}
+                                       http-options#)})))))
 
 (defmacro defsearcher
   "Creates a function that can be used to send find items matching parameters."
@@ -201,14 +211,14 @@
       (let [{is-raw?# :is-raw? token# :token http-options# :http-options} options#
             token# (or token# (:token context#))
             headers# (when token# {config/token-header token#})]
-        (h/request context# ~app-name
-                   {:url-fn ~url-fn
-                    :method :get
-                    :raw? is-raw?#
-                    :http-options (merge {:headers headers#
-                                          :query-params params#
-                                          :accept :json}
-                                         http-options#)})))))
+        (request context# ~app-name
+                 {:url-fn ~url-fn
+                  :method :get
+                  :raw? is-raw?#
+                  :http-options (merge {:headers headers#
+                                        :query-params params#
+                                        :accept :json}
+                                       http-options#)})))))
 
 
 

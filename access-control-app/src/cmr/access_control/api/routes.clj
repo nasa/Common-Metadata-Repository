@@ -64,6 +64,13 @@
        (group-service/create-group context)
        api-response))
 
+(defn get-group
+  "Retrieves the group with the given concept-id."
+  [context concept-id]
+  (-> (group-service/get-group context concept-id)
+      api-response))
+
+
 (def admin-api-routes
   "The administrative control routes."
   (routes
@@ -86,7 +93,13 @@
         (POST "/" {:keys [request-context headers body]}
           ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
           (acl/verify-ingest-management-permission request-context :update)
-          (create-group request-context headers (slurp body)))))
+          (create-group request-context headers (slurp body)))
+
+        (context "/:group-id" [group-id]
+          ;; Get a group
+          (GET "/" {:keys [request-context]}
+            (get-group request-context group-id)))))
+
     (route/not-found "Not Found")))
 
 (defn make-api [system]
