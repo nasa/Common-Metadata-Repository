@@ -95,7 +95,7 @@
         coll21 (d/ingest "PROV2" (dc/collection {:entry-title "coll21" :long-name "ABC!"}))
         coll22 (d/ingest "PROV2" (dc/collection {:collection-data-type "NEAR_REAL_TIME"}))
         coll23 (d/ingest "PROV1" (dc/collection {:entry-title "coll23" :long-name "\"Quoted\" collection" }))
-        coll24 (d/ingest "PROV2" (dc/collection {:entry-title "coll24" :platforms [p4]}))]
+        coll24 (d/ingest "PROV2" (dc/collection {:entry-title "coll24" :short-name "coll24" :platforms [p4]}))]
 
     (index/wait-until-indexed)
 
