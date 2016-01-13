@@ -212,8 +212,7 @@
    (group-concept provider-id uniq-num {}))
   ([provider-id uniq-num attributes]
    (let [attributes (merge {:user-id (str "user" uniq-num)
-                            :format "application/edn"
-                            :extra-fields {}}
+                            :format "application/edn"}
                            attributes)]
      (concept provider-id :access-group uniq-num attributes))))
 

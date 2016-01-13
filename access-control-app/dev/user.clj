@@ -26,8 +26,8 @@
 
 (def use-external-db?
   "Set to true to use the Oracle DB"
-  true)
-  ; false
+  ; true
+  false)
 
 (defn start
   "Starts the current development system."
