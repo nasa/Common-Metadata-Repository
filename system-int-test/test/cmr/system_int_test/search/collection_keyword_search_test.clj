@@ -351,7 +351,11 @@
                                                 :keyword ["Laser" "spoon"]})
             {:keys [status errors]} resp]
         (is (= 400 status))
-        (is (= "Parameter [keyword] must have a single value." (first errors)))))))
+        (is (= "Parameter [keyword] must have a single value." (first errors)))))
+
+    (testing "JSON negated keyword search does not return score"
+      (let [refs (search/find-refs-with-json-query :collection {} {:not {:keyword "Laser"}})]
+        (is (not-any? :score (:refs refs)))))))
 
 (deftest search-by-keywords-with-special-chars
   ;; needed for special charatcter tests
