@@ -72,6 +72,7 @@
   (mock-echo-client/reset (conn-context))
   (mdb/reset (conn-context))
   (ac/reset (conn-context))
+  ;; Temporarily granting all admin. Remove this when implementing  CMR-2133, CMR-2134
   (e/grant-all-admin (conn-context))
   (f))
 
