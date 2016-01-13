@@ -90,9 +90,11 @@
 
       (is (= (expected-conversion/convert user/failing-value :serf)
            (xml-round-trip :service :serf user/failing-value)))
-
-            (is (= (:Responsibilities (expected-conversion/convert user/failing-value :serf))
-           (:Responsibilities (xml-round-trip :service :serf user/failing-value))))
+      
+      (= (type (expected-conversion/convert user/failing-value :serf)) (type (xml-round-trip :service :serf user/failing-value)))
+            
+            (is (= (:Platforms (expected-conversion/convert user/failing-value :serf))
+           (:Platforms (xml-round-trip :service :serf user/failing-value))))
 
   (is (= (:Responsibilities (expected-conversion/convert expected-conversion/example-service-record :serf))
     (:Responsibilities (xml-round-trip :service :serf expected-conversion/example-service-record))))

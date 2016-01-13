@@ -227,8 +227,9 @@
        [:ISO_Topic_Category topic-category])
      (for [ak (:AncillaryKeywords s)]
        [:Keyword ak])
-     (create-sensors s)
-     (create-source-names s)
+     ;;Removing Instruments and Platforms conversion until we can get better parsing code
+     ;;(create-sensors s)
+     ;;(create-source-names s)
      (create-projects s)
      [:Quality (:Quality s)]
      [:Access_Constraints (:Description (:AccessConstraints s))]

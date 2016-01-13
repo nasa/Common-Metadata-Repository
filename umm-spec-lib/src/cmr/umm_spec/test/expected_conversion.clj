@@ -779,11 +779,17 @@
       (assoc :ContactInstructions nil :ServiceHours nil)
       (update-in [:Addresses] serf-expected-addresses)))
 
+(defn- expected-related-urls-for-serf-party
+  [related-urls]
+  (seq 
+    (for [related-url (take 1 related-urls)]
+      (cmn/map->RelatedUrlType {:URLs (take 1 (:URLs related-url))}))))
+
 (defn- expected-serf-responsibility
   [resp]
   (cmr.common.dev.capture-reveal/capture resp)
   (-> resp
-      (update-in [:Party :RelatedUrls] expected-related-urls-for-dif-serf)
+      (update-in [:Party :RelatedUrls] expected-related-urls-for-serf-party)
       fix-organization-name-in-party
       (update-in [:Party :Contacts] expected-serf-contacts)
       (update-in [:Party] remove-party-elements-not-in-serf)
@@ -878,6 +884,7 @@
       (update-in [:MetadataAssociations] fix-metadata-associations)
       (update-in-each [:PublicationReferences] fix-serf-doi)
       (update-in-each [:PublicationReferences] update-in [:RelatedUrl] fix-publication-reference-url)
+      (assoc :Platforms nil)
       ))
 
 ;; ISO 19115-2

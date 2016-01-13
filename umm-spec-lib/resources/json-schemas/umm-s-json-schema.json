@@ -14,7 +14,8 @@
         },
         "DistributionSize": {
           "description": "The size of the distribution package of the data or service.",
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "DistributionFormat": {
           "description": "The distribution format of the data.",
