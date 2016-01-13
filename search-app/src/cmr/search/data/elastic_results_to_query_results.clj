@@ -14,11 +14,14 @@
   (fn [context query elastic-results]
     [(:concept-type query) (:result-format query)]))
 
-(defmethod elastic-results->query-results :default
+(defn default-elastic-results->query-results
+  "Default function for converting elastic-results to query-results"
   [context query elastic-results]
   (let [hits (get-in elastic-results [:hits :total])
         elastic-matches (get-in elastic-results [:hits :hits])
         items (mapv (partial elastic-result->query-result-item context query) elastic-matches)]
     (results/map->Results {:hits hits :items items :result-format (:result-format query)})))
 
-
+(defmethod elastic-results->query-results :default
+  [context query elastic-results]
+  (default-elastic-results->query-results context query elastic-results))

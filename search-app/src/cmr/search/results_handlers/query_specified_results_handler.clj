@@ -26,6 +26,11 @@
 
 (doseq [concept-type [:collection :granule :tag]]
 
+  (defmethod elastic-results/elastic-results->query-results [concept-type :query-specified]
+    [context query elastic-results]
+    (assoc (elastic-results/default-elastic-results->query-results context query elastic-results)
+           :aggregations (:aggregations elastic-results)))
+
   (defmethod elastic-search-index/concept-type+result-format->fields [concept-type :query-specified]
     [concept-type query]
     (map name (:fields query)))
