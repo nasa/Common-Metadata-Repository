@@ -30,6 +30,12 @@
               ["The mime types specified in the content-type header [application/xml] are not supported."]}
              (u/create-group valid-user-token valid-group {:http-options {:content-type :xml}}))))
 
+    (testing "Create group with invalid JSON"
+      (is (= {:status 400,
+              :errors
+              ["Invalid JSON: Unexpected character ('{' (code 123)): was expecting double-quote to start field name\n at  line: 1, column: 3]"]}
+             (u/create-group valid-user-token valid-group {:http-options {:body "{{{"}}))))
+
     (testing "Missing field validations"
       (are [field]
         (= {:status 400
