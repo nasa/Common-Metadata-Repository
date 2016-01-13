@@ -312,7 +312,10 @@
                (println "Expected:" (map :entry-title items))
                (println "Actual:" (map :name (:refs refs))))
              matches?)
-           "Laser spoonA" [coll14 coll9]))
+           "Laser spoonA" [coll14 coll9]
+           "La?er spoonA" [coll14 coll9]
+           "L*er spo*A" [coll14 coll9]
+           "L?s* s?o*A" [coll14 coll9]))
 
     (testing "sorted search by keywords JSON query."
       (are [keyword-str items]
