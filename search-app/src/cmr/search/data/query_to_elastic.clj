@@ -63,6 +63,24 @@
                  query-string-reserved-characters-regex
                  "\\\\$1")))
 
+(defn- keywords-in-condition
+  "Returns a list of keywords if the condition contains a keyword condition or nil if not."
+  [condition]
+  (when (not= (type condition) cmr.search.models.query.NegatedCondition)
+    (or (when (= :keyword (:field condition))
+          (str/split (str/lower-case (:query-str condition)) #" "))
+        ;; Call this function recursively on nested conditions, e.g., AND or OR conditions.
+        (when-let [conds (:conditions condition)]
+          (some #(keywords-in-condition %1) conds))
+        ;; Call this function recursively for a single nested condition.
+        (when-let [con (:condition condition)] (keywords-in-condition con)))))
+
+(defn- keywords-in-query
+  "Returns a list of keywords if the query contains a keyword condition or nil if not.
+  Used to set sort and use function score for keyword queries."
+  [query]
+  (keywords-in-condition (:condition query)))
+
 (defprotocol ConditionToElastic
   "Defines a function to map from a query to elastic search query"
   (condition->elastic
@@ -74,11 +92,12 @@
   [query]
   (let [{:keys [concept-type condition keywords]} (query-expense/order-conditions query)
         core-query (condition->elastic condition concept-type)]
-    (if-let [keywords (:keywords query)]
+    (if-let [keywords (keywords-in-query query)]
       ;; function_score query allows us to compute a custom relevance score for each document
       ;; matched by the primary query. The final document relevance is given by multiplying
       ;; a boosting term for each matching filter in a set of filters.
-      {:function_score {:functions (k2e/keywords->boosted-elastic-filters keywords)
+      {:function_score {:score_mode :multiply
+                        :functions (k2e/keywords->boosted-elastic-filters keywords)
                         :query {:filtered {:query (q/match-all)
                                            :filter core-query}}}}
       {:filtered {:query (q/match-all)
@@ -110,25 +129,33 @@
              :sensor :sensor-sn.lowercase
              :project :project-refs.lowercase}})
 
+(defn- sort-keys->elastic-sort
+  "Converts sort keys into the proper elastic sort condition."
+  [concept-type sort-keys]
+  (seq (map (fn [{:keys [order field]}]
+              {(get-in sort-key-field->elastic-field [concept-type field] (name field))
+                {:order order}})
+            sort-keys)))
+
+(def sub-sorts
+  "Sub sorting applied per concept type to preserve paging, etc."
+  {:collection [{:concept-seq-id {:order "asc"}} {:revision-id {:order "desc"}}]
+   :granule [{:concept-seq-id {:order "asc"}}]
+   :tag [{:concept-id {:order "asc"}}]})
+
 (defn query->sort-params
   "Converts a query into the elastic parameters for sorting results"
   [query]
   (let [{:keys [concept-type sort-keys]} query
-        default-sorts (case concept-type
-                        :collection
-                        [{:concept-seq-id {:order "asc"}} {:revision-id {:order "desc"}}]
-                        :granule
-                        [{:concept-seq-id {:order "asc"}}]
-                        :tag
-                        [{:concept-id {:order "asc"}}])
-        specified-sort (map (fn [{:keys [order field]}]
-                              {(get-in sort-key-field->elastic-field [concept-type field] (name field))
-                               {:order order}})
-                            sort-keys)]
+        ;; If the sort keys are given as parameters then keyword-sort will not be used.
+        keyword-sort (when (keywords-in-query query)
+                       [{:_score {:order :desc}}])
+        specified-sort (sort-keys->elastic-sort concept-type sort-keys)
+        default-sort (sort-keys->elastic-sort concept-type (qm/default-sort-keys concept-type))]
     ;; Sorting within elastic if the sort keys match is essentially random. We add a globally unique
     ;; sort to the end of the specified sort keys so that sorting is always the same. This makes
     ;; paging and query results consistent.
-    (concat specified-sort default-sorts)))
+    (concat (or specified-sort keyword-sort default-sort) (sub-sorts concept-type))))
 
 (defn field->lowercase-field
   "Maps a field name to the name of the lowercase field to use within elastic.

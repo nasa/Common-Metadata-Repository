@@ -22,11 +22,11 @@
   {:function_score {
   :functions [
   {
-  :boost_factor 1.4
+  :weight 1.4
   :filter {...}
   }
   {
-  :boost_factor 1.2
+  :weight 1.2
   :filter {...}
   }
   ]
@@ -100,7 +100,7 @@
   "Create a filter for keyword searches that checks for a loose match on one field or an
   exact match on another"
   [regex-field exact-field keywords boost]
-  {:boost_factor boost
+  {:weight boost
    :filter {:or [{:and (map (partial keyword-regexp-filter regex-field) keywords)}
                  {:or (map (partial keyword-exact-match-filter exact-field) keywords)}]}})
 
@@ -115,7 +115,7 @@
 (defn keywords->sk-filter
   "Create a filter for keyword searches that checks science keywords"
   [keywords boost]
-  {:boost_factor boost
+  {:weight boost
    :filter {:nested {:path :science-keywords
                      :filter {:or (science-keywords-or-filter (str/join " " keywords))}}}})
 
@@ -123,7 +123,7 @@
   "Create a boosted filter for keyword searches that requires an exact match on the given field"
   [field keywords boost]
   (let [keyword (str/join " " keywords)]
-    {:boost_factor boost
+    {:weight boost
      :filter (keyword-exact-match-filter field keyword)}))
 
 (defn keywords->boosted-elastic-filters

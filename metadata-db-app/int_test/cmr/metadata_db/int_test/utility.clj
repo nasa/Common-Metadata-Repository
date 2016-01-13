@@ -24,19 +24,29 @@
   (when-not @conn-mgr-atom
     (reset! conn-mgr-atom  (conn-mgr/make-reusable-conn-manager {}))))
 
-(def concepts-url (str "http://localhost:" (config/metadata-db-port) "/concepts/"))
+(defn concepts-url
+  []
+  (str "http://localhost:" (transmit-config/metadata-db-port) "/concepts/"))
 
-(def concept-id-url (str "http://localhost:" (config/metadata-db-port) "/concept-id/"))
+(defn concept-id-url
+  []
+  (str "http://localhost:" (transmit-config/metadata-db-port) "/concept-id/"))
 
-(def reset-url (str "http://localhost:" (config/metadata-db-port) "/reset"))
+(defn reset-url
+  []
+  (str "http://localhost:" (transmit-config/metadata-db-port) "/reset"))
 
-(def old-revision-concept-cleanup-url
-  (str "http://localhost:" (config/metadata-db-port) "/jobs/old-revision-concept-cleanup"))
+(defn old-revision-concept-cleanup-url
+  []
+  (str "http://localhost:" (transmit-config/metadata-db-port) "/jobs/old-revision-concept-cleanup"))
 
-(def expired-concept-cleanup-url
-  (str "http://localhost:" (config/metadata-db-port) "/jobs/expired-concept-cleanup"))
+(defn expired-concept-cleanup-url
+  []
+  (str "http://localhost:" (transmit-config/metadata-db-port) "/jobs/expired-concept-cleanup"))
 
-(def providers-url (str "http://localhost:" (config/metadata-db-port) "/providers"))
+(defn providers-url
+  []
+  (str "http://localhost:" (transmit-config/metadata-db-port) "/providers"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; utility methods
@@ -202,8 +212,7 @@
    (group-concept provider-id uniq-num {}))
   ([provider-id uniq-num attributes]
    (let [attributes (merge {:user-id (str "user" uniq-num)
-                            :format "application/edn"
-                            :extra-fields {}}
+                            :format "application/edn"}
                            attributes)]
      (concept provider-id :access-group uniq-num attributes))))
 
@@ -254,7 +263,7 @@
 (defn get-concept-id
   "Make a GET to retrieve the id for a given concept-type, provider-id, and native-id."
   [concept-type provider-id native-id]
-  (let [response (client/get (str concept-id-url (name concept-type) "/" provider-id "/" native-id)
+  (let [response (client/get (str (concept-id-url) (name concept-type) "/" provider-id "/" native-id)
                              {:accept :json
                               :throw-exceptions false
                               :connection-manager (conn-mgr)})
@@ -266,7 +275,7 @@
 (defn get-concept-by-id-and-revision
   "Make a GET to retrieve a concept by concept-id and revision."
   [concept-id revision-id]
-  (let [response (client/get (str concepts-url concept-id "/" revision-id)
+  (let [response (client/get (str (concepts-url) concept-id "/" revision-id)
                              {:accept :json
                               :throw-exceptions false
                               :connection-manager (conn-mgr)})
@@ -278,7 +287,7 @@
 (defn get-concept-by-id
   "Make a GET to retrieve a concept by concept-id."
   [concept-id]
-  (let [response (client/get (str concepts-url concept-id)
+  (let [response (client/get (str (concepts-url) concept-id)
                              {:accept :json
                               :throw-exceptions false
                               :connection-manager (conn-mgr)})
@@ -296,7 +305,7 @@
                         {}
                         {:allow_missing allow-missing?})
          path "search/concept-revisions"
-         response (client/post (str concepts-url path)
+         response (client/post (str (concepts-url) path)
                                {:query-params query-params
                                 :body (json/generate-string tuples)
                                 :content-type :json
@@ -318,7 +327,7 @@
                         {}
                         {:allow_missing allow-missing?})
          path "search/latest-concept-revisions"
-         response (client/post (str concepts-url path)
+         response (client/post (str (concepts-url) path)
                                {:query-params query-params
                                 :body (json/generate-string concept-ids)
                                 :content-type :json
@@ -334,7 +343,7 @@
 (defn find-concepts
   "Make a get to retrieve concepts by parameters for a specific concept type"
   [concept-type params]
-  (let [response (client/get (str concepts-url "search/" (inf/plural (name concept-type)))
+  (let [response (client/get (str (concepts-url) "search/" (inf/plural (name concept-type)))
                              {:query-params params
                               :accept :json
                               :throw-exceptions false
@@ -353,7 +362,7 @@
 (defn get-expired-collection-concept-ids
   "Make a get to retrieve expired collection concept ids."
   [provider-id]
-  (let [response (client/get (str concepts-url "search/expired-collections")
+  (let [response (client/get (str (concepts-url) "search/expired-collections")
                              {:query-params (when provider-id {:provider provider-id})
                               :accept :json
                               :throw-exceptions false
@@ -367,7 +376,7 @@
 (defn- save-concept-core
   "Fundamental save operation"
   [concept]
-  (let [response (client/post concepts-url
+  (let [response (client/post (concepts-url)
                               {:body (json/generate-string concept)
                                :content-type :json
                                :accept :json
@@ -400,8 +409,8 @@
    (delete-concept concept-id revision-id nil))
   ([concept-id revision-id revision-date]
    (let [url (if revision-id
-               (format "%s%s/%s" concepts-url concept-id revision-id)
-               (format "%s%s" concepts-url concept-id))
+               (format "%s%s/%s" (concepts-url) concept-id revision-id)
+               (format "%s%s" (concepts-url) concept-id))
          query-params (when revision-date
                         {:revision-date (str revision-date)})
          response (client/delete url
@@ -416,7 +425,7 @@
 (defn force-delete-concept
   "Make a DELETE request to permanently remove a revison of a concept."
   [concept-id revision-id]
-  (let [url (format "%sforce-delete/%s/%s" concepts-url concept-id revision-id)
+  (let [url (format "%sforce-delete/%s/%s" (concepts-url) concept-id revision-id)
         response (client/delete url
                                 {:throw-exceptions false
                                  :connection-manager (conn-mgr)})
@@ -534,7 +543,7 @@
   "Make a POST request to save a provider with JSON encoding of the provider. Returns a map with
   status and a list of error messages."
   [params]
-  (let [response (client/post providers-url
+  (let [response (client/post (providers-url)
                               {:body (json/generate-string
                                        (util/remove-nil-keys params))
                                :content-type :json
@@ -549,7 +558,7 @@
 (defn get-providers
   "Make a GET request to retrieve the list of providers."
   []
-  (let [response (client/get providers-url
+  (let [response (client/get (providers-url)
                              {:accept :json
                               :throw-exceptions false
                               :connection-manager (conn-mgr)})
@@ -563,7 +572,7 @@
   "Updates the provider with the given parameters, which is a map of key and value for
   provider-id, short-name, cmr-only and small fields of the provider."
   [params]
-  (let [response (client/put (format "%s/%s" providers-url (:provider-id params))
+  (let [response (client/put (format "%s/%s" (providers-url) (:provider-id params))
                              {:body (json/generate-string params)
                               :content-type :json
                               :accept :json
@@ -579,7 +588,7 @@
 (defn delete-provider
   "Make a DELETE request to remove a provider."
   [provider-id]
-  (let [response (client/delete (format "%s/%s" providers-url provider-id)
+  (let [response (client/delete (format "%s/%s" (providers-url) provider-id)
                                 {:accept :json
                                  :throw-exceptions false
                                  :connection-manager (conn-mgr)
@@ -605,7 +614,7 @@
   "Runs the old revision concept cleanup job"
   []
   (:status
-    (client/post old-revision-concept-cleanup-url
+    (client/post (old-revision-concept-cleanup-url)
                  {:throw-exceptions false
                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                   :connection-manager (conn-mgr)})))
@@ -614,7 +623,7 @@
   "Runs the expired concept cleanup job"
   []
   (:status
-    (client/post expired-concept-cleanup-url
+    (client/post (expired-concept-cleanup-url)
                  {:throw-exceptions false
                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                   :connection-manager (conn-mgr)})))
@@ -623,9 +632,9 @@
   "Make a request to reset the database by clearing out all stored concepts."
   []
   (:status
-    (client/post reset-url {:throw-exceptions false
-                            :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                            :connection-manager (conn-mgr)})))
+   (client/post (reset-url) {:throw-exceptions false
+                             :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                             :connection-manager (conn-mgr)})))
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn reset-database-fixture

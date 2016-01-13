@@ -20,7 +20,8 @@
             [cmr.search.services.acls.collections-cache :as coll-cache]
             [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
             [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.search.services.transformer :as transformer]))
+            [cmr.search.services.transformer :as transformer]
+            [cmr.common-app.system :as common-sys]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
@@ -103,11 +104,9 @@
   and start it running. Returns an updated instance of the system."
   [this]
   (info "System starting")
-  (let [started-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/start % system))))
-                               (update-in this [:embedded-systems :metadata-db] mdb-system/start)
-                               component-order)]
+  (let [started-system (-> this
+                           (update-in [:embedded-systems :metadata-db] mdb-system/start)
+                           (common-sys/start component-order))]
     (info "System started")
     started-system))
 
@@ -117,11 +116,8 @@
   resources. Returns an updated instance of the system."
   [this]
   (info "System shutting down")
-  (let [stopped-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/stop % system))))
-                               this
-                               (reverse component-order))
-        stopped-system (update-in stopped-system [:embedded-systems :metadata-db] mdb-system/stop)]
+  (let [stopped-system (-> this
+                           (common-sys/stop component-order)
+                           (update-in [:embedded-systems :metadata-db] mdb-system/stop))]
     (info "System stopped")
     stopped-system))

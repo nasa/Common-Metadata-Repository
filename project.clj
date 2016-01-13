@@ -16,7 +16,8 @@
   :description "Top level project to support all CMR libraries and applications."
   :plugins [[lein-modules "0.3.11"]]
 
-  :profiles {:uberjar {:modules {:dirs ["cubby-app"
+  :profiles {:uberjar {:modules {:dirs ["access-control-app"
+                                        "cubby-app"
                                         "bootstrap-app"
                                         "index-set-app"
                                         "indexer-app"

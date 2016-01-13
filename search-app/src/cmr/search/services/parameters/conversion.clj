@@ -371,8 +371,7 @@
                               (parameter->condition concept-type param value options))
                             params)]
         (qm/query (assoc query-attribs
-                         :condition (gc/and-conds conditions)
-                         :keywords keywords))))))
+                         :condition (gc/and-conds conditions)))))))
 
 (defn timeline-parameters->query
   "Converts parameters from a granule timeline request into a query."

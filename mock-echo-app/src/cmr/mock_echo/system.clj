@@ -9,9 +9,9 @@
             [cmr.mock-echo.data.token-db :as token-db]
             [cmr.mock-echo.data.provider-db :as provider-db]
             [cmr.mock-echo.data.acl-db :as acl-db]
-            [cmr.common.api.context :as context]))
-
-(def PORT 3008)
+            [cmr.transmit.config :as transmit-config]
+            [cmr.common.api.context :as context]
+            [cmr.common-app.system :as common-sys]))
 
 (def
   ^{:doc "Defines the order to start the components."
@@ -25,31 +25,15 @@
    :token-db (token-db/create-db)
    :provider-db (provider-db/create-db)
    :acl-db (acl-db/create-db)
-   :web (web/create-web-server PORT routes/make-api)})
+   :web (web/create-web-server (transmit-config/echo-rest-port) routes/make-api)})
 
-(defn start
+(def start
   "Performs side effects to initialize the system, acquire resources,
   and start it running. Returns an updated instance of the system."
-  [this]
-  (info "mock-echo System starting")
-  (let [started-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/start % system))))
-                               this
-                               component-order)]
-    (info "mock-echo System started")
-    started-system))
+  (common-sys/start-fn "mock-echo" component-order))
 
-
-(defn stop
+(def stop
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
-  [this]
-  (info "mock-echo System shutting down")
-  (let [stopped-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/stop % system))))
-                               this
-                               (reverse component-order))]
-    (info "mock-echo System stopped")
-    stopped-system))
+  (common-sys/stop-fn "mock-echo" component-order))
+

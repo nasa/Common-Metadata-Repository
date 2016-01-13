@@ -10,7 +10,8 @@
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.elastic-utils.config :as es-config]
             [cmr.cubby.data.elastic-cache-store :as elastic-cache-store]
-            [cmr.transmit.config :as transmit-config]))
+            [cmr.transmit.config :as transmit-config]
+            [cmr.common-app.system :as common-sys]))
 
 (defconfig cubby-nrepl-port
   "Port to listen for nREPL connections"
@@ -31,18 +32,15 @@
              :relative-root-url (transmit-config/cubby-relative-root-url)}]
     (transmit-config/system-with-connections sys [:echo-rest])))
 
-(defn start
+(def start
   "Performs side effects to initialize the system, acquire resources,
   and start it running. Returns an updated instance of the system."
-  [this]
-  (info "cubby System starting")
-  (let [started-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/start % system))))
-                               this
-                               component-order)]
-    (info "cubby System started")
-    started-system))
+  (common-sys/start-fn "cubby" component-order))
+
+(def stop
+  "Performs side effects to shut down the system and release its
+  resources. Returns an updated instance of the system."
+  (common-sys/stop-fn "cubby" component-order))
 
 (defn dev-start
   "Starts the system but performs extra calls to make sure all indexes are created in elastic."
@@ -50,16 +48,3 @@
   (let [started-system (start system)]
     (elastic-cache-store/create-index-or-update-mappings (:db started-system))
     started-system))
-
-(defn stop
-  "Performs side effects to shut down the system and release its
-  resources. Returns an updated instance of the system."
-  [this]
-  (info "cubby System shutting down")
-  (let [stopped-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/stop % system))))
-                               this
-                               (reverse component-order))]
-    (info "cubby System stopped")
-    stopped-system))

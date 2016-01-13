@@ -3,6 +3,8 @@
 ***
 
 See the [CMR Data Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Data+Partner+User+Guide) for a general guide to utilizing the CMR Ingest API as a data partner.
+See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide) for a general guide to developing a CMR client.
+Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum) to ask questions, make suggestions and discuss topics like future CMR capabilities.
 
 ### Metadata Ingest API Overview
 
@@ -77,14 +79,13 @@ The user id header allows specifying the user-id to use when saving or deleting 
 
 ### <a name="responses"></a> Responses
 
-### <a name="response-headers"></a> Reponse Headers
+### <a name="response-headers"></a> Response Headers
 
 #### <a name="CMR-Request-Id-header"></a> cmr-request-id
 
-This header returns the unique id assigned to the request. This can be used
-to help debug client errors. The value is a long string of the form
+This header returns the unique id assigned to the request. This can be used to help debug client errors. The value is a long string of the form
 
-828ef0b8-a876-4579-85db-3cc9d1b5f6e5
+    828ef0b8-a876-4579-85db-3cc9d1b5f6e5
 
 #### <a name="http-status-codes"></a> HTTP Status Codes
 

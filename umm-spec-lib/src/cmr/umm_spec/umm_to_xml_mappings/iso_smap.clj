@@ -91,7 +91,7 @@
             [:gmd:MD_Identifier
              [:gmd:code (char-string (with-default (:Version c)))]
              [:gmd:description [:gco:CharacterString "The ECS Version ID"]]]]]]
-         [:gmd:abstract (char-string (:Abstract c))]
+         [:gmd:abstract (char-string (or (:Abstract c) su/not-provided))]
          [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
          [:gmd:status (generate-collection-progress c)]
          (kws/generate-iso-smap-descriptive-keywords
@@ -101,7 +101,7 @@
            (for [platform (:Platforms c)]
              [:gmd:keyword
               (char-string (kws/smap-keyword-str platform))])
-           (for [instrument (mapcat :Instruments (:Platforms c))]
+           (for [instrument (distinct (mapcat :Instruments (:Platforms c)))]
              [:gmd:keyword
               (char-string (kws/smap-keyword-str instrument))])]]
          [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
@@ -145,4 +145,18 @@
             [:gmd:DS_AssociationTypeCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
                                           :codeListValue "largerWorkCitation"}
              "largerWorkCitation"]]]]
-         [:gmd:language (char-string "eng")]]]]]]))
+         [:gmd:language (char-string "eng")]]]
+       [:gmd:dataQualityInfo
+        [:gmd:DQ_DataQuality
+         [:gmd:scope
+          [:gmd:DQ_Scope
+           [:gmd:level
+            [:gmd:MD_ScopeCode
+             {:codeList (str (:iso iso/code-lists) "#MD_ScopeCode")
+              :codeListValue "series"}
+             "series"]]]]
+         (when-let [quality (:Quality c)]
+           [:gmd:report
+            [:gmd:DQ_QuantitativeAttributeAccuracy
+             [:gmd:evaluationMethodDescription (char-string quality)]
+             [:gmd:result {:gco:nilReason "missing"}]]])]]]]]))

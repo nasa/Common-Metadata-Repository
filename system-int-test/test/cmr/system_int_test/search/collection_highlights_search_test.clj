@@ -252,11 +252,12 @@
     (testing "Wildcard searches do not highlight any strings with reserved characters except for
              colon."
              (doseq [reserved-string #{"*" "?"}]
-               (is (= (set [nil nil nil ["<em>MODIS:TERRA</em> dataset."] nil nil nil nil nil nil])
+               (is (= (set [nil ["<em>MODIS:TERRA</em> dataset."]])
                       (set (get-search-results-summaries
                              (search/find-concepts-in-json-with-json-query
                                                            :collection
-                                                           {:include-highlights true}
+                                                           {:include-highlights true
+                                                            :page-size 1000}
                                                            {:keyword (format "MODIS%sTERRA"
                                                                              reserved-string)})))))))))
 

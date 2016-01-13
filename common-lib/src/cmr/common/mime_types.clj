@@ -51,8 +51,8 @@
   "A map of CMR data format keywords to MIME type strings."
   (into {} (mapcat (fn [[format-kw {:keys [mime-type aliases]}]]
                      (cons [format-kw mime-type]
-                            (for [a aliases]
-                              [a mime-type])))
+                           (for [a aliases]
+                             [a mime-type])))
                    mime-types)))
 
 ;; extra helpers

@@ -36,11 +36,11 @@
   [poly]
   [:Polygon
    [:Boundary
-    (map point-element (-> poly :Boundary :Points))]
+    (map point-element (u/closed-counter-clockwise->open-clockwise (-> poly :Boundary :Points)))]
    [:Exclusive_Zone
     (for [b (-> poly :ExclusiveZone :Boundaries)]
       [:Boundary
-       (map point-element (:Points b))])]
+       (map point-element (u/closed-counter-clockwise->open-clockwise (:Points b)))])]
    [:Center_Point
     (point-contents (:CenterPoint poly))]])
 
@@ -67,11 +67,12 @@
   (if-let [sp (:SpatialExtent c)]
     [:Spatial_Coverage
      [:Spatial_Coverage_Type (umm-spatial-type->dif10-spatial-type (:SpatialCoverageType sp))]
-     [:Granule_Spatial_Representation (:GranuleSpatialRepresentation sp)]
+     [:Granule_Spatial_Representation (or (:GranuleSpatialRepresentation sp)
+                                          u/default-granule-spatial-representation)]
      [:Zone_Identifier (-> sp :HorizontalSpatialDomain :ZoneIdentifier)]
      (let [geom (-> sp :HorizontalSpatialDomain :Geometry)]
        [:Geometry
-        [:Coordinate_System (:CoordinateSystem geom)]
+        [:Coordinate_System (u/coordinate-system geom)]
         (concat
           ;; From most-specific to least specific. This is arbitrary.
           (map polygon-element (:GPolygons geom))
@@ -89,15 +90,14 @@
        [:Vertical_Spatial_Info
         (elements-from vert :Type :Value)])
      [:Spatial_Info
-      (when-let [sys (:TilingIdentificationSystem c)]
-        (list
-         [:Spatial_Coverage_Type u/not-provided]
-         [:TwoD_Coordinate_System
-          [:TwoD_Coordinate_System_Name (:TilingIdentificationSystemName sys)]
-          (tiling-system-coord-element sys :Coordinate1)
-          (tiling-system-coord-element sys :Coordinate2)]))]]
+      [:Spatial_Coverage_Type u/not-provided]
+      (for [sys (:TilingIdentificationSystems c)]
+        [:TwoD_Coordinate_System
+         [:TwoD_Coordinate_System_Name (:TilingIdentificationSystemName sys)]
+         (tiling-system-coord-element sys :Coordinate1)
+         (tiling-system-coord-element sys :Coordinate2)])]]
 
     ;; Default Spatial_Coverage
     [:Spatial_Coverage
      [:Spatial_Coverage_Type "Horizontal"]
-     [:Granule_Spatial_Representation "CARTESIAN"]]))
+     [:Granule_Spatial_Representation u/default-granule-spatial-representation]]))
