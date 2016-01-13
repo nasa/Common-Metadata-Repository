@@ -89,7 +89,7 @@
                              [field (string-of-length max-length)]))]
         (is (= 200 (:status (u/create-group (e/login (u/conn-context) "user1") group)))))))
 
-  (testing "Creation without required fields is allowed"
+  (testing "Creation without optional fields is allowed"
     (let [group (dissoc (u/make-group {:name "name2"}) :legacy-guid)
           token (e/login (u/conn-context) "user1")
           {:keys [status concept-id revision-id]} (u/create-group token group)]

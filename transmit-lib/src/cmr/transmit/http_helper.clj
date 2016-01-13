@@ -74,6 +74,14 @@
       (= method :get) (handle-raw-fetch-response response)
       :else (handle-raw-update-response response))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; CRUD Macros
+;; These are macros for defining standard CRUD operations for objects.
+;; * Objects are sent and retrieved in JSON.
+;; * Create and Update functions expect that they'll be able to succeed. It's considered an internal
+;; error if an object sent is invalid. This can be bypassed by sending :is-raw? option to get the
+;; raw HTTP response back.
+
 (defmacro defcreator
   "Creates a function that can be used to send standard requests to create an item using JSON."
   [fn-name app-name url-fn]

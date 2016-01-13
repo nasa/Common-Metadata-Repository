@@ -130,7 +130,7 @@
                            [field (string-of-length max-length)]))]
         (is (= 200 (:status (tags/create-tag (e/login (s/context) "user1") tag)))))))
 
-  (testing "Creation without required fields is allowed"
+  (testing "Creation without optional fields is allowed"
     (let [tag (dissoc (tags/make-tag {:value "value2"}) :category :description)
           token (e/login (s/context) "user1")
           {:keys [status concept-id revision-id]} (tags/create-tag token tag)]

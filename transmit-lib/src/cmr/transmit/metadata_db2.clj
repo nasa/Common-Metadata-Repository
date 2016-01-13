@@ -45,28 +45,13 @@
 ;; Request functions
 
 (defn reset
-  "Resets the access control service"
+  "Resets the metadata db service"
   ([context]
    (reset context false))
   ([context is-raw]
    (h/request context :metadata-db {:url-fn reset-url, :method :post, :raw? is-raw})))
 
-(defn save-concept
-  "Sends a request to save the concept. Valid options are
-  * :is-raw? - set to true to indicate the raw response should be returned. See
-  cmr.transmit.http-helper for more info. Default false.
-  * http-options - Other http-options to be sent to clj-http."
-  ([context concept]
-   (save-concept context concept nil))
-  ([context concept {:keys [is-raw? http-options]}]
-   (h/request context :metadata-db
-              {:url-fn concepts-url
-               :method :post
-               :raw? is-raw?
-               :http-options (merge {:body (json/generate-string concept)
-                                     :content-type :json
-                                     :accept :json}
-                                    http-options)})))
+(h/defcreator save-concept :metadata-db concepts-url)
 
 (defn get-concept-id
   "Returns a concept id for the given concept type, provider, and native id"

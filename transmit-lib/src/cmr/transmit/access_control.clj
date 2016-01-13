@@ -13,7 +13,7 @@
   [conn]
   (format "%s/reset" (conn/root-url conn)))
 
-;; TODO add health function
+;; TODO CMR-2351 - add health function
 
 (defn- health-url
   [conn]

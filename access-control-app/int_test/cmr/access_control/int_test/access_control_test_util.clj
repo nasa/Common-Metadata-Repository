@@ -22,7 +22,7 @@
   (atom nil))
 
 (defn conn-context
-  "Retrieves a context map that contains a connection to the cubby app."
+  "Retrieves a context map that contains a connection to the access control app."
   []
   (when-not @conn-context-atom
     (reset! conn-context-atom {:system (config/system-with-connections
@@ -42,7 +42,7 @@
            :scheduler (jobs/create-non-running-scheduler))))
 
 (defn int-test-fixtures
-  "Returns test fixtures for starting the cubby application and its external dependencies."
+  "Returns test fixtures for starting the access control application and its external dependencies."
   []
   (ct/join-fixtures
    [(common-client-test-util/run-app-fixture
@@ -91,6 +91,8 @@
           aacributes)))
 
 (defn- process-response
+  "Takes an HTTP response that may have a parsed body. If the body was parsed into a JSON map then it
+  will associate the status with the body otherwise returns a map of the unparsed body and status code."
   [{:keys [status body]}]
   (if (map? body)
     (assoc body :status status)
