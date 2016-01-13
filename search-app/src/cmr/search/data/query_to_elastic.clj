@@ -129,7 +129,7 @@
              :project :project-refs.lowercase}})
 
 (defn- sort-keys->elastic-sort
-  "Converts a sort key into the proper elastic sort condition."
+  "Converts sort keys into the proper elastic sort condition."
   [concept-type sort-keys]
   (seq (map (fn [{:keys [order field]}]
               {(get-in sort-key-field->elastic-field [concept-type field] (name field))
