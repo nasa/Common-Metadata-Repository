@@ -24,6 +24,11 @@
   [system]
   (assoc-in system [:web :use-access-log?] false))
 
+(def use-external-db?
+  "Set to true to use the Oracle DB"
+  true)
+  ; false
+
 (defn start
   "Starts the current development system."
   []
@@ -39,7 +44,7 @@
   ;; Start metadata db
   (alter-var-root
    #'mdb-system
-   (constantly (-> (int-test-util/create-mdb-system) disable-access-log mdb/start)))
+   (constantly (-> (int-test-util/create-mdb-system use-external-db?) disable-access-log mdb/start)))
   ;; Start access control
   (alter-var-root
    #'system

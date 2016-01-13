@@ -32,35 +32,37 @@
 
 (defn create-mdb-system
   "Creates an in memory version of metadata db."
-  []
-  (let [mq (mem-queue/create-memory-queue-broker (mdb-config/rabbit-mq-config))
-        db (memory/create-db)
-        mdb-sys (mdb-system/create-system)]
-    (assoc mdb-sys
-           :queue-broker mq
-           :db db
-           :scheduler (jobs/create-non-running-scheduler))))
+  ([]
+   (create-mdb-system false))
+  ([use-external-db]
+   (let [mq (mem-queue/create-memory-queue-broker (mdb-config/rabbit-mq-config))
+         mdb-sys (mdb-system/create-system)]
+     (merge mdb-sys
+            {:queue-broker mq
+             :scheduler (jobs/create-non-running-scheduler)}
+            (when-not use-external-db
+              {:db (memory/create-db)})))))
 
 (defn int-test-fixtures
   "Returns test fixtures for starting the access control application and its external dependencies."
   []
   (ct/join-fixtures
    [(common-client-test-util/run-app-fixture
-     (conn-context)
+     conn-context
      :access-control
      (system/create-system)
      system/start
      system/stop)
 
     (common-client-test-util/run-app-fixture
-     (conn-context)
+     conn-context
      :echo-rest
      (mock-echo-system/create-system)
      mock-echo-system/start
      mock-echo-system/stop)
 
     (common-client-test-util/run-app-fixture
-     (conn-context)
+     conn-context
      :metadata-db
      (create-mdb-system)
      mdb-system/start

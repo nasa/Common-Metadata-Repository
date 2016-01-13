@@ -17,13 +17,15 @@
 
 (defn run-app-fixture
   "Test fixture that will automatically run the application if it's not detected as currently running.
-  The context should contain a system with an application context configured for the app."
-  [context app-name initial-system start-fn stop-fn]
+  The context-or-fn should contain a system with an application context configured for the app or
+  be a function that will return that."
+  [context-or-fn app-name initial-system start-fn stop-fn]
   (fn [f]
-    (if (app-running? context app-name)
-      (f)
-      (let [system (start-fn initial-system)]
-        (try
-          (f)
-          (finally
-            (stop-fn system)))))))
+    (let [context (if (fn? context-or-fn) (context-or-fn) context-or-fn)]
+      (if (app-running? context app-name)
+        (f)
+        (let [system (start-fn initial-system)]
+          (try
+            (f)
+            (finally
+              (stop-fn system))))))))
