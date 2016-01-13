@@ -22,7 +22,8 @@
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.common-app.cache.consistent-cache :as consistent-cache]
             [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.indexer.services.event-handler :as event-handler]))
+            [cmr.indexer.services.event-handler :as event-handler]
+            [cmr.common-app.system :as common-sys]))
 
 (defconfig colls-with-separate-indexes
   "Configuration value that contains a list of collections with separate indexes for their
@@ -68,17 +69,13 @@
   "Performs side effects to initialize the system, acquire resources,
   and start it running. Returns an updated instance of the system."
   [system]
-  (info "System starting")
-  (let [started-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/start % system))))
-                               system
-                               component-order)]
+  (info "Indexer system starting")
+  (let [started-system (common-sys/start system component-order)]
 
     (when (:queue-broker system)
       (event-handler/subscribe-to-events {:system started-system}))
 
-    (info "System started")
+    (info "Indexer system started")
     started-system))
 
 (defn dev-start
@@ -92,16 +89,8 @@
       (es/update-indexes context))
     started-system))
 
-
-(defn stop
+(def stop
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
-  [system]
-  (info "System shutting down")
-  (let [stopped-system (reduce (fn [system component-name]
-                                 (update-in system [component-name]
-                                            #(when % (lifecycle/stop % system))))
-                               system
-                               (reverse component-order))]
-    (info "System stopped")
-    stopped-system))
+  (common-sys/stop-fn "indexer" component-order))
+

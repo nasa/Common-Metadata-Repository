@@ -61,9 +61,9 @@
   (clojure.string/join (clojure.core/range 3))
 
   ;; Returned from dev system
-  "012"
+  "012")
 
-  )
+
 
 (defn clear-caches
   "Clears all the caches in the CMR."

@@ -79,11 +79,11 @@
                                        :InclinationAngle 94.0
                                        :NumberOfOrbits 2.0
                                        :StartCircularLatitude 50.0}}
-     :TilingIdentificationSystem {:TilingIdentificationSystemName "Tiling System Name"
-                                  :Coordinate1 {:MinimumValue 1.0
-                                                :MaximumValue 10.0}
-                                  :Coordinate2 {:MinimumValue 1.0
-                                                :MaximumValue 10.0}}
+     :TilingIdentificationSystems [{:TilingIdentificationSystemName "Tiling System Name"
+                                     :Coordinate1 {:MinimumValue 1.0
+                                                   :MaximumValue 10.0}
+                                     :Coordinate2 {:MinimumValue 1.0
+                                                   :MaximumValue 10.0}}]
      :AccessConstraints {:Description "Restriction Comment: Access constraints"
                          :Value "0"}
      :UseConstraints "Restriction Flag: Use constraints"
@@ -446,14 +446,14 @@
 
 ;; ECHO 10
 
-(defn fix-echo10-polygon
+(defn fix-echo10-dif10-polygon
   "Because the generated points may not be in valid UMM order (closed and CCW), we need to do some
   fudging here."
   [gpolygon]
   (let [fix-points (fn [points]
                      (-> points
-                         echo10-spatial-gen/echo-point-order
-                         echo10-spatial-parse/umm-point-order))]
+                         su/closed-counter-clockwise->open-clockwise
+                         su/open-clockwise->closed-counter-clockwise))]
     (-> gpolygon
         (update-in [:Boundary :Points] fix-points)
         (update-in-each [:ExclusiveZone :Boundaries] update-in [:Points] fix-points))))
@@ -477,6 +477,22 @@
                                                "VIEW RELATED INFORMATION"} rel)
                                         [rel])))))))
 
+(defn- geometry-with-coordinate-system
+  "Returns the geometry with default CoordinateSystem added if it doesn't have a CoordinateSystem."
+  [geometry]
+  (when geometry
+    (update-in geometry [:CoordinateSystem] #(if % % "CARTESIAN"))))
+
+(defn- expected-echo10-spatial-extent
+  "Returns the expected ECHO10 SpatialExtent for comparison with the umm model."
+  [spatial-extent]
+  (let [spatial-extent (prune-empty-maps spatial-extent)]
+    (if (get-in spatial-extent [:HorizontalSpatialDomain :Geometry])
+      (update-in spatial-extent
+                 [:HorizontalSpatialDomain :Geometry]
+                 geometry-with-coordinate-system)
+      spatial-extent)))
+
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
@@ -494,8 +510,9 @@
       (assoc :Organizations nil)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
-      (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons] fix-echo10-polygon)
-      (update-in [:SpatialExtent] prune-empty-maps)
+      (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons]
+                      fix-echo10-dif10-polygon)
+      (update-in [:SpatialExtent] expected-echo10-spatial-extent)
       (update-in-each [:AdditionalAttributes] assoc :Group nil :MeasurementResolution nil
                       :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
                       :ValueAccuracyExplanation nil :UpdateDate nil)
@@ -570,7 +587,7 @@
       ;; DIF 9 only supports entry-id in metadata associations
       (update-in-each [:MetadataAssociations] assoc :Type nil :Description nil :Version nil)
       ;; DIF 9 does not support tiling identification system
-      (assoc :TilingIdentificationSystem nil)
+      (assoc :TilingIdentificationSystems nil)
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       ;; DIF 9 does not support DataDates
@@ -637,6 +654,18 @@
   [ma]
   (update-in ma [:Type] #(or % "SCIENCE ASSOCIATED")))
 
+(defn- expected-dif10-related-urls
+  [related-urls]
+  (seq (for [related-url related-urls]
+         (assoc related-url :Title nil :FileSize nil :MimeType nil))))
+
+(defn- expected-dif10-spatial-extent
+  [spatial-extent]
+  (-> spatial-extent
+      (update-in [:HorizontalSpatialDomain :Geometry] geometry-with-coordinate-system)
+      (update-in-each [:HorizontalSpatialDomain :Geometry :GPolygons] fix-echo10-dif10-polygon)
+      prune-empty-maps))
+
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
@@ -644,7 +673,7 @@
       (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
-      (update-in [:SpatialExtent] prune-empty-maps)
+      (update-in [:SpatialExtent] expected-dif10-spatial-extent)
       (update-in [:DataDates] fixup-dif10-data-dates)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
@@ -655,10 +684,7 @@
       (update-in-each [:PublicationReferences] dif-publication-reference)
       (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
       ;; DIF 10 required element
-      (update-in [:Abstract] #(or % su/not-provided))
-      ;; The following fields are not supported yet
-      (assoc :Organizations nil
-             :Personnel nil)))
+      (update-in [:Abstract] #(or % su/not-provided))))
 
 (defn- default-serf-required-additional-attributes
   "Populate a default not-provided value for additional attributes if none exist"
@@ -1040,6 +1066,8 @@
   [umm-coll _]
   (-> umm-coll
       (update-in [:SpatialExtent] update-iso-spatial)
+      ;; ISO only supports a single tiling identification system
+      (update-in [:TilingIdentificationSystems] #(seq (take 1 %)))
       (update-in [:TemporalExtents] expected-iso-19115-2-temporal)
       ;; The following platform instrument properties are not supported in ISO 19115-2
       (update-in-each [:Platforms] update-in-each [:Instruments] assoc
@@ -1098,8 +1126,6 @@
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
       ;; TODO - Implement this as part of CMR-2057
       (update-in-each [:TemporalExtents] assoc :TemporalRangeType nil)
-      ;; TODO - Implement this as part of CMR-1946
-      (assoc :Quality nil)
       ;; Fields not supported by ISO-SMAP
       (assoc :MetadataAssociations nil) ;; Not supported for ISO SMAP
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841

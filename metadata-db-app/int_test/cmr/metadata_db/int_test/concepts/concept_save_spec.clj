@@ -8,20 +8,17 @@
 ;; Need this instead of direct string comparisons because we don't know ahead of time what
 ;; concept-ids will be generated, so the error messages must be checked with regexes instead
 ;; of exact strings.
-(defn- error-messages-match?
+(defn- assert-error-messages-match
   "Compare the returned error messages to the expected ones given as a vector of regexes."
   [exp-errors errors]
-  (let [failures (remove seq (map (fn [exp-error error]
-                                    (re-matches exp-error error))
-                                  exp-errors errors))]
-    (and (empty? failures) (= (count exp-errors) (count errors)))))
-
-(comment
-
-
-  (error-messages-match? [#"ABC \d+"#"EFG \d+"] ["ABC 123" "EFG 4" "ERROR"])
-
-  )
+  (let [unexpected-errors (for [error errors
+                                :when (not (some #(re-matches % error) exp-errors))]
+                            error)
+        missing-errors (for [error-regex exp-errors
+                             :when (not (some #(re-matches error-regex %) errors))]
+                         error-regex)]
+    (is (empty? unexpected-errors) "The errors were not expected")
+    (is (empty? missing-errors) "Some expected errors were missing")))
 
 (defn- wrong-concept-prefix
   "For the given concept type return a prefix that is guarnteed not to match."
@@ -36,7 +33,7 @@
     (let [{:keys [status revision-id concept-id errors]} (util/save-concept concept)]
       (is (= exp-status status))
       (is (= exp-revision-id revision-id))
-      (is (error-messages-match? exp-errors errors))
+      (assert-error-messages-match exp-errors errors)
       (when (= 201 exp-status)
         (util/verify-concept-was-saved
           (assoc concept :revision-id revision-id :concept-id concept-id)))))
@@ -56,7 +53,7 @@
           revision-date2 (get-in (util/get-concept-by-id-and-revision concept-id revision-id)
                                  [:concept :revision-date])]
       (is (= exp-status status))
-      (is (error-messages-match? exp-errors errors))
+      (assert-error-messages-match exp-errors errors)
       (when (= 201 exp-status)
         (is (= new-revision-id revision-id))
         (is (t/after? revision-date2 revision-date1))
@@ -100,7 +97,7 @@
   [concept-type provider-ids req-params]
   (doseq [provider-id provider-ids
           [idx param] (map-indexed vector req-params)]
-    (testing "save concept with missing required parameters fails"
+    (testing (format "save concept with missing required parameters %s fails" param)
       (let [concept (gen-concept concept-type provider-id idx {})
             field-errors (param missing-parameter-errors)]
         (save-concept-test (dissoc concept param) 422 nil field-errors)))))
@@ -163,7 +160,7 @@
         (testing "with incorrect concept id"
           (let [other-concept-id (str (cc/concept-type->concept-prefix concept-type) "11-" provider-id)]
             (save-concept-test (assoc concept :concept-id other-concept-id)
-                                      409 nil [#"A concept with concept-id \[\w+-\w+\] and native-id \[.*?\] already exists for concept-type \[:[\w-]+\] provider-id \[\w+\]. The given concept-id \[\w+-\w+\] and native-id \[.*?\] would conflict with that one."])))))
+                               409 nil [#"A concept with concept-id \[\w+-\w+\] and native-id \[.*?\] already exists for concept-type \[:[\w-]+\] provider-id \[\w+\]. The given concept-id \[\w+-\w+\] and native-id \[.*?\] would conflict with that one."])))))
 
     (testing "save after delete"
       (let [concept (gen-concept concept-type provider-id 9 {})

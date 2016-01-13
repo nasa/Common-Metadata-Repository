@@ -1,10 +1,6 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10.spatial
-  (:require [cmr.umm-spec.xml.gen :refer :all]))
-
-(defn echo-point-order
-  "Returns a sequence of points in ECHO order (open and clockwise)."
-  [points]
-  (reverse (butlast points)))
+  (:require [cmr.umm-spec.xml.gen :refer :all]
+            [cmr.umm-spec.util :as u]))
 
 (defn- point-contents
   "Returns the inner lon/lat elements for an ECHO Point or CenterPoint element from a UMM PointType
@@ -38,11 +34,11 @@
   [poly]
   [:GPolygon
    [:Boundary
-    (map point-element (echo-point-order (-> poly :Boundary :Points)))]
+    (map point-element (u/closed-counter-clockwise->open-clockwise (-> poly :Boundary :Points)))]
    [:ExclusiveZone
     (for [b (-> poly :ExclusiveZone :Boundaries)]
       [:Boundary
-       (map point-element  (echo-point-order (:Points b)))])]
+       (map point-element (u/closed-counter-clockwise->open-clockwise (:Points b)))])]
    [:CenterPoint
     (point-contents (:CenterPoint poly))]])
 
@@ -64,7 +60,7 @@
         (elements-from horiz :ZoneIdentifier)
         (let [geom (:Geometry horiz)]
           [:Geometry
-           (elements-from geom :CoordinateSystem)
+           [:CoordinateSystem (u/coordinate-system geom)]
            (map point-element (:Points geom))
            (map bounding-rect-element (:BoundingRectangles geom))
            (map polygon-element (:GPolygons geom))
@@ -76,4 +72,5 @@
       (elements-from (:OrbitParameters sp)
                      :SwathWidth :Period :InclinationAngle
                      :NumberOfOrbits :StartCircularLatitude)]
-     (elements-from sp :GranuleSpatialRepresentation)]))
+     [:GranuleSpatialRepresentation (or (:GranuleSpatialRepresentation sp)
+                                        u/default-granule-spatial-representation)]]))

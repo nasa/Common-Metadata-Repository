@@ -73,7 +73,7 @@
         coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7" :version-id "Laser"}))
         coll8 (d/ingest "PROV2" (dc/collection {:entry-title "coll8" :processing-level-id "PDQ123"}))
 
-        coll9 (d/ingest "PROV2" (dc/collection {:entry-title "coll9" :science-keywords [sk1 sk2]}))
+        coll9 (d/ingest "PROV2" (dc/collection {:entry-title "coll09" :science-keywords [sk1 sk2]}))
 
 
         coll10 (d/ingest "PROV2" (dc/collection {:entry-title "coll10"
@@ -95,7 +95,7 @@
         coll21 (d/ingest "PROV2" (dc/collection {:entry-title "coll21" :long-name "ABC!"}))
         coll22 (d/ingest "PROV2" (dc/collection {:collection-data-type "NEAR_REAL_TIME"}))
         coll23 (d/ingest "PROV1" (dc/collection {:entry-title "coll23" :long-name "\"Quoted\" collection" }))
-        coll24 (d/ingest "PROV2" (dc/collection {:entry-title "coll24" :platforms [p4]}))]
+        coll24 (d/ingest "PROV2" (dc/collection {:entry-title "coll24" :short-name "coll24" :platforms [p4]}))]
 
     (index/wait-until-indexed)
 
@@ -317,6 +317,16 @@
            "L*er spo*A" [coll14 coll9]
            "L?s* s?o*A" [coll14 coll9]))
 
+    (testing "sorted search by keywords JSON query."
+      (are [keyword-str items]
+           (let [refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str})
+                 matches? (d/refs-match-order? items refs)]
+             (when-not matches?
+               (println "Expected:" (map :entry-title items))
+               (println "Actual:" (map :name (:refs refs))))
+             matches?)
+           "Laser spoonA" [coll14 coll9]))
+
     (testing "sorted search by keywords with sort keys."
       (are [keyword-str sort-key items]
            (let [refs (search/find-refs :collection {:keyword keyword-str :sort-key sort-key})
@@ -325,10 +335,18 @@
                (println "Expected:" (map :entry-title items))
                (println "Actual:" (map :name (:refs refs))))
              matches?)
-           "Laser" "-entry-title" [coll9 coll7 coll5 coll14]
+           "Laser" "-entry-title" [coll7 coll5 coll14 coll9]
            "Laser" "score" [coll14 coll5 coll7 coll9]
            "Laser" "+score" [coll5 coll7 coll9 coll14]
            "Laser" "-score" [coll14 coll5 coll7 coll9]))
+
+    (testing "parameter search by keywords returns score"
+      (let [refs (search/find-refs :collection {:keyword "Laser"})]
+        (is (every? :score (:refs refs)))))
+
+    (testing "JSON keywords search returns score"
+      (let [refs (search/find-refs-with-json-query :collection {} {:keyword "Laser"})]
+        (is (every? :score (:refs refs)))))
 
     (testing "search by multiple keywords returns an error."
       (let [resp (search/find-refs :collection {:provider "PROV1"
@@ -336,7 +354,11 @@
                                                 :keyword ["Laser" "spoon"]})
             {:keys [status errors]} resp]
         (is (= 400 status))
-        (is (= "Parameter [keyword] must have a single value." (first errors)))))))
+        (is (= "Parameter [keyword] must have a single value." (first errors)))))
+
+    (testing "JSON negated keyword search does not return score"
+      (let [refs (search/find-refs-with-json-query :collection {} {:not {:keyword "Laser"}})]
+        (is (not-any? :score (:refs refs)))))))
 
 (deftest search-by-keywords-with-special-chars
   ;; needed for special charatcter tests

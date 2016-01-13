@@ -38,7 +38,7 @@
 
 (def quality-xpath
   (str data-quality-info-xpath
-       "/gmd:scope/gmd:DQ_Scope/gmd:levelDescription/gmd:MD_ScopeDescription/gmd:other"))
+       "/gmd:report/DQ_QuantitativeAttributeAccuracy/gmd:evaluationMethodDescription"))
 
 (def precision-xpath
   (str data-quality-info-xpath
@@ -156,7 +156,7 @@
      :DataLanguage (char-string-value md-data-id-el "gmd:language")
      :ISOTopicCategories (values-at doc topic-categories-xpath)
      :SpatialExtent (spatial/parse-spatial doc extent-info)
-     :TilingIdentificationSystem (tiling/parse-tiling-system md-data-id-el)
+     :TilingIdentificationSystems (tiling/parse-tiling-system md-data-id-el)
      :TemporalExtents (for [temporal (select md-data-id-el temporal-xpath)]
                         {:PrecisionOfSeconds (value-of doc precision-xpath)
                          :EndsAtPresentFlag (temporal-ends-at-present? temporal)

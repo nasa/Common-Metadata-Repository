@@ -139,8 +139,8 @@
 (comment
 
   (parse-error-path "SpatialCoverage/Geometries/0")
-  (parse-error-path "SpatialCoverage/1/Geometries")
-  )
+  (parse-error-path "SpatialCoverage/1/Geometries"))
+
 
 (defn- parse-xml-error-elem
   "Parse an xml error entry. If this contains a path then we need to return map with a :path
@@ -350,8 +350,8 @@
 
      (when grant-all-search?
        (echo-util/grant (s/context)
-                        [echo-util/guest-ace
-                         echo-util/registered-user-ace]
+                        [echo-util/guest-read-ace
+                         echo-util/registered-user-read-ace]
                         :catalog-item-identity
                         (assoc (echo-util/catalog-item-id provider-guid)
                                :collection-applicable true

@@ -31,20 +31,21 @@
   "A map of concept type to the deleted flag to the required extra fields."
   {:collection {true #{}
                 false #{:short-name :version-id :entry-id :entry-title}}
-   :granule {true #{:parent-collection-id }
+   :granule {true #{:parent-collection-id}
              false #{:parent-collection-id :parent-entry-title :granule-ur}}
-   :services {true #{}
-              false #{:entry-id :entry-title}}})
+   :service {true #{}
+             false #{:entry-id :entry-title}}})
 
 (defn extra-fields-missing-validation
   "Validates that the concept is provided with extra fields and that all of them are present and not nil."
   [concept]
-  (if-let [extra-fields (:extra-fields concept)]
+  (if-let [extra-fields (util/remove-nil-keys (:extra-fields concept))]
     (map #(msg/missing-extra-field %)
          (set/difference (get-in concept-type->required-extra-fields
                                  [(:concept-type concept) (true? (:deleted concept))])
                          (set (keys extra-fields))))
-    [(msg/missing-extra-fields)]))
+    (when (contains? concept-type->required-extra-fields (:concept-type concept))
+      [(msg/missing-extra-fields)])))
 
 (defn nil-fields-validation
   "Validates that none of the fields are nil."

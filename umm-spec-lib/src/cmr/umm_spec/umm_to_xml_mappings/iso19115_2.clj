@@ -177,7 +177,7 @@
            (for [responsibility (org-per/responsibility-by-role (:Organizations c) "ORIGINATOR")]
              [:gmd:citedResponsibleParty
               (org-per/generate-responsible-party responsibility)])]]
-         [:gmd:abstract (char-string (:Abstract c))]
+         [:gmd:abstract (char-string (or (:Abstract c) su/not-provided))]
          [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
          [:gmd:status
           (when-let [collection-progress (:CollectionProgress c)]
@@ -256,10 +256,7 @@
             [:gmd:MD_ScopeCode
              {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
               :codeListValue "series"}
-             "series"]]
-           [:gmd:levelDescription
-            [:gmd:MD_ScopeDescription
-             [:gmd:other (char-string (:Quality c))]]]]]
+             "series"]]]]
          [:gmd:report
           [:gmd:DQ_AccuracyOfATimeMeasurement
            [:gmd:measureIdentification
@@ -272,6 +269,11 @@
              [:gmd:value
               [:gco:Record {:xsi:type "gco:Real_PropertyType"}
                [:gco:Real (:PrecisionOfSeconds (first (:TemporalExtents c)))]]]]]]]
+         (when-let [quality (:Quality c)]
+           [:gmd:report
+            [:gmd:DQ_QuantitativeAttributeAccuracy
+             [:gmd:evaluationMethodDescription (char-string quality)]
+             [:gmd:result {:gco:nilReason "missing"}]]])
          [:gmd:lineage
           [:gmd:LI_Lineage
            [:gmd:processStep

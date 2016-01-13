@@ -59,9 +59,8 @@
     (admin/cluster-health conn :wait_for_status "yellow"
                           :timeout (str (hh/health-check-timeout-seconds) "s"))
     (catch Exception e
-      {:status "Inaccessible"
-       :problem (format "Unable to get elasticsearch cluster health, caught exception: %s"
-                        (.getMessage e))})))
+      (format "Unable to get elasticsearch cluster health, caught exception: %s"
+              (.getMessage e)))))
 
 (defn health-fn
   "Returns the health state of elasticsearch."

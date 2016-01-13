@@ -5,13 +5,6 @@
             [ring.util.codec :as codec]
             [cmr.transmit.http-helper :as h]))
 
-(comment
-  (def context {:system (config/system-with-connections {} [:cubby])})
-
-  (get-keys-raw context)
-
-  )
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
 
@@ -54,9 +47,9 @@
    (set-value context key-name value false))
   ([context key-name value is-raw]
    (h/request context :cubby {:url-fn (partial key-url key-name)
-                           :method :put
-                           :raw? is-raw
-                           :http-options {:body value}})))
+                              :method :put
+                              :raw? is-raw
+                              :http-options {:body value}})))
 
 (defn delete-value
   "Dissociates the value with the given key."
