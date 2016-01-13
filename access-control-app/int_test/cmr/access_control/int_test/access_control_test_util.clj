@@ -72,6 +72,7 @@
   (mock-echo-client/reset (conn-context))
   (mdb/reset (conn-context))
   (ac/reset (conn-context))
+  (e/grant-all-admin (conn-context))
   (f))
 
 (defn grant-all-group-fixture
