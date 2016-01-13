@@ -9,10 +9,9 @@
             [cmr.mock-echo.data.token-db :as token-db]
             [cmr.mock-echo.data.provider-db :as provider-db]
             [cmr.mock-echo.data.acl-db :as acl-db]
+            [cmr.transmit.config :as transmit-config]
             [cmr.common.api.context :as context]
             [cmr.common-app.system :as common-sys]))
-
-(def PORT 3008)
 
 (def
   ^{:doc "Defines the order to start the components."
@@ -26,7 +25,7 @@
    :token-db (token-db/create-db)
    :provider-db (provider-db/create-db)
    :acl-db (acl-db/create-db)
-   :web (web/create-web-server PORT routes/make-api)})
+   :web (web/create-web-server (transmit-config/echo-rest-port) routes/make-api)})
 
 (def start
   "Performs side effects to initialize the system, acquire resources,

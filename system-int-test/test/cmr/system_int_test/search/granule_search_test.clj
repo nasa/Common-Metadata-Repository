@@ -1,5 +1,5 @@
-(ns ^{:doc "Integration test for CMR granule search"}
-  cmr.system-int-test.search.granule-search-test
+(ns cmr.system-int-test.search.granule-search-test
+  "Integration test for CMR granule search"
   (:require [clojure.test :refer :all]
             [clojure.string :as s]
             [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -20,7 +20,8 @@
   (doseq [p ["PROV1" "PROV2" "CMR_T_PROV"]]
     (ingest/create-provider {:provider-guid (str "guid-" p) :provider-id p}))
 
-  )
+  (def coll1 (d/ingest "PROV1" (dc/collection {})))
+  (def gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))))
 
 (deftest search-by-provider-id
   (let [coll1 (d/ingest "PROV1" (dc/collection {}))

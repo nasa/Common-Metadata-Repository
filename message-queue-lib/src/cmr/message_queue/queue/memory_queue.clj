@@ -49,9 +49,10 @@
 (defn drain-channels
   "Removes all messages from the given channels. Will not block"
   [channels]
-  (loop []
-    (when-not (= :done (first (a/alts!! (vec channels) :default :done)))
-      (recur))))
+  (when channels
+    (loop []
+      (when-not (= :done (first (a/alts!! (vec channels) :default :done)))
+        (recur)))))
 
 (defrecord MemoryQueueBroker
   [
@@ -68,8 +69,8 @@
    ;; Running State
 
    ;; An atom containing a sequence of channels returned by the go block processors for each handler.
-   handler-channels-atom
-   ]
+   handler-channels-atom]
+
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
@@ -173,10 +174,9 @@
   (queue/publish-to-queue running-qb "c" {:id 3})
 
   (queue/publish-to-exchange running-qb "e1" {:id 4})
-  (queue/publish-to-exchange running-qb "e2" {:id 5})
+  (queue/publish-to-exchange running-qb "e2" {:id 5}))
 
 
 
 
 
-  )

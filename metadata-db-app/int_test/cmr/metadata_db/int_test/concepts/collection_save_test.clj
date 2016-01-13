@@ -34,12 +34,6 @@
   (c-spec/save-test-with-missing-required-parameters
     :collection ["REG_PROV" "SMAL_PROV1"] [:concept-type :provider-id :native-id :extra-fields]))
 
-(deftest save-collection-specific-tests
-  (testing "save concept without version-id"
-    (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
-      (let [concept (util/collection-concept provider-id 1 {:extra-fields {:version-id nil}})]
-        (c-spec/save-concept-test concept 201 1 nil)))))
-
 (deftest save-collection-with-same-native-id-test
   (testing "Save collections with the same native-id for two small providers is OK"
     (let [coll1 (util/collection-concept "SMAL_PROV1" 1 {:native-id "foo"})

@@ -17,6 +17,7 @@
                         [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
                         [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]]
          :source-paths ["src" "dev" "test" "int_test"]
+         :test-paths ["test" "int_test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}
    :uberjar {:main cmr.access-control.runner

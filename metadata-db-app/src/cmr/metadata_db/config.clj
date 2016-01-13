@@ -5,10 +5,6 @@
             [cmr.oracle.connection :as conn]
             [cmr.message-queue.config :as rmq-conf]))
 
-(defconfig metadata-db-port
-  "Port metadata-db application listens on."
-  {:default 3001 :type Long})
-
 (def db-username
   (cfg/config-value-fn :metadata-db-username "METADATA_DB"))
 

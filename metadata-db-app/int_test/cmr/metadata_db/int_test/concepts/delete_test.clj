@@ -20,7 +20,7 @@
 
 (deftest delete-concepts-test
   (doseq [concept-type [:collection :granule :service]]
-  (cd-spec/general-delete-test concept-type ["REG_PROV" "SMAL_PROV"])))
+   (cd-spec/general-delete-test concept-type ["REG_PROV" "SMAL_PROV"])))
 
 (deftest delete-tag-general
   (cd-spec/general-delete-test :tag ["CMR"]))
