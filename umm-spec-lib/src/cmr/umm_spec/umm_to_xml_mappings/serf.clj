@@ -86,9 +86,8 @@
 (defn- create-service-provider-personnel
   "Converts a UMM-S Responsibility to a SERF Personnel element"
   [responsibilities] 
-  (for [responsibility responsibilities
-        :let [{{:keys [Contacts Addresses Person]} :Party} responsibility]
-        :when (= (:Role responsibility) "RESOURCEPROVIDER")]
+  (for [responsibility (take 1 (filter #(= "RESOURCEPROVIDER" (:Role %)) responsibilities))
+        :let [{{:keys [Contacts Addresses Person]} :Party} responsibility]]
     [:Personnel 
      [:Role (or (get umm-roles->serf-roles (:Role responsibility)) not-provided)]
      [:First_Name (:FirstName Person)]
@@ -244,8 +243,7 @@
       [:Abstract (:Abstract s)] 
       [:Purpose (:Purpose s)]]
      (create-related-urls s)
-     (for [ma (:MetadataAssociations s)]
-       [:Parent_SERF (:EntryId ma)])
+      [:Parent_SERF (:EntryId (first (:MetadataAssociations s)))]
      (create-idn-node s)
      [:Metadata_Name 
       (or (:Value (first (filter #(= "Metadata_Name" (:Name %)) (:AdditionalAttributes s)))) not-provided)]

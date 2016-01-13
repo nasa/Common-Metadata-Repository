@@ -669,14 +669,22 @@
                                                  :Description (format "Root SERF %s Object" attribute-name)
                                                  :Value su/not-provided
                                                  :Group nil}))))
+
 (defn- default-serf-additional-attributes
-  "Strips out attributes not required in serf from expected-conversion"
+  "Modifies attributes in serf from expected-conversion"
   [aa]
+  (let [u-date (:UpdateDate aa)]
   (-> aa
       (select-keys [:Description :Name :Value :Group :UpdateDate :DataType :Value])
       (assoc :Name (or (:Name aa) su/not-provided))
-      (cmn/map->AdditionalAttributeType)))
+      (cmn/map->AdditionalAttributeType))))
 
+(defn- fix-serf-aa-update-date-format
+  "Fixes SERF update-date format to conform to a specific rule"
+  [aa]
+  (if-let [u-date (:UpdateDate aa)]
+    (assoc aa :UpdateDate (t/date-time (t/year u-date) (t/month u-date) (t/day u-date)))
+    aa))
 (defn- fix-expected-serf-additional-attributes
   "Check and see if Metadata_Name and Metadata_Version are in serf additional attributes.
   If not, you need to inject them so that a comparison will work"
@@ -692,13 +700,12 @@
 
 
 (defn- make-sure-organization-exists
-  "Make sure a UMM-S Responsibilities element contains at least one role that can correlate
+  "Make sure a UMM-S Responsibilities element contains exactly one role that can correlate
   to a SERF 'SERVICE PROVIDER CONTACT' role"
   [resps]
-  (cmr.common.dev.capture-reveal/capture-all)
   (if (some #(= serf-organization-role (:Role %)) resps)
     (concat (remove #(= serf-organization-role (:Role %)) resps) 
-          (filter #(= serf-organization-role (:Role %)) resps))
+          (take 1 (filter #(= serf-organization-role (:Role %)) resps)))
     (conj resps
           (cmn/map->ResponsibilityType 
             {:Role serf-organization-role
@@ -719,11 +726,13 @@
 
 (defn- serf-expected-person
   [person]
-  (assoc
-    person :Uuid nil
+   (-> person 
+    (assoc
+    :Uuid nil
     :FirstName (:FirstName person)
     :MiddleName (:MiddleName person)
-    :LastName (or (:LastName person) su/not-provided)))
+    :LastName (or (:LastName person) su/not-provided))
+    cmn/map->PersonType))
 
 (defn- remove-organization-role-and-related-urls
   "Removes an organization-role and related-urls if present from a UMM-S Responsibility"
@@ -742,10 +751,13 @@
     ;; SERF only recognizes OrganizationName under a RESOURCEPROVIDER role. 
     (if (= serf-organization-role Role)
       (-> resp
-          (assoc-in [:Party :Person :Uuid] nil)
+          (update-in [:Party :Person] #(or % (cmn/map->PersonType {:LastName su/not-provided})))
           (update-in [:Party :OrganizationName] #(or % 
                                                     (cmn/map->OrganizationNameType 
-                                                      {:ShortName su/not-provided}))))
+                                                      {:ShortName su/not-provided
+                                                       :Uuid nil})))
+          (assoc-in [:Party :OrganizationName :Uuid] nil)
+          (assoc-in [:Party :Person :Uuid] nil))
       (let [resp (remove-organization-role-and-related-urls resp)]
         (if (seq (:Person (:Party resp)))
           resp
@@ -809,6 +821,7 @@
          :IssueIdentification nil
          :Editor nil
          :ReleaseDate nil
+         :OtherCitationDetails nil
          :RelatedUrl (fix-publication-reference-url (:RelatedUrl citation))))
 
 (defn- convert-to-vector
@@ -820,6 +833,29 @@
   (cmr.common.dev.capture-reveal/capture-all)
   (filter #(some val %) objects))
 
+(defn- fix-serf-doi
+  [pubref]
+  (if (:DOI pubref)
+    (assoc-in pubref [:DOI :Authority] nil)
+    pubref ))
+
+(defn- fix-access-constraints
+  [access-constraint]
+  (if access-constraint
+    (assoc access-constraint :Value nil)
+    access-constraint))
+
+(defn fix-serf-project
+  [project]
+  (-> project
+      (assoc :EndDate nil :StartDate nil :Campaigns nil)))
+
+(defn fix-metadata-associations
+  [metadata-association]
+  (if-let [ma (seq (take 1 metadata-association))]
+    ma
+    metadata-association))
+
 (defmethod convert-internal :serf
   [umm-service _]
   (cmr.common.dev.capture-reveal/capture-all)
@@ -829,13 +865,18 @@
       (update-in-each [:AdditionalAttributes] default-serf-additional-attributes)
       (update-in [:AdditionalAttributes] convert-to-vector)
       (update-in [:AdditionalAttributes] fix-expected-serf-additional-attributes)
+      (update-in-each [:AdditionalAttributes] fix-serf-aa-update-date-format)
       (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
       (update-in [:MetadataDates] expected-metadata-dates-for-serf)
       (update-in-each [:ServiceCitation] expected-serf-service-citation)
       (update-in [:ServiceCitation] remove-empty-objects)
-      (update-in-each [:MetadataAssociations] assoc :Description nil :Type nil)
-      (update-in [:AccessConstraints] assoc :Value nil)
-      (update-in-each [:PublicationReferences] assoc-in [:DOI :Authority] nil)
+      (update-in [:ServiceCitation] seq)
+      (update-in-each [:Projects] fix-serf-project)
+      (update-in-each [:Platforms] assoc :Type nil :Characteristics nil)
+      (update-in [:AccessConstraints] fix-access-constraints)
+      (update-in-each [:MetadataAssociations] assoc :Description nil :Type nil :Version nil)
+      (update-in [:MetadataAssociations] fix-metadata-associations)
+      (update-in-each [:PublicationReferences] fix-serf-doi)
       (update-in-each [:PublicationReferences] update-in [:RelatedUrl] fix-publication-reference-url)
       ))
 

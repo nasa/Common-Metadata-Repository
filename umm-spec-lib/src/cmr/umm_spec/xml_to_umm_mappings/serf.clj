@@ -246,7 +246,7 @@
    :ServiceCitation (parse-service-citations doc)
    :Quality (value-of doc "/SERF/Quality")
    :UseConstraints (value-of doc "/SERF/Use_Constraints")
-   :AccessConstraints {:Description (value-of doc "/SERF/Access_Constraints")}
+   :AccessConstraints {:Description (value-of doc "/SERF/Access_Constraints") :Value nil}
    :MetadataAssociations (parse-metadata-associations doc)
    :PublicationReferences (parse-publication-references doc)
    :ISOTopicCategories (values-at doc "/SERF/ISO_Topic_Category")

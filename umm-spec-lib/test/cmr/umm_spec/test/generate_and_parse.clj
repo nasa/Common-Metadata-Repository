@@ -91,11 +91,11 @@
       (is (= (expected-conversion/convert user/failing-value :serf)
            (xml-round-trip :service :serf user/failing-value)))
 
-            (is (= (:MetadataDates (expected-conversion/convert user/failing-value :serf))
-           (:MetadataDates (xml-round-trip :service :serf user/failing-value))))
+            (is (= (:Responsibilities (expected-conversion/convert user/failing-value :serf))
+           (:Responsibilities (xml-round-trip :service :serf user/failing-value))))
 
-  (is (= (:MetadataDates (expected-conversion/convert expected-conversion/example-service-record :serf))
-    (:MetadataDates (xml-round-trip :service :serf expected-conversion/example-service-record))))
+  (is (= (:Responsibilities (expected-conversion/convert expected-conversion/example-service-record :serf))
+    (:Responsibilities (xml-round-trip :service :serf expected-conversion/example-service-record))))
 
 (is (= (expected-conversion/convert expected-conversion/example-service-record :serf)
     (xml-round-trip :service :serf expected-conversion/example-service-record)))
