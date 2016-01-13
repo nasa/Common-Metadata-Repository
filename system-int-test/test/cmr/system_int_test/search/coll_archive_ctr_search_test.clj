@@ -137,7 +137,8 @@
                          (search/find-refs :collection {:data-center "S*", "options[data-center][pattern]" "true"}))))
     (testing "search data center using AND/OR operators"
       (are [kvs items] (d/refs-match? items (search/find-refs :collection kvs))
-           {"data-center[]" ["SEDAC AC" "Larc" "Sedac AC"]} [coll3 coll4 coll5 coll6 coll7]))
+           {"data-center[]" ["SEDAC AC" "Larc" "Sedac AC"]} [coll3 coll4 coll5 coll6 coll7]
+           {"data-center[]" ["SEDAC AC" "SEDAC PC"] "options[data-center][and]" "true"} [coll5]))
 
     (testing "Search collections by data center using JSON Query."
       (are [items search]
@@ -155,6 +156,7 @@
            [coll5 coll7] {:data_center {:short_name "Sedac AC"}}
            [] {:data_center {:short_name "BLAH"}}
            [] {:and [{:data_center {:short_name "SEDAC AC"}} {:data_center {:short_name "Larc"}}]}
+           [coll5] {:and [{:data_center {:short_name "SEDAC AC"}} {:data_center {:short_name "SEDAC PC"}}]}
            [coll1 coll2 coll3 coll4 coll6 kms-coll1 kms-coll2 dif-coll1] {:not {:data_center {:short_name "SEDAC AC"}}}
 
            ;; Wildcards
