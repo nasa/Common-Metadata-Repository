@@ -80,10 +80,10 @@
                                        :NumberOfOrbits 2.0
                                        :StartCircularLatitude 50.0}}
      :TilingIdentificationSystems [{:TilingIdentificationSystemName "Tiling System Name"
-                                     :Coordinate1 {:MinimumValue 1.0
-                                                   :MaximumValue 10.0}
-                                     :Coordinate2 {:MinimumValue 1.0
-                                                   :MaximumValue 10.0}}]
+                                    :Coordinate1 {:MinimumValue 1.0
+                                                  :MaximumValue 10.0}
+                                    :Coordinate2 {:MinimumValue 1.0
+                                                  :MaximumValue 10.0}}]
      :AccessConstraints {:Description "Restriction Comment: Access constraints"
                          :Value "0"}
      :UseConstraints "Restriction Flag: Use constraints"
@@ -338,23 +338,6 @@
                            :LongName "Open Geospatial Consortium/Web Coverage Service"}]}))
 
 (defn- prune-empty-maps
-  "If x is a map, returns nil if all of the map's values are nil, otherwise returns the map with
-  prune-empty-maps applied to all values. If x is a collection, returns the result of keeping the
-  non-nil results of calling prune-empty-maps on each value in x."
-  [x]
-  (cond
-    (map? x) (let [pruned (reduce (fn [m [k v]]
-                                    (assoc m k (prune-empty-maps v)))
-                                  x
-                                  x)]
-               (when (seq (keep val pruned))
-                 pruned))
-    (vector? x) (when-let [pruned (prune-empty-maps (seq x))]
-                  (vec pruned))
-    (seq? x)    (seq (keep prune-empty-maps x))
-    :else x))
-
-(defn- prune-nil-maps
   "If x is a map, returns nil if all of the map's values are nil, otherwise returns the map with
   prune-empty-maps applied to all values. If x is a collection, returns the result of keeping the
   non-nil results of calling prune-empty-maps on each value in x."
@@ -693,17 +676,15 @@
     aas
     (conj aas (cmn/map->AdditionalAttributeType {:Name attribute-name
                                                  :Description (format "Root SERF %s Object" attribute-name)
-                                                 :Value su/not-provided
-                                                 :Group nil}))))
+                                                 :Value su/not-provided}))))
 
 (defn- default-serf-additional-attributes
   "Modifies attributes in serf from expected-conversion"
   [aa]
-  (let [u-date (:UpdateDate aa)]
   (-> aa
       (select-keys [:Description :Name :Value :Group :UpdateDate :DataType :Value])
-      (assoc :Name (or (:Name aa) su/not-provided))
-      (cmn/map->AdditionalAttributeType))))
+      (assoc :Name (get aa :Name su/not-provided))
+      (cmn/map->AdditionalAttributeType)))
 
 (defn- fix-serf-aa-update-date-format
   "Fixes SERF update-date format to conform to a specific rule"
@@ -711,6 +692,7 @@
   (if-let [u-date (:UpdateDate aa)]
     (assoc aa :UpdateDate (t/date-time (t/year u-date) (t/month u-date) (t/day u-date)))
     aa))
+
 (defn- fix-expected-serf-additional-attributes
   "Check and see if Metadata_Name and Metadata_Version are in serf additional attributes.
   If not, you need to inject them so that a comparison will work"
@@ -719,11 +701,17 @@
       (default-serf-required-additional-attributes "Metadata_Name")
       (default-serf-required-additional-attributes "Metadata_Version")))
 
+(defn- convert-serf-additional-attributes
+  [additional-attributes]
+  (fix-expected-serf-additional-attributes 
+    (vec (for [attribute additional-attributes]
+      (-> attribute
+          default-serf-additional-attributes
+          fix-serf-aa-update-date-format)))))
+
 (defn- expected-serf-contacts
   [contacts]
   (seq (filter #(#{"email" "phone" "fax"} (:Type %)) contacts)))
-
-
 
 (defn- make-sure-organization-exists
   "Make sure a UMM-S Responsibilities element contains exactly one role that can correlate
@@ -731,7 +719,7 @@
   [resps]
   (if (some #(= serf-organization-role (:Role %)) resps)
     (concat (remove #(= serf-organization-role (:Role %)) resps) 
-          (take 1 (filter #(= serf-organization-role (:Role %)) resps)))
+            (take 1 (filter #(= serf-organization-role (:Role %)) resps)))
     (conj resps
           (cmn/map->ResponsibilityType 
             {:Role serf-organization-role
@@ -752,43 +740,40 @@
 
 (defn- serf-expected-person
   [person]
-   (-> person 
-    (assoc
-    :Uuid nil
-    :FirstName (:FirstName person)
-    :MiddleName (:MiddleName person)
-    :LastName (or (:LastName person) su/not-provided))
-    cmn/map->PersonType))
+  (-> person 
+      (assoc
+        :Uuid nil
+        :FirstName (:FirstName person)
+        :MiddleName (:MiddleName person)
+        :LastName (or (:LastName person) su/not-provided))
+      cmn/map->PersonType))
 
 (defn- remove-organization-role-and-related-urls
   "Removes an organization-role and related-urls if present from a UMM-S Responsibility"
   [resp]
-  (cmr.common.dev.capture-reveal/capture-all)
   (-> resp
-  (update-in [:Party :Person] serf-expected-person)
-  (assoc-in [:Party :OrganizationName] nil)
-  (assoc-in [:Party :RelatedUrls] nil)))
+      (update-in [:Party :Person] serf-expected-person)
+      (assoc-in [:Party :OrganizationName] nil)
+      (assoc-in [:Party :RelatedUrls] nil)))
 
 (defn- fix-organization-name-in-party
   "Modifies generated UMM-S Responsibility to conform to SERF rules"
   [resp]
-  (cmr.common.dev.capture-reveal/capture-all)
   (let [{:keys [Role Party]} resp]
     ;; SERF only recognizes OrganizationName under a RESOURCEPROVIDER role. 
     (if (= serf-organization-role Role)
       (-> resp
-          (update-in [:Party :Person] #(or % (cmn/map->PersonType {:LastName su/not-provided})))
-          (update-in [:Party :OrganizationName] #(or % 
-                                                    (cmn/map->OrganizationNameType 
-                                                      {:ShortName su/not-provided
-                                                       :Uuid nil})))
+          (update-in [:Party :Person] (fn [p] (or p (cmn/map->PersonType {:LastName su/not-provided}))))
+          (update-in [:Party :OrganizationName] (fn [o] (or o 
+                                                            (cmn/map->OrganizationNameType 
+                                                              {:ShortName su/not-provided
+                                                               :Uuid nil}))))
           (assoc-in [:Party :OrganizationName :Uuid] nil)
           (assoc-in [:Party :Person :Uuid] nil))
       (let [resp (remove-organization-role-and-related-urls resp)]
         (if (seq (:Person (:Party resp)))
           resp
-          (-> resp 
-            (assoc-in [:Party] (cmn/map->PersonType {:LastName su/not-provided}))))))))
+          (assoc-in resp [:Party] (cmn/map->PersonType {:LastName su/not-provided})))))))
 
 (defn- serf-expected-addresses 
   "Modify UMM-S Addresses to conform to SERF rules"
@@ -807,29 +792,26 @@
 
 (defn- expected-related-urls-for-serf-party
   [related-urls]
-  (seq 
-    (for [related-url (take 1 related-urls)]
-      (cmn/map->RelatedUrlType {:URLs (take 1 (:URLs related-url))}))))
+  (when-let [related-url (first related-urls)] 
+    [(cmn/map->RelatedUrlType {:URLs (take 1 (:URLs related-url))})]))
 
 (defn- expected-serf-responsibility
   [resp]
-  (cmr.common.dev.capture-reveal/capture resp)
   (-> resp
       (update-in [:Party :RelatedUrls] expected-related-urls-for-serf-party)
       fix-organization-name-in-party
       (update-in [:Party :Contacts] expected-serf-contacts)
-      (update-in [:Party] remove-party-elements-not-in-serf)
-      ))
+      (update-in [:Party] remove-party-elements-not-in-serf)))
 
 (defn- filter-unused-serf-datetypes
   [dates]
-  (seq (remove #(= "DELETE" (:Type %)) dates)))
+  (remove #(= "DELETE" (:Type %)) dates))
 
 (defn- filter-unique-serf-dates
   [dates]
   (let [dates-by-type (group-by :Type dates)] 
-     (keep #(first (get dates-by-type %))
-           ["CREATE" "UPDATE" "REVIEW"])))
+    (keep #(first (get dates-by-type %))
+          ["CREATE" "UPDATE" "REVIEW"])))
 
 
 (defn- expected-metadata-dates-for-serf
@@ -842,11 +824,12 @@
 (defn- fix-publication-reference-url
   [some-url]
   (when some-url
-  (cmn/map->RelatedUrlType {:URLs (->> some-url :URLs (take 1))})))
+    (cmn/map->RelatedUrlType {:URLs (->> some-url :URLs (take 1))})))
 
 (defn- expected-serf-service-citation
   [citation]
-  (assoc citation :DOI nil 
+  (assoc citation 
+         :DOI nil 
          :ReleasePlace nil 
          :SeriesName nil 
          :DataPresentationForm nil
@@ -856,13 +839,8 @@
          :OtherCitationDetails nil
          :RelatedUrl (fix-publication-reference-url (:RelatedUrl citation))))
 
-(defn- convert-to-vector
-  [some-list]
-  (vec some-list))
-
 (defn remove-empty-objects
   [objects]
-  (cmr.common.dev.capture-reveal/capture-all)
   (filter #(some val %) objects))
 
 (defn- fix-serf-doi
@@ -879,8 +857,7 @@
 
 (defn fix-serf-project
   [project]
-  (-> project
-      (assoc :EndDate nil :StartDate nil :Campaigns nil)))
+  (assoc project :EndDate nil :StartDate nil :Campaigns nil))
 
 (defn fix-metadata-associations
   [metadata-association]
@@ -890,34 +867,28 @@
 
 (defmethod convert-internal :serf
   [umm-service _]
-  (cmr.common.dev.capture-reveal/capture-all)
   (-> umm-service
       (update-in [:Responsibilities] make-sure-organization-exists)
       (update-in-each [:Responsibilities] expected-serf-responsibility)
-      (update-in-each [:AdditionalAttributes] default-serf-additional-attributes)
-      (update-in [:AdditionalAttributes] convert-to-vector)
-      (update-in [:AdditionalAttributes] fix-expected-serf-additional-attributes)
-      (update-in-each [:AdditionalAttributes] fix-serf-aa-update-date-format)
+      (update-in [:AdditionalAttributes] convert-serf-additional-attributes)
       (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
       (update-in [:MetadataDates] expected-metadata-dates-for-serf)
       (update-in-each [:ServiceCitation] expected-serf-service-citation)
       (update-in [:ServiceCitation] remove-empty-objects)
       (update-in [:ServiceCitation] seq)
       (update-in-each [:Projects] fix-serf-project)
-      (update-in-each [:Platforms] assoc :Type nil :Characteristics nil)
       (update-in [:AccessConstraints] fix-access-constraints)
       (update-in-each [:MetadataAssociations] assoc :Description nil :Type nil :Version nil)
       (update-in [:MetadataAssociations] fix-metadata-associations)
       (update-in-each [:PublicationReferences] fix-serf-doi)
       (update-in-each [:PublicationReferences] update-in [:RelatedUrl] fix-publication-reference-url)
-      (assoc :Platforms nil)
-      ))
+      (assoc :Platforms nil)))
 
 ;; ISO 19115-2
 
 (defn propagate-first
   "Returns coll with the first element's value under k assoc'ed to each element in coll.
-
+  
   Example: (propagate-first :x [{:x 1} {:y 2}]) => [{:x 1} {:x 1 :y 2}]"
   [k coll]
   (let [v (get (first coll) k)]
@@ -1175,9 +1146,9 @@
   (if (contains? #{:serf} metadata-format)
     record
     (reduce (fn [r field]
-            (assoc r field nil))
-          record
-          not-implemented-fields)))
+              (assoc r field nil))
+            record
+            not-implemented-fields)))
 
 ;;; Public API
 
