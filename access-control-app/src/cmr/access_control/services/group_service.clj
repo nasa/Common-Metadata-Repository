@@ -1,7 +1,6 @@
 (ns cmr.access-control.services.group-service
     "Provides functions for creating, updating, deleting, retrieving, and finding groups."
     (:require [cmr.transmit.metadata-db2 :as mdb]
-              [cmr.transmit.metadata-db :as mdb-legacy]
               [cmr.transmit.echo.tokens :as tokens]
               [cmr.common.concepts :as concepts]
               [cmr.common.services.errors :as errors]
@@ -58,7 +57,7 @@
   "Validates that the groups provider exists."
   [context {:keys [provider-id]}]
   (when (and provider-id
-             (not (some #{provider-id} (map :provider-id (mdb-legacy/get-providers context)))))
+             (not (some #{provider-id} (map :provider-id (mdb/get-providers context)))))
     (errors/throw-service-error :not-found (msg/provider-does-not-exist provider-id))))
 
 

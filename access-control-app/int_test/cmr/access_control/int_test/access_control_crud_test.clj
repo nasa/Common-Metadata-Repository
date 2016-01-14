@@ -147,10 +147,14 @@
       (is (= {:status 400
               :errors ["Concept-id [F100-CMR] is not valid."]}
              (u/get-group "F100-CMR"))))
-    (testing "Retrieve group with bad provider in concept id"
+    (testing "Retrieve group with concept id for a different concept type"
       (is (= {:status 400
-              :errors ["[T100-PROV1] is not a valid group concept id."]}
-             (u/get-group "T100-PROV1"))))
+              :errors ["[C100-PROV1] is not a valid group concept id."]}
+             (u/get-group "C100-PROV1"))))
+    (testing "Retrieve group with bad provider in concept id"
+      (is (= {:status 404
+              :errors ["Group could not be found with concept id [AG100-PROV3]"]}
+             (u/get-group "AG100-PROV3"))))
     ;; TODO CMR-2131 uncomment when implementing delete
     #_(testing "Retrieve deleted group"
         (u/delete-group token concept-id)

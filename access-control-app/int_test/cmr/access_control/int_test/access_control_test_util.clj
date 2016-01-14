@@ -4,7 +4,6 @@
             [cmr.transmit.config :as config]
             [cmr.transmit.echo.tokens :as tokens]
             [cmr.transmit.metadata-db2 :as mdb]
-            [cmr.transmit.metadata-db :as mdb-old]
             [cmr.access-control.system :as system]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.mock-echo.system :as mock-echo-system]
@@ -79,9 +78,10 @@
      (mdb/reset (conn-context))
      (ac/reset (conn-context))
      (doseq [[provider-guid provider-id] provider-map]
-       (mdb-old/create-provider (conn-context) {:provider-id provider-id}))
+       (mdb/create-provider (assoc (conn-context) :token (config/echo-system-token))
+                            {:provider-id provider-id}))
      (e/create-providers (conn-context) provider-map)
-     ;; Temporarily granting all admin. Remove this when implementing  CMR-2133, CMR-2134
+     ;; TODO Temporarily granting all admin. Remove this when implementing  CMR-2133, CMR-2134
      (e/grant-all-admin (conn-context))
 
      (f))))

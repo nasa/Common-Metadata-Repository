@@ -14,6 +14,14 @@
   [conn]
   (format "%s/reset" (conn/root-url conn)))
 
+(defn- providers-url
+  [conn]
+  (format "%s/providers" (conn/root-url conn)))
+
+(defn- provider-url
+  [conn provider-id]
+  (format "%s/%s" (providers-url conn) provider-id))
+
 (defn- concepts-url
   [conn]
   (format "%s/concepts" (conn/root-url conn)))
@@ -50,6 +58,36 @@
    (reset context false))
   ([context raw]
    (h/request context :metadata-db {:url-fn reset-url, :method :post, :raw? raw})))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Provider functions
+
+(h/defcreator create-provider :metadata-db providers-url)
+(h/defupdater update-provider :metadata-db provider-url)
+(h/defdestroyer delete-provider :metadata-db provider-url)
+
+(defn get-providers
+  "Returns the list of providers configured in the metadata db. Valid options are
+  * :raw? - set to true to indicate the raw response should be returned. See
+  cmr.transmit.http-helper for more info. Default false.
+  * token - the user token to use. If not set the token in the context will
+  be used.
+  * http-options - Other http-options to be sent to clj-http."
+  ([context]
+   (get-providers context nil))
+  ([context {:keys [raw? http-options token]}]
+   (let [token (or token (:token context))
+         headers (when token {config/token-header token})]
+     (h/request context :metadata-db
+                {:url-fn providers-url
+                 :method :get
+                 :raw? raw?
+                 :http-options (merge {:accept :json
+                                       :headers headers}
+                                      http-options)}))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Concept functions
 
 (h/defcreator save-concept :metadata-db concepts-url)
 

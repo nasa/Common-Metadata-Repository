@@ -154,7 +154,7 @@
                  {:url-fn #(~url-fn % concept-id#)
                   :response-handler (partial update-response-handler concept-id#)
                   :method :put
-                  :raw? true
+                  :raw? raw?#
                   :http-options (merge {:body (json/generate-string item#)
                                         :content-type :json
                                         :headers headers#

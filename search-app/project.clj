@@ -40,8 +40,8 @@
                       (pjstadig.humane-test-output/activate!)]}
 
    ;; This profile specifically here for generating documentation. It's faster than using the regular
-   ;; profile. We're not sure why though. There must be something hooking into the regular profile
-   ;; that's running at the end.
+   ;; profile. An agent pool is being started when using the default profile which causes the wait of
+   ;; 60 seconds before allowing the JVM to shutdown since no call to shutdown-agents is made.
    ;; Generate docs with: lein with-profile docs generate-docs
    :docs {}
 

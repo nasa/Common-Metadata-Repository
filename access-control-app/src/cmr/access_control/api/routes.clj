@@ -70,7 +70,6 @@
   (-> (group-service/get-group context concept-id)
       api-response))
 
-
 (def admin-api-routes
   "The administrative control routes."
   (routes
