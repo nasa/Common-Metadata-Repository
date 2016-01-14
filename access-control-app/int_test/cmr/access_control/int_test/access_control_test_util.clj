@@ -116,20 +116,20 @@
   ([token group]
    (create-group token group nil))
   ([token group options]
-   (let [options (merge {:is-raw? true :token token} options)]
+   (let [options (merge {:raw? true :token token} options)]
      (process-response (ac/create-group (conn-context) group options)))))
 
 (defn get-group
   "Retrieves a group by concept id"
   [concept-id]
-  (process-response (ac/get-group (conn-context) concept-id {:is-raw? true})))
+  (process-response (ac/get-group (conn-context) concept-id {:raw? true})))
 
 (defn update-group
   "Updates a group."
   ([token concept-id group]
    (update-group token concept-id group nil))
   ([token concept-id group options]
-   (let [options (merge {:is-raw? true :token token} options)]
+   (let [options (merge {:raw? true :token token} options)]
      (process-response (ac/update-group (conn-context) concept-id group options)))))
 
 (defn delete-group
@@ -137,13 +137,13 @@
   ([token concept-id]
    (delete-group token concept-id nil))
   ([token concept-id options]
-   (let [options (merge {:is-raw? true :token token} options)]
+   (let [options (merge {:raw? true :token token} options)]
      (process-response (ac/delete-group (conn-context) concept-id options)))))
 
 (defn search
   "Searches for groups using the given parameters"
   [params]
-  (process-response (ac/search-for-groups (conn-context) params {:is-raw? true})))
+  (process-response (ac/search-for-groups (conn-context) params {:raw? true})))
 
 (defn assert-group-saved
   "Checks that a group was persisted correctly in metadata db. The user-id indicates which user

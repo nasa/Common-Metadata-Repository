@@ -37,20 +37,20 @@
   ([token tag]
    (create-tag token tag nil))
   ([token tag options]
-   (let [options (merge {:is-raw? true :token token} options)]
+   (let [options (merge {:raw? true :token token} options)]
      (process-response (tt/create-tag (s/context) tag options)))))
 
 (defn get-tag
   "Retrieves a tag by concept id"
   [concept-id]
-  (process-response (tt/get-tag (s/context) concept-id {:is-raw? true})))
+  (process-response (tt/get-tag (s/context) concept-id {:raw? true})))
 
 (defn update-tag
   "Updates a tag."
   ([token concept-id tag]
    (update-tag token concept-id tag nil))
   ([token concept-id tag options]
-   (let [options (merge {:is-raw? true :token token} options)]
+   (let [options (merge {:raw? true :token token} options)]
      (process-response (tt/update-tag (s/context) concept-id tag options)))))
 
 
@@ -59,7 +59,7 @@
   ([token concept-id]
    (delete-tag token concept-id nil))
   ([token concept-id options]
-   (let [options (merge {:is-raw? true :token token} options)]
+   (let [options (merge {:raw? true :token token} options)]
      (process-response (tt/delete-tag (s/context) concept-id options)))))
 
 (defn associate-by-query
@@ -67,7 +67,7 @@
   ([token concept-id condition]
    (associate-by-query token concept-id condition nil))
   ([token concept-id condition options]
-   (let [options (merge {:is-raw? true :token token} options)]
+   (let [options (merge {:raw? true :token token} options)]
      (process-response (tt/associate-tag-by-query (s/context) concept-id {:condition condition} options)))))
 
 (defn disassociate-by-query
@@ -75,7 +75,7 @@
   ([token concept-id condition]
    (disassociate-by-query token concept-id condition nil))
   ([token concept-id condition options]
-   (let [options (merge {:is-raw? true :token token} options)]
+   (let [options (merge {:raw? true :token token} options)]
      (process-response (tt/disassociate-tag-by-query (s/context) concept-id {:condition condition} options)))))
 
 (defn save-tag
@@ -104,7 +104,7 @@
 (defn search
   "Searches for tags using the given parameters"
   [params]
-  (process-response (tt/search-for-tags (s/context) params {:is-raw? true})))
+  (process-response (tt/search-for-tags (s/context) params {:raw? true})))
 
 (defn assert-tag-saved
   "Checks that a tag was persisted correctly in metadata db. The tag should already have originator

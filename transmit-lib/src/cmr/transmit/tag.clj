@@ -32,20 +32,20 @@
 
 (defn associate-tag-by-query
   "Sends a request to associate the tag with collections found with a JSON query. Valid options are
-  * :is-raw? - set to true to indicate the raw response should be returned. See
+  * :raw? - set to true to indicate the raw response should be returned. See
   cmr.transmit.http-helper for more info. Default false.
   * token - the user token to use when creating the token. If not set the token in the context will
   be used.
   * http-options - Other http-options to be sent to clj-http."
   ([context concept-id query]
    (associate-tag-by-query context concept-id query nil))
-  ([context concept-id query {:keys [is-raw? token http-options]}]
+  ([context concept-id query {:keys [raw? token http-options]}]
    (let [token (or token (:token context))
          headers (when token {config/token-header token})]
      (h/request context :search
                 {:url-fn #(tag-associations-by-query-url % concept-id)
                  :method :post
-                 :is-raw? is-raw?
+                 :raw? raw?
                  :http-options (merge {:body (json/generate-string query)
                                        :content-type :json
                                        :headers headers
@@ -54,20 +54,20 @@
 
 (defn disassociate-tag-by-query
   "Sends a request to disassociate the tag with collections found with a JSON query. Valid options are
-  * :is-raw? - set to true to indicate the raw response should be returned. See
+  * :raw? - set to true to indicate the raw response should be returned. See
   cmr.transmit.http-helper for more info. Default false.
   * token - the user token to use when creating the token. If not set the token in the context will
   be used.
   * http-options - Other http-options to be sent to clj-http."
   ([context concept-id query]
    (disassociate-tag-by-query context concept-id query nil))
-  ([context concept-id query {:keys [is-raw? token http-options]}]
+  ([context concept-id query {:keys [raw? token http-options]}]
    (let [token (or token (:token context))
          headers (when token {config/token-header token})]
      (h/request context :search
                 {:url-fn #(tag-associations-by-query-url % concept-id)
                  :method :delete
-                 :is-raw? is-raw?
+                 :raw? raw?
                  :http-options (merge {:body (json/generate-string query)
                                        :content-type :json
                                        :headers headers
