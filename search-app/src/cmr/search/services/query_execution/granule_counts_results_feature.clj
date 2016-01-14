@@ -70,13 +70,14 @@
         spatial-temp-conds (extract-spatial-and-temporal-conditions coll-query)
         condition (if (seq collection-ids)
                     (gc/and-conds (cons (q/string-conditions :collection-concept-id collection-ids true)
-                                       spatial-temp-conds))
+                                        spatial-temp-conds))
                     ;; The results were empty so the granule count query doesn't need to find anything.
                     q/match-none)]
     (q/query {:concept-type :granule
               :condition condition
               ;; We don't need any results
               :page-size 0
+              :result-format :query-specified
               :aggregations {:granule-counts-by-collection-id
                              {:terms {:field :collection-concept-id
                                       :size (count collection-ids)}}}})))
@@ -93,8 +94,6 @@
   [context query elastic-results query-results feature]
   (->> query-results
        (extract-granule-count-query query)
-       (acl-service/add-acl-conditions-to-query context)
-       (c2s/reduce-query context)
-       (idx/execute-query context)
+       (query-execution/execute-query context)
        search-results->granule-counts
        (assoc query-results :granule-counts-map)))

@@ -360,8 +360,8 @@
   (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
   (def coll1 (d/ingest "PROV1" (dc/collection)))
   (ingest/delete-concept coll1)
-  (get-in user/system [:apps :metadata-db :db])
-  )
+  (get-in user/system [:apps :metadata-db :db]))
+
 
 (deftest delete-collection-test
   (let [coll1 (d/ingest "PROV1" (dc/collection))

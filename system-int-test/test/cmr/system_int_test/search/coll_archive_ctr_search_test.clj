@@ -120,6 +120,26 @@
            [kms-coll2] {:archive_center {:uuid "69db99c6-54d6-40b9-9f72-47eab9c34869"}}
            [kms-coll2] {:archive_center {:any "69db99c6*" :pattern true}}))
 
+    (testing "search coll by data center"
+      (are [org-name items] (d/refs-match? items (search/find-refs :collection {:data-center org-name}))
+           "Larc" [coll3 coll4 coll6]
+           "SEDAC AC" [coll5 coll7]
+           "SEDAC PC" [coll5]
+           "Sedac AC" [coll5 coll7]
+           "Dist center" [dif-coll1]
+           "BLAH" []))
+    (testing "data center case sensitivity ..."
+      (are [kvs items] (d/refs-match? items (search/find-refs :collection kvs))
+           {:data-center "Sedac AC", "options[data-center][ignore-case]" "false"} [coll7]
+           {:data-center "sedac ac", "options[data-center][ignore-case]" "true"} [coll5 coll7]))
+    (testing "search data center using wild cards"
+      (is (d/refs-match? [coll5 coll7]
+                         (search/find-refs :collection {:data-center "S*", "options[data-center][pattern]" "true"}))))
+    (testing "search data center using AND/OR operators"
+      (are [kvs items] (d/refs-match? items (search/find-refs :collection kvs))
+           {"data-center[]" ["SEDAC AC" "Larc" "Sedac AC"]} [coll3 coll4 coll5 coll6 coll7]
+           {"data-center[]" ["SEDAC AC" "SEDAC PC"] "options[data-center][and]" "true"} [coll5]))
+
     (testing "Search collections by data center using JSON Query."
       (are [items search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
@@ -136,6 +156,7 @@
            [coll5 coll7] {:data_center {:short_name "Sedac AC"}}
            [] {:data_center {:short_name "BLAH"}}
            [] {:and [{:data_center {:short_name "SEDAC AC"}} {:data_center {:short_name "Larc"}}]}
+           [coll5] {:and [{:data_center {:short_name "SEDAC AC"}} {:data_center {:short_name "SEDAC PC"}}]}
            [coll1 coll2 coll3 coll4 coll6 kms-coll1 kms-coll2 dif-coll1] {:not {:data_center {:short_name "SEDAC AC"}}}
 
            ;; Wildcards

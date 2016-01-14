@@ -38,6 +38,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Entry id](#c-entry-id)
     * [Dif entry id](#c-dif-entry-id)
     * [Archive center](#c-archive-center)
+    * [Data center](#c-data-center)
     * [Temporal](#c-temporal)
     * [Project](#c-project)
     * [Updated since](#c-updated-since)
@@ -933,6 +934,19 @@ Find collections matching 'archive_center' param value
 Find collections matching any of the 'archive_center' param values
 
      curl "%CMR-ENDPOINT%/collections?archive_center\[\]=Larc&archive_center\[\]=SEDAC"
+
+#### <a name="c-data-center"></a> Find collections by data center
+
+This supports `pattern`, `and`, and `ignore_case`.
+
+Find collections matching 'data_center' param value
+
+    curl "%CMR-ENDPOINT%/collections?data_center\[\]=LARC"
+    curl "%CMR-ENDPOINT%/collections?data_center=Sedac+AC"
+
+Find collections matching any of the 'data_center' param values
+
+     curl "%CMR-ENDPOINT%/collections?data_center\[\]=Larc&data_center\[\]=SEDAC"
 
 #### <a name="c-temporal"></a> Find collections with temporal
 

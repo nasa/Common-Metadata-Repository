@@ -34,6 +34,10 @@
    ;; The short name associated with the collection.
    ShortName
 
+   ;; Name of the two-dimensional tiling system for the collection. Previously called
+   ;; TwoDCoordinateSystem.
+   TilingIdentificationSystem
+
    ;; A brief description of the collection or service the metadata represents.
    Abstract
 
@@ -52,10 +56,6 @@
 
    ;; Suggested usage or purpose for the collection data or service.
    Purpose
-
-   ;; Name of the two-dimensional tiling system for the collection. Previously called
-   ;; TwoDCoordinateSystem.
-   TilingIdentificationSystems
 
    ;; Describes key bibliographic citations pertaining to the collection.
    PublicationReferences

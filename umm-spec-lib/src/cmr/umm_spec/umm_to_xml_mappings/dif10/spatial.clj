@@ -90,12 +90,13 @@
        [:Vertical_Spatial_Info
         (elements-from vert :Type :Value)])
      [:Spatial_Info
-      [:Spatial_Coverage_Type u/not-provided]
-      (for [sys (:TilingIdentificationSystems c)]
-        [:TwoD_Coordinate_System
-         [:TwoD_Coordinate_System_Name (:TilingIdentificationSystemName sys)]
-         (tiling-system-coord-element sys :Coordinate1)
-         (tiling-system-coord-element sys :Coordinate2)])]]
+      (when-let [sys (:TilingIdentificationSystem c)]
+        (list
+          [:Spatial_Coverage_Type u/not-provided]
+          [:TwoD_Coordinate_System
+           [:TwoD_Coordinate_System_Name (:TilingIdentificationSystemName sys)]
+           (tiling-system-coord-element sys :Coordinate1)
+           (tiling-system-coord-element sys :Coordinate2)]))]]
 
     ;; Default Spatial_Coverage
     [:Spatial_Coverage

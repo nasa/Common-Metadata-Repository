@@ -31,46 +31,46 @@
   "Gets the stored keys of cached values as a raw response."
   ([context]
    (get-keys context false))
-  ([context is-raw]
-   (h/request context :cubby {:url-fn keys-url :method :get :raw? is-raw})))
+  ([context raw]
+   (h/request context :cubby {:url-fn keys-url :method :get :raw? raw})))
 
 (defn get-value
   "Gets the value associated with the given key."
   ([context key-name]
    (get-value context key-name false))
-  ([context key-name is-raw]
-   (h/request context :cubby {:url-fn (partial key-url key-name), :method :get, :raw? is-raw})))
+  ([context key-name raw]
+   (h/request context :cubby {:url-fn (partial key-url key-name), :method :get, :raw? raw})))
 
 (defn set-value
   "Associates a value with the given key."
   ([context key-name value]
    (set-value context key-name value false))
-  ([context key-name value is-raw]
+  ([context key-name value raw]
    (h/request context :cubby {:url-fn (partial key-url key-name)
                               :method :put
-                              :raw? is-raw
+                              :raw? raw
                               :http-options {:body value}})))
 
 (defn delete-value
   "Dissociates the value with the given key."
   ([context key-name]
    (delete-value context key-name false))
-  ([context key-name is-raw]
-   (h/request context :cubby {:url-fn (partial key-url key-name), :method :delete, :raw? is-raw})))
+  ([context key-name raw]
+   (h/request context :cubby {:url-fn (partial key-url key-name), :method :delete, :raw? raw})))
 
 (defn delete-all-values
   "Deletes all values"
   ([context]
    (delete-all-values context false))
-  ([context is-raw]
-   (h/request context :cubby {:url-fn keys-url, :method :delete, :raw? is-raw})))
+  ([context raw]
+   (h/request context :cubby {:url-fn keys-url, :method :delete, :raw? raw})))
 
 (defn reset
   "Clears all values in the cache service"
   ([context]
    (reset context false))
-  ([context is-raw]
-   (h/request context :cubby {:url-fn reset-url, :method :post, :raw? is-raw})))
+  ([context raw]
+   (h/request context :cubby {:url-fn reset-url, :method :post, :raw? raw})))
 
 (defn get-cubby-health-fn
   "Returns the health status of cubby"
