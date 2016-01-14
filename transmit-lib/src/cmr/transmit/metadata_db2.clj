@@ -14,6 +14,14 @@
   [conn]
   (format "%s/reset" (conn/root-url conn)))
 
+(defn- providers-url
+  [conn]
+  (format "%s/providers" (conn/root-url conn)))
+
+(defn- provider-url
+  [conn provider-id]
+  (format "%s/%s" (providers-url conn) provider-id))
+
 (defn- concepts-url
   [conn]
   (format "%s/concepts" (conn/root-url conn)))
@@ -48,8 +56,38 @@
   "Resets the metadata db service"
   ([context]
    (reset context false))
-  ([context is-raw]
-   (h/request context :metadata-db {:url-fn reset-url, :method :post, :raw? is-raw})))
+  ([context raw]
+   (h/request context :metadata-db {:url-fn reset-url, :method :post, :raw? raw})))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Provider functions
+
+(h/defcreator create-provider :metadata-db providers-url)
+(h/defupdater update-provider :metadata-db provider-url)
+(h/defdestroyer delete-provider :metadata-db provider-url)
+
+(defn get-providers
+  "Returns the list of providers configured in the metadata db. Valid options are
+  * :raw? - set to true to indicate the raw response should be returned. See
+  cmr.transmit.http-helper for more info. Default false.
+  * token - the user token to use. If not set the token in the context will
+  be used.
+  * http-options - Other http-options to be sent to clj-http."
+  ([context]
+   (get-providers context nil))
+  ([context {:keys [raw? http-options token]}]
+   (let [token (or token (:token context))
+         headers (when token {config/token-header token})]
+     (h/request context :metadata-db
+                {:url-fn providers-url
+                 :method :get
+                 :raw? raw?
+                 :http-options (merge {:accept :json
+                                       :headers headers}
+                                      http-options)}))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Concept functions
 
 (h/defcreator save-concept :metadata-db concepts-url)
 
@@ -57,43 +95,43 @@
   "Returns a concept id for the given concept type, provider, and native id"
   ([context concept-type provider-id native-id]
    (get-concept-id context concept-type provider-id native-id nil))
-  ([context concept-type provider-id native-id {:keys [is-raw? http-options]}]
+  ([context concept-type provider-id native-id {:keys [raw? http-options]}]
    (let [response (h/request context :metadata-db
                              {:url-fn #(concept-id-url % concept-type provider-id native-id)
                               :method :get
-                              :raw? is-raw?
+                              :raw? raw?
                               :http-options (merge {:accept :json} http-options)})]
-     (if is-raw?
+     (if raw?
        response
        (:concept-id response)))))
 
 (defn get-concept
   "Retrieve the concept with the given concept and revision-id. Valid options are
-  * :is-raw? - set to true to indicate the raw response should be returned. See
+  * :raw? - set to true to indicate the raw response should be returned. See
   cmr.transmit.http-helper for more info. Default false.
   * http-options - Other http-options to be sent to clj-http."
   ([context concept-id revision-id]
    (get-concept context concept-id revision-id nil))
-  ([context concept-id revision-id {:keys [is-raw? http-options]}]
+  ([context concept-id revision-id {:keys [raw? http-options]}]
    (-> (h/request context :metadata-db
                   {:url-fn #(concept-revision-url % concept-id revision-id)
                    :method :get
-                   :raw? is-raw?
+                   :raw? raw?
                    :http-options (merge {:accept :json} http-options)})
        finish-parse-concept)))
 
 (defn get-latest-concept
   "Retrieve the latest verison of a concept. Valid options are
-  * :is-raw? - set to true to indicate the raw response should be returned. See
+  * :raw? - set to true to indicate the raw response should be returned. See
   cmr.transmit.http-helper for more info. Default false.
   * http-options - Other http-options to be sent to clj-http."
   ([context concept-id]
    (get-latest-concept context concept-id nil))
-  ([context concept-id {:keys [is-raw? http-options]}]
+  ([context concept-id {:keys [raw? http-options]}]
    (-> (h/request context :metadata-db
                   {:url-fn #(latest-concept-url % concept-id)
                    :method :get
-                   :raw? is-raw?
+                   :raw? raw?
                    :http-options (merge {:accept :json} http-options)})
        finish-parse-concept)))
 

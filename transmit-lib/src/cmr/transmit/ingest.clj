@@ -35,12 +35,12 @@
   "Send a request to ingest service to ingest a concept using the optional headers"
   ([context concept headers]
    (ingest-concept context concept headers false))
-  ([context concept headers is-raw]
+  ([context concept headers raw]
    (let [{:keys [provider-id concept-type metadata native-id revision-id]} concept]
      (h/request context :ingest
                 {:url-fn #(concept-ingest-url provider-id concept-type native-id %)
                  :method :put
-                 :raw? is-raw
+                 :raw? raw
                  :http-options {:body metadata
                                 :content-type (:format concept)
                                 :headers headers
@@ -49,12 +49,12 @@
   "Send a request to ingest service to delete a concept using the optional headers"
   ([context concept headers]
    (ingest-concept context concept headers false))
-  ([context concept headers is-raw]
+  ([context concept headers raw]
    (let [{:keys [provider-id concept-type native-id revision-id]} concept]
      (h/request context :ingest
                 {:url-fn #(concept-ingest-url provider-id concept-type native-id %)
                  :method :delete
-                 :raw? is-raw
+                 :raw? raw
                  :http-options {:headers headers
                                 :accept :json}}))))
 

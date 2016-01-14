@@ -69,14 +69,22 @@
      mdb-system/stop)]))
 
 (defn reset-fixture
-  "Test fixture that resets the application before each test."
-  [f]
-  (mock-echo-client/reset (conn-context))
-  (mdb/reset (conn-context))
-  (ac/reset (conn-context))
-  ;; Temporarily granting all admin. Remove this when implementing  CMR-2133, CMR-2134
-  (e/grant-all-admin (conn-context))
-  (f))
+  "Test fixture that resets the application before each test and creates providers listed"
+  ([]
+   (reset-fixture nil))
+  ([provider-map]
+   (fn [f]
+     (mock-echo-client/reset (conn-context))
+     (mdb/reset (conn-context))
+     (ac/reset (conn-context))
+     (doseq [[provider-guid provider-id] provider-map]
+       (mdb/create-provider (assoc (conn-context) :token (config/echo-system-token))
+                            {:provider-id provider-id}))
+     (e/create-providers (conn-context) provider-map)
+     ;; TODO Temporarily granting all admin. Remove this when implementing  CMR-2133, CMR-2134
+     (e/grant-all-admin (conn-context))
+
+     (f))))
 
 (defn grant-all-group-fixture
   "Creates A test fixture that grants all users the ability to create and modify groups for the given providers"
@@ -108,20 +116,20 @@
   ([token group]
    (create-group token group nil))
   ([token group options]
-   (let [options (merge {:is-raw? true :token token} options)]
+   (let [options (merge {:raw? true :token token} options)]
      (process-response (ac/create-group (conn-context) group options)))))
 
 (defn get-group
   "Retrieves a group by concept id"
   [concept-id]
-  (process-response (ac/get-group (conn-context) concept-id {:is-raw? true})))
+  (process-response (ac/get-group (conn-context) concept-id {:raw? true})))
 
 (defn update-group
   "Updates a group."
   ([token concept-id group]
    (update-group token concept-id group nil))
   ([token concept-id group options]
-   (let [options (merge {:is-raw? true :token token} options)]
+   (let [options (merge {:raw? true :token token} options)]
      (process-response (ac/update-group (conn-context) concept-id group options)))))
 
 (defn delete-group
@@ -129,13 +137,13 @@
   ([token concept-id]
    (delete-group token concept-id nil))
   ([token concept-id options]
-   (let [options (merge {:is-raw? true :token token} options)]
+   (let [options (merge {:raw? true :token token} options)]
      (process-response (ac/delete-group (conn-context) concept-id options)))))
 
 (defn search
   "Searches for groups using the given parameters"
   [params]
-  (process-response (ac/search-for-groups (conn-context) params {:is-raw? true})))
+  (process-response (ac/search-for-groups (conn-context) params {:raw? true})))
 
 (defn assert-group-saved
   "Checks that a group was persisted correctly in metadata db. The user-id indicates which user
@@ -144,7 +152,7 @@
   (let [concept (mdb/get-concept (conn-context) concept-id revision-id)]
     (is (= {:concept-type :access-group
             :native-id (:name group)
-            :provider-id "CMR"
+            :provider-id (:provider-id group "CMR")
             :format mt/edn
             :metadata (pr-str group)
             :user-id user-id
@@ -159,7 +167,7 @@
   (let [concept (mdb/get-concept (conn-context) concept-id revision-id)]
     (is (= {:concept-type :access-group
             :native-id (:name group)
-            :provider-id "CMR"
+            :provider-id (:provider-id group "CMR")
             :metadata ""
             :format mt/edn
             :user-id user-id

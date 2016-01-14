@@ -34,8 +34,8 @@
   "Resets the access control service"
   ([context]
    (reset context false))
-  ([context is-raw]
-   (h/request context :access-control {:url-fn reset-url, :method :post, :raw? is-raw})))
+  ([context raw]
+   (h/request context :access-control {:url-fn reset-url, :method :post, :raw? raw})))
 
 ; Group CRUD functions
 (h/defcreator create-group :access-control groups-url)

@@ -20,6 +20,13 @@
          :test-paths ["test" "int_test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}
+
+   ;; This profile specifically here for generating documentation. It's faster than using the regular
+   ;; profile. An agent pool is being started when using the default profile which causes the wait of
+   ;; 60 seconds before allowing the JVM to shutdown since no call to shutdown-agents is made.
+   ;; Generate docs with: lein with-profile docs generate-docs
+   :docs {}
+
    :uberjar {:main cmr.access-control.runner
              :aot :all}}
   :aliases {"generate-docs" ["exec" "-ep" (pr-str '(do

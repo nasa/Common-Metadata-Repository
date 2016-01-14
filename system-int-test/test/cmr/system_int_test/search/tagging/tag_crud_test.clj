@@ -156,8 +156,8 @@
              (tags/get-tag "F100-CMR"))))
     (testing "Retrieve tag with bad provider in concept id"
       (is (= {:status 400
-              :errors ["[T100-PROV1] is not a valid tag concept id."]}
-             (tags/get-tag "T100-PROV1"))))
+              :errors ["[T100-NOT_EXIST] is not a valid tag concept id."]}
+             (tags/get-tag "T100-NOT_EXIST"))))
     (testing "Retrieve tag with collection concept-id"
       (let [{coll-concept-id :concept-id} (d/ingest "PROV1" (dc/collection))]
         (is (= {:status 400
