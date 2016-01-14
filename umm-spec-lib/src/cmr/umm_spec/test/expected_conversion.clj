@@ -75,11 +75,11 @@
                                        :InclinationAngle 94.0
                                        :NumberOfOrbits 2.0
                                        :StartCircularLatitude 50.0}}
-     :TilingIdentificationSystems [{:TilingIdentificationSystemName "Tiling System Name"
-                                     :Coordinate1 {:MinimumValue 1.0
-                                                   :MaximumValue 10.0}
-                                     :Coordinate2 {:MinimumValue 1.0
-                                                   :MaximumValue 10.0}}]
+     :TilingIdentificationSystem {:TilingIdentificationSystemName "Tiling System Name"
+                                  :Coordinate1 {:MinimumValue 1.0
+                                                :MaximumValue 10.0}
+                                  :Coordinate2 {:MinimumValue 1.0
+                                                :MaximumValue 10.0}}
      :AccessConstraints {:Description "Restriction Comment: Access constraints"
                          :Value "0"}
      :UseConstraints "Restriction Flag: Use constraints"
@@ -572,7 +572,7 @@
       ;; DIF 9 only supports entry-id in metadata associations
       (update-in-each [:MetadataAssociations] assoc :Type nil :Description nil :Version nil)
       ;; DIF 9 does not support tiling identification system
-      (assoc :TilingIdentificationSystems nil)
+      (assoc :TilingIdentificationSystem nil)
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       ;; DIF 9 does not support DataDates
@@ -836,8 +836,6 @@
   [umm-coll _]
   (-> umm-coll
       (update-in [:SpatialExtent] update-iso-spatial)
-      ;; ISO only supports a single tiling identification system
-      (update-in [:TilingIdentificationSystems] #(seq (take 1 %)))
       (update-in [:TemporalExtents] expected-iso-19115-2-temporal)
       ;; The following platform instrument properties are not supported in ISO 19115-2
       (update-in-each [:Platforms] update-in-each [:Instruments] assoc

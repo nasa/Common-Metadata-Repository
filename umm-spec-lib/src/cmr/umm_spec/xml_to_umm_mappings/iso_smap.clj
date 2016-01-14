@@ -84,4 +84,4 @@
                            :EndsAtPresentFlag (some? (seq (select temporal "gml:TimePeriod/gml:endPosition[@indeterminatePosition='now']")))})
        :ScienceKeywords (parse-science-keywords data-id-el)
        :SpatialExtent (spatial/parse-spatial data-id-el)
-       :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)})))
+       :TilingIdentificationSystem (tiling/parse-tiling-system data-id-el)})))

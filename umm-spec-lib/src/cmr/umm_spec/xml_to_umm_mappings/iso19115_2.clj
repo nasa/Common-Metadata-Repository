@@ -156,7 +156,7 @@
      :DataLanguage (char-string-value md-data-id-el "gmd:language")
      :ISOTopicCategories (values-at doc topic-categories-xpath)
      :SpatialExtent (spatial/parse-spatial doc extent-info)
-     :TilingIdentificationSystems (tiling/parse-tiling-system md-data-id-el)
+     :TilingIdentificationSystem (tiling/parse-tiling-system md-data-id-el)
      :TemporalExtents (for [temporal (select md-data-id-el temporal-xpath)]
                         {:PrecisionOfSeconds (value-of doc precision-xpath)
                          :EndsAtPresentFlag (temporal-ends-at-present? temporal)

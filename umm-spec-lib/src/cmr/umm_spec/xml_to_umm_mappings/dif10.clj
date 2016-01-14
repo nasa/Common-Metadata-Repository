@@ -106,7 +106,7 @@
                                              :PeriodCycleDurationUnit (value-of pdt "Period_Cycle_Duration_Unit")
                                              :PeriodCycleDurationValue (value-of pdt "Period_Cycle_Duration_Value")})})
    :SpatialExtent (spatial/parse-spatial doc)
-   :TilingIdentificationSystems (spatial/parse-tiling doc)
+   :TilingIdentificationSystem (spatial/parse-tiling doc)
    :Distributions (for [dist (select doc "/DIF/Distribution")]
                     {:DistributionMedia (value-of dist "Distribution_Media")
                      :Sizes (u/parse-data-sizes (value-of dist "Distribution_Size"))

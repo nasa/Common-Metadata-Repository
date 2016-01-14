@@ -33,7 +33,7 @@
 
 (defn tiling-system-elements
   [c]
-  (when-let [tiling-system (first (:TilingIdentificationSystems c))]
+  (when-let [tiling-system (:TilingIdentificationSystem c)]
     [:gmd:geographicElement
      [:gmd:EX_GeographicDescription
       [:gmd:geographicIdentifier
