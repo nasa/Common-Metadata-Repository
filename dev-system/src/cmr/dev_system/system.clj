@@ -9,6 +9,8 @@
 
             [cmr.bootstrap.system :as bootstrap-system]
 
+            [cmr.access-control.system :as access-control-system]
+
             [cmr.cubby.system :as cubby-system]
 
             [cmr.virtual-product.system :as vp-system]
@@ -83,6 +85,8 @@
             :stop search-system/stop}
    :bootstrap {:start bootstrap-system/start
                :stop bootstrap-system/stop}
+   :access-control {:start access-control-system/start
+                    :stop access-control-system/stop}
    :cubby {:start cubby-system/dev-start
            :stop cubby-system/stop}
    :virtual-product {:start vp-system/start
@@ -90,7 +94,7 @@
 
 (def app-startup-order
   "Defines the order in which applications should be started"
-  [:mock-echo :cubby :metadata-db :index-set :indexer :ingest :search :virtual-product :bootstrap])
+  [:mock-echo :cubby :metadata-db :access-control :index-set :indexer :ingest :search :virtual-product :bootstrap])
 
 (def use-compression?
   "Indicates whether the servers will use gzip compression. Disable this to make tcpmon usable"
@@ -281,6 +285,7 @@
         control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
     {:apps (u/remove-nil-keys
              {:mock-echo echo-component
+              :access-control (access-control-system/create-system)
               :cubby (cubby-system/create-system)
               :metadata-db (create-metadata-db-app db-component queue-broker)
               :bootstrap (when-not db-component (bootstrap-system/create-system))
