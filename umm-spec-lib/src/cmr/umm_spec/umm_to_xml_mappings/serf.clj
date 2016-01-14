@@ -74,7 +74,7 @@
   (for [responsibility responsibilities
         :let [{{:keys [Contacts Addresses Person OrganizationName]} :Party} responsibility
               role (or (get umm-roles->serf-roles (:Role responsibility)) (:Role responsibility))]
-        :when (and (not= "SERVICE PROVIDER CONTACT" role) role)]
+        :when (and role (not= "SERVICE PROVIDER CONTACT" role))]
     [:Personnel 
      [:Role role]
      [:First_Name (:FirstName Person)]
@@ -86,16 +86,19 @@
 (defn- create-service-provider-personnel
   "Converts a UMM-S Responsibility to a SERF Personnel element"
   [responsibilities] 
-  (for [responsibility (take 1 (filter #(= "RESOURCEPROVIDER" (:Role %)) responsibilities))
-        :let [{{:keys [Contacts Addresses Person]} :Party} responsibility]]
+  (let [responsibility (first (filter #(= "RESOURCEPROVIDER" (:Role %)) responsibilities))
+        party (:Party responsibility)
+        person (:Person party)
+        contacts (:Contacts party)
+        addresses (:Addresses party)]
     [:Personnel 
      [:Role (or (get umm-roles->serf-roles (:Role responsibility)) not-provided)]
-     [:First_Name (:FirstName Person)]
-     [:Middle_Name (:MiddleName Person)]
+     [:First_Name (:FirstName person)]
+     [:Middle_Name (:MiddleName person)]
      ;;For some reason Last Name is the only thing required by SERF
-     [:Last_Name (or (:LastName Person) not-provided)]
-     (contact-to-serf Contacts)
-     (address-to-serf Addresses)]))
+     [:Last_Name (or (:LastName person) not-provided)]
+     (contact-to-serf contacts)
+     (address-to-serf addresses)]))
 
 (defn- create-service-provider
   "Converts a UMM-S Responsibilities element to a SERF Service Provider element

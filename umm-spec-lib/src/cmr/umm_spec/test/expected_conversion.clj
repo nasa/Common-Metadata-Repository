@@ -78,7 +78,7 @@
                                        :Period 96.7
                                        :InclinationAngle 94.0
                                        :NumberOfOrbits 2.0
-                                       :StartCircularLatitude 50.0}}  
+                                       :StartCircularLatitude 50.0}}
      :TilingIdentificationSystem {:TilingIdentificationSystemName "Tiling System Name"
                                   :Coordinate1 {:MinimumValue 1.0
                                                 :MaximumValue 10.0}
@@ -704,10 +704,11 @@
 (defn- convert-serf-additional-attributes
   [additional-attributes]
   (fix-expected-serf-additional-attributes 
-    (vec (for [attribute additional-attributes]
-      (-> attribute
-          default-serf-additional-attributes
-          fix-serf-aa-update-date-format)))))
+    (vec 
+      (for [attribute additional-attributes]
+        (-> attribute
+            default-serf-additional-attributes
+            fix-serf-aa-update-date-format)))))
 
 (defn- expected-serf-contacts
   [contacts]
@@ -840,6 +841,8 @@
          :RelatedUrl (fix-publication-reference-url (:RelatedUrl citation))))
 
 (defn remove-empty-objects
+  "Required to remove some extraneous mappings from ResourceCitation that are not used
+  in ServiceCitation for the comparison engine."
   [objects]
   (filter #(some val %) objects))
 
