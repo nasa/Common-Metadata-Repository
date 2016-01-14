@@ -30,6 +30,7 @@
                 :instrument :string
                 :sensor :string
                 :project :string
+                :data-center :string
                 :archive-center :string
                 :spatial-keyword :string
                 :two-d-coordinate-system-name :string

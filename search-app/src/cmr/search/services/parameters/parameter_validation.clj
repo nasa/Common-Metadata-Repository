@@ -155,6 +155,7 @@
   "Map of parameters to options that are valid for them."
   {:collection-concept-id pattern-option
    :native-id pattern-option
+   :data-center string-plus-and-options
    :archive-center string-param-options
    :dataset-id pattern-option
    :entry-title string-plus-and-options
