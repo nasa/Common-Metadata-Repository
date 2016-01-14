@@ -212,7 +212,6 @@
 (defn umm-s-to-serf-xml
   "Returns SERF XML structure from UMM collection record s."
   [s]
-  (cmr.common.dev.capture-reveal/capture-all)
   (xml
     [:SERF
      serf-xml-namespaces
