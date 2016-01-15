@@ -185,6 +185,61 @@
               :errors ["Group could not be found with concept id [AG100-CMR]"]}
              (u/delete-group token "AG100-CMR"))))))
 
+(deftest update-group-test
+  (let [group (u/make-group)
+        token (e/login (u/conn-context) "user1")
+        {:keys [concept-id revision-id]} (u/create-group token group)]
+
+    (let [updated-group (update-in group [:description] #(str % " updated"))
+          token2 (e/login (u/conn-context) "user2")
+          response (u/update-group token2 concept-id updated-group)]
+      (is (= {:status 200 :concept-id concept-id :revision-id 2}
+             response))
+      (u/assert-group-saved updated-group "user2" concept-id 2))))
+
+(deftest update-group-failure-test
+  (let [group (u/make-group)
+        token (e/login (u/conn-context) "user1")
+        {:keys [concept-id revision-id]} (u/create-group token group)]
+
+    (testing "Update group with invalid content type"
+      (is (= {:status 400,
+              :errors
+              ["The mime types specified in the content-type header [application/xml] are not supported."]}
+             (u/update-group token concept-id group {:http-options {:content-type :xml}}))))
+
+    (testing "Update without token"
+      (is (= {:status 401
+              :errors ["Groups cannot be modified without a valid user token."]}
+             (u/update-group nil concept-id group))))
+
+    (testing "Fields that cannot be changed"
+      (are [field human-name]
+           (= {:status 400
+               :errors [(format (str "%s cannot be modified. Attempted to change existing value"
+                                     " [%s] to [updated]")
+                                human-name
+                                (get group field))]}
+              (u/update-group token concept-id (assoc group field "updated")))
+           :name "Name"
+           :provider-id "Provider Id"
+           :legacy-guid "Legacy Guid"))
+
+    (testing "Updates applies JSON validations"
+      (is (= {:status 400
+              :errors ["/description string \"\" is too short (length: 0, required minimum: 1)"]}
+             (u/update-group token concept-id (assoc group :description "")))))
+
+    (testing "Update group that doesn't exist"
+      (is (= {:status 404
+              :errors ["Group could not be found with concept id [AG100-CMR]"]}
+             (u/update-group token "AG100-CMR" group))))
+
+    (testing "Update deleted group"
+      (u/delete-group token concept-id)
+      (is (= {:status 404
+              :errors [(format "Group with concept id [%s] was deleted." concept-id)]}
+             (u/update-group token concept-id group))))))
 
 
 

@@ -215,7 +215,7 @@
     (testing "Fields that cannot be changed"
       (are [field human-name]
            (= {:status 400
-               :errors [(format (str "Tag %s cannot be modified. Attempted to change existing value"
+               :errors [(format (str "%s cannot be modified. Attempted to change existing value"
                                      " [%s] to [updated]")
                                 human-name
                                 (get tag field))]}

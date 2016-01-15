@@ -12,6 +12,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [POST - Create Group](#create-group)
   * /groups/:group-id
       * [GET - Retrieve a group](#retrieve-group)
+      * [PUT - Update a group](#update-group)
       * [DELETE - Delete a group](#delete-group)
 
 ***
@@ -124,6 +125,24 @@ Content-Length: 106
   "name" : "Administrators",
   "description" : "The group of users that manages PROV1s data holdings."
 }
+```
+
+#### <a name="update-group"></a> Update Group
+
+Groups are updated by sending a PUT request with the JSON representation of a group to `%CMR-ENDPOINT%/groups/<concept-id>` where `concept-id` is the concept id of the group returned when it was created. The same rules apply when updating a group as when creating it but only the description can be modified. The response will contain the concept id along with the group revision id.
+
+```
+curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/groups/AG1200000000-CMR -d \
+'{
+  "name": "Administrators",
+  "description": "The group of users that manages the CMR and related systems."
+ }'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 48
+
+{"concept-id":"AG1200000000-CMR","revision-id":2}
 ```
 
 #### <a name="deleted-group"></a> Delete Group

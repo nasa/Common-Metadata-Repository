@@ -35,9 +35,9 @@
                                             {:street "dfkkd"}]
                                 :name {:first "Jason"
                                        :last "Jason"}
-                                :age "35"})
+                                :age "35"}))
 
-  )
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Support functions
@@ -140,11 +140,15 @@
     (fn [field-path value]
       (validation field-path (prefn value)))))
 
+(defn required-msg
+  []
+  "%s is required.")
+
 (defn required
   "Validates that the value is not nil"
   [field-path value]
   (when (nil? value)
-    {field-path ["%s is required."]}))
+    {field-path [(required-msg)]}))
 
 (defn every
   "Validate a validation against every item in a sequence. The field path will contain the index of
@@ -158,22 +162,55 @@
                          errors-map)]
         (apply merge-with concat error-maps)))))
 
+(defn integer-msg
+  [value]
+  (format "%%s must be an integer but was [%s]." value))
+
 (defn integer
   "Validates that the value is an integer"
   [field-path value]
   (when (and value (not (integer? value)))
-    {field-path [(format "%%s must be an integer but was [%s]." value)]}))
+    {field-path [(integer-msg value)]}))
+
+(defn number-msg
+  [value]
+  (format "%%s must be a number but was [%s]." value))
 
 (defn number
   "Validates the value is a number"
   [field-path value]
   (when (and value (not (number? value)))
-    {field-path [(format "%%s must be a number but was [%s]." value)]}))
+    {field-path [(number-msg value)]}))
+
+(defn within-range-msg
+  [minv maxv value]
+  (format "%%s must be within [%s] and [%s] but was [%s]." minv maxv value))
 
 (defn within-range
   "Creates a validator within a specified range"
   [minv maxv]
   (fn [field-path value]
     (when (and value (or (< (compare value minv) 0) (> (compare value maxv) 0)))
-      {field-path [(format "%%s must be within [%s] and [%s] but was [%s]."
-                           minv maxv value)]})))
+      {field-path [(within-range-msg minv maxv value)]})))
+
+(defn field-cannot-be-changed-msg
+  [existing-value new-value]
+  (format "%%s cannot be modified. Attempted to change existing value [%s] to [%s]"
+          existing-value new-value))
+
+(defn field-cannot-be-changed
+  "Validation that a field in a object has not been modified. Accepts optional nil-allowed? parameter
+  which indicates the validation should be skipped if the new value is nil."
+  ([field]
+   (field-cannot-be-changed field false))
+  ([field nil-allowed?]
+   (fn [field-path object]
+     (let [existing-value (get-in object [:existing field])
+           new-value (get object field)
+           ;; if nil is allowed and the new value is nil we skip validation.
+           skip-validation? (and nil-allowed? (nil? new-value))]
+       (when (and (not skip-validation?)
+                  (not= existing-value new-value))
+         {(conj field-path field)
+          [(field-cannot-be-changed-msg existing-value new-value)]})))))
+

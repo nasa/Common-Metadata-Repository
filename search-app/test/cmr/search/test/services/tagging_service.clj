@@ -41,21 +41,21 @@
                     :description "anything"}}))
 
     (testing "Namespace can't change"
-      (is (= {[:namespace] [(msg/cannot-change-field-value "current" "update")]}
+      (is (= {[:namespace] [(v/field-cannot-be-changed-msg "current" "update")]}
              (v/validate
                update-tag-validations
                {:namespace "update" :value "foo"
                 :existing {:namespace "current" :value "foo"}}))))
 
     (testing "Value can't change"
-      (is (= {[:value] [(msg/cannot-change-field-value "current" "update")]}
+      (is (= {[:value] [(v/field-cannot-be-changed-msg "current" "update")]}
              (v/validate
                update-tag-validations
                {:namespace "foo" :value "update"
                 :existing {:namespace "foo" :value "current"}}))))
 
     (testing "Originator id can't change"
-      (is (= {[:originator-id] [(msg/cannot-change-field-value "current" "update")]}
+      (is (= {[:originator-id] [(v/field-cannot-be-changed-msg "current" "update")]}
              (v/validate
                update-tag-validations
                {:namespace "foo" :value "fooer" :originator-id "update"
