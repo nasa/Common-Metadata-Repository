@@ -230,6 +230,7 @@
      (for [ak (:AncillaryKeywords s)]
        [:Keyword ak])
      ;;Removing Instruments and Platforms conversion until we can get better parsing code
+     ;;CMR-2369 will allow us to do round-tripping. 
      ;;(create-sensors s)
      ;;(create-source-names s)
      (create-projects s)

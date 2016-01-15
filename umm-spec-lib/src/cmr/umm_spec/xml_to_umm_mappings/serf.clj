@@ -105,10 +105,10 @@
         personnel (concat root-personnel service-provider-personnel)]
     (for [person personnel
           role (values-at person "Role")]
-      (let [translated-role (or (get serf-roles->umm-roles role) role)]
-      ;;TODO: CMR-2298 Fix Responsibilities to have multiple roles. Then adjust accordingly below.
-      {:Role translated-role
-       :Party (parse-party person organization service-provider translated-role)}))))
+      (let [translated-role (get serf-roles->umm-roles role role)]
+        ;;TODO: CMR-2298 Fix Responsibilities to have multiple roles. Then adjust accordingly below.
+        {:Role translated-role
+         :Party (parse-party person organization service-provider translated-role)}))))
 
 (defn- parse-service-citations
   "Parse SERF Service Citations into UMM-S"
