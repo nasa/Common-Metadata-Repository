@@ -5,6 +5,7 @@
               [cmr.common.concepts :as concepts]
               [cmr.common.services.errors :as errors]
               [cmr.common.mime-types :as mt]
+              [cmr.common.validations.core :as v]
               [cmr.access-control.services.group-service-messages :as msg]
               [clojure.edn :as edn]))
 
@@ -60,6 +61,17 @@
              (not (some #{provider-id} (map :provider-id (mdb/get-providers context)))))
     (errors/throw-service-error :not-found (msg/provider-does-not-exist provider-id))))
 
+(def ^:private update-group-validations
+  "Service level validations when updating a group."
+  [(v/field-cannot-be-changed :name)
+   (v/field-cannot-be-changed :provider-id)
+   (v/field-cannot-be-changed :legacy-guid)])
+
+(defn- validate-update-group
+  "Validates a group update."
+  [existing-group updated-group]
+  (v/validate! update-group-validations (assoc updated-group :existing existing-group)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Service level functions
@@ -93,6 +105,20 @@
 
     ;; The group doesn't exist
     (mdb/save-concept context (group->new-concept context group))))
+
+(defn update-group
+  "Updates an existing group with the given concept id"
+  [context concept-id updated-group]
+  (let [existing-concept (fetch-group-concept context concept-id)
+        existing-group (edn/read-string (:metadata existing-concept))]
+    (validate-update-group existing-group updated-group)
+    (mdb/save-concept
+      context
+      (-> existing-concept
+          (assoc :metadata (pr-str updated-group)
+                 :user-id (context->user-id context))
+          (dissoc :revision-date)
+          (update-in [:revision-id] inc)))))
 
 (defn get-group
   "Retrieves a group with the given concept id."

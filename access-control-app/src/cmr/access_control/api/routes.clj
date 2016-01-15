@@ -43,8 +43,8 @@
     :body (if encode? (json/generate-string data) data)
     :headers {"Content-Type" mt/json}}))
 
-(defn- validate-group-content-type
-  "Validates that content type sent with a group is JSON"
+(defn- validate-content-type
+  "Validates that content type sent is JSON"
   [headers]
   (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
 
@@ -58,7 +58,7 @@
   "Processes a create group request."
   [context headers body]
   ;; TODO CMR-2133, CMR-2134 - verify permission in service (dependent on provider level or system level)
-  (validate-group-content-type headers)
+  (validate-content-type headers)
   (validate-group-json body)
   (->> (json/parse-string body true)
        (group-service/create-group context)
@@ -70,11 +70,19 @@
   (-> (group-service/get-group context concept-id)
       api-response))
 
+(defn update-group
+  "Processes a request to update a group."
+  [context headers body concept-id]
+  (validate-content-type headers)
+  (validate-group-json body)
+  (->> (json/parse-string body true)
+       (group-service/update-group context concept-id)
+       api-response))
+
 (defn delete-group
   "Deletes the group with the given concept-id."
   [context concept-id]
   (api-response (group-service/delete-group context concept-id)))
-
 
 (def admin-api-routes
   "The administrative control routes."
@@ -109,7 +117,13 @@
           (DELETE "/" {:keys [request-context]}
             ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
             (acl/verify-ingest-management-permission request-context :update)
-            (delete-group request-context group-id)))))
+            (delete-group request-context group-id))
+
+          ;; Update a group
+          (PUT "/" {:keys [request-context headers body]}
+            ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
+            (acl/verify-ingest-management-permission request-context :update)
+            (update-group request-context headers (slurp body) group-id)))))
 
     (route/not-found "Not Found")))
 

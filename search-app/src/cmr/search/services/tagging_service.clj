@@ -65,29 +65,13 @@
   [tag]
   (v/validate! tag-validations tag))
 
-(defn- field-cannot-be-changed
-  "Validation that a field in a tag has not been modified. Accepts optional nil-allowed? parameter
-  which indicates the validation should be skipped if the new value is nil."
-  ([field]
-   (field-cannot-be-changed field false))
-  ([field nil-allowed?]
-   (fn [field-path tag]
-     (let [existing-value (get-in tag [:existing field])
-           new-value (get tag field)
-           ;; if nil is allowed and the new value is nil we skip validation.
-           skip-validation? (and nil-allowed? (nil? new-value))]
-       (when (and (not skip-validation?)
-                  (not= existing-value new-value))
-         {(conj field-path field)
-          [(msg/cannot-change-field-value existing-value new-value)]})))))
-
 (def ^:private update-tag-validations
   "Service level validations when updating a tag."
   [tag-validations
-   (field-cannot-be-changed :namespace)
-   (field-cannot-be-changed :value)
+   (v/field-cannot-be-changed :namespace)
+   (v/field-cannot-be-changed :value)
    ;; Originator id cannot change but we allow it if they don't specify a value.
-   (field-cannot-be-changed :originator-id true)])
+   (v/field-cannot-be-changed :originator-id true)])
 
 (defn- validate-update-tag
   "Validates a tag update."
@@ -219,14 +203,6 @@
   [context params]
   (:results (query-service/find-concepts-by-parameters
               context :tag (assoc params :result-format :json))))
-
-(comment
-
-  (def context {:system (get-in user/system [:apps :search])})
-
-  (search-for-tags context {}))
-
-
 
 
 

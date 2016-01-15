@@ -13,11 +13,6 @@
   "Validation format message so %s is included for the field"
   "%s may not contain the Group Separator character. ASCII decimal value: 29 Unicode: U+001D")
 
-(defn cannot-change-field-value
-  [existing-value new-value]
-  (format "Tag %%s cannot be modified. Attempted to change existing value [%s] to [%s]"
-          existing-value new-value))
-
 (defn tag-does-not-exist
   [concept-id]
   (format "Tag could not be found with concept id [%s]" concept-id))
