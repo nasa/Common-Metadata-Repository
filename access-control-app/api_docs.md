@@ -12,6 +12,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [POST - Create Group](#create-group)
   * /groups/:group-id
       * [GET - Retrieve a group](#retrieve-group)
+      * [DELETE - Delete a group](#delete-group)
 
 ***
 
@@ -125,3 +126,16 @@ Content-Length: 106
 }
 ```
 
+#### <a name="deleted-group"></a> Delete Group
+
+Groups are deleted by sending a DELETE request to `%CMR-ENDPOINT%/groups/<concept-id>` where `concept-id` is the concept id of the group returned when it was created. Deleting a group creates a tombstone that marks the group as deleted. The concept id of the group and the revision id of the tombstone are returned from a delete request.
+
+```
+curl -XDELETE -i  -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/groups/AG1200000000-CMR
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 48
+
+{"concept-id":"AG1200000000-CMR","revision-id":3}
+```

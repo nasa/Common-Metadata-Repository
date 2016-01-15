@@ -83,14 +83,13 @@
         (testing "Works for a different provider"
           (is (= 200 (:status (u/create-group token (assoc group :provider-id "PROV1")))))))
 
-      ;; TODO CMR-2131 uncomment when implementing delete
-      #_(testing "Creation of previously deleted group"
-          (u/delete-group token concept-id)
-          (let [new-group (assoc group :legacy-guid "the legacy guid" :description "new description")
-                response (u/create-group token new-group)]
-            (is (= {:status 200 :concept-id concept-id :revision-id 3}
-                   response))
-            (u/assert-group-saved new-group "user2" concept-id 3))))
+      (testing "Creation of previously deleted group"
+        (u/delete-group token concept-id)
+        (let [new-group (assoc group :legacy-guid "the legacy guid" :description "new description")
+              response (u/create-group token new-group)]
+          (is (= {:status 200 :concept-id concept-id :revision-id 3}
+                 response))
+          (u/assert-group-saved new-group "user1" concept-id 3))))
 
     (testing "Create group with fields at maximum length"
       (let [group (into {} (for [[field max-length] field-maxes]
@@ -155,13 +154,36 @@
       (is (= {:status 404
               :errors ["Group could not be found with concept id [AG100-PROV3]"]}
              (u/get-group "AG100-PROV3"))))
-    ;; TODO CMR-2131 uncomment when implementing delete
-    #_(testing "Retrieve deleted group"
-        (u/delete-group token concept-id)
-        (is (= {:status 404
-                :errors [(format "Group with concept id [%s] was deleted." concept-id)]}
-               (u/get-group concept-id))))))
+    (testing "Retrieve deleted group"
+      (u/delete-group token concept-id)
+      (is (= {:status 404
+              :errors [(format "Group with concept id [%s] was deleted." concept-id)]}
+             (u/get-group concept-id))))))
 
+(deftest delete-group-test
+  (let [group (u/make-group)
+        token (e/login (u/conn-context) "user1")
+        {:keys [concept-id revision-id]} (u/create-group token group)]
+
+    (testing "Delete without token"
+      (is (= {:status 401
+              :errors ["Groups cannot be modified without a valid user token."]}
+             (u/delete-group nil concept-id))))
+
+    (testing "Delete success"
+      (is (= {:status 200 :concept-id concept-id :revision-id 2}
+             (u/delete-group token concept-id)))
+      (u/assert-group-deleted group "user1" concept-id 2))
+
+    (testing "Delete group that was already deleted"
+      (is (= {:status 404
+              :errors [(format "Group with concept id [%s] was deleted." concept-id)]}
+             (u/delete-group token concept-id))))
+
+    (testing "Delete group that doesn't exist"
+      (is (= {:status 404
+              :errors ["Group could not be found with concept id [AG100-CMR]"]}
+             (u/delete-group token "AG100-CMR"))))))
 
 
 
