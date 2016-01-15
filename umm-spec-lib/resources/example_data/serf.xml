@@ -132,6 +132,7 @@
     <Short_Name>OGC/WCS</Short_Name>
     <Long_Name>Open Geospatial Consortium/Web Coverage Service</Long_Name>
   </Project>
+  <Access_Constraints>Access Constraint</Access_Constraints>
   <Service_Language>English</Service_Language>
   <Distribution>
     <Distribution_Media>Digital</Distribution_Media>

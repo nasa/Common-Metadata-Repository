@@ -81,12 +81,30 @@
     (is (= (expected-conversion/convert umm-record metadata-format)
            (xml-round-trip :collection metadata-format umm-record)))))
 
-;; TODO - Fix these test failures with CMR-2332 and uncomment the test
-#_(defspec roundtrip-generated-service-records 100
+(defspec roundtrip-generated-service-records 100
   (for-all [umm-record (gen/no-shrink umm-gen/umm-s-generator)
             metadata-format (gen/elements tested-service-formats)]
     (is (= (expected-conversion/convert umm-record metadata-format)
            (xml-round-trip :service metadata-format umm-record)))))
+(comment
+
+      (is (= (expected-conversion/convert user/failing-value :serf)
+           (xml-round-trip :service :serf user/failing-value)))
+      
+      (= (type (expected-conversion/convert user/failing-value :serf)) (type (xml-round-trip :service :serf user/failing-value)))
+            
+            (is (= (:Platforms (expected-conversion/convert user/failing-value :serf))
+           (:Platforms (xml-round-trip :service :serf user/failing-value))))
+
+  (is (= (:Responsibilities (expected-conversion/convert expected-conversion/example-service-record :serf))
+    (:Responsibilities (xml-round-trip :service :serf expected-conversion/example-service-record))))
+
+(is (= (expected-conversion/convert expected-conversion/example-service-record :serf)
+    (xml-round-trip :service :serf expected-conversion/example-service-record)))
+
+  (is (= (:Responsibilities (:Party (last (:Responsibilities (expected-conversion/convert expected-conversion/example-service-record :serf)))))
+    (:Responsibilities (:Party (last (:Responsibilities (xml-round-trip :service :serf expected-conversion/example-service-record)))))))
+  )
 
 (defn- parse-iso19115-projects-keywords
   "Returns the parsed projects keywords for the given ISO19115-2 xml"
@@ -143,15 +161,16 @@
   (def sample-record user/failing-value)
 
   ;; Evaluate this expression to use the standard UMM example record.
-  (def sample-record expected-conversion/example-record)
+  (def sample-record expected-conversion/example-service-record)
 
   ;; Evaluate to print generated metadata from the record selected above.
-  (println (core/generate-metadata :collection metadata-format sample-record))
+  (println (core/generate-metadata :service metadata-format sample-record))
 
   ;; our simple example record
   (core/generate-metadata :collection metadata-format expected-conversion/example-record)
+  (core/generate-metadata :service metadata-format expected-conversion/example-service-record)
 
-  (core/validate-xml :collection metadata-format metadata-xml)
+  (core/validate-xml :service metadata-format metadata-xml)
 
   ;; round-trip
   (xml-round-trip concept-type metadata-format sample-record)

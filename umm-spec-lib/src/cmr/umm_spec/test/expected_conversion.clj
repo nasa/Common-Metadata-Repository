@@ -21,6 +21,10 @@
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as echo10-spatial-parse]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]))
 
+(def serf-organization-role 
+  "UMM-S Role that corresponds to SERVICE PROVIDER CONTACT role in SERF"
+  "RESOURCEPROVIDER")
+
 (def example-collection-record
   "An example record with fields supported by most formats."
   (js/parse-umm-c
@@ -190,7 +194,7 @@
                               {:Date "2009-12-04T00:00:00.000Z"
                                :Type "UPDATE"}]
               :ServiceLanguage "English"
-              :AccessConstraints { :Description "Access Constraint"}
+              :AccessConstraints {:Description "Access Constraint"}
               :Responsibilities [{:Party {:Person {:FirstName "FIRSTNAME"
                                                    :LastName "LASTNAME"}
                                           :Contacts [{:Type "email"
@@ -205,8 +209,7 @@
                                                        :City "Greenbelt"
                                                        :StateProvince "Maryland"
                                                        :PostalCode "20771"
-                                                       :Country "USA"}]
-                                          :RelatedUrls nil}
+                                                       :Country "USA"}]}
                                   :Role "POINTOFCONTACT"}
                                  {:Party {:Person {:FirstName "FIRSTNAME"
                                                    :LastName "LASTNAME"}
@@ -222,8 +225,7 @@
                                                        :City "Greenbelt"
                                                        :StateProvince "Maryland"
                                                        :PostalCode "20771"
-                                                       :Country "USA"}]
-                                          :RelatedUrls nil}
+                                                       :Country "USA"}]}
                                   :Role "AUTHOR"}
                                  {:Party {:OrganizationName {:ShortName "NASA/GSFC/SED/ESD/GCDC/GESDISC"
                                                              :LongName "Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA" }
@@ -240,8 +242,7 @@
                                                        :StateProvince "MD"
                                                        :PostalCode "20771"
                                                        :Country "U.S.A."}]
-                                          :RelatedUrls [{:URLs ["http://disc.gsfc.nasa.gov/"]
-                                                         :Description "SERVICE_ORGANIZATION_URL"}]}
+                                          :RelatedUrls [{:URLs ["http://disc.gsfc.nasa.gov/"]}]}
                                   :Role "RESOURCEPROVIDER"}]
               :ISOTopicCategories ["CLIMATOLOGY/METEOROLOGY/ATMOSPHERE"
                                    "ENVIRONMENT"
@@ -250,12 +251,8 @@
               :ServiceCitation [{:Creator "NASA Goddard Earth Sciences (GES) Data and Information Services Center (DISC)"
                                  :Title "OGC Web Coverage Service (WCS) for accessing Atmospheric Infrared Sounder (AIRS) Data" }]
               :RelatedUrls [{:Description "\n   This Web Coverage Service (WCS) is one of the multiple GES DISC data service instances used to provide gridded Level 3 Atmospheric Infrared Sounder (AIRS) data products. Accessing to this URL will result in a brief description of coverages (i.e., data layers or variables), or a getCapabilities response. A client can request more detailed information about the served coverages by sending a describeCoverage request to the server. Finally, a client can request actual data using a getCoverage request. \n"
-                             :ContentType {:Type "GET SERVICE" :Subtype "GET WEB COVERAGE SERVICE (WCS)"}
-                             :Protocol nil
-                             :URLs ["http://acdisc.sci.gsfc.nasa.gov/daac-bin/wcsAIRSL3?Service=WCS&Version=1.0.0&Request=getCapabilities"]
-                             :Title nil
-                             :MimeType nil
-                             :Caption nil}]
+                             :Relation ["GET SERVICE" "GET WEB COVERAGE SERVICE (WCS)"]
+                             :URLs ["http://acdisc.sci.gsfc.nasa.gov/daac-bin/wcsAIRSL3?Service=WCS&Version=1.0.0&Request=getCapabilities"]}]
               :ServiceKeywords [{:Category "EARTH SCIENCE SERVICES"
                                  :Topic "WEB SERVICES"
                                  :Term "DATA APPLICATION SERVICES"}
@@ -535,7 +532,8 @@
                                             :MimeType nil
                                             :FileSize nil))))))
 
-(defn- expected-dif-related-urls
+(defn- expected-related-urls-for-dif-serf
+  "Expected Related URLs for DIF and SERF concepts"
   [related-urls]
   (seq (for [related-url related-urls]
          (assoc related-url :Title nil :FileSize nil :MimeType nil))))
@@ -603,7 +601,7 @@
       (update-in-each [:AdditionalAttributes] assoc :Group "AdditionalAttribute")
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
       (update-in-each [:PublicationReferences] dif-publication-reference)
-      (update-in [:RelatedUrls] expected-dif-related-urls)))
+      (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)))
 
 ;; DIF 10
 (defn dif10-platform
@@ -667,19 +665,233 @@
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] prune-empty-maps)
       (update-in-each [:PublicationReferences] dif-publication-reference)
-      (update-in [:RelatedUrls] expected-dif10-related-urls)
+      (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
       ;; DIF 10 required element
       (update-in [:Abstract] #(or % su/not-provided))))
 
+(defn- default-serf-required-additional-attributes
+  "Populate a default not-provided value for additional attributes if none exist"
+  [aas attribute-name]
+  (if (seq (filter #(= attribute-name (:Name %)) aas))
+    aas
+    (conj aas (cmn/map->AdditionalAttributeType {:Name attribute-name
+                                                 :Description (format "Root SERF %s Object" attribute-name)
+                                                 :Value su/not-provided}))))
+
+(defn- default-serf-additional-attributes
+  "Modifies attributes in serf from expected-conversion"
+  [aa]
+  (-> aa
+      (select-keys [:Description :Name :Value :Group :UpdateDate :DataType :Value])
+      (assoc :Name (get aa :Name su/not-provided))
+      (cmn/map->AdditionalAttributeType)))
+
+(defn- fix-serf-aa-update-date-format
+  "Fixes SERF update-date format to conform to a specific rule"
+  [aa]
+  (if-let [u-date (:UpdateDate aa)]
+    (assoc aa :UpdateDate (t/date-time (t/year u-date) (t/month u-date) (t/day u-date)))
+    aa))
+
+(defn- fix-expected-serf-additional-attributes
+  "Check and see if Metadata_Name and Metadata_Version are in serf additional attributes.
+  If not, you need to inject them so that a comparison will work"
+  [aas]
+  (-> aas
+      (default-serf-required-additional-attributes "Metadata_Name")
+      (default-serf-required-additional-attributes "Metadata_Version")))
+
+(defn- convert-serf-additional-attributes
+  [additional-attributes]
+  (fix-expected-serf-additional-attributes 
+    (vec 
+      (for [attribute additional-attributes]
+        (-> attribute
+            default-serf-additional-attributes
+            fix-serf-aa-update-date-format)))))
+
+(defn- expected-serf-contacts
+  [contacts]
+  (seq (filter #(#{"email" "phone" "fax"} (:Type %)) contacts)))
+
+(defn- make-sure-organization-exists
+  "Make sure a UMM-S Responsibilities element contains exactly one role that can correlate
+  to a SERF 'SERVICE PROVIDER CONTACT' role"
+  [resps]
+  (if (some #(= serf-organization-role (:Role %)) resps)
+    (concat (remove #(= serf-organization-role (:Role %)) resps) 
+            (take 1 (filter #(= serf-organization-role (:Role %)) resps)))
+    (conj resps
+          (cmn/map->ResponsibilityType 
+            {:Role serf-organization-role
+             :Party (cmn/map->PartyType 
+                      {:OrganizationName 
+                       (cmn/map->OrganizationNameType 
+                         {:ShortName su/not-provided})
+                       :Person (cmn/map->PersonType
+                                 {:LastName su/not-provided})})}))))
+
+(defn- expected-person
+  [person]
+  (when-let [{:keys [FirstName MiddleName LastName]} person]
+    (-> person
+        (assoc :Uuid nil :FirstName nil :MiddleName nil)
+        (assoc :LastName (str/join
+                           " " (remove nil? [FirstName MiddleName LastName]))))))
+
+(defn- serf-expected-person
+  [person]
+  (-> person 
+      (assoc
+        :Uuid nil
+        :FirstName (:FirstName person)
+        :MiddleName (:MiddleName person)
+        :LastName (or (:LastName person) su/not-provided))
+      cmn/map->PersonType))
+
+(defn- remove-organization-role-and-related-urls
+  "Removes an organization-role and related-urls if present from a UMM-S Responsibility"
+  [resp]
+  (-> resp
+      (update-in [:Party :Person] serf-expected-person)
+      (assoc-in [:Party :OrganizationName] nil)
+      (assoc-in [:Party :RelatedUrls] nil)))
+
+(defn- fix-organization-name-in-party
+  "Modifies generated UMM-S Responsibility to conform to SERF rules"
+  [resp]
+  (let [{:keys [Role Party]} resp]
+    ;; SERF only recognizes OrganizationName under a RESOURCEPROVIDER role. 
+    (if (= serf-organization-role Role)
+      (-> resp
+          (update-in [:Party :Person] (fn [p] (or p (cmn/map->PersonType {:LastName su/not-provided}))))
+          (update-in [:Party :OrganizationName] (fn [o] (or o 
+                                                            (cmn/map->OrganizationNameType 
+                                                              {:ShortName su/not-provided
+                                                               :Uuid nil}))))
+          (assoc-in [:Party :OrganizationName :Uuid] nil)
+          (assoc-in [:Party :Person :Uuid] nil))
+      (let [resp (remove-organization-role-and-related-urls resp)]
+        (if (seq (:Person (:Party resp)))
+          resp
+          (assoc-in resp [:Party] (cmn/map->PersonType {:LastName su/not-provided})))))))
+
+(defn- serf-expected-addresses 
+  "Modify UMM-S Addresses to conform to SERF rules"
+  [addresses]
+  (when-let [address (first addresses)]
+    (-> address 
+        (assoc :StreetAddresses (seq (take 1 (:StreetAddresses address))))
+        list)))
+
+(defn- remove-party-elements-not-in-serf 
+  "Removes elements in a party element that are not in SERF"
+  [party]
+  (-> party
+      (assoc :ContactInstructions nil :ServiceHours nil)
+      (update-in [:Addresses] serf-expected-addresses)))
+
+(defn- expected-related-urls-for-serf-party
+  [related-urls]
+  (when-let [related-url (first related-urls)] 
+    [(cmn/map->RelatedUrlType {:URLs (take 1 (:URLs related-url))})]))
+
+(defn- expected-serf-responsibility
+  [resp]
+  (-> resp
+      (update-in [:Party :RelatedUrls] expected-related-urls-for-serf-party)
+      fix-organization-name-in-party
+      (update-in [:Party :Contacts] expected-serf-contacts)
+      (update-in [:Party] remove-party-elements-not-in-serf)))
+
+(defn- filter-unused-serf-datetypes
+  [dates]
+  (remove #(= "DELETE" (:Type %)) dates))
+
+(defn- filter-unique-serf-dates
+  [dates]
+  (let [dates-by-type (group-by :Type dates)] 
+    (keep #(first (get dates-by-type %))
+          ["CREATE" "UPDATE" "REVIEW"])))
+
+
+(defn- expected-metadata-dates-for-serf
+  [dates]
+  (-> dates
+      filter-unused-serf-datetypes
+      filter-unique-serf-dates 
+      seq))
+
+(defn- fix-publication-reference-url
+  [some-url]
+  (when some-url
+    (cmn/map->RelatedUrlType {:URLs (->> some-url :URLs (take 1))})))
+
+(defn- expected-serf-service-citation
+  [citation]
+  (assoc citation 
+         :DOI nil 
+         :ReleasePlace nil 
+         :SeriesName nil 
+         :DataPresentationForm nil
+         :IssueIdentification nil
+         :Editor nil
+         :ReleaseDate nil
+         :OtherCitationDetails nil
+         :RelatedUrl (fix-publication-reference-url (:RelatedUrl citation))))
+
+(defn remove-empty-objects
+  "Required to remove some extraneous mappings from ResourceCitation that are not used
+  in ServiceCitation for the comparison engine."
+  [objects]
+  (filter #(some val %) objects))
+
+(defn- fix-serf-doi
+  [pubref]
+  (if (:DOI pubref)
+    (assoc-in pubref [:DOI :Authority] nil)
+    pubref ))
+
+(defn- fix-access-constraints
+  [access-constraint]
+  (if access-constraint
+    (assoc access-constraint :Value nil)
+    access-constraint))
+
+(defn fix-serf-project
+  [project]
+  (assoc project :EndDate nil :StartDate nil :Campaigns nil))
+
+(defn fix-metadata-associations
+  [metadata-association]
+  (if-let [ma (seq (take 1 metadata-association))]
+    ma
+    metadata-association))
+
 (defmethod convert-internal :serf
-  [umm-coll _]
-  umm-coll)
+  [umm-service _]
+  (-> umm-service
+      (update-in [:Responsibilities] make-sure-organization-exists)
+      (update-in-each [:Responsibilities] expected-serf-responsibility)
+      (update-in [:AdditionalAttributes] convert-serf-additional-attributes)
+      (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
+      (update-in [:MetadataDates] expected-metadata-dates-for-serf)
+      (update-in-each [:ServiceCitation] expected-serf-service-citation)
+      (update-in [:ServiceCitation] remove-empty-objects)
+      (update-in [:ServiceCitation] seq)
+      (update-in-each [:Projects] fix-serf-project)
+      (update-in [:AccessConstraints] fix-access-constraints)
+      (update-in-each [:MetadataAssociations] assoc :Description nil :Type nil :Version nil)
+      (update-in [:MetadataAssociations] fix-metadata-associations)
+      (update-in-each [:PublicationReferences] fix-serf-doi)
+      (update-in-each [:PublicationReferences] update-in [:RelatedUrl] fix-publication-reference-url)
+      (assoc :Platforms nil)))
 
 ;; ISO 19115-2
 
 (defn propagate-first
   "Returns coll with the first element's value under k assoc'ed to each element in coll.
-
+  
   Example: (propagate-first :x [{:x 1} {:y 2}]) => [{:x 1} {:x 1 :y 2}]"
   [k coll]
   (let [v (get (first coll) k)]
@@ -779,14 +991,6 @@
       (update-in [:VerticalSpatialDomains] #(take 1 %))
       (update-in-each [:VerticalSpatialDomains] fix-iso-vertical-spatial-domain-values)
       prune-empty-maps))
-
-(defn- expected-person
-  [person]
-  (when-let [{:keys [FirstName MiddleName LastName]} person]
-    (-> person
-        (assoc :Uuid nil :FirstName nil :MiddleName nil)
-        (assoc :LastName (str/join
-                           " " (remove nil? [FirstName MiddleName LastName]))))))
 
 (defn- expected-contacts
   "Returns the contacts with type phone or email"
@@ -939,24 +1143,26 @@
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"
-  [record]
-  (reduce (fn [r field]
-            (assoc r field nil))
-          record
-          not-implemented-fields))
+  [record metadata-format]
+  (if (contains? #{:serf} metadata-format)
+    record
+    (reduce (fn [r field]
+              (assoc r field nil))
+            record
+            not-implemented-fields)))
 
 ;;; Public API
 
 (defn convert
-  "Returns input UMM-C record transformed according to the specified transformation for
+  "Returns input UMM-C/S record transformed according to the specified transformation for
   metadata-format."
-  ([umm-coll metadata-format]
-   (if (contains? #{:umm-json :serf} metadata-format)
-     umm-coll
-     (-> umm-coll
+  ([umm-record metadata-format]
+   (if (contains? #{:umm-json} metadata-format)
+     umm-record
+     (-> umm-record
          (convert-internal metadata-format)
-         dissoc-not-implemented-fields)))
-  ([umm-coll src dest]
-   (-> umm-coll
+         (dissoc-not-implemented-fields metadata-format))))
+  ([umm-record src dest]
+   (-> umm-record
        (convert src)
        (convert dest))))

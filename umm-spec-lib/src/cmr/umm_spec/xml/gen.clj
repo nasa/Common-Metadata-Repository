@@ -33,6 +33,9 @@
 
   java.lang.Boolean
   (generate [b] (str b))
+  
+  clojure.lang.Keyword
+  (generate [k] (str k))
 
   nil
   (generate [_] nil))

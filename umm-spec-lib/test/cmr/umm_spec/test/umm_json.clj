@@ -80,26 +80,6 @@
           parsed (uj/json->umm js/umm-s-schema json)]
       (is (= umm-s-record parsed)))))
 
-(comment
-
-  ;; After you see a failing value execute the def then use this to see what failed.
-  ;; We will eventually update try to update test_check_ext to see if it can automatically take
-  ;; the smallest failing value and then execute the let block so that the failure will be displayed
-  ;; as normal.
-
-  (let [json (uj/umm->json user/failing-value)
-        _ (is (empty? (js/validate-umm-json json :collection)))
-        parsed (uj/json->umm js/umm-c-schema json)]
-    (is (= user/failing-value parsed)))
-
- ;; Use this block for testing UMM-S calls.
-
-  (let [json (uj/umm->json user/failing-value)
-        _ (is (empty? (js/validate-umm-json json :service)))
-        parsed (uj/json->umm js/umm-s-schema json)]
-    (is (= user/failing-value parsed))))
-
-
 (deftest validate-json-with-extra-fields
   (let [json (uj/umm->json (assoc minimal-example-umm-c-record :foo "extra"))]
     (is (= ["object instance has properties which are not allowed by the schema: [\"foo\"]"]
