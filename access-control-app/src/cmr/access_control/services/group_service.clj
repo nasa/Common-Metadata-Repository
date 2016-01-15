@@ -98,3 +98,17 @@
   "Retrieves a group with the given concept id."
   [context concept-id]
   (edn/read-string (:metadata (fetch-group-concept context concept-id))))
+
+(defn delete-group
+  "Deletes a group with the given concept id"
+  [context concept-id]
+  (let [existing-concept (fetch-group-concept context concept-id)]
+    (mdb/save-concept
+      context
+      (-> existing-concept
+          ;; Remove fields not allowed when creating a tombstone.
+          (dissoc :metadata :format :provider-id :native-id)
+          (assoc :deleted true
+                 :user-id (context->user-id context))
+          (dissoc :revision-date)
+          (update-in [:revision-id] inc)))))

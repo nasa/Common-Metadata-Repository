@@ -70,6 +70,12 @@
   (-> (group-service/get-group context concept-id)
       api-response))
 
+(defn delete-group
+  "Deletes the group with the given concept-id."
+  [context concept-id]
+  (api-response (group-service/delete-group context concept-id)))
+
+
 (def admin-api-routes
   "The administrative control routes."
   (routes
@@ -97,7 +103,13 @@
         (context "/:group-id" [group-id]
           ;; Get a group
           (GET "/" {:keys [request-context]}
-            (get-group request-context group-id)))))
+            (get-group request-context group-id))
+
+          ;; Delete a group
+          (DELETE "/" {:keys [request-context]}
+            ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
+            (acl/verify-ingest-management-permission request-context :update)
+            (delete-group request-context group-id)))))
 
     (route/not-found "Not Found")))
 
