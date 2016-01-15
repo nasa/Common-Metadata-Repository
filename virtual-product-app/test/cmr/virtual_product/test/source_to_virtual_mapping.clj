@@ -133,48 +133,48 @@
           :data-granule {:size nil}}
 
          ;; AIRX3STD
-         "GSFCS4PA" airx3std "AIRX3STD_006_H2O_MMR_Surf"
+         "GSFCS4PA" airx3std "AIRX3STD_H2O_MMR_Surf"
          {:granule-ur "AIRX3STD.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
           :related-urls (gen-resource-urls [opendap-url])
           :measured-parameters airx3std-measured-parameters
           :data-granule {:size 40}}
-         {:granule-ur "AIRX3STD_006_H2O_MMR_Surf.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
+         {:granule-ur "AIRX3STD_H2O_MMR_Surf.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
           :related-urls (gen-resource-urls [(str opendap-url "?" "H2O_MMR_A,H2O_MMR_D,Latitude,Longitude")])
           :data-granule {:size nil}}
 
-         "GSFCS4PA" airx3std "AIRX3STD_006_OLR"
+         "GSFCS4PA" airx3std "AIRX3STD_OLR"
          {:granule-ur "AIRX3STD.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
           :related-urls (gen-resource-urls [opendap-url])
           :measured-parameters airx3std-measured-parameters
           :data-granule {:size 40}}
-         {:granule-ur  "AIRX3STD_006_OLR.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
+         {:granule-ur  "AIRX3STD_OLR.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
           :related-urls (gen-resource-urls [(str opendap-url "?" "OLR_A,OLR_D,Latitude,Longitude")])
           :data-granule {:size nil}}
 
-         "GSFCS4PA" airx3std "AIRX3STD_006_SurfAirTemp"
+         "GSFCS4PA" airx3std "AIRX3STD_SurfAirTemp"
          {:granule-ur "AIRX3STD.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
           :related-urls (gen-resource-urls [opendap-url])
           :measured-parameters airx3std-measured-parameters
           :data-granule {:size 40}}
-         {:granule-ur "AIRX3STD_006_SurfAirTemp.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
+         {:granule-ur "AIRX3STD_SurfAirTemp.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
           :related-urls (gen-resource-urls [(str opendap-url "?" "SurfAirTemp_A,SurfAirTemp_D,Latitude,Longitude")])
           :data-granule {:size nil}}
 
-         "GSFCS4PA" airx3std "AIRX3STD_006_SurfSkinTemp"
+         "GSFCS4PA" airx3std "AIRX3STD_SurfSkinTemp"
          {:granule-ur "AIRX3STD.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
           :related-urls (gen-resource-urls [opendap-url])
           :measured-parameters airx3std-measured-parameters
           :data-granule {:size 40}}
-         {:granule-ur "AIRX3STD_006_SurfSkinTemp.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
+         {:granule-ur "AIRX3STD_SurfSkinTemp.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
           :related-urls (gen-resource-urls [(str opendap-url "?" "SurfSkinTemp_A,SurfSkinTemp_D,Latitude,Longitude")])
           :data-granule {:size nil}}
 
-         "GSFCS4PA" airx3std "AIRX3STD_006_TotCO"
+         "GSFCS4PA" airx3std "AIRX3STD_TotCO"
          {:granule-ur "AIRX3STD.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
           :related-urls (gen-resource-urls [opendap-url])
           :measured-parameters airx3std-measured-parameters
           :data-granule {:size 40}}
-         {:granule-ur "AIRX3STD_006_TotCO.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
+         {:granule-ur "AIRX3STD_TotCO.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
           :related-urls (gen-resource-urls [(str opendap-url "?" "TotCO_A,TotCO_D,Latitude,Longitude")])
           :data-granule {:size nil}}
 
@@ -197,51 +197,51 @@
           :data-granule {:size nil}}
 
          ;; AIRX3STM
-         "GSFCS4PA" airx3stm "AIRX3STM_006_ClrOLR"
+         "GSFCS4PA" airx3stm "AIRX3STM_ClrOLR"
          {:granule-ur "AIRX3STM.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
           :related-urls (gen-resource-urls [opendap-url])
           :data-granule {:size 40}}
-         {:granule-ur "AIRX3STM_006_ClrOLR.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
+         {:granule-ur "AIRX3STM_ClrOLR.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
           :related-urls (gen-resource-urls [(str opendap-url "?" "ClrOLR_A,ClrOLR_D,Latitude,Longitude")])
           :data-granule {:size nil}}
 
-         "GSFCS4PA" airx3stm "AIRX3STM_006_H2O_MMR_Surf"
+         "GSFCS4PA" airx3stm "AIRX3STM_H2O_MMR_Surf"
          {:granule-ur "AIRX3STM.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
           :related-urls (gen-resource-urls [opendap-url])
           :data-granule {:size 40}}
-         {:granule-ur "AIRX3STM_006_H2O_MMR_Surf.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
+         {:granule-ur "AIRX3STM_H2O_MMR_Surf.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
           :related-urls (gen-resource-urls [(str opendap-url "?" "H2O_MMR_A,H2O_MMR_D,Latitude,Longitude")])
           :data-granule {:size nil}}
 
-         "GSFCS4PA" airx3stm "AIRX3STM_006_OLR"
+         "GSFCS4PA" airx3stm "AIRX3STM_OLR"
          {:granule-ur "AIRX3STM.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
           :related-urls (gen-resource-urls [opendap-url])
           :data-granule {:size 40}}
-         {:granule-ur "AIRX3STM_006_OLR.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
+         {:granule-ur "AIRX3STM_OLR.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
           :related-urls (gen-resource-urls [(str opendap-url "?" "OLR_A,OLR_D,Latitude,Longitude")])
           :data-granule {:size nil}}
 
-         "GSFCS4PA" airx3stm "AIRX3STM_006_SurfAirTemp"
+         "GSFCS4PA" airx3stm "AIRX3STM_SurfAirTemp"
          {:granule-ur "AIRX3STM.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
           :related-urls (gen-resource-urls [opendap-url])
           :data-granule {:size 40}}
-         {:granule-ur "AIRX3STM_006_SurfAirTemp.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
+         {:granule-ur "AIRX3STM_SurfAirTemp.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
           :related-urls (gen-resource-urls [(str opendap-url "?" "SurfAirTemp_A,SurfAirTemp_D,Latitude,Longitude")])
           :data-granule {:size nil}}
 
-         "GSFCS4PA" airx3stm "AIRX3STM_006_SurfSkinTemp"
+         "GSFCS4PA" airx3stm "AIRX3STM_SurfSkinTemp"
          {:granule-ur "AIRX3STM.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
           :related-urls (gen-resource-urls [opendap-url])
           :data-granule {:size 40}}
-         {:granule-ur "AIRX3STM_006_SurfSkinTemp.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
+         {:granule-ur "AIRX3STM_SurfSkinTemp.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
           :related-urls (gen-resource-urls [(str opendap-url "?" "SurfSkinTemp_A,SurfSkinTemp_D,Latitude,Longitude")])
           :data-granule {:size nil}}
 
-         "GSFCS4PA" airx3stm "AIRX3STM_006_TotCO"
+         "GSFCS4PA" airx3stm "AIRX3STM_TotCO"
          {:granule-ur "AIRX3STM.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
           :related-urls (gen-resource-urls [opendap-url])
           :data-granule {:size 40}}
-         {:granule-ur "AIRX3STM_006_TotCO.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
+         {:granule-ur "AIRX3STM_TotCO.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
           :related-urls (gen-resource-urls [(str opendap-url "?" "TotCO_A,TotCO_D,Latitude,Longitude")])
           :data-granule {:size nil}}
 
