@@ -92,15 +92,15 @@
    ["GSFCS4PA" "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006"]
    {:short-name "AIRX3STD"
     :virtual-collections [{:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Water Vapor Mass Mixing Ratio V006"
-                           :short-name "AIRX3STD_006_H2O_MMR_Surf"}
+                           :short-name "AIRX3STD_H2O_MMR_Surf"}
                           {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Outgoing Longwave Radiation V006"
-                           :short-name "AIRX3STD_006_OLR"}
+                           :short-name "AIRX3STD_OLR"}
                           {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Surface Air Temperature V006"
-                           :short-name "AIRX3STD_006_SurfAirTemp"}
+                           :short-name "AIRX3STD_SurfAirTemp"}
                           {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Surface Skin Temperature V006"
-                           :short-name "AIRX3STD_006_SurfSkinTemp"}
+                           :short-name "AIRX3STD_SurfSkinTemp"}
                           {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Total Carbon Monoxide V006"
-                           :short-name "AIRX3STD_006_TotCO"}
+                           :short-name "AIRX3STD_TotCO"}
                           {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Outgoing Longwave Radiation Clear Sky V006"
                            :short-name "AIRX3STD_ClrOLR"}
                           {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Methane Total Column V006"
@@ -108,17 +108,17 @@
    ["GSFCS4PA" "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) V006"]
    {:short-name "AIRX3STM"
     :virtual-collections [{:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Clear Sky Outgoing Longwave Flux V006"
-                           :short-name "AIRX3STM_006_ClrOLR"}
+                           :short-name "AIRX3STM_ClrOLR"}
                           {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Water Vapor Mass Mixing Ratio at Surface V006"
-                           :short-name "AIRX3STM_006_H2O_MMR_Surf"}
+                           :short-name "AIRX3STM_H2O_MMR_Surf"}
                           {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Outgoing Longwave Radiation V006"
-                           :short-name "AIRX3STM_006_OLR"}
+                           :short-name "AIRX3STM_OLR"}
                           {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Surface Air Temperature V006"
-                           :short-name "AIRX3STM_006_SurfAirTemp"}
+                           :short-name "AIRX3STM_SurfAirTemp"}
                           {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Surface Skin Temperature V006"
-                           :short-name "AIRX3STM_006_SurfSkinTemp"}
+                           :short-name "AIRX3STM_SurfSkinTemp"}
                           {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Total Carbon Monoxide V006"
-                           :short-name "AIRX3STM_006_TotCO"}
+                           :short-name "AIRX3STM_TotCO"}
                           {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Methane Total Column V006"
                            :short-name "AIRX3STM_TotCH4"}]}
    ["LPDAAC_ECS" "ASTER Level 1 precision terrain corrected registered at-sensor radiance V003"]
@@ -284,11 +284,11 @@
   "A map of short names of the virtual products based on AIRXSTD dataset to the string representing
   the corresponding OpenDAP url subset used in the generation of the online access urls for the
   virtual granule metadata being created"
-  {"AIRX3STD_006_H2O_MMR_Surf" "H2O_MMR_A,H2O_MMR_D,Latitude,Longitude"
-   "AIRX3STD_006_OLR" "OLR_A,OLR_D,Latitude,Longitude"
-   "AIRX3STD_006_SurfAirTemp" "SurfAirTemp_A,SurfAirTemp_D,Latitude,Longitude"
-   "AIRX3STD_006_SurfSkinTemp" "SurfSkinTemp_A,SurfSkinTemp_D,Latitude,Longitude"
-   "AIRX3STD_006_TotCO" "TotCO_A,TotCO_D,Latitude,Longitude"
+  {"AIRX3STD_H2O_MMR_Surf" "H2O_MMR_A,H2O_MMR_D,Latitude,Longitude"
+   "AIRX3STD_OLR" "OLR_A,OLR_D,Latitude,Longitude"
+   "AIRX3STD_SurfAirTemp" "SurfAirTemp_A,SurfAirTemp_D,Latitude,Longitude"
+   "AIRX3STD_SurfSkinTemp" "SurfSkinTemp_A,SurfSkinTemp_D,Latitude,Longitude"
+   "AIRX3STD_TotCO" "TotCO_A,TotCO_D,Latitude,Longitude"
    "AIRX3STD_ClrOLR" "ClrOLR_A,ClrOLR_D,Latitude,Longitude"
    "AIRX3STD_TotCH4" "TotCH4_A,TotCH4_D,Latitude,Longitude"})
 
@@ -301,12 +301,12 @@
   "A map of short names of the virtual products based on AIRXSTM dataset to the string representing
   the corresponding OpenDAP url subset used in the generation of the online access urls for the
   virtual granule metadata being created"
-  {"AIRX3STM_006_ClrOLR" "ClrOLR_A,ClrOLR_D,Latitude,Longitude"
-   "AIRX3STM_006_H2O_MMR_Surf" "H2O_MMR_A,H2O_MMR_D,Latitude,Longitude"
-   "AIRX3STM_006_OLR" "OLR_A,OLR_D,Latitude,Longitude"
-   "AIRX3STM_006_SurfAirTemp" "SurfAirTemp_A,SurfAirTemp_D,Latitude,Longitude"
-   "AIRX3STM_006_SurfSkinTemp" "SurfSkinTemp_A,SurfSkinTemp_D,Latitude,Longitude"
-   "AIRX3STM_006_TotCO" "TotCO_A,TotCO_D,Latitude,Longitude"
+  {"AIRX3STM_ClrOLR" "ClrOLR_A,ClrOLR_D,Latitude,Longitude"
+   "AIRX3STM_H2O_MMR_Surf" "H2O_MMR_A,H2O_MMR_D,Latitude,Longitude"
+   "AIRX3STM_OLR" "OLR_A,OLR_D,Latitude,Longitude"
+   "AIRX3STM_SurfAirTemp" "SurfAirTemp_A,SurfAirTemp_D,Latitude,Longitude"
+   "AIRX3STM_SurfSkinTemp" "SurfSkinTemp_A,SurfSkinTemp_D,Latitude,Longitude"
+   "AIRX3STM_TotCO" "TotCO_A,TotCO_D,Latitude,Longitude"
    "AIRX3STM_TotCH4" "TotCH4_A,TotCH4_D,Latitude,Longitude"})
 
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "AIRX3STM"]
