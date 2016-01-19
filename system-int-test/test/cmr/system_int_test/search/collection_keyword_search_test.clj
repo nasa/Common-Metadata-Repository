@@ -40,6 +40,7 @@
                          :instruments [(dc/instrument {:short-name "SMAP L-BAND RADIOMETER"})]})
         p5 (dc/platform {:short-name "fo&nA"})
         p6 (dc/platform {:short-name "spo~nA"})
+        psn (dc/platform {:short-name "boost"})
         pr1 (dc/projects "project-short-name")
         sk1 (dc/science-keyword {:category "Cat1"
                                  :topic "Topic1"
@@ -237,7 +238,7 @@
            ;; - detailed-variable
            "SUPER" [coll9]
 
-            ;; Special characters are escaped before sending to Elastic
+           ;; Special characters are escaped before sending to Elastic
            "ABC~ZYX" []
            "ABC~" []
            "spo~nA" [coll11]
@@ -303,6 +304,54 @@
 
            ;; science-keywords
            (:category sk1) [k2e/science-keywords-boost]))
+
+    (testing "Specified boosts on fields"
+      (are [params scores] (= (map #(/ % 2.0) scores)
+                              (map :score (:refs (search/find-refs :collection params))))
+           ;; short-name
+           {:keyword "SNFoobar":boost {:short-name 2.0}} [2.0]
+
+           ;; project short-name
+           {:keyword (:short-name (first pr1)) :boost {:project 2.0}} [2.0]
+
+           ;; platform short-name
+           {:keyword (:short-name p1) :boost {:platform 2.0}} [2.0]
+
+           ;; instrument short-name
+           {:keyword (:short-name (first (:instruments p1))) :boost {:platorm 2.0}} [2.0]
+
+           ;; sensor short-name
+           {:keyword (:short-name (first (:sensors (first (:instruments p1))))) :boost {:sensor 2.0}} [2.0]
+
+           ;; temporal-keywords
+           {:keyword "tk1" :boost {:temporal-keywords 2.0}} [2.0]
+
+           ;; spatial-keyword
+           {:keyword "in out" :boost {:spatial-keyword 2.0}} [2.0]
+
+           ;; science-keywords
+           {:keyword (:category sk1) :boost {:science-keywords-boost 2.0}} [2.0]
+
+           ;; mixed boosts
+           {:keyword "spoonA" :boost {:short-name 2.0 :science-keywords 5.0}} [5.0 2.0]))
+
+    (testing "Setting boosts without keyword search is an error"
+      (let [resp (search/find-refs :collection {:provider "PROV1"
+                                                :page_size 5
+                                                :short_name "SNFoobar"
+                                                :boost {:short-name 2.0}})
+            {:keys [status errors]} resp]
+        (is (= 400 status))
+        (is (= "Parameter [boost] is only valid for keyword queries." (first errors)))))
+
+    (testing "Boosting on invalid field"
+      (let [resp (search/find-refs :collection {:provider "PROV1"
+                                                :page_size 5
+                                                :keyword "Laser"
+                                                :boost {:foo 2.0}})
+            {:keys [status errors]} resp]
+        (is (= 400 status))
+        (is (= "Cannot set boost on field [foo]." (first errors)))))
 
     (testing "sorted search by keywords."
       (are [keyword-str items]
