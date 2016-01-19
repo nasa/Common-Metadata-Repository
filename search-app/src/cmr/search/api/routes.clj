@@ -424,13 +424,13 @@
 (defn make-api [system]
   (-> (build-routes system)
       acl/add-authentication-handler
-      common-routes/add-request-id-response-handler
-      (context/build-request-context-handler system)
       keyword-params/wrap-keyword-params
       nested-params/wrap-nested-params
       errors/invalid-url-encoding-handler
       mixed-arity-param-handler
       (errors/exception-handler default-error-format-fn)
+      common-routes/add-request-id-response-handler
+      (context/build-request-context-handler system)
       common-routes/pretty-print-response-handler
       params/wrap-params
       copy-of-body-handler))

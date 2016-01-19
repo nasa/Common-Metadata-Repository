@@ -143,6 +143,7 @@
    ;; no-snake-kebab needed for legacy psa which use camel case minValue/maxValue
    (let [url-extension (get options :url-extension)
          snake-kebab? (get options :snake-kebab? true)
+         throw-exceptions? (get options :throw-exceptions true)
          headers (get options :headers {})
          params (if snake-kebab?
                   (params->snake_case (util/map-keys csk/->snake_case_keyword params))
@@ -153,8 +154,10 @@
          response (client/get url {:accept accept
                                    :headers headers
                                    :query-params params
+                                   :throw-exceptions throw-exceptions?
                                    :connection-manager (s/conn-mgr)})]
-     (is (= 200 (:status response)))
+     (when throw-exceptions?
+       (is (= 200 (:status response))))
      response)))
 
 (defn- find-with-json-query

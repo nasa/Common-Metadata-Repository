@@ -196,14 +196,15 @@
    (ingest-concept concept {}))
   ([concept options]
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
-         {:keys [token client-id user-id validate-keywords]} options
+         {:keys [token client-id user-id validate-keywords cmr-request-id]} options
          accept-format (:accept-format options)
          headers (util/remove-nil-keys {"Cmr-Concept-id" concept-id
                                         "Cmr-Revision-id" revision-id
                                         "Cmr-Validate-Keywords" validate-keywords
                                         "Echo-Token" token
                                         "User-Id" user-id
-                                        "Client-Id" client-id})
+                                        "Client-Id" client-id
+                                        "CMR-Request-Id" cmr-request-id})
          params {:method :put
                  :url (url/ingest-url provider-id concept-type native-id)
                  :body  metadata

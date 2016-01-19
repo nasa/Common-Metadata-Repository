@@ -24,8 +24,8 @@
   (get-in context [:request :request-id]))
 
 (def REQUEST_ID_HEADER
-  "The HTTP header field containing the current request id."
-  "CMR-Request-Id")
+  "The HTTP header field containing the current request id. Ring converts all headers to lowercase."
+  "cmr-request-id")
 
 (defn build-request-context
   "Creates a request context. Takes the current system and an HTTP Request"
