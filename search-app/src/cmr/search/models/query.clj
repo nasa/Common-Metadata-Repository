@@ -22,6 +22,9 @@
    ;; the desired page in the result set - starting at zero
    page-num
 
+   ;; a map various fields used in keyword query to boosts (weights)
+   boosts
+
    ;; a sequence of maps with :order and :field for sorting
    sort-keys
 

@@ -69,6 +69,25 @@
   "The boost to apply to the temporal keyword field"
   1.1)
 
+(def default-boosts
+  "Field boosts to use if not provided."
+  {:short-name short-name-long-name-boost
+   :project project-boost
+   :platform platform-boost
+   :instrument instrument-boost
+   :sensor sensor-boost
+   :science-keywords science-keywords-boost
+   :spatial-keyword spatial-keyword-boost
+   :temporal-keyword temporal-keyword-boost
+   :summary 1.0
+   :version-id 1.0
+   :entry-title 1.0
+   :provider-id 1.0
+   :concept-id 1.0
+   :two-d-coord-names 1.0
+   :processing-level-id 1.0
+   :data-center 1.0})
+
 (def elastic-regex-wildcard-chars-re
   "Regex to match wildcard characters that need to be processed for elastic regexp query"
   #"([\?\*])")
@@ -101,6 +120,7 @@
   exact match on another"
   [regex-field exact-field keywords boost]
   {:weight boost
+   ;; TODO - should the 'and' below actually be an 'or'? Investigate this as part of CMR-1329
    :filter {:or [{:and (map (partial keyword-regexp-filter regex-field) keywords)}
                  {:or (map (partial keyword-exact-match-filter exact-field) keywords)}]}})
 
@@ -126,25 +146,45 @@
     {:weight boost
      :filter (keyword-exact-match-filter field keyword)}))
 
+(defn- get-boost
+  "Get the boost value for the given field."
+  [specified-boosts field use-defaults?]
+  (let [boosts (if specified-boosts
+                 (if use-defaults?
+                   (merge default-boosts specified-boosts)
+                   specified-boosts)
+                 default-boosts)]
+    (get boosts field 1.0)))
+
 (defn keywords->boosted-elastic-filters
   "Create filters with boosting for the function score query used with keyword search"
-  [keywords]
-  [;; long-name, short-name
-   (keywords->name-filter :long-name.lowercase
-                          :short-name.lowercase keywords
-                          short-name-long-name-boost)
-   ;; project (ECHO campaign)
-   (keywords->name-filter :project-ln.lowercase :project-sn2.lowercase keywords project-boost)
-   ;; platform
-   (keywords->name-filter :platform-ln.lowercase :platform-sn.lowercase keywords platform-boost)
-   ;; instrument
-   (keywords->name-filter :instrument-ln.lowercase :instrument-sn.lowercase keywords instrument-boost)
-   ;; sensor
-   (keywords->name-filter :sensor-ln.lowercase :sensor-sn.lowercase keywords sensor-boost)
-   ;; science keywords
-   (keywords->sk-filter keywords science-keywords-boost)
-   ;; spatial-keyword
-   (keywords->boosted-exact-match-filter :spatial-keyword.lowercase keywords spatial-keyword-boost)
-   ;; temporal-keyword
-   (keywords->boosted-exact-match-filter :temporal-keyword.lowercase keywords temporal-keyword-boost)])
+  [keywords specified-boosts use-defaults?]
+  (let [get-boost-fn #(get-boost specified-boosts % use-defaults?)]
+    [;; long-name, short-name
+     (keywords->name-filter :long-name.lowercase
+                            :short-name.lowercase keywords
+                            (get-boost-fn :short-name))
+     ;; project (ECHO campaign)
+     (keywords->name-filter :project-ln.lowercase :project-sn2.lowercase keywords
+                            (get-boost-fn :project))
+     ;; platform
+     (keywords->name-filter :platform-ln.lowercase :platform-sn.lowercase keywords
+                            (get-boost-fn :platform))
+     ;; instrument
+     (keywords->name-filter :instrument-ln.lowercase :instrument-sn.lowercase keywords
+                            (get-boost-fn :instrument))
+     ;; sensor
+     (keywords->name-filter :sensor-ln.lowercase :sensor-sn.lowercase keywords
+                            (get-boost-fn :sensor))
+     ;; science keywords
+     (keywords->sk-filter keywords (get-boost-fn :science-keywords))
+     ;; spatial-keyword
+     (keywords->boosted-exact-match-filter :spatial-keyword.lowercase keywords
+                                           (get-boost-fn :spatial-keyword))
+     ;; temporal-keyword
+     (keywords->boosted-exact-match-filter :temporal-keyword.lowercase keywords
+                                           (get-boost-fn :temporal-keyword))
+
+     ;; summary
+     ]))
 

@@ -90,18 +90,22 @@
 (defn query->elastic
   "Converts a query model into an elastic search query"
   [query]
-  (let [{:keys [concept-type condition keywords]} (query-expense/order-conditions query)
+  (let [boosts (:boosts query)
+        {:keys [concept-type condition keywords]} (query-expense/order-conditions query)
         core-query (condition->elastic condition concept-type)]
     (if-let [keywords (keywords-in-query query)]
       ;; function_score query allows us to compute a custom relevance score for each document
       ;; matched by the primary query. The final document relevance is given by multiplying
       ;; a boosting term for each matching filter in a set of filters.
       {:function_score {:score_mode :multiply
-                        :functions (k2e/keywords->boosted-elastic-filters keywords)
+                        :functions (k2e/keywords->boosted-elastic-filters keywords boosts true) ;; TOOD change true to use boosts[use_defaults] parameter
                         :query {:filtered {:query (q/match-all)
                                            :filter core-query}}}}
-      {:filtered {:query (q/match-all)
-                  :filter core-query}})))
+      ;; TODO add validation here to make sure boosts are not specified
+      (if boosts
+        (errors/throw-service-errors :bad-request ["Boosting is only supported for keyword queries"])
+        {:filtered {:query (q/match-all)
+                  :filter core-query}}))))
 
 (def sort-key-field->elastic-field
   "Submaps by concept type of the sort key fields given by the user to the exact elastic sort field to use.
