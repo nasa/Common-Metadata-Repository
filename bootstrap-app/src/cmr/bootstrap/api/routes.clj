@@ -114,9 +114,10 @@
 (defn make-api [system]
   (-> (build-routes system)
       acl/add-authentication-handler
-      (context/build-request-context-handler system)
       errors/invalid-url-encoding-handler
       errors/exception-handler
+      common-routes/add-request-id-response-handler
+      (context/build-request-context-handler system)
       keyword-params/wrap-keyword-params
       nested-params/wrap-nested-params
       ring-json/wrap-json-body

@@ -12,6 +12,10 @@
             [compojure.core :refer :all]
             [ring.util.codec :as rc]))
 
+(def RESPONSE_REQUEST_ID_HEADER
+  "The HTTP response header field containing the current request id."
+  "CMR-Request-Id")
+
 (def cache-api-routes
   "Create routes for the cache querying/management api"
   (context "/caches" []
@@ -150,6 +154,6 @@
   (fn [{context :request-context :as request}]
     (if-let [request-id (cxt/context->request-id context)]
       (-> (f request)
-          (assoc-in [:headers cxt/REQUEST_ID_HEADER] request-id))
+          (assoc-in [:headers RESPONSE_REQUEST_ID_HEADER] request-id))
       ((ring-json/wrap-json-response f) request))))
 
