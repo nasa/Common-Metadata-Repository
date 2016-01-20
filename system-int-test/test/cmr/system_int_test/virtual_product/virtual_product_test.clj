@@ -321,7 +321,6 @@
 
 (def disabled-source-colls
   #{"OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003"
-    "OMI/Aura TOMS-Like Ozone, Aerosol Index, Cloud Radiance Fraction Daily L3 Global 1.0x1.0 deg V003"
     "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006"})
 
 (deftest virtual-products-disabled-source-collections-test

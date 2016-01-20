@@ -85,10 +85,6 @@
    {:short-name "OMUVBd"
     :virtual-collections [{:entry-title "OMI/Aura Surface UVB UV Index, Erythemal Dose, and Erythemal Dose Rate Daily L3 Global 1.0x1.0 deg Grid V003"
                            :short-name "OMUVBd_ErythemalUV"}]}
-   ["GSFCS4PA" "OMI/Aura TOMS-Like Ozone, Aerosol Index, Cloud Radiance Fraction Daily L3 Global 1.0x1.0 deg V003"]
-   {:short-name "OMTO3d"
-    :virtual-collections [{:entry-title "OMI/Aura TOMS-Like Column Amount Ozone and UV Aerosol Index Daily L3 Global 1.0x1.0 deg V003"
-                           :short-name "OMTO3d_O3_AI"}]}
    ["GSFCS4PA" "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006"]
    {:short-name "AIRX3STD"
     :virtual-collections [{:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Water Vapor Mass Mixing Ratio V006"
@@ -161,9 +157,6 @@
    ["GSFCS4PA" "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003"]
    ["OMUVBd.003:OMI-Aura_L3-OMUVBd_2004m1001_v003-2013m0314t081851.he5"
     "OMUVBd.003:OMI-Aura_L3-OMUVBd_2004m1012_v003-2014m0117t110510.he5"]
-   ["GSFCS4PA" "OMI/Aura TOMS-Like Ozone, Aerosol Index, Cloud Radiance Fraction Daily L3 Global 1.0x1.0 deg V003"]
-   ["OMTO3d.003:OMI-Aura_L3-OMTO3d_2004m1001_v003-2012m0405t174138.he5"
-    "OMTO3d.003:OMI-Aura_L3-OMTO3d_2004m1002_v003-2012m0405t174153.he5"]
    ["GSFCS4PA" "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006"]
    ["AIRX3STD.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
     "AIRX3STD.006:AIRS.2002.09.01.L3.RetStd001.v6.0.9.0.G13208004820.hdf"]
@@ -275,10 +268,6 @@
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "OMUVBd"]
   [virtual-umm provider-id source-short-name virtual-short-name]
   (update-related-urls provider-id source-short-name virtual-short-name virtual-umm "ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"))
-
-(defmethod update-virtual-granule-umm ["GSFCS4PA" "OMTO3d"]
-  [virtual-umm provider-id source-short-name virtual-short-name]
-  (update-related-urls provider-id source-short-name virtual-short-name virtual-umm "ColumnAmountO3,UVAerosolIndex,lon,lat"))
 
 (def airx3std-opendap-subsets
   "A map of short names of the virtual products based on AIRXSTD dataset to the string representing

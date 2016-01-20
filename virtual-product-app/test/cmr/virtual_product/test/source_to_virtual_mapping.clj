@@ -35,7 +35,6 @@
 (deftest generate-virtual-granule-test
   (let [ast-l1a "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
         omuvbd "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003"
-        omto3d "OMI/Aura TOMS-Like Ozone, Aerosol Index, Cloud Radiance Fraction Daily L3 Global 1.0x1.0 deg V003"
         airx3std "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006"
         airx3stm "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) V006"
         gldas_noah10_3h "GLDAS Noah Land Surface Model L4 3 hourly 1.0 x 1.0 degree V2.0"
@@ -120,16 +119,6 @@
           :data-granule {:size 40}}
          {:granule-ur "OMUVBd_ErythemalUV.003:OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5"
           :related-urls (gen-resource-urls [(str opendap-url "?" "ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")])
-          :data-granule {:size nil}}
-
-         ;; OMTO3D
-         "GSFCS4PA" omto3d "OMTO3d_O3_AI"
-         {:granule-ur "OMTO3d.003:OMI-Aura_L3-OMTO3d_2004m1001_v003-2012m0405t174138.he5"
-          :related-urls (concat (gen-resource-urls [opendap-url]) {:type "SOME TYPE" :url random-url})
-          :data-granule {:size 40}}
-         {:granule-ur "OMTO3d_O3_AI.003:OMI-Aura_L3-OMTO3d_2004m1001_v003-2012m0405t174138.he5"
-          :related-urls (concat (gen-resource-urls [(str opendap-url "?" "ColumnAmountO3,UVAerosolIndex,lon,lat")])
-                                {:type "SOME TYPE" :url random-url})
           :data-granule {:size nil}}
 
          ;; AIRX3STD
