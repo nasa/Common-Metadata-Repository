@@ -98,7 +98,7 @@
       ;; matched by the primary query. The final document relevance is given by multiplying
       ;; a boosting term for each matching filter in a set of filters.
       {:function_score {:score_mode :multiply
-                        :functions (k2e/keywords->boosted-elastic-filters keywords boosts true) ;; TOOD change true to use boosts[use_defaults] parameter
+                        :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
                         :query {:filtered {:query (q/match-all)
                                            :filter core-query}}}}
       ;; TODO add validation here to make sure boosts are not specified

@@ -148,9 +148,9 @@
 
 (defn- get-boost
   "Get the boost value for the given field."
-  [specified-boosts field use-defaults?]
+  [specified-boosts field include-defaults?]
   (let [boosts (if specified-boosts
-                 (if use-defaults?
+                 (if include-defaults?
                    (merge default-boosts specified-boosts)
                    specified-boosts)
                  default-boosts)]
@@ -158,8 +158,9 @@
 
 (defn keywords->boosted-elastic-filters
   "Create filters with boosting for the function score query used with keyword search"
-  [keywords specified-boosts use-defaults?]
-  (let [get-boost-fn #(get-boost specified-boosts % use-defaults?)]
+  [keywords specified-boosts]
+  (let [include-defaults? (.equalsIgnoreCase "true" (:include-defaults specified-boosts))
+        get-boost-fn #(get-boost specified-boosts % include-defaults?)]
     [;; long-name, short-name
      (keywords->name-filter :long-name.lowercase
                             :short-name.lowercase keywords
@@ -184,6 +185,9 @@
      ;; temporal-keyword
      (keywords->boosted-exact-match-filter :temporal-keyword.lowercase keywords
                                            (get-boost-fn :temporal-keyword))
+
+     ;; TODO summary, version-id, entry-title, provider-id, concept-id, two-d-coord-names,
+     ;; processing-level-id, data-center
 
      ;; summary
      ]))

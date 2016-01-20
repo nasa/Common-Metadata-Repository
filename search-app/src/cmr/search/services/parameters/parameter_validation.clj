@@ -150,7 +150,8 @@
               (when-not (util/numeric-string? value)
                 (format "Boost value [%s] for field [%s] is not a number."
                         (csk/->snake_case_string value) (csk/->snake_case_string field)))
-              (format "Cannot set boost on field [%s]." (csk/->snake_case_string field))))
+              (when-not (= field :include-defaults)
+                (format "Cannot set boost on field [%s]." (csk/->snake_case_string field)))))
           (seq boosts))))
 
 (def string-param-options #{:pattern :ignore-case})
