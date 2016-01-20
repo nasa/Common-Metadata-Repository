@@ -9,36 +9,52 @@
 
 (defmacro def-app-conn-config
   "Defines three configuration entries for an application for the host, port and relative root URL"
-  [app-name port]
-  (let [host-config (symbol (str (name app-name) "-host"))
+  [app-name defaults]
+  (let [protocol-config (symbol (str (name app-name) "-protocol"))
+        host-config (symbol (str (name app-name) "-host"))
         port-config (symbol (str (name app-name) "-port"))
         relative-root-url-config (symbol (str (name app-name) "-relative-root-url"))]
     `(do
+       (defconfig ~protocol-config
+         ~(str "The protocol to use for connections to the " (name app-name) " application.")
+         {:default ~(get defaults :protocol "http")})
+
        (defconfig ~host-config
          ~(str "The host name to use for connections to the " (name app-name) " application.")
-         {:default "localhost"})
+         {:default ~(get defaults :host "localhost")})
 
        (defconfig ~port-config
          ~(str "The port number to use for connections to the " (name app-name) " application.")
-         {:default ~port :type Long})
+         {:default ~(get defaults :port 3000) :type Long})
 
        (defconfig ~relative-root-url-config
          ~(str "Defines a root path that will appear on all requests sent to this application. For "
                "example if the relative-root-url is '/cmr-app' and the path for a URL is '/foo' then "
                "the full url would be http://host:port/cmr-app/foo. This should be set when this "
                "application is deployed in an environment where it is accessed through a VIP.")
-         {:default ""}))))
+         {:default ~(get defaults :relative-root-url "")}))))
 
-(def-app-conn-config metadata-db 3001)
-(def-app-conn-config ingest 3002)
-(def-app-conn-config search 3003)
-(def-app-conn-config indexer 3004)
-(def-app-conn-config index-set 3005)
-(def-app-conn-config bootstrap 3006)
-(def-app-conn-config cubby 3007)
-(def-app-conn-config virtual-product 3009)
+(def-app-conn-config metadata-db {:port 3001})
+(def-app-conn-config ingest {:port 3002})
+(def-app-conn-config search {:port 3003})
+(def-app-conn-config indexer {:port 3004})
+(def-app-conn-config index-set {:port 3005})
+(def-app-conn-config bootstrap {:port 3006})
+(def-app-conn-config cubby {:port 3007})
+(def-app-conn-config virtual-product {:port 3009})
 ;; CMR open search is 3010
-(def-app-conn-config access-control 3011)
+(def-app-conn-config access-control {:port 3011})
+(def-app-conn-config kms {:port 2999, :relative-root-url "/kms"})
+
+(def-app-conn-config urs {:port 3008, :relative-root-url "/urs"})
+
+(defconfig urs-username
+  "Defines the username that is sent from the CMR to URS to authenticate the CMR."
+  {:default "mock-urs-username"})
+
+(defconfig urs-password
+  "Defines the password that is sent from the CMR to URS to authenticate the CMR."
+  {***REMOVED***})
 
 (defn mins->ms
   "Returns the number of minutes in milliseconds"
@@ -51,6 +67,9 @@
   ;; EI-3988 where responses longer than 5 minutes never return. We want to cause those to fail.
   {:default (mins->ms 6)
    :type Long})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ECHO Rest
 
 (defconfig echo-rest-protocol
   "The protocol to use when contructing ECHO Rest URLs."
@@ -77,19 +96,6 @@
   "The ECHO system token to use for request to ECHO."
   {:default "mock-echo-system-token"})
 
-(defconfig kms-host
-  "The host name to use for connections to GCMD KMS."
-  {:default "localhost"})
-
-(defconfig kms-port
-  "The port to use for connections to GCMD KMS."
-  {:default 2999 :type Long})
-
-(defconfig kms-relative-root-url
-  "The root URL for accessing GCMD KMS resources."
-  {:default "/kms"})
-
-
 (def default-conn-info
   "The default values for connections."
   {:protocol "http"
@@ -98,40 +104,54 @@
 (defn app-conn-info
   "Returns the current application connection information as a map by application name"
   []
-  {:metadata-db {:host (metadata-db-host)
+  {:metadata-db {:protocol (metadata-db-protocol)
+                 :host (metadata-db-host)
                  :port (metadata-db-port)
                  :context (metadata-db-relative-root-url)}
-   :ingest {:host (ingest-host)
+   :ingest {:protocol (ingest-protocol)
+            :host (ingest-host)
             :port (ingest-port)
             :context (ingest-relative-root-url)}
-   :access-control {:host (access-control-host)
+   :access-control {:protocol (access-control-protocol)
+                    :host (access-control-host)
                     :port (access-control-port)
                     :context (access-control-relative-root-url)}
-   :search {:host (search-host)
+   :search {:protocol (search-protocol)
+            :host (search-host)
             :port (search-port)
             :context (search-relative-root-url)}
-   :indexer {:host (indexer-host)
+   :indexer {:protocol (indexer-protocol)
+             :host (indexer-host)
              :port (indexer-port)
              :context (indexer-relative-root-url)}
-   :index-set {:host (index-set-host)
+   :index-set {:protocol (index-set-protocol)
+               :host (index-set-host)
                :port (index-set-port)
                :context (index-set-relative-root-url)}
-   :bootstrap {:host (bootstrap-host)
+   :bootstrap {:protocol (bootstrap-protocol)
+               :host (bootstrap-host)
                :port (bootstrap-port)
                :context (bootstrap-relative-root-url)}
-   :cubby {:host (cubby-host)
+   :cubby {:protocol (cubby-protocol)
+           :host (cubby-host)
            :port (cubby-port)
            :context (cubby-relative-root-url)}
-   :virtual-product {:host (virtual-product-host)
+   :virtual-product {:protocol (virtual-product-protocol)
+                     :host (virtual-product-host)
                      :port (virtual-product-port)
                      :context (virtual-product-relative-root-url)}
    :echo-rest {:protocol (echo-rest-protocol)
                :host (echo-rest-host)
                :port (echo-rest-port)
                :context (echo-rest-context)}
-   :kms {:host (kms-host)
+   :kms {:protocol (kms-protocol)
+         :host (kms-host)
          :port (kms-port)
-         :context (kms-relative-root-url)}})
+         :context (kms-relative-root-url)}
+   :urs {:protocol (urs-protocol)
+         :host (urs-host)
+         :port (urs-port)
+         :context (urs-relative-root-url)}})
 
 (defn app-connection-system-key-name
   "The name of the app connection in the system"

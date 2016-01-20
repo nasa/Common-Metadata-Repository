@@ -85,7 +85,7 @@
   desired. Defaults to false.
   * :http-options - a map of additional HTTP options to send to the clj-http.client/request function.
   * :response-handler - a function to handle the response. Defaults to default-response-handler"
-  [context app-name {:keys [url-fn method raw? http-options response-handler] :as request}]
+  [context app-name {:keys [url-fn method http-options response-handler] :as request}]
   (let [conn (config/context->app-connection context app-name)
         response-handler (or response-handler default-response-handler)
         response (http-response->raw-response
