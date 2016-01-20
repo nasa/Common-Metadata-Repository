@@ -37,6 +37,8 @@
   for details on the function score query."
   (:require [clojure.string :as str]))
 
+;; TODO - Arey these really necessary now? Maybe just include them directly in the map.
+
 (def short-name-long-name-boost
   "The boost to apply to the short-name/long-name component of the keyword matching"
   1.4)
