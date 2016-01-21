@@ -118,7 +118,7 @@
       "Sends a request to create the item. Valid options are
       * :raw? - set to true to indicate the raw response should be returned. See
       cmr.transmit.http-helper for more info. Default false.
-      * token - the user token to use when creating the group. If not set the token in the context will
+      * token - the user token to use when creating the item If not set the token in the context will
       be used.
       * http-options - Other http-options to be sent to clj-http."
       ([context# item#]

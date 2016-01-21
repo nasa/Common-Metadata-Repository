@@ -6,6 +6,7 @@
               [cmr.common.services.errors :as errors]
               [cmr.common.mime-types :as mt]
               [cmr.common.validations.core :as v]
+              [cmr.transmit.urs :as urs]
               [cmr.access-control.services.group-service-messages :as msg]
               [clojure.edn :as edn]))
 
@@ -51,27 +52,68 @@
       concept)
     (errors/throw-service-error :not-found (msg/group-does-not-exist concept-id))))
 
+(defn- save-updated-group-concept
+  "Saves an updated group concept"
+  [context existing-concept updated-group]
+  (mdb/save-concept
+   context
+   (-> existing-concept
+       (assoc :metadata (pr-str updated-group)
+              :deleted false
+              :user-id (context->user-id context))
+       (dissoc :revision-date)
+       (update :revision-id inc))))
+
+(defn- save-deleted-group-concept
+  "Saves an existing group concept as a tombstone"
+  [context existing-concept]
+  (mdb/save-concept
+    context
+    (-> existing-concept
+        ;; Remove fields not allowed when creating a tombstone.
+        (dissoc :metadata :format :provider-id :native-id)
+        (assoc :deleted true
+               :user-id (context->user-id context))
+        (dissoc :revision-date)
+        (update :revision-id inc))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations
 
-(defn validate-group-provider-exists
+(defn validate-provider-exists
   "Validates that the groups provider exists."
-  [context {:keys [provider-id]}]
+  [context fieldpath provider-id]
   (when (and provider-id
              (not (some #{provider-id} (map :provider-id (mdb/get-providers context)))))
-    (errors/throw-service-error :not-found (msg/provider-does-not-exist provider-id))))
+    {fieldpath [(msg/provider-does-not-exist provider-id)]}))
 
-(def ^:private update-group-validations
+(defn- validate-members-exist
+  "Validation that the given usernames exist"
+  [context fieldpath usernames]
+  (when-let [non-existant-users (seq (remove #(urs/user-exists? context %) usernames))]
+    {fieldpath [(msg/users-do-not-exist non-existant-users)]}))
+
+(defn- create-group-validations
+  "Service level validations when creating a group."
+  [context]
+  {:provider-id #(validate-provider-exists context %1 %2)})
+
+(defn- validate-create-group
+ "Validates a group create."
+ [context group]
+ (v/validate! (create-group-validations context) group))
+
+(defn- update-group-validations
   "Service level validations when updating a group."
+  [context]
   [(v/field-cannot-be-changed :name)
    (v/field-cannot-be-changed :provider-id)
    (v/field-cannot-be-changed :legacy-guid)])
 
 (defn- validate-update-group
   "Validates a group update."
-  [existing-group updated-group]
-  (v/validate! update-group-validations (assoc updated-group :existing existing-group)))
-
+  [context existing-group updated-group]
+  (v/validate! (update-group-validations context) (assoc updated-group :existing existing-group)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Service level functions
@@ -80,7 +122,7 @@
   "Creates the group by saving it to Metadata DB. Returns a map of the concept id and revision id of
   the created group."
   [context group]
-  (validate-group-provider-exists context group)
+  (validate-create-group context group)
   ;; Check if the group already exists
   (if-let [concept-id (mdb/get-concept-id context
                                           :access-group
@@ -91,34 +133,13 @@
     (let [concept (mdb/get-latest-concept context concept-id)]
       (if (:deleted concept)
         ;; The group exists but was previously deleted.
-        (mdb/save-concept
-         context
-         (-> concept
-             (assoc :metadata (pr-str group)
-                    :deleted false
-                    :user-id (context->user-id context))
-             (dissoc :revision-date)
-             (update-in [:revision-id] inc)))
+        (save-updated-group-concept context concept group)
 
         ;; The group exists and was not deleted. Reject this.
         (errors/throw-service-error :conflict (msg/group-already-exists group concept-id))))
 
     ;; The group doesn't exist
     (mdb/save-concept context (group->new-concept context group))))
-
-(defn update-group
-  "Updates an existing group with the given concept id"
-  [context concept-id updated-group]
-  (let [existing-concept (fetch-group-concept context concept-id)
-        existing-group (edn/read-string (:metadata existing-concept))]
-    (validate-update-group existing-group updated-group)
-    (mdb/save-concept
-      context
-      (-> existing-concept
-          (assoc :metadata (pr-str updated-group)
-                 :user-id (context->user-id context))
-          (dissoc :revision-date)
-          (update-in [:revision-id] inc)))))
 
 (defn get-group
   "Retrieves a group with the given concept id."
@@ -128,13 +149,49 @@
 (defn delete-group
   "Deletes a group with the given concept id"
   [context concept-id]
-  (let [existing-concept (fetch-group-concept context concept-id)]
-    (mdb/save-concept
-      context
-      (-> existing-concept
-          ;; Remove fields not allowed when creating a tombstone.
-          (dissoc :metadata :format :provider-id :native-id)
-          (assoc :deleted true
-                 :user-id (context->user-id context))
-          (dissoc :revision-date)
-          (update-in [:revision-id] inc)))))
+  (save-deleted-group-concept context (fetch-group-concept context concept-id)))
+
+(defn update-group
+  "Updates an existing group with the given concept id"
+  [context concept-id updated-group]
+  (let [existing-concept (fetch-group-concept context concept-id)
+        existing-group (edn/read-string (:metadata existing-concept))]
+    (validate-update-group context existing-group updated-group)
+    (save-updated-group-concept context existing-concept updated-group)))
+
+(defn- add-members-to-group
+  "Adds the new members to the group handling duplicates."
+  [group members]
+  (update group
+          :members
+          (fn [existing-members]
+            (vec (distinct (concat existing-members members))))))
+
+(defn add-members
+  "Adds members to the group"
+  [context concept-id members]
+  (let [existing-concept (fetch-group-concept context concept-id)
+        existing-group (edn/read-string (:metadata existing-concept))
+        updated-group (add-members-to-group existing-group members)]
+    (save-updated-group-concept context existing-concept updated-group)))
+
+(defn- remove-members-from-group
+  "Removes the members from the group."
+  [group members]
+  (update group
+          :members
+          (fn [existing-members]
+            (vec (remove (set members) existing-members)))))
+
+(defn remove-members
+  "Removes members to the group"
+  [context concept-id members]
+  (let [existing-concept (fetch-group-concept context concept-id)
+        existing-group (edn/read-string (:metadata existing-concept))
+        updated-group (remove-members-from-group existing-group members)]
+    (save-updated-group-concept context existing-concept updated-group)))
+
+(defn get-members
+  "Gets the members in the group."
+  [context concept-id]
+  (:members (fetch-group-concept context concept-id)))
