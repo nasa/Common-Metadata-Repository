@@ -81,11 +81,9 @@
    :science-keywords science-keywords-boost
    :spatial-keyword spatial-keyword-boost
    :temporal-keyword temporal-keyword-boost
-   :summary 1.0
    :version-id 1.0
    :entry-title 1.0
    :provider 1.0
-   :concept-id 1.0
    :two-d-coord-name 1.0
    :processing-level-id 1.0
    :data-center 1.0})
@@ -206,12 +204,6 @@
      ;; provider-id
      (keywords->boosted-exact-match-filter :provider-id.lowercase keywords
                                            (get-boost-fn :provider))
-
-     ;; concept-id
-     ;; TODO Enable this if we add concept-id.lowercase to the index or remove it if we don't
-     ;; want to do that.
-     ; (keywords->boosted-exact-match-filter :concept-id keywords
-     ;                                       (get-boost-fn :concept-id))
 
      ;; two-d-coord-name
      (keywords->boosted-exact-match-filter :two-d-coord-name.lowercase keywords

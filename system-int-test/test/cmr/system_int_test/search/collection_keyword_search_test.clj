@@ -319,13 +319,7 @@
            "coll5" [(k2e/get-boost nil :entry-title)]
 
            ;; provider-id
-           "PROV1" [provider-boost provider-boost provider-boost provider-boost]
-
-           ;; concept-id
-           ;; TODO Enable this if we enable concept-id boosting by adding concept-id.lowercase
-           ;; to the index.
-           ; "C1200000001-PROV1" [concept-id-boost]
-           ))
+           "PROV1" [provider-boost provider-boost provider-boost provider-boost]))
 
     (testing "Specified boosts on fields"
       (are [params scores] (= (map #(/ % 2.0) scores)
@@ -359,11 +353,6 @@
 
            ;; provider-id
            {:keyword "PROV1" :boosts {:provider 10.0}} [10.0 10.0 10.0 10.0]
-
-           ;; concept-id
-           ;; TODO Enable this if we enable concept-id boosting by adding concept-id.lowercase
-           ;; to the index.
-           ;;{:keyword "C1200000001-PROV1" :boosts {:concept-id 13.0}} [13.0]
 
            ;; entry-title
            {:keyword "coll5" :boosts {:entry-title 10.0}} [10.0]
