@@ -45,7 +45,7 @@
   Facet
   Results)
 
-;; TODO - Is now the time to change the normalization?
+;; TODO - Change this as part of CMR-1329.
 (defn normalize-score
   "The score is divided by 2 to mimic the Catalog REST logic that tries to keep the boosts normalized
   between 0.0 and 1.0. That doesn't actually work but it at least matches Catalog REST's style. As
