@@ -24,14 +24,17 @@
 
 (defn user-exists?
   "Returns true if the given user exists in URS"
-  [context user]
-  (-> (h/request context :urs
-                 {:url-fn #(get-user-url % user)
-                  :method :get
-                  :raw? true
-                  :http-options {:basic-auth [(config/urs-username) (config/urs-password)]}})
-      :status
-      (= 200)))
+  ([context user]
+   (user-exists? context user false))
+  ([context user raw?]
+   (let [response (h/request context :urs
+                             {:url-fn #(get-user-url % user)
+                              :method :get
+                              :raw? true
+                              :http-options {:basic-auth [(config/urs-username) (config/urs-password)]}})]
+     (if raw?
+       response
+       (-> response :status (= 200))))))
 
 (defn- login-xml
   "Creates the XML necessary to login to URS"
@@ -53,21 +56,25 @@
 (defn login
   "Attempts to login to URS using the given username and password. Throws a service exception if login
   is unsuccessful."
-  [context username password]
-  (let [response (h/request context :urs
-                            {:url-fn login-url
-                             :method :post
-                             :raw? true
-                             :http-options {:basic-auth [(config/urs-username) (config/urs-password)]
-                                            :body (login-xml username password)
-                                            :throw-exceptions false
-                                            :content-type mt/xml}})]
-    ;; URS always returns a successful response code as long as the request was valid.
-    (when-not (= (:status response) 200)
-      (errors/internal-error!
-       (format "Unexpected status code [%d] from URS login. Response Body: [%s]"
-               (:status response) (:body response))))
-    (assert-login-response-successful (:body response))))
+  ([context username password]
+   (login context username password false))
+  ([context username password raw?]
+   (let [response (h/request context :urs
+                             {:url-fn login-url
+                              :method :post
+                              :raw? true
+                              :http-options {:basic-auth [(config/urs-username) (config/urs-password)]
+                                             :body (login-xml username password)
+                                             :throw-exceptions false
+                                             :content-type mt/xml}})]
+     (if raw?
+       response
+       ;; URS always returns a successful response code as long as the request was valid.
+       (if (= (:status response) 200)
+         (assert-login-response-successful (:body response))
+         (errors/internal-error!
+          (format "Unexpected status code [%d] from URS login. Response Body: [%s]"
+                  (:status response) (:body response))))))))
 
 (comment
  ;; Use this code to test with URS. Replace XXXX with real values
@@ -79,10 +86,30 @@
   (config/set-urs-port! 443)
   (config/set-urs-relative-root-url! ""))
 
- (def context
-   {:system (config/system-with-connections {} [:urs])})
+ (do
+  (config/set-urs-port! 4008)
+  (def context
+    {:system (config/system-with-connections {} [:urs])})
 
- (user-exists? context "XXXX")
- (login context "XXXX" "XXX"))
+
+  (require '[cmr.mock-echo.client.mock-urs-client :as mock-urs])
+
+  (mock-urs/create-users context [{:username "foo" :password "foopass"}
+                                  {:username "jason" :password "jasonpass"}]))
+
+ (-> user/mock-echo-system :urs-db deref)
+
+ (user-exists? context "notexist")
+ (user-exists? context "foo")
+ (user-exists? context "jason")
+ (login context "foo" "badpass")
+ (login context "foo" "jasonpass")
+ (login context "foo" "foopass")
+ (login context "notexist" "foopass")
+ (login context "notexist" "")
+ (login context "notexist" nil))
+
+
+
 
 
