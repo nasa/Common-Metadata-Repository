@@ -101,7 +101,6 @@
                         :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
                         :query {:filtered {:query (q/match-all)
                                            :filter core-query}}}}
-      ;; TODO add validation here to make sure boosts are not specified
       (if boosts
         (errors/throw-service-errors :bad-request ["Boosting is only supported for keyword queries"])
         {:filtered {:query (q/match-all)
