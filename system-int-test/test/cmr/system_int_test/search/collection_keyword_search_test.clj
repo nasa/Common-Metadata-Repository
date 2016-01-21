@@ -11,7 +11,16 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}))
 
 (deftest search-by-keywords
-  (let [psa1 (dc/psa {:name "alpha" :data-type :string :value "ab"})
+  (let [short-name-boost (k2e/get-boost nil :short-name)
+        project-boost (k2e/get-boost nil :project)
+        platform-boost (k2e/get-boost nil :platform)
+        instrument-boost (k2e/get-boost nil :instrument)
+        sensor-boost (k2e/get-boost nil :sensor)
+        concept-id-boost (k2e/get-boost nil :concept-id)
+        provider-boost (k2e/get-boost nil :provider)
+        entry-title-boost (k2e/get-boost nil :entry-title)
+        science-keywords-boost (k2e/get-boost nil :science-keywords)
+        psa1 (dc/psa {:name "alpha" :data-type :string :value "ab"})
         psa2 (dc/psa {:name "bravo" :data-type :string :value "bf"})
         psa3 (dc/psa {:name "charlie" :data-type :string :value "foo"})
         psa4 (dc/psa {:name "case" :data-type :string :value "up"})
@@ -40,6 +49,7 @@
                          :instruments [(dc/instrument {:short-name "SMAP L-BAND RADIOMETER"})]})
         p5 (dc/platform {:short-name "fo&nA"})
         p6 (dc/platform {:short-name "spo~nA"})
+        pboost (dc/platform {:short-name "boost"})
         pr1 (dc/projects "project-short-name")
         sk1 (dc/science-keyword {:category "Cat1"
                                  :topic "Topic1"
@@ -61,6 +71,13 @@
                                  :variable-level-2 "Level3-2"
                                  :variable-level-3 "Level3-3"
                                  :detailed-variable "S@PER"})
+        skboost (dc/science-keyword {:category "boost"
+                                     :topic "boost"
+                                     :term "boost"
+                                     :variable-level-1 "boost"
+                                     :variable-level-2 "boost"
+                                     :variable-level-3 "boost"
+                                     :detailed-variable "boost"})
         tdcs1 (dc/two-d "XYZ")
         coll1 (d/ingest "PROV1" (dc/collection
                                   {:entry-title "coll1" :version-description "VersionDescription"}))
@@ -95,7 +112,11 @@
         coll21 (d/ingest "PROV2" (dc/collection {:entry-title "coll21" :long-name "ABC!"}))
         coll22 (d/ingest "PROV2" (dc/collection {:collection-data-type "NEAR_REAL_TIME"}))
         coll23 (d/ingest "PROV1" (dc/collection {:entry-title "coll23" :long-name "\"Quoted\" collection" }))
-        coll24 (d/ingest "PROV2" (dc/collection {:entry-title "coll24" :short-name "coll24" :platforms [p4]}))]
+        coll24 (d/ingest "PROV2" (dc/collection {:entry-title "coll24" :short-name "coll24" :platforms [p4]}))
+        coll-boost (d/ingest "PROV2" (dc/collection {:entry-titel "boost"
+                                                     :short-name "boost"
+                                                     :platforms [pboost]
+                                                     :science-keywords [skboost]}))]
 
     (index/wait-until-indexed)
 
@@ -237,7 +258,7 @@
            ;; - detailed-variable
            "SUPER" [coll9]
 
-            ;; Special characters are escaped before sending to Elastic
+           ;; Special characters are escaped before sending to Elastic
            "ABC~ZYX" []
            "ABC~" []
            "spo~nA" [coll11]
@@ -262,47 +283,132 @@
            "NEAR?REAL?TIME" [coll22]
            "near?real?time" [coll22]))
 
-    (testing "Boost on fields"
+    (testing "Default boosts on fields"
       (are [keyword-str scores] (= (map #(/ % 2.0) scores)
                                    (map :score (:refs (search/find-refs :collection
                                                                         {:keyword keyword-str}))))
            ;; short-name
-           "SNFoobar" [k2e/short-name-long-name-boost]
+           "SNFoobar" [short-name-boost]
            ;; long-name
-           "LNFoobar" [k2e/short-name-long-name-boost]
+           "LNFoobar" [short-name-boost]
 
            ;; project short-name
-           (:short-name (first pr1)) [k2e/project-boost]
+           (:short-name (first pr1)) [project-boost]
            ;; project long-name
-           (:long-name (first pr1)) [k2e/project-boost]
+           (:long-name (first pr1)) [project-boost]
 
            ;; platform short-name
-           (:short-name p1) [k2e/platform-boost]
+           (:short-name p1) [platform-boost]
            ;; platform long-name (from metadata)
-           (:long-name p1) [k2e/platform-boost]
+           (:long-name p1) [platform-boost]
            ;; platform long-name (from KMS)
-           "Soil Moisture Active and Passive Observatory" [k2e/platform-boost]
+           "Soil Moisture Active and Passive Observatory" [platform-boost]
 
            ;; instrument short-name
-           (:short-name (first (:instruments p1))) [k2e/instrument-boost]
+           (:short-name (first (:instruments p1))) [instrument-boost]
            ;; instrument long-name (from metadata)
-           (:long-name (first (:instruments p1))) [k2e/instrument-boost]
+           (:long-name (first (:instruments p1))) [instrument-boost]
            ;; instrument long-name (from KMS)
-           "L-Band Radiometer" [k2e/instrument-boost]
+           "L-Band Radiometer" [instrument-boost]
 
            ;; sensor short-name
-           (:short-name (first (:sensors (first (:instruments p1))))) [k2e/sensor-boost]
+           (:short-name (first (:sensors (first (:instruments p1))))) [sensor-boost]
            ;; sensor long-name
-           (:long-name (first (:sensors (first (:instruments p1))))) [k2e/sensor-boost]
+           (:long-name (first (:sensors (first (:instruments p1))))) [sensor-boost]
 
            ;; temporal-keywords
-           "tk1" [k2e/temporal-keyword-boost]
+           "tk1" [(k2e/get-boost nil :temporal-keyword)]
 
            ;; spatial-keyword
-           "in out" [k2e/spatial-keyword-boost]
+           "in out" [(k2e/get-boost nil :spatial-keyword)]
 
            ;; science-keywords
-           (:category sk1) [k2e/science-keywords-boost]))
+           (:category sk1) [science-keywords-boost]
+
+           ;; version-id
+           "V001" [(k2e/get-boost nil :version-id)]
+
+           ;; entry-title
+           "coll5" [(k2e/get-boost nil :entry-title)]
+
+           ;; provider-id
+           "PROV1" [provider-boost provider-boost provider-boost provider-boost]))
+
+    (testing "Specified boosts on fields"
+      (are [params scores] (= (map #(/ % 2.0) scores)
+                              (map :score (:refs (search/find-refs :collection params))))
+           ;; short-name
+           {:keyword "SNFoobar":boosts {:short-name 2.0}} [2.0]
+
+           ;; project short-name
+           {:keyword (:short-name (first pr1)) :boosts {:project 3.0}} [3.0]
+
+           ;; platform short-name
+           {:keyword (:short-name p1) :boosts {:platform 4.0}} [4.0]
+
+           ;; instrument short-name
+           {:keyword (:short-name (first (:instruments p1))) :boosts {:instrument 5.0}} [5.0]
+
+           ;; sensor short-name
+           {:keyword (:short-name (first (:sensors (first (:instruments p1))))) :boosts {:sensor 6.0}} [6.0]
+
+           ;; temporal-keywords
+           {:keyword "tk1" :boosts {:temporal-keyword 7.0}} [7.0]
+
+           ;; spatial-keyword
+           {:keyword "in out" :boosts {:spatial-keyword 8.0}} [8.0]
+
+           ;; science-keywords
+           {:keyword (:category sk1) :boosts {:science-keywords 9.0}} [9.0]
+
+           ;; version-id
+           {:keyword "V001" :boosts {:version-id 10.0}} [10.0]
+
+           ;; provider-id
+           {:keyword "PROV1" :boosts {:provider 10.0}} [10.0 10.0 10.0 10.0]
+
+           ;; entry-title
+           {:keyword "coll5" :boosts {:entry-title 10.0}} [10.0]
+
+           ;; mixed boosts
+           {:keyword "Laser spoonA" :boosts {:short-name 10.0 :science-keywords 11.0}} [11.0 10.0]
+
+           ;; no defaults
+           {:keyword (:category sk1) :boosts {:include-defaults false}} [1.0]
+
+           ;; matches all fields, do not include defaults
+           {:keyword "boost" :boosts {:short-name 5.0 :include-defaults false}} [5.0]
+
+           ;; matches all fields, use defaults, but override short-name boost
+           {:keyword "boost" :boosts {:short-name 5.0 :include-defaults true}}
+           [(* 5.0 entry-title-boost platform-boost science-keywords-boost)]))
+
+    (testing "Setting boosts without keyword search is an error"
+      (let [resp (search/find-refs :collection {:provider "PROV1"
+                                                :page_size 5
+                                                :short_name "SNFoobar"
+                                                :boosts {:short-name 2.0}})
+            {:keys [status errors]} resp]
+        (is (= 400 status))
+        (is (= "Relevance boosting is only supported for keyword queries" (first errors)))))
+
+    (testing "Boosting on invalid field"
+      (let [resp (search/find-refs :collection {:provider "PROV1"
+                                                :page_size 5
+                                                :keyword "Laser"
+                                                :boosts {:foo 2.0}})
+            {:keys [status errors]} resp]
+        (is (= 400 status))
+        (is (= "Cannot set relevance boost on field [foo]." (first errors)))))
+
+    (testing "Boosting with non-numeric values is an error."
+      (let [resp (search/find-refs :collection {:provider "PROV1"
+                                                :page_size 5
+                                                :keyword "Laser"
+                                                :boosts {:short-name "foo"}})
+            {:keys [status errors]} resp]
+        (is (= 400 status))
+        (is (= "Relevance boost value [foo] for field [short_name] is not a number." (first errors)))))
 
     (testing "sorted search by keywords."
       (are [keyword-str items]

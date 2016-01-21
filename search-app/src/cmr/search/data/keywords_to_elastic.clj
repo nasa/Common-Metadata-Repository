@@ -37,37 +37,22 @@
   for details on the function score query."
   (:require [clojure.string :as str]))
 
-(def short-name-long-name-boost
-  "The boost to apply to the short-name/long-name component of the keyword matching"
-  1.4)
-
-(def project-boost
-  "The boost to apply to the campaign short name / long name fields"
-  1.3)
-
-(def platform-boost
-  "The boost to apply to the platform short name / long name"
-  1.3)
-
-(def instrument-boost
-  "The boost to apply to the instrument short name / long name"
-  1.2)
-
-(def sensor-boost
-  "The boost to apply to the sensor short name / long name"
-  1.2)
-
-(def spatial-keyword-boost
-  "The boost to apply to the spatial keyword"
-  1.1)
-
-(def science-keywords-boost
-  "The boost to apply to the science keyword field"
-  1.2)
-
-(def temporal-keyword-boost
-  "The boost to apply to the temporal keyword field"
-  1.1)
+(def default-boosts
+  "Field boosts to use if not provided."
+  {:short-name 1.4
+   :project 1.3
+   :platform 1.3
+   :instrument 1.2
+   :sensor 1.2
+   :science-keywords 1.2
+   :spatial-keyword 1.1
+   :temporal-keyword 1.1
+   :version-id 1.0
+   :entry-title 1.0
+   :provider 1.0
+   :two-d-coord-name 1.0
+   :processing-level-id 1.0
+   :data-center 1.0})
 
 (def elastic-regex-wildcard-chars-re
   "Regex to match wildcard characters that need to be processed for elastic regexp query"
@@ -101,6 +86,7 @@
   exact match on another"
   [regex-field exact-field keywords boost]
   {:weight boost
+   ;; TODO - should the 'and' below actually be an 'or'? Investigate this as part of CMR-1329
    :filter {:or [{:and (map (partial keyword-regexp-filter regex-field) keywords)}
                  {:or (map (partial keyword-exact-match-filter exact-field) keywords)}]}})
 
@@ -126,25 +112,66 @@
     {:weight boost
      :filter (keyword-exact-match-filter field keyword)}))
 
+(defn get-boost
+  "Get the boost value for the given field."
+  [specified-boosts field]
+  (let [include-defaults? (.equalsIgnoreCase "true" (:include-defaults specified-boosts))
+        boosts (if specified-boosts
+                 (if include-defaults?
+                   (merge default-boosts specified-boosts)
+                   specified-boosts)
+                 default-boosts)]
+    (get boosts field 1.0)))
+
 (defn keywords->boosted-elastic-filters
   "Create filters with boosting for the function score query used with keyword search"
-  [keywords]
-  [;; long-name, short-name
-   (keywords->name-filter :long-name.lowercase
-                          :short-name.lowercase keywords
-                          short-name-long-name-boost)
-   ;; project (ECHO campaign)
-   (keywords->name-filter :project-ln.lowercase :project-sn2.lowercase keywords project-boost)
-   ;; platform
-   (keywords->name-filter :platform-ln.lowercase :platform-sn.lowercase keywords platform-boost)
-   ;; instrument
-   (keywords->name-filter :instrument-ln.lowercase :instrument-sn.lowercase keywords instrument-boost)
-   ;; sensor
-   (keywords->name-filter :sensor-ln.lowercase :sensor-sn.lowercase keywords sensor-boost)
-   ;; science keywords
-   (keywords->sk-filter keywords science-keywords-boost)
-   ;; spatial-keyword
-   (keywords->boosted-exact-match-filter :spatial-keyword.lowercase keywords spatial-keyword-boost)
-   ;; temporal-keyword
-   (keywords->boosted-exact-match-filter :temporal-keyword.lowercase keywords temporal-keyword-boost)])
+  [keywords specified-boosts]
+  (let [get-boost-fn #(get-boost specified-boosts %)]
+    [;; long-name, short-name
+     (keywords->name-filter :long-name.lowercase
+                            :short-name.lowercase keywords
+                            (get-boost-fn :short-name))
+     ;; project (ECHO campaign)
+     (keywords->name-filter :project-ln.lowercase :project-sn2.lowercase keywords
+                            (get-boost-fn :project))
+     ;; platform
+     (keywords->name-filter :platform-ln.lowercase :platform-sn.lowercase keywords
+                            (get-boost-fn :platform))
+     ;; instrument
+     (keywords->name-filter :instrument-ln.lowercase :instrument-sn.lowercase keywords
+                            (get-boost-fn :instrument))
+     ;; sensor
+     (keywords->name-filter :sensor-ln.lowercase :sensor-sn.lowercase keywords
+                            (get-boost-fn :sensor))
+     ;; science keywords
+     (keywords->sk-filter keywords (get-boost-fn :science-keywords))
+     ;; spatial-keyword
+     (keywords->boosted-exact-match-filter :spatial-keyword.lowercase keywords
+                                           (get-boost-fn :spatial-keyword))
+     ;; temporal-keyword
+     (keywords->boosted-exact-match-filter :temporal-keyword.lowercase keywords
+                                           (get-boost-fn :temporal-keyword))
+     ;; version-id
+     (keywords->boosted-exact-match-filter :version-id.lowercase keywords
+                                           (get-boost-fn :version-id))
+
+     ;; entry-title
+     (keywords->boosted-exact-match-filter :entry-title.lowercase keywords
+                                           (get-boost-fn :entry-title))
+
+     ;; provider-id
+     (keywords->boosted-exact-match-filter :provider-id.lowercase keywords
+                                           (get-boost-fn :provider))
+
+     ;; two-d-coord-name
+     (keywords->boosted-exact-match-filter :two-d-coord-name.lowercase keywords
+                                           (get-boost-fn :two-d-coord-name))
+
+     ;; processing-level-id
+     (keywords->boosted-exact-match-filter :processing-level-id.lowercase keywords
+                                           (get-boost-fn :processing-level-id))
+
+     ;; data-center
+     (keywords->boosted-exact-match-filter :data-center.lowercase keywords
+                                           (get-boost-fn :data-center))]))
 

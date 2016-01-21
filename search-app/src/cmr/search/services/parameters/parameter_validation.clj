@@ -18,6 +18,7 @@
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.data.messages :as d-msg]
+            [cmr.search.data.keywords-to-elastic :as k2e]
             [camel-snake-kebab.core :as csk]
             [cmr.spatial.codec :as spatial-codec]
             [clj-time.core :as t])
@@ -138,6 +139,21 @@
     (catch NumberFormatException e
       ;; This should be handled separately by page-size and page-num validiation
       [])))
+
+(defn boosts-validation
+  "Validates that all the provided fields in the boosts parameter are valid and that the values
+  are numeric."
+  [concept-type params]
+  (let [boosts (:boosts params)]
+    (keep (fn [[field value]]
+            (if (or (field k2e/default-boosts)
+                    (= field :provider))
+              (when-not (util/numeric-string? value)
+                (format "Relevance boost value [%s] for field [%s] is not a number."
+                        (csk/->snake_case_string value) (csk/->snake_case_string field)))
+              (when-not (= field :include-defaults)
+                (format "Cannot set relevance boost on field [%s]." (csk/->snake_case_string field)))))
+          (seq boosts))))
 
 (def string-param-options #{:pattern :ignore-case})
 (def pattern-option #{:pattern})
@@ -270,7 +286,7 @@
   "Validates that no invalid parameters were supplied"
   [concept-type params]
   ;; this test does not apply to page_size, page_num, etc.
-  (let [params (dissoc params :page-size :page-num :sort-key :result-format :echo-compatible)
+  (let [params (dissoc params :page-size :page-num :boosts :sort-key :result-format :echo-compatible)
         params (if (= :collection concept-type)
                  ;; Parameters only supported on collections
                  (dissoc params :include-granule-counts :include-has-granules :include-facets
@@ -671,6 +687,7 @@
    page-size-validation
    page-num-validation
    paging-depth-validation
+   boosts-validation
    sort-key-validation
    unrecognized-params-validation
    unrecognized-params-in-options-validation
@@ -701,6 +718,7 @@
    page-size-validation
    page-num-validation
    paging-depth-validation
+   boosts-validation
    sort-key-validation
    unrecognized-standard-query-params-validation])
 

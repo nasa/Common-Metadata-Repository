@@ -287,6 +287,14 @@
   [d]
   (when d (.format (DecimalFormat. "#.#####################") d)))
 
+(defn numeric-string?
+  "Returns true if the string can be converted to a double. False otherwise."
+  [val]
+  (try (Double. val)
+    true
+    (catch NumberFormatException _
+      false)))
+
 (defn rename-keys-with [m kmap merge-fn]
   "Returns the map with the keys in kmap renamed to the vals in kmap. Values of renamed keys for which
   there is already existing value will be merged using the merge-fn. merge-fn will be called with
