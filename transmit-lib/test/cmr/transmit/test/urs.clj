@@ -21,6 +21,13 @@
    (is (thrown-with-msg?
         clojure.lang.ExceptionInfo
         #"Invalid username or password"
-        (#'urs/assert-login-response-successful sample-unsuccessful-login-response))))
+        (#'urs/assert-login-response-successful 200 sample-unsuccessful-login-response))))
   (testing "Successful login"
-   (#'urs/assert-login-response-successful sample-successful-login-response)))
+   (#'urs/assert-login-response-successful 200 sample-successful-login-response))
+  (testing "Unexpected response code"
+    (is (thrown-with-msg?
+         Exception
+         #"Unexpected status code \[401\].*"
+         (#'urs/assert-login-response-successful 401 sample-unsuccessful-login-response)))))
+
+

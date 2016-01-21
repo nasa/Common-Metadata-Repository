@@ -47,11 +47,16 @@
 (defn- assert-login-response-successful
   "Checks that the login response from URS was successful. Throws a service error with the reason
   from URS if not."
-  [body]
-  (let [login-response (x/parse-str body)
-        success? (cx/bool-at-path login-response [:success])]
-    (when-not success?
-      (errors/throw-service-error :unauthorized (cx/string-at-path login-response [:reason])))))
+  [status body]
+  ;; URS always returns a successful response code as long as the request was valid.
+  (if (= status 200)
+    (let [login-response (x/parse-str body)
+          success? (cx/bool-at-path login-response [:success])]
+      (when-not success?
+        (errors/throw-service-error :unauthorized (cx/string-at-path login-response [:reason]))))
+    (errors/internal-error!
+     (format "Unexpected status code [%d] from URS login. Response Body: [%s]"
+             status body))))
 
 (defn login
   "Attempts to login to URS using the given username and password. Throws a service exception if login
@@ -69,12 +74,8 @@
                                              :content-type mt/xml}})]
      (if raw?
        response
-       ;; URS always returns a successful response code as long as the request was valid.
-       (if (= (:status response) 200)
-         (assert-login-response-successful (:body response))
-         (errors/internal-error!
-          (format "Unexpected status code [%d] from URS login. Response Body: [%s]"
-                  (:status response) (:body response))))))))
+       (assert-login-response-successful (:status response)(:body response))))))
+
 
 (comment
  ;; Use this code to test with URS. Replace XXXX with real values

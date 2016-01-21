@@ -1,4 +1,5 @@
-(ns cmr.mock-echo.data.urs-db)
+(ns cmr.mock-echo.data.urs-db
+  "This is an in memory database for mocking URS.")
 
 (def initial-db-state
   "Initial database state which is a map of usernames to passwords"
