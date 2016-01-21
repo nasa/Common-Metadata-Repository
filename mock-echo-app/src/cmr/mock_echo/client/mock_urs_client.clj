@@ -13,7 +13,7 @@
   (format "%s/users" (conn/root-url conn)))
 
 (defn create-users
-  "Creates the providers in mock urs given an array of maps with :username and :password"
+  "Creates the users in mock urs given an array of maps with :username and :password"
   [context users]
   (let [{:keys [status body]} (h/request context :urs
                                          {:url-fn create-users-url
