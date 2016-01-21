@@ -84,9 +84,9 @@
    :summary 1.0
    :version-id 1.0
    :entry-title 1.0
-   :provider-id 1.0
+   :provider 1.0
    :concept-id 1.0
-   :two-d-coord-names 1.0
+   :two-d-coord-name 1.0
    :processing-level-id 1.0
    :data-center 1.0})
 
@@ -148,21 +148,23 @@
     {:weight boost
      :filter (keyword-exact-match-filter field keyword)}))
 
-(defn- get-boost
+(defn get-boost
   "Get the boost value for the given field."
-  [specified-boosts field include-defaults?]
-  (let [boosts (if specified-boosts
+  [specified-boosts field]
+  (let [include-defaults? (.equalsIgnoreCase "true" (:include-defaults specified-boosts))
+        boosts (if specified-boosts
                  (if include-defaults?
                    (merge default-boosts specified-boosts)
                    specified-boosts)
                  default-boosts)]
+    (cmr.common.dev.capture-reveal/capture-all)
     (get boosts field 1.0)))
 
 (defn keywords->boosted-elastic-filters
   "Create filters with boosting for the function score query used with keyword search"
   [keywords specified-boosts]
-  (let [include-defaults? (.equalsIgnoreCase "true" (:include-defaults specified-boosts))
-        get-boost-fn #(get-boost specified-boosts % include-defaults?)]
+  (cmr.common.dev.capture-reveal/capture-all)
+  (let [get-boost-fn #(get-boost specified-boosts %)]
     [;; long-name, short-name
      (keywords->name-filter :long-name.lowercase
                             :short-name.lowercase keywords
@@ -188,9 +190,38 @@
      (keywords->boosted-exact-match-filter :temporal-keyword.lowercase keywords
                                            (get-boost-fn :temporal-keyword))
 
-     ;; TODO summary, version-id, entry-title, provider-id, concept-id, two-d-coord-names,
-     ;; processing-level-id, data-center
+     ;; TODO summary is not indexed now. Add a filter for it when we start indexing it.
+     ;; concept-id is stored as is with regards to case. By the time we get keywords they
+     ;; are all lowercase, so we cannot match against concept-id unless we add a
+     ;; concept-id.lowercase field to our index.
 
-     ;; summary
-     ]))
+     ;; version-id
+     (keywords->boosted-exact-match-filter :version-id.lowercase keywords
+                                           (get-boost-fn :version-id))
+
+     ;; entry-title
+     (keywords->boosted-exact-match-filter :entry-title.lowercase keywords
+                                           (get-boost-fn :entry-title))
+
+     ;; provider-id
+     (keywords->boosted-exact-match-filter :provider-id.lowercase keywords
+                                           (get-boost-fn :provider))
+
+     ;; concept-id
+     ;; TODO Enable this if we add concept-id.lowercase to the index or remove it if we don't
+     ;; want to do that.
+     ; (keywords->boosted-exact-match-filter :concept-id keywords
+     ;                                       (get-boost-fn :concept-id))
+
+     ;; two-d-coord-name
+     (keywords->boosted-exact-match-filter :two-d-coord-name.lowercase keywords
+                                           (get-boost-fn :two-d-coord-name))
+
+     ;; processing-level-id
+     (keywords->boosted-exact-match-filter :processing-level-id.lowercase keywords
+                                           (get-boost-fn :processing-level-id))
+
+     ;; data-center
+     (keywords->boosted-exact-match-filter :data-center.lowercase keywords
+                                           (get-boost-fn :data-center))]))
 

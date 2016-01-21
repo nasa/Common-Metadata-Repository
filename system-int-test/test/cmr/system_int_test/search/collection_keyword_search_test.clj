@@ -11,7 +11,14 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}))
 
 (deftest search-by-keywords
-  (let [psa1 (dc/psa {:name "alpha" :data-type :string :value "ab"})
+  (let [short-name-boost (k2e/get-boost nil :short-name)
+        project-boost (k2e/get-boost nil :project)
+        platform-boost (k2e/get-boost nil :platform)
+        instrument-boost (k2e/get-boost nil :instrument)
+        sensor-boost (k2e/get-boost nil :sensor)
+        concept-id-boost (k2e/get-boost nil :concept-id)
+        provider-boost (k2e/get-boost nil :provider)
+        psa1 (dc/psa {:name "alpha" :data-type :string :value "ab"})
         psa2 (dc/psa {:name "bravo" :data-type :string :value "bf"})
         psa3 (dc/psa {:name "charlie" :data-type :string :value "foo"})
         psa4 (dc/psa {:name "case" :data-type :string :value "up"})
@@ -263,47 +270,62 @@
            "NEAR?REAL?TIME" [coll22]
            "near?real?time" [coll22]))
 
-    (testing "Boost on fields"
+    (testing "Default boosts on fields"
       (are [keyword-str scores] (= (map #(/ % 2.0) scores)
                                    (map :score (:refs (search/find-refs :collection
                                                                         {:keyword keyword-str}))))
            ;; short-name
-           "SNFoobar" [k2e/short-name-long-name-boost]
+           "SNFoobar" [short-name-boost]
            ;; long-name
-           "LNFoobar" [k2e/short-name-long-name-boost]
+           "LNFoobar" [short-name-boost]
 
            ;; project short-name
-           (:short-name (first pr1)) [k2e/project-boost]
+           (:short-name (first pr1)) [project-boost]
            ;; project long-name
-           (:long-name (first pr1)) [k2e/project-boost]
+           (:long-name (first pr1)) [project-boost]
 
            ;; platform short-name
-           (:short-name p1) [k2e/platform-boost]
+           (:short-name p1) [platform-boost]
            ;; platform long-name (from metadata)
-           (:long-name p1) [k2e/platform-boost]
+           (:long-name p1) [platform-boost]
            ;; platform long-name (from KMS)
-           "Soil Moisture Active and Passive Observatory" [k2e/platform-boost]
+           "Soil Moisture Active and Passive Observatory" [platform-boost]
 
            ;; instrument short-name
-           (:short-name (first (:instruments p1))) [k2e/instrument-boost]
+           (:short-name (first (:instruments p1))) [instrument-boost]
            ;; instrument long-name (from metadata)
-           (:long-name (first (:instruments p1))) [k2e/instrument-boost]
+           (:long-name (first (:instruments p1))) [instrument-boost]
            ;; instrument long-name (from KMS)
-           "L-Band Radiometer" [k2e/instrument-boost]
+           "L-Band Radiometer" [instrument-boost]
 
            ;; sensor short-name
-           (:short-name (first (:sensors (first (:instruments p1))))) [k2e/sensor-boost]
+           (:short-name (first (:sensors (first (:instruments p1))))) [sensor-boost]
            ;; sensor long-name
-           (:long-name (first (:sensors (first (:instruments p1))))) [k2e/sensor-boost]
+           (:long-name (first (:sensors (first (:instruments p1))))) [sensor-boost]
 
            ;; temporal-keywords
-           "tk1" [k2e/temporal-keyword-boost]
+           "tk1" [(k2e/get-boost nil :temporal-keyword)]
 
            ;; spatial-keyword
-           "in out" [k2e/spatial-keyword-boost]
+           "in out" [(k2e/get-boost nil :spatial-keyword)]
 
            ;; science-keywords
-           (:category sk1) [k2e/science-keywords-boost]))
+           (:category sk1) [(k2e/get-boost nil :science-keywords)]
+
+           ;; version-id
+           "V001" [(k2e/get-boost nil :version-id)]
+
+           ;; entry-title
+           "coll5" [(k2e/get-boost nil :entry-title)]
+
+           ;; provider-id
+           "PROV1" [provider-boost provider-boost provider-boost provider-boost]
+
+           ;; concept-id
+           ;; TODO Enable this if we enable concept-id boosting by adding concept-id.lowercase
+           ;; to the index.
+           ; "C1200000001-PROV1" [concept-id-boost]
+           ))
 
     (testing "Specified boosts on fields"
       (are [params scores] (= (map #(/ % 2.0) scores)
@@ -332,8 +354,25 @@
            ;; science-keywords
            {:keyword (:category sk1) :boosts {:science-keywords 9.0}} [9.0]
 
+           ;; version-id
+           {:keyword "V001" :boosts {:version-id 10.0}} [10.0]
+
+           ;; provider-id
+           {:keyword "PROV1" :boosts {:provider 10.0}} [10.0 10.0 10.0 10.0]
+
+           ;; concept-id
+           ;; TODO Enable this if we enable concept-id boosting by adding concept-id.lowercase
+           ;; to the index.
+           ;;{:keyword "C1200000001-PROV1" :boosts {:concept-id 13.0}} [13.0]
+
+           ;; entry-title
+           {:keyword "coll5" :boosts {:entry-title 10.0}} [10.0]
+
            ;; mixed boosts
-           {:keyword "Laser spoonA" :boosts {:short-name 10.0 :science-keywords 11.0}} [11.0 10.0]))
+           {:keyword "Laser spoonA" :boosts {:short-name 10.0 :science-keywords 11.0}} [11.0 10.0]
+
+           ;; no defaults
+           {:keyword (:category sk1) :boosts {:include-defaults false}} [1.0]))
 
     (testing "Setting boosts without keyword search is an error"
       (let [resp (search/find-refs :collection {:provider "PROV1"

@@ -146,7 +146,8 @@
   [concept-type params]
   (let [boosts (:boosts params)]
     (keep (fn [[field value]]
-            (if (field k2e/default-boosts)
+            (if (or (field k2e/default-boosts)
+                    (= field :provider))
               (when-not (util/numeric-string? value)
                 (format "Boost value [%s] for field [%s] is not a number."
                         (csk/->snake_case_string value) (csk/->snake_case_string field)))
