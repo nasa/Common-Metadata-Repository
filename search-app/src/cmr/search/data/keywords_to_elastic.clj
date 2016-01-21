@@ -155,13 +155,11 @@
                    (merge default-boosts specified-boosts)
                    specified-boosts)
                  default-boosts)]
-    (cmr.common.dev.capture-reveal/capture-all)
     (get boosts field 1.0)))
 
 (defn keywords->boosted-elastic-filters
   "Create filters with boosting for the function score query used with keyword search"
   [keywords specified-boosts]
-  (cmr.common.dev.capture-reveal/capture-all)
   (let [get-boost-fn #(get-boost specified-boosts %)]
     [;; long-name, short-name
      (keywords->name-filter :long-name.lowercase
