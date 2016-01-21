@@ -102,7 +102,7 @@
                         :query {:filtered {:query (q/match-all)
                                            :filter core-query}}}}
       (if boosts
-        (errors/throw-service-errors :bad-request ["Boosting is only supported for keyword queries"])
+        (errors/throw-service-errors :bad-request ["Relevance boosting is only supported for keyword queries"])
         {:filtered {:query (q/match-all)
                   :filter core-query}}))))
 

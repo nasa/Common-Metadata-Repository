@@ -151,12 +151,6 @@
      ;; temporal-keyword
      (keywords->boosted-exact-match-filter :temporal-keyword.lowercase keywords
                                            (get-boost-fn :temporal-keyword))
-
-     ;; TODO summary is not indexed now. Add a filter for it when we start indexing it.
-     ;; concept-id is stored as is with regards to case. By the time we get keywords they
-     ;; are all lowercase, so we cannot match against concept-id unless we add a
-     ;; concept-id.lowercase field to our index.
-
      ;; version-id
      (keywords->boosted-exact-match-filter :version-id.lowercase keywords
                                            (get-boost-fn :version-id))

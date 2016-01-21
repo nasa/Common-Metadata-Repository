@@ -18,6 +18,8 @@
         sensor-boost (k2e/get-boost nil :sensor)
         concept-id-boost (k2e/get-boost nil :concept-id)
         provider-boost (k2e/get-boost nil :provider)
+        entry-title-boost (k2e/get-boost nil :entry-title)
+        science-keywords-boost (k2e/get-boost nil :science-keywords)
         psa1 (dc/psa {:name "alpha" :data-type :string :value "ab"})
         psa2 (dc/psa {:name "bravo" :data-type :string :value "bf"})
         psa3 (dc/psa {:name "charlie" :data-type :string :value "foo"})
@@ -47,7 +49,7 @@
                          :instruments [(dc/instrument {:short-name "SMAP L-BAND RADIOMETER"})]})
         p5 (dc/platform {:short-name "fo&nA"})
         p6 (dc/platform {:short-name "spo~nA"})
-        psn (dc/platform {:short-name "boost"})
+        pboost (dc/platform {:short-name "boost"})
         pr1 (dc/projects "project-short-name")
         sk1 (dc/science-keyword {:category "Cat1"
                                  :topic "Topic1"
@@ -69,6 +71,13 @@
                                  :variable-level-2 "Level3-2"
                                  :variable-level-3 "Level3-3"
                                  :detailed-variable "S@PER"})
+        skboost (dc/science-keyword {:category "boost"
+                                     :topic "boost"
+                                     :term "boost"
+                                     :variable-level-1 "boost"
+                                     :variable-level-2 "boost"
+                                     :variable-level-3 "boost"
+                                     :detailed-variable "boost"})
         tdcs1 (dc/two-d "XYZ")
         coll1 (d/ingest "PROV1" (dc/collection
                                   {:entry-title "coll1" :version-description "VersionDescription"}))
@@ -103,7 +112,11 @@
         coll21 (d/ingest "PROV2" (dc/collection {:entry-title "coll21" :long-name "ABC!"}))
         coll22 (d/ingest "PROV2" (dc/collection {:collection-data-type "NEAR_REAL_TIME"}))
         coll23 (d/ingest "PROV1" (dc/collection {:entry-title "coll23" :long-name "\"Quoted\" collection" }))
-        coll24 (d/ingest "PROV2" (dc/collection {:entry-title "coll24" :short-name "coll24" :platforms [p4]}))]
+        coll24 (d/ingest "PROV2" (dc/collection {:entry-title "coll24" :short-name "coll24" :platforms [p4]}))
+        coll-boost (d/ingest "PROV2" (dc/collection {:entry-titel "boost"
+                                                     :short-name "boost"
+                                                     :platforms [pboost]
+                                                     :science-keywords [skboost]}))]
 
     (index/wait-until-indexed)
 
@@ -310,7 +323,7 @@
            "in out" [(k2e/get-boost nil :spatial-keyword)]
 
            ;; science-keywords
-           (:category sk1) [(k2e/get-boost nil :science-keywords)]
+           (:category sk1) [science-keywords-boost]
 
            ;; version-id
            "V001" [(k2e/get-boost nil :version-id)]
@@ -361,7 +374,14 @@
            {:keyword "Laser spoonA" :boosts {:short-name 10.0 :science-keywords 11.0}} [11.0 10.0]
 
            ;; no defaults
-           {:keyword (:category sk1) :boosts {:include-defaults false}} [1.0]))
+           {:keyword (:category sk1) :boosts {:include-defaults false}} [1.0]
+
+           ;; matches all fields, do not include defaults
+           {:keyword "boost" :boosts {:short-name 5.0 :include-defaults false}} [5.0]
+
+           ;; matches all fields, use defaults, but override short-name boost
+           {:keyword "boost" :boosts {:short-name 5.0 :include-defaults true}}
+           [(* 5.0 entry-title-boost platform-boost science-keywords-boost)]))
 
     (testing "Setting boosts without keyword search is an error"
       (let [resp (search/find-refs :collection {:provider "PROV1"
@@ -370,7 +390,7 @@
                                                 :boosts {:short-name 2.0}})
             {:keys [status errors]} resp]
         (is (= 400 status))
-        (is (= "Boosting is only supported for keyword queries" (first errors)))))
+        (is (= "Relevance boosting is only supported for keyword queries" (first errors)))))
 
     (testing "Boosting on invalid field"
       (let [resp (search/find-refs :collection {:provider "PROV1"
@@ -379,7 +399,7 @@
                                                 :boosts {:foo 2.0}})
             {:keys [status errors]} resp]
         (is (= 400 status))
-        (is (= "Cannot set boost on field [foo]." (first errors)))))
+        (is (= "Cannot set relevance boost on field [foo]." (first errors)))))
 
     (testing "Boosting with non-numeric values is an error."
       (let [resp (search/find-refs :collection {:provider "PROV1"
@@ -388,7 +408,7 @@
                                                 :boosts {:short-name "foo"}})
             {:keys [status errors]} resp]
         (is (= 400 status))
-        (is (= "Boost value [foo] for field [short_name] is not a number." (first errors)))))
+        (is (= "Relevance boost value [foo] for field [short_name] is not a number." (first errors)))))
 
     (testing "sorted search by keywords."
       (are [keyword-str items]
