@@ -7,7 +7,10 @@
   "Migrates the database up to version 29."
   []
   (println "migrations.029-add-transaction-id-into-collections up...")
+  (println "Adding transaction_id to SMALL_PROV_COLLECTIONS")
+  (h/sql "ALTER TABLE SMALL_PROV_COLLECTIONS ADD transaction_id INTEGER")
   (doseq [table (h/get-all-concept-tablenames :collection)]
+    (println (str "Adding transaction_id to table " table))
     (h/sql (format "ALTER TABLE %s ADD transaction_id INTEGER"
                    table))))
 
@@ -16,5 +19,7 @@
   []
   (println "migrations.029-add-transaction-id-into-collections down...")
   (doseq [table (h/get-all-concept-tablenames :collection)]
+    (println (str "Dropping transaction_id from table " table))
     (h/sql (format "ALTER TABLE %s DROP COLUMN transaction_id"
-                   table))))
+                   table)))
+  (h/sql "ALTER TABLE SMALL_PROV_COLLECTIONS DROP COLUMN transaction_id"))

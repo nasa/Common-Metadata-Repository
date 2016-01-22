@@ -41,7 +41,8 @@
   (distinct (map #(concept-tables/get-table-name % :collection) (get-regular-providers))))
 
 (defn get-all-concept-tablenames
-  "Returns a sequence of table names for the given concept types, or all concept types if none are specified."
+  "Returns a sequence of table names for the given concept types, or all concept types
+  if none are specified, for all the existing providers."
   ([]
     (get-all-concept-tablenames :collection :granule :service :tag :access-group))
   ([& concept-types]

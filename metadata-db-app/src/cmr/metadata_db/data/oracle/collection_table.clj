@@ -22,7 +22,8 @@
   entry_id VARCHAR(255) NOT NULL,
   entry_title VARCHAR(1030) NOT NULL,
   delete_time TIMESTAMP WITH TIME ZONE,
-  user_id VARCHAR(30)")
+  user_id VARCHAR(30),
+  transaction_id INTEGER")
 
 (defmethod collection-column-sql true
   [provider]

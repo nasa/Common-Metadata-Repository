@@ -389,7 +389,7 @@
 
 (defn save-concept
   "Make a POST request to save a concept with JSON encoding of the concept.  Returns a map with
-  status, revision-id, and a list of error messages"
+  status, revision-id, transaction-id, and a list of error messages"
   ([concept]
    (save-concept concept 1))
   ([concept num-revisions]
@@ -466,7 +466,7 @@
   [concept]
   (let [{:keys [concept-id revision-id]} concept
         stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
-    (is (= (expected-concept concept) (dissoc stored-concept :revision-date)))))
+    (is (= (expected-concept concept) (dissoc stored-concept :revision-date :transaction-id)))))
 
 (defn create-and-save-collection
   "Creates, saves, and returns a collection concept with its data from metadata-db. "

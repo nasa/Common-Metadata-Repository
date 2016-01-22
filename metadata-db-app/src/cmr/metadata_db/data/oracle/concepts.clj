@@ -126,7 +126,8 @@
                   format
                   revision_id
                   revision_date
-                  deleted]} result]
+                  deleted
+                  transaction_id]} result]
       (util/remove-nil-keys {:concept-type concept-type
                              :native-id native_id
                              :concept-id concept_id
@@ -135,7 +136,8 @@
                              :format (db-format->mime-type format)
                              :revision-id (int revision_id)
                              :revision-date (oracle/oracle-timestamp->str-time db revision_date)
-                             :deleted (not= (int deleted) 0)}))))
+                             :deleted (not= (int deleted) 0)
+                             :transaction-id transaction_id}))))
 
 (defn concept->common-insert-args
   "Converts a concept into a set of insert arguments that is common for all provider concept types."
@@ -319,13 +321,14 @@
                 table (tables/get-table-name provider concept-type)
                 seq-name (str table "_seq")
                 [cols values] (concept->insert-args concept (:small provider))
-                stmt (format "INSERT INTO %s (id, %s) VALUES (%s.NEXTVAL,%s)"
+                stmt (format (str "INSERT INTO %s (id, %s, transaction_id) VALUES "
+                                  "(%s.NEXTVAL,%s,GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL)")
                              table
                              (str/join "," cols)
                              seq-name
                              (str/join "," (repeat (count values) "?")))]
             ;; Uncomment to debug what's inserted
-            ; (debug "Executing" stmt "with values" (pr-str values))
+            (debug "Executing" stmt "with values" (pr-str values))
             (j/db-do-prepared db stmt values)
             (after-save conn provider concept)
 

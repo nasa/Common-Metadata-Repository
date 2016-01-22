@@ -92,6 +92,9 @@
    ;; The next id to use for generating a concept id.
    next-id-atom
 
+   ;; The next global transaction id
+   next-transaction-id-atom
+
    ;; A map of provider ids to providers that exist
    providers-atom
    ]
@@ -206,6 +209,7 @@
       (let [{:keys [concept-type provider-id concept-id revision-id]} concept
             concept (update-in concept [:revision-date] #(or % (f/unparse (f/formatters :date-time)
                                                                           (tk/now))))
+            concept (update-in concept [:transaction-id] (swap! next-transaction-id-atom inc))
             concept (if (= concept-type :granule)
                       (-> concept
                           (dissoc :user-id)
@@ -249,7 +253,8 @@
   (reset
     [db]
     (reset! concepts-atom [])
-    (reset! next-id-atom (dec cmr.metadata-db.data.oracle.concepts/INITIAL_CONCEPT_NUM)))
+    (reset! next-id-atom (dec cmr.metadata-db.data.oracle.concepts/INITIAL_CONCEPT_NUM))
+    (reset! next-transaction-id-atom 1))
 
   (get-expired-concepts
     [db provider concept-type]

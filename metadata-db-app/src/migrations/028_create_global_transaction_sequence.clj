@@ -8,7 +8,11 @@
   []
   (println "migrations.028-create-global-transaction-sequence up...")
   (when-not (h/sequence-exists? "global_transaction_id_seq")
-    (let [max-rev-id
+    (let [table-name (merge (h/get-all-concept-tablenames)
+                            "SMALL_PROV_COLLECTIONS"
+                            "SMALL_PROV_GRANULES"
+                            "SMALL_PROV_SERVICES")
+          max-rev-id
         (reduce (fn [acc t]
             (let [resp (h/query (format "select max(revision_id) as max_rev_id from %s" t))
                   value (-> resp first :max_rev_id)]

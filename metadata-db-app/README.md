@@ -15,6 +15,7 @@
       "metadata": "xml here",
       "format": "application/echo10+xml",
       "revision-id": 1, //(optional field)
+      "transaction-id" : 100005,
       "revision-date": "2012-01-01T00:00:00", //(optional field)
       "extra-fields": {
         "short-name": "short",
@@ -78,14 +79,14 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
 #### Tag
 
   {
-    "native-id": "org.nasa.something\quality"
-    "user-id": "jnorton"
-    "format": "applcation/edn"
+    "native-id": "org.nasa.something\quality",
+    "user-id": "jnorton",
+    "format": "applcation/edn",
     "metadata: {
-      "tag-namespace": "org.nasa.something"
-      "category": "cat1"
-      "value": "quality"
-      "description": "A good tag"
+      "tag-namespace": "org.nasa.something",
+      "category": "cat1",
+      "value": "quality",
+      "description": "A good tag",
       "originator-id": "jnorton"
     }
   }
@@ -95,17 +96,18 @@ _Note the absense of provider-id for tags. Tags are system level entities and ar
 ### Sample Tombstone (deleted concept) JSON
 
   	{
-  		"concept-type": "collection"
-  		"native-id": "provider collection id"
-     	"concept-id": "C1-PROV1"
-     	"provider-id": "PROV1"
-      "user-id": "user101" (Only for colletions)
-     	"deleted": true
-     	"revision-id": 10
+  		"concept-type": "collection",
+  		"native-id": "provider collection id",
+     	"concept-id": "C1-PROV1",
+     	"provider-id": "PROV1",
+      "user-id": "user101", (Only for colletions)
+     	"deleted": true,
+      "transaction-id": 100005,
+     	"revision-id": 10,
       "extra-fields": {
         "short-name": "short",
         "version-id": "V01",
-        "entry-id": "short_V01"
+        "entry-id": "short_V01",
         "entry-title": "Dataset V01"
       }
      }
