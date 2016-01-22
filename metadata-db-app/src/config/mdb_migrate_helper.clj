@@ -40,6 +40,14 @@
   []
   (distinct (map #(concept-tables/get-table-name % :collection) (get-regular-providers))))
 
+(defn get-all-concept-tablenames
+  "Returns a list of all the tables names for a concept type."
+  []
+  (distinct
+    (for [provider (p/get-providers (config/db))
+          concept-type [:collection :granule :service :tag :access-group]]
+      (concept-tables/get-table-name provider concept-type))))
+
 (defn get-collection-tablenames
   "Gets a list of all the collection tablenames. Primarily for enabling migrations of existing
   provider tables."
@@ -51,6 +59,15 @@
   provider tables."
   []
   (distinct (map #(concept-tables/get-table-name % :granule) (p/get-providers (config/db)))))
+
+(defn sequence-exists?
+  "Returns true if the named sequence exists."
+  [sequence-name]
+  (let [result (j/query
+                 (config/db)
+                 ["select count(*) as c from all_sequences where sequence_owner='METADATA_DB' and sequence_name=upper(?)" sequence-name])
+        seq-count (:c (first result))]
+    (not= 0 (int seq-count))))
 
 (defn concept-id-seq-missing?
   "Returns true if concept_id_seq does not exist"
