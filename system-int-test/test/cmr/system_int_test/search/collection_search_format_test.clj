@@ -527,7 +527,7 @@
       ;; Once we implemented organizations in umm-spec-lib and switched indexer to use it,
       ;; Some of the tests may need to be updated.
       (d/ingest "PROV1"
-                (dc/collection-dif10
+                (dc/collection-dif
                   {:short-name "S-DIF9"
                    :organizations [distribution-org distribution-org-1]})
                 {:format :dif})
