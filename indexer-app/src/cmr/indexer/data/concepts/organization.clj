@@ -10,11 +10,23 @@
   (zipmap [:level-0 :level-1 :level-2 :level-3 :long-name]
           (repeat kf/FIELD_NOT_PRESENT)))
 
+(defn- ordered-organizations
+  "Returns the given organization in the order of archive centers first, then distribution centers,
+  then the rest."
+  [orgs]
+  (let [org-weight (fn [org]
+                     (case (:type org)
+                       :archive-center 1
+                       :distribution-center 2
+                       3))]
+    (sort-by org-weight orgs)))
+
 (defn extract-data-center-names
-  "Extract the unique organization names from a collection. Optionally takes an organization-type
-  field to limit the results to that type."
+  "Extract the unique organization names from a collection. The organization names are ordered by
+  archive-center names first, then distribution-center names, then the rest.
+  Optionally takes an organization-type field to limit the results to that type."
   ([collection]
-   (distinct (map :org-name (:organizations collection))))
+   (distinct (map :org-name (ordered-organizations (:organizations collection)))))
   ([collection organization-type]
    (distinct (for [org (:organizations collection)
                    :when (= organization-type (:type org))]
@@ -29,8 +41,8 @@
         (merge default-data-center-values
                (kf/get-full-hierarchy-for-short-name gcmd-keywords-map :providers short-name))
         {:keys [level-0 level-1 level-2 level-3 short-name long-name url uuid]
-                ;; Use the short-name from KMS if present, otherwise use the metadata short-name
-                :or {short-name short-name}} full-data-center]
+         ;; Use the short-name from KMS if present, otherwise use the metadata short-name
+         :or {short-name short-name}} full-data-center]
     {:level-0 level-0
      :level-0.lowercase (str/lower-case level-0)
      :level-1 level-1
