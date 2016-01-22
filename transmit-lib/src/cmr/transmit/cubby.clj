@@ -70,7 +70,7 @@
   ([context]
    (reset context false))
   ([context raw]
-   (h/request context :cubby {:url-fn reset-url, :method :post, :raw? raw})))
+   (h/request context :cubby {:url-fn reset-url, :method :post, :raw? raw :use-system-token? true})))
 
 (defn get-cubby-health-fn
   "Returns the health status of cubby"

@@ -13,6 +13,7 @@
             [cmr.mock-echo.api.tokens :as token-api]
             [cmr.mock-echo.api.providers :as providers-api]
             [cmr.mock-echo.api.acls :as acls-api]
+            [cmr.mock-echo.api.urs :as urs-api]
             [cmr.mock-echo.data.token-db :as token-db]
             [cmr.mock-echo.data.provider-db :as provider-db]
             [cmr.mock-echo.data.acl-db :as acl-db]))
@@ -34,6 +35,7 @@
     (token-api/build-routes system)
     (providers-api/build-routes system)
     (acls-api/build-routes system)
+    (urs-api/build-routes system)
 
     (route/not-found "Not Found")))
 

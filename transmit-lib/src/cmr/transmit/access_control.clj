@@ -35,7 +35,8 @@
   ([context]
    (reset context false))
   ([context raw]
-   (h/request context :access-control {:url-fn reset-url, :method :post, :raw? raw})))
+   (h/request context :access-control
+              {:url-fn reset-url, :method :post, :raw? raw :use-system-token? true})))
 
 ; Group CRUD functions
 (h/defcreator create-group :access-control groups-url)
