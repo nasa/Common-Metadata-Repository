@@ -113,7 +113,7 @@
 
 (defn remove-members
   [context headers body concept-id]
-  (validate-content-type headers concept-id)
+  (validate-content-type headers)
   (validate-group-members-json body)
   (->> (json/parse-string body true)
        (group-service/remove-members context concept-id)

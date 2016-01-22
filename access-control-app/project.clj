@@ -15,7 +15,8 @@
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [pjstadig/humane-test-output "0.7.0"]
                         [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
-                        [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]]
+                        [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
+                        [proto-repl-charts "0.1.0"]]
          :source-paths ["src" "dev" "test" "int_test"]
          :test-paths ["test" "int_test"]
          :injections [(require 'pjstadig.humane-test-output)

@@ -87,12 +87,6 @@
              (not (some #{provider-id} (map :provider-id (mdb/get-providers context)))))
     {fieldpath [(msg/provider-does-not-exist provider-id)]}))
 
-(defn- validate-members-exist
-  "Validation that the given usernames exist"
-  [context fieldpath usernames]
-  (when-let [non-existant-users (seq (remove #(urs/user-exists? context %) usernames))]
-    {fieldpath [(msg/users-do-not-exist non-existant-users)]}))
-
 (defn- create-group-validations
   "Service level validations when creating a group."
   [context]
@@ -114,6 +108,12 @@
   "Validates a group update."
   [context existing-group updated-group]
   (v/validate! (update-group-validations context) (assoc updated-group :existing existing-group)))
+
+(defn- validate-members-exist
+  "Validates that the given usernames exist. Throws an exception if they do not."
+  [context usernames]
+  (when-let [non-existant-users (seq (remove #(urs/user-exists? context %) (distinct usernames)))]
+    (errors/throw-service-error :bad-request (msg/users-do-not-exist non-existant-users))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Service level functions
@@ -144,7 +144,11 @@
 (defn get-group
   "Retrieves a group with the given concept id."
   [context concept-id]
-  (edn/read-string (:metadata (fetch-group-concept context concept-id))))
+  (let [group (edn/read-string (:metadata (fetch-group-concept context concept-id)))]
+    ;; Group response includes the number of members and not the actual members
+    (-> group
+        (assoc :num-members (count (:members group)))
+        (dissoc :members))))
 
 (defn delete-group
   "Deletes a group with the given concept id"
@@ -170,6 +174,7 @@
 (defn add-members
   "Adds members to the group"
   [context concept-id members]
+  (validate-members-exist context members)
   (let [existing-concept (fetch-group-concept context concept-id)
         existing-group (edn/read-string (:metadata existing-concept))
         updated-group (add-members-to-group existing-group members)]
@@ -194,4 +199,7 @@
 (defn get-members
   "Gets the members in the group."
   [context concept-id]
-  (:members (fetch-group-concept context concept-id)))
+  (-> (fetch-group-concept context concept-id)
+      :metadata
+      edn/read-string
+      (get :members [])))

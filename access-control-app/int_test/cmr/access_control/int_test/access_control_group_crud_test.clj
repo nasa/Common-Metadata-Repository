@@ -1,4 +1,4 @@
-(ns cmr.access-control.int-test.access-control-crud-test
+(ns cmr.access-control.int-test.access-control-group-crud-test
     (:require [clojure.test :refer :all]
               [clojure.string :as str]
               [cmr.mock-echo.client.echo-util :as e]
@@ -135,7 +135,7 @@
         token (e/login (u/conn-context) "user1")
         {:keys [concept-id]} (u/create-group token group)]
     (testing "Retrieve existing group"
-      (is (= (assoc group :status 200)
+      (is (= (assoc group :status 200 :num-members 0)
              (u/get-group concept-id))))
 
     (testing "Retrieve unknown group"
