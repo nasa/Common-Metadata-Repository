@@ -24,31 +24,15 @@
             [cmr.umm.spatial :as umm-s]
             [clojure.data.xml :as x]
             [cmr.system-int-test.utils.fast-xml :as fx]
-            [cmr.common.util :as util]
+            [cmr.common.util :as util :refer [are2]]
             [cmr.common.xml :as cx]
             [cmr.system-int-test.data2.kml :as dk]
             [cmr.system-int-test.data2.opendata :as od]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+            [cmr.umm-spec.test.expected-conversion :as exp-conv]))
 
 (use-fixtures :each (ingest/reset-fixture
                       {"provguid1" "PROV1" "provguid2" "PROV2" "usgsguid" "USGS_EROS"}))
-
-(comment
-
-  (do
-    (dev-sys-util/reset)
-    (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
-    (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"})
-
-    (d/ingest "PROV1" (dc/collection {:short-name "S1"
-                                      :version-id "V1"
-                                      :entry-title "ET1"})))
-
-  (def c10-umm-json (d/ingest "PROV1"
-                              cmr.umm-spec.test.expected-conversion/example-collection-record
-                              {:format :umm-json
-                               :accept-format :json})))
-
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
@@ -92,7 +76,7 @@
                            {:format :dif10})
 
         c10-umm-json (d/ingest "PROV1"
-                               cmr.umm-spec.test.expected-conversion/example-collection-record
+                               exp-conv/example-collection-record
                                {:format :umm-json
                                 :accept-format :json})
 
@@ -530,3 +514,68 @@
   (is (= {:status 400,
           :errors ["Parameter [unsupported] was not recognized."]}
          (search/find-concepts-json :collection {:unsupported "dummy"}))))
+
+(deftest organizations-in-json-correctly-ordered
+  (testing "the organizations field in JSON response is correctly ordered by archive-center, distribution center, then the rest"
+    (let [distribution-org (dc/org :distribution-center "distribution-org")
+          distribution-org-1 (dc/org :distribution-center "distribution-org-1")
+          archive-org (dc/org :archive-center "archive-org")
+          originating-org (dc/org :originating-center "originating-org")
+          processing-org (dc/org :processing-center "processing-org")]
+
+      ;; The organizations for the following collections are based on umm-lib implementation.
+      ;; Once we implemented organizations in umm-spec-lib and switched indexer to use it,
+      ;; Some of the tests may need to be updated.
+      (d/ingest "PROV1"
+                (dc/collection-dif10
+                  {:short-name "S-DIF9"
+                   :organizations [distribution-org distribution-org-1]})
+                {:format :dif})
+
+      (d/ingest "PROV1"
+                (dc/collection-dif10
+                  {:short-name "S-DIF10"
+                   :organizations [processing-org originating-org distribution-org archive-org]})
+                {:format :dif10})
+
+      (d/ingest "PROV1"
+                (dc/collection
+                  {:short-name "S-ECHO10"
+                   :organizations [processing-org archive-org]}))
+
+      (d/ingest "PROV1"
+                (dc/collection
+                  {:short-name "S-ISO-SMAP"
+                   :organizations [processing-org archive-org]})
+                {:format :iso-smap})
+
+      (d/ingest "PROV1"
+                (assoc exp-conv/example-collection-record :ShortName "S-UMM-JSON")
+                {:format :umm-json
+                 :accept-format :json})
+      (index/wait-until-indexed)
+
+      (are2 [short-name expected-orgs]
+            (let [organizations (-> (search/find-concepts-json :collection {:short-name short-name})
+                                    :results
+                                    :entries
+                                    first
+                                    :organizations)]
+
+              (= expected-orgs organizations))
+
+            "ECHO10 only has archive-center and processing-center"
+            "S-ECHO10" ["archive-org" "processing-org"]
+
+            "DIF9 only has distribution-centers"
+            "S-DIF9" ["distribution-org" "distribution-org-1"]
+
+            "DIF10 with archive center, distribution center and others"
+            "S-DIF10" ["archive-org" "distribution-org" "processing-org" "originating-org"]
+
+            "ISO-SMAP only has archive-center and processing-center"
+            "S-ISO-SMAP" ["archive-org" "processing-org"]
+
+            "UMM-JSON has not implemented organizations, so the expected value is nil"
+            "S-UMM-JSON" nil))))
+

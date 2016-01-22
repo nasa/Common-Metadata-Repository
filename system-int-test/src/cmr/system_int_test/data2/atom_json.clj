@@ -99,7 +99,7 @@
                 processing-level-id original-format data-center archive-center time-start time-end
                 links dif-ids online-access-flag browse-flag coordinate-system score
                 shapes points boxes polygons lines granule-count has-granules
-                orbit-parameters highlighted-summary-snippets tags]} json-entry]
+                orbit-parameters highlighted-summary-snippets tags organizations]} json-entry]
     (util/remove-nil-keys
       {:id id
        :title title
@@ -112,6 +112,7 @@
        :collection-data-type collection-data-type
        :data-center data-center
        :archive-center archive-center
+       :organizations organizations
        :processing-level-id processing-level-id
        :links (seq links)
        :start (some-> time-start dtp/parse-datetime)

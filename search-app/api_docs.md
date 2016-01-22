@@ -243,19 +243,41 @@ The CMR Atom format provides search results in an XML file representing a feed o
 | summary  (collections only) | the summary of intentions with which this collection was developed. - corresponds to the UMM summary field |
 | updated                     | date/time of the last update to the assocated metadata                                                     |
 
-The following fields are specific to the CMR output and correspond to ECHO10 fields of the same name:
+The following fields are specific to the CMR output and most correspond to ECHO10 fields of the same name:
 
-|                                                                      CMR Specific Fields                                                                      ||
-|                  Field                  |                                                     Description                                                      |
-| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| echo:datasetId                          | description of the dataset                                                                                           |
-| echo:shortName (collections only)       | UMM Entry Title                                                                                                      |
-| echo:versionId  (collections only)      | provider defined version id of the metadata                                                                          |
-| echo:originalFormat                     | original metadata format                                                                                             |
-| echo:dataCenter                         | datacenter providing the metadata                                                                                    |
-| echo:orbitParameters (collections only) | fields releated to the satellite orbit (startCircularLatitude, numberOfOrbits, inclinationAngle, period, swathWidth) |
-| echo:onlineAccessFlag                   | true if the data is available online                                                                                 |
-| echo:browseFlag                         | true if the data contains browse imagery                                                                             |
+|                                                                      CMR Specific Fields                                                                         ||
+|                  Field                     |                                                     Description                                                      |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| echo:datasetId                             | UMM entry title of the collection                                                                                    |
+| echo:shortName (collections only)          | provider defined short name of the collection                                                                        |
+| echo:versionId (collections only)          | provider defined version id of the collection                                                                        |
+| echo:collectionDataType (collections only) | type of the collection, e.g. Science Quality or Near Real Time                                                       |
+| echo:producerGranuleId (granules only)     | producer granule id of the granule                                                                                   |
+| echo:granuleSizeMB (granules only)         | granule size in megabytes                                                                                            |
+| echo:originalFormat                        | original metadata format                                                                                             |
+| echo:dataCenter                            | data center providing the metadata                                                                                   |
+| echo:archiveCenter (collections only)      | archive center of the metadata                                                                                       |
+| echo:organizations (collections only)      | organizations associated with the metadata                                                                           |
+| echo:processingLevelId (collections only)  | processing level id of the metadata                                                                                  |
+| time:start                                 | start time of the metadata                                                                                           |
+| time:end                                   | end time of the metadata                                                                                             |
+| link                                       | online access and online resource urls associated with the metadata                                                  |
+| echo:orbit (granules only)                 | orbit info of the metadata                                                                                           |
+| echo:orbitCalSpatialDomain (granules only) | orbit calculated spatial domain nfo of the metadata                                                                  |
+| echo:coordinateSystem                      | coordinate system info of the metadata                                                                               |
+| echo:orbitParameters (collections only)    | fields releated to the satellite orbit (startCircularLatitude, numberOfOrbits, inclinationAngle, period, swathWidth) |
+| georss:point                               | spatial point info of the metadata                                                                                   |
+| georss:line                                | spatial line info of the metadata                                                                                    |
+| georss:box                                 | spatial bounding box info of the metadata                                                                            |
+| georss:polygon                             | spatial polygon info of the metadata                                                                                 |
+| echo:difId (collections only)              | associated dif id of the collection                                                                                  |
+| echo:onlineAccessFlag                      | true if the data is available online                                                                                 |
+| echo:browseFlag                            | true if the data contains browse imagery                                                                             |
+| echo:hasGranules (collections only)        | true if there are granules associated with the collection                                                            |
+| echo:granuleCount (collections only)       | granule count of the collection                                                                                      |
+| relevance:score (collections only)         | relevance score of the collection to search parameters                                                               |
+| echo:dayNightFlag (granules only)          | day night flag of the granule                                                                                        |
+| echo:cloudCover (granules only)            | cloud cover of the granule                                                                                           |
 
 __Example__
 

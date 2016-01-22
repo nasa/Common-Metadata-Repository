@@ -137,6 +137,7 @@
      :collection-data-type (cx/string-at-path entry-elem [:collectionDataType])
      :data-center (cx/string-at-path entry-elem [:dataCenter])
      :archive-center (cx/string-at-path entry-elem [:archiveCenter])
+     :organizations (seq (cx/strings-at-path entry-elem [:organization]))
      :processing-level-id (cx/string-at-path entry-elem [:processingLevelId])
      :links (seq (map :attrs (cx/elements-at-path entry-elem [:link])))
      :start (cx/datetime-at-path entry-elem [:start])
@@ -268,6 +269,7 @@
        :collection-data-type collection-data-type
        :data-center (:provider-id (cu/parse-concept-id concept-id))
        :archive-center archive-center
+       :organizations (seq (map :org-name organizations))
        :processing-level-id processing-level-id
        :start (some->> (:temporal collection) (sed/start-date :collection))
        :end (some->> (:temporal collection) (sed/end-date :collection))
