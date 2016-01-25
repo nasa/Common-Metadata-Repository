@@ -52,8 +52,8 @@
    all-revisions?
 
    ;; Options for the search response.
-   result-options
-   ])
+   result-options])
+
 
 (defrecord ConditionGroup
   [
@@ -61,8 +61,8 @@
    operation
 
    ;; A sequence of conditions in the group
-   conditions
-   ])
+   conditions])
+
 
 (defrecord NestedCondition
   [
@@ -70,8 +70,8 @@
    path
 
    ;; The nested condition
-   condition
-   ])
+   condition])
+
 
 ;; whitespace analyzed text query
 (defrecord TextCondition
@@ -80,8 +80,8 @@
    field
 
    ;; the query string
-   query-str
-   ])
+   query-str])
+
 
 (defrecord StringCondition
   [
@@ -95,8 +95,8 @@
    case-sensitive?
 
    ;; Indicates if the search contains pattern matching expressions. Defaults to false.
-   pattern?
-   ])
+   pattern?])
+
 
 ;; Represents a search for multiple possible values on a single field. The values are essentially OR'd
 (defrecord StringsCondition
@@ -108,14 +108,14 @@
    values
 
    ;; indicates if the search is case sensitive. Defaults to false.
-   case-sensitive?
-   ])
+   case-sensitive?])
+
 
 (defrecord NegatedCondition
   [
    ;; condition to exclude
-   condition
-   ])
+   condition])
+
 
 (defrecord BooleanCondition
   [
@@ -123,14 +123,14 @@
    field
 
    ;; The boolean value to match
-   value
-   ])
+   value])
+
 
 (defrecord SpatialCondition
   [
    ;; One of cmr.spatial polygon, line, point, or mbr
-   shape
-   ])
+   shape])
+
 
 ;; Allows execution of a custom native search script
 (defrecord ScriptCondition
@@ -139,22 +139,22 @@
    script
 
    ;; Parameter map of names to values
-   params
-   ])
+   params])
+
 
 ;; ExistCondition represents the specified field must have value, i.e. filed is not null
 (defrecord ExistCondition
   [
    ;; The field being searched.
-   field
-   ])
+   field])
+
 
 ;; MissingCondition represents the specified field must not have value, i.e. filed is nil
 (defrecord MissingCondition
   [
    ;; The field being searched.
-   field
-   ])
+   field])
+
 
 (defrecord DateValueCondition
   [
@@ -162,8 +162,8 @@
    field
 
    ;; The date value
-   value
-   ])
+   value])
+
 
 (defrecord DateRangeCondition
   [
@@ -177,8 +177,8 @@
    end-date
 
    ;; If true, exclude the boundary values. Default to false.
-   exclusive?
-   ])
+   exclusive?])
+
 
 (defrecord NumericValueCondition
   [
@@ -186,8 +186,8 @@
    field
 
    ;; The value to match.
-   value
-   ])
+   value])
+
 
 (defrecord NumericRangeCondition
   [
@@ -201,8 +201,8 @@
    max-value
 
    ;; If true, exclude the boundary values. Default to false.
-   exclusive?
-   ])
+   exclusive?])
+
 
 ;; This condition can be used for finding concepts having two fields representing a range of values
 ;; where that range overlaps a given range.
@@ -218,8 +218,8 @@
    min-value
 
    ;; The maximum value of the search range (inclusive)
-   max-value
-   ])
+   max-value])
+
 
 (defrecord StringRangeCondition
   [
@@ -230,8 +230,8 @@
    start-value
 
    ;; The end value for the range
-   end-value
-   ])
+   end-value])
+
 
 (defrecord TemporalCondition
   [
@@ -239,43 +239,43 @@
    end-date
    start-day
    end-day
-   exclusive?
-   ])
+   exclusive?])
+
 
 (defrecord OrbitNumberValueCondition
   [
-   value
-   ])
+   value])
+
 
 (defrecord OrbitNumberRangeCondition
   [
    min-value
-   max-value
-   ])
+   max-value])
+
 
 (defrecord EquatorCrossingLongitudeValueCondition
   [
-   value
-   ])
+   value])
+
 
 (defrecord EquatorCrossingLongitudeRangeCondition
   [
    min-value
-   max-value
-   ])
+   max-value])
+
 
 ;; This condition is used for holding two-d-coordinate value
 (defrecord CoordinateValueCondition
   [
-   value
-   ])
+   value])
+
 
 ;; This condition is used for holding two-d-coordinate range
 (defrecord CoordinateRangeCondition
   [
    min-value
-   max-value
-   ])
+   max-value])
+
 
 ;; This condition is used for holding two-d-coordinate-system coordinates info
 (defrecord TwoDCoordinateCondition
@@ -283,8 +283,8 @@
    ;; it is nil, CoordinateValueCondition or CoordinateRangeCondition
    coordinate-1-cond
    ;; it is nil, CoordinateValueCondition or CoordinateRangeCondition
-   coordinate-2-cond
-   ])
+   coordinate-2-cond])
+
 
 (defrecord TwoDCoordinateSystemCondition
   [
@@ -292,20 +292,20 @@
    ;; it is nil or a list of TwoDCoordinateConditions
    two-d-conditions
    ;; indicates if the search is case sensitive. Defaults to false.
-   case-sensitive?
-   ])
+   case-sensitive?])
+
 
 (defrecord EquatorCrossingDateCondition
   [
    start-date
-   end-date
-   ])
+   end-date])
+
 
 (defrecord CollectionQueryCondition
   [
    ;; The condition to find collections
-   condition
-   ])
+   condition])
+
 
 (defrecord RelatedItemQueryCondition
   [
@@ -319,8 +319,8 @@
 
    ;; A function that will take the results found in result-field and creates a new condition to
    ;; replace the instance of the related item query condition
-   results-to-condition-fn
-   ])
+   results-to-condition-fn])
+
 
 (defrecord MatchAllCondition
   [])
@@ -343,8 +343,8 @@
    group
 
    ;; Optional - Performs pattern search on both name and group fields. Nil defaults to false.
-   pattern?
-   ])
+   pattern?])
+
 
 ;; Condition for searching against a given additional attribute for an exact value.
 (defrecord AttributeValueCondition
@@ -362,8 +362,8 @@
    value
 
    ;; Optional - Performs pattern search on the value field. Nil defaults to false.
-   pattern?
-   ])
+   pattern?])
+
 
 ;; Condition for searching against a given additional attribute with a value within the given range.
 ;; One of min-value or max-value must be present.
@@ -386,10 +386,11 @@
 
    ;; Optional - If set to true the search is performed with < max-value and > min-value, otherwise
    ;; <= max-value and >= min-value are used. Nil defaults to false.
-   exclusive?
-   ])
+   exclusive?])
+
 
 (def default-sort-keys
+  "A map of default sort keys from specific concept types"
   {:granule [{:field :provider-id :order :asc}
              {:field :start-date :order :asc}]
    :tag [{:field :namespace :order :asc}
@@ -453,10 +454,10 @@
   ([field start stop]
    (string-range-condition field start stop false))
   ([field start stop exclusive?]
-  (map->StringRangeCondition {:field field
-                              :start-value start
-                              :end-value stop
-                              :exclusive? exclusive?})))
+   (map->StringRangeCondition {:field field
+                               :start-value start
+                               :end-value stop
+                               :exclusive? exclusive?})))
 
 (defn date-range-condition
   "Creates a DateRangeCondition."
