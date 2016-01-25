@@ -40,7 +40,8 @@
    :format mt/edn})
 
 (defn- fetch-group-concept
-  "Fetches the latest version of a group concept by concept id"
+  "Fetches the latest version of a group concept by concept id. Handles unknown concept ids by
+  throwing a service error."
   [context concept-id]
   (let [{:keys [concept-type provider-id]} (concepts/parse-concept-id concept-id)]
     (when (not= :access-group concept-type)
@@ -112,8 +113,8 @@
 (defn- validate-members-exist
   "Validates that the given usernames exist. Throws an exception if they do not."
   [context usernames]
-  (when-let [non-existant-users (seq (remove #(urs/user-exists? context %) (distinct usernames)))]
-    (errors/throw-service-error :bad-request (msg/users-do-not-exist non-existant-users))))
+  (when-let [non-existent-users (seq (remove #(urs/user-exists? context %) (distinct usernames)))]
+    (errors/throw-service-error :bad-request (msg/users-do-not-exist non-existent-users))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Service level functions
@@ -172,7 +173,8 @@
             (vec (distinct (concat existing-members members))))))
 
 (defn add-members
-  "Adds members to the group"
+  "Adds members to the group identified by the concept id persisting it to Metadata DB. Returns
+  the new concept id and revision id."
   [context concept-id members]
   (validate-members-exist context members)
   (let [existing-concept (fetch-group-concept context concept-id)
@@ -189,7 +191,8 @@
             (vec (remove (set members) existing-members)))))
 
 (defn remove-members
-  "Removes members to the group"
+  "Removes members from the group identified by the concept id persisting it to Metadata DB. Returns
+  the new concept id and revision id."
   [context concept-id members]
   (let [existing-concept (fetch-group-concept context concept-id)
         existing-group (edn/read-string (:metadata existing-concept))

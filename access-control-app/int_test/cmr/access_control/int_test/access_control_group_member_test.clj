@@ -42,7 +42,7 @@
       (assert-group-member-count-correct concept-id 4))
 
     (testing "Removing members"
-      ;; Removing duplicates, members not in the group, and non-existant users is allowed.
+      ;; Removing duplicates, members not in the group, and non-existent users is allowed.
       (let [response (u/remove-members token concept-id
                                        ["user3"
                                         "user1"
@@ -51,5 +51,24 @@
                                         "user5"])] ; exists but not in group
         (assert-group-member-count-correct concept-id 2)
         (is (= {:status 200 :concept-id concept-id :revision-id 4} response))
-        (is (= {:status 200 :body ["user2" "user4"]} (u/get-members token concept-id)))))))
+        (is (= {:status 200 :body ["user2" "user4"]} (u/get-members token concept-id)))))
+
+    (testing "Add and remove with a deleted group"
+      (is (= 200 (:status (u/delete-group token concept-id))))
+      (is (= {:status 404
+              :errors [(format "Group with concept id [%s] was deleted." concept-id)]}
+             (u/add-members token concept-id ["user1"])))
+      (is (= {:status 404
+              :errors [(format "Group with concept id [%s] was deleted." concept-id)]}
+             (u/remove-members token concept-id ["user1"]))))
+
+    (testing "Add and remove with a non existent group"
+      (is (= {:status 404
+              :errors ["Group could not be found with concept id [AG1234-CMR]"]}
+             (u/add-members token "AG1234-CMR" ["user1"])))
+      (is (= {:status 404
+              :errors ["Group could not be found with concept id [AG1234-CMR]"]}
+             (u/remove-members token "AG1234-CMR" ["user1"]))))))
+
+
 

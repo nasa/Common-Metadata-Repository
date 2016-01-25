@@ -77,11 +77,6 @@ Groups are used to identify sets of users for the assignment of access privilege
 * `description` - Required field that describes the group.
 * `legacy-guid` - Internal use only. This is used for ECHO Kernel interoperability.
 
-TODO document group member operations
-* add duplicates is allowed. Duplicates are ignored
-* Adding users already in group is ok
-* remove users not in group is ok as well.
-
 ### <a name="create-group"></a> Create Group
 
 Groups are created by POSTing a JSON representation of a group to `%CMR-ENDPOINT%/groups` along with a valid ECHO token. The response will contain a concept id identifying the group along with the group revision id.

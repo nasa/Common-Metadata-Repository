@@ -100,10 +100,12 @@
   (api-response (group-service/delete-group context concept-id)))
 
 (defn get-members
-  [context headers concept-id]
+  "Handles a request to fetch group members"
+  [context concept-id]
   (api-response (group-service/get-members context concept-id)))
 
 (defn add-members
+  "Handles a request to add group members"
   [context headers body concept-id]
   (validate-content-type headers)
   (validate-group-members-json body)
@@ -112,6 +114,7 @@
        api-response))
 
 (defn remove-members
+  "Handles a request to remove group members"
   [context headers body concept-id]
   (validate-content-type headers)
   (validate-group-members-json body)
@@ -162,13 +165,17 @@
             (update-group request-context headers (slurp body) group-id))
 
           (context "/members" []
-            (GET "/" {:keys [request-context headers]}
-              (get-members request-context headers group-id))
+            (GET "/" {:keys [request-context]}
+              (get-members request-context group-id))
 
             (POST "/" {:keys [request-context headers body]}
+              ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
+              (acl/verify-ingest-management-permission request-context :update)
               (add-members request-context headers (slurp body) group-id))
 
             (DELETE "/" {:keys [request-context headers body]}
+              ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
+              (acl/verify-ingest-management-permission request-context :update)
               (remove-members request-context headers (slurp body) group-id))))))
 
     (route/not-found "Not Found")))

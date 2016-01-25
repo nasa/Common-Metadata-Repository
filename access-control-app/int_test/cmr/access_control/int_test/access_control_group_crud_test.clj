@@ -124,7 +124,7 @@
 
         (testing "Works for a different provider"
           (is (= 200 (:status (u/create-group token (assoc group :provider-id "PROV2")))))))))
-  (testing "Creation for a non-existant provider"
+  (testing "Creation for a non-existent provider"
     (is (= {:status 400
             :errors ["Provider with provider-id [NOT_EXIST] does not exist."]}
            (u/create-group (e/login (u/conn-context) "user1")
