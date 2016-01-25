@@ -65,12 +65,12 @@
    `(def ~mapping-name
       ~docstring
       {~mapping-type
-       (merge ~mapping-settings
-              {:dynamic "strict"
+       (merge {:dynamic "strict"
                :_source {:enabled false}
                :_all {:enabled false}
                :_ttl {:enabled true}
-               :properties ~properties})})))
+               :properties ~properties}
+              ~mapping-settings)})))
 
 (defmacro defnestedmapping
   "Defines a new nested mapping type for an elasticsearch index. The argument after the

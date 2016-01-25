@@ -5,6 +5,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.elastic-utils.connect :as esc]
             [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.elastic-utils.mapping :as m :refer [defmapping]]
             [clojurewerkz.elastisch.rest.index :as esi]
             [clojurewerkz.elastisch.rest.document :as esd]
             [clojurewerkz.elastisch.query :as q]))
@@ -33,20 +34,17 @@
   "The name of the mapping type within the cubby elasticsearch index."
   "cached-value")
 
-(def mappings
+(defmapping mappings type-name
   "Defines the field mappings and type options for cubby stored values in elasticsearch."
-  {type-name
-   {:dynamic "strict",
-    :_source {:enabled true},
-    :_all {:enabled false},
-    :_id   {:path "key-name"},
-    :properties {:key-name indexed-string-type
+  {:_id {:path "key-name"}
+   :_source {:enabled true}}
+  {:key-name (m/stored m/string-field-mapping)
 
-                 ;; Deprecated, remove in future sprint. We changed the value to support values
-                 ;; larger than 32KB.
-                 :value indexed-string-type
+   ;; Deprecated, remove in future sprint. We changed the value to support values
+   ;; larger than 32KB.
+   :value (m/stored m/string-field-mapping)
 
-                 :value2 not-indexed-string-type}}})
+   :value2 (m/not-indexed (m/stored m/string-field-mapping))})
 
 (def index-settings
   "Defines the cubby elasticsearch index settings."
@@ -54,7 +52,6 @@
    {:number_of_shards 3,
     :number_of_replicas 1,
     :refresh_interval "1s"}})
-
 
 (defn create-index-or-update-mappings
   "Creates the index needed in Elasticsearch for data storage"
@@ -106,9 +103,9 @@
               index-name type-name
               :query {:filtered {:query (q/match-all)
                                  :filter {:term {:key-name "foo"}}}}
-              :fields [:value2])
+              :fields [:value2]))
 
-  )
+
 
 (defmacro try-elastic-operation
   [& body]
@@ -131,8 +128,8 @@
    config
 
    ;; The connection to elasticsearch
-   conn
-   ]
+   conn]
+
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   l/Lifecycle
@@ -156,8 +153,8 @@
                                :size 10000
                                :fields [:key-name])
           num-keys-found (get-in response [:hits :total])
-          num-keys-in-response (count (get-in response [:hits :hits])) ]
-      (when (> num-keys-found num-keys-in-response )
+          num-keys-in-response (count (get-in response [:hits :hits]))]
+      (when (> num-keys-found num-keys-in-response)
         (errors/internal-error!
           (format "The number of keys found, [%s], exceeded the number of keys we requested in the keys request"
                   num-keys-found)))

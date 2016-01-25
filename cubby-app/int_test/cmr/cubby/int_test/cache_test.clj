@@ -17,9 +17,9 @@
   (c/get-value (u/conn-context) "charlie")
   (c/get-value (u/conn-context) "foo")
 
-  (c/reset (u/conn-context))
+  (c/reset (u/conn-context)))
 
-  )
+
 
 (deftest initial-state
   (testing "retrieve unsaved key returns 404"
