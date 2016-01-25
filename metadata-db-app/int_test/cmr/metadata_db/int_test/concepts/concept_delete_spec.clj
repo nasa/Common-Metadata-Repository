@@ -26,8 +26,8 @@
                               :metadata ""
                               :revision-id revision-id
                               :user-id nil)
-                       :revision-date :user-id)
-               (dissoc deleted-concept1 :revision-date :user-id)))
+                       :revision-date :user-id :transaction-id)
+               (dissoc deleted-concept1 :revision-date :user-id :transaction-id)))
 
         ;; Make sure that a deleted concept gets it's own unique revision date
         (is (t/after? (:revision-date deleted-concept1) (:revision-date saved-concept1))

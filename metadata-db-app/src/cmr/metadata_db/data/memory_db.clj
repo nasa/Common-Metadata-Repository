@@ -209,7 +209,7 @@
       (let [{:keys [concept-type provider-id concept-id revision-id]} concept
             concept (update-in concept [:revision-date] #(or % (f/unparse (f/formatters :date-time)
                                                                           (tk/now))))
-            concept (update-in concept [:transaction-id] (swap! next-transaction-id-atom inc))
+            concept (assoc concept :transaction-id (swap! next-transaction-id-atom inc))
             concept (if (= concept-type :granule)
                       (-> concept
                           (dissoc :user-id)
@@ -328,4 +328,5 @@
    ;; sort by revision-id reversed so latest will be first
    (->MemoryDB (atom (reverse (sort-by :revision-id concepts)))
                (atom (dec cmr.metadata-db.data.oracle.concepts/INITIAL_CONCEPT_NUM))
+               (atom 0)
                (atom {}))))

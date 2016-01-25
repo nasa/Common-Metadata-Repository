@@ -48,8 +48,8 @@
                             :metadata ""
                             :revision-id revision-id
                             :user-id nil)
-                     :revision-date)
-             (dissoc deleted-coll1 :revision-date)))
+                     :revision-date :transaction-id)
+             (dissoc deleted-coll1 :revision-date :transaction-id)))
 
       ;; Make sure that a deleted collection gets it's own unique revision date
       (is (t/after? (:revision-date deleted-coll1) (:revision-date saved-coll1))
@@ -86,8 +86,11 @@
                             :metadata ""
                             :revision-id revision-id
                             :user-id "user101")
-                     :revision-date)
-             (dissoc deleted-coll1 :revision-date)))
+                     :revision-date :transaction-id)
+             (dissoc deleted-coll1 :revision-date :transaction-id)))
+
+      ;; make sure that a deleted collection gets it's own unique transaction-id
+      (is (> (:transaction-id deleted-coll1) (:transaction-id saved-coll1)))
 
       ;; Make sure that a deleted collection gets it's own unique revision date
       (is (t/after? (:revision-date deleted-coll1) (:revision-date saved-coll1))

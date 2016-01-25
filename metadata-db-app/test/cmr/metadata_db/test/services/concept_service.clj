@@ -131,7 +131,7 @@
           db (memory/create-db [expired])
           ;; create a mock save function that, the first time it is
           ;; called, updates our expired concept before calling the
-          ;; original save functio so that a conflict occurs when
+          ;; original save function so that a conflict occurs when
           ;; delete-expired-concepts runs
           expired-2 (-> expired (assoc :revision-id 2))
           orig-save cs/try-to-save
@@ -151,7 +151,7 @@
         ;; went through
         (is (= [expired-2]
                (for [concept (c/get-expired-concepts db {:provider-id "PROV1"} :collection)]
-                 (dissoc concept :revision-date))))
+                 (dissoc concept :revision-date :transaction-id))))
 
         ;; run it again, this time without the conflict...
         (cs/delete-expired-concepts {:system {:db db}} {:provider-id "PROV1"} :collection)
