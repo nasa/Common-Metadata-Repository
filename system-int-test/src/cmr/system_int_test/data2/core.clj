@@ -202,22 +202,16 @@
 (defn echo-compatible-refs-match?
   "Returns true if the echo compatible references match the expected items"
   [items search-result]
-  (let [result (= (set (map #(dissoc % :revision-id) (map item->ref items)))
-                  (set (map #(dissoc % :score) (:refs search-result))))]
-    (when (:status search-result)
-      (println (pr-str search-result)))
-    result))
+  (= (set (map #(dissoc % :revision-id) (map item->ref items)))
+     (set (map #(dissoc % :score) (:refs search-result)))))
 
 (defn refs-match?
   "Returns true if the references match the expected items"
   [items search-result]
-  (let [result (is (= (set (map item->ref items))
-                  ;; need to remove score etc. because it won't be available in collections
-                  ;; to which we are comparing
-                  (set (map #(dissoc % :score :granule-count) (:refs search-result)))))]
-    (when (:status search-result)
-      (println (pr-str search-result)))
-    result))
+  (is (= (set (map item->ref items))
+         ;; need to remove score etc. because it won't be available in collections
+         ;; to which we are comparing
+         (set (map #(dissoc % :score :granule-count) (:refs search-result))))))
 
 (defn assert-refs-match
   "Asserts that the references match the results returned. Use this in place of refs-match? to
@@ -231,11 +225,8 @@
 (defn refs-match-order?
   "Returns true if the references match the expected items in the order specified"
   [items search-result]
-  (let [result (= (map item->ref items)
-                  (map #(dissoc % :score :granule-count) (:refs search-result)))]
-    (when (:status search-result)
-      (println (pr-str search-result)))
-    result))
+  (= (map item->ref items)
+     (map #(dissoc % :score :granule-count) (:refs search-result))))
 
 (defn unique-num
   "Creates a unique number and returns it"

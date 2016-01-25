@@ -57,14 +57,14 @@
   ([context]
    (reset context false))
   ([context raw]
-   (h/request context :metadata-db {:url-fn reset-url, :method :post, :raw? raw})))
+   (h/request context :metadata-db {:url-fn reset-url, :method :post, :raw? raw :use-system-token? true})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Provider functions
 
-(h/defcreator create-provider :metadata-db providers-url)
-(h/defupdater update-provider :metadata-db provider-url)
-(h/defdestroyer delete-provider :metadata-db provider-url)
+(h/defcreator create-provider :metadata-db providers-url {:use-system-token? true})
+(h/defupdater update-provider :metadata-db provider-url {:use-system-token? true})
+(h/defdestroyer delete-provider :metadata-db provider-url {:use-system-token? true})
 
 (defn get-providers
   "Returns the list of providers configured in the metadata db. Valid options are
@@ -89,7 +89,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Concept functions
 
-(h/defcreator save-concept :metadata-db concepts-url)
+(h/defcreator save-concept :metadata-db concepts-url {:use-system-token? true})
 
 (defn get-concept-id
   "Returns a concept id for the given concept type, provider, and native id"
@@ -100,6 +100,7 @@
                              {:url-fn #(concept-id-url % concept-type provider-id native-id)
                               :method :get
                               :raw? raw?
+                              :use-system-token? true
                               :http-options (merge {:accept :json} http-options)})]
      (if raw?
        response
@@ -117,6 +118,7 @@
                   {:url-fn #(concept-revision-url % concept-id revision-id)
                    :method :get
                    :raw? raw?
+                   :use-system-token? true
                    :http-options (merge {:accept :json} http-options)})
        finish-parse-concept)))
 
@@ -132,6 +134,7 @@
                   {:url-fn #(latest-concept-url % concept-id)
                    :method :get
                    :raw? raw?
+                   :use-system-token? true
                    :http-options (merge {:accept :json} http-options)})
        finish-parse-concept)))
 

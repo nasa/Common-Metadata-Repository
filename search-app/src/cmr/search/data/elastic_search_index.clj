@@ -105,8 +105,8 @@
    config
 
    ;; The connection to elastic
-   conn
-   ]
+   conn]
+
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle

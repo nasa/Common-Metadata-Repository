@@ -181,9 +181,6 @@
           {:target "GROUP"
            :provider-guid provider-guid})))
 
-;; TODO at a later time we should add a helper function to grant update and delete access to individual groups
-;; That's controlled by the single instance object identity in acls
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Grant functions for Catalog Item ACLS
 

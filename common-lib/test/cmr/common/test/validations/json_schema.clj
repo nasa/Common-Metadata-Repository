@@ -41,9 +41,9 @@
        :properties {:omega {"$ref" "#/definitions/omega"}}
        :required ["omega"]})
 
-    (json/generate-string {:omega {:b 2}}))
+    (json/generate-string {:omega {:b 2}})))
 
-  )
+
 
 
 (deftest validate-json-test

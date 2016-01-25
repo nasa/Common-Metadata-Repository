@@ -11,9 +11,13 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * [/groups](#groups)
     * [POST - Create Group](#create-group)
   * /groups/:group-id
-      * [GET - Retrieve a group](#retrieve-group)
-      * [PUT - Update a group](#update-group)
-      * [DELETE - Delete a group](#delete-group)
+    * [GET - Retrieve a group](#retrieve-group)
+    * [PUT - Update a group](#update-group)
+    * [DELETE - Delete a group](#delete-group)
+  * /groups/:group-id/members
+    * [GET - Retrieve group members] (#retrieve-group-members)
+    * [POST - Add group members] (#add-group-members)
+    * [DELETE - Remove group members] (#remove-group-members)
 
 ***
 
@@ -88,7 +92,6 @@ curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-E
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
-Content-Length: 48
 
 {"revision-id":1,"concept-id":"AG1200000000-CMR"}
 ```
@@ -105,12 +108,11 @@ curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-E
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
-Content-Length: 48
 
 {"revision-id":1,"concept-id":"AG1200000001-PROV1"}
 ```
 
-#### <a name="retrieve-group"></a> Retrieve Group
+### <a name="retrieve-group"></a> Retrieve Group
 
 A single group can be retrieved by sending a GET request to `%CMR-ENDPOINT%/groups/<concept-id>` where `concept-id` is the concept id of the group returned when it was created.
 
@@ -119,7 +121,6 @@ curl -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/groups/AG1200000000-CMR?pretty=true
 
 HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 106
 
 {
   "name" : "Administrators",
@@ -127,7 +128,7 @@ Content-Length: 106
 }
 ```
 
-#### <a name="update-group"></a> Update Group
+### <a name="update-group"></a> Update Group
 
 Groups are updated by sending a PUT request with the JSON representation of a group to `%CMR-ENDPOINT%/groups/<concept-id>` where `concept-id` is the concept id of the group returned when it was created. The same rules apply when updating a group as when creating it but only the description can be modified. The response will contain the concept id along with the group revision id.
 
@@ -140,12 +141,11 @@ curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-EN
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
-Content-Length: 48
 
 {"concept-id":"AG1200000000-CMR","revision-id":2}
 ```
 
-#### <a name="deleted-group"></a> Delete Group
+### <a name="deleted-group"></a> Delete Group
 
 Groups are deleted by sending a DELETE request to `%CMR-ENDPOINT%/groups/<concept-id>` where `concept-id` is the concept id of the group returned when it was created. Deleting a group creates a tombstone that marks the group as deleted. The concept id of the group and the revision id of the tombstone are returned from a delete request.
 
@@ -154,7 +154,47 @@ curl -XDELETE -i  -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/groups/AG1200000000-CMR
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
-Content-Length: 48
 
 {"concept-id":"AG1200000000-CMR","revision-id":3}
+```
+
+### <a name="retrieve-group-members"></a> Retrieve Group Members
+
+The members in a group can be retrieved by sending a GET request to `%CMR-ENDPOINT%/groups/<concept-id>/members` where `concept-id` is the concept id of the group returned when it was created.
+
+```
+curl -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/groups/AG1200000000-CMR/members?pretty=true
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+["user1", "user2", "user3"]
+```
+
+### <a name="add-group-members"></a> Add Group Members
+
+The members in a group can be added by sending a POST request to `%CMR-ENDPOINT%/groups/<concept-id>/members` where `concept-id` is the concept id of the group returned when it was created. The body of the request should be a JSON array of Earthdata Login usernames. The concept id and updated revision number is returned.
+
+```
+curl -i -XPOST -H "Echo-Token: XXXX" -H "Content-Type application/json" %CMR-ENDPOINT%/groups/AG1200000000-CMR/members -d
+'["user1", "user2", "user3"]'
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"concept-id":"AG1200000000-CMR","revision-id":3}
+```
+
+### <a name="remove-group-members"></a> Remove Group Members
+
+The members in a group can be removed by sending a DELETE request to `%CMR-ENDPOINT%/groups/<concept-id>/members` where `concept-id` is the concept id of the group returned when it was created. The body of the request should be a JSON array of Earthdata Login usernames to remove. The concept id and updated revision number is returned.
+
+```
+curl -i -XDELETE -H "Echo-Token: XXXX" -H "Content-Type application/json" %CMR-ENDPOINT%/groups/AG1200000000-CMR/members -d
+'["user1", "user2", "user3"]'
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"concept-id":"AG1200000000-CMR","revision-id":4}
 ```

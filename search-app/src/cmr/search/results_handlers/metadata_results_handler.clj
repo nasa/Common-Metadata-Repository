@@ -47,7 +47,7 @@
 
 
 ;; Define transormations methods from query results to concept-ids
-(doseq [format [:echo10 :dif :dif10]]
+(doseq [format [:echo10 :dif :dif10 :native]]
   (defmethod gcrf/query-results->concept-ids format
     [results]
     (->> results

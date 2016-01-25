@@ -8,6 +8,7 @@
             [cmr.metadata-db.system :as mdb-system]
             [cmr.mock-echo.system :as mock-echo-system]
             [cmr.mock-echo.client.mock-echo-client :as mock-echo-client]
+            [cmr.mock-echo.client.mock-urs-client :as mock-urs-client]
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.common-app.test.client-util :as common-client-test-util]
             [cmr.common.mime-types :as mt]
@@ -27,7 +28,7 @@
   (when-not @conn-context-atom
     (reset! conn-context-atom {:system (config/system-with-connections
                                          {}
-                                         [:access-control :echo-rest :metadata-db])}))
+                                         [:access-control :echo-rest :metadata-db :urs])}))
   @conn-context-atom)
 
 (defn create-mdb-system
@@ -69,10 +70,14 @@
      mdb-system/stop)]))
 
 (defn reset-fixture
-  "Test fixture that resets the application before each test and creates providers listed"
+  "Test fixture that resets the application before each test and creates providers and users listed.
+  provider-map should be a map of provider guids to provider ids. usernames should be a list of usernames
+  that exist in URS. The password for each username will be username + \"pass\"."
   ([]
    (reset-fixture nil))
   ([provider-map]
+   (reset-fixture provider-map nil))
+  ([provider-map usernames]
    (fn [f]
      (mock-echo-client/reset (conn-context))
      (mdb/reset (conn-context))
@@ -81,6 +86,12 @@
        (mdb/create-provider (assoc (conn-context) :token (config/echo-system-token))
                             {:provider-id provider-id}))
      (e/create-providers (conn-context) provider-map)
+
+     (when (seq usernames)
+      (mock-urs-client/create-users (conn-context) (for [username usernames]
+                                                     {:username username
+                                                      :password (str username "pass")})))
+
      ;; TODO Temporarily granting all admin. Remove this when implementing  CMR-2133, CMR-2134
      (e/grant-all-admin (conn-context))
 
@@ -97,10 +108,10 @@
   "Makes a valid group"
   ([]
    (make-group nil))
-  ([aacributes]
+  ([attributes]
    (merge {:name "Administrators"
            :description "A very good group"}
-          aacributes)))
+          attributes)))
 
 (defn- process-response
   "Takes an HTTP response that may have a parsed body. If the body was parsed into a JSON map then it
@@ -144,6 +155,30 @@
   "Searches for groups using the given parameters"
   [params]
   (process-response (ac/search-for-groups (conn-context) params {:raw? true})))
+
+(defn add-members
+  "Adds members to the group"
+  ([token concept-id members]
+   (add-members token concept-id members nil))
+  ([token concept-id members options]
+   (let [options (merge {:raw? true :token token} options)]
+    (process-response (ac/add-members (conn-context) concept-id members options)))))
+
+(defn remove-members
+  "Removes members from the group"
+  ([token concept-id members]
+   (remove-members token concept-id members nil))
+  ([token concept-id members options]
+   (let [options (merge {:raw? true :token token} options)]
+    (process-response (ac/remove-members (conn-context) concept-id members options)))))
+
+(defn get-members
+  "Gets members in the group"
+  ([token concept-id]
+   (get-members token concept-id nil))
+  ([token concept-id options]
+   (let [options (merge {:raw? true :token token} options)]
+    (process-response (ac/get-members (conn-context) concept-id options)))))
 
 (defn assert-group-saved
   "Checks that a group was persisted correctly in metadata db. The user-id indicates which user
