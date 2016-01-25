@@ -63,7 +63,6 @@
                                         :spatial-coverage (apply dg/spatial orbit nil)}
                                        other-attribs))))))
 
-
 (deftest granule-related-collection-query-results-features-test
   (let [;; Create collections
         ;; whole world, no temporal, and science keywords
@@ -149,7 +148,6 @@
       
       (testing "granule counts for native collections"
         (let [granules (search/find-metadata :collection :native {:include-granule-counts true})]
-          (is (= nil (get granules :errors)))
           (is (gran-counts/granule-counts-match? :echo10 {coll1 5 coll2 0 coll3 3 coll4 3 
                                                           coll5 3 coll6 3 orbit-coll 1} granules))))
       ;; CMR-712
