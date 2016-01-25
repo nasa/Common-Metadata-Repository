@@ -23,7 +23,7 @@
 
 (defn- specific-items-query?
   "Returns true if the query is only for specific items."
-  [{:keys [condition concept-type page-num page-size] :as query}]
+  [{:keys [condition page-num page-size] :as query}]
   (and (#{StringCondition StringsCondition} (type condition))
        (= :concept-id (:field condition))
        (= page-num 1)
@@ -32,16 +32,16 @@
 
 (defn- direct-transformer-query?
   "Returns true if the query should be executed directly against the transformer and bypass elastic."
-  [{:keys [result-format result-features all-revisions? sort-keys] :as query}]
+  [{:keys [result-format result-features all-revisions? sort-keys concept-type] :as query}]
   (and (specific-items-query? query)
        (t/transformer-supported-format? result-format)
        (not all-revisions?)
        ;; Facets requires elastic search
        (not-any? #(= % :facets) result-features)
-       ;; sorting has been left at the default level
+       ;; Sorting hasn't been specified or is set to the default value
        ;; Note that we don't actually sort items by the default sort keys
        ;; See issue CMR-607
-       (nil? sort-keys)))
+       (or (nil? sort-keys) (= (concept-type qm/default-sort-keys) sort-keys))))
 
 
 (defn- specific-items-from-elastic-query?

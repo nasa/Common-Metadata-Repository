@@ -29,6 +29,9 @@
         ;; Multiple are supported
         {:concept-id ["G1-PROV1" "G2-PROV1"] :result-format :opendata} :specific-elastic-items
 
+        ;; Facets are supported
+        {:concept-id "G1-PROV1" :result-format :opendata :include-facets "true"} :specific-elastic-items
+
         ;; Sorting is supported
         {:concept-id ["G1-PROV1" "G2-PROV1"]
          :result-format :opendata
@@ -90,10 +93,7 @@
         {:concept-id "G1-PROV1" :result-format :echo10 :all-revisions "true"} :elastic
 
         ;; Facets require elastic strategy
-        {:concept-id "G1-PROV1" :result-format :echo10 :include-facets "true"} :elastic
-
-        ;; XML References use elastic strategy
-        {:concept-id "G1-PROV1" :result-format :xml} :elastic))))
+        {:concept-id "G1-PROV1" :result-format :echo10 :include-facets "true"} :elastic))))
 
 
 
