@@ -36,6 +36,7 @@
   (transmit-config/set-access-control-port! 4011)
   (transmit-config/set-metadata-db-port! 4001)
   (transmit-config/set-echo-rest-port! 4008)
+  (transmit-config/set-urs-port! 4008)
 
   ;; Start mock echo
   (alter-var-root

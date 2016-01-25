@@ -1,4 +1,4 @@
-(ns cmr.access-control.int-test.access-control-crud-test
+(ns cmr.access-control.int-test.access-control-group-crud-test
     (:require [clojure.test :refer :all]
               [clojure.string :as str]
               [cmr.mock-echo.client.echo-util :as e]
@@ -106,7 +106,7 @@
 
 (deftest create-provider-group-test
   (testing "Successful creation"
-    (let [group (assoc (u/make-group) :provider-id "PROV1")
+    (let [group (u/make-group {:provider-id "PROV1"})
           token (e/login (u/conn-context) "user1")
           {:keys [status concept-id revision-id]} (u/create-group token group)]
       (is (= 200 status))
@@ -124,18 +124,18 @@
 
         (testing "Works for a different provider"
           (is (= 200 (:status (u/create-group token (assoc group :provider-id "PROV2")))))))))
-  (testing "Creation for a non-existant provider"
-    (is (= {:status 404
+  (testing "Creation for a non-existent provider"
+    (is (= {:status 400
             :errors ["Provider with provider-id [NOT_EXIST] does not exist."]}
            (u/create-group (e/login (u/conn-context) "user1")
-                           (assoc (u/make-group) :provider-id "NOT_EXIST"))))))
+                           (u/make-group {:provider-id "NOT_EXIST"}))))))
 
 (deftest get-group-test
   (let [group (u/make-group)
         token (e/login (u/conn-context) "user1")
         {:keys [concept-id]} (u/create-group token group)]
     (testing "Retrieve existing group"
-      (is (= (assoc group :status 200)
+      (is (= (assoc group :status 200 :num-members 0)
              (u/get-group concept-id))))
 
     (testing "Retrieve unknown group"

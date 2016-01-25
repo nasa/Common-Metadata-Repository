@@ -38,7 +38,7 @@
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
              :public-conf public-conf
              :relative-root-url (transmit-config/access-control-relative-root-url)}]
-    (transmit-config/system-with-connections sys [:echo-rest :metadata-db])))
+    (transmit-config/system-with-connections sys [:echo-rest :metadata-db :urs])))
 
 (def start
   "Performs side effects to initialize the system, acquire resources,
