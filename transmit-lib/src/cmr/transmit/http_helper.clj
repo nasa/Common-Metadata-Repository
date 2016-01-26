@@ -5,7 +5,12 @@
             [cheshire.core :as json]
             [cmr.transmit.config :as config]
             [cmr.transmit.connection :as conn]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [cmr.common.services.health-helper :as hh]))
+
+(defn health-url
+  [conn]
+  (format "%s/health" (conn/root-url conn)))
 
 (defn- safe-parse-json
   "Tries to parse the string as json. Swallows any exceptions."
@@ -50,22 +55,6 @@
       (format "Received unexpected status code %s with response %s"
               status (pr-str resp)))))
 
-(defn update-response-handler
-  "Response handler for update requests."
-  [concept-id request {:keys [status body] :as resp}]
-  (cond
-    (<= 200 status 299)
-    body
-
-    (= 404 status)
-    (errors/throw-service-error
-     :not-found (format "Item could not be found with id [%s]" concept-id))
-
-    :else
-    (errors/internal-error!
-      (format "Received unexpected status code %s with response %s"
-              status (pr-str resp)))))
-
 (defn default-response-handler
   "The default response handler."
   [request response]
@@ -98,7 +87,7 @@
                             (when use-system-token?
                               {:headers {config/token-header (config/echo-system-token)}})
                             http-options)))]
-    (default-response-handler request response)))
+    (response-handler request response)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -160,7 +149,6 @@
              headers# (when token# {config/token-header token#})]
          (request context# ~app-name
                   {:url-fn #(~url-fn % concept-id#)
-                   :response-handler (partial update-response-handler concept-id#)
                    :method :put
                    :raw? raw?#
                    :http-options (merge {:body (json/generate-string item#)
@@ -252,6 +240,30 @@
                                          :query-params params#
                                          :accept :json}
                                         http-options#)}))))))
+
+(defmacro defhealther
+  "Creates a function that can be used to send get health call for the given app."
+  ([fn-name app-name]
+   `(defhealther ~fn-name ~app-name 0))
+  ([fn-name app-name timeout-level]
+   `(defn ~fn-name
+      "Sends a request to get the health of the given app with the timeout handling.
+      The timeout level indicates how many extra seconds the get health call would timeout after the
+      default health-check-timeout-seconds expires. This is needed so that the app would time out
+      after its components time out."
+      [context#]
+      (let [health-fn# (fn []
+                         (let [{status# :status body# :body}
+                               (request context# ~app-name
+                                        {:url-fn ~cmr.transmit.http-helper/health-url
+                                         :method :get
+                                         :raw? true
+                                         :http-options {:accept :json}})]
+                           (if (= 200 status#)
+                             {:ok? true :dependencies body#}
+                             {:ok? false :problem body#})))
+            timeout-ms# (* 1000 (+ ~timeout-level (hh/health-check-timeout-seconds)))]
+        (hh/get-health health-fn# timeout-ms#)))))
 
 
 

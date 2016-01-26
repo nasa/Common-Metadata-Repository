@@ -4,8 +4,7 @@
   (:require [cmr.transmit.connection :as conn]
             [cmr.transmit.config :as config]
             [ring.util.codec :as codec]
-            [cmr.transmit.http-helper :as h]
-            [cheshire.core :as json]))
+            [cmr.transmit.http-helper :as h]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
@@ -137,4 +136,7 @@
                    :use-system-token? true
                    :http-options (merge {:accept :json} http-options)})
        finish-parse-concept)))
+
+;; Defines health check function
+(h/defhealther get-metadata-db-health :metadata-db 2)
 

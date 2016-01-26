@@ -100,3 +100,9 @@
                  :metadata-db good-metadata-db-health
                  :rabbit-mq {:ok? true}}]
            (get-app-health (url/virtual-product-health-url))))))
+
+(deftest access-control-health-test
+  (s/only-with-real-database
+    (is (= [200 {:echo {:ok? true}
+                 :metadata-db good-metadata-db-health}]
+           (get-app-health (url/access-control-health-url))))))

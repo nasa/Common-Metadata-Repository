@@ -13,12 +13,6 @@
   [conn]
   (format "%s/reset" (conn/root-url conn)))
 
-;; TODO CMR-2351 - add health function
-
-(defn- health-url
-  [conn]
-  (format "%s/health" (conn/root-url conn)))
-
 (defn- groups-url
   [conn]
   (format "%s/groups" (conn/root-url conn)))
@@ -108,6 +102,6 @@
                                        :accept :json}
                                       http-options)}))))
 
-
-
+;; Defines health check function
+(h/defhealther get-access-control-health :access-control 2)
 

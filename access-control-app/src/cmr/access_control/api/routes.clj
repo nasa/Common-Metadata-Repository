@@ -141,6 +141,9 @@
                             (get-in system [:public-conf :relative-root-url])
                             "public/access_control_index.html")
 
+      ;; add routes for checking health of the application
+      (common-routes/health-api-routes group-service/health)
+
       (context "/groups" []
         (POST "/" {:keys [request-context headers body]}
           ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
