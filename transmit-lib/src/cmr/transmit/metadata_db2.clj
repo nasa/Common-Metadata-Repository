@@ -9,10 +9,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
 
-(defn- reset-url
-  [conn]
-  (format "%s/reset" (conn/root-url conn)))
-
 (defn- providers-url
   [conn]
   (format "%s/providers" (conn/root-url conn)))
@@ -50,13 +46,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
-
-(defn reset
-  "Resets the metadata db service"
-  ([context]
-   (reset context false))
-  ([context raw]
-   (h/request context :metadata-db {:url-fn reset-url, :method :post, :raw? raw :use-system-token? true})))
+(h/defresetter reset :metadata-db)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Provider functions

@@ -19,7 +19,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [POST - Add group members] (#add-group-members)
     * [DELETE - Remove group members] (#remove-group-members)
   * /health
-    * [GET - Gets the health of the access control application.](#application-health)
+    * [GET - Get the health of the access control application.](#application-health)
 
 ***
 
@@ -238,7 +238,7 @@ Example unhealthy response body:
   },
   "metadata-db" : {
     "ok?" : false,
-    "problem" : {
+    "dependencies" : {
       "oracle" : {
         "ok?" : false,
         "problem" : "Exception occurred while getting connection: oracle.ucp.UniversalConnectionPoolException: Cannot get Connection from Datasource: java.sql.SQLRecoverableException: IO Error: The Network Adapter could not establish the connection"

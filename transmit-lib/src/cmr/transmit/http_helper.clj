@@ -8,6 +8,10 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.services.health-helper :as hh]))
 
+(defn reset-url
+  [conn]
+  (format "%s/reset" (conn/root-url conn)))
+
 (defn health-url
   [conn]
   (format "%s/health" (conn/root-url conn)))
@@ -261,9 +265,23 @@
                                          :http-options {:accept :json}})]
                            (if (= 200 status#)
                              {:ok? true :dependencies body#}
-                             {:ok? false :problem body#})))
+                             {:ok? false :dependencies body#})))
             timeout-ms# (* 1000 (+ ~timeout-level (hh/health-check-timeout-seconds)))]
         (hh/get-health health-fn# timeout-ms#)))))
 
-
+(defmacro defresetter
+  "Creates a function that can be used to send the reset call for the given app."
+  [fn-name app-name]
+  `(defn ~fn-name
+     "Sends a request to call the reset endpoint of the given app.
+     * :raw - set to true to indicate the raw response should be returned. See
+     cmr.transmit.http-helper for more info. Default false."
+     ([context#]
+      (~fn-name context# false))
+     ([context# raw#]
+      (request context# ~app-name
+               {:url-fn ~cmr.transmit.http-helper/reset-url
+                :method :post
+                :raw? raw#
+                :use-system-token? true}))))
 

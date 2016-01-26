@@ -7,10 +7,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
 
-(defn- reset-url
-  [conn]
-  (format "%s/reset" (conn/root-url conn)))
-
 (defn- keys-url
   [conn]
   (format "%s/keys" (conn/root-url conn)))
@@ -60,11 +56,8 @@
   ([context raw]
    (h/request context :cubby {:url-fn keys-url, :method :delete, :raw? raw})))
 
-(defn reset
-  "Clears all values in the cache service"
-  ([context]
-   (reset context false))
-  ([context raw]
-   (h/request context :cubby {:url-fn reset-url, :method :post, :raw? raw :use-system-token? true})))
+;; Defines reset function
+(h/defresetter reset :cubby)
 
+;; Defines health check function
 (h/defhealther get-cubby-health :cubby 2)

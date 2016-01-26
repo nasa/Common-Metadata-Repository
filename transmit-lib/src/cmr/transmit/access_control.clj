@@ -9,10 +9,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
 
-(defn- reset-url
-  [conn]
-  (format "%s/reset" (conn/root-url conn)))
-
 (defn- groups-url
   [conn]
   (format "%s/groups" (conn/root-url conn)))
@@ -28,13 +24,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
 
-(defn reset
-  "Resets the access control service"
-  ([context]
-   (reset context false))
-  ([context raw]
-   (h/request context :access-control
-              {:url-fn reset-url, :method :post, :raw? raw :use-system-token? true})))
+(h/defresetter reset :access-control)
 
 ; Group CRUD functions
 (h/defcreator create-group :access-control groups-url)
