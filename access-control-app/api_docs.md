@@ -18,6 +18,8 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [GET - Retrieve group members] (#retrieve-group-members)
     * [POST - Add group members] (#add-group-members)
     * [DELETE - Remove group members] (#remove-group-members)
+  * /health
+    * [GET - Gets the health of the access control application.](#application-health)
 
 ***
 
@@ -197,4 +199,54 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 
 {"concept-id":"AG1200000000-CMR","revision-id":4}
+```
+
+### <a name="application-health"></a> Application Health
+
+
+This will report the current health of the application. It checks all resources and services used by the application and reports their health status in the response body in JSON format. The report includes an "ok?" status and a "problem" field for each resource. The report includes an overall "ok?" status and health reports for each of a service's dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.
+
+    curl -i -XGET %CMR-ENDPOINT%/health?pretty=true
+
+Example healthy response body:
+
+```
+{
+  "echo" : {
+    "ok?" : true
+  },
+  "metadata-db" : {
+    "ok?" : true,
+    "dependencies" : {
+      "oracle" : {
+        "ok?" : true
+      },
+      "echo" : {
+        "ok?" : true
+      }
+    }
+  }
+}
+```
+
+Example unhealthy response body:
+
+```
+{
+  "echo" : {
+    "ok?" : true
+  },
+  "metadata-db" : {
+    "ok?" : false,
+    "problem" : {
+      "oracle" : {
+        "ok?" : false,
+        "problem" : "Exception occurred while getting connection: oracle.ucp.UniversalConnectionPoolException: Cannot get Connection from Datasource: java.sql.SQLRecoverableException: IO Error: The Network Adapter could not establish the connection"
+      },
+      "echo" : {
+        "ok?" : true
+      }
+    }
+  }
+}
 ```
