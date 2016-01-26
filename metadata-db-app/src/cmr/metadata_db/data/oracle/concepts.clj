@@ -321,18 +321,8 @@
                 table (tables/get-table-name provider concept-type)
                 seq-name (str table "_seq")
                 [cols values] (concept->insert-args concept (:small provider))
-                stmt (format (str "INSERT INTO %s (id, %s"
-                                  ;; TODO Remove the `when` clause when other concept types get
-                                  ;; transaction-id (CMR-2363)
-                                  (when (= concept-type :collection)
-                                    ", transaction_id")
-                                  ") VALUES "
-                                  "(%s.NEXTVAL,%s"
-                                  ;; TODO Remove the `when` clause when other concept types get
-                                  ;; transaction-id (CMR-2363)
-                                  (when (= concept-type :collection)
-                                    ",GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL")
-                                  ")")
+                stmt (format (str "INSERT INTO %s (id, %s, transaction_id) VALUES "
+                                  "(%s.NEXTVAL,%s,GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL")
                              table
                              (str/join "," cols)
                              seq-name

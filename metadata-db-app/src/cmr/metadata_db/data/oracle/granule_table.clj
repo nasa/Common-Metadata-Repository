@@ -24,7 +24,8 @@
        ;; populate the granule_ur column as part of the initial
        ;; migration. We should change the column to NOT NULL once it is
        ;; fully populated.
-       "granule_ur VARCHAR(250)"))
+       "granule_ur VARCHAR(250),
+        transaction_id INTEGER DEFAULT 0 NOT NULL"))
 
 (defmethod granule-column-sql true
   [provider]
