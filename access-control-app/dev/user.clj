@@ -7,13 +7,18 @@
             [clojure.repl :refer :all]
             [cmr.access-control.system :as system]
             [cmr.access-control.int-test.access-control-test-util :as int-test-util]
+            [cmr.elastic-utils.embedded-elastic-server :as es]
+            [cmr.elastic-utils.config :as elastic-config]
             [cmr.metadata-db.system :as mdb]
             [cmr.mock-echo.system :as mock-echo]
+            [cmr.common.lifecycle :as l]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.transmit.config :as transmit-config]
             [cmr.common.dev.util :as d]))
 
 (def system nil)
+
+(def elastic-server nil)
 
 (def mdb-system nil)
 
@@ -28,6 +33,12 @@
   "Set to true to use the Oracle DB"
   ; true
   false)
+
+(defn- create-elastic-server
+  "Creates an instance of an elasticsearch server in memory."
+  []
+  (elastic-config/set-elastic-port! 9306)
+  (es/create-server 9306 9316 "es_data/access_control"))
 
 (defn start
   "Starts the current development system."
@@ -46,10 +57,16 @@
   (alter-var-root
    #'mdb-system
    (constantly (-> (int-test-util/create-mdb-system use-external-db?) disable-access-log mdb/start)))
+
+  ;; Start elastic search
+  (alter-var-root
+   #'elastic-server
+   (constantly (l/start (create-elastic-server) nil)))
+
   ;; Start access control
   (alter-var-root
    #'system
-   (constantly (-> (system/create-system) disable-access-log system/start)))
+   (constantly (-> (system/create-system) disable-access-log system/dev-start)))
 
   (d/touch-user-clj))
 
@@ -66,6 +83,8 @@
   (alter-var-root #'mock-echo-system (when-not-nil mock-echo/stop))
   ;; Stop metadata db
   (alter-var-root #'mdb-system (when-not-nil mdb/stop))
+  ;; Stop elastic search
+  (alter-var-root #'elastic-server #(when % (l/stop % system)))
   ;; Stop access control
   (alter-var-root #'system (when-not-nil system/stop)))
 

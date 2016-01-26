@@ -48,73 +48,15 @@
 
 (def index-settings
   "Defines the cubby elasticsearch index settings."
-  {:index
-   {:number_of_shards 3,
-    :number_of_replicas 1,
-    :refresh_interval "1s"}})
+  {:number_of_shards 3,
+   :number_of_replicas 1,
+   :refresh_interval "1s"})
 
 (defn create-index-or-update-mappings
   "Creates the index needed in Elasticsearch for data storage"
   [elastic-store]
-  (let [conn (:conn elastic-store)]
-    (if (esi/exists? conn index-name)
-      (do
-        (info "Updating cubby mappings and settings")
-        (let [response (esi/update-mapping conn index-name type-name :mapping mappings :ignore_conflicts false)]
-          (when-not (= {:acknowledged true} response)
-            (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
-                                         (pr-str response))))))
-      (do
-        (info "Creating cubby index")
-        (esi/create conn index-name :settings index-settings :mappings mappings)
-        (esc/wait-for-healthy-elastic elastic-store)))
-    (esi/refresh conn index-name)))
-
-(comment
-
-  (def db (get-in user/system [:apps :cubby :db]))
-
-  (create-index-or-update-mappings db)
-  (esi/get-mapping (:conn db) index-name type-name)
-
-  (d/reset db)
-
-  (d/set-value db "foo" "v")
-  (d/set-value db "bar" "v2")
-  (d/set-value db "charlie" "v2")
-
-
-
-  (d/get-keys db)
-  (d/get-value db "bar")
-  (d/delete-value db "bar")
-
-  (esd/search (-> user/system :db :conn)
-              index-name type-name :query (q/match-all)
-              :fields [:key-name])
-
-  (esd/search (-> user/system :db :conn)
-              index-name type-name
-              :query (q/match-all)
-              :size 10
-              :fields [:key-name])
-
-  (esd/search (-> user/system :db :conn)
-              index-name type-name
-              :query {:filtered {:query (q/match-all)
-                                 :filter {:term {:key-name "foo"}}}}
-              :fields [:value2]))
-
-
-
-(defmacro try-elastic-operation
-  [& body]
-  `(try
-     ~@body
-     (catch clojure.lang.ExceptionInfo e#
-       (errors/internal-error!
-         (str "Call to Elasticsearch caught exception " (get-in (ex-data e#) [:object :body]))
-         e#))))
+  (m/create-index-or-update-mappings
+    index-name index-settings type-name mappings elastic-store))
 
 (defn- extract-field-from-hits
   "Extracts the given field from the hits returned. Expects that there is only 1 value indexed per
@@ -167,7 +109,7 @@
 
   (set-value
     [this key-name value]
-    (try-elastic-operation
+    (m/try-elastic-operation
       (esd/create conn index-name type-name
                   {:key-name key-name :value2 value}
                   :id key-name
@@ -175,13 +117,13 @@
 
   (delete-value
     [this key-name]
-    (:found (try-elastic-operation (esd/delete conn index-name type-name key-name :refresh true))))
+    (:found (m/try-elastic-operation (esd/delete conn index-name type-name key-name :refresh true))))
 
   (delete-all-values
     [this]
-    (try-elastic-operation
+    (m/try-elastic-operation
       (esd/delete-by-query conn index-name type-name (q/match-all)))
-    (try-elastic-operation
+    (m/try-elastic-operation
       (esi/refresh conn index-name)))
 
   (reset

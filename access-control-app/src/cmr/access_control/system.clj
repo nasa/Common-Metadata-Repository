@@ -7,6 +7,7 @@
             [cmr.common.nrepl :as nrepl]
             [cmr.transmit.config :as transmit-config]
             [cmr.access-control.api.routes :as routes]
+            [cmr.access-control.data.access-control-index :as access-control-index]
             [cmr.common.api.web-server :as web]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.common-app.system :as common-sys]))
@@ -28,12 +29,13 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :web])
+  component-order [:log :index :web :nrepl])
 
 (defn create-system
   "Returns a new instance of the whole application."
   []
   (let [sys {:log (log/create-logger)
+             :index (access-control-index/create-elastic-store)
              :web (web/create-web-server (transmit-config/access-control-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
              :public-conf public-conf
@@ -49,3 +51,10 @@
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
   (common-sys/stop-fn "access-control" component-order))
+
+(defn dev-start
+  "Starts the system but performs extra calls to make sure all indexes are created in elastic."
+  [system]
+  (let [started-system (start system)]
+    (access-control-index/create-index-or-update-mappings (:index started-system))
+    started-system))

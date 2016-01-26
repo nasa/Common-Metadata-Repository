@@ -25,6 +25,11 @@
   "Local in memory mock echo to make available when running the cubby app by itself."
   nil)
 
+(defn disable-access-log
+  "Disables use of the access log in the given system"
+  [system]
+  (assoc-in system [:web :use-access-log?] false))
+
 (defn- create-elastic-server
   "Creates an instance of an elasticsearch server in memory."
   []
@@ -43,13 +48,13 @@
 
   (alter-var-root #'mock-echo
                   (constantly
-                    (mock-echo/start (mock-echo/create-system))))
+                    (mock-echo/start (disable-access-log (mock-echo/create-system)))))
 
   (alter-var-root #'system
                   (constantly
-                    (system/start (system/create-system))))
+                    (system/start (disable-access-log (system/create-system)))))
 
-    (d/touch-user-clj))
+  (d/touch-user-clj))
 
 (defn stop
   "Shuts down and destroys the current development system."

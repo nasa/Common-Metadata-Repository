@@ -1,5 +1,9 @@
 (ns cmr.elastic-utils.mapping
-  "Defines different types and functions for defining mappings")
+  "Defines different types and functions for defining mappings"
+  (:require [clojurewerkz.elastisch.rest.index :as esi]
+            [cmr.elastic-utils.connect :as esc]
+            [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.services.errors :as errors]))
 
 (def string-field-mapping
   {:type "string" :index "not_analyzed"})
@@ -60,7 +64,7 @@
     {:name string-field-mapping
      :age int-field-mapping})"
   ([mapping-name mapping-type docstring properties]
-   `(defmapping ~mapping-name ~docstring ~mapping-type nil ~properties))
+   `(defmapping ~mapping-name ~mapping-type ~docstring nil ~properties))
   ([mapping-name mapping-type docstring mapping-settings properties]
    `(def ~mapping-name
       ~docstring
@@ -91,4 +95,38 @@
               :_source {:enabled false}
               :_all {:enabled false}
               :properties ~properties}))))
+
+(defn create-index-or-update-mappings
+  "Creates the index needed in Elasticsearch for data storage or updates it. Parameters are as follows:
+
+  * index-name - the name of the index to use in elastic search.
+  * index-settings - A map of index settings to pass to elastic search.
+  * type-name - The name for the mapping
+  * mappings - a map containing mapping details for field names and types as defined by defmapping.
+  * elastic-store - A component containing an elastic connection under the :conn key"
+  [index-name index-settings type-name mappings elastic-store]
+  (let [conn (:conn elastic-store)]
+    (if (esi/exists? conn index-name)
+      (do
+        (info (format "Updating %s mappings and settings" index-name))
+        (let [response (esi/update-mapping conn index-name type-name :mapping mappings :ignore_conflicts false)]
+          (when-not (= {:acknowledged true} response)
+            (errors/internal-error!
+             (str "Unexpected response when updating elastic mappings: " (pr-str response))))))
+      (do
+        (info (format "Creating %s index" index-name))
+        (esi/create conn index-name :settings {:index index-settings} :mappings mappings)
+        (esc/wait-for-healthy-elastic elastic-store)))
+    (esi/refresh conn index-name)))
+
+(defmacro try-elastic-operation
+  "Handles any Elasticsearch exceptions from the body and converts them to internal errors. We do this
+  because an ExceptionInfo exceptions in the CMR are considered CMR exceptions."
+  [& body]
+  `(try
+     ~@body
+     (catch clojure.lang.ExceptionInfo e#
+       (errors/internal-error!
+         (str "Call to Elasticsearch caught exception " (get-in (ex-data e#) [:object :body]))
+         e#))))
 
