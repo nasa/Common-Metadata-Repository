@@ -246,15 +246,15 @@
                                         http-options#)}))))))
 
 (defmacro defhealther
-  "Creates a function that can be used to send get health call for the given app."
+  "Creates a function that can be used to send get health call for the given app.
+  The timeout level indicates how many extra seconds the get health call would timeout after the
+  default health-check-timeout-seconds expires. This is needed so that the app would time out
+  after its components time out."
   ([fn-name app-name]
    `(defhealther ~fn-name ~app-name 0))
   ([fn-name app-name timeout-level]
    `(defn ~fn-name
-      "Sends a request to get the health of the given app with the timeout handling.
-      The timeout level indicates how many extra seconds the get health call would timeout after the
-      default health-check-timeout-seconds expires. This is needed so that the app would time out
-      after its components time out."
+      "Sends a request to call the health endpoint of the given app."
       [context#]
       (let [health-fn# (fn []
                          (let [{status# :status body# :body}
