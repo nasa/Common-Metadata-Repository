@@ -75,7 +75,8 @@
 
 (defn ring-contains-both-poles
   []
-  "The polygon boundary contains both the North and South Poles. A polygon can contain at most one pole.")
+"The polygon boundary contains both the North and South Poles. A polygon can contain at most one pole. Please check the order of your points.
+ You may have provided them in the wrong order (clockwise vs counter-clockwise)")
 
 (defn ring-points-out-of-order
   []
