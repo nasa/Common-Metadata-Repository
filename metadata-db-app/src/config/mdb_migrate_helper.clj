@@ -44,12 +44,16 @@
   "Returns a sequence of table names for the given concept types, or all concept types
   if none are specified, for all the existing providers."
   ([]
-    (get-all-concept-tablenames :collection :granule :service :tag :access-group))
+   (get-all-concept-tablenames :collection :granule :service :tag :access-group))
   ([& concept-types]
-   (distinct
-     (for [provider (p/get-providers (config/db))
-           concept-type concept-types]
-       (concept-tables/get-table-name provider concept-type)))))
+   (-> 
+    (distinct
+      (for [provider (p/get-providers (config/db))
+            concept-type concept-types]
+        (concept-tables/get-table-name provider concept-type)))
+    (into (when (contains? (set concept-types) :collection) ["small_prov_collections"]))
+    (into (when (contains? (set concept-types) :granule) ["small_prov_granules"]))
+    (into (when (contains? (set concept-types) :service) ["small_prov_services"])))))
 
 (defn get-collection-tablenames
   "Gets a list of all the collection tablenames. Primarily for enabling migrations of existing

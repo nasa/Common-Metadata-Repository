@@ -218,8 +218,7 @@ concept-id is a required field. revision-id and revision date are optional. No o
 
 #### Note Regarding Transaction IDs
 
-When a new collections revision is saved (including tombstones) a global transaction-id is saved with it. This transaction-id represents a unique identifier of the state of the database at any give time and is returned with
-the concept fields when a conept is retrieved. This is to be used during indexing as the version of the indexed record (replacing revision-id). 
+When a new collections revision is saved (including tombstones) a global transaction-id is saved with it. This transaction-id represents a unique identifier of the state of the database at any give time and is returned with the concept fields when a concept is retrieved. This is to be used during indexing as the version of the indexed record (replacing revision-id). 
 
 ### GET /concepts/#concept-id
 

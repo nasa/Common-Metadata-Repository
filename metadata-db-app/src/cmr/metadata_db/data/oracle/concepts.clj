@@ -338,7 +338,7 @@
                              seq-name
                              (str/join "," (repeat (count values) "?")))]
             ;; Uncomment to debug what's inserted
-            (debug "Executing" stmt "with values" (pr-str values))
+            ; (debug "Executing" stmt "with values" (pr-str values))
             (j/db-do-prepared db stmt values)
             (after-save conn provider concept)
 
