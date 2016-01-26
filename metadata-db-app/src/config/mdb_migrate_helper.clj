@@ -2,6 +2,7 @@
   "Contains helper functions for performing database migrations"
   (:require [clojure.java.jdbc :as j]
             [cmr.metadata-db.data.oracle.concept-tables :as concept-tables]
+            [cmr.metadata-db.services.concept-service :as s]
             [config.migrate-config :as config]
             [cmr.metadata-db.data.oracle.providers]
             [cmr.metadata-db.data.providers :as p]))
@@ -44,9 +45,9 @@
   "Returns a sequence of table names for the given concept types, or all concept types
   if none are specified, for all the existing providers."
   ([]
-   (get-all-concept-tablenames :collection :granule :service :tag :access-group))
+   (apply get-all-concept-tablenames (keys s/num-revisions-to-keep-per-concept-type)))
   ([& concept-types]
-   (-> 
+   (->
     (distinct
       (for [provider (p/get-providers (config/db))
             concept-type concept-types]
