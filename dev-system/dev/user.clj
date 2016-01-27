@@ -41,8 +41,8 @@
   ;; MAKE SURE YOU DISABLE SYMANTEC ANTIVIRUS BEFORE STARTING THE TESTS WITH EXTERNAL DB
   ;; Renable them when you're done
 
-  ; (system/set-dev-system-db-type! :in-memory)
-  (system/set-dev-system-db-type! :external)
+  (system/set-dev-system-db-type! :in-memory)
+  ; (system/set-dev-system-db-type! :external)
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

@@ -322,7 +322,7 @@
                 seq-name (str table "_seq")
                 [cols values] (concept->insert-args concept (:small provider))
                 stmt (format (str "INSERT INTO %s (id, %s, transaction_id) VALUES "
-                                  "(%s.NEXTVAL,%s,GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL")
+                                  "(%s.NEXTVAL,%s,GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL)")
                              table
                              (str/join "," cols)
                              seq-name
@@ -534,4 +534,3 @@
                                             (truncate-highest rev-ids max-revisions))))
                    []
                    concept-id-rev-ids-map)))))
-

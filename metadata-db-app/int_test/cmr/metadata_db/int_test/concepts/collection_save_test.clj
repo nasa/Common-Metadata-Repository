@@ -67,7 +67,7 @@
         (let [found-concepts (util/find-concepts :collection
                                                  {:entry-title "ET-1" :provider-id provider-id})]
           (is (= [existing-collection]
-                 (map #(dissoc % :revision-date) (:concepts found-concepts))))))))
+                 (map #(dissoc % :revision-date :transaction-id) (:concepts found-concepts))))))))
   (testing "duplicate entry titles within multiple small providers is OK"
     (let [coll1 (util/collection-concept "SMAL_PROV1" 1
                                          {:concept-id "C1-SMAL_PROV1"
@@ -82,19 +82,3 @@
       (is (= 201 status))
       (util/verify-concept-was-saved coll1)
       (util/verify-concept-was-saved coll2))))
-
-;; TODO Move this into concept_save_spec.clj when other concepts get transaction_id
-;; CMR-2363, CMR-2364
-
-(deftest save-gets-transaction-id
-  (testing "save concept results in incremented transaction-id"
-    (let [coll (util/collection-concept "SMAL_PROV1" 1 {:native-id "foo"})]
-      (loop [index 0
-             transaction-id 0]
-        (when (< index 10)
-          (let [concept (util/save-concept coll)
-                {:keys [concept-id revision-id]} concept
-                retrieved-concept (util/get-concept-by-id-and-revision concept-id revision-id)
-                new-transaction-id (get-in retrieved-concept [:concept :transaction-id])]
-            (is (> new-transaction-id transaction-id))
-            (recur (inc index) new-transaction-id)))))))
