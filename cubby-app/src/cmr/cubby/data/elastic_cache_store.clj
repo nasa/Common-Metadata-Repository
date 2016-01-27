@@ -5,7 +5,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.elastic-utils.connect :as esc]
             [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.elastic-utils.mapping :as m :refer [defmapping]]
+            [cmr.elastic-utils.index-util :as m :refer [defmapping]]
             [clojurewerkz.elastisch.rest.index :as esi]
             [clojurewerkz.elastisch.rest.document :as esd]
             [clojurewerkz.elastisch.query :as q]))

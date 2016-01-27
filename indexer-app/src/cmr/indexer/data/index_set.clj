@@ -10,7 +10,7 @@
             [cmr.transmit.index-set :as index-set]
             [cmr.transmit.config :as transmit-config]
             [cmr.transmit.connection :as transmit-conn]
-            [cmr.elastic-utils.mapping :as m :refer [defmapping defnestedmapping]]
+            [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
             [cmr.common.cache :as cache]
             [cmr.common.config :as cfg]))
 

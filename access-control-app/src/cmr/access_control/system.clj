@@ -12,6 +12,7 @@
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.common.api.web-server :as web]
             [cmr.common.config :as cfg :refer [defconfig]]
+            [cmr.access-control.services.event-handler :as event-handler]
             [cmr.common-app.system :as common-sys]))
 
 (defconfig access-control-nrepl-port
@@ -45,10 +46,18 @@
              :relative-root-url (transmit-config/access-control-relative-root-url)}]
     (transmit-config/system-with-connections sys [:echo-rest :metadata-db :urs])))
 
-(def start
-  "Performs side effects to initialize the system, acquire resources,
-  and start it running. Returns an updated instance of the system."
-  (common-sys/start-fn "access-control" component-order))
+(defn start
+  "Performs side effects to initialize the system, acquire resources,  and start it running. Returns
+  an updated instance of the system."
+  [system]
+  (info "Access Control system starting")
+  (let [started-system (common-sys/start system component-order)]
+
+    (when (:queue-broker system)
+      (event-handler/subscribe-to-events {:system started-system}))
+
+    (info "Indexer system started")
+    started-system))
 
 (def stop
   "Performs side effects to shut down the system and release its
@@ -61,3 +70,4 @@
   (let [started-system (start system)]
     (access-control-index/create-index-or-update-mappings (:index started-system))
     started-system))
+

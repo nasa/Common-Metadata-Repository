@@ -85,7 +85,7 @@
             :stop search-system/stop}
    :bootstrap {:start bootstrap-system/start
                :stop bootstrap-system/stop}
-   :access-control {:start access-control-system/start
+   :access-control {:start access-control-system/dev-start
                     :stop access-control-system/stop}
    :cubby {:start cubby-system/dev-start
            :stop cubby-system/stop}

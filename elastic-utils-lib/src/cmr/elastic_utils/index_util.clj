@@ -1,7 +1,8 @@
-(ns cmr.elastic-utils.mapping
+(ns cmr.elastic-utils.index-util
   "Defines different types and functions for defining mappings"
   (:require [clojurewerkz.elastisch.rest.index :as esi]
             [cmr.elastic-utils.connect :as esc]
+            [clojurewerkz.elastisch.rest.document :as doc]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]))
 
@@ -129,4 +130,32 @@
        (errors/internal-error!
          (str "Call to Elasticsearch caught exception " (get-in (ex-data e#) [:object :body]))
          e#))))
+
+(defn save-elastic-doc
+  "Save the document in Elasticsearch, raise error if failed.
+  * elastic-store - A component containing an elastic connection under the :conn key
+  * index-name - the name of the index to use in elastic search.
+  * type-name - The name for the mapping
+  * elastic-id - the identifier for the elastic document
+  * doc - the elastic document to save.
+  * version - the version of the document to use. This is usually revision-id of a concept. If the
+  version of the document in elastic is newer than this then an exception will be raised. This can
+  be overriden by passing :ignore-conflict? true in the options
+  * options - Optional map of options. :ignore-conflict? and :ttl (time to live) are options."
+  ([elastic-store index-name type-name elastic-id doc version]
+   (save-elastic-doc elastic-store index-name type-name elastic-id doc version nil))
+  ([elastic-store index-name type-name elastic-id doc version options]
+   (let [conn (:conn elastic-store)
+         {:keys [ttl ignore-conflict?]} options
+         elastic-options (merge {:version version :version_type "external_gte"}
+                                (when ttl
+                                  {:ttl ttl}))
+         result (try-elastic-operation
+                 (doc/put conn index-name type-name elastic-id doc elastic-options))]
+     (if (:error result)
+       (if (= 409 (:status result))
+         (if ignore-conflict?
+           (info (str "Ignore conflict: " (str result)))
+           (errors/throw-service-error :conflict (str "Save to Elasticsearch failed " (str result))))
+         (errors/internal-error! (str "Save to Elasticsearch failed " (str result))))))))
 
