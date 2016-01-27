@@ -34,6 +34,11 @@
   ; true
   false)
 
+(def use-external-mq?
+  "Set to true to use Rabbit MQ"
+  ; true
+  false)
+
 (defn- create-elastic-server
   "Creates an instance of an elasticsearch server in memory."
   []
@@ -43,30 +48,42 @@
 (defn start
   "Starts the current development system."
   []
-
+  ;; Configure ports so that it won't conflict with another REPL containing the same applications.
   (transmit-config/set-access-control-port! 4011)
   (transmit-config/set-metadata-db-port! 4001)
   (transmit-config/set-echo-rest-port! 4008)
   (transmit-config/set-urs-port! 4008)
 
-  ;; Start mock echo
-  (alter-var-root
-   #'mock-echo-system
-   (constantly (-> (mock-echo/create-system) disable-access-log mock-echo/start)))
-  ;; Start metadata db
-  (alter-var-root
-   #'mdb-system
-   (constantly (-> (int-test-util/create-mdb-system use-external-db?) disable-access-log mdb/start)))
+  (let [queue-broker (when (not use-external-mq?)
+                       (int-test-util/create-memory-queue-broker))]
 
-  ;; Start elastic search
-  (alter-var-root
-   #'elastic-server
-   (constantly (l/start (create-elastic-server) nil)))
+    ;; Start mock echo
+    (alter-var-root
+     #'mock-echo-system
+     (constantly (-> (mock-echo/create-system) disable-access-log mock-echo/start)))
 
-  ;; Start access control
-  (alter-var-root
-   #'system
-   (constantly (-> (system/create-system) disable-access-log system/dev-start)))
+    ;; Start metadata db
+    (alter-var-root
+     #'mdb-system
+     (constantly (-> (int-test-util/create-mdb-system use-external-db?)
+                     ;; queue-broker will be nil if we're using the external one.
+                     (update :queue-broker #(or queue-broker %))
+                     disable-access-log
+                     mdb/start)))
+
+    ;; Start elastic search
+    (alter-var-root
+     #'elastic-server
+     (constantly (l/start (create-elastic-server) nil)))
+
+    ;; Start access control
+    (alter-var-root
+     #'system
+     (constantly (-> (system/create-system)
+                     ;; queue-broker will be nil if we're using the external one.
+                     (update :queue-broker #(or queue-broker %))
+                     disable-access-log
+                     system/dev-start))))
 
   (d/touch-user-clj))
 

@@ -13,6 +13,7 @@
             [cmr.elastic-utils.test-util :as elastic-test-util]
             [cmr.elastic-utils.embedded-elastic-server :as es]
             [cmr.elastic-utils.config :as elastic-config]
+            [cmr.transmit.config :as transmit-config]
             [cmr.mock-echo.system :as mock-echo]))
 
 (def system nil)
@@ -30,18 +31,23 @@
   [system]
   (assoc-in system [:web :use-access-log?] false))
 
+(def elastic-port
+  "The elastic port to use"
+  (+ 2000 elastic-test-util/IN_MEMORY_ELASTIC_PORT))
+
 (defn- create-elastic-server
   "Creates an instance of an elasticsearch server in memory."
   []
-  (elastic-config/set-elastic-port! elastic-test-util/IN_MEMORY_ELASTIC_PORT)
-  (es/create-server
-    elastic-test-util/IN_MEMORY_ELASTIC_PORT
-    (+ elastic-test-util/IN_MEMORY_ELASTIC_PORT 10)
-    "es_data/cubby"))
+  (elastic-config/set-elastic-port! elastic-port)
+  (es/create-server elastic-port (+ elastic-port 10) "es_data/cubby"))
 
 (defn start
   "Starts the current development system."
   []
+  ;; Set ports to use to allow running at the same time as other instances of applications
+  (transmit-config/set-cubby-port! 5007)
+  (transmit-config/set-echo-rest-port! 5008)
+
   (alter-var-root #'elastic-server
                   (constantly
                     (l/start (create-elastic-server) nil)))

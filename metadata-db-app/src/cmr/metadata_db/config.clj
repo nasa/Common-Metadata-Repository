@@ -42,6 +42,19 @@
   "The ingest exchange to which concept update/save messages are published."
   {:default "cmr_ingest.exchange"})
 
+(defconfig access-control-exchange-name
+  "The access control exchange to which update/save messages are published for access control data."
+  {:default "cmr_access_control.exchange"})
+
+(def concept-type->exchange-name-fn
+  "Maps concept types to a function that returns the name of the exchange to publish the message to."
+  {:granule ingest-exchange-name
+   :collection ingest-exchange-name
+   :tag ingest-exchange-name
+   ;; TODO - Add service when we add service indexing
+   :service nil
+   :access-group access-control-exchange-name})
+
 (defconfig deleted-collection-revision-exchange-name
   "An exchange that will have messages passed to it whenever a collection revision is removed
   from metadata db."
@@ -56,7 +69,8 @@
   []
   (assoc (rmq-conf/default-config)
          :exchanges [(deleted-collection-revision-exchange-name)
-                     (ingest-exchange-name)]))
+                     (ingest-exchange-name)
+                     (access-control-exchange-name)]))
 
 (defconfig publish-timeout-ms
   "Number of milliseconds to wait for a publish request to be confirmed before considering the

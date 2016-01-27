@@ -8,6 +8,8 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.access-control.api.routes :as routes]
             [cmr.access-control.data.access-control-index :as access-control-index]
+            [cmr.access-control.config :as config]
+            [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.common.api.web-server :as web]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.common-app.system :as common-sys]))
@@ -29,7 +31,7 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :index :web :nrepl])
+  component-order [:log :index :queue-broker :web :nrepl])
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -38,6 +40,7 @@
              :index (access-control-index/create-elastic-store)
              :web (web/create-web-server (transmit-config/access-control-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
+             :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))
              :public-conf public-conf
              :relative-root-url (transmit-config/access-control-relative-root-url)}]
     (transmit-config/system-with-connections sys [:echo-rest :metadata-db :urs])))

@@ -4,8 +4,7 @@
    :cmr-acl-lib "0.1.0-SNAPSHOT"
    :cmr-transmit-lib "0.1.0-SNAPSHOT"
    :cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
-    ; Will need this soon
-   ; :cmr-message-queue-lib "0.1.0-SNAPSHOT"
+   :cmr-message-queue-lib "0.1.0-SNAPSHOT"
    :cmr-common-app-lib "0.1.0-SNAPSHOT"})
 
 (def dev-projects

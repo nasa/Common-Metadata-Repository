@@ -41,10 +41,11 @@
 
 (defn reset-fixture
   "Test fixture that resets the application before each test."
-  [f]
-  (mock-echo-client/reset (conn-context))
-  (c/reset (conn-context))
-  (f))
+  []
+  (fn [f]
+    (mock-echo-client/reset (conn-context))
+    (c/reset (conn-context))
+    (f)))
 
 (defn assert-value-saved-and-retrieved
   "Asserts that the given keyname and value can be set and retrieved."

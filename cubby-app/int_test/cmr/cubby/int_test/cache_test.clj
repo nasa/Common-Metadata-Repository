@@ -5,21 +5,7 @@
             [cmr.cubby.int-test.utils :as u]))
 
 (use-fixtures :once (u/int-test-fixtures))
-(use-fixtures :each u/reset-fixture)
-
-
-(comment
-
-  (c/set-value (u/conn-context) "foo" "the value" true)
-
-
-  (c/get-value (u/conn-context) "charlie" true)
-  (c/get-value (u/conn-context) "charlie")
-  (c/get-value (u/conn-context) "foo")
-
-  (c/reset (u/conn-context)))
-
-
+(use-fixtures :each (u/reset-fixture))
 
 (deftest initial-state
   (testing "retrieve unsaved key returns 404"

@@ -209,6 +209,11 @@
   [queue-broker]
   (assoc (vp-system/create-system) :queue-broker queue-broker))
 
+(defn create-access-control-app
+  "Create an instance of the access control application."
+  [queue-broker]
+  (assoc (access-control-system/create-system) :queue-broker queue-broker))
+
 (defmulti create-ingest-app
   "Create an instance of the ingest application."
   (fn [db-type queue-broker]
@@ -285,7 +290,7 @@
         control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
     {:apps (u/remove-nil-keys
              {:mock-echo echo-component
-              :access-control (access-control-system/create-system)
+              :access-control (create-access-control-app queue-broker)
               :cubby (cubby-system/create-system)
               :metadata-db (create-metadata-db-app db-component queue-broker)
               :bootstrap (when-not db-component (bootstrap-system/create-system))

@@ -5,6 +5,7 @@
             [cmr.transmit.echo.tokens :as tokens]
             [cmr.transmit.metadata-db2 :as mdb]
             [cmr.access-control.system :as system]
+            [cmr.access-control.config :as access-control-config]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.mock-echo.system :as mock-echo-system]
             [cmr.mock-echo.client.mock-echo-client :as mock-echo-client]
@@ -16,6 +17,7 @@
             [cmr.metadata-db.config :as mdb-config]
             [cmr.metadata-db.data.memory-db :as memory]
             [cmr.message-queue.queue.memory-queue :as mem-queue]
+            [cmr.message-queue.config :as rmq-conf]
             [cmr.common.jobs :as jobs]))
 
 (def conn-context-atom
@@ -31,43 +33,48 @@
                                          [:access-control :echo-rest :metadata-db :urs])}))
   @conn-context-atom)
 
+(defn create-memory-queue-broker
+  []
+  (mem-queue/create-memory-queue-broker
+   (rmq-conf/merge-configs (mdb-config/rabbit-mq-config)
+                           (access-control-config/rabbit-mq-config))))
+
 (defn create-mdb-system
   "Creates an in memory version of metadata db."
   ([]
    (create-mdb-system false))
   ([use-external-db]
-   (let [mq (mem-queue/create-memory-queue-broker (mdb-config/rabbit-mq-config))
-         mdb-sys (mdb-system/create-system)]
+   (let [mdb-sys (mdb-system/create-system)]
      (merge mdb-sys
-            {:queue-broker mq
-             :scheduler (jobs/create-non-running-scheduler)}
+            {:scheduler (jobs/create-non-running-scheduler)}
             (when-not use-external-db
               {:db (memory/create-db)})))))
 
 (defn int-test-fixtures
   "Returns test fixtures for starting the access control application and its external dependencies."
   []
-  (ct/join-fixtures
-   [(common-client-test-util/run-app-fixture
-     conn-context
-     :access-control
-     (system/create-system)
-     system/start
-     system/stop)
+  (let [queue-broker (create-memory-queue-broker)]
+    (ct/join-fixtures
+     [(common-client-test-util/run-app-fixture
+       conn-context
+       :access-control
+       (assoc (system/create-system) :queue-broker queue-broker)
+       system/start
+       system/stop)
 
-    (common-client-test-util/run-app-fixture
-     conn-context
-     :echo-rest
-     (mock-echo-system/create-system)
-     mock-echo-system/start
-     mock-echo-system/stop)
+      (common-client-test-util/run-app-fixture
+       conn-context
+       :echo-rest
+       (mock-echo-system/create-system)
+       mock-echo-system/start
+       mock-echo-system/stop)
 
-    (common-client-test-util/run-app-fixture
-     conn-context
-     :metadata-db
-     (create-mdb-system)
-     mdb-system/start
-     mdb-system/stop)]))
+      (common-client-test-util/run-app-fixture
+       conn-context
+       :metadata-db
+       (assoc (create-mdb-system) :queue-broker queue-broker)
+       mdb-system/start
+       mdb-system/stop)])))
 
 (defn reset-fixture
   "Test fixture that resets the application before each test and creates providers and users listed.
