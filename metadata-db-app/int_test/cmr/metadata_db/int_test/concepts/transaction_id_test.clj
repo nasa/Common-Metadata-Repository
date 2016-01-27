@@ -2,14 +2,7 @@
   "Contains a test to verify that when saving concepts in no particular order (provider, concept
   type) they get incrementing transaction-ids."
   (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
-            [clj-time.local :as l]
-            [cmr.metadata-db.int-test.utility :as util]
-            [cmr.metadata-db.services.messages :as msg]
-            [cmr.metadata-db.services.concept-constraints :as cc]
-            [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]))
+            [cmr.metadata-db.int-test.utility :as util]))
 
 
 ;;; fixtures
