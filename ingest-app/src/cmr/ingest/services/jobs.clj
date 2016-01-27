@@ -42,7 +42,7 @@
                                          (acl-fetcher/get-acls context [:catalog-item]))]
     (info "Sending events to reindex collections in all providers:" (pr-str providers))
     (doseq [provider providers]
-      (ingest-events/publish-event
+      (ingest-events/publish-provider-event
         context
         (ingest-events/provider-collections-require-reindexing-event provider)))
 
@@ -74,7 +74,7 @@
       (info "Providers" (pr-str providers-requiring-reindex)
             "ACLs have changed. Reindexing collections")
       (doseq [provider providers-requiring-reindex]
-        (ingest-events/publish-event
+        (ingest-events/publish-provider-event
           context
           (ingest-events/provider-collections-require-reindexing-event provider))))
 

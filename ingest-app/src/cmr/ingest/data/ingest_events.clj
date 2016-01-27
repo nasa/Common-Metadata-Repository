@@ -5,13 +5,13 @@
             [cmr.common.services.errors :as errors]
             [cmr.message-queue.services.queue :as queue]))
 
-(defn publish-event
-  "Put an ingest event on the message queue."
+(defn publish-provider-event
+  "Put a provider event on the message queue."
   [context msg]
-   (let [timeout-ms (config/publish-queue-timeout-ms)
-         queue-broker (get-in context [:system :queue-broker])
-         exchange-name (config/ingest-exchange-name)]
-     (queue/publish-message queue-broker exchange-name msg timeout-ms)))
+  (let [timeout-ms (config/publish-queue-timeout-ms)
+        queue-broker (get-in context [:system :queue-broker])
+        exchange-name (config/provider-exchange-name)]
+    (queue/publish-message queue-broker exchange-name msg timeout-ms)))
 
 (defn provider-collections-require-reindexing-event
   "Indicates that all the collections within a provider require reindexing"

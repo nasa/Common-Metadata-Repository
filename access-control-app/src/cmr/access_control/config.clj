@@ -7,6 +7,10 @@
   "The access control exchange to which update/save messages are published for access control data."
   {:default "cmr_access_control.exchange"})
 
+(defconfig provider-exchange-name
+  "The ingest exchange to which provider change messages are published."
+  {:default "cmr_ingest_provider.exchange"})
+
 (defconfig index-queue-name
   "The queue containing ingest events for access control"
   {:default "cmr_access_control_index.queue"})
@@ -22,7 +26,8 @@
   (assoc (rmq-conf/default-config)
          :queues [(index-queue-name)]
          :exchanges [(access-control-exchange-name)]
-         :queues-to-exchanges {(index-queue-name) [(access-control-exchange-name)]}))
+         :queues-to-exchanges {(index-queue-name) [(access-control-exchange-name)
+                                                   (provider-exchange-name)]}))
 
 
 
