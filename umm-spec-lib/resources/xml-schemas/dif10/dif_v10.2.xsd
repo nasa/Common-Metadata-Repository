@@ -25,6 +25,8 @@ History:
     2014-12-18 : 10.0 - Milestone.
     2015-03-28 : 10.1 - Milestone.
     2015-10-26 : 10.2 - Milestone.
+    2015-01-08 : 10.2 a - Patch, fix /DIF/Additional_Attributes/ParameterRangeBegin
+    2016-01-27 : 10.2 b - patch, changed date time types on three fields
 
 -->
 
@@ -49,7 +51,7 @@ History:
             <xs:documentation>
                 The GCMD Directory Interchange Format. Description of changes in DIF Version 10.2
             </xs:documentation>
-	</xs:annotation>
+  </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="Entry_ID"                     type="EntryIDType"/>                                                        <!-- Renamed from Entry_ID -->
@@ -655,6 +657,7 @@ History:
             <xs:appinfo><details><path>/DIF/Temporal_Coverage</path></details></xs:appinfo>
             <xs:appinfo><action>changed</action><src>UMM</src><since>b</since></xs:appinfo>
             <xs:appinfo><action>rename</action><src>UMM</src><since>c</since><note>added underscore for local consistency</note></xs:appinfo>
+            <xs:appinfo><action>changed</action><src>CMR</src><since>10.2 b</since><note>CMR-2356 - change date type</note></xs:appinfo>
             <xs:documentation>
                 Required by UMM-C; DIF and ECHO traditionally did not require.
 
@@ -692,7 +695,7 @@ History:
 
             <xs:choice>
                 <xs:element name="Range_DateTime"       type="RangeDateTimeType"    maxOccurs="unbounded"/>
-                <xs:element name="Single_DateTime"      type="xs:dateTime"          maxOccurs="unbounded"/>
+                <xs:element name="Single_DateTime"      type="DateOrTimeOrEnumType" maxOccurs="unbounded"/><!--CMR-2356-->
                 <xs:element name="Periodic_DateTime"    type="PeriodicDateTimeType" maxOccurs="unbounded"/>
                 <xs:element name="Paleo_DateTime"       type="PaleoDateTimeType"    maxOccurs="unbounded"/>
             </xs:choice>
@@ -704,16 +707,14 @@ History:
     <xs:complexType name="PeriodicDateTimeType">
         <xs:annotation>
             <xs:appinfo><details><path>/DIF/Temporal_Coverage/Periodic_DateTime</path></details></xs:appinfo>
-            <xs:appinfo>
-                <action>changed</action>
-                <src>UMM (ECHO)</src>
-            </xs:appinfo>
+            <xs:appinfo><action>changed</action><src>UMM (ECHO)</src></xs:appinfo>
+            <xs:appinfo><action>changed</action><src>CMR</src><since>10.2 b</since><note>CMR-2356 - change date type</note></xs:appinfo>
             <xs:documentation>
-		        This entity contains the name of the temporal period in addition
-		        to the date, time, duration unit, and value, and cycle duration
-		        unit and value. Used at the collection level to describe a
-		        collection having granules, which cover a regularly occurring
-		        period.
+            This entity contains the name of the temporal period in addition
+            to the date, time, duration unit, and value, and cycle duration
+            unit and value. Used at the collection level to describe a
+            collection having granules, which cover a regularly occurring
+            period.
 
                 * Name : The name given to the recurring time period. e.g. 'spring - north hemi.'
                 * Start_Date : This attribute provides the date (day and time) of the first occurrence of this regularly occurring period which is relevant to the collection, granule, or event coverage.
@@ -735,8 +736,8 @@ History:
         </xs:annotation>
       <xs:sequence>
             <xs:element name="Name"                         type="xs:string"/>
-            <xs:element name="Start_Date"                   type="xs:dateTime"/>
-            <xs:element name="End_Date"                     type="xs:dateTime"/>
+            <xs:element name="Start_Date"                   type="DateOrTimeOrEnumType"/><!--CMR-2356-->
+            <xs:element name="End_Date"                     type="DateOrTimeOrEnumType"/><!--CMR-2356-->
             <xs:element name="Duration_Unit"                type="DurationUnitEnum"/>
             <xs:element name="Duration_Value"               type="xs:int"/>
             <xs:element name="Period_Cycle_Duration_Unit"   type="DurationUnitEnum"/>
@@ -802,8 +803,8 @@ History:
                 Was a top level field in DIF 9 but is now one of the choices within the Temporal_Coverage field.
 
                 | DIF 9                   | ECHO     | UMM                   | DIF 10          | Notes                               |
-		        | ----------------------- |----------| --------------------- | --------------- | ------------------------------------|
-		        | Paleo_Temporal_Coverage |     -    | PaleoTemporalCoverage | Paleo_Date_Time | Moved to Temporal_Coverage choice   |
+            | ----------------------- |----------| --------------------- | --------------- | ------------------------------------|
+            | Paleo_Temporal_Coverage |     -    | PaleoTemporalCoverage | Paleo_Date_Time | Moved to Temporal_Coverage choice   |
 
             </xs:documentation>
         </xs:annotation>
@@ -1868,6 +1869,7 @@ History:
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>added</action><src>UMM (ECHO)</src><since>10.0.0b</since></xs:appinfo>
             <xs:appinfo><action>renamed</action><src>UMM (ECHO)</src><since>10.0.0c</since></xs:appinfo>
+            <xs:appinfo><action>change</action><src>UMM (ECHO)</src><since>10.2 a</since><details>relaxed requirement on ParameterRangeBegin and Desciption</details></xs:appinfo>
 
             <xs:documentation>
                 One of three classes of structures for storing "name-value" style information:
@@ -1886,7 +1888,7 @@ History:
         <xs:sequence>
             <xs:element name="Name"                     type="xs:string"/>
             <xs:element name="DataType"                 type="xs:string"/><!-- TODO: should be an enum? -->
-            <xs:element name="Description"              type="xs:string"/>
+            <xs:element name="Description"              type="xs:string" minOccurs="0" />
             <xs:element name="MeasurementResolution"    type="xs:string" minOccurs="0" />
             <xs:element name="ParameterRangeBegin"      type="xs:string" minOccurs="0" />
             <xs:element name="ParameterRangeEnd"        type="xs:string" minOccurs="0" />
