@@ -26,5 +26,5 @@
   (println "migrations.031-assign-transaction-ids-for-collections-services-tags-and-access-groups down...")
   (doseq [table (h/get-concept-tablenames :collection :service :tag :access-group)]
       (h/sql (format "UPDATE %s SET transaction_id=0 WHERE transaction_id < %d"
-                     table h/TRANSACTION_ID_CODE_SEQ_START))
-    (h/sql "DROP SEQUENCE MIGRATION_TRANSACTION_ID_SEQ")))
+                     table h/TRANSACTION_ID_CODE_SEQ_START)))
+  (h/sql "DROP SEQUENCE MIGRATION_TRANSACTION_ID_SEQ"))
