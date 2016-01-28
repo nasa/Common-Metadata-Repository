@@ -8,11 +8,16 @@
             [cmr.common.services.errors :as svc-errors]
             [ring.middleware.format-response :as fr]))
 
+(defn version
+  "Returns the value of the \"version\" parameter in the given media-type string."
+  [media-type]
+  (second (re-find #"version=([^,]+)" media-type)))
+
 (def mime-types
   "Defines a map of mime type format keywords to mime types and other format aliases. Each one of these
    has a var defined for it for easy access."
   {:json {:mime-type "application/json"}
-   :umm-json {:mime-type "application/umm+json"
+   :umm-json {:mime-type "application/vnd.nasa.cmr.umm+json"
               :aliases [:umm_json]}
    :xml {:mime-type "application/xml"}
    :form-url-encoded {:mime-type "application/x-www-form-urlencoded"}
@@ -101,6 +106,11 @@
   (when mime-type-str
     (for [{:keys [sub-type type]} (fr/parse-accept-header* mime-type-str)]
       (str type "/" sub-type))))
+
+(defn format-key
+  "Returns a format keyword from the given media type string."
+  [media-type]
+  (mime-type->format (first (extract-mime-types media-type))))
 
 (defn mime-type-from-header
   "Returns first acceptable preferred mime-type from the given header."

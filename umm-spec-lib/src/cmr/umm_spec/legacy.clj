@@ -10,7 +10,7 @@
   ;; Convert the UMM JSON metadata into ECHO10 metadata using umm-spec-lib, and then use the old
   ;; umm-lib to parse it into a UMM record.
   (let [model (umm-spec/parse-metadata concept-type :umm-json metadata)
-        echo10-metadata (umm-spec/generate-metadata concept-type :echo10 model)]
+        echo10-metadata (umm-spec/generate-metadata model :echo10)]
     (umm/parse-concept (assoc concept-map :format mt/echo10 :metadata echo10-metadata))))
 
 (defn parse-concept
@@ -37,7 +37,7 @@
 
 (defmethod generate-metadata cmr.umm_spec.models.collection.UMM-C
   [umm format-key]
-  (umm-spec/generate-metadata :collection format-key umm))
+  (umm-spec/generate-metadata umm format-key))
 
 (defmethod generate-metadata :default
   [umm format-key]

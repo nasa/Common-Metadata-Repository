@@ -504,12 +504,12 @@
        :iso-smap ["Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
 
 (deftest ingest-umm-json
-  (let [json (umm-spec/generate-metadata :collection :umm-json exc/example-collection-record)
+  (let [json (umm-spec/generate-metadata exc/example-collection-record :umm-json)
         coll-map {:provider-id "PROV1"
                   :native-id "umm_json_coll_V1"
                   :revision-id "1"
                   :concept-type :collection
-                  :format "application/umm+json"
+                  :format "application/vnd.nasa.cmr.umm+json"
                   :metadata json}
         response (ingest/ingest-concept coll-map)]
     (is (= 200 (:status response)))
@@ -528,16 +528,16 @@
         (is (= 2 (:revision-id response))))))
 
   (testing "ingesting UMM JSON with parsing errors"
-    (let [json (umm-spec/generate-metadata :collection :umm-json
-                                           (assoc exc/example-collection-record
-                                                  :DataDates
-                                                  [{:Date "invalid date"
-                                                    :Type "CREATE"}]))
+    (let [json (umm-spec/generate-metadata (assoc exc/example-collection-record
+                                             :DataDates
+                                             [{:Date "invalid date"
+                                               :Type "CREATE"}])
+                                           :umm-json)
           concept-map {:provider-id "PROV1"
                        :native-id "umm_json_coll_2"
                        :revision-id "1"
                        :concept-type :collection
-                       :format "application/umm+json"
+                       :format "application/vnd.nasa.cmr.umm+json"
                        :metadata json}
           response (ingest/ingest-concept concept-map {:accept-format :json})]
       (is (= ["/DataDates/0/Date string \"invalid date\" is invalid against requested date format(s) [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.SSSZ]"] (:errors response)))

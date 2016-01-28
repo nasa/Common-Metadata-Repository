@@ -52,8 +52,8 @@
       (xslt/transform (:metadata concept) (get-template context xsl))
       (if (= :umm-json native-format)
         (umm-spec/generate-metadata
-         :collection target-format
-         (umm-spec/parse-metadata :collection :umm-json (:metadata concept)))
+          (umm-spec/parse-metadata :collection :umm-json (:metadata concept))
+          target-format)
         (-> concept
             ummc/parse-concept
             (ummc/umm->xml target-format))))))

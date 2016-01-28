@@ -105,7 +105,7 @@
 (comment
   ;; for REPL testing purposes
   (def example-collection-record expected-conversion/example-collection-record)
-  (cmr.umm.core/parse-concept {:metadata (cmr.umm-spec.core/generate-metadata :collection :echo10 example-collection-record)
+  (cmr.umm.core/parse-concept {:metadata (cmr.umm-spec.core/generate-metadata example-collection-record :echo10)
                                :concept-type :collection
                                :format "application/echo10+xml"})
   )
@@ -113,7 +113,7 @@
 (deftest mmt-ingest-round-trip
     (testing "ingest and search UMM JSON metadata"
       (let [example-collection-record expected-conversion/example-collection-record
-            umm-json (umm-spec/generate-metadata :collection :umm-json example-collection-record)
+            umm-json (umm-spec/generate-metadata example-collection-record :umm-json)
             coll (d/ingest-concept-with-metadata {:provider-id "PROV1"
                                                   :concept-type :collection
                                                   :format-key :umm-json

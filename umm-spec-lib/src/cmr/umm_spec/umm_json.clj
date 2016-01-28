@@ -4,9 +4,11 @@
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.record-generator :as record-gen]
             [cmr.common.date-time-parser :as dtp]
+            [cmr.umm-spec.versioning :as ver]
 
-            ;; To get ability to convert joda time to json
-            [cmr.common.joda-time]))
+    ;; To get ability to convert joda time to json
+            [cmr.common.joda-time]
+            [clojure.set :as set]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; UMM To JSON
@@ -116,9 +118,13 @@
 
 (defn json->umm
   "Parses the JSON string and returns Clojure UMM records."
-  [schema json-str]
-  (let [root-type-def (get-in schema [:definitions (:root schema)])]
-    (parse-json schema [(:root schema)] (:root schema) root-type-def (json/decode json-str true))))
-
-
-
+  ([concept-type json-str json-version]
+   (let [schema (js/concept-schema concept-type)
+         root-type-def (get-in schema [:definitions (:root schema)])
+         ;; migrate the decoded JSON object up to the latest UMM before running it through the schema
+         json-obj (json/decode json-str true)
+         migrated (ver/migrate-umm json-obj concept-type json-version ver/current-version)]
+     (parse-json schema [(:root schema)] (:root schema) root-type-def migrated)))
+  ([concept-type json-str]
+    ;; default to trying to parse the current UMM version
+    (json->umm concept-type json-str ver/current-version)))
