@@ -72,12 +72,16 @@
       (= gsr :orbit)
       (let [orbit (get-in granule [:spatial-coverage :orbit])
             {:keys [ascending-crossing start-lat start-direction end-lat end-direction]} orbit
-            [^double orbit-start-clat ^double orbit-end-clat] (orbit->circular-latitude-range orbit)]
+            [^double orbit-start-clat ^double orbit-end-clat] (orbit->circular-latitude-range orbit)
+            orbit-end-clat-normalized (if (= orbit-end-clat orbit-start-clat)
+                                        (+ orbit-end-clat 360.0)
+                                        orbit-end-clat)]
         {:orbit-asc-crossing-lon ascending-crossing
+         :orbit-asc-crossing-lon-doc-values ascending-crossing
          :orbit-start-clat orbit-start-clat
-         :orbit-end-clat (if (= orbit-end-clat orbit-start-clat)
-                           (+ orbit-end-clat 360.0)
-                           orbit-end-clat)
+         :orbit-start-clat-doc-values orbit-start-clat
+         :orbit-end-clat orbit-end-clat-normalized
+         :orbit-end-clat-doc-values orbit-end-clat-normalized
          :start-lat start-lat
          :start-direction (umm-spatial/key->orbit-direction start-direction)
          :end-lat end-lat
@@ -135,55 +139,77 @@
         granule-spatial-representation (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
     (merge {:concept-id concept-id
             :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
+            :concept-seq-id-doc-values (:sequence-number (concepts/parse-concept-id concept-id))
             :collection-concept-id parent-collection-id
             :collection-concept-seq-id (:sequence-number (concepts/parse-concept-id parent-collection-id))
+            :collection-concept-seq-id-doc-values (:sequence-number (concepts/parse-concept-id parent-collection-id))
 
             :entry-title (:entry-title parent-collection)
+            :entry-title.lowercase (s/lower-case (:entry-title parent-collection))
+            :entry-title.lowercase-doc-values (s/lower-case (:entry-title parent-collection))
             :metadata-format (name (mt/base-mime-type-to-format format))
             :update-time update-time
             :coordinate-system (when granule-spatial-representation
                                  (csk/->SCREAMING_SNAKE_CASE_STRING granule-spatial-representation))
 
-            :entry-title.lowercase (s/lower-case (:entry-title parent-collection))
             :short-name.lowercase (when short-name (s/lower-case short-name))
+            :short-name.lowercase-doc-values (when short-name (s/lower-case short-name))
             :version-id.lowercase (when version-id (s/lower-case version-id))
+            :version-id.lowercase-doc-values (when version-id (s/lower-case version-id))
 
             :provider-id provider-id
+            :provider-id-doc-values provider-id
             :provider-id.lowercase (s/lower-case provider-id)
+            :provider-id.lowercase-doc-values (s/lower-case provider-id)
             :granule-ur granule-ur
             :granule-ur.lowercase2 (s/lower-case granule-ur)
             :producer-gran-id producer-gran-id
             :producer-gran-id.lowercase2 (when producer-gran-id (s/lower-case producer-gran-id))
             :day-night day-night
+            :day-night-doc-values day-night
             :day-night.lowercase (when day-night (s/lower-case day-night))
             :access-value access-value
+            :access-value-doc-values access-value
 
             ;; Provides sorting on a combination of producer granule id and granule ur
             :readable-granule-name-sort2 (s/lower-case (or producer-gran-id granule-ur))
 
             :platform-sn platform-short-names
             :platform-sn.lowercase  (map s/lower-case platform-short-names)
+            :platform-sn.lowercase-doc-values  (map s/lower-case platform-short-names)
             :instrument-sn instrument-short-names
             :instrument-sn.lowercase  (map s/lower-case instrument-short-names)
+            :instrument-sn.lowercase-doc-values  (map s/lower-case instrument-short-names)
             :sensor-sn sensor-short-names
             :sensor-sn.lowercase  (map s/lower-case sensor-short-names)
+            :sensor-sn.lowercase-doc-values  (map s/lower-case sensor-short-names)
             :project-refs project-refs
             :project-refs.lowercase (map s/lower-case project-refs)
+            :project-refs.lowercase-doc-values (map s/lower-case project-refs)
             :size size
+            :size-doc-values size
             :cloud-cover cloud-cover
+            :cloud-cover-doc-values cloud-cover
             :orbit-calculated-spatial-domains (ocsd/ocsds->elastic-docs umm-granule)
             :attributes (attrib/psa-refs->elastic-docs parent-collection umm-granule)
             :revision-date revision-date
+            :revision-date-doc-values revision-date
             :downloadable downloadable
             :browsable browsable
             :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
+            :start-date-doc-values (when start-date (f/unparse (f/formatters :date-time) start-date))
             :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
+            :end-date-doc-values (when end-date (f/unparse (f/formatters :date-time) end-date))
             :two-d-coord-name two-d-coord-name
             :two-d-coord-name.lowercase (when two-d-coord-name (s/lower-case two-d-coord-name))
             :start-coordinate-1 start-coordinate-1
             :end-coordinate-1 end-coordinate-1
             :start-coordinate-2 start-coordinate-2
             :end-coordinate-2 end-coordinate-2
+            :start-coordinate-1-doc-values start-coordinate-1
+            :end-coordinate-1-doc-values end-coordinate-1
+            :start-coordinate-2-doc-values start-coordinate-2
+            :end-coordinate-2-doc-values end-coordinate-2
             :atom-links atom-links
             :orbit-calculated-spatial-domains-json ocsd-json}
            (spatial->elastic parent-collection umm-granule))))
