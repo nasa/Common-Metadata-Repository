@@ -24,6 +24,7 @@
    :metadata "xml here"
    :format "echo10"
    :revision-id 1
+   :transaction-id 1
    :extra-fields {:entry-title "ET-1"
                   :entry-id "EID-1"}})
 
@@ -151,7 +152,7 @@
         ;; went through
         (is (= [expired-2]
                (for [concept (c/get-expired-concepts db {:provider-id "PROV1"} :collection)]
-                 (dissoc concept :revision-date :transaction-id))))
+                 (dissoc concept :revision-date))))
 
         ;; run it again, this time without the conflict...
         (cs/delete-expired-concepts {:system {:db db}} {:provider-id "PROV1"} :collection)
