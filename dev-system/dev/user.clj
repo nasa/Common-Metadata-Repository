@@ -46,8 +46,8 @@
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  (system/set-dev-system-message-queue-type! :in-memory)
-  ; (system/set-dev-system-message-queue-type! :external)
+  ; (system/set-dev-system-message-queue-type! :in-memory)
+  (system/set-dev-system-message-queue-type! :external)
 
   (let [s (system/create-system)]
     (alter-var-root #'system
