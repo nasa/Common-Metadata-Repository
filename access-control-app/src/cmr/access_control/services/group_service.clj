@@ -75,7 +75,7 @@
         (dissoc :metadata :format :provider-id :native-id)
         (assoc :deleted true
                :user-id (context->user-id context))
-        (dissoc :revision-date)
+        (dissoc :revision-date :transaction-id)
         (update :revision-id inc))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

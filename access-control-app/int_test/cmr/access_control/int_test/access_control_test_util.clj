@@ -194,7 +194,7 @@
             :deleted false
             :concept-id concept-id
             :revision-id revision-id}
-           (dissoc concept :revision-date)))))
+           (dissoc concept :revision-date :transaction-id)))))
 
 (defn assert-group-deleted
   "Checks that a group tombstone was persisted correctly in metadata db."
@@ -209,4 +209,4 @@
             :deleted true
             :concept-id concept-id
             :revision-id revision-id}
-           (dissoc concept :revision-date)))))
+           (dissoc concept :revision-date :transaction-id)))))
