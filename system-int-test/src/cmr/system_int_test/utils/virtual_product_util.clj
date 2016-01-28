@@ -6,7 +6,7 @@
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.virtual-product.config]
-            [cmr.virtual-product.source-to-virtual-mapping :as svm]
+            [cmr.virtual-product.data.source-to-virtual-mapping :as svm]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.umm.granule :as umm-g]

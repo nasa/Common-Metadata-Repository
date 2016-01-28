@@ -13,7 +13,7 @@
             [cmr.system-int-test.system :as s]
             [cmr.umm.granule :as umm-g]
             [cmr.virtual-product.config]
-            [cmr.virtual-product.source-to-virtual-mapping :as svm]
+            [cmr.virtual-product.data.source-to-virtual-mapping :as svm]
             [cmr.common.util :refer [are2]]))
 
 ;; test procedure:
@@ -102,7 +102,7 @@
     (let [;; ingest and then delete a collection that has the same entry-title as one of the virtual
           ;; collections to test the edge case documented in CMR-2169
           coll1 (d/ingest "LPDAAC_ECS"
-                          (dc/collection {:entry-title "ASTER On-Demand L2 Surface Emissivity"
+                          (dc/collection {:entry-title "ASTER L2 Surface Emissivity V003"
                                           :native-id "NID-1"}))
           _ (ingest/delete-concept (d/item->concept coll1 :echo10))
           source-collections (vp/ingest-source-collections)

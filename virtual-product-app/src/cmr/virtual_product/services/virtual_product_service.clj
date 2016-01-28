@@ -14,7 +14,7 @@
             [cmr.message-queue.config :as queue-config]
             [cmr.common.util :as u :refer [defn-timed]]
             [cmr.virtual-product.config :as config]
-            [cmr.virtual-product.source-to-virtual-mapping :as svm]))
+            [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
 
 (defmulti handle-ingest-event
   "Handles an ingest event. Checks if it is an event that should be applied to virtual granules. If
