@@ -98,6 +98,10 @@
                                table-name
                                table-name))
 
+  (j/db-do-commands db (format "CREATE INDEX %s_tid ON %s (transaction_id)"
+                                table-name
+                                table-name))
+
   ;; This index is needed when bulk indexing granules within a collection
   (j/db-do-commands db (format "CREATE INDEX %s_cpk ON %s (parent_collection_id, id)"
                                table-name
@@ -124,4 +128,3 @@
   (create-common-gran-indexes db table-name)
   (j/db-do-commands db (format "CREATE INDEX idx_%s_pur ON %s(provider_id, granule_ur)"
                                table-name table-name)))
-
