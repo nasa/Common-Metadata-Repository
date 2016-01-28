@@ -22,6 +22,14 @@
        ;; Remove tombstones from the list of concepts
        (remove :deleted)))
 
+(defn- find-all-matching-concepts
+  "Returns any concepts which match the concept-type, provider-id, and value for the given field
+  that matches the passed in concept, inluding old revisions and tombstones."
+  [db provider concept field field-value]
+  (->> (c/find-concepts db provider {:concept-type (:concept-type concept)
+                                     :provider-id (:provider-id concept)
+                                     field field-value})))
+
 (defn- validate-num-concepts-found
   "Validates that exactly one matching concept is found. Otherwise throw an error with an
   appropriate error message."
@@ -66,6 +74,25 @@
                               (filter #(= granule-ur (get-in % [:extra-fields :granule-ur]))))]
     (validate-num-concepts-found combined-matches concept :granule-ur granule-ur)))
 
+(defn concept-transaction-id-constraint
+  "Verifies that there are no earlier revisions with a higher transaction-id."
+  [db provider concept]
+  (let [concept-revisions (find-all-matching-concepts
+                            db provider concept :concept-id (:concept-id concept))
+        this-transaction-id (:transaction-id (some (fn [con-rev]
+                                                     (when (= (:revision-id con-rev)
+                                                              (:revision-id concept))
+                                                       con-rev))
+                                                   concept-revisions))]
+    (some (fn [con-rev]
+            (let [{:keys [transaction-id revision-id]} con-rev]
+              (when (and (< revision-id (:revision-id concept))
+                         (> transaction-id this-transaction-id))
+                [(format (str "Revision [%d] of concept [%s] has transaction-id [%d] which is higher than "
+                              "revision [%d] with transaction-id [%d]."))])))
+          concept-revisions)))
+
+
 ;; Note - change back to a var once the enforce-granule-ur-constraint configuration is no longer
 ;; needed. Using a function for now so that configuration can be changed in tests.
 (defn- constraints-by-concept-type
@@ -85,3 +112,12 @@
     (when-let [errors (seq (util/apply-validations constraints db provider concept))]
       (rollback-function)
       (errors/throw-service-errors :conflict errors))))
+
+(defn perform-post-commit-transaction-id-constraint-check
+  "Performs a post commit constraint check that there are no older revisions of this concept
+  with a higher transaction-id."
+  [db provider concept rollback-function]
+  (when-let [errors (concept-transaction-id-constraint db provider concept)]
+    (rollback-function)
+    (errors/throw-service-errors :conflict errors)))
+

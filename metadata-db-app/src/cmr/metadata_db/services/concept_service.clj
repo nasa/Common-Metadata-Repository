@@ -186,6 +186,18 @@
                              provider
                              (:concept-id concept)
                              (:revision-id concept))))
+        ;; Always perform a transaction-id post commit constraint check.
+        (cc/perform-post-commit-transaction-id-constraint-check
+          db
+          provider
+          concept
+          ;; When there are constraint violations we send in a rollback function to delete the
+          ;; concept that had just been saved and then throw an error.
+          #(c/force-delete db
+                           (:concept-type concept)
+                           provider
+                           (:concept-id concept)
+                           (:revision-id concept)))
         concept)
       (handle-save-errors concept result))))
 

@@ -98,7 +98,7 @@
                                table-name
                                table-name))
 
-  (j/db-do-commands db (format "CREATE INDEX %s_tid ON %s (transaction_id)"
+  (j/db-do-commands db (format "CREATE INDEX %s_crtid ON %s (concept_id, revision_id, transaction_id)"
                                 table-name
                                 table-name))
 
