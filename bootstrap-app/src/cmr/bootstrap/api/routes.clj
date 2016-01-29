@@ -18,7 +18,7 @@
             [cmr.bootstrap.services.health-service :as hs]
             [cmr.common.date-time-parser :as date-time-parser]
             [cmr.common-app.api.routes :as common-routes]
-            [cmr.virtual-product.source-to-virtual-mapping :as svm]))
+            [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
 
 (defn- migrate-collection
   "Copy collections data from catalog-rest to metadata db (including granules)"

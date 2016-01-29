@@ -7,7 +7,7 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.transmit.search :as search]
             [cmr.virtual-product.config :as config]
-            [cmr.virtual-product.source-to-virtual-mapping :as svm]))
+            [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
 
 (def granule-entries-schema
   "Schema for the JSON request to the translate-granule-entries end-point"
