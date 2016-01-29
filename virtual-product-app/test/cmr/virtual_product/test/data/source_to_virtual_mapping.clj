@@ -10,7 +10,7 @@
 
 (def airx3std-measured-parameters
   "Defines the AIRX3STD measured parameters parsed from a sample AIRX3STD granule."
-  (-> "data/example_granules/airx3std_granule.xml"
+  (-> "data/AIRX3STD/granules/airx3std_granule.xml"
       io/resource
       slurp
       g/parse-granule
