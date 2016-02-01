@@ -186,7 +186,8 @@
                              provider
                              (:concept-id concept)
                              (:revision-id concept))))
-        ;; Always perform a transaction-id post commit constraint check.
+
+        ; Always perform a transaction-id post commit constraint check.
         (cc/perform-post-commit-transaction-id-constraint-check
           db
           provider

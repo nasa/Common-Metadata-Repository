@@ -20,7 +20,7 @@
 
 (deftest delete-concepts-test
   (doseq [concept-type [:collection :granule :service]]
-   (cd-spec/general-delete-test concept-type ["REG_PROV" "SMAL_PROV"])))
+    (cd-spec/general-delete-test concept-type ["REG_PROV" "SMAL_PROV"])))
 
 (deftest delete-tag-general
   (cd-spec/general-delete-test :tag ["CMR"]))
@@ -30,7 +30,7 @@
 
 ;; collections must be tested separately to make sure granules are deleted as well
 (deftest delete-collection-using-delete-end-point-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
+  (doseq [provider-id ["REG_PROV"]]
     (let [coll1 (util/create-and-save-collection provider-id 1 3)
           gran1 (util/create-and-save-granule provider-id coll1 1 2)
           coll2 (util/create-and-save-collection provider-id 2)
@@ -69,6 +69,7 @@
           gran1 (util/create-and-save-granule provider-id coll1 1 2)
           coll2 (util/create-and-save-collection provider-id 2)
           gran3 (util/create-and-save-granule provider-id coll2 1)
+
           {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id coll1)
                                                            :deleted true
                                                            :user-id "user101"})

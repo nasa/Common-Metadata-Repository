@@ -22,14 +22,6 @@
        ;; Remove tombstones from the list of concepts
        (remove :deleted)))
 
-(defn- find-all-matching-concepts
-  "Returns any concepts which match the concept-type, provider-id, and value for the given field
-  that matches the passed in concept, inluding old revisions and tombstones."
-  [db provider concept field field-value]
-  (->> (c/find-concepts db provider {:concept-type (:concept-type concept)
-                                     :provider-id (:provider-id concept)
-                                     field field-value})))
-
 (defn- validate-num-concepts-found
   "Validates that exactly one matching concept is found. Otherwise throw an error with an
   appropriate error message."
@@ -77,8 +69,7 @@
 (defn concept-transaction-id-constraint
   "Verifies that there are no earlier revisions with a higher transaction-id."
   [db provider concept]
-  (let [concept-revisions (find-all-matching-concepts
-                            db provider concept :concept-id (:concept-id concept))
+  (let [concept-revisions (c/get-transactions-for-concept db provider (:concept-id concept))
         this-transaction-id (:transaction-id (some (fn [con-rev]
                                                      (when (= (:revision-id con-rev)
                                                               (:revision-id concept))
@@ -86,12 +77,13 @@
                                                    concept-revisions))]
     (some (fn [con-rev]
             (let [{:keys [transaction-id revision-id]} con-rev]
-              (when (and (< revision-id (:revision-id concept))
-                         (> transaction-id this-transaction-id))
+              (when (or (and (< revision-id (:revision-id concept))
+                             (> transaction-id this-transaction-id))
+                        (and (> revision-id (:revision-id concept))
+                             (< transaction-id this-transaction-id)))
                 [(format (str "Revision [%d] of concept [%s] has transaction-id [%d] which is higher than "
                               "revision [%d] with transaction-id [%d]."))])))
           concept-revisions)))
-
 
 ;; Note - change back to a var once the enforce-granule-ur-constraint configuration is no longer
 ;; needed. Using a function for now so that configuration can be changed in tests.

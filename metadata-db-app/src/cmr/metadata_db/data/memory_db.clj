@@ -198,6 +198,13 @@
                               @concepts-atom)]
       (keep (partial get concept-map) concept-ids)))
 
+  (get-transactions-for-concept
+    [db provider con-id]
+    (keep (fn [{:keys [concept-id revision-id transaction-id]}]
+            (when (= con-id concept-id)
+              {:revision-id revision-id :transaction-id transaction-id}))
+          @concepts-atom))
+
   (save-concept
     [this provider concept]
     {:pre [(:revision-id concept)]}
