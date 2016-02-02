@@ -10,6 +10,7 @@
             [cmr.bootstrap.system :as bootstrap-system]
 
             [cmr.access-control.system :as access-control-system]
+            [cmr.access-control.config :as access-control-config]
 
             [cmr.cubby.system :as cubby-system]
 
@@ -175,6 +176,7 @@
   [type]
   (-> (indexer-config/rabbit-mq-config)
       (rmq-conf/merge-configs (vp-config/rabbit-mq-config))
+      (rmq-conf/merge-configs (access-control-config/rabbit-mq-config))
       mem-queue/create-memory-queue-broker
       wrapper/create-queue-broker-wrapper))
 

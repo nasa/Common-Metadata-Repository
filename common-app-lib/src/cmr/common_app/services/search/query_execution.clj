@@ -77,7 +77,7 @@
   [context query]
   [context query])
 
-(defmethod execute-query :elastic
+(defmethod execute-query :elasticsearch
   [context query]
   (let [pre-processed-query (pre-process-query-result-features context query)
         [context processed-query] (concept-type-specific-query-processing

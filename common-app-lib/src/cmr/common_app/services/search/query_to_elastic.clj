@@ -32,7 +32,7 @@
 (defn- query-field->elastic-field
   "Returns the elastic field name for the equivalent query field name."
   [field concept-type]
-  (get-in (concept-type->field-mappings concept-type) [concept-type field] field))
+  (get (concept-type->field-mappings concept-type) field field))
 
 (def ^:private query-string-reserved-characters-regex
   "Characters reserved for elastic query_string queries. These must be escaped."

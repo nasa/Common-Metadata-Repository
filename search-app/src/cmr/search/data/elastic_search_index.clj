@@ -9,6 +9,8 @@
             [cmr.common.cache :as cache]
             [cmr.transmit.index-set :as index-set]
             [cmr.common-app.services.search.query-model :as qm]
+            ;; Required to be available at runtime.
+            [cmr.search.data.query-to-elastic]
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
             [cmr.search.services.query-walkers.provider-id-extractor :as pex]
             [cmr.common.services.errors :as e]

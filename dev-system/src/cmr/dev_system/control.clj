@@ -14,7 +14,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.transmit.echo.acls :as echo-acls]
-            [cmr.common-app.services.search.elastic-search-index :as es]
+            [cmr.search.data.elastic-search-index :as es]
             [cmr.dev-system.queue-broker-wrapper :as wrapper]
             [cmr.ingest.config :as iconfig]
             [cmr.common.time-keeper :as tk]
