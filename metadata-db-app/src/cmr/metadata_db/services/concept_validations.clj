@@ -8,7 +8,10 @@
             [cmr.common.util :as util]))
 
 (def MAX_REVISION_ID
-  "The maximum value a revision ID can take so as not to conflict with transaction ids"
+  "The maximum value a revision ID can take so as not to conflict with transaction ids.
+  This is necessary because we use revision id as the version in elasticsearch. We will
+  eventually switch to using the global transaction id as the elasticsearch version so all
+  transaction ids must be greater than the revision ids. Once this switch has been completely made we can remove the limitation on the maximum revision id."
   999999999)
 
 (defn concept-type-missing-validation

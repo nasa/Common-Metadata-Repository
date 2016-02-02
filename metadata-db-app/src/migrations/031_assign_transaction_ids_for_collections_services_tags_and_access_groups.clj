@@ -14,11 +14,11 @@
       (format "CREATE SEQUENCE METADATA_DB.migration_transaction_id_seq START WITH %s INCREMENT BY 1 CACHE 400"
               migration-trans-seqeunce-start))
     ;; transaction-ids for granules will be handled as a separate job
-    (doseq [table (h/get-concept-tablenames :collection :service :tag :access-group)]
-      (doseq [row (h/query (format (str "SELECT id FROM %s WHERE transaction_id = 0 "
+    (doseq [table (h/get-concept-tablenames :collection :service :tag :access-group)
+            row (h/query (format (str "SELECT id FROM %s WHERE transaction_id = 0 "
                                         "ORDER BY concept_id ASC, revision_id ASC FOR UPDATE") table))]
         (h/sql (format "UPDATE %s SET transaction_id=MIGRATION_TRANSACTION_ID_SEQ.NEXTVAL WHERE id=%d"
-                       table (long (:id row))))))))
+                       table (long (:id row)))))))
 
 (defn down
   "Migrates the database down from version 31."

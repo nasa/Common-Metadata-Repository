@@ -97,7 +97,7 @@
   (j/db-do-commands db (format "CREATE INDEX %s_pcr ON %s (parent_collection_id, concept_id, revision_id)"
                                table-name
                                table-name))
-
+  ;; Need this for transaction-id post commit check
   (j/db-do-commands db (format "CREATE INDEX %s_crtid ON %s (concept_id, revision_id, transaction_id)"
                                 table-name
                                 table-name))

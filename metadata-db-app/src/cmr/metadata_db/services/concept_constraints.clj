@@ -66,23 +66,46 @@
                               (filter #(= granule-ur (get-in % [:extra-fields :granule-ur]))))]
     (validate-num-concepts-found combined-matches concept :granule-ur granule-ur)))
 
+;; There is a race condtion that needs to be checked with regard to transaction-ids.
+;; If two revisions of a concpet are ingested at the same time with revision-id 2 and
+;; revision-id 3, then both revisisons will pass the revision-id test (assuming there is no
+;; higher revision) and get saved. The order with which they are saved is indeterminate,
+;; so it is possible for revision-id 2 to get saved last and end up with a higher transaction-id.
+;; This would mean it would be the one kept in elastic-search.
+;; This constraint will check to see if a saved revision exists that is either lower
+;; than this revision with a higher transaction-id or higher with lower transaction-id.
+;; In either case it returns an error explaining the problem.
 (defn concept-transaction-id-constraint
   "Verifies that there are no earlier revisions with a higher transaction-id."
   [db provider concept]
-  (let [concept-revisions (c/get-transactions-for-concept db provider (:concept-id concept))
+  (let [concept-id (:concept-id concept)
+        this-revision-id (:revision-id concept)
+        concept-revisions (c/get-transactions-for-concept db provider concept-id)
         this-transaction-id (:transaction-id (some (fn [con-rev]
                                                      (when (= (:revision-id con-rev)
-                                                              (:revision-id concept))
+                                                              this-revision-id)
                                                        con-rev))
                                                    concept-revisions))]
     (some (fn [con-rev]
             (let [{:keys [transaction-id revision-id]} con-rev]
-              (when (or (and (< revision-id (:revision-id concept))
+              (or (when (and (< revision-id this-revision-id)
                              (> transaction-id this-transaction-id))
-                        (and (> revision-id (:revision-id concept))
-                             (< transaction-id this-transaction-id)))
-                [(format (str "Revision [%d] of concept [%s] has transaction-id [%d] which is higher than "
-                              "revision [%d] with transaction-id [%d]."))])))
+                        [(format (str "Revision [%d] of concept [%s] has transaction-id [%d] "
+                                      "which is higher than revision [%d] with transaction-id [%d].")
+                                 revision-id
+                                 concept-id
+                                 transaction-id
+                                 this-revision-id
+                                 this-transaction-id)])
+                  (when (and (> revision-id this-revision-id)
+                             (< transaction-id this-transaction-id))
+                        [(format (str "Revision [%d] of concept [%s] has transaction-id [%d] "
+                                      "which is lower than revision [%d] with transaction-id [%d]."
+                                     revision-id
+                                     concept-id
+                                     transaction-id
+                                     this-revision-id
+                                     this-transaction-id))]))))
           concept-revisions)))
 
 ;; Note - change back to a var once the enforce-granule-ur-constraint configuration is no longer
@@ -112,4 +135,3 @@
   (when-let [errors (concept-transaction-id-constraint db provider concept)]
     (rollback-function)
     (errors/throw-service-errors :conflict errors)))
-
