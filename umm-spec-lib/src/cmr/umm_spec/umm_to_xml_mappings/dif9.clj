@@ -40,7 +40,10 @@
   (xml
     [:DIF
      dif9-xml-namespaces
-     [:Entry_ID (:ShortName c)]
+     [:Entry_ID (if (or (nil? (:Version c))
+                        (= u/not-provided (:Version c)))
+                  (:ShortName c)
+                  (str (:ShortName c) "_" (:Version c)))]
      [:Entry_Title (:EntryTitle c)]
      [:Data_Set_Citation
       [:Version (:Version c)]]
