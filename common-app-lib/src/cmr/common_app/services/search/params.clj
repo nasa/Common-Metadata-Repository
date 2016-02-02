@@ -15,7 +15,7 @@
     (str dir-char (csk/->kebab-case field))
     sort-key))
 
-(defn- remove-empty-params
+(defn remove-empty-params
   "Returns the params after removing the ones with value of an empty string
   or string with just whitespaces"
   [params]

@@ -1,7 +1,7 @@
 (ns cmr.search.test.services.json-parameters
   "Testing functions used for parsing and generating query conditions for JSON queries."
   (:require [clojure.test :refer :all]
-            [cmr.search.models.query :as q]
+            [cmr.common-app.services.search.query-model :as q]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.search.services.json-parameters.conversion :as jp]
             [cheshire.core :as json]))
@@ -30,16 +30,16 @@
              :collection
              {}
              (json/generate-string {:condition {:or [{:entry_title "foo"
-                                          :provider "bar"}
-                                         {:provider "soap"
-                                          :and [{:not {:provider "alpha"}}
-                                                {:entry_title "ET"}]}]}})))))
+                                                      :provider "bar"}
+                                                     {:provider "soap"
+                                                      :and [{:not {:provider "alpha"}}
+                                                            {:entry_title "ET"}]}]}})))))
   (testing "Implicit ANDing of conditions"
     (is (= (q/query {:concept-type :collection
                      :condition (gc/and-conds [(q/string-condition :entry-title "foo")
                                                (q/string-condition :provider "bar")])})
            (jp/parse-json-query :collection {} (json/generate-string {:condition {:entry_title "foo"
-                                                                      :provider "bar"}}))))))
+                                                                                  :provider "bar"}}))))))
 
 (deftest parse-json-condition-test
   (testing "OR condition"

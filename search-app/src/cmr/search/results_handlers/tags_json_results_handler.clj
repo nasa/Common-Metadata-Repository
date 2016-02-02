@@ -2,7 +2,7 @@
   "Handles extracting elasticsearch tag results and converting them into a JSON search response."
   (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
             [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-            [cmr.search.services.query-service :as qs]
+            [cmr.common-app.services.search :as qs]
             [cmr.common.util :as util]
             [cheshire.core :as json]))
 

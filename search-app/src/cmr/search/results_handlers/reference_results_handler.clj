@@ -2,12 +2,12 @@
   "Handles the XML reference format."
   (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
             [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-            [cmr.search.services.query-service :as qs]
+            [cmr.common-app.services.search :as qs]
             [cmr.search.services.url-helper :as url]
             [clojure.data.xml :as x]
             [clojure.set :as set]
             [cheshire.core :as json]
-            [cmr.common-app.services.search.results :as r]
+            [cmr.search.models.query :as q]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.services.query-execution.facets-results-feature :as frf]))
 
@@ -43,7 +43,7 @@
      :deleted deleted
      :location (format "%s%s/%s" (url/reference-root context) concept-id revision-id)
      :name name-value
-     :score (r/normalize-score score)}))
+     :score (q/normalize-score score)}))
 
 (doseq [concept-type [:collection :granule]]
   (defmethod elastic-results/elastic-result->query-result-item [concept-type :xml]

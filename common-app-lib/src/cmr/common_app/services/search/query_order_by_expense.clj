@@ -89,11 +89,4 @@
 
   java.lang.Object
   (order-conditions [o] o)
-  (expense
-   [o]
-   ;; If we somehow don't implement this for something I want to know about it. We may add a default later.
-   ;; If you're looking at this code because of a bug don't just make this default to 1. Add
-   ;; implementations for the missing class or look for missing require statements (search has one But
-   ;; it may not be required)
-   (throw (Exception. (str "expense not implemented for" (type o))))))
-
+  (expense [o] 1))

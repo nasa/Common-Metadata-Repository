@@ -2,7 +2,7 @@
   "Handles the opendata results format and related functions"
   (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
             [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-            [cmr.search.services.query-service :as qs]
+            [cmr.common-app.services.search :as qs]
             [cmr.search.results-handlers.opendata-spatial-results-handler :as opendata-spatial]
             [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
             [clojure.walk :as walk]

@@ -13,8 +13,8 @@
 
 (def coordinate-syste->srs-name
   {:cartesian "EPSG:9825" ; Psuedo Plate Carree
-   :geodetic "EPSG:4326" ; WGS-84
-   })
+   :geodetic "EPSG:4326"}) ; WGS-84
+
 
 (defn- points-map->points-str
   "Converts a map containing :points into the lat lon space separated points string of GML"

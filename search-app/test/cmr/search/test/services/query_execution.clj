@@ -2,7 +2,7 @@
   "This tests the query-execution namespace. The main point of this is to make sure that specific
   queries are given the correct execution strategy."
   (:require [clojure.test :refer :all]
-            [cmr.search.services.parameters.conversion :as pc]
+            [cmr.common-app.services.search.params :as pc]
             [cmr.common-app.services.search.query-execution :as qe]))
 
 

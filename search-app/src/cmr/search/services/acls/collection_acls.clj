@@ -4,6 +4,7 @@
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.common-app.services.search.query-execution :as qe]
             [cmr.search.services.acls.acl-helper :as acl-helper]
+            [cmr.search.services.acl-service :as acl-service]
             [cmr.acl.umm-matchers :as umm-matchers]))
 
 

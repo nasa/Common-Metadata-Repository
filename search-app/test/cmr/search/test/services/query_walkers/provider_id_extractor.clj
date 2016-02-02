@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [cmr.search.test.models.helpers :refer :all]
             [cmr.search.services.query-walkers.provider-id-extractor :as p]
-            [cmr.search.models.query :as q]))
+            [cmr.common-app.services.search.query-model :as q]))
 
 (defn provider
   [provider-id]

@@ -63,8 +63,6 @@
 
   EquatorCrossingDateCondition
   (order-conditions [c] c)
-  (expense [c] 10)
+  (expense [c] 10))
 
-  java.lang.Object
-  (order-conditions [o] o)
-  (expense [o] 1))
+

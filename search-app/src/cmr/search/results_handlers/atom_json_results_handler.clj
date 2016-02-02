@@ -4,7 +4,7 @@
             [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-execution.facets-results-feature :as frf]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
-            [cmr.search.services.query-service :as qs]
+            [cmr.common-app.services.search :as qs]
             [cheshire.core :as json]
             [clj-time.core :as time]
             [clojure.string :as str]

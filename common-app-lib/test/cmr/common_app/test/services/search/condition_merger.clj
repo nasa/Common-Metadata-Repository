@@ -1,8 +1,8 @@
-(ns cmr.search.test.models.condition-merger
+(ns cmr.common-app.test.services.search.condition-merger
   (:require [clojure.test :refer :all]
-            [cmr.search.models.condition-merger :as c]
-            [cmr.search.models.query :as q]
-            [cmr.search.test.models.helpers :refer :all]))
+            [cmr.common-app.services.search.condition-merger :as c]
+            [cmr.common-app.services.search.query-model :as q]
+            [cmr.common-app.test.services.search.helpers :refer :all]))
 
 
 (defn does-not-merge
@@ -27,9 +27,9 @@
 (def does-merge-and
   (partial does-merge :and))
 
-(defn processor-fn1 [] )
-(defn processor-fn2 [] )
-(defn processor-fn3 [] )
+(defn processor-fn1 [])
+(defn processor-fn2 [])
+(defn processor-fn3 [])
 
 (defn related-item-cond
   "Helper for creating related item conditions"

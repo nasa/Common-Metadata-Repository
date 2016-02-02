@@ -11,7 +11,7 @@
   - Convert Query into Elastic Query Model
   - Send query to Elasticsearch
   - Convert query results into requested format"
-  (:require [cmr.common-app.services.search.elastic-search-index :as idx]
+  (:require [cmr.search.data.elastic-search-index :as idx]
             [cmr.common-app.services.search.query-model :as qm]
             [cmr.common.mime-types :as mt]
             [cmr.common-app.services.search :as common-search]
@@ -201,7 +201,7 @@
                    pv/validate-timeline-parameters
                    p/timeline-parameters->query)
         results (qe/execute-query context query)]
-    (search-results->response context query results)))
+    (common-search/search-results->response context query results)))
 
 (defn get-collections-by-providers
   "Returns all collections limited optionally by the given provider ids"
@@ -250,7 +250,7 @@
   coordinates if the input parameters does not include any spatial parameters"
   [context params]
   (let [spatial-params (->> params
-                            remove-empty-params
+                            common-params/remove-empty-params
                             u/map-keys->kebab-case
                             (pv/validate-tile-parameters)
                             (#(select-keys % [:bounding-box :point :line :polygon])))]

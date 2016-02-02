@@ -4,7 +4,7 @@
             [cmr.common.xml :as cx]
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.search.services.aql.conversion :as a]
-            [cmr.search.models.query :as q]
+            [cmr.common-app.services.search.query-model :as q]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.search.services.aql.conversion :as c]
             [cmr.common.test.test-util :as tu]))
@@ -89,7 +89,7 @@
          (q/string-condition :provider-id "PROV1" true false) "<list><value>PROV1</value></list>"
 
          (gc/or-conds[(q/string-condition :provider-id "PROV1" true false)
-                     (q/string-condition :provider-id "PROV2" true false)])
+                      (q/string-condition :provider-id "PROV2" true false)])
          "<list><value>PROV1</value><value>PROV2</value></list>"
 
          ;; list with caseInsensitive attribute
@@ -97,7 +97,7 @@
          "<list><value caseInsensitive=\"N\">PROV1</value></list>"
 
          (gc/or-conds[(q/string-condition :provider-id "PROV1" true false)
-                     (q/string-condition :provider-id "PROV2" false false)])
+                      (q/string-condition :provider-id "PROV2" false false)])
          "<list><value caseInsensitive=\"N\">PROV1</value><value caseInsensitive=\"y\">PROV2</value></list>"
 
          ;; patternList
@@ -106,11 +106,11 @@
          "<patternList><textPattern>PROV%</textPattern></patternList>"
 
          (gc/or-conds[(q/string-condition :provider-id "PROV1" true false)
-                     (q/string-condition :provider-id "PROV2" true false)])
+                      (q/string-condition :provider-id "PROV2" true false)])
          "<patternList><value>PROV1</value><value>PROV2</value></patternList>"
 
          (gc/or-conds[(q/string-condition :provider-id "PROV1" true false)
-                     (q/string-condition :provider-id "PROV?" true true)])
+                      (q/string-condition :provider-id "PROV?" true true)])
          "<patternList><value>PROV1</value><textPattern>PROV_</textPattern></patternList>"
 
          ;; patternList with caseInsensitive attribute
@@ -118,11 +118,11 @@
          "<patternList><value caseInsensitive=\"N\">PROV1</value></patternList>"
 
          (gc/or-conds[(q/string-condition :provider-id "PROV1" true false)
-                     (q/string-condition :provider-id "PROV2" false false)])
+                      (q/string-condition :provider-id "PROV2" false false)])
          "<patternList><value caseInsensitive=\"N\">PROV1</value><value caseInsensitive=\"y\">PROV2</value></patternList>"
 
          (gc/or-conds[(q/string-condition :provider-id "PROV1" true true)
-                     (q/string-condition :provider-id "PROV2" false false)])
+                      (q/string-condition :provider-id "PROV2" false false)])
          "<patternList><textPattern caseInsensitive=\"N\">PROV1</textPattern><value caseInsensitive=\"y\">PROV2</value></patternList>")))
 
 
@@ -184,7 +184,7 @@
   (testing "aql pattern string validation success"
     (are [pattern-str]
          (= nil
-         (a/validate-aql-pattern pattern-str))
+          (a/validate-aql-pattern pattern-str))
 
          "some%_*?characters"
          "\\\\Short"

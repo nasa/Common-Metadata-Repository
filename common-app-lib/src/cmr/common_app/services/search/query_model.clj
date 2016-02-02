@@ -244,6 +244,13 @@
   (fn [concept-type]
     concept-type))
 
+(defmethod concept-type->default-query-attribs :default
+  [_]
+  {:condition (->MatchAllCondition)
+   :page-size default-page-size
+   :page-num default-page-num
+   :result-format :json})
+
 (defn query
   "Constructs a query with the given attributes and root condition. If root condition is not
   provided it matches everything. If page-size, page-num, or result-format are not specified

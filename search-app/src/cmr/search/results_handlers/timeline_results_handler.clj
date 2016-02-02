@@ -6,7 +6,7 @@
   (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
             [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
             [cmr.common-app.services.search.query-execution :as query-execution]
-            [cmr.search.services.query-service :as qs]
+            [cmr.common-app.services.search :as qs]
             [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as q]
             [cmr.common-app.services.search.group-query-conditions :as gc]
@@ -235,9 +235,9 @@
   (prettify-results
     (elastic-results/elastic-results->query-results
       nil {:result-format :timeline
-           :interval :year} @last-elastic-results))
+           :interval :year} @last-elastic-results)))
 
-  )
+
 
 (defn interval->response-tuple
   "Converts an interval into the response tuple containing the start, end, and number of granules."

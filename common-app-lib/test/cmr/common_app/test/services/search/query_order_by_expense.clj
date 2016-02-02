@@ -1,8 +1,8 @@
-(ns cmr.search.test.data.query-order-by-expense
+(ns cmr.common-app.test.services.search.query-order-by-expense
   (:require [clojure.test :refer :all]
-            [cmr.search.test.models.helpers :refer :all]
-            [cmr.search.data.query-order-by-expense :as qe]
-            [cmr.search.models.query :as q]))
+            [cmr.common-app.test.services.search.helpers :refer :all]
+            [cmr.common-app.services.search.query-order-by-expense :as qe]
+            [cmr.common-app.services.search.query-model :as q]))
 
 (defn script-cond
   [script-name]

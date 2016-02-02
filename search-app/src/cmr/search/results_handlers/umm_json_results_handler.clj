@@ -2,7 +2,7 @@
   "Handles the umm-json results format and related functions"
   (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
             [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-            [cmr.search.services.query-service :as qs]
+            [cmr.common-app.services.search :as qs]
             [cheshire.core :as json]
             [clojure.string :as str]
             [cmr.common.util :as util]
