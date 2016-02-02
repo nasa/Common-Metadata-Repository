@@ -1,11 +1,14 @@
-(ns cmr.common-app.services.search.elastic-search-index
+(ns cmr.search.data.elastic-search-index
   "Implements the search index protocols for searching against Elasticsearch."
   (:require [clojure.string :as s]
+            [clojurewerkz.elastisch.rest.document :as esd]
+            [clojurewerkz.elastisch.query :as q]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.util :as util]
             [cmr.common.lifecycle :as lifecycle]
             [cmr.common.cache :as cache]
             [cmr.transmit.index-set :as index-set]
+            [cmr.common-app.services.search.query-model :as qm]
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
             [cmr.search.services.query-walkers.provider-id-extractor :as pex]
             [cmr.common.services.errors :as e]
@@ -89,11 +92,15 @@
   {:index-name "1_tags"
    :type-name "tag"})
 
+(defn context->conn
+  [context]
+  (get-in context [:system :search-index :conn]))
+
 (defn get-collection-permitted-groups
   "NOTE: Use for debugging only. Gets collections along with their currently permitted groups. This
   won't work if more than 10,000 collections exist in the CMR."
   [context]
-  (let [index-info (concept-type->index-info context :collection nil)
+  (let [index-info (common-esi/concept-type->index-info context :collection nil)
         results (esd/search (context->conn context)
                             (:index-name index-info)
                             [(:type-name index-info)]
@@ -121,7 +128,7 @@
                                          :aggs {:by-collection-id
                                                 {:terms {:field :collection-concept-seq-id
                                                          :size 10000}}}}}})
-        results (execute-query context query)
+        results (common-esi/execute-query context query)
         extra-provider-count (get-in results [:aggregations :by-provider :sum_other_doc_count])]
     ;; It's possible that there are more providers with granules than we expected.
     ;; :sum_other_doc_count will be greater than 0 in that case.

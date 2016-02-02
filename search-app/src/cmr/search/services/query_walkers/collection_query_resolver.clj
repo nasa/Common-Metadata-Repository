@@ -1,6 +1,7 @@
 (ns cmr.search.services.query-walkers.collection-query-resolver
   "Defines protocols and functions to resolve collection query conditions"
   (:require [cmr.search.models.query :as qm]
+            [cmr.common-app.services.search.query-model :as cqm]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.common.services.errors :as errors]
             [cmr.common-app.services.search.elastic-search-index :as idx]
@@ -86,7 +87,7 @@
 
 (extend-protocol ResolveCollectionQuery
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.search.models.query.Query
+  cmr.common_app.services.search.query_model.Query
   (is-collection-query-cond? [_] false)
 
   (merge-collection-queries
@@ -98,7 +99,7 @@
     [:all (update-in query [:condition] #(second (resolve-collection-query % context)))])
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.search.models.query.ConditionGroup
+  cmr.common_app.services.search.query_model.ConditionGroup
   (is-collection-query-cond? [_] false)
 
   (merge-collection-queries
@@ -154,18 +155,18 @@
                       (and collection-ids (empty? collection-ids))
                       ;; The collection ids in the context is an empty set. This query can match
                       ;; nothing.
-                      qm/match-none
+                      cqm/match-none
 
                       collection-ids
-                      (gc/and-conds [(qm/string-conditions :concept-id collection-ids true) condition])
+                      (gc/and-conds [(cqm/string-conditions :concept-id collection-ids true) condition])
 
                       :else
                       condition)
           result (idx/execute-query context
                                     (c2s/reduce-query context
-                                                      (qm/query {:concept-type :collection
+                                                      (cqm/query {:concept-type :collection}
                                                                  :condition condition
-                                                                 :page-size :unlimited})))
+                                                                 :page-size :unlimited)))
           ;; It's possible that many collection concept ids could be found here. If this becomes a
           ;; performance issue we could restrict the collections that are found to ones that we know
           ;; have some granules. The has-granule-results-feature has a cache of collections to granule
@@ -173,9 +174,9 @@
           collection-concept-ids (map :_id (get-in result [:hits :hits]))]
 
       (if (empty? collection-concept-ids)
-        [#{} qm/match-none]
+        [#{} cqm/match-none]
         [(set collection-concept-ids)
-         (qm/string-conditions :collection-concept-id collection-concept-ids true)])))
+         (cqm/string-conditions :collection-concept-id collection-concept-ids true)])))
 
   (is-collection-query-cond? [_] true)
 

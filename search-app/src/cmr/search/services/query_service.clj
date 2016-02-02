@@ -12,7 +12,7 @@
   - Send query to Elasticsearch
   - Convert query results into requested format"
   (:require [cmr.common-app.services.search.elastic-search-index :as idx]
-            [cmr.search.models.query :as qm]
+            [cmr.common-app.services.search.query-model :as qm]
             [cmr.common.mime-types :as mt]
             [cmr.common-app.services.search :as common-search]
             [cmr.common-app.services.search.params :as common-params]
@@ -44,11 +44,9 @@
             [cmr.search.services.aql.converters.two-d-coordinate-system]
 
             ;; Validation
-            [cmr.search.validators.validation :as v]
+            [cmr.search.validators.validation]
             [cmr.search.validators.temporal]
-            [cmr.search.validators.date-range]
             [cmr.search.validators.attribute]
-            [cmr.search.validators.numeric-range]
             [cmr.search.validators.orbit-number]
             [cmr.search.validators.equator-crossing-longitude]
             [cmr.search.validators.equator-crossing-date]
@@ -61,6 +59,7 @@
             [cmr.search.data.complex-to-simple-converters.two-d-coordinate-system]
 
             ;; Query Results Features
+            [cmr.search.services.query-execution]
             [cmr.search.services.query-execution.granule-counts-results-feature]
             [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
             [cmr.search.services.query-execution.facets-results-feature]
@@ -70,7 +69,7 @@
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.parameters.provider-short-name :as psn]
             [cmr.search.services.parameters.parameter-validation :as pv]
-            [cmr.search.services.query-execution :as qe]
+            [cmr.common-app.services.search.query-execution :as qe]
             [cmr.search.results-handlers.provider-holdings :as ph]
             [cmr.search.services.transformer :as t]
             [cmr.metadata-db.services.search-service :as mdb-search]
@@ -92,7 +91,7 @@
   This function removes it, santizes the params and returns the end result."
   [params]
   (-> (select-keys params (filter keyword? (keys params)))
-      sanitize-params))
+      common-params/sanitize-params))
 
 (defn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
@@ -122,10 +121,10 @@
   [context concept-type params json-query]
   (let [[query-creation-time query] (u/time-execution
                                       (-> (jp/parse-json-query concept-type
-                                                               (sanitize-params params)
+                                                               (common-params/sanitize-params params)
                                                                json-query)))
 
-        results (find-concepts context concept-type query-creation-time query)]
+        results (common-search/find-concepts context concept-type query-creation-time query)]
     (info (format "Found %d %ss in %d ms in format %s with JSON Query %s and query params %s."
                   (:hits results) (name concept-type) (:total-took results) (:result-format query)
                   json-query (pr-str params)))
@@ -140,7 +139,7 @@
                    lp/replace-parameter-aliases)
         [query-creation-time query] (u/time-execution (a/parse-aql-query params aql))
         concept-type (:concept-type query)
-        results (find-concepts context concept-type query-creation-time query)]
+        results (common-search/find-concepts context concept-type query-creation-time query)]
     (info (format "Found %d %ss in %d ms in format %s with aql: %s."
                   (:hits results) (name concept-type) (:total-took results) (:result-format query)
                   aql))
@@ -164,14 +163,14 @@
   [context result-format concept-id]
   (if (contains? #{:atom :json} result-format)
     ;; do a query and use single-result->response
-    (let [query (p/parse-parameter-query (cc/concept-id->type concept-id)
+    (let [query (common-params/parse-parameter-query (cc/concept-id->type concept-id)
                                          {:page-size 1
                                           :concept-id concept-id
                                           :result-format result-format})
           results (qe/execute-query context query)]
       (when (zero? (:hits results))
         (throw-id-not-found concept-id))
-      {:results (single-result->response context query results)
+      {:results (common-search/single-result->response context query results)
        :result-format result-format})
     ;; else
     (let [concept (first (t/get-latest-formatted-concepts context [concept-id] result-format))]
@@ -194,7 +193,7 @@
   "Finds granules and returns the results as a list of intervals of granule counts per collection."
   [context params]
   (let [query (->> params
-                   sanitize-params
+                   common-params/sanitize-params
                    ;; handle legacy parameters
                    lp/replace-parameter-aliases
                    (lp/process-legacy-multi-params-conditions :granule)

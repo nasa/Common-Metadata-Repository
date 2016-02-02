@@ -1,9 +1,9 @@
 (ns cmr.search.validators.orbit-number
   "Contains functions for validating orbit-number conditions"
   (:require [clojure.set]
-            [cmr.search.models.query :as qm]
+            [cmr.common-app.services.search.query-model :as qm]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
-            [cmr.search.validators.validation :as v]))
+            [cmr.common-app.services.search.query-validation :as v]))
 
 
 (extend-protocol v/Validator

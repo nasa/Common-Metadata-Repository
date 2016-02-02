@@ -168,7 +168,7 @@
       (gc/or-conds
         (map #(common-params/parameter->condition concept-type param % options) value)))
     (let [case-sensitive (common-params/case-sensitive-field? :readable-granule-name options)
-          pattern (pattern-field? :readable-granule-name options)]
+          pattern (common-params/pattern-field? :readable-granule-name options)]
       (gc/or-conds
         [(cqm/string-condition :granule-ur value case-sensitive pattern)
          (cqm/string-condition :producer-granule-id value case-sensitive pattern)]))))
@@ -196,7 +196,7 @@
       (gc/or-conds
         (map #(common-params/parameter->condition concept-type param % options) value)))
     (let [case-sensitive (common-params/case-sensitive-field? :collection-data-type options)
-          pattern (pattern-field? :collection-data-type options)]
+          pattern (common-params/pattern-field? :collection-data-type options)]
       (if (or (= "SCIENCE_QUALITY" value)
               (and (= "SCIENCE_QUALITY" (str/upper-case value))
                    (not= "false" (get-in options [:collection-data-type :ignore-case])))
@@ -231,7 +231,7 @@
                                   [:highlights])
                                 (when-not (str/blank? (:include-tags params))
                                   [:tags]))]
-    (-> (common-params/default-parse-standard-params :collection params lp/aliases)
+    (-> (common-params/default-parse-standard-params :collection params lp/param-aliases)
         ;; If there is no sort key specified and keyword parameter exists then we default to
         ;; sorting by document relevance score
         (update :sort-key #(or % (when (:keyword params) [{:order :desc :field :score}])))
@@ -250,7 +250,7 @@
 
 (defmethod common-params/parse-standard-params :granule
   [concept-type params]
-  (-> (common-params/default-parse-standard-params :granule params lp/aliases)
+  (-> (common-params/default-parse-standard-params :granule params lp/param-aliases)
       (merge {:echo-compatible? (= "true" (:echo-compatible params))})))
 
 (defn timeline-parameters->query

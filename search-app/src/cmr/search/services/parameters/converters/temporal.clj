@@ -6,7 +6,7 @@
             [cmr.common.date-time-range-parser :as range-parser]
             [cmr.search.models.query :as qm]
             [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.search.services.parameters.conversion :as p]))
+            [cmr.common-app.services.search.params :as p]))
 
 (defn string->int-value
   "Return int value of the string value if it is not blank or nil if it is"

@@ -1,9 +1,9 @@
 (ns cmr.search.services.query-execution.highlight-results-feature
   "This enables returning highlighted snippets with collection search results based on the
   provided keyword search."
-  (:require [cmr.search.services.query-execution :as query-execution]
+  (:require [cmr.common-app.services.search.query-execution :as query-execution]
             [cmr.common-app.services.search.results :as r]
-            [cmr.search.data.query-to-elastic :as qte]
+            [cmr.common-app.services.search.query-to-elastic :as q2e]
             [clojure.string :as str]
             [cmr.common.util :as util]))
 
@@ -43,7 +43,7 @@
           query-map {:fields
                      {:summary {:highlight_query
                                 {:query_string
-                                 {:query (qte/escape-query-string conditions-as-string)}}}}}]
+                                 {:query (q2e/escape-query-string conditions-as-string)}}}}}]
       (-> query-map
           (add-tag :pre_tags begin-tag)
           (add-tag :post_tags end-tag)

@@ -1,6 +1,6 @@
 (ns cmr.search.services.query-execution.facets-results-feature
   "This enables returning facets with collection search results"
-  (:require [cmr.search.services.query-execution :as query-execution]
+  (:require [cmr.common-app.services.search.query-execution :as query-execution]
             [cmr.common-app.services.kms-fetcher :as kms-fetcher]
             [cmr.common-app.services.search.results :as r]
             [camel-snake-kebab.core :as csk]
@@ -266,7 +266,7 @@
                   (filter #(cmr-facet-name->echo-facet-keyword (:field %))
                           facets)))))
 
-(comment
+(comment)
 
   ;; See below for snippets of the data structures used for building hierarchical facets
   ;; 1) The elastic aggregations query for hierarchical facets
@@ -345,5 +345,5 @@
   ;         "value" : "Popular",
   ;           ...
   ;
-  )
+
 

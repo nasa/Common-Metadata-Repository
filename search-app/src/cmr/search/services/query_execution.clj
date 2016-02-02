@@ -3,9 +3,14 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.search.services.query-walkers.collection-query-resolver :as r]
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as ce]
+            [cmr.search.services.acl-service :as acl-service]
             [cmr.common-app.services.search.query-execution :as common-qe]
             [cmr.common-app.services.search.elastic-search-index :as idx]
-            [cmr.common-app.services.search.elastic-results-to-query-results :as rc])
+            [cmr.common-app.services.search.query-model :as cqm]
+            [cmr.common-app.services.search.complex-to-simple :as c2s]
+            [cmr.common-app.services.search.results :as results]
+            [cmr.common-app.services.search.elastic-results-to-query-results :as rc]
+            [cmr.common-app.services.search.related-item-resolver :as related-item-resolver])
   (:import [cmr.common_app.services.search.query_model
             StringCondition StringsCondition]))
 
@@ -37,7 +42,7 @@
        ;; Sorting hasn't been specified or is set to the default value
        ;; Note that we don't actually sort items by the default sort keys
        ;; See issue CMR-607
-       (or (nil? sort-keys) (= (concept-type qm/default-sort-keys) sort-keys))))
+       (or (nil? sort-keys) (= (cqm/default-sort-keys concept-type) sort-keys))))
 
 (defn- specific-items-from-elastic-query?
   "Returns true if the query is only for specific items that will come directly from elastic search.
@@ -85,7 +90,7 @@
         tresults (t/get-latest-formatted-concepts context concept-ids result-format skip-acls?)
         items (map #(select-keys % metadata-result-item-fields) tresults)
         results (results/map->Results {:hits (count items) :items items :result-format result-format})]
-    (post-process-query-result-features context query nil results)))
+    (common-qe/post-process-query-result-features context query nil results)))
 
 (defmethod common-qe/execute-query :specific-elastic-items
   [context query]

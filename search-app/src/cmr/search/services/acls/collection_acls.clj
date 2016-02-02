@@ -1,6 +1,6 @@
 (ns cmr.search.services.acls.collection-acls
   "Contains functions for manipulating collection acls"
-  (:require [cmr.search.models.query :as qm]
+  (:require [cmr.common-app.services.search.query-model :as qm]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.common-app.services.search.query-execution :as qe]
             [cmr.search.services.acls.acl-helper :as acl-helper]

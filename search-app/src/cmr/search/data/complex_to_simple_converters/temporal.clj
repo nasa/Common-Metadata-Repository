@@ -5,7 +5,8 @@
   (:require [clj-time.core :as t]
             [cmr.common.time-keeper :as tk]
             [cmr.common.services.errors :as errors]
-            [cmr.common-app.services.search.query-model :as qm]
+            [cmr.search.models.query :as qm]
+            [cmr.common-app.services.search.query-model :as cqm]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.common-app.services.search.datetime-helper :as h]
             [cmr.common-app.services.search.complex-to-simple :as c2s]))
@@ -16,19 +17,19 @@
   [temporal]
   (let [{:keys [start-date end-date exclusive?]} temporal
         conditions (if end-date
-                     [(qm/map->DateRangeCondition {:field :start-date
+                     [(cqm/map->DateRangeCondition {:field :start-date}
                                                    :end-date end-date
-                                                   :exclusive? exclusive?})
-                      (gc/or-conds [(qm/map->MissingCondition {:field :end-date})
-                                    (qm/map->DateRangeCondition {:field :end-date
+                                                   :exclusive? exclusive?)
+                      (gc/or-conds [(cqm/map->MissingCondition {:field :end-date})
+                                    (cqm/map->DateRangeCondition {:field :end-date}
                                                                  :start-date start-date
-                                                                 :exclusive? exclusive?})])]
-                     [(gc/or-conds [(qm/map->MissingCondition {:field :end-date})
-                                    (qm/map->DateRangeCondition {:field :end-date
+                                                                 :exclusive? exclusive?)])]
+                     [(gc/or-conds [(cqm/map->MissingCondition {:field :end-date})
+                                    (cqm/map->DateRangeCondition {:field :end-date}
                                                                  :start-date start-date
-                                                                 :exclusive? exclusive?})])])]
+                                                                 :exclusive? exclusive?)])])]
     (gc/and-conds (concat
-                    [(qm/map->ExistCondition {:field :start-date})]
+                    [(cqm/map->ExistCondition {:field :start-date})]
                     conditions))))
 
 (defn current-end-date

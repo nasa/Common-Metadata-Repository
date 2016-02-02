@@ -6,7 +6,7 @@
   (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
             [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
-            [cmr.search.services.query-execution :as qe]
+            [cmr.common-app.services.search.query-execution :as qe]
             [cmr.search.models.query :as q]
             [clojure.data.xml :as x]
             [cheshire.core :as json]

@@ -1,10 +1,14 @@
 (ns cmr.common-app.services.search
   "This contains common code for implementing search capabilities in a CMR application"
   (:require [cmr.common.util :as u]
-            [cmr.common-app.services.search.query-validation :as qv]
+            [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
+            [cmr.common-app.services.search.query-validation :as qv]
             [cmr.common-app.services.search.query-execution :as qe]
-            [cmr.common.log :refer (debug info warn error)]))
+            ;; Must be required to be available
+            [cmr.common-app.services.search.validators.numeric-range]
+            [cmr.common-app.services.search.validators.date-range]))
+
 
 (defn validate-query
   "Validates a query model. Throws an exception to return to user with errors.

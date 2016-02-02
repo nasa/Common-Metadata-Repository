@@ -10,8 +10,10 @@
             [cmr.search.services.messages.common-messages :as msg]
             [clj-time.core :as t]
             [cmr.search.models.query :as qm]
+            [cmr.common-app.services.search.query-model :as cqm]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.search.services.parameters.conversion :as pc]
+            [cmr.common-app.services.search.params :as common-params]
             [cmr.search.services.parameters.parameter-validation :as pv]))
 
 (def aql-elem->converter-attrs
@@ -115,7 +117,7 @@
         options (-> (u/remove-nil-keys {:ignore-case ignore-case :pattern pattern?})
                     (update-map-values str))
         options {key options}]
-    (pc/parameter->condition :granule key value options)))
+    (common-params/parameter->condition :granule key value options)))
 
 (defn validate-aql-pattern
   "Validates the aql pattern string, throws service error if the string contains backslash
@@ -123,7 +125,7 @@
   [pattern]
   (let [pattern (str/replace pattern "\\\\" "")
         invalid-chars (->> ;; Split on \
-                           (str/split pattern #"\\")
+                           (str/split pattern (re-pattern "\\\\"))
                            ;; Drop everything before the first \
                            (drop 1)
                            ;; Get the first character following each \
@@ -174,10 +176,12 @@
    (let [value (element->string-content elem)
          value (if pattern? (aql-pattern->cmr-pattern value) value)
          case-sensitive? (aql-elem-case-sensitive? elem)
-         case-sensitive? (if (contains? pc/always-case-sensitive-fields key) true case-sensitive?)]
+         case-sensitive? (if (contains? (common-params/always-case-sensitive-fields concept-type) key)
+                           true
+                           case-sensitive?)]
      (if (inherited-condition? concept-type key)
        (inheritance-condition key value case-sensitive? pattern?)
-       (qm/string-condition key value case-sensitive? pattern?)))))
+       (cqm/string-condition key value case-sensitive? pattern?)))))
 
 (defn- string-pattern-elem->condition
   "Converts a string value element to query condition"
@@ -251,7 +255,7 @@
   [concept-type element]
   (let [condition-key (elem-name->condition-key concept-type (:tag element))
         [start-date stop-date] (parse-date-range-element (cx/element-at-path element [:dateRange]))]
-    (qm/map->DateRangeCondition
+    (cqm/map->DateRangeCondition
       {:field condition-key
        :start-date start-date
        :end-date stop-date})))
@@ -272,8 +276,8 @@
   [concept-type element]
   (let [condition-key (elem-name->condition-key concept-type (:tag element))
         value (get-in element [:attrs :value] "Y")]
-    (qm/map->BooleanCondition {:field condition-key
-                               :value (= "Y" value)})))
+    (cqm/map->BooleanCondition {:field condition-key}
+                               :value (= "Y" value))))
 
 (defmethod element->condition :orbit-number
   [concept-type element]
@@ -286,7 +290,7 @@
 (defmethod element->condition :day-night
   [concept-type element]
   (let [value (get-in element [:attrs :value] "DAY")]
-    (qm/string-condition :day-night value)))
+    (cqm/string-condition :day-night value)))
 
 (defmethod element->condition :equator-crossing-longitude
   [concept-type element]
@@ -298,7 +302,7 @@
   [concept-type element]
   (let [condition-key (elem-name->condition-key concept-type (:tag element))
         numeric-range-map (assoc (element->num-range concept-type element) :field condition-key)]
-    (qm/map->NumericRangeCondition numeric-range-map)))
+    (cqm/map->NumericRangeCondition numeric-range-map)))
 
 (def aql-query-type->concept-type
   "Mapping of AQL query type to search concept type"
@@ -355,6 +359,6 @@
         xml-struct (x/parse-str (cx/remove-xml-processing-instructions aql))
         concept-type (get-concept-type xml-struct)
         params (pv/validate-standard-query-parameters concept-type params)]
-    (qm/query (assoc (pc/standard-params->query-attribs concept-type params)
+    (cqm/query (assoc (common-params/parse-standard-params concept-type params)
                      :concept-type concept-type
                      :condition (xml-struct->query-condition concept-type xml-struct)))))

@@ -1,7 +1,7 @@
 (ns cmr.search.services.query-helper-service
   "Helper queries for other services, for instance fetching collection-level
    data required to construct granule queries or results."
-  (:require [cmr.search.services.query-execution :as qe]
+  (:require [cmr.common-app.services.search.query-execution :as qe]
             [cmr.common-app.services.search.query-model :as qm]
             [cmr.common-app.services.search.group-query-conditions :as gc]))
 

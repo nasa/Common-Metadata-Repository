@@ -2,7 +2,7 @@
   "Contains functions for converting science keywords query parameters to conditions"
   (:require [cmr.search.services.parameters.converters.nested-field :as nf]
             [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.search.services.parameters.conversion :as p]))
+            [cmr.common-app.services.search.params :as p]))
 
 ;; Converts science keywords parameter and values into conditions
 (defmethod p/parameter->condition :science-keywords

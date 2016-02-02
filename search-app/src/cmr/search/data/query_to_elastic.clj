@@ -1,7 +1,11 @@
 (ns cmr.search.data.query-to-elastic
   "Defines protocols and functions to map from a query model to elastic search query"
-  (:require ;; require it so it will be available
+  (:require [clojure.string :as str]
+            ;; require it so it will be available
             [cmr.search.data.query-order-by-expense]
+            [cmr.common.services.errors :as errors]
+            [cmr.search.data.keywords-to-elastic :as k2e]
+            [cmr.common-app.services.search.query-model :as q]
             [cmr.common-app.services.search.query-order-by-expense :as query-expense]
             [cmr.common-app.services.search.query-to-elastic :as q2e]
             [cmr.common-app.services.search.complex-to-simple :as c2s]))
@@ -32,7 +36,7 @@
 (defn- keywords-in-condition
   "Returns a list of keywords if the condition contains a keyword condition or nil if not."
   [condition]
-  (when (not= (type condition) cmr.search.models.query.NegatedCondition)
+  (when (not= (type condition) cmr.common_app.services.search.query_model.NegatedCondition)
     (or (when (= :keyword (:field condition))
           (str/split (str/lower-case (:query-str condition)) #" "))
         ;; Call this function recursively on nested conditions, e.g., AND or OR conditions.
@@ -107,18 +111,17 @@
 
 ;; Collections will default to the keyword sort if they have no sort specified and search by keywords
 (defmethod q2e/query->sort-params :collection
-  "Converts a query into the elastic parameters for sorting results."
   [query]
   (let [{:keys [concept-type sort-keys]} query
         ;; If the sort keys are given as parameters then keyword-sort will not be used.
         keyword-sort (when (keywords-in-query query)
                        [{:_score {:order :desc}}])
-        specified-sort (sort-keys->elastic-sort concept-type sort-keys)
-        default-sort (sort-keys->elastic-sort concept-type (qm/default-sort-keys concept-type))]
+        specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
+        default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))]
     (concat (or specified-sort keyword-sort default-sort) (q2e/concept-type->sub-sort-fields concept-type))))
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.CollectionQueryCondition
   (reduce-query-condition
     [condition context]
-    (update-in condition [:condition] reduce-query-condition context)))
+    (update-in condition [:condition] c2s/reduce-query-condition context)))

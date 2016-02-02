@@ -3,7 +3,7 @@
   queries are given the correct execution strategy."
   (:require [clojure.test :refer :all]
             [cmr.search.services.parameters.conversion :as pc]
-            [cmr.search.services.query-execution :as qe]))
+            [cmr.common-app.services.search.query-execution :as qe]))
 
 
 (defn params->query-execution-strategy

@@ -1,6 +1,7 @@
 (ns cmr.search.services.query-walkers.collection-concept-id-extractor
   "Defines protocols and functions to extract collection concept ids from the query constructs"
   (:require [cmr.common.services.errors :as errors]
+            [cmr.common-app.services.search.query-model :as cqm]
             [cmr.search.models.query :as qm]))
 
 (defprotocol ExtractCollectionConceptId
@@ -11,7 +12,7 @@
     do not definitively apply to the whole query then an empty set will returned"))
 
 (extend-protocol ExtractCollectionConceptId
-  cmr.search.models.query.Query
+  cmr.common_app.services.search.query_model.Query
   (extract-collection-concept-ids
     [query]
     ;; This is expected to the entry way into the
@@ -20,7 +21,7 @@
         #{}
         concept-ids)))
 
-  cmr.search.models.query.ConditionGroup
+  cmr.common_app.services.search.query_model.ConditionGroup
   (extract-collection-concept-ids
     [{:keys [operation conditions]}]
     (let [concept-ids (set (mapcat extract-collection-concept-ids conditions))]
@@ -31,7 +32,7 @@
         (disj concept-ids :any))))
 
 
-  cmr.search.models.query.StringCondition
+  cmr.common_app.services.search.query_model.StringCondition
   (extract-collection-concept-ids
     [{:keys [field value pattern]}]
     (if pattern
@@ -40,7 +41,7 @@
         [value]
         [:any])))
 
-  cmr.search.models.query.StringsCondition
+  cmr.common_app.services.search.query_model.StringsCondition
   (extract-collection-concept-ids
     [{:keys [field values]}]
     (if (= field :collection-concept-id)

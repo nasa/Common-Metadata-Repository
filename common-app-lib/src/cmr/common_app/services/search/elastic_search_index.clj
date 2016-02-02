@@ -1,14 +1,12 @@
 (ns cmr.common-app.services.search.elastic-search-index
   "Implements the search index protocols for searching against Elasticsearch."
   (:require [clojurewerkz.elastisch.rest.document :as esd]
-            [clojurewerkz.elastisch.query :as q]
             [clojurewerkz.elastisch.aggregation :as a]
             [clojurewerkz.elastisch.rest.response :as esrsp]
             [clojure.string :as s]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.util :as util]
             [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.cache :as cache]
             [cmr.common.services.errors :as e]
             [cmr.common.concepts :as concepts]
             [cmr.elastic-utils.connect :as es]

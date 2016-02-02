@@ -6,7 +6,7 @@
             [cmr.common.cache :as cache]
             [cmr.common.cache.in-memory-cache :as mem-cache]
             [cmr.search.models.query :as q]
-            [cmr.search.services.query-execution :as qe]
+            [cmr.common-app.services.search.query-execution :as qe]
             [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]))
 
 (def initial-cache-state

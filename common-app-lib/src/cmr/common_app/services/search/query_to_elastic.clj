@@ -6,7 +6,8 @@
             [cmr.common-app.services.search.datetime-helper :as h]
             [cmr.common.services.errors :as errors]
             [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.common-app.services.search.query-order-by-expense :as query-expense]))
+            [cmr.common-app.services.search.query-order-by-expense :as query-expense]
+            [cmr.common-app.services.search.validators.messages :as m]))
 
 (defconfig numeric-range-execution-mode
   "Defines the execution mode to use for numeric ranges in an elasticsearch search"
@@ -89,7 +90,7 @@
   [_]
   [{:concept-id {:order "asc"}}])
 
-(defn- sort-keys->elastic-sort
+(defn sort-keys->elastic-sort
   "Converts sort keys into the proper elastic sort condition."
   [concept-type sort-keys]
   (let [sort-key-map (concept-type->sort-key-map concept-type)]
@@ -153,7 +154,7 @@
                 :_cache use-cache}}
 
        :else
-       (errors/internal-error! "The min and max values of a numeric range cannot both be nil.")))))
+       (errors/internal-error! (m/nil-min-max-msg))))))
 
 (extend-protocol ConditionToElastic
   cmr.common_app.services.search.query_model.ConditionGroup

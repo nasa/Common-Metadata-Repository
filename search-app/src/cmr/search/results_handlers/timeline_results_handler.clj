@@ -5,7 +5,7 @@
   ending. The events counts of granules are used to determine when intervals start and stop."
   (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
             [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-            [cmr.search.services.query-execution :as query-execution]
+            [cmr.common-app.services.search.query-execution :as query-execution]
             [cmr.search.services.query-service :as qs]
             [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as q]

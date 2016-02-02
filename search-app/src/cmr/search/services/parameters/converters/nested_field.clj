@@ -1,8 +1,8 @@
 (ns cmr.search.services.parameters.converters.nested-field
   "Contains functions for converting query parameters to conditions for nested fields."
-  (:require [cmr.search.models.query :as qm]
+  (:require [cmr.common-app.services.search.query-model :as qm]
             [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.search.services.parameters.conversion :as p]
+            [cmr.common-app.services.search.params :as p]
             [cmr.transmit.kms :as kms]))
 
 (defn get-subfield-names

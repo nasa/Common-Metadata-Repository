@@ -22,10 +22,10 @@
   CollectionQueryCondition
   (order-conditions
    [c]
-   (update-in c [:condition] order-conditions))
+   (update-in c [:condition] qobe/order-conditions))
   (expense
    [c]
-   (expense (:condition c)))
+   (qobe/expense (:condition c)))
 
   SpatialCondition
   (order-conditions [c] c)

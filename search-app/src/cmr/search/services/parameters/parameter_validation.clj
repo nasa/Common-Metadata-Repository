@@ -9,7 +9,7 @@
             [clojure.string :as s]
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.common.date-time-range-parser :as dtr-parser]
-            [cmr.search.services.parameters.conversion :as p]
+            [cmr.common-app.services.search.params :as common-params]
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.parameters.converters.attribute :as attrib]
             [cmr.search.services.parameters.converters.nested-field :as nf]
@@ -17,7 +17,7 @@
             [cmr.search.services.parameters.converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.search.services.messages.common-messages :as msg]
-            [cmr.search.data.messages :as d-msg]
+            [cmr.common-app.services.search.validators.messages :as d-msg]
             [cmr.search.data.keywords-to-elastic :as k2e]
             [camel-snake-kebab.core :as csk]
             [cmr.spatial.codec :as spatial-codec]
@@ -62,7 +62,7 @@
   "A set of the valid parameter names for the given concept-type."
   [concept-type]
   (set (concat
-         (keys (get p/concept-param->type concept-type))
+         (keys (common-params/param-mappings concept-type))
          (keys lp/param-aliases)
          [:options])))
 

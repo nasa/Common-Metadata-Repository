@@ -42,7 +42,7 @@
   [validate-result-format-for-all-revisions
    validate-highlights-format])
 
-(extend-protocol Validator
+(extend-protocol cqv/Validator
   cmr.search.models.query.SpatialCondition
   (validate
     [{:keys [shape]}]

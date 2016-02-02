@@ -5,15 +5,16 @@
   Other types of conditions will not be included in limiting the granule counts."
   (:require [cmr.common.services.errors :as errors]
             [cmr.search.services.query-walkers.condition-extractor :as condition-extractor]
-            [cmr.search.models.query :as q]
+            [cmr.common-app.services.search.query-model :as q]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.common-app.services.search.elastic-search-index :as idx]
             [cmr.common-app.services.search.complex-to-simple :as c2s]
-            [cmr.search.services.query-execution :as query-execution]
+            [cmr.common-app.services.search.query-execution :as query-execution]
             [cmr.search.services.acl-service :as acl-service])
-  (:import [cmr.search.models.query
+  (:import [cmr.common_app.services.search.query_model
             Query
-            ConditionGroup
+            ConditionGroup]
+           [cmr.search.models.query
             SpatialCondition
             TemporalCondition]))
 
