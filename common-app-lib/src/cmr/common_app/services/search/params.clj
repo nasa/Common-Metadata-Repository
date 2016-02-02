@@ -94,14 +94,14 @@
   [concept-type param value options]
   (if (sequential? value)
     (gc/group-conds (group-operation param options)
-                    (map #(string-parameter->condition param % options) value))
+                    (map #(string-parameter->condition concept-type param % options) value))
     (let [case-sensitive (case-sensitive-field? concept-type param options)
-          pattern (pattern-field? param options)]
+          pattern (pattern-field? concept-type param options)]
       (qm/string-condition param value case-sensitive pattern))))
 
 (defmethod parameter->condition :string
   [concept-type param value options]
-  (string-parameter->condition param value options))
+  (string-parameter->condition concept-type param value options))
 
 ;; or-conds --> "not (CondA and CondB)" == "(not CondA) or (not CondB)"
 (defmethod parameter->condition :exclude
@@ -131,30 +131,28 @@
 
 (defn parse-sort-key
   "Parses the sort key param and returns a sequence of maps with fields and order.
-  Returns nil if no sort key was specified."
-  ([sort-key]
-   (parse-sort-key sort-key {}))
-  ([sort-key aliases]
-   (when sort-key
-     (if (sequential? sort-key)
-       (mapcat parse-sort-key sort-key)
-       (let [[_ dir-char field] (re-find #"([\-+])?(.*)" sort-key)
-             direction (cond
-                         (= dir-char "-")
-                         :desc
+   Returns nil if no sort key was specified."
+  [sort-key aliases]
+  (when sort-key
+    (if (sequential? sort-key)
+      (mapcat parse-sort-key sort-key aliases)
+      (let [[_ dir-char field] (re-find #"([\-+])?(.*)" sort-key)
+            direction (cond
+                        (= dir-char "-")
+                        :desc
 
-                         (= dir-char "+")
-                         :asc
+                        (= dir-char "+")
+                        :asc
 
-                         :else
-                         ;; score sorts default to descending sort, everything else ascending
-                         (if (= "score" (str/lower-case sort-key))
-                           :desc
-                           :asc))
-             field (keyword field)]
-         [{:order direction
-           :field (or (get aliases field)
-                      field)}])))))
+                        :else
+                        ;; score sorts default to descending sort, everything else ascending
+                        (if (= "score" (str/lower-case sort-key))
+                          :desc
+                          :asc))
+            field (keyword field)]
+        [{:order direction
+          :field (or (get aliases field)
+                     field)}]))))
 
 (defn default-parse-standard-params
   ([concept-type params]
@@ -185,6 +183,7 @@
                    (str/split (str/lower-case (:keyword params)) #" "))
         params (if keywords (assoc params :keyword (str/join " " keywords)) params)
         params (dissoc params :options :page-size :page-num :boosts :sort-key :result-format
+                       ;; TODO these are referring to search app specific things. We need another way to remove these
                        :include-granule-counts :include-has-granules :include-facets
                        :echo-compatible :hierarchical-facets :include-highlights
                        :include-tags :all-revisions)]

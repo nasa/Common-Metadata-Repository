@@ -8,7 +8,7 @@
 (defmethod p/parameter->condition :science-keywords
   [concept-type param value options]
   (let [case-sensitive? (p/case-sensitive-field? param options)
-        pattern? (p/pattern-field? param options)
+        pattern? (p/pattern-field? concept-type param options)
         group-operation (p/group-operation param options :and)]
 
     (if (map? (first (vals value)))

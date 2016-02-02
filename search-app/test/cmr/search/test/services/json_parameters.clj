@@ -45,14 +45,14 @@
   (testing "OR condition"
     (is (= (gc/or-conds [(q/string-condition :provider "foo")
                          (q/string-condition :entry-title "bar")])
-           (jp/parse-json-condition :or [{:provider "foo"} {:entry-title "bar"}]))))
+           (jp/parse-json-condition :collection :or [{:provider "foo"} {:entry-title "bar"}]))))
   (testing "AND condition"
     (is (= (gc/and-conds [(q/string-condition :provider "foo")
                           (q/string-condition :entry-title "bar")])
-           (jp/parse-json-condition :and [{:provider "foo"} {:entry-title "bar"}]))))
+           (jp/parse-json-condition :collection :and [{:provider "foo"} {:entry-title "bar"}]))))
   (testing "NOT condition"
     (is (= (q/negated-condition (q/string-condition :provider "alpha"))
-           (jp/parse-json-condition :not {:provider "alpha"}))))
+           (jp/parse-json-condition :collection :not {:provider "alpha"}))))
 
   (testing "Nested conditions"
     (is (= (gc/or-conds [(gc/and-conds [(q/string-condition :entry-title "foo")
@@ -60,21 +60,21 @@
                          (gc/and-conds [(q/string-condition :provider "soap")
                                         (q/string-condition :entry-title "ET")
                                         (q/->NegatedCondition
-                                          (q/string-condition :provider "alpha"))])])
-           (jp/parse-json-condition :or [{:entry-title "foo"
-                                          :provider "bar"}
-                                         {:provider "soap"
-                                          :and [{:not {:provider "alpha"}}
-                                                {:entry-title "ET"}]}]))))
+                                         (q/string-condition :provider "alpha"))])])
+           (jp/parse-json-condition :collection :or [{:entry-title "foo"
+                                                      :provider "bar"}
+                                                     {:provider "soap"
+                                                      :and [{:not {:provider "alpha"}}
+                                                            {:entry-title "ET"}]}]))))
 
   (testing "case-insensitive"
     (is (= (q/string-condition :entry-title "bar" false false)
-           (jp/parse-json-condition :entry-title {:value "bar" :ignore-case true :pattern false})))
+           (jp/parse-json-condition :collection :entry-title {:value "bar" :ignore-case true :pattern false})))
     (is (= (q/string-condition :entry-title "bar" true false)
-           (jp/parse-json-condition :entry-title {:value "bar" :ignore-case false :pattern false}))))
+           (jp/parse-json-condition :collection :entry-title {:value "bar" :ignore-case false :pattern false}))))
   (testing "pattern"
     (is (= (q/string-condition :entry-title "bar*" false false)
-           (jp/parse-json-condition :entry-title {:value "bar*" :ignore-case true :pattern false})))
+           (jp/parse-json-condition :collection :entry-title {:value "bar*" :ignore-case true :pattern false})))
     (is (= (q/string-condition :entry-title "bar*" false true)
-           (jp/parse-json-condition :entry-title {:value "bar*" :ignore-case true
-                                                  :pattern true})))))
+           (jp/parse-json-condition :collection :entry-title {:value "bar*" :ignore-case true
+                                                              :pattern true})))))

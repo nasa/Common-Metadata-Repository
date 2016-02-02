@@ -118,9 +118,9 @@
         {granule-concept-ids :granule
          collection-concept-ids :collection} (group-by (comp :concept-type cc/parse-concept-id) values)
         collection-cond (when (seq collection-concept-ids)
-                          (common-params/string-parameter->condition :collection-concept-id collection-concept-ids {}))
+                          (common-params/string-parameter->condition concept-type :collection-concept-id collection-concept-ids {}))
         granule-cond (when (seq granule-concept-ids)
-                       (common-params/string-parameter->condition :concept-id granule-concept-ids options))]
+                       (common-params/string-parameter->condition concept-type :concept-id granule-concept-ids options))]
     (if (and collection-cond granule-cond)
       (gc/and-conds [collection-cond granule-cond])
       (or collection-cond granule-cond))))
@@ -168,7 +168,7 @@
       (gc/or-conds
         (map #(common-params/parameter->condition concept-type param % options) value)))
     (let [case-sensitive (common-params/case-sensitive-field? :readable-granule-name options)
-          pattern (common-params/pattern-field? :readable-granule-name options)]
+          pattern (common-params/pattern-field? concept-type :readable-granule-name options)]
       (gc/or-conds
         [(cqm/string-condition :granule-ur value case-sensitive pattern)
          (cqm/string-condition :producer-granule-id value case-sensitive pattern)]))))
@@ -196,7 +196,7 @@
       (gc/or-conds
         (map #(common-params/parameter->condition concept-type param % options) value)))
     (let [case-sensitive (common-params/case-sensitive-field? :collection-data-type options)
-          pattern (common-params/pattern-field? :collection-data-type options)]
+          pattern (common-params/pattern-field? concept-type :collection-data-type options)]
       (if (or (= "SCIENCE_QUALITY" value)
               (and (= "SCIENCE_QUALITY" (str/upper-case value))
                    (not= "false" (get-in options [:collection-data-type :ignore-case])))
@@ -214,7 +214,8 @@
   [concept-type param value options]
   (gc/or-conds
     [(common-params/parameter->condition concept-type :entry-id value (set/rename-keys options {:dif-entry-id :entry-id}))
-     (common-params/string-parameter->condition :associated-difs value (set/rename-keys options {:dif-entry-id :associated-difs}))]))
+     (common-params/string-parameter->condition concept-type  :associated-difs value
+                                                (set/rename-keys options {:dif-entry-id :associated-difs}))]))
 
 (defmethod common-params/parse-standard-params :collection
   [concept-type params]
@@ -234,7 +235,7 @@
     (-> (common-params/default-parse-standard-params :collection params lp/param-aliases)
         ;; If there is no sort key specified and keyword parameter exists then we default to
         ;; sorting by document relevance score
-        (update :sort-key #(or % (when (:keyword params) [{:order :desc :field :score}])))
+        (update :sort-keys #(or % (when (:keyword params) [{:order :desc :field :score}])))
         (merge {:boosts (:boosts params)
                 :result-features (seq result-features)
                 :echo-compatible? (= "true" (:echo-compatible params))
@@ -246,7 +247,8 @@
                                           {:begin-tag begin-tag
                                            :end-tag end-tag
                                            :snippet-length (when snippet-length (Integer. snippet-length))
-                                           :num-snippets (when num-snippets (Integer. num-snippets))}}))}))))
+                                           :num-snippets (when num-snippets (Integer. num-snippets))}}))})
+        u/remove-nil-keys)))
 
 (defmethod common-params/parse-standard-params :granule
   [concept-type params]

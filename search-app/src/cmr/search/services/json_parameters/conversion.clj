@@ -134,7 +134,7 @@
 
 (defmethod parse-json-condition :string
   [concept-type condition-name value]
-  (parse-json-string-condition condition-name value))
+  (parse-json-string-condition concept-type condition-name value))
 
 (defmethod parse-json-condition :keyword
   [concept-type _ value]

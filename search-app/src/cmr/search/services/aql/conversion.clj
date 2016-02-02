@@ -276,8 +276,8 @@
   [concept-type element]
   (let [condition-key (elem-name->condition-key concept-type (:tag element))
         value (get-in element [:attrs :value] "Y")]
-    (cqm/map->BooleanCondition {:field condition-key}
-                               :value (= "Y" value))))
+    (cqm/map->BooleanCondition {:field condition-key
+                                :value (= "Y" value)})))
 
 (defmethod element->condition :orbit-number
   [concept-type element]

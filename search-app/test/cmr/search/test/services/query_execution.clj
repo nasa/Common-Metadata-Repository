@@ -15,85 +15,90 @@
 ;; Integration test that specific set of input parameters will result in query with the specified
 ;; execution strategy
 (deftest parameters-to-query-execution-strategy
-  (doseq [concept-type [:granule :collection]]
-    (testing (str "Parameters for " concept-type)
-      (are [params expected-strategy]
-        (= expected-strategy (params->query-execution-strategy concept-type params))
+  (testing "Colletion and Granule Common"
+    (doseq [concept-type [:granule :collection]]
+      (testing (str "Parameters for " concept-type)
+        (are [params expected-strategy]
+          (is (= expected-strategy (params->query-execution-strategy concept-type params)))
 
-        ;; Specific elastic items queries by format
-        {:concept-id "G1-PROV1" :result-format :atom} :specific-elastic-items
-        {:concept-id "G1-PROV1" :result-format :json} :specific-elastic-items
-        {:concept-id "G1-PROV1" :result-format :csv} :specific-elastic-items
-        {:concept-id "G1-PROV1" :result-format :opendata} :specific-elastic-items
+          ;; Specific elastic items queries by format
+          {:concept-id "G1-PROV1" :result-format :atom} :specific-elastic-items
+          {:concept-id "G1-PROV1" :result-format :json} :specific-elastic-items
+          {:concept-id "G1-PROV1" :result-format :csv} :specific-elastic-items
+          {:concept-id "G1-PROV1" :result-format :opendata} :specific-elastic-items
 
-        ;; Multiple are supported
-        {:concept-id ["G1-PROV1" "G2-PROV1"] :result-format :opendata} :specific-elastic-items
+          ;; Multiple are supported
+          {:concept-id ["G1-PROV1" "G2-PROV1"] :result-format :opendata} :specific-elastic-items
 
-        ;; Facets are supported
-        {:concept-id "G1-PROV1" :result-format :opendata :include-facets "true"} :specific-elastic-items
+          ;; Sorting is supported
+          {:concept-id ["G1-PROV1" "G2-PROV1"]
+           :result-format :opendata
+           :sort-key ["concept-id"]}
+          :specific-elastic-items
 
-        ;; Sorting is supported
-        {:concept-id ["G1-PROV1" "G2-PROV1"]
-         :result-format :opendata
-         :sort-key ["concept-id"]}
-        :specific-elastic-items
+          ;; A page size less than the number of items forces elastic strategy
+          {:concept-id ["G1-PROV1" "G2-PROV1"]
+           :page-size 2
+           :result-format :opendata}
+          :specific-elastic-items
 
-        ;; A page size less than the number of items forces elastic strategy
-        {:concept-id ["G1-PROV1" "G2-PROV1"]
-         :page-size 2
-         :result-format :opendata}
-        :specific-elastic-items
+          {:concept-id ["G1-PROV1" "G2-PROV1"]
+           :page-size 1
+           :result-format :opendata}
+          :elasticsearch
 
-        {:concept-id ["G1-PROV1" "G2-PROV1"]
-         :page-size 1
-         :result-format :opendata}
-        :elastic
+          ;; A different page number forces elastic strategy
+          {:concept-id ["G1-PROV1" "G2-PROV1"] :result-format :opendata :page-num 2} :elasticsearch
 
-        ;; A different page number forces elastic strategy
-        {:concept-id ["G1-PROV1" "G2-PROV1"] :result-format :opendata :page-num 2} :elastic
+          ;; XML References use elastic strategy
+          {:concept-id "G1-PROV1" :result-format :xml} :elasticsearch
 
-        ;; All revisions uses elastic strategy
-        {:concept-id "G1-PROV1" :result-format :opendata :all-revisions "true"} :elastic
+          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+          ;; Direct transfomer queries
+          {:concept-id "G1-PROV1" :result-format :echo10} :direct-transformer
+          {:concept-id "G1-PROV1" :result-format :dif} :direct-transformer
+          {:concept-id "G1-PROV1" :result-format :dif10} :direct-transformer
+          {:concept-id "G1-PROV1" :result-format :iso19115} :direct-transformer
+          {:concept-id "G1-PROV1" :result-format :iso-smap} :direct-transformer
 
-        ;; XML References use elastic strategy
-        {:concept-id "G1-PROV1" :result-format :xml} :elastic
+          ;; Sorting uses the elastic strategy
+          {:concept-id ["G1-PROV1" "G2-PROV1"]
+           :result-format :echo10
+           :sort-key ["concept-id"]}
+          :elasticsearch
 
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-        ;; Direct transfomer queries
-        {:concept-id "G1-PROV1" :result-format :echo10} :direct-transformer
-        {:concept-id "G1-PROV1" :result-format :dif} :direct-transformer
-        {:concept-id "G1-PROV1" :result-format :dif10} :direct-transformer
-        {:concept-id "G1-PROV1" :result-format :iso19115} :direct-transformer
-        {:concept-id "G1-PROV1" :result-format :iso-smap} :direct-transformer
+          ;; Multiple are supported
+          {:concept-id ["G1-PROV1" "G2-PROV1"] :result-format :echo10} :direct-transformer
 
-        ;; Sorting uses the elastic strategy
-        {:concept-id ["G1-PROV1" "G2-PROV1"]
-         :result-format :echo10
-         :sort-key ["concept-id"]}
-        :elastic
+          ;; A page size less than the number of items forces elastic strategy
+          {:concept-id ["G1-PROV1" "G2-PROV1"]
+           :page-size 2
+           :result-format :echo10}
+          :direct-transformer
 
-        ;; Multiple are supported
-        {:concept-id ["G1-PROV1" "G2-PROV1"] :result-format :echo10} :direct-transformer
+          {:concept-id ["G1-PROV1" "G2-PROV1"]
+           :page-size 1
+           :result-format :echo10}
+          :elasticsearch
 
-        ;; A page size less than the number of items forces elastic strategy
-        {:concept-id ["G1-PROV1" "G2-PROV1"]
-         :page-size 2
-         :result-format :echo10}
-        :direct-transformer
+          ;; A different page number forces elastic strategy
+          {:concept-id ["G1-PROV1" "G2-PROV1"] :result-format :echo10 :page-num 2} :elasticsearch))))
 
-        {:concept-id ["G1-PROV1" "G2-PROV1"]
-         :page-size 1
-         :result-format :echo10}
-        :elastic
 
-        ;; A different page number forces elastic strategy
-        {:concept-id ["G1-PROV1" "G2-PROV1"] :result-format :echo10 :page-num 2} :elastic
 
-        ;; All revisions uses elastic strategy
-        {:concept-id "G1-PROV1" :result-format :echo10 :all-revisions "true"} :elastic
+  (testing "Collection Specific"
+    (are [params expected-strategy]
+      (is (= expected-strategy (params->query-execution-strategy :collection params)))
 
-        ;; Facets require elastic strategy
-        {:concept-id "G1-PROV1" :result-format :echo10 :include-facets "true"} :elastic))))
+      ;; Facets are supported
+      {:concept-id "G1-PROV1" :result-format :opendata :include-facets "true"} :specific-elastic-items
+
+      ;; Facets require elastic strategy
+      {:concept-id "G1-PROV1" :result-format :echo10 :include-facets "true"} :elasticsearch
+
+      ;; All revisions uses elastic strategy
+      {:concept-id "C1-PROV1" :result-format :opendata :all-revisions "true"} :elasticsearch
+      {:concept-id "C1-PROV1" :result-format :echo10 :all-revisions "true"} :elasticsearch)))
 
 
 
