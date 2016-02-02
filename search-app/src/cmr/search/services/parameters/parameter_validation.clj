@@ -610,7 +610,7 @@
               (csk/->snake_case_string param) value)))))
     [:snippet-length :num-snippets]))
 
-(defn- result-format-parameters-validation
+(defn- include-tags-parameter-validation
   "Validates parameters against result format."
   [concept-type params]
   (concat
@@ -709,7 +709,7 @@
    line-validation
    no-highlight-options-without-highlights-validation
    highlights-numeric-options-validation
-   result-format-parameters-validation])
+   include-tags-parameter-validation])
 
 (def standard-query-parameter-validations
   "A list of functions that can validate the query parameters passed in with an AQL or JSON search.
