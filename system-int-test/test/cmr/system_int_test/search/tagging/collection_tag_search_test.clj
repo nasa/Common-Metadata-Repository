@@ -336,49 +336,60 @@
     (index/wait-until-indexed)
 
     (testing "include-tags in json format has proper tags added to json response."
-      (are2 [include-tags dataset-id-tags]
-            (let [feed-id (->> (-> include-tags
-                                   (str/replace "?" "%3F")
-                                   (str/replace "," "%2C"))
-                               (format "collections.json?provider=PROV1&include_tags=%s"))
-                  expected-json (-> (da/collections->expected-atom all-prov1-colls feed-id)
-                                    (update-in [:entries] add-tags-to-collections dataset-id-tags))
-                  response (search/find-concepts-json :collection {:provider "PROV1"
-                                                                   :include-tags include-tags})
-                  {:keys [status results]} response]
-              (= [200 expected-json] [status results]))
+      (are2
+        [include-tags dataset-id-tags]
+        (let [expected-result
+              (fn [response-format]
+                (let [feed-id (->> (-> include-tags
+                                       (str/replace "?" "%3F")
+                                       (str/replace "," "%2C"))
+                                   (format "collections.%s?provider=PROV1&include_tags=%s"
+                                           (name response-format)))]
+                  (-> (da/collections->expected-atom all-prov1-colls feed-id)
+                      (update-in [:entries] add-tags-to-collections dataset-id-tags))))
 
-            "match all tags"
-            "*" {"coll1" [["Namespace1" "Value1"] ["Namespace100" "Value2"]]
-                 "coll2" [["Namespace100" "Value2"]]
-                 "coll3" [["cmr.namespace2" "Value1"]]}
+              {json-status :status json-results :results}
+              (search/find-concepts-json :collection {:provider "PROV1"
+                                                      :include-tags include-tags})
 
-            "match one tag"
-            "namespace1" {"coll1" [["Namespace1" "Value1"]]}
+              {atom-status :status atom-results :results}
+              (search/find-concepts-atom :collection {:provider "PROV1"
+                                                      :include-tags include-tags})]
 
-            "match tags with wildcard *"
-            "namespace1*" {"coll1" [["Namespace1" "Value1"] ["Namespace100" "Value2"]]
-                           "coll2" [["Namespace100" "Value2"]]}
+          (and (= [200 (expected-result :json)] [json-status json-results])
+               (= [200 (expected-result :atom)] [atom-status atom-results])))
 
-            "match tags with wildcard ?"
-            "namespace?" {"coll1" [["Namespace1" "Value1"]]}
+        "match all tags"
+        "*" {"coll1" [["Namespace1" "Value1"] ["Namespace100" "Value2"]]
+             "coll2" [["Namespace100" "Value2"]]
+             "coll3" [["cmr.namespace2" "Value1"]]}
 
-            "match no tag"
-            "namespace3*" {}
+        "match one tag"
+        "namespace1" {"coll1" [["Namespace1" "Value1"]]}
 
-            "match empty tag"
-            "" {}
+        "match tags with wildcard *"
+        "namespace1*" {"coll1" [["Namespace1" "Value1"] ["Namespace100" "Value2"]]
+                       "coll2" [["Namespace100" "Value2"]]}
 
-            "match multiple tags"
-            "namespace1*,cmr.*" {"coll1" [["Namespace1" "Value1"] ["Namespace100" "Value2"]]
-                                 "coll2" [["Namespace100" "Value2"]]
-                                 "coll3" [["cmr.namespace2" "Value1"]]}))
+        "match tags with wildcard ?"
+        "namespace?" {"coll1" [["Namespace1" "Value1"]]}
+
+        "match no tag"
+        "namespace3*" {}
+
+        "match empty tag"
+        "" {}
+
+        "match multiple tags"
+        "namespace1*,cmr.*" {"coll1" [["Namespace1" "Value1"] ["Namespace100" "Value2"]]
+                             "coll2" [["Namespace100" "Value2"]]
+                             "coll3" [["cmr.namespace2" "Value1"]]}))
 
     (testing "Invalid include-tags params"
       (testing "include-tags in collection search with metadata formats orther than JSON is invalid."
         (are [metadata-format]
              (= {:status 400
-                 :errors ["Parameter [include_tags] is only supported in JSON format search."]}
+                 :errors ["Parameter [include_tags] is only supported in ATOM or JSON format search."]}
                 (search/find-metadata
                   :collection metadata-format {:provider "PROV1" :include-tags "*"}))
 
@@ -390,14 +401,11 @@
       (testing "include-tags in collection search with result formats orther than JSON is invalid."
         (are2 [search-fn]
               (= {:status 400
-                  :errors ["Parameter [include_tags] is only supported in JSON format search."]}
+                  :errors ["Parameter [include_tags] is only supported in ATOM or JSON format search."]}
                  (search-fn :collection {:include-tags "*"}))
 
               "search in xml reference"
               search/find-refs
-
-              "search in atom format"
-              search/find-concepts-atom
 
               "search in kml format"
               search/find-concepts-kml
