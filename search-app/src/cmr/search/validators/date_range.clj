@@ -5,7 +5,7 @@
             [clj-time.format :as f]
             [cmr.search.models.query :as qm]
             [cmr.search.validators.validation :as v]
-            [cmr.search.data.datetime-helper :as h]))
+            [cmr.common-app.services.search.datetime-helper :as h]))
 
 (defn- start-date-is-before-end-date
   "Validates start-date is before end-date"

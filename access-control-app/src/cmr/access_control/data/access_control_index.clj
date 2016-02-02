@@ -2,7 +2,6 @@
   "Performs search and indexing of access control data."
   (:require [cmr.elastic-utils.index-util :as m :refer [defmapping]]
             [cmr.elastic-utils.connect :as esc]
-            [cmr.access-control.data :as d]
             [cmr.elastic-utils.config :as es-config]
             [cmr.common.lifecycle :as l]
             [clojure.edn :as edn]))

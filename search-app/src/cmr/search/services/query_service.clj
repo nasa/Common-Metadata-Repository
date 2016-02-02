@@ -11,9 +11,11 @@
   - Convert Query into Elastic Query Model
   - Send query to Elasticsearch
   - Convert query results into requested format"
-  (:require [cmr.search.data.elastic-search-index :as idx]
+  (:require [cmr.common-app.services.search.elastic-search-index :as idx]
             [cmr.search.models.query :as qm]
             [cmr.common.mime-types :as mt]
+            [cmr.common-app.services.search :as common-search]
+            [cmr.common-app.services.search.params :as common-params]
 
             ;; parameter-converters
             ;; These must be required here to make multimethod implementations available.
@@ -84,49 +86,6 @@
             [cmr.spatial.codec :as spatial-codec]
             [cmr.common.log :refer (debug info warn error)]))
 
-(defn validate-query
-  "Validates a query model. Throws an exception to return to user with errors.
-  Returns the query model if validation is successful so it can be chained with other calls."
-  [context query]
-  (if-let [errors (seq (v/validate query))]
-    (errors/throw-service-errors :bad-request errors)
-    query))
-
-(defmulti search-results->response
-  "Converts query search results into a string response."
-  (fn [context query results]
-    [(:concept-type query) (:result-format query)]))
-
-(defmulti single-result->response
-  "Returns a string representation of a single concept in the format
-  specified in the query."
-  (fn [context query results]
-    [(:concept-type query) (:result-format query)]))
-
-(defn- sanitize-sort-key
-  "Sanitizes a single sort key preserving the direction character."
-  [sort-key]
-  (if-let [[_ dir-char field] (re-find #"([^a-zA-Z])?(.*)" sort-key)]
-    (str dir-char (csk/->kebab-case field))
-    sort-key))
-
-(defn- remove-empty-params
-  "Returns the params after removing the ones with value of an empty string
-  or string with just whitespaces"
-  [params]
-  (let [not-empty-string? (fn [value]
-                            (not (and (string? value) (= "" (s/trim value)))))]
-    (into {} (filter (comp not-empty-string? second) params))))
-
-(defn- sanitize-params
-  "Manipulates the parameters to make them easier to process"
-  [params]
-  (-> params
-      remove-empty-params
-      u/map-keys->kebab-case
-      (update-in [:sort-key] #(when % (if (sequential? %)
-                                        (map sanitize-sort-key % )
-                                        (sanitize-sort-key %))))))
 
 (defn- sanitize-aql-params
   "When content-type is not set for aql searches, the aql will get mistakenly parsed into params.
@@ -135,38 +94,23 @@
   (-> (select-keys params (filter keyword? (keys params)))
       sanitize-params))
 
-(defn- find-concepts
-  "Common functionality for find-concepts-by-parameters and find-concepts-by-aql."
-  [context concept-type params query-creation-time query]
-  (validate-query context query)
-  (let [[query-execution-time results] (u/time-execution (qe/execute-query context query))
-        took (+ query-creation-time query-execution-time)
-        [result-gen-time result-str] (u/time-execution
-                                       (search-results->response
-                                         context query (assoc results :took took)))
-        total-took (+ query-creation-time query-execution-time result-gen-time)]
-    (debug "query-creation-time:" query-creation-time
-           "query-execution-time:" query-execution-time
-           "result-gen-time:" result-gen-time)
-    {:results result-str :hits (:hits results) :took took :total-took total-took
-     :result-format (:result-format query)}))
-
 (defn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context concept-type params]
   (let [[query-creation-time query] (u/time-execution
                                       (->> params
-                                           sanitize-params
+                                           common-params/sanitize-params
                                            ;; handle legacy parameters
                                            lp/replace-parameter-aliases
                                            (lp/process-legacy-multi-params-conditions concept-type)
                                            (lp/replace-science-keywords-or-option concept-type)
 
                                            (psn/replace-provider-short-names context)
+                                           ;; TOOD finish moving parameter validation to common-app
                                            (pv/validate-parameters concept-type)
-                                           (p/parse-parameter-query concept-type)))
-        results (find-concepts context concept-type params query-creation-time query)]
+                                           (common-params/parse-parameter-query concept-type)))
+        results (common-search/find-concepts context concept-type query-creation-time query)]
     (info (format "Found %d %ss in %d ms in format %s with params %s."
                   (:hits results) (name concept-type) (:total-took results) (:result-format query)
                   (pr-str params)))
@@ -181,7 +125,7 @@
                                                                (sanitize-params params)
                                                                json-query)))
 
-        results (find-concepts context concept-type params query-creation-time query)]
+        results (find-concepts context concept-type query-creation-time query)]
     (info (format "Found %d %ss in %d ms in format %s with JSON Query %s and query params %s."
                   (:hits results) (name concept-type) (:total-took results) (:result-format query)
                   json-query (pr-str params)))
@@ -196,7 +140,7 @@
                    lp/replace-parameter-aliases)
         [query-creation-time query] (u/time-execution (a/parse-aql-query params aql))
         concept-type (:concept-type query)
-        results (find-concepts context concept-type params query-creation-time query)]
+        results (find-concepts context concept-type query-creation-time query)]
     (info (format "Found %d %ss in %d ms in format %s with aql: %s."
                   (:hits results) (name concept-type) (:total-took results) (:result-format query)
                   aql))

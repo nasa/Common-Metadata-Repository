@@ -1,8 +1,8 @@
 (ns cmr.search.services.acls.granule-acls
   "Contains functions for manipulating granule acls"
   (:require [cmr.search.models.query :as q]
-            [cmr.search.models.group-query-conditions :as gc]
-            [cmr.search.services.acl-service :as acl-service]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
+            [cmr.common-app.services.search.query-execution :as qe]
             [cmr.search.services.acls.acl-helper :as acl-helper]
             [cmr.common.concepts :as c]
             [cmr.common.util :as u]
@@ -133,7 +133,7 @@
           entry-titles-cond (when entry-titles
                               (q/->CollectionQueryCondition
                                 (gc/and-conds [(q/string-condition :provider-id provider-id true false)
-                                              (q/string-conditions :entry-title entry-titles true)])))]
+                                               (q/string-conditions :entry-title entry-titles true)])))]
       (if (and concept-ids-cond entry-titles-cond)
         (gc/or-conds [concept-ids-cond entry-titles-cond])
         (or concept-ids-cond entry-titles-cond)))))
@@ -197,7 +197,7 @@
       q/match-none)))
 
 ;; This expects that collection queries have been resolved before this step.
-(defmethod acl-service/add-acl-conditions-to-query :granule
+(defmethod qe/add-acl-conditions-to-query :granule
   [context query]
   (let [coll-ids-by-prov (->> (coll-id-extractor/extract-collection-concept-ids query)
                               ;; Group the concept ids by provider

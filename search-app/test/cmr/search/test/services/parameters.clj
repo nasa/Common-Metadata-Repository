@@ -3,7 +3,7 @@
             [cmr.common.util :refer [are2]]
             [cmr.search.services.parameters.conversion :as p]
             [cmr.search.models.query :as q]
-            [cmr.search.models.group-query-conditions :as gc]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.parameters.provider-short-name :as psn]))
 

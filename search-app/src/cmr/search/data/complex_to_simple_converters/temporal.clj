@@ -5,10 +5,10 @@
   (:require [clj-time.core :as t]
             [cmr.common.time-keeper :as tk]
             [cmr.common.services.errors :as errors]
-            [cmr.search.models.query :as qm]
-            [cmr.search.models.group-query-conditions :as gc]
-            [cmr.search.data.datetime-helper :as h]
-            [cmr.search.data.complex-to-simple :as c2s]))
+            [cmr.common-app.services.search.query-model :as qm]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
+            [cmr.common-app.services.search.datetime-helper :as h]
+            [cmr.common-app.services.search.complex-to-simple :as c2s]))
 
 (defn- intersect-temporal->simple-conditions
   "Convert a temporal condition with INTERSECT mask into a combination of simpler conditions

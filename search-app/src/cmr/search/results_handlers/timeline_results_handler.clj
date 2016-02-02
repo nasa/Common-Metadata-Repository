@@ -3,15 +3,15 @@
   over granule start date and end dates. The aggregation results of start date and end dates are
   converted to a list of events of some number of granules starting and some number of granules
   ending. The events counts of granules are used to determine when intervals start and stop."
-  (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
-            [cmr.search.data.elastic-search-index :as elastic-search-index]
+  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-execution :as query-execution]
             [cmr.search.services.query-service :as qs]
             [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as q]
-            [cmr.search.models.group-query-conditions :as gc]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
             [cheshire.core :as json]
-            [cmr.search.models.results :as r]
+            [cmr.common-app.services.search.results :as r]
             [clj-time.core :as t]
             [clj-time.coerce :as c]))
 

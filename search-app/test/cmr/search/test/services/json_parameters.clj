@@ -2,7 +2,7 @@
   "Testing functions used for parsing and generating query conditions for JSON queries."
   (:require [clojure.test :refer :all]
             [cmr.search.models.query :as q]
-            [cmr.search.models.group-query-conditions :as gc]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.search.services.json-parameters.conversion :as jp]
             [cheshire.core :as json]))
 

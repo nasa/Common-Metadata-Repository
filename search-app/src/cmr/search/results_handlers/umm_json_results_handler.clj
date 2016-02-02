@@ -1,7 +1,7 @@
 (ns cmr.search.results-handlers.umm-json-results-handler
   "Handles the umm-json results format and related functions"
-  (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
-            [cmr.search.data.elastic-search-index :as elastic-search-index]
+  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
             [cheshire.core :as json]
             [clojure.string :as str]

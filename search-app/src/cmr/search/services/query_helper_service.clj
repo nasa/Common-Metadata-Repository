@@ -2,8 +2,8 @@
   "Helper queries for other services, for instance fetching collection-level
    data required to construct granule queries or results."
   (:require [cmr.search.services.query-execution :as qe]
-            [cmr.search.models.query :as qm]
-            [cmr.search.models.group-query-conditions :as gc]))
+            [cmr.common-app.services.search.query-model :as qm]
+            [cmr.common-app.services.search.group-query-conditions :as gc]))
 
 (def ^:private orbit-param-fields
   "The collection fields that describe the orbit as used in orbital back tracking."
@@ -49,11 +49,11 @@
    null or empty collection ids implies that no results should be found.
    The scoping rules are kind of ugly, but we need it both ways."
   ([context collection-ids]
-     (collection-orbit-parameters context collection-ids false))
+   (collection-orbit-parameters context collection-ids false))
   ([context collection-ids treat-empty-as-all?]
-     (if (or treat-empty-as-all? (seq collection-ids))
-       (fetch-elastic-collections context
-                                  (qm/->ExistCondition :swath-width)
-                                  collection-ids
-                                  orbit-param-fields)
-       [])))
+   (if (or treat-empty-as-all? (seq collection-ids))
+     (fetch-elastic-collections context
+                                (qm/->ExistCondition :swath-width)
+                                collection-ids
+                                orbit-param-fields)
+     [])))

@@ -5,7 +5,7 @@
             [clj-time.format :as f]
             [cmr.search.models.query :as qm]
             [cmr.search.validators.validation :as v]
-            [cmr.search.data.datetime-helper :as h]
+            [cmr.common-app.services.search.datetime-helper :as h]
             [cmr.search.validators.messages :as m]
             [cmr.search.data.messages :as sdm]))
 

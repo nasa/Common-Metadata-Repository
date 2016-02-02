@@ -10,7 +10,7 @@
             [cmr.acl.core :as acl]
             [cmr.common.jobs :as jobs]
             [cmr.search.api.routes :as routes]
-            [cmr.search.data.elastic-search-index :as idx]
+            [cmr.common-app.services.search.elastic-search-index :as idx]
             [cmr.search.services.acls.acl-helper :as ah]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.common.config :as cfg :refer [defconfig]]

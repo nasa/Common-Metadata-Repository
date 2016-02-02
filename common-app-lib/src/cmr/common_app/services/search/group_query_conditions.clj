@@ -1,10 +1,10 @@
-(ns cmr.search.models.group-query-conditions
+(ns cmr.common-app.services.search.group-query-conditions
   "Contains conditions for group together multiple conditions. These are the boolean operations
   for AND and OR."
-  (:require [cmr.search.models.query :as q]
+  (:require [cmr.common-app.services.search.query-model :as q]
             [cmr.common.services.errors :as errors]
-            [cmr.search.models.condition-merger :as condition-merger])
-  (:import [cmr.search.models.query
+            [cmr.common-app.services.search.condition-merger :as condition-merger])
+  (:import [cmr.common_app.services.search.query_model
             ConditionGroup]))
 
 (defn- flatten-group-conds

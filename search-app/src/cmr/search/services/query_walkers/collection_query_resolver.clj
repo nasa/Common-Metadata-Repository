@@ -1,10 +1,10 @@
 (ns cmr.search.services.query-walkers.collection-query-resolver
   "Defines protocols and functions to resolve collection query conditions"
   (:require [cmr.search.models.query :as qm]
-            [cmr.search.models.group-query-conditions :as gc]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.common.services.errors :as errors]
-            [cmr.search.data.elastic-search-index :as idx]
-            [cmr.search.data.complex-to-simple :as c2s]
+            [cmr.common-app.services.search.elastic-search-index :as idx]
+            [cmr.common-app.services.search.complex-to-simple :as c2s]
             [cmr.common.log :refer (debug info warn error)]
             [clojure.set :as set])
   (:import cmr.search.models.query.CollectionQueryCondition))

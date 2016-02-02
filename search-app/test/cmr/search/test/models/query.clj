@@ -3,7 +3,7 @@
             [cmr.search.test.models.helpers :refer :all]
             [cmr.search.services.parameters.conversion :as p]
             [cmr.search.models.query :as q]
-            [cmr.search.models.group-query-conditions :as gc]))
+            [cmr.common-app.services.search.group-query-conditions :as gc]))
 
 (deftest conds-test
   (testing "AND simplification"

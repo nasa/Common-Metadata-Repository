@@ -3,166 +3,124 @@
   (:require [clojure.string :as str]
             [clojure.set :as set]
             [cmr.common.services.errors :as errors]
+            [cmr.common-app.services.search.query-model :as cqm]
             [cmr.search.models.query :as qm]
-            [cmr.search.models.group-query-conditions :as gc]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.common.util :as u]
+            [cmr.common-app.services.search.params :as common-params]
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.tagging.tag-related-item-condition :as tag-related]
             [cmr.common.concepts :as cc]
             [cmr.common.date-time-parser :as parser]))
 
-(def concept-param->type
-  "A mapping of param names to query condition types based on concept-type"
-  {:collection {:entry-title :string
-                :entry-id :string
-                :native-id :string
-                :provider :string
-                :attribute :attribute
-                :short-name :string
-                :version :string
-                :updated-since :updated-since
-                :revision-date :revision-date
-                :processing-level-id :string
-                :collection-data-type :collection-data-type
-                :temporal :temporal
-                :concept-id :string
-                :platform :string
-                :instrument :string
-                :sensor :string
-                :project :string
-                :data-center :string
-                :archive-center :string
-                :spatial-keyword :string
-                :two-d-coordinate-system-name :string
-                :two-d-coordinate-system :two-d-coordinate-system
-                :science-keywords :science-keywords
-                :dif-entry-id :dif-entry-id
-                :downloadable :boolean
-                :browsable :boolean
-                :polygon :polygon
-                :bounding-box :bounding-box
-                :point :point
-                :keyword :keyword
-                :line :line
-                :exclude :exclude
+(defmethod common-params/param-mappings :collection
+  [_]
+  {:entry-title :string
+   :entry-id :string
+   :native-id :string
+   :provider :string
+   :attribute :attribute
+   :short-name :string
+   :version :string
+   :updated-since :updated-since
+   :revision-date :revision-date
+   :processing-level-id :string
+   :collection-data-type :collection-data-type
+   :temporal :temporal
+   :concept-id :string
+   :platform :string
+   :instrument :string
+   :sensor :string
+   :project :string
+   :data-center :string
+   :archive-center :string
+   :spatial-keyword :string
+   :two-d-coordinate-system-name :string
+   :two-d-coordinate-system :two-d-coordinate-system
+   :science-keywords :science-keywords
+   :dif-entry-id :dif-entry-id
+   :downloadable :boolean
+   :browsable :boolean
+   :polygon :polygon
+   :bounding-box :bounding-box
+   :point :point
+   :keyword :keyword
+   :line :line
+   :exclude :exclude
 
-                ;; Tag parameters
-                :tag-namespace :tag-query
-                :tag-value :tag-query
-                :tag-category :tag-query
-                :tag-originator-id :tag-query}
-   :granule {:granule-ur :string
-             :concept-id :granule-concept-id
-             :collection-concept-id :string
-             :producer-granule-id :string
-             :day-night :string
-             :readable-granule-name :readable-granule-name
-             :provider :collection-query
-             :entry-title :collection-query
-             :attribute :attribute
-             :short-name :collection-query
-             :orbit-number :orbit-number
-             :equator-crossing-longitude :equator-crossing-longitude
-             :equator-crossing-date :equator-crossing-date
-             :version :collection-query
-             :updated-since :updated-since
-             :revision-date :revision-date
-             :temporal :temporal
-             :platform :inheritance
-             :instrument :inheritance
-             :sensor :inheritance
-             :project :string
-             :cloud-cover :num-range
-             :exclude :exclude
-             :downloadable :boolean
-             :polygon :polygon
-             :bounding-box :bounding-box
-             :point :point
-             :line :line
-             :browsable :boolean
-             :two-d-coordinate-system :two-d-coordinate-system}
-   :tag {:namespace :string
-         :value :string
-         :category :string
-         :originator-id :string}})
+   ;; Tag parameters
+   :tag-namespace :tag-query
+   :tag-value :tag-query
+   :tag-category :tag-query
+   :tag-originator-id :tag-query})
 
-(def always-case-sensitive-fields
-  "A set of parameters that will always be case sensitive"
+(defmethod common-params/param-mappings :granule
+  [_]
+  {:granule-ur :string
+   :concept-id :granule-concept-id
+   :collection-concept-id :string
+   :producer-granule-id :string
+   :day-night :string
+   :readable-granule-name :readable-granule-name
+   :provider :collection-query
+   :entry-title :collection-query
+   :attribute :attribute
+   :short-name :collection-query
+   :orbit-number :orbit-number
+   :equator-crossing-longitude :equator-crossing-longitude
+   :equator-crossing-date :equator-crossing-date
+   :version :collection-query
+   :updated-since :updated-since
+   :revision-date :revision-date
+   :temporal :temporal
+   :platform :inheritance
+   :instrument :inheritance
+   :sensor :inheritance
+   :project :string
+   :cloud-cover :num-range
+   :exclude :exclude
+   :downloadable :boolean
+   :polygon :polygon
+   :bounding-box :bounding-box
+   :point :point
+   :line :line
+   :browsable :boolean
+   :two-d-coordinate-system :two-d-coordinate-system})
+
+(defmethod common-params/param-mappings :tag
+  [_]
+  {:namespace :string
+   :value :string
+   :category :string
+   :originator-id :string})
+
+(defmethod common-params/always-case-sensitive-fields :collection
+  [_]
   #{:concept-id :collection-concept-id})
 
-(defn case-sensitive-field?
-  "Return true if the given field is a case-sensitive field"
-  [field options]
-  (or (contains? always-case-sensitive-fields field)
-      (= "false" (get-in options [field :ignore-case]))))
-
-(defn pattern-field?
-  "Returns true if the field is a pattern"
-  [field options]
-  (= "true" (get-in options [field :pattern])))
-
-(defn group-operation
-  "Returns the group operation (:and or :or) for the given field."
-  ([field options]
-   (group-operation field options :or))
-  ([field options default]
-   (cond
-     (= "true" (get-in options [field :and])) :and
-     (= "true" (get-in options [field :or])) :or
-     :else default)))
-
-(defn- param-name->type
-  "Returns the query condition type based on the given concept-type and param-name."
-  [concept-type param-name]
-  (get-in concept-param->type [concept-type param-name]))
-
-(defmulti parameter->condition
-  "Converts a parameter into a condition"
-  (fn [concept-type param value options]
-    (param-name->type concept-type param)))
-
-(defmethod parameter->condition :default
-  [concept-type param value options]
-  (errors/internal-error!
-    (format "Could not find parameter handler for [%s] with concept-type [%s]"
-            param concept-type)))
-
-(defn string-parameter->condition
-  [param value options]
-  (if (sequential? value)
-    (gc/group-conds (group-operation param options)
-                    (map #(string-parameter->condition param % options) value))
-    (let [case-sensitive (case-sensitive-field? param options)
-          pattern (pattern-field? param options)]
-      (qm/string-condition param value case-sensitive pattern))))
-
-(defmethod parameter->condition :string
-  [concept-type param value options]
-  (string-parameter->condition param value options))
-
-(defmethod parameter->condition :keyword
+(defmethod common-params/parameter->condition :keyword
   [_ _ value _]
-  (qm/text-condition :keyword (str/lower-case value)))
+  (cqm/text-condition :keyword (str/lower-case value)))
 
-(defmethod parameter->condition :tag-query
+(defmethod common-params/parameter->condition :tag-query
   [concept-type param value options]
   (let [rename-tag-param #(keyword (str/replace (name %) "tag-" ""))
         tag-param-name (rename-tag-param param)
         options (u/map-keys rename-tag-param options)]
     (tag-related/tag-related-item-query-condition
-      (parameter->condition :tag tag-param-name value options))))
+      (common-params/parameter->condition :tag tag-param-name value options))))
 
 ;; Special case handler for concept-id. Concept id can refer to a granule or collection.
 ;; If it's a granule query with a collection concept id then we convert the parameter to :collection-concept-id
-(defmethod parameter->condition :granule-concept-id
+(defmethod common-params/parameter->condition :granule-concept-id
   [concept-type param value options]
   (let [values (if (sequential? value) value [value])
         {granule-concept-ids :granule
          collection-concept-ids :collection} (group-by (comp :concept-type cc/parse-concept-id) values)
         collection-cond (when (seq collection-concept-ids)
-                          (string-parameter->condition :collection-concept-id collection-concept-ids {}))
+                          (common-params/string-parameter->condition :collection-concept-id collection-concept-ids {}))
         granule-cond (when (seq granule-concept-ids)
-                       (string-parameter->condition :concept-id granule-concept-ids options))]
+                       (common-params/string-parameter->condition :concept-id granule-concept-ids options))]
     (if (and collection-cond granule-cond)
       (gc/and-conds [collection-cond granule-cond])
       (or collection-cond granule-cond))))
@@ -170,72 +128,50 @@
 ;; Construct an inheritance query condition for granules.
 ;; This will find granules which either have explicitly specified a value
 ;; or have not specified any value for the field and inherit it from their parent collection.
-(defmethod parameter->condition :inheritance
+(defmethod common-params/parameter->condition :inheritance
   [concept-type param value options]
-  (let [field-condition (parameter->condition :collection param value options)]
+  (let [field-condition (common-params/parameter->condition :collection param value options)]
     (gc/or-conds
       [field-condition
        (gc/and-conds
          [(qm/->CollectionQueryCondition field-condition)
-          (qm/map->MissingCondition {:field param})])])))
+          (cqm/map->MissingCondition {:field param})])])))
 
-;; or-conds --> "not (CondA and CondB)" == "(not CondA) or (not CondB)"
-(defmethod parameter->condition :exclude
+(defmethod common-params/parameter->condition :updated-since
   [concept-type param value options]
-  (gc/or-conds
-    (map (fn [[exclude-param exclude-val]]
-           (qm/map->NegatedCondition
-             {:condition (parameter->condition concept-type exclude-param exclude-val options)}))
-         value)))
-
-(defmethod parameter->condition :updated-since
-  [concept-type param value options]
-  (qm/map->DateRangeCondition
+  (cqm/map->DateRangeCondition
     {:field param
      :start-date (parser/parse-datetime
                    (if (sequential? value) (first value) value))
      :end-date nil}))
 
-(defmethod parameter->condition :revision-date
+(defmethod common-params/parameter->condition :revision-date
   [concept-type param value options]
   (if (sequential? value)
     (if (= "true" (get-in options [:revision-date :and]))
       (gc/and-conds
-        (map #(parameter->condition concept-type param % options) value))
+        (map #(common-params/parameter->condition concept-type param % options) value))
       (gc/or-conds
-        (map #(parameter->condition concept-type param % options) value)))
+        (map #(common-params/parameter->condition concept-type param % options) value)))
     (let [[start-date end-date] (map str/trim (str/split value #","))]
-      (qm/map->DateRangeCondition
+      (cqm/map->DateRangeCondition
         {:field param
          :start-date (when-not (str/blank? start-date) (parser/parse-datetime start-date))
          :end-date (when-not (str/blank? end-date) (parser/parse-datetime end-date))}))))
 
-(defmethod parameter->condition :boolean
-  [concept-type param value options]
-  (cond
-    (or (= "true" value) (= "false" value))
-    (qm/map->BooleanCondition {:field param
-                               :value (= "true" value)})
-
-    (= "unset" (str/lower-case value))
-    qm/match-all
-
-    :else
-    (errors/internal-error! (format "Boolean condition for %s has invalid value of [%s]" param value))))
-
-(defmethod parameter->condition :readable-granule-name
+(defmethod common-params/parameter->condition :readable-granule-name
   [concept-type param value options]
   (if (sequential? value)
     (if (= "true" (get-in options [param :and]))
       (gc/and-conds
-        (map #(parameter->condition concept-type param % options) value))
+        (map #(common-params/parameter->condition concept-type param % options) value))
       (gc/or-conds
-        (map #(parameter->condition concept-type param % options) value)))
-    (let [case-sensitive (case-sensitive-field? :readable-granule-name options)
+        (map #(common-params/parameter->condition concept-type param % options) value)))
+    (let [case-sensitive (common-params/case-sensitive-field? :readable-granule-name options)
           pattern (pattern-field? :readable-granule-name options)]
       (gc/or-conds
-        [(qm/string-condition :granule-ur value case-sensitive pattern)
-         (qm/string-condition :producer-granule-id value case-sensitive pattern)]))))
+        [(cqm/string-condition :granule-ur value case-sensitive pattern)
+         (cqm/string-condition :producer-granule-id value case-sensitive pattern)]))))
 
 (defn- collection-data-type-matches-science-quality?
   "Convert the collection-data-type parameter with wildcards to a regex. This function
@@ -251,15 +187,15 @@
                     re-pattern)]
     (re-find pattern "SCIENCE_QUALITY")))
 
-(defmethod parameter->condition :collection-data-type
+(defmethod common-params/parameter->condition :collection-data-type
   [concept-type param value options]
   (if (sequential? value)
     (if (= "true" (get-in options [param :and]))
       (gc/and-conds
-        (map #(parameter->condition concept-type param % options) value))
+        (map #(common-params/parameter->condition concept-type param % options) value))
       (gc/or-conds
-        (map #(parameter->condition concept-type param % options) value)))
-    (let [case-sensitive (case-sensitive-field? :collection-data-type options)
+        (map #(common-params/parameter->condition concept-type param % options) value)))
+    (let [case-sensitive (common-params/case-sensitive-field? :collection-data-type options)
           pattern (pattern-field? :collection-data-type options)]
       (if (or (= "SCIENCE_QUALITY" value)
               (and (= "SCIENCE_QUALITY" (str/upper-case value))
@@ -269,118 +205,59 @@
         ; SCIENCE_QUALITY collection-data-type should match concepts with SCIENCE_QUALITY
         ; or the ones missing collection-data-type field
         (gc/or-conds
-          [(qm/string-condition :collection-data-type value case-sensitive pattern)
-           (qm/map->MissingCondition {:field :collection-data-type})])
-        (qm/string-condition :collection-data-type value case-sensitive pattern)))))
-
-(defmethod parameter->condition :num-range
-  [concept-type param value options]
-  (qm/numeric-range-str->condition param value))
+          [(cqm/string-condition :collection-data-type value case-sensitive pattern)
+           (cqm/map->MissingCondition {:field :collection-data-type})])
+        (cqm/string-condition :collection-data-type value case-sensitive pattern)))))
 
 ;; dif-entry-id matches on entry-id or associated-difs
-(defmethod parameter->condition :dif-entry-id
+(defmethod common-params/parameter->condition :dif-entry-id
   [concept-type param value options]
   (gc/or-conds
-    [(parameter->condition concept-type :entry-id value (set/rename-keys options {:dif-entry-id :entry-id}))
-     (string-parameter->condition :associated-difs value (set/rename-keys options {:dif-entry-id :associated-difs}))]))
+    [(common-params/parameter->condition concept-type :entry-id value (set/rename-keys options {:dif-entry-id :entry-id}))
+     (common-params/string-parameter->condition :associated-difs value (set/rename-keys options {:dif-entry-id :associated-difs}))]))
 
-(defn parse-sort-key
-  "Parses the sort key param and returns a sequence of maps with fields and order.
-  Returns nil if no sort key was specified."
-  [sort-key]
-  (when sort-key
-    (if (sequential? sort-key)
-      (mapcat parse-sort-key sort-key)
-      (let [[_ dir-char field] (re-find #"([\-+])?(.*)" sort-key)
-            direction (cond
-                        (= dir-char "-")
-                        :desc
-
-                        (= dir-char "+")
-                        :asc
-
-                        :else
-                        ;; score sorts default to descending sort, everything else ascending
-                        (if (= "score" (str/lower-case sort-key))
-                          :desc
-                          :asc))
-            field (keyword field)]
-        [{:order direction
-          :field (or (lp/param-aliases field)
-                     field)}]))))
-
-(defn standard-params->query-attribs
-  "Extracts standard parameters that work on any query api like page-size and page-num and returns
-  them in a map as query attributes"
+(defmethod common-params/parse-standard-params :collection
   [concept-type params]
-  (let [page-size (Integer. (get params :page-size qm/default-page-size))
-        page-num (Integer. (get params :page-num qm/default-page-num))
-        all-revisions? (= "true" (:all-revisions params))
-        boosts (:boosts params)
-        ;; If there is no sort key specified and keyword parameter exists then we default to
-        ;; sorting by document relevance score
-        sort-keys (or (parse-sort-key (:sort-key params))
-                      (when (:keyword params) [{:order :desc :field :score}]))
-        echo-compatible? (= "true" (:echo-compatible params))
-        hierarchical-facets? (= "true" (:hierarchical-facets params))
-        {:keys [begin-tag end-tag snippet-length num-snippets]} (get-in params [:options :highlights])
+  (let [{:keys [begin-tag end-tag snippet-length num-snippets]} (get-in params [:options :highlights])
         result-features (concat (when (= (:include-granule-counts params) "true")
                                   [:granule-counts])
                                 (when (= (:include-has-granules params) "true")
                                   [:has-granules])
                                 (when (= (:include-facets params) "true")
-                                  (if hierarchical-facets?
+                                  (if (= "true" (:hierarchical-facets params))
                                     [:hierarchical-facets]
                                     [:facets]))
                                 (when (= (:include-highlights params) "true")
                                   [:highlights])
                                 (when-not (str/blank? (:include-tags params))
                                   [:tags]))]
-    {:concept-type concept-type
-     :page-size page-size
-     :page-num page-num
-     :boosts boosts
-     :sort-keys sort-keys
-     :result-format (:result-format params)
-     :result-features (seq result-features)
-     :echo-compatible? echo-compatible?
-     :all-revisions? all-revisions?
-     :result-options (merge (when-not (str/blank? (:include-tags params))
-                              {:tags (map str/trim (str/split (:include-tags params) #","))})
-                            (when (or begin-tag end-tag snippet-length num-snippets)
-                              {:highlights
-                               {:begin-tag begin-tag
-                                :end-tag end-tag
-                                :snippet-length (when snippet-length (Integer. snippet-length))
-                                :num-snippets (when num-snippets (Integer. num-snippets))}}))}))
+    (-> (common-params/default-parse-standard-params :collection params lp/aliases)
+        ;; If there is no sort key specified and keyword parameter exists then we default to
+        ;; sorting by document relevance score
+        (update :sort-key #(or % (when (:keyword params) [{:order :desc :field :score}])))
+        (merge {:boosts (:boosts params)
+                :result-features (seq result-features)
+                :echo-compatible? (= "true" (:echo-compatible params))
+                :all-revisions? (= "true" (:all-revisions params))
+                :result-options (merge (when-not (str/blank? (:include-tags params))
+                                         {:tags (map str/trim (str/split (:include-tags params) #","))})
+                                       (when (or begin-tag end-tag snippet-length num-snippets)
+                                         {:highlights
+                                          {:begin-tag begin-tag
+                                           :end-tag end-tag
+                                           :snippet-length (when snippet-length (Integer. snippet-length))
+                                           :num-snippets (when num-snippets (Integer. num-snippets))}}))}))))
 
-(defn parse-parameter-query
-  "Converts parameters into a query model."
+(defmethod common-params/parse-standard-params :granule
   [concept-type params]
-  (let [options (u/map-keys->kebab-case (get params :options {}))
-        query-attribs (standard-params->query-attribs concept-type params)
-        keywords (when (:keyword params)
-                   (str/split (str/lower-case (:keyword params)) #" "))
-        params (if keywords (assoc params :keyword (str/join " " keywords)) params)
-        params (dissoc params :options :page-size :page-num :boosts :sort-key :result-format
-                       :include-granule-counts :include-has-granules :include-facets
-                       :echo-compatible :hierarchical-facets :include-highlights
-                       :include-tags :all-revisions)]
-    (if (empty? params)
-      ;; matches everything
-      (qm/query query-attribs)
-      ;; Convert params into conditions
-      (let [conditions (map (fn [[param value]]
-                              (parameter->condition concept-type param value options))
-                            params)]
-        (qm/query (assoc query-attribs
-                         :condition (gc/and-conds conditions)))))))
+  (-> (common-params/default-parse-standard-params :granule params lp/aliases)
+      (merge {:echo-compatible? (= "true" (:echo-compatible params))})))
 
 (defn timeline-parameters->query
   "Converts parameters from a granule timeline request into a query."
   [params]
   (let [{:keys [interval start-date end-date]} params
-        query (parse-parameter-query
+        query (common-params/parse-parameter-query
                 :granule
                 (dissoc params :interval :start-date :end-date))]
     ;; Add timeline request fields to the query so that they can be used later

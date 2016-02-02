@@ -2,7 +2,7 @@
   "This enables returning highlighted snippets with collection search results based on the
   provided keyword search."
   (:require [cmr.search.services.query-execution :as query-execution]
-            [cmr.search.models.results :as r]
+            [cmr.common-app.services.search.results :as r]
             [cmr.search.data.query-to-elastic :as qte]
             [clojure.string :as str]
             [cmr.common.util :as util]))

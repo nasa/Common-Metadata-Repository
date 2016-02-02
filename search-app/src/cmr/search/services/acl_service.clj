@@ -2,15 +2,6 @@
   "Performs ACL related tasks for the search application"
   (:require [cmr.search.services.acls.acl-helper :as acl-helper]))
 
-(defmulti add-acl-conditions-to-query
-  "Adds conditions to the query to enforce ACLs."
-  (fn [context query]
-    (:concept-type query)))
-
-(defmethod add-acl-conditions-to-query :default
-  [_ query]
-  query)
-
 (defmulti acls-match-concept?
   "Returns true if any of the acls match the concept."
   (fn [context acls concept]

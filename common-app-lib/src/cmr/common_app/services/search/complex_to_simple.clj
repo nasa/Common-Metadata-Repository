@@ -1,5 +1,5 @@
-(ns cmr.search.data.complex-to-simple
-  (:require [cmr.search.models.query :as qm]))
+(ns cmr.common-app.services.search.complex-to-simple
+  (:require [cmr.common-app.services.search.query-model :as cqm]))
 
 (defprotocol ComplexQueryToSimple
   "Defines a function to convert a complex / high level query/condition into simpler ones that
@@ -8,7 +8,6 @@
     [query context]
     "Converts a high-level query condition into a simpler form."))
 
-
 (defn reduce-query
   "Converts a complex / high level query/condition into simpler ones that
   can be optimized more easily."
@@ -16,24 +15,18 @@
   (reduce-query-condition query context))
 
 (extend-protocol ComplexQueryToSimple
-  cmr.search.models.query.Query
+  cmr.common_app.services.search.query_model.Query
   (reduce-query-condition
     [query context]
     (update-in query [:condition] reduce-query-condition context))
 
-  cmr.search.models.query.ConditionGroup
+  cmr.common_app.services.search.query_model.ConditionGroup
   (reduce-query-condition
     [condition context]
     (update-in condition [:conditions] (fn [conditions]
                                          (map #(reduce-query-condition % context) conditions))))
 
-
-  cmr.search.models.query.CollectionQueryCondition
-  (reduce-query-condition
-    [condition context]
-    (update-in condition [:condition] reduce-query-condition context))
-
-  cmr.search.models.query.NegatedCondition
+  cmr.common_app.services.search.query_model.NegatedCondition
   (reduce-query-condition
     [condition context]
     (update-in condition [:condition] reduce-query-condition context))

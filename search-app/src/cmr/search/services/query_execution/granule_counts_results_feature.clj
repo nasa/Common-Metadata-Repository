@@ -6,9 +6,9 @@
   (:require [cmr.common.services.errors :as errors]
             [cmr.search.services.query-walkers.condition-extractor :as condition-extractor]
             [cmr.search.models.query :as q]
-            [cmr.search.models.group-query-conditions :as gc]
-            [cmr.search.data.elastic-search-index :as idx]
-            [cmr.search.data.complex-to-simple :as c2s]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
+            [cmr.common-app.services.search.elastic-search-index :as idx]
+            [cmr.common-app.services.search.complex-to-simple :as c2s]
             [cmr.search.services.query-execution :as query-execution]
             [cmr.search.services.acl-service :as acl-service])
   (:import [cmr.search.models.query

@@ -10,7 +10,7 @@
             [cmr.common.date-time-parser :as parser]
             [cmr.common.validations.json-schema :as js]
             [cmr.search.models.query :as qm]
-            [cmr.search.models.group-query-conditions :as gc]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.parameters.conversion :as pc]
             [cmr.search.services.parameters.parameter-validation :as pv]

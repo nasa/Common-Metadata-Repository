@@ -3,7 +3,7 @@
   (:require [cmr.common.xml :as cx]
             [cmr.search.services.aql.conversion :as a]
             [cmr.search.models.query :as qm]
-            [cmr.search.models.group-query-conditions :as gc]))
+            [cmr.common-app.services.search.group-query-conditions :as gc]))
 
 (defmulti keyword-element->condition
   "Returns the query condition of the given keyword element"

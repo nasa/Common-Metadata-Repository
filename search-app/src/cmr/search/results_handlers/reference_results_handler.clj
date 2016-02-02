@@ -1,13 +1,13 @@
 (ns cmr.search.results-handlers.reference-results-handler
   "Handles the XML reference format."
-  (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
-            [cmr.search.data.elastic-search-index :as elastic-search-index]
+  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
             [cmr.search.services.url-helper :as url]
             [clojure.data.xml :as x]
             [clojure.set :as set]
             [cheshire.core :as json]
-            [cmr.search.models.results :as r]
+            [cmr.common-app.services.search.results :as r]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.services.query-execution.facets-results-feature :as frf]))
 

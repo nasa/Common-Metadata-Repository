@@ -30,7 +30,7 @@
 
             [cmr.mock-echo.system :as mock-echo-system]
 
-            [cmr.search.data.elastic-search-index :as es-search]
+            [cmr.common-app.services.search.elastic-search-index :as es-search]
             [cmr.search.system :as search-system]
 
             [cmr.elastic-utils.test-util :as elastic-test-util]

@@ -4,7 +4,7 @@
             [cmr.search.services.parameters.converters.attribute :as a]
             [cmr.search.services.messages.attribute-messages :as msg]
             [cmr.search.models.query :as qm]
-            [cmr.search.models.group-query-conditions :as gc]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.search.services.parameters.conversion :as p]
             [cmr.common.util :as u]))
 

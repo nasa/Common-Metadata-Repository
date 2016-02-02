@@ -6,7 +6,7 @@
             [cmr.common.util :as util]
             [cmr.search.services.query-execution :as query-execution]
             [cmr.search.models.query :as qm]
-            [cmr.search.models.group-query-conditions :as gc]))
+            [cmr.common-app.services.search.group-query-conditions :as gc]))
 
 (defn- tag->unzipped-tag
   "Returns the unzipped tag by gunzip the :associated-concept-ids-gzip-b64 field and replace it

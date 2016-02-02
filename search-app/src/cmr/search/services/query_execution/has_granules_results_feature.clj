@@ -5,7 +5,7 @@
   (:require [cmr.search.services.query-execution :as query-execution]
             [cmr.common.jobs :refer [defjob]]
             [cmr.common.cache :as cache]
-            [cmr.search.data.elastic-search-index :as idx]
+            [cmr.common-app.services.search.elastic-search-index :as idx]
             [cmr.common.cache.in-memory-cache :as mem-cache]))
 
 (def REFRESH_HAS_GRANULES_MAP_JOB_INTERVAL
