@@ -52,7 +52,7 @@
   ([]
    ;; use all concept types
    (apply get-concept-tablenames (keys s/num-revisions-to-keep-per-concept-type)))
-  ([& concept-types
+  ([& concept-types]
     (distinct
      (->
       (for [provider (p/get-providers (config/db))
@@ -64,7 +64,7 @@
       (into (when (contains? (set concept-types) :granule) ["small_prov_granules"]))
       (into (when (contains? (set concept-types) :service) ["small_prov_services"]))
       (into (when (contains? (set concept-types) :access-group) ["cmr_groups"]))
-      (into (when (contains? (set concept-types) :tag) ["cmr_tags"]))))]))
+      (into (when (contains? (set concept-types) :tag) ["cmr_tags"]))))))
 
 (defn get-collection-tablenames
   "Gets a list of all the collection tablenames. Primarily for enabling migrations of existing
