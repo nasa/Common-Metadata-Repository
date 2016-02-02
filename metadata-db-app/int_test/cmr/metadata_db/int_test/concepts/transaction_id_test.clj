@@ -29,5 +29,5 @@
           concept-ids (map :concept-id [coll-reg gran-reg serv-reg tag1 coll-small group-small
                                         tag2 serv-small gran-small group-reg])
           trans-ids (distinct (map :transaction-id (:concepts (util/get-latest-concepts concept-ids))))]
-      (is (= 11 (count trans-ids)))
+      (is (= 10 (count trans-ids)))
       (is (apply < trans-ids)))))
