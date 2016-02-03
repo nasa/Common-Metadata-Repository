@@ -10,7 +10,7 @@
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.common.date-time-range-parser :as dtr-parser]
             [cmr.common-app.services.search.params :as p]
-            ;; TODO do we need common messages in common-app?
+            ;; TODO CMR-2130 do we need common messages in common-app?
             ; [cmr.search.services.messages.common-messages :as msg]
             ; [cmr.search.data.messages :as d-msg]
             [camel-snake-kebab.core :as csk]

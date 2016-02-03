@@ -1,5 +1,5 @@
 (ns cmr.common-app.services.search.elastic-search-index
-  "Implements the search index protocols for searching against Elasticsearch."
+  "Implements searching against Elasticsearch. Defines an Elastic Search Index component."
   (:require [clojurewerkz.elastisch.rest.document :as esd]
             [clojurewerkz.elastisch.aggregation :as a]
             [clojurewerkz.elastisch.rest.response :as esrsp]
@@ -27,6 +27,7 @@
   (fn [concept-type query]
     [concept-type (:result-format query)]))
 
+
 (defrecord ElasticSearchIndex
   [
    config
@@ -45,9 +46,9 @@
   (stop [this system]
         this))
 
-;; TODO this will require the connection to appear in the same place in every service. Either document
-;; the requirements or make this dynamic.
 (defn context->conn
+  "Returns the connection given a context. This assumes that the search index is always located in a
+   system using the :search-index key."
   [context]
   (get-in context [:system :search-index :conn]))
 
@@ -58,9 +59,6 @@
 
 (defmethod send-query-to-elastic :default
   [context query]
-
-  ;; TODO we're referring to highlights here but the query model doesn't contain highlights. We need
-  ;; to either put highlights in the query model and document it or find another way to do this.
   (let [{:keys [page-size page-num concept-type result-format aggregations highlights]} query
         elastic-query (q2e/query->elastic query)
         sort-params (q2e/query->sort-params query)

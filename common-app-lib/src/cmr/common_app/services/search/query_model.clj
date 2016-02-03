@@ -37,6 +37,10 @@
    ;; aggregation documentatation unfortunately)
    aggregations
 
+   ;; highlights to send to elasticsearch. The format of this object matches the shape expected by
+   ;; elastisch for highlights.
+   highlights
+
    ;; Flag to allow acls to be bypassed. For internal use only
    skip-acls?
 

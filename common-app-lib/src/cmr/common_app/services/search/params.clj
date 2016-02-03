@@ -1,5 +1,5 @@
 (ns cmr.common-app.services.search.params
-  "TODO"
+  "Contains common code for handling search parameters and converting them into a query model."
   (:require [cmr.common.util :as u]
             [cmr.common.services.errors :as errors]
             [clojure.string :as str]
@@ -23,7 +23,6 @@
                             (not (and (string? value) (= "" (str/trim value)))))]
     (into {} (filter (comp not-empty-string? second) params))))
 
-;; TODO call this from an API.
 (defn sanitize-params
   "Manipulates the parameters to make them easier to process"
   [params]
@@ -36,8 +35,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parameter to query conversion
-;; TODO consider putting it in it's own namespace
-
 
 (defmulti always-case-sensitive-fields
   "Returns a set of parameters that will always be case sensitive for the given concept type."

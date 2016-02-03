@@ -28,11 +28,22 @@
   [_]
   {:provider :provider-id
    :producer-granule-id :producer-gran-id
+   :granule-ur.lowercase :granule-ur.lowercase2
+   :producer-gran-id.lowercase :producer-gran-id.lowercase2
    :updated-since :revision-date
    :platform :platform-sn
    :instrument :instrument-sn
    :sensor :sensor-sn
    :project :project-refs})
+
+(defmethod q2e/field->lowercase-field :granule
+  [_ field]
+  (or (get {:granule-ur "granule-ur.lowercase2"
+            :producer-gran-id "producer-gran-id.lowercase2"}
+           (if (string? field)
+             (keyword field)
+             field))
+      (str (name field) ".lowercase")))
 
 (defn- keywords-in-condition
   "Returns a list of keywords if the condition contains a keyword condition or nil if not."

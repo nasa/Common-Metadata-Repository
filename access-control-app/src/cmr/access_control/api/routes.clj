@@ -124,7 +124,7 @@
 
 (defn search-for-groups
   [context params])
-  ;; TODO validate accept header (only accept JSON search response)
+  ;; TODO CMR-2130 validate accept header (only accept JSON search response)
   ; (group-service/search-for-groups params))
 
 
@@ -151,7 +151,7 @@
 
       (context "/groups" []
 
-        ;; TODO document in api docs
+        ;; TODO CMR-2130 document in api docs
         ;; Search for groups
         (GET "/" {:keys [request-context params]}
           (search-for-groups request-context params))
