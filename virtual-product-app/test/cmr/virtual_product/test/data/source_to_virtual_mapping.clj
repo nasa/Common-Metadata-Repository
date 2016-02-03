@@ -1,4 +1,4 @@
-(ns cmr.virtual-product.test.source-to-virtual-mapping
+(ns cmr.virtual-product.test.data.source-to-virtual-mapping
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
             [clojure.java.io :as io]
@@ -6,11 +6,11 @@
             [cmr.common.mime-types :as mt]
             [cmr.umm.granule :as umm-g]
             [cmr.umm.echo10.granule :as g]
-            [cmr.virtual-product.source-to-virtual-mapping :as svm]))
+            [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
 
 (def airx3std-measured-parameters
   "Defines the AIRX3STD measured parameters parsed from a sample AIRX3STD granule."
-  (-> "example_granules/airx3std_granule.xml"
+  (-> "data/AIRX3STD/granules/airx3std_granule.xml"
       io/resource
       slurp
       g/parse-granule

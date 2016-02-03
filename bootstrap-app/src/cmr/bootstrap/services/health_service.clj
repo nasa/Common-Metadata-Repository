@@ -1,6 +1,6 @@
 (ns cmr.bootstrap.services.health-service
   "Contains fuctions to provider health status of the bootstrap app."
-  (:require [cmr.transmit.metadata-db :as mdb]
+  (:require [cmr.transmit.metadata-db2 :as mdb]
             [cmr.metadata-db.services.health-service :as hs]
             [cmr.indexer.services.index-service :as indexer]
             [cmr.bootstrap.embedded-system-helper :as helper]))

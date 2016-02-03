@@ -131,6 +131,12 @@
    :mbr-north m/float-field-mapping
    :mbr-east m/float-field-mapping
    :mbr-south m/float-field-mapping
+
+   :mbr-west-doc-values (m/doc-values m/float-field-mapping)
+   :mbr-north-doc-values (m/doc-values m/float-field-mapping)
+   :mbr-east-doc-values (m/doc-values m/float-field-mapping)
+   :mbr-south-doc-values (m/doc-values m/float-field-mapping)
+
    :mbr-crosses-antimeridian m/bool-field-mapping
 
    ;; Largest Interior Rectangle Fields
@@ -139,6 +145,12 @@
    :lr-north m/float-field-mapping
    :lr-east m/float-field-mapping
    :lr-south m/float-field-mapping
+
+   :lr-west-doc-values (m/doc-values m/float-field-mapping)
+   :lr-north-doc-values (m/doc-values m/float-field-mapping)
+   :lr-east-doc-values (m/doc-values m/float-field-mapping)
+   :lr-south-doc-values (m/doc-values m/float-field-mapping)
+
    :lr-crosses-antimeridian m/bool-field-mapping
 
    ;; ords-info contains tuples of shapes stored in ords
@@ -292,8 +304,10 @@
     ;; This is used explicitly for sorting. The values take up less space in the
     ;; fielddata cache.
     :concept-seq-id m/int-field-mapping
+    :concept-seq-id-doc-values (m/doc-values m/int-field-mapping)
 
     :collection-concept-id (m/stored m/string-field-mapping)
+    :collection-concept-id-doc-values (-> m/string-field-mapping m/stored m/doc-values)
 
     ;; Used for aggregations. It takes up less space in the field data cache.
     :collection-concept-seq-id m/int-field-mapping
@@ -306,13 +320,22 @@
 
     ;; Collection fields added strictly for sorting granule results
     :entry-title.lowercase m/string-field-mapping
+    :entry-title.lowercase-doc-values (m/doc-values m/string-field-mapping)
+
     :short-name.lowercase  m/string-field-mapping
+    :short-name.lowercase-doc-values  (m/doc-values m/string-field-mapping)
+
     :version-id.lowercase  m/string-field-mapping
+    :version-id.lowercase-doc-values  (m/doc-values m/string-field-mapping)
 
     :provider-id           (m/stored m/string-field-mapping)
+    :provider-id-doc-values           (-> m/string-field-mapping m/stored m/doc-values)
+
     :provider-id.lowercase m/string-field-mapping
+    :provider-id.lowercase-doc-values (m/doc-values m/string-field-mapping)
 
     :granule-ur            (m/stored m/string-field-mapping)
+
 
     ;; Modified mappings for the lowercase fields for granule-ur, producer-gran-id,
     ;; and readable-granule-name-sort in order to prevent these values from being
@@ -324,15 +347,19 @@
     ;; for the search application to use the special lowercase2 fields, the fields
     ;; need to be mapped in cmr.search.data.query-to-elastic/field->lowercase-field.
     :granule-ur.lowercase2 (m/doc-values m/string-field-mapping)
+
     :producer-gran-id (m/stored m/string-field-mapping)
     :producer-gran-id.lowercase2 (m/doc-values m/string-field-mapping)
 
     :day-night (m/stored m/string-field-mapping)
+    :day-night-doc-values (-> m/string-field-mapping m/stored m/doc-values)
+
     :day-night.lowercase m/string-field-mapping
 
     ;; Access value is stored to allow us to enforce acls after retrieving results
     ;; for certain types of queries.
     :access-value (m/stored m/float-field-mapping)
+    :access-value-doc-values (-> m/float-field-mapping m/stored m/doc-values)
 
     ;; We need to sort by a combination of producer granule and granule ur
     ;; It should use producer granule id if present otherwise the granule ur is used
@@ -341,24 +368,44 @@
     ;; to use a sort script which is (most likely) much slower.
     :readable-granule-name-sort2 (m/doc-values m/string-field-mapping)
 
-
     :platform-sn           m/string-field-mapping
     :platform-sn.lowercase m/string-field-mapping
+    :platform-sn.lowercase-doc-values   (m/doc-values m/string-field-mapping)
+
     :instrument-sn         m/string-field-mapping
     :instrument-sn.lowercase m/string-field-mapping
+    :instrument-sn.lowercase-doc-values (m/doc-values m/string-field-mapping)
+
     :sensor-sn             m/string-field-mapping
     :sensor-sn.lowercase   m/string-field-mapping
+    :sensor-sn.lowercase-doc-values     (m/doc-values m/string-field-mapping)
+
     :start-date (m/stored m/date-field-mapping)
+    :start-date-doc-values              (-> m/date-field-mapping m/stored m/doc-values)
+
     :end-date (m/stored m/date-field-mapping)
+    :end-date-doc-values                (-> m/date-field-mapping m/stored m/doc-values)
+
+
     :size (m/stored m/float-field-mapping)
+    :size-doc-values (-> m/float-field-mapping m/stored m/doc-values)
+
     :cloud-cover (m/stored m/float-field-mapping)
+    :cloud-cover-doc-values (-> m/float-field-mapping m/stored m/doc-values)
+
     :orbit-calculated-spatial-domains orbit-calculated-spatial-domain-mapping
+
     :project-refs m/string-field-mapping
     :project-refs.lowercase m/string-field-mapping
+    :project-refs.lowercase-doc-values (m/doc-values m/string-field-mapping)
+
     :revision-date         m/date-field-mapping
+    :revision-date-doc-values           (m/doc-values m/date-field-mapping)
+
     :downloadable (m/stored m/bool-field-mapping)
     :browsable (m/stored m/bool-field-mapping)
     :attributes attributes-field-mapping
+
     :two-d-coord-name m/string-field-mapping
     :two-d-coord-name.lowercase m/string-field-mapping
     :start-coordinate-1 m/double-field-mapping
@@ -366,10 +413,18 @@
     :start-coordinate-2 m/double-field-mapping
     :end-coordinate-2 m/double-field-mapping
 
+    :start-coordinate-1-doc-values (m/doc-values m/double-field-mapping)
+    :end-coordinate-1-doc-values (m/doc-values m/double-field-mapping)
+    :start-coordinate-2-doc-values (m/doc-values m/double-field-mapping)
+    :end-coordinate-2-doc-values (m/doc-values m/double-field-mapping)
+
     ;; Used for orbit search
     :orbit-asc-crossing-lon (m/stored m/double-field-mapping)
+    :orbit-asc-crossing-lon-doc-values (-> m/double-field-mapping m/stored m/doc-values)
     :orbit-start-clat m/double-field-mapping
+    :orbit-start-clat-doc-values (m/doc-values m/double-field-mapping)
     :orbit-end-clat m/double-field-mapping
+    :orbit-end-clat-doc-values (m/doc-values m/double-field-mapping)
     :start-lat (m/stored m/double-field-mapping)
     :start-direction (m/stored m/string-field-mapping)
     :end-lat (m/stored m/double-field-mapping)

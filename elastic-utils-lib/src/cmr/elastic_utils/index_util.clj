@@ -36,7 +36,12 @@
   {:type "integer"})
 
 (def bool-field-mapping
-  {:type "boolean"})
+  {:type "boolean"
+   ;; Cannot use doc values using Elasticsearch 1.6, however we can update the fielddata cache
+   ;; at index time rather than on the first query. See
+   ;; https://www.elastic.co/guide/en/elasticsearch/reference/1.6/fielddata-formats.html and
+   ;; https://www.elastic.co/guide/en/elasticsearch/guide/1.x/preload-fielddata.html
+   :fielddata {:loading "eager"}})
 
 (defn stored
   "modifies a mapping to indicate that it should be stored"

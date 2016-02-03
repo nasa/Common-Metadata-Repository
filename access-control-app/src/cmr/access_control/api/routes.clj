@@ -146,6 +146,9 @@
                             (get-in system [:public-conf :relative-root-url])
                             "public/access_control_index.html")
 
+      ;; add routes for checking health of the application
+      (common-routes/health-api-routes group-service/health)
+
       (context "/groups" []
 
         ;; TODO document in api docs

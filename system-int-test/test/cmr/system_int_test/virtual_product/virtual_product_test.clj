@@ -10,7 +10,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.virtual-product.config]
-            [cmr.virtual-product.source-to-virtual-mapping :as svm]
+            [cmr.virtual-product.data.source-to-virtual-mapping :as svm]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
             [cheshire.core :as json]
             [cmr.common.util :as util]
