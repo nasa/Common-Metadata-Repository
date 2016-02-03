@@ -1,7 +1,7 @@
 (ns cmr.virtual-product.services.health-service
   "Contains fuctions to provider health status of the search app."
   (:require [cmr.transmit.ingest :as ingest]
-            [cmr.transmit.metadata-db :as mdb]
+            [cmr.transmit.metadata-db2 :as mdb]
             [cmr.message-queue.services.queue :as queue]))
 
 (defn health

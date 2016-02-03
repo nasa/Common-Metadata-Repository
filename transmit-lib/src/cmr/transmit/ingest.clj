@@ -1,7 +1,6 @@
 (ns cmr.transmit.ingest
   "Provide functions to invoke ingest app"
-  (:require [cmr.common.services.health-helper :as hh]
-            [cmr.transmit.connection :as conn]
+  (:require [cmr.transmit.connection :as conn]
             [ring.util.codec :as codec]
             [cmr.transmit.http-helper :as h]
             [camel-snake-kebab.core :as csk]
@@ -58,17 +57,5 @@
                  :http-options {:headers headers
                                 :accept :json}}))))
 
-(defn get-ingest-health-fn
-  "Returns the health status of the ingest"
-  [context]
-  (let [{:keys [status body]} (h/request context :ingest
-                                         {:url-fn health-url, :method :get, :raw? true})]
-    (if (= 200 status)
-      {:ok? true :dependencies body}
-      {:ok? false :problem body})))
-
-(defn get-ingest-health
-  "Returns the health of ingest application with timeout handling."
-  [context]
-  (let [timeout-ms (* 1000 (+ 2 (hh/health-check-timeout-seconds)))]
-    (hh/get-health #(get-ingest-health-fn context) timeout-ms)))
+;; Defines health check function
+(h/defhealther get-ingest-health :ingest 2)

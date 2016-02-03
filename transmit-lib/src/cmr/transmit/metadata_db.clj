@@ -7,7 +7,6 @@
   (:require [clj-http.client :as client]
             [clojure.string :as str]
             [cmr.common.services.errors :as errors]
-            [cmr.common.services.health-helper :as hh]
             [cmr.common.services.messages :as cmsg]
             [cmr.transmit.config :as config]
             [cheshire.core :as json]
@@ -292,24 +291,3 @@
       (errors/internal-error!
         (format "Save concept failed. MetadataDb app response status code: %s response: %s"
                 status response)))))
-
-(defn get-metadata-db-health-fn
-  "Returns the health status of the metadata db"
-  [context]
-  (let [conn (config/context->app-connection context :metadata-db)
-        request-url (str (conn/root-url conn) "/health")
-        response (client/get request-url (merge
-                                           (config/conn-params conn)
-                                           {:accept :json
-                                            :throw-exceptions false}))
-        {:keys [status body]} response
-        result (json/decode body true)]
-    (if (= 200 status)
-      {:ok? true :dependencies result}
-      {:ok? false :problem result})))
-
-(defn get-metadata-db-health
-  "Returns the metadata-db health with timeout handling."
-  [context]
-  (let [timeout-ms (* 1000 (+ 2 (hh/health-check-timeout-seconds)))]
-    (hh/get-health #(get-metadata-db-health-fn context) timeout-ms)))

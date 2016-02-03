@@ -10,6 +10,7 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.util :as util]
             [cmr.transmit.metadata-db :as meta-db]
+            [cmr.transmit.metadata-db2 :as meta-db2]
             [cmr.transmit.index-set :as tis]
             [cmr.transmit.echo.rest :as rest]
             [cmr.transmit.cubby :as cubby]
@@ -271,7 +272,7 @@
   {:elastic_search #(es-util/health % :db)
    :echo rest/health
    :cubby cubby/get-cubby-health
-   :metadata-db meta-db/get-metadata-db-health
+   :metadata-db meta-db2/get-metadata-db-health
    :index-set tis/get-index-set-health
    :rabbit-mq (fn [context]
                 (when-let [qb (get-in context [:system :queue-broker])]

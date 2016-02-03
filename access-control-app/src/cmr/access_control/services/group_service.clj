@@ -1,14 +1,15 @@
 (ns cmr.access-control.services.group-service
-    "Provides functions for creating, updating, deleting, retrieving, and finding groups."
-    (:require [cmr.transmit.metadata-db2 :as mdb]
-              [cmr.transmit.echo.tokens :as tokens]
-              [cmr.common.concepts :as concepts]
-              [cmr.common.services.errors :as errors]
-              [cmr.common.mime-types :as mt]
-              [cmr.common.validations.core :as v]
-              [cmr.transmit.urs :as urs]
-              [cmr.access-control.services.group-service-messages :as msg]
-              [clojure.edn :as edn]))
+  "Provides functions for creating, updating, deleting, retrieving, and finding groups."
+  (:require [cmr.transmit.metadata-db2 :as mdb]
+            [cmr.transmit.echo.rest :as rest]
+            [cmr.transmit.echo.tokens :as tokens]
+            [cmr.common.concepts :as concepts]
+            [cmr.common.services.errors :as errors]
+            [cmr.common.mime-types :as mt]
+            [cmr.common.validations.core :as v]
+            [cmr.transmit.urs :as urs]
+            [cmr.access-control.services.group-service-messages :as msg]
+            [clojure.edn :as edn]))
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
@@ -57,13 +58,13 @@
   "Saves an updated group concept"
   [context existing-concept updated-group]
   (mdb/save-concept
-   context
-   (-> existing-concept
-       (assoc :metadata (pr-str updated-group)
-              :deleted false
-              :user-id (context->user-id context))
-       (dissoc :revision-date)
-       (update :revision-id inc))))
+    context
+    (-> existing-concept
+        (assoc :metadata (pr-str updated-group)
+               :deleted false
+               :user-id (context->user-id context))
+        (dissoc :revision-date)
+        (update :revision-id inc))))
 
 (defn- save-deleted-group-concept
   "Saves an existing group concept as a tombstone"
@@ -94,9 +95,9 @@
   {:provider-id #(validate-provider-exists context %1 %2)})
 
 (defn- validate-create-group
- "Validates a group create."
- [context group]
- (v/validate! (create-group-validations context) group))
+  "Validates a group create."
+  [context group]
+  (v/validate! (create-group-validations context) group))
 
 (defn- update-group-validations
   "Service level validations when updating a group."
@@ -206,3 +207,14 @@
       :metadata
       edn/read-string
       (get :members [])))
+
+(defn health
+  "Returns the health state of the app."
+  [context]
+  (let [echo-rest-health (rest/health context)
+        metadata-db-health (mdb/get-metadata-db-health context)
+        ok? (every? :ok? [echo-rest-health metadata-db-health])]
+    {:ok? ok?
+     :dependencies {:echo echo-rest-health
+                    :metadata-db metadata-db-health}}))
+

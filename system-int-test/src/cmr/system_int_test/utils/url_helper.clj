@@ -399,3 +399,11 @@
   []
   (format "http://localhost:%s/translate-granule-entries" (transmit-config/virtual-product-port)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Access Control URLs
+
+(defn access-control-health-url
+  "URL to check access control health."
+  []
+  (format "http://localhost:%s/health" (transmit-config/access-control-port)))
+
