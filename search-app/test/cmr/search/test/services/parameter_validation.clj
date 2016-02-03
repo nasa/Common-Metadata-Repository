@@ -22,9 +22,9 @@
                                                     :echo-compatible "true"
                                                     :foo 1
                                                     :bar 2})))))
-    (is (= ["Parameter [page_size] was not recognized."]
-           (pv/unrecognized-tile-params-validation {:page-size 1
-                                                    :point "50, 50"})))
+  (is (= ["Parameter [page_size] was not recognized."]
+         (pv/unrecognized-tile-params-validation {:page-size 1
+                                                  :point "50, 50"})))
   (testing "invalid options param names"
     (is (= [] (pv/unrecognized-params-in-options-validation :collection valid-params)))
     (is (= ["Parameter [foo] with option was not recognized."]
@@ -59,8 +59,8 @@
     (is (= ["Parameter [concept_id] must have a single value or multiple values."
             "Parameter [platform] must have a single value or multiple values."]
            (pv/multiple-value-validation :collection {:concept-id {0 "C1-PROV1"}
-                                                    :platform {0 "bar"}
-                                                    :page-size 10}))))
+                                                      :platform {0 "bar"}
+                                                      :page-size 10}))))
 
   ;; Page Size
   (testing "Search with large page size"

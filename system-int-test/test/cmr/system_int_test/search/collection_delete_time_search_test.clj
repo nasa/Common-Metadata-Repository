@@ -23,9 +23,9 @@
   (do
     (dev-sys-util/reset)
     (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
-    (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"}))
+    (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"})))
 
-)
+
 
 (deftest collection-delete-time-test
   (s/only-with-in-memory-database
@@ -60,28 +60,28 @@
       (index/wait-until-indexed)
 
       (testing "We can find everything before they expire"
-        (is (d/refs-match? all-colls (search/find-refs :collection {})))
-        (is (d/refs-match? all-grans (search/find-refs :granule {}))))
+        (d/assert-refs-match all-colls (search/find-refs :collection {}))
+        (d/assert-refs-match all-grans (search/find-refs :granule {})))
 
       (testing "And after the job runs we can still find everything"
         (ingest/cleanup-expired-collections)
         (index/wait-until-indexed)
-        (is (d/refs-match? all-colls (search/find-refs :collection {})))
-        (is (d/refs-match? all-grans (search/find-refs :granule {}))))
+        (d/assert-refs-match all-colls (search/find-refs :collection {}))
+        (d/assert-refs-match all-grans (search/find-refs :granule {})))
 
       (testing "Time can advance part way but the collections still won't be cleaned up"
         (dev-sys-util/advance-time! 99)
         (ingest/cleanup-expired-collections)
         (index/wait-until-indexed)
-        (is (d/refs-match? all-colls (search/find-refs :collection {})))
-        (is (d/refs-match? all-grans (search/find-refs :granule {}))))
+        (d/assert-refs-match all-colls (search/find-refs :collection {}))
+        (d/assert-refs-match all-grans (search/find-refs :granule {})))
 
       (testing "collections are removed after their expiration date"
         (dev-sys-util/advance-time! 2)
         (ingest/cleanup-expired-collections)
         (index/wait-until-indexed)
-        (is (d/refs-match? [coll4 coll5 coll6] (search/find-refs :collection {})))
-        (is (d/refs-match? [gran4 gran5 gran6] (search/find-refs :granule {})))))))
+        (d/assert-refs-match [coll4 coll5 coll6] (search/find-refs :collection {}))
+        (d/assert-refs-match [gran4 gran5 gran6] (search/find-refs :granule {}))))))
 
 
 

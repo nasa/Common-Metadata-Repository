@@ -1,7 +1,7 @@
 (ns cmr.search.services.parameters.converters.equator-crossing-longitude
   "Contains functions for converting equator-crossing-longitude search parameters to a query model."
   (:require [cmr.search.models.query :as qm]
-            [cmr.search.services.parameters.conversion :as p]
+            [cmr.common-app.services.search.params :as p]
             [cmr.search.services.messages.orbit-number-messages :as msg]
             [cmr.common.services.errors :as errors]
             [cmr.common.parameter-parser :as parser])

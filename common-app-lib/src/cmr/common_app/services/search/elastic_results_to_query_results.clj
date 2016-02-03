@@ -1,8 +1,7 @@
-(ns cmr.search.data.elastic-results-to-query-results
+(ns cmr.common-app.services.search.elastic-results-to-query-results
   "Contains functions to convert elasticsearch results to query results."
   (:require [clojure.string :as s]
-            [cmr.search.models.results :as results]
-            [cmr.search.services.url-helper :as url]))
+            [cmr.common-app.services.search.results :as results]))
 
 (defmulti elastic-result->query-result-item
   "Converts the Elasticsearch result into the result expected from execute-query for the given format."

@@ -2,6 +2,7 @@
   "An in memory implementation of the metadata database."
   (:require [cmr.metadata-db.data.concepts :as concepts]
             [cmr.metadata-db.data.providers :as providers]
+            [cmr.metadata-db.data.oracle.concepts]
             [cmr.common.concepts :as cc]
             [cmr.common.lifecycle :as lifecycle]
             [clj-time.core :as t]
@@ -96,8 +97,8 @@
    next-transaction-id-atom
 
    ;; A map of provider ids to providers that exist
-   providers-atom
-   ]
+   providers-atom]
+
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle

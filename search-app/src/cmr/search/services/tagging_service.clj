@@ -8,7 +8,7 @@
             [cmr.common.concepts :as concepts]
             [cmr.search.services.tagging.tagging-service-messages :as msg]
             [cmr.search.services.json-parameters.conversion :as jp]
-            [cmr.search.services.query-execution :as qe]
+            [cmr.common-app.services.search.query-execution :as qe]
             [cmr.search.services.query-service :as query-service]
             [clojure.string :as str]
             [clojure.edn :as edn]

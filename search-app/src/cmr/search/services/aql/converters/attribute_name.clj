@@ -3,7 +3,7 @@
   (:require [cmr.common.xml :as cx]
             [cmr.search.services.aql.conversion :as a]
             [cmr.search.models.query :as qm]
-            [cmr.search.models.group-query-conditions :as gc]))
+            [cmr.common-app.services.search.group-query-conditions :as gc]))
 
 (defn- attrib-name-condition
   "Returns the AttributeNameAndGroupCondition for the given attrib-name"

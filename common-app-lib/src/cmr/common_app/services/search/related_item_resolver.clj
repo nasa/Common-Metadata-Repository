@@ -1,10 +1,10 @@
-(ns cmr.search.services.query-walkers.related-item-resolver
+(ns cmr.common-app.services.search.related-item-resolver
   "Finds RelatedItemQueryConditions in a query, executes them, processes the results and replaces
   them with the retrieved condition"
-  (:require [cmr.search.models.query :as qm]
-            [cmr.search.models.group-query-conditions :as gc]
-            [cmr.search.data.complex-to-simple :as c2s]
-            [cmr.search.data.elastic-search-index :as idx]))
+  (:require [cmr.common-app.services.search.query-model :as qm]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
+            [cmr.common-app.services.search.complex-to-simple :as c2s]
+            [cmr.common-app.services.search.elastic-search-index :as idx]))
 
 (defprotocol ResolveRelatedItemQueryCondition
   (resolve-related-item-conditions
@@ -13,28 +13,28 @@
 
 (extend-protocol ResolveRelatedItemQueryCondition
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.search.models.query.Query
+  cmr.common_app.services.search.query_model.Query
 
   (resolve-related-item-conditions
     [query context]
     (update-in query [:condition] #(resolve-related-item-conditions % context)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.search.models.query.ConditionGroup
+  cmr.common_app.services.search.query_model.ConditionGroup
 
   (resolve-related-item-conditions
     [condition context]
     (update-in condition [:conditions] (partial mapv #(resolve-related-item-conditions % context))))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.search.models.query.NegatedCondition
+  cmr.common_app.services.search.query_model.NegatedCondition
 
   (resolve-related-item-conditions
     [condition context]
     (update-in condition [:condition] #(resolve-related-item-conditions % context)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.search.models.query.RelatedItemQueryCondition
+  cmr.common_app.services.search.query_model.RelatedItemQueryCondition
 
   (resolve-related-item-conditions
     [{:keys [concept-type condition result-fields results-to-condition-fn]} context]

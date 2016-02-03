@@ -53,7 +53,7 @@
   (let [[c1-p1 c2-p1 c3-p1 c4-p1 c5-p1
          c1-p2 c2-p2 c3-p2 c4-p2 c5-p2] (for [p ["PROV1" "PROV2"]
                                               n (range 1 6)]
-                                          (d/ingest p (dc/collection {:entry-title (str "coll" n )})))
+                                          (d/ingest p (dc/collection {:entry-title (str "coll" n)})))
 
         ;; Wait until collections are indexed so tags can be associated with them
         _ (index/wait-until-indexed)
@@ -303,7 +303,7 @@
 
 (deftest search-for-collections-with-include-tags-test
   (let [[coll1 coll2 coll3 coll4] (for [n (range 1 5)]
-                                    (d/ingest "PROV1" (dc/collection {:entry-title (str "coll" n )})))
+                                    (d/ingest "PROV1" (dc/collection {:entry-title (str "coll" n)})))
         coll5 (d/ingest "PROV2" (dc/collection))
         all-prov1-colls [coll1 coll2 coll3 coll4]
 

@@ -43,7 +43,7 @@
     condition))
 
 (defmethod jp/parse-json-condition :additional-attribute
-  [_ value]
+  [_ _ value]
   (let [condition (-> value
                       validate-attribute-condition
                       (update-in [:type] keyword)

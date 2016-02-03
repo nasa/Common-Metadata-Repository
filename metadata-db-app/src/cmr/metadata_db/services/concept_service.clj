@@ -29,8 +29,7 @@
             [clojure.string]
             [clj-time.core :as t]
             [cmr.common.time-keeper :as time-keeper]
-            [cmr.metadata-db.services.concept-constraints :as cc]
-            [cmr.message-queue.services.queue :as queue]))
+            [cmr.metadata-db.services.concept-constraints :as cc]))
 
 
 (def num-revisions-to-keep-per-concept-type
@@ -375,7 +374,6 @@
                                           (try-to-save db provider))]
             (ingest-events/publish-event
               context
-              (config/ingest-exchange-name)
               (ingest-events/concept-delete-event revisioned-tombstone))
             revisioned-tombstone)))
       (if revision-id
@@ -406,7 +404,6 @@
                        (try-to-save db provider))]
       (ingest-events/publish-event
         context
-        (config/ingest-exchange-name)
         (ingest-events/concept-update-event concept))
       concept)))
 

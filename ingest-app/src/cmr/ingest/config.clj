@@ -24,15 +24,15 @@
     (ingest-username)
     (ingest-password)))
 
-(defconfig ingest-exchange-name
-  "The ingest exchange to which messages are published."
-  {:default "cmr_ingest.exchange"})
+(defconfig provider-exchange-name
+  "The ingest exchange to which provider change messages are published."
+  {:default "cmr_ingest_provider.exchange"})
 
 (defn rabbit-mq-config
   "Returns the rabbit mq configuration for the ingest application."
   []
   (assoc (rmq-conf/default-config)
-         :exchanges [(ingest-exchange-name)]))
+         :exchanges [(provider-exchange-name)]))
 
 (defconfig publish-queue-timeout-ms
   "Number of milliseconds to wait for a publish request to be confirmed before considering the
