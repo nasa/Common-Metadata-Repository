@@ -5,6 +5,18 @@
             [config.mdb-migrate-helper :as h]
             [migrations.028-create-global-transaction-sequence :as m28]))
 
+;; This migration assigns transaction-ids to all existing concepts except granules (they will be
+;; handled by a separate job). In order to avoid collisions with new transaction-ids generated
+;; for concepts ingested while this migration is running, and to avoid the need to use locking,
+;; this migration creates a separate sequence from the global transaction-id sequence used by the
+;; metadata-db code when saving concepts. The migration sequence created here begins half way below
+;; the start of the global transaction-id seqeunece. At the time of this writing that would
+;; be 1,000,000,000. Since the global transaction-id sequence used by metadata-db starts
+;; at 2,000,000,000 and there are less than 400,000,000 concepts at this time, the
+;; the transaction-ids assigned to existing concepts by this migration should stay well
+;; below those assigned to newer conepts ingested while it is running. This would not be
+;; the case if this migration were to be run at a later date with more than 999,999,999 existing
+;; concepts.
 (defn up
   "Migrates the database up to version 31."
   []

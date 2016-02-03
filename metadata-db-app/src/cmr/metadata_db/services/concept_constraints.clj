@@ -66,17 +66,17 @@
                               (filter #(= granule-ur (get-in % [:extra-fields :granule-ur]))))]
     (validate-num-concepts-found combined-matches concept :granule-ur granule-ur)))
 
-;; There is a race condtion that needs to be checked with regard to transaction-ids.
-;; If two revisions of a concpet are ingested at the same time with revision-id 2 and
-;; revision-id 3, then both revisisons will pass the revision-id test (assuming there is no
-;; higher revision) and get saved. The order with which they are saved is indeterminate,
-;; so it is possible for revision-id 2 to get saved last and end up with a higher transaction-id.
-;; This would mean it would be the one kept in elastic-search.
-;; This constraint will check to see if a saved revision exists that is either lower
-;; than this revision with a higher transaction-id or higher with lower transaction-id.
-;; In either case it returns an error explaining the problem.
 (defn concept-transaction-id-constraint
-  "Verifies that there are no earlier revisions with a higher transaction-id."
+  "Verifies that there are no earlier revisions with a higher transaction-id.
+  There is a race condition that needs to be checked with regard to transaction-ids.
+  If two revisions of a concept are ingested at the same time with revision-id 2 and
+  revision-id 3, then both revisions will pass the revision-id test (assuming there is no)
+  higher revision and get saved. The order with which they are saved is indeterminate,
+  so it is possible for revision-id 2 to get saved last and end up with a higher transaction-id.
+  This would mean it would be the one kept in elastic-search.
+  This constraint will check to see if a saved revision exists that is either lower
+  than this revision with a higher transaction-id or higher with lower transaction-id.
+  In either case it returns an error explaining the problem."
   [db provider concept]
   (let [concept-id (:concept-id concept)
         this-revision-id (:revision-id concept)
