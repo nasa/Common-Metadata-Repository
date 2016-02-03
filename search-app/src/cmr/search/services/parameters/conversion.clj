@@ -94,7 +94,7 @@
    :category :string
    :originator-id :string})
 
-(defmethod common-params/always-case-sensitive-fields :collection
+(defmethod common-params/always-case-sensitive-fields :granule
   [_]
   #{:concept-id :collection-concept-id})
 
@@ -118,9 +118,11 @@
         {granule-concept-ids :granule
          collection-concept-ids :collection} (group-by (comp :concept-type cc/parse-concept-id) values)
         collection-cond (when (seq collection-concept-ids)
-                          (common-params/string-parameter->condition concept-type :collection-concept-id collection-concept-ids {}))
+                          (common-params/string-parameter->condition
+                           concept-type :collection-concept-id collection-concept-ids {}))
         granule-cond (when (seq granule-concept-ids)
-                       (common-params/string-parameter->condition concept-type :concept-id granule-concept-ids options))]
+                       (common-params/string-parameter->condition
+                        concept-type :concept-id granule-concept-ids options))]
     (if (and collection-cond granule-cond)
       (gc/and-conds [collection-cond granule-cond])
       (or collection-cond granule-cond))))
