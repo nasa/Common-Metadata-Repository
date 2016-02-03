@@ -187,6 +187,7 @@
     (rmq-conf/set-rabbit-mq-ttls! ttls)
     (-> (indexer-config/rabbit-mq-config)
         (rmq-conf/merge-configs (vp-config/rabbit-mq-config))
+        (rmq-conf/merge-configs (access-control-config/rabbit-mq-config))
         (assoc :ttls ttls)
         rmq/create-queue-broker
         wrapper/create-queue-broker-wrapper)))
