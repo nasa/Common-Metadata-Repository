@@ -200,7 +200,7 @@
   [concept-type _ value]
   (let [parse-tag-condition (fn [[cond-name cond-value]]
                               (tag-related/tag-related-item-query-condition
-                                (parse-json-string-condition cond-name cond-value)))]
+                                (parse-json-string-condition concept-type cond-name cond-value)))]
     (gc/and-conds (map parse-tag-condition value))))
 
 (defn parse-json-query

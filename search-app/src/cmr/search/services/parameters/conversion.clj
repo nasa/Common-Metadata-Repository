@@ -169,7 +169,7 @@
         (map #(common-params/parameter->condition concept-type param % options) value))
       (gc/or-conds
         (map #(common-params/parameter->condition concept-type param % options) value)))
-    (let [case-sensitive (common-params/case-sensitive-field? :readable-granule-name options)
+    (let [case-sensitive (common-params/case-sensitive-field? concept-type :readable-granule-name options)
           pattern (common-params/pattern-field? concept-type :readable-granule-name options)]
       (gc/or-conds
         [(cqm/string-condition :granule-ur value case-sensitive pattern)
@@ -197,7 +197,7 @@
         (map #(common-params/parameter->condition concept-type param % options) value))
       (gc/or-conds
         (map #(common-params/parameter->condition concept-type param % options) value)))
-    (let [case-sensitive (common-params/case-sensitive-field? :collection-data-type options)
+    (let [case-sensitive (common-params/case-sensitive-field? concept-type :collection-data-type options)
           pattern (common-params/pattern-field? concept-type :collection-data-type options)]
       (if (or (= "SCIENCE_QUALITY" value)
               (and (= "SCIENCE_QUALITY" (str/upper-case value))

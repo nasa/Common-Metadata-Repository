@@ -25,7 +25,7 @@
   [context {:keys [concept-id revision-id]}])
 
 (defmethod handle-event :provider-delete
-  [context _ {:keys [provider-id]}])
+  [context {:keys [provider-id]}])
 ;; TODO remove all the indexed items for this provider
 
 (defn subscribe-to-events
