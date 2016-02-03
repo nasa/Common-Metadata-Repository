@@ -21,6 +21,10 @@
      (with-prefix :north) north
      (with-prefix :east) east
      (with-prefix :south) south
+     (with-prefix :west-doc-values) west
+     (with-prefix :north-doc-values) north
+     (with-prefix :east-doc-values) east
+     (with-prefix :south-doc-values) south
      (with-prefix :crosses-antimeridian) crosses-antimeridian?}))
 
 (def west-hemisphere

@@ -1,9 +1,10 @@
-(ns cmr.virtual-product.source-to-virtual-mapping
+(ns cmr.virtual-product.data.source-to-virtual-mapping
   "Defines source to vritual granule mapping rules."
   (:require [cmr.umm.granule :as umm-g]
             [clojure.string :as str]
             [cmr.common.mime-types :as mt]
-            [cmr.virtual-product.config :as vp-config])
+            [cmr.virtual-product.config :as vp-config]
+            [cmr.virtual-product.data.ast-l1a :as l1a])
   (:import java.util.regex.Pattern))
 
 (def source-granule-ur-additional-attr-name
@@ -51,34 +52,34 @@
   "A map of source collection provider id and entry titles to virtual product configs"
   {["LPDAAC_ECS" "ASTER L1A Reconstructed Unprocessed Instrument Data V003"]
    {:short-name "AST_L1A"
-    :virtual-collections [{:entry-title "ASTER On-Demand L2 Surface Emissivity"
+    :virtual-collections [{:entry-title "ASTER L2 Surface Emissivity V003"
                            :short-name "AST_05"
                            :matcher tir-mode?}
-                          {:entry-title "ASTER On-Demand L2 Surface Reflectance"
+                          {:entry-title "ASTER L2 Surface Reflectance SWIR and ASTER L2 Surface Reflectance VNIR V003"
                            :short-name "AST_07"
                            :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
-                          {:entry-title "ASTER On-Demand L2 Surface Reflectance VNIR and SWIR Crosstalk-Corrected"
+                          {:entry-title "ASTER L2 Surface Reflectance VNIR and Crosstalk Corrected SWIR V003"
                            :short-name "AST_07XT"
                            :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
-                          {:entry-title "ASTER On-Demand L2 Surface Kinetic Temperature"
+                          {:entry-title "ASTER L2 Surface Temperature V003"
                            :short-name "AST_08"
                            :matcher tir-mode?}
-                          {:entry-title "ASTER On-Demand L2 Surface Radiance SWIR and VNIR"
+                          {:entry-title "ASTER L2 Surface Radiance VNIR and SWIR V003"
                            :short-name "AST_09"
                            :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
-                          {:entry-title "ASTER On-Demand L2 Surface Radiance VNIR and SWIR Crosstalk-Corrected"
+                          {:entry-title "ASTER L2 Surface Radiance - VNIR and Crosstalk Corrected SWIR V003"
                            :short-name "AST_09XT"
                            :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
-                          {:entry-title "ASTER On-Demand L2 Surface Radiance TIR"
+                          {:entry-title "ASTER L2 Surface Radiance TIR V003"
                            :short-name "AST_09T"
                            :matcher tir-mode?}
-                          {:entry-title "ASTER On-Demand L3 Digital Elevation Model, GeoTIF Format"
+                          {:entry-title "ASTER Digital Elevation Model V003"
                            :short-name "AST14DEM"
                            :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}
-                          {:entry-title "ASTER On-Demand L3 Orthorectified Images, GeoTIF Format"
+                          {:entry-title "ASTER Registered Radiance at the Sensor - Orthorectified V003"
                            :short-name "AST14OTH"
                            :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}
-                          {:entry-title "ASTER On-Demand L3 DEM and Orthorectified Images, GeoTIF Format"
+                          {:entry-title "ASTER Orthorectified Digital Elevation Model (DEM) V003"
                            :short-name "AST14DMO"
                            :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}]}
    ["GSFCS4PA" "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003"]
@@ -339,6 +340,12 @@
                                         "FullResolutionThermalBrowseAvailable"}
                                         (:name %)) psas)))))
 
+(defmethod update-virtual-granule-umm ["LPDAAC_ECS" "AST_L1A"]
+  [virtual-umm provider-id source-short-name virtual-short-name]
+  (-> virtual-umm
+      (update-in [:product-specific-attributes]
+                 (fn [psas] (filter #((l1a/short-name->additional-attributes virtual-short-name)
+                                      (:name %)) psas)))))
 
 (defn generate-virtual-granule-umm
   "Generate the virtual granule umm based on source granule umm"

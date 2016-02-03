@@ -1,20 +1,11 @@
 (ns cmr.transmit.cubby
   "Provide functions for accessing the cubby app"
-  (:require [cmr.common.services.health-helper :as hh]
-            [cmr.transmit.connection :as conn]
+  (:require [cmr.transmit.connection :as conn]
             [ring.util.codec :as codec]
             [cmr.transmit.http-helper :as h]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
-
-(defn- reset-url
-  [conn]
-  (format "%s/reset" (conn/root-url conn)))
-
-(defn- health-url
-  [conn]
-  (format "%s/health" (conn/root-url conn)))
 
 (defn- keys-url
   [conn]
@@ -65,25 +56,8 @@
   ([context raw]
    (h/request context :cubby {:url-fn keys-url, :method :delete, :raw? raw})))
 
-(defn reset
-  "Clears all values in the cache service"
-  ([context]
-   (reset context false))
-  ([context raw]
-   (h/request context :cubby {:url-fn reset-url, :method :post, :raw? raw :use-system-token? true})))
+;; Defines reset function
+(h/defresetter reset :cubby)
 
-(defn get-cubby-health-fn
-  "Returns the health status of cubby"
-  [context]
-  (let [{:keys [status body]} (h/request context :cubby
-                                         {:url-fn health-url, :method :get, :raw? true})]
-    (if (= 200 status)
-      {:ok? true :dependencies body}
-      {:ok? false :problem body})))
-
-(defn get-cubby-health
-  "Returns the cubby health with timeout handling."
-  [context]
-  (let [timeout-ms (* 1000 (+ 2 (hh/health-check-timeout-seconds)))]
-    (hh/get-health #(get-cubby-health-fn context) timeout-ms)))
-
+;; Defines health check function
+(h/defhealther get-cubby-health :cubby 2)

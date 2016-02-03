@@ -1,6 +1,7 @@
 (ns cmr.ingest.services.ingest-service
   (:require [cmr.oracle.connection :as conn]
             [cmr.transmit.metadata-db :as mdb]
+            [cmr.transmit.metadata-db2 :as mdb2]
             [cmr.transmit.echo.rest :as rest]
             [cmr.transmit.cubby :as cubby]
             [cmr.ingest.data.indexer :as indexer]
@@ -189,7 +190,7 @@
   "A map of keywords to functions to be called for health checks"
   {:oracle #(conn/health (pah/context->db %))
    :echo rest/health
-   :metadata-db mdb/get-metadata-db-health
+   :metadata-db mdb2/get-metadata-db-health
    :indexer indexer/get-indexer-health
    :cubby cubby/get-cubby-health
    :rabbit-mq #(queue/health (get-in % [:system :queue-broker]))})

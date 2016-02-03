@@ -1,4 +1,5 @@
-(ns cmr.access-control.services.group-service-messages)
+(ns cmr.access-control.services.group-service-messages
+  (:require [clojure.string :as str]))
 
 (def token-required-for-group-modification
   "Groups cannot be modified without a valid user token.")
@@ -26,3 +27,7 @@
 (defn provider-does-not-exist
   [provider-id]
   (format "Provider with provider-id [%s] does not exist." provider-id))
+
+(defn users-do-not-exist
+  [usernames]
+  (format "The following users do not exist [%s]" (str/join ", " usernames)))

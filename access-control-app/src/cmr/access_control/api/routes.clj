@@ -30,9 +30,18 @@
                 :legacy-guid {:type :string :minLength 1 :maxLength 50}}
    :required [:name :description]})
 
+
 (def ^:private group-schema
   "The JSON schema used to validate groups"
   (js/parse-json-schema group-schema-structure))
+
+(def ^:private group-members-schema-structure
+ "Schema defining list of usernames sent to add or remove members in a group"
+ {:type :array :items {:type :string :minLength 1 :maxLength 50}})
+
+(def ^:private group-members-schema
+  "The JSON schema used to validate a list of group members"
+  (js/parse-json-schema group-members-schema-structure))
 
 (defn- api-response
   "Creates a successful response with the given data response"
@@ -52,6 +61,12 @@
   "Validates the group JSON string against the schema. Throws a service error if it is invalid."
   [json-str]
   (when-let [errors (seq (js/validate-json group-schema json-str))]
+    (errors/throw-service-errors :bad-request errors)))
+
+(defn- validate-group-members-json
+  "Validates the group mebers JSON string against the schema. Throws a service error if it is invalid."
+  [json-str]
+  (when-let [errors (seq (js/validate-json group-members-schema json-str))]
     (errors/throw-service-errors :bad-request errors)))
 
 (defn create-group
@@ -84,6 +99,30 @@
   [context concept-id]
   (api-response (group-service/delete-group context concept-id)))
 
+(defn get-members
+  "Handles a request to fetch group members"
+  [context concept-id]
+  (api-response (group-service/get-members context concept-id)))
+
+(defn add-members
+  "Handles a request to add group members"
+  [context headers body concept-id]
+  (validate-content-type headers)
+  (validate-group-members-json body)
+  (->> (json/parse-string body true)
+       (group-service/add-members context concept-id)
+       api-response))
+
+(defn remove-members
+  "Handles a request to remove group members"
+  [context headers body concept-id]
+  (validate-content-type headers)
+  (validate-group-members-json body)
+  (->> (json/parse-string body true)
+       (group-service/remove-members context concept-id)
+       api-response))
+
+
 (def admin-api-routes
   "The administrative control routes."
   (routes
@@ -101,6 +140,9 @@
       (api-docs/docs-routes (get-in system [:public-conf :protocol])
                             (get-in system [:public-conf :relative-root-url])
                             "public/access_control_index.html")
+
+      ;; add routes for checking health of the application
+      (common-routes/health-api-routes group-service/health)
 
       (context "/groups" []
         (POST "/" {:keys [request-context headers body]}
@@ -123,7 +165,21 @@
           (PUT "/" {:keys [request-context headers body]}
             ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
             (acl/verify-ingest-management-permission request-context :update)
-            (update-group request-context headers (slurp body) group-id)))))
+            (update-group request-context headers (slurp body) group-id))
+
+          (context "/members" []
+            (GET "/" {:keys [request-context]}
+              (get-members request-context group-id))
+
+            (POST "/" {:keys [request-context headers body]}
+              ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
+              (acl/verify-ingest-management-permission request-context :update)
+              (add-members request-context headers (slurp body) group-id))
+
+            (DELETE "/" {:keys [request-context headers body]}
+              ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
+              (acl/verify-ingest-management-permission request-context :update)
+              (remove-members request-context headers (slurp body) group-id))))))
 
     (route/not-found "Not Found")))
 

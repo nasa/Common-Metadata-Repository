@@ -103,7 +103,7 @@
                                                          :small false})]
       (is (= [409 ["Provider with short name [S6] already exists. Its provider id is [PROV6]."]]
              [status errors]))))
-  (testing "update nonexistant provider"
+  (testing "update non-existent provider"
     (is (= 404 (:status (util/update-provider {:provider-id "PROV2"
                                                :short-name "S2"
                                                :cmr-only true

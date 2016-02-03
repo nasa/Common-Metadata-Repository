@@ -48,7 +48,7 @@
         {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
-                orbit-parameters highlighted-summary-snippets tags]} reference
+                orbit-parameters highlighted-summary-snippets tags organizations]} reference
         shape-result (atom-spatial/shapes->json shapes)
         granule-count (get granule-counts-map id 0)
         result (merge {:id id
@@ -63,6 +63,7 @@
                        :collection_data_type collection-data-type
                        :data_center data-center
                        :archive_center archive-center
+                       :organizations organizations
                        :processing_level_id processing-level-id
                        :time_start start-date
                        :time_end end-date

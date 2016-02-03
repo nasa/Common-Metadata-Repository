@@ -104,6 +104,7 @@
           [metadata-format] :metadata-format
           [provider-id] :provider-id
           [archive-center] :archive-center
+          organizations :data-center
           [start-date] :start-date
           [end-date] :end-date
           atom-links :atom-links
@@ -141,6 +142,7 @@
             :original-format (metadata-format->atom-original-format metadata-format)
             :data-center provider-id
             :archive-center archive-center
+            :organizations organizations
             :start-date start-date
             :end-date end-date
             :atom-links atom-links
@@ -304,6 +306,11 @@
              (when (:inherited atom-link)
                (x/element :echo:inherited))))
 
+(defn- organization->xml-element
+  "Convert an organization to an XML element"
+  [org]
+  (x/element :echo:organization {} org))
+
 (defn- orbit-parameters->attribute-map
   "Convert orbit parameters into attributes for an XML element"
   [orbit-params]
@@ -366,7 +373,7 @@
         {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
-                orbit-parameters]} reference
+                orbit-parameters organizations]} reference
         granule-count (get granule-counts-map id 0)]
     (x/element :entry {}
                (x/element :id {} id)
@@ -380,6 +387,7 @@
                (when collection-data-type (x/element :echo:collectionDataType {} collection-data-type))
                (x/element :echo:dataCenter {} data-center)
                (when archive-center (x/element :echo:archiveCenter {} archive-center))
+               (map organization->xml-element organizations)
                (when processing-level-id (x/element :echo:processingLevelId {} processing-level-id))
                (when start-date (x/element :time:start {} (str start-date)))
                (when end-date (x/element :time:end {} (str end-date)))
