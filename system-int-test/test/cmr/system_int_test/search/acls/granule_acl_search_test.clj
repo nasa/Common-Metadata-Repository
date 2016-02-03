@@ -47,65 +47,65 @@
     (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"} {:grant-all-search? false})
     (ingest/create-provider {:provider-guid "provguid3" :provider-id "PROV3"} {:grant-all-search? false})
     (ingest/create-provider {:provider-guid "provguid4" :provider-id "PROV4"} {:grant-all-search? false})
-    (ingest/create-provider {:provider-guid "provguid5" :provider-id "PROV5"} {:grant-all-search? false}))
-  )
+    (ingest/create-provider {:provider-guid "provguid5" :provider-id "PROV5"} {:grant-all-search? false})))
+
 
 (deftest granule-search-with-acls-test
   (do
-    ;; -- PROV1 --
-    ;; Guests have access to coll1
-    (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid1" (e/coll-id ["coll1" "collnonexist"])))
-    ;; coll 2 has no granule permissions
-    ;; Permits granules with access values.
-    (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid1" nil (e/gran-id {:min-value 10
-                                                                                   :max-value 20
-                                                                                   :include-undefined true})))
+   ;; -- PROV1 --
+   ;; Guests have access to coll1
+   (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid1" (e/coll-id ["coll1" "collnonexist"])))
+   ;; coll 2 has no granule permissions
+   ;; Permits granules with access values.
+   (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid1" nil (e/gran-id {:min-value 10
+                                                                                  :max-value 20
+                                                                                  :include-undefined true})))
 
-    ;; -- PROV2 --
-    ;; Combined collection identifier and granule identifier
-    (e/grant-guest
-      (s/context)
-      (e/gran-catalog-item-id "provguid2" (e/coll-id ["coll7"]) (e/gran-id {:min-value 30
-                                                                            :max-value 40})))
-    (e/grant-registered-users
-      (s/context)
-      (e/gran-catalog-item-id "provguid2" (e/coll-id ["coll3"] {:min-value 1 :max-value 3})))
-    (e/grant-registered-users
-      (s/context)
-      (e/gran-catalog-item-id "provguid2" (e/coll-id [] {:min-value 4 :max-value 6})))
+   ;; -- PROV2 --
+   ;; Combined collection identifier and granule identifier
+   (e/grant-guest
+    (s/context)
+    (e/gran-catalog-item-id "provguid2" (e/coll-id ["coll7"]) (e/gran-id {:min-value 30
+                                                                          :max-value 40})))
+   (e/grant-registered-users
+    (s/context)
+    (e/gran-catalog-item-id "provguid2" (e/coll-id ["coll3"] {:min-value 1 :max-value 3})))
+   (e/grant-registered-users
+    (s/context)
+    (e/gran-catalog-item-id "provguid2" (e/coll-id [] {:min-value 4 :max-value 6})))
 
-    ;; Acls that grant nothing
-    (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid2" (e/coll-id ["nonexist1"])))
-    (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid2" (e/coll-id [] {:min-value 4000 :max-value 4000})))
-    (e/grant-registered-users (s/context) (e/gran-catalog-item-id "provguid2" (e/coll-id ["nonexist2"])))
-    (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid2"
-                                                       (e/coll-id ["notexist3"]) (e/gran-id {:min-value 30
-                                                                                             :max-value 40})))
-    ;; -- PROV3 --
-    ;; Guests have full access to provider 3
-    (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid3"))
+   ;; Acls that grant nothing
+   (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid2" (e/coll-id ["nonexist1"])))
+   (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid2" (e/coll-id [] {:min-value 4000 :max-value 4000})))
+   (e/grant-registered-users (s/context) (e/gran-catalog-item-id "provguid2" (e/coll-id ["nonexist2"])))
+   (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid2"
+                                                      (e/coll-id ["notexist3"]) (e/gran-id {:min-value 30
+                                                                                            :max-value 40})))
+   ;; -- PROV3 --
+   ;; Guests have full access to provider 3
+   (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid3"))
 
-    ;; Added for CMR-835: This should have no effect on other providers.
-    (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid3" (e/coll-id [] {:include-undefined true})))
+   ;; Added for CMR-835: This should have no effect on other providers.
+   (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid3" (e/coll-id [] {:include-undefined true})))
 
 
-    ;; -- PROV4 --
-    ;; no acls
+   ;; -- PROV4 --
+   ;; no acls
 
-    ;; -- PROV5 --
-    ;; lots of access value filters
-    (e/grant-registered-users (s/context)
-                              (e/gran-catalog-item-id "provguid5" (e/coll-id ["coll51"]) (e/gran-id {:include-undefined true})))
-    (e/grant-registered-users (s/context)
-                              (e/gran-catalog-item-id "provguid5" (e/coll-id ["coll52"]) (e/gran-id {:min-value 10})))
-    (e/grant-registered-users (s/context)
-                              (e/gran-catalog-item-id "provguid5" (e/coll-id ["coll53"]) (e/gran-id {:max-value 10})))
+   ;; -- PROV5 --
+   ;; lots of access value filters
+   (e/grant-registered-users (s/context)
+                             (e/gran-catalog-item-id "provguid5" (e/coll-id ["coll51"]) (e/gran-id {:include-undefined true})))
+   (e/grant-registered-users (s/context)
+                             (e/gran-catalog-item-id "provguid5" (e/coll-id ["coll52"]) (e/gran-id {:min-value 10})))
+   (e/grant-registered-users (s/context)
+                             (e/gran-catalog-item-id "provguid5" (e/coll-id ["coll53"]) (e/gran-id {:max-value 10})))
 
-    ;; Grant all collections to guests so that granule counts query can be executed
-    (dotimes [n 5]
-      (e/grant-all (s/context) (e/coll-catalog-item-id (str "provguid" (inc n)))))
+   ;; Grant all collections to guests so that granule counts query can be executed
+   (dotimes [n 5]
+     (e/grant-all (s/context) (e/coll-catalog-item-id (str "provguid" (inc n)))))
 
-    (dev-sys-util/clear-caches))
+   (dev-sys-util/clear-caches))
 
   (let [coll1 (make-coll 1 "PROV1")
         coll2 (make-coll 2 "PROV1")
@@ -187,79 +187,79 @@
 
     (index/wait-until-indexed)
 
-    (testing "refs"
+    (testing "Search for refs"
       (are [expected params]
-           (let [refs-result (search/find-refs :granule params)
-                 match? (d/refs-match? expected refs-result)]
-             (when-not match?
-               (println "Expected:" (map :concept-id expected))
-               (println "Actual:" (map :id (:refs refs-result)))
-               (println "Expected:" (map :granule-ur expected))
-               (println "Actual:" (map :name (:refs refs-result))))
-             match?)
-           guest-permitted-granules {:token guest-token}
-           user-permitted-granules {:token user1-token}
+        (let [refs-result (search/find-refs :granule params)
+              match? (d/refs-match? expected refs-result)]
+          (when-not match?
+            (println "Expected:" (map :concept-id expected))
+            (println "Actual:" (map :id (:refs refs-result)))
+            (println "Expected:" (map :granule-ur expected))
+            (println "Actual:" (map :name (:refs refs-result))))
+          match?)
+        guest-permitted-granules {:token guest-token}
+        user-permitted-granules {:token user1-token}
 
-           ;; Test searching with each collection id as guest and user
-           ;; Entry title searches
-           [gran1 gran2] {:token guest-token :entry-title "coll1"}
-           [gran3 gran5] {:token guest-token :entry-title "coll2"}
-           [gran1 gran2 gran3 gran5 gran11] {:token guest-token :entry-title ["coll1" "coll2" "coll7"]}
+        ;; Test searching with each collection id as guest and user
+        ;; Entry title searches
+        [gran1 gran2] {:token guest-token :entry-title "coll1"}
+        [gran3 gran5] {:token guest-token :entry-title "coll2"}
+        [gran1 gran2 gran3 gran5 gran11] {:token guest-token :entry-title ["coll1" "coll2" "coll7"]}
 
-           ;; provider id
-           (filter #(= "PROV1" (:provider-id %))
-                   guest-permitted-granules)
-           {:token guest-token :provider-id "PROV1"}
+        ;; provider id
+        (filter #(= "PROV1" (:provider-id %))
+                guest-permitted-granules)
+        {:token guest-token :provider-id "PROV1"}
 
-           ;; provider id and entry title
-           [gran1 gran2] {:token guest-token :entry-title "coll1" :provider-id "PROV1"}
-           [] {:token guest-token :entry-title "coll5" :provider-id "PROV1"}
+        ;; provider id and entry title
+        [gran1 gran2] {:token guest-token :entry-title "coll1" :provider-id "PROV1"}
+        [] {:token guest-token :entry-title "coll5" :provider-id "PROV1"}
 
-           ;; concept id
-           [gran1 gran2] {:token guest-token :concept-id (:concept-id coll1)}
-           [gran3 gran5] {:token guest-token :concept-id (:concept-id coll2)}
-           guest-permitted-granules
-           {:token guest-token :concept-id (cons "C999-PROV1" (map :concept-id all-colls))}
-           user-permitted-granules
-           {:token user1-token :concept-id (cons "C999-PROV1" (map :concept-id all-colls))}))
+        ;; concept id
+        [gran1 gran2] {:token guest-token :concept-id (:concept-id coll1)}
+        [gran3 gran5] {:token guest-token :concept-id (:concept-id coll2)}
+        guest-permitted-granules
+        {:token guest-token :concept-id (cons "C999-PROV1" (map :concept-id all-colls))}
+        user-permitted-granules
+        {:token user1-token :concept-id (cons "C999-PROV1" (map :concept-id all-colls))}))
 
     (testing "ATOM ACL Enforcement"
       (testing "all items"
         (let [gran-atom (da/granules->expected-atom
-                          guest-permitted-granules
-                          guest-permitted-granule-colls
-                          (format "granules.atom?token=%s&page_size=100" guest-token))]
+                         guest-permitted-granules
+                         guest-permitted-granule-colls
+                         (format "granules.atom?token=%s&page_size=100" guest-token))]
           (is (= gran-atom (:results (search/find-concepts-atom :granule {:token guest-token
                                                                           :page-size 100}))))))
 
       (testing "by concept id"
         (let [concept-ids (map :concept-id all-grans)
               gran-atom (da/granules->expected-atom
-                          guest-permitted-granules
-                          guest-permitted-granule-colls
-                          (str "granules.atom?token=" guest-token
-                               "&page_size=100&concept_id="
-                               (str/join "&concept_id=" concept-ids)))]
+                         guest-permitted-granules
+                         guest-permitted-granule-colls
+                         (str "granules.atom?token=" guest-token
+                              "&page_size=100&concept_id="
+                              (str/join "&concept_id=" concept-ids)))]
           (is (= gran-atom (:results (search/find-concepts-atom :granule {:token guest-token
                                                                           :page-size 100
                                                                           :concept-id concept-ids})))))))
     (testing "JSON ACL Enforcement"
       (testing "all items"
         (let [gran-atom (da/granules->expected-atom
-                          guest-permitted-granules
-                          guest-permitted-granule-colls
-                          (format "granules.json?token=%s&page_size=100" guest-token))]
+                         guest-permitted-granules
+                         guest-permitted-granule-colls
+                         (format "granules.json?token=%s&page_size=100" guest-token))]
           (is (= gran-atom (:results (search/find-concepts-json :granule {:token guest-token
                                                                           :page-size 100}))))))
 
       (testing "by concept id"
         (let [concept-ids (map :concept-id all-grans)
               gran-atom (da/granules->expected-atom
-                          guest-permitted-granules
-                          guest-permitted-granule-colls
-                          (str "granules.json?token=" guest-token
-                               "&page_size=100&concept_id="
-                               (str/join "&concept_id=" concept-ids)))]
+                         guest-permitted-granules
+                         guest-permitted-granule-colls
+                         (str "granules.json?token=" guest-token
+                              "&page_size=100&concept_id="
+                              (str/join "&concept_id=" concept-ids)))]
           (is (= gran-atom (:results (search/find-concepts-json :granule {:token guest-token
                                                                           :page-size 100
                                                                           :concept-id concept-ids})))))))
@@ -269,42 +269,42 @@
         (let [expected-granule-urs (map :granule-ur guest-permitted-granules)]
           (is (= expected-granule-urs
                  (search/csv-response->granule-urs
-                   (search/find-concepts-csv :granule {:token guest-token
-                                                    :page-size 100}))))))
+                  (search/find-concepts-csv :granule {:token guest-token
+                                                      :page-size 100}))))))
 
       (testing "by concept id"
         (let [concept-ids (map :concept-id all-grans)
               expected-granule-urs (map :granule-ur guest-permitted-granules)]
           (is (= expected-granule-urs
                  (search/csv-response->granule-urs
-                   (search/find-concepts-csv :granule {:token guest-token
-                                                    :page-size 100
-                                                    :concept-id concept-ids})))))))
+                  (search/find-concepts-csv :granule {:token guest-token
+                                                      :page-size 100
+                                                      :concept-id concept-ids})))))))
 
 
     (testing "Direct transformer retrieval acl enforcement"
       (d/assert-metadata-results-match
-        :echo10 user-permitted-granules
-        (search/find-metadata :granule :echo10 {:token user1-token
-                                                :page-size 100
-                                                :concept-id (map :concept-id all-grans)})))
+       :echo10 user-permitted-granules
+       (search/find-metadata :granule :echo10 {:token user1-token
+                                               :page-size 100
+                                               :concept-id (map :concept-id all-grans)})))
 
     (testing "granule counts acl enforcement"
       (testing "guest"
         (let [refs-result (search/find-refs :collection {:token guest-token
                                                          :include-granule-counts true})]
           (is (gran-counts/granule-counts-match?
-                :xml {coll1 2 coll2 2 coll3 0 coll4 0 coll5 2
-                      coll6 0 coll7 1 coll51 0 coll52 0 coll53 0}
-                refs-result))))
+               :xml {coll1 2 coll2 2 coll3 0 coll4 0 coll5 2
+                     coll6 0 coll7 1 coll51 0 coll52 0 coll53 0}
+               refs-result))))
 
       (testing "user"
         (let [refs-result (search/find-refs :collection {:token user1-token
                                                          :include-granule-counts true})]
           (is (gran-counts/granule-counts-match?
-                :xml {coll1 0 coll2 0 coll3 1 coll4 1 coll5 0
-                      coll6 0 coll7 0 coll51 1 coll52 2 coll53 2}
-                refs-result)))))))
+               :xml {coll1 0 coll2 0 coll3 1 coll4 1 coll5 0
+                     coll6 0 coll7 0 coll51 1 coll52 2 coll53 2}
+               refs-result)))))))
 
 
 

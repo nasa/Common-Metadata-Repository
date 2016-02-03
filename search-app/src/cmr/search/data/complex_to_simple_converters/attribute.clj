@@ -2,10 +2,10 @@
   "Defines functions that implement the reduce-query-condition method of the ComplexQueryToSimple
   protocol for product specific attribute search fields."
   (:require [clojure.string :as s]
-            [cmr.search.data.complex-to-simple :as c2s]
-            [cmr.search.models.query :as qm]
-            [cmr.search.models.group-query-conditions :as gc]
-            [cmr.search.data.datetime-helper :as h]))
+            [cmr.common-app.services.search.complex-to-simple :as c2s]
+            [cmr.common-app.services.search.query-model :as qm]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
+            [cmr.common-app.services.search.datetime-helper :as h]))
 
 (defmulti value-condition->value-filter
   "Converts an additional attribute value condition into the nested filter to use."

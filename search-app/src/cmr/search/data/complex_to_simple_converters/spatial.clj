@@ -1,10 +1,10 @@
 (ns cmr.search.data.complex-to-simple-converters.spatial
   "Contains converters for spatial condition into the simpler executable conditions"
-  (:require [cmr.search.data.complex-to-simple :as c2s]
-            [cmr.search.data.elastic-search-index :as idx]
+  (:require [cmr.common-app.services.search.complex-to-simple :as c2s]
+            [cmr.common-app.services.search.elastic-search-index :as idx]
             [cmr.search.services.query-helper-service :as query-helper]
-            [cmr.search.models.query :as qm]
-            [cmr.search.models.group-query-conditions :as gc]
+            [cmr.common-app.services.search.query-model :as qm]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.serialize :as srl]
             [cmr.spatial.derived :as d]

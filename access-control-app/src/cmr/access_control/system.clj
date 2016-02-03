@@ -7,8 +7,12 @@
             [cmr.common.nrepl :as nrepl]
             [cmr.transmit.config :as transmit-config]
             [cmr.access-control.api.routes :as routes]
+            [cmr.access-control.data.access-control-index :as access-control-index]
+            [cmr.access-control.config :as config]
+            [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.common.api.web-server :as web]
             [cmr.common.config :as cfg :refer [defconfig]]
+            [cmr.access-control.services.event-handler :as event-handler]
             [cmr.common-app.system :as common-sys]))
 
 (defconfig access-control-nrepl-port
@@ -28,24 +32,42 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :web])
+  component-order [:log :index :queue-broker :web :nrepl])
 
 (defn create-system
   "Returns a new instance of the whole application."
   []
   (let [sys {:log (log/create-logger)
+             :index (access-control-index/create-elastic-store)
              :web (web/create-web-server (transmit-config/access-control-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
+             :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))
              :public-conf public-conf
              :relative-root-url (transmit-config/access-control-relative-root-url)}]
     (transmit-config/system-with-connections sys [:echo-rest :metadata-db :urs])))
 
-(def start
-  "Performs side effects to initialize the system, acquire resources,
-  and start it running. Returns an updated instance of the system."
-  (common-sys/start-fn "access-control" component-order))
+(defn start
+  "Performs side effects to initialize the system, acquire resources,  and start it running. Returns
+  an updated instance of the system."
+  [system]
+  (info "Access Control system starting")
+  (let [started-system (common-sys/start system component-order)]
+
+    (when (:queue-broker system)
+      (event-handler/subscribe-to-events {:system started-system}))
+
+    (info "Indexer system started")
+    started-system))
 
 (def stop
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
   (common-sys/stop-fn "access-control" component-order))
+
+(defn dev-start
+  "Starts the system but performs extra calls to make sure all indexes are created in elastic."
+  [system]
+  (let [started-system (start system)]
+    (access-control-index/create-index-or-update-mappings (:index started-system))
+    started-system))
+

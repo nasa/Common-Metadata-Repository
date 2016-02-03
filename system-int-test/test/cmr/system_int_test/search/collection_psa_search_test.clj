@@ -118,7 +118,7 @@
            ["string,alpha,ab" "string,bravo,,bc"] [] :and
            ["string,alpha,ab" "string,bravo,bc,"] [coll1] :and
            ; and is the default
-           ["string,alpha,ab" "string,bravo,,bc"] [] nil ))
+           ["string,alpha,ab" "string,bravo,,bc"] [] nil))
 
     (testing "searching with multiple attribute conditions catalog-rest style"
       (are [v items operation]
@@ -137,7 +137,7 @@
            ["string,alpha,ab" "string,bravo,,bc"] [] :and
            ["string,alpha,ab" "string,bravo,bc,"] [coll1] :and
            ; and is the default
-           ["string,alpha,ab" "string,bravo,,bc"] [] nil ))
+           ["string,alpha,ab" "string,bravo,,bc"] [] nil))
 
     (testing "search collections by additionalAttributes multiple string values with aql"
       (are [items additional-attribs options]

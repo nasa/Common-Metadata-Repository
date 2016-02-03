@@ -2,8 +2,8 @@
   "Allows internal use of querying to retrieve specific data from elastic search. The query can
   specify fields to retrieve and extract using :fields in the query. A function for processing
   elastic items can be also be specified in the :result-features of the query."
-  (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
-            [cmr.search.data.elastic-search-index :as elastic-search-index]))
+  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]))
 
 (defn- elastic-result-item-processor
   "The default function that will be used to process an elastic result into a result for the caller."

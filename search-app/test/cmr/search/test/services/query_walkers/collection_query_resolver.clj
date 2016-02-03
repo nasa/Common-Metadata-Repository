@@ -4,17 +4,18 @@
             [cmr.search.test.models.helpers :refer :all]
             [clojure.string :as str]
             [cmr.search.models.query :as q]
+            [cmr.common-app.services.search.query-model :as cqm]
             [clojure.set :as set]))
 (defn query
   [condition]
-  (q/query {:concept-type :granule
-            :condition condition}))
+  (cqm/query {:concept-type :granule
+              :condition condition}))
 
 (defrecord MockCollectionQueryCondition
   [
    condition
-   collection-ids-to-find
-   ]
+   collection-ids-to-find]
+
 
   c/ResolveCollectionQuery
 
@@ -25,7 +26,7 @@
                            (set/intersection (set collection-ids) collection-ids-to-find)
                            collection-ids-to-find)]
       (if (empty? collection-ids)
-        [#{} q/match-none]
+        [#{} cqm/match-none]
         [collection-ids (generic (str/join "," collection-ids))])))
 
   (is-collection-query-cond? [_] true))
@@ -47,18 +48,18 @@
 
     (testing "collection concept id condition with collection query condition"
       (let [test-and (and-conds (generic "normal")
-                                (q/string-condition :collection-concept-id :a)
+                                (cqm/string-condition :collection-concept-id :a)
                                 (mock-coll-query-cond "coll-foo" [:a :b :c]))]
-        (is (= [#{:a} (and-conds (q/string-condition :collection-concept-id :a)
+        (is (= [#{:a} (and-conds (cqm/string-condition :collection-concept-id :a)
                                  (generic ":a")
                                  (generic "normal"))]
                (c/resolve-collection-query test-and {})))))
 
     (testing "collection concept id strings condition with collection query condition"
       (let [test-and (and-conds (generic "normal")
-                                (q/string-conditions :collection-concept-id [:a :b :d])
+                                (cqm/string-conditions :collection-concept-id [:a :b :d])
                                 (mock-coll-query-cond "coll-foo" [:a :b :c]))]
-        (is (= [#{:a :b} (and-conds (q/string-conditions :collection-concept-id [:a :b :d])
+        (is (= [#{:a :b} (and-conds (cqm/string-conditions :collection-concept-id [:a :b :d])
                                  (generic ":b,:a")
                                  (generic "normal"))]
                (c/resolve-collection-query test-and {})))))
@@ -67,7 +68,7 @@
       (let [test-and (and-conds (mock-coll-query-cond "coll-id" [:a])
                                 (mock-coll-query-cond "coll-id" [:b]))]
         (is (= [#{} (and-conds (generic ":a")
-                               q/match-none)]
+                               cqm/match-none)]
                (c/resolve-collection-query test-and {})))))
     (testing "multiple coll queries with matching collections"
       (let [test-and (and-conds (mock-coll-query-cond "coll-id" [:a :b])
@@ -130,9 +131,9 @@
                                                  (mock-coll-query-cond "coll-inst" [:d :f :g]))
                                        (or-conds (generic "gran-plat")
                                                  (mock-coll-query-cond "coll-plat" [:a :b :c :d :e]))
-                                       (q/string-condition :collection-concept-id :d)))
+                                       (cqm/string-condition :collection-concept-id :d)))
 
-          expected (query (and-conds (q/string-condition :collection-concept-id :d)
+          expected (query (and-conds (cqm/string-condition :collection-concept-id :d)
                                      (or-conds (generic "gran-inst")
                                                (generic ":d"))
                                      (or-conds (generic "gran-plat")

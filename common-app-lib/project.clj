@@ -8,6 +8,7 @@
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
 
                  ;; Markdown generator needed for API documentation
                  [org.pegdown/pegdown "1.6.0"]]

@@ -1,9 +1,7 @@
 (ns cmr.search.validators.attribute
   "Contains functions for validating attribute condition"
-  (:require [clojure.set]
-            [cmr.search.models.query :as qm]
-            [cmr.search.services.messages.attribute-messages :as attrib-msg]
-            [cmr.search.validators.validation :as v]))
+  (:require [cmr.search.services.messages.attribute-messages :as attrib-msg]
+            [cmr.common-app.services.search.query-validation :as v]))
 
 
 (extend-protocol v/Validator

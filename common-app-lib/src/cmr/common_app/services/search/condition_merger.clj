@@ -1,8 +1,8 @@
-(ns cmr.search.models.condition-merger
+(ns cmr.common-app.services.search.condition-merger
   "Contains functions for merging and simplifying conditions in a condition group"
-  (:require [cmr.search.models.query :as q]
+  (:require [cmr.common-app.services.search.query-model :as q]
             [clojure.set :as set])
-  (:import [cmr.search.models.query
+  (:import [cmr.common_app.services.search.query_model
             StringCondition
             StringsCondition
             RelatedItemQueryCondition]))
