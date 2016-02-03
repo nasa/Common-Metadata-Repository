@@ -311,6 +311,7 @@
 
     ;; Used for aggregations. It takes up less space in the field data cache.
     :collection-concept-seq-id m/int-field-mapping
+    :collection-concept-seq-id-doc-values (m/doc-values m/int-field-mapping)
 
     ;; fields added for atom
     :entry-title (m/not-indexed (m/stored m/string-field-mapping))
