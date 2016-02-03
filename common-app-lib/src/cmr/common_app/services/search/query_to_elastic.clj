@@ -62,8 +62,13 @@
     [condition concept-type]
     "Converts a query model condition into the equivalent elastic search filter"))
 
-(defn query->elastic
+
+(defmulti query->elastic
   "Converts a query model into an elastic search query"
+  (fn [query]
+    (:concept-type query)))
+
+(defmethod query->elastic :default
   [query]
   (let [{:keys [concept-type condition]} (query-expense/order-conditions query)
         core-query (condition->elastic condition concept-type)]

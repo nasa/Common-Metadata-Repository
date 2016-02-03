@@ -17,17 +17,17 @@
   [temporal]
   (let [{:keys [start-date end-date exclusive?]} temporal
         conditions (if end-date
-                     [(cqm/map->DateRangeCondition {:field :start-date}
-                                                   :end-date end-date
-                                                   :exclusive? exclusive?)
+                     [(cqm/map->DateRangeCondition {:field :start-date
+                                                    :end-date end-date
+                                                    :exclusive? exclusive?})
                       (gc/or-conds [(cqm/map->MissingCondition {:field :end-date})
-                                    (cqm/map->DateRangeCondition {:field :end-date}
-                                                                 :start-date start-date
-                                                                 :exclusive? exclusive?)])]
+                                    (cqm/map->DateRangeCondition {:field :end-date
+                                                                  :start-date start-date
+                                                                  :exclusive? exclusive?})])]
                      [(gc/or-conds [(cqm/map->MissingCondition {:field :end-date})
-                                    (cqm/map->DateRangeCondition {:field :end-date}
-                                                                 :start-date start-date
-                                                                 :exclusive? exclusive?)])])]
+                                    (cqm/map->DateRangeCondition {:field :end-date
+                                                                  :start-date start-date
+                                                                  :exclusive? exclusive?})])])]
     (gc/and-conds (concat
                     [(cqm/map->ExistCondition {:field :start-date})]
                     conditions))))

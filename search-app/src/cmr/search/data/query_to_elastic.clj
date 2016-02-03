@@ -5,6 +5,7 @@
             [cmr.search.data.query-order-by-expense]
             [cmr.common.services.errors :as errors]
             [cmr.search.data.keywords-to-elastic :as k2e]
+            [clojurewerkz.elastisch.query :as eq]
             [cmr.common-app.services.search.query-model :as q]
             [cmr.common-app.services.search.query-order-by-expense :as query-expense]
             [cmr.common-app.services.search.query-to-elastic :as q2e]
@@ -51,8 +52,7 @@
   [query]
   (keywords-in-condition (:condition query)))
 
-(defn query->elastic
-  "Converts a query model into an elastic search query"
+(defmethod q2e/query->elastic :collection
   [query]
   (let [boosts (:boosts query)
         {:keys [concept-type condition keywords]} (query-expense/order-conditions query)
@@ -63,11 +63,11 @@
       ;; a boosting term for each matching filter in a set of filters.
       {:function_score {:score_mode :multiply
                         :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
-                        :query {:filtered {:query (q/match-all)
+                        :query {:filtered {:query (eq/match-all)
                                            :filter core-query}}}}
       (if boosts
         (errors/throw-service-errors :bad-request ["Relevance boosting is only supported for keyword queries"])
-        {:filtered {:query (q/match-all)
+        {:filtered {:query (eq/match-all)
                     :filter core-query}}))))
 
 (defmethod q2e/concept-type->sort-key-map :collection

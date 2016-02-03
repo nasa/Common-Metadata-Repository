@@ -14,7 +14,7 @@
     (keyword (:action msg))))
 
 (defmethod handle-event :default
-  [_ _ _])
+  [_ _])
   ;; Default ignores the ingest event. There may be ingest events we don't care about.
 
 (defmethod handle-event :concept-update

@@ -7,7 +7,7 @@
 ;; Converts science keywords parameter and values into conditions
 (defmethod p/parameter->condition :science-keywords
   [concept-type param value options]
-  (let [case-sensitive? (p/case-sensitive-field? param options)
+  (let [case-sensitive? (p/case-sensitive-field? concept-type param options)
         pattern? (p/pattern-field? concept-type param options)
         group-operation (p/group-operation param options :and)]
 
