@@ -155,15 +155,16 @@
   ([concept-type params]
    (default-parse-standard-params concept-type params {}))
   ([concept-type params aliases]
-   {:concept-type concept-type
-    :page-size (Integer. (get params :page-size qm/default-page-size))
-    :page-num (Integer. (get params :page-num qm/default-page-num))
-    :sort-keys (parse-sort-key (:sort-key params) aliases)
-    :result-format (:result-format params)}))
+   [(dissoc params :page-size :page-num :sort-key :result-format)
+    {:concept-type concept-type
+     :page-size (Integer. (get params :page-size qm/default-page-size))
+     :page-num (Integer. (get params :page-num qm/default-page-num))
+     :sort-keys (parse-sort-key (:sort-key params) aliases)
+     :result-format (:result-format params)}]))
 
 (defmulti parse-standard-params
   "Extracts standard parameters that work on any query api like page-size and page-num and returns
-  them in a map as query attributes"
+   a tuple of leftover parameters and a map as query attributes"
   (fn [concept-type params]
     concept-type))
 
@@ -174,16 +175,9 @@
 (defn parse-parameter-query
   "Converts parameters into a query model."
   [concept-type params]
-  (let [options (u/map-keys->kebab-case (get params :options {}))
-        query-attribs (parse-standard-params concept-type params)
-        keywords (when (:keyword params)
-                   (str/split (str/lower-case (:keyword params)) #" "))
-        params (if keywords (assoc params :keyword (str/join " " keywords)) params)
-        params (dissoc params :options :page-size :page-num :boosts :sort-key :result-format
-                       ;; TODO these are referring to search app specific things. We need another way to remove these
-                       :include-granule-counts :include-has-granules :include-facets
-                       :echo-compatible :hierarchical-facets :include-highlights
-                       :include-tags :all-revisions)]
+  (let [[params query-attribs] (parse-standard-params concept-type params)
+        options (u/map-keys->kebab-case (get params :options {}))
+        params (dissoc params :options)]
     (if (empty? params)
       ;; matches everything
       (qm/query query-attribs)

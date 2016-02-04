@@ -359,6 +359,6 @@
         xml-struct (x/parse-str (cx/remove-xml-processing-instructions aql))
         concept-type (get-concept-type xml-struct)
         params (pv/validate-standard-query-parameters concept-type params)]
-    (cqm/query (assoc (common-params/parse-standard-params concept-type params)
+    (cqm/query (assoc (second (common-params/parse-standard-params concept-type params))
                      :concept-type concept-type
                      :condition (xml-struct->query-condition concept-type xml-struct)))))

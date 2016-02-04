@@ -208,7 +208,7 @@
   [concept-type params json-string]
   (let [params (pv/validate-standard-query-parameters concept-type params)]
     (validate-json-query concept-type json-string)
-    (cqm/query (assoc (common-params/parse-standard-params concept-type params)
+    (cqm/query (assoc (second (common-params/parse-standard-params concept-type params))
                      :concept-type concept-type
                      :condition (->> (json/parse-string json-string true)
                                     util/map-keys->kebab-case
