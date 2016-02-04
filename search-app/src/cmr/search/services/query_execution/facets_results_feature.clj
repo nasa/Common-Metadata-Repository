@@ -2,7 +2,7 @@
   "This enables returning facets with collection search results"
   (:require [cmr.common-app.services.search.query-execution :as query-execution]
             [cmr.common-app.services.kms-fetcher :as kms-fetcher]
-            [cmr.common-app.services.search.results :as r]
+            [cmr.common-app.services.search.results-model :as r]
             [camel-snake-kebab.core :as csk]
             [clojure.data.xml :as x]))
 

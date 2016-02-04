@@ -12,7 +12,7 @@
             [clj-time.format :as f]
             [cheshire.core :as json]
             [cmr.common.util :as util]
-            [cmr.common-app.services.search.results :as r]
+            [cmr.common-app.services.search.results-model :as r]
             [cmr.spatial.serialize :as srl]
             [cmr.search.services.url-helper :as url]
             [cmr.umm.related-url-helper :as ru]))

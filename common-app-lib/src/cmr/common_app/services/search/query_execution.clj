@@ -1,7 +1,7 @@
 (ns cmr.common-app.services.search.query-execution
   (:require [cmr.common-app.services.search.query-model :as qm]
             [cmr.common-app.services.search.elastic-search-index :as idx]
-            [cmr.common-app.services.search.results :as results]
+            [cmr.common-app.services.search.results-model :as results]
             [cmr.common-app.services.search.elastic-results-to-query-results :as rc]
             [cmr.common-app.services.search.complex-to-simple :as c2s]
             [cmr.common.log :refer (debug info warn error)]

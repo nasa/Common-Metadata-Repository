@@ -6,7 +6,7 @@
             [cmr.common.services.errors :as errors]
             [clojure.data.xml :as x]
             [clojure.string :as str]
-            [cmr.common-app.services.search.results :as r]
+            [cmr.common-app.services.search.results-model :as r]
             [cmr.spatial.kml :as kml]
             [cmr.spatial.serialize :as srl]
             [cmr.spatial.relations :as relations]

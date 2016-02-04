@@ -10,7 +10,7 @@
             [cmr.common.services.errors :as e]
             [cmr.common.concepts :as concepts]
             [cmr.elastic-utils.connect :as es]
-            [cmr.common-app.services.search.results :as results]
+            [cmr.common-app.services.search.results-model :as results]
             [cmr.common-app.services.search.query-model :as qm]
             [cmr.common-app.services.search.query-to-elastic :as q2e]))
 

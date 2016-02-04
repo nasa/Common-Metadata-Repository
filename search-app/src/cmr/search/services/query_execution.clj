@@ -8,7 +8,7 @@
             [cmr.common-app.services.search.elastic-search-index :as idx]
             [cmr.common-app.services.search.query-model :as cqm]
             [cmr.common-app.services.search.complex-to-simple :as c2s]
-            [cmr.common-app.services.search.results :as results]
+            [cmr.common-app.services.search.results-model :as results]
             [cmr.common-app.services.search.elastic-results-to-query-results :as rc]
             [cmr.common-app.services.search.related-item-resolver :as related-item-resolver])
   (:import [cmr.common_app.services.search.query_model
