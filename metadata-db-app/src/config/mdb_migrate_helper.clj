@@ -14,12 +14,12 @@
 
 (defn sql
   "Applies the sql update"
-  [stmt-str]
-  (println "Applying" stmt-str)
+  [& stmt-strs]
+  (println "Applying" stmt-strs)
   (let [start-time (System/currentTimeMillis)]
-    (j/db-do-commands (config/db) stmt-str)
+    (apply j/db-do-commands (config/db) stmt-strs)
     (println (format "Finished %s in [%s] ms."
-                     stmt-str
+                     stmt-strs
                      (- (System/currentTimeMillis) start-time)))))
 
 (defn query
