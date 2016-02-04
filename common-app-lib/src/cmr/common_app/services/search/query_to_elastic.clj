@@ -7,7 +7,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.common-app.services.search.query-order-by-expense :as query-expense]
-            [cmr.common-app.services.search.validators.messages :as m]))
+            [cmr.common-app.services.search.messages :as m]))
 
 (defconfig numeric-range-execution-mode
   "Defines the execution mode to use for numeric ranges in an elasticsearch search"

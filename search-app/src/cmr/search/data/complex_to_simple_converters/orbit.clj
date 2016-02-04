@@ -5,7 +5,7 @@
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.common-app.services.search.complex-to-simple :as c2s]
             [cmr.common.services.errors :as errors]
-            [cmr.common-app.services.search.validators.messages :as m]))
+            [cmr.common-app.services.search.messages :as m]))
 
 (defn- orbit-number-range-condition-both
   "Creates a grouped condition from an OrbitNumberRangeCondition with both min-value and max.'"

@@ -7,7 +7,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.common-app.services.search.validators.messages :as m]
+            [cmr.common-app.services.search.messages :as m]
             [cmr.search.services.messages.orbit-number-messages :as on-m]
             [cmr.common.services.messages :as cm]))
 

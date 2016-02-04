@@ -1,7 +1,7 @@
 (ns cmr.common-app.services.search.validators.numeric-range
   "Contains functions for validating numeric range condition"
   (:require [cmr.common-app.services.search.query-validation :as v]
-            [cmr.common-app.services.search.validators.messages :as m]))
+            [cmr.common-app.services.search.messages :as m]))
 
 (defn min-is-lte-max
   "Validates min is less than or equal to max."

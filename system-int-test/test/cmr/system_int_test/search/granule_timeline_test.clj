@@ -30,9 +30,9 @@
 (comment
   (do
     (dev-sys-util/reset)
-    (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"}))
+    (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})))
 
-  )
+
 
 (deftest timeline-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"

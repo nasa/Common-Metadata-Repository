@@ -72,8 +72,8 @@
    routes-fn
 
    ;;The actual Jetty instance
-   server
-   ]
+   server]
+
 
   lifecycle/Lifecycle
 
