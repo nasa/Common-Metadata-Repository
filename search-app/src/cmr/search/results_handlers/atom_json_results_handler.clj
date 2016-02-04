@@ -1,10 +1,10 @@
 (ns cmr.search.results-handlers.atom-json-results-handler
   "Handles the JSON results format and related functions"
-  (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
-            [cmr.search.data.elastic-search-index :as elastic-search-index]
+  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-execution.facets-results-feature :as frf]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
-            [cmr.search.services.query-service :as qs]
+            [cmr.common-app.services.search :as qs]
             [cheshire.core :as json]
             [clj-time.core :as time]
             [clojure.string :as str]

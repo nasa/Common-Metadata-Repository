@@ -1,9 +1,9 @@
 (ns cmr.search.test.services.parameters
   (:require [clojure.test :refer :all]
             [cmr.common.util :refer [are2]]
-            [cmr.search.services.parameters.conversion :as p]
-            [cmr.search.models.query :as q]
-            [cmr.search.models.group-query-conditions :as gc]
+            [cmr.common-app.services.search.params :as p]
+            [cmr.common-app.services.search.query-model :as q]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.parameters.provider-short-name :as psn]))
 
@@ -93,29 +93,29 @@
 
 (deftest parse-sort-key-test
   (testing "no sort key"
-    (is (= nil (p/parse-sort-key nil))))
+    (is (= nil (p/parse-sort-key nil lp/param-aliases))))
   (testing "single field default order"
     (is (= [{:field :entry-title
              :order :asc}]
-           (p/parse-sort-key "entry-title"))))
+           (p/parse-sort-key "entry-title" lp/param-aliases))))
   (testing "single field with alias"
     (is (= [{:field :entry-title
              :order :asc}]
-           (p/parse-sort-key "dataset-id"))))
+           (p/parse-sort-key "dataset-id" lp/param-aliases))))
   (testing "single field default ascending"
     (is (= [{:field :entry-title
              :order :asc}]
-           (p/parse-sort-key "+entry-title"))))
+           (p/parse-sort-key "+entry-title" lp/param-aliases))))
   (testing "single field descending"
     (is (= [{:field :entry-title
              :order :desc}]
-           (p/parse-sort-key "-entry-title"))))
+           (p/parse-sort-key "-entry-title" lp/param-aliases))))
   (testing "multiple fields"
     (is (= [{:field :short-name
              :order :asc}
             {:field :entry-title
              :order :desc}]
-           (p/parse-sort-key ["short-name" "-entry-title"])))))
+           (p/parse-sort-key ["short-name" "-entry-title"] lp/param-aliases)))))
 
 (deftest handle-legacy-condtions
   (testing "legacy equator date crossing"

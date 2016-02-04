@@ -10,6 +10,7 @@
             [cmr.bootstrap.system :as bootstrap-system]
 
             [cmr.access-control.system :as access-control-system]
+            [cmr.access-control.config :as access-control-config]
 
             [cmr.cubby.system :as cubby-system]
 
@@ -30,7 +31,7 @@
 
             [cmr.mock-echo.system :as mock-echo-system]
 
-            [cmr.search.data.elastic-search-index :as es-search]
+            [cmr.common-app.services.search.elastic-search-index :as es-search]
             [cmr.search.system :as search-system]
 
             [cmr.elastic-utils.test-util :as elastic-test-util]
@@ -85,7 +86,7 @@
             :stop search-system/stop}
    :bootstrap {:start bootstrap-system/start
                :stop bootstrap-system/stop}
-   :access-control {:start access-control-system/start
+   :access-control {:start access-control-system/dev-start
                     :stop access-control-system/stop}
    :cubby {:start cubby-system/dev-start
            :stop cubby-system/stop}
@@ -175,6 +176,7 @@
   [type]
   (-> (indexer-config/rabbit-mq-config)
       (rmq-conf/merge-configs (vp-config/rabbit-mq-config))
+      (rmq-conf/merge-configs (access-control-config/rabbit-mq-config))
       mem-queue/create-memory-queue-broker
       wrapper/create-queue-broker-wrapper))
 
@@ -185,6 +187,7 @@
     (rmq-conf/set-rabbit-mq-ttls! ttls)
     (-> (indexer-config/rabbit-mq-config)
         (rmq-conf/merge-configs (vp-config/rabbit-mq-config))
+        (rmq-conf/merge-configs (access-control-config/rabbit-mq-config))
         (assoc :ttls ttls)
         rmq/create-queue-broker
         wrapper/create-queue-broker-wrapper)))
@@ -208,6 +211,11 @@
   "Create an instance of the virtual product application."
   [queue-broker]
   (assoc (vp-system/create-system) :queue-broker queue-broker))
+
+(defn create-access-control-app
+  "Create an instance of the access control application."
+  [queue-broker]
+  (assoc (access-control-system/create-system) :queue-broker queue-broker))
 
 (defmulti create-ingest-app
   "Create an instance of the ingest application."
@@ -285,7 +293,7 @@
         control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
     {:apps (u/remove-nil-keys
              {:mock-echo echo-component
-              :access-control (access-control-system/create-system)
+              :access-control (create-access-control-app queue-broker)
               :cubby (cubby-system/create-system)
               :metadata-db (create-metadata-db-app db-component queue-broker)
               :bootstrap (when-not db-component (bootstrap-system/create-system))

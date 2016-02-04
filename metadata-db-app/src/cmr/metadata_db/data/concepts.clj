@@ -47,6 +47,10 @@
     "Get a sequence of the latest revision of concepts by specifying a list of
     concept-ids")
 
+  (get-transactions-for-concept
+    [db provider concept-id]
+    "Returns maps with revision-ids and transaction-ids for the given concept-id.")
+
   (save-concept
     [db provider concept]
     "Saves a concept and returns the revision id. If the concept already

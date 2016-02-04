@@ -1,4 +1,4 @@
-(ns cmr.search.data.datetime-helper
+(ns cmr.common-app.services.search.datetime-helper
   "Contains helper functions for converting date time string to elastic date time string"
   (:require [clojure.string :as s]
             [clj-time.format :as f]

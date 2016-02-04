@@ -9,7 +9,7 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.common.services.messages :as msg]
             [cmr.search.services.messages.common-messages :as smsg]
-            [cmr.search.validators.messages :as vmsg]
+            [cmr.common-app.services.search.validators.messages :as vmsg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 

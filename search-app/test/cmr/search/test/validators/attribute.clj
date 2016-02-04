@@ -1,7 +1,7 @@
 (ns cmr.search.test.validators.attribute
   "Contains tests for validating additional attribute conditions"
   (:require [clojure.test :refer :all]
-            [cmr.search.validators.validation :as v]
+            [cmr.common-app.services.search.query-validation :as v]
             [cmr.search.validators.attribute]
             [cmr.search.services.messages.attribute-messages :as msg]
             [cmr.search.models.query :as q]))

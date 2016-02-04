@@ -8,7 +8,7 @@
             [cmr.common.concepts :as concepts]
             [cmr.search.services.tagging.tagging-service-messages :as msg]
             [cmr.search.services.json-parameters.conversion :as jp]
-            [cmr.search.services.query-execution :as qe]
+            [cmr.common-app.services.search.query-execution :as qe]
             [cmr.search.services.query-service :as query-service]
             [clojure.string :as str]
             [clojure.edn :as edn]
@@ -145,7 +145,7 @@
         (-> existing-concept
             (assoc :metadata (pr-str updated-tag)
                    :user-id (context->user-id context))
-            (dissoc :revision-date)
+            (dissoc :revision-date :transaction-id)
             (update-in [:revision-id] inc))))))
 
 (defn delete-tag
@@ -156,7 +156,7 @@
       context
       (-> existing-concept
           ;; Remove fields not allowed when creating a tombstone.
-          (dissoc :metadata :format :provider-id :native-id)
+          (dissoc :metadata :format :provider-id :native-id :transaction-id)
           (assoc :deleted true
                  :user-id (context->user-id context))
           (dissoc :revision-date)

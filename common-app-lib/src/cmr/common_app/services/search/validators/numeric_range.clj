@@ -1,13 +1,7 @@
-(ns cmr.search.validators.numeric-range
+(ns cmr.common-app.services.search.validators.numeric-range
   "Contains functions for validating numeric range condition"
-  (:require [clojure.set]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
-            [cmr.search.models.query :as qm]
-            [cmr.search.validators.validation :as v]
-            [cmr.search.data.datetime-helper :as h]
-            [cmr.search.validators.messages :as m]
-            [cmr.search.data.messages :as sdm]))
+  (:require [cmr.common-app.services.search.query-validation :as v]
+            [cmr.common-app.services.search.validators.messages :as m]))
 
 (defn min-is-lte-max
   "Validates min is less than or equal to max."
@@ -21,10 +15,10 @@
   [{:keys [min-value max-value]}]
   (if (or min-value max-value)
     []
-    [(sdm/nil-min-max-msg)]))
+    [(m/nil-min-max-msg)]))
 
 (extend-protocol v/Validator
-  cmr.search.models.query.NumericRangeCondition
+  cmr.common_app.services.search.query_model.NumericRangeCondition
   (validate
     [numeric-range]
     (concat (min-max-not-both-nil numeric-range) (min-is-lte-max numeric-range))))

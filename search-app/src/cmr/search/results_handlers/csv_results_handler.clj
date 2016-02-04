@@ -1,8 +1,8 @@
 (ns cmr.search.results-handlers.csv-results-handler
   "Handles the CSV results format and related functions."
-  (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
-            [cmr.search.data.elastic-search-index :as elastic-search-index]
-            [cmr.search.services.query-service :as qs]
+  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+            [cmr.common-app.services.search :as qs]
             [cheshire.core :as json]
             [clojure.data.csv :as csv]
             [clojure.string :as str]

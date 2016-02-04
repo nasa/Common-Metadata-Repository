@@ -29,8 +29,7 @@
             [clojure.string]
             [clj-time.core :as t]
             [cmr.common.time-keeper :as time-keeper]
-            [cmr.metadata-db.services.concept-constraints :as cc]
-            [cmr.message-queue.services.queue :as queue]))
+            [cmr.metadata-db.services.concept-constraints :as cc]))
 
 
 (def num-revisions-to-keep-per-concept-type
@@ -170,7 +169,14 @@
   concept if successful, otherwise throws an exception."
   [db provider concept]
   {:pre [(:revision-id concept)]}
-  (let [result (c/save-concept db provider concept)]
+  (let [result (c/save-concept db provider concept)
+        ;; When there are constraint violations we send in a rollback function to delete the
+        ;; concept that had just been saved and then throw an error.
+        rollback-fn #(c/force-delete db
+                         (:concept-type concept)
+                         provider
+                         (:concept-id concept)
+                         (:revision-id concept))]
     (if (nil? (:error result))
       (do
         ;; Perform post commit constraint checks - don't perform check if deleting concepts
@@ -179,13 +185,14 @@
             db
             provider
             concept
-            ;; When there are constraint violations we send in a rollback function to delete the
-            ;; concept that had just been saved and then throw an error.
-            #(c/force-delete db
-                             (:concept-type concept)
-                             provider
-                             (:concept-id concept)
-                             (:revision-id concept))))
+            rollback-fn))
+
+        ; Always perform a transaction-id post commit constraint check.
+        (cc/perform-post-commit-transaction-id-constraint-check
+          db
+          provider
+          concept
+          rollback-fn)
         concept)
       (handle-save-errors concept result))))
 
@@ -367,7 +374,6 @@
                                           (try-to-save db provider))]
             (ingest-events/publish-event
               context
-              (config/ingest-exchange-name)
               (ingest-events/concept-delete-event revisioned-tombstone))
             revisioned-tombstone)))
       (if revision-id
@@ -398,7 +404,6 @@
                        (try-to-save db provider))]
       (ingest-events/publish-event
         context
-        (config/ingest-exchange-name)
         (ingest-events/concept-update-event concept))
       concept)))
 
@@ -551,6 +556,3 @@
          concept-type
          tombstone-cut-off-date
          concept-truncation-batch-size))))
-
-
-

@@ -7,6 +7,14 @@
             [cmr.common.date-time-parser :as p]
             [cmr.common.util :as util]))
 
+(def MAX_REVISION_ID
+  "The maximum value a revision ID can take so as not to conflict with transaction ids.
+  This is necessary because we use revision id as the version in elasticsearch. We will
+  eventually switch to using the global transaction id as the elasticsearch version so all
+  transaction ids must be greater than the revision ids. Once this switch has been completely
+  made we can remove the limitation on the maximum revision id."
+  999999999)
+
 (defn concept-type-missing-validation
   [concept]
   (when-not (:concept-type concept)
@@ -78,6 +86,14 @@
   (when-let [concept-id (:concept-id concept)]
     (cc/concept-id-validation concept-id)))
 
+(defn max-revision-id-validation
+  "Validates that the revision id given (if any) is less than the start of the transaction-id
+  sequence start."
+  [concept]
+  (when-let [revision-id (:revision-id concept)]
+    (when (> revision-id MAX_REVISION_ID)
+      [(format "revision-id [%d] exceeds the maximum allowed value of %d." revision-id MAX_REVISION_ID)])))
+
 (defn concept-id-matches-concept-fields-validation-no-provider
   "Validate that the concept-id has the correct form and that values represented in the concept's
   concept-id match the values in the concept's concept map. In particular, that the concept-type
@@ -107,6 +123,7 @@
   [concept-type-missing-validation
    native-id-missing-validation
    concept-id-validation
+   max-revision-id-validation
    nil-fields-validation
    nil-extra-fields-validation
    (datetime-validator [:revision-date])

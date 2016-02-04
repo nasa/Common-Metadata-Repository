@@ -26,12 +26,15 @@
                               :metadata ""
                               :revision-id revision-id
                               :user-id nil)
-                       :revision-date :user-id)
-               (dissoc deleted-concept1 :revision-date :user-id)))
+                       :revision-date :user-id :transaction-id)
+               (dissoc deleted-concept1 :revision-date :user-id :transaction-id)))
 
         ;; Make sure that a deleted concept gets it's own unique revision date
         (is (t/after? (:revision-date deleted-concept1) (:revision-date saved-concept1))
             "The deleted concept revision date should be after the previous revisions revision date.")
+
+        ;; Make sure transaction-ids increment
+        (is (> (:transaction-id deleted-concept1) (:transaction-id saved-concept1)))
 
         (is (= (util/delete-concept concept-id)
                (util/delete-concept concept-id)
@@ -70,12 +73,16 @@
     (testing "save tombstone"
       (let [concept1 (c-spec/gen-concept concept-type provider-id 6 {})
             concept2 (c-spec/gen-concept concept-type provider-id 7 {})
-            con1 (util/save-concept concept1 3)
+            {concept-id1 :concept-id revision-id1 :revision-id} (util/save-concept concept1 3)
             {concept-id2 :concept-id revision-id2 :revision-id} (util/save-concept concept2)
 
-            {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id con1)
+            {:keys [status revision-id]} (util/save-concept {:concept-id concept-id1
                                                              :deleted true})
-            stored-concept1 (:concept (util/get-concept-by-id-and-revision (:concept-id con1) revision-id))]
+            {transaction-id1 :transaction-id} (:concept (util/get-concept-by-id-and-revision
+                                                          concept-id1 revision-id1))
+            {transaction-id2 :transaction-id} (:concept (util/get-concept-by-id-and-revision
+                                                          concept-id2 revision-id2))
+            stored-concept1 (:concept (util/get-concept-by-id-and-revision concept-id1 revision-id))]
         (is (= {:status 201
                 :revision-id 4
                 :deleted true
@@ -84,6 +91,9 @@
                 :revision-id revision-id
                 :deleted (:deleted stored-concept1)
                 :metadata (:metadata stored-concept1)}))
+
+        ;; Make sure transaction-ids increment
+        (is (> (:transaction-id stored-concept1) transaction-id2 transaction-id1))
 
         ;; Other data left in database
         (util/verify-concept-was-saved

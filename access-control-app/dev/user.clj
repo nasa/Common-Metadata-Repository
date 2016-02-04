@@ -7,13 +7,18 @@
             [clojure.repl :refer :all]
             [cmr.access-control.system :as system]
             [cmr.access-control.int-test.access-control-test-util :as int-test-util]
+            [cmr.elastic-utils.embedded-elastic-server :as es]
+            [cmr.elastic-utils.config :as elastic-config]
             [cmr.metadata-db.system :as mdb]
             [cmr.mock-echo.system :as mock-echo]
+            [cmr.common.lifecycle :as l]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.transmit.config :as transmit-config]
             [cmr.common.dev.util :as d]))
 
 (def system nil)
+
+(def elastic-server nil)
 
 (def mdb-system nil)
 
@@ -29,27 +34,56 @@
   ; true
   false)
 
+(def use-external-mq?
+  "Set to true to use Rabbit MQ"
+  ; true
+  false)
+
+(defn- create-elastic-server
+  "Creates an instance of an elasticsearch server in memory."
+  []
+  (elastic-config/set-elastic-port! 9306)
+  (es/create-server 9306 9316 "es_data/access_control"))
+
 (defn start
   "Starts the current development system."
   []
-
+  ;; Configure ports so that it won't conflict with another REPL containing the same applications.
   (transmit-config/set-access-control-port! 4011)
   (transmit-config/set-metadata-db-port! 4001)
   (transmit-config/set-echo-rest-port! 4008)
   (transmit-config/set-urs-port! 4008)
 
-  ;; Start mock echo
-  (alter-var-root
-   #'mock-echo-system
-   (constantly (-> (mock-echo/create-system) disable-access-log mock-echo/start)))
-  ;; Start metadata db
-  (alter-var-root
-   #'mdb-system
-   (constantly (-> (int-test-util/create-mdb-system use-external-db?) disable-access-log mdb/start)))
-  ;; Start access control
-  (alter-var-root
-   #'system
-   (constantly (-> (system/create-system) disable-access-log system/start)))
+  (let [queue-broker (when (not use-external-mq?)
+                       (int-test-util/create-memory-queue-broker))]
+
+    ;; Start mock echo
+    (alter-var-root
+     #'mock-echo-system
+     (constantly (-> (mock-echo/create-system) disable-access-log mock-echo/start)))
+
+    ;; Start metadata db
+    (alter-var-root
+     #'mdb-system
+     (constantly (-> (int-test-util/create-mdb-system use-external-db?)
+                     ;; queue-broker will be nil if we're using the external one.
+                     (update :queue-broker #(or queue-broker %))
+                     disable-access-log
+                     mdb/start)))
+
+    ;; Start elastic search
+    (alter-var-root
+     #'elastic-server
+     (constantly (l/start (create-elastic-server) nil)))
+
+    ;; Start access control
+    (alter-var-root
+     #'system
+     (constantly (-> (system/create-system)
+                     ;; queue-broker will be nil if we're using the external one.
+                     (update :queue-broker #(or queue-broker %))
+                     disable-access-log
+                     system/dev-start))))
 
   (d/touch-user-clj))
 
@@ -66,6 +100,8 @@
   (alter-var-root #'mock-echo-system (when-not-nil mock-echo/stop))
   ;; Stop metadata db
   (alter-var-root #'mdb-system (when-not-nil mdb/stop))
+  ;; Stop elastic search
+  (alter-var-root #'elastic-server #(when % (l/stop % system)))
   ;; Stop access control
   (alter-var-root #'system (when-not-nil system/stop)))
 

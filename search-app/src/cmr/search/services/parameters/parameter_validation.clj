@@ -9,7 +9,7 @@
             [clojure.string :as s]
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.common.date-time-range-parser :as dtr-parser]
-            [cmr.search.services.parameters.conversion :as p]
+            [cmr.common-app.services.search.params :as common-params]
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.parameters.converters.attribute :as attrib]
             [cmr.search.services.parameters.converters.nested-field :as nf]
@@ -17,7 +17,7 @@
             [cmr.search.services.parameters.converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.search.services.messages.common-messages :as msg]
-            [cmr.search.data.messages :as d-msg]
+            [cmr.common-app.services.search.validators.messages :as d-msg]
             [cmr.search.data.keywords-to-elastic :as k2e]
             [camel-snake-kebab.core :as csk]
             [cmr.spatial.codec :as spatial-codec]
@@ -42,27 +42,27 @@
   (cfg/config-value-fn :search-paging-depth-limit 1000000 #(Integer. %)))
 
 (def case-sensitive-params
-  "Parameters which do not allow option with ingnore_case set to true."
-  (set #{:concept-id :echo-collection-id :echo-granule-id}))
+  "Parameters which do not allow option with ignore_case set to true."
+  #{:concept-id :echo-collection-id :echo-granule-id})
 
 (def params-that-disallow-pattern-search-option
   "Parameters which do not allow pattern search option."
-  (set #{:concept-id :echo-collection-id :echo-granule-id}))
+  #{:concept-id :echo-collection-id :echo-granule-id})
 
 (def params-that-allow-or-option
   "Parameter which allow search with the OR option."
-  (set #{:attribute :science-keywords}))
+  #{:attribute :science-keywords})
 
 (def exclude-params
   "Map of concept-type to parameters which can be used to exclude items from results."
-  {:collection (set #{:tag-namespace})
-   :granule (set #{:concept-id})})
+  {:collection #{:tag-namespace}
+   :granule #{:concept-id}})
 
 (defn- concept-type->valid-param-names
   "A set of the valid parameter names for the given concept-type."
   [concept-type]
   (set (concat
-         (keys (get p/concept-param->type concept-type))
+         (keys (common-params/param-mappings concept-type))
          (keys lp/param-aliases)
          [:options])))
 
@@ -99,7 +99,7 @@
   (try
     (if-let [page-size-i (get-ivalue-from-params params :page-size)]
       (cond
-        (< page-size-i 0 )
+        (< page-size-i 0)
         ["page_size must be a number between 0 and 2000"]
 
         (> page-size-i 2000)

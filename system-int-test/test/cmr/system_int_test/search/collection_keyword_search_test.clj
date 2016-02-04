@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.search.collection-keyword-search-test
   "Integration test for CMR collection search by keyword terms"
   (:require [clojure.test :refer :all]
+            [cmr.common.util :as u :refer [are2]]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -111,9 +112,9 @@
         coll20 (d/ingest "PROV2" (dc/collection {:projects pr1}))
         coll21 (d/ingest "PROV2" (dc/collection {:entry-title "coll21" :long-name "ABC!"}))
         coll22 (d/ingest "PROV2" (dc/collection {:collection-data-type "NEAR_REAL_TIME"}))
-        coll23 (d/ingest "PROV1" (dc/collection {:entry-title "coll23" :long-name "\"Quoted\" collection" }))
+        coll23 (d/ingest "PROV1" (dc/collection {:entry-title "coll23" :long-name "\"Quoted\" collection"}))
         coll24 (d/ingest "PROV2" (dc/collection {:entry-title "coll24" :short-name "coll24" :platforms [p4]}))
-        coll-boost (d/ingest "PROV2" (dc/collection {:entry-titel "boost"
+        coll-boost (d/ingest "PROV2" (dc/collection {:entry-title "boost"
                                                      :short-name "boost"
                                                      :platforms [pboost]
                                                      :science-keywords [skboost]}))]
@@ -121,217 +122,217 @@
     (index/wait-until-indexed)
 
     (testing "search by keywords."
-      (are [keyword-str items]
-           (let [parameter-refs (search/find-refs :collection {:keyword keyword-str})
-                 json-refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str})
-                 parameter-matches? (d/refs-match? items parameter-refs)
-                 json-matches? (d/refs-match? items json-refs)]
-             (when-not parameter-matches?
-               (println "Parameter search failed")
-               (println "Expected:" (map :entry-title items))
-               (println "Actual:" (map :name (:refs parameter-refs))))
-             (when-not json-matches?
-               (println "JSON Query search failed")
-               (println "Expected:" (map :entry-title items))
-               (println "Actual:" (map :name (:refs json-refs))))
-             (and parameter-matches? json-matches?))
+       (are [keyword-str items]
+            (let [parameter-refs (search/find-refs :collection {:keyword keyword-str})
+                  json-refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str})
+                  parameter-matches? (d/refs-match? items parameter-refs)
+                  json-matches? (d/refs-match? items json-refs)]
+              (when-not parameter-matches?
+                (println "Parameter search failed")
+                (println "Expected:" (map :entry-title items))
+                (println "Actual:" (map :name (:refs parameter-refs))))
+              (when-not json-matches?
+                (println "JSON Query search failed")
+                (println "Expected:" (map :entry-title items))
+                (println "Actual:" (map :name (:refs json-refs))))
+              (and parameter-matches? json-matches?))
 
-           "ABC" [coll2 coll5 coll21]
-           "place" [coll6]
-           "Laser" [coll5 coll7 coll9 coll14]
-           "ABC space" [coll5]
-           "BLAH" []
-           "abc!" [coll21]
+            "ABC" [coll2 coll5 coll21]
+            "place" [coll6]
+            "Laser" [coll5 coll7 coll9 coll14]
+            "ABC space" [coll5]
+            "BLAH" []
+            "abc!" [coll21]
 
            ;; Checking specific fields
 
            ;; provider
-           "PROV1" [coll1 coll2 coll3 coll23]
+            "PROV1" [coll1 coll2 coll3 coll23]
 
            ;; entry title
-           "coll1" [coll1]
+            "coll1" [coll1]
 
            ;; entry id
-           "entryid4" [coll16]
+            "entryid4" [coll16]
 
            ;; short name
-           "XYZ" [coll2 coll13]
+            "XYZ" [coll2 coll13]
 
            ;; long name
-           "ABC" [coll5 coll2 coll21]
+            "ABC" [coll5 coll2 coll21]
 
            ;; version id
-           "V001" [coll2]
+            "V001" [coll2]
 
            ;; version description
-           "VersionDescription" [coll1]
+            "VersionDescription" [coll1]
 
            ;; processing level id
-           "plid1" [coll15]
+            "plid1" [coll15]
 
            ;; collection data type
-           "SCIENCE_QUALITY" [coll15]
+            "SCIENCE_QUALITY" [coll15]
 
            ;; collection data type aliases for NEAR_REAL_TIME
-           "NEAR_REAL_TIME" [coll22]
-           "NRT" [coll22]
-           "near_real_time" [coll22]
-           "nrt" [coll22]
-           "near-real-time" [coll22]
-           "near real-time" [coll22]
-           "near-real time" [coll22]
+            "NEAR_REAL_TIME" [coll22]
+            "NRT" [coll22]
+            "near_real_time" [coll22]
+            "nrt" [coll22]
+            "near-real-time" [coll22]
+            "near real-time" [coll22]
+            "near-real time" [coll22]
 
            ;; summary
-           "summary" [coll15]
+            "summary" [coll15]
 
            ;; temporal keywords
-           "tk1" [coll15]
+            "tk1" [coll15]
 
            ;; spatial keywords
-           "in" [coll10]
+            "in" [coll10]
 
            ;; associated difs
-           "dif-1" [coll17]
+            "dif-1" [coll17]
 
            ;; two d coord
-           "xyz" [coll2 coll13]
+            "xyz" [coll2 coll13]
 
            ;; archive center
-           "some" [coll6]
+            "some" [coll6]
 
            ;; attributes
            ;; - name
-           "charlie" [coll12]
+            "charlie" [coll12]
            ;; - description
-           "Generated" [coll12]
+            "Generated" [coll12]
            ;; description with no value - see CMR-1129
-           "description" [coll11]
+            "description" [coll11]
 
            ;; Platforms
            ;; - short name
-           "platform_SnA" [coll11]
+            "platform_SnA" [coll11]
            ;; - long name (from metadata - not from KMS)
-           "platform_ln" [coll15]
+            "platform_ln" [coll15]
            ;; - long name (from KMS - not from the metadata)
-           "Soil Moisture Active and Passive Observatory" [coll24]
+            "Soil Moisture Active and Passive Observatory" [coll24]
            ;; - characteristic name
-           "char1" [coll11]
-           "char2" [coll11]
-           "char1 char2" [coll11]
+            "char1" [coll11]
+            "char2" [coll11]
+            "char1 char2" [coll11]
            ;; - chracteristic description
-           "char1desc" [coll11]
-           "char2desc" [coll11]
-           "char1desc char2desc" [coll11]
+            "char1desc" [coll11]
+            "char2desc" [coll11]
+            "char1desc char2desc" [coll11]
 
            ;; Instruments
            ;; - short name
-           "isnA" [coll15]
+            "isnA" [coll15]
            ;; - long name (from metadata - not from KMS)
-           "ilnB" [coll11]
+            "ilnB" [coll11]
            ;; - long name (from KMS - not from metadata)
-           "SMAP L-Band Radiometer" [coll24]
+            "SMAP L-Band Radiometer" [coll24]
            ;; - technique
-           "itechniqueB" [coll11]
-           "itechniqueA" [coll15]
+            "itechniqueB" [coll11]
+            "itechniqueA" [coll15]
 
            ;; Sensors
            ;; - short name
-           "ssnA" [coll15]
+            "ssnA" [coll15]
            ;; - long name
-           "slnB" [coll11]
+            "slnB" [coll11]
            ;; - technique
-           "techniqueB" [coll11]
-           "techniqueD" [coll15]
-           "techniqueB techniqueC" [coll11]
+            "techniqueB" [coll11]
+            "techniqueD" [coll15]
+            "techniqueB techniqueC" [coll11]
 
            ;; Science keywords
            ;; - category
-           "Cat1" [coll9]
+            "Cat1" [coll9]
            ;; - topic
-           "Topic1" [coll9 coll10]
+            "Topic1" [coll9 coll10]
            ;; - term
-           "Term1" [coll9 coll10]
+            "Term1" [coll9 coll10]
            ;; - variable-levels
-           "Level2-1" [coll9]
-           "Level2-2" [coll9]
-           "Level2-3" [coll9]
+            "Level2-1" [coll9]
+            "Level2-2" [coll9]
+            "Level2-3" [coll9]
            ;; - detailed-variable
-           "SUPER" [coll9]
+            "SUPER" [coll9]
 
            ;; Special characters are escaped before sending to Elastic
-           "ABC~ZYX" []
-           "ABC~" []
-           "spo~nA" [coll11]
-           "fo&nA" [coll11]
-           "A.+&.+C" []
-           "S@PER" [coll10]
+            "ABC~ZYX" []
+            "ABC~" []
+            "spo~nA" [coll11]
+            "fo&nA" [coll11]
+            "A.+&.+C" []
+            "S@PER" [coll10]
 
            ;; search by keywords using wildcard *
-           "A*C" [coll2 coll5 coll21]
-           "XY*" [coll2 coll13]
-           "*aser" [coll5 coll7 coll9 coll14]
-           "p*ce" [coll6]
-           "NEA*REA*IME" [coll22]
-           "nea*rea*ime" [coll22]
-           "\"Quoted*" [coll23]
+            "A*C" [coll2 coll5 coll21]
+            "XY*" [coll2 coll13]
+            "*aser" [coll5 coll7 coll9 coll14]
+            "p*ce" [coll6]
+            "NEA*REA*IME" [coll22]
+            "nea*rea*ime" [coll22]
+            "\"Quoted*" [coll23]
 
            ;; search by keywords using wildcard ?
-           "A?C" [coll2 coll5 coll21]
-           "XY?" [coll2 coll13]
-           "?aser" [coll5 coll7 coll9 coll14]
-           "p*ace" [coll6]
-           "NEAR?REAL?TIME" [coll22]
-           "near?real?time" [coll22]))
+            "A?C" [coll2 coll5 coll21]
+            "XY?" [coll2 coll13]
+            "?aser" [coll5 coll7 coll9 coll14]
+            "p*ace" [coll6]
+            "NEAR?REAL?TIME" [coll22]
+            "near?real?time" [coll22]))
 
     (testing "Default boosts on fields"
-      (are [keyword-str scores] (= (map #(/ % 2.0) scores)
+      (are2 [keyword-str scores] (= (map #(/ % 2.0) scores)
                                    (map :score (:refs (search/find-refs :collection
                                                                         {:keyword keyword-str}))))
-           ;; short-name
+           "short-name"
            "SNFoobar" [short-name-boost]
-           ;; long-name
+           "long-name"
            "LNFoobar" [short-name-boost]
 
-           ;; project short-name
+           "project short-name"
            (:short-name (first pr1)) [project-boost]
-           ;; project long-name
+           "project long-name"
            (:long-name (first pr1)) [project-boost]
 
-           ;; platform short-name
+           "platform short-name"
            (:short-name p1) [platform-boost]
-           ;; platform long-name (from metadata)
+           "platform long-name (from metadata)"
            (:long-name p1) [platform-boost]
-           ;; platform long-name (from KMS)
+           "platform long-name (from KMS)"
            "Soil Moisture Active and Passive Observatory" [platform-boost]
 
-           ;; instrument short-name
+           "instrument short-name"
            (:short-name (first (:instruments p1))) [instrument-boost]
-           ;; instrument long-name (from metadata)
+           "instrument long-name (from metadata)"
            (:long-name (first (:instruments p1))) [instrument-boost]
-           ;; instrument long-name (from KMS)
+           "instrument long-name (from KMS)"
            "L-Band Radiometer" [instrument-boost]
 
-           ;; sensor short-name
+           "sensor short-name"
            (:short-name (first (:sensors (first (:instruments p1))))) [sensor-boost]
-           ;; sensor long-name
+           "sensor long-name"
            (:long-name (first (:sensors (first (:instruments p1))))) [sensor-boost]
 
-           ;; temporal-keywords
+           "temporal-keywords"
            "tk1" [(k2e/get-boost nil :temporal-keyword)]
 
-           ;; spatial-keyword
+           "spatial-keyword"
            "in out" [(k2e/get-boost nil :spatial-keyword)]
 
-           ;; science-keywords
+           "science-keywords"
            (:category sk1) [science-keywords-boost]
 
-           ;; version-id
+           "version-id"
            "V001" [(k2e/get-boost nil :version-id)]
 
-           ;; entry-title
+           "entry-title"
            "coll5" [(k2e/get-boost nil :entry-title)]
 
-           ;; provider-id
+           "provider-id"
            "PROV1" [provider-boost provider-boost provider-boost provider-boost]))
 
     (testing "Specified boosts on fields"

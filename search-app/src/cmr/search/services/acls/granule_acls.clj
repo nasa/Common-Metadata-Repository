@@ -1,9 +1,11 @@
 (ns cmr.search.services.acls.granule-acls
   "Contains functions for manipulating granule acls"
   (:require [cmr.search.models.query :as q]
-            [cmr.search.models.group-query-conditions :as gc]
-            [cmr.search.services.acl-service :as acl-service]
+            [cmr.common-app.services.search.query-model :as cqm]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
+            [cmr.common-app.services.search.query-execution :as qe]
             [cmr.search.services.acls.acl-helper :as acl-helper]
+            [cmr.search.services.acl-service :as acl-service]
             [cmr.common.concepts :as c]
             [cmr.common.util :as u]
             [cmr.common.date-time-parser :as date-time-parser]
@@ -53,10 +55,10 @@
   [access-value-filter]
   (when-let [{:keys [include-undefined min-value max-value]} access-value-filter]
     (let [value-cond (when (or min-value max-value)
-                       (q/numeric-range-condition :access-value min-value max-value))
+                       (cqm/numeric-range-condition :access-value min-value max-value))
           include-undefined-cond (when include-undefined
-                                   (q/->NegatedCondition
-                                     (q/->ExistCondition :access-value)))]
+                                   (cqm/->NegatedCondition
+                                     (cqm/->ExistCondition :access-value)))]
       (if (and value-cond include-undefined-cond)
         (gc/or-conds [value-cond include-undefined-cond])
         (or value-cond include-undefined-cond)))))
@@ -75,12 +77,12 @@
                                              :end-date end-date
                                              :exclusive? false})
       ;; Disjoint is intersects negated.
-      :disjoint (q/->NegatedCondition (temporal->query-condition
-                                        (assoc temporal-filter :mask :intersect)))
+      :disjoint (cqm/->NegatedCondition (temporal->query-condition
+                                         (assoc temporal-filter :mask :intersect)))
       ;; The granules temporal must start and end within the temporal range
-      :contains (gc/and-conds [(q/date-range-condition :start-date start-date end-date false)
-                               (q/->ExistCondition :end-date)
-                               (q/date-range-condition :end-date start-date end-date false)]))))
+      :contains (gc/and-conds [(cqm/date-range-condition :start-date start-date end-date false)
+                               (cqm/->ExistCondition :end-date)
+                               (cqm/date-range-condition :end-date start-date end-date false)]))))
 
 (defmulti provider->collection-condition
   "Converts a provider id from an ACL into a collection query condition that will find all collections
@@ -95,11 +97,11 @@
 (defmethod provider->collection-condition :no-query-coll-ids
   [query-coll-ids provider-id]
   (q/->CollectionQueryCondition
-    (q/string-condition :provider-id provider-id true false)))
+    (cqm/string-condition :provider-id provider-id true false)))
 
 (defmethod provider->collection-condition :with-query-coll-ids
   [query-coll-ids provider-id]
-  (q/string-conditions :collection-concept-id query-coll-ids true))
+  (cqm/string-conditions :collection-concept-id query-coll-ids true))
 
 (defn concept-ids->collection-condition
   "Helper for converting a list of concept ids from an ACL into a collection condition that will
@@ -109,9 +111,9 @@
   [query-coll-ids concept-ids]
   (if query-coll-ids
     (if-let [concept-ids (seq (set/intersection query-coll-ids (set concept-ids)))]
-      (q/string-conditions :collection-concept-id concept-ids true)
-      q/match-none)
-    (q/string-conditions :collection-concept-id concept-ids true)))
+      (cqm/string-conditions :collection-concept-id concept-ids true)
+      cqm/match-none)
+    (cqm/string-conditions :collection-concept-id concept-ids true)))
 
 (defn- provider+entry-titles->collection-condition
   "Converts a provider and entry titles from an ACL into a an equivalent query condition.
@@ -132,8 +134,8 @@
                              (concept-ids->collection-condition query-coll-ids concept-ids))
           entry-titles-cond (when entry-titles
                               (q/->CollectionQueryCondition
-                                (gc/and-conds [(q/string-condition :provider-id provider-id true false)
-                                              (q/string-conditions :entry-title entry-titles true)])))]
+                                (gc/and-conds [(cqm/string-condition :provider-id provider-id true false)
+                                               (cqm/string-conditions :entry-title entry-titles true)])))]
       (if (and concept-ids-cond entry-titles-cond)
         (gc/or-conds [concept-ids-cond entry-titles-cond])
         (or concept-ids-cond entry-titles-cond)))))
@@ -190,14 +192,14 @@
   to collection concept ids from the user's query."
   [context coll-ids-by-prov acls]
   (if (empty? acls)
-    q/match-none
+    cqm/match-none
     (if-let [conds (seq (filter identity
                                 (map (partial acl->query-condition context coll-ids-by-prov) acls)))]
       (gc/or-conds conds)
-      q/match-none)))
+      cqm/match-none)))
 
 ;; This expects that collection queries have been resolved before this step.
-(defmethod acl-service/add-acl-conditions-to-query :granule
+(defmethod qe/add-acl-conditions-to-query :granule
   [context query]
   (let [coll-ids-by-prov (->> (coll-id-extractor/extract-collection-concept-ids query)
                               ;; Group the concept ids by provider

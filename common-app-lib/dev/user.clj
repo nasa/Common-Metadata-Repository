@@ -1,6 +1,7 @@
 (ns user
   (:require [clojure.pprint :refer (pprint pp)]
-            [clojure.tools.namespace.repl :refer (refresh refresh-all)])
+            [clojure.tools.namespace.repl :refer (refresh refresh-all)]
+            [cmr.common.dev.capture-reveal])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         ;; Needed to make debug-repl available

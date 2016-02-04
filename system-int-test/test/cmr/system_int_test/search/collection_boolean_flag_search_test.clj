@@ -40,9 +40,9 @@
          [coll2 coll3 coll4 coll6] false
          [coll1 coll2 coll3 coll4 coll5 coll6] "unset"))
 
-     (testing "search by online only wrong value"
-      (is (= {:status 400 :errors ["Parameter downloadable must take value of true, false, or unset, but was [wrong]"]}
-             (search/find-refs :collection {:online-only "wrong"}))))
+    (testing "search by online only wrong value"
+     (is (= {:status 400 :errors ["Parameter downloadable must take value of true, false, or unset, but was [wrong]"]}
+            (search/find-refs :collection {:online-only "wrong"}))))
 
     (testing "search by online only with aql"
       (are [items value]

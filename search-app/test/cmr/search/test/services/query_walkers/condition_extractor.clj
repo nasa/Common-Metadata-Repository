@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [cmr.search.test.models.helpers :refer :all]
             [cmr.search.services.query-walkers.condition-extractor :as c]
-            [cmr.search.models.query :as q]))
+            [cmr.common-app.services.search.query-model :as q]))
+
 
 (defn string-cond
   [field n]
@@ -17,7 +18,7 @@
   [condition-path condition]
   (->> condition-path
        (filter (fn [c]
-                 (= cmr.search.models.query.ConditionGroup (type c))))
+                 (= cmr.common_app.services.search.query_model.ConditionGroup (type c))))
        (filter (fn [c]
                  (= :or (:operation c))))
        empty?))

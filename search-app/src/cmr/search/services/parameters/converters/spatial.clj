@@ -1,8 +1,8 @@
 (ns cmr.search.services.parameters.converters.spatial
   "Contains parameter converters for spatial parameters"
-  (:require [cmr.search.services.parameters.conversion :as p]
+  (:require [cmr.common-app.services.search.params :as p]
             [cmr.search.models.query :as qm]
-            [cmr.search.models.group-query-conditions :as gc]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.spatial.codec :as spatial-codec]
             [cmr.common.services.errors :as errors]
             [clojure.string :as str]))

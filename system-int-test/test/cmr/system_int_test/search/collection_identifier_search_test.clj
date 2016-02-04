@@ -15,7 +15,6 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
-
 (deftest identifier-search-test
 
   ;; Create 4 collections in each provider that are identical.
