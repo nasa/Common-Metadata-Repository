@@ -151,9 +151,9 @@
           :field (or (get aliases field)
                      field)}]))))
 
-(defn default-parse-standard-params
+(defn default-parse-query-level-params
   ([concept-type params]
-   (default-parse-standard-params concept-type params {}))
+   (default-parse-query-level-params concept-type params {}))
   ([concept-type params aliases]
    [(dissoc params :page-size :page-num :sort-key :result-format)
     {:concept-type concept-type
@@ -162,20 +162,20 @@
      :sort-keys (parse-sort-key (:sort-key params) aliases)
      :result-format (:result-format params)}]))
 
-(defmulti parse-standard-params
-  "Extracts standard parameters that work on any query api like page-size and page-num and returns
-   a tuple of leftover parameters and a map as query attributes"
+(defmulti parse-query-level-params
+  "Extracts parameters apply at the query level page-size and result format and returns a tuple of
+   leftover parameters and a map as query attributes. "
   (fn [concept-type params]
     concept-type))
 
-(defmethod parse-standard-params :default
+(defmethod parse-query-level-params :default
   [concept-type params]
-  (default-parse-standard-params concept-type params))
+  (default-parse-query-level-params concept-type params))
 
 (defn parse-parameter-query
   "Converts parameters into a query model."
   [concept-type params]
-  (let [[params query-attribs] (parse-standard-params concept-type params)
+  (let [[params query-attribs] (parse-query-level-params concept-type params)
         options (u/map-keys->kebab-case (get params :options {}))
         params (dissoc params :options)]
     (if (empty? params)

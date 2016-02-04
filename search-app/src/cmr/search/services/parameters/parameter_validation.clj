@@ -71,28 +71,10 @@
   {:collection #{:tag-namespace}
    :granule #{:concept-id}})
 
-;; TODO move this lower in the file
-(defn boosts-validation
-  "Validates that all the provided fields in the boosts parameter are valid and that the values
-  are numeric."
-  [concept-type params]
-  (let [boosts (:boosts params)]
-    (keep (fn [[field value]]
-            (if (or (field k2e/default-boosts)
-                    (= field :provider))
-              (when-not (util/numeric-string? value)
-                (format "Relevance boost value [%s] for field [%s] is not a number."
-                        (csk/->snake_case_string value) (csk/->snake_case_string field)))
-              (when-not (= field :include-defaults)
-                (format "Cannot set relevance boost on field [%s]." (csk/->snake_case_string field)))))
-          (seq boosts))))
-
 (def exclude-plus-or-option #{:exclude-collection :or :exclude-boundary})
 (def exclude-plus-and-or-option #{:exclude-boundary :and :or})
 (def highlights-option #{:begin-tag :end-tag :snippet-length :num-snippets})
 
-
-;; TODO is it necessary to put all the aliases in here?
 
 (defmethod cpv/valid-parameter-options :collection
   [_]
@@ -161,6 +143,20 @@
    :value cpv/string-param-options
    :category cpv/string-param-options
    :originator-id cpv/pattern-option})
+
+(defmethod cpv/valid-query-level-params :collection
+  [_]
+  #{:include-granule-counts :include-has-granules :include-facets :hierarchical-facets
+    :include-highlights :include-tags :all-revisions :echo-compatible :boosts})
+
+(defmethod cpv/valid-query-level-options :collection
+  [_]
+  #{:highlights})
+
+(defmethod cpv/valid-query-level-params :granule
+  [_]
+  #{:echo-compatible})
+
 
 (defmethod cpv/valid-sort-keys :collection
   [_]
@@ -462,7 +458,6 @@
               (csk/->snake_case_string param) value)))))
     [:snippet-length :num-snippets]))
 
-;; TODO rename this to something more specific
 (defn- include-tag-result-format-validation
   "Validates parameters against result format."
   [concept-type params]
@@ -483,6 +478,21 @@
       [(str "Timeline interval is a required parameter for timeline search and must be one of"
             " year, month, day, hour, minute, or second.")])
     ["interval is a required parameter for timeline searches"]))
+
+(defn boosts-validation
+  "Validates that all the provided fields in the boosts parameter are valid and that the values
+  are numeric."
+  [concept-type params]
+  (let [boosts (:boosts params)]
+    (keep (fn [[field value]]
+            (if (or (field k2e/default-boosts)
+                    (= field :provider))
+              (when-not (util/numeric-string? value)
+                (format "Relevance boost value [%s] for field [%s] is not a number."
+                        (csk/->snake_case_string value) (csk/->snake_case_string field)))
+              (when-not (= field :include-defaults)
+                (format "Cannot set relevance boost on field [%s]." (csk/->snake_case_string field)))))
+          (seq boosts))))
 
 (def parameter-validations
   "Lists of parameter validation functions by concept type"

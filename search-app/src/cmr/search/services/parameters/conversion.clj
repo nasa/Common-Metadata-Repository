@@ -219,9 +219,9 @@
      (common-params/string-parameter->condition concept-type  :associated-difs value
                                                 (set/rename-keys options {:dif-entry-id :associated-difs}))]))
 
-(defmethod common-params/parse-standard-params :collection
+(defmethod common-params/parse-query-level-params :collection
   [concept-type params]
-  (let [[params query-attribs] (common-params/default-parse-standard-params
+  (let [[params query-attribs] (common-params/default-parse-query-level-params
                                 :collection params lp/param-aliases)
         {:keys [begin-tag end-tag snippet-length num-snippets]} (get-in params [:options :highlights])
         result-features (concat (when (= (:include-granule-counts params) "true")
@@ -260,9 +260,9 @@
                                             :num-snippets (when num-snippets (Integer. num-snippets))}}))})
          u/remove-nil-keys)]))
 
-(defmethod common-params/parse-standard-params :granule
+(defmethod common-params/parse-query-level-params :granule
   [concept-type params]
-  (let [[params query-attribs] (common-params/default-parse-standard-params
+  (let [[params query-attribs] (common-params/default-parse-query-level-params
                                 :granule params lp/param-aliases)]
     [(dissoc params :echo-compatible)
      (merge query-attribs {:echo-compatible? (= "true" (:echo-compatible params))})]))

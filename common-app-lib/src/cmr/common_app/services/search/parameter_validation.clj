@@ -141,7 +141,7 @@
 (def string-plus-or-options #{:pattern :ignore-case :or})
 
 (defmulti valid-parameter-options
-  "TODO"
+  "Returns a map of parameter name to the set of option keys that are allowed for that parameter."
   by-concept-type)
 
 (defn parameter-options-validation
@@ -191,28 +191,37 @@
   "A set of the valid parameter names for the given concept-type."
   (memoize
    (fn [concept-type]
-    (set (concat
-           (keys (p/param-mappings concept-type))
-           ;; TODO is it necessary to append options here?
-           [:options])))))
+    (set (keys (p/param-mappings concept-type))))))
+
+(defmulti valid-query-level-params
+  "Returns a set of parameter names that are valid at the query level"
+  by-concept-type)
+
+(defmethod valid-query-level-params :default
+  [_]
+  #{})
+
+(def standard-valid-params
+  "The set of standard valid query level parameters."
+  #{:page-size :page-num :sort-key :result-format :options})
 
 (defn unrecognized-params-validation
   "Validates that no invalid parameters were supplied"
   [concept-type params]
+  (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))
+       (set/difference (set (keys params))
+                       (set/union standard-valid-params
+                                  (concept-type->valid-param-names concept-type)
+                                  (valid-query-level-params concept-type)))))
 
-  ;; TODO we shouldn't have to dissassociate things here like this
-  ;; this test does not apply to page_size, page_num, etc.
-  (let [params (dissoc params :page-size :page-num :boosts :sort-key :result-format :echo-compatible)
 
-        ;; TODO this is collection specific and likely unnecessary
-        params (if (= :collection concept-type)
-                 ;; Parameters only supported on collections
-                 (dissoc params :include-granule-counts :include-has-granules :include-facets
-                         :hierarchical-facets :include-highlights :include-tags :all-revisions)
-                 params)]
-    (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))
-         (set/difference (set (keys params))
-                         (concept-type->valid-param-names concept-type)))))
+(defmulti valid-query-level-options
+  "Returns a set of query level options that are valid."
+  by-concept-type)
+
+(defmethod valid-query-level-options :default
+  [_]
+  #{})
 
 (defn unrecognized-params-in-options-validation
   "Validates that no invalid parameters names in the options were supplied"
@@ -220,11 +229,8 @@
   (if-let [options (:options params)]
     (map #(str "Parameter [" (csk/->snake_case_string %)"] with option was not recognized.")
          (set/difference (set (keys options))
-
-                         ;; TODO can highlights be moved out of here somehow?
-                         ;; Adding in :highlights since this option does not have any
-                         ;; corresponding search parameters
-                         (conj (concept-type->valid-param-names concept-type) :highlights)))
+                         (set/union (concept-type->valid-param-names concept-type)
+                                    (valid-query-level-options concept-type))))
     []))
 
 (defn validate-date-time
@@ -262,12 +268,9 @@
   "Validates that any query parameters passed to the AQL or JSON search endpoints are valid."
   [concept-type params]
   (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
-       ;; TODO this has all kinds of references to collection specific parameters
        (set/difference (set (keys params))
-                       (set [:page-size :page-num :sort-key :result-format :options
-                             :include-granule-counts :include-has-granules :include-facets
-                             :echo-compatible :hierarchical-facets :include-highlights
-                             :include-tags]))))
+                       (set/union standard-valid-params
+                                  (valid-query-level-params concept-type)))))
 
 (defn assoc-keys->param-name
   "Given a set of parameter assoc keys, returns the URL string for the parameter at that path.  For
