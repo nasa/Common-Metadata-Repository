@@ -3,7 +3,8 @@
             [cmr.metadata-db.services.concept-validations :as v]
             [config.migrate-config :as config]
             [config.mdb-migrate-helper :as h]
-            [migrations.028-create-global-transaction-sequence :as m28]))
+            [migrations.028-create-global-transaction-sequence :as m28]
+            [cmr.oracle.sql-utils :as utils]))
 
 ;; This migration assigns transaction-ids to all existing concepts except granules (they will be
 ;; handled by a separate job). In order to avoid collisions with new transaction-ids generated
@@ -22,9 +23,10 @@
   []
   (println "migrations.031-assign-transaction-ids-for-collections-services-tags-and-access-groups up...")
   (let [migration-trans-seqeunce-start (inc v/MAX_REVISION_ID)]
-    (h/sql
-      (format "CREATE SEQUENCE METADATA_DB.migration_transaction_id_seq START WITH %s INCREMENT BY 1 CACHE 400"
-              migration-trans-seqeunce-start))
+    (utils/ignore-already-exists-errors "SEQUENCE"
+      (h/sql
+        (format "CREATE SEQUENCE METADATA_DB.migration_transaction_id_seq START WITH %s INCREMENT BY 1 CACHE 400"
+              migration-trans-seqeunce-start)))
     ;; transaction-ids for granules will be handled as a separate job
     (doseq [table (h/get-concept-tablenames :collection :service :tag :access-group)
             row (h/query (format (str "SELECT id FROM %s WHERE transaction_id = 0 "

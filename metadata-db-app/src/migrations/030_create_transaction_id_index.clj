@@ -1,15 +1,16 @@
 (ns migrations.030-create-transaction-id-index
   (:require [clojure.java.jdbc :as j]
             [config.migrate-config :as config]
-            [config.mdb-migrate-helper :as h]))
+            [config.mdb-migrate-helper :as h]
+            [cmr.oracle.sql-utils :as utils]))
 
 (defn up
   "Migrates the database up to version 30."
   []
   (println "migrations.030-create-transaction-id-index up...")
   (doseq [table (h/get-concept-tablenames)]
-    (h/sql (format "CREATE INDEX %s_crtid ON %s (concept_id, revision_id, transaction_id)" table table))))
-
+    (utils/ignore-already-exists-errors "INDEX"
+      (h/sql (format "CREATE INDEX %s_crtid ON %s (concept_id, revision_id, transaction_id)" table table)))))
 (defn down
   "Migrates the database down from version 30."
   []
