@@ -175,7 +175,7 @@ These are query parameters specific to collections
   * `include_facets` - If this parameter is set to "true" facets will be included in the collection results (not applicable to opendata results). Facets are described in detail below.
   * `hierarchical_facets` - If this parameter is set to "true" and the parameter `include_facets` is set to "true" the facets that are returned will be hierarchical. Hierarchical facets are described in the facets section below.
   * `include_highlights` - If this parameter is set to "true", the collection results will contain an additional field, 'highlighted_summary_snippets'. The field is an array of strings which contain a snippet of the summary which highlight any terms which match the terms provided in the keyword portion of a search. By default up to 5 snippets may be returned with each individual snippet being up to 100 characters, and keywords in the snippets are delineated with begin tag `<em>` and end tag `</em>`. This is configurable using `options[highlights][param]=value`. Supported option params are `begin_tag`, `end_tag`, `snippet_length` and `num_snippets`. The values for `snippet_length` and `num_snippets` must be integers greater than 0.
-  * `include_tags` - If this parameter is set (e.g. `include_tags=gov.nasa.earthdata.search.*,gov.nasa.echo.*`), the collection results will contain an additional field 'tags' within each collection. The value of the tags field is a list of tuples of tag namespace and tag value that are associated with the collection. Only the tags with namespace matching the values of `include_tags` parameter (with wildcard support) are included in the results. This parameter is only supported in JSON result format, it has no effects on other formats.
+  * `include_tags` - If this parameter is set (e.g. `include_tags=gov.nasa.earthdata.search.*,gov.nasa.echo.*`), the collection results will contain an additional field 'tags' within each collection. The value of the tags field is a list of tuples of tag namespace and tag value that are associated with the collection. Only the tags with namespace matching the values of `include_tags` parameter (with wildcard support) are included in the results. This parameter is supported in JSON and ATOM result formats.
 
   _There is a known bug with the `snippet_length` parameter that occasionally leads to snippets that are longer than `snippet_length` characters._
 
@@ -276,6 +276,7 @@ The following fields are specific to the CMR output and most correspond to ECHO1
 | echo:hasGranules (collections only)        | true if there are granules associated with the collection                                                            |
 | echo:granuleCount (collections only)       | granule count of the collection                                                                                      |
 | relevance:score (collections only)         | relevance score of the collection to search parameters                                                               |
+| echo:tag (collections only)                | tags associated with the collection                                                                                  |
 | echo:dayNightFlag (granules only)          | day night flag of the granule                                                                                        |
 | echo:cloudCover (granules only)            | cloud cover of the granule                                                                                           |
 
@@ -639,7 +640,7 @@ __Example__
 
 #### <a name="json"></a> JSON
 
-The JSON response contains the same fields as the ATOM response, only in JSON format except the `tags` field which is added as a result of the `include_tags` search parameter.
+The JSON response contains the same fields as the ATOM response.
 
 __Example__
 
