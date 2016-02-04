@@ -67,7 +67,7 @@
         (let [found-concepts (util/find-concepts :collection
                                                  {:entry-title "ET-1" :provider-id provider-id})]
           (is (= [existing-collection]
-                 (map #(dissoc % :revision-date) (:concepts found-concepts))))))))
+                 (map #(dissoc % :revision-date :transaction-id) (:concepts found-concepts))))))))
   (testing "duplicate entry titles within multiple small providers is OK"
     (let [coll1 (util/collection-concept "SMAL_PROV1" 1
                                          {:concept-id "C1-SMAL_PROV1"
@@ -82,4 +82,3 @@
       (is (= 201 status))
       (util/verify-concept-was-saved coll1)
       (util/verify-concept-was-saved coll2))))
-

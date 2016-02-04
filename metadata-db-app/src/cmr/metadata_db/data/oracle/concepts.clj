@@ -126,7 +126,8 @@
                   format
                   revision_id
                   revision_date
-                  deleted]} result]
+                  deleted
+                  transaction_id]} result]
       (util/remove-nil-keys {:concept-type concept-type
                              :native-id native_id
                              :concept-id concept_id
@@ -135,7 +136,8 @@
                              :format (db-format->mime-type format)
                              :revision-id (int revision_id)
                              :revision-date (oracle/oracle-timestamp->str-time db revision_date)
-                             :deleted (not= (int deleted) 0)}))))
+                             :deleted (not= (int deleted) 0)
+                             :transaction-id transaction_id}))))
 
 (defn concept->common-insert-args
   "Converts a concept into a set of insert arguments that is common for all provider concept types."
@@ -306,6 +308,20 @@
       db concept-type provider
       (get-latest-concept-id-revision-id-tuples db concept-type provider concept-ids)))
 
+  (get-transactions-for-concept
+    [db provider concept-id]
+      (j/with-db-transaction
+        [conn db]
+        (let [provider-id (:provider-id provider)
+              concept-type (cc/concept-id->type concept-id)
+              table (tables/get-table-name provider concept-type)
+              stmt (su/build (select [:c.revision-id :c.transaction-id]
+                               (from (as (keyword table) :c))
+                               (where `(= :c.concept-id ~concept-id))))]
+          (map (fn [result] {:revision-id (long (:revision_id result))
+                             :transaction-id (long (:transaction_id result))})
+               (su/query conn stmt)))))
+
   (save-concept
     [db provider concept]
     (try
@@ -319,7 +335,8 @@
                 table (tables/get-table-name provider concept-type)
                 seq-name (str table "_seq")
                 [cols values] (concept->insert-args concept (:small provider))
-                stmt (format "INSERT INTO %s (id, %s) VALUES (%s.NEXTVAL,%s)"
+                stmt (format (str "INSERT INTO %s (id, %s, transaction_id) VALUES "
+                                  "(%s.NEXTVAL,%s,GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL)")
                              table
                              (str/join "," cols)
                              seq-name
@@ -531,4 +548,3 @@
                                             (truncate-highest rev-ids max-revisions))))
                    []
                    concept-id-rev-ids-map)))))
-

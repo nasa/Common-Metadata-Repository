@@ -20,7 +20,7 @@
 
 (deftest delete-concepts-test
   (doseq [concept-type [:collection :granule :service]]
-   (cd-spec/general-delete-test concept-type ["REG_PROV" "SMAL_PROV"])))
+    (cd-spec/general-delete-test concept-type ["REG_PROV" "SMAL_PROV"])))
 
 (deftest delete-tag-general
   (cd-spec/general-delete-test :tag ["CMR"]))
@@ -48,8 +48,8 @@
                             :metadata ""
                             :revision-id revision-id
                             :user-id nil)
-                     :revision-date)
-             (dissoc deleted-coll1 :revision-date)))
+                     :revision-date :transaction-id)
+             (dissoc deleted-coll1 :revision-date :transaction-id)))
 
       ;; Make sure that a deleted collection gets it's own unique revision date
       (is (t/after? (:revision-date deleted-coll1) (:revision-date saved-coll1))
@@ -69,6 +69,7 @@
           gran1 (util/create-and-save-granule provider-id coll1 1 2)
           coll2 (util/create-and-save-collection provider-id 2)
           gran3 (util/create-and-save-granule provider-id coll2 1)
+
           {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id coll1)
                                                            :deleted true
                                                            :user-id "user101"})
@@ -86,8 +87,11 @@
                             :metadata ""
                             :revision-id revision-id
                             :user-id "user101")
-                     :revision-date)
-             (dissoc deleted-coll1 :revision-date)))
+                     :revision-date :transaction-id)
+             (dissoc deleted-coll1 :revision-date :transaction-id)))
+
+      ;; make sure that a deleted collection gets it's own unique transaction-id
+      (is (> (:transaction-id deleted-coll1) (:transaction-id saved-coll1)))
 
       ;; Make sure that a deleted collection gets it's own unique revision date
       (is (t/after? (:revision-date deleted-coll1) (:revision-date saved-coll1))

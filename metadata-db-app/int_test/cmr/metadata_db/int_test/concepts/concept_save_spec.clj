@@ -3,7 +3,8 @@
   (:require [clojure.test :refer :all]
             [clj-time.core :as t]
             [cmr.common.concepts :as cc]
-            [cmr.metadata-db.int-test.utility :as util]))
+            [cmr.metadata-db.int-test.utility :as util]
+            [cmr.metadata-db.services.concept-validations :as v]))
 
 ;; Need this instead of direct string comparisons because we don't know ahead of time what
 ;; concept-ids will be generated, so the error messages must be checked with regexes instead
@@ -107,10 +108,10 @@
   [concept-type provider-ids]
   (doseq [[idx provider-id] (map-indexed vector provider-ids)]
     (testing "basic save"
-          (let [concept (gen-concept concept-type provider-id 1 {})]
-            (save-concept-test concept 201 1 nil)
-            (testing "save again with same concept-id"
-              (save-concept-test concept 201 2 nil))))
+      (let [concept (gen-concept concept-type provider-id 1 {})]
+        (save-concept-test concept 201 1 nil)
+        (testing "save again with same concept-id"
+          (save-concept-test concept 201 2 nil))))
 
     (testing "save with revision-date"
       (let [concept (gen-concept concept-type provider-id 2 {:revision-date (t/date-time 2001 1 1 12 12 14)})]
@@ -137,6 +138,12 @@
       (let [concept-with-bad-revision (gen-concept concept-type provider-id 18 {:revision-id 0})]
         (save-concept-test
           concept-with-bad-revision 409 nil [#"Expected revision-id of \[1\] got \[0\] for \[null\]"])))
+
+    (testing "save concept with revision-id > MAX_REVISION_ID fails"
+      (let [concept-with-bad-revision (gen-concept concept-type provider-id 18
+                                                   {:revision-id (inc v/MAX_REVISION_ID)})]
+        (save-concept-test
+          concept-with-bad-revision 422 nil [#"revision-id \[\d+\] exceeds the maximum allowed value of \d+."])))
 
     (testing "save with concept-id"
       (let [prefix (cc/concept-type->concept-prefix concept-type)
@@ -186,8 +193,18 @@
             {:keys [status revision-id]} (util/save-concept concept-with-concept-id)
             {retrieved-concept :concept} (util/get-concept-by-id concept-id)]
         (is (= 201 status))
-        (is (= 101 revision-id (:revision-id retrieved-concept)))))))
+        (is (= 101 revision-id (:revision-id retrieved-concept)))))
 
+    (testing "save concept results in incremented transaction-id"
+      (let [concept (gen-concept concept-type provider-id 1 {})]
+        (loop [index 0
+               transaction-id 0]
+          (when (< index 10)
+            (let [{:keys [concept-id revision-id]} (util/save-concept concept)
+                  retrieved-concept (util/get-concept-by-id-and-revision concept-id revision-id)
+                  new-transaction-id (get-in retrieved-concept [:concept :transaction-id])]
+              (is (> new-transaction-id transaction-id))
+              (recur (inc index) new-transaction-id))))))))
 
 
 
