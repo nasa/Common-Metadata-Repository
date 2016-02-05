@@ -16,7 +16,7 @@
   (:import clojure.lang.ExceptionInfo))
 
 (defn- by-concept-type
-  "This is a very simple helper functions for defining some of the multimethods here."
+  "This is a very simple helper function for defining some of the multimethods here."
   [concept-type]
   concept-type)
 

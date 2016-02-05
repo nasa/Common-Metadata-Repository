@@ -27,7 +27,6 @@
   (fn [concept-type query]
     [concept-type (:result-format query)]))
 
-
 (defrecord ElasticSearchIndex
   [
    config

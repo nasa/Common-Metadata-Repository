@@ -74,7 +74,6 @@
    ;;The actual Jetty instance
    server]
 
-
   lifecycle/Lifecycle
 
   (start
