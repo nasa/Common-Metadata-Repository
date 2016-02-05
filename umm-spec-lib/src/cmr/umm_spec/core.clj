@@ -67,7 +67,6 @@
   "Validates the given metadata and returns a list of errors found."
   [concept-type media-type metadata]
   (let [format-key (format-key media-type)]
-    (println "concept-type =" concept-type "media-type =" media-type)
     (if (= format-key :umm-json)
       (js/validate-umm-json metadata concept-type (umm-json-version media-type))
       (validate-xml concept-type format-key metadata))))
