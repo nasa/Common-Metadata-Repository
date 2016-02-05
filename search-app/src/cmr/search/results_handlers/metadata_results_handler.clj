@@ -1,12 +1,12 @@
 (ns cmr.search.results-handlers.metadata-results-handler
   "Handles search results with metadata including ECHO10 and DIF formats."
-  (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
-            [cmr.search.data.elastic-search-index :as elastic-search-index]
-            [cmr.search.services.query-service :as qs]
+  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+            [cmr.common-app.services.search :as qs]
             [cmr.search.services.query-execution :as qe]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.services.query-execution.facets-results-feature :as frf]
-            [cmr.search.models.results :as results]
+            [cmr.common-app.services.search.results-model :as results]
             [cmr.search.services.transformer :as t]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]

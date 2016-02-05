@@ -76,7 +76,7 @@
 ;;; Public Migration Interface
 
 (defn migrate-umm
-  [data concept-type source-version dest-version]
+  [concept-type source-version dest-version data]
   (if (= source-version dest-version)
     data
     ;; Migrating across versions is just reducing over the discrete steps between each version.

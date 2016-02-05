@@ -8,14 +8,16 @@
 
 (defn publish-event
   "Put an ingest event on the message queue."
-  [context exchange-name msg]
-  (when (and (config/publish-messages)
-             ;; TODO - Update/remove this when we add service indexing and group indexing.
-             (not (contains? #{:service :access-group} (cc/concept-id->type (:concept-id msg)))))
-    (let [timeout-ms (config/publish-timeout-ms)
-          queue-broker (get-in context [:system :queue-broker])]
-      (when queue-broker
-        (queue/publish-message queue-broker exchange-name msg timeout-ms)))))
+  [context msg]
+  (when-not (:concept-id msg)
+    (errors/internal-error! (str "Expecting every message to contain a concept-id. msg: " (pr-str msg))))
+  (when (config/publish-messages)
+    (when-let [exchange-name-fn (config/concept-type->exchange-name-fn
+                                 (cc/concept-id->type (:concept-id msg)))]
+      (let [timeout-ms (config/publish-timeout-ms)
+            queue-broker (get-in context [:system :queue-broker])]
+        (when queue-broker
+          (queue/publish-message queue-broker (exchange-name-fn) msg timeout-ms))))))
 
 (defmulti concept-update-event
   "Creates an event representing a concept being updated or created."

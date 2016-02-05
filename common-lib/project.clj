@@ -38,10 +38,10 @@
                  ;; Excludes things that are specified with other parts of the CMR
                  ;; 0.3.5-SNAPSHOT is used because it gives us the ability to clear the output.
                  [gorilla-repl "0.3.5-SNAPSHOT"  :exclusions [org.clojure/java.classpath
-                                                             ch.qos.logback/logback-classic
-                                                             javax.servlet/servlet-api
-                                                             compojure
-                                                             ring-json]]]
+                                                              ch.qos.logback/logback-classic
+                                                              javax.servlet/servlet-api
+                                                              compojure
+                                                              ring-json]]]
 
   :plugins [[lein-test-out "0.3.1"]
             [lein-exec "0.3.2"]]

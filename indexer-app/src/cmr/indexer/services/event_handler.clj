@@ -13,9 +13,9 @@
     (keyword (:action msg))))
 
 (defmethod handle-ingest-event :default
-  [_ _ _]
+  [_ _ _])
   ;; Default ignores the ingest event. There may be ingest events we don't care about.
-  )
+
 
 (defmethod handle-ingest-event :provider-collection-reindexing
   [context all-revisions-index? {:keys [provider-id]}]

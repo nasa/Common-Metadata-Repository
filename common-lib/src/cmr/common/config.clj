@@ -112,9 +112,9 @@
                      "\nCurrent: " (pr-str current))))))))))
 
 (comment
-  (print-all-configs-docs)
+  (print-all-configs-docs))
 
-  )
+
 
 (defn parse-boolean
   "Helper for parsing boolean strings."

@@ -1,17 +1,18 @@
 (ns cmr.search.services.query-execution
-  (:require [cmr.search.models.query :as qm]
-            [cmr.search.data.elastic-search-index :as idx]
-            [cmr.search.services.transformer :as t]
-            [cmr.search.models.results :as results]
-            [cmr.search.data.elastic-results-to-query-results :as rc]
-            [cmr.search.data.complex-to-simple :as c2s]
+  (:require [cmr.search.services.transformer :as t]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.search.services.query-walkers.collection-query-resolver :as r]
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as ce]
             [cmr.search.services.acl-service :as acl-service]
-            [cmr.search.services.query-walkers.related-item-resolver :as related-item-resolver])
-  (:import cmr.search.models.query.StringsCondition
-           cmr.search.models.query.StringCondition))
+            [cmr.common-app.services.search.query-execution :as common-qe]
+            [cmr.common-app.services.search.elastic-search-index :as idx]
+            [cmr.common-app.services.search.query-model :as cqm]
+            [cmr.common-app.services.search.complex-to-simple :as c2s]
+            [cmr.common-app.services.search.results-model :as results]
+            [cmr.common-app.services.search.elastic-results-to-query-results :as rc]
+            [cmr.common-app.services.search.related-item-resolver :as related-item-resolver])
+  (:import [cmr.common_app.services.search.query_model
+            StringCondition StringsCondition]))
 
 (def specific-elastic-items-format?
   "The set of formats that are supported for the :specific-elastic-items query execution strategy"
@@ -41,8 +42,7 @@
        ;; Sorting hasn't been specified or is set to the default value
        ;; Note that we don't actually sort items by the default sort keys
        ;; See issue CMR-607
-       (or (nil? sort-keys) (= (concept-type qm/default-sort-keys) sort-keys))))
-
+       (or (nil? sort-keys) (= (cqm/default-sort-keys concept-type) sort-keys))))
 
 (defn- specific-items-from-elastic-query?
   "Returns true if the query is only for specific items that will come directly from elastic search.
@@ -53,13 +53,22 @@
        (not all-revisions?)
        (specific-elastic-items-format? result-format)))
 
-(defn- query->execution-strategy
+(defn- collection-and-granule-execution-strategy-determiner
   "Determines the execution strategy to use for the given query."
   [query]
   (cond
     (direct-transformer-query? query) :direct-transformer
     (specific-items-from-elastic-query? query) :specific-elastic-items
-    :else :elastic))
+    :else :elasticsearch))
+
+(defmethod common-qe/query->execution-strategy :collection
+  [query]
+  (collection-and-granule-execution-strategy-determiner query))
+
+(defmethod common-qe/query->execution-strategy :granule
+  [query]
+  (collection-and-granule-execution-strategy-determiner query))
+
 
 (defmulti query->concept-ids
   "Extract concept ids from a concept-id only query"
@@ -74,60 +83,19 @@
   [query]
   (get-in query [:condition :values]))
 
-(defmulti pre-process-query-result-feature
-  "Applies result feature changes to the query before it is executed. Should return the query with
-  any changes necessary to apply the feature."
-  (fn [context query feature]
-    feature))
-
-(defmethod pre-process-query-result-feature :default
-  [context query feature]
-  ; Does nothing by default
-  query)
-
-(defmulti post-process-query-result-feature
-  "Processes the results found by the query to add additional information or other changes
-  based on the particular feature enabled by the user."
-  (fn [context query elastic-results query-results feature]
-    feature))
-
-(defmethod post-process-query-result-feature :default
-  [context query elastic-results query-results feature]
-  ; Does nothing by default
-  query-results)
-
-(defn pre-process-query-result-features
-  "Applies each result feature change to the query before it is executed. Returns the updated query."
-  [context query]
-  (reduce (partial pre-process-query-result-feature context)
-          query
-          (:result-features query)))
-
-(defn post-process-query-result-features
-  "Processes result features that execute after a query results have been found."
-  [context query elastic-results query-results]
-  (reduce (partial post-process-query-result-feature context query elastic-results)
-          query-results
-          (:result-features query)))
-
-(defmulti execute-query
-  "Executes the query using the most appropriate mechanism"
-  (fn [context query]
-    (query->execution-strategy query)))
-
-(defmethod execute-query :direct-transformer
+(defmethod common-qe/execute-query :direct-transformer
   [context query]
   (let [{:keys [result-format skip-acls?]} query
         concept-ids (query->concept-ids query)
         tresults (t/get-latest-formatted-concepts context concept-ids result-format skip-acls?)
         items (map #(select-keys % metadata-result-item-fields) tresults)
         results (results/map->Results {:hits (count items) :items items :result-format result-format})]
-    (post-process-query-result-features context query nil results)))
+    (common-qe/post-process-query-result-features context query nil results)))
 
-(defmethod execute-query :specific-elastic-items
+(defmethod common-qe/execute-query :specific-elastic-items
   [context query]
   (let [processed-query (->> query
-                             (pre-process-query-result-features context)
+                             (common-qe/pre-process-query-result-features context)
                              (r/resolve-collection-queries context)
                              (c2s/reduce-query context))
         elastic-results (idx/execute-query context processed-query)
@@ -136,14 +104,9 @@
                         query-results
                         (update-in query-results [:items]
                                    (partial acl-service/filter-concepts context)))]
-    (post-process-query-result-features context query elastic-results query-results)))
+    (common-qe/post-process-query-result-features context query elastic-results query-results)))
 
-(defmulti concept-type-specific-query-processing
-  "Performs processing on the context and the query specific to the concept type being searched"
-  (fn [context query]
-    (:concept-type query)))
-
-(defmethod concept-type-specific-query-processing :granule
+(defmethod common-qe/concept-type-specific-query-processing :granule
   [context query]
   (let [processed-query (r/resolve-collection-queries context query)
         collection-ids (ce/extract-collection-concept-ids processed-query)]
@@ -152,25 +115,9 @@
             :query-concept-type (:concept-type query))
      processed-query]))
 
-(defmethod concept-type-specific-query-processing :collection
+(defmethod common-qe/concept-type-specific-query-processing :collection
   [context query]
   [context (related-item-resolver/resolve-related-item-conditions query context)])
 
-(defmethod concept-type-specific-query-processing :default
-  [context query]
-  [context query])
 
-(defmethod execute-query :elastic
-  [context query]
-  (let [pre-processed-query (pre-process-query-result-features context query)
-        [context processed-query] (concept-type-specific-query-processing
-                                    context pre-processed-query)
-        elastic-results (->> processed-query
-                             (#(if (:skip-acls? %)
-                                 %
-                                 (acl-service/add-acl-conditions-to-query context %)))
-                             (c2s/reduce-query context)
-                             (idx/execute-query context))
-        query-results (rc/elastic-results->query-results context pre-processed-query elastic-results)]
-    (post-process-query-result-features context query elastic-results query-results)))
 

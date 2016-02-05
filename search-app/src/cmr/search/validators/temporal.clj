@@ -1,10 +1,7 @@
 (ns cmr.search.validators.temporal
   "Contains functions for validating temporal condition"
-  (:require [clojure.set]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
-            [cmr.search.models.query :as qm]
-            [cmr.search.validators.validation :as v]))
+  (:require [cmr.common-app.services.search.query-model :as qm]
+            [cmr.common-app.services.search.query-validation :as v]))
 
 (extend-protocol v/Validator
   cmr.search.models.query.TemporalCondition

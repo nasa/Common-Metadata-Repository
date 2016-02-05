@@ -1,7 +1,7 @@
 (ns cmr.search.services.tagging.tag-related-item-condition
   "Contains a function for creating a tag related item query condition along with the function to
   process the related tag items."
-  (:require [cmr.search.models.query :as qm]
+  (:require [cmr.common-app.services.search.query-model :as qm]
             [cmr.common.util :as util]
             [clojure.edn :as edn]))
 

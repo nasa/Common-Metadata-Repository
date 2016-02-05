@@ -118,7 +118,7 @@
            ["string,alpha,ab" "string,bravo,,bc"] [] :and
            ["string,alpha,ab" "string,bravo,bc,"] [coll1] :and
            ; and is the default
-           ["string,alpha,ab" "string,bravo,,bc"] [] nil ))
+           ["string,alpha,ab" "string,bravo,,bc"] [] nil))
 
     (testing "searching with multiple attribute conditions catalog-rest style"
       (are [v items operation]
@@ -137,7 +137,7 @@
            ["string,alpha,ab" "string,bravo,,bc"] [] :and
            ["string,alpha,ab" "string,bravo,bc,"] [coll1] :and
            ; and is the default
-           ["string,alpha,ab" "string,bravo,,bc"] [] nil ))
+           ["string,alpha,ab" "string,bravo,,bc"] [] nil))
 
     (testing "search collections by additionalAttributes multiple string values with aql"
       (are [items additional-attribs options]
@@ -1031,7 +1031,7 @@
         [dif9-coll] {:additional_attribute_value
                      {:name "metadata.extraction_date" :type "string" :value "2015-05-21 15:58:46"}}
 
-        ;; TODO - Figure out why exact match is failing
+        ;; TODO CMR-2413 - This is failing due to 8.100000381469727 being sent to elasticsearch.
         ; "By value - float"
         ; [dif9-coll] {:additional_attribute_name {:name "metadata.keyword_version" :value 8.1 :type "float"}}
 

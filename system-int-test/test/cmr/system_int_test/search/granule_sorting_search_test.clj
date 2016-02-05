@@ -8,7 +8,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.search.services.messages.common-messages :as msg]
+            [cmr.common-app.services.search.messages :as cmsg]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 
@@ -16,10 +16,10 @@
 
 (deftest invalid-sort-key-test
   (is (= {:status 400
-          :errors [(msg/invalid-sort-key "foo_bar" :granule)]}
+          :errors [(cmsg/invalid-sort-key "foo_bar" :granule)]}
          (search/find-refs :granule {:sort-key "foo_bar"})))
   (is (= {:status 400
-          :errors [(msg/invalid-sort-key "foo_bar" :granule)]}
+          :errors [(cmsg/invalid-sort-key "foo_bar" :granule)]}
          (search/find-refs-with-aql :granule [] {}
                                     {:query-params {:sort-key "foo_bar"}}))))
 

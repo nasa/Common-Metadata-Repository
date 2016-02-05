@@ -241,11 +241,11 @@
                           :echo-collection-id "C1000000002-PROV2"},
                 :echo-granule-id ["G1000000002-PROV1" "G1000000003-PROV1"
                                   "G1000000004-PROV1" "G1000000005-PROV2" "G1000000006-PROV2"]}]
-    (replace-parameter-aliases params)
-    )
+    (replace-parameter-aliases params)))
+
 
   ;;;;;;;;;;;;;;;;;
-  )
+
 
 
 

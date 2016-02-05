@@ -1,8 +1,8 @@
 (ns cmr.search.results-handlers.atom-results-handler
   "Handles the ATOM results format and related functions"
-  (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
-            [cmr.search.data.elastic-search-index :as elastic-search-index]
-            [cmr.search.services.query-service :as qs]
+  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+            [cmr.common-app.services.search :as qs]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.services.query-execution.facets-results-feature :as frf]
             [clojure.data.xml :as x]
@@ -14,8 +14,9 @@
             [cmr.common.util :as util]
             [cmr.common.date-time-parser :as dtp]
             [cmr.umm.collection.entry-id :as eid]
-            [cmr.search.models.results :as r]
+            [cmr.common-app.services.search.results-model :as r]
             [cmr.spatial.serialize :as srl]
+            [cmr.search.models.query :as q]
             [cmr.search.services.url-helper :as url]
             [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
             [cmr.search.results-handlers.atom-links-results-handler :as atom-links]
@@ -130,7 +131,7 @@
                           "dif10" [(eid/entry-id short-name version-id)]
                           associated-difs)]
     (merge {:id concept-id
-            :score (r/normalize-score score)
+            :score (q/normalize-score score)
             :title entry-title
             :short-name short-name
             :version-id version-id
@@ -311,6 +312,13 @@
   [org]
   (x/element :echo:organization {} org))
 
+(defn- tag->xml-element
+  "Convert a tag to an XML element"
+  [[tag-namespace tag-value]]
+  (x/element :echo:tag {}
+             (x/element :echo:namespace {} tag-namespace)
+             (x/element :echo:value {} tag-value)))
+
 (defn- orbit-parameters->attribute-map
   "Convert orbit parameters into attributes for an XML element"
   [orbit-params]
@@ -373,7 +381,7 @@
         {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
-                orbit-parameters organizations]} reference
+                orbit-parameters organizations tags]} reference
         granule-count (get granule-counts-map id 0)]
     (x/element :entry {}
                (x/element :id {} id)
@@ -403,7 +411,8 @@
                                                      (get has-granules-map id false))))
                (when granule-counts-map
                  (x/element :echo:granuleCount {} granule-count))
-               (when score (x/element :relevance:score {} score)))))
+               (when score (x/element :relevance:score {} score))
+               (map tag->xml-element tags))))
 
 (defmethod atom-reference->xml-element :granule
   [results concept-type reference]

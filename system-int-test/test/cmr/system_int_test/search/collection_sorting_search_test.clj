@@ -8,7 +8,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
             [cmr.umm.collection.entry-id :as eid]
-            [cmr.search.services.messages.common-messages :as msg]))
+            [cmr.common-app.services.search.messages :as msg]))
 
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))

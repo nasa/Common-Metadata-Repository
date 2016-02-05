@@ -24,6 +24,7 @@
    :metadata "xml here"
    :format "echo10"
    :revision-id 1
+   :transaction-id 1
    :extra-fields {:entry-title "ET-1"
                   :entry-id "EID-1"}})
 
@@ -131,7 +132,7 @@
           db (memory/create-db [expired])
           ;; create a mock save function that, the first time it is
           ;; called, updates our expired concept before calling the
-          ;; original save functio so that a conflict occurs when
+          ;; original save function so that a conflict occurs when
           ;; delete-expired-concepts runs
           expired-2 (-> expired (assoc :revision-id 2))
           orig-save cs/try-to-save

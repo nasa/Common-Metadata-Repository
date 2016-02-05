@@ -15,7 +15,7 @@
   [context provider]
   (let [response (mdb/create-provider-raw context provider)]
     (when (successful? response)
-      (ingest-events/publish-event
+      (ingest-events/publish-provider-event
         context (ingest-events/provider-create-event (:provider-id provider))))
     response))
 
@@ -24,7 +24,7 @@
   [context provider]
   (let [response (mdb/update-provider-raw context provider)]
     (when (successful? response)
-      (ingest-events/publish-event
+      (ingest-events/publish-provider-event
         context (ingest-events/provider-update-event (:provider-id provider))))
     response))
 
@@ -33,7 +33,7 @@
   [context provider-id]
   (let [response (mdb/delete-provider-raw context provider-id)]
     (when (successful? response)
-      (ingest-events/publish-event
+      (ingest-events/publish-provider-event
         context (ingest-events/provider-delete-event provider-id)))
     response))
 

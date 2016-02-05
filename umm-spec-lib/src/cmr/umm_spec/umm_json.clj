@@ -123,7 +123,7 @@
          root-type-def (get-in schema [:definitions (:root schema)])
          ;; migrate the decoded JSON object up to the latest UMM before running it through the schema
          json-obj (json/decode json-str true)
-         migrated (ver/migrate-umm json-obj concept-type json-version ver/current-version)]
+         migrated (ver/migrate-umm concept-type json-version ver/current-version json-obj)]
      (parse-json schema [(:root schema)] (:root schema) root-type-def migrated)))
   ([concept-type json-str]
     ;; default to trying to parse the current UMM version

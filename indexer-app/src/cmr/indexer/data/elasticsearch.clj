@@ -99,8 +99,8 @@
    config
 
    ;; The connection to elasticsearch
-   conn
-   ]
+   conn]
+
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle

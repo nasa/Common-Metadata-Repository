@@ -1,8 +1,8 @@
 (ns cmr.search.results-handlers.opendata-results-handler
   "Handles the opendata results format and related functions"
-  (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
-            [cmr.search.data.elastic-search-index :as elastic-search-index]
-            [cmr.search.services.query-service :as qs]
+  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+            [cmr.common-app.services.search :as qs]
             [cmr.search.results-handlers.opendata-spatial-results-handler :as opendata-spatial]
             [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
             [clojure.walk :as walk]
@@ -12,7 +12,7 @@
             [clj-time.format :as f]
             [cheshire.core :as json]
             [cmr.common.util :as util]
-            [cmr.search.models.results :as r]
+            [cmr.common-app.services.search.results-model :as r]
             [cmr.spatial.serialize :as srl]
             [cmr.search.services.url-helper :as url]
             [cmr.umm.related-url-helper :as ru]))

@@ -1,13 +1,14 @@
 (ns cmr.search.services.query-walkers.condition-extractor
   "Defines protocols and functions to extract conditions."
   (:require [cmr.common.services.errors :as errors]
+            [cmr.common-app.services.search.query-model :as cqm]
             [cmr.search.models.query :as qm])
-  (:import [cmr.search.models.query
+  (:import [cmr.common_app.services.search.query_model
             Query
             ConditionGroup
             NegatedCondition
-            NestedCondition
-            CollectionQueryCondition]))
+            NestedCondition]
+           cmr.search.models.query.CollectionQueryCondition))
 
 (defprotocol ExtractCondition
   (extract-condition-impl
@@ -30,14 +31,14 @@
     [c]))
 
 (extend-protocol ExtractCondition
-  cmr.search.models.query.Query
+  Query
   (extract-condition-impl
     [query _ extract-tester]
     (extract-condition-impl (:condition query)
                        [query]
                        extract-tester))
 
-  cmr.search.models.query.ConditionGroup
+  ConditionGroup
   (extract-condition-impl
     [group condition-path extract-tester]
     (concat (extract-self condition-path extract-tester group)
@@ -45,21 +46,21 @@
               (mapcat #(extract-condition-impl % condition-path extract-tester)
                       (:conditions group)))))
 
-  cmr.search.models.query.CollectionQueryCondition
+  CollectionQueryCondition
   (extract-condition-impl
     [coll-query-cond condition-path extract-tester]
     (concat (extract-self condition-path extract-tester coll-query-cond)
             (let [condition-path (conj condition-path coll-query-cond)]
               (extract-condition-impl (:condition coll-query-cond) condition-path extract-tester))))
 
-  cmr.search.models.query.NegatedCondition
+  NegatedCondition
   (extract-condition-impl
     [negated-cond condition-path extract-tester]
     (concat (extract-self condition-path extract-tester negated-cond)
             (let [condition-path (conj condition-path negated-cond)]
               (extract-condition-impl (:condition negated-cond) condition-path extract-tester))))
 
-  cmr.search.models.query.NestedCondition
+  NestedCondition
   (extract-condition-impl
     [c condition-path extract-tester]
     (concat (extract-self condition-path extract-tester c)

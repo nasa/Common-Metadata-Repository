@@ -1,10 +1,12 @@
 (ns cmr.search.test.services.parameter-validation
   (:require [clojure.test :refer :all]
             [cmr.search.services.parameters.parameter-validation :as pv]
+            [cmr.common-app.services.search.parameter-validation :as cpv]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.common.services.messages :as com-msg]
-            [cmr.search.services.messages.common-messages :as msg]))
+            [cmr.search.services.messages.common-messages :as msg]
+            [cmr.common-app.services.search.messages :as cmsg]))
 
 (def valid-params
   "Example valid parameters"
@@ -14,96 +16,96 @@
 
 (deftest individual-parameter-validation-test
   (testing "unrecognized parameters"
-    (is (= [] (pv/unrecognized-params-validation :collection valid-params)))
+    (is (= [] (cpv/unrecognized-params-validation :collection valid-params)))
     (is (= #{"Parameter [foo] was not recognized."
              "Parameter [bar] was not recognized."}
-           (set (pv/unrecognized-params-validation :collection
-                                                   {:entry-title "fdad"
-                                                    :echo-compatible "true"
-                                                    :foo 1
-                                                    :bar 2})))))
-    (is (= ["Parameter [page_size] was not recognized."]
-           (pv/unrecognized-tile-params-validation {:page-size 1
-                                                    :point "50, 50"})))
+           (set (cpv/unrecognized-params-validation :collection
+                                                    {:entry-title "fdad"
+                                                     :echo-compatible "true"
+                                                     :foo 1
+                                                     :bar 2})))))
+  (is (= ["Parameter [page_size] was not recognized."]
+         (pv/unrecognized-tile-params-validation {:page-size 1
+                                                  :point "50, 50"})))
   (testing "invalid options param names"
-    (is (= [] (pv/unrecognized-params-in-options-validation :collection valid-params)))
+    (is (= [] (cpv/unrecognized-params-in-options-validation :collection valid-params)))
     (is (= ["Parameter [foo] with option was not recognized."]
-           (pv/unrecognized-params-in-options-validation :collection
-                                                         {:entry-title "fdad"
-                                                          :options {:foo {:ignore-case "true"}}}))))
+           (cpv/unrecognized-params-in-options-validation :collection
+                                                          {:entry-title "fdad"
+                                                           :options {:foo {:ignore-case "true"}}}))))
   (testing "invalid options param args"
-    (is (= [(msg/invalid-opt-for-param :entry-title :foo)]
-           (pv/parameter-options-validation :collection {:entry-title "fdad"
-                                                         :options {:entry-title {:foo "true"}}}))))
+    (is (= [(cmsg/invalid-opt-for-param :entry-title :foo)]
+           (cpv/parameter-options-validation :collection {:entry-title "fdad"
+                                                          :options {:entry-title {:foo "true"}}}))))
 
   (testing "for a parameter requiring a single value validating a value vector returns an error"
     (is (= ["Parameter [keyword] must have a single value."]
-           (pv/single-value-validation :collection {:keyword ["foo"]}))))
+           (cpv/single-value-validation :collection {:keyword ["foo"]}))))
   (testing "for multiple parameters requiring single values validating value vectors returns multiple errors"
     (is (= ["Parameter [page_size] must have a single value."
             "Parameter [keyword] must have a single value."]
-           (pv/single-value-validation :collection {:keyword ["foo"] :page-size [10] :platform ["bar"]}))))
+           (cpv/single-value-validation :collection {:keyword ["foo"] :page-size [10] :platform ["bar"]}))))
   (testing "for a parameter allowing multiple values validating a value vector returns no error"
     (is (= []
-           (pv/single-value-validation :collection {:platform ["bar"]}))))
+           (cpv/single-value-validation :collection {:platform ["bar"]}))))
   (testing "for a parameter requiring a single value validating a single value returns no error"
     (is (= []
-           (pv/single-value-validation :collection {:keyword "foo"}))))
+           (cpv/single-value-validation :collection {:keyword "foo"}))))
   (testing "for a parameter requiring a single value validating no value returns no error"
     (is (= []
-           (pv/single-value-validation :collection {}))))
+           (cpv/single-value-validation :collection {}))))
   (testing "for a parameter requiring vector of values validating a value map returns an error"
     (is (= ["Parameter [concept_id] must have a single value or multiple values."]
-           (pv/multiple-value-validation :collection {:concept-id {0 "C1-PROV1"}}))))
+           (cpv/multiple-value-validation :collection {:concept-id {0 "C1-PROV1"}}))))
   (testing "for multiple parameters requiring vector of values validating value maps returns multiple errors"
     (is (= ["Parameter [concept_id] must have a single value or multiple values."
             "Parameter [platform] must have a single value or multiple values."]
-           (pv/multiple-value-validation :collection {:concept-id {0 "C1-PROV1"}
-                                                    :platform {0 "bar"}
-                                                    :page-size 10}))))
+           (cpv/multiple-value-validation :collection {:concept-id {0 "C1-PROV1"}
+                                                       :platform {0 "bar"}
+                                                       :page-size 10}))))
 
   ;; Page Size
   (testing "Search with large page size"
     (is (= []
-           (pv/page-size-validation :collection (assoc valid-params :page-size 100)))))
+           (cpv/page-size-validation :collection (assoc valid-params :page-size 100)))))
   (testing "Negative page size"
     (is (= ["page_size must be a number between 0 and 2000"]
-           (pv/page-size-validation :collection (assoc valid-params :page-size -1)))))
+           (cpv/page-size-validation :collection (assoc valid-params :page-size -1)))))
   (testing "Page size too large."
     (is (= ["page_size must be a number between 0 and 2000"]
-           (pv/page-size-validation :collection (assoc valid-params :page-size 2001)))))
+           (cpv/page-size-validation :collection (assoc valid-params :page-size 2001)))))
   (testing "Non-numeric page size"
     (is (= ["page_size must be a number between 0 and 2000"]
-           (pv/page-size-validation :collection (assoc valid-params :page-size "ABC")))))
+           (cpv/page-size-validation :collection (assoc valid-params :page-size "ABC")))))
 
   ;; Page Num
   (testing "Valid page_num"
     (is (= []
-           (pv/page-num-validation :collection (assoc valid-params :page-num 5)))))
+           (cpv/page-num-validation :collection (assoc valid-params :page-num 5)))))
   (testing "Page num less than one"
     (is (= ["page_num must be a number greater than or equal to 1"]
-           (pv/page-num-validation :collection (assoc valid-params :page-num 0)))))
+           (cpv/page-num-validation :collection (assoc valid-params :page-num 0)))))
   (testing "Non-numeric page num"
     (is (= ["page_num must be a number greater than or equal to 1"]
-           (pv/page-num-validation :collection (assoc valid-params :page-num "ABC")))))
+           (cpv/page-num-validation :collection (assoc valid-params :page-num "ABC")))))
 
   ;; Sort Key
   (testing "sort key"
     (are [sort-key type errors]
-         (= errors
-            (pv/sort-key-validation type {:sort-key sort-key}))
+      (= errors
+         (cpv/sort-key-validation type {:sort-key sort-key}))
 
-         nil :collection []
-         "entry-title" :collection []
-         ["entry-title" "start-date"] :collection []
-         ["+entry-title" "-start-date"] :collection []
-         "foo" :collection [(msg/invalid-sort-key "foo" :collection)]
-         ["foo" "-bar" "+chew"] :collection [(msg/invalid-sort-key "foo" :collection)
-                                             (msg/invalid-sort-key "bar" :collection)
-                                             (msg/invalid-sort-key "chew" :collection)]
-         ["foo" "-bar" "+chew"] :granule [(msg/invalid-sort-key "foo" :granule)
-                                          (msg/invalid-sort-key "bar" :granule)
-                                          (msg/invalid-sort-key "chew" :granule)]))
+      nil :collection []
+      "entry-title" :collection []
+      ["entry-title" "start-date"] :collection []
+      ["+entry-title" "-start-date"] :collection []
+      "foo" :collection [(cmsg/invalid-sort-key "foo" :collection)]
+      ["foo" "-bar" "+chew"] :collection [(cmsg/invalid-sort-key "foo" :collection)
+                                          (cmsg/invalid-sort-key "bar" :collection)
+                                          (cmsg/invalid-sort-key "chew" :collection)]
+      ["foo" "-bar" "+chew"] :granule [(cmsg/invalid-sort-key "foo" :granule)
+                                       (cmsg/invalid-sort-key "bar" :granule)
+                                       (cmsg/invalid-sort-key "chew" :granule)]))
 
   ;; Orbit Number
   (testing "Valid exact orbit_number"
@@ -136,7 +138,7 @@
   ;; Point, Line, Polygon and Bounding-Box
   (testing "a spatial parameter can be a multi-valued parameter"
     (is (empty?
-          (pv/bounding-box-validation :granule {:bounding-box ["-180,-90,180,90","-20,-20,20,20"]}))))
+         (pv/bounding-box-validation :granule {:bounding-box ["-180,-90,180,90","-20,-20,20,20"]}))))
   (testing "a geometry parameter which is invalid returns a parsing error"
     (is (= ["[10.0,-.3] is not a valid URL encoded point"]
            (pv/point-validation :granule {:point "10.0,-.3"}))))
@@ -293,46 +295,42 @@
     (is (= ["Exclude collection is not supported, {:concept-id \"C1-PROV1\"}"]
            (pv/exclude-validation :granule {:exclude {:concept-id "C1-PROV1"}})))))
 
-(def ^:private assoc-keys->param-name #'cmr.search.services.parameters.parameter-validation/assoc-keys->param-name)
 (deftest assoc-keys->param-name-fn-test
-  (is (= "foo_bar" (assoc-keys->param-name [:foo-bar])))
-  (is (= "foo_bar[bar_baz][baz_quux]" (assoc-keys->param-name [:foo-bar :bar-baz :baz-quux]))))
+  (is (= "foo_bar" (cpv/assoc-keys->param-name [:foo-bar])))
+  (is (= "foo_bar[bar_baz][baz_quux]" (cpv/assoc-keys->param-name [:foo-bar :bar-baz :baz-quux]))))
 
-(def ^:private validate-map #'cmr.search.services.parameters.parameter-validation/validate-map)
 (deftest validate-map-fn-test
   (testing "params contain a map at the specified path"
     (is (= [{:parent {:child {:gchild 0}}} []]
-           (validate-map [:parent :child] {:parent {:child {:gchild 0}}}))))
+           (cpv/validate-map [:parent :child] {:parent {:child {:gchild 0}}}))))
   (testing "params do not contain an entry for the specified path"
     (is (= [{:parent {:other-child 0}} []]
-           (validate-map [:parent :child] {:parent {:other-child 0}}))))
+           (cpv/validate-map [:parent :child] {:parent {:other-child 0}}))))
   (testing "params have something other than a map at the specified path"
     (is (= [{:parent {:other-child 0}} ["Parameter [parent[child]] must include a nested key, parent[child][...]=value."]]
-           (validate-map [:parent :child] {:parent {:child 0 :other-child 0}})))))
+           (cpv/validate-map [:parent :child] {:parent {:child 0 :other-child 0}})))))
 
-(def ^:private apply-type-validations #'cmr.search.services.parameters.parameter-validation/apply-type-validations)
 (deftest apply-type-validations-fn-test
-  (let [type-validation-fns [(partial validate-map [:foo])
-                             (partial validate-map [:bar])
-                             (partial validate-map [:baz :quux])]
+  (let [type-validation-fns [(partial cpv/validate-map [:foo])
+                             (partial cpv/validate-map [:bar])
+                             (partial cpv/validate-map [:baz :quux])]
         valid-params {:foo {:foochild 1} :bar {:barchild 1} :baz {:quux {:quuxchild 1} :other-quux 1} :other 1}
         invalid-params {:foo "foovalue" :bar "barvalue" :baz {:quux "quuxvalue" :other-quux 1} :other 1}]
     (testing "passed valid params"
       (is (= [valid-params []]
-             (apply-type-validations valid-params type-validation-fns))))
+             (cpv/apply-type-validations valid-params type-validation-fns))))
     (testing "passed invalid params"
       (is (= [{:baz {:other-quux 1} :other 1} ["Parameter [baz[quux]] must include a nested key, baz[quux][...]=value."
                                                "Parameter [bar] must include a nested key, bar[...]=value."
                                                "Parameter [foo] must include a nested key, foo[...]=value."]]
-             (apply-type-validations invalid-params type-validation-fns))))))
+             (cpv/apply-type-validations invalid-params type-validation-fns))))))
 
-(def ^:private validate-all-map-values #'cmr.search.services.parameters.parameter-validation/validate-all-map-values)
 (deftest validate-all-map-values-fn-test
   (testing "passed valid map values"
     (let [params {:root {:0 {:k0 :v0} :1 {:k1 :v1}}}]
       (is (= [params []]
-             (validate-all-map-values validate-map [:root] params)))))
+             (cpv/validate-all-map-values cpv/validate-map [:root] params)))))
   (testing "passed an invalid map value"
     (let [params {:root {:0 {:k0 :v0} :1 :v1 :2 {:k2 :v2}}}]
       (is (= [{:root {:0 {:k0 :v0} :2 {:k2 :v2}}} ["Parameter [root[1]] must include a nested key, root[1][...]=value."]]
-             (validate-all-map-values validate-map [:root] params))))))
+             (cpv/validate-all-map-values cpv/validate-map [:root] params))))))

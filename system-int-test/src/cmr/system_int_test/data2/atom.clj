@@ -118,6 +118,13 @@
                                                            equatorCrossingLongitude))
                            :equator-crossing-date-time equatorCrossingDateTime})))
 
+(defn- xml-elem->tag
+  "Extracts the tag from the XML entry."
+  [tag-elem]
+  (let [tag-namespace (cx/string-at-path tag-elem [:namespace])
+        tag-value (cx/string-at-path tag-elem [:value])]
+    [tag-namespace tag-value]))
+
 (defmulti xml-elem->entry
   "Retrns an atom entry from a parsed atom xml structure"
   (fn [concept-type xml-elem]
@@ -153,7 +160,8 @@
      :shapes (seq (xml-elem->shapes entry-elem))
      :score (cx/double-at-path entry-elem [:score])
      :granule-count (cx/long-at-path entry-elem [:granuleCount])
-     :has-granules (cx/bool-at-path entry-elem [:hasGranules])}))
+     :has-granules (cx/bool-at-path entry-elem [:hasGranules])
+     :tags (seq (map xml-elem->tag (cx/elements-at-path entry-elem [:tag])))}))
 
 (defmethod xml-elem->entry :granule
   [concept-type entry-elem]

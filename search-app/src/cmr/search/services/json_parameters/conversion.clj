@@ -10,9 +10,11 @@
             [cmr.common.date-time-parser :as parser]
             [cmr.common.validations.json-schema :as js]
             [cmr.search.models.query :as qm]
-            [cmr.search.models.group-query-conditions :as gc]
+            [cmr.common-app.services.search.query-model :as cqm]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.parameters.conversion :as pc]
+            [cmr.common-app.services.search.params :as common-params]
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.services.parameters.converters.nested-field :as nf]
@@ -104,70 +106,70 @@
 
 (defn- case-sensitive-field?
   "Return true if the given field should be searched case-sensitive"
-  ([field]
-   (case-sensitive-field? field {}))
-  ([field value-map]
-   (or (contains? pc/always-case-sensitive-fields field)
+  ([concept-type field]
+   (case-sensitive-field? concept-type field {}))
+  ([concept-type field value-map]
+   (or (contains? (common-params/always-case-sensitive-fields concept-type) field)
        (= false (:ignore-case value-map)))))
 
 (defn- parse-json-string-condition
   "Returns the parsed json string condition for the given name and value."
-  [condition-name value]
+  [concept-type condition-name value]
   (if (map? value)
-    (qm/string-condition condition-name
+    (cqm/string-condition condition-name
                          (:value value)
-                         (case-sensitive-field? condition-name value)
+                         (case-sensitive-field? concept-type condition-name value)
                          (:pattern value))
-    (qm/string-condition condition-name value (case-sensitive-field? condition-name) false)))
+    (cqm/string-condition condition-name value (case-sensitive-field? concept-type condition-name) false)))
 
 (defmulti parse-json-condition
   "Converts a JSON query condition into a query model condition"
-  (fn [condition-name value]
+  (fn [concept-type condition-name value]
     (query-condition-name->condition-type condition-name)))
 
 (defmethod parse-json-condition :default
-  [condition-name value]
+  [concept-type condition-name value]
   (errors/internal-error!
     (format "Could not find parameter handler for [%s]" condition-name)))
 
 (defmethod parse-json-condition :string
-  [condition-name value]
-  (parse-json-string-condition condition-name value))
+  [concept-type condition-name value]
+  (parse-json-string-condition concept-type condition-name value))
 
 (defmethod parse-json-condition :keyword
-  [_ value]
-  (qm/text-condition :keyword (str/lower-case value)))
+  [concept-type _ value]
+  (cqm/text-condition :keyword (str/lower-case value)))
 
 (defn- parse-json-condition-map
   "Parse a JSON condition map into the appropriate query conditions. Conditions within a map are
   implicitly and'ed together."
-  [condition-map]
+  [concept-type condition-map]
   (when-let [query-conditions (seq (for [[k v] condition-map]
-                                     (parse-json-condition k v)))]
+                                     (parse-json-condition concept-type k v)))]
     (gc/and-conds query-conditions)))
 
 (defmethod parse-json-condition :and
-  [_ values]
-  (gc/and-conds (map #(parse-json-condition-map %) values)))
+  [concept-type _ values]
+  (gc/and-conds (map #(parse-json-condition-map concept-type %) values)))
 
 (defmethod parse-json-condition :or
-  [_ values]
-  (gc/or-conds (map #(parse-json-condition-map %) values)))
+  [concept-type _ values]
+  (gc/or-conds (map #(parse-json-condition-map concept-type %) values)))
 
 ;; Example {"not": {"entry_title": "ET"}}
 (defmethod parse-json-condition :not
-  [_ value]
-  (qm/negated-condition (parse-json-condition-map value)))
+  [concept-type _ value]
+  (cqm/negated-condition (parse-json-condition-map concept-type value)))
 
 (defmethod parse-json-condition :nested-condition
-  [condition-name value]
+  [concept-type condition-name value]
   (validate-nested-condition condition-name value)
   (nf/parse-nested-condition (inf/plural condition-name) value
-                             (case-sensitive-field? condition-name value)
+                             (case-sensitive-field? concept-type condition-name value)
                              (:pattern value)))
 
 (defmethod parse-json-condition :bounding-box
-  [_ value]
+  [concept-type _ value]
   (let [bounding-box (if (map? value)
                        (mbr/mbr (:west value) (:north value) (:east value) (:south value))
                        (let [[west south east north] value]
@@ -176,14 +178,14 @@
     (qm/->SpatialCondition bounding-box)))
 
 (defmethod parse-json-condition :updated-since
-  [_ value]
-  (qm/map->DateRangeCondition
+  [concept-type _ value]
+  (cqm/map->DateRangeCondition
     {:field :updated-since
      :start-date (parser/parse-datetime value)
      :end-date nil}))
 
 (defmethod parse-json-condition :temporal
-  [_ value]
+  [concept-type _ value]
   (validate-temporal-condition value)
   (let [{:keys [start-date end-date recurring-start-day recurring-end-day exclude-boundary]} value]
     (qm/map->TemporalCondition {:start-date (when-not (str/blank? start-date)
@@ -195,10 +197,10 @@
                                 :exclusive? exclude-boundary})))
 
 (defmethod parse-json-condition :tag
-  [_ value]
+  [concept-type _ value]
   (let [parse-tag-condition (fn [[cond-name cond-value]]
                               (tag-related/tag-related-item-query-condition
-                                (parse-json-string-condition cond-name cond-value)))]
+                                (parse-json-string-condition concept-type cond-name cond-value)))]
     (gc/and-conds (map parse-tag-condition value))))
 
 (defn parse-json-query
@@ -206,9 +208,9 @@
   [concept-type params json-string]
   (let [params (pv/validate-standard-query-parameters concept-type params)]
     (validate-json-query concept-type json-string)
-    (qm/query (assoc (pc/standard-params->query-attribs concept-type params)
+    (cqm/query (assoc (second (common-params/parse-query-level-params concept-type params))
                      :concept-type concept-type
-                     :condition (-> (json/parse-string json-string true)
+                     :condition (->> (json/parse-string json-string true)
                                     util/map-keys->kebab-case
                                     :condition
-                                    parse-json-condition-map)))))
+                                    (parse-json-condition-map concept-type))))))

@@ -24,7 +24,8 @@
        ;; populate the granule_ur column as part of the initial
        ;; migration. We should change the column to NOT NULL once it is
        ;; fully populated.
-       "granule_ur VARCHAR(250)"))
+       "granule_ur VARCHAR(250),
+        transaction_id INTEGER DEFAULT 0 NOT NULL"))
 
 (defmethod granule-column-sql true
   [provider]
@@ -96,6 +97,10 @@
   (j/db-do-commands db (format "CREATE INDEX %s_pcr ON %s (parent_collection_id, concept_id, revision_id)"
                                table-name
                                table-name))
+  ;; Need this for transaction-id post commit check
+  (j/db-do-commands db (format "CREATE INDEX %s_crtid ON %s (concept_id, revision_id, transaction_id)"
+                                table-name
+                                table-name))
 
   ;; This index is needed when bulk indexing granules within a collection
   (j/db-do-commands db (format "CREATE INDEX %s_cpk ON %s (parent_collection_id, id)"
@@ -123,4 +128,3 @@
   (create-common-gran-indexes db table-name)
   (j/db-do-commands db (format "CREATE INDEX idx_%s_pur ON %s(provider_id, granule_ur)"
                                table-name table-name)))
-

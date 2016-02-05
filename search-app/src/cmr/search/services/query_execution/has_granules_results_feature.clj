@@ -2,7 +2,7 @@
   "This enables the :has-granules feature for collection search results. When it is enabled
   collection search results will include a boolean flag indicating whether the collection has
   any granules at all as indicated by provider holdings."
-  (:require [cmr.search.services.query-execution :as query-execution]
+  (:require [cmr.common-app.services.search.query-execution :as query-execution]
             [cmr.common.jobs :refer [defjob]]
             [cmr.common.cache :as cache]
             [cmr.search.data.elastic-search-index :as idx]

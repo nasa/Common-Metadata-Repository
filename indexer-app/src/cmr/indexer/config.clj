@@ -25,8 +25,12 @@
    :type Long})
 
 (defconfig ingest-exchange-name
-  "The ingest exchange to which messages are published."
+  "The ingest exchange to which messages are published when collections and granules are ingested."
   {:default "cmr_ingest.exchange"})
+
+(defconfig provider-exchange-name
+  "The ingest exchange to which provider change messages are published."
+  {:default "cmr_ingest_provider.exchange"})
 
 (defconfig deleted-collection-revision-exchange-name
   "An exchange that will have messages passed to it whenever a collection revision is removed
@@ -39,9 +43,11 @@
   (assoc (rmq-conf/default-config)
          :queues [(index-queue-name)
                   (all-revisions-index-queue-name)]
-         :exchanges [(ingest-exchange-name) (deleted-collection-revision-exchange-name)]
+         :exchanges [(ingest-exchange-name)
+                     (deleted-collection-revision-exchange-name)
+                     (provider-exchange-name)]
          :queues-to-exchanges
-         {(index-queue-name) [(ingest-exchange-name)]
+         {(index-queue-name) [(ingest-exchange-name) (provider-exchange-name)]
           ;; The all revisions index  queue will be bound to both the ingest exchange and the
           ;; deleted collection revision exchange
           (all-revisions-index-queue-name) [(ingest-exchange-name)

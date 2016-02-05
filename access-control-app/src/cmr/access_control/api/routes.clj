@@ -122,6 +122,11 @@
        (group-service/remove-members context concept-id)
        api-response))
 
+(defn search-for-groups
+  [context params])
+  ;; TODO CMR-2130 validate accept header (only accept JSON search response)
+  ; (group-service/search-for-groups params))
+
 
 (def admin-api-routes
   "The administrative control routes."
@@ -145,6 +150,13 @@
       (common-routes/health-api-routes group-service/health)
 
       (context "/groups" []
+
+        ;; TODO CMR-2130 document in api docs
+        ;; Search for groups
+        (GET "/" {:keys [request-context params]}
+          (search-for-groups request-context params))
+
+        ;; Create a group
         (POST "/" {:keys [request-context headers body]}
           ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
           (acl/verify-ingest-management-permission request-context :update)

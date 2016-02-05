@@ -125,9 +125,9 @@
          gran-for-iso-smap-coll)))
 
 ;; This tests for limitations when changing the format for a collection with granules.
-;; TODO - Based on the test above, we would expect to see the same errors seen when saving
+;; TODO CMR-2326 - Based on the test above, we would expect to see the same errors seen when saving
 ;; collections in formats that don't support some things referenced by child granules, but we
-;; do not. This needs to be investigated in CMR-2326.
+;; do not.
 (deftest collection-format-change-test
   (let [psa1 (dc/psa {:name "a-float" :data-type :float :min-value 1.0 :max-value 10.0})
         gpsa (dg/psa "a-float" [7.0])

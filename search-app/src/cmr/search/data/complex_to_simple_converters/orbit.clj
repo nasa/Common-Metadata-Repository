@@ -1,11 +1,11 @@
 (ns cmr.search.data.complex-to-simple-converters.orbit
   "Defines functions that implement the reduce-query-condition method of the ComplexQueryToSimple
   protocol for orbit related search fields."
-  (:require [cmr.search.models.query :as qm]
-            [cmr.search.models.group-query-conditions :as gc]
-            [cmr.search.data.complex-to-simple :as c2s]
+  (:require [cmr.common-app.services.search.query-model :as qm]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
+            [cmr.common-app.services.search.complex-to-simple :as c2s]
             [cmr.common.services.errors :as errors]
-            [cmr.search.data.messages :as m]))
+            [cmr.common-app.services.search.messages :as m]))
 
 (defn- orbit-number-range-condition-both
   "Creates a grouped condition from an OrbitNumberRangeCondition with both min-value and max.'"

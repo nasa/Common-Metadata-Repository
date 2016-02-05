@@ -1,12 +1,12 @@
 (ns cmr.search.results-handlers.kml-results-handler
   "Handles the returning search results in KML format (keyhole markup language for Google Earth etc)"
-  (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
-            [cmr.search.data.elastic-search-index :as elastic-search-index]
-            [cmr.search.services.query-service :as qs]
+  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+            [cmr.common-app.services.search :as qs]
             [cmr.common.services.errors :as errors]
             [clojure.data.xml :as x]
             [clojure.string :as str]
-            [cmr.search.models.results :as r]
+            [cmr.common-app.services.search.results-model :as r]
             [cmr.spatial.kml :as kml]
             [cmr.spatial.serialize :as srl]
             [cmr.spatial.relations :as relations]

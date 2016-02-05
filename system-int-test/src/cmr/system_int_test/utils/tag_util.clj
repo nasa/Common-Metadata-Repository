@@ -122,7 +122,7 @@
             :deleted false
             :concept-id concept-id
             :revision-id revision-id}
-           (dissoc concept :revision-date)))))
+           (dissoc concept :revision-date :transaction-id)))))
 
 (defn assert-tag-deleted
   "Checks that a tag tombstone was persisted correctly in metadata db."
@@ -137,7 +137,7 @@
             :deleted true
             :concept-id concept-id
             :revision-id revision-id}
-           (dissoc concept :revision-date)))))
+           (dissoc concept :revision-date :transaction-id)))))
 
 (defn sort-expected-tags
   "Sorts the tags using the expected default sort key."
@@ -169,4 +169,3 @@
                             :items expected-items}]
      (is (:took response))
      (is (= expected-response (dissoc response :took))))))
-

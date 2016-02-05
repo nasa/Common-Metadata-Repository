@@ -19,7 +19,7 @@
 (defn concepts-for-comparison
   "Removes revision-date from concepts so they can be compared."
   [concepts]
-  (map #(dissoc % :revision-date) concepts))
+  (map #(dissoc % :revision-date :transaction-id) concepts))
 
 (deftest search-by-concept-revision-id-tuples
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
@@ -355,7 +355,7 @@
             (= (set tags)
                (set (->> (util/find-latest-concepts :tag params)
                          :concepts
-                         (map #(dissoc % :provider-id :revision-date)))))
+                         (map #(dissoc % :provider-id :revision-date :transaction-id)))))
             "with metadata"
             [tag1 tag2] {}
 
@@ -382,7 +382,7 @@
             (= (set servs)
                (set (->> (util/find-latest-concepts :service params)
                          :concepts
-                         (map #(dissoc % :revision-date)))))
+                         (map #(dissoc % :revision-date :transaction-id)))))
             "with metadata"
             [serv1 serv2] {}
 
@@ -425,4 +425,3 @@
                             :concepts)))
               "provider-id, native-id - three revisons"
               3 {:provider-id "REG_PROV" :native-id "native-id 1"})))))
-
