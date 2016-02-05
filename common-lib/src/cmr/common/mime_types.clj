@@ -11,7 +11,7 @@
 (defn version
   "Returns the value of the \"version\" parameter in the given media-type string."
   [media-type]
-  (second (re-find #"version=([^,]+)" media-type)))
+  (second (re-find #"; ?version=([^,]+)" media-type)))
 
 (def mime-types
   "Defines a map of mime type format keywords to mime types and other format aliases. Each one of these

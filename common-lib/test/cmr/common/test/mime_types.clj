@@ -65,3 +65,10 @@
          ""
          "granules.json/json"
          "granules.j%25son")))
+
+(deftest test-version-param-parsing
+  (is (= "1.0" (mt/version "application/json;version=1.0")))
+  (is (= "1.0" (mt/version "application/json; version=1.0")))
+  (is (= "1.0" (mt/version "application/json;charset=utf-8;version=1.0")))
+  (is (= nil   (mt/version "application/json; not-the-version=1.0")))
+  (is (= nil   (mt/version "application/version=1.0"))))
