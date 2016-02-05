@@ -11,8 +11,6 @@
    when new schema versions are added to the CMR."
   ["1.0" "1.1"])
 
-;; TODO look into how to automatically get a list of versions from resources
-
 (def current-version
   "The current version of the UMM schema."
   (last versions))
