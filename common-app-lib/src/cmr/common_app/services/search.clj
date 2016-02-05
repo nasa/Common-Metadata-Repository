@@ -29,18 +29,16 @@
   (fn [context query results]
     [(:concept-type query) (:result-format query)]))
 
-
-
 (defn find-concepts
   "Executes a search for concepts using the given query."
-  [context concept-type params query]
+  [context concept-type query]
   (validate-query context query)
   (let [[query-execution-time results] (u/time-execution (qe/execute-query context query))
         [result-gen-time result-str] (u/time-execution
                                       (search-results->response
-                                       context query (assoc results :took query-execution-time)))
-        total-took (+ query-execution-time result-gen-time)]
+                                       context query (assoc results :took query-execution-time)))]
     (debug "query-execution-time:" query-execution-time "result-gen-time:" result-gen-time)
 
-    {:results result-str :hits (:hits results) :took query-execution-time :total-took total-took
+    {:results result-str
+     :hits (:hits results)
      :result-format (:result-format query)}))
