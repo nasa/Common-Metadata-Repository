@@ -312,6 +312,13 @@
   [org]
   (x/element :echo:organization {} org))
 
+(defn- tag->xml-element
+  "Convert a tag to an XML element"
+  [[tag-namespace tag-value]]
+  (x/element :echo:tag {}
+             (x/element :echo:namespace {} tag-namespace)
+             (x/element :echo:value {} tag-value)))
+
 (defn- orbit-parameters->attribute-map
   "Convert orbit parameters into attributes for an XML element"
   [orbit-params]
@@ -374,7 +381,7 @@
         {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
-                orbit-parameters organizations]} reference
+                orbit-parameters organizations tags]} reference
         granule-count (get granule-counts-map id 0)]
     (x/element :entry {}
                (x/element :id {} id)
@@ -404,7 +411,8 @@
                                                      (get has-granules-map id false))))
                (when granule-counts-map
                  (x/element :echo:granuleCount {} granule-count))
-               (when score (x/element :relevance:score {} score)))))
+               (when score (x/element :relevance:score {} score))
+               (map tag->xml-element tags))))
 
 (defmethod atom-reference->xml-element :granule
   [results concept-type reference]

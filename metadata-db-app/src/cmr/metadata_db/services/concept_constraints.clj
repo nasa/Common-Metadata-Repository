@@ -66,6 +66,48 @@
                               (filter #(= granule-ur (get-in % [:extra-fields :granule-ur]))))]
     (validate-num-concepts-found combined-matches concept :granule-ur granule-ur)))
 
+(defn concept-transaction-id-constraint
+  "Verifies that there are no earlier revisions with a higher transaction-id.
+  There is a race condition that needs to be checked with regard to transaction-ids.
+  If two revisions of a concept are ingested at the same time with revision-id 2 and
+  revision-id 3, then both revisions will pass the revision-id test (assuming there is no)
+  higher revision and get saved. The order with which they are saved is indeterminate,
+  so it is possible for revision-id 2 to get saved last and end up with a higher transaction-id.
+  This would mean it would be the one kept in elastic-search.
+  This constraint will check to see if a saved revision exists that is either lower
+  than this revision with a higher transaction-id or higher with lower transaction-id.
+  In either case it returns an error explaining the problem."
+  [db provider concept]
+  (let [concept-id (:concept-id concept)
+        this-revision-id (:revision-id concept)
+        concept-revisions (c/get-transactions-for-concept db provider concept-id)
+        this-transaction-id (:transaction-id (some (fn [con-rev]
+                                                     (when (= (:revision-id con-rev)
+                                                              this-revision-id)
+                                                       con-rev))
+                                                   concept-revisions))]
+    (some (fn [con-rev]
+            (let [{:keys [transaction-id revision-id]} con-rev]
+              (or (when (and (< revision-id this-revision-id)
+                             (> transaction-id this-transaction-id))
+                        [(format (str "Revision [%d] of concept [%s] has transaction-id [%d] "
+                                      "which is higher than revision [%d] with transaction-id [%d].")
+                                 revision-id
+                                 concept-id
+                                 transaction-id
+                                 this-revision-id
+                                 this-transaction-id)])
+                  (when (and (> revision-id this-revision-id)
+                             (< transaction-id this-transaction-id))
+                        [(format (str "Revision [%d] of concept [%s] has transaction-id [%d] "
+                                      "which is lower than revision [%d] with transaction-id [%d]."
+                                     revision-id
+                                     concept-id
+                                     transaction-id
+                                     this-revision-id
+                                     this-transaction-id))]))))
+          concept-revisions)))
+
 ;; Note - change back to a var once the enforce-granule-ur-constraint configuration is no longer
 ;; needed. Using a function for now so that configuration can be changed in tests.
 (defn- constraints-by-concept-type
@@ -85,3 +127,11 @@
     (when-let [errors (seq (util/apply-validations constraints db provider concept))]
       (rollback-function)
       (errors/throw-service-errors :conflict errors))))
+
+(defn perform-post-commit-transaction-id-constraint-check
+  "Performs a post commit constraint check that there are no older revisions of this concept
+  with a higher transaction-id."
+  [db provider concept rollback-function]
+  (when-let [errors (concept-transaction-id-constraint db provider concept)]
+    (rollback-function)
+    (errors/throw-service-errors :conflict errors)))

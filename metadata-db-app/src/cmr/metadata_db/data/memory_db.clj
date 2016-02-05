@@ -93,6 +93,9 @@
    ;; The next id to use for generating a concept id.
    next-id-atom
 
+   ;; The next global transaction id
+   next-transaction-id-atom
+
    ;; A map of provider ids to providers that exist
    providers-atom]
 
@@ -196,6 +199,13 @@
                               @concepts-atom)]
       (keep (partial get concept-map) concept-ids)))
 
+  (get-transactions-for-concept
+    [db provider con-id]
+    (keep (fn [{:keys [concept-id revision-id transaction-id]}]
+            (when (= con-id concept-id)
+              {:revision-id revision-id :transaction-id transaction-id}))
+          @concepts-atom))
+
   (save-concept
     [this provider concept]
     {:pre [(:revision-id concept)]}
@@ -207,6 +217,7 @@
       (let [{:keys [concept-type provider-id concept-id revision-id]} concept
             concept (update-in concept [:revision-date] #(or % (f/unparse (f/formatters :date-time)
                                                                           (tk/now))))
+            concept (assoc concept :transaction-id (swap! next-transaction-id-atom inc))
             concept (if (= concept-type :granule)
                       (-> concept
                           (dissoc :user-id)
@@ -250,7 +261,8 @@
   (reset
     [db]
     (reset! concepts-atom [])
-    (reset! next-id-atom (dec cmr.metadata-db.data.oracle.concepts/INITIAL_CONCEPT_NUM)))
+    (reset! next-id-atom (dec cmr.metadata-db.data.oracle.concepts/INITIAL_CONCEPT_NUM))
+    (reset! next-transaction-id-atom 1))
 
   (get-expired-concepts
     [db provider concept-type]
@@ -324,4 +336,5 @@
    ;; sort by revision-id reversed so latest will be first
    (->MemoryDB (atom (reverse (sort-by :revision-id concepts)))
                (atom (dec cmr.metadata-db.data.oracle.concepts/INITIAL_CONCEPT_NUM))
+               (atom 0)
                (atom {}))))

@@ -20,7 +20,8 @@
   entry_id VARCHAR(255) NOT NULL,
   entry_title VARCHAR(1030) NOT NULL,
   delete_time TIMESTAMP WITH TIME ZONE,
-  user_id VARCHAR(30)")
+  user_id VARCHAR(30),
+  transaction_id INTEGER DEFAULT 0 NOT NULL")
 
 (defmethod service-column-sql true
   [provider]
@@ -94,7 +95,11 @@
                                table-name))
   (j/db-do-commands db (format "CREATE INDEX %s_et_i ON %s (entry_title)"
                                table-name
-                               table-name)))
+                               table-name))
+  ;; Need this for transaction-id post commit check
+  (j/db-do-commands db (format "CREATE INDEX %s_crtid ON %s (concept_id, revision_id, transaction_id)"
+                                table-name
+                                table-name)))
 
 (defmethod create-service-indexes true
   [db _ table-name]
@@ -106,4 +111,8 @@
                                table-name))
   (j/db-do-commands db (format "CREATE INDEX %s_p_et_i ON %s (provider_id, entry_title)"
                                table-name
-                               table-name)))
+                               table-name))
+  ;; Need this for transaction-id post commit check
+  (j/db-do-commands db (format "CREATE INDEX %s_crtid ON %s (concept_id, revision_id, transaction_id)"
+                                table-name
+                                table-name)))

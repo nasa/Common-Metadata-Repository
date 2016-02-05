@@ -209,7 +209,7 @@
 
     (let [concepts-after-cleanup (:concepts (util/get-concepts all-concept-tuples true))]
       (is (= (set (map util/expected-concept [gran1 gran2 gran4-3]))
-             (set concepts-after-cleanup))))
+             (set (map #(dissoc % :transaction-id) concepts-after-cleanup)))))
 
     ;; Back to the future!
     ;; Advance one second past granule 1's tombstone cleanup time
@@ -220,6 +220,6 @@
 
     (let [concepts-after-cleanup (:concepts (util/get-concepts all-concept-tuples true))]
       (is (= (set (map util/expected-concept [gran2 gran4-3]))
-             (set concepts-after-cleanup))))))
+             (set (map #(dissoc % :transaction-id) concepts-after-cleanup)))))))
 
 

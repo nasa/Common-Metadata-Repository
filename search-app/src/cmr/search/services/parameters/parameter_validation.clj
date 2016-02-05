@@ -2,9 +2,7 @@
   "Contains functions for validating query parameters"
   (:require [clojure.set :as set]
             [clojure.string :as s]
-
             [cmr.common-app.services.search.parameter-validation :as cpv]
-
             [cmr.common.services.errors :as errors]
             [cmr.common.services.messages :as c-msg]
             [cmr.common.parameter-parser :as parser]
@@ -20,9 +18,7 @@
             [cmr.search.services.parameters.converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.search.services.messages.common-messages :as msg]
-
             [cmr.common-app.services.search.messages :as d-msg]
-
             [cmr.search.data.keywords-to-elastic :as k2e]
             [camel-snake-kebab.core :as csk]
             [cmr.spatial.codec :as spatial-codec]
@@ -70,6 +66,7 @@
   "Map of concept-type to parameters which can be used to exclude items from results."
   {:collection #{:tag-namespace}
    :granule #{:concept-id}})
+
 
 (def exclude-plus-or-option #{:exclude-collection :or :exclude-boundary})
 (def exclude-plus-and-or-option #{:exclude-boundary :and :or})
@@ -156,7 +153,6 @@
 (defmethod cpv/valid-query-level-params :granule
   [_]
   #{:echo-compatible})
-
 
 (defmethod cpv/valid-sort-keys :collection
   [_]
@@ -312,6 +308,7 @@
       (catch NumberFormatException e
         [(apply error-message-fn args)]))))
 
+
 (defn cloud-cover-validation
   "Validates cloud cover range values are numeric"
   [concept-type params]
@@ -458,13 +455,13 @@
               (csk/->snake_case_string param) value)))))
     [:snippet-length :num-snippets]))
 
-(defn- include-tag-result-format-validation
+(defn- include-tags-parameter-validation
   "Validates parameters against result format."
   [concept-type params]
   (concat
-    (when (and (not= :json (:result-format params))
+    (when (and (not (#{:json :atom} (:result-format params)))
                (not (s/blank? (:include-tags params))))
-      [(format "Parameter [include_tags] is only supported in JSON format search.")])))
+      [(format "Parameter [include_tags] is only supported in ATOM or JSON format search.")])))
 
 (def valid-timeline-intervals
   "A list of the valid values for timeline intervals."
@@ -493,6 +490,7 @@
               (when-not (= field :include-defaults)
                 (format "Cannot set relevance boost on field [%s]." (csk/->snake_case_string field)))))
           (seq boosts))))
+
 
 (def parameter-validations
   "Lists of parameter validation functions by concept type"
@@ -534,7 +532,7 @@
               bounding-box-validation
               point-validation
               line-validation
-              include-tag-result-format-validation])
+              include-tags-parameter-validation])
    :tag cpv/common-validations})
 
 (def standard-query-parameter-validations
