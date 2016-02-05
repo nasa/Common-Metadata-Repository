@@ -98,22 +98,25 @@
   concept id and native provider id along with hit count and timing info."
   [context concept-type params]
   (let [[query-creation-time query] (u/time-execution
-                                      (->> params
-                                           common-params/sanitize-params
-                                           ;; handle legacy parameters
-                                           lp/replace-parameter-aliases
-                                           (lp/process-legacy-multi-params-conditions concept-type)
-                                           (lp/replace-science-keywords-or-option concept-type)
+                                     (->> params
+                                          common-params/sanitize-params
+                                          ;; handle legacy parameters
+                                          lp/replace-parameter-aliases
+                                          (lp/process-legacy-multi-params-conditions concept-type)
+                                          (lp/replace-science-keywords-or-option concept-type)
 
-                                           (psn/replace-provider-short-names context)
-                                           ;; TOOD finish moving parameter validation to common-app
-                                           (pv/validate-parameters concept-type)
-                                           (common-params/parse-parameter-query concept-type)))
-        results (common-search/find-concepts context concept-type query-creation-time query)]
+                                          (psn/replace-provider-short-names context)
+                                          (pv/validate-parameters concept-type)
+                                          (common-params/parse-parameter-query concept-type)))
+        [find-concepts-time results] (u/time-execution
+                                      (common-search/find-concepts context
+                                                                   concept-type
+                                                                   query))
+        total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms in format %s with params %s."
-                  (:hits results) (name concept-type) (:total-took results) (:result-format query)
+                  (:hits results) (name concept-type) total-took (:result-format query)
                   (pr-str params)))
-    results))
+    (assoc results :took total-took)))
 
 (defn find-concepts-by-json-query
   "Executes a search for concepts using the given JSON. The concepts will be returned with
@@ -124,11 +127,15 @@
                                                                (common-params/sanitize-params params)
                                                                json-query)))
 
-        results (common-search/find-concepts context concept-type query-creation-time query)]
+        [find-concepts-time results] (u/time-execution
+                                      (common-search/find-concepts context
+                                                                   concept-type
+                                                                   query))
+        total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms in format %s with JSON Query %s and query params %s."
-                  (:hits results) (name concept-type) (:total-took results) (:result-format query)
+                  (:hits results) (name concept-type) total-took (:result-format query)
                   json-query (pr-str params)))
-    results))
+    (assoc results :took total-took)))
 
 (defn find-concepts-by-aql
   "Executes a search for concepts using the given aql. The concepts will be returned with
@@ -139,11 +146,15 @@
                    lp/replace-parameter-aliases)
         [query-creation-time query] (u/time-execution (a/parse-aql-query params aql))
         concept-type (:concept-type query)
-        results (common-search/find-concepts context concept-type query-creation-time query)]
+        [find-concepts-time results] (u/time-execution
+                                      (common-search/find-concepts context
+                                                                   concept-type
+                                                                   query))
+        total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms in format %s with aql: %s."
-                  (:hits results) (name concept-type) (:total-took results) (:result-format query)
+                  (:hits results) (name concept-type) total-took (:result-format query)
                   aql))
-    results))
+    (assoc results :took total-took)))
 
 (defn- throw-id-not-found
   [concept-id]
