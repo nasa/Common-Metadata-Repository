@@ -514,7 +514,7 @@
                  line-validation
                  no-highlight-options-without-highlights-validation
                  highlights-numeric-options-validation
-                 include-tag-result-format-validation])
+                 include-tags-parameter-validation])
    :granule (concat
              cpv/common-validations
              [temporal-format-validation
@@ -531,8 +531,7 @@
               polygon-validation
               bounding-box-validation
               point-validation
-              line-validation
-              include-tags-parameter-validation])
+              line-validation])
    :tag cpv/common-validations})
 
 (def standard-query-parameter-validations
