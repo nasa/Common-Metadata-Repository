@@ -16,15 +16,15 @@
   (last versions))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Private Utility Functions
+;;; Utility Functions
 
-(defn- version-steps
+(defn version-steps
   "Returns a sequence of version steps between begin and end, inclusive."
   [begin end]
-  (->> (case (compare begin end)
-         -1 (sort versions)
-         0  nil
-         1  (reverse (sort versions)))
+  (->> (condp #(%1 %2) (compare begin end)
+         neg?  (sort versions)
+         zero? nil
+         pos?  (reverse (sort versions)))
        (partition 2 1 nil)
        (drop-while #(not= (first %) begin))
        (take-while #(not= (first %) end))))

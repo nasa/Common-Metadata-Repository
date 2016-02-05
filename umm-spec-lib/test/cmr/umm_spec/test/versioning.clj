@@ -2,6 +2,12 @@
   (:require [cmr.umm-spec.versioning :as v]
             [clojure.test :refer :all]))
 
+(deftest test-version-steps
+  (with-redefs [cmr.umm-spec.versioning/versions ["1.0" "1.1" "1.2" "1.3"]]
+    (is (= [] (v/version-steps "1.2" "1.2")))
+    (is (= [["1.1" "1.2"] ["1.2" "1.3"]] (v/version-steps "1.1" "1.3")))
+    (is (= [["1.2" "1.1"] ["1.1" "1.0"]] (v/version-steps "1.2" "1.0")))))
+
 (deftest migrate-1_0-up-to-1_1
   (is (nil?
         (:TilingIdentificationSystems
