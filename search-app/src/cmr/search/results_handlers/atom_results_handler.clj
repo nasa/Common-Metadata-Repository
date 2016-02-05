@@ -14,7 +14,7 @@
             [cmr.common.util :as util]
             [cmr.common.date-time-parser :as dtp]
             [cmr.umm.collection.entry-id :as eid]
-            [cmr.common-app.services.search.results :as r]
+            [cmr.common-app.services.search.results-model :as r]
             [cmr.spatial.serialize :as srl]
             [cmr.search.models.query :as q]
             [cmr.search.services.url-helper :as url]

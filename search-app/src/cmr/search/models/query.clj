@@ -1,24 +1,10 @@
 (ns cmr.search.models.query
-  "Defines various query models and conditions."
+  "Defines various query models and conditions specific for searching for collections and granules."
   (:require [cmr.common.services.errors :as errors]
             [cmr.common.parameter-parser :as pp]
             [clojure.string :as s]
             [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
             [cmr.common-app.services.search.query-model :as common-qm]))
-
-;; TODO determine if we can just add on the additional fields
-
-; (defrecord Query
-;    ;; a map of various fields used in keyword queries to boosts (weights)
-;    boosts
-;
-;    ;; Flag indicates if results should be returned in a way that is ECHO compatible.
-;    echo-compatible?
-;
-;    ;; Flag to indicate an all revisions search instead of the default revision search.
-;    ;; If this is true all revisions of the concept will be searched. If false, the default,
-;    ;; then the latest revisions of the concept type will be searched.
-;    all-revisions?
 
 (defrecord SpatialCondition
   [

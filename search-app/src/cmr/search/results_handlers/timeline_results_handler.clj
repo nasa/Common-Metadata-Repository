@@ -11,7 +11,7 @@
             [cmr.search.models.query :as q]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cheshire.core :as json]
-            [cmr.common-app.services.search.results :as r]
+            [cmr.common-app.services.search.results-model :as r]
             [clj-time.core :as t]
             [clj-time.coerce :as c]))
 

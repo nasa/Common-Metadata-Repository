@@ -1,8 +1,6 @@
-(ns cmr.common-app.services.search.results
+(ns cmr.common-app.services.search.results-model
   "Defines types for search results"
   (:require [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
-
-;; TODO rename to results-model
 
 ;; Defines a single faceted field.
 (defrecord Facet

@@ -42,9 +42,5 @@
         total-took (+ query-execution-time result-gen-time)]
     (debug "query-execution-time:" query-execution-time "result-gen-time:" result-gen-time)
 
-    (info (format "Found %d %ss in %d ms in format %s with params %s."
-                  (:hits results) (name concept-type) (:total-took results) (:result-format query)
-                  (pr-str params)))
-
     {:results result-str :hits (:hits results) :took query-execution-time :total-took total-took
      :result-format (:result-format query)}))

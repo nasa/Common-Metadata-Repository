@@ -6,7 +6,7 @@
             [cmr.search.services.query-execution :as qe]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.services.query-execution.facets-results-feature :as frf]
-            [cmr.common-app.services.search.results :as results]
+            [cmr.common-app.services.search.results-model :as results]
             [cmr.search.services.transformer :as t]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]

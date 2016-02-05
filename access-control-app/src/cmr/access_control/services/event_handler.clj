@@ -26,7 +26,7 @@
 
 (defmethod handle-event :provider-delete
   [context {:keys [provider-id]}])
-;; TODO remove all the indexed items for this provider
+;; TODO CMR-2412 remove all the indexed items for this provider
 
 (defn subscribe-to-events
   "Subscribe to event messages on various queues"

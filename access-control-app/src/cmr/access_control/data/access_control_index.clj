@@ -53,12 +53,6 @@
      elastic-store group-index-name group-type-name concept-id elastic-doc revision-id
      {:ignore-conflict? true})))
 
-
-;; TODO write test that deleting a provider deletes all the groups in that provider
-;; -- or make this a new issue
-
-
-
 (defrecord ElasticStore
   [;; configuration of host and port for elasticsearch
    config

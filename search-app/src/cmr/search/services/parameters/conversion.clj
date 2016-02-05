@@ -219,9 +219,11 @@
      (common-params/string-parameter->condition concept-type  :associated-difs value
                                                 (set/rename-keys options {:dif-entry-id :associated-difs}))]))
 
-(defmethod common-params/parse-standard-params :collection
+(defmethod common-params/parse-query-level-params :collection
   [concept-type params]
-  (let [{:keys [begin-tag end-tag snippet-length num-snippets]} (get-in params [:options :highlights])
+  (let [[params query-attribs] (common-params/default-parse-query-level-params
+                                :collection params lp/param-aliases)
+        {:keys [begin-tag end-tag snippet-length num-snippets]} (get-in params [:options :highlights])
         result-features (concat (when (= (:include-granule-counts params) "true")
                                   [:granule-counts])
                                 (when (= (:include-has-granules params) "true")
@@ -233,29 +235,38 @@
                                 (when (= (:include-highlights params) "true")
                                   [:highlights])
                                 (when-not (str/blank? (:include-tags params))
-                                  [:tags]))]
-    (-> (common-params/default-parse-standard-params :collection params lp/param-aliases)
-        ;; If there is no sort key specified and keyword parameter exists then we default to
-        ;; sorting by document relevance score
-        (update :sort-keys #(or % (when (:keyword params) [{:order :desc :field :score}])))
-        (merge {:boosts (:boosts params)
-                :result-features (seq result-features)
-                :echo-compatible? (= "true" (:echo-compatible params))
-                :all-revisions? (= "true" (:all-revisions params))
-                :result-options (merge (when-not (str/blank? (:include-tags params))
-                                         {:tags (map str/trim (str/split (:include-tags params) #","))})
-                                       (when (or begin-tag end-tag snippet-length num-snippets)
-                                         {:highlights
-                                          {:begin-tag begin-tag
-                                           :end-tag end-tag
-                                           :snippet-length (when snippet-length (Integer. snippet-length))
-                                           :num-snippets (when num-snippets (Integer. num-snippets))}}))})
-        u/remove-nil-keys)))
+                                  [:tags]))
+        keywords (when (:keyword params)
+                   (str/split (str/lower-case (:keyword params)) #" "))
+        params (if keywords (assoc params :keyword (str/join " " keywords)) params)]
+    [(dissoc params
+             :boosts :include-granule-counts :include-has-granules :include-facets :echo-compatible
+             :hierarchical-facets :include-highlights :include-tags :all-revisions)
+     (-> query-attribs
+         ;; If there is no sort key specified and keyword parameter exists then we default to
+         ;; sorting by document relevance score
+         (update :sort-keys #(or % (when (:keyword params) [{:order :desc :field :score}])))
+         (merge {:boosts (:boosts params)
+                 :result-features (seq result-features)
+                 :echo-compatible? (= "true" (:echo-compatible params))
+                 :all-revisions? (= "true" (:all-revisions params))
+                 :result-options (merge (when-not (str/blank? (:include-tags params))
+                                          {:tags (map str/trim (str/split (:include-tags params) #","))})
+                                        (when (or begin-tag end-tag snippet-length num-snippets)
+                                          {:highlights
+                                           {:begin-tag begin-tag
+                                            :end-tag end-tag
+                                            :snippet-length (when snippet-length (Integer. snippet-length))
+                                            :num-snippets (when num-snippets (Integer. num-snippets))}}))})
+         u/remove-nil-keys)]))
 
-(defmethod common-params/parse-standard-params :granule
+(defmethod common-params/parse-query-level-params :granule
   [concept-type params]
-  (-> (common-params/default-parse-standard-params :granule params lp/param-aliases)
-      (merge {:echo-compatible? (= "true" (:echo-compatible params))})))
+  (let [[params query-attribs] (common-params/default-parse-query-level-params
+                                :granule params lp/param-aliases)]
+    [(dissoc params :echo-compatible)
+     (merge query-attribs {:echo-compatible? (= "true" (:echo-compatible params))})]))
+
 
 (defn timeline-parameters->query
   "Converts parameters from a granule timeline request into a query."
