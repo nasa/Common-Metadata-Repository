@@ -206,6 +206,22 @@
      ;; no provider-id should be specified for tags
      (dissoc (concept nil :tag uniq-num attributes) :provider-id))))
 
+(defn tag-association-concept
+  "Creates a tag association concept"
+  ([concept tag uniq-num]
+   (tag-association-concept uniq-num {}))
+  ([concept tag uniq-num attributes]
+   (let [{:keys [concept-id revision-id]} concept
+         tag-id (:native-id tag)
+         user-id (str "user" uniq-num)
+         native-id (str tag-id (char 29) concept-id (char 29) revision-id)
+         attributes (merge {:user-id user-id
+                            :format "application/edn"
+                            :native-id native-id}
+                           attributes)]
+     ;; no provider-id should be specified for tag associations
+     (dissoc (concept nil :tag-association uniq-num attributes) :provider-id))))
+
 (defn group-concept
   "Creates a group concept"
   ([provider-id uniq-num]
@@ -509,6 +525,19 @@
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]
      (assoc concept :concept-id concept-id :revision-id revision-id))))
+
+(defn create-and-save-tag-association
+  "Creates, saves, and returns a tag concept with its data from metadata-db"
+  ([concept tag uniq-num]
+   (create-and-save-tag-association concept tag uniq-num 1))
+  ([concept tag uniq-num num-revisions]
+   (create-and-save-tag-association concept tag uniq-num num-revisions {}))
+  ([concept tag uniq-num num-revisions attributes]
+    (let [concept (tag-association-concept concept tag uniq-num attributes)
+          _ (dotimes [n (dec num-revisions)]
+              (assert-no-errors (save-concept concept)))
+          {:keys [concept-id revision-id]} (save-concept concept)]
+      (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 (defn create-and-save-service
   "Creates, saves, and returns a service concept with its data from metadata-db."
