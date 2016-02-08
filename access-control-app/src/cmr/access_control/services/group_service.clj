@@ -6,10 +6,18 @@
             [cmr.common.concepts :as concepts]
             [cmr.common.services.errors :as errors]
             [cmr.common.mime-types :as mt]
+            [cmr.common.util :as u]
+            [cmr.common.log :refer (debug info warn error)]
             [cmr.common.validations.core :as v]
+            [cmr.common-app.services.search :as cs]
+            [cmr.common-app.services.search.params :as cp]
+            [cmr.common-app.services.search.parameter-validation :as cpv]
+            [cmr.common-app.services.search.query-model :as common-qm]
             [cmr.transmit.urs :as urs]
             [cmr.access-control.services.group-service-messages :as msg]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            ;; Must be required to be available at runtime
+            [cmr.access-control.data.group-json-results-handler]))
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
@@ -164,6 +172,50 @@
         existing-group (edn/read-string (:metadata existing-concept))]
     (validate-update-group context existing-group updated-group)
     (save-updated-group-concept context existing-concept updated-group)))
+
+
+(defn find-concepts-by-parameters
+  "Executes a search for concepts using the given parameters. The concepts will be returned with
+  concept id and native provider id along with hit count and timing info."
+  [context concept-type params])
+
+
+;; TODO move this into validation section
+
+(defn validate-group-search-params
+  [context params]
+  ;; TODO
+  params)
+
+(defmethod common-qm/default-sort-keys :access-group
+  [_]
+  [{:field :provider-id :order :asc}
+   {:field :name :order :asc}])
+
+(defn search-for-groups
+  [context params]
+  (let [[query-creation-time query] (u/time-execution
+                                     (->> params
+                                          cp/sanitize-params
+                                          (validate-group-search-params :access-group)
+                                          (cp/parse-parameter-query :access-group)))
+        [find-concepts-time results] (u/time-execution
+                                      (cs/find-concepts context :access-group query))
+        total-took (+ query-creation-time find-concepts-time)]
+    (info (format "Found %d access-groups in %d ms in format %s with params %s."
+                  (:hits results) total-took (:result-format query) (pr-str params)))
+    (assoc results :took total-took)))
+
+(comment
+
+
+  (cp/parse-parameter-query :access-group {})
+
+ (search-for-groups {:system user/system} {}))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Member functions
 
 (defn- add-members-to-group
   "Adds the new members to the group handling duplicates."

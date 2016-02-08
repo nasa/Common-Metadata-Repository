@@ -8,6 +8,7 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.access-control.api.routes :as routes]
             [cmr.access-control.data.access-control-index :as access-control-index]
+            [cmr.common-app.services.search.elastic-search-index :as search-index]
             [cmr.access-control.config :as config]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.common.api.web-server :as web]
@@ -32,13 +33,13 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :index :queue-broker :web :nrepl])
+  component-order [:log :search-index :queue-broker :web :nrepl])
 
 (defn create-system
   "Returns a new instance of the whole application."
   []
   (let [sys {:log (log/create-logger)
-             :index (access-control-index/create-elastic-store)
+             :search-index (search-index/create-elastic-search-index)
              :web (web/create-web-server (transmit-config/access-control-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
              :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))
@@ -52,11 +53,10 @@
   [system]
   (info "Access Control system starting")
   (let [started-system (common-sys/start system component-order)]
-
     (when (:queue-broker system)
       (event-handler/subscribe-to-events {:system started-system}))
 
-    (info "Indexer system started")
+    (info "Access control system started")
     started-system))
 
 (def stop
@@ -68,6 +68,10 @@
   "Starts the system but performs extra calls to make sure all indexes are created in elastic."
   [system]
   (let [started-system (start system)]
-    (access-control-index/create-index-or-update-mappings (:index started-system))
+    (try
+      (access-control-index/create-index-or-update-mappings (:search-index started-system))
+      (catch Exception e
+        (.printStackTrace e)
+        (common-sys/stop started-system component-order)))
     started-system))
 

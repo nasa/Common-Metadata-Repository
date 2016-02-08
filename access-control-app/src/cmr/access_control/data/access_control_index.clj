@@ -1,9 +1,9 @@
 (ns cmr.access-control.data.access-control-index
   "Performs search and indexing of access control data."
   (:require [cmr.elastic-utils.index-util :as m :refer [defmapping]]
-            [cmr.elastic-utils.connect :as esc]
-            [cmr.elastic-utils.config :as es-config]
+            [cmr.common-app.services.search.elastic-search-index :as esi]
             [cmr.common.lifecycle :as l]
+            [clojure.string :as str]
             [clojure.edn :as edn]))
 
 (def ^:private group-index-name
@@ -16,11 +16,21 @@
 
 (defmapping ^:private group-mappings group-type-name
   "Defines the field mappings and type options for indexing groups in elasticsearch."
-  {:name (m/stored m/string-field-mapping)
+  {:concept-id (m/stored m/string-field-mapping)
+   :revision-id (m/stored m/int-field-mapping)
+
+   :name (m/stored m/string-field-mapping)
+   :name.lowercase m/string-field-mapping
+
    :provider-id (m/stored m/string-field-mapping)
+   :provider-id.lowercase m/string-field-mapping
+
    :description (m/not-indexed (m/stored m/string-field-mapping))
+
    :legacy-guid (m/stored m/string-field-mapping)
-   :members m/string-field-mapping
+
+   ;; Member search is always case insensitive
+   :members.lowercase m/string-field-mapping
    ;; Member count is returned in the group response. The list of members is returned separately so
    ;; we don't store the members in the elastic index. If members end up being stored at some point
    ;; we can get rid of this field.
@@ -43,33 +53,35 @@
   (fn [context concept-map]
     (:concept-type concept-map)))
 
+(defn- safe-lowercase
+  [v]
+  (when v (str/lower-case v)))
+
+(defn- group-concept-map->elastic-doc
+  "Converts a concept map containing an access group into the elasticsearch document to index."
+  [concept-map]
+  (let [group (edn/read-string (:metadata concept-map))]
+    (-> group
+        (merge (select-keys concept-map [:concept-id :revision-id]))
+        (assoc :name.lowercase (safe-lowercase (:name group))
+               :provider-id.lowercase (safe-lowercase (:provider-id group))
+               :members.lowercase (map str/lower-case (:members group))
+               :member-count (count (:members group)))
+        (dissoc :members))))
+
 (defmethod index-concept :access-group
   [context concept-map]
-  (let [group (edn/read-string (:metadata concept-map))
-        elastic-doc (assoc group :member-count (count (:members group [])))
+  (let [elastic-doc (group-concept-map->elastic-doc concept-map)
         {:keys [concept-id revision-id]} concept-map
-        elastic-store (get-in context [:system :index])]
+        elastic-store (esi/context->search-index context)]
     (m/save-elastic-doc
      elastic-store group-index-name group-type-name concept-id elastic-doc revision-id
      {:ignore-conflict? true})))
 
-(defrecord ElasticStore
-  [;; configuration of host and port for elasticsearch
-   config
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Search Functions
 
-   ;; The connection to elasticsearch
-   conn]
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  l/Lifecycle
-
-  (start
-    [this system]
-    (assoc this :conn (esc/try-connect config)))
-
-  (stop [this system]
-        this))
-
-(defn create-elastic-store
-  []
-  (->ElasticStore (es-config/elastic-config) nil))
+(defmethod esi/concept-type->index-info :access-group
+  [context _ _]
+  {:index-name group-index-name
+   :type-name group-type-name})

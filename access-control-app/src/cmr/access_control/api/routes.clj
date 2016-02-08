@@ -122,10 +122,38 @@
        (group-service/remove-members context concept-id)
        api-response))
 
+;; TODO this should be reusable
+(def CONTENT_TYPE_HEADER "Content-Type")
+(def HITS_HEADER "CMR-Hits")
+(def TOOK_HEADER "CMR-Took")
+(def CORS_ORIGIN_HEADER
+  "This CORS header is to restrict access to the resource to be only from the defined origins,
+  value of \"*\" means all request origins have access to the resource"
+  "Access-Control-Allow-Origin")
+;; TODO also get and make the options response work
+;; Why did we add that in the first place? Does it make sense that we only support it in one spot?
+
+
+(defn- search-response-headers
+  "Generate headers for search response."
+  [content-type results]
+  (merge {CONTENT_TYPE_HEADER (mt/with-utf-8 content-type)
+          CORS_ORIGIN_HEADER "*"}
+         (when (:hits results) {HITS_HEADER (str (:hits results))})
+         (when (:took results) {TOOK_HEADER (str (:took results))})))
+
+(defn- search-response
+  "Generate the response map for finding concepts/"
+  [{:keys [results result-format] :as response}]
+  {:status 200
+   :headers (search-response-headers (mt/format->mime-type result-format) response)
+   :body results})
+
 (defn search-for-groups
-  [context params])
+  [context params]
   ;; TODO CMR-2130 validate accept header (only accept JSON search response)
-  ; (group-service/search-for-groups params))
+  (-> (group-service/search-for-groups context params)
+      search-response))
 
 
 (def admin-api-routes
