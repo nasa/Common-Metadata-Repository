@@ -9,66 +9,81 @@
             [cmr.common-app.services.search.query-model :as q]
             [cmr.common-app.services.search.query-order-by-expense :as query-expense]
             [cmr.common-app.services.search.query-to-elastic :as q2e]
-            [cmr.common-app.services.search.complex-to-simple :as c2s]))
+            [cmr.common-app.services.search.complex-to-simple :as c2s]
+            [cmr.common.config :refer [defconfig]]))
+
+(defconfig use-doc-values-fields
+  "Indicates whether search fields should use the doc-values fields or not. If false the field data
+  cache fields will be used."
+  {:type Boolean
+   :default true})
 
 (defmethod q2e/concept-type->field-mappings :collection
   [_]
-  {:provider :provider-id
-   :version :version-id
-   :project :project-sn2
-   :project-sn :project-sn2
-   :updated-since :revision-date2
-   :two-d-coordinate-system-name :two-d-coord-name
-   :platform :platform-sn
-   :instrument :instrument-sn
-   :sensor :sensor-sn
-   :revision-date :revision-date2
-   :mbr-north :mbr-north-doc-values
-   :mbr-south :mbr-south-doc-values
-   :mbr-east :mbr-east-doc-values
-   :mbr-west :mbr-west-doc-values
-   :lr-north :lr-north-doc-values
-   :lr-south :lr-south-doc-values
-   :lr-east :lr-east-doc-values
-   :lr-west :lr-west-doc-values})
+  (let [default-mappings {:provider :provider-id
+                          :version :version-id
+                          :project :project-sn2
+                          :project-sn :project-sn2
+                          :updated-since :revision-date2
+                          :two-d-coordinate-system-name :two-d-coord-name
+                          :platform :platform-sn
+                          :instrument :instrument-sn
+                          :sensor :sensor-sn
+                          :revision-date :revision-date2}]
+    (if (use-doc-values-fields)
+      (merge default-mappings
+             {:mbr-north :mbr-north-doc-values
+              :mbr-south :mbr-south-doc-values
+              :mbr-east :mbr-east-doc-values
+              :mbr-west :mbr-west-doc-values
+              :lr-north :lr-north-doc-values
+              :lr-south :lr-south-doc-values
+              :lr-east :lr-east-doc-values
+              :lr-west :lr-west-doc-values})
+      default-mappings)))
 
 (defmethod q2e/concept-type->field-mappings :granule
   [_]
-  {:granule-ur.lowercase :granule-ur.lowercase2
-   :producer-gran-id.lowercase :producer-gran-id.lowercase2
-   :provider :provider-id-doc-values
-   :provider-id :provider-id-doc-values
-   :collection-concept-id :collection-concept-id-doc-values
-   :collection-concept-seq-id :collection-concept-seq-id-doc-values
-   :concept-seq-id :concept-seq-id-doc-values
-   :size :size-doc-values
-   :start-date :start-date-doc-values
-   :end-date :end-date-doc-values
-   :revision-date :revision-date-doc-values
-   :updated-since :revision-date-doc-values
-   :producer-granule-id :producer-gran-id
-   :platform :platform-sn
-   :instrument :instrument-sn
-   :sensor :sensor-sn
-   :project :project-refs
-   :day-night :day-night-doc-values
-   :cloud-cover :cloud-cover-doc-values
-   :mbr-north :mbr-north-doc-values
-   :mbr-south :mbr-south-doc-values
-   :mbr-east :mbr-east-doc-values
-   :mbr-west :mbr-west-doc-values
-   :lr-north :lr-north-doc-values
-   :lr-south :lr-south-doc-values
-   :lr-east :lr-east-doc-values
-   :lr-west :lr-west-doc-values
-   :orbit-start-clat :orbit-start-clat-doc-values
-   :orbit-end-clat :orbit-end-clat-doc-values
-   :orbit-asc-crossing-lon :orbit-asc-crossing-lon-doc-values
-   :access-value :access-value-doc-values
-   :start-coordinate-1 :start-coordinate-1-doc-values
-   :end-coordinate-1 :end-coordinate-1-doc-values
-   :start-coordinate-2 :start-coordinate-2-doc-values
-   :end-coordinate-2 :end-coordinate-2-doc-values})
+  (let [default-mappings {:granule-ur.lowercase :granule-ur.lowercase2
+                          :producer-gran-id.lowercase :producer-gran-id.lowercase2
+                          :provider :provider-id
+                          :updated-since :revision-date
+                          :producer-granule-id :producer-gran-id
+                          :platform :platform-sn
+                          :instrument :instrument-sn
+                          :sensor :sensor-sn
+                          :project :project-refs}]
+        (if (use-doc-values-fields)
+          (merge default-mappings
+                 {:provider :provider-id-doc-values
+                  :provider-id :provider-id-doc-values
+                  :concept-seq-id :concept-seq-id-doc-values
+                  :collection-concept-id :collection-concept-id-doc-values
+                  :collection-concept-seq-id :collection-concept-seq-id-doc-values
+                  :size :size-doc-values
+                  :start-date :start-date-doc-values
+                  :end-date :end-date-doc-values
+                  :revision-date :revision-date-doc-values
+                  :updated-since :revision-date-doc-values
+                  :day-night :day-night-doc-values
+                  :cloud-cover :cloud-cover-doc-values
+                  :mbr-north :mbr-north-doc-values
+                  :mbr-south :mbr-south-doc-values
+                  :mbr-east :mbr-east-doc-values
+                  :mbr-west :mbr-west-doc-values
+                  :lr-north :lr-north-doc-values
+                  :lr-south :lr-south-doc-values
+                  :lr-east :lr-east-doc-values
+                  :lr-west :lr-west-doc-values
+                  :orbit-start-clat :orbit-start-clat-doc-values
+                  :orbit-end-clat :orbit-end-clat-doc-values
+                  :orbit-asc-crossing-lon :orbit-asc-crossing-lon-doc-values
+                  :access-value :access-value-doc-values
+                  :start-coordinate-1 :start-coordinate-1-doc-values
+                  :end-coordinate-1 :end-coordinate-1-doc-values
+                  :start-coordinate-2 :start-coordinate-2-doc-values
+                  :end-coordinate-2 :end-coordinate-2-doc-values})
+          default-mappings)))
 
 (defmethod q2e/elastic-field->query-field-mappings :collection
   [_]
@@ -116,15 +131,18 @@
 
 (defmethod q2e/field->lowercase-field-mappings :granule
   [_]
-  {:provider "provider-id.lowercase-doc-values"
-   :provider-id "provider-id.lowercase-doc-values"
-   :granule-ur "granule-ur.lowercase2"
-   :producer-gran-id "producer-gran-id.lowercase2"
-   :producer-granule-id "producer-gran-id.lowercase2"
-   :platform "platform-sn.lowercase-doc-values"
-   :instrument "instrument-sn.lowercase-doc-values"
-   :sensor "sensor-sn.lowercase-doc-values"
-   :project "project-refs.lowercase-doc-values"})
+  (let [default-mappings
+        {:granule-ur "granule-ur.lowercase2"
+         :producer-gran-id "producer-gran-id.lowercase2"
+         :producer-granule-id "producer-gran-id.lowercase2"}]
+    (if (use-doc-values-fields)
+      (merge default-mappings {:provider "provider-id.lowercase-doc-values"
+                               :provider-id "provider-id.lowercase-doc-values"
+                               :platform "platform-sn.lowercase-doc-values"
+                               :instrument "instrument-sn.lowercase-doc-values"
+                               :sensor "sensor-sn.lowercase-doc-values"
+                               :project "project-refs.lowercase-doc-values"})
+      default-mappings)))
 
 (defn- keywords-in-condition
   "Returns a list of keywords if the condition contains a keyword condition or nil if not."
