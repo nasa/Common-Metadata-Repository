@@ -509,6 +509,7 @@
                   :native-id "umm_json_coll_V1"
                   :revision-id "1"
                   :concept-type :collection
+                  ;; assumes the current version
                   :format "application/vnd.nasa.cmr.umm+json"
                   :metadata json}
         response (ingest/ingest-concept coll-map)]
@@ -542,6 +543,41 @@
           response (ingest/ingest-concept concept-map {:accept-format :json})]
       (is (= ["/DataDates/0/Date string \"invalid date\" is invalid against requested date format(s) [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.SSSZ]"] (:errors response)))
       (is (= 400 (:status response))))))
+
+(deftest ingest-old-json-versions
+  (let [json     (umm-spec/generate-metadata exc/example-collection-record "application/vnd.nasa.cmr.umm+json;version=1.0")
+        _ (println json)
+        coll-map {:provider-id  "PROV1"
+                  :native-id    "umm_json_coll_V1"
+                  :concept-type :collection
+                  :format       "application/vnd.nasa.cmr.umm+json;version=1.0"
+                  :metadata     json}
+        response (ingest/ingest-concept coll-map {:accept-format :json})]
+    (is (= 200 (:status response)))))
+
+(deftest ingest-invalid-umm-version
+  (let [coll-map {:provider-id  "PROV1"
+                  :native-id    "umm_json_coll_V1"
+                  :concept-type :collection
+                  :format       "application/vnd.nasa.cmr.umm+json;version=9000.1"
+                  :metadata     "{\"foo\":\"bar\"}"}
+        response (ingest/ingest-concept coll-map {:accept-format :json})]
+    (is (= 400 (:status response)))
+    (is (= ["Unknown UMM JSON schema version: \"9000.1\""]
+           (:errors response)))))
+
+(comment
+  ((ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}) println)
+  (let [json (umm-spec/generate-metadata exc/example-collection-record "application/vnd.nasa.cmr.umm+json;version=9000.1")
+        coll-map {:provider-id  "PROV1"
+                  :native-id    "umm_json_coll_V1"
+                  :concept-type :collection
+                  :format       "application/vnd.nasa.cmr.umm+json;version=9000.1"
+                  :metadata     json}
+        response (ingest/ingest-concept coll-map {:accept-format :json})]
+    (is (= 200 (:status response)))
+    (println "response =" response))
+  )
 
 ;; Verify ingest of collection with string larger than 80 characters for project(campaign) long name is successful (CMR-1361)
 (deftest project-long-name-can-be-upto-1024-characters

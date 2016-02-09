@@ -184,9 +184,11 @@
    (validate-umm-json json-str concept-type ver/current-version))
   ([json-str concept-type umm-version]
    (let [schema-name (concept-schema-name concept-type)
-         schema-url (umm-schema-resource umm-version schema-name)
-         java-schema-obj (js-validations/parse-json-schema-from-uri schema-url)]
-     (js-validations/validate-json java-schema-obj json-str))))
+         schema-url (umm-schema-resource umm-version schema-name)]
+     (if schema-url
+       (let [java-schema-obj (js-validations/parse-json-schema-from-uri schema-url)]
+         (js-validations/validate-json java-schema-obj json-str))
+       [(str "Unknown UMM JSON schema version: " (pr-str umm-version))]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Loaded schemas

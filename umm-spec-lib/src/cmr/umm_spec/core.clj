@@ -24,20 +24,16 @@
     ;; UMM and JSON
             [cmr.umm-spec.umm-json :as umm-json]
             [cmr.umm-spec.versioning :as ver]
-            [cmr.common.mime-types :as mt]))
+            [cmr.common.mime-types :as mt])
+  (:import (cmr.umm_spec.models.collection UMM-C)
+           (cmr.umm_spec.models.service UMM-S)))
 
 (defn concept-type
   "Returns a concept type keyword from a UMM Clojure record (i.e. defrecord)."
   [record]
   (condp instance? record
-    cmr.umm_spec.models.collection.UMM-C :collection
-    cmr.umm_spec.models.service.UMM-S :service))
-
-(defn format-key
-  [media-type-or-format-key]
-  (if (keyword? media-type-or-format-key)
-    media-type-or-format-key
-    (mt/format-key media-type-or-format-key)))
+    UMM-C :collection
+    UMM-S :service))
 
 (defn umm-json-version
   [media-type]
@@ -45,7 +41,7 @@
   ;; parameters like umm+json;version=1.1, or just :umm-json
   (if (= :umm-json media-type)
     ver/current-version
-    (or (mt/version media-type) ver/current-version)))
+    (or (mt/version-of media-type) ver/current-version)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validate Metadata
@@ -65,88 +61,35 @@
 
 (defn validate-metadata
   "Validates the given metadata and returns a list of errors found."
-  [concept-type media-type metadata]
-  (let [format-key (format-key media-type)]
-    (if (= format-key :umm-json)
-      (js/validate-umm-json metadata concept-type (umm-json-version media-type))
+  [concept-type fmt metadata]
+  (let [format-key (mt/format-key fmt)]
+    (if (= (mt/format-key fmt) :umm-json)
+      (js/validate-umm-json metadata concept-type (umm-json-version fmt))
       (validate-xml concept-type format-key metadata))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Parse Metadata
-
-(defn- dispatch-parse-metadata
-  [concept-type media-type metadata]
-  ;; dispatch on a vector of concept type and format key
-  [(keyword concept-type) (format-key media-type)])
-
-(defmulti parse-metadata
+(defn parse-metadata
   "Parses metadata of the specific concept type and format into UMM records"
-  #'dispatch-parse-metadata)
-
-(defmethod parse-metadata [:collection :umm-json]
-  [_ media-type json]
-  (umm-json/json->umm :collection json (umm-json-version media-type)))
-
-(defmethod parse-metadata [:collection :echo10]
-  [_ _ metadata]
-  (echo10-to-umm/echo10-xml-to-umm-c (xpath/context metadata)))
-
-(defmethod parse-metadata [:collection :dif]
-  [_ _ metadata]
-  (dif9-to-umm/dif9-xml-to-umm-c (xpath/context metadata)))
-
-(defmethod parse-metadata [:collection :dif10]
-  [_ _ metadata]
-  (dif10-to-umm/dif10-xml-to-umm-c (xpath/context metadata)))
-
-(defmethod parse-metadata [:collection :iso19115]
-  [_ _ metadata]
-  (iso19115-2-to-umm/iso19115-2-xml-to-umm-c (xpath/context metadata)))
-
-(defmethod parse-metadata [:collection :iso-smap]
-  [_ _ metadata]
-  (iso-smap-to-umm/iso-smap-xml-to-umm-c (xpath/context metadata)))
-
-(defmethod parse-metadata [:service :serf]
-  [_ _ metadata]
-  (serf-to-umm/serf-xml-to-umm-s (xpath/context metadata)))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Generate Metadata
-
-(defmulti ^:private generate-metadata-impl
-  (fn [concept-type metadata-standard umm]
-    [(keyword concept-type) metadata-standard]))
-
-(defmethod generate-metadata-impl [:collection :umm-json]
-  [_ _ umm]
-  (umm-json/umm->json umm))
-
-(defmethod generate-metadata-impl [:collection :echo10]
-  [_ _ umm]
-  (umm-to-echo10/umm-c-to-echo10-xml umm))
-
-(defmethod generate-metadata-impl [:collection :dif]
-  [_ _ umm]
-  (umm-to-dif9/umm-c-to-dif9-xml umm))
-
-(defmethod generate-metadata-impl [:collection :dif10]
-  [_ _ umm]
-  (umm-to-dif10/umm-c-to-dif10-xml umm))
-
-(defmethod generate-metadata-impl [:collection :iso19115]
-  [_ _ umm]
-  (umm-to-iso19115-2/umm-c-to-iso19115-2-xml umm))
-
-(defmethod generate-metadata-impl [:collection :iso-smap]
-  [_ _ umm]
-  (umm-to-iso-smap/umm-c-to-iso-smap-xml umm))
-
-(defmethod generate-metadata-impl [:service :serf]
-  [_ _ umm]
-  (umm-to-serf/umm-s-to-serf-xml umm))
+  [concept-type fmt metadata]
+  (condp = [concept-type (mt/format-key fmt)]
+    [:collection :umm-json] (umm-json/json->umm :collection metadata (umm-json-version fmt))
+    [:collection :echo10]   (echo10-to-umm/echo10-xml-to-umm-c (xpath/context metadata))
+    [:collection :dif]      (dif9-to-umm/dif9-xml-to-umm-c (xpath/context metadata))
+    [:collection :dif10]    (dif10-to-umm/dif10-xml-to-umm-c (xpath/context metadata))
+    [:collection :iso19115] (iso19115-2-to-umm/iso19115-2-xml-to-umm-c (xpath/context metadata))
+    [:collection :iso-smap] (iso-smap-to-umm/iso-smap-xml-to-umm-c (xpath/context metadata))
+    [:service :serf]        (serf-to-umm/serf-xml-to-umm-s (xpath/context metadata))))
 
 (defn generate-metadata
-  [umm media-type]
-  (generate-metadata-impl (concept-type umm) (format-key media-type) umm))
+  [umm fmt]
+  (let [concept-type (concept-type umm)]
+    (condp = [concept-type (mt/format-key fmt)]
+      [:collection :umm-json] (umm-json/umm->json (ver/migrate-umm concept-type
+                                                                   ver/current-version
+                                                                   (umm-json-version fmt)
+                                                                   umm))
+      [:collection :echo10]   (umm-to-echo10/umm-c-to-echo10-xml umm)
+      [:collection :dif]      (umm-to-dif9/umm-c-to-dif9-xml umm)
+      [:collection :dif10]    (umm-to-dif10/umm-c-to-dif10-xml umm)
+      [:collection :iso19115] (umm-to-iso19115-2/umm-c-to-iso19115-2-xml umm)
+      [:collection :iso-smap] (umm-to-iso-smap/umm-c-to-iso-smap-xml umm)
+      [:service :serf]        (umm-to-serf/umm-s-to-serf-xml umm))))

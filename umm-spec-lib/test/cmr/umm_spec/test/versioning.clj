@@ -8,6 +8,10 @@
             [com.gfredericks.test.chuck.clojure-test :refer [for-all]]
             [cmr.umm-spec.core :as core]))
 
+(deftest test-valid-version
+  (is (v/valid-version? "1.0"))
+  (is (not (v/valid-version? "bananas"))))
+
 (deftest test-version-steps
   (with-redefs [cmr.umm-spec.versioning/versions ["1.0" "1.1" "1.2" "1.3"]]
     (is (= [] (v/version-steps "1.2" "1.2")))

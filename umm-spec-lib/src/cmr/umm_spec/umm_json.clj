@@ -13,38 +13,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; UMM To JSON
 
-(defprotocol ToJsonAble
-  "A function for converting data into data that can easily be converted to JSON"
-  (to-jsonable
-    [o]
-    "Takes in object and returns a new object that can be converted to JSON"))
-
-(extend-protocol ToJsonAble
-
-  ;; Records contain every key with a value of nil. We don't want the JSON to contain that.
-  ;; This converts them into a standard map without the nil keys.
-  clojure.lang.IRecord
-  (to-jsonable
-    [r]
-    (into {}
-          (for [[k v] r
-                :when (some? v)]
-            [(to-jsonable k) (to-jsonable v)])))
-
-  clojure.lang.Sequential
-  (to-jsonable
-    [values]
-    (mapv to-jsonable values))
-
-  ;; Default implementations
-  Object
-  (to-jsonable [o] o)
-
-  nil
-  (to-jsonable [o] o))
+(defn to-jsonable
+  [x]
+  (cond
+    (map? x) (into {}
+                   (for [[k v] x
+                         :when (some? v)]
+                     [(to-jsonable k) (to-jsonable v)]))
+    (sequential? x) (mapv to-jsonable x)
+    :else x))
 
 (defn umm->json
-  "Converts the UMM record to JSON."
+  "Returns a JSON string from the given Clojure record."
   [umm-record]
   (json/generate-string (to-jsonable umm-record)))
 

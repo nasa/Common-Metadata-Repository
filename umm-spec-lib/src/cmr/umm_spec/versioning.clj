@@ -15,6 +15,10 @@
   "The current version of the UMM schema."
   (last versions))
 
+(defn valid-version?
+  [x]
+  (boolean (some #{x} versions)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Utility Functions
 
@@ -34,7 +38,7 @@
 (defn with-default-version
   "Returns the media type with the current UMM version if no version parameter is specified."
   [media-type]
-  (if (mt/version media-type)
+  (if (mt/version-of media-type)
     media-type
     (str media-type ";version=" current-version)))
 

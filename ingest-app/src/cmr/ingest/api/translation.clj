@@ -34,7 +34,7 @@
   "Returns a translate API response map for the given UMM record and the requested response media type."
   [umm requested-media-type]
   ;; We are only going to respond with a version parameter if we are returning UMM JSON.
-  (let [response-media-type (if (= :umm-json (mt/format-key requested-media-type))
+  (let [response-media-type (if (mt/umm-json? requested-media-type)
                               (ver/with-default-version requested-media-type)
                               requested-media-type)
         body (umm-spec/generate-metadata umm response-media-type)]
@@ -82,7 +82,7 @@
           output-format (mt/mime-type->format output-mime-type)]
 
       (let [umm (test-check-gen/generate umm-generators/umm-c-generator)
-            output-str (umm-spec/generate-metadata umm output-format)]
+            output-str (umm-spec/generate-metadata umm output-mime-type)]
         {:status 200
          :body output-str
          :headers {"Content-Type" output-mime-type}}))))
