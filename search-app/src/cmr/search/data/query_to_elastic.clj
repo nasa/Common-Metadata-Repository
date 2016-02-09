@@ -198,18 +198,31 @@
 
 (defmethod q2e/concept-type->sort-key-map :granule
   [_]
-  {:provider :provider-id.lowercase-doc-values
-   :entry-title :entry-title.lowercase
-   :short-name :short-name.lowercase
-   :version :version-id.lowercase
-   :granule-ur :granule-ur.lowercase2
-   :producer-granule-id :producer-gran-id.lowercase2
-   :readable-granule-name :readable-granule-name-sort2
-   :data-size :size-doc-values
-   :platform :platform-sn.lowercase-doc-values
-   :instrument :instrument-sn.lowercase-doc-values
-   :sensor :sensor-sn.lowercase-doc-values
-   :project :project-refs.lowercase-doc-values})
+  (let [default-mappings {:provider :provider-id.lowercase
+                          :provider-id :provider-id.lowercase
+                          :data-size :size
+                          :entry-title :entry-title.lowercase
+                          :short-name :short-name.lowercase
+                          :version :version-id.lowercase
+                          :granule-ur :granule-ur.lowercase2
+                          :producer-granule-id :producer-gran-id.lowercase2
+                          :readable-granule-name :readable-granule-name-sort2
+                          :platform :platform-sn.lowercase
+                          :instrument :instrument-sn.lowercase
+                          :sensor :sensor-sn.lowercase
+                          :project :project-refs.lowercase}]
+    (if (use-doc-values-fields)
+      (merge default-mappings {:provider :provider-id.lowercase-doc-values
+                               :provider-id :provider-id.lowercase-doc-values
+                               :size :size-doc-values
+                               :data-size :size-doc-values
+                               :platform :platform-sn.lowercase-doc-values
+                               :instrument :instrument-sn.lowercase-doc-values
+                               :sensor :sensor-sn.lowercase-doc-values
+                               :project :project-refs.lowercase-doc-values
+                               :start-date :start-date-doc-values
+                               :end-date :end-date-doc-values})
+      default-mappings)))
 
 (defmethod q2e/concept-type->sub-sort-fields :collection
   [_]
