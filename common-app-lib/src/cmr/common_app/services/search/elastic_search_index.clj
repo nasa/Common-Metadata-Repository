@@ -54,7 +54,7 @@
 
 (defn- query-fields->elastic-fields
   "Converts all of the CMR business logic field names to the actual fields in elastic."
-  [fields concept-type]
+  [concept-type fields]
   (map #(q2e/query-field->elastic-field (keyword %) concept-type) fields))
 
 (defmulti send-query-to-elastic
@@ -85,10 +85,10 @@
            "with sort" (pr-str sort-params)
            "with aggregations" (pr-str aggregations)
            "and highlights" (pr-str highlights))
-    (let [response (esd/search (context->conn context
-                                              (:index-name index-info)
-                                              [(:type-name index-info)]
-                                              query-map))]
+    (let [response (esd/search (context->conn context)
+                               (:index-name index-info)
+                               [(:type-name index-info)]
+                               query-map)]
       ;; Replace the Elasticsearch field names with their query model field names within the results
       (update-in response [:hits :hits]
                  (fn [all-concepts]

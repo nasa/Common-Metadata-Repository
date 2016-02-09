@@ -16,6 +16,7 @@
   {:provider :provider-id
    :version :version-id
    :project :project-sn2
+   :project-sn :project-sn2
    :updated-since :revision-date2
    :two-d-coordinate-system-name :two-d-coord-name
    :platform :platform-sn
@@ -35,6 +36,7 @@
   [_]
   {:granule-ur.lowercase :granule-ur.lowercase2
    :producer-gran-id.lowercase :producer-gran-id.lowercase2
+   :provider :provider-id-doc-values
    :provider-id :provider-id-doc-values
    :collection-concept-id :collection-concept-id-doc-values
    :collection-concept-seq-id :collection-concept-seq-id-doc-values
@@ -70,7 +72,7 @@
 
 (defmethod q2e/elastic-field->query-field-mappings :collection
   [_]
-  {:project-sn2 :project
+  {:project-sn2 :project-sn
    :two-d-coord-name :two-d-coordinate-system-name
    :platform-sn :platform
    :instrument-sn :instrument
@@ -87,10 +89,10 @@
    :start-date-doc-values :start-date
    :end-date-doc-values :end-date
    :revision-date-doc-values :revision-date
-   :platform-sn-doc-values :platform
-   :instrument-sn-doc-values :instrument
-   :sensor-sn-doc-values :sensor
-   :project-refs-doc-values :project
+   :platform-sn :platform
+   :instrument-sn :instrument
+   :sensor-sn :sensor
+   :project-refs :project
    :day-night-doc-values :day-night
    :cloud-cover-doc-values :cloud-cover
    :orbit-start-clat-doc-values :orbit-start-clat
@@ -103,7 +105,7 @@
    :end-coordinate-2-doc-values :end-coordinate-2})
 
 (defmethod q2e/field->lowercase-field-mappings :collection
-  [_ field]
+  [_]
   {:provider "provider-id.lowercase"
    :version "version-id.lowercase"
    :project "project-sn2.lowercase"
@@ -113,16 +115,16 @@
    :sensor "sensor-sn.lowercase"})
 
 (defmethod q2e/field->lowercase-field-mappings :granule
-  [_ field]
-  {:provider "provider-id-doc-values.lowercase"
-   :provider-id "provider-id-doc-values.lowercase"
+  [_]
+  {:provider "provider-id.lowercase-doc-values"
+   :provider-id "provider-id.lowercase-doc-values"
    :granule-ur "granule-ur.lowercase2"
    :producer-gran-id "producer-gran-id.lowercase2"
    :producer-granule-id "producer-gran-id.lowercase2"
-   :platform "platform-sn-doc-values.lowercase"
-   :instrument "instrument-sn-doc-values.lowercase"
-   :sensor "sensor-sn-doc-values.lowercase"
-   :project "project-refs-doc-values.lowercase"})
+   :platform "platform-sn.lowercase-doc-values"
+   :instrument "instrument-sn.lowercase-doc-values"
+   :sensor "sensor-sn.lowercase-doc-values"
+   :project "project-refs.lowercase-doc-values"})
 
 (defn- keywords-in-condition
   "Returns a list of keywords if the condition contains a keyword condition or nil if not."
@@ -178,18 +180,18 @@
 
 (defmethod q2e/concept-type->sort-key-map :granule
   [_]
-  {:provider :provider-id.lowercase
+  {:provider :provider-id.lowercase-doc-values
    :entry-title :entry-title.lowercase
    :short-name :short-name.lowercase
    :version :version-id.lowercase
    :granule-ur :granule-ur.lowercase2
    :producer-granule-id :producer-gran-id.lowercase2
    :readable-granule-name :readable-granule-name-sort2
-   :data-size :size
-   :platform :platform-sn.lowercase
-   :instrument :instrument-sn.lowercase
-   :sensor :sensor-sn.lowercase
-   :project :project-refs.lowercase})
+   :data-size :size-doc-values
+   :platform :platform-sn.lowercase-doc-values
+   :instrument :instrument-sn.lowercase-doc-values
+   :sensor :sensor-sn.lowercase-doc-values
+   :project :project-refs.lowercase-doc-values})
 
 (defmethod q2e/concept-type->sub-sort-fields :collection
   [_]

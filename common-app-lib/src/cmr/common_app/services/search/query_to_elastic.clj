@@ -43,7 +43,7 @@
 (defn query-field->elastic-field
   "Returns the elastic field name for the equivalent query field name."
   [field concept-type]
-  (get (concept-type->field-mappings concept-type) field field))
+  (get (concept-type->field-mappings concept-type) (keyword field) field))
 
 (defn- elastic-field->query-field
   "Returns the query field name for the equivalent elastic field name."
@@ -108,7 +108,7 @@
 
 (defmethod concept-type->sub-sort-fields :default
   [concept-type]
-  [{(query-field->elastic-field concept-type :concept-id) {:order "asc"}}])
+  [{(query-field->elastic-field :concept-id concept-type) {:order "asc"}}])
 
 (defn sort-keys->elastic-sort
   "Converts sort keys into the proper elastic sort condition."
@@ -136,18 +136,20 @@
 
 (defmulti field->lowercase-field-mappings
   "Mapping of query model field names to Elasticsearch lowercase field names."
-  (fn [concept-type _]
+  (fn [concept-type]
     concept-type))
 
 (defmethod field->lowercase-field-mappings :default
-  [_ field]
-  (str (name field) ".lowercase"))
+  [_]
+  ;; No field mappings specified by default
+  {})
 
 (defn field->lowercase-field
   "Maps a field name to the name of the lowercase field to use within elastic.
   If a mapping is not present it defaults the lowercase field as <field>.lowercase"
   [concept-type field]
-  (get (concept-type->field-mappings concept-type) field field))
+  (get (field->lowercase-field-mappings concept-type) (keyword field)
+       (str (name field) ".lowercase")))
 
 (defn- range-condition->elastic
   "Convert a range condition to an elastic search condition. Execution
