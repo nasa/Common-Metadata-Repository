@@ -11,7 +11,6 @@
             [cmr.common-app.services.search.query-to-elastic :as q2e]
             [cmr.common-app.services.search.complex-to-simple :as c2s]))
 
-
 (defmethod q2e/concept-type->field-mappings :collection
   [_]
   {:provider :provider-id
@@ -22,28 +21,108 @@
    :platform :platform-sn
    :instrument :instrument-sn
    :sensor :sensor-sn
-   :revision-date :revision-date2})
+   :revision-date :revision-date2
+   :mbr-north :mbr-north-doc-values
+   :mbr-south :mbr-south-doc-values
+   :mbr-east :mbr-east-doc-values
+   :mbr-west :mbr-west-doc-values
+   :lr-north :lr-north-doc-values
+   :lr-south :lr-south-doc-values
+   :lr-east :lr-east-doc-values
+   :lr-west :lr-west-doc-values})
 
 (defmethod q2e/concept-type->field-mappings :granule
   [_]
-  {:provider :provider-id
-   :producer-granule-id :producer-gran-id
-   :granule-ur.lowercase :granule-ur.lowercase2
+  {:granule-ur.lowercase :granule-ur.lowercase2
    :producer-gran-id.lowercase :producer-gran-id.lowercase2
-   :updated-since :revision-date
+   :provider-id :provider-id-doc-values
+   :collection-concept-id :collection-concept-id-doc-values
+   :collection-concept-seq-id :collection-concept-seq-id-doc-values
+   :concept-seq-id :concept-seq-id-doc-values
+   :size :size-doc-values
+   :start-date :start-date-doc-values
+   :end-date :end-date-doc-values
+   :revision-date :revision-date-doc-values
+   :updated-since :revision-date-doc-values
+   :producer-granule-id :producer-gran-id
    :platform :platform-sn
    :instrument :instrument-sn
    :sensor :sensor-sn
-   :project :project-refs})
+   :project :project-refs
+   :day-night :day-night-doc-values
+   :cloud-cover :cloud-cover-doc-values
+   :mbr-north :mbr-north-doc-values
+   :mbr-south :mbr-south-doc-values
+   :mbr-east :mbr-east-doc-values
+   :mbr-west :mbr-west-doc-values
+   :lr-north :lr-north-doc-values
+   :lr-south :lr-south-doc-values
+   :lr-east :lr-east-doc-values
+   :lr-west :lr-west-doc-values
+   :orbit-start-clat :orbit-start-clat-doc-values
+   :orbit-end-clat :orbit-end-clat-doc-values
+   :orbit-asc-crossing-lon :orbit-asc-crossing-lon-doc-values
+   :access-value :access-value-doc-values
+   :start-coordinate-1 :start-coordinate-1-doc-values
+   :end-coordinate-1 :end-coordinate-1-doc-values
+   :start-coordinate-2 :start-coordinate-2-doc-values
+   :end-coordinate-2 :end-coordinate-2-doc-values})
 
-(defmethod q2e/field->lowercase-field :granule
+(defmethod q2e/elastic-field->query-field-mappings :collection
+  [_]
+  {:project-sn2 :project
+   :two-d-coord-name :two-d-coordinate-system-name
+   :platform-sn :platform
+   :instrument-sn :instrument
+   :sensor-sn :sensor
+   :revision-date2 :revision-date})
+
+(defmethod q2e/elastic-field->query-field-mappings :granule
+  [_]
+  {:provider-id-doc-values :provider-id
+   :collection-concept-id-doc-values :collection-concept-id
+   :collection-concept-seq-id-doc-values :collection-concept-seq-id
+   :concept-seq-id-doc-values :concept-seq-id
+   :size-doc-values :size
+   :start-date-doc-values :start-date
+   :end-date-doc-values :end-date
+   :revision-date-doc-values :revision-date
+   :platform-sn-doc-values :platform
+   :instrument-sn-doc-values :instrument
+   :sensor-sn-doc-values :sensor
+   :project-refs-doc-values :project
+   :day-night-doc-values :day-night
+   :cloud-cover-doc-values :cloud-cover
+   :orbit-start-clat-doc-values :orbit-start-clat
+   :orbit-end-clat-doc-values :orbit-end-clat
+   :orbit-asc-crossing-lon-doc-values :orbit-asc-crossing-lon
+   :access-value-doc-values :access-value
+   :start-coordinate-1-doc-values :start-coordinate-1
+   :end-coordinate-1-doc-values :end-coordinate-1
+   :start-coordinate-2-doc-values :start-coordinate-2
+   :end-coordinate-2-doc-values :end-coordinate-2})
+
+(defmethod q2e/field->lowercase-field-mappings :collection
   [_ field]
-  (or (get {:granule-ur "granule-ur.lowercase2"
-            :producer-gran-id "producer-gran-id.lowercase2"}
-           (if (string? field)
-             (keyword field)
-             field))
-      (str (name field) ".lowercase")))
+  {:provider "provider-id.lowercase"
+   :version "version-id.lowercase"
+   :project "project-sn2.lowercase"
+   :two-d-coordinate-system-name "two-d-coord-name.lowercase"
+   :platform "platform-sn.lowercase"
+   :instrument "instrument-sn.lowercase"
+   :sensor "sensor-sn.lowercase"})
+
+(defmethod q2e/field->lowercase-field-mappings :granule
+  [_ field]
+  {:provider "provider-id-doc-values.lowercase"
+   :provider-id "provider-id-doc-values.lowercase"
+   :granule-ur "granule-ur.lowercase2"
+   :producer-gran-id "producer-gran-id.lowercase2"
+   :producer-granule-id "producer-gran-id.lowercase2"
+   :platform "platform-sn-doc-values.lowercase"
+   :instrument "instrument-sn-doc-values.lowercase"
+   :sensor "sensor-sn-doc-values.lowercase"
+   :project "project-refs-doc-values.lowercase"})
 
 (defn- keywords-in-condition
   "Returns a list of keywords if the condition contains a keyword condition or nil if not."
@@ -114,11 +193,12 @@
 
 (defmethod q2e/concept-type->sub-sort-fields :collection
   [_]
-  [{:concept-seq-id {:order "asc"}} {:revision-id {:order "desc"}}])
+  [{(q2e/query-field->elastic-field :concept-seq-id :collection) {:order "asc"}}
+   {(q2e/query-field->elastic-field :revision-id :collection) {:order "desc"}}])
 
 (defmethod q2e/concept-type->sub-sort-fields :granule
   [_]
-  [{:concept-seq-id {:order "asc"}}])
+  [{(q2e/query-field->elastic-field :concept-seq-id :granule) {:order "asc"}}])
 
 ;; Collections will default to the keyword sort if they have no sort specified and search by keywords
 (defmethod q2e/query->sort-params :collection

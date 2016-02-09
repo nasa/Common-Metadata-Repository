@@ -7,6 +7,7 @@
             [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
             [cmr.common-app.services.search.query-execution :as query-execution]
             [cmr.common-app.services.search :as qs]
+            [cmr.common-app.services.search.query-to-elastic :as q2e]
             [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as q]
             [cmr.common-app.services.search.group-query-conditions :as gc]
@@ -19,13 +20,17 @@
   "Returns the elasticsearch aggregations to put in the query for finding granule timeline intervals."
   [interval-granularity]
   {:by-collection
-   {:terms {:field :collection-concept-id
+   {:terms {:field (q2e/query-field->elastic-field :collection-concept-id :granule)
             ;; See CMR-1577
             :size 10000}
-    :aggregations {:start-date-intervals {:date_histogram {:field :start-date
-                                                           :interval interval-granularity}}
-                   :end-date-intervals {:date_histogram {:field :end-date
-                                                         :interval interval-granularity}}}}})
+    :aggregations {:start-date-intervals
+                   {:date_histogram
+                    {:field (q2e/query-field->elastic-field :start-date :granule)
+                     :interval interval-granularity}}
+                   :end-date-intervals
+                    {:date_histogram
+                     {:field (q2e/query-field->elastic-field :end-date :granule)
+                      :interval interval-granularity}}}}})
 
 (defmethod query-execution/pre-process-query-result-feature :timeline
   [context query feature]
@@ -260,7 +265,3 @@
   (let [{:keys [items]} results
         response (map (partial collection-result->response-result query) items)]
     (json/generate-string response)))
-
-
-
-
