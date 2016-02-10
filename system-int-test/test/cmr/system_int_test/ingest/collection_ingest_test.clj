@@ -568,7 +568,7 @@
 
 (comment
   ((ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}) println)
-  (let [json (umm-spec/generate-metadata exc/example-collection-record "application/vnd.nasa.cmr.umm+json;version=9000.1")
+  (let [json (umm-spec/generate-metadata exc/example-collection-record "application/vnd.nasa.cmr.umm+json;version=1.0")
         coll-map {:provider-id  "PROV1"
                   :native-id    "umm_json_coll_V1"
                   :concept-type :collection
