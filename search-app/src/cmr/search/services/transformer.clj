@@ -47,7 +47,6 @@
   "Transforms the metadata of the concept to the given format"
   [context concept target-format]
   (let [concept-format (:format concept)]
-    (println "concept-format =" concept-format)
     (if-let [xsl (types->xsl [(mt/mime-type->format concept-format) target-format])]
       ; xsl is defined for the transformation, so use xslt
       (xslt/transform (:metadata concept) (get-template context xsl))
