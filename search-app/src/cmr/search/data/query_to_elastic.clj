@@ -134,14 +134,19 @@
   (let [default-mappings
         {:granule-ur "granule-ur.lowercase2"
          :producer-gran-id "producer-gran-id.lowercase2"
-         :producer-granule-id "producer-gran-id.lowercase2"}]
+         :producer-granule-id "producer-gran-id.lowercase2"
+         :version "version-id.lowercase"}]
     (if (use-doc-values-fields)
       (merge default-mappings {:provider "provider-id.lowercase-doc-values"
                                :provider-id "provider-id.lowercase-doc-values"
                                :platform "platform-sn.lowercase-doc-values"
                                :instrument "instrument-sn.lowercase-doc-values"
                                :sensor "sensor-sn.lowercase-doc-values"
-                               :project "project-refs.lowercase-doc-values"})
+                               :project "project-refs.lowercase-doc-values"
+                               :entry-title "entry-title.lowercase-doc-values"
+                               :short-name "short-name.lowercase-doc-values"
+                               :version "version-id.lowercase-doc-values"
+                               :version-id "version-id.lowercase-doc-values"})
       default-mappings)))
 
 (defn- keywords-in-condition
@@ -221,7 +226,14 @@
                                :sensor :sensor-sn.lowercase-doc-values
                                :project :project-refs.lowercase-doc-values
                                :start-date :start-date-doc-values
-                               :end-date :end-date-doc-values})
+                               :end-date :end-date-doc-values
+                               :revision-date :revision-date-doc-values
+                               :entry-title :entry-title.lowercase-doc-values
+                               :short-name :short-name.lowercase-doc-values
+                               :version :version-id.lowercase-doc-values
+                               :version-id :version-id.lowercase-doc-values
+                               :day-night :day-night-doc-values
+                               :cloud-cover :cloud-cover-doc-values})
       default-mappings)))
 
 (defmethod q2e/concept-type->sub-sort-fields :collection
