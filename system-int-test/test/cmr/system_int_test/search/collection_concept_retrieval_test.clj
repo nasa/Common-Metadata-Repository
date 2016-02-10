@@ -160,6 +160,7 @@
                                              :accept "application/vnd.nasa.cmr.umm+json"})
           content-type (get-in response [:headers "Content-Type"])]
       (is (= 200 (:status response)))
+      (is (= json (:body response)))
       (is (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type)))
       (is (= "1.0" (mt/version-of content-type))))))
 
