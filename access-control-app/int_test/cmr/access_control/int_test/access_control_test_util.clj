@@ -1,11 +1,14 @@
 (ns cmr.access-control.int-test.access-control-test-util
   (:require [cmr.transmit.access-control :as ac]
             [clojure.test :as ct :refer [is]]
+            [clj-http.client :as client]
             [cmr.transmit.config :as config]
             [cmr.transmit.echo.tokens :as tokens]
             [cmr.transmit.metadata-db2 :as mdb]
             [cmr.access-control.system :as system]
             [cmr.access-control.config :as access-control-config]
+            [cmr.elastic-utils.test-util :as elastic-test-util]
+            [cmr.elastic-utils.config :as es-config]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.mock-echo.system :as mock-echo-system]
             [cmr.mock-echo.client.mock-echo-client :as mock-echo-client]
@@ -18,6 +21,8 @@
             [cmr.metadata-db.data.memory-db :as memory]
             [cmr.message-queue.queue.memory-queue :as mem-queue]
             [cmr.message-queue.config :as rmq-conf]
+            [cmr.message-queue.test.queue-broker-wrapper :as queue-broker-wrapper]
+            [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
             [cmr.common.jobs :as jobs]))
 
 (def conn-context-atom
@@ -33,11 +38,14 @@
                                          [:access-control :echo-rest :metadata-db :urs])}))
   @conn-context-atom)
 
+(defn queue-config
+  []
+  (rmq-conf/merge-configs (mdb-config/rabbit-mq-config)
+                          (access-control-config/rabbit-mq-config)))
+
 (defn create-memory-queue-broker
   []
-  (mem-queue/create-memory-queue-broker
-   (rmq-conf/merge-configs (mdb-config/rabbit-mq-config)
-                           (access-control-config/rabbit-mq-config))))
+  (mem-queue/create-memory-queue-broker (queue-config)))
 
 (defn create-mdb-system
   "Creates an in memory version of metadata db."
@@ -50,44 +58,30 @@
             (when-not use-external-db
               {:db (memory/create-db)})))))
 
-;; TODO choose non dev system conflicting ports
-;; If we're running the tests in the dev system repl we want them to work there against the instances
-;; running there. That means we have to use the standard ports that are configured via transmit config
-;; It also means we have to reset the queue broker by sending a request to a control endpoint.
-;; which means we need to match the dev system control endpoint or some portion of it.
-
-;; How much  api are we going
-
-;; reset
-;; clear cache
-;; stop (maybe)
-;; eval (maybe)
-;; time-keeper (maybe)
-;; wait for terminal states (maybe just all of the message queue stuff)
-
-;; What to do
-;; move control to test-control-api namespace in common app. Add functions to make it easy to setup
-;; Add namespace for making requests to control api namespace.
-;; Update dev system to use that and system int test to use control api namespace.
-
-;; access control can use the control api namespace now.
-
-
-
-;; TODO Figure out how we'll get access to the queue broker to wait for terminal states
-;; Will it always be in process? Yes either in REPL or started by the test
 
 (defn int-test-fixtures
-  "Returns test fixtures for starting the access control application and its external dependencies."
+  "Returns test fixtures for starting the access control application and its external dependencies.
+   The test fixtures only start up applications and side APIs if it detects the applications are not
+   already running on the ports requested. This allows the tests to be run in different scenarios
+   and still work. The applications may already be running in dev-system or through user.clj If they
+   are running these fixtures won't do anything. If it isn't running these fixtures will start up the
+   applications and the test will work."
   []
-  (let [queue-broker (create-memory-queue-broker)]
+  (let [queue-broker (queue-broker-wrapper/create-queue-broker-wrapper (create-memory-queue-broker))]
     (ct/join-fixtures
-     [(common-client-test-util/run-app-fixture
+     [elastic-test-util/run-elastic-fixture
+      (common-client-test-util/run-app-fixture
        conn-context
        :access-control
        (assoc (system/create-system) :queue-broker queue-broker)
        system/start
        system/stop)
+
+      ;; Create a side API that will allow waiting for the queue broker terminal states to be achieved.
+      (common-client-test-util/side-api-fixture
+       (fn [_]
+         (qb-side-api/build-routes queue-broker))
+       nil)
 
       (common-client-test-util/run-app-fixture
        conn-context
@@ -137,6 +131,16 @@
   ;; TODO CMR-2133, CMR-2134 update this when implementing ACLS
   ; (e/grant-all-group (conn-context))
   (f))
+
+(defn refresh-elastic-index
+  []
+  (client/post (format "http://localhost:%s/_refresh" (es-config/elastic-port))))
+
+(defn wait-until-indexed
+  "Waits until all messages are processed and then flushes the elasticsearch index"
+  []
+  (qb-side-api/wait-for-terminal-states)
+  (refresh-elastic-index))
 
 (defn make-group
   "Makes a valid group"
@@ -220,8 +224,12 @@
    (create-group-with-members token group members nil))
   ([token group members options]
    (let [group (create-group token group options)]
-     (add-members token (:concept-id group) members options)
-     group)))
+     (if (seq members)
+       (let [{:keys [revision-id status] :as resp} (add-members token (:concept-id group) members options)]
+         (when-not (= status 200)
+           (throw (Exception. (format "Unexpected status [%s] when adding members: %s" status (pr-str resp)))))
+         (assoc group :revision-id revision-id))
+       group))))
 
 (defn assert-group-saved
   "Checks that a group was persisted correctly in metadata db. The user-id indicates which user

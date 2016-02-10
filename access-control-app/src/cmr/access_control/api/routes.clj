@@ -18,7 +18,8 @@
             [cmr.acl.core :as acl]
             [cmr.common-app.api.routes :as common-routes]
             [cmr.common-app.api-docs :as api-docs]
-            [cmr.access-control.services.group-service :as group-service]))
+            [cmr.access-control.services.group-service :as group-service]
+            [cmr.access-control.data.access-control-index :as index]))
 
 (def ^:private group-schema-structure
   "Schema for groups as json."
@@ -162,6 +163,7 @@
     (POST "/reset" {:keys [request-context params headers]}
       (acl/verify-ingest-management-permission request-context :update)
       (cache/reset-caches request-context)
+      (index/reset (get-in request-context [:system :search-index]))
       {:status 204})))
 
 (defn- build-routes [system]

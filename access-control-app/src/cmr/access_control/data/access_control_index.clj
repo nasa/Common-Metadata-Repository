@@ -48,6 +48,11 @@
   (m/create-index-or-update-mappings
     group-index-name group-index-settings group-type-name group-mappings elastic-store))
 
+(defn reset
+  "Deletes all data from the index"
+  [elastic-store]
+  (m/reset group-index-name group-index-settings group-type-name group-mappings elastic-store))
+
 (defmulti index-concept
   "Indexes the concept map in elastic search."
   (fn [context concept-map]
