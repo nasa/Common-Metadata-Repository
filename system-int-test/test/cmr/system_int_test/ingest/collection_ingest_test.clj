@@ -533,7 +533,6 @@
 
 (deftest ingest-old-json-versions
   (let [json     (umm-spec/generate-metadata exc/example-collection-record "application/vnd.nasa.cmr.umm+json;version=1.0")
-        _ (println json)
         coll-map {:provider-id  "PROV1"
                   :native-id    "umm_json_coll_V1"
                   :concept-type :collection
