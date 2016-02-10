@@ -133,9 +133,6 @@
         (index/wait-until-indexed)
         (is (= [422 ["Concept-id [C1111-PROV1] does not match the existing concept-id [C1000-PROV1] for native-id [Atlantic-1]"]]
                [status errors]))))))
-(comment
-  (cmr.metadata-db.int-test.utility/find-concepts :collection
-                                                  {:provider-id "PROV1"}))
 
 ;; Verify that the accept header works
 (deftest collection-ingest-accept-header-response-test
@@ -353,16 +350,6 @@
       (is (= 5 delete-revision-id))
       (is (mdb/concept-exists-in-mdb? (:concept-id ingest-result) 5)))))
 
-
-(comment
-
-  (dev-sys-util/reset)
-  (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
-  (def coll1 (d/ingest "PROV1" (dc/collection)))
-  (ingest/delete-concept coll1)
-  (get-in user/system [:apps :metadata-db :db]))
-
-
 (deftest delete-collection-test
   (let [coll1 (d/ingest "PROV1" (dc/collection))
         gran1 (d/ingest "PROV1" (dg/granule coll1))
@@ -565,19 +552,6 @@
     (is (= 400 (:status response)))
     (is (= ["Unknown UMM JSON schema version: \"9000.1\""]
            (:errors response)))))
-
-(comment
-  ((ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}) println)
-  (let [json (umm-spec/generate-metadata exc/example-collection-record "application/vnd.nasa.cmr.umm+json;version=1.0")
-        coll-map {:provider-id  "PROV1"
-                  :native-id    "umm_json_coll_V1"
-                  :concept-type :collection
-                  :format       "application/vnd.nasa.cmr.umm+json;version=9000.1"
-                  :metadata     json}
-        response (ingest/ingest-concept coll-map {:accept-format :json})]
-    (is (= 200 (:status response)))
-    (println "response =" response))
-  )
 
 ;; Verify ingest of collection with string larger than 80 characters for project(campaign) long name is successful (CMR-1361)
 (deftest project-long-name-can-be-upto-1024-characters
