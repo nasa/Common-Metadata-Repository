@@ -135,7 +135,12 @@
         {:granule-ur "granule-ur.lowercase2"
          :producer-gran-id "producer-gran-id.lowercase2"
          :producer-granule-id "producer-gran-id.lowercase2"
-         :version "version-id.lowercase"}]
+         :project "project-refs.lowercase"
+         :version "version-id.lowercase"
+         :provider "provider-id.lowercase"
+         :platform "platform-sn.lowercase"
+         :instrument "instrument-sn.lowercase"
+         :sensor "sensor-sn.lowercase"}]
     (if (use-doc-values-fields)
       (merge default-mappings {:provider "provider-id.lowercase-doc-values"
                                :provider-id "provider-id.lowercase-doc-values"
