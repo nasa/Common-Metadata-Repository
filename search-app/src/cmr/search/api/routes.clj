@@ -103,7 +103,8 @@
     mt/iso
     mt/iso-smap
     mt/dif
-    mt/dif10})
+    mt/dif10
+    mt/umm-json})
 
 (defn- search-response-headers
   "Generate headers for search response."
@@ -171,9 +172,12 @@
 (defn- search-response
   "Generate the response map for finding concepts by params or AQL."
   [{:keys [results result-format] :as response}]
-  {:status 200
-   :headers (search-response-headers (mt/format->mime-type result-format) response)
-   :body results})
+  {:status  200
+   :headers (search-response-headers (if (string? result-format)
+                                       result-format
+                                       (mt/format->mime-type result-format))
+                                     response)
+   :body    results})
 
 (def options-response
   "Generate the response map for finding concepts by params or AQL."
