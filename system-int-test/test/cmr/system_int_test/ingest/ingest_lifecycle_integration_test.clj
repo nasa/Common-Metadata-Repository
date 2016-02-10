@@ -12,7 +12,8 @@
             [cmr.common.util :refer [are2]]
             [cmr.umm-spec.core :as umm-spec]
             [cmr.umm.collection.entry-id :as eid]
-            [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
+            [cmr.umm-spec.test.expected-conversion :as expected-conversion]
+            [cmr.umm-spec.versioning :as ver]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -105,128 +106,129 @@
 (comment
   ;; for REPL testing purposes
   (def example-collection-record expected-conversion/example-collection-record)
-  (cmr.umm.core/parse-concept {:metadata (cmr.umm-spec.core/generate-metadata :collection :echo10 example-collection-record)
+  (cmr.umm.core/parse-concept {:metadata (cmr.umm-spec.core/generate-metadata example-collection-record :echo10)
                                :concept-type :collection
                                :format "application/echo10+xml"}))
 
 
 (deftest mmt-ingest-round-trip
   (testing "ingest and search UMM JSON metadata"
-    (let [example-collection-record expected-conversion/example-collection-record
-          umm-json (umm-spec/generate-metadata :collection :umm-json example-collection-record)
-          coll (d/ingest-concept-with-metadata {:provider-id "PROV1"
-                                                :concept-type :collection
-                                                :format-key :umm-json
-                                                :metadata umm-json})]
-      (index/wait-until-indexed)
-      ;; parameter queries
-      (are2 [items params]
-            (d/refs-match? items (search/find-refs :collection params))
+    ;; test for each UMM JSON version
+    (doseq [v ver/versions]
+      (let [coll      expected-conversion/example-collection-record
+            mime-type (str "application/vnd.nasa.cmr.umm+json;version=" v)
+            json      (umm-spec/generate-metadata coll mime-type)
+            result    (d/ingest-concept-with-metadata {:provider-id  "PROV1"
+                                                       :concept-type :collection
+                                                       :format       mime-type
+                                                       :metadata     json})]
+        (index/wait-until-indexed)
+        ;; parameter queries
+        (are2 [items params]
+              (d/refs-match? items (search/find-refs :collection params))
 
-            "entry-title matches"
-            [coll] {:entry_title "The entry title V5"}
-            "entry-title not matches"
-            [] {:entry_title "foo"}
+              "entry-title matches"
+              [result] {:entry_title "The entry title V5"}
+              "entry-title not matches"
+              [] {:entry_title "foo"}
 
-            "entry-id matches"
-            [coll] {:entry_id (eid/entry-id (:ShortName example-collection-record) (:Version example-collection-record))}
-            "entry-id not matches"
-            [] {:entry_id "foo"}
+              "entry-id matches"
+              [result] {:entry_id (eid/entry-id (:ShortName result) (:Version result))}
+              "entry-id not matches"
+              [] {:entry_id "foo"}
 
-            "native-id matches"
-            [coll] {:native_id "native-id"}
-            "native-id not matches"
-            [] {:native_id "foo"}
+              "native-id matches"
+              [result] {:native_id "native-id"}
+              "native-id not matches"
+              [] {:native_id "foo"}
 
-            "short-name matches"
-            [coll] {:short_name "short"}
-            "short-name not matches"
-            [] {:short_name "foo"}
+              "short-name matches"
+              [result] {:short_name "short"}
+              "short-name not matches"
+              [] {:short_name "foo"}
 
-            "version matches"
-            [coll] {:version "V5"}
-            "version not matches"
-            [] {:version "foo"}
+              "version matches"
+              [result] {:version "V5"}
+              "version not matches"
+              [] {:version "foo"}
 
-            "updated-since matches"
-            [coll] {:updated_since "2000-01-01T10:00:00Z"}
-            "updated-since not matches"
-            [] {:updated_since "3000-01-01T10:00:00Z"}
+              "updated-since matches"
+              [result] {:updated_since "2000-01-01T10:00:00Z"}
+              "updated-since not matches"
+              [] {:updated_since "3000-01-01T10:00:00Z"}
 
-            "revision-date matches"
-            [coll] {:revision_date "2000-01-01T10:00:00Z,3000-01-01T10:00:00Z"}
-            "revision-date not matches"
-            [] {:revision_date "3000-01-01T10:00:00Z,3001-01-01T10:00:00Z"}
+              "revision-date matches"
+              [result] {:revision_date "2000-01-01T10:00:00Z,3000-01-01T10:00:00Z"}
+              "revision-date not matches"
+              [] {:revision_date "3000-01-01T10:00:00Z,3001-01-01T10:00:00Z"}
 
-            "processing level matches"
-            [coll] {:processing_level "3"}
-            "processing level not matches"
-            [] {:processing_level "foo"}
+              "processing level matches"
+              [result] {:processing_level "3"}
+              "processing level not matches"
+              [] {:processing_level "foo"}
 
-            "collection data type matches"
-            [coll] {"collection_data_type[]" "SCIENCE_QUALITY"}
+              "collection data type matches"
+              [result] {"collection_data_type[]" "SCIENCE_QUALITY"}
 
-            "temporal matches"
-            [coll] {:temporal "2000-01-01T00:00:00Z,2015-12-04T13:55:29Z"}
-            "temporal not matches"
-            [] {:temporal "3000-01-01T10:00:00Z,3001-01-01T10:00:00Z"}
+              "temporal matches"
+              [result] {:temporal "2000-01-01T00:00:00Z,2015-12-04T13:55:29Z"}
+              "temporal not matches"
+              [] {:temporal "3000-01-01T10:00:00Z,3001-01-01T10:00:00Z"}
 
-            "concept-id matches"
-            [coll] {:concept_id "C1200000000-PROV1"}
-            "concept-id not matches"
-            [] {:concept-id "C1200000001-PROV1"}
+              "concept-id matches"
+              [result] {:concept_id "C1200000000-PROV1"}
+              "concept-id not matches"
+              [] {:concept-id "C1200000001-PROV1"}
 
-            "platform matches"
-            [coll] {:platform "Platform 1"}
-            "platform not matches"
-            [] {:platform "foo"}
+              "platform matches"
+              [result] {:platform "Platform 1"}
+              "platform not matches"
+              [] {:platform "foo"}
 
-            "instrument"
-            [coll] {:instrument "An Instrument"}
+              "instrument"
+              [result] {:instrument "An Instrument"}
 
-            "sensor"
-            [coll] {:sensor "ABC"}
+              "sensor"
+              [result] {:sensor "ABC"}
 
-            "project matches"
-            [coll] {:project "project short_name"}
-            "project not matches"
-            [] {:project "foo"}
+              "project matches"
+              [result] {:project "project short_name"}
+              "project not matches"
+              [] {:project "foo"}
 
-            ;; archive-center, data-center - TODO CMR-2265 still need to figure out how to tell them apart in UMM-C
+              ;; archive-center, data-center - TODO CMR-2265 still need to figure out how to tell them apart in UMM-C
 
-            "spatial keywords match"
-            [coll] {"spatial_keyword[]" "SPK1"}
-            "non-matching spatial keyword"
-            [] {"spatial_keyword[]" "foobar"}
+              "spatial keywords match"
+              [result] {"spatial_keyword[]" "SPK1"}
+              "non-matching spatial keyword"
+              [] {"spatial_keyword[]" "foobar"}
 
-            "temporal keywords match"
-            [coll] {:keyword "temporal keyword 1"}
+              "temporal keywords match"
+              [result] {:keyword "temporal keyword 1"}
 
-            "two-d-coordinate-system-name matches"
-            [coll] {:two-d-coordinate-system-name "Tiling System Name"}
+              "two-d-coordinate-system-name matches"
+              [result] {:two-d-coordinate-system-name "Tiling System Name"}
 
-            "science-keywords"
-            [coll] {:science-keywords {:0 {:category "EARTH SCIENCE"
-                                           :topic "top"
-                                           :term "ter"}}}
+              "science-keywords"
+              [result] {:science-keywords {:0 {:category "EARTH SCIENCE"
+                                             :topic    "top"
+                                             :term     "ter"}}}
 
-            "additional attributes match"
-            [coll] {"attribute[]" "PercentGroundHit"}
+              "additional attributes match"
+              [result] {"attribute[]" "PercentGroundHit"}
 
-            "downloadable matches"
-            [] {:downloadable false}
-            "downloadable not matches"
-            [coll] {:downloadable true}
+              "downloadable matches"
+              [] {:downloadable false}
+              "downloadable not matches"
+              [result] {:downloadable true}
 
-            "browsable matches"
-            [coll] {:browsable true}
-            "browsable not matches"
-            [] {:browsable false}
+              "browsable matches"
+              [result] {:browsable true}
+              "browsable not matches"
+              [] {:browsable false}
 
-            "bounding box"
-            [coll] {:bounding_box "-180,-90,180,90"}))))
-
-
+              "bounding box"
+              [result] {:bounding_box "-180,-90,180,90"})))))
 
 ;; Tests that over the lifecycle of a collection and granule the right data will be found.
 ;; Test Outline

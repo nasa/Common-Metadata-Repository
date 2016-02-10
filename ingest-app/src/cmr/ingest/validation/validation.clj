@@ -21,7 +21,7 @@
 (defn- validate-format
   "Validates the format of the concept. Throws a 415 error if invalid."
   [concept]
-  (let [content-type (:format concept)
+  (let [content-type (mt/base-mime-type-of (:format concept))
         valid-types (get valid-concept-mime-types (:concept-type concept))]
     (when-not (contains? valid-types content-type)
       (errors/throw-service-error :invalid-content-type
@@ -83,9 +83,9 @@
 (defn validate-concept-metadata
   [concept]
   (if-errors-throw :bad-request
-                   (if (= mt/umm-json (:format concept))
+                   (if (mt/umm-json? (:format concept))
                      (umm-spec/validate-metadata (:concept-type concept)
-                                                 (mt/mime-type->format (:format concept))
+                                                 (:format concept)
                                                  (:metadata concept))
                      (umm/validate-concept-xml concept))))
 

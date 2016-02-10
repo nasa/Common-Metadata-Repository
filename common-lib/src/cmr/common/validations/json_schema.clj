@@ -67,7 +67,7 @@
   JSON schemas on the classpath."
   [uri]
   (let [factory (JsonSchemaFactory/byDefault)]
-    (.getJsonSchema factory uri)))
+    (.getJsonSchema factory (str uri))))
 
 (defn validate-json
   "Performs schema validation using the provided JSON schema and the given json string to validate.

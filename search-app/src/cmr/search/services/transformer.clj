@@ -46,14 +46,14 @@
 (defn- transform-metadata
   "Transforms the metadata of the concept to the given format"
   [context concept target-format]
-  (let [native-format (mt/mime-type->format (:format concept))]
-    (if-let [xsl (types->xsl [native-format target-format])]
+  (let [concept-format (:format concept)]
+    (if-let [xsl (types->xsl [(mt/mime-type->format concept-format) target-format])]
       ; xsl is defined for the transformation, so use xslt
       (xslt/transform (:metadata concept) (get-template context xsl))
-      (if (= :umm-json native-format)
+      (if (mt/umm-json? concept-format)
         (umm-spec/generate-metadata
-         :collection target-format
-         (umm-spec/parse-metadata :collection :umm-json (:metadata concept)))
+          (umm-spec/parse-metadata :collection concept-format (:metadata concept))
+          target-format)
         (-> concept
             ummc/parse-concept
             (ummc/umm->xml target-format))))))
