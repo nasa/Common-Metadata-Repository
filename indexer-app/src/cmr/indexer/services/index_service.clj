@@ -29,7 +29,8 @@
             [clojure.edn :as edn]
             [clj-time.core :as t]
             [clj-time.format :as f]
-            [cmr.indexer.data.concept-parser :as cp]))
+            [cmr.indexer.data.concept-parser :as cp]
+            [cmr.common-app.services.search.query-to-elastic :as q2e]))
 
 (defn filter-expired-concepts
   "Remove concepts that have an expired delete-time."
@@ -209,7 +210,8 @@
                 context
                 (idx-set/get-granule-index-name-for-collection context concept-id)
                 (concept-mapping-types :granule)
-                {:term {:collection-concept-id concept-id}}))))))))
+                {:term {(q2e/query-field->elastic-field :collection-concept-id :granule)
+                        concept-id}}))))))))
 
 (defn force-delete-collection-revision
   "Removes a collection revision from the all revisions index"
@@ -238,20 +240,20 @@
       context
       (get-in index-names [:collection :collections])
       (concept-mapping-types :collection)
-      {:term {:provider-id provider-id}})
+      {:term {(q2e/query-field->elastic-field :provider-id :collection) provider-id}})
     ;; delete all revisions of collections
     (es/delete-by-query
       context
       (get-in index-names [:collection :all-collection-revisions])
       (concept-mapping-types :collection)
-      {:term {:provider-id provider-id}})
+      {:term {(q2e/query-field->elastic-field :provider-id :collection) provider-id}})
     ;; delete the granules
     (doseq [index-name (idx-set/get-granule-index-names-for-provider context provider-id)]
       (es/delete-by-query
         context
         index-name
         (concept-mapping-types :granule)
-        {:term {:provider-id provider-id}}))))
+        {:term {(q2e/query-field->elastic-field :provider-id :granule) provider-id}}))))
 
 (defn reset
   "Delegates reset elastic indices operation to index-set app as well as resetting caches"
