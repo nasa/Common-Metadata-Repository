@@ -50,6 +50,33 @@
             (when-not use-external-db
               {:db (memory/create-db)})))))
 
+;; TODO choose non dev system conflicting ports
+;; If we're running the tests in the dev system repl we want them to work there against the instances
+;; running there. That means we have to use the standard ports that are configured via transmit config
+;; It also means we have to reset the queue broker by sending a request to a control endpoint.
+;; which means we need to match the dev system control endpoint or some portion of it.
+
+;; How much  api are we going
+
+;; reset
+;; clear cache
+;; stop (maybe)
+;; eval (maybe)
+;; time-keeper (maybe)
+;; wait for terminal states (maybe just all of the message queue stuff)
+
+;; What to do
+;; move control to test-control-api namespace in common app. Add functions to make it easy to setup
+;; Add namespace for making requests to control api namespace.
+;; Update dev system to use that and system int test to use control api namespace.
+
+;; access control can use the control api namespace now.
+
+
+
+;; TODO Figure out how we'll get access to the queue broker to wait for terminal states
+;; Will it always be in process? Yes either in REPL or started by the test
+
 (defn int-test-fixtures
   "Returns test fixtures for starting the access control application and its external dependencies."
   []
@@ -186,6 +213,15 @@
   ([token concept-id options]
    (let [options (merge {:raw? true :token token} options)]
     (process-response (ac/get-members (conn-context) concept-id options)))))
+
+(defn create-group-with-members
+  "Creates a group with the given list of members."
+  ([token group members]
+   (create-group-with-members token group members nil))
+  ([token group members options]
+   (let [group (create-group token group options)]
+     (add-members token (:concept-id group) members options)
+     group)))
 
 (defn assert-group-saved
   "Checks that a group was persisted correctly in metadata db. The user-id indicates which user

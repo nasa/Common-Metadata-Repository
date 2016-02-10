@@ -1,5 +1,5 @@
-(ns ^{:doc "provides index related utilities."}
-  cmr.system-int-test.utils.index-util
+(ns cmr.system-int-test.utils.index-util
+  "provides index related utilities."
   (:require [clojure.test :refer [is]]
             [clj-http.client :as client]
             [cmr.system-int-test.utils.url-helper :as url]
