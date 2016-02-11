@@ -6,10 +6,20 @@
             [cmr.common.concepts :as concepts]
             [cmr.common.services.errors :as errors]
             [cmr.common.mime-types :as mt]
+            [cmr.common.util :as u]
+            [cmr.common.log :refer (debug info warn error)]
             [cmr.common.validations.core :as v]
+            [cmr.common-app.services.search :as cs]
+            [cmr.common-app.services.search.params :as cp]
+            [cmr.common-app.services.search.parameter-validation :as cpv]
+            [cmr.common-app.services.search.query-model :as common-qm]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.transmit.urs :as urs]
             [cmr.access-control.services.group-service-messages :as msg]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [clojure.string :as str]
+            ;; Must be required to be available at runtime
+            [cmr.access-control.data.group-json-results-handler]))
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
@@ -18,13 +28,17 @@
     (tokens/get-user-id context (:token context))
     (errors/throw-service-error :unauthorized msg/token-required-for-group-modification)))
 
+(def SYSTEM_PROVIDER_ID
+  "The provider id used when a group is a system provider."
+  "CMR")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB Concept Map Manipulation
 
 (defn- group->mdb-provider-id
   "Returns the provider id to use in metadata db for the group"
   [group]
-  (get group :provider-id "CMR"))
+  (get group :provider-id SYSTEM_PROVIDER_ID))
 
 (defn- group->new-concept
   "Converts a group into a new concept that can be persisted in metadata db."
@@ -164,6 +178,77 @@
         existing-group (edn/read-string (:metadata existing-concept))]
     (validate-update-group context existing-group updated-group)
     (save-updated-group-concept context existing-concept updated-group)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Search functions
+
+(defmethod cpv/params-config :access-group
+  [_]
+  (cpv/merge-params-config
+   cpv/basic-params-config
+   {:single-value #{}
+    :multiple-value #{:provider}
+    :always-case-sensitive #{}
+    :disallow-pattern #{}
+    :allow-or #{}}))
+
+(defmethod cpv/valid-parameter-options :access-group
+  [_]
+  {:provider cpv/string-param-options})
+
+
+(defn validate-group-search-params
+  "Validates the parameters for a group search. Returns the parameters or throws an error if invalid."
+  [context params]
+  (let [[safe-params type-errors] (cpv/apply-type-validations
+                                   params
+                                   [(partial cpv/validate-map [:options])
+                                    (partial cpv/validate-map [:options :provider])])]
+    (cpv/validate-parameters
+     :access-group safe-params
+     cpv/common-validations
+     type-errors))
+  params)
+
+
+(defmethod common-qm/default-sort-keys :access-group
+  [_]
+  [{:field :provider-id :order :asc}
+   {:field :name :order :asc}])
+
+(defmethod cp/param-mappings :access-group
+  [_]
+  {:provider :access-group-provider})
+
+(defmethod cp/parameter->condition :access-group-provider
+  [concept-type param value options]
+
+  (if (sequential? value)
+    (gc/group-conds (cp/group-operation param options)
+                    (map #(cp/parameter->condition concept-type param % options) value))
+    ;; CMR indicates we should search for system groups
+    (if (= (str/upper-case value) SYSTEM_PROVIDER_ID)
+      (common-qm/negated-condition (common-qm/exist-condition :provider))
+      (cp/string-parameter->condition concept-type param value options))))
+
+
+(defn search-for-groups
+  [context params]
+  (let [[query-creation-time query] (u/time-execution
+                                     (->> params
+                                          cp/sanitize-params
+                                          (validate-group-search-params :access-group)
+                                          (cp/parse-parameter-query :access-group)))
+        [find-concepts-time results] (u/time-execution
+                                      (cs/find-concepts context :access-group query))
+        total-took (+ query-creation-time find-concepts-time)]
+    (info (format "Found %d access-groups in %d ms in format %s with params %s."
+                  (:hits results) total-took (:result-format query) (pr-str params)))
+    (assoc results :took total-took)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Member functions
 
 (defn- add-members-to-group
   "Adds the new members to the group handling duplicates."

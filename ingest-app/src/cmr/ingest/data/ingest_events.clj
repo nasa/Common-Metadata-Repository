@@ -8,10 +8,9 @@
 (defn publish-provider-event
   "Put a provider event on the message queue."
   [context msg]
-  (let [timeout-ms (config/publish-queue-timeout-ms)
-        queue-broker (get-in context [:system :queue-broker])
+  (let [queue-broker (get-in context [:system :queue-broker])
         exchange-name (config/provider-exchange-name)]
-    (queue/publish-message queue-broker exchange-name msg timeout-ms)))
+    (queue/publish-message queue-broker exchange-name msg)))
 
 (defn provider-collections-require-reindexing-event
   "Indicates that all the collections within a provider require reindexing"

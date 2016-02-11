@@ -17,7 +17,6 @@
             [cmr.metadata-db.system :as mdb-system]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.transmit.config :as transmit-config]
-            [cmr.elastic-utils.config :as es-config]
             [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
             [cmr.search.services.acls.collections-cache :as coll-cache]
             [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
@@ -74,7 +73,7 @@
              ;; An embedded version of the metadata db app to allow quick retrieval of data
              ;; from oracle.
              :embedded-systems {:metadata-db metadata-db}
-             :search-index (common-idx/create-elastic-search-index (es-config/elastic-config))
+             :search-index (common-idx/create-elastic-search-index)
              :web (web/create-web-server (transmit-config/search-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (search-nrepl-port))
              ;; Caches added to this list must be explicitly cleared in query-service/clear-cache

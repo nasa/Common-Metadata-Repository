@@ -24,26 +24,6 @@
   []
   (format "http://localhost:%s/eval" dev-system-port))
 
-(defn dev-system-wait-for-terminal-states-url
-  "The wait-for-terminal-states url on the dev system control api."
-  []
-  (format "http://localhost:%s/message-queue/wait-for-terminal-states" dev-system-port))
-
-(defn dev-system-get-message-queue-history-url
-  "The get-message-queue-history url on the dev system control api."
-  []
-  (format "http://localhost:%s/message-queue/history" dev-system-port))
-
-(defn dev-system-set-message-queue-retry-behavior-url
-  "The message queue set-retry-behavior url on the dev system control api."
-  []
-  (format "http://localhost:%s/message-queue/set-retry-behavior" dev-system-port))
-
-(defn dev-system-set-message-queue-publish-timeout-url
-  "The message queue set-message-queue-publish-timeout url on the dev system control api."
-  []
-  (format "http://localhost:%s/message-queue/set-publish-timeout" dev-system-port))
-
 (defn dev-system-reset-url
   "The reset url on the dev system control api."
   []

@@ -72,9 +72,6 @@
                      (ingest-exchange-name)
                      (access-control-exchange-name)]))
 
-(defconfig publish-timeout-ms
-  "Number of milliseconds to wait for a publish request to be confirmed before considering the
-  request timed out."
-  {:default 20000 :type Long})
+
 
 

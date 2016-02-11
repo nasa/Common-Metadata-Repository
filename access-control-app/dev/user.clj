@@ -11,14 +11,20 @@
             [cmr.elastic-utils.config :as elastic-config]
             [cmr.metadata-db.system :as mdb]
             [cmr.mock-echo.system :as mock-echo]
+            [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.common.lifecycle :as l]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.transmit.config :as transmit-config]
-            [cmr.common.dev.util :as d]))
+            [cmr.common.dev.util :as d]
+            [cmr.common-app.test.side-api :as side-api]
+            [cmr.message-queue.test.queue-broker-wrapper :as queue-broker-wrapper]
+            [cmr.message-queue.test.queue-broker-side-api :as queue-broker-side-api]))
 
 (def system nil)
 
 (def elastic-server nil)
+
+(def side-api-server nil)
 
 (def mdb-system nil)
 
@@ -53,9 +59,18 @@
   (transmit-config/set-metadata-db-port! 4001)
   (transmit-config/set-echo-rest-port! 4008)
   (transmit-config/set-urs-port! 4008)
+  (side-api/set-side-api-port! 3999)
 
-  (let [queue-broker (when (not use-external-mq?)
-                       (int-test-util/create-memory-queue-broker))]
+  (let [queue-broker (queue-broker-wrapper/create-queue-broker-wrapper
+                      (if use-external-mq?
+                        (rmq/create-queue-broker (int-test-util/queue-config))
+                        (int-test-util/create-memory-queue-broker)))]
+    ;; Start side api server
+    (alter-var-root
+     #'side-api-server
+     (constantly (-> (side-api/create-side-server
+                       (fn [_] (queue-broker-side-api/build-routes queue-broker)))
+                     (l/start nil))))
 
     ;; Start mock echo
     (alter-var-root
@@ -66,8 +81,7 @@
     (alter-var-root
      #'mdb-system
      (constantly (-> (int-test-util/create-mdb-system use-external-db?)
-                     ;; queue-broker will be nil if we're using the external one.
-                     (update :queue-broker #(or queue-broker %))
+                     (assoc :queue-broker queue-broker)
                      disable-access-log
                      mdb/start)))
 
@@ -80,8 +94,7 @@
     (alter-var-root
      #'system
      (constantly (-> (system/create-system)
-                     ;; queue-broker will be nil if we're using the external one.
-                     (update :queue-broker #(or queue-broker %))
+                     (assoc :queue-broker queue-broker)
                      disable-access-log
                      system/dev-start))))
 
@@ -96,6 +109,8 @@
 (defn stop
   "Shuts down and destroys the current development system."
   []
+  ;; Stop the side api server
+  (alter-var-root #'side-api-server (when-not-nil #(l/stop % nil)))
   ;; Stop mock echo
   (alter-var-root #'mock-echo-system (when-not-nil mock-echo/stop))
   ;; Stop metadata db

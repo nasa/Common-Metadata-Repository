@@ -1,5 +1,5 @@
-(ns ^{:doc "provides index related utilities."}
-  cmr.system-int-test.utils.index-util
+(ns cmr.system-int-test.utils.index-util
+  "provides index related utilities."
   (:require [clojure.test :refer [is]]
             [clj-http.client :as client]
             [cmr.system-int-test.utils.url-helper :as url]
@@ -8,21 +8,17 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cheshire.core :as json]
-            [cmr.system-int-test.system :as s]))
+            [cmr.system-int-test.system :as s]
+            [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]))
 
 (defn refresh-elastic-index
   []
   (client/post (url/elastic-refresh-url) {:connection-manager (s/conn-mgr)}))
 
-(defn wait-for-terminal-states
-  "Waits until all the message queues have reached a terminal state"
-  []
-  (client/post (url/dev-system-wait-for-terminal-states-url) {:connection-manager (s/conn-mgr)}))
-
 (defn wait-until-indexed
   "Wait until ingested concepts have been indexed"
   []
-  (wait-for-terminal-states)
+  (qb-side-api/wait-for-terminal-states)
   (refresh-elastic-index))
 
 (defn update-indexes
@@ -52,30 +48,6 @@
                     :throw-exceptions false})]
     (is (= 200 (:status response)) (:body response))))
 
-(defn set-message-queue-retry-behavior
-  "Set the message queue retry behavior"
-  [num-retries]
-  (client/post
-    (url/dev-system-set-message-queue-retry-behavior-url)
-    {:connection-manager (s/conn-mgr)
-     :query-params {:num-retries num-retries}}))
-
-(defn set-message-queue-publish-timeout
-  "Set the message queue publish timeout"
-  [timeout]
-  (client/post
-    (url/dev-system-set-message-queue-publish-timeout-url)
-    {:connection-manager (s/conn-mgr)
-     :query-params {:timeout timeout}}))
-
-(defn get-message-queue-history
-  "Returns the message queue history."
-  [queue-name]
-  (-> (client/get (url/dev-system-get-message-queue-history-url)
-                  {:connection-manager (s/conn-mgr)
-                   :query-params {:queue-name queue-name}})
-      :body
-      (json/decode true)))
 
 (defn- messages+id->message
   "Returns the first message for a given message id."
@@ -96,7 +68,7 @@
   "Gets the message queue history and then returns a map of concept-id revision-id tuples to the
   sequence of states for each one."
   [queue-name]
-  (concept-history (get-message-queue-history queue-name)))
+  (concept-history (qb-side-api/get-message-queue-history queue-name)))
 
 (defn reset-message-queue-behavior-fixture
   "This is a clojure.test fixture that will reset the message queue behavior to normal processing
@@ -107,5 +79,5 @@
       (f)
       (finally
         (s/only-with-real-message-queue
-          (set-message-queue-retry-behavior 0)
-          (set-message-queue-publish-timeout 10000))))))
+          (qb-side-api/set-message-queue-retry-behavior 0)
+          (qb-side-api/set-message-queue-publish-timeout 10000))))))

@@ -5,6 +5,7 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.common.util :as util :refer [defn-timed]]
+            [cmr.message-queue.config :as config]
             [clojail.core :as timeout]))
 
 (defn retry-limit-met?
@@ -76,10 +77,10 @@
 
   Requests to publish a message are wrapped in a timeout to handle error cases with the Rabbit MQ
   server. Otherwise failures to publish will be retried indefinitely."
-  [queue-broker exchange-name msg timeout-ms]
+  [queue-broker exchange-name msg]
   (let [start-time (System/currentTimeMillis)]
     (try
-      (timeout/thunk-timeout #(try-to-publish queue-broker exchange-name msg) timeout-ms)
+      (timeout/thunk-timeout #(try-to-publish queue-broker exchange-name msg) (config/publish-queue-timeout-ms))
       (catch java.util.concurrent.TimeoutException e
         (errors/throw-service-error
           :service-unavailable
