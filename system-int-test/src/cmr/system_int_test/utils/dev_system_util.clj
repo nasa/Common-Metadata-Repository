@@ -5,6 +5,7 @@
             [cheshire.core :as json]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.index-util :as index]
+            [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
             [cmr.common.util :as util]
             [clojure.test :refer [is]]
             [cmr.system-int-test.system :as s]))
@@ -18,7 +19,7 @@
 (defn reset
   "Resets the database, queues, and the elastic indexes"
   []
-  (index/wait-for-terminal-states)
+  (qb-side-api/wait-for-terminal-states)
   (client/post (url/dev-system-reset-url) (admin-connect-options))
   (index/refresh-elastic-index))
 

@@ -21,7 +21,7 @@
 
 (defn parse-tiling-system
   [md-data-id-el]
-  (when-let [tiling-system-el (first (select md-data-id-el tiling-system-xpath))]
+  (for [tiling-system-el (select md-data-id-el tiling-system-xpath)]
     (let [code-string (value-of tiling-system-el "gmd:code/gco:CharacterString")
           description-string (value-of tiling-system-el "gmd:description/gco:CharacterString")]
       (merge

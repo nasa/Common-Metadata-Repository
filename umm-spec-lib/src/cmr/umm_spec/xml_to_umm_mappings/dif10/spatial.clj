@@ -79,7 +79,7 @@
 (defn parse-tiling
   "Returns UMM-C TilingIdentificationSystem map from DIF 10 XML document."
   [doc]
-  (when-let [[twod-el] (select doc tiling-system-xpath)]
+  (for [twod-el (select doc tiling-system-xpath)]
     {:TilingIdentificationSystemName (value-of twod-el "TwoD_Coordinate_System_Name")
      :Coordinate1 (parse-tiling-coord twod-el "Coordinate1")
      :Coordinate2 (parse-tiling-coord twod-el "Coordinate2")}))

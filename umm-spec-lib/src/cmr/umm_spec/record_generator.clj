@@ -12,7 +12,6 @@
 ;; - generate records with fields in the same order as they are defined in the file.
 ;; - generate documentation list the type and restrictions
 
-
 (def schema-name->namespace
   "A map of schema names to the namespace they should be placed in"
   {"umm-cmn-json-schema.json" 'cmr.umm-spec.models.common
@@ -162,7 +161,6 @@
                            (generate-ns-declaration ns-def)
                            "\n\n"
                            (generate-clojure-records schema))]
-
     (.. (io/file file-name) getParentFile mkdirs)
     (spit file-name file-contents)))
 
@@ -175,11 +173,11 @@
 
   (generate-clojure-records-file {:the-ns 'cmr.umm-spec.models.collection
                                   :description "Defines UMM-C clojure records."
-                                  :schema-resource (:collection js/concept-type->schema-file)})
+                                  :schema-resource (js/concept-schema-resource :collection)})
  
   (generate-clojure-records-file {:the-ns 'cmr.umm-spec.models.service
                                   :description "Defines UMM-S clojure records."
-                                  :schema-resource (:service js/concept-type->schema-file)}))
+                                  :schema-resource (js/concept-schema-resource :service)}))
 
 (comment
 

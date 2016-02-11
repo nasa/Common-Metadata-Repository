@@ -10,6 +10,7 @@
             [cmr.common.services.errors :as e]
             [cmr.common.concepts :as concepts]
             [cmr.elastic-utils.connect :as es]
+            [cmr.elastic-utils.config :as es-config]
             [cmr.common-app.services.search.results-model :as results]
             [cmr.common-app.services.search.query-model :as qm]
             [cmr.common-app.services.search.query-to-elastic :as q2e]))
@@ -27,29 +28,17 @@
   (fn [concept-type query]
     [concept-type (:result-format query)]))
 
-(defrecord ElasticSearchIndex
-  [
-   config
-
-   ;; The connection to elastic
-   conn]
-
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  lifecycle/Lifecycle
-
-  (start
-    [this system]
-    (assoc this :conn (es/try-connect (:config this))))
-
-  (stop [this system]
-        this))
+(defn context->search-index
+  "Returns the search index given a context. This assumes that the search index is always located in a
+   system using the :search-index key."
+  [context]
+  (get-in context [:system :search-index]))
 
 (defn context->conn
   "Returns the connection given a context. This assumes that the search index is always located in a
    system using the :search-index key."
   [context]
-  (get-in context [:system :search-index :conn]))
+  (:conn (context->search-index context)))
 
 (defmulti send-query-to-elastic
   "Created to trace only the sending of the query off to elastic search."
@@ -134,9 +123,27 @@
                (e/internal-error! "Failed to retrieve all hits.")))
     e-results))
 
+(defrecord ElasticSearchIndex
+  [
+   config
+
+   ;; The connection to elastic
+   conn]
+
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  lifecycle/Lifecycle
+
+  (start
+    [this system]
+    (assoc this :conn (es/try-connect (:config this))))
+
+  (stop [this system]
+        this))
+
 (defn create-elastic-search-index
   "Creates a new instance of the elastic search index."
-  [config]
-  (->ElasticSearchIndex config nil))
+  []
+  (->ElasticSearchIndex (es-config/elastic-config) nil))
 
 

@@ -1,7 +1,6 @@
 (ns cmr.dev-system.system
   (:require [cmr.common.log :refer (debug info warn error)]
             [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.api.web-server :as web]
             [cmr.common.config :as config :refer [defconfig]]
             [cmr.common.util :as u]
             [cmr.common.jobs :as jobs]
@@ -43,7 +42,7 @@
             [cmr.message-queue.services.queue :as queue]
             [cmr.message-queue.queue.memory-queue :as mem-queue]
 
-            [cmr.dev-system.queue-broker-wrapper :as wrapper]
+            [cmr.message-queue.test.queue-broker-wrapper :as wrapper]
             [cmr.dev-system.control :as control]
 
             [cmr.transmit.config :as transmit-config]))
@@ -290,7 +289,7 @@
         echo-component (create-echo echo)
         queue-broker (create-queue-broker message-queue)
         elastic-server (create-elastic elastic)
-        control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
+        control-server (control/create-server)]
     {:apps (u/remove-nil-keys
              {:mock-echo echo-component
               :access-control (create-access-control-app queue-broker)

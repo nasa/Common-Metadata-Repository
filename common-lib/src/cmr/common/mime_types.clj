@@ -6,70 +6,130 @@
   (:require [clojure.string :as str]
             [cmr.common.util :as util]
             [cmr.common.services.errors :as svc-errors]
-            [ring.middleware.format-response :as fr]))
+            [clojure.set :as set]))
 
-(def mime-types
-  "Defines a map of mime type format keywords to mime types and other format aliases. Each one of these
-   has a var defined for it for easy access."
-  {:json {:mime-type "application/json"}
-   :umm-json {:mime-type "application/umm+json"
-              :aliases [:umm_json]}
-   :xml {:mime-type "application/xml"}
-   :form-url-encoded {:mime-type "application/x-www-form-urlencoded"}
-   :echo10 {:mime-type "application/echo10+xml"}
-   :iso-smap {:mime-type "application/iso:smap+xml"
-              :aliases [:iso_smap]}
-   :iso19115 {:mime-type "application/iso19115+xml"
-              :aliases [:iso]}
-   :dif {:mime-type "application/dif+xml"}
-   :dif10 {:mime-type "application/dif10+xml"}
-   :csv {:mime-type "text/csv"}
-   :atom {:mime-type  "application/atom+xml"}
-   :kml {:mime-type "application/vnd.google-earth.kml+xml"}
-   :opendata {:mime-type "application/opendata+json"}
-   :native {:mime-type "application/metadata+xml"}
-   :edn {:mime-type "application/edn"}
-   :opendap {:mime-type "application/x-netcdf"}
-   :serf {:mime-type "application/serf+xml"}})
+;;; Core Functions
 
-;; Define vars for each of the mime type formats, e.g. (def json "application/json")
-(doseq [[format-kw {:keys [mime-type]}] mime-types]
-  (eval `(def ~(symbol (name format-kw)) ~mime-type)))
+;; These functions are useful for all operations on MIME (or media) types and are not strictly CMR related.
 
-(def iso
-  "Defines a shorter alias for iso19115."
-  iso19115)
+(defn- parse-mime-type*
+  [mt]
+  (when mt
+    (let [[base & parts] (str/split mt #"\s*;\s*")
+          params (into {}
+                       (for [part parts]
+                         (let [[k v] (str/split part #"=")]
+                           [k v])))]
+      {:base       base
+       :parameters params})))
+
+(def parse-mime-type
+  "Returns a Clojure map of components parsed from the given mime type string."
+  (memoize parse-mime-type*))
+
+(defn base-mime-type-of
+  "Returns the base MIME type of the given MIME type string."
+  [mt]
+  (:base (parse-mime-type mt)))
+
+(defn version-of
+  "Returns the version parameter, if present, of the given mime type."
+  [mt]
+  (get-in (parse-mime-type mt) [:parameters "version"]))
+
+(defn with-version
+  "Returns MIME type with version parameter appended."
+  [mt v]
+  (if v
+    (str mt ";version=" v)
+    mt))
+
+(defn keep-version
+  "Returns MIME type with only the version parameter preserved, if present."
+  [mt]
+  (with-version (base-mime-type-of mt) (version-of mt)))
+
+;;; Officially-Recognized CMR Media Types
+
+;; The following media types are recognized by the CMR for use in various places. The map below is used
+;; to dynamically create vars containing the recognized base MIME type for each keyword on the left.
+
+(def ^:private core-formats->mime-types
+  "A map of format keywords to MIME types. Each keyword will have a corresponding var def'ed in this
+  namespace for other namespaces to reference."
+  {:json             "application/json"
+   :umm-json         "application/vnd.nasa.cmr.umm+json"
+   :xml              "application/xml"
+   :form-url-encoded "application/x-www-form-urlencoded"
+   :echo10           "application/echo10+xml"
+   :iso-smap         "application/iso:smap+xml"
+   :iso19115         "application/iso19115+xml"
+   :dif              "application/dif+xml"
+   :dif10            "application/dif10+xml"
+   :csv              "text/csv"
+   :atom             "application/atom+xml"
+   :kml              "application/vnd.google-earth.kml+xml"
+   :opendata         "application/opendata+json"
+   :native           "application/metadata+xml"
+   :edn              "application/edn"
+   :opendap          "application/x-netcdf"
+   :serf             "application/serf+xml"})
+
+(def ^:private format-aliases
+  "A map of alternative format keyword aliases to format keywords."
+  {:iso :iso19115
+   :iso_smap :iso-smap
+   :umm_json :umm-json})
+
+(def format->mime-type
+  "A map of CMR data format keywords and aliases to base MIME types."
+  (merge core-formats->mime-types
+         ;; lookup aliases
+         (zipmap (keys format-aliases)
+                 (map core-formats->mime-types
+                      (vals format-aliases)))))
+
+;; Intern vars for each of the mime type formats, e.g. (def json "application/json")
+
+(doseq [[format-key mime-type] format->mime-type]
+  (intern *ns* (symbol (name format-key)) mime-type))
+
+(defn umm-json?
+  "Returns true if the given mime type is recognized as UMM JSON."
+  [mt]
+  (when mt
+    (= (:umm-json core-formats->mime-types) (base-mime-type-of mt))))
 
 (def any "*/*")
 
 (def base-mime-type-to-format
   "A map of MIME type strings to CMR data format keywords."
-  (into {} (for [[format-kw {:keys [mime-type]}] mime-types]
-             [mime-type format-kw])))
-
-(def format->mime-type
-  "A map of CMR data format keywords to MIME type strings."
-  (into {} (mapcat (fn [[format-kw {:keys [mime-type aliases]}]]
-                     (cons [format-kw mime-type]
-                           (for [a aliases]
-                             [a mime-type])))
-                   mime-types)))
-
-;; extra helpers
+  (set/map-invert core-formats->mime-types))
 
 (def all-supported-mime-types
   "A superset of all mime types supported by any CMR applications."
-  (keys base-mime-type-to-format))
+  (vals core-formats->mime-types))
+
+(def all-formats
+  "A set of all format keywords supported by CMR."
+  (set (keys format->mime-type)))
 
 (defn mime-type->format
-  "Converts a mime-type into the format requested."
+  "Returns a format keyword for the given MIME type and optional default MIME type."
   ([mime-type]
-   (mime-type->format mime-type json))
+    ;; why does this default to JSON?
+   (mime-type->format mime-type (:json core-formats->mime-types)))
   ([mime-type default-mime-type]
-   (if mime-type
-     (or (get base-mime-type-to-format mime-type)
-         (get base-mime-type-to-format default-mime-type))
-     (get base-mime-type-to-format default-mime-type))))
+   (get base-mime-type-to-format (base-mime-type-of mime-type)
+        (get base-mime-type-to-format default-mime-type))))
+
+(defn format-key
+  "Returns CMR format keyword from given value. Value may be a keyword or a MIME type string."
+  [x]
+  (cond
+    (string? x) (mime-type->format x nil)
+    (keyword? x) (get all-formats x)
+    :else nil))
 
 ;; Content-Type utilities
 
@@ -83,47 +143,48 @@
   [mime-type]
   (with-charset mime-type "utf-8"))
 
+;;; HTTP (Ring) Header-Specific Functions
+
+;; These functions deal with extracting MIME types from HTTP headers, and from Ring request header maps.
+
 (defn extract-mime-types
-  "Extracts mime types from an accept header string according to RFC 2616 and returns them
-  as combined type/sub-type strings in order of preference.
-  Example from spec:
+  "Returns a seq of base MIME types from a HTTP header media range string.
 
-  audio/*; q=0.2, audio/basic
+  Based on the example from RFC 2616:
 
-  \"SHOULD be interpreted as \"I prefer audio/basic, but send me any audio
-  type if it is the best available after an 80% mark-down in quality.\"\"
+    (extract-mime-types \"audio/*; q=0.2, audio/basic\")
 
-  This function will return [\"audio/basic\" \"audio/*\"]
+  will return: (\"audio/basic\" \"audio/*\").
 
-  Note that we do not currently handle asterisks and matching them. So \"*/xml\" would not match
-  application/xml."
-  [mime-type-str]
-  (when mime-type-str
-    (for [{:keys [sub-type type]} (fr/parse-accept-header* mime-type-str)]
-      (str type "/" sub-type))))
+  Wildcards (e.g. \"*/xml\") are not supported."
+  [header-value]
+  (when header-value
+    (map base-mime-type-of (reverse (str/split header-value #"\s*,\s*")))))
 
-(defn mime-type-from-header
-  "Returns first acceptable preferred mime-type from the given header."
-  [header-value potential-mime-types]
-  (some (set potential-mime-types) (extract-mime-types header-value)))
+(defn- get-header
+  "Gets a value from a header map in a case-insensitive way."
+  [m k]
+  (get (util/map-keys str/lower-case m) (str/lower-case k)))
 
-(defn accept-mime-type
+(defn- header-mime-type-getter
+  "Returns a function which uses the supplied header key k to retrieve supplied mime types."
+  [k]
+  (fn f
+    ([headers]
+     (f headers all-supported-mime-types))
+    ([headers valid-mime-types]
+     (some (set valid-mime-types)
+           (extract-mime-types (get-header headers k))))))
+
+(def accept-mime-type
   "Returns the first accepted mime type passed in the Accept header"
-  ([headers]
-   (accept-mime-type headers all-supported-mime-types))
-  ([headers potential-mime-types]
-   (mime-type-from-header (get (util/map-keys str/lower-case headers) "accept")
-                          potential-mime-types)))
+  (header-mime-type-getter "accept"))
 
-(defn content-type-mime-type
+(def content-type-mime-type
   "Returns the mime type passed in the Content-Type header"
-  ([headers]
-   (content-type-mime-type headers all-supported-mime-types))
-  ([headers potential-mime-types]
-   (mime-type-from-header (get (util/map-keys str/lower-case headers) "content-type")
-                          potential-mime-types)))
+  (header-mime-type-getter "content-type"))
 
-(defn path-w-extension->mime-type
+(defn path->mime-type
   "Parses the search path with extension and returns the requested mime-type or nil if no extension
   was passed."
   [search-path-w-extension]
@@ -141,16 +202,3 @@
           (svc-errors/throw-service-error
             :bad-request (format "The mime types specified in the %s header [%s] are not supported."
                                  header header-value))))))
-
-(defn get-results-format
-  "Returns the requested results format parsed from the URL extension.  If the URL extension does
-  not designate the format, then determine the mime-type from the accept and content-type headers.
-  If the format still cannot be determined return the default-mime-type as passed in."
-  ([path-w-extension headers default-mime-type]
-   (get-results-format
-     path-w-extension headers all-supported-mime-types default-mime-type))
-  ([path-w-extension headers valid-mime-types default-mime-type]
-   (or (path-w-extension->mime-type path-w-extension)
-       (accept-mime-type headers valid-mime-types)
-       (content-type-mime-type headers valid-mime-types)
-       default-mime-type)))
