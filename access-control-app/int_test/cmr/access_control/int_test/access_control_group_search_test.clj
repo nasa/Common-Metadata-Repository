@@ -30,18 +30,21 @@
           group (sort-by :name (groups-by-prov provider))]
       group)))
 
-(deftest invalid-param-test
-  (is (= {:status 400 :errors ["Parameter [foo] was not recognized."]}
-         (u/search {:foo "bar"})))
-  (is (= {:status 400 :errors ["Parameter [options[provider]] must include a nested key, options[provider][...]=value."]}
-         (u/search {:provider "foo"
-                    "options[provider]" "foo"})))
-  (is (= {:status 400 :errors ["Parameter [options] must include a nested key, options[...]=value."]}
-         (u/search {"options" "bar"})))
-  (is (= {:status 400 :errors ["Option [foo] is not supported for param [provider]"]}
-         (u/search {:provider "PROV1"
-                    "options[provider][foo]" "bar"}))))
-
+(deftest invalid-search-test
+  (let [token (e/login (u/conn-context) "user1")]
+    (is (= {:status 400
+            :errors ["The mime types specified in the accept header [application/text] are not supported."]}
+           (u/search token {} {:http-options {:accept "application/text"}})))
+    (is (= {:status 400 :errors ["Parameter [foo] was not recognized."]}
+           (u/search token {:foo "bar"})))
+    (is (= {:status 400 :errors ["Parameter [options[provider]] must include a nested key, options[provider][...]=value."]}
+           (u/search token {:provider "foo"
+                            "options[provider]" "foo"})))
+    (is (= {:status 400 :errors ["Parameter [options] must include a nested key, options[...]=value."]}
+           (u/search token {"options" "bar"})))
+    (is (= {:status 400 :errors ["Option [foo] is not supported for param [provider]"]}
+           (u/search token {:provider "PROV1"
+                            "options[provider][foo]" "bar"})))))
 
 (deftest group-search-test
   (let [token (e/login (u/conn-context) "user1")
@@ -60,7 +63,7 @@
     (u/wait-until-indexed)
     (are2 [expected-groups params]
       (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
-             (select-keys (u/search params) [:status :items :hits])))
+             (select-keys (u/search token params) [:status :items :hits])))
 
       "No parameters finds all groups"
       all-groups {}

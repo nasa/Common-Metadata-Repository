@@ -16,7 +16,7 @@
             [cmr.common.validations.json-schema :as js]
             [cmr.common.mime-types :as mt]
             [cmr.acl.core :as acl]
-            [cmr.common-app.api.routes :as common-routes]
+            [cmr.common-app.api.routes :as cr]
             [cmr.common-app.api-docs :as api-docs]
             [cmr.access-control.services.group-service :as group-service]
             [cmr.access-control.data.access-control-index :as index]))
@@ -123,39 +123,11 @@
        (group-service/remove-members context concept-id)
        api-response))
 
-;; TODO this should be reusable
-(def CONTENT_TYPE_HEADER "Content-Type")
-(def HITS_HEADER "CMR-Hits")
-(def TOOK_HEADER "CMR-Took")
-(def CORS_ORIGIN_HEADER
-  "This CORS header is to restrict access to the resource to be only from the defined origins,
-  value of \"*\" means all request origins have access to the resource"
-  "Access-Control-Allow-Origin")
-;; TODO also get and make the options response work
-;; Why did we add that in the first place? Does it make sense that we only support it in one spot?
-
-
-(defn- search-response-headers
-  "Generate headers for search response."
-  [content-type results]
-  (merge {CONTENT_TYPE_HEADER (mt/with-utf-8 content-type)
-          CORS_ORIGIN_HEADER "*"}
-         (when (:hits results) {HITS_HEADER (str (:hits results))})
-         (when (:took results) {TOOK_HEADER (str (:took results))})))
-
-(defn- search-response
-  "Generate the response map for finding concepts/"
-  [{:keys [results result-format] :as response}]
-  {:status 200
-   :headers (search-response-headers (mt/format->mime-type result-format) response)
-   :body results})
-
 (defn search-for-groups
-  [context params]
-  ;; TODO CMR-2130 validate accept header (only accept JSON search response)
+  [context headers params]
+  (mt/extract-header-mime-type #{mt/json} headers "accept" true)
   (-> (group-service/search-for-groups context params)
-      search-response))
-
+      cr/search-response))
 
 (def admin-api-routes
   "The administrative control routes."
@@ -177,16 +149,16 @@
                             "public/access_control_index.html")
 
       ;; add routes for checking health of the application
-      (common-routes/health-api-routes group-service/health)
+      (cr/health-api-routes group-service/health)
 
       (context "/groups" []
+        (OPTIONS "/" req cr/options-response)
 
-        ;; TODO CMR-2130 document in api docs
         ;; Search for groups
-        (GET "/" {:keys [request-context params]}
+        (GET "/" {:keys [request-context headers params]}
           ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
           (acl/verify-ingest-management-permission request-context :update)
-          (search-for-groups request-context params))
+          (search-for-groups request-context headers params))
 
         ;; Create a group
         (POST "/" {:keys [request-context headers body]}
@@ -195,6 +167,7 @@
           (create-group request-context headers (slurp body)))
 
         (context "/:group-id" [group-id]
+          (OPTIONS "/" req cr/options-response)
           ;; Get a group
           (GET "/" {:keys [request-context]}
             ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
@@ -214,6 +187,7 @@
             (update-group request-context headers (slurp body) group-id))
 
           (context "/members" []
+            (OPTIONS "/" req cr/options-response)
             (GET "/" {:keys [request-context]}
               ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
               (acl/verify-ingest-management-permission request-context :update)
@@ -234,13 +208,13 @@
 (defn make-api [system]
   (-> (build-routes system)
       acl/add-authentication-handler
-      common-routes/add-request-id-response-handler
+      cr/add-request-id-response-handler
       (context/build-request-context-handler system)
       keyword-params/wrap-keyword-params
       nested-params/wrap-nested-params
       api-errors/invalid-url-encoding-handler
       api-errors/exception-handler
-      common-routes/pretty-print-response-handler
+      cr/pretty-print-response-handler
       params/wrap-params))
 
 

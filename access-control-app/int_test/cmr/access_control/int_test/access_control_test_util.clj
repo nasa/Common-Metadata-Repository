@@ -191,8 +191,11 @@
 
 (defn search
   "Searches for groups using the given parameters"
-  [params]
-  (process-response (ac/search-for-groups (conn-context) params {:raw? true})))
+  ([token params]
+   (search token params nil))
+  ([token params options]
+   (let [options (merge {:raw? true :token token} options)]
+    (process-response (ac/search-for-groups (conn-context) params options)))))
 
 (defn add-members
   "Adds members to the group"
