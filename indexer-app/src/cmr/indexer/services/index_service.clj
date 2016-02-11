@@ -9,6 +9,7 @@
             [cmr.common.cache :as cache]
             [cmr.common.mime-types :as mt]
             [cmr.common.util :as util]
+            [cmr.common.config :refer [defconfig]]
             [cmr.transmit.metadata-db :as meta-db]
             [cmr.transmit.metadata-db2 :as meta-db2]
             [cmr.transmit.index-set :as tis]
@@ -29,8 +30,28 @@
             [clojure.edn :as edn]
             [clj-time.core :as t]
             [clj-time.format :as f]
-            [cmr.indexer.data.concept-parser :as cp]
-            [cmr.common-app.services.search.query-to-elastic :as q2e]))
+            [cmr.indexer.data.concept-parser :as cp]))
+
+(defconfig use-doc-values-fields
+  "Indicates whether search fields should use the doc-values fields or not. If false the field data
+  cache fields will be used. This is a temporary configuration to toggle the feature off if there
+  are issues. It is duplicated from the search application."
+  {:type Boolean
+   :default true})
+
+(def query-field->elastic-doc-values-fields
+  "Maps the query-field names to the field names used in elasticsearch when using doc-values. Field
+  names are excluded from this map if the query field name matches the field name in elastic search."
+  {:granule {:provider-id :provider-id-doc-values
+             :collection-concept-id :collection-concept-id-doc-values}})
+
+(defn query-field->elastic-field
+  "Returns the elastic field name for the equivalent query field name. Duplicated the mappings from
+  the search application here."
+  [field concept-type]
+  (if (use-doc-values-fields)
+    (get-in query-field->elastic-doc-values-fields [concept-type field] field)
+    field))
 
 (defn filter-expired-concepts
   "Remove concepts that have an expired delete-time."
@@ -210,7 +231,7 @@
                 context
                 (idx-set/get-granule-index-name-for-collection context concept-id)
                 (concept-mapping-types :granule)
-                {:term {(q2e/query-field->elastic-field :collection-concept-id :granule)
+                {:term {(query-field->elastic-field :collection-concept-id :granule)
                         concept-id}}))))))))
 
 (defn force-delete-collection-revision
@@ -240,20 +261,20 @@
       context
       (get-in index-names [:collection :collections])
       (concept-mapping-types :collection)
-      {:term {(q2e/query-field->elastic-field :provider-id :collection) provider-id}})
+      {:term {(query-field->elastic-field :provider-id :collection) provider-id}})
     ;; delete all revisions of collections
     (es/delete-by-query
       context
       (get-in index-names [:collection :all-collection-revisions])
       (concept-mapping-types :collection)
-      {:term {(q2e/query-field->elastic-field :provider-id :collection) provider-id}})
+      {:term {(query-field->elastic-field :provider-id :collection) provider-id}})
     ;; delete the granules
     (doseq [index-name (idx-set/get-granule-index-names-for-provider context provider-id)]
       (es/delete-by-query
         context
         index-name
         (concept-mapping-types :granule)
-        {:term {(q2e/query-field->elastic-field :provider-id :granule) provider-id}}))))
+        {:term {(query-field->elastic-field :provider-id :granule) provider-id}}))))
 
 (defn reset
   "Delegates reset elastic indices operation to index-set app as well as resetting caches"

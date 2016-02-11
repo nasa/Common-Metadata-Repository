@@ -1,6 +1,7 @@
 (ns cmr.search.data.query-to-elastic
   "Defines protocols and functions to map from a query model to elastic search query"
   (:require [clojure.string :as str]
+            [clojure.set :as set]
             ;; require it so it will be available
             [cmr.search.data.query-order-by-expense]
             [cmr.common.services.errors :as errors]
@@ -14,9 +15,22 @@
 
 (defconfig use-doc-values-fields
   "Indicates whether search fields should use the doc-values fields or not. If false the field data
-  cache fields will be used."
+  cache fields will be used. This is a temporary configuration to toggle the feature off if there
+  are issues."
   {:type Boolean
    :default true})
+
+(defn- doc-values-field-name
+  "Returns the doc-values field-name for the given field."
+  [field]
+  (keyword (str (name field) "-doc-values")))
+
+(def spatial-doc-values-field-mappings
+  "The field mappings for the MBR and LR elasticsearch doc-values fields."
+  (into {} (for [shape ["mbr" "lr"]
+                 direction ["north" "south" "east" "west"]
+                 :let [field (keyword (str shape "-" direction))]]
+             [field (doc-values-field-name field)])))
 
 (defmethod q2e/concept-type->field-mappings :collection
   [_]
@@ -31,16 +45,19 @@
                           :sensor :sensor-sn
                           :revision-date :revision-date2}]
     (if (use-doc-values-fields)
-      (merge default-mappings
-             {:mbr-north :mbr-north-doc-values
-              :mbr-south :mbr-south-doc-values
-              :mbr-east :mbr-east-doc-values
-              :mbr-west :mbr-west-doc-values
-              :lr-north :lr-north-doc-values
-              :lr-south :lr-south-doc-values
-              :lr-east :lr-east-doc-values
-              :lr-west :lr-west-doc-values})
+      (merge default-mappings spatial-doc-values-field-mappings)
       default-mappings)))
+
+(def query-field->granule-doc-values-fields-map
+  "Defines mappings for any query-fields to Elasticsearch doc-values field names. Note that this
+  does not include lowercase field mappings for doc-values fields."
+  (into spatial-doc-values-field-mappings
+        (for [field [:provider-id :concept-seq-id :collection-concept-id
+                     :collection-concept-seq-id :size :start-date :end-date :revision-date
+                     :day-night :cloud-cover :orbit-start-clat :orbit-end-clat
+                     :orbit-asc-crossing-lon :access-value :start-coordinate-1
+                     :end-coordinate-1 :start-coordinate-2 :end-coordinate-2]]
+          [field (doc-values-field-name field)])))
 
 (defmethod q2e/concept-type->field-mappings :granule
   [_]
@@ -56,33 +73,8 @@
         (if (use-doc-values-fields)
           (merge default-mappings
                  {:provider :provider-id-doc-values
-                  :provider-id :provider-id-doc-values
-                  :concept-seq-id :concept-seq-id-doc-values
-                  :collection-concept-id :collection-concept-id-doc-values
-                  :collection-concept-seq-id :collection-concept-seq-id-doc-values
-                  :size :size-doc-values
-                  :start-date :start-date-doc-values
-                  :end-date :end-date-doc-values
-                  :revision-date :revision-date-doc-values
-                  :updated-since :revision-date-doc-values
-                  :day-night :day-night-doc-values
-                  :cloud-cover :cloud-cover-doc-values
-                  :mbr-north :mbr-north-doc-values
-                  :mbr-south :mbr-south-doc-values
-                  :mbr-east :mbr-east-doc-values
-                  :mbr-west :mbr-west-doc-values
-                  :lr-north :lr-north-doc-values
-                  :lr-south :lr-south-doc-values
-                  :lr-east :lr-east-doc-values
-                  :lr-west :lr-west-doc-values
-                  :orbit-start-clat :orbit-start-clat-doc-values
-                  :orbit-end-clat :orbit-end-clat-doc-values
-                  :orbit-asc-crossing-lon :orbit-asc-crossing-lon-doc-values
-                  :access-value :access-value-doc-values
-                  :start-coordinate-1 :start-coordinate-1-doc-values
-                  :end-coordinate-1 :end-coordinate-1-doc-values
-                  :start-coordinate-2 :start-coordinate-2-doc-values
-                  :end-coordinate-2 :end-coordinate-2-doc-values})
+                  :updated-since :revision-date-doc-values}
+                 query-field->granule-doc-values-fields-map)
           default-mappings)))
 
 (defmethod q2e/elastic-field->query-field-mappings :collection
@@ -96,28 +88,11 @@
 
 (defmethod q2e/elastic-field->query-field-mappings :granule
   [_]
-  {:provider-id-doc-values :provider-id
-   :collection-concept-id-doc-values :collection-concept-id
-   :collection-concept-seq-id-doc-values :collection-concept-seq-id
-   :concept-seq-id-doc-values :concept-seq-id
-   :size-doc-values :size
-   :start-date-doc-values :start-date
-   :end-date-doc-values :end-date
-   :revision-date-doc-values :revision-date
-   :platform-sn :platform
-   :instrument-sn :instrument
-   :sensor-sn :sensor
-   :project-refs :project
-   :day-night-doc-values :day-night
-   :cloud-cover-doc-values :cloud-cover
-   :orbit-start-clat-doc-values :orbit-start-clat
-   :orbit-end-clat-doc-values :orbit-end-clat
-   :orbit-asc-crossing-lon-doc-values :orbit-asc-crossing-lon
-   :access-value-doc-values :access-value
-   :start-coordinate-1-doc-values :start-coordinate-1
-   :end-coordinate-1-doc-values :end-coordinate-1
-   :start-coordinate-2-doc-values :start-coordinate-2
-   :end-coordinate-2-doc-values :end-coordinate-2})
+  (merge {:platform-sn :platform
+          :instrument-sn :instrument
+          :sensor-sn :sensor
+          :project-refs :project}
+         (set/map-invert query-field->granule-doc-values-fields-map)))
 
 (defmethod q2e/field->lowercase-field-mappings :collection
   [_]
@@ -128,6 +103,22 @@
    :platform "platform-sn.lowercase"
    :instrument "instrument-sn.lowercase"
    :sensor "sensor-sn.lowercase"})
+
+(defn- doc-values-lowercase-field-name
+  "Returns the doc-values field-name for the given field."
+  [field]
+  (str (name field) "-lowercase-doc-values"))
+
+(def query-field->lowercase-granule-doc-values-fields-map
+  "Defines mappings from query-fields to Elasticsearch lowercase-doc-values fields."
+  (into {:provider "provider-id.lowercase-doc-values"
+         :platform "platform-sn.lowercase-doc-values"
+         :instrument "instrument-sn.lowercase-doc-values"
+         :sensor "sensor-sn.lowercase-doc-values"
+         :project "project-refs.lowercase-doc-values"
+         :version "version-id.lowercase-doc-values"}
+        (for [field [:provider-id :entry-title :short-name :version-id]]
+          [field (doc-values-lowercase-field-name field)])))
 
 (defmethod q2e/field->lowercase-field-mappings :granule
   [_]
@@ -142,16 +133,7 @@
          :instrument "instrument-sn.lowercase"
          :sensor "sensor-sn.lowercase"}]
     (if (use-doc-values-fields)
-      (merge default-mappings {:provider "provider-id.lowercase-doc-values"
-                               :provider-id "provider-id.lowercase-doc-values"
-                               :platform "platform-sn.lowercase-doc-values"
-                               :instrument "instrument-sn.lowercase-doc-values"
-                               :sensor "sensor-sn.lowercase-doc-values"
-                               :project "project-refs.lowercase-doc-values"
-                               :entry-title "entry-title.lowercase-doc-values"
-                               :short-name "short-name.lowercase-doc-values"
-                               :version "version-id.lowercase-doc-values"
-                               :version-id "version-id.lowercase-doc-values"})
+      (merge default-mappings query-field->lowercase-granule-doc-values-fields-map)
       default-mappings)))
 
 (defn- keywords-in-condition

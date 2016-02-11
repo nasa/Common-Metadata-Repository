@@ -20,7 +20,7 @@
 
 (defmulti concept-type->field-mappings
   "Returns a map of fields in the query to the field name in elastic. Field names are excluded from
-  this if the query field name matches the field name in elastic search."
+  this map if the query field name matches the field name in elastic search."
   (fn [concept-type]
     concept-type))
 
