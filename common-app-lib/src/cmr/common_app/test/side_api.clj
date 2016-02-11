@@ -1,5 +1,5 @@
 (ns cmr.common-app.test.side-api
-  "A namespace that creates a web server for control a system under test. It allows the system to be
+  "A namespace that creates a web server for controlling a system under test. It allows the system to be
   stopped for easy testing in CI."
   (:require [compojure.route :as route]
             [compojure.core :refer :all]

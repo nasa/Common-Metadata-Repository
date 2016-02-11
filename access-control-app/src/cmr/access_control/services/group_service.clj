@@ -28,13 +28,17 @@
     (tokens/get-user-id context (:token context))
     (errors/throw-service-error :unauthorized msg/token-required-for-group-modification)))
 
+(def SYSTEM_PROVIDER_ID
+  "The provider id used when a group is a system provider."
+  "CMR")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB Concept Map Manipulation
 
 (defn- group->mdb-provider-id
   "Returns the provider id to use in metadata db for the group"
   [group]
-  (get group :provider-id "CMR"))
+  (get group :provider-id SYSTEM_PROVIDER_ID))
 
 (defn- group->new-concept
   "Converts a group into a new concept that can be persisted in metadata db."
@@ -223,7 +227,7 @@
     (gc/group-conds (cp/group-operation param options)
                     (map #(cp/parameter->condition concept-type param % options) value))
     ;; CMR indicates we should search for system groups
-    (if (= (str/upper-case value) "CMR")
+    (if (= (str/upper-case value) SYSTEM_PROVIDER_ID)
       (common-qm/negated-condition (common-qm/exist-condition :provider))
       (cp/string-parameter->condition concept-type param value options))))
 
