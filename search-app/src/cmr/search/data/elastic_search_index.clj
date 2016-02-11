@@ -9,6 +9,7 @@
             [cmr.common.cache :as cache]
             [cmr.transmit.index-set :as index-set]
             [cmr.common-app.services.search.query-model :as qm]
+            [cmr.common-app.services.search.query-to-elastic :as q2e]
             ;; Required to be available at runtime.
             [cmr.search.data.query-to-elastic]
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
@@ -125,10 +126,13 @@
                          :condition condition
                          :page-size 0
                          :aggregations {:by-provider
-                                        {:terms {:field :provider-id
+                                        {:terms {:field (q2e/query-field->elastic-field
+                                                         :provider-id :granule)
                                                  :size 10000}
                                          :aggs {:by-collection-id
-                                                {:terms {:field :collection-concept-seq-id
+                                                {:terms {:field (q2e/query-field->elastic-field
+                                                                  :collection-concept-seq-id
+                                                                  :granule)
                                                          :size 10000}}}}}})
         results (common-esi/execute-query context query)
         extra-provider-count (get-in results [:aggregations :by-provider :sum_other_doc_count])]
@@ -155,4 +159,3 @@
                                               :provider-id provider-id
                                               :concept-type :collection})
                   num-granules])))))
-

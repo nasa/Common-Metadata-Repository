@@ -1,6 +1,7 @@
 (ns cmr.search.data.query-to-elastic
   "Defines protocols and functions to map from a query model to elastic search query"
   (:require [clojure.string :as str]
+            [clojure.set :as set]
             ;; require it so it will be available
             [cmr.search.data.query-order-by-expense]
             [cmr.common.services.errors :as errors]
@@ -9,41 +10,131 @@
             [cmr.common-app.services.search.query-model :as q]
             [cmr.common-app.services.search.query-order-by-expense :as query-expense]
             [cmr.common-app.services.search.query-to-elastic :as q2e]
-            [cmr.common-app.services.search.complex-to-simple :as c2s]))
+            [cmr.common-app.services.search.complex-to-simple :as c2s]
+            [cmr.common.config :refer [defconfig]]))
 
+(defconfig use-doc-values-fields
+  "Indicates whether search fields should use the doc-values fields or not. If false the field data
+  cache fields will be used. This is a temporary configuration to toggle the feature off if there
+  are issues."
+  {:type Boolean
+   :default true})
+
+(defn- doc-values-field-name
+  "Returns the doc-values field-name for the given field."
+  [field]
+  (keyword (str (name field) "-doc-values")))
+
+(def spatial-doc-values-field-mappings
+  "The field mappings for the MBR and LR elasticsearch doc-values fields."
+  (into {} (for [shape ["mbr" "lr"]
+                 direction ["north" "south" "east" "west"]
+                 :let [field (keyword (str shape "-" direction))]]
+             [field (doc-values-field-name field)])))
 
 (defmethod q2e/concept-type->field-mappings :collection
   [_]
-  {:provider :provider-id
-   :version :version-id
-   :project :project-sn2
-   :updated-since :revision-date2
-   :two-d-coordinate-system-name :two-d-coord-name
-   :platform :platform-sn
-   :instrument :instrument-sn
-   :sensor :sensor-sn
-   :revision-date :revision-date2})
+  (let [default-mappings {:provider :provider-id
+                          :version :version-id
+                          :project :project-sn2
+                          :project-sn :project-sn2
+                          :updated-since :revision-date2
+                          :two-d-coordinate-system-name :two-d-coord-name
+                          :platform :platform-sn
+                          :instrument :instrument-sn
+                          :sensor :sensor-sn
+                          :revision-date :revision-date2}]
+    (if (use-doc-values-fields)
+      (merge default-mappings spatial-doc-values-field-mappings)
+      default-mappings)))
+
+(def query-field->granule-doc-values-fields-map
+  "Defines mappings for any query-fields to Elasticsearch doc-values field names. Note that this
+  does not include lowercase field mappings for doc-values fields."
+  (into spatial-doc-values-field-mappings
+        (for [field [:provider-id :concept-seq-id :collection-concept-id
+                     :collection-concept-seq-id :size :start-date :end-date :revision-date
+                     :day-night :cloud-cover :orbit-start-clat :orbit-end-clat
+                     :orbit-asc-crossing-lon :access-value :start-coordinate-1
+                     :end-coordinate-1 :start-coordinate-2 :end-coordinate-2]]
+          [field (doc-values-field-name field)])))
 
 (defmethod q2e/concept-type->field-mappings :granule
   [_]
-  {:provider :provider-id
-   :producer-granule-id :producer-gran-id
-   :granule-ur.lowercase :granule-ur.lowercase2
-   :producer-gran-id.lowercase :producer-gran-id.lowercase2
-   :updated-since :revision-date
-   :platform :platform-sn
-   :instrument :instrument-sn
-   :sensor :sensor-sn
-   :project :project-refs})
+  (let [default-mappings {:granule-ur.lowercase :granule-ur.lowercase2
+                          :producer-gran-id.lowercase :producer-gran-id.lowercase2
+                          :provider :provider-id
+                          :updated-since :revision-date
+                          :producer-granule-id :producer-gran-id
+                          :platform :platform-sn
+                          :instrument :instrument-sn
+                          :sensor :sensor-sn
+                          :project :project-refs}]
+        (if (use-doc-values-fields)
+          (merge default-mappings
+                 {:provider :provider-id-doc-values
+                  :updated-since :revision-date-doc-values}
+                 query-field->granule-doc-values-fields-map)
+          default-mappings)))
 
-(defmethod q2e/field->lowercase-field :granule
-  [_ field]
-  (or (get {:granule-ur "granule-ur.lowercase2"
-            :producer-gran-id "producer-gran-id.lowercase2"}
-           (if (string? field)
-             (keyword field)
-             field))
-      (str (name field) ".lowercase")))
+(defmethod q2e/elastic-field->query-field-mappings :collection
+  [_]
+  {:project-sn2 :project-sn
+   :two-d-coord-name :two-d-coordinate-system-name
+   :platform-sn :platform
+   :instrument-sn :instrument
+   :sensor-sn :sensor
+   :revision-date2 :revision-date})
+
+(defmethod q2e/elastic-field->query-field-mappings :granule
+  [_]
+  (merge {:platform-sn :platform
+          :instrument-sn :instrument
+          :sensor-sn :sensor
+          :project-refs :project}
+         (set/map-invert query-field->granule-doc-values-fields-map)))
+
+(defmethod q2e/field->lowercase-field-mappings :collection
+  [_]
+  {:provider "provider-id.lowercase"
+   :version "version-id.lowercase"
+   :project "project-sn2.lowercase"
+   :two-d-coordinate-system-name "two-d-coord-name.lowercase"
+   :platform "platform-sn.lowercase"
+   :instrument "instrument-sn.lowercase"
+   :sensor "sensor-sn.lowercase"})
+
+(defn- doc-values-lowercase-field-name
+  "Returns the doc-values field-name for the given field."
+  [field]
+  (str (name field) "-lowercase-doc-values"))
+
+(def query-field->lowercase-granule-doc-values-fields-map
+  "Defines mappings from query-fields to Elasticsearch lowercase-doc-values fields."
+  (into {:provider "provider-id.lowercase-doc-values"
+         :platform "platform-sn.lowercase-doc-values"
+         :instrument "instrument-sn.lowercase-doc-values"
+         :sensor "sensor-sn.lowercase-doc-values"
+         :project "project-refs.lowercase-doc-values"
+         :version "version-id.lowercase-doc-values"}
+        (for [field [:provider-id :entry-title :short-name :version-id]]
+          [field (doc-values-lowercase-field-name field)])))
+
+(defmethod q2e/field->lowercase-field-mappings :granule
+  [_]
+  (let [default-mappings
+        {:granule-ur "granule-ur.lowercase2"
+         :producer-gran-id "producer-gran-id.lowercase2"
+         :producer-granule-id "producer-gran-id.lowercase2"
+         :project "project-refs.lowercase"
+         :version "version-id.lowercase"
+         :provider "provider-id.lowercase"
+         :platform "platform-sn.lowercase"
+         :instrument "instrument-sn.lowercase"
+         :sensor "sensor-sn.lowercase"}]
+    (if (use-doc-values-fields)
+      (merge default-mappings query-field->lowercase-granule-doc-values-fields-map)
+      default-mappings)))
 
 (defn- keywords-in-condition
   "Returns a list of keywords if the condition contains a keyword condition or nil if not."
@@ -99,26 +190,47 @@
 
 (defmethod q2e/concept-type->sort-key-map :granule
   [_]
-  {:provider :provider-id.lowercase
-   :entry-title :entry-title.lowercase
-   :short-name :short-name.lowercase
-   :version :version-id.lowercase
-   :granule-ur :granule-ur.lowercase2
-   :producer-granule-id :producer-gran-id.lowercase2
-   :readable-granule-name :readable-granule-name-sort2
-   :data-size :size
-   :platform :platform-sn.lowercase
-   :instrument :instrument-sn.lowercase
-   :sensor :sensor-sn.lowercase
-   :project :project-refs.lowercase})
+  (let [default-mappings {:provider :provider-id.lowercase
+                          :provider-id :provider-id.lowercase
+                          :data-size :size
+                          :entry-title :entry-title.lowercase
+                          :short-name :short-name.lowercase
+                          :version :version-id.lowercase
+                          :granule-ur :granule-ur.lowercase2
+                          :producer-granule-id :producer-gran-id.lowercase2
+                          :readable-granule-name :readable-granule-name-sort2
+                          :platform :platform-sn.lowercase
+                          :instrument :instrument-sn.lowercase
+                          :sensor :sensor-sn.lowercase
+                          :project :project-refs.lowercase}]
+    (if (use-doc-values-fields)
+      (merge default-mappings {:provider :provider-id.lowercase-doc-values
+                               :provider-id :provider-id.lowercase-doc-values
+                               :size :size-doc-values
+                               :data-size :size-doc-values
+                               :platform :platform-sn.lowercase-doc-values
+                               :instrument :instrument-sn.lowercase-doc-values
+                               :sensor :sensor-sn.lowercase-doc-values
+                               :project :project-refs.lowercase-doc-values
+                               :start-date :start-date-doc-values
+                               :end-date :end-date-doc-values
+                               :revision-date :revision-date-doc-values
+                               :entry-title :entry-title.lowercase-doc-values
+                               :short-name :short-name.lowercase-doc-values
+                               :version :version-id.lowercase-doc-values
+                               :version-id :version-id.lowercase-doc-values
+                               :day-night :day-night-doc-values
+                               :cloud-cover :cloud-cover-doc-values})
+      default-mappings)))
 
 (defmethod q2e/concept-type->sub-sort-fields :collection
   [_]
-  [{:concept-seq-id {:order "asc"}} {:revision-id {:order "desc"}}])
+  [{(q2e/query-field->elastic-field :concept-seq-id :collection) {:order "asc"}}
+   {(q2e/query-field->elastic-field :revision-id :collection) {:order "desc"}}])
 
 (defmethod q2e/concept-type->sub-sort-fields :granule
   [_]
-  [{:concept-seq-id {:order "asc"}}])
+  [{(q2e/query-field->elastic-field :concept-seq-id :granule) {:order "asc"}}])
 
 ;; Collections will default to the keyword sort if they have no sort specified and search by keywords
 (defmethod q2e/query->sort-params :collection

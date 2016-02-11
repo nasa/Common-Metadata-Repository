@@ -10,6 +10,7 @@
             [cmr.common-app.services.search.elastic-search-index :as idx]
             [cmr.common-app.services.search.complex-to-simple :as c2s]
             [cmr.common-app.services.search.query-execution :as query-execution]
+            [cmr.common-app.services.search.query-to-elastic :as q2e]
             [cmr.search.services.acl-service :as acl-service])
   (:import [cmr.common_app.services.search.query_model
             Query
@@ -80,7 +81,8 @@
               :page-size 0
               :result-format :query-specified
               :aggregations {:granule-counts-by-collection-id
-                             {:terms {:field :collection-concept-id
+                             {:terms {:field (q2e/query-field->elastic-field
+                                              :collection-concept-id :granule)
                                       :size (count collection-ids)}}}})))
 
 (defn- search-results->granule-counts

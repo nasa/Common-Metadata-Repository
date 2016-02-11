@@ -19,8 +19,8 @@
    :default false})
 
 (defmulti concept-type->field-mappings
-  "Returns a map of fields in the query to the field name in elastic. Field names are excluded from this
-  map if the query field name matches the field name in elastic search."
+  "Returns a map of fields in the query to the field name in elastic. Field names are excluded from
+  this map if the query field name matches the field name in elastic search."
   (fn [concept-type]
     concept-type))
 
@@ -29,10 +29,26 @@
   ;; No field mappings specified by default
   {})
 
-(defn- query-field->elastic-field
+(defmulti elastic-field->query-field-mappings
+  "A map of fields in elasticsearch to their query model field names. Field names are
+  excluded from this map if the CMR query field name matches the field name in elastic search."
+  (fn [concept-type]
+    concept-type))
+
+(defmethod elastic-field->query-field-mappings :default
+  [_]
+  ;; No field mappings specified by default
+  {})
+
+(defn query-field->elastic-field
   "Returns the elastic field name for the equivalent query field name."
   [field concept-type]
-  (get (concept-type->field-mappings concept-type) field field))
+  (get (concept-type->field-mappings concept-type) (keyword field) field))
+
+(defn- elastic-field->query-field
+  "Returns the query field name for the equivalent elastic field name."
+  [field concept-type]
+  (get (elastic-field->query-field-mappings concept-type) field field))
 
 (def ^:private query-string-reserved-characters-regex
   "Characters reserved for elastic query_string queries. These must be escaped."
@@ -61,7 +77,6 @@
   (condition->elastic
     [condition concept-type]
     "Converts a query model condition into the equivalent elastic search filter"))
-
 
 (defmulti query->elastic
   "Converts a query model into an elastic search query"
@@ -92,8 +107,8 @@
     concept-type))
 
 (defmethod concept-type->sub-sort-fields :default
-  [_]
-  [{:concept-id {:order "asc"}}])
+  [concept-type]
+  [{(query-field->elastic-field :concept-id concept-type) {:order "asc"}}])
 
 (defn sort-keys->elastic-sort
   "Converts sort keys into the proper elastic sort condition."
@@ -119,16 +134,22 @@
     ;; paging and query results consistent.
     (concat (or specified-sort default-sort) (concept-type->sub-sort-fields concept-type))))
 
-(defmulti field->lowercase-field
-  "Maps a field name to the name of the lowercase field to use within elastic.
-  If a mapping is not present it defaults the lowercase field as <field>.lowercase"
-  (fn [concept-type field]
+(defmulti field->lowercase-field-mappings
+  "Mapping of query model field names to Elasticsearch lowercase field names."
+  (fn [concept-type]
     concept-type))
 
-(defmethod field->lowercase-field :default
-  [_ field]
-  (str (name field) ".lowercase"))
+(defmethod field->lowercase-field-mappings :default
+  [_]
+  ;; No field mappings specified by default
+  {})
 
+(defn field->lowercase-field
+  "Maps a field name to the name of the lowercase field to use within elastic.
+  If a mapping is not present it defaults the lowercase field as <field>.lowercase"
+  [concept-type field]
+  (get (field->lowercase-field-mappings concept-type) (keyword field)
+       (str (name field) ".lowercase")))
 
 (defn- range-condition->elastic
   "Convert a range condition to an elastic search condition. Execution
@@ -185,8 +206,9 @@
   cmr.common_app.services.search.query_model.StringCondition
   (condition->elastic
     [{:keys [field value case-sensitive? pattern?]} concept-type]
-    (let [field (query-field->elastic-field field concept-type)
-          field (if case-sensitive? field (field->lowercase-field concept-type field))
+    (let [field (if case-sensitive?
+                  (query-field->elastic-field field concept-type)
+                  (field->lowercase-field concept-type field))
           value (if case-sensitive? value (str/lower-case value))]
       (if pattern?
         {:query {:wildcard {field value}}}
@@ -195,8 +217,9 @@
   cmr.common_app.services.search.query_model.StringsCondition
   (condition->elastic
     [{:keys [field values case-sensitive?]} concept-type]
-    (let [field (query-field->elastic-field field concept-type)
-          field (if case-sensitive? field (field->lowercase-field concept-type field))
+    (let [field (if case-sensitive?
+                  (query-field->elastic-field field concept-type)
+                  (field->lowercase-field concept-type field))
           values (if case-sensitive? values (map str/lower-case values))]
       {:terms {field values
                :execution "plain"}}))
