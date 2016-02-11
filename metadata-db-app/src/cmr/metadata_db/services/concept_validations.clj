@@ -142,7 +142,6 @@
   (util/compose-validations (conj base-concept-validations
                                   concept-id-matches-concept-fields-validation-no-provider)))
 
-;; TODO Add validation that associtated tag and concept exists
 (def tag-association-concept-validation
   "Builds a function that validats a tag association concept map that has no provider and returns
   a list of errors"

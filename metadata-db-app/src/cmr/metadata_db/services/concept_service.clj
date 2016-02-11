@@ -63,7 +63,7 @@
                (not (:system-level? provider)))
       (let [err-msg (case concept-type
                       :tag (msg/tags-only-system-level provider-id)
-                      :tag-association (msg/tag-associatons-only-system-level provider-id))]
+                      :tag-association (msg/tag-associations-only-system-level provider-id))]
         (errors/throw-service-errors :invalid-data [err-msg])))))
 
 (defn- provider-ids-for-validation

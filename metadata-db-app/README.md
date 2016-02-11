@@ -105,7 +105,7 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
     }
   }
 
-_Note the absense of provider-id for tags and tag assoications. These are system level entities and are always assigned the sytem level provider, CMR._
+_Note the absense of provider-id for tags and tag associations. These are system level entities and are always assigned the system level provider, CMR._
 
 ### Sample Tombstone (deleted concept) JSON
 
@@ -222,7 +222,7 @@ throws error if revision-id is less than or equal to the current highest saved r
 
 #### Note Regarding Tags and Tag Associations
 
-No provider should be specified when creating tag or tag associaation concepts - the system level CMR provider is used for all tags. As such, tag concept-ids always take the form of T\<number\>-CMR and tag association concept-ids TA\<number>\>-CMR, where \<number\> is a positive integer.
+No provider should be specified when creating tag or tag association concepts - the system level CMR provider is used for all tags and tag associations. As such, tag concept-ids always take the form of T\<number\>-CMR and tag association concept-ids TA\<number>\>-CMR, where \<number\> is a positive integer.
 
 Tombstones can be created using the same end-point used for saving concepts by specifying "deleted" as true in the body of the POST:
 

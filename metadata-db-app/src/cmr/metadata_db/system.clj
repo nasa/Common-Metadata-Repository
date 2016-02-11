@@ -16,7 +16,6 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.acl.core :as acl]
             [cmr.common.config :as cfg]
-            [cmr.message-queue.config :as rmq-conf]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.common-app.system :as common-sys]))
 

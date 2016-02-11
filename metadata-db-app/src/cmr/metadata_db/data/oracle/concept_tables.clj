@@ -12,7 +12,7 @@
            [cmr.metadata-db.data.oracle.service-table :as st]))
 
 (def all-provider-concept-types
-  "All the concpet types that have tables for each (non-small) provider"
+  "All the concept types that have tables for each (non-small) provider"
   [:collection :granule :service])
 
 (defmulti get-table-name
