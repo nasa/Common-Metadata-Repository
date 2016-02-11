@@ -154,15 +154,28 @@
                                                      :format       mime-type
                                                      :metadata     json})]
     (index/wait-until-indexed)
-    (let [response (search/retrieve-concept (:concept-id result)
-                                            nil
-                                            {:query-params {:token user1-token}
-                                             :accept "application/vnd.nasa.cmr.umm+json"})
-          content-type (get-in response [:headers "Content-Type"])]
-      (is (= 200 (:status response)))
-      (is (= json (:body response)))
-      (is (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type)))
-      (is (= "1.0" (mt/version-of content-type))))))
+
+    (testing "without revision id"
+      (let [response     (search/retrieve-concept (:concept-id result)
+                                                  nil
+                                                  {:query-params {:token user1-token}
+                                                   :accept       "application/vnd.nasa.cmr.umm+json"})
+            content-type (get-in response [:headers "Content-Type"])]
+        (is (= 200 (:status response)))
+        (is (= json (:body response)))
+        (is (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type)))
+        (is (= "1.0" (mt/version-of content-type)))))
+
+    (testing "with a revision id"
+      (let [response     (search/retrieve-concept (:concept-id result)
+                                                  1
+                                                  {:query-params {:token user1-token}
+                                                   :accept       "application/vnd.nasa.cmr.umm+json"})
+            content-type (get-in response [:headers "Content-Type"])]
+        (is (= 200 (:status response)))
+        (is (= json (:body response)))
+        (is (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type)))
+        (is (= "1.0" (mt/version-of content-type)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

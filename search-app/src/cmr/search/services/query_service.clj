@@ -198,7 +198,7 @@
   (let [concept (t/get-formatted-concept context concept-id revision-id result-format)]
     (when-not concept
       (throw-concept-revision-not-found concept-id revision-id))
-    {:results (:metadata concept) :result-format (mt/mime-type->format (:format concept))}))
+    {:results (:metadata concept) :result-format (:format concept)}))
 
 (defn get-granule-timeline
   "Finds granules and returns the results as a list of intervals of granule counts per collection."
