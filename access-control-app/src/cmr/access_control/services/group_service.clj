@@ -13,9 +13,11 @@
             [cmr.common-app.services.search.params :as cp]
             [cmr.common-app.services.search.parameter-validation :as cpv]
             [cmr.common-app.services.search.query-model :as common-qm]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.transmit.urs :as urs]
             [cmr.access-control.services.group-service-messages :as msg]
             [clojure.edn :as edn]
+            [clojure.string :as str]
             ;; Must be required to be available at runtime
             [cmr.access-control.data.group-json-results-handler]))
 
@@ -173,24 +175,58 @@
     (validate-update-group context existing-group updated-group)
     (save-updated-group-concept context existing-concept updated-group)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Search functions
 
-(defn find-concepts-by-parameters
-  "Executes a search for concepts using the given parameters. The concepts will be returned with
-  concept id and native provider id along with hit count and timing info."
-  [context concept-type params])
+(defmethod cpv/params-config :access-group
+  [_]
+  (cpv/merge-params-config
+   cpv/basic-params-config
+   {:single-value #{}
+    :multiple-value #{:provider}
+    :always-case-sensitive #{}
+    :disallow-pattern #{}
+    :allow-or #{}}))
 
+(defmethod cpv/valid-parameter-options :access-group
+  [_]
+  {:provider cpv/string-param-options})
 
-;; TODO move this into validation section
 
 (defn validate-group-search-params
+  "Validates the parameters for a group search. Returns the parameters or throws an error if invalid."
   [context params]
-  ;; TODO
+  (let [[safe-params type-errors] (cpv/apply-type-validations
+                                   params
+                                   [(partial cpv/validate-map [:options])
+                                    (partial cpv/validate-map [:options :provider])])]
+    (cpv/validate-parameters
+     :access-group safe-params
+     cpv/common-validations
+     type-errors))
   params)
+
 
 (defmethod common-qm/default-sort-keys :access-group
   [_]
   [{:field :provider-id :order :asc}
    {:field :name :order :asc}])
+
+(defmethod cp/param-mappings :access-group
+  [_]
+  {:provider :access-group-provider})
+
+(defmethod cp/parameter->condition :access-group-provider
+  [concept-type param value options]
+
+  (if (sequential? value)
+    (gc/group-conds (cp/group-operation param options)
+                    (map #(cp/parameter->condition concept-type param % options) value))
+    ;; CMR indicates we should search for system groups
+    (if (= (str/upper-case value) "CMR")
+      (common-qm/negated-condition (common-qm/exist-condition :provider))
+      (cp/string-parameter->condition concept-type param value options))))
+
 
 (defn search-for-groups
   [context params]
@@ -205,13 +241,6 @@
     (info (format "Found %d access-groups in %d ms in format %s with params %s."
                   (:hits results) total-took (:result-format query) (pr-str params)))
     (assoc results :took total-took)))
-
-(comment
-
-
-  (cp/parse-parameter-query :access-group {})
-
- (search-for-groups {:system user/system} {}))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

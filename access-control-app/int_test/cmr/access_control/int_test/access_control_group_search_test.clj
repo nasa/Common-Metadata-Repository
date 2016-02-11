@@ -2,6 +2,7 @@
   "Tests searching for access control groups"
     (:require [clojure.test :refer :all]
               [cmr.mock-echo.client.echo-util :as e]
+              [cmr.common.util :as util :refer [are2]]
               [cmr.access-control.int-test.access-control-test-util :as u]))
 
 (use-fixtures :each (u/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"} ["user1" "user2" "user3" "user4" "user5"]))
@@ -29,6 +30,19 @@
           group (sort-by :name (groups-by-prov provider))]
       group)))
 
+(deftest invalid-param-test
+  (is (= {:status 400 :errors ["Parameter [foo] was not recognized."]}
+         (u/search {:foo "bar"})))
+  (is (= {:status 400 :errors ["Parameter [options[provider]] must include a nested key, options[provider][...]=value."]}
+         (u/search {:provider "foo"
+                    "options[provider]" "foo"})))
+  (is (= {:status 400 :errors ["Parameter [options] must include a nested key, options[...]=value."]}
+         (u/search {"options" "bar"})))
+  (is (= {:status 400 :errors ["Option [foo] is not supported for param [provider]"]}
+         (u/search {:provider "PROV1"
+                    "options[provider][foo]" "bar"}))))
+
+
 (deftest group-search-test
   (let [token (e/login (u/conn-context) "user1")
         cmr-group1 (ingest-group token {:name "group1"} ["user1"])
@@ -41,12 +55,57 @@
         cmr-groups [cmr-group1 cmr-group2 cmr-group3]
         prov1-groups [prov1-group1 prov1-group2]
         prov2-groups [prov2-group1 prov2-group2]
+        prov-groups (concat prov1-groups prov2-groups)
         all-groups (concat cmr-groups prov1-groups prov2-groups)]
     (u/wait-until-indexed)
-    (are [expected-groups params]
+    (are2 [expected-groups params]
       (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
              (select-keys (u/search params) [:status :items :hits])))
-      all-groups {})))
+
+      "No parameters finds all groups"
+      all-groups {}
+
+      "Single provider id"
+      prov1-groups {:provider "PROV1"}
+
+      "Provider id is case insensitve"
+      prov1-groups {:provider "prov1"}
+
+      "Provider id is case sensitive"
+      [] {:provider "prov1" "options[provider][ignore_case]" false}
+
+      "Provider id is case insensitive"
+      prov1-groups {:provider "prov1" "options[provider][ignore_case]" true}
+
+      "Provider id pattern"
+      prov-groups {:provider "prov?" "options[provider][pattern]" true}
+
+      "Multiple provider ids - 1 matches"
+      prov1-groups {:provider ["PROV1" "PROV3"]}
+
+      "Multiple provider ids - 2 matches"
+      prov-groups {:provider ["PROV1" "PROV2"]}
+
+      "Provider id that does not match"
+      [] {:provider "not_exist"}
+
+      "System level groups"
+      cmr-groups {:provider "CMR"}
+
+      "System level groups - case insensitive"
+      cmr-groups {:provider "cmr"}
+
+      "System level groups are always case insensitive"
+      cmr-groups {:provider "cmr" "options[provider][ignore_case]" false}
+
+      "System level and provider groups"
+      (concat cmr-groups prov1-groups) {:provider ["CMR" "prov1"]})))
+
+
+
+
+
+
 
 
 

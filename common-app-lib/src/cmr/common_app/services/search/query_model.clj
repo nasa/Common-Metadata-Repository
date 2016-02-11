@@ -330,6 +330,11 @@
   [value]
   (->NegatedCondition value))
 
+(defn exist-condition
+  "Creates condition that matches a field with a value"
+  [field]
+  (->ExistCondition field))
+
 (defn string-condition
   ([field value]
    (string-condition field value false false))

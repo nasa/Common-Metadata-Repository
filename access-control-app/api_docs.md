@@ -10,6 +10,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
 
   * [/groups](#groups)
     * [POST - Create Group](#create-group)
+    * [GET - Search Groups](#search-groups)
   * /groups/:group-id
     * [GET - Retrieve a group](#retrieve-group)
     * [PUT - Update a group](#update-group)
@@ -200,6 +201,69 @@ Content-Type: application/json
 
 {"concept-id":"AG1200000000-CMR","revision-id":4}
 ```
+
+### <a name="search-groups"></a> Search Groups
+
+Groups can be searched for by sending a GET request to `%CMR-ENDPOINT%/groups`
+
+##### Group Search Parameters
+
+The following parameters are supported when searching for groups.
+
+##### Standard Parameters:
+
+* page_size
+* page_num
+* pretty
+
+##### Group Matching Parameters
+
+These parameters will match fields within a group. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `provider[]=PROV1&provider[]=PROV2`.
+
+* provider
+  * options: ignore_case, pattern
+
+##### Group Search Response
+
+The response is always returned in JSON and includes the following parts.
+
+TODO update from here down
+
+* hits - How many total groups were found.
+* took - How long the search took in milliseconds
+* items - a list of the current page of groups with the following fields
+  * concept-id
+  * revision-id
+  * namespace
+  * value
+  * category
+  * description
+  * originator-id - The id of the user that created the group.
+
+##### Group Search Example
+
+```
+curl -g -i "%CMR-ENDPOINT%/groups?pretty=true&namespace=org\\.ceos\\.*&options[namespace][pattern]=true"
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 292
+
+{
+  "items" : [ {
+    "concept-id" : "T1200000000-CMR",
+    "revision-id" : 1,
+    "namespace" : "org.ceos.wgiss.cwic",
+    "value" : "quality",
+    "category" : "cwic_public",
+    "description" : "This is a sample group.",
+    "originator-id" : "mock-admin"
+  } ],
+  "took" : 5,
+  "hits" : 1
+}
+```
+
 
 ### <a name="application-health"></a> Application Health
 

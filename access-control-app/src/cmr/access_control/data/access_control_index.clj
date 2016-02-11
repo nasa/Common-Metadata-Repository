@@ -2,6 +2,7 @@
   "Performs search and indexing of access control data."
   (:require [cmr.elastic-utils.index-util :as m :refer [defmapping]]
             [cmr.common-app.services.search.elastic-search-index :as esi]
+            [cmr.common-app.services.search.query-to-elastic :as q2e]
             [cmr.common.lifecycle :as l]
             [clojure.string :as str]
             [clojure.edn :as edn]))
@@ -85,6 +86,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search Functions
+
+(defmethod q2e/concept-type->field-mappings :access-group
+  [_]
+  {:provider :provider-id})
 
 (defmethod esi/concept-type->index-info :access-group
   [context _ _]
