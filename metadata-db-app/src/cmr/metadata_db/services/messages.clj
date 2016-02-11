@@ -142,3 +142,8 @@
 (defn tags-only-system-level [provider-id]
   (format "Tag could not be associated with provider [%s]. Tags are system level entities."
           provider-id))
+
+(defn tag-associatons-only-system-level [provider-id]
+  (format (str "Tag association could not be associated with provider [%s]. Tag associations are "
+               "system level entities.")
+          provider-id))

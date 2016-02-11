@@ -142,6 +142,13 @@
   (util/compose-validations (conj base-concept-validations
                                   concept-id-matches-concept-fields-validation-no-provider)))
 
+;; TODO Add validation that associtated tag and concept exists
+(def tag-association-concept-validation
+  "Builds a function that validats a tag association concept map that has no provider and returns
+  a list of errors"
+  (util/compose-validations (conj base-concept-validations
+                                  concept-id-matches-concept-fields-validation-no-provider)))
+
 (def group-concept-validation
   "Builds a function that validates a group concept"
   (util/compose-validations (conj base-concept-validations
@@ -156,6 +163,10 @@
   "validates a tag concept. Throws an error if invalid."
   (util/build-validator :invalid-data tag-concept-validation))
 
+(def validate-tag-association-concept
+  "Validates a tag association concept. Throws an error if invalid."
+  (util/build-validator :invalid-data tag-association-concept-validation))
+
 (def validate-concept-group
   "Validates a group concept. Throws and error if invalid."
   (util/build-validator :invalid-data group-concept-validation))
@@ -168,6 +179,10 @@
 (defmethod validate-concept :tag
   [concept]
   (validate-tag-concept concept))
+
+(defmethod validate-concept :tag-association
+  [concept]
+  (validate-tag-association-concept concept))
 
 (defmethod validate-concept :access-group
   [concept]

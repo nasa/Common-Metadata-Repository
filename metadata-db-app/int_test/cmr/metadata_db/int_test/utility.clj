@@ -1,6 +1,7 @@
 (ns cmr.metadata-db.int-test.utility
   "Contains various utility methods to support integration tests."
   (:require [clojure.test :refer :all]
+            [clojure.string :as str]
             [clj-http.client :as client]
             [cheshire.core :as json]
             [clojure.walk :as walk]
@@ -117,12 +118,16 @@
 
 (def tag-edn
   "Valid EDN for tag metadata"
-  (pr-str {:namespace "org.nasa.something"
-           :category "category1"
-           :value "quality"
+  (pr-str {:tag-key "org.nasa.something.ozone"
            :description "A very good tag"
-           :originator-id "jnorton"
-           :associated-concept-ids #{}}))
+           :originator-id "jnorton"}))
+
+(def tag-association-edn
+  "Valid EDN for tag association metadata"
+  (pr-str {:tag-key "org.nasa.something.ozone"
+           :associated-concept-id "C120000000-PROV1"
+           :revision-id 1
+           :value "Some Value"}))
 
 (def group-edn
   "Valid EDN for group metadata"
@@ -140,6 +145,7 @@
    :granule granule-xml
    :service service-xml
    :tag tag-edn
+   :tag-association tag-association-edn
    :access-group group-edn})
 
 (defn- concept
@@ -208,13 +214,13 @@
 
 (defn tag-association-concept
   "Creates a tag association concept"
-  ([concept tag uniq-num]
-   (tag-association-concept uniq-num {}))
-  ([concept tag uniq-num attributes]
-   (let [{:keys [concept-id revision-id]} concept
+  ([assoc-concept tag uniq-num]
+   (tag-association-concept assoc-concept tag uniq-num {}))
+  ([assoc-concept tag uniq-num attributes]
+   (let [{:keys [concept-id revision-id]} assoc-concept
          tag-id (:native-id tag)
          user-id (str "user" uniq-num)
-         native-id (str tag-id (char 29) concept-id (char 29) revision-id)
+         native-id (str/join (char 29) [tag-id concept-id revision-id])
          attributes (merge {:user-id user-id
                             :format "application/edn"
                             :native-id native-id}
@@ -473,6 +479,10 @@
   [concept]
   (assoc concept :provider-id "CMR"))
 
+(defmethod expected-concept :tag-association
+  [concept]
+  (assoc concept :provider-id "CMR"))
+
 (defmethod expected-concept :default
   [concept]
   concept)
@@ -533,7 +543,7 @@
   ([concept tag uniq-num num-revisions]
    (create-and-save-tag-association concept tag uniq-num num-revisions {}))
   ([concept tag uniq-num num-revisions attributes]
-    (let [concept (tag-association-concept concept tag uniq-num attributes)
+   (let [concept (tag-association-concept concept tag uniq-num attributes)
           _ (dotimes [n (dec num-revisions)]
               (assert-no-errors (save-concept concept)))
           {:keys [concept-id revision-id]} (save-concept concept)]

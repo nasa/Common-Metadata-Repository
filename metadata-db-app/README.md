@@ -91,7 +91,21 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
     }
   }
 
-_Note the absense of provider-id for tags. Tags are system level entities and are always assigned the sytem level provider, CMR._
+#### Tag Association
+
+  {
+    "native-id": "org.nasa.something.quality\C12-PROV_A42\1",
+    "user-id": "jnorton",
+    "format": "applcation/edn",
+    "metadata: {
+      "tag-key": "org.nasa.something.quality",
+      "associated-concept-id": "C12-PROV_A42",
+      "revision-id": 1, (optional field),
+      "value": "string to be indexed" or "data": "arbitrary JSON <= 32K"
+    }
+  }
+
+_Note the absense of provider-id for tags and tag assoications. These are system level entities and are always assigned the sytem level provider, CMR._
 
 ### Sample Tombstone (deleted concept) JSON
 
@@ -206,9 +220,9 @@ throws error if revision-id is less than or equal to the current highest saved r
 
     curl -v -XPOST -H "Content-Type: application/json" -d '{"concept-type": "collection", "native-id": "native-id", "concept-id": "C1-PROV1", "provider-id": "PROV1", "metadata": "<Collection><ShortName>MINIMAL</ShortName></Collection>", "format": "application/echo10+xml", "extra-fields": {"short-name": "MINIMAL", "version-id": "V01", "entry-id": "MINIMAL_V01", "entry-title": "native-id"}}' http://localhost:3001/concepts/
 
-#### Note Regarding Tags
+#### Note Regarding Tags and Tag Associations
 
-No provider should be specified when creating tag concepts - the system level CMR provider is used for all tags. As such, tag concept-ids always take the form of T\<number\>-CMR, where \<number\> is a positive integer.
+No provider should be specified when creating tag or tag associaation concepts - the system level CMR provider is used for all tags. As such, tag concept-ids always take the form of T\<number\>-CMR and tag association concept-ids TA\<number>\>-CMR, where \<number\> is a positive integer.
 
 Tombstones can be created using the same end-point used for saving concepts by specifying "deleted" as true in the body of the POST:
 
@@ -218,7 +232,7 @@ concept-id is a required field. revision-id and revision date are optional. No o
 
 #### Note Regarding Transaction IDs
 
-When a new collections revision is saved (including tombstones) a global transaction-id is saved with it. This transaction-id represents a unique identifier of the state of the database at any give time and is returned with the concept fields when a concept is retrieved. This is to be used during indexing as the version of the indexed record (replacing revision-id). 
+When a new collections revision is saved (including tombstones) a global transaction-id is saved with it. This transaction-id represents a unique identifier of the state of the database at any give time and is returned with the concept fields when a concept is retrieved. This is to be used during indexing as the version of the indexed record (replacing revision-id).
 
 ### GET /concepts/#concept-id
 
@@ -259,7 +273,7 @@ Supported combinations of concept type and parameters:
   * collections with any combination of concept-id, provider-id, entry-id, entry-title, short-name, version-id and native-id
   * granules with provider-id, granule-ur
   * granules with provider-id, native-id
-  * tags with no parameters other than exclude-metadata and latest
+  * tags or tag associations with no parameters other than exclude-metadata and latest
 
 ```
 curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&short-name=s&version-id=1"

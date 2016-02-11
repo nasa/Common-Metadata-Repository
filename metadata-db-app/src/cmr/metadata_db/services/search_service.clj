@@ -74,8 +74,8 @@
       [provider])
     (provider-service/get-providers context)))
 
-(defn- find-tags
-  "Find tags with specific parameters"
+(defn- find-tags-or-tag-associations
+  "Find tags or tag associations with specific parameters"
   [context params]
   (let [db (db-util/context->db context)
         latest-only? (or (true? (:latest params))
@@ -105,7 +105,6 @@
   "Find concepts with specific parameters"
   [context params]
   (validate-find-params params)
-  (if (= :tag (:concept-type params))
-    (find-tags context params)
+  (if (contains? #{:tag :tag-association} (:concept-type params))
+    (find-tags-or-tag-associations context params)
     (find-provider-concepts context params)))
-

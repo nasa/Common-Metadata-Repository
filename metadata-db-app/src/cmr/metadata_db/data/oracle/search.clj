@@ -41,6 +41,7 @@
                      [:provider_id :entry_title :entry_id :short_name :version_id :delete_time
                       :user_id])
    :tag (into common-columns [:user_id])
+   :tag-association (into common-columns [:user_id])
    :access-group (into common-columns [:provider_id :user_id])
    :service (into common-columns [:provider_id :entry_title :entry_id :delete_time :user_id])})
 
@@ -180,4 +181,3 @@
                                (map (fn [[concept-id concepts]]
                                       (->> concepts (sort-by :revision-id) reverse first))))]
       (c/search-with-params latest-concepts params))))
-

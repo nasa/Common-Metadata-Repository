@@ -22,6 +22,7 @@
        :granule "G12-PROV_A42" "PROV_A42"
        :service "S12-PROV_A42" "PROV_A42"
        :tag "T12-PROV_A42" "PROV_A42"
+       :tag-association "TA12-PROV_A42" "PROV_A42"
        :access-group "AG12-PROV_A42" "PROV_A42"
        :access-group "AG12-CMR" "CMR"))
 
@@ -33,6 +34,7 @@
          :granule
          :service
          :tag
+         :tag-association
          :access-group))
   (testing "invalid type"
     (is (= ["[foo] is not a valid concept type."]

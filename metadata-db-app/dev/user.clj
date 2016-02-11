@@ -22,14 +22,7 @@
   (alter-var-root #'mock-echo
                   (constantly
                     (mock-echo/start (mock-echo/create-system))))
-
-
-  (let [s (system/create-system)
-        ;; uncomment to test the memory db
-         ; s (-> s
-         ;       (assoc :db (memory/create-db))
-         ;       (dissoc :scheduler))
-        ]
+  (let [s (system/create-system)]
     (alter-var-root #'system
                     (constantly
                       (system/start s))))

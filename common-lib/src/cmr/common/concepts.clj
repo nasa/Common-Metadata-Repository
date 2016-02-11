@@ -7,13 +7,14 @@
 
 (def concept-types
   "This is the set of the types of concepts in the CMR."
-  #{:collection :granule :tag :service :access-group})
+  #{:collection :granule :tag :tag-association :service :access-group})
 
 (def concept-prefix->concept-type
   "Maps a concept id prefix to the concept type"
   {"C" :collection
    "G" :granule
    "T" :tag
+   "TA" :tag-association
    "S" :service
    "AG" :access-group})
 
