@@ -4,45 +4,27 @@
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.record-generator :as record-gen]
             [cmr.common.date-time-parser :as dtp]
+            [cmr.umm-spec.versioning :as ver]
 
-            ;; To get ability to convert joda time to json
-            [cmr.common.joda-time]))
+    ;; To get ability to convert joda time to json
+            [cmr.common.joda-time]
+            [clojure.set :as set]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; UMM To JSON
 
-(defprotocol ToJsonAble
-  "A function for converting data into data that can easily be converted to JSON"
-  (to-jsonable
-    [o]
-    "Takes in object and returns a new object that can be converted to JSON"))
-
-(extend-protocol ToJsonAble
-
-  ;; Records contain every key with a value of nil. We don't want the JSON to contain that.
-  ;; This converts them into a standard map without the nil keys.
-  clojure.lang.IRecord
-  (to-jsonable
-    [r]
-    (into {}
-          (for [[k v] r
-                :when (some? v)]
-            [(to-jsonable k) (to-jsonable v)])))
-
-  clojure.lang.Sequential
-  (to-jsonable
-    [values]
-    (mapv to-jsonable values))
-
-  ;; Default implementations
-  Object
-  (to-jsonable [o] o)
-
-  nil
-  (to-jsonable [o] o))
+(defn to-jsonable
+  [x]
+  (cond
+    (map? x) (into {}
+                   (for [[k v] x
+                         :when (some? v)]
+                     [(to-jsonable k) (to-jsonable v)]))
+    (sequential? x) (mapv to-jsonable x)
+    :else x))
 
 (defn umm->json
-  "Converts the UMM record to JSON."
+  "Returns a JSON string from the given Clojure record."
   [umm-record]
   (json/generate-string (to-jsonable umm-record)))
 
@@ -116,9 +98,13 @@
 
 (defn json->umm
   "Parses the JSON string and returns Clojure UMM records."
-  [schema json-str]
-  (let [root-type-def (get-in schema [:definitions (:root schema)])]
-    (parse-json schema [(:root schema)] (:root schema) root-type-def (json/decode json-str true))))
-
-
-
+  ([concept-type json-str json-version]
+   (let [schema (js/concept-schema concept-type)
+         root-type-def (get-in schema [:definitions (:root schema)])
+         ;; migrate the decoded JSON object up to the latest UMM before running it through the schema
+         json-obj (json/decode json-str true)
+         migrated (ver/migrate-umm concept-type json-version ver/current-version json-obj)]
+     (parse-json schema [(:root schema)] (:root schema) root-type-def migrated)))
+  ([concept-type json-str]
+    ;; default to trying to parse the current UMM version
+    (json->umm concept-type json-str ver/current-version)))

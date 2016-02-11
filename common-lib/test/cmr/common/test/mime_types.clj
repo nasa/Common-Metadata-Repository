@@ -44,20 +44,20 @@
 
 (deftest convert-format-extension-to-mime-type
   (testing "valid extensions"
-    (is (= mt/json (mt/path-w-extension->mime-type "granules.json")))
-    (is (= mt/xml (mt/path-w-extension->mime-type "granules.xml")))
-    (is (= mt/echo10 (mt/path-w-extension->mime-type "granules.echo10")))
-    (is (= mt/iso-smap (mt/path-w-extension->mime-type "granules.iso-smap")))
-    (is (= mt/iso-smap (mt/path-w-extension->mime-type "granules.iso_smap")))
-    (is (= mt/iso (mt/path-w-extension->mime-type "granules.iso")))
-    (is (= mt/iso (mt/path-w-extension->mime-type "granules.iso19115")))
-    (is (= mt/dif (mt/path-w-extension->mime-type "granules.dif")))
-    (is (= mt/csv (mt/path-w-extension->mime-type "granules.csv")))
-    (is (= mt/kml (mt/path-w-extension->mime-type "granules.kml")))
-    (is (= mt/opendata (mt/path-w-extension->mime-type "granules.opendata"))))
+    (is (= mt/json (mt/path->mime-type "granules.json")))
+    (is (= mt/xml (mt/path->mime-type "granules.xml")))
+    (is (= mt/echo10 (mt/path->mime-type "granules.echo10")))
+    (is (= mt/iso-smap (mt/path->mime-type "granules.iso-smap")))
+    (is (= mt/iso-smap (mt/path->mime-type "granules.iso_smap")))
+    (is (= mt/iso (mt/path->mime-type "granules.iso")))
+    (is (= mt/iso (mt/path->mime-type "granules.iso19115")))
+    (is (= mt/dif (mt/path->mime-type "granules.dif")))
+    (is (= mt/csv (mt/path->mime-type "granules.csv")))
+    (is (= mt/kml (mt/path->mime-type "granules.kml")))
+    (is (= mt/opendata (mt/path->mime-type "granules.opendata"))))
   (testing "invalid extensions"
     (are [uri]
-         (= nil (mt/path-w-extension->mime-type uri))
+         (= nil (mt/path->mime-type uri))
          "granules.text"
          "granules.json.2"
          "granulesjson"
@@ -65,3 +65,26 @@
          ""
          "granules.json/json"
          "granules.j%25son")))
+
+(deftest test-version-of
+  (is (= "1.0" (mt/version-of "application/json;version=1.0")))
+  (is (= "1.0" (mt/version-of "application/json; version=1.0")))
+  (is (= "1.0" (mt/version-of "application/json;charset=utf-8;version=1.0")))
+  (is (= nil   (mt/version-of "application/json; not-the-version=1.0")))
+  (is (= nil   (mt/version-of "application/version=1.0"))))
+
+(deftest test-keep-version
+  (is (= "application/foo" (mt/keep-version "application/foo")))
+  (is (= "application/foo" (mt/keep-version "application/foo;bar=bat")))
+  (is (= "application/foo;version=1.0" (mt/keep-version "application/foo; version=1.0")))
+  (is (= "application/foo;version=1.0" (mt/keep-version "application/foo; charset=utf-8; version=1.0"))))
+
+(deftest test-base-mime-type
+  (is (= "application/foo" (mt/base-mime-type-of "application/foo;bar=bat")))
+  (is (= nil (mt/base-mime-type-of nil))))
+
+(deftest test-format->mime-type
+  (is (= "application/json" (mt/format->mime-type :json)))
+  (is (= "application/vnd.nasa.cmr.umm+json" (mt/format->mime-type :umm-json)))
+  (testing "aliases"
+    (is (= "application/vnd.nasa.cmr.umm+json" (mt/format->mime-type :umm_json)))))

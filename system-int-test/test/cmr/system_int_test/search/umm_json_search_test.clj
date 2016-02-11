@@ -162,6 +162,6 @@
 (deftest search-umm-json-error-cases
   (testing "granule umm-json search is not supported"
     (let [{:keys [status errors]} (search/find-concepts-umm-json :granule {})]
-      (is (= [400 ["The mime type [application/umm+json] is not supported for granules."]]
+      (is (= [400 ["The mime type [application/vnd.nasa.cmr.umm+json] is not supported for granules."]]
              [status errors])))))
 
