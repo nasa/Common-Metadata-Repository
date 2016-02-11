@@ -222,45 +222,57 @@ These parameters will match fields within a group. They are case insensitive by 
 
 * provider
   * options: ignore_case, pattern
+  * This allows searching for either system level groups or groups owned by a specific provider. Use the provider id of "CMR" to search for system level groups.
 
 ##### Group Search Response
 
 The response is always returned in JSON and includes the following parts.
-
-TODO update from here down
 
 * hits - How many total groups were found.
 * took - How long the search took in milliseconds
 * items - a list of the current page of groups with the following fields
   * concept-id
   * revision-id
-  * namespace
-  * value
-  * category
+  * name
   * description
-  * originator-id - The id of the user that created the group.
+  * provider-id - if a provider level group
+  * member-count - The number of users in the group
 
 ##### Group Search Example
 
 ```
-curl -g -i "%CMR-ENDPOINT%/groups?pretty=true&namespace=org\\.ceos\\.*&options[namespace][pattern]=true"
+curl -i %CMR-ENDPOINT%/groups?pretty=true
 
 HTTP/1.1 200 OK
-Content-Type: application/json;charset=ISO-8859-1
-Content-Length: 292
+Content-Type: application/json; charset=utf-8
+CMR-Hits: 4
+CMR-Took: 5
+CMR-Request-Id: 5689303f-574d-4edf-b2f1-5219dc0ae6c5
+Content-Length: 702
 
 {
-  "items" : [ {
-    "concept-id" : "T1200000000-CMR",
-    "revision-id" : 1,
-    "namespace" : "org.ceos.wgiss.cwic",
-    "value" : "quality",
-    "category" : "cwic_public",
-    "description" : "This is a sample group.",
-    "originator-id" : "mock-admin"
-  } ],
+  "hits" : 4,
   "took" : 5,
-  "hits" : 1
+  "items" : [ {
+    "member-count" : 2,
+    "name" : "Administrators",
+    "description" : "na",
+    "revision-id" : 2,
+    "concept-id" : "AG1200000002-PROV1",
+    "provider-id" : "PROV1"
+  }, {
+    "name" : "Administrators",
+    "member-count" : 2,
+    "description" : "na",
+    "revision-id" : 2,
+    "concept-id" : "AG1200000000-CMR"
+  }, {
+    "name" : "Data Readers",
+    "member-count" : 2,
+    "description" : "na",
+    "revision-id" : 2,
+    "concept-id" : "AG1200000001-CMR"
+  } ]
 }
 ```
 

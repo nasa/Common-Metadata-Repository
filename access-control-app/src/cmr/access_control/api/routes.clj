@@ -184,6 +184,8 @@
         ;; TODO CMR-2130 document in api docs
         ;; Search for groups
         (GET "/" {:keys [request-context params]}
+          ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
+          (acl/verify-ingest-management-permission request-context :update)
           (search-for-groups request-context params))
 
         ;; Create a group
@@ -195,6 +197,8 @@
         (context "/:group-id" [group-id]
           ;; Get a group
           (GET "/" {:keys [request-context]}
+            ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
+            (acl/verify-ingest-management-permission request-context :update)
             (get-group request-context group-id))
 
           ;; Delete a group
@@ -211,6 +215,8 @@
 
           (context "/members" []
             (GET "/" {:keys [request-context]}
+              ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
+              (acl/verify-ingest-management-permission request-context :update)
               (get-members request-context group-id))
 
             (POST "/" {:keys [request-context headers body]}
