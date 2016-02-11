@@ -136,6 +136,15 @@
          (str "Call to Elasticsearch caught exception " (get-in (ex-data e#) [:object :body]))
          e#))))
 
+(defn reset
+  "Development time helper function to delete an index and recreate it to empty all data."
+  [index-name index-settings type-name mappings elastic-store]
+  (let [conn (:conn elastic-store)]
+    (when (esi/exists? conn index-name)
+      (info "Deleting the cubby index")
+      (esi/delete conn index-name))
+    (create-index-or-update-mappings index-name index-settings type-name mappings elastic-store)))
+
 (defn save-elastic-doc
   "Save the document in Elasticsearch, raise error if failed.
   * elastic-store - A component containing an elastic connection under the :conn key

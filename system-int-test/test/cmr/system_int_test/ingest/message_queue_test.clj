@@ -9,6 +9,7 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.system :as s]
             [cmr.system-int-test.utils.search-util :as search]
+            [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
             [cmr.indexer.config :as indexer-config]))
 
 (use-fixtures :each (join-fixtures
@@ -114,7 +115,7 @@
 (deftest message-queue-retry-test
   (s/only-with-real-message-queue
     (testing "Initial index fails and retries once, completes successfully on retry"
-      (index-util/set-message-queue-retry-behavior 1)
+      (qb-side-api/set-message-queue-retry-behavior 1)
       (let [collection (make-coll 1)
             granule (make-gran collection 1)]
         (assert-in-metadata-db collection granule)
@@ -136,7 +137,7 @@
 (deftest message-queue-failure-test
   (s/only-with-real-message-queue
     (testing "Indexing attempts fail with retryable error and eventually all retries are exhausted"
-      (index-util/set-message-queue-retry-behavior 6)
+      (qb-side-api/set-message-queue-retry-behavior 6)
       (let [collection (make-coll 1)
             granule (make-gran collection 1)]
         (assert-in-metadata-db collection granule)
@@ -166,30 +167,30 @@
 ;; This test isn't reliable as sometimes the item is able to be queued
 ;; See CMR-1717
 #_(deftest publish-messages-failure-test
-  (s/only-with-real-message-queue
-    (testing "When unable to publish a message on the queue the ingest fails."
-      (testing "Update concept"
-        (index-util/set-message-queue-publish-timeout 0)
-        (let [collection (d/ingest "PROV1" (dc/collection) {:allow-failure? true})]
+   (s/only-with-real-message-queue
+     (testing "When unable to publish a message on the queue the ingest fails."
+       (testing "Update concept"
+         (index-util/set-message-queue-publish-timeout 0)
+         (let [collection (d/ingest "PROV1" (dc/collection) {:allow-failure? true})]
           ;; Verify ingest received a failed status code
-          (is (= 503 (:status collection)))
-          (index-util/wait-until-indexed)
+           (is (= 503 (:status collection)))
+           (index-util/wait-until-indexed)
           ;; Verify the message queue did not receive the message
-          (is (nil? (index-util/get-concept-message-queue-history (indexer-config/index-queue-name))))))
+           (is (nil? (index-util/get-concept-message-queue-history (indexer-config/index-queue-name))))))
 
-      (testing "Delete concept"
-        (index-util/set-message-queue-publish-timeout 10000)
-        (let [collection (d/ingest "PROV1" (dc/collection))
-              _ (index-util/set-message-queue-publish-timeout 0)
-              response (ingest/delete-concept (d/item->concept collection))]
+       (testing "Delete concept"
+         (index-util/set-message-queue-publish-timeout 10000)
+         (let [collection (d/ingest "PROV1" (dc/collection))
+               _ (index-util/set-message-queue-publish-timeout 0)
+               response (ingest/delete-concept (d/item->concept collection))]
           ;; Verify ingest received a failed status code
-          (is (= 503 (:status response)))
-          (index-util/wait-until-indexed)
+           (is (= 503 (:status response)))
+           (index-util/wait-until-indexed)
           ;; Verify the message queue did not receive the delete message
-          (is (= {[(:concept-id collection) 1]
-                  [{:action "enqueue", :result "initial"}
-                   {:action "process", :result "success"}]}
-                 (index-util/get-concept-message-queue-history (indexer-config/index-queue-name)))))))))
+           (is (= {[(:concept-id collection) 1]
+                   [{:action "enqueue", :result "initial"}
+                    {:action "process", :result "success"}]}
+                  (index-util/get-concept-message-queue-history (indexer-config/index-queue-name)))))))))
 
 (comment
 
@@ -267,7 +268,7 @@
   ;;   (Thread/sleep 2000)
   ;; 2.) Force messages to retry 4 times before being processed so that messages are on each of the
   ;; different queues.
-  (index-util/set-message-queue-retry-behavior 4)
+  (qb-side-api/set-message-queue-retry-behavior 4)
   ;; 3.) Get a count of the collections in your system before you start:
   (cmr.demos.helpers/curl "http://localhost:3003/collections.xml?page_size=0")
   ;; 4.) Ingest a bunch of collections - note you will want to be ready to restart things quickly
@@ -282,9 +283,9 @@
   ;;      sudo service rabbitmq-server restart
   ;; 7.) Wait until everything is indexed
   ;; 8.) Verify that every collection was ingested successfully by adding 150 to the original count.
-  (cmr.demos.helpers/curl "http://localhost:3003/collections.xml?page_size=0")
+  (cmr.demos.helpers/curl "http://localhost:3003/collections.xml?page_size=0"))
 
   ;; At the end of the tests make sure to return behavior to normal by running reset
-  )
+
 
 

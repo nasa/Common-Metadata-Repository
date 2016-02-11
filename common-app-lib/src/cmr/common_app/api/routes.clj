@@ -16,6 +16,62 @@
   "The HTTP response header field containing the current request id."
   "CMR-Request-Id")
 
+(def TOKEN_HEADER "echo-token")
+
+(def CONTENT_TYPE_HEADER "Content-Type")
+
+(def HITS_HEADER "CMR-Hits")
+
+(def TOOK_HEADER "CMR-Took")
+
+(def CORS_ORIGIN_HEADER
+  "This CORS header is to restrict access to the resource to be only from the defined origins,
+  value of \"*\" means all request origins have access to the resource"
+  "Access-Control-Allow-Origin")
+
+(def CORS_METHODS_HEADER
+  "This CORS header is to define the allowed access methods"
+  "Access-Control-Allow-Methods")
+
+(def CORS_CUSTOM_HEADERS_HEADER
+  "This CORS header is to define the allowed custom headers"
+  "Access-Control-Allow-Headers")
+
+(def CORS_MAX_AGE_HEADER
+  "This CORS header is to define how long in seconds the response of the preflight request can be cached"
+  "Access-Control-Max-Age")
+
+(defn search-response-headers
+  "Generate headers for search response."
+  [content-type results]
+  (merge {CONTENT_TYPE_HEADER (mt/with-utf-8 content-type)
+          CORS_ORIGIN_HEADER "*"}
+         (when (:hits results) {HITS_HEADER (str (:hits results))})
+         (when (:took results) {TOOK_HEADER (str (:took results))})))
+
+(defn search-response
+  "Generate the response map for finding concepts"
+  [{:keys [results result-format] :as response}]
+  {:status  200
+   :headers (search-response-headers
+             (if (string? result-format)
+               result-format
+               (mt/format->mime-type result-format))
+             response)
+   :body    results})
+
+(def options-response
+  "Generate the response map when requesting options"
+  {:status 200
+   :headers {CONTENT_TYPE_HEADER "text/plain; charset=utf-8"
+             CORS_ORIGIN_HEADER "*"
+             CORS_METHODS_HEADER "POST, GET, OPTIONS"
+             CORS_CUSTOM_HEADERS_HEADER "Echo-Token"
+             ;; the value in seconds for how long the response to the preflight request can be cached
+             ;; set to 30 days
+             CORS_MAX_AGE_HEADER "2592000"}})
+
+
 (def cache-api-routes
   "Create routes for the cache querying/management api"
   (context "/caches" []

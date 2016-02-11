@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10.spatial
   "Defines mappings from ECHO10 XML spatial elements into UMM records"
-  (:require [cmr.umm-spec.simple-xpath :refer [select text]]
+  (:require [clojure.string :as str]
+            [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
             [cmr.umm-spec.util :as u]))
 
@@ -44,7 +45,8 @@
   "Returns UMM-C spatial map from ECHO10 XML document."
   [doc]
   (let [[spatial] (select doc "/Collection/Spatial")]
-    {:SpatialCoverageType          (value-of spatial "SpatialCoverageType")
+    {:SpatialCoverageType          (when-let [sct (value-of spatial "SpatialCoverageType")]
+                                     (str/upper-case sct))
      :GranuleSpatialRepresentation (value-of spatial "GranuleSpatialRepresentation")
      :HorizontalSpatialDomain      (let [[horiz] (select spatial "HorizontalSpatialDomain")]
                                      {:ZoneIdentifier (value-of horiz "ZoneIdentifier")

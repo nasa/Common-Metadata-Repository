@@ -14,10 +14,9 @@
   (when (config/publish-messages)
     (when-let [exchange-name-fn (config/concept-type->exchange-name-fn
                                  (cc/concept-id->type (:concept-id msg)))]
-      (let [timeout-ms (config/publish-timeout-ms)
-            queue-broker (get-in context [:system :queue-broker])]
+      (let [queue-broker (get-in context [:system :queue-broker])]
         (when queue-broker
-          (queue/publish-message queue-broker (exchange-name-fn) msg timeout-ms))))))
+          (queue/publish-message queue-broker (exchange-name-fn) msg))))))
 
 (defmulti concept-update-event
   "Creates an event representing a concept being updated or created."
@@ -49,11 +48,10 @@
   "Publishes a message indicating a collection revision was removed."
   [context concept-id revision-id]
   (when (config/publish-messages)
-    (let [timeout-ms (config/publish-timeout-ms)
-          queue-broker (get-in context [:system :queue-broker])
+    (let [queue-broker (get-in context [:system :queue-broker])
           exchange-name (config/deleted-collection-revision-exchange-name)
           ;; Note it's important that the format of this message match the ingest event format.
           msg {:action :concept-revision-delete
                :concept-id concept-id
                :revision-id revision-id}]
-      (queue/publish-message queue-broker exchange-name msg timeout-ms))))
+      (queue/publish-message queue-broker exchange-name msg))))
