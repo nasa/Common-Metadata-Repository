@@ -49,7 +49,7 @@
   (doseq [input-format valid-formats
           output-format valid-formats]
     (testing (format "Translating %s to %s" (name input-format) (name output-format))
-      (let [input-str (umm-spec/generate-metadata :collection input-format expected-conversion/example-collection-record)
+      (let [input-str (umm-spec/generate-metadata expected-conversion/example-collection-record input-format)
             expected (expected-conversion/convert expected-conversion/example-collection-record input-format output-format)
             {:keys [status headers body]} (ingest/translate-metadata :collection input-format input-str output-format)
             content-type (first (mt/extract-mime-types (:content-type headers)))]
@@ -87,7 +87,7 @@
       (testing "wrong xml format"
         (assert-translate-failure
           #"Element 'Entry_ID' is a simple type, so it must have no element information item"
-          :collection :dif (umm-spec/generate-metadata :collection :dif10 expected-conversion/example-collection-record) :umm-json))
+          :collection :dif (umm-spec/generate-metadata expected-conversion/example-collection-record :dif10) :umm-json))
 
       (testing "bad json"
         (assert-translate-failure #"object has missing required properties"
@@ -153,11 +153,11 @@
     (def output :dif)
 
 
-    (def metadata (umm-spec/generate-metadata :collection input expected-conversion/example-collection-record))
+    (def metadata (umm-spec/generate-metadata expected-conversion/example-collection-record input))
 
     (def parsed-from-metadata (umm-spec/parse-metadata :collection input metadata))
 
-    (def metadata-regen (umm-spec/generate-metadata :collection output parsed-from-metadata))
+    (def metadata-regen (umm-spec/generate-metadata parsed-from-metadata output))
 
     (def parsed-from-metadata-regen (umm-spec/parse-metadata :collection output metadata-regen))
     )

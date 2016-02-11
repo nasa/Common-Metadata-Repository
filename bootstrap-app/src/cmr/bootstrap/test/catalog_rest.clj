@@ -104,7 +104,7 @@
 
 (def mime-type->db-format
   "Map of mime types to the format to store in the database. Modified to store what Catalog REST uses"
-  (assoc mdb-concepts/mime-type->db-format
+  (assoc mdb-concepts/mime-type->db-format-map
          mt/iso-smap "ISO-SMAP"))
 
 (defn update-concept

@@ -27,7 +27,7 @@
   "The batch size to retrieve expired concepts"
   5000)
 
-(def mime-type->db-format
+(def mime-type->db-format-map
   "A mapping of mime type strings to the strings they are stored in the database as. The existing ones
   here match what Catalog REST stores and must continue to match that. Adding new ones is allowed
   but do not modify these existing values."
@@ -40,16 +40,30 @@
    mt/serf     "SERF"
    mt/umm-json "UMM_JSON"})
 
-(def db-format->mime-type
+(defn mime-type->db-format
+  [x]
+  (if (mt/umm-json? x)
+    (str "UMM_JSON;" (mt/version-of x))
+    (get mime-type->db-format-map x)))
+
+(def db-format->mime-type-map
   "A mapping of the format strings stored in the database to the equivalent mime type in concepts"
   ;; We add "ISO-SMAP" mapping here to work with data that are bootstrapped or synchronized directly
   ;; from catalog-rest. Since catalog-rest uses ISO-SMAP as the format value in its database and
   ;; CMR bootstrap-app simply copies this format into CMR database, we could have "ISO-SMAP" as
   ;; a format in CMR database.
-  (assoc (set/map-invert mime-type->db-format)
+  (assoc (set/map-invert mime-type->db-format-map)
          "ISO-SMAP" mt/iso-smap
          ;; We also have to support whatever the original version of the the string Metadata DB originally used.
          "SMAP_ISO" mt/iso-smap))
+
+(defn db-format->mime-type
+  [db-format]
+  (if (.startsWith db-format "UMM_JSON;")
+    (let [[_ version] (str/split db-format #";")]
+      (mt/with-version mt/umm-json version))
+    ;; if it's anything else, including "UMM_JSON", use the map lookup
+    (get db-format->mime-type-map db-format)))
 
 (defn safe-max
   "Return the maximimum of two numbers, treating nil as the lowest possible number"

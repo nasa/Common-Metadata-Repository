@@ -27,9 +27,6 @@
    ;; Abstract provides a brief description of the data or service the metadata represents.
    Abstract
 
-   ;; The language used in the metadata record.
-   MetadataLanguage
-
    ;; This element contains suggested usage or purpose for the data or service.
    Purpose
 

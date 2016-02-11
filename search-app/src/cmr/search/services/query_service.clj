@@ -187,7 +187,7 @@
     (let [concept (first (t/get-latest-formatted-concepts context [concept-id] result-format))]
       (when-not concept
         (throw-id-not-found concept-id))
-      {:results (:metadata concept) :result-format (mt/mime-type->format (:format concept))})))
+      {:results (:metadata concept) :result-format (:format concept)})))
 
 (defn find-concept-by-id-and-revision
   "Executes a search to metadata-db and returns the concept with the given concept-id and

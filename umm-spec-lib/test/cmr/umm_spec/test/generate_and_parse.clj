@@ -44,7 +44,7 @@
   "Returns record after being converted to XML and back to UMM through
   the given to-xml and to-umm mappings."
   [concept-type metadata-format record]
-  (let [metadata-xml (core/generate-metadata concept-type metadata-format record)]
+  (let [metadata-xml (core/generate-metadata record metadata-format)]
     ;; validate against xml schema
     (is (empty? (core/validate-xml concept-type metadata-format metadata-xml)))
     (core/parse-metadata concept-type metadata-format metadata-xml)))
@@ -53,7 +53,7 @@
   "Returns a vector of errors (empty if none) from attempting to convert the given UMM record
   to valid XML in the given format."
   [concept-type metadata-format record]
-  (let [metadata-xml (core/generate-metadata concept-type metadata-format record)]
+  (let [metadata-xml (core/generate-metadata record metadata-format)]
     (core/validate-xml concept-type metadata-format metadata-xml)))
 
 (deftest roundtrip-example-collection-record
@@ -117,7 +117,7 @@
 ;; This test is to verify that we populate UMM Projects in gmd:descriptiveKeywords correctly as well.
 (defspec iso19115-projects-keywords 100
   (for-all [umm-record umm-gen/umm-c-generator]
-    (let [metadata-xml (core/generate-metadata :collection :iso19115 umm-record)
+    (let [metadata-xml (core/generate-metadata umm-record :iso19115)
           projects (:Projects (core/parse-metadata :collection :iso19115 metadata-xml))
           expected-projects-keywords (seq (map iu/generate-title projects))]
       (is (= expected-projects-keywords

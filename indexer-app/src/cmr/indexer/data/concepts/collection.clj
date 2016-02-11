@@ -168,7 +168,7 @@
             :browsable browsable
             :atom-links atom-links
             :summary summary
-            :metadata-format (name (mt/base-mime-type-to-format format))
+            :metadata-format (name (mt/format-key format))
             :related-urls (map json/generate-string related-urls)
             :update-time update-time
             :insert-time insert-time

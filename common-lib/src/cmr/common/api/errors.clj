@@ -55,8 +55,8 @@
   [error]
   (update-in error [:path] keyword-path->string-path))
 
-(defmethod errors->body-string :json
-  [response-format errors]
+(defmethod errors->body-string mt/json
+  [_ errors]
   (json/generate-string {:errors (map error->json-element errors)}))
 
 (defmulti error->xml-element
@@ -77,8 +77,8 @@
                           (for [error errors]
                             (x/element :error {} error))))))
 
-(defmethod errors->body-string :xml
-  [response-format errors]
+(defmethod errors->body-string mt/xml
+  [_ errors]
   (x/emit-str
     (x/element :errors {}
                (map error->xml-element errors))))
@@ -87,14 +87,26 @@
   "Returns the response content-type and body for the given errors and format"
   [errors results-format]
   (let [content-type (if (re-find #"xml" results-format) mt/xml mt/json)
-        response-format (mt/mime-type->format content-type)
-        body (errors->body-string response-format errors)]
+        body (errors->body-string content-type errors)]
     [content-type body]))
+
+(defn- get-results-format
+  "Returns the requested results format parsed from the URL extension.  If the URL extension does
+  not designate the format, then determine the mime-type from the accept and content-type headers.
+  If the format still cannot be determined return the default-mime-type as passed in."
+  ([path-w-extension headers default-mime-type]
+   (get-results-format
+     path-w-extension headers mt/all-supported-mime-types default-mime-type))
+  ([path-w-extension headers valid-mime-types default-mime-type]
+   (or (mt/path->mime-type path-w-extension)
+       (mt/accept-mime-type headers valid-mime-types)
+       (mt/content-type-mime-type headers valid-mime-types)
+       default-mime-type)))
 
 (defn- handle-service-error
   "Handles service errors thrown during a request and returns the appropriate ring response."
   [default-format-fn request type errors e]
-  (let [results-format (mt/get-results-format
+  (let [results-format (get-results-format
                          (:uri request)
                          (:headers request)
                          (default-format-fn request e))
