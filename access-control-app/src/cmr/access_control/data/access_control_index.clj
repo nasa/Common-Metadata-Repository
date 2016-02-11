@@ -91,6 +91,10 @@
   [_]
   {:provider :provider-id})
 
+(defmethod q2e/field->lowercase-field-mappings :access-group
+  [_]
+  {:provider "provider-id.lowercase"})
+
 (defmethod esi/concept-type->index-info :access-group
   [context _ _]
   {:index-name group-index-name
