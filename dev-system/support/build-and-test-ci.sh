@@ -28,6 +28,12 @@ if [ $? -ne 0 ] ; then
   echo "Failed to generate ingest docs" >&2
   exit 1
 fi
+date && echo "Generating Access Control API documentation" &&
+(cd access-control-app && lein with-profile docs generate-docs)
+if [ $? -ne 0 ] ; then
+  echo "Failed to generate access control docs" >&2
+  exit 1
+fi
 if [ "$CMR_DEV_SYSTEM_DB_TYPE" = "external" ] ; then
   dev-system/support/setup-oracle.sh
   if [$? -ne 0 ] ; then
