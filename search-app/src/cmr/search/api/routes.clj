@@ -219,17 +219,16 @@
       (let [supported-mime-types (disj supported-concept-id-retrieval-mime-types mt/atom mt/json)
             result-format (get-search-results-format path-w-extension headers
                                                      supported-mime-types
-                                                     mt/xml)
-            params (assoc params :result-format result-format)]
+                                                     mt/xml)]
         (info (format "Search for concept with cmr-concept-id [%s] and revision-id [%s]"
                       concept-id
                       revision-id))
+        ;; else, revision-id is nil
         (cr/search-response (query-svc/find-concept-by-id-and-revision
-                                        context result-format concept-id revision-id)))
+                              context result-format concept-id revision-id)))
       (let [result-format (get-search-results-format path-w-extension headers
                                                      supported-concept-id-retrieval-mime-types
-                                                     mt/xml)
-            params (assoc params :result-format result-format)]
+                                                     mt/xml)]
         (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
         (cr/search-response (query-svc/find-concept-by-id context result-format concept-id))))))
 

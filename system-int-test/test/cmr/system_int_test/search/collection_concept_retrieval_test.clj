@@ -152,17 +152,30 @@
         result      (d/ingest-concept-with-metadata {:provider-id  "PROV1"
                                                      :concept-type :collection
                                                      :format       mime-type
-                                                     :metadata     json})]
+                                                     :metadata     json})
+        concept-id  (:concept-id result)
+        retrieve    (fn [revision-id]
+                      (search/retrieve-concept concept-id
+                                               revision-id
+                                               {:query-params {:token user1-token}
+                                                :accept       "application/vnd.nasa.cmr.umm+json"}))]
     (index/wait-until-indexed)
-    (let [response (search/retrieve-concept (:concept-id result)
-                                            nil
-                                            {:query-params {:token user1-token}
-                                             :accept "application/vnd.nasa.cmr.umm+json"})
-          content-type (get-in response [:headers "Content-Type"])]
-      (is (= 200 (:status response)))
-      (is (= json (:body response)))
-      (is (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type)))
-      (is (= "1.0" (mt/version-of content-type))))))
+
+    (testing "without revision id"
+      (let [response     (retrieve nil)
+            content-type (get-in response [:headers "Content-Type"])]
+        (is (= 200 (:status response)))
+        (is (= json (:body response)))
+        (is (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type)))
+        (is (= "1.0" (mt/version-of content-type)))))
+
+    (testing "with a revision id"
+      (let [response     (retrieve 1)
+            content-type (get-in response [:headers "Content-Type"])]
+        (is (= 200 (:status response)))
+        (is (= json (:body response)))
+        (is (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type)))
+        (is (= "1.0" (mt/version-of content-type)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
