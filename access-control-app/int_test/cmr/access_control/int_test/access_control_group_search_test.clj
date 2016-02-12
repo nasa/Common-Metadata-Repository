@@ -54,7 +54,7 @@
 (deftest group-search-test
   (let [token (e/login (u/conn-context) "user1")
         cmr-group1 (ingest-group token {:name "group1"} ["user1"])
-        cmr-group2 (ingest-group token {:name "group2"} ["user1" "user2"])
+        cmr-group2 (ingest-group token {:name "group2"} ["USER1" "user2"])
         cmr-group3 (ingest-group token {:name "group3"} nil)
         prov1-group1 (ingest-group token {:name "group1" :provider-id "PROV1"} ["user1"])
         prov1-group2 (ingest-group token {:name "group2" :provider-id "PROV1"} ["user1" "user3"])
@@ -73,7 +73,7 @@
                (select-keys (u/search token params) [:status :items :hits :errors])))
 
         "Normal case is case insensitive"
-        [cmr-group1 cmr-group2 prov1-group1 prov1-group2] {:member "user1"}
+        [cmr-group1 cmr-group2 prov1-group1 prov1-group2] {:member "UsEr1"}
 
         "Pattern"
         [cmr-group1 cmr-group2 prov1-group1 prov1-group2 prov2-group1 prov2-group2]

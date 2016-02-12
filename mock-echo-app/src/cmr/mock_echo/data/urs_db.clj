@@ -1,5 +1,6 @@
 (ns cmr.mock-echo.data.urs-db
-  "This is an in memory database for mocking URS.")
+  "This is an in memory database for mocking URS."
+  (:require [clojure.string :as str]))
 
 (def initial-db-state
   "Initial database state which is a map of usernames to passwords"
@@ -21,14 +22,14 @@
   "Creates the list of users in the user db"
   [context users]
   (let [user-map (into {} (for [{:keys [username password]} users]
-                            [username password]))
+                            [(str/lower-case username) password]))
         user-db (context->urs-db context)]
     (swap! user-db update-in [:users] merge user-map)))
 
 (defn user-exists?
   "Returns true if the user exists"
   [context username]
-  (some? (get-in (deref (context->urs-db context)) [:users username])))
+  (some? (get-in (deref (context->urs-db context)) [:users (str/lower-case username)])))
 
 (defn password-matches?
   "Returns true if the user exists and their password matches"
