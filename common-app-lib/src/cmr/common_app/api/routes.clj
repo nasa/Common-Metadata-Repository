@@ -33,18 +33,24 @@
   "This CORS header is to define the allowed access methods"
   "Access-Control-Allow-Methods")
 
-(def CORS_CUSTOM_HEADERS_HEADER
+(def CORS_CUSTOM_ALLOWED_HEADER
   "This CORS header is to define the allowed custom headers"
   "Access-Control-Allow-Headers")
+
+(def CORS_CUSTOM_EXPOSED_HEADER
+  "This CORS header is to define the exposed custom headers"
+  "Access-Control-Expose-Headers")
 
 (def CORS_MAX_AGE_HEADER
   "This CORS header is to define how long in seconds the response of the preflight request can be cached"
   "Access-Control-Max-Age")
 
 (defn search-response-headers
-  "Generate headers for search response."
+  "Generate headers for search response. CORS response headers can be tested through
+  dev-system/resources/cors_headers_test.html"
   [content-type results]
   (merge {CONTENT_TYPE_HEADER (mt/with-utf-8 content-type)
+          CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id"
           CORS_ORIGIN_HEADER "*"}
          (when (:hits results) {HITS_HEADER (str (:hits results))})
          (when (:took results) {TOOK_HEADER (str (:took results))})))
@@ -54,10 +60,10 @@
   [{:keys [results result-format] :as response}]
   {:status  200
    :headers (search-response-headers
-             (if (string? result-format)
-               result-format
-               (mt/format->mime-type result-format))
-             response)
+              (if (string? result-format)
+                result-format
+                (mt/format->mime-type result-format))
+              response)
    :body    results})
 
 (def options-response
@@ -66,7 +72,7 @@
    :headers {CONTENT_TYPE_HEADER "text/plain; charset=utf-8"
              CORS_ORIGIN_HEADER "*"
              CORS_METHODS_HEADER "POST, GET, OPTIONS"
-             CORS_CUSTOM_HEADERS_HEADER "Echo-Token"
+             CORS_CUSTOM_ALLOWED_HEADER "Echo-Token, Client-Id, CMR-Request-Id"
              ;; the value in seconds for how long the response to the preflight request can be cached
              ;; set to 30 days
              CORS_MAX_AGE_HEADER "2592000"}})
