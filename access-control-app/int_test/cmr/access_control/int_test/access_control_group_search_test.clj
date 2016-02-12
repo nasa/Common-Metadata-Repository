@@ -107,7 +107,7 @@
         "Pattern - no match"
         [] {:name "*oup" "options[name][pattern]" true}
         "Pattern - matches"
-        all-groups {:name "Group*" "options[name][pattern]" true}
+        all-groups {:name "Gr?up*" "options[name][pattern]" true}
 
         "Multiple matches"
         [cmr-group1 prov1-group1 prov2-group1
