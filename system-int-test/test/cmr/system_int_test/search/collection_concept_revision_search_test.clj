@@ -7,7 +7,9 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.mime-types :as mt]
-            [cmr.common.util :refer [are2] :as util]))
+            [cmr.common.util :refer [are2] :as util]
+            [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -117,6 +119,26 @@
             "all-revisions true"
             [coll1-1 coll1-2-tombstone coll1-3 coll2-1 coll2-2 coll2-3-tombstone coll3]
             {:all-revisions true}))))
+
+(deftest search-umm-json-tombstones
+  (let [coll4-umm expected-conversion/example-collection-record
+        mime-type "application/vnd.nasa.cmr.umm+json;version=1.0"
+        json (umm-spec/generate-metadata coll4-umm mime-type)
+        coll (d/ingest-concept-with-metadata {:provider-id "PROV1"
+                                                 :concept-type :collection
+                                                 :format mime-type
+                                                 :native-id "coll"
+                                                 :metadata json})
+        tombstone (ingest/delete-concept {:provider-id "PROV1"
+                                                  :concept-type :collection
+                                                  :native-id "coll"})
+        tombstone (assoc tombstone :deleted true)]
+    (index/wait-until-indexed)
+    (is (= (set (for [{:keys [concept-id revision-id]} [coll tombstone]]
+                  {:id concept-id
+                   :revision-id revision-id}))
+           (set (for [ref (:refs (search/find-refs :collection {:all-revisions true}))]
+                  (select-keys ref [:id :revision-id])))))))
 
 (deftest search-all-revisions-error-cases
   (testing "collection search with all_revisions bad value"
