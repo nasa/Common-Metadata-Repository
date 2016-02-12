@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+   <meta charset="utf-8">
+   <title>Cors Test</title>
+ </head>
+ <body>
+   <h1 id="resp"></h1>
+   <script>
+     var req = new XMLHttpRequest();
+     var url = 'http://localhost:3003/collections.json';
+     req.open('GET', url, true);
+     req.setRequestHeader('Client-Id', 'Sprint44Demo');
+     req.setRequestHeader('CMR-Request-Id', 'sprint44-demo');
+     req.onload = function() {
+      var hits = req.getResponseHeader("CMR-Hits");
+      var requestId = req.getResponseHeader("CMR-Request-Id");
+      var response = "CMR-Hits: " + hits + "\nCMR-Request-Id: " + requestId + "\nResult: " + req.responseText;
+       document.getElementById('resp').innerText = response;
+     };
+     req.onerror = function() {
+       document.getElementById('resp').innerText = "Fail!";
+     };
+     req.send();
+   </script>
+ </body>
+</html>
+
