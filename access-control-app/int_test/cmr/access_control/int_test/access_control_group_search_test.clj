@@ -44,12 +44,17 @@
            (u/search token {"options" "bar"})))
     (is (= {:status 400 :errors ["Option [foo] is not supported for param [provider]"]}
            (u/search token {:provider "PROV1"
-                            "options[provider][foo]" "bar"})))))
+                            "options[provider][foo]" "bar"})))
+
+    ;; Members search is always case insensitive
+    (is (= {:status 400 :errors ["Option [ignore_case] is not supported for param [member]"]}
+           (u/search token {:member "foo"
+                            "options[member][ignore_case]" true})))))
 
 (deftest group-search-test
   (let [token (e/login (u/conn-context) "user1")
         cmr-group1 (ingest-group token {:name "group1"} ["user1"])
-        cmr-group2 (ingest-group token {:name "group2"} ["user1" "user2"])
+        cmr-group2 (ingest-group token {:name "group2"} ["USER1" "user2"])
         cmr-group3 (ingest-group token {:name "group3"} nil)
         prov1-group1 (ingest-group token {:name "group1" :provider-id "PROV1"} ["user1"])
         prov1-group2 (ingest-group token {:name "group2" :provider-id "PROV1"} ["user1" "user3"])
@@ -61,48 +66,97 @@
         prov-groups (concat prov1-groups prov2-groups)
         all-groups (concat cmr-groups prov1-groups prov2-groups)]
     (u/wait-until-indexed)
-    (are2 [expected-groups params]
-      (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
-             (select-keys (u/search token params) [:status :items :hits])))
 
-      "No parameters finds all groups"
-      all-groups {}
+    (testing "Search by member"
+      (are2 [expected-groups params]
+        (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
+               (select-keys (u/search token params) [:status :items :hits :errors])))
 
-      "Single provider id"
-      prov1-groups {:provider "PROV1"}
+        "Normal case is case insensitive"
+        [cmr-group1 cmr-group2 prov1-group1 prov1-group2] {:member "UsEr1"}
 
-      "Provider id is case insensitve"
-      prov1-groups {:provider "prov1"}
+        "Pattern"
+        [cmr-group1 cmr-group2 prov1-group1 prov1-group2 prov2-group1 prov2-group2]
+        {:member "user*" "options[member][pattern]" true}
 
-      "Provider id is case sensitive"
-      [] {:provider "prov1" "options[provider][ignore_case]" false}
+        "Multiple members"
+        [cmr-group2 prov1-group2 prov2-group1 prov2-group2] {:member ["user3" "user2"]}
 
-      "Provider id is case insensitive"
-      prov1-groups {:provider "prov1" "options[provider][ignore_case]" true}
+        "Multiple members - AND false (default)"
+        [cmr-group2 prov1-group2 prov2-group1 prov2-group2] {:member ["user3" "user2"]
+                                                             "options[member][and]" false}
 
-      "Provider id pattern"
-      prov-groups {:provider "prov?" "options[provider][pattern]" true}
+        "Multiple members - AND'd"
+        [prov2-group2] {:member ["user3" "user2"] "options[member][and]" true}))
 
-      "Multiple provider ids - 1 matches"
-      prov1-groups {:provider ["PROV1" "PROV3"]}
 
-      "Multiple provider ids - 2 matches"
-      prov-groups {:provider ["PROV1" "PROV2"]}
 
-      "Provider id that does not match"
-      [] {:provider "not_exist"}
+    (testing "Search by name"
+      (are2 [expected-groups params]
+        (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
+               (select-keys (u/search token params) [:status :items :hits])))
 
-      "System level groups"
-      cmr-groups {:provider "CMR"}
+        "Normal case insensitive"
+        [cmr-group1 prov1-group1 prov2-group1] {:name "Group1"}
 
-      "System level groups - case insensitive"
-      cmr-groups {:provider "cmr"}
+        "Case sensitive - no match"
+        [] {:name "Group1" "options[name][ignore_case]" false}
+        "Case sensitive - matches"
+        [cmr-group1 prov1-group1 prov2-group1] {:name "group1" "options[name][ignore_case]" false}
 
-      "System level groups are always case insensitive"
-      cmr-groups {:provider "cmr" "options[provider][ignore_case]" false}
+        "Pattern - no match"
+        [] {:name "*oup" "options[name][pattern]" true}
+        "Pattern - matches"
+        all-groups {:name "Group*" "options[name][pattern]" true}
 
-      "System level and provider groups"
-      (concat cmr-groups prov1-groups) {:provider ["CMR" "prov1"]})))
+        "Multiple matches"
+        [cmr-group1 prov1-group1 prov2-group1
+         cmr-group2 prov1-group2 prov2-group2] {:name ["group1" "group2"]}))
+
+
+    (testing "Search by provider"
+      (are2 [expected-groups params]
+        (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
+               (select-keys (u/search token params) [:status :items :hits])))
+
+        "No parameters finds all groups"
+        all-groups {}
+
+        "Single provider id"
+        prov1-groups {:provider "PROV1"}
+
+        "Provider id is case insensitve"
+        prov1-groups {:provider "prov1"}
+
+        "Provider id is case sensitive"
+        [] {:provider "prov1" "options[provider][ignore_case]" false}
+
+        "Provider id is case insensitive"
+        prov1-groups {:provider "prov1" "options[provider][ignore_case]" true}
+
+        "Provider id pattern"
+        prov-groups {:provider "prov?" "options[provider][pattern]" true}
+
+        "Multiple provider ids - 1 matches"
+        prov1-groups {:provider ["PROV1" "PROV3"]}
+
+        "Multiple provider ids - 2 matches"
+        prov-groups {:provider ["PROV1" "PROV2"]}
+
+        "Provider id that does not match"
+        [] {:provider "not_exist"}
+
+        "System level groups"
+        cmr-groups {:provider "CMR"}
+
+        "System level groups - case insensitive"
+        cmr-groups {:provider "cmr"}
+
+        "System level groups are always case insensitive"
+        cmr-groups {:provider "cmr" "options[provider][ignore_case]" false}
+
+        "System level and provider groups"
+        (concat cmr-groups prov1-groups) {:provider ["CMR" "prov1"]}))))
 
 
 

@@ -187,15 +187,16 @@
   (cpv/merge-params-config
    cpv/basic-params-config
    {:single-value #{}
-    :multiple-value #{:provider}
+    :multiple-value #{:provider :name :member}
     :always-case-sensitive #{}
     :disallow-pattern #{}
     :allow-or #{}}))
 
 (defmethod cpv/valid-parameter-options :access-group
   [_]
-  {:provider cpv/string-param-options})
-
+  {:provider cpv/string-param-options
+   :name cpv/string-param-options
+   :member #{:pattern :and}})
 
 (defn validate-group-search-params
   "Validates the parameters for a group search. Returns the parameters or throws an error if invalid."
@@ -203,7 +204,9 @@
   (let [[safe-params type-errors] (cpv/apply-type-validations
                                    params
                                    [(partial cpv/validate-map [:options])
-                                    (partial cpv/validate-map [:options :provider])])]
+                                    (partial cpv/validate-map [:options :provider])
+                                    (partial cpv/validate-map [:options :name])
+                                    (partial cpv/validate-map [:options :member])])]
     (cpv/validate-parameters
      :access-group safe-params
      cpv/common-validations
@@ -218,7 +221,9 @@
 
 (defmethod cp/param-mappings :access-group
   [_]
-  {:provider :access-group-provider})
+  {:provider :access-group-provider
+   :name :string
+   :member :string})
 
 (defmethod cp/parameter->condition :access-group-provider
   [concept-type param value options]
