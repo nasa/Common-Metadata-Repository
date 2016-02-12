@@ -46,7 +46,8 @@
   "Access-Control-Max-Age")
 
 (defn search-response-headers
-  "Generate headers for search response."
+  "Generate headers for search response. CORS response headers can be tested through
+  dev-system/resources/cors_headers_test.html"
   [content-type results]
   (merge {CONTENT_TYPE_HEADER (mt/with-utf-8 content-type)
           CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id"
@@ -59,10 +60,10 @@
   [{:keys [results result-format] :as response}]
   {:status  200
    :headers (search-response-headers
-             (if (string? result-format)
-               result-format
-               (mt/format->mime-type result-format))
-             response)
+              (if (string? result-format)
+                result-format
+                (mt/format->mime-type result-format))
+              response)
    :body    results})
 
 (def options-response
