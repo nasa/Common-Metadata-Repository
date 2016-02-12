@@ -37,7 +37,7 @@
   "This CORS header is to define the allowed custom headers"
   "Access-Control-Allow-Headers")
 
-(def CORS_CUSTOM_EXPOSEDED_HEADER
+(def CORS_CUSTOM_EXPOSED_HEADER
   "This CORS header is to define the exposed custom headers"
   "Access-Control-Expose-Headers")
 
@@ -49,7 +49,7 @@
   "Generate headers for search response."
   [content-type results]
   (merge {CONTENT_TYPE_HEADER (mt/with-utf-8 content-type)
-          CORS_CUSTOM_EXPOSEDED_HEADER "CMR-Hits, CMR-Request-Id"
+          CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id"
           CORS_ORIGIN_HEADER "*"}
          (when (:hits results) {HITS_HEADER (str (:hits results))})
          (when (:took results) {TOOK_HEADER (str (:took results))})))
