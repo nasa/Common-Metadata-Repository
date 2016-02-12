@@ -29,7 +29,7 @@
             [cmr.search.api.tags-api :as tags-api]
             [cmr.acl.core :as acl]
             [cmr.search.api.keyword :as keyword-api]
-            [cmr.common-app.api.routes :as common-routes]
+            [cmr.common-app.api.routes :as cr]
             [cmr.common-app.api-docs :as api-docs]
 
             ;; Result handlers
@@ -50,25 +50,8 @@
             [cmr.search.services.acls.collection-acls]
             [cmr.search.services.acls.granule-acls]))
 
-(def TOKEN_HEADER "echo-token")
-(def CONTENT_TYPE_HEADER "Content-Type")
-(def HITS_HEADER "CMR-Hits")
-(def TOOK_HEADER "CMR-Took")
 (def CMR_GRANULE_COUNT_HEADER "CMR-Granule-Hits")
 (def CMR_COLLECTION_COUNT_HEADER "CMR-Collection-Hits")
-(def CORS_ORIGIN_HEADER
-  "This CORS header is to restrict access to the resource to be only from the defined origins,
-  value of \"*\" means all request origins have access to the resource"
-  "Access-Control-Allow-Origin")
-(def CORS_METHODS_HEADER
-  "This CORS header is to define the allowed access methods"
-  "Access-Control-Allow-Methods")
-(def CORS_CUSTOM_HEADERS_HEADER
-  "This CORS header is to define the allowed custom headers"
-  "Access-Control-Allow-Headers")
-(def CORS_MAX_AGE_HEADER
-  "This CORS header is to define how long in seconds the response of the preflight request can be cached"
-  "Access-Control-Max-Age")
 
 (def search-result-supported-mime-types
   "The mime types supported by search."
@@ -105,14 +88,6 @@
     mt/dif
     mt/dif10
     mt/umm-json})
-
-(defn- search-response-headers
-  "Generate headers for search response."
-  [content-type results]
-  (merge {CONTENT_TYPE_HEADER (mt/with-utf-8 content-type)
-          CORS_ORIGIN_HEADER "*"}
-         (when (:hits results) {HITS_HEADER (str (:hits results))})
-         (when (:took results) {TOOK_HEADER (str (:took results))})))
 
 (defn- concept-type-path-w-extension->concept-type
   "Parses the concept type and extension (\"granules.echo10\") into the concept type"
@@ -169,27 +144,6 @@
       (dissoc :token)
       (assoc :result-format (get-search-results-format path-w-extension headers default-mime-type))))
 
-(defn- search-response
-  "Generate the response map for finding concepts by params or AQL."
-  [{:keys [results result-format] :as response}]
-  {:status  200
-   :headers (search-response-headers (if (string? result-format)
-                                       result-format
-                                       (mt/format->mime-type result-format))
-                                     response)
-   :body    results})
-
-(def options-response
-  "Generate the response map for finding concepts by params or AQL."
-  {:status 200
-   :headers {CONTENT_TYPE_HEADER "text/plain; charset=utf-8"
-             CORS_ORIGIN_HEADER "*"
-             CORS_METHODS_HEADER "POST, GET, OPTIONS"
-             CORS_CUSTOM_HEADERS_HEADER "Echo-Token"
-             ;; the value in seconds for how long the response to the preflight request can be cached
-             ;; set to 30 days
-             CORS_MAX_AGE_HEADER "2592000"}})
-
 (defn- find-concepts-by-json-query
   "Invokes query service to parse the JSON query, find results and return the response."
   [context path-w-extension params headers json-query]
@@ -198,7 +152,7 @@
         _ (info (format "Searching for concepts from client %s in format %s with JSON %s and query parameters %s."
                         (:client-id context) (:result-format params) json-query params))
         results (query-svc/find-concepts-by-json-query context concept-type params json-query)]
-    (search-response results)))
+    (cr/search-response results)))
 
 (defn- find-concepts-by-parameters
   "Invokes query service to parse the parameters query, find results, and return the response"
@@ -212,12 +166,12 @@
                         (pr-str params)))
         search-params (lp/process-legacy-psa params body)
         results (query-svc/find-concepts-by-parameters context concept-type search-params)]
-    (search-response results)))
+    (cr/search-response results)))
 
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
   [context path-w-extension params headers body]
-  (let [content-type-header (get headers (str/lower-case CONTENT_TYPE_HEADER))]
+  (let [content-type-header (get headers (str/lower-case cr/CONTENT_TYPE_HEADER))]
     (cond
       (= mt/json content-type-header)
       (find-concepts-by-json-query context path-w-extension params headers body)
@@ -227,9 +181,9 @@
 
       :else
       {:status 415
-       :headers {CORS_ORIGIN_HEADER "*"}
+       :headers {cr/CORS_ORIGIN_HEADER "*"}
        :body (str "Unsupported content type ["
-                  (get headers (str/lower-case CONTENT_TYPE_HEADER)) "]")})))
+                  (get headers (str/lower-case cr/CONTENT_TYPE_HEADER)) "]")})))
 
 
 (defn- get-granules-timeline
@@ -241,7 +195,7 @@
         search-params (lp/process-legacy-psa params query-string)
         results (query-svc/get-granule-timeline context search-params)]
     {:status 200
-     :headers {CORS_ORIGIN_HEADER "*"}
+     :headers {cr/CORS_ORIGIN_HEADER "*"}
      :body results}))
 
 (defn- find-concepts-by-aql
@@ -251,7 +205,7 @@
         _ (info (format "Searching for concepts from client %s in format %s with AQL: %s and query parameters %s."
                         (:client-id context) (:result-format params) aql params))
         results (query-svc/find-concepts-by-aql context params aql)]
-    (search-response results)))
+    (cr/search-response results)))
 
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id (and possibly revision id)
@@ -269,14 +223,14 @@
         (info (format "Search for concept with cmr-concept-id [%s] and revision-id [%s]"
                       concept-id
                       revision-id))
-        (search-response (query-svc/find-concept-by-id-and-revision
-                           context result-format concept-id revision-id)))
-      ;; else, revision-id is nil
+        ;; else, revision-id is nil
+        (cr/search-response (query-svc/find-concept-by-id-and-revision
+                              context result-format concept-id revision-id)))
       (let [result-format (get-search-results-format path-w-extension headers
                                                      supported-concept-id-retrieval-mime-types
                                                      mt/xml)]
         (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
-        (search-response (query-svc/find-concept-by-id context result-format concept-id))))))
+        (cr/search-response (query-svc/find-concept-by-id context result-format concept-id))))))
 
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
@@ -289,10 +243,10 @@
         collection-count (count provider-holdings)
         granule-count (reduce + (map :granule-count provider-holdings))]
     {:status 200
-     :headers {CONTENT_TYPE_HEADER (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")
+     :headers {cr/CONTENT_TYPE_HEADER (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")
                CMR_COLLECTION_COUNT_HEADER (str collection-count)
                CMR_GRANULE_COUNT_HEADER (str granule-count)
-               CORS_ORIGIN_HEADER "*"}
+               cr/CORS_ORIGIN_HEADER "*"}
      :body provider-holdings-formatted}))
 
 (defn- find-tiles
@@ -300,7 +254,7 @@
   [context params]
   (let [results (query-svc/find-tiles-by-geometry context params)]
     {:status 200
-     :headers {CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)}
+     :headers {cr/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)}
      :body results}))
 
 (defn- build-routes [system]
@@ -324,13 +278,13 @@
       (context ["/concepts/:path-w-extension" :path-w-extension #"[A-Z][0-9]+-[0-9A-Z_]+.*"] [path-w-extension]
         ;; OPTIONS method is needed to support CORS when custom headers are used in requests to the endpoint.
         ;; In this case, the Echo-Token header is used in the GET request.
-        (OPTIONS "/" req options-response)
+        (OPTIONS "/" req cr/options-response)
         (GET "/" {params :params headers :headers context :request-context}
           (find-concept-by-cmr-concept-id context path-w-extension params headers)))
 
       ;; Find concepts
       (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections))(?:\..+)?"] [path-w-extension]
-        (OPTIONS "/" req options-response)
+        (OPTIONS "/" req cr/options-response)
         (GET "/" {params :params headers :headers context :request-context query-string :query-string}
           (find-concepts context path-w-extension params headers query-string))
         ;; Find concepts - form encoded or JSON
@@ -339,7 +293,7 @@
 
       ;; Granule timeline
       (context ["/granules/:path-w-extension" :path-w-extension #"(?:timeline)(?:\..+)?"] [path-w-extension]
-        (OPTIONS "/" req options-response)
+        (OPTIONS "/" req cr/options-response)
         (GET "/" {params :params headers :headers context :request-context query-string :query-string}
           (get-granules-timeline context path-w-extension params headers query-string))
         (POST "/" {params :params headers :headers context :request-context body :body-copy}
@@ -347,13 +301,13 @@
 
       ;; AQL search - xml
       (context ["/concepts/:path-w-extension" :path-w-extension #"(?:search)(?:\..+)?"] [path-w-extension]
-        (OPTIONS "/" req options-response)
+        (OPTIONS "/" req cr/options-response)
         (POST "/" {params :params headers :headers context :request-context body :body-copy}
           (find-concepts-by-aql context path-w-extension params headers body)))
 
       ;; Provider holdings
       (context ["/:path-w-extension" :path-w-extension #"(?:provider_holdings)(?:\..+)?"] [path-w-extension]
-        (OPTIONS "/" req options-response)
+        (OPTIONS "/" req cr/options-response)
         (GET "/" {params :params headers :headers context :request-context}
           (get-provider-holdings context path-w-extension params headers)))
 
@@ -367,10 +321,10 @@
       keyword-api/keyword-api-routes
 
       ;; add routes for accessing caches
-      common-routes/cache-api-routes
+      cr/cache-api-routes
 
       ;; add routes for checking health of the application
-      (common-routes/health-api-routes hs/health)
+      (cr/health-api-routes hs/health)
 
       (GET "/tiles" {params :params context :request-context}
         (find-tiles context params)))
@@ -432,8 +386,8 @@
       errors/invalid-url-encoding-handler
       mixed-arity-param-handler
       (errors/exception-handler default-error-format-fn)
-      common-routes/add-request-id-response-handler
+      cr/add-request-id-response-handler
       (context/build-request-context-handler system)
-      common-routes/pretty-print-response-handler
+      cr/pretty-print-response-handler
       params/wrap-params
       copy-of-body-handler))

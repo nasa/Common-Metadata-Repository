@@ -1,4 +1,4 @@
-(ns cmr.dev-system.queue-broker-wrapper
+(ns cmr.message-queue.test.queue-broker-wrapper
   "Functions to wrap the message queue while testing. The wrapper is necessary because messages
   are processed asynchronously, but for our tests we will often want to wait until messages are
   processed before performing other steps or confirming results. It keeps track, in memory, of
@@ -214,8 +214,8 @@
    num-retries-atom
 
    ;; Tracks whether enqueuing messages will fail with a timeout error.
-   timeout?-atom
-   ]
+   timeout?-atom]
+
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle

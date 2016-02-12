@@ -1,22 +1,15 @@
 (ns cmr.dev-system.control
   "A namespace that creates a web server for control of the dev system. It allows the system to be
   stopped for easy testing in CI."
-  (:require [clojure.java.io :as io]
-            [compojure.handler :as handler]
+  (:require [cmr.common-app.test.side-api :as side-api]
+            [cmr.message-queue.test.queue-broker-side-api :as queue-broker-side-api]
+            [clojure.java.io :as io]
             [compojure.route :as route]
             [compojure.core :refer :all]
             [cheshire.core :as json]
-            [ring.middleware.json :as ring-json]
-            [ring.middleware.params :as params]
-            [ring.middleware.nested-params :as nested-params]
-            [ring.middleware.keyword-params :as keyword-params]
-            [cmr.common-app.api.routes :as common-routes]
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.api.errors :as errors]
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.search.data.elastic-search-index :as es]
-            [cmr.dev-system.queue-broker-wrapper :as wrapper]
-            [cmr.ingest.config :as iconfig]
             [cmr.common.time-keeper :as tk]
             [cmr.common.date-time-parser :as parser]
             [cmr.common.mime-types :as mt]
@@ -165,61 +158,14 @@
         (tk/advance-time! (Long. num-secs))
         {:status 200}))
 
-    (context "/message-queue" []
-      (POST "/wait-for-terminal-states" []
-        (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
-          (debug "dev system /wait-for-terminal-states")
-          (wrapper/wait-for-terminal-states broker-wrapper)
-          (debug "/wait-for-terminal-states complete")
-          {:status 200}))
+    (queue-broker-side-api/build-routes (get-in system [:pre-components :broker-wrapper]))))
 
-      (GET "/history" {:keys [params]}
-        (if-let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
-          {:status 200
-           :body (wrapper/get-message-queue-history broker-wrapper (:queue-name params))
-           :headers {"Content-Type" "application/json"}}
-          {:status 403
-           :body "Cannot get message queue history unless using the message queue wrapper."}))
 
-      (POST "/set-retry-behavior" {:keys [params]}
-        (let [num-retries (:num-retries params)]
-          (debug (format "dev system setting message queue to retry messages %s times"
-                         num-retries))
-          (if-let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
-            (do
-              (wrapper/set-message-queue-retry-behavior!
-                broker-wrapper
-                (Integer/parseInt num-retries))
-              {:status 200})
-            {:status 403
-             :body "Cannot set message queue retry behvavior unless using the message queue wrapper."})))
+(defn create-server
+  []
+  (side-api/create-side-server build-routes))
 
-      ;; Used to change the timeout used for queueing messages on the message queue. For tests which
-      ;; simulate a timeout error, set the timeout value to 0.
-      (POST "/set-publish-timeout" {:keys [params]}
-        (let [timeout (Integer/parseInt (:timeout params))
-              expect-timeout? (= timeout 0)]
-          (debug (format "dev system setting message queue publish timeout to %d ms" timeout))
-          (iconfig/set-publish-queue-timeout-ms! timeout)
-          (if-let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
-            (do
-              (wrapper/set-message-queue-timeout-expected!
-                broker-wrapper
-                expect-timeout?)
-              {:status 200})
-            {:status 403
-             :body "Cannot set message queue timeout unless using the message queue wrapper."}))))
 
-    (route/not-found "Not Found")))
-
-(defn make-api [system]
-  (-> (build-routes system)
-      keyword-params/wrap-keyword-params
-      nested-params/wrap-nested-params
-      errors/exception-handler
-      ring-json/wrap-json-response
-      common-routes/pretty-print-response-handler
-      params/wrap-params))
 
 
 

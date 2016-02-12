@@ -10,9 +10,11 @@
             [cmr.common.services.errors :as e]
             [cmr.common.concepts :as concepts]
             [cmr.elastic-utils.connect :as es]
+            [cmr.elastic-utils.config :as es-config]
             [cmr.common-app.services.search.results-model :as results]
             [cmr.common-app.services.search.query-model :as qm]
-            [cmr.common-app.services.search.query-to-elastic :as q2e]))
+            [cmr.common-app.services.search.query-to-elastic :as q2e]
+            [clojure.set :as set]))
 
 (defmulti concept-type->index-info
   "Returns index info based on input concept type. The map should contain a :type-name key along with
@@ -27,29 +29,22 @@
   (fn [concept-type query]
     [concept-type (:result-format query)]))
 
-(defrecord ElasticSearchIndex
-  [
-   config
-
-   ;; The connection to elastic
-   conn]
-
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  lifecycle/Lifecycle
-
-  (start
-    [this system]
-    (assoc this :conn (es/try-connect (:config this))))
-
-  (stop [this system]
-        this))
+(defn context->search-index
+  "Returns the search index given a context. This assumes that the search index is always located in a
+   system using the :search-index key."
+  [context]
+  (get-in context [:system :search-index]))
 
 (defn context->conn
   "Returns the connection given a context. This assumes that the search index is always located in a
    system using the :search-index key."
   [context]
-  (get-in context [:system :search-index :conn]))
+  (:conn (context->search-index context)))
+
+(defn- query-fields->elastic-fields
+  "Converts all of the CMR business logic field names to the actual fields in elastic."
+  [concept-type fields]
+  (map #(q2e/query-field->elastic-field (keyword %) concept-type) fields))
 
 (defmulti send-query-to-elastic
   "Created to trace only the sending of the query off to elastic search."
@@ -62,7 +57,9 @@
         elastic-query (q2e/query->elastic query)
         sort-params (q2e/query->sort-params query)
         index-info (concept-type->index-info context concept-type query)
-        fields (or (:result-fields query) (concept-type+result-format->fields concept-type query))
+        fields (query-fields->elastic-fields
+                concept-type
+                (or (:result-fields query) (concept-type+result-format->fields concept-type query)))
         from (* (dec page-num) page-size)
         query-map (util/remove-nil-keys {:query elastic-query
                                          :version true
@@ -77,11 +74,20 @@
            "with sort" (pr-str sort-params)
            "with aggregations" (pr-str aggregations)
            "and highlights" (pr-str highlights))
-
-    (esd/search (context->conn context)
-                (:index-name index-info)
-                [(:type-name index-info)]
-                query-map)))
+    (let [response (esd/search (context->conn context)
+                               (:index-name index-info)
+                               [(:type-name index-info)]
+                               query-map)]
+      ;; Replace the Elasticsearch field names with their query model field names within the results
+      (update-in response [:hits :hits]
+                 (fn [all-concepts]
+                   (map (fn [single-concept-result]
+                          (update-in single-concept-result [:fields]
+                                     (fn [field]
+                                       (set/rename-keys field
+                                                        (q2e/elastic-field->query-field-mappings
+                                                         concept-type)))))
+                        all-concepts))))))
 
 (def unlimited-page-size
   "This is the number of items we will request at a time when the page size is set to unlimited"
@@ -134,9 +140,25 @@
                (e/internal-error! "Failed to retrieve all hits.")))
     e-results))
 
+(defrecord ElasticSearchIndex
+  [
+   config
+
+   ;; The connection to elastic
+   conn]
+
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  lifecycle/Lifecycle
+
+  (start
+    [this system]
+    (assoc this :conn (es/try-connect (:config this))))
+
+  (stop [this system]
+        this))
+
 (defn create-elastic-search-index
   "Creates a new instance of the elastic search index."
-  [config]
-  (->ElasticSearchIndex config nil))
-
-
+  []
+  (->ElasticSearchIndex (es-config/elastic-config) nil))

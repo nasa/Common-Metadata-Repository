@@ -5,6 +5,7 @@
             [cmr.search.models.query :as q]
             [cmr.common-app.services.search.query-model :as cqm]
             [cmr.common-app.services.search.results-model :as r]
+            [cmr.common-app.services.search.query-to-elastic :as q2e]
             [cmr.spatial.point :as p]))
 
 (defn spatial-cond
@@ -29,7 +30,8 @@
               :condition condition
               :result-format :query-specified
               :aggregations {:granule-counts-by-collection-id
-                             {:terms {:field :collection-concept-id
+                             {:terms {:field (q2e/query-field->elastic-field :collection-concept-id
+                                                                             :granule)
                                       :size num-collection-ids}}}}))
 
 (deftest extract-granule-count-query-test
