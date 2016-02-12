@@ -221,7 +221,7 @@
      :provider-id provider-id
      :provider-id.lowercase (str/lower-case provider-id)
      :revision-date2 revision-date
-     :metadata-format (name (mt/base-mime-type-to-format format))
+     :metadata-format (name (mt/format-key format))
      :permitted-group-ids tombstone-permitted-group-ids
      :access-value access-value}))
 
