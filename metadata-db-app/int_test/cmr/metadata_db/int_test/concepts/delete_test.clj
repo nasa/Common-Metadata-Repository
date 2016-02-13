@@ -25,6 +25,9 @@
 (deftest delete-tag-general
   (cd-spec/general-delete-test :tag ["CMR"]))
 
+(deftest delete-tag-association-general
+  (cd-spec/general-delete-test :tag-association ["CMR"]))
+
 (deftest delete-group-general
   (cd-spec/general-delete-test :access-group ["REG_PROV" "SMAL_PROV" "CMR"]))
 
