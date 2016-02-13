@@ -93,7 +93,8 @@
 
 (defmethod q2e/field->lowercase-field-mappings :access-group
   [_]
-  {:provider "provider-id.lowercase"})
+  {:provider "provider-id.lowercase"
+   :member "members.lowercase"})
 
 (defmethod esi/concept-type->index-info :access-group
   [context _ _]

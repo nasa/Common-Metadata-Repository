@@ -125,7 +125,7 @@
 
 (defn search-for-groups
   [context headers params]
-  (mt/extract-header-mime-type #{mt/json} headers "accept" true)
+  (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
   (-> (group-service/search-for-groups context params)
       cr/search-response))
 
