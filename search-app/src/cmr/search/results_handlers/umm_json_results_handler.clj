@@ -18,7 +18,7 @@
    "entry-id"
    "short-name"
    "version-id"
-   "revision-date2"
+   "revision-date"
    "deleted"
    "metadata-format"])
 
@@ -32,7 +32,7 @@
          [entry-id] :entry-id
          [short-name] :short-name
          [version-id] :version-id
-         [revision-date] :revision-date2
+         [revision-date] :revision-date
          [deleted] :deleted
          [metadata-format] :metadata-format} (:fields elastic-result)
         revision-date (when revision-date (str/replace (str revision-date) #"\+0000" "Z"))
