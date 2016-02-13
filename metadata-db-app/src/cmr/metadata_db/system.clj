@@ -29,34 +29,21 @@
   "Required for jobs"
   (atom nil))
 
-(def use-external-db?
-  "Set to true to use the Oracle DB"
-  true)
-  ; false)
-
-(def use-external-mq?
-  "Set to true to use Rabbit MQ"
-  true)
-  ; false)
-
 (defn create-system
   "Returns a new instance of the whole application."
   ([]
    (create-system "metadata-db"))
   ([connection-pool-name]
-   (let [sys {:db (when use-external-db?
-                    (assoc (oracle/create-db (config/db-spec connection-pool-name))
+   (let [sys {:db (assoc (oracle/create-db (config/db-spec connection-pool-name))
                          :result-set-fetch-size
-                         (config/result-set-fetch-size)))
+                         (config/result-set-fetch-size))
               :log (log/create-logger)
               :web (web/create-web-server (transmit-config/metadata-db-port) routes/make-api)
               :nrepl (nrepl/create-nrepl-if-configured (config/metadata-db-nrepl-port))
               :parallel-chunk-size (config/parallel-chunk-size)
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}
-              :scheduler (when use-external-db?
-                           (jobs/create-clustered-scheduler `system-holder :db mdb-jobs/jobs))
-              :queue-broker (when use-external-mq?
-                              (rmq/create-queue-broker (config/rabbit-mq-config)))
+              :scheduler (jobs/create-clustered-scheduler `system-holder :db mdb-jobs/jobs)
+              :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))
               :relative-root-url (transmit-config/metadata-db-relative-root-url)}]
      (transmit-config/system-with-connections sys [:echo-rest]))))
 

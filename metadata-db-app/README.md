@@ -101,11 +101,15 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
       "tag-key": "org.nasa.something.quality",
       "associated-concept-id": "C12-PROV_A42",
       "revision-id": 1, (optional field),
-      "value": "string to be indexed" or "data": "arbitrary JSON <= 32K"
+      "value": "string to be indexed" or "data": "arbitrary JSON <= 32K" (optional fields)
+    }
+    "extra-fields": {
+      "associated-concept-id": "C12-PROV_A42",
+      "associated-revision-id": 1
     }
   }
 
-_Note the absense of provider-id for tags and tag associations. These are system level entities and are always assigned the system level provider, CMR._
+_Note the absence of provider-id for tags and tag associations. These are system level entities and are always assigned the system level provider, CMR._
 
 ### Sample Tombstone (deleted concept) JSON
 
@@ -274,6 +278,7 @@ Supported combinations of concept type and parameters:
   * granules with provider-id, granule-ur
   * granules with provider-id, native-id
   * tags or tag associations with no parameters other than exclude-metadata and latest
+  * tag associations with associated-concept-id, associated-revision-id
 
 ```
 curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&short-name=s&version-id=1"

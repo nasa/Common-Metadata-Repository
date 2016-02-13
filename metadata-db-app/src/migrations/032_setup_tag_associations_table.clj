@@ -10,6 +10,8 @@
   metadata BLOB NOT NULL,
   format VARCHAR(255) NOT NULL,
   revision_id INTEGER DEFAULT 1 NOT NULL,
+  associated_concept_id VARCHAR(255) NOT NULL,
+  associated_revision_id INTEGER NOT NULL,
   revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
   deleted INTEGER DEFAULT 0 NOT NULL,
   user_id VARCHAR(30),
@@ -33,7 +35,8 @@
 
 (defn- create-tag-associations-indices
   []
-  (h/sql "CREATE INDEX tag_assoc_crdi ON cmr_tag_associations (concept_id, revision_id, deleted)"))
+  (h/sql "CREATE INDEX tag_assoc_crdi ON cmr_tag_associations (concept_id, revision_id, deleted)")
+  (h/sql "CREATE INDEX tag_assoc_acari ON cmr_tag_associations (associated_concept_id, associated_revision_id)"))
 
 (defn- create-tag-associations-sequence
   []

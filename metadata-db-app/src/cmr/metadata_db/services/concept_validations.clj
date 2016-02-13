@@ -42,7 +42,9 @@
    :granule {true #{:parent-collection-id}
              false #{:parent-collection-id :parent-entry-title :granule-ur}}
    :service {true #{}
-             false #{:entry-id :entry-title}}})
+             false #{:entry-id :entry-title}}
+   :tag-association {true #{}
+                     false #{:associated-concept-id :associated-revision-id}}})
 
 (defn extra-fields-missing-validation
   "Validates that the concept is provided with extra fields and that all of them are present and not nil."

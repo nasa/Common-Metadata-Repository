@@ -243,6 +243,9 @@
             "entry-title - all revisions"
             [coll2-1 coll2-2] {:entry-title "et2"}
 
+            "entry-title - all revisions - find latest false"
+            [coll2-1 coll2-2] {:entry-title "et2" :latest false}
+
             "concept-id - all revisions"
             [coll4-1 coll4-2 coll4-3] {:concept-id (:concept-id coll4-1)}
 
@@ -386,7 +389,7 @@
         associated-tag (util/create-and-save-tag 1)
         tag-association1 (util/create-and-save-tag-association coll1 associated-tag 1 3)
         tag-association2 (util/create-and-save-tag-association coll2 associated-tag 2 2)]
-    (testing "find latest revsions"
+    (testing "find latest revisions"
       (are2 [tag-associations params]
             (= (set tag-associations)
                (set (->> (util/find-latest-concepts :tag-association params)
