@@ -19,6 +19,7 @@
             [cmr.metadata-db.data.oracle.concepts.collection]
             [cmr.metadata-db.data.oracle.concepts.granule]
             [cmr.metadata-db.data.oracle.concepts.tag]
+            [cmr.metadata-db.data.oracle.concepts.tag-association]
             [cmr.metadata-db.data.oracle.concepts.service]
             [cmr.metadata-db.data.oracle.concepts.group]
             [cmr.metadata-db.data.oracle.providers]
@@ -39,6 +40,7 @@
    :granule 1
    :service 10
    :tag 10
+   :tag-association 10
    :access-group 10})
 
 (def days-to-keep-tombstone
@@ -52,18 +54,21 @@
 ;;; utility methods
 
 (defn validate-system-level-provider-for-tags
-  "Validates that tags are only created with a system level provider; throws an
+  "Validates that tags/tag-associations are only created with a system level provider; throws an
   error otherwise."
   [concept provider]
   (let [{concept-type :concept-type} concept
         {provider-id :provider-id} provider]
-    (when (and (= concept-type :tag)
+    (when (and (contains? #{:tag :tag-association} concept-type)
                (not (:system-level? provider)))
-      (errors/throw-service-errors :invalid-data [(msg/tags-only-system-level provider-id)]))))
+      (let [err-msg (case concept-type
+                      :tag (msg/tags-only-system-level provider-id)
+                      :tag-association (msg/tag-associations-only-system-level provider-id))]
+        (errors/throw-service-errors :invalid-data [err-msg])))))
 
 (defn- provider-ids-for-validation
   "Returns the set of provider-ids for validation purpose. It is a list of existing provider ids
-  and 'CMR', which is reserved for tags."
+  and 'CMR', which is reserved for tags / tag associations."
   [db]
   (set (conj (map :provider-id (provider-db/get-providers db)) "CMR")))
 
@@ -390,8 +395,8 @@
   (cv/validate-concept concept)
   (let [db (util/context->db context)
         provider-id (or (:provider-id concept)
-                        (when (contains? #{:tag} (:concept-type concept)) "CMR"))
-        ;; Need this for tags since they don't have a provider-id in their
+                        (when (contains? #{:tag :tag-association} (:concept-type concept)) "CMR"))
+        ;; Need this for tags/tag-associations since they don't have a provider-id in their
         ;; concept maps, but later processing requires it.
         concept (assoc concept :provider-id provider-id)
         provider (provider-service/get-provider-by-id context provider-id true)

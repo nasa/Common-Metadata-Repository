@@ -35,7 +35,7 @@
             (is (= exp-status status))
             (is (= (set exp-errors) (set errors))))
 
-           "failure when using non system-level provider"
+          "failure when using non system-level provider"
           (assoc (util/tag-concept 2) :provider-id "REG_PROV")
           422
           ["Tag could not be associated with provider [REG_PROV]. Tags are system level entities."])))

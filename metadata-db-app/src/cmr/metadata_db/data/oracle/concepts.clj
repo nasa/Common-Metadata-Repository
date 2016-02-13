@@ -324,17 +324,17 @@
 
   (get-transactions-for-concept
     [db provider concept-id]
-      (j/with-db-transaction
-        [conn db]
-        (let [provider-id (:provider-id provider)
-              concept-type (cc/concept-id->type concept-id)
-              table (tables/get-table-name provider concept-type)
-              stmt (su/build (select [:c.revision-id :c.transaction-id]
-                               (from (as (keyword table) :c))
-                               (where `(= :c.concept-id ~concept-id))))]
-          (map (fn [result] {:revision-id (long (:revision_id result))
-                             :transaction-id (long (:transaction_id result))})
-               (su/query conn stmt)))))
+    (j/with-db-transaction
+      [conn db]
+      (let [provider-id (:provider-id provider)
+            concept-type (cc/concept-id->type concept-id)
+            table (tables/get-table-name provider concept-type)
+            stmt (su/build (select [:c.revision-id :c.transaction-id]
+                             (from (as (keyword table) :c))
+                             (where `(= :c.concept-id ~concept-id))))]
+        (map (fn [result] {:revision-id (long (:revision_id result))
+                           :transaction-id (long (:transaction_id result))})
+             (su/query conn stmt)))))
 
   (save-concept
     [db provider concept]
@@ -440,6 +440,7 @@
                                    INCREMENT BY 1
                                    CACHE 20" INITIAL_CONCEPT_NUM))
     (j/db-do-commands this "DELETE FROM cmr_tags")
+    (j/db-do-commands this "DELETE FROM cmr_tag_associations")
     (j/db-do-commands this "DELETE FROM cmr_groups"))
 
   (get-expired-concepts

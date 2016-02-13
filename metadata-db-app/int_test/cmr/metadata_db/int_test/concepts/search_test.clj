@@ -243,6 +243,9 @@
             "entry-title - all revisions"
             [coll2-1 coll2-2] {:entry-title "et2"}
 
+            "entry-title - all revisions - find latest false"
+            [coll2-1 coll2-2] {:entry-title "et2" :latest false}
+
             "concept-id - all revisions"
             [coll4-1 coll4-2 coll4-3] {:concept-id (:concept-id coll4-1)}
 
@@ -373,6 +376,42 @@
     (is (= {:status 400
             :errors ["Finding concept type [tag] with parameters [provider-id] is not supported."]}
            (util/find-concepts :tag {:provider-id "REG_PROV"})))))
+
+(deftest find-tag-associations
+  (let [coll1 (save-collection "REG_PROV" 1 {:extra-fields {:entry-id "entry-1"
+                                                            :entry-title "et1"
+                                                            :version-id "v1"
+                                                            :short-name "s1"}})
+        coll2 (save-collection "REG_PROV" 2 {:extra-fields {:entry-id "entry-2"
+                                                              :entry-title "et2"
+                                                              :version-id "v1"
+                                                              :short-name "s2"}})
+        associated-tag (util/create-and-save-tag 1)
+        tag-association1 (util/create-and-save-tag-association coll1 associated-tag 1 3)
+        tag-association2 (util/create-and-save-tag-association coll2 associated-tag 2 2)]
+    (testing "find latest revisions"
+      (are2 [tag-associations params]
+            (= (set tag-associations)
+               (set (->> (util/find-latest-concepts :tag-association params)
+                         :concepts
+                         (map #(dissoc % :provider-id :revision-date :transaction-id)))))
+            "with metadata"
+            [tag-association1 tag-association2] {}
+
+            "exclude metadata"
+            [(dissoc tag-association1 :metadata) (dissoc tag-association2 :metadata)] {:exclude-metadata true}))
+
+    (testing "find all revisions"
+      (let [num-of-tag-associations (-> (util/find-concepts :tag-association {})
+                                        :concepts
+                                        count)]
+        (is (= 5 num-of-tag-associations))))))
+
+(deftest find-tag-associations-with-invalid-parameters
+  (testing "extra parameters"
+    (is (= {:status 400
+            :errors ["Finding concept type [tag-association] with parameters [provider-id] is not supported."]}
+           (util/find-concepts :tag-association {:provider-id "REG_PROV"})))))
 
 (deftest find-services
   (let [serv1 (util/create-and-save-service "REG_PROV" 1 3)

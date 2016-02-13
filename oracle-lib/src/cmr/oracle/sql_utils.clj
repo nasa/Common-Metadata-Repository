@@ -82,4 +82,3 @@
        (if (re-find #"(ORA-00955|ORA-01920):" (.getMessage e#))
          (info (str ~object-name " already exists, ignoring error."))
          (throw e#)))))
-

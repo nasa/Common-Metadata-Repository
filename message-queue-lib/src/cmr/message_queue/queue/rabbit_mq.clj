@@ -233,8 +233,8 @@
    persistent-exchanges
 
    ;; A map of queue name to a sequence of exchange names that the queue should be bound to.
-   bindings
-   ]
+   bindings]
+
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
@@ -305,4 +305,3 @@
            queues exchanges queues-to-exchanges]}]
   (->RabbitMQBroker host port admin-port username password nil
                     queues exchanges queues-to-exchanges))
-

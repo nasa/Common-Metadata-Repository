@@ -42,7 +42,9 @@
    :granule {true #{:parent-collection-id}
              false #{:parent-collection-id :parent-entry-title :granule-ur}}
    :service {true #{}
-             false #{:entry-id :entry-title}}})
+             false #{:entry-id :entry-title}}
+   :tag-association {true #{}
+                     false #{:associated-concept-id :associated-revision-id}}})
 
 (defn extra-fields-missing-validation
   "Validates that the concept is provided with extra fields and that all of them are present and not nil."
@@ -142,6 +144,12 @@
   (util/compose-validations (conj base-concept-validations
                                   concept-id-matches-concept-fields-validation-no-provider)))
 
+(def tag-association-concept-validation
+  "Builds a function that validats a tag association concept map that has no provider and returns
+  a list of errors"
+  (util/compose-validations (conj base-concept-validations
+                                  concept-id-matches-concept-fields-validation-no-provider)))
+
 (def group-concept-validation
   "Builds a function that validates a group concept"
   (util/compose-validations (conj base-concept-validations
@@ -156,6 +164,10 @@
   "validates a tag concept. Throws an error if invalid."
   (util/build-validator :invalid-data tag-concept-validation))
 
+(def validate-tag-association-concept
+  "Validates a tag association concept. Throws an error if invalid."
+  (util/build-validator :invalid-data tag-association-concept-validation))
+
 (def validate-concept-group
   "Validates a group concept. Throws and error if invalid."
   (util/build-validator :invalid-data group-concept-validation))
@@ -168,6 +180,10 @@
 (defmethod validate-concept :tag
   [concept]
   (validate-tag-concept concept))
+
+(defmethod validate-concept :tag-association
+  [concept]
+  (validate-tag-association-concept concept))
 
 (defmethod validate-concept :access-group
   [concept]

@@ -11,7 +11,9 @@
            [cmr.metadata-db.data.oracle.granule-table :as gt]
            [cmr.metadata-db.data.oracle.service-table :as st]))
 
-(def all-concept-types [:collection :granule :service])
+(def all-provider-concept-types
+  "All the concept types that have tables for each (non-small) provider"
+  [:collection :granule :service])
 
 (defmulti get-table-name
   "Get the name for the table for a given provider and concept-type"
@@ -25,6 +27,10 @@
 (defmethod get-table-name :tag
   [_ _]
   "cmr_tags")
+
+(defmethod get-table-name :tag-association
+  [_ _]
+  "cmr_tag_associations")
 
 (defmethod get-table-name :default
   [provider concept-type]
@@ -80,7 +86,7 @@
   "Create all the concept tables for the given provider."
   [db provider]
   (info "Creating concept tables for provider [" (:provider-id provider) "]")
-  (doseq [concept-type all-concept-types]
+  (doseq [concept-type all-provider-concept-types]
     (create-concept-table db provider concept-type)
     (create-concept-table-id-sequence db provider concept-type)))
 
@@ -88,7 +94,7 @@
   "Delete the concept tables associated with the given provider."
   [db provider]
   (info "Deleting concept tables for provider [" (:provider-id provider) "]")
-  (doseq [concept-type all-concept-types]
+  (doseq [concept-type all-provider-concept-types]
     (let [table-name (get-table-name provider concept-type)
           sequence-name (str table-name "_seq")]
       (info "Dropping table" table-name)

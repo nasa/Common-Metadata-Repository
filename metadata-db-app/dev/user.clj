@@ -3,6 +3,7 @@
   stopping the application from the REPL."
   (:require [clojure.pprint :refer (pprint pp)]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
+            [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.metadata-db.system :as system]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.metadata-db.data.memory-db :as memory]
@@ -16,23 +17,37 @@
 (def system nil)
 (def mock-echo nil)
 
+(def use-external-db?
+  "Set to true to use the Oracle DB"
+  true)
+  ; false)
+
+(def use-external-mq?
+  "Set to true to use Rabbit MQ"
+  ; true
+  false)
+
 (defn start
   "Starts the current development system."
   []
+
   (alter-var-root #'mock-echo
                   (constantly
                     (mock-echo/start (mock-echo/create-system))))
 
+  (let [s (-> (system/create-system)
+              (update-in [:db] #(if use-external-db?
+                                  %
+                                  (memory/create-db)))
 
-  (let [s (system/create-system)
-        ;; uncomment to test the memory db
-         ; s (-> s
-         ;       (assoc :db (memory/create-db))
-         ;       (dissoc :scheduler))
-        ]
-    (alter-var-root #'system
-                    (constantly
-                      (system/start s))))
+              (update-in [:queue-broker] #(when use-external-mq? %))
+
+              ((fn [sys] (if use-external-db?
+                          sys
+                          (dissoc sys :scheduler)))))]
+
+    (alter-var-root #'system (constantly (system/start s))))
+
   (d/touch-user-clj)
   (d/touch-files-in-dir "src/cmr/metadata_db/services"))
 

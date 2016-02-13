@@ -1,6 +1,7 @@
 (ns cmr.metadata-db.int-test.utility
   "Contains various utility methods to support integration tests."
   (:require [clojure.test :refer :all]
+            [clojure.string :as str]
             [clj-http.client :as client]
             [cheshire.core :as json]
             [clojure.walk :as walk]
@@ -117,12 +118,16 @@
 
 (def tag-edn
   "Valid EDN for tag metadata"
-  (pr-str {:namespace "org.nasa.something"
-           :category "category1"
-           :value "quality"
+  (pr-str {:tag-key "org.nasa.something.ozone"
            :description "A very good tag"
-           :originator-id "jnorton"
-           :associated-concept-ids #{}}))
+           :originator-id "jnorton"}))
+
+(def tag-association-edn
+  "Valid EDN for tag association metadata"
+  (pr-str {:tag-key "org.nasa.something.ozone"
+           :associated-concept-id "C120000000-PROV1"
+           :revision-id 1
+           :value "Some Value"}))
 
 (def group-edn
   "Valid EDN for group metadata"
@@ -140,6 +145,7 @@
    :granule granule-xml
    :service service-xml
    :tag tag-edn
+   :tag-association tag-association-edn
    :access-group group-edn})
 
 (defn- concept
@@ -205,6 +211,26 @@
                            attributes)]
      ;; no provider-id should be specified for tags
      (dissoc (concept nil :tag uniq-num attributes) :provider-id))))
+
+(defn tag-association-concept
+  "Creates a tag association concept"
+  ([assoc-concept tag uniq-num]
+   (tag-association-concept assoc-concept tag uniq-num {}))
+  ([assoc-concept tag uniq-num attributes]
+   (let [{:keys [concept-id revision-id]} assoc-concept
+         tag-id (:native-id tag)
+         user-id (str "user" uniq-num)
+         native-id (str/join (char 29) [tag-id concept-id revision-id])
+         extra-fields (merge {:associated-concept-id concept-id
+                              :associated-revision-id revision-id}
+                             (:extra-fields attributes))
+         attributes (merge {:user-id user-id
+                            :format "application/edn"
+                            :native-id native-id
+                            :extra-fields extra-fields}
+                           (dissoc attributes :extra-fields))]
+     ;; no provider-id should be specified for tag associations
+     (dissoc (concept nil :tag-association uniq-num attributes) :provider-id))))
 
 (defn group-concept
   "Creates a group concept"
@@ -457,6 +483,10 @@
   [concept]
   (assoc concept :provider-id "CMR"))
 
+(defmethod expected-concept :tag-association
+  [concept]
+  (assoc concept :provider-id "CMR"))
+
 (defmethod expected-concept :default
   [concept]
   concept)
@@ -509,6 +539,19 @@
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]
      (assoc concept :concept-id concept-id :revision-id revision-id))))
+
+(defn create-and-save-tag-association
+  "Creates, saves, and returns a tag concept with its data from metadata-db"
+  ([concept tag uniq-num]
+   (create-and-save-tag-association concept tag uniq-num 1))
+  ([concept tag uniq-num num-revisions]
+   (create-and-save-tag-association concept tag uniq-num num-revisions {}))
+  ([concept tag uniq-num num-revisions attributes]
+   (let [concept (tag-association-concept concept tag uniq-num attributes)
+          _ (dotimes [n (dec num-revisions)]
+              (assert-no-errors (save-concept concept)))
+          {:keys [concept-id revision-id]} (save-concept concept)]
+      (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 (defn create-and-save-service
   "Creates, saves, and returns a service concept with its data from metadata-db."

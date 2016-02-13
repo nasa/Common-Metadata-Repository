@@ -205,7 +205,3 @@
                   new-transaction-id (get-in retrieved-concept [:concept :transaction-id])]
               (is (> new-transaction-id transaction-id))
               (recur (inc index) new-transaction-id))))))))
-
-
-
-
