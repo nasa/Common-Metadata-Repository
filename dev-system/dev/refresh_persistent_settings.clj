@@ -6,8 +6,6 @@
 (r/disable-reload!)
 (r/disable-unload!)
 
-;; TODO test this with refresh and super refresh
-
 (def logging-level
   "The logging level to use locally"
   (atom :error))
