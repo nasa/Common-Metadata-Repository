@@ -8,14 +8,41 @@
             [cmr.dev-system.tests :as tests]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.dev.util :as d]
+            [cmr.common.util :as u]
             [cmr.system-int-test.system :as sit-sys]
             [cmr.common.jobs :as jobs]
-            [cmr.common.config :as config])
+            [cmr.common.config :as config]
+            [refresh-persistent-settings :as settings])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]))
 
 (def system nil)
+
+(defn configure-systems-logging
+  "Configures the systems in the system map to the indicated level"
+  [system level]
+  (update system :apps
+          (fn [app-map]
+            (u/map-values #(assoc-in % [:log :level] level) app-map))))
+
+(defn set-logging-level!
+  "Sets the logging level to the given setting. Puts the level in refresh-persistent-settings
+   so that the level will be kept through refreshes. "
+  [level]
+  ;; Store it in persistent settings to keep the level through refreshes
+  (reset! settings/logging-level level)
+  ;; Change the currently configured systems to all use the new level
+  (alter-var-root #'system
+                  #(when % (configure-systems-logging % level)))
+  ;; Change system integration tests to the new level
+  (sit-sys/set-logging-level level)
+
+  ;; Set timbre.logging to the level
+  (taoensso.timbre/set-level! level)
+  (println "Logging level set to" level)
+  nil)
+
 
 (defn start
   "Starts the current development system."
@@ -49,10 +76,14 @@
   (system/set-dev-system-message-queue-type! :in-memory)
   ; (system/set-dev-system-message-queue-type! :external)
 
-  (let [s (system/create-system)]
+  (sit-sys/set-logging-level @settings/logging-level)
+
+  (let [s (system/create-system)
+        s (configure-systems-logging s @settings/logging-level)]
     (alter-var-root #'system
                     (constantly
                       (system/start s))))
+
   (d/touch-user-clj))
 
 (defn stop
