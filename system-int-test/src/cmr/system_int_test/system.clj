@@ -21,10 +21,17 @@
   receiving context information"
   (atom nil))
 
+(def logging-level-atom
+  (atom :debug))
+
+(defn set-logging-level
+  [level]
+  (reset! logging-level-atom level))
+
 (defn create-system
   "Returns a new instance of the whole application."
   [component-type-map]
-  (let [sys {:log (log/create-logger)
+  (let [sys {:log (log/create-logger {:level @logging-level-atom})
              :bootstrap-db (when (= :external (:db component-type-map))
                              (oracle/create-db (mdb-config/db-spec "bootstrap-test-pool")))
              ;; the HTTP connection manager to use. This allows system integration tests to use persistent
