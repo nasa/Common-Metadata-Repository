@@ -12,7 +12,7 @@
 
   If the document has a 'deleted' flag = true, then a delete operation is created instead."
   [doc]
-  (if (:deleted doc)
+  (if (and (:deleted doc) (not= "1_all_collection_revisions" (:_index doc)))
     [{"delete" (select-keys doc special-operation-keys)}]
     [{"index" (select-keys doc special-operation-keys)}
      (apply dissoc doc special-operation-keys)]))

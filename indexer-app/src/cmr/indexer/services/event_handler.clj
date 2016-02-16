@@ -18,8 +18,13 @@
 
 
 (defmethod handle-ingest-event :provider-collection-reindexing
-  [context all-revisions-index? {:keys [provider-id]}]
-  (indexer/reindex-provider-collections context [provider-id] all-revisions-index? false))
+  [context _ {:keys [provider-id]}]
+  (println "Provider ID in handle-ingest-event = " provider-id)
+  ;; We want to reindex all revisions and latest so we pass in nil for the all-revisions-index?
+  ;; flag. This is a provider event which always applies to all the indexes.
+  ;; We set the refresh acls flag to false because the ACLs should have been refreshed as part
+  ;; of the ingest job that kicks this off.
+  (indexer/reindex-provider-collections context [provider-id] nil false))
 
 (defmethod handle-ingest-event :concept-update
   [context all-revisions-index? {:keys [concept-id revision-id]}]
@@ -64,4 +69,3 @@
       (queue/subscribe queue-broker
                        (config/all-revisions-index-queue-name)
                        #(handle-ingest-event context true %)))))
-
