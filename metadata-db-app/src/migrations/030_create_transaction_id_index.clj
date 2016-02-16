@@ -8,7 +8,7 @@
   "Migrates the database up to version 30."
   []
   (println "migrations.030-create-transaction-id-index up...")
-  (doseq [table (h/get-concept-tablenames)]
+  (doseq [table (h/get-concept-tablenames :collection :granule :service :tag :access-group)]
     (utils/ignore-already-exists-errors "INDEX"
       (h/sql
        (format "LOCK TABLE %s IN EXCLUSIVE MODE" table)
@@ -17,7 +17,7 @@
   "Migrates the database down from version 30."
   []
   (println "030-create-transaction-id-index down...")
-  (doseq [table (h/get-concept-tablenames)]
+  (doseq [table (h/get-concept-tablenames :collection :granule :service :tag :access-group)]
     (h/sql
      (format "LOCK TABLE %s IN EXCLUSIVE MODE" table)
      (format "DROP INDEX %s_crtid" table))))
