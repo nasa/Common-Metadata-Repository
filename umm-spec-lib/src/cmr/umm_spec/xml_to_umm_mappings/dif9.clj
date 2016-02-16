@@ -70,7 +70,9 @@
   [entry-id version-id]
   (let [version-suffix (str "_" version-id)
         short-name-length (- (count entry-id) (count version-suffix))]
-    (if (and version-id (= (subs entry-id short-name-length) version-suffix))
+    (if (and version-id
+             (> short-name-length 0)
+             (= (subs entry-id short-name-length) version-suffix))
       (subs entry-id 0 short-name-length)
       entry-id)))
 
