@@ -79,6 +79,7 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
 #### Tag
 
   {
+    "concept-type": "tag",
     "native-id": "org.nasa.something\quality",
     "user-id": "jnorton",
     "format": "applcation/edn",
@@ -94,6 +95,7 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
 #### Tag Association
 
   {
+    "concept-type": "tag-association",
     "native-id": "org.nasa.something.quality\C12-PROV_A42\1",
     "user-id": "jnorton",
     "format": "applcation/edn",
@@ -286,6 +288,7 @@ curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&entry-
 curl "http://localhost:3001/concepts/search/granules?provider-id=PROV1&granule_ur=ur"
 curl "http://localhost:3001/concepts/search/granules?provider-id=PROV1&native_id=id"
 curl "http://localhost:3001/concepts/search/tags"
+curl "http://localhost:3001/concepts/search/tag-associatons?associated-concept-id=C12-PROV1"
 ```
 
 ### GET /concepts/search/expired-collections?provider=PROV
