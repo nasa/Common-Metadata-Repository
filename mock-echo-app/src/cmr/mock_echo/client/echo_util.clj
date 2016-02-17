@@ -243,4 +243,17 @@
          :system-object-identity
          {:target tag-acl}))
 
+(defn grant-system-group-permissions-to-group
+  [context group-guid & permission-types]
+  (grant context [(group-ace group-guid (or (seq permission-types)
+                                            [:create :update :delete]))]
+         :system-object-identity
+         {:target "GROUP"}))
 
+(defn grant-provider-group-permissions-to-group
+  [context group-guid provider-guid & permission-types]
+  (grant context [(group-ace group-guid (or (seq permission-types)
+                                            [:create :update :delete]))]
+         :provider-object-identity
+         {:target "GROUP"
+          :provider-guid provider-guid}))
