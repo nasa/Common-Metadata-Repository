@@ -1,5 +1,5 @@
-(ns cmr.umm-spec.test.xml.gen
-  (:require [cmr.umm-spec.xml.gen :refer [xml]]
+(ns cmr.common.test.xml.gen
+  (:require [cmr.common.xml.gen :refer [xml]]
             [clojure.test :refer :all]
             clojure.data.xml))
 

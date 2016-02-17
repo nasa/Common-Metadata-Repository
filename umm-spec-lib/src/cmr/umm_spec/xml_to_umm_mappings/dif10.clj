@@ -2,10 +2,10 @@
   "Defines mappings from DIF10 XML into UMM records"
   (:require [cmr.common.date-time-parser :as dtp]
             [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.simple-xpath :refer [select]]
+            [cmr.common.xml.simple-xpath :refer [select]]
             [camel-snake-kebab.core :as csk]
             [clojure.string :as string]
-            [cmr.umm-spec.xml.parse :refer :all]
+            [cmr.common.xml.parse :refer :all]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
             [cmr.umm-spec.util :as u :refer [without-default-value-of]]
             [cmr.umm-spec.date-util :as date]))

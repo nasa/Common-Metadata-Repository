@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system
-  (:require [cmr.umm-spec.simple-xpath :refer [select]]
-            [cmr.umm-spec.xml.parse :refer :all]))
+  (:require [cmr.common.xml.simple-xpath :refer [select]]
+            [cmr.common.xml.parse :refer :all]))
 
 (def tiling-system-xpath
   (str "gmd:extent/gmd:EX_Extent"

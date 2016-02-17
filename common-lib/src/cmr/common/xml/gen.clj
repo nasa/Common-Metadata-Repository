@@ -1,7 +1,7 @@
-(ns cmr.umm-spec.xml.gen
+(ns cmr.common.xml.gen
   "Contains functions for generating XML using a Hiccup-style syntax."
   (:require [clojure.data.xml :as x]
-            [cmr.umm-spec.simple-xpath :refer [select]]))
+            [cmr.common.xml.simple-xpath :refer [select]]))
 
 (defprotocol GenerateXML
   (generate [x]))
@@ -10,8 +10,8 @@
   clojure.lang.PersistentVector
   (generate [[tag maybe-attrs & content]]
             (let [[attrs content] (if (map? maybe-attrs)
-                                       [maybe-attrs content]
-                                       [{} (cons maybe-attrs content)])
+                                      [maybe-attrs content]
+                                      [{} (cons maybe-attrs content)])
                   content         (generate content)]
               (when (or (seq content) (seq attrs))
                 (apply x/element tag attrs content))))
@@ -33,7 +33,7 @@
 
   java.lang.Boolean
   (generate [b] (str b))
-  
+
   clojure.lang.Keyword
   (generate [k] (str k))
 
@@ -47,16 +47,6 @@
 
 ;;; Helpers
 
-(defn char-string
-  "Returns an ISO gco:CharacterString element with the given contents."
-  [content]
-  [:gco:CharacterString content])
-
-(defn char-string-at
-  "Returns an ISO gco:CharacterString with contents taken from the given xpath."
-  [context xpath]
-  (char-string (select context xpath)))
-
 (defn element-from
   [context kw]
   [kw {} (select context (name kw))])
@@ -64,3 +54,5 @@
 (defn elements-from
   [context & kws]
   (map (partial element-from context) kws))
+
+

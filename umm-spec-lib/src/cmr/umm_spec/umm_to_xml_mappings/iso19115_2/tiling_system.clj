@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system
   "Functions for generating ISO XML tiling system elements."
-  (:require [cmr.umm-spec.xml.gen :refer :all]))
+  (:require [cmr.common.xml.gen :refer :all]
+            [cmr.umm-spec.util :refer [char-string]]))
 
 (defn- tiling-system-coding-params
   "Returns ISO tiling system encoding string parameters (coordinate 1 prefix, coordinate 2 prefix,

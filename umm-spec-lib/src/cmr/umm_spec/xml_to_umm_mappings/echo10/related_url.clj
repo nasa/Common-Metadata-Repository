@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10.related-url
-  (:require [cmr.umm-spec.xml.parse :refer :all]
-            [cmr.umm-spec.simple-xpath :refer [select text]]
+  (:require [cmr.common.xml.parse :refer :all]
+            [cmr.common.xml.simple-xpath :refer [select text]]
             [clojure.string :as str]))
 
 (def resource-type->related-url-types

@@ -4,8 +4,8 @@
             [cheshire.core :as json]
             [cheshire.factory :as factory]
             [cmr.common.util :as util]
-            [cmr.umm-spec.xml.parse :as p]
-            [cmr.umm-spec.simple-xpath :refer [select]]))
+            [cmr.common.xml.parse :as p]
+            [cmr.common.xml.simple-xpath :refer [select]]))
 
 (def not-provided
   "place holder string value for not provided string field"
@@ -130,3 +130,14 @@
         ;; Use default value if CoordinateSystem is not set, but the geometry has any spatial area
         (when (or GPolygons BoundingRectangles Lines Points)
           default-granule-spatial-representation))))
+
+(defn char-string
+  "Returns an ISO gco:CharacterString element with the given contents."
+  [content]
+  [:gco:CharacterString content])
+
+(defn char-string-at
+  "Returns an ISO gco:CharacterString with contents taken from the given xpath."
+  [context xpath]
+  (char-string (select context xpath)))
+

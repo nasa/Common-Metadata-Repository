@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute
   "Functions for generating ISO19115-2 XML elements from UMM additional attribute records."
-  (:require [cmr.umm-spec.xml.gen :refer :all]
+  (:require [cmr.common.xml.gen :refer :all]
+            [cmr.umm-spec.util :refer [char-string]]
             [cmr.umm-spec.iso19115-2-util :as iso]))
 
 (defn generate-additional-attributes

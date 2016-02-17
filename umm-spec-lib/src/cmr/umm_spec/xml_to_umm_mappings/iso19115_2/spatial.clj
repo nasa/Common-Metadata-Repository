@@ -2,8 +2,8 @@
   "Functions for parsing UMM spatial records out of ISO 19115-2 XML documents."
   (:require [clojure.string :as str]
             [cmr.umm-spec.iso19115-2-util :as iso]
-            [cmr.umm-spec.simple-xpath :refer [select text]]
-            [cmr.umm-spec.xml.parse :refer :all]
+            [cmr.common.xml.simple-xpath :refer [select text]]
+            [cmr.common.xml.parse :refer :all]
             [cmr.spatial.encoding.gmd :as gmd]))
 
 (def coordinate-system-xpath
