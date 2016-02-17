@@ -5,7 +5,10 @@
               [cmr.access-control.int-test.access-control-test-util :as u]))
 
 (use-fixtures :once (u/int-test-fixtures))
-(use-fixtures :each (u/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"}))
+
+(use-fixtures :each
+              (u/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"})
+              (u/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 
 ;; TODO CMR-2134, CMR-2133 test creating groups without various permissions
 

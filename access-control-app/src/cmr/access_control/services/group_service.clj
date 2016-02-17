@@ -16,6 +16,7 @@
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.transmit.urs :as urs]
             [cmr.access-control.services.group-service-messages :as msg]
+            [cmr.access-control.services.auth-util :as auth]
             [clojure.edn :as edn]
             [clojure.string :as str]
     ;; Must be required to be available at runtime
@@ -141,8 +142,8 @@
   [context group]
   (validate-create-group context group)
   (if-let [provider-id (:provider-id group)]
-    (acl/verify-can-create-provider-group context provider-id)
-    (acl/verify-can-create-system-group context))
+    (auth/verify-can-create-provider-group context provider-id)
+    (auth/verify-can-create-system-group context))
   ;; Check if the group already exists
   (if-let [concept-id (mdb/get-concept-id context
                                           :access-group

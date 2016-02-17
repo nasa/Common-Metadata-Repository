@@ -149,21 +149,3 @@
        (errors/throw-service-error
          :unauthorized
          "You do not have permission to perform that action.")))))
-
-(defn verify-can-create-system-group
-  [context]
-  (when-not (get-permitting-acls context :system-object "GROUP" :create)
-    (errors/throw-service-error
-      :unauthorized
-      "You do not have permission to create system-level access control groups.")))
-
-(defn verify-can-create-provider-group
-  [context provider-id]
-  (let [acls (get-permitting-acls context :provider-object "GROUP" :create)]
-    (when-not (some #(= provider-id (-> % :provider-object-identity :provider-id))
-                    acls)
-      (errors/throw-service-error
-        :unauthorized
-        (str "You do not have permission to create access control groups under provider ["
-             provider-id
-             "].")))))
