@@ -19,7 +19,6 @@
 
 (defmethod handle-ingest-event :provider-collection-reindexing
   [context _ {:keys [provider-id]}]
-  (println "Provider ID in handle-ingest-event = " provider-id)
   ;; We want to reindex all revisions and latest so we pass in nil for the all-revisions-index?
   ;; flag. This is a provider event which always applies to all the indexes.
   ;; We set the refresh acls flag to false because the ACLs should have been refreshed as part

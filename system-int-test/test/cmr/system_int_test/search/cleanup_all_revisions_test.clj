@@ -57,7 +57,7 @@
     (cmr.metadata-db.config/set-publish-messages! false)
     (ingest/delete-concept (d/item->concept collection-to-delete))
     (cmr.metadata-db.config/set-publish-messages! true)
+    (index/wait-until-indexed)
     (ingest/reindex-all-collections)
     (index/wait-until-indexed)
-    (Thread/sleep 1000)
     (is (= 3 (:hits (search/find-refs :collection {:all-revisions true :page-size 20}))))))

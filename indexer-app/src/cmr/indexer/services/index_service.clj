@@ -73,7 +73,7 @@
   (reduce (fn [num-indexed batch]
             (let [batch (es/prepare-batch context (filter-expired-concepts batch)
                                           all-revisions-index?)]
-              (println "Result of ES/bulk-index:" (es/bulk-index context batch))
+              (es/bulk-index context batch)
               (+ num-indexed (count batch))))
           0
           concept-batches))
@@ -125,7 +125,7 @@
                                      :collection
                                      REINDEX_BATCH_SIZE
                                      {:provider-id provider-id})]
-         (println "result of bulk-index" (bulk-index context all-revisions-batches true)))))))
+         (bulk-index context all-revisions-batches true))))))
 
 (defn reindex-tags
   "Reindexes all the tags. Only the latest revisions will be indexed"

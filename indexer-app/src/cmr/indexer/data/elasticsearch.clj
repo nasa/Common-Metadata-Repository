@@ -169,16 +169,13 @@
                                        context concept-id revision-id all-revisions-index?
                                        concept)]
                        (if (:deleted concept)
-                         (merge (select-keys concept [:provider-id
-                                                      :concept-id
-                                                      :revision-id
-                                                      :revision-date 
-                                                      :entry-id])
-                                {:_id elastic-id
-                                 :_index index-name
-                                 :_type type
-                                 :_version revision-id
-                                 :_version_type "external_gte"})
+                         (let [elastic-doc (concept->elastic-doc context concept concept)]
+                           (merge elastic-doc
+                                  {:_id elastic-id
+                                   :_index index-name
+                                   :_type type
+                                   :_version revision-id
+                                   :_version_type "external_gte"}))
                          (let [parsed-concept (cp/parse-concept concept)
                                delete-time (get-in parsed-concept
                                                    [:data-provider-timestamps :delete-time])
