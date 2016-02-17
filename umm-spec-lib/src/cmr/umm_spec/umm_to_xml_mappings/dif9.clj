@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif9
   "Defines mappings from a UMM record into DIF9 XML"
   (:require [cmr.umm-spec.util :as u]
-            [cmr.umm-spec.xml.gen :refer :all]
+            [cmr.common.xml.gen :refer :all]
             [clojure.set :as set]
             [camel-snake-kebab.core :as csk]
             [cmr.umm-spec.xml-to-umm-mappings.dif9 :as xtu]))

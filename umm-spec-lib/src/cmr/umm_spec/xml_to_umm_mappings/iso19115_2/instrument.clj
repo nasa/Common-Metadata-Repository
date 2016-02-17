@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2.instrument
   "Functions for parsing UMM instrument records out of ISO 19115-2 XML documents."
-  (:require [cmr.umm-spec.simple-xpath :refer [select text]]
-            [cmr.umm-spec.xml.parse :refer :all]
+  (:require [cmr.common.xml.simple-xpath :refer [select text]]
+            [cmr.common.xml.parse :refer :all]
             [cmr.umm-spec.util :refer [without-default-value-of]]
             [cmr.umm-spec.iso19115-2-util :as iso :refer [char-string-value]]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.characteristics :as ch]))
