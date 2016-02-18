@@ -35,7 +35,9 @@
   series of lines of index information and documents to updates interleaved. This functions expects
   that the document will contain the index information. It extracts the index keys from each document
   and returns a sequence of index info, document, index info, document..., etc."
-  [documents all-revisions-index?]
+  ([documents]
+   (bulk-index documents false) )
+  ([documents all-revisions-index?]
   (if all-revisions-index?
     (mapcat index-operation-all-revisions documents)
-    (mapcat index-operation documents)))
+    (mapcat index-operation documents))))

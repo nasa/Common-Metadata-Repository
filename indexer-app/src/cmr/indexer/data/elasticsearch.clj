@@ -209,9 +209,11 @@
 
 (defn bulk-index
   "Save a batch of documents in Elasticsearch."
-  [context docs all-revisions-index?]
+  ([context docs]
+   (bulk-index context docs nil))
+  ([context docs all-revisions-index?]
   (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
-    (let [bulk-operations (cmr-bulk/bulk-index docs-batch all-revisions-index?) 
+    (let [bulk-operations (cmr-bulk/bulk-index docs-batch all-revisions-index?)
           conn (context->conn context)
           response (bulk/bulk conn bulk-operations)
           ;; we don't care about version conflicts or deletes that aren't found
@@ -224,7 +226,7 @@
                                     (not= 404 status))))
                            (:items response))]
       (when bad-errors
-        (errors/internal-error! (format "Bulk indexing failed with response %s" response))))))
+        (errors/internal-error! (format "Bulk indexing failed with response %s" response)))))))
 
 (defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
