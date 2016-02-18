@@ -8,22 +8,18 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:tag :json]
   [concept-type query]
-  ["concept-id" "namespace" "category" "value" "description" "originator-id.lowercase"])
+  ["concept-id" "tag-key.lowercase" "description" "originator-id.lowercase"])
 
 (defmethod elastic-results/elastic-result->query-result-item [:tag :json]
   [context query elastic-result]
-  (let [{{[tag-namespace] :namespace
+  (let [{{[tag-key] :tag-key.lowercase
           [description] :description
-          [category] :category
-          [value] :value
           [concept-id] :concept-id
           [originator-id] :originator-id.lowercase} :fields
          revision-id :_version} elastic-result]
     {:concept-id concept-id
      :revision-id revision-id
-     :namespace tag-namespace
-     :value value
-     :category category
+     :tag-key tag-key
      :description description
      :originator-id originator-id}))
 

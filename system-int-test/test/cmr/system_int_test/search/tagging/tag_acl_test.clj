@@ -27,7 +27,7 @@
         delete-user (e/login (s/context) "delete-user" ["delete-group"])
         all-user (e/login (s/context) "all-user" ["all-group"])
         tag-value (atom 0)
-        uniq-tag #(tags/make-tag {:value (str (swap! tag-value inc))})]
+        uniq-tag #(tags/make-tag {:tag-key (str (swap! tag-value inc))})]
 
     (testing "Create permissions"
       (testing "Success"

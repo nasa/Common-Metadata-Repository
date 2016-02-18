@@ -202,9 +202,7 @@
   ([uniq-num]
    (tag-concept uniq-num {}))
   ([uniq-num attributes]
-   (let [namespace (str "namespace" uniq-num)
-         value (str "value" uniq-num)
-         native-id (str namespace (char 29) value)
+   (let [native-id (str "tag-key" uniq-num)
          attributes (merge {:user-id (str "user" uniq-num)
                             :format "application/edn"
                             :native-id native-id}

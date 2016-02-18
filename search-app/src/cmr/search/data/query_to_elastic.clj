@@ -185,8 +185,7 @@
 
 (defmethod q2e/concept-type->sort-key-map :tag
   [_]
-  {:namespace :namespace.lowercase
-   :value :value.lowercase})
+  {:tag-key :tag-key.lowercase})
 
 (defmethod q2e/concept-type->sort-key-map :granule
   [_]
