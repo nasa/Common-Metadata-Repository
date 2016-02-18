@@ -23,7 +23,6 @@
 (defn login
   "Perform a login request against the SOAP API and return the generated token."
   [user pass]
-  (let [[status body-xml]
-        (soap/post-soap :authentication
-          (login-request user pass))]
+  (let [[status body-xml] (soap/post-soap :authentication
+                            (login-request user pass))]
       (xp/value-of body-xml "/Envelope/Body/LoginResponse/result")))
