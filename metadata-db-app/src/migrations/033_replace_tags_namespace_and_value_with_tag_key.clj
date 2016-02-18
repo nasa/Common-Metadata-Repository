@@ -41,6 +41,8 @@
                        (util/gzip-blob->string)
                        (edn/read-string))
           tag-key (:tag-key metadata)
+          ;; There is no way to properly recover a namespace and value that have a 
+          ;; "." in the value.
           [_ namespace value] (re-matches #"(.*)\.(.*$)" tag-key)
           metadata (-> metadata
                        (assoc :namespace namespace
