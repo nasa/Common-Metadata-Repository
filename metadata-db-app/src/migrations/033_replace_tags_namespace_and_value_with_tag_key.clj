@@ -1,6 +1,7 @@
 (ns migrations.033-replace-tags-namespace-and-value-with-tag-key
   (:require [clojure.java.jdbc :as j]
             [clojure.edn :as edn]
+            [clojure.string :as str]
             [config.migrate-config :as config]
             [cmr.common.util :as util]
             [config.mdb-migrate-helper :as h]))
@@ -17,7 +18,7 @@
           ;; Some rows may already have a tag-key instead of namespace and value.
           {:keys [namespace value tag-key]} metadata
           tag-key (or tag-key
-                      (lower-case (str namespace "." value)))
+                      (str/lower-case (str namespace "." value)))
           metadata (-> metadata
                        (assoc :tag-key tag-key)
                        (dissoc :namespace :value :category)
