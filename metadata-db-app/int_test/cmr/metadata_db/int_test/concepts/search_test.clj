@@ -395,6 +395,10 @@
                (set (->> (util/find-latest-concepts :tag-association params)
                          :concepts
                          (map #(dissoc % :provider-id :revision-date :transaction-id)))))
+
+            "by associated-concept-id"
+            [tag-association1] {:associated-concept-id "C1200000000-REG_PROV"}
+
             "with metadata"
             [tag-association1 tag-association2] {}
 

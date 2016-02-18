@@ -6,11 +6,18 @@
             [cmr.common.util :as util]
             [config.mdb-migrate-helper :as h]))
 
+(defn- print-message
+  [result]
+  (println (format "Processing concept-id [%s] revision [%d]"
+                   (:concept_id result)
+                   (long (:revision_id result)))))
+
 (defn up
   "Migrates the database up to version 33."
   []
   (println "migrations.033-replace-tags-namespace-and-value-with-tag-key up...")
   (doseq [result (h/query "SELECT * from cmr_tags")]
+    (print-message result)
     (let [{:keys [id metadata]} result
           metadata (-> metadata
                        (util/gzip-blob->string)
@@ -31,19 +38,23 @@
   "Migrates the database down from version 33."
   []
   (println "migrations.033-replace-tags-namespace-and-value-with-tag-key down...")
-  (println "NOTE: category field and original native-id cannot be recoverd")
+  (println "NOTE: category field and original native-id cannot be recovered")
   (doseq [result (h/query "SELECT * from cmr_tags")]
+    (print-message result)
     (let [{:keys [id metadata]} result
           metadata (-> metadata
                        (util/gzip-blob->string)
                        (edn/read-string))
           tag-key (:tag-key metadata)
+          ;; There is no way to properly recover a namespace and value that have a
+          ;; "." in the value.
           [_ namespace value] (re-matches #"(.*)\.(.*$)" tag-key)
+          native-id (str namespace (char 29) value)
           metadata (-> metadata
                        (assoc :namespace namespace
                               :value value)
                        (dissoc :tag-key)
                        (prn-str)
                        (util/string->gzip-bytes))
-          result (assoc result :metadata metadata)]
+          result (assoc result :metadata metadata :native_id native-id)]
       (j/update! (config/db) "cmr_tags" result ["id = ?" id]))))
