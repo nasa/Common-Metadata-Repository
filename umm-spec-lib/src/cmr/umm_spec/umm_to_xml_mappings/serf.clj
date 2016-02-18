@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.serf
   "Defines mappings from a UMM record into SERF XML"
-  (:require [cmr.umm-spec.xml.gen :refer :all]
+  (:require [cmr.common.xml.gen :refer :all]
             [camel-snake-kebab.core :as csk]
             [cmr.umm-spec.xml-to-umm-mappings.serf :as utx]
             [cmr.umm-spec.util :refer [without-default-value-of not-provided]]
