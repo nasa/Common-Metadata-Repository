@@ -11,6 +11,9 @@
   []
   (println "migrations.033-replace-tags-namespace-and-value-with-tag-key up...")
   (doseq [result (h/query "SELECT * from cmr_tags")]
+    (println (format "Processing concept-id [%s] revision [%d]"
+                     (:concept_id result)
+                     (long (:revision_id result))))
     (let [{:keys [id metadata]} result
           metadata (-> metadata
                        (util/gzip-blob->string)
