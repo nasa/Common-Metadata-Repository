@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.iso19115-2-util
   "Defines common xpaths and functions used by various namespaces in ISO19115-2."
-  (:require [cmr.umm-spec.xml.parse :refer :all]
-            [cmr.umm-spec.simple-xpath :refer [select]]
+  (:require [cmr.common.xml.parse :refer :all]
+            [cmr.common.xml.simple-xpath :refer [select]]
             clojure.set
             [clojure.string :as str]))
 

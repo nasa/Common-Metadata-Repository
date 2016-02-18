@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif10
   "Defines mappings from a UMM record into DIF10 XML"
-  (:require [cmr.umm-spec.xml.gen :refer :all]
+  (:require [cmr.common.xml.gen :refer :all]
             [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as spatial]
             [cmr.umm-spec.date-util :as date]
             [camel-snake-kebab.core :as csk]

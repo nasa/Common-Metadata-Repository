@@ -5,7 +5,9 @@
               [cmr.common.util :as util :refer [are2]]
               [cmr.access-control.int-test.access-control-test-util :as u]))
 
-(use-fixtures :each (u/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"} ["user1" "user2" "user3" "user4" "user5"]))
+(use-fixtures :each
+              (u/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"} ["user1" "user2" "user3" "user4" "user5"])
+              (u/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 (use-fixtures :once (u/int-test-fixtures))
 
 (defn ingest-group

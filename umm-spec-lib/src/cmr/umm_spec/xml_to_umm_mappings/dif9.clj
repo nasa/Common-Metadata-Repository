@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif9
   "Defines mappings from DIF9 XML into UMM records"
-  (:require [cmr.umm-spec.simple-xpath :refer [select text]]
-            [cmr.umm-spec.xml.parse :refer :all]
+  (:require [cmr.common.xml.simple-xpath :refer [select text]]
+            [cmr.common.xml.parse :refer :all]
             [camel-snake-kebab.core :as csk]
             [cmr.common.util :as util]
             [cmr.umm-spec.util :as su]
@@ -70,7 +70,9 @@
   [entry-id version-id]
   (let [version-suffix (str "_" version-id)
         short-name-length (- (count entry-id) (count version-suffix))]
-    (if (and version-id (= (subs entry-id short-name-length) version-suffix))
+    (if (and version-id
+             (> short-name-length 0)
+             (= (subs entry-id short-name-length) version-suffix))
       (subs entry-id 0 short-name-length)
       entry-id)))
 

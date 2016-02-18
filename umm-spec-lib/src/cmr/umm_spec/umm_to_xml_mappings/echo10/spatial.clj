@@ -1,5 +1,5 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10.spatial
-  (:require [cmr.umm-spec.xml.gen :refer :all]
+  (:require [cmr.common.xml.gen :refer :all]
             [cmr.umm-spec.util :as u]))
 
 (defn- point-contents

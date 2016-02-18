@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.organizations-personnel
   "Functions for generating ISO19115-2 XML elements from UMM organization and personnel records."
-  (:require [cmr.umm-spec.xml.gen :refer :all]
+  (:require [cmr.common.xml.gen :refer :all]
+            [cmr.umm-spec.util :refer [char-string]]
             [clojure.string :as str]
             [cmr.umm-spec.iso19115-2-util :as iso]))
 
@@ -8,7 +9,7 @@
 (defn responsibility-by-role
   [responsibilities role]
   (seq (filter (fn [responsibility]
-              (= (:Role responsibility) role)) responsibilities)))
+                (= (:Role responsibility) role)) responsibilities)))
 
 (defn- contact-values-by-type
   [contacts type]

@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif10.spatial
   "Defines mappings from DIF 10 XML spatial elements into UMM records"
   (:require [clojure.set :as set]
-            [cmr.umm-spec.simple-xpath :refer [select text]]
-            [cmr.umm-spec.xml.parse :refer :all]
+            [cmr.common.xml.simple-xpath :refer [select text]]
+            [cmr.common.xml.parse :refer :all]
             [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as utx]
             [cmr.umm-spec.util :as u]))
 

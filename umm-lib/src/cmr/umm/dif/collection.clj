@@ -23,11 +23,24 @@
             [cmr.umm.dif.collection.personnel :as personnel])
   (:import cmr.umm.collection.UmmCollection))
 
+(defn- get-short-name
+  "Returns the short-name from the given entry-id and version-id, where entry-id is
+  in the form of <short-name>_<version-id>."
+  [entry-id version-id]
+  (let [version-suffix (str "_" version-id)
+        short-name-length (- (count entry-id) (count version-suffix))]
+    (if (and version-id
+             (> short-name-length 0)
+             (= (subs entry-id short-name-length) version-suffix))
+      (subs entry-id 0 short-name-length)
+      entry-id)))
+
 (defn- xml-elem->Product
   "Returns a UMM Product from a parsed Collection Content XML structure"
   [collection-content]
-  (let [short-name (cx/string-at-path collection-content [:Entry_ID])
+  (let [entry-id (cx/string-at-path collection-content [:Entry_ID])
         version-id (cx/string-at-path collection-content [:Data_Set_Citation :Version])
+        short-name (get-short-name entry-id version-id)
         long-name (cx/string-at-path collection-content [:Entry_Title])
         long-name (util/trunc long-name 1024)
         processing-level-id (em/extended-metadata-value
@@ -156,7 +169,7 @@
            instruments (mapcat :instruments platforms)]
        (x/emit-str
          (x/element :DIF dif-header-attributes
-                    (x/element :Entry_ID {} short-name)
+                    (x/element :Entry_ID {} (eid/entry-id short-name version-id))
                     (x/element :Entry_Title {} entry-title)
                     (when version-id
                       (x/element :Data_Set_Citation {}

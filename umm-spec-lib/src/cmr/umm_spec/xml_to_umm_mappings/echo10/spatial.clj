@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10.spatial
   "Defines mappings from ECHO10 XML spatial elements into UMM records"
   (:require [clojure.string :as str]
-            [cmr.umm-spec.simple-xpath :refer [select text]]
-            [cmr.umm-spec.xml.parse :refer :all]
+            [cmr.common.xml.simple-xpath :refer [select text]]
+            [cmr.common.xml.parse :refer :all]
             [cmr.umm-spec.util :as u]))
 
 (defn- parse-point

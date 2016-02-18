@@ -149,6 +149,3 @@
        (errors/throw-service-error
          :unauthorized
          "You do not have permission to perform that action.")))))
-
-
-

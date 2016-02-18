@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10
   "Defines mappings from ECHO10 XML into UMM records"
-  (:require [cmr.umm-spec.simple-xpath :refer [select text]]
-            [cmr.umm-spec.xml.parse :refer :all]
+  (:require [cmr.common.xml.simple-xpath :refer [select text]]
+            [cmr.common.xml.parse :refer :all]
             [cmr.umm-spec.util :refer [without-default-value-of]]
             [cmr.umm-spec.date-util :as date]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]

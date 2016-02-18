@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-smap
   "Defines mappings from ISO-SMAP XML to UMM records"
   (:require [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.simple-xpath :refer [select]]
-            [cmr.umm-spec.xml.parse :refer :all]
+            [cmr.common.xml.simple-xpath :refer [select]]
+            [cmr.common.xml.parse :refer :all]
             [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.util :refer [without-default-value-of]]
             [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]

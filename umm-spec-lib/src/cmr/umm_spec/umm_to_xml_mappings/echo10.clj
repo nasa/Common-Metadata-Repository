@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10
   "Defines mappings from a UMM record into ECHO10 XML"
-  (:require [cmr.umm-spec.xml.gen :refer :all]
+  (:require [cmr.common.xml.gen :refer :all]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.related-url :as ru]
             [cmr.umm-spec.util :refer [with-default]]
             [cmr.umm-spec.util :as spec-util]
