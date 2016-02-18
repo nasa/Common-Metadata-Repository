@@ -59,7 +59,7 @@
     (index/wait-until-indexed)
     ;; Make sure the collection was ingested twice.
     (is (d/refs-match? coll1s (search/find-refs :collection {:all-revisions true :page-size 20})))
-    ;; Block ingest events to elastic to simulate some kind of network or messaging failure.
+    ;; Tell metadata db to not send messages to simulate some kind of network or messaging failure
     (dev-sys-util/eval-in-dev-sys
      `(cmr.metadata-db.config/set-publish-messages! false))
     ;; Create a tombstone in metadata-db. Because messages are off this should simulate a failure to
