@@ -172,8 +172,8 @@
 
 (defn get-group
   "Retrieves a group by concept id"
-  [concept-id]
-  (process-response (ac/get-group (conn-context) concept-id {:raw? true})))
+  [token concept-id]
+  (process-response (ac/get-group (conn-context) concept-id {:raw? true :token token})))
 
 (defn update-group
   "Updates a group."

@@ -44,5 +44,45 @@
           group (u/make-group {:provider-id "PROV1"})
           response (u/create-group token group)]
       (is (= {:status 401
-              :errors ["You do not have permission to create access control groups under provider [PROV1]."]}
+              :errors ["You do not have permission to create access control groups for provider [PROV1]."]}
              response)))))
+
+(deftest get-group-acl-test
+
+  (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group-readers" :read :create)
+  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group-readers" "prov1guid" :read :create)
+  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov2-group-creator" "prov2guid" :create)
+
+  (let [token (e/login (u/conn-context) "user1" ["sys-group-readers" "prov1-group-readers"])
+        no-group-token (e/login (u/conn-context) "user2")
+        system-group (u/make-group)
+        system-group-concept-id (:concept-id (u/create-group token system-group))
+        prov-group (u/make-group {:provider-id "PROV1"})
+        prov-group-concept-id (:concept-id (u/create-group token prov-group))
+        prov2-group (u/make-group {:provider-id "PROV2"})
+        prov2-creator-token (e/login (u/conn-context) "user3" ["prov2-group-creator"])
+        prov2-group-concept-id (:concept-id (u/create-group prov2-creator-token prov2-group))]
+
+    (testing "reading system groups"
+      (testing "with permission"
+        (is (= (assoc system-group :status 200 :num-members 0)
+               (u/get-group token system-group-concept-id))))
+
+      (testing "without permission"
+        (is (= {:status 401
+                :errors ["You do not have permission to read system-level access control groups."]}
+               (u/get-group no-group-token system-group-concept-id)))))
+
+    (testing "reading provider groups"
+      (testing "with permission"
+        (is (= (assoc prov-group :num-members 0 :status 200)
+               (u/get-group token prov-group-concept-id))))
+
+      (testing "without permission"
+        (is (= {:status 401
+                :errors ["You do not have permission to read access control groups for provider [PROV1]."]}
+               (u/get-group no-group-token prov-group-concept-id)))
+
+        (is (= {:status 401
+                :errors ["You do not have permission to read access control groups for provider [PROV2]."]}
+               (u/get-group token prov2-group-concept-id)))))))
