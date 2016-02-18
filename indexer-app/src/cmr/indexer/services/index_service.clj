@@ -73,7 +73,7 @@
   (reduce (fn [num-indexed batch]
             (let [batch (es/prepare-batch context (filter-expired-concepts batch)
                                           all-revisions-index?)]
-              (es/bulk-index context batch)
+              (es/bulk-index context batch all-revisions-index?)
               (+ num-indexed (count batch))))
           0
           concept-batches))
@@ -308,5 +308,3 @@
         ok? (every? :ok? (vals dep-health))]
     {:ok? ok?
      :dependencies dep-health}))
-
-
