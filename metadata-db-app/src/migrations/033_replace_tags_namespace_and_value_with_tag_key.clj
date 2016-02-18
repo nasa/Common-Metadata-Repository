@@ -29,8 +29,8 @@
           metadata (-> metadata
                        (assoc :tag-key tag-key)
                        (dissoc :namespace :value :category)
-                       (prn-str)
-                       (util/string->gzip-bytes))
+                       pr-str
+                       util/string->gzip-bytes)
           result (assoc result :metadata metadata :native_id tag-key)]
       (j/update! (config/db) "cmr_tags" result ["id = ?" id]))))
 
@@ -54,7 +54,7 @@
                        (assoc :namespace namespace
                               :value value)
                        (dissoc :tag-key)
-                       (prn-str)
-                       (util/string->gzip-bytes))
+                       pr-str
+                       util/string->gzip-bytes)
           result (assoc result :metadata metadata :native_id native-id)]
       (j/update! (config/db) "cmr_tags" result ["id = ?" id]))))
