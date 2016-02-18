@@ -34,7 +34,7 @@
   "Migrates the database down from version 33."
   []
   (println "migrations.033-replace-tags-namespace-and-value-with-tag-key down...")
-  (println "NOTE: category field and original native-id cannot be recoverd")
+  (println "NOTE: category field and original native-id cannot be recovered")
   (doseq [result (h/query "SELECT * from cmr_tags")]
     (let [{:keys [id metadata]} result
           metadata (-> metadata
