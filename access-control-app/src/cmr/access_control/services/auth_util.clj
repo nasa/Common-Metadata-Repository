@@ -24,17 +24,25 @@
                (name permission)
                provider-id)))))
 
+(defn- verify-group-permission
+  [context permission {:keys [provider-id]}]
+  (if (and provider-id (not= "CMR" provider-id))
+    (verify-permission context permission provider-id)
+    (verify-permission context permission)))
+
 (defn verify-can-create-group
   "Throws a service error if the context user cannot create a group under provider-id."
   [context group]
-  (if-let [provider-id (:provider-id group)]
-    (verify-permission context :create provider-id)
-    (verify-permission context :create)))
+  (verify-group-permission context :create group))
 
 (defn verify-can-read-group
   "Throws a service error if the context user cannot read the access control group represented by
    the group map."
   [context group]
-  (if-let [provider-id (:provider-id group)]
-    (verify-permission context :read provider-id)
-    (verify-permission context :read)))
+  (verify-group-permission context :read group))
+
+(defn verify-can-delete-group
+  "Throws a service error of context user cannot delete access control group represented by given
+   group map."
+  [context group]
+  (verify-group-permission context :delete group))

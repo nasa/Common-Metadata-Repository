@@ -172,8 +172,6 @@
 
           ;; Delete a group
           (DELETE "/" {:keys [request-context]}
-            ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
-            (acl/verify-ingest-management-permission request-context :update)
             (delete-group request-context group-id))
 
           ;; Update a group
