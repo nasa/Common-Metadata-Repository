@@ -139,29 +139,29 @@
         {:keys [concept-id]} (u/create-group token group)]
     (testing "Retrieve existing group"
       (is (= (assoc group :status 200 :num-members 0)
-             (u/get-group concept-id))))
+             (u/get-group token concept-id))))
 
     (testing "Retrieve unknown group"
       (is (= {:status 404
               :errors ["Group could not be found with concept id [AG100-CMR]"]}
-             (u/get-group "AG100-CMR"))))
+             (u/get-group token "AG100-CMR"))))
     (testing "Retrieve group with bad concept-id"
       (is (= {:status 400
               :errors ["Concept-id [F100-CMR] is not valid."]}
-             (u/get-group "F100-CMR"))))
+             (u/get-group token "F100-CMR"))))
     (testing "Retrieve group with concept id for a different concept type"
       (is (= {:status 400
               :errors ["[C100-PROV1] is not a valid group concept id."]}
-             (u/get-group "C100-PROV1"))))
+             (u/get-group token "C100-PROV1"))))
     (testing "Retrieve group with bad provider in concept id"
       (is (= {:status 404
               :errors ["Group could not be found with concept id [AG100-PROV3]"]}
-             (u/get-group "AG100-PROV3"))))
+             (u/get-group token "AG100-PROV3"))))
     (testing "Retrieve deleted group"
       (u/delete-group token concept-id)
       (is (= {:status 404
               :errors [(format "Group with concept id [%s] was deleted." concept-id)]}
-             (u/get-group concept-id))))))
+             (u/get-group token concept-id))))))
 
 (deftest delete-group-test
   (let [group (u/make-group)

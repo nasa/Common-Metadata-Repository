@@ -162,16 +162,12 @@
 
         ;; Create a group
         (POST "/" {:keys [request-context headers body]}
-          ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
-          (acl/verify-ingest-management-permission request-context :update)
           (create-group request-context headers (slurp body)))
 
         (context "/:group-id" [group-id]
           (OPTIONS "/" req cr/options-response)
           ;; Get a group
           (GET "/" {:keys [request-context]}
-            ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
-            (acl/verify-ingest-management-permission request-context :update)
             (get-group request-context group-id))
 
           ;; Delete a group
