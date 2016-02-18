@@ -447,7 +447,7 @@
   "Defines the elasticsearch mapping for storing tags."
   {:_id  {:path "concept-id"}}
   {:concept-id (m/stored m/string-field-mapping)
-   :tag-key.lowercase (m/stored m/string-field-mapping)
+   :tag-key.lowercase (-> m/string-field-mapping m/stored m/doc-values)
    :description (m/not-indexed (m/stored m/string-field-mapping))
    :originator-id.lowercase (m/stored m/string-field-mapping)
    ;; set of concept-ids stored as EDN gzipped and base64 encoded for retrieving purpose

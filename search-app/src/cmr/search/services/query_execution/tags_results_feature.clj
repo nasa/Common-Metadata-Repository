@@ -12,8 +12,7 @@
   "Returns the unzipped tag by gunzip the :associated-concept-ids-gzip-b64 field and replace it
   with associated-concept-ids."
   [tag]
-  (let [{tag-key :tag-key.lowercase
-         associated-concept-ids-gzip-b64 :associated-concept-ids-gzip-b64} tag]
+  (let [{:keys [tag-key associated-concept-ids-gzip-b64]} tag]
     {:tag-key tag-key
      :associated-concept-ids (some-> associated-concept-ids-gzip-b64
                                      util/gzip-base64->string
@@ -40,7 +39,7 @@
      :skip-acls? true
      :page-size :unlimited
      :result-format :query-specified
-     :fields [:tag-key.lowercase :associated-concept-ids-gzip-b64]}))
+     :fields [:tag-key :associated-concept-ids-gzip-b64]}))
 
 (defmethod query-execution/post-process-query-result-feature :tags
   [context query elastic-results query-results feature]

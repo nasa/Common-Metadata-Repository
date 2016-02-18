@@ -57,8 +57,14 @@
 
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
           ;; tag-key Param
-          "By tag-key - Ignore Case Default" ;; Case sensitive not supported
+          "By tag-key case insensitive - lower case"
           [tag1] {:tag-key "tag1"}
+
+          "By tag-key case insensitive - upper case"
+          [tag1] {:tag-key "TAG1"}
+
+          "By tag-key case insensitive - mixed case"
+          [tag1] {:tag-key "TaG1"}
 
           "By tag-key Pattern"
           [tag4] {:tag-key "*other" "options[tag-key][pattern]" true}
