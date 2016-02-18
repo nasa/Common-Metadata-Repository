@@ -17,7 +17,7 @@
           ;; Some rows may already have a tag-key instead of namespace and value.
           {:keys [namespace value tag-key]} metadata
           tag-key (or tag-key
-                      (str namespace "." value))
+                      (lower-case (str namespace "." value)))
           metadata (-> metadata
                        (assoc :tag-key tag-key)
                        (dissoc :namespace :value :category)
