@@ -18,10 +18,8 @@
 
 (def field-maxes
   "A map of fields to their max lengths"
-  {:namespace 514
-   :value 515
-   :description 4000
-   :category 1030})
+  {:tag-key 1030
+   :description 4000})
 
 (defn string-of-length
   "Creates a string of the specified length"
@@ -49,12 +47,9 @@
              (tags/create-tag valid-user-token valid-tag {:http-options {:content-type :xml}}))))
 
     (testing "Missing field validations"
-      (are [field]
-           (= {:status 400
-               :errors [(format "object has missing required properties ([\"%s\"])" (name field))]}
-              (tags/create-tag valid-user-token (dissoc valid-tag field)))
-
-           :namespace :value))
+      (is (= {:status 400
+              :errors ["object has missing required properties ([\"tag-key\"])"]}
+             (tags/create-tag valid-user-token (dissoc valid-tag :tag-key)))))
 
     (testing "Minimum field length validations"
       (are [field]
@@ -63,7 +58,7 @@
                                 (name field))]}
               (tags/create-tag valid-user-token (assoc valid-tag field "")))
 
-           :namespace :value :description :category))
+           :tag-key :description))
 
     (testing "Maximum field length validations"
       (doseq [[field max-length] field-maxes]
@@ -73,18 +68,7 @@
                                    (name field) long-value (inc max-length) max-length)]}
                  (tags/create-tag
                    valid-user-token
-                   (assoc valid-tag field long-value)))))))
-
-    (testing "Invalid namespace and value characters"
-      (are [field field-name]
-           (= {:status 400
-               :errors [(str field-name " may not contain the Group Separator character. "
-                             "ASCII decimal value: 29 Unicode: U+001D")]}
-              (tags/create-tag
-                valid-user-token
-                (assoc valid-tag field (str "abc" (char 29) "abc"))))
-           :namespace "Namespace"
-           :value "Value"))))
+                   (assoc valid-tag field long-value)))))))))
 
 (deftest create-tag-test
   (testing "Successful creation"
@@ -96,28 +80,27 @@
       (is (= 1 revision-id))
       (tags/assert-tag-saved (assoc tag :originator-id "user1") "user1" concept-id revision-id)
 
-      (testing "Creation with an already existing namespace and value"
+      (testing "Creation with an already existing tag-key"
         (is (= {:status 409
-                :errors [(format "A tag with namespace [%s] and value [%s] already exists with concept id %s."
-                                 (:namespace tag) (:value tag) concept-id)]}
+                :errors [(format "A tag with tag-key [%s] already exists with concept id [%s]."
+                                 (:tag-key tag) concept-id)]}
                (tags/create-tag token tag))))
 
-      (testing "Creation with different namespace and same value succeeds"
-        (let [response (tags/create-tag token (assoc tag :namespace "different"))]
+      (testing "tag-key is case-insensitive"
+        (let [{:keys[status errors]} (tags/create-tag token (update tag :tag-key str/upper-case))]
+          (is (= [409 [(format "A tag with tag-key [%s] already exists with concept id [%s]."
+                               (:tag-key tag) concept-id)]]
+                 [status errors]))))
+
+      (testing "Creation with different tag-key succeeds"
+        (let [response (tags/create-tag token (assoc tag :tag-key "different"))]
           (is (= 200 (:status response)))
           (is (not= concept-id (:concept-id response)))
           (is (= 1 (:revision-id response)))))
-
-      (testing "Creation with same namespace and different value succeeds"
-        (let [response (tags/create-tag token (assoc tag :value "different"))]
-          (is (= 200 (:status response)))
-          (is (not= concept-id (:concept-id response)))
-          (is (= 1 (:revision-id response)))))
-
 
       (testing "Creation of previously deleted tag"
         (tags/delete-tag token concept-id)
-        (let [new-tag (assoc tag :category "new cat" :description "new description")
+        (let [new-tag (assoc tag :description "new description")
               token2 (e/login (s/context) "user2")
               response (tags/create-tag token2 new-tag)]
           (is (= {:status 200 :concept-id concept-id :revision-id 3}
@@ -131,7 +114,7 @@
         (is (= 200 (:status (tags/create-tag (e/login (s/context) "user1") tag)))))))
 
   (testing "Creation without optional fields is allowed"
-    (let [tag (dissoc (tags/make-tag {:value "value2"}) :category :description)
+    (let [tag (dissoc (tags/make-tag {:tag-key "tag-key2"}) :description)
           token (e/login (s/context) "user1")
           {:keys [status concept-id revision-id]} (tags/create-tag token tag)]
       (is (= 200 status))
@@ -139,12 +122,14 @@
       (is (= 1 revision-id)))))
 
 (deftest get-tag-test
-  (let [tag (tags/make-tag)
+  (let [tag (tags/make-tag {:tag-key "MixedCaseTagKey"})
         token (e/login (s/context) "user1")
         {:keys [concept-id]} (tags/create-tag token tag)]
-    (testing "Retrieve existing tag"
-      (is (= (assoc tag :originator-id "user1" :status 200)
-             (tags/get-tag concept-id))))
+    (testing "Retrieve existing tag, verify tag-key is converted to lowercase"
+      (let [expected-tag (-> tag
+                             (update :tag-key str/lower-case)
+                             (assoc :originator-id "user1" :status 200))]
+        (is (= expected-tag (tags/get-tag concept-id)))))
 
     (testing "Retrieve unknown tag"
       (is (= {:status 404
@@ -176,7 +161,6 @@
 
     (testing "Update with originator id"
       (let [updated-tag (-> tag
-                            (update-in [:category] #(str % " updated"))
                             (update-in [:description] #(str % " updated"))
                             (assoc :originator-id "user1"))
             token2 (e/login (s/context) "user2")
@@ -220,8 +204,7 @@
                                 human-name
                                 (get tag field))]}
               (tags/update-tag token concept-id (assoc tag field "updated")))
-           :namespace "Namespace"
-           :value "Value"
+           :tag-key "Tag Key"
            :originator-id "Originator Id"))
 
     (testing "Updates applies JSON validations"

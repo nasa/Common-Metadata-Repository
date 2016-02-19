@@ -2,6 +2,7 @@
   "This contains utilities for testing tagging"
   (:require [cmr.transmit.tag :as tt]
             [clojure.test :refer [is]]
+            [clojure.string :as str]
             [cmr.system-int-test.system :as s]
             [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.transmit.echo.tokens :as tokens]
@@ -19,9 +20,7 @@
   ([]
    (make-tag nil))
   ([attributes]
-   (merge {:namespace "org.nasa.something"
-           :category "QA"
-           :value "value"
+   (merge {:tag-key "tag-key"
            :description "A very good tag"}
           attributes)))
 
@@ -83,11 +82,13 @@
   :concept-id it saves it. If the tag has a :concept-id it updates the tag. Returns the saved tag
   along with :concept-id, :revision-id, :errors, and :status"
   ([token tag]
-   (let [tag-to-save (select-keys tag [:namespace :category :value :description])
+   (let [tag-to-save (select-keys tag [:tag-key :description])
          response (if-let [concept-id (:concept-id tag)]
                     (update-tag token concept-id tag-to-save)
                     (create-tag token tag-to-save))
-         tag (into tag (select-keys response [:status :errors :concept-id :revision-id]))]
+         tag (-> tag
+                 (update :tag-key str/lower-case)
+                 (into (select-keys response [:status :errors :concept-id :revision-id])))]
 
      (if (= (:revision-id tag) 1)
        ;; Get the originator id for the tag
@@ -114,7 +115,7 @@
         ;; make sure a tag has associated collection ids for comparison in metadata db
         tag (update-in tag [:associated-concept-ids] #(or % #{}))]
     (is (= {:concept-type :tag
-            :native-id (str (:namespace tag) (char 29) (:value tag))
+            :native-id (:tag-key tag)
             :provider-id "CMR"
             :format mt/edn
             :metadata (pr-str tag)
@@ -129,7 +130,7 @@
   [tag user-id concept-id revision-id]
   (let [concept (mdb/get-concept concept-id revision-id)]
     (is (= {:concept-type :tag
-            :native-id (str (:namespace tag) (char 29) (:value tag))
+            :native-id (:tag-key tag)
             :provider-id "CMR"
             :metadata ""
             :format mt/edn
@@ -144,17 +145,11 @@
   [tags]
   (sort-by identity
            (fn [t1 t2]
-             (let [tns (:namespace t1)
-                   tns2 (:namespace t2)
-                   v1 (:value t1)
-                   v2 (:value t2)]
-               (cond
-                 (not= tns tns2) (compare tns tns2)
-                 :else (compare v1 v2))))
+             (compare (:tag-key t1) (:tag-key t2)))
            tags))
 
 (def tag-keys-in-expected-response
-  [:concept-id :revision-id :namespace :value :description :category :originator-id])
+  [:concept-id :revision-id :tag-key :description :originator-id])
 
 (defn assert-tag-search
   "Verifies the tag search results"
