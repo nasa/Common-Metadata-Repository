@@ -90,17 +90,9 @@
 					"additionalProperties": false,
 					"minProperties": 1,
 					"properties": {
-						"namespace": {
-							"description": "Namespace of the tag.",
-							"$ref": "#/definitions/StringCondition"
-						},
-						"value": {
-							"description": "Value of the tag.",
-							"$ref": "#/definitions/StringCondition"
-						},
-						"category": {
-							"description": "Category of the tag.",
-							"$ref": "#/definitions/StringCondition"
+						"tag_key": {
+							"description": "Tag key of the tag.",
+							"$ref": "#/definitions/CaseInsensitiveStringCondition"
 						},
 						"originator_id": {
 							"description": "Originator id of the tag.",

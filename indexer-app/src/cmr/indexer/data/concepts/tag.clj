@@ -8,15 +8,10 @@
 (defmethod es/concept->elastic-doc :tag
   [context concept parsed-concept]
   (let [{:keys [concept-id]} concept
-        {:keys [namespace value category description originator-id associated-concept-ids]}
+        {:keys [tag-key description originator-id associated-concept-ids]}
         parsed-concept]
     {:concept-id concept-id
-     :namespace namespace
-     :namespace.lowercase (str/lower-case namespace)
-     :value value
-     :value.lowercase (str/lower-case value)
-     :category category
-     :category.lowercase (when category (str/lower-case category))
+     :tag-key.lowercase (str/lower-case tag-key)
      :description description
      :originator-id.lowercase  (str/lower-case originator-id)
      :associated-concept-ids-gzip-b64 (util/string->gzip-base64 (pr-str associated-concept-ids))

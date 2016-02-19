@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.simple-xpath
+(ns cmr.common.xml.simple-xpath
   "Simple XPath is an XPath implementation that works against XML parsed with clojure.data.xml
   and against Clojure records.
 

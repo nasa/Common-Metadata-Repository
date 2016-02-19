@@ -16,10 +16,12 @@
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.transmit.urs :as urs]
             [cmr.access-control.services.group-service-messages :as msg]
+            [cmr.access-control.services.auth-util :as auth]
             [clojure.edn :as edn]
             [clojure.string :as str]
-            ;; Must be required to be available at runtime
-            [cmr.access-control.data.group-json-results-handler]))
+    ;; Must be required to be available at runtime
+            [cmr.access-control.data.group-json-results-handler]
+            [cmr.acl.core :as acl]))
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
@@ -139,6 +141,7 @@
   the created group."
   [context group]
   (validate-create-group context group)
+  (auth/verify-can-create-group context group)
   ;; Check if the group already exists
   (if-let [concept-id (mdb/get-concept-id context
                                           :access-group
@@ -161,6 +164,7 @@
   "Retrieves a group with the given concept id."
   [context concept-id]
   (let [group (edn/read-string (:metadata (fetch-group-concept context concept-id)))]
+    (auth/verify-can-read-group context group)
     ;; Group response includes the number of members and not the actual members
     (-> group
         (assoc :num-members (count (:members group)))

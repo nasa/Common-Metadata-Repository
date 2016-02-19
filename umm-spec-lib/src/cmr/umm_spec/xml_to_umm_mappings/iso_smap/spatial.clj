@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial
   "Functions for parsing UMM spatial records out of ISO SMAP XML documents."
-  (:require [cmr.umm-spec.simple-xpath :refer [select]]
-            [cmr.umm-spec.xml.parse :refer :all]))
+  (:require [cmr.common.xml.simple-xpath :refer [select]]
+            [cmr.common.xml.parse :refer :all]))
 
 (def bounding-rectangles-xpath-str
   "gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox")

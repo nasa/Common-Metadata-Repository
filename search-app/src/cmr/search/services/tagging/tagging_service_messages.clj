@@ -6,8 +6,7 @@
 
 (defn tag-already-exists
   [tag concept-id]
-  (format "A tag with namespace [%s] and value [%s] already exists with concept id %s."
-          (:namespace tag) (:value tag) concept-id))
+  (format "A tag with tag-key [%s] already exists with concept id [%s]." (:tag-key tag) concept-id))
 
 (def field-may-not-contain-separator
   "Validation format message so %s is included for the field"

@@ -126,11 +126,13 @@
      (f))))
 
 (defn grant-all-group-fixture
-  "Creates A test fixture that grants all users the ability to create and modify groups for the given providers"
-  [f]
-  ;; TODO CMR-2133, CMR-2134 update this when implementing ACLS
-  ; (e/grant-all-group (conn-context))
-  (f))
+  "Returns a test fixture function which grants all users the ability to create and modify groups for given provider guids."
+  [provider-guids]
+  (fn [f]
+    (e/grant-system-group-permissions-to-all (conn-context))
+    (doseq [provider-guid provider-guids]
+      (e/grant-provider-group-permissions-to-all (conn-context) provider-guid))
+    (f)))
 
 (defn refresh-elastic-index
   []
@@ -170,8 +172,8 @@
 
 (defn get-group
   "Retrieves a group by concept id"
-  [concept-id]
-  (process-response (ac/get-group (conn-context) concept-id {:raw? true})))
+  [token concept-id]
+  (process-response (ac/get-group (conn-context) concept-id {:raw? true :token token})))
 
 (defn update-group
   "Updates a group."

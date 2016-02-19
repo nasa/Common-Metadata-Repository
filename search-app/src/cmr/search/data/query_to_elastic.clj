@@ -70,12 +70,17 @@
                           :instrument :instrument-sn
                           :sensor :sensor-sn
                           :project :project-refs}]
-        (if (use-doc-values-fields)
-          (merge default-mappings
-                 {:provider :provider-id-doc-values
-                  :updated-since :revision-date-doc-values}
-                 query-field->granule-doc-values-fields-map)
-          default-mappings)))
+    (if (use-doc-values-fields)
+      (merge default-mappings
+             {:provider :provider-id-doc-values
+              :updated-since :revision-date-doc-values}
+             query-field->granule-doc-values-fields-map)
+      default-mappings)))
+
+(defmethod q2e/concept-type->field-mappings :tag
+  [_]
+  {:tag-key :tag-key.lowercase
+   :originator-id :originator-id.lowercase})
 
 (defmethod q2e/elastic-field->query-field-mappings :collection
   [_]
@@ -93,6 +98,11 @@
           :sensor-sn :sensor
           :project-refs :project}
          (set/map-invert query-field->granule-doc-values-fields-map)))
+
+(defmethod q2e/elastic-field->query-field-mappings :tag
+  [_]
+  {:tag-key.lowercase :tag-key
+   :originator-id.lowercase :originator-id})
 
 (defmethod q2e/field->lowercase-field-mappings :collection
   [_]
@@ -185,8 +195,7 @@
 
 (defmethod q2e/concept-type->sort-key-map :tag
   [_]
-  {:namespace :namespace.lowercase
-   :value :value.lowercase})
+  {:tag-key :tag-key.lowercase})
 
 (defmethod q2e/concept-type->sort-key-map :granule
   [_]

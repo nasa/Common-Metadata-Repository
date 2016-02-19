@@ -12,9 +12,8 @@
   "Returns the unzipped tag by gunzip the :associated-concept-ids-gzip-b64 field and replace it
   with associated-concept-ids."
   [tag]
-  (let [{:keys [namespace value associated-concept-ids-gzip-b64]} tag]
-    {:namespace namespace
-     :value value
+  (let [{:keys [tag-key associated-concept-ids-gzip-b64]} tag]
+    {:tag-key tag-key
      :associated-concept-ids (some-> associated-concept-ids-gzip-b64
                                      util/gzip-base64->string
                                      edn/read-string)}))
@@ -25,7 +24,7 @@
   (if-let [matching-tags (seq (filter
                                 #(contains? (:associated-concept-ids %) (:id coll))
                                 tags))]
-    (assoc coll :tags (mapv #(vector (:namespace %) (:value %)) matching-tags))
+    (assoc coll :tags (mapv #(vector (:tag-key %)) matching-tags))
     coll))
 
 (defn- tag-query
@@ -35,12 +34,12 @@
   (qm/query
     {:concept-type :tag
      :condition (gc/and-conds
-                  [(qm/string-conditions :namespace tags-value false true :or)
+                  [(qm/string-conditions :tag-key tags-value false true :or)
                    (qm/string-conditions :associated-concept-ids coll-concept-ids true)])
      :skip-acls? true
      :page-size :unlimited
      :result-format :query-specified
-     :fields [:namespace :value :associated-concept-ids-gzip-b64]}))
+     :fields [:tag-key :associated-concept-ids-gzip-b64]}))
 
 (defmethod query-execution/post-process-query-result-feature :tags
   [context query elastic-results query-results feature]

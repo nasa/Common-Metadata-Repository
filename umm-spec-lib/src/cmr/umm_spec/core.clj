@@ -5,7 +5,7 @@
             [cmr.common.xml :as cx]
 
     ;; XML -> UMM
-            [cmr.umm-spec.simple-xpath :as xpath]
+            [cmr.common.xml.simple-xpath :as xpath]
             [cmr.umm-spec.xml-to-umm-mappings.echo10 :as echo10-to-umm]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso19115-2-to-umm]
             [cmr.umm-spec.xml-to-umm-mappings.iso-smap :as iso-smap-to-umm]

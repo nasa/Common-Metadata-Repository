@@ -1,6 +1,6 @@
-(ns cmr.umm-spec.xml.parse
+(ns cmr.common.xml.parse
   (:require [clojure.string :as str]
-            [cmr.umm-spec.simple-xpath :refer [select text]]
+            [cmr.common.xml.simple-xpath :refer [select text]]
             [cmr.common.date-time-parser :as dtp]))
 
 (defn- blank-to-nil

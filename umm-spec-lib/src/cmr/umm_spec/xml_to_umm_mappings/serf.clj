@@ -1,10 +1,10 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.serf
   "Defines mappings from SERF XML into UMM records"
   (:require [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.simple-xpath :refer [select]]
+            [cmr.common.xml.simple-xpath :refer [select]]
             [camel-snake-kebab.core :as csk]
             [clojure.string :as string]
-            [cmr.umm-spec.xml.parse :refer :all]
+            [cmr.common.xml.parse :refer :all]
             [cmr.umm-spec.util :refer [without-default-value-of not-provided]]
             [cmr.umm-spec.date-util :as date]))
 

@@ -4,12 +4,14 @@
             [cmr.access-control.int-test.access-control-test-util :as u]))
 
 (use-fixtures :once (u/int-test-fixtures))
-(use-fixtures :each (u/reset-fixture {"prov1guid" "PROV1"} ["user1" "user2" "user3" "user4" "user5"]))
+(use-fixtures :each
+              (u/reset-fixture {"prov1guid" "PROV1"} ["user1" "user2" "user3" "user4" "user5"])
+              (u/grant-all-group-fixture ["prov1guid"]))
 
 (defn- assert-group-member-count-correct
   "Asserts that when retrieving the group the correct number of members is returned."
-  [concept-id num-expected]
-  (is (= num-expected (:num-members (u/get-group concept-id)))))
+  [token concept-id num-expected]
+  (is (= num-expected (:num-members (u/get-group token concept-id)))))
 
 (deftest group-members-test
   (let [token (e/login (u/conn-context) "user1")
@@ -17,19 +19,19 @@
         {:keys [status concept-id revision-id]} (u/create-group token group)]
 
     (testing "Initially no members are in the group"
-      (assert-group-member-count-correct concept-id 0)
+      (assert-group-member-count-correct token concept-id 0)
       (is (= {:status 200 :body []} (u/get-members token concept-id))))
 
     (testing "Successful add members to group"
       (let [token2 (e/login (u/conn-context) "user1")
             response (u/add-members token concept-id ["user1" "user2" "user1"])]
-        (assert-group-member-count-correct concept-id 2)
+        (assert-group-member-count-correct token concept-id 2)
         (is (= {:status 200 :concept-id concept-id :revision-id 2} response))
         (is (= {:status 200 :body ["user1" "user2"]} (u/get-members token concept-id)))))
 
     (testing "Add more members to the group"
       (let [response (u/add-members token concept-id ["user3" "user4" "user3" "user1"])]
-        (assert-group-member-count-correct concept-id 4)
+        (assert-group-member-count-correct token concept-id 4)
         (is (= {:status 200 :concept-id concept-id :revision-id 3} response))
         (is (= {:status 200 :body ["user1" "user2" "user3" "user4"]} (u/get-members token concept-id)))))
 
@@ -39,7 +41,7 @@
              (u/add-members
               token concept-id
               ["notexist1" "user1" "notexist2" "user2" "notexist2"])))
-      (assert-group-member-count-correct concept-id 4))
+      (assert-group-member-count-correct token concept-id 4))
 
     (testing "Removing members"
       ;; Removing duplicates, members not in the group, and non-existent users is allowed.
@@ -49,7 +51,7 @@
                                         "user3" ; duplicate
                                         "notexist3" ; doesn't exist
                                         "user5"])] ; exists but not in group
-        (assert-group-member-count-correct concept-id 2)
+        (assert-group-member-count-correct token concept-id 2)
         (is (= {:status 200 :concept-id concept-id :revision-id 4} response))
         (is (= {:status 200 :body ["user2" "user4"]} (u/get-members token concept-id)))))
 

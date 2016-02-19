@@ -57,14 +57,14 @@
   (cpv/merge-params-config
    cpv/basic-params-config
    {:single-value #{}
-    :multiple-value #{:namespace :value :category :originator-id}
+    :multiple-value #{:tag-key :originator-id}
     :always-case-sensitive #{}
     :disallow-pattern #{}
     :allow-or #{}}))
 
 (def exclude-params
   "Map of concept-type to parameters which can be used to exclude items from results."
-  {:collection #{:tag-namespace}
+  {:collection #{:tag-key}
    :granule #{:concept-id}})
 
 
@@ -102,9 +102,7 @@
    :highlights highlights-option
 
    ;; Tag parameters for use querying other concepts.
-   :tag-namespace cpv/string-param-options
-   :tag-value cpv/string-param-options
-   :tag-category cpv/string-param-options
+   :tag-key cpv/pattern-option
    :tag-originator-id cpv/pattern-option})
 
 (defmethod cpv/valid-parameter-options :granule
@@ -136,9 +134,7 @@
 
 (defmethod cpv/valid-parameter-options :tag
   [_]
-  {:namespace cpv/string-param-options
-   :value cpv/string-param-options
-   :category cpv/string-param-options
+  {:tag-key cpv/pattern-option
    :originator-id cpv/pattern-option})
 
 (defmethod cpv/valid-query-level-params :collection

@@ -29,39 +29,24 @@
            (tags/search {:entry_title "foo"}))))
 
   (testing "Unsupported options"
-    (are [field]
+    (are [field option]
          (= {:status 400
-             :errors [(format "Option [and] is not supported for param [%s]" (name field))]}
-            (tags/search {field "foo" (format "options[%s][and]" (name field)) true}))
-         :namespace :category :value :originator_id)
-
-    (testing "Originator id does not support ignore case because it is always case insensitive"
-      (is (= {:status 400
-              :errors ["Option [ignore_case] is not supported for param [originator_id]"]}
-             (tags/search {:originator-id "foo" "options[originator-id][ignore-case]" true}))))))
+             :errors [(format "Option [%s] is not supported for param [%s]" option (name field))]}
+            (tags/search {field "foo" (format "options[%s][%s]" (name field) option) true}))
+         ;; tag-key and originator-id do not support ignore case because they are always case insensitive
+         :tag_key "and"
+         :tag_key "ignore_case"
+         :originator_id "and"
+         :originator_id "ignore_case")))
 
 (deftest search-for-tags-test
   (let [user1-token (e/login (s/context) "user1")
         user2-token (e/login (s/context) "user2")
-        tag1 (tags/save-tag user1-token (tags/make-tag
-                                          {:namespace "Namespace1"
-                                           :value "Value1"
-                                           :category "Category1"}))
-        tag2 (tags/save-tag user2-token (tags/make-tag
-                                          {:namespace "Namespace1"
-                                           :value "Value2"}))
-        tag3 (tags/save-tag user1-token (tags/make-tag
-                                          {:namespace "Namespace2"
-                                           :value "Value1"
-                                           :category "Category2"}))
-        tag4 (tags/save-tag user2-token (tags/make-tag
-                                          {:namespace "Namespace2"
-                                           :value "Value2"
-                                           :category "Category2"}))
-        tag5 (tags/save-tag user1-token (tags/make-tag
-                                          {:namespace "Namespace Other"
-                                           :value "Value Other"}))
-        all-tags [tag1 tag2 tag3 tag4 tag5]]
+        tag1 (tags/save-tag user1-token (tags/make-tag {:tag-key "TAG1"}))
+        tag2 (tags/save-tag user2-token (tags/make-tag {:tag-key "Tag2"}))
+        tag3 (tags/save-tag user1-token (tags/make-tag {:tag-key "tag3"}))
+        tag4 (tags/save-tag user2-token (tags/make-tag {:tag-key "uv.other"}))
+        all-tags [tag1 tag2 tag3 tag4]]
     (index/wait-until-indexed)
 
     (are2 [expected-tags query]
@@ -71,73 +56,40 @@
           all-tags {}
 
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-          ;; Parameter Combinations
-          "Combination of namespace and value"
-          [tag1] {:namespace "namespace1" :value "value1"}
+          ;; tag-key Param
+          "By tag-key case insensitive - lower case"
+          [tag1] {:tag-key "tag1"}
 
-          "Combination with multiple values"
-          [tag1 tag3] {:namespace ["namespace1" "namespace2" "foo"] :value "value1"}
+          "By tag-key case insensitive - upper case"
+          [tag1] {:tag-key "TAG1"}
 
+          "By tag-key case insensitive - mixed case"
+          [tag1] {:tag-key "TaG1"}
 
-          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-          ;; Namespace Param
-
-          "By Namespace - Ignore Case Default"
-          [tag1 tag2] {:namespace "namespace1"}
-
-          "By Namespace Case Sensitive - no match"
-          [] {:namespace "namespace1" "options[namespace][ignore-case]" false}
-
-          "By Namespace Case Sensitive - matches"
-          [tag1 tag2] {:namespace "Namespace1" "options[namespace][ignore-case]" false}
-
-          "By Namespace Pattern"
-          [tag5] {:namespace "*other" "options[namespace][pattern]" true}
-
-          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-          ;; Value Param
-
-          "By Value - Ignore Case Default"
-          [tag1 tag3] {:value "value1"}
-
-          "By Value Case Sensitive - no match"
-          [] {:value "value1" "options[value][ignore-case]" false}
-
-          "By Value Case Sensitive - matches"
-          [tag1 tag3] {:value "Value1" "options[value][ignore-case]" false}
-
-          "By Value Pattern"
-          [tag5] {:value "*other" "options[value][pattern]" true}
-
-          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-          ;; Category Param
-
-          "By Category - Ignore Case Default"
-          [tag3 tag4] {:category "category2"}
-
-          "By Category Case Sensitive - no match"
-          [] {:category "category2" "options[category][ignore-case]" false}
-
-          "By Category Case Sensitive - matches"
-          [tag3 tag4] {:category "Category2" "options[category][ignore-case]" false}
-
-          "By Category Pattern"
-          [tag1] {:category "*1" "options[category][pattern]" true}
+          "By tag-key Pattern"
+          [tag4] {:tag-key "*other" "options[tag-key][pattern]" true}
 
           ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
           ;; Originator Id Param
-
           "By Originator Id - Ignore Case Default" ;; Case sensitive not supported
-          [tag1 tag3 tag5] {:originator-id "USER1"}
+          [tag1 tag3] {:originator-id "USER1"}
 
           "By Originator Id - Pattern"
-          [tag2 tag4] {:originator-id "*2" "options[originator-id][pattern]" true})))
+          [tag2 tag4] {:originator-id "*2" "options[originator-id][pattern]" true}
+
+          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+          ;; Parameter Combinations
+          "Combination of tag-key and originator-id"
+          [tag2] {:tag-key "tag?" "options[tag-key][pattern]" true :originator-id "user2"}
+
+          "Combination with multiple values"
+          [tag1] {:tag-key ["tag1" "tag2"] :originator-id "user1"})))
 
 (deftest tag-paging-search-test
   (let [token (e/login (s/context) "user1")
         num-tags 20
         tags (->> (range num-tags)
-                  (map #(tags/make-tag {:value (str "value" %)}))
+                  (map #(tags/make-tag {:tag-key (str "tag" %)}))
                   (map #(tags/save-tag token %))
                   tags/sort-expected-tags
                   vec)]
@@ -160,13 +112,8 @@
 
 (deftest deleted-tags-not-found-test
   (let [user1-token (e/login (s/context) "user1")
-        tag1 (tags/save-tag user1-token (tags/make-tag
-                                          {:namespace "Namespace1"
-                                           :value "Value1"
-                                           :category "Category1"}))
-        tag2 (tags/save-tag user1-token (tags/make-tag
-                                          {:namespace "Namespace1"
-                                           :value "Value2"}))
+        tag1 (tags/save-tag user1-token (tags/make-tag {:tag-key "tag1"}))
+        tag2 (tags/save-tag user1-token (tags/make-tag {:tag-key "tag2"}))
         all-tags [tag1 tag2]]
     (index/wait-until-indexed)
 

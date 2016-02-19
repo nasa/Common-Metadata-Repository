@@ -9,7 +9,7 @@
             [clojure.string :as str]
             [cmr.common.xml :as cx]
             [cmr.umm-spec.models.common :as c]
-            [cmr.umm-spec.xml.parse :refer :all]
+            [cmr.common.xml.parse :refer :all]
             [cmr.umm-spec.iso19115-2-util :as iso]))
 
 (def nil-science-keyword-field

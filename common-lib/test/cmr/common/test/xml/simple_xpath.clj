@@ -1,6 +1,6 @@
-(ns cmr.umm-spec.test.simple-xpath
+(ns cmr.common.test.xml.simple-xpath
   (:require [clojure.test :refer :all]
-            [cmr.umm-spec.simple-xpath :as sx]
+            [cmr.common.xml.simple-xpath :as sx]
             [clojure.data.xml :as x]
             [cmr.common.util :as u :refer [are2]]))
 
@@ -129,7 +129,7 @@
                             "<title>Oberon's Legacy</title>"
                             "<title>The Sundered Grail</title>"])
 
-          "/catalog/book[price!='5.95']/title"
+         "/catalog/book[price!='5.95']/title"
          (mapv x/parse-str ["<title>XML Developer's Guide</title>"])
 
          "/catalog/book[1]/author"

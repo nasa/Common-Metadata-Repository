@@ -151,8 +151,7 @@
 
 (defmethod common-qm/default-sort-keys :tag
   [_]
-  [{:field :namespace :order :asc}
-   {:field :value :order :asc}])
+  [{:field :tag-key :order :asc}])
 
 (defmethod common-qm/default-sort-keys :collection
   [_]

@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url
   "Functions for parsing UMM related-url records out of ISO 19115-2 XML documents."
   (:require [cmr.umm-spec.util :as su]
-            [cmr.umm-spec.xml.parse :refer :all]
-            [cmr.umm-spec.simple-xpath :refer [select]]
+            [cmr.common.xml.parse :refer :all]
+            [cmr.common.xml.simple-xpath :refer [select]]
             [cmr.umm-spec.iso19115-2-util :refer :all]
             [cmr.common.util :as util]))
 
