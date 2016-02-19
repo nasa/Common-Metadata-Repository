@@ -2,7 +2,6 @@
   "Helper to perform Authentication tasks against the SOAP API."
   (:require [cmr.transmit.echo.soap.core :as soap]
             [cmr.common.xml.parse :as xp]
-            [cmr.common.xml.simple-xpath :as xpath]
             [cmr.common.log :refer (debug info warn error)]))
 
 
