@@ -87,7 +87,3 @@
                                         {:value "ABC"}]}
                            (legacy-psa-maps->legacy-psa-query
                              [{:name "PDQ" :type "string" :value "ABC"}]))))
-
-
-
-

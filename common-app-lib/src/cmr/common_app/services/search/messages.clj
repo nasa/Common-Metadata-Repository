@@ -36,3 +36,8 @@
   [params-set]
   (let [params (reduce (fn [params param] (conj params param)) '() (seq params-set))]
     (format "Ignore case option setting disallowed on these parameters: %s" params)))
+
+(defn invalid-settings-for-param
+  "Creates a message stating that the provided settings for the parameter query are invalid."
+  [param settings]
+  (format "Invalid settings %s for parameter %s" settings param))

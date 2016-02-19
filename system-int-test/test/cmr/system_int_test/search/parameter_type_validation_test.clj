@@ -46,6 +46,10 @@
       (is-bad-request? response ["Parameter [options] must include a nested key, options[...]=value."
                                  "page_size must be a number between 0 and 2000"])))
 
+  (testing "invalid parameter setting for a valid parameter produces  an error"
+    (let [response (search/find-refs :granule {:options {:provider "foo"}})]
+      (is-bad-request? response ["Invalid settings foo for parameter :provider"])))
+
   (testing "invalid exclude parameter value"
     (let [response (search/find-concepts-with-param-string
                      :granule "exclude[echo_granule_id][][]=G1-PROV1")]
