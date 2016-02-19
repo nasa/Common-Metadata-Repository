@@ -183,6 +183,7 @@
   (let [existing-concept (fetch-group-concept context concept-id)
         existing-group (edn/read-string (:metadata existing-concept))]
     (validate-update-group context existing-group updated-group)
+    (auth/verify-can-update-group context existing-group)
     (save-updated-group-concept context existing-concept updated-group)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

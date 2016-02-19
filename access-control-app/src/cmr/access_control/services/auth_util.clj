@@ -46,3 +46,8 @@
    group map."
   [context group]
   (verify-group-permission context :delete group))
+
+(defn verify-can-update-group
+  "Throws service error if context user does not have permission to delete group map."
+  [context group]
+  (verify-group-permission context :update group))

@@ -176,8 +176,6 @@
 
           ;; Update a group
           (PUT "/" {:keys [request-context headers body]}
-            ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
-            (acl/verify-ingest-management-permission request-context :update)
             (update-group request-context headers (slurp body) group-id))
 
           (context "/members" []

@@ -128,3 +128,46 @@
         (is (= {:status 200 :concept-id prov-group-id :revision-id 2}
                (u/delete-group prov-token prov-group-id)))
         (u/assert-group-deleted prov-group "user2" prov-group-id 2)))))
+
+(deftest update-group-acl-test
+
+  (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group" :create :update)
+  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group" "prov1guid" :create :update)
+  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov2-group" "prov2guid" :create)
+
+  (let [group (u/make-group)
+        ;; a user with permission to delete system-level groups only
+        sys-token (e/login (u/conn-context) "user1" ["sys-group"])
+        ;; a user with permission to delete PROV1 groups only
+        prov-token (e/login (u/conn-context) "user2" ["prov1-group"])
+        sys-group-id (:concept-id (u/create-group sys-token group))
+        prov-group (u/make-group {:provider-id "PROV1"})
+        prov-group-id (:concept-id (u/create-group prov-token prov-group))
+        prov2-group (u/make-group {:provider-id "PROV2"})
+        prov2-group-id (:concept-id (u/create-group (e/login (u/conn-context) "user3" ["prov2-group"])
+                                                    prov2-group))]
+
+    (testing "updating system groups"
+      (testing "without permission"
+        (is (= {:status 401
+                :errors ["You do not have permission to update system-level access control groups."]}
+               (u/update-group prov-token sys-group-id (assoc group :description "Updated name")))))
+
+      (testing "with permission"
+        (is (= {:status 200 :concept-id sys-group-id :revision-id 2}
+               (u/update-group sys-token sys-group-id (assoc group :description "Updated name"))))
+        (u/assert-group-saved group "user1" sys-group-id 2)))
+
+    (testing "updating provider groups"
+      (testing "without permission"
+        (is (= {:status 401
+                :errors ["You do not have permission to update access control groups for provider [PROV1]."]}
+               (u/update-group sys-token prov-group-id (assoc prov-group :description "Updated name"))))
+        (is (= {:status 401
+                :errors ["You do not have permission to update access control groups for provider [PROV2]."]}
+               (u/update-group prov-token prov2-group-id (assoc prov2-group :description "Updated name")))))
+
+      (testing "with permission"
+        (is (= {:status 200 :concept-id prov-group-id :revision-id 2}
+               (u/update-group prov-token prov-group-id (assoc prov-group :description "Updated name"))))
+        (u/assert-group-saved prov-group "user2" prov-group-id 2)))))
