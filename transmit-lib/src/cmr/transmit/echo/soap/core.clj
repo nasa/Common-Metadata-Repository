@@ -53,8 +53,10 @@
           (200, 201) [status response]
           401 (cmr.common.services.errors/throw-service-error :unauthorized response)
           404 (cmr.common.services.errors/throw-service-error :not-found response)
+          ;; soap-services returns all SOAP errors as 500.  Check if it is a SOAP error and if so,
+          ;; extract the fault string from the XML.  If not, add the entire response to the exception
           500 (if-let [fault-msg (xp/value-of response "/Envelope/Body/Fault/faultstring")]
-                (cmr.common.services.errors/internal-error! fault-msg)
+                (cmr.common.services.errors/throw-service-error :soap-fault fault-msg)
                 (cmr.common.services.errors/internal-error! response))
           503 (cmr.common.services.errors/throw-service-error :unavailable response)
           (cmr.common.services.errors/internal-error! response))))
