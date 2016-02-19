@@ -4,7 +4,6 @@
             [clojure.string :as str]
             [clj-http.client :as client]
             [cheshire.core :as json]
-            [clojure.edn :as edn]
             [clojure.walk :as walk]
             [clj-time.core :as t]
             [clj-time.format :as f]
@@ -119,10 +118,8 @@
 
 (def tag-edn
   "Valid EDN for tag metadata"
-  (pr-str {:namespace "org.nasa.something"
-           :value "ozone"
+  (pr-str {:tag-key "org.nasa.something.ozone"
            :description "A very good tag"
-           :category "A category"
            :originator-id "jnorton"}))
 
 (def tag-association-edn
@@ -211,14 +208,7 @@
                             :native-id native-id}
                            attributes)]
      ;; no provider-id should be specified for tags
-     (let [concept (concept nil :tag uniq-num attributes)
-           metadata (-> (:metadata concept)
-                        (edn/read-string)
-                        (assoc :namespace namespace :value value)
-                        (pr-str))]
-       (-> concept
-           (dissoc :provider-id)
-           (assoc :metadata metadata))))))
+     (dissoc (concept nil :tag uniq-num attributes) :provider-id))))
 
 (defn tag-association-concept
   "Creates a tag association concept"
