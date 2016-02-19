@@ -19,11 +19,6 @@
   character called group separator. This will not be allowed in the namespace or value of a tag."
   (char 29))
 
-(defn- tag->native-id
-  "Returns the native id to use for a tag."
-  [tag]
-  (str (:namespace tag) native-id-separator-character (:value tag)))
-
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
   [context]
@@ -38,7 +33,7 @@
   "Converts a tag into a new concept that can be persisted in metadata db."
   [tag]
   {:concept-type :tag
-   :native-id (tag->native-id tag)
+   :native-id (:tag-key tag)
    :metadata (pr-str tag)
    :user-id (:originator-id tag)
    ;; The first version of a tag should always be revision id 1. We always specify a revision id
@@ -49,27 +44,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations
 
-(defn- should-not-contain-native-id-separator-character
-  "Validates the value does not contain the native id separator character."
-  [field-path ^String value]
-  (when (.contains value (str native-id-separator-character))
-    {field-path [msg/field-may-not-contain-separator]}))
-
-(def ^:private tag-validations
-  "Service level validations for tags."
-  {:namespace should-not-contain-native-id-separator-character
-   :value should-not-contain-native-id-separator-character})
-
-(defn- validate-create-tag
-  "Validates a tag for creation"
-  [tag]
-  (v/validate! tag-validations tag))
-
 (def ^:private update-tag-validations
   "Service level validations when updating a tag."
-  [tag-validations
-   (v/field-cannot-be-changed :namespace)
-   (v/field-cannot-be-changed :value)
+  [(v/field-cannot-be-changed :tag-key)
    ;; Originator id cannot change but we allow it if they don't specify a value.
    (v/field-cannot-be-changed :originator-id true)])
 
@@ -85,13 +62,12 @@
   "Creates the tag saving it as a revision in metadata db. Returns the concept id and revision id of
   the saved tag."
   [context tag]
-  (validate-create-tag tag)
   (let [user-id (context->user-id context)
         tag (assoc tag
                    :originator-id user-id
                    :associated-concept-ids #{})]
     ;; Check if the tag already exists
-    (if-let [concept-id (mdb/get-concept-id context :tag "CMR" (tag->native-id tag) false)]
+    (if-let [concept-id (mdb/get-concept-id context :tag "CMR" (:tag-key tag) false)]
 
       ;; The tag exists. Check if its latest revision is a tombstone
       (let [concept (mdb/get-latest-concept context concept-id false)]

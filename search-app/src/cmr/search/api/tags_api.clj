@@ -3,6 +3,7 @@
   (:require [compojure.route :as route]
             [compojure.core :refer :all]
             [cheshire.core :as json]
+            [clojure.string :as str]
             [cmr.common.mime-types :as mt]
             [cmr.common.validations.json-schema :as js]
             [cmr.search.services.tagging-service :as tagging-service]
@@ -10,16 +11,12 @@
             [cmr.acl.core :as acl]))
 
 (def ^:private base-tag-schema-structure
-  "Base Schema for tags as json. Namespace and value are combined to with a separator character to
-  be used as the native id when stored in metadata db. The maximum lengths of namespace and value
-  are based on the maximum length of native id - 1 for the separator character."
+  "Base Schema for tags as json."
   {:type :object
    :additionalProperties false
-   :properties {:namespace {:type :string :minLength 1 :maxLength 514}
-                :value {:type :string :minLength 1 :maxLength 515}
-                :category {:type :string :minLength 1 :maxLength 1030}
+   :properties {:tag-key {:type :string :minLength 1 :maxLength 1030}
                 :description {:type :string :minLength 1 :maxLength 4000}}
-   :required [:namespace :value]})
+   :required [:tag-key]})
 
 (def ^:private create-tag-schema
   "The JSON schema used to validate tag creation requests"
@@ -60,13 +57,21 @@
       :unauthorized
       (format "You do not have permission to %s a tag." (name permission-type)))))
 
+(defn- request-body->tag
+  "Returns the tag in JSON from the given request body with the tag-key converted to lowercase."
+  [body]
+  (-> (json/parse-string body true)
+      ;; tag-key is always in lowercase
+      (update :tag-key str/lower-case)))
+
 (defn create-tag
   "Processes a create tag request."
   [context headers body]
   (verify-tag-modification-permission context :create)
   (validate-tag-content-type headers)
   (validate-tag-json create-tag-schema body)
-  (->> (json/parse-string body true)
+  (->> body
+       request-body->tag
        (tagging-service/create-tag context)
        tag-api-response))
 
@@ -85,7 +90,8 @@
   (verify-tag-modification-permission context :update)
   (validate-tag-content-type headers)
   (validate-tag-json update-tag-schema body)
-  (->> (json/parse-string body true)
+  (->> body
+       request-body->tag
        (tagging-service/update-tag context concept-id)
        tag-api-response))
 

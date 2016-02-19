@@ -175,7 +175,7 @@ These are query parameters specific to collections
   * `include_facets` - If this parameter is set to "true" facets will be included in the collection results (not applicable to opendata results). Facets are described in detail below.
   * `hierarchical_facets` - If this parameter is set to "true" and the parameter `include_facets` is set to "true" the facets that are returned will be hierarchical. Hierarchical facets are described in the facets section below.
   * `include_highlights` - If this parameter is set to "true", the collection results will contain an additional field, 'highlighted_summary_snippets'. The field is an array of strings which contain a snippet of the summary which highlight any terms which match the terms provided in the keyword portion of a search. By default up to 5 snippets may be returned with each individual snippet being up to 100 characters, and keywords in the snippets are delineated with begin tag `<em>` and end tag `</em>`. This is configurable using `options[highlights][param]=value`. Supported option params are `begin_tag`, `end_tag`, `snippet_length` and `num_snippets`. The values for `snippet_length` and `num_snippets` must be integers greater than 0.
-  * `include_tags` - If this parameter is set (e.g. `include_tags=gov.nasa.earthdata.search.*,gov.nasa.echo.*`), the collection results will contain an additional field 'tags' within each collection. The value of the tags field is a list of tuples of tag namespace and tag value that are associated with the collection. Only the tags with namespace matching the values of `include_tags` parameter (with wildcard support) are included in the results. This parameter is supported in JSON and ATOM result formats.
+  * `include_tags` - If this parameter is set (e.g. `include_tags=gov.nasa.earthdata.search.*,gov.nasa.echo.*`), the collection results will contain an additional field 'tags' within each collection. The value of the tags field is a list of tag-keys that are associated with the collection. Only the tags with tag-key matching the values of `include_tags` parameter (with wildcard support) are included in the results. This parameter is supported in JSON and ATOM result formats.
 
   _There is a known bug with the `snippet_length` parameter that occasionally leads to snippets that are longer than `snippet_length` characters._
 
@@ -663,7 +663,7 @@ __Example__
       "original_format" : "ECHO10",
       "browse_flag" : false,
       "online_access_flag" : false,
-      "tags" : [["Namespace1", "Value1"], ["Namespace2", "Value2"]]
+      "tags" : [["tag1"], ["tag2"]]
     } ]
   }
 }
@@ -1198,24 +1198,20 @@ Find collections matching the given 'short\_name' and any of the 'version' param
 
 Collections can be found by searching for associated tags. The following tag parameters are supported.
 
-* tag_namespace
-  * options: ignore_case, pattern
-* tag_value
-  * options: ignore_case, pattern
-* tag_category
-  * options: ignore_case, pattern
+* tag_key
+  * options: pattern
 * tag_originator_id
   * options: pattern
 
-`exclude` parameter can be used with tag_namespace to exclude any collections that are associated with the specified tag namespaces from the search result.
+`exclude` parameter can be used with tag_key to exclude any collections that are associated with the specified tag key from the search result.
 
-Find collections matching tag namespace and value.
+Find collections matching tag key.
 
-    curl "%CMR-ENDPOINT%/collections?tag_namespace=org.ceos.wgiss.cwic&tag_value=quality"
+    curl "%CMR-ENDPOINT%/collections?tag_key=org.ceos.wgiss.cwic.quality"
 
-Find collections with exclude tag namespace.
+Find collections with exclude tag key.
 
-    curl "%CMR-ENDPOINT%/collections?exclude\[tag_namespace\]=gov.nasa.earthdata.search.cwic"
+    curl "%CMR-ENDPOINT%/collections?exclude\[tag_key\]=gov.nasa.earthdata.search.cwic"
 
 #### <a name="c-spatial"></a> Find collections by Spatial
 
@@ -2110,13 +2106,9 @@ Tagging allows arbitrary sets of collections to be grouped under a single namesp
 
 Tags have the following fields:
 
-* Namespace (REQUIRED): free text specifying the name of the organization (e.g., LPDAAC) or the project (e.g., org.ceos.wgiss.cwic) who created the tag. Allowing the Namespace to be a part of the Tag ensures uniqueness when different organizations or projects choose to use the same tag Value (see below). The maximum length for a namespace is 514 characters.
-* Category (OPTIONAL): free text category name for the tag. Category is a way of grouping tags with similar purposes, i.e. grouping tags by type (e.g., Category of public_data_set and Values of cwic_public, xxx_public for the tags in that category) The maximum length for a category is 1030 characters.
-* Value (REQUIRED): free text "name" of the tag. The maximum length of a value is 515 characters.
+* Tag-key (REQUIRED): free text specifying the key of the tag. Tag-key is case-insensitive, it is always saved in lower case. When it is specified as mixed case, CMR will convert it into lower case. It normally consists of the name of the organization or the project who created the tag followed by a dot and the name of the tag. For example, org.ceos.wgiss.cwic.quality. The maximum length for tag-key is 1030 characters.
 * Description (OPTIONAL): a free text description of what this tag is and / or how it is used. The maximum length for description is 4000 characters.
 * Originator ID (REQUIRED): the Earthdata Login ID of the person who created the tag.
-
-Both the tag namespace and value cannot contain the Group Separator character. This is the ASCII decimal character 29 and in Unicode U+001D.
 
 #### <a name="tag-access-control"></a> Tag Access Control
 
@@ -2129,9 +2121,7 @@ Tags are created by POSTing a JSON representation of a tag to `%CMR-ENDPOINT%/ta
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags -d \
 '{
-  "namespace": "org.ceos.wgiss.cwic",
-  "category": "cwic_public",
-  "value": "quality",
+  "tag-key": "org.ceos.wgiss.cwic.quality",
   "description": "This is a sample tag."
  }'
 
@@ -2155,23 +2145,19 @@ Content-Type: application/json;charset=ISO-8859-1
 
 {
   "originator-id" : "mock-admin",
-  "namespace" : "org.ceos.wgiss.cwic",
-  "category" : "cwic_non_public",
-  "value" : "quality",
+  "tag-key": "org.ceos.wgiss.cwic.quality",
   "description" : "This is a sample tag for indicating some data is high quality."
 }
 ```
 
 #### <a name="updating-a-tag"></a> Updating a Tag
 
-Tags are updated by sending a PUT request with the JSON representation of a tag to `%CMR-ENDPOINT%/tags/<concept-id>` where `concept-id` is the concept id of the tag returned when it was created. The same rules apply when updating a tag as when creating it but in addition namespace, value, and originator id cannot be modified. The response will contain the concept id along with the tag revision id.
+Tags are updated by sending a PUT request with the JSON representation of a tag to `%CMR-ENDPOINT%/tags/<concept-id>` where `concept-id` is the concept id of the tag returned when it was created. The same rules apply when updating a tag as when creating it but in addition tag-key and originator id cannot be modified. The response will contain the concept id along with the tag revision id.
 
 ```
 curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR -d \
 '{
-  "namespace": "org.ceos.wgiss.cwic",
-  "category": "cwic_non_public",
-  "value": "quality",
+  "tag-key": "org.ceos.wgiss.cwic.quality",
   "description": "This is a sample tag for indicating some data is high quality."
  }'
 
@@ -2248,14 +2234,10 @@ The following parameters are supported when searching for tags.
 
 ##### Tag Matching Parameters
 
-These parameters will match fields within a tag. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `namespace[]=ns1&namespace[]=ns2`.
+These parameters will match fields within a tag. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `tag-key[]=key1&tag-key[]=key2`.
 
-* namespace
-  * options: ignore_case, pattern
-* value
-  * options: ignore_case, pattern
-* category
-  * options: ignore_case, pattern
+* tag-key
+  * options: pattern
 * originator_id
   * options: pattern
 
@@ -2268,16 +2250,14 @@ The response is always returned in JSON and includes the following parts.
 * items - a list of the current page of tags with the following fields
   * concept-id
   * revision-id
-  * namespace
-  * value
-  * category
+  * tag-key
   * description
   * originator-id - The id of the user that created the tag.
 
 ##### Tag Search Example
 
 ```
-curl -g -i "%CMR-ENDPOINT%/tags?pretty=true&namespace=org\\.ceos\\.*&options[namespace][pattern]=true"
+curl -g -i "%CMR-ENDPOINT%/tags?pretty=true&tag-key=org\\.ceos\\.*&options[tag-key][pattern]=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
@@ -2287,9 +2267,7 @@ Content-Length: 292
   "items" : [ {
     "concept-id" : "T1200000000-CMR",
     "revision-id" : 1,
-    "namespace" : "org.ceos.wgiss.cwic",
-    "value" : "quality",
-    "category" : "cwic_public",
+    "tag-key" : "org.ceos.wgiss.cwic",
     "description" : "This is a sample tag.",
     "originator-id" : "mock-admin"
   } ],

@@ -207,10 +207,10 @@
   (let [coll (d/ingest "PROV1" (dc/collection))
         token (e/login (s/context) "user1")
         _ (index/wait-until-indexed)
-        tag (tags/save-tag token (tags/make-tag {:value "tag1"}) [coll])
+        tag (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll])
         assert-tag-associated (fn [collection]
                                 (is (d/refs-match? [collection]
-                                                   (search/find-refs :collection {:tag-value "tag1"}))))
+                                                   (search/find-refs :collection {:tag-key "tag1"}))))
         assert-tag-not-associated (fn []
                                     (is (d/refs-match?
                                           []
@@ -250,7 +250,7 @@
           (assert-tag-not-associated))
 
         (is (= {:status 200 :concept-id (:concept-id tag) :revision-id 5}
-               (tags/create-tag token (tags/make-tag {:value "tag1"}))))
+               (tags/create-tag token (tags/make-tag {:tag-key "tag1"}))))
         (index/wait-until-indexed)
         (testing "Not associated after being recreated."
           (assert-tag-not-associated))))))

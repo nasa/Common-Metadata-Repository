@@ -49,9 +49,7 @@
    :exclude :exclude
 
    ;; Tag parameters
-   :tag-namespace :tag-query
-   :tag-value :tag-query
-   :tag-category :tag-query
+   :tag-key :tag-query
    :tag-originator-id :tag-query})
 
 (defmethod common-params/param-mappings :granule
@@ -89,9 +87,7 @@
 
 (defmethod common-params/param-mappings :tag
   [_]
-  {:namespace :string
-   :value :string
-   :category :string
+  {:tag-key :string
    :originator-id :string})
 
 (defmethod common-params/always-case-sensitive-fields :granule
@@ -104,11 +100,13 @@
 
 (defmethod common-params/parameter->condition :tag-query
   [concept-type param value options]
-  (let [rename-tag-param #(keyword (str/replace (name %) "tag-" ""))
-        tag-param-name (rename-tag-param param)
-        options (u/map-keys rename-tag-param options)]
+  (let [param->condition-key #(if (= :tag-originator-id %)
+                                :originator-id
+                                %)
+        condition-key (param->condition-key param)
+        options (u/map-keys param->condition-key options)]
     (tag-related/tag-related-item-query-condition
-      (common-params/parameter->condition :tag tag-param-name value options))))
+      (common-params/parameter->condition :tag condition-key value options))))
 
 ;; Special case handler for concept-id. Concept id can refer to a granule or collection.
 ;; If it's a granule query with a collection concept id then we convert the parameter to :collection-concept-id
@@ -119,10 +117,10 @@
          collection-concept-ids :collection} (group-by (comp :concept-type cc/parse-concept-id) values)
         collection-cond (when (seq collection-concept-ids)
                           (common-params/string-parameter->condition
-                           concept-type :collection-concept-id collection-concept-ids {}))
+                            concept-type :collection-concept-id collection-concept-ids {}))
         granule-cond (when (seq granule-concept-ids)
                        (common-params/string-parameter->condition
-                        concept-type :concept-id granule-concept-ids options))]
+                         concept-type :concept-id granule-concept-ids options))]
     (if (and collection-cond granule-cond)
       (gc/and-conds [collection-cond granule-cond])
       (or collection-cond granule-cond))))
@@ -222,7 +220,7 @@
 (defmethod common-params/parse-query-level-params :collection
   [concept-type params]
   (let [[params query-attribs] (common-params/default-parse-query-level-params
-                                :collection params lp/param-aliases)
+                                 :collection params lp/param-aliases)
         {:keys [begin-tag end-tag snippet-length num-snippets]} (get-in params [:options :highlights])
         result-features (concat (when (= (:include-granule-counts params) "true")
                                   [:granule-counts])
@@ -263,7 +261,7 @@
 (defmethod common-params/parse-query-level-params :granule
   [concept-type params]
   (let [[params query-attribs] (common-params/default-parse-query-level-params
-                                :granule params lp/param-aliases)]
+                                 :granule params lp/param-aliases)]
     [(dissoc params :echo-compatible)
      (merge query-attribs {:echo-compatible? (= "true" (:echo-compatible params))})]))
 

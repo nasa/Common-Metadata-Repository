@@ -14,18 +14,10 @@
 (deftest reindex-tags-test
   (let [user1-token (e/login (s/context) "user1")
         user2-token (e/login (s/context) "user2")
-        tag1 (tags/save-tag user1-token (tags/make-tag
-                                          {:namespace "Namespace1"
-                                           :value "Value1"
-                                           :category "Category1"}))
+        tag1 (tags/save-tag user1-token (tags/make-tag {:tag-key "tag1"}))
         tag1-2 (tags/save-tag user1-token (dissoc tag1 :revision-id))
-        tag2 (tags/save-tag user2-token (tags/make-tag
-                                          {:namespace "Namespace1"
-                                           :value "Value2"}))
-        tag3 (tags/save-tag user1-token (tags/make-tag
-                                          {:namespace "Namespace2"
-                                           :value "Value1"
-                                           :category "Category2"}))
+        tag2 (tags/save-tag user2-token (tags/make-tag {:tag-key "tag2"}))
+        tag3 (tags/save-tag user1-token (tags/make-tag {:tag-key "tag3"}))
         tag3-tombstone (tags/delete-tag user1-token (:concept-id tag3))
         all-tags [tag1-2 tag2]]
     (index/wait-until-indexed)
