@@ -1,7 +1,6 @@
 (ns cmr.transmit.echo.soap.core
   "Helper to interact with the SOAP services."
-  (:require [hiccup.core :as hiccup]
-            [cmr.common.xml.gen :as xg]
+  (:require [cmr.common.xml.gen :as xg]
             [clj-http.client :as http]
             [cmr.common.config :refer [defconfig]]
             [cmr.common.log :refer (debug info warn error)]
@@ -9,14 +8,15 @@
 
 (defconfig soap-url-base
   "Base URL for SOAP requests"
-  {:default "http://localhost:3012/echo-v10/" :type String})
+  {:default "http://localhost:3012/echo-v10/"})
 
 (defn post-xml
   "Post an XML object to the specified endpoint.  The XML must be a hiccup style object."
   [endpoint xml]
-  (let [{status :status body :body}
+  (let [{:keys [status body]}
         (http/post endpoint
           { :content-type "text/xml"
+            :throw-exceptions false
             :body (xg/xml xml)})]
     [status body]))
 

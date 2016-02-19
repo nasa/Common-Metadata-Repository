@@ -2,7 +2,8 @@
   "Helper to perform Authentication tasks against the SOAP API."
   (:require [cmr.transmit.echo.soap.core :as soap]
             [cmr.common.xml.parse :as xp]
-            [cmr.common.xml.simple-xpath :as xpath]))
+            [cmr.common.xml.simple-xpath :as xpath]
+            [cmr.common.log :refer (debug info warn error)]))
 
 
 (defn login-request
@@ -10,8 +11,8 @@
   [user pass]
   ["ns2:Login"
     {"xmlns:ns2" "http://echo.nasa.gov/echo/v10"
-      "xmlns:ns3" "http://echo.nasa.gov/echo/v10/types"
-      "xmlns:ns4" "http://echo.nasa.gov/ingest/v10"}
+     "xmlns:ns3" "http://echo.nasa.gov/echo/v10/types"
+     "xmlns:ns4" "http://echo.nasa.gov/ingest/v10"}
     ["ns2:username" user]
     ["ns2:password" pass]
     ["ns2:clientInfo"
