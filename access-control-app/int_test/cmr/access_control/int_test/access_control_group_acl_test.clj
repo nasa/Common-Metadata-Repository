@@ -44,7 +44,7 @@
           group (u/make-group {:provider-id "PROV1"})
           response (u/create-group token group)]
       (is (= {:status 401
-              :errors ["You do not have permission to create access control groups for provider [PROV1]."]}
+              :errors ["You do not have permission to create access control group [Administrators] in provider [PROV1]."]}
              response)))))
 
 (deftest get-group-acl-test
@@ -55,6 +55,7 @@
 
   (let [token (e/login (u/conn-context) "user1" ["sys-group-readers" "prov1-group-readers"])
         no-group-token (e/login (u/conn-context) "user2")
+        prov1-only-token (e/login (u/conn-context) "user3" ["prov1-group-readers"])
         system-group (u/make-group)
         system-group-concept-id (:concept-id (u/create-group token system-group))
         prov-group (u/make-group {:provider-id "PROV1"})
@@ -80,12 +81,12 @@
 
       (testing "without permission"
         (is (= {:status 401
-                :errors ["You do not have permission to read access control groups for provider [PROV1]."]}
+                :errors ["You do not have permission to read access control group [Administrators] in provider [PROV1]."]}
                (u/get-group no-group-token prov-group-concept-id)))
 
         (is (= {:status 401
-                :errors ["You do not have permission to read access control groups for provider [PROV2]."]}
-               (u/get-group token prov2-group-concept-id)))))))
+                :errors ["You do not have permission to read access control group [Administrators] in provider [PROV2]."]}
+               (u/get-group prov1-only-token prov2-group-concept-id)))))))
 
 (deftest delete-group-acl-test
 
@@ -122,10 +123,10 @@
     (testing "deleting provider groups"
       (testing "without permission"
         (is (= {:status 401
-                :errors ["You do not have permission to delete access control groups for provider [PROV1]."]}
+                :errors ["You do not have permission to delete access control group [Administrators] in provider [PROV1]."]}
                (u/delete-group sys-token prov-group-id)))
         (is (= {:status 401
-                :errors ["You do not have permission to delete access control groups for provider [PROV2]."]}
+                :errors ["You do not have permission to delete access control group [Administrators] in provider [PROV2]."]}
                (u/delete-group prov-token prov2-group-id))))
 
       (testing "with permission"
@@ -169,10 +170,10 @@
     (testing "updating provider groups"
       (testing "without permission"
         (is (= {:status 401
-                :errors ["You do not have permission to update access control groups for provider [PROV1]."]}
+                :errors ["You do not have permission to update access control group [Administrators] in provider [PROV1]."]}
                (u/update-group sys-token prov-group-id (assoc prov-group :description "Updated name"))))
         (is (= {:status 401
-                :errors ["You do not have permission to update access control groups for provider [PROV2]."]}
+                :errors ["You do not have permission to update access control group [Administrators] in provider [PROV2]."]}
                (u/update-group prov-token prov2-group-id (assoc prov2-group :description "Updated name")))))
 
       (testing "with permission"

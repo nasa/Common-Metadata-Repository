@@ -2,40 +2,49 @@
   (:require [cmr.common.services.errors :as errors]
             [cmr.acl.core :as acl]))
 
-(defn get-access-control-group-acls
-  ([context permission]
-   (acl/get-permitting-acls context :system-object "GROUP" permission))
-  ([context permission provider-id]
-   (some #(= provider-id (-> % :provider-object-identity :provider-id))
-         (acl/get-permitting-acls context :provider-object "GROUP" permission))))
+(defn- get-system-acls
+  [context permission]
+  (seq (acl/get-permitting-acls context :system-object "GROUP" permission)))
 
-(defn- verify-permission
-  ([context permission]
-   (when-not (get-access-control-group-acls context permission)
-     (errors/throw-service-error
-       :unauthorized
-       (format "You do not have permission to %s system-level access control groups."
-               (name permission)))))
-  ([context permission provider-id]
-   (when-not (get-access-control-group-acls context permission provider-id)
-     (errors/throw-service-error
-       :unauthorized
-       (format "You do not have permission to %s access control groups for provider [%s]."
-               (name permission)
-               provider-id)))))
+(defn- get-provider-acls
+  [context permission group]
+  (when-let [provider-id (:provider-id group)]
+    (when-not (= "CMR" provider-id)
+      (some #(= provider-id (-> % :provider-object-identity :provider-id))
+            (acl/get-permitting-acls context :provider-object "GROUP" permission)))))
+
+(defn- get-instance-acls
+  [context permission group]
+  (when-let [target-guid (:legacy-guid group)]
+    (some #(= target-guid (-> % :single-instance-object-identity :target-guid))
+          (acl/get-permitting-acls context :single-instance-object "GROUP" permission))))
+
+(defn- get-group-acls
+  "Returns any group ACLs that grant the context user the given permission on group."
+  [context permission group]
+  (or (get-instance-acls context permission group)
+      (get-provider-acls context permission group)
+      (get-system-acls context permission)))
+
+(defn- describe-group
+  [group]
+  (let [{:keys [provider-id]} group]
+    (if (and provider-id (not= "CMR" provider-id))
+      (format "access control group [%s] in provider [%s]" (:name group) provider-id)
+      (format "system-level access control groups"))))
+
+(defn- throw-group-permission-error
+  [permission group]
+  (errors/throw-service-error
+    :unauthorized
+    (format "You do not have permission to %s %s."
+            (name permission)
+            (describe-group group))))
 
 (defn- verify-group-permission
-  [context permission {:keys [provider-id]}]
-  (if (and provider-id (not= "CMR" provider-id))
-    (verify-permission context permission provider-id)
-    (verify-permission context permission)))
-
-(defn- verify-group-instance-permission
   [context permission group]
-  (let [legacy-guid (:legacy-guid group)
-        acls (acl/get-permitting-acls context :single-instance-object "GROUP" permission)]
-    (some #(= legacy-guid (-> % :single-instance-object-identity :target-guid))
-          acls)))
+  (when-not (get-group-acls context permission group)
+    (throw-group-permission-error permission group)))
 
 (defn verify-can-create-group
   "Throws a service error if the context user cannot create a group under provider-id."
@@ -52,13 +61,9 @@
   "Throws a service error of context user cannot delete access control group represented by given
    group map."
   [context group]
-  ;; Group deletion is governed by single-instance-object-identity type ACL entries in ECHO. We
-  ;; will also fall back on system- and provider-level group delete permissions for system groups.
-  (or (verify-group-instance-permission context :delete group)
-      (verify-group-permission context :delete group)))
+  (verify-group-permission context :delete group))
 
 (defn verify-can-update-group
   "Throws service error if context user does not have permission to delete group map."
   [context group]
-  (or (verify-group-instance-permission context :update group)
-      (verify-group-permission context :update group)))
+  (verify-group-permission context :update group))
