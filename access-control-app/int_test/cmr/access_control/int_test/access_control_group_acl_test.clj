@@ -164,8 +164,7 @@
 
       (testing "with permission"
         (is (= {:status 200 :concept-id sys-group-id :revision-id 2}
-               (u/update-group sys-token sys-group-id (assoc sys-group :description "Updated name"))))
-        (u/assert-group-saved sys-group "user1" sys-group-id 2)))
+               (u/update-group sys-token sys-group-id (assoc sys-group :description "Updated name"))))))
 
     (testing "updating provider groups"
       (testing "without permission"
@@ -178,5 +177,4 @@
 
       (testing "with permission"
         (is (= {:status 200 :concept-id prov-group-id :revision-id 2}
-               (u/update-group prov-token prov-group-id (assoc prov-group :description "Updated name"))))
-        (u/assert-group-saved prov-group "user2" prov-group-id 2)))))
+               (u/update-group prov-token prov-group-id (assoc prov-group :description "Updated name"))))))))
