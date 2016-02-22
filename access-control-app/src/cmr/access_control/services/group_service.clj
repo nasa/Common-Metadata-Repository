@@ -173,8 +173,9 @@
 (defn delete-group
   "Deletes a group with the given concept id"
   [context concept-id]
-  (let [group-concept (fetch-group-concept context concept-id)]
-    (auth/verify-can-delete-group context group-concept)
+  (let [group-concept (fetch-group-concept context concept-id)
+        group (edn/read-string (:metadata group-concept))]
+    (auth/verify-can-delete-group context group)
     (save-deleted-group-concept context group-concept)))
 
 (defn update-group

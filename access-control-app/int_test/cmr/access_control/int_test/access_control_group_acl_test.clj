@@ -89,18 +89,22 @@
 
 (deftest delete-group-acl-test
 
-  (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group-delete" :create :delete)
-  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group-delete" "prov1guid" :create :delete)
+  (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group-delete" :create)
+  (e/grant-group-instance-permissions-to-group (u/conn-context) "sys-group-delete" "system-group-guid" :delete)
+  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group-delete" "prov1guid" :create)
+  (e/grant-group-instance-permissions-to-group (u/conn-context) "prov1-group-delete" "prov1-group-guid" :delete)
   (e/grant-provider-group-permissions-to-group (u/conn-context) "prov2-group-creator" "prov2guid" :create)
+  (e/grant-group-instance-permissions-to-group (u/conn-context) "prov2-group-creator" "prov2-group-guid" :delete)
 
-  (let [group (u/make-group)
-        ;; a user with permission to delete system-level groups only
-        sys-token (e/login (u/conn-context) "user1" ["sys-group-delete"])
-        ;; a user with permission to delete PROV1 groups only
+  (let [sys-token (e/login (u/conn-context) "user1" ["sys-group-delete"])
         prov-token (e/login (u/conn-context) "user2" ["prov1-group-delete"])
-        sys-group-id (:concept-id (u/create-group sys-token group))
-        prov-group (u/make-group {:provider-id "PROV1"})
+
+        sys-group (u/make-group {:legacy-guid "system-group-guid"})
+        sys-group-id (:concept-id (u/create-group sys-token sys-group))
+
+        prov-group (u/make-group {:provider-id "PROV1" :legacy-guid "prov1-group-guid"})
         prov-group-id (:concept-id (u/create-group prov-token prov-group))
+
         prov2-group-id (:concept-id (u/create-group (e/login (u/conn-context) "user3" ["prov2-group-creator"])
                                                     (u/make-group {:provider-id "PROV2"})))]
 
@@ -113,7 +117,7 @@
       (testing "with permission"
         (is (= {:status 200 :concept-id sys-group-id :revision-id 2}
                (u/delete-group sys-token sys-group-id)))
-        (u/assert-group-deleted group "user1" sys-group-id 2)))
+        (u/assert-group-deleted sys-group "user1" sys-group-id 2)))
 
     (testing "deleting provider groups"
       (testing "without permission"
@@ -131,18 +135,23 @@
 
 (deftest update-group-acl-test
 
-  (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group" :create :update)
-  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group" "prov1guid" :create :update)
+  ;; members of "sys-group" can create system-level groups and delete the group with the guid "sys-group-guid"
+  (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group" :create)
+  (e/grant-group-instance-permissions-to-group (u/conn-context) "sys-group" "sys-group-guid" :update)
+  ;; members of "prov1-group" can create groups for PROV1 but can only update the group with guid "prov1-group-guid"
+  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group" "prov1guid" :create)
+  (e/grant-group-instance-permissions-to-group (u/conn-context) "prov1-group" "prov1-group-guid" :update)
   (e/grant-provider-group-permissions-to-group (u/conn-context) "prov2-group" "prov2guid" :create)
 
-  (let [group (u/make-group)
-        ;; a user with permission to delete system-level groups only
-        sys-token (e/login (u/conn-context) "user1" ["sys-group"])
-        ;; a user with permission to delete PROV1 groups only
+  (let [sys-token (e/login (u/conn-context) "user1" ["sys-group"])
         prov-token (e/login (u/conn-context) "user2" ["prov1-group"])
-        sys-group-id (:concept-id (u/create-group sys-token group))
-        prov-group (u/make-group {:provider-id "PROV1"})
+
+        sys-group (u/make-group {:legacy-guid "sys-group-guid"})
+        sys-group-id (:concept-id (u/create-group sys-token sys-group))
+
+        prov-group (u/make-group {:provider-id "PROV1" :legacy-guid "prov1-group-guid"})
         prov-group-id (:concept-id (u/create-group prov-token prov-group))
+
         prov2-group (u/make-group {:provider-id "PROV2"})
         prov2-group-id (:concept-id (u/create-group (e/login (u/conn-context) "user3" ["prov2-group"])
                                                     prov2-group))]
@@ -151,12 +160,12 @@
       (testing "without permission"
         (is (= {:status 401
                 :errors ["You do not have permission to update system-level access control groups."]}
-               (u/update-group prov-token sys-group-id (assoc group :description "Updated name")))))
+               (u/update-group prov-token sys-group-id (assoc sys-group :description "Updated name")))))
 
       (testing "with permission"
         (is (= {:status 200 :concept-id sys-group-id :revision-id 2}
-               (u/update-group sys-token sys-group-id (assoc group :description "Updated name"))))
-        (u/assert-group-saved group "user1" sys-group-id 2)))
+               (u/update-group sys-token sys-group-id (assoc sys-group :description "Updated name"))))
+        (u/assert-group-saved sys-group "user1" sys-group-id 2)))
 
     (testing "updating provider groups"
       (testing "without permission"
