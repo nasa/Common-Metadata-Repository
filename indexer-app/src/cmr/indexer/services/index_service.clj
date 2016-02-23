@@ -66,7 +66,7 @@
           batch))
 
 (defn- get-tag-associations-for-collection
-  "Get all the tag associations for a collection"
+  "Get all the tag associations (including tombstones) for a collection."
   [context concept]
   (let [params {:associated-concept-id (:concept-id concept)
                 :latest true}
@@ -174,12 +174,15 @@
               concept-id
               revision-date)))))
 
-(defn index-concept
+(defmulti index-concept
   "Index the given concept with the parsed umm record."
+  (fn [context concept parsed-concept options]
+    (:concept-type concept)))
+
+(defmethod index-concept :default
   [context concept parsed-concept options]
   (let [{:keys [all-revisions-index?]} options
-        {:keys [concept-id revision-id concept-type]} concept
-        concept-type (cs/concept-id->type concept-id)]
+        {:keys [concept-id revision-id concept-type]} concept]
     (when (indexing-applicable? concept-type all-revisions-index?)
       (info (format "Indexing concept %s, revision-id %s, all-revisions-index? %s"
                     concept-id revision-id all-revisions-index?))
@@ -202,6 +205,46 @@
               revision-id
               elastic-options)))))))
 
+(defmethod index-concept :collection
+  [context concept parsed-concept options]
+  (let [{:keys [all-revisions-index?]} options
+        {:keys [concept-id revision-id concept-type]} concept]
+    (when (indexing-applicable? concept-type all-revisions-index?)
+      (info (format "Indexing concept %s, revision-id %s, all-revisions-index? %s"
+                    concept-id revision-id all-revisions-index?))
+      (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
+            delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
+        (when (or (nil? delete-time) (> (compare delete-time (tk/now)) 0))
+          (let [tag-associations (get-tag-associations-for-collection concept)
+                transaction-id (get-max-transaction-id concept tag-associations)
+                tag-associations (filter #(not (:deleted %)) tag-associations)
+                concept-index (idx-set/get-concept-index-name context concept-id revision-id
+                                                              all-revisions-index? concept)
+                es-doc (es/concept->elastic-doc context
+                                                (assoc concept :tag-associations tag-associations)
+                                                parsed-concept)
+                elastic-options (-> options
+                                    (select-keys [:all-revisions-index? :ignore-conflict?])
+                                    (assoc :ttl (when delete-time
+                                                  (t/in-millis (t/interval (tk/now) delete-time)))))]
+            (es/save-document-in-elastic
+              context
+              concept-index
+              (concept-mapping-types concept-type)
+              es-doc
+              concept-id
+              transaction-id
+              elastic-options)))))))
+
+(defmethod index-concept :tag-association
+  [context concept parsed-concept options]
+  (let [{{:keys [associated-concept-id associated-revision-id]} :extra-fields} concept
+        coll-concept (if associated-revision-id
+                       (meta-db/get-concept context associated-concept-id associated-revision-id)
+                       (meta-db/get-latest-concept context associated-concept-id))
+        parsed-coll-concept (cp/parse-concept coll-concept)]
+    (index-concept context coll-concept parsed-coll-concept options)))
+
 (defn index-concept-by-concept-id-revision-id
   "Index the given concept and revision-id"
   [context concept-id revision-id options]
@@ -213,10 +256,10 @@
   (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)]
     (when (indexing-applicable? concept-type all-revisions-index?)
-      (let [concept (meta-db/get-concept context concept-id revision-id)]
-        (let [parsed-concept (cp/parse-concept concept)]
-          (index-concept context concept parsed-concept options)
-          (log-ingest-to-index-time concept))))))
+      (let [concept (meta-db/get-concept context concept-id revision-id)
+            parsed-concept (cp/parse-concept concept)]
+        (index-concept context concept parsed-concept options)
+        (log-ingest-to-index-time concept)))))
 
 (defn delete-concept
   "Delete the concept with the given id"

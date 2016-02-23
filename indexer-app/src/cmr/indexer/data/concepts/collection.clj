@@ -9,6 +9,7 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
+            [cmr.common.util :as util]
             [cmr.umm.related-url-helper :as ru]
             [cmr.umm.start-end-date :as sed]
             [cmr.indexer.data.concepts.attribute :as attrib]
@@ -18,6 +19,7 @@
             [cmr.indexer.data.concepts.spatial :as spatial]
             [cmr.indexer.data.concepts.keyword :as k]
             [cmr.indexer.data.concepts.organization :as org]
+            [cmr.indexer.data.concepts.tag :as tag]
             [cmr.acl.core :as acl]
             [cmr.common.concepts :as concepts]
             [cmr.umm.collection :as umm-c]
@@ -54,7 +56,7 @@
   "Get all the fields for a normal collection index operation."
   [context concept collection]
   (let [{:keys [concept-id revision-id provider-id user-id
-                native-id revision-date deleted format extra-fields]} concept
+                native-id revision-date deleted format extra-fields tag-associations]} concept
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-title summary temporal related-urls spatial-keywords associated-difs
                 temporal-keywords access-value personnel distribution]} collection
@@ -107,8 +109,7 @@
         insert-time (f/unparse (f/formatters :date-time) insert-time)
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         permitted-group-ids (acl/get-coll-permitted-group-ids context provider-id collection)]
-    (merge {:elastic-version-id elastic-version-id
-            :concept-id concept-id
+    (merge {:concept-id concept-id
             :revision-id revision-id
             :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
             :native-id native-id
@@ -187,7 +188,12 @@
             :instrument-ln.lowercase (map str/lower-case instrument-long-names)
             :sensor-ln.lowercase (map str/lower-case sensor-long-names)
             :project-ln.lowercase (map str/lower-case project-long-names)
-            :temporal-keyword.lowercase (map str/lower-case temporal-keywords)}
+            :temporal-keyword.lowercase (map str/lower-case temporal-keywords)
+
+            ;; tags
+            :tag-associations (map tag/tag-association->elastic-doc tag-associations)
+            :associated-tags-gzip-b64 (util/string->gzip-base64 (pr-str (seq (map :tag-key tag-associations))))}
+
            (get-in collection [:spatial-coverage :orbit-parameters])
            (spatial->elastic collection)
            (sk/science-keywords->facet-fields collection))))
