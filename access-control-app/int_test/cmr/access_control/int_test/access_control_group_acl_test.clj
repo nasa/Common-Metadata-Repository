@@ -105,6 +105,10 @@
 
 (deftest delete-group-acl-test
 
+  ;; Members of "sys-group-delete" can create system-level groups and delete the (to-be-created) group with
+  ;; guid "system-group-guid". Members of "prov*-" groups can do the same with their respective
+  ;; "prov*-group-guid" groups.
+
   (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group-delete" :create)
   (e/grant-group-instance-permissions-to-group (u/conn-context) "sys-group-delete" "system-group-guid" :delete)
   (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group-delete" "prov1guid" :create)

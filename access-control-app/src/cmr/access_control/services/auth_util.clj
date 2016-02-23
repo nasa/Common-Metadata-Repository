@@ -6,14 +6,17 @@
             [cmr.common-app.services.search.query-execution :as qe]))
 
 (defn- get-system-acls
+  "Returns ACLs which grant the given permission to the context user for system-level groups."
   [context permission]
   (seq (acl/get-permitting-acls context :system-object "GROUP" permission)))
 
 (defn- get-all-provider-acls
+  "Returns all ACLs that grant given permission to context user for any provider-level groups."
   [context permission]
   (acl/get-permitting-acls context :provider-object "GROUP" permission))
 
 (defn- get-provider-acls
+  "Returns any ACLs that grant the given permission to the context user for the specified group object."
   [context permission group]
   (when-let [provider-id (:provider-id group)]
     (when-not (= "CMR" provider-id)
@@ -22,6 +25,7 @@
                 (get-all-provider-acls context permission))))))
 
 (defn- get-instance-acls
+  "Returns any ACLs that grant the given permission to the context user on a specific group by its :legacy-guid."
   [context permission group]
   (when-let [target-guid (:legacy-guid group)]
     (seq
