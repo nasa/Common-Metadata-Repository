@@ -241,6 +241,8 @@
         (is (= ["C1-PROV1" 2 200 nil] [concept-id revision-id status errors]))))
 
     (testing "update the collection that has granules with a different entry-id is allowed"
+      ;; For CMR-2403 we decided to temporary allow collection identifiers to be updated even
+      ;; with existing granules for the collection. We will change this with CMR-2485.
       (let [{:keys [status concept-id revision-id errors]}
             (d/ingest "PROV1" coll1-4 {:format :dif :allow-failure? true})]
         (is (= ["C3-PROV1" 2 200 nil] [concept-id revision-id status errors]))))

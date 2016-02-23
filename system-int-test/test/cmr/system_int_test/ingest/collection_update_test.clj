@@ -579,6 +579,8 @@
         (= [200 nil] [status errors])))
 
     (testing "Update unique identifiers of a collection even with granules is allowed"
+      ;; For CMR-2403 we decided to temporary allow collection identifiers to be updated even
+      ;; with existing granules for the collection. We will change this with CMR-2485.
       (are2 [identifier-map]
             (let [response (d/ingest "PROV1" (dc/collection (merge {:entry-title "Dataset1"
                                                                     :short-name "S1"
