@@ -88,7 +88,6 @@
                                                    transaction-revisions))]
     (some (fn [tran-rev]
             (let [{:keys [transaction-id revision-id]} tran-rev]
-              (println "transaction-id: " transaction-id)
               (or (when (and (< revision-id this-revision-id)
                              (> transaction-id this-transaction-id))
                         [(format (str "Revision [%d] of concept [%s] has transaction-id [%d] "
