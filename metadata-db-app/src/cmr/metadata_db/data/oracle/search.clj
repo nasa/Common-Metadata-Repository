@@ -31,7 +31,7 @@
 
 (def common-columns
   "A set of common columns for all concept types."
-  #{:native_id :concept_id :revision_date :metadata :deleted :revision_id :format})
+  #{:native_id :concept_id :revision_date :metadata :deleted :revision_id :format :transaction_id})
 
 (def concept-type->columns
   "A map of concept type to the columns for that type in the database."

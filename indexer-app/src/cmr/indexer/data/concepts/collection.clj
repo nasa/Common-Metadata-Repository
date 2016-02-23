@@ -62,7 +62,8 @@
     ;; revision of this collection
     (filter (fn [ta] (let [rev-id (:associated-revision-id ta)]
                        (or (nil? rev-id)
-                           (= (rev-id (:revision-id concept)))))))))
+                           (= (rev-id (:revision-id concept))))))
+            tag-associations)))
 
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
