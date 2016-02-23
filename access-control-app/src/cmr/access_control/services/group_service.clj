@@ -279,6 +279,7 @@
   (let [existing-concept (fetch-group-concept context concept-id)
         existing-group (edn/read-string (:metadata existing-concept))
         updated-group (add-members-to-group existing-group members)]
+    (auth/verify-can-update-group context existing-group)
     (save-updated-group-concept context existing-concept updated-group)))
 
 (defn- remove-members-from-group
@@ -296,15 +297,16 @@
   (let [existing-concept (fetch-group-concept context concept-id)
         existing-group (edn/read-string (:metadata existing-concept))
         updated-group (remove-members-from-group existing-group members)]
+    (auth/verify-can-update-group context existing-group)
     (save-updated-group-concept context existing-concept updated-group)))
 
 (defn get-members
   "Gets the members in the group."
   [context concept-id]
-  (-> (fetch-group-concept context concept-id)
-      :metadata
-      edn/read-string
-      (get :members [])))
+  (let [concept (fetch-group-concept context concept-id)
+        group (edn/read-string (:metadata concept))]
+    (auth/verify-can-read-group context group)
+    (get group :members [])))
 
 (defn health
   "Returns the health state of the app."

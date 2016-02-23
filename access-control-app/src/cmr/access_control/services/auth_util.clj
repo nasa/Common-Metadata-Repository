@@ -31,7 +31,7 @@
   (let [{:keys [provider-id]} group]
     (if (and provider-id (not= "CMR" provider-id))
       (format "access control group [%s] in provider [%s]" (:name group) provider-id)
-      (format "system-level access control groups"))))
+      (format "system-level access control group [%s]" (:name group)))))
 
 (defn- throw-group-permission-error
   [permission group]
