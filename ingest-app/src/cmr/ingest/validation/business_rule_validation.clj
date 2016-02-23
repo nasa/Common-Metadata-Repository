@@ -44,8 +44,11 @@
   concept and return search maps used to validate that a collection was not updated in a way that
   invalidates granules. Each search map contains a :params key of the parameters to use to execute
   the search and an :error-msg to return if the search finds any hits."
-  [cui/entry-title-searches
-   cui/short-name-version-id-searches
+  [
+   ;; For CMR-2403 we decided to disable these validations. We will re-enable them after
+   ;; implementing CMR-2485.
+   ;;  cui/entry-title-searches
+   ;;  cui/short-name-version-id-searches
    aa/additional-attribute-searches
    pv/deleted-project-searches
    tv/out-of-range-temporal-searches
