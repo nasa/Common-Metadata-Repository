@@ -154,15 +154,17 @@
       (apply concat
              (map
               (fn [[param settings]]
-                ;; handle these parameters separately since they don't allow any options
-                (if (always-case-sensitive-fields param)
-                  (map #(msg/invalid-opt-for-param param %) (keys settings))
-                  (let [valid-options (valid-options param)]
-                    ;; Only check params we recognize - other validations will handle the rest
-                    (when valid-options
-                      (map #(msg/invalid-opt-for-param param %)
-                           (set/difference (set (keys settings))
-                                           valid-options))))))
+                (if-not (map? settings)
+                  [(msg/invalid-settings-for-param param settings)]
+                  ;; handle these parameters separately since they don't allow any options
+                  (if (always-case-sensitive-fields param)
+                    (map #(msg/invalid-opt-for-param param %) (keys settings))
+                    (let [valid-options (valid-options param)]
+                      ;; Only check params we recognize - other validations will handle the rest
+                      (when valid-options
+                        (map #(msg/invalid-opt-for-param param %)
+                             (set/difference (set (keys settings))
+                               valid-options)))))))
               options)))))
 
 (defmulti valid-sort-keys
@@ -341,4 +343,3 @@
   ([concept-type params validations other-errors]
    (when-let [errors (seq (concat other-errors (mapcat #(% concept-type params) validations)))]
      (errors/throw-service-errors :bad-request errors))))
-
