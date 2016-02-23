@@ -169,8 +169,8 @@
         "removed min" [nil 10]
         "removed max" [1 nil]
         "no range" []
-        "minimal range" [2 5]
-        ))
+        "minimal range" [2 5]))
+
     (testing "failure cases"
       (are2
         [range num-grans]
@@ -578,28 +578,24 @@
             {:keys [status errors]} response]
         (= [200 nil] [status errors])))
 
-    (testing "Update unique identifiers of collection failure cases"
-      (are2 [identifier-map error]
+    (testing "Update unique identifiers of a collection even with granules is allowed"
+      (are2 [identifier-map]
             (let [response (d/ingest "PROV1" (dc/collection (merge {:entry-title "Dataset1"
                                                                     :short-name "S1"
                                                                     :version-id "V1"
                                                                     :native-id "coll1"}
-                                                                   identifier-map))
-                                     {:allow-failure? true})
+                                                                  identifier-map)))
                   {:keys [status errors]} response]
-              (= [422 [error]] [status errors]))
+              (= [200 nil] [status errors]))
 
             "Update entry-title of collection with granules"
             {:entry-title "New Dataset1"}
-            "Collection with entry-title [Dataset1] is referenced by existing granules, cannot be renamed. Found 2 granules."
 
             "Update short-name of collection with granules"
             {:short-name "S11"}
-            "Collection with short-name [S1] and version-id [V1] is referenced by existing granules, cannot be renamed. Found 2 granules."
 
             "Update version-id of collection with granules"
-            {:version-id "V11"}
-            "Collection with short-name [S1] and version-id [V1] is referenced by existing granules, cannot be renamed. Found 2 granules."))))
+            {:version-id "V11"}))))
 
 (deftest collection-update-temporal-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
