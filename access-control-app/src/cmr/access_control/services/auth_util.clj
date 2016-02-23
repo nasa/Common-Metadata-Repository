@@ -42,6 +42,8 @@
             (describe-group group))))
 
 (defn- verify-group-permission
+  "Throws a permission service error if no ACLs exist that grant the desired permission to the
+  context user on group."
   [context permission group]
   (when-not (get-group-acls context permission group)
     (throw-group-permission-error permission group)))
