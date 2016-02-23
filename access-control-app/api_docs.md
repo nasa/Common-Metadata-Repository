@@ -105,7 +105,7 @@ Content-Type: application/json;charset=ISO-8859-1
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/groups -d \
 '{
   "name": "Administrators",
-  "provider-id": "PROV1"
+  "provider-id": "PROV1",
   "description": "The group of users that manages PROV1s data holdings."
  }'
 
