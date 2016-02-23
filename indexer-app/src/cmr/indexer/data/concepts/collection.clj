@@ -20,6 +20,7 @@
             [cmr.indexer.data.concepts.organization :as org]
             [cmr.acl.core :as acl]
             [cmr.common.concepts :as concepts]
+            [cmr.transmit.metadata-db :as mdb]
             [cmr.umm.collection :as umm-c]
             [cmr.umm.collection.entry-id :as eid]
             [cmr.common-app.services.kms-fetcher :as kf])
@@ -49,6 +50,20 @@
   nil if none exists."
   [personnel]
   (first (filter person->email-contact personnel)))
+
+(defn- get-tag-associations-for-collection
+  "Get all the tag associations for a collection"
+  [context concept]
+  (let [params {:associated-concept-id (:concept-id concept)
+                :exclude-metadata true
+                :latest true}
+        tag-associations (mdb/find-concepts context params :tag-association)]
+    (proto/save 1)
+    ;; we only want the tag associations that have no associated revision id or one equal to the
+    ;; revision of this collection
+    (filter (fn [ta] (let [rev-id (:associated-revision-id ta)]
+                       (or (nil? rev-id)
+                           (= (rev-id (:revision-id concept)))))))))
 
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
@@ -106,8 +121,11 @@
         insert-time (get-in collection [:data-provider-timestamps :insert-time])
         insert-time (f/unparse (f/formatters :date-time) insert-time)
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
-        permitted-group-ids (acl/get-coll-permitted-group-ids context provider-id collection)]
-    (merge {:concept-id concept-id
+        permitted-group-ids (acl/get-coll-permitted-group-ids context provider-id collection)
+        tag-associations (get-tag-associations-for-collection context concept)
+        elastic-version-id (apply max (:transaction-id concept) (map :transaction-id tag-associations))]
+    (merge {:elastic-version-id elastic-version-id
+            :concept-id concept-id
             :revision-id revision-id
             :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
             :native-id native-id
@@ -230,4 +248,3 @@
   (if (:deleted concept)
     (get-elastic-doc-for-tombstone-collection context concept)
     (get-elastic-doc-for-full-collection context concept collection)))
-
