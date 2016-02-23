@@ -16,7 +16,8 @@
 (def object-identity-type->acl-field
   {"CATALOG_ITEM" :catalog_item_identity
    "SYSTEM_OBJECT" :system_object_identity
-   "PROVIDER_OBJECT" :provider_object_identity})
+   "PROVIDER_OBJECT" :provider_object_identity
+   "SINGLE_INSTANCE_OBJECT" :single_instance_object_identity})
 
 (defn- get-acls-having-fields-and-provider
   "Fetches acls from the acl db that have object identity type fields with the specified provider-id"

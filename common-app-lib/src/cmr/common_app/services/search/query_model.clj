@@ -331,7 +331,7 @@
   (->NegatedCondition value))
 
 (defn exist-condition
-  "Creates condition that matches a field with a value"
+  "Returns a query condition that checks that field exists."
   [field]
   (->ExistCondition field))
 

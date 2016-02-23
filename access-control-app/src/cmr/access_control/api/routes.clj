@@ -172,31 +172,21 @@
 
           ;; Delete a group
           (DELETE "/" {:keys [request-context]}
-            ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
-            (acl/verify-ingest-management-permission request-context :update)
             (delete-group request-context group-id))
 
           ;; Update a group
           (PUT "/" {:keys [request-context headers body]}
-            ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
-            (acl/verify-ingest-management-permission request-context :update)
             (update-group request-context headers (slurp body) group-id))
 
           (context "/members" []
             (OPTIONS "/" req cr/options-response)
             (GET "/" {:keys [request-context]}
-              ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
-              (acl/verify-ingest-management-permission request-context :update)
               (get-members request-context group-id))
 
             (POST "/" {:keys [request-context headers body]}
-              ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
-              (acl/verify-ingest-management-permission request-context :update)
               (add-members request-context headers (slurp body) group-id))
 
             (DELETE "/" {:keys [request-context headers body]}
-              ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
-              (acl/verify-ingest-management-permission request-context :update)
               (remove-members request-context headers (slurp body) group-id))))))
 
     (route/not-found "Not Found")))
