@@ -24,7 +24,7 @@
           token (e/login (u/conn-context) "user2")
           response (u/create-group token group)]
       (is (= {:status 401
-              :errors ["You do not have permission to create system-level access control groups."]}
+              :errors ["You do not have permission to create system-level access control group [Administrators]."]}
              response)))))
 
 (deftest create-provider-group-test
@@ -71,7 +71,7 @@
 
       (testing "without permission"
         (is (= {:status 401
-                :errors ["You do not have permission to read system-level access control groups."]}
+                :errors ["You do not have permission to read system-level access control group [Administrators]."]}
                (u/get-group no-group-token system-group-concept-id)))))
 
     (testing "reading provider groups"
@@ -112,7 +112,7 @@
     (testing "deleting system groups"
       (testing "without permission"
         (is (= {:status 401
-                :errors ["You do not have permission to delete system-level access control groups."]}
+                :errors ["You do not have permission to delete system-level access control group [Administrators]."]}
                (u/delete-group prov-token sys-group-id))))
 
       (testing "with permission"
@@ -160,7 +160,7 @@
     (testing "updating system groups"
       (testing "without permission"
         (is (= {:status 401
-                :errors ["You do not have permission to update system-level access control groups."]}
+                :errors ["You do not have permission to update system-level access control group [Administrators]."]}
                (u/update-group prov-token sys-group-id (assoc sys-group :description "Updated name")))))
 
       (testing "with permission"
@@ -183,11 +183,11 @@
 (deftest group-members-acl-test
 
   ;; members of "sys-group" can create system-level groups and delete the group with the guid "sys-group-guid"
-  (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group" :create)
-  (e/grant-group-instance-permissions-to-group (u/conn-context) "sys-group" "sys-group-guid" :update :read)
+  (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group" :create :read)
+  (e/grant-group-instance-permissions-to-group (u/conn-context) "sys-group" "sys-group-guid" :update)
   ;; members of "prov1-group" can create groups for PROV1 but can only update the group with guid "prov1-group-guid"
-  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group" "prov1guid" :create)
-  (e/grant-group-instance-permissions-to-group (u/conn-context) "prov1-group" "prov1-group-guid" :update :read)
+  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group" "prov1guid" :create :read)
+  (e/grant-group-instance-permissions-to-group (u/conn-context) "prov1-group" "prov1-group-guid" :update)
 
   (let [sys-token (e/login (u/conn-context) "sys-user" ["sys-group"])
         sys-group (u/make-group {:legacy-guid "sys-group-guid"})
@@ -203,7 +203,7 @@
                (u/get-members prov1-token sys-group-concept-id)))
         (is (= {:status 401
                 :errors ["You do not have permission to read access control group [Administrators] in provider [PROV1]."]}
-               (u/get-members sys-token prov1-group-concept-id))))
+               (u/get-members (e/login (u/conn-context) "some-random-user") prov1-group-concept-id))))
       (testing "with permission"
         (is (= {:status 200 :body []}
                (u/get-members sys-token sys-group-concept-id)))
