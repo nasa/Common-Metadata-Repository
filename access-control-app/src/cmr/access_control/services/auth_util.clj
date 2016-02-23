@@ -32,13 +32,6 @@
       (filter #(= target-guid (-> % :single-instance-object-identity :target-guid))
               (acl/get-permitting-acls context :single-instance-object "GROUP" permission)))))
 
-(defn- get-group-acls
-  "Returns any group ACLs that grant the context user the given permission on group."
-  [context permission group]
-  (or (get-instance-acls context permission group)
-      (get-provider-acls context permission group)
-      (get-system-acls context permission)))
-
 (defn- describe-group
   [group]
   (let [{:keys [provider-id]} group]
@@ -58,7 +51,9 @@
   "Throws a permission service error if no ACLs exist that grant the desired permission to the
   context user on group."
   [context permission group]
-  (when-not (get-group-acls context permission group)
+  (when-not (or (get-instance-acls context permission group)
+                (get-provider-acls context permission group)
+                (get-system-acls context permission))
     (throw-group-permission-error permission group)))
 
 (defn verify-can-create-group
