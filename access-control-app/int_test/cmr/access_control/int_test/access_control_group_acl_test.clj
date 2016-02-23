@@ -101,7 +101,8 @@
     (is (= [sys-group-concept-id]
            (map :concept-id (:items (u/search sys-token {:name "Administrators"})))))
     (is (= [prov1-group-concept-id]
-           (map :concept-id (:items (u/search prov1-token {:name "Administrators"})))))))
+           (map :concept-id (:items (u/search prov1-token {:name "Administrators"})))))
+    (is (= 0 (:hits (u/search (e/login (u/conn-context) "non-permitted-user") {:name "Administrators"}))))))
 
 (deftest delete-group-acl-test
 

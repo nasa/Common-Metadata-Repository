@@ -90,5 +90,7 @@
                           (get-all-provider-acls context :read))
         provider-condition (when (seq provider-ids)
                              (qm/string-conditions :provider-id provider-ids))
-        acl-conditions (gc/or-conds (remove nil? [system-condition provider-condition]))]
-    (update-in query [:condition] #(gc/and-conds [acl-conditions %]))))
+        all-conditions (remove nil? [system-condition provider-condition])]
+    (if (seq all-conditions)
+      (update-in query [:condition] #(gc/and-conds [(gc/or-conds all-conditions) %]))
+      (assoc query :condition qm/match-none))))
