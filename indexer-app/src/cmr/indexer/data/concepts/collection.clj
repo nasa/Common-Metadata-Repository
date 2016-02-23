@@ -58,7 +58,6 @@
                 :exclude-metadata true
                 :latest true}
         tag-associations (mdb/find-concepts context params :tag-association)]
-    (proto/save 1)
     ;; we only want the tag associations that have no associated revision id or one equal to the
     ;; revision of this collection
     (filter (fn [ta] (let [rev-id (:associated-revision-id ta)]
