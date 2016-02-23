@@ -84,22 +84,10 @@
 						"required": ["value"]
 					}]
 				},
-				"tag": {
-					"description": "Search against any of the subfields of tag",
-					"type": "object",
-					"additionalProperties": false,
-					"minProperties": 1,
-					"properties": {
-						"tag_key": {
-							"description": "Tag key of the tag.",
-							"$ref": "#/definitions/CaseInsensitiveStringCondition"
-						},
-						"originator_id": {
-							"description": "Originator id of the tag.",
-							"$ref": "#/definitions/CaseInsensitiveStringCondition"
-						}
-					}
-				},
+        "tag": {
+          "description": "Search against the subfields of associated tag.)",
+          "$ref": "#/definitions/TagCondition"
+        },
 				"platform": {
 					"description": "Search against any of the subfields in the platform hierarchy",
 					"type": "object",
@@ -520,6 +508,25 @@
 				}
 			}
 		},
+    "TagCondition": {
+      "description": "Search against the subfields of tags associated with the collection",
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "tag_key": {
+          "description": "Key of the associated tag.",
+          "type": "string"
+        },
+        "originator_id": {
+          "description": "Originator id of the associated tag.",
+          "type": "string"
+        },
+        "pattern": {
+          "$ref": "#/definitions/PatternOption"
+        }
+      }
+    },
 		"IgnoreCaseOption": {
 			"description": "If set to true, the search will be case insensitive and if set to false, the search will be case sensitive. Defaults to true.",
 			"type": "boolean"

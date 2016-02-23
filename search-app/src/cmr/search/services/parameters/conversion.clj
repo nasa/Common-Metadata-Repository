@@ -9,7 +9,7 @@
             [cmr.common.util :as u]
             [cmr.common-app.services.search.params :as common-params]
             [cmr.search.services.parameters.legacy-parameters :as lp]
-            [cmr.search.services.tagging.tag-related-item-condition :as tag-related]
+            [cmr.search.services.parameters.converters.nested-field :as nf]
             [cmr.common.concepts :as cc]
             [cmr.common.date-time-parser :as parser]))
 
@@ -104,9 +104,8 @@
                                 :originator-id
                                 %)
         condition-key (param->condition-key param)
-        options (u/map-keys param->condition-key options)]
-    (tag-related/tag-related-item-query-condition
-      (common-params/parameter->condition :tag condition-key value options))))
+        pattern? (common-params/pattern-field? concept-type param options)]
+    (nf/parse-nested-condition :tag-associations {condition-key value} false pattern?)))
 
 ;; Special case handler for concept-id. Concept id can refer to a granule or collection.
 ;; If it's a granule query with a collection concept id then we convert the parameter to :collection-concept-id

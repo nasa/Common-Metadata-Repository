@@ -33,22 +33,15 @@
 
 (deftest search-for-collections-with-tag-json-query-validation-test
   (testing "Unsupported options and"
-    (are [field]
+    (are [field option-field]
          (= {:status 400
-             :errors ["/condition/tag object instance has properties which are not allowed by the schema: [\"and\"]"]}
-            (search/find-refs-with-json-query :collection {} {:tag {field "name" :and true}}))
-         :tag_key :originator_id))
-
-  (testing "Unsupported ignore_case option because tag-key and originator-id are always case insensitive"
-    (are [field]
-         (= {:status 400
-             :errors [(format "/condition/tag/%s instance failed to match exactly one schema (matched 0 out of 2)" (name field))
-                      (format "/condition/tag/%s instance type (object) does not match any allowed primitive type (allowed: [\"string\"])" (name field))
-                      (format "/condition/tag/%s object instance has properties which are not allowed by the schema: [\"ignore_case\"]" (name field))]}
-            (search/find-refs-with-json-query :collection {}
-                                              {:tag {field {:value "foo"
-                                                            :ignore_case true}}}))
-         :tag_key :originator_id)))
+             :errors [(format "/condition/tag object instance has properties which are not allowed by the schema: [\"%s\"]"
+                              (name option-field))]}
+            (search/find-refs-with-json-query :collection {} {:tag {field "foo" option-field true}}))
+         :tag_key :and
+         :tag_key :ignore_case
+         :originator_id :and
+         :originator_id :ignore_case)))
 
 (deftest search-for-collections-by-tag-params-test
   (let [[c1-p1 c2-p1 c3-p1
@@ -139,7 +132,7 @@
             [tag1-colls] {:tag {:tag_key "tag1"}}
 
             "By tag-key Pattern"
-            [tag3-colls] {:tag {:tag_key {:value "*other" :pattern true}}}
+            [tag3-colls] {:tag {:tag_key "*other" :pattern true}}
 
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
             ;; Originator Id Param
@@ -148,17 +141,17 @@
             [tag1-colls tag3-colls] {:tag {:originator_id "USER1"}}
 
             "By Originator Id - Pattern"
-            [tag2-colls] {:tag {:originator_id {:value "*2" :pattern true}}}
+            [tag2-colls] {:tag {:originator_id "*2" :pattern true}}
 
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
             ;; JSON Query Conditional constructs: and, or, not
 
             "By or'ing tags"
-            [tag1-colls tag2-colls tag3-colls] {:or [{:tag {:tag_key {:value "tag*" :pattern true}}}
+            [tag1-colls tag2-colls tag3-colls] {:or [{:tag {:tag_key "tag*" :pattern true}}
                                                      {:tag {:originator_id "USER2"}}]}
 
             "By and'ing tags"
-            [tag2-colls] {:and [{:tag {:tag_key {:value "tag*" :pattern true}}}
+            [tag2-colls] {:and [{:tag {:tag_key "tag*" :pattern true}}
                                 {:tag {:originator_id "USER2"}}]}
 
             "By negating ('not') tags"

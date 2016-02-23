@@ -67,7 +67,7 @@
 
 (defnestedmapping tag-associations-mapping
   "Defines mappings for tag associations."
-  {:tag-key m/string-field-mapping
+  {:tag-key.lowercase m/string-field-mapping
    :originator-id.lowercase m/string-field-mapping
    :value m/string-field-mapping})
 
