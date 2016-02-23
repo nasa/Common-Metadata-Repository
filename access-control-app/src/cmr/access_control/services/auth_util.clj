@@ -1,23 +1,32 @@
 (ns cmr.access-control.services.auth-util
   (:require [cmr.common.services.errors :as errors]
-            [cmr.acl.core :as acl]))
+            [cmr.acl.core :as acl]
+            [cmr.common-app.services.search.query-model :as qm]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
+            [cmr.common-app.services.search.query-execution :as qe]))
 
 (defn- get-system-acls
   [context permission]
   (seq (acl/get-permitting-acls context :system-object "GROUP" permission)))
 
+(defn- get-all-provider-acls
+  [context permission]
+  (acl/get-permitting-acls context :provider-object "GROUP" permission))
+
 (defn- get-provider-acls
   [context permission group]
   (when-let [provider-id (:provider-id group)]
     (when-not (= "CMR" provider-id)
-      (some #(= provider-id (-> % :provider-object-identity :provider-id))
-            (acl/get-permitting-acls context :provider-object "GROUP" permission)))))
+      (seq
+        (filter #(= provider-id (-> % :provider-object-identity :provider-id))
+                (get-all-provider-acls context permission))))))
 
 (defn- get-instance-acls
   [context permission group]
   (when-let [target-guid (:legacy-guid group)]
-    (some #(= target-guid (-> % :single-instance-object-identity :target-guid))
-          (acl/get-permitting-acls context :single-instance-object "GROUP" permission))))
+    (seq
+      (filter #(= target-guid (-> % :single-instance-object-identity :target-guid))
+              (acl/get-permitting-acls context :single-instance-object "GROUP" permission)))))
 
 (defn- get-group-acls
   "Returns any group ACLs that grant the context user the given permission on group."
@@ -69,3 +78,18 @@
   "Throws service error if context user does not have permission to delete group map."
   [context group]
   (verify-group-permission context :update group))
+
+;;; For Search/Indexing
+
+;; The following multimethod is automatically called by the query execution service when executing a query.
+
+(defmethod qe/add-acl-conditions-to-query :access-group
+  [context query]
+  (let [system-condition (when (get-system-acls context :read)
+                           (qm/negated-condition (qm/exist-condition :provider-id)))
+        provider-ids (map #(-> % :provider-object-identity :provider-id)
+                          (get-all-provider-acls context :read))
+        provider-condition (when (seq provider-ids)
+                             (qm/string-conditions :provider-id provider-ids))
+        acl-conditions (gc/or-conds (remove nil? [system-condition provider-condition]))]
+    (update-in query [:condition] #(gc/and-conds [acl-conditions %]))))
