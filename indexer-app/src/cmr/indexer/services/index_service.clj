@@ -215,9 +215,9 @@
       (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
             delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
         (when (or (nil? delete-time) (> (compare delete-time (tk/now)) 0))
-          (let [tag-associations (get-tag-associations-for-collection concept)
+          (let [tag-associations (get-tag-associations-for-collection context concept)
                 transaction-id (get-max-transaction-id concept tag-associations)
-                tag-associations (filter #(not (:deleted %)) tag-associations)
+                tag-associations (map cp/parse-concept (filter #(not (:deleted %)) tag-associations))
                 concept-index (idx-set/get-concept-index-name context concept-id revision-id
                                                               all-revisions-index? concept)
                 es-doc (es/concept->elastic-doc context

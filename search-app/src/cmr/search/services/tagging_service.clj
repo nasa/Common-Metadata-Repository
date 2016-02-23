@@ -174,7 +174,8 @@
                               :items
                               (map :concept-id))
         existing-concept (fetch-tag-concept context concept-id)
-        tag-key (:native-id existing-concept)]
+        existing-tag (edn/read-string (:metadata existing-concept))
+        {:keys [tag-key originator-id]} existing-tag]
     ;; save tag-association for each collection concept-id
     (for [coll-concept-id coll-concept-ids
           :let [native-id (str tag-key native-id-separator-character coll-concept-id)]]
@@ -184,6 +185,7 @@
                                    :user-id (context->user-id context)
                                    :format (mt/format->mime-type :edn)
                                    :metadata (pr-str {:tag-key tag-key
+                                                      :originator-id originator-id
                                                       :associated-concept-id coll-concept-id})
                                    :extra-fields {:associated-concept-id coll-concept-id}})
         (delete-tag-association context native-id)))))
