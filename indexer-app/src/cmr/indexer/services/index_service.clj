@@ -18,6 +18,7 @@
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.elastic-utils.connect :as es-util]
             [cmr.umm.core :as umm]
+            [cmr.transmit.metadata-db :as mdb]
             [cmr.message-queue.services.queue :as queue]
             [cheshire.core :as cheshire]
             [cmr.indexer.data.index-set :as idx-set]
@@ -63,6 +64,24 @@
               (or (nil? delete-time)
                   (t/after? delete-time (tk/now)))))
           batch))
+
+(defn- get-tag-associations-for-collection
+  "Get all the tag associations for a collection"
+  [context concept]
+  (let [params {:associated-concept-id (:concept-id concept)
+                :latest true}
+        tag-associations (mdb/find-concepts context params :tag-association)]
+    ;; we only want the tag associations that have no associated revision id or one equal to the
+    ;; revision of this collection
+    (filter (fn [ta] (let [rev-id (:associated-revision-id ta)]
+                       (or (nil? rev-id)
+                           (= (rev-id (:revision-id concept))))))
+            tag-associations)))
+
+(defn- get-max-transaction-id
+  "Get the highest transaction id for a collection and its tag associatiosn"
+  [concept tag-associations]
+  (apply max (:transaction-id concept) (map :transaction-id tag-associations)))
 
 (defn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
