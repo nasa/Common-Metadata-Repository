@@ -15,7 +15,6 @@
       "in work"  :in-work
       "complete" :complete
       "completed" :complete
-      "ongoing" :in-work
       :in-work)))
 
 (defn generate
