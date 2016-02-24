@@ -12,6 +12,8 @@
   (println "migrations.034-generate-tag-associations-from-tags up...")
   (println "Changing cmr_tag_associations.associated_revision_id to allow NULL")
   (h/sql "alter table cmr_tag_associations modify (associated_revision_id NULL)")
+  (h/sql "alter table cmr_tag_associations add tag_key varchar(1030) NOT NULL")
+  (h/sql "CREATE INDEX tag_assoc_tkri ON cmr_tag_associations (tag_key, revision_id)")
   (let [context {:system {:db (config/db)}}]
     (doseq [{:keys [concept_id revision_id]} (h/query "select concept_id, max(revision_id) as revision_id from cmr_tags group by concept_id")]
       (println (format "Processing tag [%s]" concept_id))
@@ -67,4 +69,5 @@
             (println "TAG" tag)
             (cs/save-concept-revision context tag)))))
     (h/sql "delete from cmr_tag_associations")
+    (h/sql "alter table cmr_tag_associations drop column tag_key")
     (h/sql "alter table cmr_tag_associations modify (associated_revision_id NOT NULL)")))

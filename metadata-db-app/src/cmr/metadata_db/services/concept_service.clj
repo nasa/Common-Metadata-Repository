@@ -343,6 +343,8 @@
         provider (provider-service/get-provider-by-id context provider-id true)]
     (distinct (map :concept-id (c/get-expired-concepts db provider :collection)))))
 
+(declare cascade-tag-delete-to-tag-associations)
+
 (defmulti save-concept-revision
   "Store a concept record, which could be a tombstone, and return the revision."
   (fn [context concept]
@@ -377,6 +379,8 @@
           (validate-concept-revision-id db provider tombstone previous-revision)
           (let [revisioned-tombstone (->> (set-or-generate-revision-id db provider tombstone previous-revision)
                                           (try-to-save db provider))]
+            (when (= :tag concept-type)
+              (cascade-tag-delete-to-tag-associations context previous-revision))
             (ingest-events/publish-event
               context
               (ingest-events/concept-delete-event revisioned-tombstone))
@@ -411,6 +415,27 @@
         context
         (ingest-events/concept-update-event concept))
       concept)))
+
+(defn- get-tag-associations-for-tag
+  "Returns the latest revisions of the tag associations for the given tag."
+  [context tag-concept]
+  (let [db (util/context->db context)
+        tag-key (:native-id tag-concept)
+        cmr-provider (provider-service/get-provider-by-id context "CMR")]
+    (c/find-latest-concepts db {:provider-id "CMR"} {:concept-type :tag-association
+                                                     :tag-key tag-key})))
+
+(defn- cascade-tag-delete-to-tag-associations
+  "Save tombstones for all the tag associations for the given tag"
+  [context tag-concept]
+  (let [tag-associations (get-tag-associations-for-tag context tag-concept)
+        tombstones (map (fn [{:keys [concept-id revision-id]}]
+                            {:concept-id concept-id
+                             :revision-id (inc revision-id)
+                             :deleted true})
+                     tag-associations)]
+    (doseq [tombstone tombstones]
+      (save-concept-revision context tombstone))))
 
 (defn force-delete
   "Remove a revision of a concept from the database completely."
