@@ -76,7 +76,8 @@
             (let [batch (if (= :collection (cs/concept-id->type (:concept-id (first batch))))
                           ;; Get the tag associations as well.
                           (map (fn [concept]
-                                 (let [tag-associations (mdb/get-tag-associations-for-collection concept)]
+                                 (let [tag-associations (mdb/get-tag-associations-for-collection
+                                                         context concept)]
                                    (assoc concept :tag-associations tag-associations)))
                                batch)
                           ;; Just use the concepts as is.
