@@ -105,6 +105,7 @@
                 :errors ["You do not have permission to update a tag."]}
                (tags/associate-by-query token concept-id {:provider "foo"}))
 
+            nil
             guest-token
             reg-user-token
             create-user
@@ -124,6 +125,7 @@
                 :errors ["You do not have permission to update a tag."]}
                (tags/disassociate-by-query token concept-id {:provider "foo"}))
 
+            nil
             guest-token
             reg-user-token
             create-user
