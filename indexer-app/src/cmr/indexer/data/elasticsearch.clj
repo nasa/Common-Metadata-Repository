@@ -22,6 +22,14 @@
   "The maximum number of operations to batch in a single request"
   100)
 
+(defn get-elastic-version
+  "Get the proper elastic document version for the concept based on type."
+   [concept]
+    (let [concept-type (cs/concept-id->type (:concept-id concept))]
+      (if (= concept-type :collection)
+        (apply max (:transaction-id concept) (map :transaction-id (:tag-associations concept)))
+        (:revision-id concept))))
+
 (defn- get-elastic-id
   "Create the proper elastic document id for normal indexing or all-revisions indexing"
   [concept-id revision-id all-revisions-index?]
@@ -174,7 +182,7 @@
                                   {:_id elastic-id
                                    :_index index-name
                                    :_type type
-                                   :_version revision-id
+                                   :_version (get-elastic-version concept)
                                    :_version_type "external_gte"}))
                          (let [parsed-concept (cp/parse-concept concept)
                                delete-time (get-in parsed-concept
@@ -193,7 +201,7 @@
                              (merge elastic-doc {:_id elastic-id
                                                  :_index index-name
                                                  :_type type
-                                                 :_version revision-id
+                                                 :_version (get-elastic-version concept)
                                                  :_version_type "external_gte"})
                              (info
                               (str

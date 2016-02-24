@@ -65,32 +65,23 @@
                   (t/after? delete-time (tk/now)))))
           batch))
 
-(defn- get-tag-associations-for-collection
-  "Get all the tag associations (including tombstones) for a collection."
-  [context concept]
-  (let [params {:associated-concept-id (:concept-id concept)
-                :latest true}
-        tag-associations (mdb/find-concepts context params :tag-association)]
-    ;; we only want the tag associations that have no associated revision id or one equal to the
-    ;; revision of this collection
-    (filter (fn [ta] (let [rev-id (:associated-revision-id ta)]
-                       (or (nil? rev-id)
-                           (= (rev-id (:revision-id concept))))))
-            tag-associations)))
-
-(defn- get-max-transaction-id
-  "Get the highest transaction id for a collection and its tag associatiosn"
-  [concept tag-associations]
-  (apply max (:transaction-id concept) (map :transaction-id tag-associations)))
-
 (defn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
-  directly to this function - it does not retrieve them from metadata db. The bulk API is
+  directly to this function - it does not retrieve them from metadata db (tag associaitons for
+  collections WILL be retieved, however). The bulk API is
   invoked repeatedly if necessary - processing batch-size concepts each time. Returns the number
-  of concepts that have been indexed"
+  of concepts that have been indexed."
   [context concept-batches all-revisions-index?]
   (reduce (fn [num-indexed batch]
-            (let [batch (es/prepare-batch context (filter-expired-concepts batch)
+            (let [batch (if (= :collection (cs/concept-id->type (:concept-id (first batch))))
+                          ;; Get the tag associations as well.
+                          (map (fn [concept]
+                                (let [tag-associations (mdb/get-tag-associations-for-collection concept)]
+                                  (assoc concept :tag-associations tag-associations)))
+                               batch)
+                          ;; Just use the concepts as is.
+                          batch)
+                  batch (es/prepare-batch context (filter-expired-concepts batch)
                                           all-revisions-index?)]
               (es/bulk-index context batch all-revisions-index?)
               (+ num-indexed (count batch))))
@@ -179,6 +170,7 @@
   (fn [context concept parsed-concept options]
     (:concept-type concept)))
 
+;; TODO Refactor this method and the next to pull out common code into a separate function.
 (defmethod index-concept :default
   [context concept parsed-concept options]
   (let [{:keys [all-revisions-index?]} options
@@ -215,8 +207,8 @@
       (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
             delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
         (when (or (nil? delete-time) (> (compare delete-time (tk/now)) 0))
-          (let [tag-associations (get-tag-associations-for-collection context concept)
-                transaction-id (get-max-transaction-id concept tag-associations)
+          (let [tag-associations (mdb/get-tag-associations-for-collection context concept)
+                elastic-version (es/get-elastic-version concept tag-associations)
                 tag-associations (map cp/parse-concept (filter #(not (:deleted %)) tag-associations))
                 concept-index (idx-set/get-concept-index-name context concept-id revision-id
                                                               all-revisions-index? concept)
@@ -233,7 +225,7 @@
               (concept-mapping-types concept-type)
               es-doc
               concept-id
-              transaction-id
+              elastic-version
               elastic-options)))))))
 
 (defmethod index-concept :tag-association
