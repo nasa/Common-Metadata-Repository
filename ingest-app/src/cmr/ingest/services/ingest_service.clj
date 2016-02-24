@@ -20,7 +20,8 @@
             [cmr.message-queue.services.queue :as queue]
             [cmr.common.cache :as cache]
             [cmr.common.services.errors :as errors]
-            [cmr.umm.collection.entry-id :as eid]))
+            [cmr.umm.collection.entry-id :as eid]
+            [cmr.umm-spec.versioning :as ver]))
 
 (def ingest-validation-enabled?
   "A configuration feature switch that turns on CMR ingest validation."
@@ -55,7 +56,8 @@
   "Validates the collection and adds extra fields needed for metadata db. Throws a service error
   if any validation issues are found."
   [context concept validate-keywords?]
-  (let [collection (validate-and-parse-collection-concept context concept validate-keywords?)
+  (let [concept (update-in concept [:format] ver/fix-concept-format)
+        collection (validate-and-parse-collection-concept context concept validate-keywords?)
         ;; Add extra fields for the collection
         coll-concept (add-extra-fields-for-collection context concept collection)]
     (v/validate-business-rules
