@@ -237,32 +237,40 @@
           (and (= [200 (expected-result :json)] [json-status json-results])
                (= [200 (expected-result :atom)] [atom-status atom-results])))
 
-        "match all tags"
-        "*" {"coll1" [["tag1"] ["tag2"]]
-             "coll2" [["tag2"]]
-             "coll3" [["cmr.other"]]}
+        "include all tags"
+        "*" {"coll1" ["tag1" "tag2"]
+             "coll2" ["tag2"]
+             "coll3" ["cmr.other"]}
 
-        "match one tag"
-        "tag1" {"coll1" [["tag1"]]}
+        "include one tag"
+        "tag1" {"coll1" ["tag1"]
+                "coll2" nil
+                "coll3" nil}
 
-        "match tags with wildcard *"
-        "tag*" {"coll1" [["tag1"] ["tag2"]]
-                "coll2" [["tag2"]]}
+        "include tags with wildcard *"
+        "tag*" {"coll1" ["tag1" "tag2"]
+                "coll2" ["tag2"]
+                "coll3" nil}
 
-        "match tags with wildcard ?"
-        "tag?" {"coll1" [["tag1"] ["tag2"]]
-                "coll2" [["tag2"]]}
+        "include tags with wildcard ?"
+        "tag?" {"coll1" ["tag1" "tag2"]
+                "coll2" ["tag2"]
+                "coll3" nil}
 
-        "match no tag"
-        "tag3*" {}
+        "include no tag"
+        "tag3*" {"coll1" nil
+                 "coll2" nil
+                 "coll3" nil}
 
-        "match empty tag"
-        "" {}
+        "include empty tag"
+        "" {"coll1" nil
+            "coll2" nil
+            "coll3" nil}
 
         "match multiple tags"
-        "tag*,cmr.*" {"coll1" [["tag1"] ["tag2"]]
-                      "coll2" [["tag2"]]
-                      "coll3" [["cmr.other"]]}))
+        "tag*,cmr.*" {"coll1" ["tag1" "tag2"]
+                      "coll2" ["tag2"]
+                      "coll3" ["cmr.other"]}))
 
     (testing "Invalid include-tags params"
       (testing "include-tags in collection search with metadata formats orther than JSON is invalid."

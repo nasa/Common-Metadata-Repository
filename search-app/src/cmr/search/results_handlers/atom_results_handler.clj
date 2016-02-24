@@ -9,6 +9,7 @@
             [clojure.walk :as walk]
             [clojure.string :as str]
             [clojure.set :as set]
+            [clojure.edn :as edn]
             [clj-time.core :as time]
             [cheshire.core :as json]
             [cmr.common.util :as util]
@@ -57,35 +58,38 @@
                      "start-circular-latitude"
                      "ords-info"
                      "ords"
-                     "_score"]]
+                     "_score"]
+        atom-fields (if (and (:result-features query) (.contains (:result-features query) :tags))
+                      (conj atom-fields "associated-tags-gzip-b64")
+                      atom-fields)]
     (distinct (concat atom-fields acl-rhh/collection-elastic-fields))))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :atom]
   [concept-type query]
   (let [atom-fields ["granule-ur"
-                      "collection-concept-id"
-                      "update-time"
-                      "entry-title"
-                      "producer-gran-id"
-                      "size"
-                      "metadata-format"
-                      "provider-id"
-                      "start-date"
-                      "end-date"
-                      "atom-links"
-                      "orbit-asc-crossing-lon"
-                      "start-lat"
-                      "start-direction"
-                      "end-lat"
-                      "end-direction"
-                      "orbit-calculated-spatial-domains-json"
-                      "downloadable"
-                      "browsable"
-                      "day-night"
-                      "cloud-cover"
-                      "coordinate-system"
-                      "ords-info"
-                      "ords"]]
+                     "collection-concept-id"
+                     "update-time"
+                     "entry-title"
+                     "producer-gran-id"
+                     "size"
+                     "metadata-format"
+                     "provider-id"
+                     "start-date"
+                     "end-date"
+                     "atom-links"
+                     "orbit-asc-crossing-lon"
+                     "start-lat"
+                     "start-direction"
+                     "end-lat"
+                     "end-direction"
+                     "orbit-calculated-spatial-domains-json"
+                     "downloadable"
+                     "browsable"
+                     "day-night"
+                     "cloud-cover"
+                     "coordinate-system"
+                     "ords-info"
+                     "ords"]]
     (vec (distinct
            (concat atom-fields
                    orbit-swath-helper/orbit-elastic-fields
@@ -120,7 +124,8 @@
           [period] :period
           [inclination-angle] :inclination-angle
           [number-of-orbits] :number-of-orbits
-          [start-circular-latitude] :start-circular-latitude} :fields} elastic-result
+          [start-circular-latitude] :start-circular-latitude
+          associated-tags-gzip-b64 :associated-tags-gzip-b64} :fields} elastic-result
         start-date (acl-rhh/parse-elastic-datetime start-date)
         end-date (acl-rhh/parse-elastic-datetime end-date)
         atom-links (map #(json/decode % true) atom-links)
@@ -156,7 +161,11 @@
                                :period period
                                :inclination-angle inclination-angle
                                :number-of-orbits number-of-orbits
-                               :start-circular-latitude start-circular-latitude}}
+                               :start-circular-latitude start-circular-latitude}
+            :tags (some-> associated-tags-gzip-b64
+                          first
+                          util/gzip-base64->string
+                          edn/read-string)}
            (acl-rhh/parse-elastic-item :collection elastic-result))))
 
 (defn- granule-elastic-result->query-result-item
@@ -314,7 +323,7 @@
 
 (defn- tag->xml-element
   "Convert a tag to an XML element"
-  [[tag-key]]
+  [tag-key]
   (x/element :echo:tag {}
              (x/element :echo:tagKey {} tag-key)))
 
