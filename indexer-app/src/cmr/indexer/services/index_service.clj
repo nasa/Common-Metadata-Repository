@@ -76,8 +76,8 @@
             (let [batch (if (= :collection (cs/concept-id->type (:concept-id (first batch))))
                           ;; Get the tag associations as well.
                           (map (fn [concept]
-                                (let [tag-associations (mdb/get-tag-associations-for-collection concept)]
-                                  (assoc concept :tag-associations tag-associations)))
+                                 (let [tag-associations (mdb/get-tag-associations-for-collection concept)]
+                                   (assoc concept :tag-associations tag-associations)))
                                batch)
                           ;; Just use the concepts as is.
                           batch)
@@ -208,7 +208,7 @@
             delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
         (when (or (nil? delete-time) (> (compare delete-time (tk/now)) 0))
           (let [tag-associations (mdb/get-tag-associations-for-collection context concept)
-                elastic-version (es/get-elastic-version concept tag-associations)
+                elastic-version (es/get-elastic-version (assoc concept :tag-associations tag-associations))
                 tag-associations (map cp/parse-concept (filter #(not (:deleted %)) tag-associations))
                 concept-index (idx-set/get-concept-index-name context concept-id revision-id
                                                               all-revisions-index? concept)
@@ -253,8 +253,12 @@
         (index-concept context concept parsed-concept options)
         (log-ingest-to-index-time concept)))))
 
-(defn delete-concept
+(defmulti delete-concept
   "Delete the concept with the given id"
+  (fn [context concept-id revision-id options]
+    (cs/concept-id->type concept-id)))
+
+(defmethod delete-concept :default
   [context concept-id revision-id options]
   ;; Assuming ingest will pass enough info for deletion
   ;; We should avoid making calls to metadata db to get the necessary info if possible
@@ -287,6 +291,11 @@
                 (concept-mapping-types :granule)
                 {:term {(query-field->elastic-field :collection-concept-id :granule)
                         concept-id}}))))))))
+
+(defmethod delete-concept :tag-association
+  [context concept-id revision-id options]
+  (let [concept (meta-db/get-concept context concept-id revision-id)]
+    (index-concept context concept nil options)))
 
 (defn force-delete-collection-revision
   "Removes a collection revision from the all revisions index"
