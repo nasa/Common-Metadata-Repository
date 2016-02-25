@@ -77,7 +77,7 @@
                           ;; Get the tag associations as well.
                           (map (fn [concept]
                                  (let [tag-associations (mdb/get-tag-associations-for-collection
-                                                         context concept)]
+                                                          context concept)]
                                    (assoc concept :tag-associations tag-associations)))
                                batch)
                           ;; Just use the concepts as is.
@@ -166,6 +166,14 @@
               concept-id
               revision-date)))))
 
+(defn- get-collection-elastic-version
+  "Returns the elastic version of the collection with the given concept-id and revision-id"
+  ([context concept]
+   (let [tag-associations (mdb/get-tag-associations-for-collection context concept)]
+     (get-collection-elastic-version context concept tag-associations)))
+  ([_ concept tag-associations]
+   (es/get-elastic-version (assoc concept :tag-associations tag-associations))))
+
 (defmulti index-concept
   "Index the given concept with the parsed umm record."
   (fn [context concept parsed-concept options]
@@ -209,7 +217,7 @@
             delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
         (when (or (nil? delete-time) (> (compare delete-time (tk/now)) 0))
           (let [tag-associations (mdb/get-tag-associations-for-collection context concept)
-                elastic-version (es/get-elastic-version (assoc concept :tag-associations tag-associations))
+                elastic-version (get-collection-elastic-version context concept tag-associations)
                 tag-associations (map cp/parse-concept (filter #(not (:deleted %)) tag-associations))
                 concept-index (idx-set/get-concept-index-name context concept-id revision-id
                                                               all-revisions-index? concept)
@@ -264,7 +272,11 @@
   ;; Assuming ingest will pass enough info for deletion
   ;; We should avoid making calls to metadata db to get the necessary info if possible
   (let [{:keys [all-revisions-index?]} options
-        concept-type (cs/concept-id->type concept-id)]
+        concept-type (cs/concept-id->type concept-id)
+        concept (meta-db/get-concept context concept-id revision-id)
+        elastic-version (if (= :collection concept-type)
+                          (get-collection-elastic-version context concept)
+                          revision-id)]
     (when (indexing-applicable? concept-type all-revisions-index?)
       (info (format "Deleting concept %s, revision-id %s, all-revisions-index? %s"
                     concept-id revision-id all-revisions-index?))
@@ -274,16 +286,15 @@
             elastic-options (select-keys options [:all-revisions-index? :ignore-conflict?])]
         (if all-revisions-index?
           ;; save tombstone in all revisions collection index
-          (let [concept (meta-db/get-concept context concept-id revision-id)
-                es-doc (es/concept->elastic-doc context concept (:extra-fields concept))]
+          (let [es-doc (es/concept->elastic-doc context concept (:extra-fields concept))]
             (es/save-document-in-elastic
               context index-name (concept-mapping-types concept-type)
-              es-doc concept-id revision-id elastic-options))
+              es-doc concept-id elastic-version elastic-options))
           ;; delete concept from primary concept index
           (do
             (es/delete-document
               context index-name (concept-mapping-types concept-type)
-              concept-id revision-id elastic-options)
+              concept-id elastic-version elastic-options)
             ;; propagate collection deletion to granules
             (when (= :collection concept-type)
               (es/delete-by-query
