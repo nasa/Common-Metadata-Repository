@@ -78,12 +78,27 @@
           (let [data (ex-data e)]
             (:errors data)))))))
 
-(defn nil-extra-fields-validation
-  "Validates that among the extra fields, only delete-time, version-id and associated-revision-id
-  can sometimes be nil."
+(def common-nillable-fields
+  "Fields common to all concept types that can be nil"
+  [:delete-time :version-id])
+
+(defn base-nil-extra-fields-validation
+  "Validates that only the given extra fields are nil."
+  [concept fields]
+  (nil-fields-validation (apply dissoc (:extra-fields concept) fields)))
+
+(defmulti nil-extra-fields-validation
+  "Validates that only allowed fields in extra fields are nil."
+  (fn [concept]
+    (:concept-type concept)))
+
+(defmethod nil-extra-fields-validation :tag-association
   [concept]
-  (nil-fields-validation (apply dissoc (:extra-fields concept)
-                                [:delete-time :version-id :associated-revision-id])))
+  (base-nil-extra-fields-validation concept (conj common-nillable-fields :associated-revision-id)))
+
+(defmethod nil-extra-fields-validation :default
+  [concept]
+  (base-nil-extra-fields-validation concept common-nillable-fields))
 
 (defn concept-id-validation
   [concept]
