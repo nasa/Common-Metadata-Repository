@@ -204,6 +204,7 @@
               es-doc
               concept-id
               revision-id
+              revision-id
               elastic-options)))))))
 
 (defmethod index-concept :collection
@@ -234,6 +235,7 @@
               (concept-mapping-types concept-type)
               es-doc
               concept-id
+              revision-id
               elastic-version
               elastic-options)))))))
 
@@ -289,7 +291,7 @@
           (let [es-doc (es/concept->elastic-doc context concept (:extra-fields concept))]
             (es/save-document-in-elastic
               context index-name (concept-mapping-types concept-type)
-              es-doc concept-id elastic-version elastic-options))
+              es-doc concept-id revision-id elastic-version elastic-options))
           ;; delete concept from primary concept index
           (do
             (es/delete-document

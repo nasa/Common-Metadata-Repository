@@ -192,7 +192,9 @@
 
             ;; tags
             :tag-associations (map tag/tag-association->elastic-doc tag-associations)
-            :associated-tags-gzip-b64 (util/string->gzip-base64 (pr-str (seq (map :tag-key tag-associations))))}
+            :associated-tags-gzip-b64 (when (seq tag-associations)
+                                        (util/string->gzip-base64
+                                          (pr-str (seq (map :tag-key tag-associations)))))}
 
            (get-in collection [:spatial-coverage :orbit-parameters])
            (spatial->elastic collection)
