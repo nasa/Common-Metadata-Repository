@@ -67,8 +67,8 @@
 
 (defn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
-  directly to this function - it does not retrieve them from metadata db (tag associaitons for
-  collections WILL be retieved, however). The bulk API is
+  directly to this function - it does not retrieve them from metadata db (tag associations for
+  collections WILL be retrieved, however). The bulk API is
   invoked repeatedly if necessary - processing batch-size concepts each time. Returns the number
   of concepts that have been indexed."
   [context concept-batches all-revisions-index?]
