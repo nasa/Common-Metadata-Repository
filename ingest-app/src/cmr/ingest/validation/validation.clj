@@ -23,6 +23,10 @@
   [concept]
   (let [content-type (mt/base-mime-type-of (:format concept))
         valid-types (get valid-concept-mime-types (:concept-type concept))]
+    (when (and (= mt/umm-json content-type)
+               (not (mt/version-of (:format concept))))
+      (errors/throw-service-error :invalid-content-type
+                                  (format "Missing version parameter from Content-Type header.")))
     (when-not (contains? valid-types content-type)
       (errors/throw-service-error :invalid-content-type
                                   (format "Invalid content-type: %s. Valid content-types: %s."

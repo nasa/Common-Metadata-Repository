@@ -36,6 +36,7 @@
             [cmr.common.mime-types :as mt]
             [clj-time.format :as f]
             [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm-spec.versioning :as ver]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
 
 (use-fixtures
@@ -176,6 +177,41 @@
         (is (= json (:body response)))
         (is (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type)))
         (is (= "1.0" (mt/version-of content-type)))))))
+
+
+(deftest umm-json-version-retrieval-test-with-no-version
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1" ["The entry title V5"]))
+  (let [user1-token (e/login (s/context) "user1")
+        coll        expected-conversion/example-collection-record
+        mime-type   (str "application/vnd.nasa.cmr.umm+json")
+        json        (umm-spec/generate-metadata coll mime-type)
+        result      (d/ingest-concept-with-metadata {:provider-id  "PROV1"
+                                                     :concept-type :collection
+                                                     :format       mime-type
+                                                     :metadata     json})
+        concept-id  (:concept-id result)
+        retrieve    (fn [revision-id]
+                      (search/retrieve-concept concept-id
+                                               revision-id
+                                               {:query-params {:token user1-token}
+                                                :accept       "application/vnd.nasa.cmr.umm+json"}))]
+    (index/wait-until-indexed)
+
+    (testing "without revision id"
+      (let [response     (retrieve nil)
+            content-type (get-in response [:headers "Content-Type"])]
+        (is (= 200 (:status response)))
+        (is (= json (:body response)))
+        (is (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type)))
+        (is (= ver/current-version (mt/version-of content-type)))))
+
+    (testing "with a revision id"
+      (let [response     (retrieve 1)
+            content-type (get-in response [:headers "Content-Type"])]
+        (is (= 200 (:status response)))
+        (is (= json (:body response)))
+        (is (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type)))
+        (is (= ver/current-version (mt/version-of content-type)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
