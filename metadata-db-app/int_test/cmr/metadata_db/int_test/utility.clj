@@ -119,10 +119,8 @@
 
 (def tag-edn
   "Valid EDN for tag metadata"
-  (pr-str {:namespace "org.nasa.something"
-           :value "ozone"
+  (pr-str {:tag-key "org.nasa.something.ozone"
            :description "A very good tag"
-           :category "A category"
            :originator-id "jnorton"}))
 
 (def tag-association-edn

@@ -23,3 +23,28 @@
         [cols values] (c/concept->common-insert-args concept)]
     [(concat cols ["user_id"])
      (concat values [user-id])]))
+
+
+(defn get-tag-associations-for-tag
+  "Returns the latest revisions of the tag associations for the given tag."
+  [db tag-concept]
+  (let [tag-key (:native-id tag-concept)]
+    (concepts/find-latest-concepts db {:provider-id "CMR"} {:concept-type :tag-association
+                                                            :tag-key tag-key})))
+
+(defn cascade-tag-delete-to-tag-associations
+  "Save tombstones for all the tag associations for the given tag"
+  [db tag-concept]
+  (let [tag-associations (get-tag-associations-for-tag db tag-concept)
+        tombstones (map (fn [concept] (-> concept
+                                          (assoc :deleted true :metadata "")
+                                          (update :revision-id inc)))
+                     tag-associations)]
+    (doseq [tombstone tombstones]
+      (concepts/save-concept db {:provider-id "CMR" :small false} tombstone))))
+
+(defmethod c/after-save :tag
+  [db provider tag]
+  (when (:deleted tag)
+    ;; Cascade deletion to tag-associations
+    (cascade-tag-delete-to-tag-associations db tag)))
