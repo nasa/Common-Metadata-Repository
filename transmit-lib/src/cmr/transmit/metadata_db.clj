@@ -94,7 +94,7 @@
          (errors/throw-service-error :not-found err-msg))
 
        200
-       (json/decode (:body response) true)
+       (map mdb2/finish-parse-concept (json/decode (:body response) true))
 
        ;; default
        (errors/internal-error! (str "Get concept revisions failed. MetadataDb app response status code: "

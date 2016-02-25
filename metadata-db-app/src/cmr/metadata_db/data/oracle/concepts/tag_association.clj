@@ -22,7 +22,8 @@
 ;; as well.
 (defmethod c/concept->insert-args [:tag-association false]
   [concept _]
-  (let [{{:keys [associated-concept-id associated-revision-id tag-key]} :extra-fields :keys [user-id]} concept
+  (let [{{:keys [associated-concept-id associated-revision-id tag-key]} :extra-fields
+         :keys [user-id]} concept
         [cols values] (c/concept->common-insert-args concept)]
     [(concat cols ["associated_concept_id" "associated_revision_id" "tag_key" "user_id"])
      (concat values [associated-concept-id associated-revision-id tag-key user-id])]))

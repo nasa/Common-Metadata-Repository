@@ -172,7 +172,8 @@
                    (try
                      (let [{:keys [concept-id revision-id]} concept
                            type (name (concept->type concept))
-                           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
+                           elastic-version (get-elastic-version concept)
+                           elastic-id (get-elastic-id concept-id elastic-version all-revisions-index?)
                            index-name (idx-set/get-concept-index-name
                                        context concept-id revision-id all-revisions-index?
                                        concept)]
@@ -182,7 +183,7 @@
                                   {:_id elastic-id
                                    :_index index-name
                                    :_type type
-                                   :_version (get-elastic-version concept)
+                                   :_version elastic-version
                                    :_version_type "external_gte"}))
                          (let [parsed-concept (cp/parse-concept concept)
                                delete-time (get-in parsed-concept
@@ -201,7 +202,7 @@
                              (merge elastic-doc {:_id elastic-id
                                                  :_index index-name
                                                  :_type type
-                                                 :_version (get-elastic-version concept)
+                                                 :_version elastic-version
                                                  :_version_type "external_gte"})
                              (info
                               (str

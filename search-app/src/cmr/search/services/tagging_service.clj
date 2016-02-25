@@ -187,7 +187,8 @@
                                    :metadata (pr-str {:tag-key tag-key
                                                       :originator-id originator-id
                                                       :associated-concept-id coll-concept-id})
-                                   :extra-fields {:associated-concept-id coll-concept-id}})
+                                   :extra-fields {:tag-key tag-key
+                                                  :associated-concept-id coll-concept-id}})
         (delete-tag-association context native-id)))))
 
 (defn associate-tag-by-query
