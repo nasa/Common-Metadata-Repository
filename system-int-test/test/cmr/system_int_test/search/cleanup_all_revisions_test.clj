@@ -17,9 +17,10 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"}))
 
-;; TODO: force deleted metadata-db collection cannot be deleted correctly in elasticsearch right now,
-;; as we can't reliably figure out what the transaction-id indexer used to populate the elasticsearch
-;; index _version. We would have to pass the transaction-id as part of the event message.
+;; This test is commented out due to CMR-2500.
+;; Force deleted metadata-db collection cannot be deleted correctly in elasticsearch right now,
+;; as we can't reliably figure out what the transaction-id indexer used to populate the
+;; elasticsearch index _version.
 #_(deftest cleanup-all-revisions-test
   (let [umm-c (dc/collection {:entry-title "coll1"})
         coll1s (doall (for [n (range 12)]
