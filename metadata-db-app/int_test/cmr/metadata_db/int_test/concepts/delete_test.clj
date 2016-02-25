@@ -31,6 +31,24 @@
 (deftest delete-group-general
   (cd-spec/general-delete-test :access-group ["REG_PROV" "SMAL_PROV" "CMR"]))
 
+;; test tag delete cascades to tag associations
+(deftest tag-delete-cascades-to-tag-associations
+  (let [tag-collection (util/create-and-save-collection "REG_PROV" 1)
+        tag (util/create-and-save-tag 1)
+        tag-association (util/create-and-save-tag-association tag-collection tag 1 1)
+        tag-association-id (:concept-id tag-association)
+        {status :status tag-association-concept :concept} (util/get-concept-by-id tag-association-id)
+        _ (util/delete-concept (:concept-id tag))
+        {tombstone-status :status tombstone :concept} (util/get-concept-by-id tag-association-id)]
+
+    (testing "tag association was saved and is not a tombstone"
+      (is (= 200 status))
+      (is (not (:deleted tag-association-concept))))
+
+    (testing "tag association is tombstoned after tag is deleted"
+      (is (= 200 tombstone-status))
+      (is (:deleted tombstone)))))
+
 ;; collections must be tested separately to make sure granules are deleted as well
 (deftest delete-collection-using-delete-end-point-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
