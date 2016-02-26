@@ -20,9 +20,10 @@
           (filter #(not= (:concept-id concept) (get-in % [:extra-fields :parent-collection-id]))
             concepts)
 
+        ;; TODO CMR-2520 Remove this case when asynchronous cascaded deletes are implemented.
         (and (= :tag (:concept-type concept))
              (:deleted concept))
-        (let [tag-associations (tag/get-tag-associations-for-tag db concept)
+        (let [tag-associations (tag/get-tag-associations-for-tag-tombstone db concept)
               tombstones (map (fn [ta] (-> ta
                                            (assoc :metadata "" :deleted true)
                                            (update :revision-id inc)))
