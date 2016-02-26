@@ -10,21 +10,16 @@
   [param-map]
   (let [{:keys [token group-guids]} param-map]
     ["ns2:GetGroups2"
-      {"xmlns:ns2" "http://echo.nasa.gov/echo/v10"
-       "xmlns:ns3" "http://echo.nasa.gov/echo/v10/types"
-       "xmlns:ns4" "http://echo.nasa.gov/ingest/v10"}
+      soap/ns-map
       ["ns2:token" token]
-      ["ns2:groupGuids"
-        (for [guid group-guids] ["ns3:Item" guid])]]))
+      ["ns2:groupGuids" (soap/item-list group-guids)]]))
 
 (defn get-group-names-by-member2
   "Returns a hiccup representation of the SOAP body for a GetGroupNamesByMember2 request using the provided itoken."
   [param-map]
   (let [{:keys [token member-guid]} param-map]
     ["ns2:GetGroupNamesByMember2"
-      {"xmlns:ns2" "http://echo.nasa.gov/echo/v10"
-       "xmlns:ns3" "http://echo.nasa.gov/echo/v10/types"
-       "xmlns:ns4" "http://echo.nasa.gov/ingest/v10"}
+      soap/ns-map
       ["ns2:token" token]
       ["ns2:memberGuid" member-guid]]))
 
@@ -33,16 +28,13 @@
   [param-map]
   (let [{:keys [token name description member-guids managing-group guid provider-guid]} param-map]
     ["ns2:CreateGroup"
-      {"xmlns:ns2" "http://echo.nasa.gov/echo/v10"
-       "xmlns:ns3" "http://echo.nasa.gov/echo/v10/types"
-       "xmlns:ns4" "http://echo.nasa.gov/ingest/v10"}
+      soap/ns-map
       ["ns2:token" token]
       ["ns2:newGroup"
         (when guid ["ns3:Guid" guid])
         ["ns3:Name" name]
         ["ns3:Description" description]
-        ["ns3:MemberGuids"
-          (for [member member-guids]["ns3:Item" member])]
+        ["ns3:MemberGuids" (soap/item-list member-guids)]
         (when provider-guid ["ns3:OwnerProviderGuid" provider-guid])]
       ["ns2:managingGroupGuid" managing-group]]))
 

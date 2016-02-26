@@ -12,6 +12,11 @@
   "Base URL for SOAP requests"
   {:default "http://localhost:3012/echo-v10/"})
 
+(def ns-map
+  {"xmlns:ns2" "http://echo.nasa.gov/echo/v10"
+   "xmlns:ns3" "http://echo.nasa.gov/echo/v10/types"
+   "xmlns:ns4" "http://echo.nasa.gov/ingest/v10"})
+
 (defn- sanitize-soap
   "Sanitize a SOAP request (e.g. remove user/pass)"
   [xml]
@@ -20,6 +25,11 @@
     (s/replace #"<([^:>]*:username)>[^>]*>" "<$1>*****</$1>")
     (s/replace #"<([^:>]*:password)>[^>]*>" "<$1>*****</$1>")
     (s/replace #"<([^:>]*:token)>[^>]*>" "<$1>*****</$1>")))
+
+(defn item-list
+  "return a list of 'Item' elements for the items in a vector."
+  [items]
+  (for [item items]["ns3:Item" item]))
 
 (defn post-xml
   "Post an XML object to the specified endpoint.  The XML must be a hiccup style object."

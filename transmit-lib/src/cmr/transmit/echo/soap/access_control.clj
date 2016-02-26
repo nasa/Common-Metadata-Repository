@@ -10,13 +10,11 @@
   [param-map]
   (let [{:keys [token acl-guid aces replace-all]} param-map]
     ["ns2:SetPermissions"
-      {"xmlns:ns2" "http://echo.nasa.gov/echo/v10"
-       "xmlns:ns3" "http://echo.nasa.gov/echo/v10/types"
-       "xmlns:ns4" "http://echo.nasa.gov/ingest/v10"}
+      soap/ns-map
       ["ns2:token" token]
       ["ns2:aclGuid" acl-guid]
       ["ns2:aces"
-        (for [ace aces] ace)]
+        (soap/item-list aces)]
       ["ns2:replaceAll" replace-all]]))
 
 (defn set-permissions

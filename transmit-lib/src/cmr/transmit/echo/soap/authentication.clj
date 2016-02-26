@@ -10,9 +10,7 @@
   "Returns a hiccup representation of the SOAP body for a Login request using the provided user and pass."
   [user pass]
   ["ns2:Login"
-    {"xmlns:ns2" "http://echo.nasa.gov/echo/v10"
-     "xmlns:ns3" "http://echo.nasa.gov/echo/v10/types"
-     "xmlns:ns4" "http://echo.nasa.gov/ingest/v10"}
+    soap/ns-map
     ["ns2:username" user]
     ["ns2:password" pass]
     ["ns2:clientInfo"
@@ -25,21 +23,16 @@
   "Returns a hiccup representation of the SOAP body for a Logout request using the provided user and pass."
   [token]
   ["ns2:Logout"
-    {"xmlns:ns2" "http://echo.nasa.gov/echo/v10"
-     "xmlns:ns3" "http://echo.nasa.gov/echo/v10/types"
-     "xmlns:ns4" "http://echo.nasa.gov/ingest/v10"}
+    soap/ns-map
     ["ns2:token" token]])
 
 (defn get-security-token-informaton-request
   "Returns a hiccup representation of the SOAP body for a GetSecurityTokenInformation request using the provided user and pass."
   [admin-token tokens]
   ["ns2:GetSecurityTokenInformation"
-    {"xmlns:ns2" "http://echo.nasa.gov/echo/v10"
-     "xmlns:ns3" "http://echo.nasa.gov/echo/v10/types"
-     "xmlns:ns4" "http://echo.nasa.gov/ingest/v10"}
+    soap/ns-map
     ["ns2:token" admin-token]
-    ["ns2:tokens"
-      (for [token tokens]["ns3:Item" token])]])
+    ["ns2:tokens" (soap/item-list tokens)]])
 
 (defn login
   "Perform a login request against the SOAP API and return the generated token."
