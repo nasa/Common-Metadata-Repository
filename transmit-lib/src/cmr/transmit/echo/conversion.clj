@@ -235,11 +235,16 @@
   {:provider-id s/Str
    :target s/Str})
 
+(def single-instance-object-identity-schema
+  {:target s/Str
+   :target-guid s/Str})
+
 (def acl-schema
   {(s/optional-key :guid) s/Str
    :aces [ace-schema]
    (s/optional-key :catalog-item-identity) catalog-item-identity-schema
    (s/optional-key :system-object-identity) system-object-identity-schema
-   (s/optional-key :provider-object-identity) provider-object-identity-schema})
+   (s/optional-key :provider-object-identity) provider-object-identity-schema
+   (s/optional-key :single-instance-object-identity) single-instance-object-identity-schema})
 
 

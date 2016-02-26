@@ -59,9 +59,9 @@
 
 (defn db-format->mime-type
   [db-format]
-  (if (.startsWith db-format "UMM_JSON;")
+  (if (.startsWith db-format "UMM_JSON")
     (let [[_ version] (str/split db-format #";")]
-      (mt/with-version mt/umm-json version))
+      (mt/with-version mt/umm-json (or version "1.0")))
     ;; if it's anything else, including "UMM_JSON", use the map lookup
     (get db-format->mime-type-map db-format)))
 

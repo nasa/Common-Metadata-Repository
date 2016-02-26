@@ -42,6 +42,14 @@
     media-type
     (str media-type ";version=" current-version)))
 
+(defn fix-concept-format
+  "Fixes formats"
+  [fmt]
+  (if (mt/umm-json? fmt)
+    (with-default-version fmt)
+    fmt))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Migrating Between Versions
 

@@ -240,10 +240,12 @@
             (d/ingest "PROV1" coll1-2 {:format :dif})]
         (is (= ["C1-PROV1" 2 200 nil] [concept-id revision-id status errors]))))
 
-    (testing "update the collection that has granules with a different entry-id is invalid"
-      (let [{:keys [status errors]} (d/ingest "PROV1" coll1-4 {:format :dif :allow-failure? true})]
-        (is (= [422 ["Collection with short-name [EID-3] and version-id [Not provided] is referenced by existing granules, cannot be renamed. Found 2 granules."]]
-               [status errors]))))
+    (testing "update the collection that has granules with a different entry-id is allowed"
+      ;; For CMR-2403 we decided to temporary allow collection identifiers to be updated even
+      ;; with existing granules for the collection. We will change this with CMR-2485.
+      (let [{:keys [status concept-id revision-id errors]}
+            (d/ingest "PROV1" coll1-4 {:format :dif :allow-failure? true})]
+        (is (= ["C3-PROV1" 2 200 nil] [concept-id revision-id status errors]))))
 
     (testing "ingest collection with entry-id used by a different collection latest revision within the same provider is invalid"
       (let [{:keys [status errors]} (d/ingest "PROV1"

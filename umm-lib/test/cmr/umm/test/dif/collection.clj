@@ -242,6 +242,7 @@
       <Start_Date>1998-02-24T22:20:41-05:00</Start_Date>
       <Stop_Date>1999-03-24T22:20:41-05:00</Stop_Date>
     </Temporal_Coverage>
+    <Data_Set_Progress>ONGOING</Data_Set_Progress>
     <Spatial_Coverage>
       <Southernmost_Latitude>-90.0</Southernmost_Latitude>
       <Northernmost_Latitude>-60.5033</Northernmost_Latitude>
@@ -531,6 +532,7 @@
                     :long-name "Systeme Probatoire Pour l'Observation de la Terre-4"
                     :type "Not Specified"})]
      :temporal expected-temporal
+     :collection-progress :in-work
      :science-keywords
      [(umm-c/map->ScienceKeyword
         {:category "EARTH SCIENCE"
@@ -673,4 +675,3 @@
   ;; UMM-C is now making the version field a required field. It is optional in DIF-9 so we provide
   ;; a default of "Not provided" when it is missing from the DIF-9 metadata.
   (is (= "Not provided" (get-in (c/parse-collection valid-collection-xml) [:product :version-id]))))
-

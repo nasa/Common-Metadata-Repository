@@ -251,6 +251,13 @@
          :system-object-identity
          {:target "GROUP"}))
 
+(defn grant-group-instance-permissions-to-group
+  [context group-guid target-group-guid & permission-types]
+  (grant context [(group-ace group-guid (seq permission-types))]
+         :single-instance-object-identity
+         {:target "GROUP"
+          :target-guid target-group-guid}))
+
 (defn grant-system-group-permissions-to-all
   "Grants all users all permissions for system level access control group management."
   [context]
