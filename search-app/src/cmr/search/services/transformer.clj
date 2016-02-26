@@ -4,6 +4,7 @@
             [cmr.umm.core :as ummc]
             [cmr.umm.start-end-date :as sed]
             [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm-spec.umm-json :as umm-json]
             [cmr.common.cache :as cache]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.mime-types :as mt]
@@ -50,10 +51,17 @@
     (if-let [xsl (types->xsl [(mt/mime-type->format concept-format) target-format])]
       ; xsl is defined for the transformation, so use xslt
       (xslt/transform (:metadata concept) (get-template context xsl))
-      (if (mt/umm-json? concept-format)
+      (cond
+        (mt/umm-json? concept-format)
         (umm-spec/generate-metadata
           (umm-spec/parse-metadata :collection concept-format (:metadata concept))
           target-format)
+
+        (= :umm-json target-format)
+        (umm-json/umm->json
+         (umm-spec/parse-metadata :collection concept-format (:metadata concept)))
+
+        :else
         (-> concept
             ummc/parse-concept
             (ummc/umm->xml target-format))))))

@@ -37,6 +37,7 @@
             [clj-time.format :as f]
             [cmr.umm-spec.core :as umm-spec]
             [cmr.umm-spec.versioning :as ver]
+            [cmr.umm-spec.umm-json :as umm-json]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
 
 (use-fixtures
@@ -142,7 +143,15 @@
                                                             :headers {transmit-config/token-header
                                                                       user1-token}}))]
         (is (= 404 status))
-        (is (= ["Concept with concept-id [C1111-PROV1] could not be found."] errors))))))
+        (is (= ["Concept with concept-id [C1111-PROV1] could not be found."] errors))))
+    (testing "retrieval of UMM JSON"
+      (let [response (search/retrieve-concept
+                       (:concept-id coll1) nil {:query-params {:token user1-token}
+                                                :url-extension "umm-json"})
+            _ (is (= 200 (:status response)))
+            parsed-collection (umm-json/json->umm :collection (:body response))]
+        (is (search/mime-type-matches-response? response mt/umm-json))
+        (is (= (:entry-title umm-coll) (:EntryTitle parsed-collection)))))))
 
 (deftest umm-json-version-retrieval-test
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1" ["The entry title V5"]))
