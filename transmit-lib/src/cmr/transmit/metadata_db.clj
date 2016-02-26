@@ -94,7 +94,7 @@
          (errors/throw-service-error :not-found err-msg))
 
        200
-       (json/decode (:body response) true)
+       (map mdb2/finish-parse-concept (json/decode (:body response) true))
 
        ;; default
        (errors/internal-error! (str "Get concept revisions failed. MetadataDb app response status code: "
@@ -152,6 +152,19 @@
       (errors/internal-error!
         (format "%s search failed. status: %s body: %s"
                 (str/capitalize (name concept-type)) status body)))))
+
+(defn get-tag-associations-for-collection
+  "Get all the tag associations (including tombstones) for a collection."
+  [context concept]
+  (let [params {:associated-concept-id (:concept-id concept)
+                :latest true}
+        tag-associations (find-concepts context params :tag-association)]
+    ;; we only want the tag associations that have no associated revision id or one equal to the
+    ;; revision of this collection
+    (filter (fn [ta] (let [rev-id (:associated-revision-id ta)]
+                      (or (nil? rev-id)
+                          (= (rev-id (:revision-id concept))))))
+            tag-associations)))
 
 (defn-timed find-collections
   "Searches metadata db for concepts matching the given parameters."

@@ -25,6 +25,7 @@
    "version-id"
    "concept-id"
    "deleted"
+   "revision-id"
    "_score"])
 
 (def concept-type->name-key
@@ -34,10 +35,11 @@
 
 (defn- elastic-result->query-result-item
   [context query elastic-result]
-  (let [name-key (concept-type->name-key (:concept-type query))
-        {revision-id :_version
-         score :_score
-         {[name-value] name-key [concept-id] :concept-id [deleted] :deleted} :fields} elastic-result]
+  (let [concept-type (:concept-type query)
+        name-key (concept-type->name-key concept-type)
+        {score :_score
+         {[name-value] name-key [concept-id] :concept-id [deleted] :deleted} :fields} elastic-result
+        revision-id (elastic-results/get-revision-id-from-elastic-result concept-type elastic-result)]
     {:concept-id concept-id
      :revision-id revision-id
      :deleted deleted

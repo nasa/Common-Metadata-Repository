@@ -51,6 +51,7 @@
   {:granule ingest-exchange-name
    :collection ingest-exchange-name
    :tag ingest-exchange-name
+   :tag-association ingest-exchange-name
    ;; Add service when we add service indexing
    :service nil
    :access-group access-control-exchange-name})

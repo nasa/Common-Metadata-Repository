@@ -80,7 +80,7 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
 
   {
     "concept-type": "tag",
-    "native-id": "org.nasa.something\quality",
+    "native-id": "org.nasa.something/quality",
     "user-id": "jnorton",
     "format": "applcation/edn",
     "metadata: {
@@ -96,11 +96,12 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
 
   {
     "concept-type": "tag-association",
-    "native-id": "org.nasa.something.quality\C12-PROV_A42\1",
+    "native-id": "org.nasa.something.quality/C12-PROV_A42",
     "user-id": "jnorton",
     "format": "applcation/edn",
     "metadata: {
       "tag-key": "org.nasa.something.quality",
+      "originator-id": "jdoe",
       "associated-concept-id": "C12-PROV_A42",
       "revision-id": 1, (optional field),
       "value": "string to be indexed" or "data": "arbitrary JSON <= 32K" (optional fields)

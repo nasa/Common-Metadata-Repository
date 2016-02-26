@@ -121,8 +121,7 @@
 (defn- xml-elem->tag
   "Extracts the tag from the XML entry."
   [tag-elem]
-  (let [tag-key (cx/string-at-path tag-elem [:tagKey])]
-    [tag-key]))
+  (cx/string-at-path tag-elem [:tagKey]))
 
 (defmulti xml-elem->entry
   "Retrns an atom entry from a parsed atom xml structure"

@@ -19,7 +19,7 @@
   "Map of concept-types to sets of parameters supported by find for each type."
   {:collection #{:concept-id :provider-id :entry-title :entry-id :short-name :version-id :native-id}
    :tag #{:concept-id :native-id}
-   :tag-association #{:concept-id :native-id :associated-concept-id :associated-revision-id}
+   :tag-association #{:concept-id :native-id :associated-concept-id :associated-revision-id :tag-key}
    :service default-supported-find-parameters
    :access-group default-supported-find-parameters})
 

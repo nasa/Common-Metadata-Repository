@@ -4,6 +4,7 @@
             [clojure.string :as str]
             [clj-http.client :as client]
             [cheshire.core :as json]
+            [clojure.edn :as edn]
             [clojure.walk :as walk]
             [clj-time.core :as t]
             [clj-time.format :as f]
@@ -198,17 +199,17 @@
      (concept provider-id :granule uniq-num attributes))))
 
 (defn tag-concept
-  "Creates a tag concept"
-  ([uniq-num]
-   (tag-concept uniq-num {}))
-  ([uniq-num attributes]
-   (let [native-id (str "tag-key" uniq-num)
-         attributes (merge {:user-id (str "user" uniq-num)
-                            :format "application/edn"
-                            :native-id native-id}
-                           attributes)]
-     ;; no provider-id should be specified for tags
-     (dissoc (concept nil :tag uniq-num attributes) :provider-id))))
+ "Creates a tag concept"
+ ([uniq-num]
+  (tag-concept uniq-num {}))
+ ([uniq-num attributes]
+  (let [native-id (str "tag-key" uniq-num)
+        attributes (merge {:user-id (str "user" uniq-num)
+                           :format "application/edn"
+                           :native-id native-id}
+                          attributes)]
+    ;; no provider-id should be specified for tags
+    (dissoc (concept nil :tag uniq-num attributes) :provider-id))))
 
 (defn tag-association-concept
   "Creates a tag association concept"
@@ -218,9 +219,10 @@
    (let [{:keys [concept-id revision-id]} assoc-concept
          tag-id (:native-id tag)
          user-id (str "user" uniq-num)
-         native-id (str/join (char 29) [tag-id concept-id revision-id])
+         native-id (str/join "/" [tag-id concept-id revision-id])
          extra-fields (merge {:associated-concept-id concept-id
-                              :associated-revision-id revision-id}
+                              :associated-revision-id revision-id
+                              :tag-key tag-id}
                              (:extra-fields attributes))
          attributes (merge {:user-id user-id
                             :format "application/edn"

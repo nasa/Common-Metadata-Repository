@@ -4,6 +4,7 @@
             [cmr.common.mime-types :as mt]
             [cmr.transmit.echo.tokens :as tokens]
             [cmr.common.services.errors :as errors]
+            [cmr.common.services.messages :as cmsg]
             [cmr.common.validations.core :as v]
             [cmr.common.concepts :as concepts]
             [cmr.search.services.tagging.tagging-service-messages :as msg]
@@ -15,9 +16,8 @@
             [clojure.set :as set]))
 
 (def ^:private native-id-separator-character
-  "This is the separate character used when creating the native id for a tag. It is the ASCII
-  character called group separator. This will not be allowed in the namespace or value of a tag."
-  (char 29))
+  "This is the separator character used when creating the native id for a tag."
+  "/")
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
@@ -138,41 +138,68 @@
           (dissoc :revision-date)
           (update-in [:revision-id] inc)))))
 
+(defn- delete-tag-association
+  "Delete the tag association with the given native-id"
+  [context native-id]
+  (let [existing-concept (first (mdb/find-concepts context
+                                                   {:native-id native-id
+                                                    :exclude-metadata true
+                                                    :latest true}
+                                                   :tag-association))
+        concept-id (:concept-id existing-concept)]
+    (when-not concept-id
+      (errors/throw-service-error
+        :not-found (cmsg/invalid-native-id-msg :tag-association "CMR" native-id)))
+    (when (:deleted existing-concept)
+      (errors/throw-service-error
+        :not-found (format "Concept with native-id [%s] and concept-id [%s] is already deleted."
+                           native-id concept-id)))
+    (let [concept {:concept-type :tag-association
+                   :concept-id concept-id
+                   :user-id (context->user-id context)
+                   :deleted true}
+          {:keys [revision-id]} (mdb/save-concept context concept)]
+      {:concept-id concept-id, :revision-id revision-id})))
+
 (defn- update-tag-associations-with-query
-  "Modifies a tags associations. Finds collections using the query and then passes the existing
-  associated collection ids and the ones found from the query to the function. Sets the collection
-  ids as the result of the function."
-  [context concept-id json-query update-fn]
+  "Based on the input operation type (:insert or :delete), insert or delete tag associations
+  identified by the json query."
+  [context concept-id json-query operation]
   (let [query (-> (jp/parse-json-query :collection {} json-query)
                   (assoc :page-size :unlimited
                          :result-format :query-specified
                          :fields [:concept-id]
                          :skip-acls? false))
-        concept-id-set (->> (qe/execute-query context query)
-                            :items
-                            (map :concept-id)
-                            set)
+        coll-concept-ids (->> (qe/execute-query context query)
+                              :items
+                              (map :concept-id))
         existing-concept (fetch-tag-concept context concept-id)
         existing-tag (edn/read-string (:metadata existing-concept))
-        updated-tag (update-in existing-tag [:associated-concept-ids]
-                               #(update-fn % concept-id-set))]
-    (mdb/save-concept
-      context
-      (-> existing-concept
-          (assoc :metadata (pr-str updated-tag)
-                 :user-id (context->user-id context))
-          (dissoc :revision-date)
-          (update-in [:revision-id] inc)))))
+        {:keys [tag-key originator-id]} existing-tag]
+    ;; save tag-association for each collection concept-id
+    (for [coll-concept-id coll-concept-ids
+          :let [native-id (str tag-key native-id-separator-character coll-concept-id)]]
+      (if (= :insert operation)
+        (mdb/save-concept context {:concept-type :tag-association
+                                   :native-id native-id
+                                   :user-id (context->user-id context)
+                                   :format (mt/format->mime-type :edn)
+                                   :metadata (pr-str {:tag-key tag-key
+                                                      :originator-id originator-id
+                                                      :associated-concept-id coll-concept-id})
+                                   :extra-fields {:tag-key tag-key
+                                                  :associated-concept-id coll-concept-id}})
+        (delete-tag-association context native-id)))))
 
 (defn associate-tag-by-query
   "Associates a tag with collections that are the result of a JSON query"
   [context concept-id json-query]
-  (update-tag-associations-with-query context concept-id json-query set/union))
+  (update-tag-associations-with-query context concept-id json-query :insert))
 
 (defn disassociate-tag-by-query
   "Disassociates a tag with collections that are the result of a JSON query"
   [context concept-id json-query]
-  (update-tag-associations-with-query context concept-id json-query set/difference))
+  (update-tag-associations-with-query context concept-id json-query :delete))
 
 (defn search-for-tags
   "Searches for tags with the given result formats. Returns the results as a string."

@@ -3,6 +3,7 @@
   (:require [cmr.metadata-db.data.concepts :as concepts]
             [cmr.metadata-db.data.providers :as providers]
             [cmr.metadata-db.data.oracle.concepts]
+            [cmr.metadata-db.data.oracle.concepts.tag :as tag]
             [cmr.common.concepts :as cc]
             [cmr.common.lifecycle :as lifecycle]
             [clj-time.core :as t]
@@ -10,17 +11,26 @@
             [clj-time.format :as f]
             [cmr.common.date-time-parser :as p]))
 
-
-
 (defn after-save
   "Handler for save calls. It will be passed the list of concepts and the concept that was just
   saved. It should manipulate anything required and return the new list of concepts."
-  [concepts concept]
-  (if (and (= :collection (:concept-type concept))
+  [db concepts concept]
+  (cond (and (= :collection (:concept-type concept))
            (:deleted concept))
-    (filter #(not= (:concept-id concept) (get-in % [:extra-fields :parent-collection-id]))
+          (filter #(not= (:concept-id concept) (get-in % [:extra-fields :parent-collection-id]))
             concepts)
-    concepts))
+
+        ;; CMR-2520 Remove this case when asynchronous cascaded deletes are implemented.
+        (and (= :tag (:concept-type concept))
+             (:deleted concept))
+        (let [tag-associations (tag/get-tag-associations-for-tag-tombstone db concept)
+              tombstones (map (fn [ta] (-> ta
+                                           (assoc :metadata "" :deleted true)
+                                           (update :revision-id inc)))
+                           tag-associations)]
+          (concat concepts tombstones))
+
+        :else concepts))
 
 (defn- concept->tuple
   "Converts a concept into a concept id revision id tuple"
@@ -229,7 +239,7 @@
           {:error :revision-id-conflict}
           (do
             (swap! concepts-atom (fn [concepts]
-                                   (after-save (conj concepts concept)
+                                   (after-save this (conj concepts concept)
                                                concept)))
             nil)))))
 

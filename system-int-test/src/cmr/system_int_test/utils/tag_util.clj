@@ -7,6 +7,7 @@
             [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.transmit.echo.tokens :as tokens]
             [cmr.mock-echo.client.echo-util :as e]
+            [cmr.system-int-test.utils.index-util :as index]
             [cmr.common.mime-types :as mt]))
 
 (defn grant-all-tag-fixture
@@ -66,16 +67,20 @@
   ([token concept-id condition]
    (associate-by-query token concept-id condition nil))
   ([token concept-id condition options]
-   (let [options (merge {:raw? true :token token} options)]
-     (process-response (tt/associate-tag-by-query (s/context) concept-id {:condition condition} options)))))
+   (let [options (merge {:raw? true :token token} options)
+         response (tt/associate-tag-by-query (s/context) concept-id {:condition condition} options)]
+     (index/wait-until-indexed)
+     (process-response response))))
 
 (defn disassociate-by-query
   "Disassociates a tag with collections found with a JSON query"
   ([token concept-id condition]
    (disassociate-by-query token concept-id condition nil))
   ([token concept-id condition options]
-   (let [options (merge {:raw? true :token token} options)]
-     (process-response (tt/disassociate-tag-by-query (s/context) concept-id {:condition condition} options)))))
+   (let [options (merge {:raw? true :token token} options)
+         response (tt/disassociate-tag-by-query (s/context) concept-id {:condition condition} options)]
+     (index/wait-until-indexed)
+     (process-response response))))
 
 (defn save-tag
   "A helper function for creating or updating tags for search tests. If the tag does not have a

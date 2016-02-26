@@ -31,7 +31,7 @@
 
 (def common-columns
   "A set of common columns for all concept types."
-  #{:native_id :concept_id :revision_date :metadata :deleted :revision_id :format})
+  #{:native_id :concept_id :revision_date :metadata :deleted :revision_id :format :transaction_id})
 
 (def concept-type->columns
   "A map of concept type to the columns for that type in the database."
@@ -41,7 +41,7 @@
                      [:provider_id :entry_title :entry_id :short_name :version_id :delete_time
                       :user_id])
    :tag (into common-columns [:user_id])
-   :tag-association (into common-columns [:associated_concept_id :associated_revision_id :user_id])
+   :tag-association (into common-columns [:associated_concept_id :associated_revision_id :tag_key :user_id])
    :access-group (into common-columns [:provider_id :user_id])
    :service (into common-columns [:provider_id :entry_title :entry_id :delete_time :user_id])})
 

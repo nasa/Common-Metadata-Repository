@@ -23,3 +23,35 @@
         [cols values] (c/concept->common-insert-args concept)]
     [(concat cols ["user_id"])
      (concat values [user-id])]))
+
+(defn get-tag-associations-for-tag-tombstone
+  "Returns the latest revisions of the tag associations for the given tag."
+  [db tag-concept-tombstone]
+  (let [tag-key (:native-id tag-concept-tombstone)]
+    (concepts/find-latest-concepts db {:provider-id "CMR"}
+                                      {:concept-type :tag-association :tag-key tag-key})))
+
+(defn cascade-tag-delete-to-tag-associations
+  "Save tombstones for all the tag associations for the given tag"
+  [db tag-concept-tombstone]
+  (let [{:keys [concept-id revision-id]} tag-concept-tombstone
+        ;; We need to pull pack the saved concept (tombstone) so we can get the transaction-id.
+        saved-tombstone (concepts/get-concept db :tag {:provider-id "CMR" :small false}
+                                              concept-id revision-id)
+        transaction-id (:transaction-id saved-tombstone)
+        tag-associations (get-tag-associations-for-tag-tombstone db tag-concept-tombstone)
+        ;; Remove any associations newer than the tag tombstone.
+        tag-associations (filter #(< (:transaction-id %) transaction-id) tag-associations)
+        tombstones (map (fn [concept] (-> concept
+                                          (assoc :deleted true :metadata "")
+                                          (update :revision-id inc)))
+                     tag-associations)]
+    (doseq [tombstone tombstones]
+      (concepts/save-concept db {:provider-id "CMR" :small false} tombstone))))
+
+;; CMR-2520 Remove this and the related functions when implementing asynchronous cascade deletes
+(defmethod c/after-save :tag
+  [db provider tag-concept-tombstone]
+  (when (:deleted tag-concept-tombstone)
+    ;; Cascade deletion to tag-associations
+    (cascade-tag-delete-to-tag-associations db tag-concept-tombstone)))
