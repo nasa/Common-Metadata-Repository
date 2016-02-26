@@ -166,20 +166,51 @@
               concept-id
               revision-date)))))
 
-(defn- get-collection-elastic-version
-  "Returns the elastic version of the collection with the given concept-id and revision-id"
-  ([context concept]
-   (let [tag-associations (mdb/get-tag-associations-for-collection context concept)]
-     (get-collection-elastic-version context concept tag-associations)))
-  ([_ concept tag-associations]
-   (es/get-elastic-version (assoc concept :tag-associations tag-associations))))
+(defmulti get-elastic-version-with-tag-associations
+  "Returns the elastic version of the concept and its tag associations"
+  (fn [context concept tag-associations]
+    (:concept-type concept)))
+
+(defmethod get-elastic-version-with-tag-associations :default
+  [context concept tag-associations]
+  (:revision-id concept))
+
+(defmethod get-elastic-version-with-tag-associations :collection
+  [context concept tag-associations]
+  (es/get-elastic-version (assoc concept :tag-associations tag-associations)))
+
+(defmulti get-elastic-version
+  "Returns the elastic version of the concept"
+  (fn [context concept]
+    (:concept-type concept)))
+
+(defmethod get-elastic-version :default
+  [context concept]
+  (:revision-id concept))
+
+(defmethod get-elastic-version :collection
+  [context concept]
+  (let [tag-associations (mdb/get-tag-associations-for-collection context concept)]
+    (get-elastic-version-with-tag-associations context concept tag-associations)))
+
+(defmulti get-tag-associations
+  "Returns the tag associations of the concept"
+  (fn [context concept]
+    (:concept-type concept)))
+
+(defmethod get-tag-associations :default
+  [context concept]
+  nil)
+
+(defmethod get-tag-associations :collection
+  [context concept]
+  (mdb/get-tag-associations-for-collection context concept))
 
 (defmulti index-concept
   "Index the given concept with the parsed umm record."
   (fn [context concept parsed-concept options]
     (:concept-type concept)))
 
-;; TODO Refactor this method and the next to pull out common code into a separate function.
 (defmethod index-concept :default
   [context concept parsed-concept options]
   (let [{:keys [all-revisions-index?]} options
@@ -190,35 +221,9 @@
       (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
             delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
         (when (or (nil? delete-time) (t/after? delete-time (tk/now)))
-          (let [concept-index (idx-set/get-concept-index-name context concept-id revision-id
-                                                              all-revisions-index? concept)
-                es-doc (es/concept->elastic-doc context concept parsed-concept)
-                elastic-options (-> options
-                                    (select-keys [:all-revisions-index? :ignore-conflict?])
-                                    (assoc :ttl (when delete-time
-                                                  (t/in-millis (t/interval (tk/now) delete-time)))))]
-            (es/save-document-in-elastic
-              context
-              concept-index
-              (concept-mapping-types concept-type)
-              es-doc
-              concept-id
-              revision-id
-              revision-id
-              elastic-options)))))))
-
-(defmethod index-concept :collection
-  [context concept parsed-concept options]
-  (let [{:keys [all-revisions-index?]} options
-        {:keys [concept-id revision-id concept-type]} concept]
-    (when (indexing-applicable? concept-type all-revisions-index?)
-      (info (format "Indexing concept %s, revision-id %s, all-revisions-index? %s"
-                    concept-id revision-id all-revisions-index?))
-      (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
-            delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
-        (when (or (nil? delete-time) (t/after? delete-time (tk/now)))
-          (let [tag-associations (mdb/get-tag-associations-for-collection context concept)
-                elastic-version (get-collection-elastic-version context concept tag-associations)
+          (let [tag-associations (get-tag-associations context concept)
+                elastic-version (get-elastic-version-with-tag-associations
+                                  context concept tag-associations)
                 tag-associations (map cp/parse-concept (filter #(not (:deleted %)) tag-associations))
                 concept-index (idx-set/get-concept-index-name context concept-id revision-id
                                                               all-revisions-index? concept)
@@ -276,9 +281,7 @@
   (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)
         concept (meta-db/get-concept context concept-id revision-id)
-        elastic-version (if (= :collection concept-type)
-                          (get-collection-elastic-version context concept)
-                          revision-id)]
+        elastic-version (get-elastic-version context concept)]
     (when (indexing-applicable? concept-type all-revisions-index?)
       (info (format "Deleting concept %s, revision-id %s, all-revisions-index? %s"
                     concept-id revision-id all-revisions-index?))
