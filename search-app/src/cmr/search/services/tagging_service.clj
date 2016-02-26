@@ -157,6 +157,7 @@
                            native-id concept-id)))
     (let [concept {:concept-type :tag-association
                    :concept-id concept-id
+                   :user-id (context->user-id context)
                    :deleted true}
           {:keys [revision-id]} (mdb/save-concept context concept)]
       {:concept-id concept-id, :revision-id revision-id})))

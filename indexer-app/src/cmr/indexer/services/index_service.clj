@@ -309,6 +309,8 @@
 (defmethod delete-concept :tag-association
   [context concept-id revision-id options]
   (let [concept (meta-db/get-concept context concept-id revision-id)]
+    ;; When tag association is deleted, we want to re-index the associated collection.
+    ;; This is the same thing we do when a tag association is update. So we call the same function.
     (index-concept context concept nil options)))
 
 (defn force-delete-collection-revision

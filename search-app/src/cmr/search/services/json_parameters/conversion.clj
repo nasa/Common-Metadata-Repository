@@ -165,17 +165,10 @@
   [concept-type _ value]
   (cqm/negated-condition (parse-json-condition-map concept-type value)))
 
-(defn- json-condition-name->nested-parent-condition-name
-  "Returns the nested parent condition name for the given json query condition name"
-  [condition-name]
-  (if (= :tag condition-name)
-    :tag-associations
-    (inf/plural condition-name)))
-
 (defmethod parse-json-condition :nested-condition
   [concept-type condition-name value]
   (validate-nested-condition condition-name value)
-  (nf/parse-nested-condition (json-condition-name->nested-parent-condition-name condition-name) value
+  (nf/parse-nested-condition (inf/plural condition-name) value
                              (case-sensitive-field? concept-type condition-name value)
                              (:pattern value)))
 

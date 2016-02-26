@@ -17,11 +17,11 @@
                                              {:grant-all-search? false})
                        tags/grant-all-tag-fixture]))
 
-(defn- tag-association-response-ok?
+(defn- assert-tag-association-response-ok?
   "Returns true if the tag association response is correct."
   [expected-status expected-tag-associations response]
-  (= [expected-status (set expected-tag-associations)]
-     [(:status response) (set (:body response))]))
+  (is (= [expected-status (set expected-tag-associations)]
+         [(:status response) (set (:body response))])))
 
 (deftest associate-tags-by-query-with-collections-test
 
@@ -49,29 +49,29 @@
 
     (testing "Successfully Associate tag with collections"
       (let [response (tags/associate-by-query token concept-id {:provider "PROV1"})]
-        (is (tag-association-response-ok? 200
-                                          [{:concept-id "TA1200000009-CMR", :revision-id 1}
-                                           {:concept-id "TA1200000010-CMR", :revision-id 1}
-                                           {:concept-id "TA1200000011-CMR", :revision-id 1}
-                                           {:concept-id "TA1200000012-CMR", :revision-id 1}]
-                                          response))
+        (assert-tag-association-response-ok? 200
+                                             [{:concept-id "TA1200000009-CMR", :revision-id 1}
+                                              {:concept-id "TA1200000010-CMR", :revision-id 1}
+                                              {:concept-id "TA1200000011-CMR", :revision-id 1}
+                                              {:concept-id "TA1200000012-CMR", :revision-id 1}]
+                                             response)
 
         (testing "Associate using query that finds nothing"
           (let [response (tags/associate-by-query token concept-id {:provider "foo"})]
-            (is (tag-association-response-ok? 200 [] response))))
+            (assert-tag-association-response-ok? 200 [] response)))
 
         (testing "ACLs are applied to collections found"
           ;; None of PROV3's collections are visible
           (let [response (tags/associate-by-query token concept-id {:provider "PROV3"})]
-            (is (tag-association-response-ok? 200 [] response))))
+            (assert-tag-association-response-ok? 200 [] response)))
 
         (testing "Associate more collections"
           ;; Associates all the version 2 collections which is c2-p1 (already in) and c2-p2 (new)
           (let [response (tags/associate-by-query token concept-id {:version "v2"})]
-            (is (tag-association-response-ok? 200
-                                              [{:concept-id "TA1200000010-CMR", :revision-id 2}
-                                               {:concept-id "TA1200000013-CMR", :revision-id 1}]
-                                              response))))))))
+            (assert-tag-association-response-ok? 200
+                                                 [{:concept-id "TA1200000010-CMR", :revision-id 2}
+                                                  {:concept-id "TA1200000013-CMR", :revision-id 1}]
+                                                 response)))))))
 
 (deftest associate-tag-failure-test
   (let [tag (tags/make-tag)

@@ -291,9 +291,9 @@
           :start-circular-latitude (m/stored m/double-field-mapping)
 
           ;; associated tags
-          :tag-associations tag-associations-mapping
+          :tags tag-associations-mapping
           ;; associated tags stored as EDN gzipped and base64 encoded for retrieving purpose
-          :associated-tags-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))}
+          :tags-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))}
          spatial-coverage-fields))
 
 (def granule-settings-for-individual-indexes

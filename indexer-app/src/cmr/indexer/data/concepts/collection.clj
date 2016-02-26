@@ -191,8 +191,8 @@
             :temporal-keyword.lowercase (map str/lower-case temporal-keywords)
 
             ;; tags
-            :tag-associations (map tag/tag-association->elastic-doc tag-associations)
-            :associated-tags-gzip-b64 (when (seq tag-associations)
+            :tags (map tag/tag-association->elastic-doc tag-associations)
+            :tags-gzip-b64 (when (seq tag-associations)
                                         (util/string->gzip-base64
                                           (pr-str (mapv :tag-key tag-associations))))}
 

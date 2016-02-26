@@ -5,11 +5,11 @@
             [cmr.common-app.services.search :as qs]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.services.query-execution.facets-results-feature :as frf]
+            [cmr.search.services.query-execution.tags-results-feature :as trf]
             [clojure.data.xml :as x]
             [clojure.walk :as walk]
             [clojure.string :as str]
             [clojure.set :as set]
-            [clojure.edn :as edn]
             [clj-time.core :as time]
             [cheshire.core :as json]
             [cmr.common.util :as util]
@@ -59,8 +59,8 @@
                      "ords-info"
                      "ords"
                      "_score"]
-        atom-fields (if (and (:result-features query) (.contains (:result-features query) :tags))
-                      (conj atom-fields "associated-tags-gzip-b64")
+        atom-fields (if (contains? (set (:result-features query)) :tags)
+                      (conj atom-fields trf/stored-tags-field)
                       atom-fields)]
     (distinct (concat atom-fields acl-rhh/collection-elastic-fields))))
 
@@ -124,8 +124,7 @@
           [period] :period
           [inclination-angle] :inclination-angle
           [number-of-orbits] :number-of-orbits
-          [start-circular-latitude] :start-circular-latitude
-          associated-tags-gzip-b64 :associated-tags-gzip-b64} :fields} elastic-result
+          [start-circular-latitude] :start-circular-latitude} :fields} elastic-result
         start-date (acl-rhh/parse-elastic-datetime start-date)
         end-date (acl-rhh/parse-elastic-datetime end-date)
         atom-links (map #(json/decode % true) atom-links)
@@ -162,10 +161,7 @@
                                :inclination-angle inclination-angle
                                :number-of-orbits number-of-orbits
                                :start-circular-latitude start-circular-latitude}
-            :tags (some-> associated-tags-gzip-b64
-                          first
-                          util/gzip-base64->string
-                          edn/read-string)}
+            :tags (trf/collection-elastic-result->tags elastic-result)}
            (acl-rhh/parse-elastic-item :collection elastic-result))))
 
 (defn- granule-elastic-result->query-result-item
