@@ -65,6 +65,25 @@
                   (t/after? delete-time (tk/now)))))
           batch))
 
+(defmulti prepare-batch
+  "Returns the batch of concepts into elastic docs for bulk indexing."
+  (fn [context batch all-revisions-index?]
+    (cs/concept-id->type (:concept-id (first batch)))))
+
+(defmethod prepare-batch :default
+  [context batch all-revisions-index?]
+  (es/prepare-batch context (filter-expired-concepts batch) all-revisions-index?))
+
+(defmethod prepare-batch :collection
+  [context batch all-revisions-index?]
+  ;; Get the tag associations as well.
+  (let [batch (map (fn [concept]
+                     (let [tag-associations (mdb/get-tag-associations-for-collection
+                                              context concept)]
+                       (assoc concept :tag-associations tag-associations)))
+                   batch)]
+    (es/prepare-batch context (filter-expired-concepts batch) all-revisions-index?)))
+
 (defn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
   directly to this function - it does not retrieve them from metadata db (tag associations for
@@ -73,17 +92,7 @@
   of concepts that have been indexed."
   [context concept-batches all-revisions-index?]
   (reduce (fn [num-indexed batch]
-            (let [batch (if (= :collection (cs/concept-id->type (:concept-id (first batch))))
-                          ;; Get the tag associations as well.
-                          (map (fn [concept]
-                                 (let [tag-associations (mdb/get-tag-associations-for-collection
-                                                          context concept)]
-                                   (assoc concept :tag-associations tag-associations)))
-                               batch)
-                          ;; Just use the concepts as is.
-                          batch)
-                  batch (es/prepare-batch context (filter-expired-concepts batch)
-                                          all-revisions-index?)]
+            (let [batch (prepare-batch context batch all-revisions-index?)]
               (es/bulk-index context batch all-revisions-index?)
               (+ num-indexed (count batch))))
           0
