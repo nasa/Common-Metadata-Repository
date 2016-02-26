@@ -5,7 +5,8 @@
             [clj-http.client :as http]
             [cmr.common.config :refer [defconfig]]
             [cmr.common.log :refer (debug info warn error)]
-            [clojure.string :as s]))
+            [clojure.string :as s]
+            [camel-snake-kebab.core :as csk]))
 
 (defconfig soap-url-base
   "Base URL for SOAP requests"
@@ -16,10 +17,9 @@
   [xml]
   (->
     (xg/xml xml)
-    (s/replace #"<([^:>]*:username)>[^>]*" "<$1>*****</$1>")
-    (s/replace #"<([^:>]*:password)>[^>]*" "<$1>*****</$1>")))
-
-
+    (s/replace #"<([^:>]*:username)>[^>]*>" "<$1>*****</$1>")
+    (s/replace #"<([^:>]*:password)>[^>]*>" "<$1>*****</$1>")
+    (s/replace #"<([^:>]*:token)>[^>]*>" "<$1>*****</$1>")))
 
 (defn post-xml
   "Post an XML object to the specified endpoint.  The XML must be a hiccup style object."
@@ -38,7 +38,7 @@
     prior to 'ServicePortImpl' in an ECHO-v10 API call.  e.g. :authentication corresponds to
     AuthenticationServicePortImpl"
   [service-key body]
-  (let [service (str (s/capitalize (name service-key)) "ServicePortImpl")
+  (let [service (str (csk/->PascalCase (name service-key)) "ServicePortImpl")
         endpoint (str (soap-url-base) service)
         - (debug (format "POST SOAP request to %s" endpoint))
         - (debug (format "SOAP body: %s" (sanitize-soap body)))
