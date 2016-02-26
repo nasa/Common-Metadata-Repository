@@ -49,7 +49,7 @@
     (doseq [tombstone tombstones]
       (concepts/save-concept db {:provider-id "CMR" :small false} tombstone))))
 
-;; TODO CMR-2520 Remove this and the related functions when implementing asynchronous cascade deletes
+;; CMR-2520 Remove this and the related functions when implementing asynchronous cascade deletes
 (defmethod c/after-save :tag
   [db provider tag-concept-tombstone]
   (when (:deleted tag-concept-tombstone)

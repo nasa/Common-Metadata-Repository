@@ -101,6 +101,7 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
     "format": "applcation/edn",
     "metadata: {
       "tag-key": "org.nasa.something.quality",
+      "originator-id": "jdoe",
       "associated-concept-id": "C12-PROV_A42",
       "revision-id": 1, (optional field),
       "value": "string to be indexed" or "data": "arbitrary JSON <= 32K" (optional fields)

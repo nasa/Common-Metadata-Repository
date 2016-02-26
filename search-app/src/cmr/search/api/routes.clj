@@ -33,7 +33,7 @@
             [cmr.common-app.api-docs :as api-docs]
 
             ;; Required here to make sure the multimethod function implementation is available
-            [cmr.search.services.elastic-results-to-query-results]
+            [cmr.search.data.elastic-results-to-query-results]
 
             ;; Result handlers
             ;; required here to avoid circular dependency in query service
