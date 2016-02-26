@@ -25,9 +25,11 @@
   [context query elastic-results]
   (default-elastic-results->query-results context query elastic-results))
 
-(defn get-revision-id-from-elastic-result
+(defmulti get-revision-id-from-elastic-result
   "Returns the revision-id from elastic result for the given concept-type"
+  (fn [concept-type elastic-result]
+    concept-type))
+
+(defmethod get-revision-id-from-elastic-result :default
   [concept-type elastic-result]
-  (if (= :collection concept-type)
-    (first (get-in elastic-result [:fields :revision-id]))
-    (:_version elastic-result)))
+  (:_version elastic-result))

@@ -90,8 +90,14 @@
             "By tag-key - always case-insensitive"
             [tag1-colls] {:tag-key "tag1"}
 
-            "By tag-key Pattern"
+            "Tag-key search is pattern search by default"
+            [tag3-colls] {:tag-key "*other"}
+
+            "By tag-key Pattern true"
             [tag3-colls] {:tag-key "*other" "options[tag-key][pattern]" true}
+
+            "By tag-key Pattern false"
+            [] {:tag-key "*other" "options[tag-key][pattern]" false}
 
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
             ;; Originator Id Param

@@ -104,7 +104,10 @@
                                 :originator-id
                                 %)
         condition-key (param->condition-key param)
-        pattern? (common-params/pattern-field? concept-type param options)]
+        ;; tag-key defaults to pattern true
+        pattern? (if (= :tag-key param)
+                   (not= "false" (get-in options [param :pattern]))
+                   (common-params/pattern-field? concept-type param options))]
     (nf/parse-nested-condition :tag-associations {condition-key value} false pattern?)))
 
 ;; Special case handler for concept-id. Concept id can refer to a granule or collection.

@@ -85,7 +85,7 @@
 					}]
 				},
         "tag": {
-          "description": "Search against the subfields of associated tag.)",
+          "description": "Search against the subfields of associated tag.",
           "$ref": "#/definitions/TagCondition"
         },
 				"platform": {

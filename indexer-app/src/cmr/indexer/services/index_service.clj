@@ -189,7 +189,7 @@
                     concept-id revision-id all-revisions-index?))
       (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
             delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
-        (when (or (nil? delete-time) (> (compare delete-time (tk/now)) 0))
+        (when (or (nil? delete-time) (t/after? delete-time (tk/now)))
           (let [concept-index (idx-set/get-concept-index-name context concept-id revision-id
                                                               all-revisions-index? concept)
                 es-doc (es/concept->elastic-doc context concept parsed-concept)
@@ -216,7 +216,7 @@
                     concept-id revision-id all-revisions-index?))
       (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
             delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
-        (when (or (nil? delete-time) (> (compare delete-time (tk/now)) 0))
+        (when (or (nil? delete-time) (t/after? delete-time (tk/now)))
           (let [tag-associations (mdb/get-tag-associations-for-collection context concept)
                 elastic-version (get-collection-elastic-version context concept tag-associations)
                 tag-associations (map cp/parse-concept (filter #(not (:deleted %)) tag-associations))
