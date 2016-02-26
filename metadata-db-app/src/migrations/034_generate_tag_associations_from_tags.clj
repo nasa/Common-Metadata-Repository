@@ -31,11 +31,13 @@
             (doseq [concept-id (:associated-concept-ids tag)]
               (println (format "Creating association with concept-id [%s]" concept-id))
               (let [user-id (:user-id tag)
-                    tag-key (:native-id tag)
-                    native-id (str/join (char 29) [tag-key concept-id])
+                    tag-key (:tag-key tag)
+                    native-id (str/join "/" [tag-key concept-id])
                     ta-metadata (pr-str {:associated-concept-id concept-id
-                                         :tag-key (:tag-key tag)})
-                    extra-fields {:associated-concept-id concept-id}
+                                         :tag-key tag-key
+                                         :originator-id (:originator-id tag)})
+                    extra-fields {:associated-concept-id concept-id
+                                  :tag-key tag-key}
 
                     tag-association-concept {:concept-type :tag-association
                                              :user-id user-id
@@ -60,7 +62,7 @@
         (when-not (:deleted tag-concept)
           (let [tag-key (:native-id tag-concept)
                 associated-concept-ids (->> (h/query (format "select associated_concept_id from cmr_tag_associations where native_id like '%s%%'"
-                                                             (str tag-key (char 29))))
+                                                             (str tag-key "/")))
                                             (map :associated_concept_id))
                 metadata (edn/read-string (:metadata tag-concept))
                 new-metadata (pr-str (assoc metadata :associated-concept-ids associated-concept-ids))

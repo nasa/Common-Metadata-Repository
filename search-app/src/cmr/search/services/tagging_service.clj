@@ -16,9 +16,8 @@
             [clojure.set :as set]))
 
 (def ^:private native-id-separator-character
-  "This is the separate character used when creating the native id for a tag. It is the ASCII
-  character called group separator. This will not be allowed in the namespace or value of a tag."
-  (char 29))
+  "This is the separator character used when creating the native id for a tag."
+  "/")
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"

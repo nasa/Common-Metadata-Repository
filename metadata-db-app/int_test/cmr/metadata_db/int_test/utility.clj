@@ -219,7 +219,7 @@
    (let [{:keys [concept-id revision-id]} assoc-concept
          tag-id (:native-id tag)
          user-id (str "user" uniq-num)
-         native-id (str/join (char 29) [tag-id concept-id revision-id])
+         native-id (str/join "/" [tag-id concept-id revision-id])
          extra-fields (merge {:associated-concept-id concept-id
                               :associated-revision-id revision-id
                               :tag-key tag-id}

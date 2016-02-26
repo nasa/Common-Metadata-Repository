@@ -19,6 +19,7 @@
   (doseq [result (h/query "SELECT * from cmr_tags")]
     (print-message result)
     (let [{:keys [id metadata deleted native_id]} result
+          deleted (= 1 (long deleted))
           metadata (-> metadata
                        (util/gzip-blob->string)
                        (edn/read-string))
