@@ -1,7 +1,7 @@
 (ns cmr.access-control.int-test.access-control-group-member-test
   (:require [clojure.test :refer :all]
             [cmr.mock-echo.client.echo-util :as e]
-            [cmr.access-control.int-test.access-control-test-util :as u]))
+            [cmr.access-control.test.util :as u]))
 
 (use-fixtures :once (u/int-test-fixtures))
 (use-fixtures :each

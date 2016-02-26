@@ -1,4 +1,4 @@
-(ns cmr.access-control.int-test.access-control-test-util
+(ns cmr.access-control.test.util
   (:require [cmr.transmit.access-control :as ac]
             [clojure.test :as ct :refer [is]]
             [clj-http.client :as client]

@@ -341,7 +341,8 @@
          cmr-only (if (some? cmr-only) cmr-only (get options :cmr-only true))
          small (if (some? small) small (get options :small false))
          grant-all-search? (get options :grant-all-search? true)
-         grant-all-ingest? (get options :grant-all-ingest? true)]
+         grant-all-ingest? (get options :grant-all-ingest? true)
+         grant-all-access-control (get options :grant-all-access-control? true)]
 
      (create-mdb-provider {:provider-id provider-id
                            :short-name short-name
@@ -358,7 +359,11 @@
                                :collection-applicable true
                                :granule-applicable true)))
      (when grant-all-ingest?
-       (echo-util/grant-all-ingest (s/context) provider-guid)))))
+       (echo-util/grant-all-ingest (s/context) provider-guid))
+
+     (when grant-all-access-control
+       (echo-util/grant-system-group-permissions-to-all (s/context))
+       (echo-util/grant-provider-group-permissions-to-all (s/context) provider-guid)))))
 
 (def reset-fixture-default-options
   {:grant-all-search? true
