@@ -11,9 +11,14 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.system :as s]
-            [clj-time.core :as t]))
+            [clj-time.core :as t]
+            [cmr.mock-echo.client.echo-util :as e]
+            [cmr.system-int-test.utils.tag-util :as tags]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1"})
+                       tags/grant-all-tag-fixture]))
 
 ;; This test runs bulk index with some concepts in mdb that are good, and some that are
 ;; deleted, and some that have not yet been deleted, but have an expired deletion date.
@@ -218,4 +223,34 @@
              [400 [err-msg1]] [(:status fail-stat1) (:errors fail-stat1)]
              [400 [err-msg2]] [(:status fail-stat2) (:errors fail-stat2)]
              [400 [err-msg1]] [(:status fail-stat3) (:errors fail-stat3)])))))
+
+;; This test is to verify that bulk index works with tombstoned tag associations
+(deftest bulk-index-collections-with-tag-association-test
+  (s/only-with-real-database
+    (let [[coll1 coll2] (for [n (range 1 3)]
+                          (d/ingest "PROV1" (dc/collection {:entry-title (str "coll" n)})))
+          ;; Wait until collections are indexed so tags can be associated with them
+          _ (index/wait-until-indexed)
+          user1-token (e/login (s/context) "user1")
+          tag1-colls [coll1 coll2]
+          tag1 (tags/save-tag
+                 user1-token
+                 (tags/make-tag {:tag-key "tag1"})
+                 tag1-colls)]
+
+      (index/wait-until-indexed)
+      ;; disassociate tag1 from coll2 and not send indexing events
+      (dev-sys-util/eval-in-dev-sys
+        `(cmr.metadata-db.config/set-publish-messages! false))
+      (tags/disassociate-by-query user1-token (:concept-id tag1) {:concept_id (:concept-id coll2)})
+      (dev-sys-util/eval-in-dev-sys
+        `(cmr.metadata-db.config/set-publish-messages! true))
+
+      (bootstrap/bulk-index-provider "PROV1")
+      (index/wait-until-indexed)
+
+      (testing "All tag parameters with XML references"
+        (is (d/refs-match? [coll1]
+                           (search/find-refs :collection {:tag-key "tag1"})))))))
+
 

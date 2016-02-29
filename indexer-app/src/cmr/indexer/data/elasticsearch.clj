@@ -24,11 +24,11 @@
 
 (defn get-elastic-version
   "Get the proper elastic document version for the concept based on type."
-   [concept]
-    (let [concept-type (cs/concept-id->type (:concept-id concept))]
-      (if (= concept-type :collection)
-        (apply max (:transaction-id concept) (map :transaction-id (:tag-associations concept)))
-        (:revision-id concept))))
+  [concept]
+  (let [concept-type (cs/concept-id->type (:concept-id concept))]
+    (if (= concept-type :collection)
+      (apply max (:transaction-id concept) (map :transaction-id (:tag-associations concept)))
+      (:revision-id concept))))
 
 (defn- get-elastic-id
   "Create the proper elastic document id for normal indexing or all-revisions indexing"
@@ -162,80 +162,86 @@
   [context]
   (get-in context [:system :db :config]))
 
+(defn- parse-non-tombstone-tag-associations
+  "Returns the parsed tag associations that are not tombstones"
+  [tag-associations]
+  (map cp/parse-concept (filter #(not (:deleted %)) tag-associations)))
+
 (defn prepare-batch
   "Convert a batch of concepts into elastic docs for bulk indexing."
   [context concept-batch all-revisions-index?]
   (doall
-   ;; Remove nils because some granules may fail with an exception and return nil.
-   (filter identity
-           (pmap (fn [concept]
-                   (try
-                     (let [{:keys [concept-id revision-id]} concept
-                           type (name (concept->type concept))
-                           elastic-version (get-elastic-version concept)
-                           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
-                           index-name (idx-set/get-concept-index-name
-                                       context concept-id revision-id all-revisions-index?
-                                       concept)]
-                       (if (:deleted concept)
-                         (let [elastic-doc (concept->elastic-doc context concept concept)]
-                           (merge elastic-doc
-                                  {:_id elastic-id
-                                   :_index index-name
-                                   :_type type
-                                   :_version elastic-version
-                                   :_version_type "external_gte"}))
-                         (let [parsed-concept (cp/parse-concept concept)
-                               delete-time (get-in parsed-concept
-                                                   [:data-provider-timestamps :delete-time])
-                               now (tk/now)
-                               ttl (when delete-time
-                                     (if (t/after? delete-time now)
-                                       (t/in-millis (t/interval now delete-time))
-                                       0))
-                               elastic-doc (concept->elastic-doc context concept parsed-concept)
-                               elastic-doc (if ttl
-                                             (assoc elastic-doc :_ttl ttl)
-                                             elastic-doc)]
-                           (if (or (nil? ttl)
-                                   (> ttl 0))
-                             (merge elastic-doc {:_id elastic-id
-                                                 :_index index-name
-                                                 :_type type
-                                                 :_version elastic-version
-                                                 :_version_type "external_gte"})
-                             (info
-                              (str
-                               "Skipping expired concept ["
-                               concept-id
-                               "] with delete-time ["
-                               (f/unparse (f/formatters :date-time) delete-time)
-                               "]"))))))
-                     (catch Throwable e
-                            (error e (str "Skipping failed catalog item. Exception trying to convert concept to elastic doc:"
-                                          (pr-str concept))))))
-                 concept-batch))))
+    ;; Remove nils because some granules may fail with an exception and return nil.
+    (filter identity
+            (pmap (fn [concept]
+                    (try
+                      (let [{:keys [concept-id revision-id]} concept
+                            type (name (concept->type concept))
+                            elastic-version (get-elastic-version concept)
+                            concept (update concept :tag-associations parse-non-tombstone-tag-associations)
+                            elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
+                            index-name (idx-set/get-concept-index-name
+                                         context concept-id revision-id all-revisions-index?
+                                         concept)]
+                        (if (:deleted concept)
+                          (let [elastic-doc (concept->elastic-doc context concept concept)]
+                            (merge elastic-doc
+                                   {:_id elastic-id
+                                    :_index index-name
+                                    :_type type
+                                    :_version elastic-version
+                                    :_version_type "external_gte"}))
+                          (let [parsed-concept (cp/parse-concept concept)
+                                delete-time (get-in parsed-concept
+                                                    [:data-provider-timestamps :delete-time])
+                                now (tk/now)
+                                ttl (when delete-time
+                                      (if (t/after? delete-time now)
+                                        (t/in-millis (t/interval now delete-time))
+                                        0))
+                                elastic-doc (concept->elastic-doc context concept parsed-concept)
+                                elastic-doc (if ttl
+                                              (assoc elastic-doc :_ttl ttl)
+                                              elastic-doc)]
+                            (if (or (nil? ttl)
+                                    (> ttl 0))
+                              (merge elastic-doc {:_id elastic-id
+                                                  :_index index-name
+                                                  :_type type
+                                                  :_version elastic-version
+                                                  :_version_type "external_gte"})
+                              (info
+                                (str
+                                  "Skipping expired concept ["
+                                  concept-id
+                                  "] with delete-time ["
+                                  (f/unparse (f/formatters :date-time) delete-time)
+                                  "]"))))))
+                      (catch Throwable e
+                        (error e (str "Skipping failed catalog item. Exception trying to convert concept to elastic doc:"
+                                      (pr-str concept))))))
+                  concept-batch))))
 
 (defn bulk-index
   "Save a batch of documents in Elasticsearch."
   ([context docs]
    (bulk-index context docs nil))
   ([context docs all-revisions-index?]
-  (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
-    (let [bulk-operations (cmr-bulk/bulk-index docs-batch all-revisions-index?)
-          conn (context->conn context)
-          response (bulk/bulk conn bulk-operations)
-          ;; we don't care about version conflicts or deletes that aren't found
-          bad-errors (some (fn [item]
-                             (let [status (if (:index item)
-                                            (get-in item [:index :status])
-                                            (get-in item [:delete :status]))]
-                               (and (> status 399)
-                                    (not= 409 status)
-                                    (not= 404 status))))
-                           (:items response))]
-      (when bad-errors
-        (errors/internal-error! (format "Bulk indexing failed with response %s" response)))))))
+   (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
+     (let [bulk-operations (cmr-bulk/bulk-index docs-batch all-revisions-index?)
+           conn (context->conn context)
+           response (bulk/bulk conn bulk-operations)
+           ;; we don't care about version conflicts or deletes that aren't found
+           bad-errors (some (fn [item]
+                              (let [status (if (:index item)
+                                             (get-in item [:index :status])
+                                             (get-in item [:delete :status]))]
+                                (and (> status 399)
+                                     (not= 409 status)
+                                     (not= 404 status))))
+                            (:items response))]
+       (when bad-errors
+         (errors/internal-error! (format "Bulk indexing failed with response %s" response)))))))
 
 (defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
