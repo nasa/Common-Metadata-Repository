@@ -21,6 +21,7 @@
             [cmr.index-set.services.index-service :as index-set-service]
             [cmr.indexer.services.index-service :as indexer-service]
             [cmr.ingest.services.ingest-service :as ingest-service]
+            [cmr.access-control.api.routes :as access-control]
             [cmr.search.services.query-service :as search-service]
             [cmr.mock-echo.api.routes :as mock-echo-api]
             [cmr.cubby.api.routes :as cubby-api]
@@ -68,7 +69,8 @@
    :ingest ingest-service/reset
    :search cache/reset-caches
    :mock-echo mock-echo-api/reset
-   :cubby cubby-api/reset})
+   :cubby cubby-api/reset
+   :access-control access-control/reset})
 
 (def service-clear-cache-fns
   "A map of services to clear cache functions."

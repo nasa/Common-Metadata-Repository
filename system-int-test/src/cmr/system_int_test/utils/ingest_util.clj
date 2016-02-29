@@ -12,6 +12,7 @@
             [cmr.system-int-test.data2.provider-holdings :as ph]
             [cmr.umm.echo10.core :as echo10]
             [cmr.transmit.config :as transmit-config]
+            [cmr.transmit.access-control :as ac]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.mock-echo.client.echo-util :as echo-util]
