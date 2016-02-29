@@ -19,6 +19,7 @@
    "short-name"
    "version-id"
    "revision-date"
+   "revision-id"
    "deleted"
    "metadata-format"])
 
@@ -33,10 +34,10 @@
          [short-name] :short-name
          [version-id] :version-id
          [revision-date] :revision-date
+         [revision-id] :revision-id
          [deleted] :deleted
          [metadata-format] :metadata-format} (:fields elastic-result)
-        revision-date (when revision-date (str/replace (str revision-date) #"\+0000" "Z"))
-        revision-id (:_version elastic-result)]
+        revision-date (when revision-date (str/replace (str revision-date) #"\+0000" "Z"))]
     {:meta (util/remove-nil-keys
              {:concept-type :collection
               :concept-id concept-id

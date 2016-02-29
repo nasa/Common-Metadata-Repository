@@ -79,9 +79,11 @@
             (:errors data)))))))
 
 (defn nil-extra-fields-validation
-  "Validates that among the extra fields, only delete-time and version-id can sometimes be nil."
+  "Validates that among the extra fields, only delete-time, version-id and associated-revision-id
+  can sometimes be nil."
   [concept]
-  (nil-fields-validation (apply dissoc (:extra-fields concept) [:delete-time :version-id])))
+  (nil-fields-validation (apply dissoc (:extra-fields concept)
+                                [:delete-time :version-id :associated-revision-id])))
 
 (defn concept-id-validation
   [concept]

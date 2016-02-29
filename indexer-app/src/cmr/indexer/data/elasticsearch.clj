@@ -22,6 +22,14 @@
   "The maximum number of operations to batch in a single request"
   100)
 
+(defn get-elastic-version
+  "Get the proper elastic document version for the concept based on type."
+   [concept]
+    (let [concept-type (cs/concept-id->type (:concept-id concept))]
+      (if (= concept-type :collection)
+        (apply max (:transaction-id concept) (map :transaction-id (:tag-associations concept)))
+        (:revision-id concept))))
+
 (defn- get-elastic-id
   "Create the proper elastic document id for normal indexing or all-revisions indexing"
   [concept-id revision-id all-revisions-index?]
@@ -164,6 +172,7 @@
                    (try
                      (let [{:keys [concept-id revision-id]} concept
                            type (name (concept->type concept))
+                           elastic-version (get-elastic-version concept)
                            elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
                            index-name (idx-set/get-concept-index-name
                                        context concept-id revision-id all-revisions-index?
@@ -174,7 +183,7 @@
                                   {:_id elastic-id
                                    :_index index-name
                                    :_type type
-                                   :_version revision-id
+                                   :_version elastic-version
                                    :_version_type "external_gte"}))
                          (let [parsed-concept (cp/parse-concept concept)
                                delete-time (get-in parsed-concept
@@ -193,7 +202,7 @@
                              (merge elastic-doc {:_id elastic-id
                                                  :_index index-name
                                                  :_type type
-                                                 :_version revision-id
+                                                 :_version elastic-version
                                                  :_version_type "external_gte"})
                              (info
                               (str
@@ -230,19 +239,18 @@
 
 (defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
-  ([context es-index es-type es-doc concept-id revision-id]
-   (save-document-in-elastic context es-index es-type es-doc concept-id revision-id nil))
-  ([context es-index es-type es-doc concept-id revision-id options]
-   (let [conn (context->conn context)
-         {:keys [ttl ignore-conflict? all-revisions-index?]} options
-         elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
-         result (try-elastic-operation doc/put conn es-index es-type es-doc elastic-id revision-id ttl)]
-     (if (:error result)
-       (if (= 409 (:status result))
-         (if ignore-conflict?
-           (info (str "Ignore conflict: " (str result)))
-           (errors/throw-service-error :conflict (str "Save to Elasticsearch failed " (str result))))
-         (errors/internal-error! (str "Save to Elasticsearch failed " (str result))))))))
+  [context es-index es-type es-doc concept-id revision-id elastic-version options]
+  (let [conn (context->conn context)
+        {:keys [ttl ignore-conflict? all-revisions-index?]} options
+        elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
+        result (try-elastic-operation
+                 doc/put conn es-index es-type es-doc elastic-id elastic-version ttl)]
+    (if (:error result)
+      (if (= 409 (:status result))
+        (if ignore-conflict?
+          (info (str "Ignore conflict: " (str result)))
+          (errors/throw-service-error :conflict (str "Save to Elasticsearch failed " (str result))))
+        (errors/internal-error! (str "Save to Elasticsearch failed " (str result)))))))
 
 (defn get-document
   "Get the document from Elasticsearch, raise error if failed."

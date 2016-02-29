@@ -14,9 +14,9 @@
   This will delete the concept from elastic instead of add it."
   [doc]
   (if (:deleted doc)
-  [{"delete" (select-keys doc special-operation-keys)}]
-  [{"index" (select-keys doc special-operation-keys)}
-   (apply dissoc doc special-operation-keys)]))
+   [{"delete" (select-keys doc special-operation-keys)}]
+   [{"index" (select-keys doc special-operation-keys)}
+    (apply dissoc doc special-operation-keys)]))
 
 (defn index-operation-all-revisions
   "Takes a document map and extracts the keys/values related to indexing instructions and
@@ -36,8 +36,8 @@
   that the document will contain the index information. It extracts the index keys from each document
   and returns a sequence of index info, document, index info, document..., etc."
   ([documents]
-   (bulk-index documents false) )
+   (bulk-index documents false))
   ([documents all-revisions-index?]
-  (if all-revisions-index?
-    (mapcat index-operation-all-revisions documents)
-    (mapcat index-operation documents))))
+   (if all-revisions-index?
+     (mapcat index-operation-all-revisions documents)
+     (mapcat index-operation documents))))

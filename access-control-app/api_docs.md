@@ -148,7 +148,7 @@ Content-Type: application/json;charset=ISO-8859-1
 {"concept-id":"AG1200000000-CMR","revision-id":2}
 ```
 
-### <a name="deleted-group"></a> Delete Group
+### <a name="delete-group"></a> Delete Group
 
 Groups are deleted by sending a DELETE request to `%CMR-ENDPOINT%/groups/<concept-id>` where `concept-id` is the concept id of the group returned when it was created. Deleting a group creates a tombstone that marks the group as deleted. The concept id of the group and the revision id of the tombstone are returned from a delete request.
 

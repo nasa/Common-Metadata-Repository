@@ -9,6 +9,7 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
+            [cmr.common.util :as util]
             [cmr.umm.related-url-helper :as ru]
             [cmr.umm.start-end-date :as sed]
             [cmr.indexer.data.concepts.attribute :as attrib]
@@ -18,6 +19,7 @@
             [cmr.indexer.data.concepts.spatial :as spatial]
             [cmr.indexer.data.concepts.keyword :as k]
             [cmr.indexer.data.concepts.organization :as org]
+            [cmr.indexer.data.concepts.tag :as tag]
             [cmr.acl.core :as acl]
             [cmr.common.concepts :as concepts]
             [cmr.umm.collection :as umm-c]
@@ -54,7 +56,7 @@
   "Get all the fields for a normal collection index operation."
   [context concept collection]
   (let [{:keys [concept-id revision-id provider-id user-id
-                native-id revision-date deleted format extra-fields]} concept
+                native-id revision-date deleted format extra-fields tag-associations]} concept
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-title summary temporal related-urls spatial-keywords associated-difs
                 temporal-keywords access-value personnel distribution]} collection
@@ -186,7 +188,24 @@
             :instrument-ln.lowercase (map str/lower-case instrument-long-names)
             :sensor-ln.lowercase (map str/lower-case sensor-long-names)
             :project-ln.lowercase (map str/lower-case project-long-names)
-            :temporal-keyword.lowercase (map str/lower-case temporal-keywords)}
+            :temporal-keyword.lowercase (map str/lower-case temporal-keywords)
+
+            ;; tags
+            :tags (map tag/tag-association->elastic-doc tag-associations)
+            ;; it is currently a list of tag-keys, but it will eventually be something like:
+            ;; {"org.ceos.wgiss.cwic.native_id": {"revisionId":"1",
+            ;;                                    "revisionDate":"2015-01-01T00:00:00.0Z",
+            ;;                                    "data": "Global Maps of Atmospheric Nitrogen Deposition, 1860, 1993, and 2050"},
+            ;;  "org.ceos.wgiss.cwic.data_provider": {"revisionId":"1",
+            ;;                                        "revisionDate":"2015-01-01T00:00:00.0Z",
+            ;;                                        "data": "NASA"},
+            ;;  "org.ceos.wgiss.cwic.cwic_status": {"revisionId":"1",
+            ;;                                      "revisionDate":"2015-01-01T00:00:00.0Z",
+            ;;                                      "data": "prod"}
+            :tags-gzip-b64 (when (seq tag-associations)
+                             (util/string->gzip-base64
+                               (pr-str (mapv :tag-key tag-associations))))}
+
            (get-in collection [:spatial-coverage :orbit-parameters])
            (spatial->elastic collection)
            (sk/science-keywords->facet-fields collection))))
@@ -230,4 +249,3 @@
   (if (:deleted concept)
     (get-elastic-doc-for-tombstone-collection context concept)
     (get-elastic-doc-for-full-collection context concept collection)))
-

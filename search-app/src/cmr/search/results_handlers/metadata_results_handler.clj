@@ -22,10 +22,16 @@
   {:granule [:echo10 :iso19115 :iso-smap :native]
    :collection [:echo10 :dif :dif10 :iso19115 :iso-smap :native]})
 
-;; define functions to return fields for each concept type
-(doseq [concept-type [:collection :granule]
-        format (concept-type result-formats)]
-  (defmethod elastic-search-index/concept-type+result-format->fields [concept-type format]
+;; define functions to return fields for collection
+(doseq [format (:collection result-formats)]
+  (defmethod elastic-search-index/concept-type+result-format->fields [:collection format]
+    [concept-type result-format]
+    ["metadata-format"
+     "revision-id"]))
+
+;; define functions to return fields for granule
+(doseq [format (:granule result-formats)]
+  (defmethod elastic-search-index/concept-type+result-format->fields [:granule format]
     [concept-type result-format]
     ["metadata-format"]))
 
@@ -37,13 +43,15 @@
 (defn- elastic-results->query-metadata-results
   "A helper for converting elastic results into metadata results."
   [context query elastic-results]
-  (let [hits (get-in elastic-results [:hits :total])
-        tuples (map #(vector (:_id %) (:_version %)) (get-in elastic-results [:hits :hits]))
+  (let [{:keys [concept-type result-format]} query
+        hits (get-in elastic-results [:hits :total])
+        tuples (map #(vector (:_id %) (elastic-results/get-revision-id-from-elastic-result concept-type %))
+                    (get-in elastic-results [:hits :hits]))
         [req-time tresults] (u/time-execution
-                              (t/get-formatted-concept-revisions context tuples (:result-format query) false))
+                              (t/get-formatted-concept-revisions context tuples result-format false))
         items (map #(select-keys % qe/metadata-result-item-fields) tresults)]
     (debug "Transformer metadata request time was" req-time "ms.")
-    (results/map->Results {:hits hits :items items :result-format (:result-format query)})))
+    (results/map->Results {:hits hits :items items :result-format result-format})))
 
 
 ;; Define transormations methods from query results to concept-ids
@@ -89,8 +97,8 @@
                          [:format format]]
                         (when has-granules-map
                           [[:has-granules (or
-                                           (< 0 granule-count)
-                                           (get has-granules-map concept-id false))]])
+                                            (< 0 granule-count)
+                                            (get has-granules-map concept-id false))]])
                         (when granule-counts-map
                           [[:granule-count granule-count]]))
         attrib-strs (for [[k v] attribs]

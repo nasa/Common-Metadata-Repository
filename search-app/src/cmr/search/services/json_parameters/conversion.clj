@@ -18,7 +18,6 @@
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.services.parameters.converters.nested-field :as nf]
-            [cmr.search.services.tagging.tag-related-item-condition :as tag-related]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.validation :as sv]
             [inflections.core :as inf]))
@@ -55,7 +54,7 @@
    :additional-attribute-name :additional-attribute
    :additional-attribute-value :additional-attribute
    :additional-attribute-range :additional-attribute
-   :tag :tag
+   :tag :nested-condition
 
    ;; query constructs
    :or :or
@@ -78,6 +77,10 @@
   (when-let [errors (seq (js/validate-json json-query-schema json-query))]
     (errors/throw-service-errors :bad-request errors)))
 
+(def ^:private tag-sub-fields
+  "Defines a map of :tag to its sub-fields for nested condition."
+  {:tag [:tag-key :originator-id]})
+
 (defn- validate-nested-condition
   "Custom validation to make sure there is at least one subfield being searched on in a nested
   condition. JSON schema does not provide a mechanism for ensuring at least one of a subset of
@@ -85,7 +88,8 @@
   [condition-name value]
   (when-not (seq (set/intersection
                    (set (keys value))
-                   (set (nf/get-subfield-names (inf/plural condition-name)))))
+                   (set (concat (nf/get-subfield-names (inf/plural condition-name))
+                                (tag-sub-fields condition-name)))))
     (errors/throw-service-error
       :bad-request (msg/invalid-nested-json-query-condition condition-name value))))
 
@@ -117,9 +121,9 @@
   [concept-type condition-name value]
   (if (map? value)
     (cqm/string-condition condition-name
-                         (:value value)
-                         (case-sensitive-field? concept-type condition-name value)
-                         (:pattern value))
+                          (:value value)
+                          (case-sensitive-field? concept-type condition-name value)
+                          (:pattern value))
     (cqm/string-condition condition-name value (case-sensitive-field? concept-type condition-name) false)))
 
 (defmulti parse-json-condition
@@ -196,21 +200,14 @@
                                 :end-day recurring-end-day
                                 :exclusive? exclude-boundary})))
 
-(defmethod parse-json-condition :tag
-  [concept-type _ value]
-  (let [parse-tag-condition (fn [[cond-name cond-value]]
-                              (tag-related/tag-related-item-query-condition
-                                (parse-json-string-condition concept-type cond-name cond-value)))]
-    (gc/and-conds (map parse-tag-condition value))))
-
 (defn parse-json-query
   "Converts a JSON query string and query parameters into a query model."
   [concept-type params json-string]
   (let [params (pv/validate-standard-query-parameters concept-type params)]
     (validate-json-query concept-type json-string)
     (cqm/query (assoc (second (common-params/parse-query-level-params concept-type params))
-                     :concept-type concept-type
-                     :condition (->> (json/parse-string json-string true)
-                                    util/map-keys->kebab-case
-                                    :condition
-                                    (parse-json-condition-map concept-type))))))
+                      :concept-type concept-type
+                      :condition (->> (json/parse-string json-string true)
+                                      util/map-keys->kebab-case
+                                      :condition
+                                      (parse-json-condition-map concept-type))))))

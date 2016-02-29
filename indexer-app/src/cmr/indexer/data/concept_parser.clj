@@ -13,6 +13,10 @@
   [concept]
   (edn/read-string (:metadata concept)))
 
+(defmethod parse-concept :tag-association
+  [concept]
+  (edn/read-string (:metadata concept)))
+
 (defmethod parse-concept :default
   [concept]
   (umm-legacy/parse-concept concept))

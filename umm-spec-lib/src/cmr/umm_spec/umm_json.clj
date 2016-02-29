@@ -107,4 +107,4 @@
      (parse-json schema [(:root schema)] (:root schema) root-type-def migrated)))
   ([concept-type json-str]
     ;; default to trying to parse the current UMM version
-    (json->umm concept-type json-str ver/current-version)))
+   (json->umm concept-type json-str ver/current-version)))

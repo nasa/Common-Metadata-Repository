@@ -80,14 +80,14 @@
   [db provider concept]
   (let [concept-id (:concept-id concept)
         this-revision-id (:revision-id concept)
-        concept-revisions (c/get-transactions-for-concept db provider concept-id)
-        this-transaction-id (:transaction-id (some (fn [con-rev]
-                                                     (when (= (:revision-id con-rev)
+        transaction-revisions (c/get-transactions-for-concept db provider concept-id)
+        this-transaction-id (:transaction-id (some (fn [tran-rev]
+                                                     (when (= (:revision-id tran-rev)
                                                               this-revision-id)
-                                                       con-rev))
-                                                   concept-revisions))]
-    (some (fn [con-rev]
-            (let [{:keys [transaction-id revision-id]} con-rev]
+                                                       tran-rev))
+                                                   transaction-revisions))]
+    (some (fn [tran-rev]
+            (let [{:keys [transaction-id revision-id]} tran-rev]
               (or (when (and (< revision-id this-revision-id)
                              (> transaction-id this-transaction-id))
                         [(format (str "Revision [%d] of concept [%s] has transaction-id [%d] "
@@ -106,7 +106,7 @@
                                      transaction-id
                                      this-revision-id
                                      this-transaction-id))]))))
-          concept-revisions)))
+          transaction-revisions)))
 
 ;; Note - change back to a var once the enforce-granule-ur-constraint configuration is no longer
 ;; needed. Using a function for now so that configuration can be changed in tests.

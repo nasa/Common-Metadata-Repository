@@ -65,6 +65,11 @@
    :uuid m/string-field-mapping
    :uuid.lowercase m/string-field-mapping})
 
+(defnestedmapping tag-associations-mapping
+  "Defines mappings for tag associations."
+  {:tag-key.lowercase m/string-field-mapping
+   :originator-id.lowercase m/string-field-mapping})
+
 (defnestedmapping platform-hierarchical-mapping
   "Defines hierarchical mappings for platforms."
   {:category m/string-field-mapping
@@ -282,7 +287,12 @@
           :period (m/stored m/double-field-mapping)
           :inclination-angle (m/stored m/double-field-mapping)
           :number-of-orbits (m/stored m/double-field-mapping)
-          :start-circular-latitude (m/stored m/double-field-mapping)}
+          :start-circular-latitude (m/stored m/double-field-mapping)
+
+          ;; associated tags
+          :tags tag-associations-mapping
+          ;; associated tags stored as EDN gzipped and base64 encoded for retrieving purpose
+          :tags-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))}
          spatial-coverage-fields))
 
 (def granule-settings-for-individual-indexes
@@ -299,149 +309,149 @@
   "Defines the elasticsearch mapping for storing collections"
   {:_id  {:path "concept-id"}}
   (merge
-   {:concept-id (m/stored m/string-field-mapping)
+    {:concept-id (m/stored m/string-field-mapping)
 
-    ;; This is used explicitly for sorting. The values take up less space in the
-    ;; fielddata cache.
-    :concept-seq-id m/int-field-mapping
-    :concept-seq-id-doc-values (m/doc-values m/int-field-mapping)
+     ;; This is used explicitly for sorting. The values take up less space in the
+     ;; fielddata cache.
+     :concept-seq-id m/int-field-mapping
+     :concept-seq-id-doc-values (m/doc-values m/int-field-mapping)
 
-    :collection-concept-id (m/stored m/string-field-mapping)
-    :collection-concept-id-doc-values (-> m/string-field-mapping m/stored m/doc-values)
+     :collection-concept-id (m/stored m/string-field-mapping)
+     :collection-concept-id-doc-values (-> m/string-field-mapping m/stored m/doc-values)
 
-    ;; Used for aggregations. It takes up less space in the field data cache.
-    :collection-concept-seq-id m/int-field-mapping
-    :collection-concept-seq-id-doc-values (m/doc-values m/int-field-mapping)
+     ;; Used for aggregations. It takes up less space in the field data cache.
+     :collection-concept-seq-id m/int-field-mapping
+     :collection-concept-seq-id-doc-values (m/doc-values m/int-field-mapping)
 
-    ;; fields added for atom
-    :entry-title (m/not-indexed (m/stored m/string-field-mapping))
-    :metadata-format (m/not-indexed (m/stored m/string-field-mapping))
-    :update-time (m/not-indexed (m/stored m/string-field-mapping))
-    :coordinate-system (m/not-indexed (m/stored m/string-field-mapping))
+     ;; fields added for atom
+     :entry-title (m/not-indexed (m/stored m/string-field-mapping))
+     :metadata-format (m/not-indexed (m/stored m/string-field-mapping))
+     :update-time (m/not-indexed (m/stored m/string-field-mapping))
+     :coordinate-system (m/not-indexed (m/stored m/string-field-mapping))
 
-    ;; Collection fields added strictly for sorting granule results
-    :entry-title.lowercase m/string-field-mapping
-    :entry-title.lowercase-doc-values (m/doc-values m/string-field-mapping)
+     ;; Collection fields added strictly for sorting granule results
+     :entry-title.lowercase m/string-field-mapping
+     :entry-title.lowercase-doc-values (m/doc-values m/string-field-mapping)
 
-    :short-name.lowercase  m/string-field-mapping
-    :short-name.lowercase-doc-values  (m/doc-values m/string-field-mapping)
+     :short-name.lowercase  m/string-field-mapping
+     :short-name.lowercase-doc-values  (m/doc-values m/string-field-mapping)
 
-    :version-id.lowercase  m/string-field-mapping
-    :version-id.lowercase-doc-values  (m/doc-values m/string-field-mapping)
+     :version-id.lowercase  m/string-field-mapping
+     :version-id.lowercase-doc-values  (m/doc-values m/string-field-mapping)
 
-    :provider-id           (m/stored m/string-field-mapping)
-    :provider-id-doc-values           (-> m/string-field-mapping m/stored m/doc-values)
+     :provider-id           (m/stored m/string-field-mapping)
+     :provider-id-doc-values           (-> m/string-field-mapping m/stored m/doc-values)
 
-    :provider-id.lowercase m/string-field-mapping
-    :provider-id.lowercase-doc-values (m/doc-values m/string-field-mapping)
+     :provider-id.lowercase m/string-field-mapping
+     :provider-id.lowercase-doc-values (m/doc-values m/string-field-mapping)
 
-    :granule-ur            (m/stored m/string-field-mapping)
-
-
-    ;; Modified mappings for the lowercase fields for granule-ur, producer-gran-id,
-    ;; and readable-granule-name-sort in order to prevent these values from being
-    ;; stored in the elasticsearch field data cache (by specifying to use doc-values
-    ;; for these fields). These 3 fields were taking more than 40% of the cache and
-    ;; are rarely used to sort on.
-    ;;
-    ;; The convention used is to append a 2 to the name of the fields. Note that
-    ;; for the search application to use the special lowercase2 fields, the fields
-    ;; need to be mapped in cmr.search.data.query-to-elastic/field->lowercase-field.
-    :granule-ur.lowercase2 (m/doc-values m/string-field-mapping)
-
-    :producer-gran-id (m/stored m/string-field-mapping)
-    :producer-gran-id.lowercase2 (m/doc-values m/string-field-mapping)
-
-    :day-night (m/stored m/string-field-mapping)
-    :day-night-doc-values (-> m/string-field-mapping m/stored m/doc-values)
-
-    :day-night.lowercase m/string-field-mapping
-
-    ;; Access value is stored to allow us to enforce acls after retrieving results
-    ;; for certain types of queries.
-    :access-value (m/stored m/float-field-mapping)
-    :access-value-doc-values (-> m/float-field-mapping m/stored m/doc-values)
-
-    ;; We need to sort by a combination of producer granule and granule ur
-    ;; It should use producer granule id if present otherwise the granule ur is used
-    ;; The producer granule id will be put in this field if present otherwise it
-    ;; will default to granule-ur. This avoids the solution Catalog REST uses which is
-    ;; to use a sort script which is (most likely) much slower.
-    :readable-granule-name-sort2 (m/doc-values m/string-field-mapping)
-
-    :platform-sn           m/string-field-mapping
-    :platform-sn.lowercase m/string-field-mapping
-    :platform-sn.lowercase-doc-values   (m/doc-values m/string-field-mapping)
-
-    :instrument-sn         m/string-field-mapping
-    :instrument-sn.lowercase m/string-field-mapping
-    :instrument-sn.lowercase-doc-values (m/doc-values m/string-field-mapping)
-
-    :sensor-sn             m/string-field-mapping
-    :sensor-sn.lowercase   m/string-field-mapping
-    :sensor-sn.lowercase-doc-values     (m/doc-values m/string-field-mapping)
-
-    :start-date (m/stored m/date-field-mapping)
-    :start-date-doc-values              (-> m/date-field-mapping m/stored m/doc-values)
-
-    :end-date (m/stored m/date-field-mapping)
-    :end-date-doc-values                (-> m/date-field-mapping m/stored m/doc-values)
+     :granule-ur            (m/stored m/string-field-mapping)
 
 
-    :size (m/stored m/float-field-mapping)
-    :size-doc-values (-> m/float-field-mapping m/stored m/doc-values)
+     ;; Modified mappings for the lowercase fields for granule-ur, producer-gran-id,
+     ;; and readable-granule-name-sort in order to prevent these values from being
+     ;; stored in the elasticsearch field data cache (by specifying to use doc-values
+     ;; for these fields). These 3 fields were taking more than 40% of the cache and
+     ;; are rarely used to sort on.
+     ;;
+     ;; The convention used is to append a 2 to the name of the fields. Note that
+     ;; for the search application to use the special lowercase2 fields, the fields
+     ;; need to be mapped in cmr.search.data.query-to-elastic/field->lowercase-field.
+     :granule-ur.lowercase2 (m/doc-values m/string-field-mapping)
 
-    :cloud-cover (m/stored m/float-field-mapping)
-    :cloud-cover-doc-values (-> m/float-field-mapping m/stored m/doc-values)
+     :producer-gran-id (m/stored m/string-field-mapping)
+     :producer-gran-id.lowercase2 (m/doc-values m/string-field-mapping)
 
-    :orbit-calculated-spatial-domains orbit-calculated-spatial-domain-mapping
+     :day-night (m/stored m/string-field-mapping)
+     :day-night-doc-values (-> m/string-field-mapping m/stored m/doc-values)
 
-    :project-refs m/string-field-mapping
-    :project-refs.lowercase m/string-field-mapping
-    :project-refs.lowercase-doc-values (m/doc-values m/string-field-mapping)
+     :day-night.lowercase m/string-field-mapping
 
-    :revision-date         m/date-field-mapping
-    :revision-date-doc-values           (m/doc-values m/date-field-mapping)
+     ;; Access value is stored to allow us to enforce acls after retrieving results
+     ;; for certain types of queries.
+     :access-value (m/stored m/float-field-mapping)
+     :access-value-doc-values (-> m/float-field-mapping m/stored m/doc-values)
 
-    :downloadable (m/stored m/bool-field-mapping)
-    :browsable (m/stored m/bool-field-mapping)
-    :attributes attributes-field-mapping
+     ;; We need to sort by a combination of producer granule and granule ur
+     ;; It should use producer granule id if present otherwise the granule ur is used
+     ;; The producer granule id will be put in this field if present otherwise it
+     ;; will default to granule-ur. This avoids the solution Catalog REST uses which is
+     ;; to use a sort script which is (most likely) much slower.
+     :readable-granule-name-sort2 (m/doc-values m/string-field-mapping)
 
-    :two-d-coord-name m/string-field-mapping
-    :two-d-coord-name.lowercase m/string-field-mapping
-    :start-coordinate-1 m/double-field-mapping
-    :end-coordinate-1 m/double-field-mapping
-    :start-coordinate-2 m/double-field-mapping
-    :end-coordinate-2 m/double-field-mapping
+     :platform-sn           m/string-field-mapping
+     :platform-sn.lowercase m/string-field-mapping
+     :platform-sn.lowercase-doc-values   (m/doc-values m/string-field-mapping)
 
-    :start-coordinate-1-doc-values (m/doc-values m/double-field-mapping)
-    :end-coordinate-1-doc-values (m/doc-values m/double-field-mapping)
-    :start-coordinate-2-doc-values (m/doc-values m/double-field-mapping)
-    :end-coordinate-2-doc-values (m/doc-values m/double-field-mapping)
+     :instrument-sn         m/string-field-mapping
+     :instrument-sn.lowercase m/string-field-mapping
+     :instrument-sn.lowercase-doc-values (m/doc-values m/string-field-mapping)
 
-    ;; Used for orbit search
-    :orbit-asc-crossing-lon (m/stored m/double-field-mapping)
-    :orbit-asc-crossing-lon-doc-values (-> m/double-field-mapping m/stored m/doc-values)
-    :orbit-start-clat m/double-field-mapping
-    :orbit-start-clat-doc-values (m/doc-values m/double-field-mapping)
-    :orbit-end-clat m/double-field-mapping
-    :orbit-end-clat-doc-values (m/doc-values m/double-field-mapping)
-    :start-lat (m/stored m/double-field-mapping)
-    :start-direction (m/stored m/string-field-mapping)
-    :end-lat (m/stored m/double-field-mapping)
-    :end-direction (m/stored m/string-field-mapping)
+     :sensor-sn             m/string-field-mapping
+     :sensor-sn.lowercase   m/string-field-mapping
+     :sensor-sn.lowercase-doc-values     (m/doc-values m/string-field-mapping)
 
-    ;; atom-links is a json string that contains the atom-links, which is a list of
-    ;; maps of atom link attributes. We tried to use nested document to save atom-links
-    ;; as a structure in elasticsearch, but can't find a way to retrieve it out.
-    ;; So we are saving the links in json string, then parse it out when we need it.
-    :atom-links (m/not-indexed (m/stored m/string-field-mapping))
+     :start-date (m/stored m/date-field-mapping)
+     :start-date-doc-values              (-> m/date-field-mapping m/stored m/doc-values)
 
-    ;; :orbit-calculated-spatial-domains-json is json string
-    ;; stored for retrieval similar to :atom-links above
-    :orbit-calculated-spatial-domains-json (m/not-indexed (m/stored m/string-field-mapping))}
+     :end-date (m/stored m/date-field-mapping)
+     :end-date-doc-values                (-> m/date-field-mapping m/stored m/doc-values)
 
-   spatial-coverage-fields))
+
+     :size (m/stored m/float-field-mapping)
+     :size-doc-values (-> m/float-field-mapping m/stored m/doc-values)
+
+     :cloud-cover (m/stored m/float-field-mapping)
+     :cloud-cover-doc-values (-> m/float-field-mapping m/stored m/doc-values)
+
+     :orbit-calculated-spatial-domains orbit-calculated-spatial-domain-mapping
+
+     :project-refs m/string-field-mapping
+     :project-refs.lowercase m/string-field-mapping
+     :project-refs.lowercase-doc-values (m/doc-values m/string-field-mapping)
+
+     :revision-date         m/date-field-mapping
+     :revision-date-doc-values           (m/doc-values m/date-field-mapping)
+
+     :downloadable (m/stored m/bool-field-mapping)
+     :browsable (m/stored m/bool-field-mapping)
+     :attributes attributes-field-mapping
+
+     :two-d-coord-name m/string-field-mapping
+     :two-d-coord-name.lowercase m/string-field-mapping
+     :start-coordinate-1 m/double-field-mapping
+     :end-coordinate-1 m/double-field-mapping
+     :start-coordinate-2 m/double-field-mapping
+     :end-coordinate-2 m/double-field-mapping
+
+     :start-coordinate-1-doc-values (m/doc-values m/double-field-mapping)
+     :end-coordinate-1-doc-values (m/doc-values m/double-field-mapping)
+     :start-coordinate-2-doc-values (m/doc-values m/double-field-mapping)
+     :end-coordinate-2-doc-values (m/doc-values m/double-field-mapping)
+
+     ;; Used for orbit search
+     :orbit-asc-crossing-lon (m/stored m/double-field-mapping)
+     :orbit-asc-crossing-lon-doc-values (-> m/double-field-mapping m/stored m/doc-values)
+     :orbit-start-clat m/double-field-mapping
+     :orbit-start-clat-doc-values (m/doc-values m/double-field-mapping)
+     :orbit-end-clat m/double-field-mapping
+     :orbit-end-clat-doc-values (m/doc-values m/double-field-mapping)
+     :start-lat (m/stored m/double-field-mapping)
+     :start-direction (m/stored m/string-field-mapping)
+     :end-lat (m/stored m/double-field-mapping)
+     :end-direction (m/stored m/string-field-mapping)
+
+     ;; atom-links is a json string that contains the atom-links, which is a list of
+     ;; maps of atom link attributes. We tried to use nested document to save atom-links
+     ;; as a structure in elasticsearch, but can't find a way to retrieve it out.
+     ;; So we are saving the links in json string, then parse it out when we need it.
+     :atom-links (m/not-indexed (m/stored m/string-field-mapping))
+
+     ;; :orbit-calculated-spatial-domains-json is json string
+     ;; stored for retrieval similar to :atom-links above
+     :orbit-calculated-spatial-domains-json (m/not-indexed (m/stored m/string-field-mapping))}
+
+    spatial-coverage-fields))
 
 (defmapping tag-mapping :tag
   "Defines the elasticsearch mapping for storing tags."
@@ -449,11 +459,7 @@
   {:concept-id (m/stored m/string-field-mapping)
    :tag-key.lowercase (-> m/string-field-mapping m/stored m/doc-values)
    :description (m/not-indexed (m/stored m/string-field-mapping))
-   :originator-id.lowercase (m/stored m/string-field-mapping)
-   ;; set of concept-ids stored as EDN gzipped and base64 encoded for retrieving purpose
-   :associated-concept-ids-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))
-   ;; for searching purpose
-   :associated-concept-ids m/string-field-mapping})
+   :originator-id.lowercase (m/stored m/string-field-mapping)})
 
 (defn index-set
   "Returns the index-set configuration"

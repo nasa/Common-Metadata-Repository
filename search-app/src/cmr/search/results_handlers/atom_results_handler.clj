@@ -5,6 +5,7 @@
             [cmr.common-app.services.search :as qs]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.services.query-execution.facets-results-feature :as frf]
+            [cmr.search.services.query-execution.tags-results-feature :as trf]
             [clojure.data.xml :as x]
             [clojure.walk :as walk]
             [clojure.string :as str]
@@ -57,35 +58,38 @@
                      "start-circular-latitude"
                      "ords-info"
                      "ords"
-                     "_score"]]
+                     "_score"]
+        atom-fields (if (contains? (set (:result-features query)) :tags)
+                      (conj atom-fields trf/stored-tags-field)
+                      atom-fields)]
     (distinct (concat atom-fields acl-rhh/collection-elastic-fields))))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :atom]
   [concept-type query]
   (let [atom-fields ["granule-ur"
-                      "collection-concept-id"
-                      "update-time"
-                      "entry-title"
-                      "producer-gran-id"
-                      "size"
-                      "metadata-format"
-                      "provider-id"
-                      "start-date"
-                      "end-date"
-                      "atom-links"
-                      "orbit-asc-crossing-lon"
-                      "start-lat"
-                      "start-direction"
-                      "end-lat"
-                      "end-direction"
-                      "orbit-calculated-spatial-domains-json"
-                      "downloadable"
-                      "browsable"
-                      "day-night"
-                      "cloud-cover"
-                      "coordinate-system"
-                      "ords-info"
-                      "ords"]]
+                     "collection-concept-id"
+                     "update-time"
+                     "entry-title"
+                     "producer-gran-id"
+                     "size"
+                     "metadata-format"
+                     "provider-id"
+                     "start-date"
+                     "end-date"
+                     "atom-links"
+                     "orbit-asc-crossing-lon"
+                     "start-lat"
+                     "start-direction"
+                     "end-lat"
+                     "end-direction"
+                     "orbit-calculated-spatial-domains-json"
+                     "downloadable"
+                     "browsable"
+                     "day-night"
+                     "cloud-cover"
+                     "coordinate-system"
+                     "ords-info"
+                     "ords"]]
     (vec (distinct
            (concat atom-fields
                    orbit-swath-helper/orbit-elastic-fields
@@ -156,7 +160,8 @@
                                :period period
                                :inclination-angle inclination-angle
                                :number-of-orbits number-of-orbits
-                               :start-circular-latitude start-circular-latitude}}
+                               :start-circular-latitude start-circular-latitude}
+            :tags (trf/collection-elastic-result->tags elastic-result)}
            (acl-rhh/parse-elastic-item :collection elastic-result))))
 
 (defn- granule-elastic-result->query-result-item
@@ -314,7 +319,7 @@
 
 (defn- tag->xml-element
   "Convert a tag to an XML element"
-  [[tag-key]]
+  [tag-key]
   (x/element :echo:tag {}
              (x/element :echo:tagKey {} tag-key)))
 
