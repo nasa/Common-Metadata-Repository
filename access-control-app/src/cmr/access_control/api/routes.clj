@@ -129,13 +129,18 @@
   (-> (group-service/search-for-groups context params)
       cr/search-response))
 
+(defn reset
+  "Resets the app state. Compatible with cmr.dev-system.control."
+  [context]
+  (index/reset (-> context :system :search-index)))
+
 (def admin-api-routes
   "The administrative control routes."
   (routes
     (POST "/reset" {:keys [request-context params headers]}
       (acl/verify-ingest-management-permission request-context :update)
       (cache/reset-caches request-context)
-      (index/reset (get-in request-context [:system :search-index]))
+      (reset request-context)
       {:status 204})))
 
 (defn- build-routes [system]

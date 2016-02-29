@@ -173,3 +173,7 @@
            (errors/throw-service-error :conflict (str "Save to Elasticsearch failed " (str result))))
          (errors/internal-error! (str "Save to Elasticsearch failed " (str result))))))))
 
+(defn delete-by-query
+  "Delete document that match the given query"
+  [elastic-store index-name type-name query]
+  (doc/delete-by-query (:conn elastic-store) index-name type-name query))

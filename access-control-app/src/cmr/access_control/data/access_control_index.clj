@@ -84,6 +84,16 @@
      elastic-store group-index-name group-type-name concept-id elastic-doc revision-id
      {:ignore-conflict? true})))
 
+(defn delete-provider-groups
+  "Unindexes all access groups owned by provider-id."
+  [context provider-id]
+  (m/delete-by-query (esi/context->search-index context)
+                     group-index-name
+                     group-type-name
+                     ;; only :provider-id.lowercase is indexed, so to find the access group by
+                     ;; provider-id we need to compare the lowercased version
+                     {:term {:provider-id.lowercase (.toLowerCase provider-id)}}))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search Functions
 
