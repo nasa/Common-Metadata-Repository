@@ -29,4 +29,3 @@
   (reset-providers
     [db]
     "Delete all providers from the database including their concept tables.  USE WITH CAUTION."))
-

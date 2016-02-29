@@ -25,8 +25,11 @@
   [context {:keys [concept-id revision-id]}])
 
 (defmethod handle-event :provider-delete
-  [context {:keys [provider-id]}])
-;; TODO CMR-2412 remove all the indexed items for this provider
+  [context {:keys [provider-id]}]
+  ;; The actual :access-group concept records are deleted from code within the metadata db
+  ;; app itself. We need to ensure that the groups are unindexed here too, or else they will
+  ;; still come up in search results, etc..
+  (index/delete-provider-groups context provider-id))
 
 (defn subscribe-to-events
   "Subscribe to event messages on various queues"

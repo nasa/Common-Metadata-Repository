@@ -344,6 +344,9 @@
 (defn delete-provider
   "Delete all the concepts within the given provider"
   [context provider-id]
+  ;; Only collections and granules are unindexed here. Other concepts related to the provider
+  ;; may be unindexed in other places when a :provider-delete message is handled,
+  ;; e.g. unindexing access groups in access-control-app.
   (info (format "Deleting provider-id %s" provider-id))
   (let [index-names (idx-set/get-concept-type-index-names context)
         concept-mapping-types (idx-set/get-concept-mapping-types context)]

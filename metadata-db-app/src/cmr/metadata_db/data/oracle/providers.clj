@@ -28,6 +28,11 @@
     (sh/force-delete-concept-by-params db provider {:concept-type :collection
                                                     :provider-id provider-id})
     (sh/force-delete-concept-by-params db provider {:concept-type :service
+                                                    :provider-id provider-id})
+    ;; Cascade deletes to access groups. This does not remove the record from search.
+    ;; access-control-app listens for :provider-delete messages and handles deleting the relevant
+    ;; records from Elastic.
+    (sh/force-delete-concept-by-params db provider {:concept-type :access-group
                                                     :provider-id provider-id})))
 
 (extend-protocol p/ProvidersStore

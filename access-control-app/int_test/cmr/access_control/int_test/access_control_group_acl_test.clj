@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
             [cmr.mock-echo.client.echo-util :as e]
-            [cmr.access-control.int-test.access-control-test-util :as u]))
+            [cmr.access-control.test.util :as u]))
 
 (use-fixtures :once (u/int-test-fixtures))
 (use-fixtures :each (u/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"}))

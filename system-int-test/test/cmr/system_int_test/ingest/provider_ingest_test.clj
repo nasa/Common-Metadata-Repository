@@ -4,6 +4,7 @@
             [clj-http.client :as client]
             [cmr.common.util :as u]
             [cmr.common.mime-types :as mt]
+            [cmr.access-control.test.util :as access-control]
             [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.index-util :as index]
@@ -13,7 +14,8 @@
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.system :as s]
-            [cmr.transmit.config :as transmit-config]))
+            [cmr.transmit.config :as transmit-config]
+            [cmr.mock-echo.client.echo-util :as e]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -110,11 +112,21 @@
           coll2 (d/ingest "PROV1" (dc/collection))
           gran3 (d/ingest "PROV1" (dg/granule coll2))
           coll3 (d/ingest "PROV2" (dc/collection))
-          gran4 (d/ingest "PROV2" (dg/granule coll3))]
+          gran4 (d/ingest "PROV2" (dg/granule coll3))
+          ;; create an access group to test cascading deletes
+          access-group (access-control/create-group (transmit-config/echo-system-token)
+                                                    {:name "Administrators"
+                                                     :description "A Group"
+                                                     :provider-id "PROV1"})]
       (index/wait-until-indexed)
 
       (is (= 2 (count (:refs (search/find-refs :collection {:provider-id "PROV1"})))))
       (is (= 3 (count (:refs (search/find-refs :granule {:provider-id "PROV1"})))))
+
+      ;; ensure PROV1 group is indexed
+      (is (= [(:concept-id access-group)]
+             (map :concept-id (:items (access-control/search (transmit-config/echo-system-token)
+                                                             {:provider "PROV1"})))))
 
       ;; delete provider PROV1
       (let [{:keys [status content-length]} (ingest/delete-ingest-provider "PROV1")]
@@ -129,7 +141,13 @@
            coll2
            gran1
            gran2
-           gran3)
+           gran3
+           access-group)
+
+      ;; PROV1 access group is unindexed
+      (is (= 0 (:hits
+                 (access-control/search (transmit-config/echo-system-token)
+                                        {:provider "PROV1"}))))
 
       ;; PROV2 concepts are in metadata-db
       (are [concept]
