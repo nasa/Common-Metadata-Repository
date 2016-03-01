@@ -6,6 +6,8 @@
    :cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
    :cmr-message-queue-lib "0.1.0-SNAPSHOT"
    :cmr-common-app-lib "0.1.0-SNAPSHOT"
+
+   ;; Only used for the integration testing utilities
    :cmr-metadata-db-app "0.1.0-SNAPSHOT"
    :cmr-mock-echo-app "0.1.0-SNAPSHOT"})
 
