@@ -2,10 +2,11 @@
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
             [cmr.mock-echo.client.echo-util :as e]
+            [cmr.access-control.int-test.fixtures :as fixtures]
             [cmr.access-control.test.util :as u]))
 
-(use-fixtures :once (u/int-test-fixtures))
-(use-fixtures :each (u/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"}))
+(use-fixtures :once (fixtures/int-test-fixtures))
+(use-fixtures :each (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"}))
 
 (deftest create-system-group-test
 
