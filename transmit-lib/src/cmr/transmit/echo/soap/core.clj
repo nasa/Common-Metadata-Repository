@@ -12,7 +12,7 @@
   "Base URL for SOAP requests"
   {:default "http://localhost:3012/echo-v10/"})
 
-(def ns-map
+(def soap-ns-map
   {"xmlns:ns2" "http://echo.nasa.gov/echo/v10"
    "xmlns:ns3" "http://echo.nasa.gov/echo/v10/types"
    "xmlns:ns4" "http://echo.nasa.gov/ingest/v10"})

@@ -10,7 +10,7 @@
   [param-map]
   (let [{:keys [token group-guids]} param-map]
     ["ns2:GetGroups2"
-      soap/ns-map
+      soap/soap-ns-map
       ["ns2:token" token]
       ["ns2:groupGuids" (soap/item-list group-guids)]]))
 
@@ -19,7 +19,7 @@
   [param-map]
   (let [{:keys [token member-guid]} param-map]
     ["ns2:GetGroupNamesByMember2"
-      soap/ns-map
+      soap/soap-ns-map
       ["ns2:token" token]
       ["ns2:memberGuid" member-guid]]))
 
@@ -28,7 +28,7 @@
   [param-map]
   (let [{:keys [token name description member-guids managing-group guid provider-guid]} param-map]
     ["ns2:CreateGroup"
-      soap/ns-map
+      soap/soap-ns-map
       ["ns2:token" token]
       ["ns2:newGroup"
         (when guid ["ns3:Guid" guid])

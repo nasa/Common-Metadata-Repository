@@ -10,7 +10,7 @@
   "Returns a hiccup representation of the SOAP body for a Login request using the provided user and pass."
   [user pass]
   ["ns2:Login"
-    soap/ns-map
+    soap/soap-ns-map
     ["ns2:username" user]
     ["ns2:password" pass]
     ["ns2:clientInfo"
@@ -23,14 +23,14 @@
   "Returns a hiccup representation of the SOAP body for a Logout request using the provided user and pass."
   [token]
   ["ns2:Logout"
-    soap/ns-map
+    soap/soap-ns-map
     ["ns2:token" token]])
 
 (defn get-security-token-informaton-request
   "Returns a hiccup representation of the SOAP body for a GetSecurityTokenInformation request using the provided user and pass."
   [admin-token tokens]
   ["ns2:GetSecurityTokenInformation"
-    soap/ns-map
+    soap/soap-ns-map
     ["ns2:token" admin-token]
     ["ns2:tokens" (soap/item-list tokens)]])
 
