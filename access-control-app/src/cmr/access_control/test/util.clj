@@ -1,29 +1,12 @@
 (ns cmr.access-control.test.util
   (:require [cmr.transmit.access-control :as ac]
-            [clojure.test :as ct :refer [is]]
+            [clojure.test :refer [is]]
             [clj-http.client :as client]
             [cmr.transmit.config :as config]
-            [cmr.transmit.echo.tokens :as tokens]
             [cmr.transmit.metadata-db2 :as mdb]
-            [cmr.access-control.system :as system]
-            [cmr.access-control.config :as access-control-config]
-            [cmr.elastic-utils.test-util :as elastic-test-util]
             [cmr.elastic-utils.config :as es-config]
-            [cmr.metadata-db.system :as mdb-system]
-            [cmr.mock-echo.system :as mock-echo-system]
-            [cmr.mock-echo.client.mock-echo-client :as mock-echo-client]
-            [cmr.mock-echo.client.mock-urs-client :as mock-urs-client]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.common-app.test.client-util :as common-client-test-util]
             [cmr.common.mime-types :as mt]
-            [cmr.metadata-db.system :as mdb-system]
-            [cmr.metadata-db.config :as mdb-config]
-            [cmr.metadata-db.data.memory-db :as memory]
-            [cmr.message-queue.queue.memory-queue :as mem-queue]
-            [cmr.message-queue.config :as rmq-conf]
-            [cmr.message-queue.test.queue-broker-wrapper :as queue-broker-wrapper]
-            [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
-            [cmr.common.jobs :as jobs]))
+            [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]))
 
 (def conn-context-atom
   "An atom containing the cached connection context map."
