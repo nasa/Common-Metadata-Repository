@@ -12,7 +12,7 @@
                 first-name middle-initial last-name param-map email opt-in organization-name addresses
                 phones roles creation-date]} param-map]
     ["ns2:CreateUser"
-      soap/ns-map
+      soap/soap-ns-map
       ["ns2:token" token]
       ["ns2:password" password]
       ["ns2:newUser"

@@ -10,7 +10,7 @@
   [param-map]
   (let [{:keys [token acl-guid aces replace-all]} param-map]
     ["ns2:SetPermissions"
-      soap/ns-map
+      soap/soap-ns-map
       ["ns2:token" token]
       ["ns2:aclGuid" acl-guid]
       ["ns2:aces"
