@@ -3,12 +3,13 @@
     (:require [clojure.test :refer :all]
               [cmr.mock-echo.client.echo-util :as e]
               [cmr.common.util :as util :refer [are2]]
+              [cmr.access-control.int-test.fixtures :as fixtures]
               [cmr.access-control.test.util :as u]))
 
 (use-fixtures :each
-              (u/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"} ["user1" "user2" "user3" "user4" "user5"])
-              (u/grant-all-group-fixture ["prov1guid" "prov2guid"]))
-(use-fixtures :once (u/int-test-fixtures))
+              (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"} ["user1" "user2" "user3" "user4" "user5"])
+              (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
+(use-fixtures :once (fixtures/int-test-fixtures))
 
 (defn ingest-group
   "Ingests the group and returns a group such that it can be matched with a search result."

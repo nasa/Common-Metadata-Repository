@@ -2,13 +2,14 @@
     (:require [clojure.test :refer :all]
               [clojure.string :as str]
               [cmr.mock-echo.client.echo-util :as e]
+              [cmr.access-control.int-test.fixtures :as fixtures]
               [cmr.access-control.test.util :as u]))
 
-(use-fixtures :once (u/int-test-fixtures))
+(use-fixtures :once (fixtures/int-test-fixtures))
 
 (use-fixtures :each
-              (u/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"})
-              (u/grant-all-group-fixture ["prov1guid" "prov2guid"]))
+              (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"})
+              (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 
 ;; TODO CMR-2134, CMR-2133 test creating groups without various permissions
 

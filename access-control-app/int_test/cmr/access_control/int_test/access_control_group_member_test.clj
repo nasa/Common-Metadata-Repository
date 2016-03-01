@@ -1,12 +1,13 @@
 (ns cmr.access-control.int-test.access-control-group-member-test
   (:require [clojure.test :refer :all]
             [cmr.mock-echo.client.echo-util :as e]
+            [cmr.access-control.int-test.fixtures :as fixtures]
             [cmr.access-control.test.util :as u]))
 
-(use-fixtures :once (u/int-test-fixtures))
+(use-fixtures :once (fixtures/int-test-fixtures))
 (use-fixtures :each
-              (u/reset-fixture {"prov1guid" "PROV1"} ["user1" "user2" "user3" "user4" "user5"])
-              (u/grant-all-group-fixture ["prov1guid"]))
+              (fixtures/reset-fixture {"prov1guid" "PROV1"} ["user1" "user2" "user3" "user4" "user5"])
+              (fixtures/grant-all-group-fixture ["prov1guid"]))
 
 (defn- assert-group-member-count-correct
   "Asserts that when retrieving the group the correct number of members is returned."

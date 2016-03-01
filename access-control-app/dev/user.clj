@@ -6,7 +6,7 @@
             [clojure.test :refer (run-all-tests)]
             [clojure.repl :refer :all]
             [cmr.access-control.system :as system]
-            [cmr.access-control.test.util :as int-test-util]
+            [cmr.access-control.int-test.fixtures :as int-test-util]
             [cmr.elastic-utils.embedded-elastic-server :as es]
             [cmr.elastic-utils.config :as elastic-config]
             [cmr.metadata-db.system :as mdb]
