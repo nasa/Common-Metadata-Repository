@@ -5,11 +5,8 @@
    :cmr-transmit-lib "0.1.0-SNAPSHOT"
    :cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
    :cmr-message-queue-lib "0.1.0-SNAPSHOT"
-   :cmr-common-app-lib "0.1.0-SNAPSHOT"})
-
-(def dev-projects
-  "A map of development time projects to their versions"
-  {:cmr-metadata-db-app "0.1.0-SNAPSHOT"
+   :cmr-common-app-lib "0.1.0-SNAPSHOT"
+   :cmr-metadata-db-app "0.1.0-SNAPSHOT"
    :cmr-mock-echo-app "0.1.0-SNAPSHOT"})
 
 (defn project-map->dependencies
@@ -37,7 +34,7 @@
                            [ring/ring-json "0.4.0"]]
                            ;; Temporarily fix broken build. The dev-projects depenedencies should
                            ;; not be overall depenedencies
-                         (project-map->dependencies (merge projects dev-projects)))
+                         (project-map->dependencies (merge projects projects)))
   :plugins [[lein-test-out "0.3.1"]
             [lein-shell "0.4.0"]
             [lein-exec "0.3.4"]]
