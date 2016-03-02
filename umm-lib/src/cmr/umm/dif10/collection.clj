@@ -22,7 +22,8 @@
             [cmr.umm.dif10.collection.personnel :as personnel]
             [cmr.umm.dif10.collection.product-specific-attribute :as psa]
             [cmr.umm.dif10.collection.metadata-association :as ma]
-            [cmr.umm.dif.collection.extended-metadata :as em])
+            [cmr.umm.dif.collection.extended-metadata :as em]
+            [cmr.umm-spec.util :as u :refer [with-default]])
   (:import cmr.umm.collection.UmmCollection))
 
 (defn- xml-elem->Product
@@ -96,6 +97,16 @@
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
    :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd"})
 
+(def product-levels
+  "The set of values that DIF 10 defines for Processing levels as enumerations in its schema"
+  #{u/not-provided "0" "1" "1A" "1B" "1T" "2" "2G" "2P" "3" "4" "NA"})
+
+(defn- dif10-product-level-id
+  "Returns the given product-level-id in DIF10 format."
+  [product-level-id]
+  (when product-level-id
+    (product-levels (str/replace product-level-id #"Level " ""))))
+
 (extend-protocol dif10-core/UmmToDif10Xml
   UmmCollection
   (umm->dif10-xml
@@ -141,6 +152,8 @@
                                (x/element :Data_Creation {} "1970-01-01T00:00:00")
                                (x/element :Data_Last_Revision {} "1970-01-01T00:00:00"))
                     (psa/generate-product-specific-attributes product-specific-attributes)
+                    (when-let [processing-level-id (-> collection :product :processing-level-id)]
+                      (x/element :Product_Level_Id {} (dif10-product-level-id processing-level-id)))
                     (when collection-data-type
                       (x/element :Collection_Data_Type {} collection-data-type))
                     (when access-value
