@@ -25,7 +25,7 @@
   [concept-id]
   (format "Tag with concept id [%s] was deleted." concept-id))
 
-(defn unaccessible-collections
+(defn inaccessible-collections
   [concept-ids]
   (format "The following collections do not exist or are not accessible: %s."
           (str/join ", " concept-ids)))

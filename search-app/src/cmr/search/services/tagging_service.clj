@@ -219,10 +219,10 @@
         concept-ids (->> (qe/execute-query context query)
                               :items
                               (map :concept-id))
-        unaccessible-concept-ids (set/difference (set coll-concept-ids) (set concept-ids))]
-    (when (seq unaccessible-concept-ids)
+        inaccessible-concept-ids (set/difference (set coll-concept-ids) (set concept-ids))]
+    (when (seq inaccessible-concept-ids)
        (errors/throw-service-error
-         :invalid-data (msg/unaccessible-collections unaccessible-concept-ids)))))
+         :invalid-data (msg/inaccessible-collections inaccessible-concept-ids)))))
 
 (defn associate-tag-to-collections
   "Associates a tag to the given list of collections."
