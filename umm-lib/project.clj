@@ -6,8 +6,7 @@
 
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]]
+                 [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]]
 
   :plugins [[lein-test-out "0.3.1"]]
 
@@ -33,3 +32,5 @@
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}})
+
+
