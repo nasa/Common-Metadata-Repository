@@ -22,9 +22,12 @@
             [cmr.umm.dif10.collection.personnel :as personnel]
             [cmr.umm.dif10.collection.product-specific-attribute :as psa]
             [cmr.umm.dif10.collection.metadata-association :as ma]
-            [cmr.umm.dif.collection.extended-metadata :as em]
-            [cmr.umm-spec.util :as u :refer [with-default]])
+            [cmr.umm.dif.collection.extended-metadata :as em])
   (:import cmr.umm.collection.UmmCollection))
+
+(def not-provided
+  "place holder string value for not provided string field"
+  "Not provided")
 
 (defn- xml-elem->Product
   "Returns a UMM Product from a parsed Collection Content XML structure"
@@ -99,7 +102,7 @@
 
 (def product-levels
   "The set of values that DIF 10 defines for Processing levels as enumerations in its schema"
-  #{u/not-provided "0" "1" "1A" "1B" "1T" "2" "2G" "2P" "3" "4" "NA"})
+  #{not-provided "0" "1" "1A" "1B" "1T" "2" "2G" "2P" "3" "4" "NA"})
 
 (defn- dif10-product-level-id
   "Returns the given product-level-id in DIF10 format."
@@ -152,8 +155,10 @@
                                (x/element :Data_Creation {} "1970-01-01T00:00:00")
                                (x/element :Data_Last_Revision {} "1970-01-01T00:00:00"))
                     (psa/generate-product-specific-attributes product-specific-attributes)
-                    (when-let [processing-level-id (-> collection :product :processing-level-id)]
-                      (x/element :Product_Level_Id {} (dif10-product-level-id processing-level-id)))
+                    (let [processing-level-id
+                          (dif10-product-level-id (-> collection :product :processing-level-id))]
+                      (when-not (empty? processing-level-id)
+                        (x/element :Product_Level_Id {} processing-level-id)))
                     (when collection-data-type
                       (x/element :Collection_Data_Type {} collection-data-type))
                     (when access-value
