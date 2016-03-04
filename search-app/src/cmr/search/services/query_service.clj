@@ -93,25 +93,47 @@
   (-> (select-keys params (filter keyword? (keys params)))
       common-params/sanitize-params))
 
+(def ignored-params
+  "A list of unsupported parameters that will be ignored by parameter search."
+  [:tag-namespace])
+
+(defn- drop-ignored-params
+  "At times, there are unsupported search params in parameter search that we simply want to ignore
+  rather than raise error. This function removes them from the params and returns the end result."
+  [params]
+  (let [drop-params-fn (fn [p]
+                         (if (map? p)
+                           (let [p (apply dissoc p ignored-params)]
+                             (when (seq p) p))
+                           p))]
+
+    (-> params
+        drop-params-fn
+        (update :options drop-params-fn)
+        (update :exclude drop-params-fn)
+        ;; exclude parameter processing can't handle nil value, so we remove it if it is nil.
+        u/remove-nil-keys)))
+
 (defn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context concept-type params]
   (let [[query-creation-time query] (u/time-execution
-                                     (->> params
-                                          common-params/sanitize-params
-                                          ;; handle legacy parameters
-                                          lp/replace-parameter-aliases
-                                          (lp/process-legacy-multi-params-conditions concept-type)
-                                          (lp/replace-science-keywords-or-option concept-type)
+                                      (->> params
+                                           common-params/sanitize-params
+                                           drop-ignored-params
+                                           ;; handle legacy parameters
+                                           lp/replace-parameter-aliases
+                                           (lp/process-legacy-multi-params-conditions concept-type)
+                                           (lp/replace-science-keywords-or-option concept-type)
 
-                                          (psn/replace-provider-short-names context)
-                                          (pv/validate-parameters concept-type)
-                                          (common-params/parse-parameter-query concept-type)))
+                                           (psn/replace-provider-short-names context)
+                                           (pv/validate-parameters concept-type)
+                                           (common-params/parse-parameter-query concept-type)))
         [find-concepts-time results] (u/time-execution
-                                      (common-search/find-concepts context
-                                                                   concept-type
-                                                                   query))
+                                       (common-search/find-concepts context
+                                                                    concept-type
+                                                                    query))
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms in format %s with params %s."
                   (:hits results) (name concept-type) total-took (:result-format query)
@@ -128,9 +150,9 @@
                                                                json-query)))
 
         [find-concepts-time results] (u/time-execution
-                                      (common-search/find-concepts context
-                                                                   concept-type
-                                                                   query))
+                                       (common-search/find-concepts context
+                                                                    concept-type
+                                                                    query))
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms in format %s with JSON Query %s and query params %s."
                   (:hits results) (name concept-type) total-took (:result-format query)
@@ -147,9 +169,9 @@
         [query-creation-time query] (u/time-execution (a/parse-aql-query params aql))
         concept-type (:concept-type query)
         [find-concepts-time results] (u/time-execution
-                                      (common-search/find-concepts context
-                                                                   concept-type
-                                                                   query))
+                                       (common-search/find-concepts context
+                                                                    concept-type
+                                                                    query))
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms in format %s with aql: %s."
                   (:hits results) (name concept-type) total-took (:result-format query)
@@ -175,9 +197,9 @@
   (if (contains? #{:atom :json} result-format)
     ;; do a query and use single-result->response
     (let [query (common-params/parse-parameter-query (cc/concept-id->type concept-id)
-                                         {:page-size 1
-                                          :concept-id concept-id
-                                          :result-format result-format})
+                                                     {:page-size 1
+                                                      :concept-id concept-id
+                                                      :result-format result-format})
           results (qe/execute-query context query)]
       (when (zero? (:hits results))
         (throw-id-not-found concept-id))
