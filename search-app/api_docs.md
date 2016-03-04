@@ -2199,7 +2199,7 @@ HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 48
 
-{"concept-id":"TA1200000000-CMR","revision-id":3}
+[{"concept-id":"TA1200000007-CMR","revision-id":1},{"concept-id":"TA1200000008-CMR","revision-id":1}]
 ```
 
 #### <a name="associating-collections-with-a-tag-by-concept-ids"></a> Associating Collections with a Tag by collection concept ids
@@ -2209,13 +2209,13 @@ Tags can be associated with collections by POSTing a JSON array of collection co
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR/associations -d \
-'[{"concept-id": "C1200000005-PROV1"}]'
+'[{"concept-id": "C1200000005-PROV1"} {"concept-id": "C1200000006-PROV1"}]'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 48
 
-{"concept-id":"TA1200000000-CMR","revision-id":3}
+[{"concept-id":"TA1200000007-CMR","revision-id":1},{"concept-id":"TA1200000008-CMR","revision-id":1}]
 ```
 
 #### <a name="disassociating-collections-with-a-tag-by-query"></a> Disassociating Collections with a Tag by query
@@ -2233,23 +2233,23 @@ HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 48
 
-{"concept-id":"TA1200000000-CMR","revision-id":4}
+[{"concept-id":"TA1200000007-CMR","revision-id":2},{"concept-id":"TA1200000008-CMR","revision-id":2}]
 ```
 
 #### <a name="disassociating-collections-with-a-tag-by-concept-ids"></a> Disassociating Collections with a Tag by collection concept ids
 
-Tags can be disassociated with collections by sending a DELETE request with a JSON query for collections to `%CMR-ENDPOINT%/tags/<concept-id>/associations/by_query` where `concept-id` is the concept id of the tag returned when it was created. All collections found in the query will be _removed_ from the current set of associated collections.
+Tags can be disassociated with collections by sending a DELETE request with a JSON array of collection concept-ids to `%CMR-ENDPOINT%/tags/<concept-id>/associations/by_query` where `concept-id` is the concept id of the tag returned when it was created. All collections found in the query will be _removed_ from the current set of associated collections.
 
 
 ```
 curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR/associations -d \
-'[{"concept-id": "C1200000005-PROV1"}]'
+'[{"concept-id": "C1200000005-PROV1"} {"concept-id": "C1200000006-PROV1"}]'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 48
 
-{"concept-id":"TA1200000000-CMR","revision-id":4}
+[{"concept-id":"TA1200000007-CMR","revision-id":2},{"concept-id":"TA1200000008-CMR","revision-id":2}]
 ```
 
 #### <a name="searching-for-tags"></a> Searching for Tags

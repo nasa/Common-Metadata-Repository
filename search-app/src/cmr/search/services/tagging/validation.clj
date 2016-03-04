@@ -23,7 +23,7 @@
   (js/parse-json-schema (assoc-in base-tag-schema-structure [:properties :originator-id]
                                   {:type :string})))
 
-(def ^:private collecitons-tagging-schema-structure
+(def ^:private collections-tagging-schema-structure
   "Schema for tagging collections as json."
   {:type :array
    :items {:type :object
@@ -31,9 +31,9 @@
            :properties {:concept-id {:type :string :minLength 1 :maxLength 255}}
            :required [:concept-id]}})
 
-(def ^:private collecitons-tagging-schema
+(def ^:private collections-tagging-schema
   "The JSON schema used to validate tag association by collections requests"
-  (js/parse-json-schema collecitons-tagging-schema-structure))
+  (js/parse-json-schema collections-tagging-schema-structure))
 
 (defn- validate-json
   "Validates the JSON string against the given schema. Throws a service error if it is invalid."
@@ -54,5 +54,5 @@
 (defn validate-collections-json
   "Validates the collections JSON string against the schema. Throws a service error if it is invalid."
   [json-str]
-  (validate-json collecitons-tagging-schema json-str))
+  (validate-json collections-tagging-schema json-str))
 
