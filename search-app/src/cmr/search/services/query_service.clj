@@ -93,17 +93,14 @@
   (-> (select-keys params (filter keyword? (keys params)))
       common-params/sanitize-params))
 
-(def ignored-params
-  "A list of unsupported parameters that will be ignored by parameter search."
-  [:tag-namespace])
-
+;; CMR-2553 Remove this function.
 (defn- drop-ignored-params
   "At times, there are unsupported search params in parameter search that we simply want to ignore
-  rather than raise error. This function removes them from the params and returns the end result."
+  rather than raise error. This function removes tag-namespace from the params and returns the params."
   [params]
   (let [drop-params-fn (fn [p]
                          (if (map? p)
-                           (let [p (apply dissoc p ignored-params)]
+                           (let [p (dissoc p :tag-namespace)]
                              (when (seq p) p))
                            p))]
 
@@ -121,6 +118,7 @@
   (let [[query-creation-time query] (u/time-execution
                                       (->> params
                                            common-params/sanitize-params
+                                           ;; CMR-2553 remove the following line
                                            drop-ignored-params
                                            ;; handle legacy parameters
                                            lp/replace-parameter-aliases
