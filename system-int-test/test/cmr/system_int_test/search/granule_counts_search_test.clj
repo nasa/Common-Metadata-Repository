@@ -250,8 +250,7 @@
         (let [results (search/find-metadata :collection :echo10 {"has_granules" "true"
                                                                  :concept-id (map :concept-id all-colls)})]
           (is (= (set (map :concept-id [coll1 coll3 coll4 coll5 coll6 orbit-coll]))
-                 (set (map :concept-id (:items results)))))))
-      )))
+                 (set (map :concept-id (:items results))))))))))
 
 (deftest collection-has-granules-caching-test
   (let [;; Create collections
