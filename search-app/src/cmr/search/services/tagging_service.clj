@@ -206,30 +206,30 @@
   (tv/validate-collections-json collections-json)
   (json/parse-string collections-json true))
 
-(defn- validate-collection-concpet-ids
+(defn- validate-collection-concept-ids
   "Validates the collection concept-ids are valid,
   i.e. all collections for the given concept-ids exist and are viewable by the token."
   [context coll-concept-ids]
   (let [query (cqm/query {:concept-type :collection
-                      :condition (cqm/string-conditions :concept-id coll-concept-ids true)
-                      :page-size :unlimited
-                         :result-format :query-specified
-                         :fields [:concept-id]
-                         :skip-acls? false})
+                          :condition (cqm/string-conditions :concept-id coll-concept-ids true)
+                          :page-size :unlimited
+                          :result-format :query-specified
+                          :fields [:concept-id]
+                          :skip-acls? false})
         concept-ids (->> (qe/execute-query context query)
-                              :items
-                              (map :concept-id))
+                         :items
+                         (map :concept-id))
         inaccessible-concept-ids (set/difference (set coll-concept-ids) (set concept-ids))]
     (when (seq inaccessible-concept-ids)
-       (errors/throw-service-error
-         :invalid-data (msg/inaccessible-collections inaccessible-concept-ids)))))
+      (errors/throw-service-error
+        :invalid-data (msg/inaccessible-collections inaccessible-concept-ids)))))
 
 (defn associate-tag-to-collections
   "Associates a tag to the given list of collections."
   [context concept-id collections-json]
   (let [coll-concept-ids (->> (collections-json->collections collections-json)
                               (map :concept-id))]
-    (validate-collection-concpet-ids context coll-concept-ids)
+    (validate-collection-concept-ids context coll-concept-ids)
     (update-tag-association-to-collections context concept-id coll-concept-ids :insert)))
 
 (defn disassociate-tag-to-collections
@@ -237,7 +237,7 @@
   [context concept-id collections-json]
   (let [coll-concept-ids (->> (collections-json->collections collections-json)
                               (map :concept-id))]
-    (validate-collection-concpet-ids context coll-concept-ids)
+    (validate-collection-concept-ids context coll-concept-ids)
     (update-tag-association-to-collections context concept-id coll-concept-ids :delete)))
 
 (defn associate-tag-by-query
