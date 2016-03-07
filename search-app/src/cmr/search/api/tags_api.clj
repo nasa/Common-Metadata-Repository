@@ -5,40 +5,15 @@
             [cheshire.core :as json]
             [clojure.string :as str]
             [cmr.common.mime-types :as mt]
-            [cmr.common.validations.json-schema :as js]
+            [cmr.search.services.tagging.validation :as v]
             [cmr.search.services.tagging-service :as tagging-service]
             [cmr.common.services.errors :as errors]
             [cmr.acl.core :as acl]))
-
-(def ^:private base-tag-schema-structure
-  "Base Schema for tags as json."
-  {:type :object
-   :additionalProperties false
-   :properties {:tag-key {:type :string :minLength 1 :maxLength 1030}
-                :description {:type :string :minLength 1 :maxLength 4000}}
-   :required [:tag-key]})
-
-(def ^:private create-tag-schema
-  "The JSON schema used to validate tag creation requests"
-  (js/parse-json-schema base-tag-schema-structure))
-
-(def ^:private update-tag-schema
-  "The JSON schema used to update update tag requests. Update requests are allowed to specify the
-  originator id. They can't change it but it's allowed to be passed in because the tag fetch response
-  will include it."
-  (js/parse-json-schema (assoc-in base-tag-schema-structure [:properties :originator-id]
-                                  {:type :string})))
 
 (defn- validate-tag-content-type
   "Validates that content type sent with a tag is JSON"
   [headers]
   (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
-
-(defn- validate-tag-json
-  "Validates the tag JSON string against the given tag schema. Throws a service error if it is invalid."
-  [tag-schema json-str]
-  (when-let [errors (seq (js/validate-json tag-schema json-str))]
-    (errors/throw-service-errors :bad-request errors)))
 
 (defn- tag-api-response
   "Creates a successful tag response with the given data response"
@@ -69,7 +44,7 @@
   [context headers body]
   (verify-tag-modification-permission context :create)
   (validate-tag-content-type headers)
-  (validate-tag-json create-tag-schema body)
+  (v/validate-create-tag-json body)
   (->> body
        request-body->tag
        (tagging-service/create-tag context)
@@ -89,7 +64,7 @@
   [context headers body concept-id]
   (verify-tag-modification-permission context :update)
   (validate-tag-content-type headers)
-  (validate-tag-json update-tag-schema body)
+  (v/validate-update-tag-json body)
   (->> body
        request-body->tag
        (tagging-service/update-tag context concept-id)
@@ -100,6 +75,20 @@
   [context concept-id]
   (verify-tag-modification-permission context :delete)
   (tag-api-response (tagging-service/delete-tag context concept-id)))
+
+(defn associate-tag-to-collections
+  "Associate the tag to a list of collections."
+  [context headers body concept-id]
+  (verify-tag-modification-permission context :update)
+  (validate-tag-content-type headers)
+  (tag-api-response (tagging-service/associate-tag-to-collections context concept-id body)))
+
+(defn disassociate-tag-to-collections
+  "Disassociate the tag to a list of collections."
+  [context headers body concept-id]
+  (verify-tag-modification-permission context :update)
+  (validate-tag-content-type headers)
+  (tag-api-response (tagging-service/disassociate-tag-to-collections context concept-id body)))
 
 (defn associate-tag-by-query
   "Processes a request to associate a tag."
@@ -145,6 +134,15 @@
         (update-tag request-context headers (slurp body) tag-id))
 
       (context "/associations" []
+
+        ;; Associate a tag with a list of collections
+        (POST "/" {:keys [request-context headers body]}
+          (associate-tag-to-collections request-context headers (slurp body) tag-id))
+
+        ;; Disassociate a tag with a list of collections
+        (DELETE "/" {:keys [request-context headers body]}
+          (disassociate-tag-to-collections request-context headers (slurp body) tag-id))
+
         (context "/by_query" []
           ;; Associate a tag with collections
           (POST "/" {:keys [request-context headers body]}
@@ -153,5 +151,3 @@
           ;; Disassociate a tag with collections
           (DELETE "/" {:keys [request-context headers body]}
             (disassociate-tag-by-query request-context headers (slurp body) tag-id)))))))
-
-

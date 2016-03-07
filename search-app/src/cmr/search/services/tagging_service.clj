@@ -6,12 +6,15 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.services.messages :as cmsg]
             [cmr.common.validations.core :as v]
+            [cmr.search.services.tagging.validation :as tv]
             [cmr.common.concepts :as concepts]
             [cmr.search.services.tagging.tagging-service-messages :as msg]
             [cmr.search.services.json-parameters.conversion :as jp]
+            [cmr.common-app.services.search.query-model :as cqm]
             [cmr.common-app.services.search.query-execution :as qe]
             [cmr.search.services.query-service :as query-service]
             [clojure.string :as str]
+            [cheshire.core :as json]
             [clojure.edn :as edn]
             [clojure.set :as set]))
 
@@ -161,19 +164,11 @@
           {:keys [revision-id]} (mdb/save-concept context concept)]
       {:concept-id concept-id, :revision-id revision-id})))
 
-(defn- update-tag-associations-with-query
-  "Based on the input operation type (:insert or :delete), insert or delete tag associations
-  identified by the json query."
-  [context concept-id json-query operation]
-  (let [query (-> (jp/parse-json-query :collection {} json-query)
-                  (assoc :page-size :unlimited
-                         :result-format :query-specified
-                         :fields [:concept-id]
-                         :skip-acls? false))
-        coll-concept-ids (->> (qe/execute-query context query)
-                              :items
-                              (map :concept-id))
-        existing-concept (fetch-tag-concept context concept-id)
+(defn- update-tag-association-to-collections
+  "Based on the input operation type (:insert or :delete), insert or delete tag associations to
+  the list of collections."
+  [context concept-id coll-concept-ids operation]
+  (let [existing-concept (fetch-tag-concept context concept-id)
         existing-tag (edn/read-string (:metadata existing-concept))
         {:keys [tag-key originator-id]} existing-tag]
     ;; save tag-association for each collection concept-id
@@ -191,6 +186,60 @@
                                                   :associated-concept-id coll-concept-id}})
         (delete-tag-association context native-id)))))
 
+(defn- update-tag-associations-with-query
+  "Based on the input operation type (:insert or :delete), insert or delete tag associations
+  identified by the json query."
+  [context concept-id json-query operation]
+  (let [query (-> (jp/parse-json-query :collection {} json-query)
+                  (assoc :page-size :unlimited
+                         :result-format :query-specified
+                         :fields [:concept-id]
+                         :skip-acls? false))
+        coll-concept-ids (->> (qe/execute-query context query)
+                              :items
+                              (map :concept-id))]
+    (update-tag-association-to-collections context concept-id coll-concept-ids operation)))
+
+(defn- collections-json->collections
+  "Validates the collections json and returns the parsed collections"
+  [collections-json]
+  (tv/validate-collections-json collections-json)
+  (json/parse-string collections-json true))
+
+(defn- validate-collection-concept-ids
+  "Validates the collection concept-ids are valid,
+  i.e. all collections for the given concept-ids exist and are viewable by the token."
+  [context coll-concept-ids]
+  (let [query (cqm/query {:concept-type :collection
+                          :condition (cqm/string-conditions :concept-id coll-concept-ids true)
+                          :page-size :unlimited
+                          :result-format :query-specified
+                          :fields [:concept-id]
+                          :skip-acls? false})
+        concept-ids (->> (qe/execute-query context query)
+                         :items
+                         (map :concept-id))
+        inaccessible-concept-ids (set/difference (set coll-concept-ids) (set concept-ids))]
+    (when (seq inaccessible-concept-ids)
+      (errors/throw-service-error
+        :invalid-data (msg/inaccessible-collections inaccessible-concept-ids)))))
+
+(defn associate-tag-to-collections
+  "Associates a tag to the given list of collections."
+  [context concept-id collections-json]
+  (let [coll-concept-ids (->> (collections-json->collections collections-json)
+                              (map :concept-id))]
+    (validate-collection-concept-ids context coll-concept-ids)
+    (update-tag-association-to-collections context concept-id coll-concept-ids :insert)))
+
+(defn disassociate-tag-to-collections
+  "Associates a tag to the given list of collections."
+  [context concept-id collections-json]
+  (let [coll-concept-ids (->> (collections-json->collections collections-json)
+                              (map :concept-id))]
+    (validate-collection-concept-ids context coll-concept-ids)
+    (update-tag-association-to-collections context concept-id coll-concept-ids :delete)))
+
 (defn associate-tag-by-query
   "Associates a tag with collections that are the result of a JSON query"
   [context concept-id json-query]
@@ -206,6 +255,3 @@
   [context params]
   (:results (query-service/find-concepts-by-parameters
               context :tag (assoc params :result-format :json))))
-
-
-

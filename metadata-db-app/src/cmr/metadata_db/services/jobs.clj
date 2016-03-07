@@ -12,7 +12,6 @@
   "The number of seconds between jobs run to cleanup old revisions of granules and collections"
   (* 3600 6))
 
-
 (defn expired-concept-cleanup
   [context]
   (doseq [provider (provider-service/get-providers context)]
