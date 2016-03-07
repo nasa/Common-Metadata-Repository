@@ -196,12 +196,15 @@
         _ (index/wait-until-indexed)
         tag (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll])
         assert-tag-associated (fn [collection]
-                                (is (d/refs-match? [collection]
-                                                   (search/find-refs :collection {:tag-key "tag1"}))))
+                                (let [refs (search/find-refs :collection {:tag-key "tag1"})]
+                                  (is (nil? (:errors refs)))
+                                  (is (d/refs-match?
+                                        [collection]
+                                        (search/find-refs :collection {:tag-key "tag1"})))))
         assert-tag-not-associated (fn []
-                                    (is (d/refs-match?
-                                          []
-                                          (search/find-refs :collection {:tag-value "tag1"}))))]
+                                    (let [refs (search/find-refs :collection {:tag-key "tag1"})]
+                                      (is (nil? (:errors refs)))
+                                      (is (d/refs-match? [] refs))))]
     (index/wait-until-indexed)
 
     (testing "Tag initially associated with collection"

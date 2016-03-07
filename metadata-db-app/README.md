@@ -84,9 +84,7 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
     "user-id": "jnorton",
     "format": "applcation/edn",
     "metadata: {
-      "tag-namespace": "org.nasa.something",
-      "category": "cat1",
-      "value": "quality",
+      "tag-key": "org.nasa.something/quality",
       "description": "A good tag",
       "originator-id": "jnorton"
     }
