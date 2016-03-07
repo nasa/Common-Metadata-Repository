@@ -47,6 +47,7 @@
    :keyword :keyword
    :line :line
    :exclude :exclude
+   :has-granules :has-granules
 
    ;; Tag parameters
    :tag-key :tag-query
@@ -174,6 +175,12 @@
       (gc/or-conds
         [(cqm/string-condition :granule-ur value case-sensitive pattern)
          (cqm/string-condition :producer-granule-id value case-sensitive pattern)]))))
+
+(defmethod common-params/parameter->condition :has-granules
+  [_ _ value _]
+  (if (= "unset" value)
+    cqm/match-all
+    (qm/->HasGranulesCondition (= "true" value))))
 
 (defn- collection-data-type-matches-science-quality?
   "Convert the collection-data-type parameter with wildcards to a regex. This function
