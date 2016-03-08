@@ -82,11 +82,11 @@
                           {:entry-title "ASTER Orthorectified Digital Elevation Model (DEM) V003"
                            :short-name "AST14DMO"
                            :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}]}
-   ["GSFCS4PA" "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003"]
+   ["GES_DISC" "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003"]
    {:short-name "OMUVBd"
     :virtual-collections [{:entry-title "OMI/Aura Surface UVB UV Index, Erythemal Dose, and Erythemal Dose Rate Daily L3 Global 1.0x1.0 deg Grid V003"
                            :short-name "OMUVBd_ErythemalUV"}]}
-   ["GSFCS4PA" "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006"]
+   ["GES_DISC" "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006"]
    {:short-name "AIRX3STD"
     :virtual-collections [{:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Water Vapor Mass Mixing Ratio V006"
                            :short-name "AIRX3STD_H2O_MMR_Surf"}
@@ -102,7 +102,7 @@
                            :short-name "AIRX3STD_ClrOLR"}
                           {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Methane Total Column V006"
                            :short-name "AIRX3STD_TotCH4"}]}
-   ["GSFCS4PA" "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) V006"]
+   ["GES_DISC" "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) V006"]
    {:short-name "AIRX3STM"
     :virtual-collections [{:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Clear Sky Outgoing Longwave Flux V006"
                            :short-name "AIRX3STM_ClrOLR"}
@@ -126,11 +126,11 @@
                           {:entry-title "ASTER Level 1 Full Resolution Browse Visible Near Infrared V003"
                            :short-name "AST_FRBV"
                            :matcher (matches-on-psa "FullResolutionVisibleBrowseAvailable" "YES")}]}
-   ["GSFCS4PA" "GLDAS Noah Land Surface Model L4 3 hourly 1.0 x 1.0 degree V2.0"]
+   ["GES_DISC" "GLDAS Noah Land Surface Model L4 3 hourly 1.0 x 1.0 degree V2.0"]
    {:short-name "GLDAS_NOAH10_3H"
     :virtual-collections [{:entry-title "GLDAS Noah Land Surface Model L4 3 hourly 1.0 x 1.0 degree Rain Rate, Avg. Surface Skin Temp., Soil Moisture V2.0"
                            :short-name "GLDAS_NOAH10_3Hourly"}]}
-   ["GSFCS4PA" "GLDAS Noah Land Surface Model L4 Monthly 1.0 x 1.0 degree V2.0"]
+   ["GES_DISC" "GLDAS Noah Land Surface Model L4 Monthly 1.0 x 1.0 degree V2.0"]
    {:short-name "GLDAS_NOAH10_M"
     :virtual-collections [{:entry-title "GLDAS Noah Land Surface Model L4 Monthly 1.0 x 1.0 degree Rain Rate, Avg. Surface Skin Temp., Soil Moisture V2.0"
                            :short-name "GLDAS_NOAH10_Monthly"}]}})
@@ -155,22 +155,22 @@
   {["LPDAAC_ECS" "ASTER L1A Reconstructed Unprocessed Instrument Data V003"]
    ["SC:AST_L1A.003:2006227720"
     "SC:AST_L1A.003:2006227722"]
-   ["GSFCS4PA" "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003"]
+   ["GES_DISC" "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003"]
    ["OMUVBd.003:OMI-Aura_L3-OMUVBd_2004m1001_v003-2013m0314t081851.he5"
     "OMUVBd.003:OMI-Aura_L3-OMUVBd_2004m1012_v003-2014m0117t110510.he5"]
-   ["GSFCS4PA" "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006"]
+   ["GES_DISC" "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006"]
    ["AIRX3STD.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
     "AIRX3STD.006:AIRS.2002.09.01.L3.RetStd001.v6.0.9.0.G13208004820.hdf"]
-   ["GSFCS4PA" "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) V006"]
+   ["GES_DISC" "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) V006"]
    ["AIRX3STM.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
     "AIRX3STM.006:AIRS.2002.10.01.L3.RetStd031.v6.0.9.0.G13211133235.hdf"]
    ["LPDAAC_ECS" "ASTER Level 1 precision terrain corrected registered at-sensor radiance V003"]
    ["SC:AST_L1T.003:2148809731"
     "SC:AST_L1T.003:2148809742"]
-   ["GSFCS4PA" "GLDAS Noah Land Surface Model L4 3 hourly 1.0 x 1.0 degree V2.0"]
+   ["GES_DISC" "GLDAS Noah Land Surface Model L4 3 hourly 1.0 x 1.0 degree V2.0"]
    ["GLDAS_NOAH10_3H.2.0:GLDAS_NOAH10_3H.A19480101.0300.020.nc4"
     "GLDAS_NOAH10_3H.2.0:GLDAS_NOAH10_3H.A19480101.0600.020.nc4"]
-   ["GSFCS4PA" "GLDAS Noah Land Surface Model L4 Monthly 1.0 x 1.0 degree V2.0"]
+   ["GES_DISC" "GLDAS Noah Land Surface Model L4 Monthly 1.0 x 1.0 degree V2.0"]
    ["GLDAS_NOAH10_M.2.0:GLDAS_NOAH10_M.A194801.020.nc4"
     "GLDAS_NOAH10_M.2.0:GLDAS_NOAH10_M.A194802.020.nc4"]})
 
@@ -266,7 +266,7 @@
         (update-in [:related-urls] subset-opendap-resource-url source-granule-ur opendap-subset)
         remove-granule-size)))
 
-(defmethod update-virtual-granule-umm ["GSFCS4PA" "OMUVBd"]
+(defmethod update-virtual-granule-umm ["GES_DISC" "OMUVBd"]
   [virtual-umm provider-id source-short-name virtual-short-name]
   (update-related-urls provider-id source-short-name virtual-short-name virtual-umm "ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"))
 
@@ -282,7 +282,7 @@
    "AIRX3STD_ClrOLR" "ClrOLR_A,ClrOLR_D,Latitude,Longitude"
    "AIRX3STD_TotCH4" "TotCH4_A,TotCH4_D,Latitude,Longitude"})
 
-(defmethod update-virtual-granule-umm ["GSFCS4PA" "AIRX3STD"]
+(defmethod update-virtual-granule-umm ["GES_DISC" "AIRX3STD"]
   [virtual-umm provider-id source-short-name virtual-short-name]
   (let [virtual-entry-title (get-in virtual-umm [:collection-ref :entry-title])]
     (update-related-urls provider-id source-short-name virtual-short-name virtual-umm (get airx3std-opendap-subsets virtual-short-name))))
@@ -299,15 +299,15 @@
    "AIRX3STM_TotCO" "TotCO_A,TotCO_D,Latitude,Longitude"
    "AIRX3STM_TotCH4" "TotCH4_A,TotCH4_D,Latitude,Longitude"})
 
-(defmethod update-virtual-granule-umm ["GSFCS4PA" "AIRX3STM"]
+(defmethod update-virtual-granule-umm ["GES_DISC" "AIRX3STM"]
   [virtual-umm provider-id source-short-name virtual-short-name]
   (update-related-urls provider-id source-short-name virtual-short-name virtual-umm (get airx3stm-opendap-subsets virtual-short-name)))
 
-(defmethod update-virtual-granule-umm ["GSFCS4PA" "GLDAS_NOAH10_3H"]
+(defmethod update-virtual-granule-umm ["GES_DISC" "GLDAS_NOAH10_3H"]
   [virtual-umm provider-id source-short-name virtual-short-name]
   (update-related-urls provider-id source-short-name virtual-short-name virtual-umm "Rainf_tavg,AvgSurfT_inst,SoilMoi0_10cm_inst,time,lat,lon"))
 
-(defmethod update-virtual-granule-umm ["GSFCS4PA" "GLDAS_NOAH10_M"]
+(defmethod update-virtual-granule-umm ["GES_DISC" "GLDAS_NOAH10_M"]
   [virtual-umm provider-id source-short-name virtual-short-name]
   (update-related-urls provider-id source-short-name virtual-short-name virtual-umm "Rainf_tavg,AvgSurfT_inst,SoilMoi0_10cm_inst,time,lat,lon"))
 

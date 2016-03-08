@@ -6,7 +6,7 @@
 (def good-acls
   [{:guid "5F"
     :aces [{:permissions [:update :read] :group-guid "55"}]
-    :provider-object-identity {:provider-id "GSFCS4PA" :target "INGEST_MANAGEMENT_ACL"}}
+    :provider-object-identity {:provider-id "GES_DISC" :target "INGEST_MANAGEMENT_ACL"}}
    {:guid "79"
     :aces [{:permissions [:create :read] :group-guid "67"}]
     :system-object-identity {:target "GROUP"}}

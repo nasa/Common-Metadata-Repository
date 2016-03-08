@@ -266,7 +266,7 @@
                           {:entry-title (str "OMI/Aura Surface UVB Irradiance and Erythemal"
                                              " Dose Daily L3 Global 1.0x1.0 deg Grid V003")
                            :short-name "OMUVBd"})
-                        :provider-id "GSFCS4PA")])
+                        :provider-id "GES_DISC")])
         vp-colls (vp/ingest-virtual-collections [omi-coll])
         granule-ur "OMUVBd.003:OMI-Aura_L3-OMUVBd_2015m0103_v003-2015m0107t093002.he5"
         [ur-prefix ur-suffix] (str/split granule-ur #":")
@@ -274,7 +274,7 @@
         opendap-file-path (str opendap-dir-path granule-ur ".nc")]
     (util/are2 [src-granule-ur source-related-urls expected-related-url-maps]
                (let [_ (vp/ingest-source-granule
-                         "GSFCS4PA"
+                         "GES_DISC"
                          (dg/granule
                            omi-coll {:granule-ur src-granule-ur
                                      :related-urls source-related-urls
