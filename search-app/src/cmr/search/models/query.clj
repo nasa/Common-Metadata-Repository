@@ -143,6 +143,9 @@
    ;; <= max-value and >= min-value are used. Nil defaults to false.
    exclusive?])
 
+;; The HasGranulesCondition type represents a condition that restricts a query to collection that
+;; are known to have granules.
+(defrecord HasGranulesCondition [has-granules])
 
 (defmethod common-qm/default-sort-keys :granule
   [_]

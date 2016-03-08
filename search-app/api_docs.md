@@ -12,7 +12,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [CORS Header support](#cors-header-support)
     * [Query Parameters](#query-parameters)
     * [Parameter Options](#parameter-options)
-    * [Collection Query Parameters](#collection-query-parameters)
+    * [Collection Result Feature Parameters](#collection-result-features)
     * [Headers](#headers)
     * [Extensions](#extensions)
   * [Supported Result Formats](#supported-result-formats)
@@ -66,6 +66,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Point](#c-point)
         * [Line](#c-line)
     * [Additional Attribute](#c-additional-attribute)
+    * [With/without granules](#c-has-granules)
   * [Sorting Collection Results](#sorting-collection-results)
   * [Retrieving all Revisions of a Collection](#retrieving-all-revisions-of-a-collection)
   * [Granule Search By Parameters](#granule-search-by-parameters)
@@ -168,11 +169,11 @@ where parameter is the URL parameter whose behavior is to be affected, value is 
  * `and` - if set to true and if multiple values are listed for the param, the concepts must have ALL of these values in order to match. The default is `false` which means concepts with ANY of the values match. This option only applies to fields which may be multivalued; these are documented here.
  * `or` - this option only applies to granule attributes or science-keywords searches. If set to true, attribute searches will find granules that match any of the attributes. The default is false.
 
-##### <a name="collection-query-parameters"></a> Collection Query Parameters
+##### <a name="collection-result-features"></a> Collection Result Feature Parameters
 
-These are query parameters specific to collections
+These are query parameters that control what extra data is included with collection search results. They do not impact which collections are matched but can add additional data to the search results like facets, granule counts, and tags.
 
-  * `include_has_granules` - If this parameter is set to "true" this will include a flag indicating true or false if the collection has any granules at all. Supported in all response formats except opendata.
+  * `include_has_granules` - If this parameter is set to "true" this will include a flag indicating true or false if the collection has any granules at all. Supported in all response formats except opendata. To limit search results to collections with or without granules, see the [`has_granules`](#c-has-granules) parameter.
   * `include_granule_counts` - If this parameter is set to "true" this will include a count of the granules in each collection that would match the spatial and temporal conditions from the collection query. Supported in all response formats except opendata.
   * `include_facets` - If this parameter is set to "true" facets will be included in the collection results (not applicable to opendata results). Facets are described in detail below.
   * `hierarchical_facets` - If this parameter is set to "true" and the parameter `include_facets` is set to "true" the facets that are returned will be hierarchical. Hierarchical facets are described in the facets section below.
@@ -1276,6 +1277,12 @@ Find an additional attribute with name "X\Y\Z" with value 7.
 Multiple attributes can be provided. The default is for collections to match all the attribute parameters. This can be changed by specifying `or` option with `options[attribute][or]=true`.
 
 For additional attribute range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[attribute][exclude_boundary]=true`.
+
+#### <a name="c-has-granules"></a> Find collections with or without granules
+
+When `has_granules` is set to "true" or "false", results will be restricted to collections with or without granules, respectively.
+
+    curl "%CMR_ENDPOINT%/collections?has_granules=true"
 
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 

@@ -57,6 +57,7 @@
             [cmr.search.data.complex-to-simple-converters.temporal]
             [cmr.search.data.complex-to-simple-converters.spatial]
             [cmr.search.data.complex-to-simple-converters.two-d-coordinate-system]
+            cmr.search.data.complex-to-simple-converters.has-granules
 
             ;; Query Results Features
             [cmr.search.services.query-execution]

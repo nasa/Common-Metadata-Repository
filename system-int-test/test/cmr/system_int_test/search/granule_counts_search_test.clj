@@ -213,7 +213,7 @@
                                                         coll6 3 orbit-coll 1}
                                                  results)))))
 
-    (testing "has granules"
+    (testing "include_has_granules parameter"
       (testing "invalid include-has-granules"
         (is (= {:errors ["Parameter include_has_granules must take value of true, false, or unset, but was [foo]"] :status 400}
                (search/find-refs :collection {:include-has-granules "foo"})))
@@ -234,7 +234,23 @@
              :xml (search/find-refs :collection {:include-has-granules true})
              :echo10 (search/find-metadata :collection :echo10 {:include-has-granules true})
              :atom (search/find-concepts-atom :collection {:include-has-granules true})
-             :atom (search/find-concepts-json :collection {:include-has-granules true}))))))
+             :atom (search/find-concepts-json :collection {:include-has-granules true}))))
+
+    (testing "has_granules parameter"
+
+      (let [results (search/find-refs :collection {"has_granules" "true"})]
+        (is (= (set (map :concept-id [coll1 coll3 coll4 coll5 coll6 orbit-coll]))
+               (set (map :id (:refs results))))))
+
+      (let [results (search/find-refs :collection {"has_granules" "false"})]
+        (is (= [(:concept-id coll2)]
+               (map :id (:refs results)))))
+
+      (testing "direct transformer query"
+        (let [results (search/find-metadata :collection :echo10 {"has_granules" "true"
+                                                                 :concept-id (map :concept-id all-colls)})]
+          (is (= (set (map :concept-id [coll1 coll3 coll4 coll5 coll6 orbit-coll]))
+                 (set (map :concept-id (:items results))))))))))
 
 (deftest collection-has-granules-caching-test
   (let [;; Create collections
@@ -276,7 +292,7 @@
           (let [refs (search/find-refs :collection {:include-granule-counts true})]
             (is (gran-counts/granule-counts-match? :xml {coll1 2 coll2 2} refs)))))
 
-      (testing "has_granules"
+      (testing "include_has_granules"
         (testing "without include-granule-counts"
           (are [result-format results]
                (let [expected-has-granules (util/map-keys :concept-id {coll1 true coll2 true})
