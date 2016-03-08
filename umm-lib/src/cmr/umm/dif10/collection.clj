@@ -25,6 +25,10 @@
             [cmr.umm.dif.collection.extended-metadata :as em])
   (:import cmr.umm.collection.UmmCollection))
 
+(def not-provided
+  "place holder string value for not provided string field"
+  "Not provided")
+
 (defn- xml-elem->Product
   "Returns a UMM Product from a parsed Collection Content XML structure"
   [collection-content]
@@ -64,6 +68,7 @@
      :use-constraints (cx/string-at-path xml-struct [:Use_Constraints])
      :organizations (org/xml-elem->Organizations xml-struct)
      :publication-references (ref/xml-elem->References xml-struct)
+     :collection-citations (ref/xml-elem->Citations xml-struct)
      :summary (cx/string-at-path xml-struct [:Summary :Abstract])
      :purpose (cx/string-at-path xml-struct [:Summary :Purpose])
      :related-urls (ru/xml-elem->RelatedURLs xml-struct)
@@ -96,6 +101,25 @@
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
    :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd"})
 
+(def product-levels
+  "The set of values that DIF 10 defines for Processing levels as enumerations in its schema"
+  #{not-provided "0" "1" "1A" "1B" "1T" "2" "2G" "2P" "3" "4" "NA"})
+
+(defn- dif10-product-level-id
+  "Returns the given product-level-id in DIF10 format."
+  [product-level-id]
+  (when product-level-id
+    (product-levels (str/replace product-level-id #"Level " ""))))
+
+(defn- generate-dataset-citations
+  "Generates a dataset citation given a umm-collection map"
+  [collection]
+  (for [citation (:collection-citations collection)
+        :let [other-reference-details (:other-reference-details citation)]
+        :when (not (nil? other-reference-details))]
+    (clojure.data.xml/element :Dataset_Citation {}
+                              (clojure.data.xml/element :Other_Citation_Details {} other-reference-details))))
+
 (extend-protocol dif10-core/UmmToDif10Xml
   UmmCollection
   (umm->dif10-xml
@@ -112,6 +136,7 @@
                                (x/element :Short_Name {} short-name)
                                (x/element :Version {} version-id))
                     (x/element :Entry_Title {} entry-title)
+                    (generate-dataset-citations collection)
                     (personnel/generate-personnel personnel)
                     (sk/generate-science-keywords science-keywords)
                     (platform/generate-platforms platforms)

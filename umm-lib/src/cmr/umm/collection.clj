@@ -280,6 +280,42 @@
      other-reference-details
      ])
 
+
+(defrecord CollectionCitation
+    [
+     author
+
+     publication-date
+
+     title
+
+     series
+
+     edition
+
+     volume
+
+     issue
+
+     report-number
+
+     publication-place
+
+     publisher
+
+     pages
+
+     isbn
+
+     ;; Digital Object Identifier
+     doi
+
+     related-url
+
+     ;; String for miscellaneous content
+     other-reference-details
+     ])
+
 (def collection-progress-states
   [:planned :in-work :complete])
 
@@ -349,6 +385,9 @@
 
    ;; keyword; one of the values defined in collection-progress-states
    collection-progress
+
+   ;; (seq of PublicationReference) This element describes DataSet Citations.
+   collection-citations
    ])
 
 

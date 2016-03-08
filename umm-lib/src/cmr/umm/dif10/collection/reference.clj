@@ -40,6 +40,11 @@
   (seq (map xml-elem->Reference
             (cx/elements-at-path collection-element [:Reference]))))
 
+(defn xml-elem->Citations
+  [collection-element]
+  (seq (map xml-elem->Reference
+            (cx/elements-at-path collection-element [:Data_Set_Citation]))))
+
 (defn generate-references
   "Returns a seq of DIF 10 Reference elements from a seq of UMM publication references."
   [references]
