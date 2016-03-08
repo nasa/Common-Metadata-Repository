@@ -1,5 +1,6 @@
 (ns cmr.search.services.tagging.tagging-service-messages
-  "This contains error response messages for the tagging service")
+  "This contains error response messages for the tagging service"
+  (:require [clojure.string :as str]))
 
 (def token-required-for-tag-modification
   "Tags cannot be modified without a valid user token.")
@@ -23,3 +24,8 @@
 (defn tag-deleted
   [concept-id]
   (format "Tag with concept id [%s] was deleted." concept-id))
+
+(defn inaccessible-collections
+  [concept-ids]
+  (format "The following collections do not exist or are not accessible: %s."
+          (str/join ", " concept-ids)))

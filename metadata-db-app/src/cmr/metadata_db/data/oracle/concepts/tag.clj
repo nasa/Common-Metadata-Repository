@@ -6,7 +6,8 @@
             [cmr.common.date-time-parser :as p]
             [clj-time.coerce :as cr]
             [cmr.oracle.connection :as oracle]
-            [cmr.metadata-db.data.concepts :as concepts]))
+            [cmr.metadata-db.data.concepts :as concepts]
+            [cmr.metadata-db.data.ingest-events :as ingest-events]))
 
 (defmethod c/db-result->concept-map :tag
   [concept-type db provider-id result]
@@ -29,7 +30,7 @@
   [db tag-concept-tombstone]
   (let [tag-key (:native-id tag-concept-tombstone)]
     (concepts/find-latest-concepts db {:provider-id "CMR"}
-                                      {:concept-type :tag-association :tag-key tag-key})))
+                                   {:concept-type :tag-association :tag-key tag-key})))
 
 (defn cascade-tag-delete-to-tag-associations
   "Save tombstones for all the tag associations for the given tag"
@@ -45,9 +46,13 @@
         tombstones (map (fn [concept] (-> concept
                                           (assoc :deleted true :metadata "")
                                           (update :revision-id inc)))
-                     tag-associations)]
+                        tag-associations)]
     (doseq [tombstone tombstones]
-      (concepts/save-concept db {:provider-id "CMR" :small false} tombstone))))
+      (concepts/save-concept db {:provider-id "CMR" :small false} tombstone)
+      ;; publish tag-association delete event
+      (ingest-events/publish-event
+        (:context db)
+        (ingest-events/concept-delete-event tombstone)))))
 
 ;; CMR-2520 Remove this and the related functions when implementing asynchronous cascade deletes
 (defmethod c/after-save :tag
