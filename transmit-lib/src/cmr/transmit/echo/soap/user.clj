@@ -5,8 +5,7 @@
             [cmr.common.xml.simple-xpath :as xpath]
             [cmr.common.log :refer (debug info warn error)]))
 
-(def
-  ^{:doc "Keys within a user map."}
+(def "Keys within a user map."
   user-keys [:password :guid :user-domain :user-region :primary-study-area :user-type :username :title
                 :first-name :middle-initial :last-name :param-map :email :opt-in :organization-name :addresses
                 :phones :roles :creation-date])
