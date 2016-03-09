@@ -117,8 +117,8 @@
   (for [citation (:collection-citations collection)
         :let [other-reference-details (:other-reference-details citation)]
         :when (not (nil? other-reference-details))]
-    (clojure.data.xml/element :Dataset_Citation {}
-                              (clojure.data.xml/element :Other_Citation_Details {} other-reference-details))))
+    (x/element :Dataset_Citation {}
+               (x/element :Other_Citation_Details {} other-reference-details))))
 
 (extend-protocol dif10-core/UmmToDif10Xml
   UmmCollection
