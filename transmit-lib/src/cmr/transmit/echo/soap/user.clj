@@ -5,10 +5,10 @@
             [cmr.common.xml.simple-xpath :as xpath]
             [cmr.common.log :refer (debug info warn error)]))
 
-(def "Keys within a user map."
-  user-keys [:password :guid :user-domain :user-region :primary-study-area :user-type :username :title
-                :first-name :middle-initial :last-name :param-map :email :opt-in :organization-name :addresses
-                :phones :roles :creation-date])
+(def user-keys "Keys within a user map."
+  [:password :guid :user-domain :user-region :primary-study-area :user-type :username :title
+   :first-name :middle-initial :last-name :param-map :email :opt-in :organization-name :addresses
+   :phones :roles :creation-date])
 
 (def
   ^{:doc "A minimally value user map"}
