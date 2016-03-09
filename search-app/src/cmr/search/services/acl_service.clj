@@ -7,6 +7,10 @@
   (fn [context acls concept]
     (:concept-type concept)))
 
+(defmethod acls-match-concept? :default
+  [context acls concept]
+  true)
+
 (def concept-type->applicable-field
   "A mapping of concept type to the field in the ACL indicating if it is collection or granule applicable."
   {:granule :granule-applicable

@@ -7,7 +7,6 @@
             [cmr.search.services.acl-service :as acl-service]
             [cmr.acl.umm-matchers :as umm-matchers]))
 
-
 (defmethod qe/add-acl-conditions-to-query :collection
   [context query]
   (let [group-ids (map #(if (keyword? %) (name %) %) (acl-helper/context->sids context))
