@@ -98,6 +98,7 @@
                         [criterium "0.4.3"]
                         ;; Must be listed here as metadata db depends on it.
                         [drift "1.5.3"]
+                        [proto-repl-charts "0.2.0"]
                         [proto-repl "0.1.2"]]
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
