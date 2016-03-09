@@ -34,11 +34,11 @@
 
 (deftest generate-virtual-granule-test
   (let [ast-l1a "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
-        omuvbd "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003"
-        airx3std "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006"
-        airx3stm "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) V006"
-        gldas_noah10_3h "GLDAS Noah Land Surface Model L4 3 hourly 1.0 x 1.0 degree V2.0"
-        gldas_noah10_m "GLDAS Noah Land Surface Model L4 Monthly 1.0 x 1.0 degree V2.0"
+        omuvbd "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC"
+        airx3std "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006 (AIRX3STD) at GES DISC"
+        airx3stm "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) V006 (AIRX3STM) at GES DISC"
+        gldas_noah10_3h "GLDAS Noah Land Surface Model L4 3 hourly 1.0 x 1.0 degree V2.0 (GLDAS_NOAH10_3H) at GES DISC"
+        gldas_noah10_m "GLDAS Noah Land Surface Model L4 Monthly 1.0 x 1.0 degree V2.0 (GLDAS_NOAH10_M) at GES DISC"
         ast-l1t "ASTER Level 1 precision terrain corrected registered at-sensor radiance V003"
         ;; Generate access url objects from string urls
         gen-access-urls (fn [urls] (map #(hash-map :type "GET DATA" :url %) urls))

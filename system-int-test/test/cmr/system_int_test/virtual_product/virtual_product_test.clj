@@ -264,7 +264,7 @@
                      [(assoc
                         (dc/collection
                           {:entry-title (str "OMI/Aura Surface UVB Irradiance and Erythemal"
-                                             " Dose Daily L3 Global 1.0x1.0 deg Grid V003")
+                                             " Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC")
                            :short-name "OMUVBd"})
                         :provider-id "GES_DISC")])
         vp-colls (vp/ingest-virtual-collections [omi-coll])
@@ -311,8 +311,8 @@
   (vp/assert-psa-granules-match index/wait-until-indexed))
 
 (def disabled-source-colls
-  #{"OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003"
-    "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006"})
+  #{"OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC"
+    "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006 (AIRX3STD) at GES DISC"})
 
 (deftest virtual-products-disabled-source-collections-test
   (vp/with-disabled-source-collections
