@@ -271,7 +271,7 @@
         granule-ur "OMUVBd.003:OMI-Aura_L3-OMUVBd_2015m0103_v003-2015m0107t093002.he5"
         [ur-prefix ur-suffix] (str/split granule-ur #":")
         opendap-dir-path "http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/"
-        opendap-file-path (str opendap-dir-path granule-ur ".nc")]
+        opendap-file-path (str opendap-dir-path granule-ur)]
     (util/are2 [src-granule-ur source-related-urls expected-related-url-maps]
                (let [_ (vp/ingest-source-granule
                          "GES_DISC"
@@ -289,32 +289,23 @@
 
                "Related urls with only one access url which matches the pattern"
                granule-ur
-               [{:url opendap-file-path :type "OPENDAP DATA ACCESS" :mime-type "application/x-netcdf"}]
-               [{:url (str opendap-file-path "?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
-                 :type "OPENDAP DATA ACCESS"
-                 :mime-type mt/opendap
-                 :title "(GET DATA : OPENDAP DATA (DODS))"}]
+               [{:url opendap-file-path :type "OPENDAP DATA ACCESS"}]
+               [{:url (str opendap-file-path ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
+                 :type "GET DATA"}]
 
                "Related urls with only one access url which matches the pattern, but is not
-               an online access url"
+               an online resource url"
                granule-ur
-               [{:url opendap-file-path}]
-               ;; Some additional attributes are added by CMR automatically, but url remains the same
-               [{:url opendap-file-path
-                 :type "VIEW RELATED INFORMATION"
-                 :title "(USER SUPPORT)"}]
+               [{:url opendap-file-path :type "VIEW RELATED INFORMATION"}]
+               ;; Only OPENDAP online resource url is kept in virtual granule
+               nil
 
                "Multiple related urls"
                granule-ur
                [{:url opendap-file-path :type "OPENDAP DATA ACCESS" :mime-type "application/x-netcdf"}
-                {:url "http://www.foo.com"}]
-               [{:url (str opendap-file-path "?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
-                 :type "OPENDAP DATA ACCESS"
-                 :mime-type mt/opendap
-                 :title "(GET DATA : OPENDAP DATA (DODS))"}
-                {:url "http://www.foo.com"
-                 :type "VIEW RELATED INFORMATION"
-                 :title "(USER SUPPORT)"}])))
+                {:url "http://www.foo.com" :type "VIEW RELATED INFORMATION"}]
+               [{:url (str opendap-file-path ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
+                 :type "GET DATA"}])))
 
 (deftest ast-granule-umm-matchers-test
   (vp/assert-psa-granules-match index/wait-until-indexed))

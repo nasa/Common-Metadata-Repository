@@ -1,6 +1,7 @@
 (ns cmr.virtual-product.data.source-to-virtual-mapping
   "Defines source to vritual granule mapping rules."
   (:require [cmr.umm.granule :as umm-g]
+            [cmr.umm.collection :as umm-c]
             [clojure.string :as str]
             [cmr.common.mime-types :as mt]
             [cmr.virtual-product.config :as vp-config]
@@ -234,19 +235,21 @@
   virtual-umm)
 
 (defn- subset-opendap-resource-url
-  "Update online-access-url of OMI/AURA virtual-collection to use an OpenDAP url. For example:
-  http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5.nc
-  will be translated to
-  http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5.nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"
+  "Update online-resource-url of OMI/AURA source granule to use an OpenDAP url as an online-access-url.
+  For example:
+  http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5
+  of OnlineResourceURL that has type of 'OPENDAP DATA ACCESS' will be converted into
+  http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5.nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat
+  as an OnlineAccessURL in the virtual granule and the other OnlineResourceURLs or OnlineAccessURLs
+  in the source granule will be dropped."
   [related-urls src-granule-ur opendap-subset]
   (seq (for [related-url related-urls
-             ;; access urls shouldn't be present in the virtual granules
-             :when (not= (:type related-url) "GET DATA")]
-         (if (and (= (:type related-url) "OPENDAP DATA ACCESS")
-                  (= (:mime-type related-url) mt/opendap))
-           (assoc related-url
-                  :url (str (:url related-url) "?" opendap-subset))
-           related-url))))
+             ;; only opendap OnlineResourceUrls in source granule should be present in the virtual granules
+             :when (= (:type related-url) "OPENDAP DATA ACCESS")]
+         ;; only URL is kept in virtual granule OnlineAccessURL
+         (umm-c/map->RelatedURL
+           {:type "GET DATA"
+            :url (str (:url related-url) ".nc?" opendap-subset)}))))
 
 (defn- remove-granule-size
   "Remove the size of the data granule if it is present"

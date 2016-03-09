@@ -196,7 +196,19 @@
       <URL>http://acdisc.gesdisc.eosdis.nasa.gov/data/s4pa///Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf</URL>
     </OnlineAccessURL>
   </OnlineAccessURLs>
-  <OnlineResources/>
+  <OnlineResources>
+    <OnlineResource>
+      <URL>ftp://n5eil01u.ecs.nsidc.org/DP3/GLAS/GLAH06.034/2003.09.27/GLAH06_634_1102_028_0117_4_01_0001.H5.MET.xml</URL>
+      <Type>METADATA</Type>
+      <MimeType>text/xml</MimeType>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5</URL>
+      <Description>The OPENDAP location for the granule.</Description>
+      <Type>GET DATA : OPENDAP DATA (DODS)</Type>
+      <MimeType>application/hdf</MimeType>
+    </OnlineResource>
+  </OnlineResources>
   <Orderable>false</Orderable>
   <DataFormat>HDF</DataFormat>
   <Visible>true</Visible>
