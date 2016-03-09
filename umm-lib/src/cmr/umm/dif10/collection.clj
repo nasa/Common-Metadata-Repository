@@ -157,8 +157,8 @@
                     (psa/generate-product-specific-attributes product-specific-attributes)
                     (let [processing-level-id
                           (dif10-product-level-id (-> collection :product :processing-level-id))]
-                      (when-not (empty? processing-level-id)
-                        (x/element :Product_Level_Id {} processing-level-id)))
+                      (when (some? processing-level-id))
+                        (x/element :Product_Level_Id {} processing-level-id))
                     (when collection-data-type
                       (x/element :Collection_Data_Type {} collection-data-type))
                     (when access-value
