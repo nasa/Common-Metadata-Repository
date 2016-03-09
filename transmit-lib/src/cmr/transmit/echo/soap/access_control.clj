@@ -22,38 +22,6 @@
         ["ns3:SystemObjectIdentity"
           ["ns3:Target" system-object-identity]]]))
 
-(defn- create-acl-request
-  "Returns a hiccup representation of the SOAP body for a CreateAcl request using the provided parameters."
-  [param-map]
-  (let [{:keys [token acl]} param-map]
-    ["ns2:CreateAcl"
-      soap/soap-ns-map
-      ["ns2:token" token]
-      ["ns2:acl" acl]]))
-
-(defn- set-permissions-request
-  "Returns a hiccup representation of the SOAP body for a SetPermissions request using the provided parameters."
-  [param-map]
-  (let [{:keys [token acl-guid aces replace-all]} param-map]
-    ["ns2:SetPermissions"
-      soap/soap-ns-map
-      ["ns2:token" token]
-      ["ns2:aclGuid" acl-guid]
-      ["ns2:aces"
-        (soap/item-list aces)]
-      ["ns2:replaceAll" (or replace-all "false")]]))
-
-(defn- get-acls-by-type-request
-  "Returns a hiccup representation of the SOAP body for a GetAclsbyType request using the provided parameters."
-  [param-map]
-  (let [{:keys [token object-identity-types provider-guid-filter]} param-map]
-    ["ns2:GetAclsByType"
-      soap/soap-ns-map
-      ["ns2:token" token]
-      ["ns2:objectIdentityTypes" (soap/item-list object-identity-types)]
-      ;; ns2:providerGuidFilter is required, even if it is empty
-      ["ns2:providerGuidFilter" (or provider-guid-filter "")]]))
-
 (defn- remove-acls-request
   "Returns a hiccup representation of the SOAP body for a RemoveAcls request using the provided parameters."
   [param-map]
@@ -68,26 +36,54 @@
     [token acl]
     And returns the GUID of the new ACL."
   [param-map]
-  (soap/string-from-soap-request :access-control :create-acl (create-acl-request param-map)))
+  (let [{:keys [token acl]} param-map
+        body ["ns2:CreateAcl"
+                soap/soap-ns-map
+                ["ns2:token" token]
+                ["ns2:acl" acl]]]
+      (-> (soap/post-soap :access-control body)
+          (soap/extract-string :create-acl))))
 
 (defn set-permissions
   "Perform a SetPermissions request against the SOAP API.  Takes a map containing request parameters:
     [token acl-guid aces replace-all]
-    And has no return value."
+    And returns nil."
   [param-map]
-  (soap/post-soap :access-control (set-permissions-request param-map))
-  nil)
+  (let [{:keys [token acl-guid aces replace-all]} param-map
+        body ["ns2:SetPermissions"
+                soap/soap-ns-map
+                ["ns2:token" token]
+                ["ns2:aclGuid" acl-guid]
+                ["ns2:aces"
+                  (soap/item-list aces)]
+                ["ns2:replaceAll" (or replace-all "false")]]]
+      (soap/post-soap :access-control body)
+      nil))
 
 (defn get-acls-by-type
   "Perform a GetAclsByType request against the SOAP API.  Takes a map containing request parameters:
     [token object-identity-types provider-guid-filter]
     And returns an array of clojure.data.xml elements representing the ACLs"
   [param-map]
-  (soap/item-list-from-soap-request :access-control :get-acls-by-type (get-acls-by-type-request param-map)))
+  (let [{:keys [token object-identity-types provider-guid-filter]} param-map
+        body ["ns2:GetAclsByType"
+                soap/soap-ns-map
+                ["ns2:token" token]
+                ["ns2:objectIdentityTypes" (soap/item-list object-identity-types)]
+                ;; ns2:providerGuidFilter is required, even if it is empty
+                ["ns2:providerGuidFilter" (or provider-guid-filter "")]]]
+      (-> (soap/post-soap :access-control body)
+          (soap/extract-item-list :get-acls-by-type))))
 
 (defn remove-acls
   "Perform a RemoveAcls request against the SOAP API.  Takes a map containing request parameters:
     [token acls]
-    And has no return value."
+    And returns nil."
   [param-map]
-  (soap/post-soap :access-control (remove-acls-request param-map)))
+  (let [{:keys [token guids]} param-map
+        body ["ns2:RemoveAcls"
+                soap/soap-ns-map
+                ["ns2:token" token]
+                ["ns2:guids" (soap/item-list guids)]]]
+    (soap/post-soap :access-control body)
+    nil))

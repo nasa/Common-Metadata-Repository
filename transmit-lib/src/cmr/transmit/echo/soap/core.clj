@@ -32,26 +32,26 @@
   [items]
   (for [item items]["ns3:Item" item]))
 
-(defn- xpath-to-keyword
+(defn- keyword-from-xpath
   "Generate a keyword based on the last token of an xpath."
   [xpath]
   (-> (s/replace xpath #".*/" "")
       (csk/->kebab-case)
       (keyword)))
 
-(defn xpath-to-map-pair
+(defn parse-xpath-from-xml
   "Given a clojure.data.xml object and an xpath, return a vector containing a keyword
     constructed from the xpath and the value at the xpath."
   [xml xpath]
-  (let [key (xpath-to-keyword xpath)]
+  (let [key (keyword-from-xpath xpath)]
     [key (xp/value-of xml xpath)]))
 
-(defn map-from-xpaths
+(defn parse-xpaths-from-xml
   "Given a clojure.data.xml object and a vector of xpaths, return a map of the values at each xpath."
   [xml xpaths]
-  (into {} (map #(xpath-to-map-pair xml %) xpaths)))
+  (into {} (map #(parse-xpath-from-xml xml %) xpaths)))
 
-(defn xpath-key-value-map
+(defn parse-xpath-map-from-xml
   "Given an array of clojure.data.xml objects and two xpaths, return a map containing for each
    object the value of the first xpath as the key and the second xpath as the value."
   [xml key-xpath val-xpath]
@@ -61,25 +61,25 @@
             (xp/value-of % val-xpath)))
     (into {})))
 
-(defn- keyword-to-xpath
-  "Generate a simple xpath using the syntax of teh ECHO 10 SOAP API from a keyword."
+(defn- xpath-from-keyword
+  "Generate a simple xpath using the syntax of the ECHO 10 SOAP API from a keyword."
   [key]
   (-> (name key)
       (csk/->PascalCase)))
 
-(defn keyword-to-map-pair
+(defn parse-keyword-from-xml
   "Given a clojure.data.xml object and an keyword, return a vector containing the keyword
     and the value found at an xpath constructed from that keyword."
   [xml key]
-  (let [xpath (keyword-to-xpath key)]
+  (let [xpath (xpath-from-keyword key)]
     [key (xp/value-of xml xpath)]))
 
-(defn map-from-keywords
+(defn parse-keywords-from-xml
   "Given a clojure.data.xml object and a vector of keywords, return a map of the values at xpaths
     constucted from each keyword."
   [xml keywords]
   (when xml
-    (into {} (map #(keyword-to-map-pair xml %) keywords))))
+    (into {} (map #(parse-keyword-from-xml xml %) keywords))))
 
 (defn post-xml
   "Post an XML object to the specified endpoint.  The XML must be a hiccup style object."
@@ -110,7 +110,7 @@
     (debug (format "SOAP request got %s response with body: %s"
             status response))
     (case status
-          (200, 201) [status response]
+          (200, 201) response
           401 (cmr.common.services.errors/throw-service-error :unauthorized response)
           404 (cmr.common.services.errors/throw-service-error :not-found response)
           ;; soap-services returns all SOAP errors as 500.  Check if it is a SOAP error and if so,
@@ -132,47 +132,43 @@
   [operation]
   (->>
     (-> (csk/->PascalCaseString operation)
-      (str "Response")
-      (s/replace #"([^2]*)(2)(.*)" "$1$3$2"))
+        (str "Response")
+        (s/replace #"([^2]*)(2)(.*)" "$1$3$2"))
     (str "/Envelope/Body/")))
 
-(defn string-from-soap-request
+(defn extract-string
   "Submits a SOAP request and returns the text contents of the response"
-  [service operation request-body]
-  (let [[status body-xml] (post-soap service
-                            request-body)]
-      (xp/value-of body-xml (str (response-element-xpath-from-keyword operation) "/result"))))
+  [response-body operation]
+  (info "extract " (response-element-xpath-from-keyword operation) " from " response-body)
+  (xp/value-of response-body (str (response-element-xpath-from-keyword operation) "/result")))
 
-(defn item-list-from-soap-request
+(defn extract-item-list
   "Submits a SOAP request and returns a list of clojure.data.xml objects representing the items in the response."
-  [service operation request-body]
-  (let [[status body-xml] (post-soap service
-                            request-body)
-         xpath-context (xpath/create-xpath-context-for-xml body-xml)
+  [response-body operation]
+  (let [ xpath-context (xpath/create-xpath-context-for-xml response-body)
          items-xpath (xpath/parse-xpath (str (response-element-xpath-from-keyword operation) "/result/Item"))
          items (-> (xpath/evaluate xpath-context items-xpath)
                    (:context))]
       items))
 
-(defn item-map-from-soap-request
+(defn extract-item-map
   "Submits a SOAP request and returns a map representing the single item in the response."
-  [service operation request-body keywords]
-  (let [[status body-xml] (post-soap service request-body)]
-    (-> body-xml
-        (xpath/create-xpath-context-for-xml)
-        (xpath/evaluate (xpath/parse-xpath
-                          (str (response-element-xpath-from-keyword operation) "/result")))
-        (:context)
-        (first)
-        (map-from-keywords keywords))))
+  [response-body operation keywords]
+  (let [xpath-context (xpath/create-xpath-context-for-xml response-body)
+        _ (info "response-body = " response-body)
+        _ (info "xpath = " (str (response-element-xpath-from-keyword operation) "/result/Item"))
+        item-xpath (xpath/parse-xpath (str (response-element-xpath-from-keyword operation) "/result"))
+        item (-> (xpath/evaluate xpath-context item-xpath)
+                 (:context)
+                 (first))]
+    (info "Extract Item map from " item " (we will pull the first item) with keywords " keywords)
+    (parse-keywords-from-xml item  keywords)))
 
-(defn item-map-list-from-soap-request
+(defn extract-item-map-list
   "Submits a SOAP request and returns a list of maps representing the items in the response."
-  [service operation request-body keywords]
-  (let [[status body-xml] (post-soap service
-                            request-body)
-         xpath-context (xpath/create-xpath-context-for-xml body-xml)
-         items-xpath (xpath/parse-xpath (str (response-element-xpath-from-keyword operation) "/result/Item"))
-         items (-> (xpath/evaluate xpath-context items-xpath)
-                   (:context))]
-    (map #(map-from-keywords % keywords) items)))
+  [response-body operation keywords]
+  (let [xpath-context (xpath/create-xpath-context-for-xml response-body)
+        items-xpath (xpath/parse-xpath (str (response-element-xpath-from-keyword operation) "/result/Item"))
+        items (-> (xpath/evaluate xpath-context items-xpath)
+                  (:context))]
+    (map #(parse-keywords-from-xml % keywords) items)))
