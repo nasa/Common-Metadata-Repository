@@ -25,6 +25,10 @@
             [cmr.umm.dif.collection.extended-metadata :as em])
   (:import cmr.umm.collection.UmmCollection))
 
+(def not-provided
+  "place holder string value for not provided string field"
+  "Not provided")
+
 (defn- xml-elem->Product
   "Returns a UMM Product from a parsed Collection Content XML structure"
   [collection-content]
@@ -96,6 +100,16 @@
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
    :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd"})
 
+(def product-levels
+  "The set of values that DIF 10 defines for Processing levels as enumerations in its schema"
+  #{not-provided "0" "1" "1A" "1B" "1T" "2" "2G" "2P" "3" "4" "NA"})
+
+(defn- dif10-product-level-id
+  "Returns the given product-level-id in DIF10 format."
+  [product-level-id]
+  (when product-level-id
+    (product-levels (str/replace product-level-id #"Level " ""))))
+
 (extend-protocol dif10-core/UmmToDif10Xml
   UmmCollection
   (umm->dif10-xml
@@ -107,47 +121,51 @@
                    temporal-keywords personnel collection-associations quality use-constraints
                    publication-references temporal access-value]} collection]
        (x/emit-str
-         (x/element :DIF dif10-header-attributes
-                    (x/element :Entry_ID {}
-                               (x/element :Short_Name {} short-name)
-                               (x/element :Version {} version-id))
-                    (x/element :Entry_Title {} entry-title)
-                    (personnel/generate-personnel personnel)
-                    (sk/generate-science-keywords science-keywords)
-                    (platform/generate-platforms platforms)
-                    (t/generate-temporal temporal)
-                    (progress/generate collection)
-                    (s/generate-spatial-coverage spatial-coverage)
-                    (pj/generate-projects projects)
-                    (x/element :Quality {} quality)
-                    (x/element :Use_Constraints {} use-constraints)
-                    (org/generate-organizations organizations)
-                    (ref/generate-references publication-references)
-                    (x/element :Summary {}
-                               (x/element :Abstract {} summary)
-                               (x/element :Purpose {} purpose))
-                    (ru/generate-related-urls related-urls)
-                    (ma/generate-metadata-associations collection-associations)
-                    (x/element :Metadata_Name {} "CEOS IDN DIF")
-                    (x/element :Metadata_Version {} "VERSION 10.2")
-                    (x/element :Metadata_Dates {}
-                               (x/element :Metadata_Creation {} (str insert-time))
-                               (x/element :Metadata_Last_Revision {} (str update-time))
-                               (when delete-time
-                                 (x/element :Metadata_Delete {} (str delete-time)))
-                               ;; No equivalent UMM fields exist for the next two elements which are
-                               ;; required elements in DIF 10.1. Currently adding a dummy date. This
-                               ;; needs to be reviewed as and when DIF 10 is updated.CMRIN-79
-                               (x/element :Data_Creation {} "1970-01-01T00:00:00")
-                               (x/element :Data_Last_Revision {} "1970-01-01T00:00:00"))
-                    (psa/generate-product-specific-attributes product-specific-attributes)
-                    (when collection-data-type
-                      (x/element :Collection_Data_Type {} collection-data-type))
-                    (when access-value
-                      (x/element :Extended_Metadata {}
-                                 (em/generate-metadata-elements
-                                   [{:name em/restriction_flag_external_meta_name
-                                     :value access-value}])))))))))
+        (x/element :DIF dif10-header-attributes
+                   (x/element :Entry_ID {}
+                              (x/element :Short_Name {} short-name)
+                              (x/element :Version {} version-id))
+                   (x/element :Entry_Title {} entry-title)
+                   (personnel/generate-personnel personnel)
+                   (sk/generate-science-keywords science-keywords)
+                   (platform/generate-platforms platforms)
+                   (t/generate-temporal temporal)
+                   (progress/generate collection)
+                   (s/generate-spatial-coverage spatial-coverage)
+                   (pj/generate-projects projects)
+                   (x/element :Quality {} quality)
+                   (x/element :Use_Constraints {} use-constraints)
+                   (org/generate-organizations organizations)
+                   (ref/generate-references publication-references)
+                   (x/element :Summary {}
+                              (x/element :Abstract {} summary)
+                              (x/element :Purpose {} purpose))
+                   (ru/generate-related-urls related-urls)
+                   (ma/generate-metadata-associations collection-associations)
+                   (x/element :Metadata_Name {} "CEOS IDN DIF")
+                   (x/element :Metadata_Version {} "VERSION 10.2")
+                   (x/element :Metadata_Dates {}
+                              (x/element :Metadata_Creation {} (str insert-time))
+                              (x/element :Metadata_Last_Revision {} (str update-time))
+                              (when delete-time
+                                (x/element :Metadata_Delete {} (str delete-time)))
+                              ;; No equivalent UMM fields exist for the next two elements which are
+                              ;; required elements in DIF 10.1. Currently adding a dummy date. This
+                              ;; needs to be reviewed as and when DIF 10 is updated.CMRIN-79
+                              (x/element :Data_Creation {} "1970-01-01T00:00:00")
+                              (x/element :Data_Last_Revision {} "1970-01-01T00:00:00"))
+                   (psa/generate-product-specific-attributes product-specific-attributes)
+                   (let [processing-level-id
+                         (dif10-product-level-id (-> collection :product :processing-level-id))]
+                     (when-not (empty? processing-level-id)
+                       (x/element :Product_Level_Id {} processing-level-id)))
+                   (when collection-data-type
+                     (x/element :Collection_Data_Type {} collection-data-type))
+                   (when access-value
+                     (x/element :Extended_Metadata {}
+                                (em/generate-metadata-elements
+                                 [{:name em/restriction_flag_external_meta_name
+                                   :value access-value}])))))))))
 
 (defn validate-xml
   "Validates the XML against the DIF schema."
