@@ -9,6 +9,9 @@
   "Build an Access Control Entry (ACE) based on the provided parameters.  This is pretty simplistic
     at the moment and will need to be updated as more complex ACEs are needed."
   [group-guid permissions]
+  ;; The seq here is a hack to get this to be processed right when we turn it into XML.  A wrapping
+  ;; vector with no element name string causes an error, but a sequence of vectors works properly.
+  ;; Update this if we think of a better way.
   (seq [["ns3:Sid"
           ["ns3:GroupSid"
             ["ns3:GroupGuid" group-guid]]]
@@ -18,6 +21,9 @@
   "Build an Access Control List (ACL) based on the provided parameters.  This is pretty simplistic
     at the moment and will need to be updated as more complex ACEs are needed."
   [aces system-object-identity]
+  ;; The seq here is a hack to get this to be processed right when we turn it into XML.  A wrapping
+  ;; vector with no element name string causes an error, but a sequence of vectors works properly.
+  ;; Update this if we think of a better way.
   (seq [["ns3:AccessControlEntries" (soap/item-list aces)]
         ["ns3:SystemObjectIdentity"
           ["ns3:Target" system-object-identity]]]))

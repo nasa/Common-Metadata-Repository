@@ -139,29 +139,23 @@
 (defn extract-string
   "Submits a SOAP request and returns the text contents of the response"
   [response-body operation]
-  (info "extract " (response-element-xpath-from-keyword operation) " from " response-body)
   (xp/value-of response-body (str (response-element-xpath-from-keyword operation) "/result")))
 
 (defn extract-item-list
   "Submits a SOAP request and returns a list of clojure.data.xml objects representing the items in the response."
   [response-body operation]
   (let [xpath-context (xpath/create-xpath-context-for-xml response-body)
-        items-xpath (xpath/parse-xpath (str (response-element-xpath-from-keyword operation) "/result/Item"))
-        items (-> (xpath/evaluate xpath-context items-xpath)
-                  (:context))]
-      items))
+        items-xpath (xpath/parse-xpath (str (response-element-xpath-from-keyword operation) "/result/Item"))]
+      (:context (xpath/evaluate xpath-context items-xpath))))
 
 (defn extract-item-map
   "Submits a SOAP request and returns a map representing the single item in the response."
   [response-body operation keywords]
   (let [xpath-context (xpath/create-xpath-context-for-xml response-body)
-        _ (info "response-body = " response-body)
-        _ (info "xpath = " (str (response-element-xpath-from-keyword operation) "/result/Item"))
         item-xpath (xpath/parse-xpath (str (response-element-xpath-from-keyword operation) "/result"))
         item (-> (xpath/evaluate xpath-context item-xpath)
                  (:context)
                  (first))]
-    (info "Extract Item map from " item " (we will pull the first item) with keywords " keywords)
     (parse-keywords-from-xml item  keywords)))
 
 (defn extract-item-map-list
