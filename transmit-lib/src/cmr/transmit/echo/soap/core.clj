@@ -147,8 +147,8 @@
   [response-body operation]
   (let [xpath-context (xpath/create-xpath-context-for-xml response-body)
         items-xpath (xpath/parse-xpath (str (response-element-xpath-from-keyword operation) "/result/Item"))
-        items (-> (xpath/evaluate xpath-context items-xpath
-                   (:context)))]
+        items (-> (xpath/evaluate xpath-context items-xpath)
+                  (:context))]
       items))
 
 (defn extract-item-map
