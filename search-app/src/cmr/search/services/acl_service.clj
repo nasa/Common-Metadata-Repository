@@ -7,7 +7,8 @@
   (fn [context acls concept]
     (:concept-type concept)))
 
-(defmethod acls-match-concept? :default
+;; tags have no acls so we always assume it matches
+(defmethod acls-match-concept? :tag
   [context acls concept]
   true)
 
