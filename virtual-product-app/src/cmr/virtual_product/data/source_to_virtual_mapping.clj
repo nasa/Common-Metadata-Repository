@@ -86,39 +86,54 @@
    ["GES_DISC" "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC"]
    {:short-name "OMUVBd"
     :virtual-collections [{:entry-title "OMI/Aura Surface UVB UV Index, Erythemal Dose, and Erythemal Dose Rate Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd_ErythemalUV) at GES DISC"
-                           :short-name "OMUVBd_ErythemalUV"}]}
+                           :short-name "OMUVBd_ErythemalUV"
+                           :version-id "003"}]}
    ["GES_DISC" "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006 (AIRX3STD) at GES DISC"]
    {:short-name "AIRX3STD"
     :virtual-collections [{:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Water Vapor Mass Mixing Ratio V006 (AIRX3STD_H2O_MMR_Surf) at GES DISC"
-                           :short-name "AIRX3STD_H2O_MMR_Surf"}
+                           :short-name "AIRX3STD_H2O_MMR_Surf"
+                           :version-id "006"}
                           {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Outgoing Longwave Radiation V006 (AIRX3STD_OLR) at GES DISC"
-                           :short-name "AIRX3STD_OLR"}
+                           :short-name "AIRX3STD_OLR"
+                           :version-id "006"}
                           {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Surface Air Temperature V006 (AIRX3STD_SurfAirTemp) at GES DISC"
-                           :short-name "AIRX3STD_SurfAirTemp"}
+                           :short-name "AIRX3STD_SurfAirTemp"
+                           :version-id "006"}
                           {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Surface Skin Temperature V006 (AIRX3STD_SurfSkinTemp) at GES DISC"
-                           :short-name "AIRX3STD_SurfSkinTemp"}
+                           :short-name "AIRX3STD_SurfSkinTemp"
+                           :version-id "006"}
                           {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Total Carbon Monoxide V006 (AIRX3STD_TotCO) at GES DISC"
-                           :short-name "AIRX3STD_TotCO"}
+                           :short-name "AIRX3STD_TotCO"
+                           :version-id "006"}
                           {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Outgoing Longwave Radiation Clear Sky V006 (AIRX3STD_ClrOLR) at GES DISC"
-                           :short-name "AIRX3STD_ClrOLR"}
+                           :short-name "AIRX3STD_ClrOLR"
+                           :version-id "006"}
                           {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Methane Total Column V006 (AIRX3STD_TotCH4) at GES DISC"
-                           :short-name "AIRX3STD_TotCH4"}]}
+                           :short-name "AIRX3STD_TotCH4"
+                           :version-id "006"}]}
    ["GES_DISC" "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) V006 (AIRX3STM) at GES DISC"]
    {:short-name "AIRX3STM"
     :virtual-collections [{:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Clear Sky Outgoing Longwave Flux V006 (AIRX3STM_ClrOLR) at GES DISC"
-                           :short-name "AIRX3STM_ClrOLR"}
+                           :short-name "AIRX3STM_ClrOLR"
+                           :version-id "006"}
                           {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Water Vapor Mass Mixing Ratio at Surface V006 (AIRX3STM_H2O_MMR_Surf) at GES DISC"
-                           :short-name "AIRX3STM_H2O_MMR_Surf"}
+                           :short-name "AIRX3STM_H2O_MMR_Surf"
+                           :version-id "006"}
                           {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Outgoing Longwave Radiation V006 (AIRX3STM_OLR) at GES DISC"
-                           :short-name "AIRX3STM_OLR"}
+                           :short-name "AIRX3STM_OLR"
+                           :version-id "006"}
                           {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Surface Air Temperature V006 (AIRX3STM_SurfAirTemp) at GES DISC"
-                           :short-name "AIRX3STM_SurfAirTemp"}
+                           :short-name "AIRX3STM_SurfAirTemp"
+                           :version-id "006"}
                           {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Surface Skin Temperature V006 (AIRX3STM_SurfSkinTemp) at GES DISC"
-                           :short-name "AIRX3STM_SurfSkinTemp"}
+                           :short-name "AIRX3STM_SurfSkinTemp"
+                           :version-id "006"}
                           {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Total Carbon Monoxide V006 (AIRX3STM_TotCO) at GES DISC"
-                           :short-name "AIRX3STM_TotCO"}
+                           :short-name "AIRX3STM_TotCO"
+                           :version-id "006"}
                           {:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Methane Total Column V006 (AIRX3STM_TotCH4) at GES DISC"
-                           :short-name "AIRX3STM_TotCH4"}]}
+                           :short-name "AIRX3STM_TotCH4"
+                           :version-id "006"}]}
    ["LPDAAC_ECS" "ASTER Level 1 precision terrain corrected registered at-sensor radiance V003"]
    {:short-name "AST_L1T"
     :virtual-collections [{:entry-title "ASTER Level 1 Full Resolution Browse Thermal Infrared V003"
@@ -130,11 +145,13 @@
    ["GES_DISC" "GLDAS Noah Land Surface Model L4 3 hourly 1.0 x 1.0 degree V2.0 (GLDAS_NOAH10_3H) at GES DISC"]
    {:short-name "GLDAS_NOAH10_3H"
     :virtual-collections [{:entry-title "GLDAS Noah Land Surface Model L4 3 hourly 1.0 x 1.0 degree Rain Rate, Avg. Surface Skin Temp., Soil Moisture V2.0 (GLDAS_NOAH10_3Hourly) at GES DISC"
-                           :short-name "GLDAS_NOAH10_3Hourly"}]}
+                           :short-name "GLDAS_NOAH10_3Hourly"
+                           :version-id "2.0"}]}
    ["GES_DISC" "GLDAS Noah Land Surface Model L4 Monthly 1.0 x 1.0 degree V2.0 (GLDAS_NOAH10_M) at GES DISC"]
    {:short-name "GLDAS_NOAH10_M"
     :virtual-collections [{:entry-title "GLDAS Noah Land Surface Model L4 Monthly 1.0 x 1.0 degree Rain Rate, Avg. Surface Skin Temp., Soil Moisture V2.0 (GLDAS_NOAH10_Monthly) at GES DISC"
-                           :short-name "GLDAS_NOAH10_Monthly"}]}})
+                           :short-name "GLDAS_NOAH10_Monthly"
+                           :version-id "2.0"}]}})
 
 (def virtual-product-to-source-mapping
   "A map derived from the map source-to-virtual-product-mapping. This map consists of keys which are
@@ -210,7 +227,11 @@
   (let [src-granule-ur (:granule-ur src-granule-umm)]
     (-> src-granule-umm
         (assoc :granule-ur virt-granule-ur
-               :collection-ref (umm-g/map->CollectionRef (select-keys virtual-coll [:entry-title])))
+               :collection-ref (if (:version-id virtual-coll)
+                                 (umm-g/map->CollectionRef
+                                   (select-keys virtual-coll [:short-name :version-id]))
+                                 (umm-g/map->CollectionRef
+                                   (select-keys virtual-coll [:entry-title]))))
         (update-in [:product-specific-attributes]
                    conj
                    (umm-g/map->ProductSpecificAttributeRef

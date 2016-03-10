@@ -3,7 +3,8 @@
   <InsertTime>2013-07-27T06:11:12.000Z</InsertTime>
   <LastUpdate>2013-07-27T06:11:12.000Z</LastUpdate>
   <Collection>
-    <DataSetId>Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006 (AIRX3STD) at GES DISC</DataSetId>
+    <ShortName>AIRX3STD</ShortName>
+    <VersionId>006</VersionId>
   </Collection>
   <RestrictionFlag>0</RestrictionFlag>
   <RestrictionComment>None</RestrictionComment>
