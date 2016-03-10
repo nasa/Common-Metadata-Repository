@@ -161,8 +161,6 @@
 
         ;; Search for groups
         (GET "/" {:keys [request-context headers params]}
-          ;; TEMPORARY ACL CHECK UNTIL REAL ONE IS IMPLEMENTED
-          (acl/verify-ingest-management-permission request-context :update)
           (search-for-groups request-context headers params))
 
         ;; Create a group
