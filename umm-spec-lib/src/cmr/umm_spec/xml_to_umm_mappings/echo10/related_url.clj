@@ -54,7 +54,7 @@
         :let [resource-type (value-of resource "Type")
               [type sub-type] (resource-type->related-url-types
                                 (when resource-type (str/upper-case resource-type)))
-              ;; if no type is mapped verbatimly, check for opendap (case-insensitive) in OnlineResource Type
+              ;; Check for opendap (case-insensitive) in OnlineResource Type when no defined type is found.
               ;; This is due to GES_DISC OnlineResource opendap could use any string that contains opendap.
               ;; See CMR-2555 for details
               type (or type
