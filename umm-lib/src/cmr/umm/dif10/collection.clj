@@ -166,6 +166,10 @@
                                (x/element :Data_Creation {} "1970-01-01T00:00:00")
                                (x/element :Data_Last_Revision {} "1970-01-01T00:00:00"))
                     (psa/generate-product-specific-attributes product-specific-attributes)
+                    (let [processing-level-id
+                          (dif10-product-level-id (-> collection :product :processing-level-id))]
+                      (when-not (empty? processing-level-id)
+                        (x/element :Product_Level_Id {} processing-level-id)))
                     (when collection-data-type
                       (x/element :Collection_Data_Type {} collection-data-type))
                     (when access-value
