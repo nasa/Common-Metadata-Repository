@@ -164,6 +164,15 @@
                  actual (c/parse-collection xml)]
              (= expected actual))))
 
+(comment
+
+ (let [collection (first (gen/sample coll-gen/collections 1))]
+          (let [expected (umm->expected-parsed-dif10 collection)
+                xml (dif10/umm->dif10-xml collection)
+                actual (c/parse-collection xml)]
+            (is (= expected actual))))
+ )
+
 (defn- remove-not-provided
   [values sub-key]
   (seq (remove #(= (sub-key %) "Not provided") values)))
@@ -263,6 +272,9 @@
      <Version>001</Version>
     </Entry_ID>
     <Entry_Title>A minimal dif dataset</Entry_Title>
+    <Dataset_Citation>
+      <Other_Citation_Details>Some Citation Details</Other_Citation_Details>
+    </Dataset_Citation>
   <Personnel>
     <Role>TECHNICAL CONTACT</Role>
     <Contact_Person>
@@ -466,14 +478,16 @@
 
 (def expected-collection
   (umm-c/map->UmmCollection
-    {:entry-title "A minimal dif dataset"
-     :summary "summary of the dataset"
-     :purpose "A grand purpose"
-     :product (umm-c/map->Product
-                {:short-name "minimal_dif_dataset"
-                 :long-name "A minimal dif dataset"
-                 :version-id "001"
-                 :collection-data-type "SCIENCE_QUALITY"})
+   {:entry-title "A minimal dif dataset"
+    :summary "summary of the dataset"
+    :purpose "A grand purpose"
+    :product (umm-c/map->Product
+              {:short-name "minimal_dif_dataset"
+               :long-name "A minimal dif dataset"
+               :version-id "001"
+               :collection-data-type "SCIENCE_QUALITY"})
+    :collection-citations [(umm-c/map->PublicationReference {:other-reference-details
+                                                            "Some Citation Details"})]
      :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                  {:insert-time (p/parse-datetime "2000-03-24T22:20:41-05:00")
                                   :update-time (p/parse-datetime "2000-03-24T22:20:41-05:00")})
@@ -630,7 +644,7 @@
   (testing "valid xml"
     (is (empty? (c/validate-xml dif10-collection-xml))))
   (testing "invalid xml"
-    (is (= [(str "Line 21 - cvc-complex-type.2.4.a: Invalid content"
+    (is (= [(str "Line 24 - cvc-complex-type.2.4.a: Invalid content"
                  " was found starting with element 'XXXX'. One of"
                  " '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Science_Keywords,"
                  " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":ISO_Topic_Category,"
