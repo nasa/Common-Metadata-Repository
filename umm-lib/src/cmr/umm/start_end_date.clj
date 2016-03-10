@@ -37,11 +37,12 @@
 (defn- range-end-date
   "Returns the latest end-date of the list of range date times"
   [range-date-times]
-  (->> range-date-times
-       (map #(:ending-date-time %))
-       (remove nil?)
-       (sort t/after?)
-       first))
+  (let [ending-dates (map #(:ending-date-time %) range-date-times)]
+    (if (some #(= nil %) ending-dates)
+      nil
+      (->> ending-dates
+      (sort t/after?)
+           first))))
 
 (defmulti start-date
   "Returns start-date of the temporal coverage"
