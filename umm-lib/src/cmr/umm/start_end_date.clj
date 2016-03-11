@@ -38,8 +38,7 @@
   "Returns the latest end-date of the list of range date times"
   [range-date-times]
   (let [ending-dates (map #(:ending-date-time %) range-date-times)]
-    (if (some #(= nil %) ending-dates)
-      nil
+    (when-not (some #(nil? %) ending-dates)
       (->> ending-dates
       (sort t/after?)
            first))))
