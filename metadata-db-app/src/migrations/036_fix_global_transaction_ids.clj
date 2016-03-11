@@ -23,16 +23,10 @@
                     SET transaction_id = METADATA_DB.MIGRATION_TRANSACTION_ID_SEQ.NEXTVAL
                     WHERE id = %s"
                    table
-                   (:id row))))
-
-  ;; For granules, we will simply reset all existing transaction ids to 0
-  (doseq [granule-table (h/get-concept-tablenames :granule)]
-    (h/sql (format "UPDATE %s SET transaction_id=0 WHERE transaction_id <> 0"
-                   granule-table))))
+                   (:id row)))))
 
 (defn down
   "Migrates the database down from version 36."
   []
   (println "migrations.036-fix-global-transaction-ids down...")
-  (println "nothing to do: previous transaction-id values cannot be restored")
-  (h/sql "DROP SEQUENCE METADATA_DB.MIGRATION_TRANSACTION_ID_SEQ"))
+  (println "nothing to do: previous transaction-id values cannot be restored"))
