@@ -222,4 +222,19 @@
       (is (= (set (map util/expected-concept [gran2 gran4-3]))
              (set (map #(dissoc % :transaction-id) concepts-after-cleanup)))))))
 
+(deftest old-tag-revisions-are-cleaned-up
+  (let [tag1 (util/create-and-save-tag 1 13)
+        tag2 (util/create-and-save-tag 2 3)
+        tags [tag1 tag2]]
+
+    ;; Verify prior revisions exist
+    (is (every? all-revisions-exist? tags))
+
+    (is (= 204 (util/old-revision-concept-cleanup)))
+
+    ;; Any more than 10 of the tag revisions should have been cleaned up
+    (is (revisions-removed? tag1 (range 1 4)))
+    (is (revisions-exist? tag1 (range 4 13)))
+
+    (is (all-revisions-exist? tag2))))
 
