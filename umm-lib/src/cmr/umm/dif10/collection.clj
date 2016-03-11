@@ -116,7 +116,7 @@
   [collection]
   (for [citation (:collection-citations collection)
         :let [other-reference-details (:other-reference-details citation)]
-        :when (not (nil? other-reference-details))]
+        :when (some? other-reference-details)]
     (x/element :Dataset_Citation {}
                (x/element :Other_Citation_Details {} other-reference-details))))
 
