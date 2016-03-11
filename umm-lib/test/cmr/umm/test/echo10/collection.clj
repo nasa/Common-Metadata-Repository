@@ -111,6 +111,7 @@
     <ProcessingLevelId>1B</ProcessingLevelId>
     <ArchiveCenter>SEDAC AC</ArchiveCenter>
     <VersionDescription>Sample Version Description</VersionDescription>
+    <CitationForExternalPublication>Some Citation for Publication</CitationForExternalPublication>
     <CollectionState>COMPLETED</CollectionState>
     <RestrictionFlag>5.3</RestrictionFlag>
     <SpatialKeywords>
@@ -399,6 +400,7 @@
                                   :update-time (p/parse-datetime "1999-12-31T19:00:00-05:00")
                                   :delete-time (p/parse-datetime "2000-12-31T19:00:00-05:00")
                                   :revision-date-time (p/parse-datetime "1999-12-30T19:00:00-05:00")})
+     :collection-citations [(umm-c/map->PublicationReference {:other-reference-details "Some Citation for Publication"})]
      :spatial-keywords ["Word-2" "Word-1" "Word-0"]
      :access-value 5.3
      :temporal expected-parsed-temporal
