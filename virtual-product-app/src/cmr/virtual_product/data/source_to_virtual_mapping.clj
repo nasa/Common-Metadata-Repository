@@ -55,33 +55,43 @@
    {:short-name "AST_L1A"
     :virtual-collections [{:entry-title "ASTER L2 Surface Emissivity V003"
                            :short-name "AST_05"
+                           :version-id "003"
                            :matcher tir-mode?}
                           {:entry-title "ASTER L2 Surface Reflectance SWIR and ASTER L2 Surface Reflectance VNIR V003"
                            :short-name "AST_07"
+                           :version-id "003"
                            :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER L2 Surface Reflectance VNIR and Crosstalk Corrected SWIR V003"
                            :short-name "AST_07XT"
+                           :version-id "003"
                            :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER L2 Surface Temperature V003"
                            :short-name "AST_08"
+                           :version-id "003"
                            :matcher tir-mode?}
                           {:entry-title "ASTER L2 Surface Radiance VNIR and SWIR V003"
                            :short-name "AST_09"
+                           :version-id "003"
                            :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER L2 Surface Radiance - VNIR and Crosstalk Corrected SWIR V003"
                            :short-name "AST_09XT"
+                           :version-id "003"
                            :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER L2 Surface Radiance TIR V003"
                            :short-name "AST_09T"
+                           :version-id "003"
                            :matcher tir-mode?}
                           {:entry-title "ASTER Digital Elevation Model V003"
                            :short-name "AST14DEM"
+                           :version-id "003"
                            :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER Registered Radiance at the Sensor - Orthorectified V003"
                            :short-name "AST14OTH"
+                           :version-id "003"
                            :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER Orthorectified Digital Elevation Model (DEM) V003"
                            :short-name "AST14DMO"
+                           :version-id "003"
                            :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}]}
    ["GES_DISC" "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC"]
    {:short-name "OMUVBd"
@@ -138,9 +148,11 @@
    {:short-name "AST_L1T"
     :virtual-collections [{:entry-title "ASTER Level 1 Full Resolution Browse Thermal Infrared V003"
                            :short-name "AST_FRBT"
+                           :version-id "003"
                            :matcher (matches-on-psa "FullResolutionThermalBrowseAvailable" "YES")}
                           {:entry-title "ASTER Level 1 Full Resolution Browse Visible Near Infrared V003"
                            :short-name "AST_FRBV"
+                           :version-id "003"
                            :matcher (matches-on-psa "FullResolutionVisibleBrowseAvailable" "YES")}]}
    ["GES_DISC" "GLDAS Noah Land Surface Model L4 3 hourly 1.0 x 1.0 degree V2.0 (GLDAS_NOAH10_3H) at GES DISC"]
    {:short-name "GLDAS_NOAH10_3H"
@@ -227,11 +239,8 @@
   (let [src-granule-ur (:granule-ur src-granule-umm)]
     (-> src-granule-umm
         (assoc :granule-ur virt-granule-ur
-               :collection-ref (if (:version-id virtual-coll)
-                                 (umm-g/map->CollectionRef
-                                   (select-keys virtual-coll [:short-name :version-id]))
-                                 (umm-g/map->CollectionRef
-                                   (select-keys virtual-coll [:entry-title]))))
+               :collection-ref (umm-g/map->CollectionRef
+                                   (select-keys virtual-coll [:short-name :version-id])))
         (update-in [:product-specific-attributes]
                    conj
                    (umm-g/map->ProductSpecificAttributeRef
