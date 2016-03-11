@@ -31,8 +31,9 @@
     (concept-service/delete-old-revisions context provider :granule)
     (concept-service/delete-old-revisions context provider :service)
     (concept-service/delete-old-revisions context provider :access-group))
-  ;; cleanup tags
-  (concept-service/delete-old-revisions context pv/cmr-provider :tag))
+  ;; cleanup tags and tag-associations
+  (concept-service/delete-old-revisions context pv/cmr-provider :tag)
+  (concept-service/delete-old-revisions context pv/cmr-provider :tag-association))
 
 (def-stateful-job OldRevisionConceptCleanupJob
   [ctx system]
