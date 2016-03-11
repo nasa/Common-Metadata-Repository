@@ -3,6 +3,7 @@
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
             [cmr.common.util :refer [are2]]
+            [cmr.common.mime-types :as mt]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -135,4 +136,18 @@
 
       ;; Now I should find the tag when searching
       (tags/assert-tag-search [tag1-3 tag2] (tags/search {})))))
+
+(deftest retrieve-tags-by-concept-id-test
+  (let [user1-token (e/login (s/context) "user1")
+        tag1 (tags/save-tag user1-token (tags/make-tag {:tag-key "tag1"}))
+        tag2 (tags/save-tag user1-token (tags/make-tag {:tag-key "tag2"}))
+        all-tags [tag1 tag2]]
+    (index/wait-until-indexed)
+
+    ;; CMR-2580 will add more tests on retrieving tags by concept-id,
+    ;; here we just make sure the status is 200.
+    (testing "retrieval by tag concept-id returns the latest revision."
+      (let [{:keys [status]} (search/retrieve-concept
+                               (:concept-id tag1) nil {:accept mt/xml})]
+        (is (= 200 status))))))
 

@@ -79,6 +79,10 @@
   (fn [concept]
     (:concept-type concept)))
 
+(defmethod add-acl-enforcement-fields-to-concept :default
+  [concept]
+  concept)
+
 (defmethod add-acl-enforcement-fields-to-concept :collection
   [concept]
   (-> concept

@@ -7,6 +7,11 @@
   (fn [context acls concept]
     (:concept-type concept)))
 
+;; tags have no acls so we always assume it matches
+(defmethod acls-match-concept? :tag
+  [context acls concept]
+  true)
+
 (def concept-type->applicable-field
   "A mapping of concept type to the field in the ACL indicating if it is collection or granule applicable."
   {:granule :granule-applicable
