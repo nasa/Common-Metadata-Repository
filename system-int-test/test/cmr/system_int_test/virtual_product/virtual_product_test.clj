@@ -264,17 +264,17 @@
                      [(assoc
                         (dc/collection
                           {:entry-title (str "OMI/Aura Surface UVB Irradiance and Erythemal"
-                                             " Dose Daily L3 Global 1.0x1.0 deg Grid V003")
+                                             " Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC")
                            :short-name "OMUVBd"})
-                        :provider-id "GSFCS4PA")])
+                        :provider-id "GES_DISC")])
         vp-colls (vp/ingest-virtual-collections [omi-coll])
         granule-ur "OMUVBd.003:OMI-Aura_L3-OMUVBd_2015m0103_v003-2015m0107t093002.he5"
         [ur-prefix ur-suffix] (str/split granule-ur #":")
         opendap-dir-path "http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/"
-        opendap-file-path (str opendap-dir-path granule-ur ".nc")]
+        opendap-file-path (str opendap-dir-path granule-ur)]
     (util/are2 [src-granule-ur source-related-urls expected-related-url-maps]
                (let [_ (vp/ingest-source-granule
-                         "GSFCS4PA"
+                         "GES_DISC"
                          (dg/granule
                            omi-coll {:granule-ur src-granule-ur
                                      :related-urls source-related-urls
@@ -289,39 +289,30 @@
 
                "Related urls with only one access url which matches the pattern"
                granule-ur
-               [{:url opendap-file-path :type "OPENDAP DATA ACCESS" :mime-type "application/x-netcdf"}]
-               [{:url (str opendap-file-path "?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
-                 :type "OPENDAP DATA ACCESS"
-                 :mime-type mt/opendap
-                 :title "(GET DATA : OPENDAP DATA (DODS))"}]
+               [{:url opendap-file-path :type "OPENDAP DATA ACCESS"}]
+               [{:url (str opendap-file-path ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
+                 :type "GET DATA"}]
 
                "Related urls with only one access url which matches the pattern, but is not
-               an online access url"
+               an online resource url"
                granule-ur
-               [{:url opendap-file-path}]
-               ;; Some additional attributes are added by CMR automatically, but url remains the same
-               [{:url opendap-file-path
-                 :type "VIEW RELATED INFORMATION"
-                 :title "(USER SUPPORT)"}]
+               [{:url opendap-file-path :type "VIEW RELATED INFORMATION"}]
+               ;; Only OPENDAP online resource url is kept in virtual granule
+               nil
 
                "Multiple related urls"
                granule-ur
                [{:url opendap-file-path :type "OPENDAP DATA ACCESS" :mime-type "application/x-netcdf"}
-                {:url "http://www.foo.com"}]
-               [{:url (str opendap-file-path "?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
-                 :type "OPENDAP DATA ACCESS"
-                 :mime-type mt/opendap
-                 :title "(GET DATA : OPENDAP DATA (DODS))"}
-                {:url "http://www.foo.com"
-                 :type "VIEW RELATED INFORMATION"
-                 :title "(USER SUPPORT)"}])))
+                {:url "http://www.foo.com" :type "VIEW RELATED INFORMATION"}]
+               [{:url (str opendap-file-path ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
+                 :type "GET DATA"}])))
 
 (deftest ast-granule-umm-matchers-test
   (vp/assert-psa-granules-match index/wait-until-indexed))
 
 (def disabled-source-colls
-  #{"OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003"
-    "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006"})
+  #{"OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC"
+    "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006 (AIRX3STD) at GES DISC"})
 
 (deftest virtual-products-disabled-source-collections-test
   (vp/with-disabled-source-collections

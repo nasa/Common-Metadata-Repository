@@ -29,7 +29,6 @@
    "ONLINERESOURCETYPE" ["VIEW RELATED INFORMATION"]
    "PROJECT HOME PAGE" ["VIEW PROJECT HOME PAGE"]
    "USER SUPPORT" ["VIEW RELATED INFORMATION"]
-   "DATA ACCESS (OPENDAP)" ["GET DATA" "OPENDAP DATA (DODS)"]
    "DATA ACCESS (FTP)" ["GET DATA"]
    "CALIBRATION/VALIDATION DATA" ["VIEW RELATED INFORMATION"]
    "PORTAL_DA_DIRECT_ACCESS" ["GET DATA"]
@@ -48,7 +47,6 @@
    "OVERVIEW" ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
    "BROWSE CALENDAR" ["VIEW RELATED INFORMATION"]
    "ALGORITHM INFORMATION" ["VIEW RELATED INFORMATION"]
-   "OPENDAP" ["GET DATA" "OPENDAP DATA (DODS)"]
    "DATA ACCESS" ["GET DATA"]
    "ALGORITHM INFO" ["VIEW RELATED INFORMATION"]
    "GET DATA : OPENDAP DATA (DODS)" ["OPENDAP DATA ACCESS"]})
@@ -67,7 +65,13 @@
         description (cx/string-at-path elem [:Description])
         resource-type (cx/string-at-path elem [:Type])
         mime-type (cx/string-at-path elem [:MimeType])
-        [type sub-type] (resource-type->related-url-types (when resource-type (s/upper-case resource-type)))]
+        [type sub-type] (resource-type->related-url-types (when resource-type (s/upper-case resource-type)))
+        ;; Check for opendap (case-insensitive) in OnlineResource Type when no defined type is found.
+        ;; This is due to GES_DISC OnlineResource opendap could use any string that contains opendap
+        ;; See CMR-2555 for details
+        type (or type
+                 (when (and resource-type (re-find #"^.*OPENDAP.*$" (s/upper-case resource-type)))
+                   "OPENDAP DATA ACCESS"))]
     (c/map->RelatedURL
       {:url url
        :description description

@@ -317,6 +317,10 @@
         <Type>DATA ACCESS</Type>
       </OnlineResource>
       <OnlineResource>
+        <URL>http://opendap.nasa.gov/example</URL>
+        <Type>some Opendap type</Type>
+      </OnlineResource>
+      <OnlineResource>
         <URL>http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html</URL>
         <Type>Guide</Type>
       </OnlineResource>
@@ -491,6 +495,10 @@
         {:type "GET DATA"
          :title "(DATA ACCESS)"
          :url "http://camex.nsstc.nasa.gov/camex3/"})
+      (umm-c/map->RelatedURL
+        {:type "OPENDAP DATA ACCESS"
+         :title "(some Opendap type)"
+         :url "http://opendap.nasa.gov/example"})
       (umm-c/map->RelatedURL
         {:type "VIEW RELATED INFORMATION"
          :sub-type "USER'S GUIDE"
