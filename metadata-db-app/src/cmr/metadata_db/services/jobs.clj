@@ -2,7 +2,8 @@
   (:require [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.jobs :refer [def-stateful-job]]
             [cmr.metadata-db.services.concept-service :as concept-service]
-            [cmr.metadata-db.services.provider-service :as provider-service]))
+            [cmr.metadata-db.services.provider-service :as provider-service]
+            [cmr.metadata-db.services.provider-validation :as pv]))
 
 (def EXPIRED_CONCEPT_CLEANUP_INTERVAL
   "The number of seconds between jobs run to cleanup expired granules"
@@ -29,7 +30,10 @@
     (concept-service/delete-old-revisions context provider :collection)
     (concept-service/delete-old-revisions context provider :granule)
     (concept-service/delete-old-revisions context provider :service)
-    (concept-service/delete-old-revisions context provider :access-group)))
+    (concept-service/delete-old-revisions context provider :access-group))
+  ;; cleanup tags and tag-associations
+  (concept-service/delete-old-revisions context pv/cmr-provider :tag)
+  (concept-service/delete-old-revisions context pv/cmr-provider :tag-association))
 
 (def-stateful-job OldRevisionConceptCleanupJob
   [ctx system]

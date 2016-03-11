@@ -211,6 +211,7 @@
                             (dc/collection
                               {:entry-title entry-title
                                :short-name "AST_L1A"
+                               :version-id "003"
                                :projects (dc/projects "proj1" "proj2" "proj3")})
                             :provider-id "LPDAAC_ECS")])
             vp-colls (vp/ingest-virtual-collections [ast-coll])
