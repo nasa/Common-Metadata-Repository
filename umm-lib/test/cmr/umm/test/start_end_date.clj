@@ -36,8 +36,11 @@
   )
 
 (deftest end-date-test
-  (testing "range date times without ends-at-present-flag"
+  (testing "range date times with no end without ends-at-present-flag"
     (let [temporal (c/map->Temporal {:range-date-times [range1 range2 range3]})]
+      (is (= nil (sed/end-date :collection temporal)))))
+  (testing "range date times with a definite end with no ends-at-present-flag"
+    (let [temporal (c/map->Temporal {:range-date-times [range1 range2]})]
       (is (= dt4 (sed/end-date :collection temporal)))))
   (testing "range date times with ends-at-present-flag"
     (let [temporal (c/map->Temporal {:ends-at-present-flag true
