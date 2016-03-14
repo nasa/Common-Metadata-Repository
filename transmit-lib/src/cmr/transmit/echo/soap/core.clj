@@ -16,7 +16,8 @@
 (def soap-ns-map
   {"xmlns:ns2" "http://echo.nasa.gov/echo/v10"
    "xmlns:ns3" "http://echo.nasa.gov/echo/v10/types"
-   "xmlns:ns4" "http://echo.nasa.gov/ingest/v10"})
+   "xmlns:ns4" "http://echo.nasa.gov/ingest/v10"
+   "xmlns:xsi" "http://www.w3.org/2001/XMLSchema-instance"})
 
 (defn- sanitize-soap
   "Sanitize a SOAP request (e.g. remove user/pass/token)"
