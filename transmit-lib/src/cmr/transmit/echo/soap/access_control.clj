@@ -76,8 +76,7 @@
                 soap/soap-ns-map
                 ["ns2:token" token]
                 ["ns2:objectIdentityTypes" (soap/item-list object-identity-types)]
-                ;; ns2:providerGuidFilter is required, even if it is empty
-                ["ns2:providerGuidFilter" (or provider-guid-filter "")]]]
+                ["ns2:providerGuidFilter" (or provider-guid-filter {"xsi:nil" true})]]]
       (-> (soap/post-soap :access-control body)
           (soap/extract-item-list :get-acls-by-type))))
 
