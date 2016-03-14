@@ -7,10 +7,12 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.util :as util]))
 
-(def group-keys "Keys within a group map"
+(def group-keys
+  "Keys within a group map"
   [:guid :name :description :member-guids :owner-provider-id :managing-group-guid])
 
-(def minimal-group "A minimally valid group map"
+(def minimal-group
+  "A minimally valid group map"
   {:name "A Group" :description "Description of a group" :member-guids []})
 
 (defn create-group
