@@ -6,7 +6,7 @@
             [cmr.access-control.test.util :as u]))
 
 (use-fixtures :once (fixtures/int-test-fixtures))
-(use-fixtures :each (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"}))
+(use-fixtures :each (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"} ["user1" "user2" "user3" "user4" "user5"]))
 
 (deftest create-system-group-test
 
