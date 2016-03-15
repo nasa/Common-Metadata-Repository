@@ -180,8 +180,9 @@
       (is (= 2 (:hits (u/search token nil))))
       (is (= {:status 200 :concept-id concept-id :revision-id 2}
              (u/delete-group token concept-id)))
+      (u/wait-until-indexed)
       (u/assert-group-deleted group1 "user1" concept-id 2)
-         (is (= [group2-concept-id] (map :concept-id (:items (u/search token nil))))))
+      (is (= [group2-concept-id] (map :concept-id (:items (u/search token nil))))))
 
     (testing "Delete group that was already deleted"
       (is (= {:status 404

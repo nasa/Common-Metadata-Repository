@@ -64,7 +64,6 @@
   (fn [context concept-map]
     (:concept-type concept-map)))
 
-
 (defn- safe-lowercase
   [v]
   (when v (str/lower-case v)))
@@ -92,11 +91,11 @@
 
 (defmethod delete-concept :access-group
   [context concept-map]
-  (let [concept-id (:concept-id concept-map)]
+  (let [id (:id concept-map)]
     (m/delete-by-query (esi/context->search-index context)
                        group-index-name
                        group-type-name
-                       {:term {:concept-id concept-id}})))
+                       {:term {:id id}})))
 
 (defn delete-provider-groups
   "Unindexes all access groups owned by provider-id."
