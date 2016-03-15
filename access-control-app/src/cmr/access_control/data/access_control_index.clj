@@ -93,9 +93,9 @@
   [context concept-map]
   (let [id (:concept-id concept-map)]
     (m/delete-by-id (esi/context->search-index context)
-                       group-index-name
-                       group-type-name
-                       id)))
+                    group-index-name
+                    group-type-name
+                    id)))
 
 (defn delete-provider-groups
   "Unindexes all access groups owned by provider-id."
