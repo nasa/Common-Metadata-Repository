@@ -50,33 +50,35 @@
 (defn- verify-group-permission
   "Throws a permission service error if no ACLs exist that grant the desired permission to the
   context user on group."
-  [context permission group]
+  [context action-description permission group]
   (when-not (or (get-instance-acls context permission group)
                 (get-provider-acls context permission group)
                 (get-system-acls context permission))
-    (throw-group-permission-error permission group)))
+    (throw-group-permission-error action-description group)))
 
 (defn verify-can-create-group
   "Throws a service error if the context user cannot create a group under provider-id."
   [context group]
-  (verify-group-permission context :create group))
+  (verify-group-permission context "create" :create group))
 
 (defn verify-can-read-group
   "Throws a service error if the context user cannot read the access control group represented by
    the group map."
   [context group]
-  (verify-group-permission context :read group))
+  (verify-group-permission context "read" :read group))
 
 (defn verify-can-delete-group
   "Throws a service error of context user cannot delete access control group represented by given
    group map."
   [context group]
-  (verify-group-permission context :delete group))
+  ;; Note: temporarily use :create permission for CMR-2585
+  (verify-group-permission context "delete" :create group))
 
 (defn verify-can-update-group
   "Throws service error if context user does not have permission to delete group map."
   [context group]
-  (verify-group-permission context :update group))
+  ;; Note: temporarily use :create permission for CMR-2585
+  (verify-group-permission context "update" :create group))
 
 ;;; For Search/Indexing
 

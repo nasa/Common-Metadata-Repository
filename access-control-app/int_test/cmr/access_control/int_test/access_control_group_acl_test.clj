@@ -107,19 +107,23 @@
 
 (deftest delete-group-acl-test
 
+  ;; Note: the following comment is temporarily inaccurate due to CMR-2585
   ;; Members of "sys-group-delete" can create system-level groups and delete the (to-be-created) group with
   ;; guid "system-group-guid". Members of "prov*-" groups can do the same with their respective
   ;; "prov*-group-guid" groups.
 
   (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group-delete" :create)
-  (e/grant-group-instance-permissions-to-group (u/conn-context) "sys-group-delete" "system-group-guid" :delete)
   (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group-delete" "prov1guid" :create)
-  (e/grant-group-instance-permissions-to-group (u/conn-context) "prov1-group-delete" "prov1-group-guid" :delete)
   (e/grant-provider-group-permissions-to-group (u/conn-context) "prov2-group-creator" "prov2guid" :create)
-  (e/grant-group-instance-permissions-to-group (u/conn-context) "prov2-group-creator" "prov2-group-guid" :delete)
+
+  ;; Note: temporarily disabled for CMR-2585
+  ;; (e/grant-group-instance-permissions-to-group (u/conn-context) "sys-group-delete" "system-group-guid" :delete)
+  ;; (e/grant-group-instance-permissions-to-group (u/conn-context) "prov1-group-delete" "prov1-group-guid" :delete)
+  ;; (e/grant-group-instance-permissions-to-group (u/conn-context) "prov2-group-creator" "prov2-group-guid" :delete)
 
   (let [sys-token (e/login (u/conn-context) "user1" ["sys-group-delete"])
         prov-token (e/login (u/conn-context) "user2" ["prov1-group-delete"])
+        prov2-token (e/login (u/conn-context) "user3" ["prov2-group-creator"])
 
         sys-group (u/make-group {:legacy-guid "system-group-guid"})
         sys-group-id (:concept-id (u/create-group sys-token sys-group))
@@ -127,7 +131,7 @@
         prov-group (u/make-group {:provider-id "PROV1" :legacy-guid "prov1-group-guid"})
         prov-group-id (:concept-id (u/create-group prov-token prov-group))
 
-        prov2-group-id (:concept-id (u/create-group (e/login (u/conn-context) "user3" ["prov2-group-creator"])
+        prov2-group-id (:concept-id (u/create-group prov2-token
                                                     (u/make-group {:provider-id "PROV2"})))]
 
     (testing "deleting system groups"
@@ -145,10 +149,7 @@
       (testing "without permission"
         (is (= {:status 401
                 :errors ["You do not have permission to delete access control group [Administrators] in provider [PROV1]."]}
-               (u/delete-group sys-token prov-group-id)))
-        (is (= {:status 401
-                :errors ["You do not have permission to delete access control group [Administrators] in provider [PROV2]."]}
-               (u/delete-group prov-token prov2-group-id))))
+               (u/delete-group prov2-token prov-group-id))))
 
       (testing "with permission"
         (is (= {:status 200 :concept-id prov-group-id :revision-id 2}
@@ -156,17 +157,22 @@
         (u/assert-group-deleted prov-group "user2" prov-group-id 2)))))
 
 (deftest update-group-acl-test
-
   ;; members of "sys-group" can create system-level groups and delete the group with the guid "sys-group-guid"
-  (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group" :create)
-  (e/grant-group-instance-permissions-to-group (u/conn-context) "sys-group" "sys-group-guid" :update)
-  ;; members of "prov1-group" can create groups for PROV1 but can only update the group with guid "prov1-group-guid"
+  ;; Note: :update permission is here temporarily as part of CMR-2585
+  (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group" :create :update)
+
+  ;; Note: temporarily disabled for CMR-2585
+  ;; (e/grant-group-instance-permissions-to-group (u/conn-context) "sys-group" "sys-group-guid" :update)
+  ;; (e/grant-group-instance-permissions-to-group (u/conn-context) "prov1-group" "prov1-group-guid" :update)
+
+  ;; members of "prov1-group" can create (and temporarily update for CMR-2585) groups for PROV1
+  ;; but can only update the group with guid "prov1-group-guid"
   (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group" "prov1guid" :create)
-  (e/grant-group-instance-permissions-to-group (u/conn-context) "prov1-group" "prov1-group-guid" :update)
   (e/grant-provider-group-permissions-to-group (u/conn-context) "prov2-group" "prov2guid" :create)
 
   (let [sys-token (e/login (u/conn-context) "user1" ["sys-group"])
         prov-token (e/login (u/conn-context) "user2" ["prov1-group"])
+        prov2-token (e/login (u/conn-context) "user3" ["prov2-group"])
 
         sys-group (u/make-group {:legacy-guid "sys-group-guid"})
         sys-group-id (:concept-id (u/create-group sys-token sys-group))
@@ -175,7 +181,7 @@
         prov-group-id (:concept-id (u/create-group prov-token prov-group))
 
         prov2-group (u/make-group {:provider-id "PROV2"})
-        prov2-group-id (:concept-id (u/create-group (e/login (u/conn-context) "user3" ["prov2-group"])
+        prov2-group-id (:concept-id (u/create-group prov2-token
                                                     prov2-group))]
 
     (testing "updating system groups"
@@ -192,10 +198,7 @@
       (testing "without permission"
         (is (= {:status 401
                 :errors ["You do not have permission to update access control group [Administrators] in provider [PROV1]."]}
-               (u/update-group sys-token prov-group-id (assoc prov-group :description "Updated name"))))
-        (is (= {:status 401
-                :errors ["You do not have permission to update access control group [Administrators] in provider [PROV2]."]}
-               (u/update-group prov-token prov2-group-id (assoc prov2-group :description "Updated name")))))
+               (u/update-group prov2-token prov-group-id (assoc prov-group :description "Updated name")))))
 
       (testing "with permission"
         (is (= {:status 200 :concept-id prov-group-id :revision-id 2}
@@ -203,12 +206,15 @@
 
 (deftest group-members-acl-test
 
-  ;; members of "sys-group" can create system-level groups and delete the group with the guid "sys-group-guid"
+  ;; members of "sys-group" can create and update system-level groups
   (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group" :create :read)
-  (e/grant-group-instance-permissions-to-group (u/conn-context) "sys-group" "sys-group-guid" :update)
-  ;; members of "prov1-group" can create groups for PROV1 but can only update the group with guid "prov1-group-guid"
+
+  ;; members of "prov1-group" can create and update groups for PROV1
   (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group" "prov1guid" :create :read)
-  (e/grant-group-instance-permissions-to-group (u/conn-context) "prov1-group" "prov1-group-guid" :update)
+
+  ;; Note: these are temporarily disabled for CMR-2585
+  ;; (e/grant-group-instance-permissions-to-group (u/conn-context) "sys-group" "sys-group-guid" :update)
+  ;; (e/grant-group-instance-permissions-to-group (u/conn-context) "prov1-group" "prov1-group-guid" :update)
 
   (let [sys-token (e/login (u/conn-context) "sys-user" ["sys-group"])
         sys-group (u/make-group {:legacy-guid "sys-group-guid"})
@@ -236,9 +242,11 @@
         (is (= {:status 401
                 :errors ["You do not have permission to update system-level access control group [Administrators]."]}
                (u/add-members prov1-token sys-group-concept-id ["user1" "user2" "user1"])))
-        (is (= {:status 401
-                :errors ["You do not have permission to update access control group [Administrators] in provider [PROV1]."]}
-               (u/add-members sys-token prov1-group-concept-id ["user1" "user2" "user1"]))))
+        ;; Note: temporarily disabled for CMR-2585
+        (comment
+          (is (= {:status 401
+                  :errors ["You do not have permission to update access control group [Administrators] in provider [PROV1]."]}
+                 (u/add-members sys-token prov1-group-concept-id ["user1" "user2" "user1"])))))
       (testing "with permission"
         (u/add-members sys-token sys-group-concept-id ["user1" "user2"])
         (is (= {:status 200 :body ["user1" "user2"]}
@@ -252,9 +260,11 @@
         (is (= {:status 401
                 :errors ["You do not have permission to update system-level access control group [Administrators]."]}
                (u/remove-members prov1-token sys-group-concept-id ["user1" "user2" "user1"])))
-        (is (= {:status 401
-                :errors ["You do not have permission to update access control group [Administrators] in provider [PROV1]."]}
-               (u/remove-members sys-token prov1-group-concept-id ["user1" "user2" "user1"]))))
+        ;; Note: temporarily disabled for CMR-2585
+        (comment
+          (is (= {:status 401
+                  :errors ["You do not have permission to update access control group [Administrators] in provider [PROV1]."]}
+                 (u/remove-members sys-token prov1-group-concept-id ["user1" "user2" "user1"])))))
       (testing "with permission"
         (u/remove-members sys-token sys-group-concept-id ["user1" "user2"])
         (is (= {:status 200 :body []}
