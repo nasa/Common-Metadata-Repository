@@ -22,7 +22,8 @@
   (index/index-concept context (mdb/get-concept context concept-id revision-id)))
 
 (defmethod handle-event :concept-delete
-  [context {:keys [concept-id revision-id]}])
+  [context {:keys [concept-id revision-id]}]
+  (index/delete-concept context (mdb/get-concept context concept-id revision-id)))
 
 (defmethod handle-event :provider-delete
   [context {:keys [provider-id]}]
