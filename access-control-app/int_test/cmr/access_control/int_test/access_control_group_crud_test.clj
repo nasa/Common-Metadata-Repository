@@ -165,19 +165,23 @@
              (u/get-group token concept-id))))))
 
 (deftest delete-group-test
-  (let [group (u/make-group)
+  (let [group1 (u/make-group)
+        group2 (u/make-group {:name "Some other group"})
         token (e/login (u/conn-context) "user1")
-        {:keys [concept-id revision-id]} (u/create-group token group)]
-
+        {:keys [concept-id revision-id]} (u/create-group token group1)
+        group2-concept-id (:concept-id (u/create-group token group2))]
+    (u/wait-until-indexed)
     (testing "Delete without token"
       (is (= {:status 401
               :errors ["Groups cannot be modified without a valid user token."]}
              (u/delete-group nil concept-id))))
 
     (testing "Delete success"
+      (is (= 2 (:hits (u/search token nil))))
       (is (= {:status 200 :concept-id concept-id :revision-id 2}
              (u/delete-group token concept-id)))
-      (u/assert-group-deleted group "user1" concept-id 2))
+      (u/assert-group-deleted group1 "user1" concept-id 2)
+         (is (= [group2-concept-id] (map :concept-id (:items (u/search token nil))))))
 
     (testing "Delete group that was already deleted"
       (is (= {:status 404
@@ -244,6 +248,3 @@
       (is (= {:status 404
               :errors [(format "Group with concept id [%s] was deleted." concept-id)]}
              (u/update-group token concept-id group))))))
-
-
-
