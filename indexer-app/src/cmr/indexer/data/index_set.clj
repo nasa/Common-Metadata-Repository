@@ -295,16 +295,6 @@
           :tags-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))}
          spatial-coverage-fields))
 
-(def granule-settings-for-individual-indexes
-  {:index {:number_of_shards (elastic-granule-index-num-shards),
-           :number_of_replicas 1,
-           :refresh_interval "1s"}})
-
-(def granule-settings-for-small-collections-index
-  {:index {:number_of_shards (elastic-small-collections-index-num-shards),
-           :number_of_replicas 1,
-           :refresh_interval "1s"}})
-
 (defmapping granule-mapping :granule
   "Defines the elasticsearch mapping for storing collections"
   {:_id  {:path "concept-id"}}
@@ -461,36 +451,62 @@
    :description (m/not-indexed (m/stored m/string-field-mapping))
    :originator-id.lowercase (m/stored m/string-field-mapping)})
 
+(def granule-settings-for-individual-indexes
+  {:index {:number_of_shards (elastic-granule-index-num-shards),
+           :number_of_replicas 1,
+           :refresh_interval "1s"}})
+
+(def granule-settings-for-small-collections-index
+  {:index {:number_of_shards (elastic-small-collections-index-num-shards),
+           :number_of_replicas 1,
+           :refresh_interval "1s"}})
+
+(def index-set-id
+  "The identifier of the one and only index set"
+  1)
+
 (defn index-set
-  "Returns the index-set configuration"
-  [context]
-  (let [colls-w-separate-indexes ((get-in context [:system :colls-with-separate-indexes-fn]))
-        granule-indices (remove empty? colls-w-separate-indexes)]
-    {:index-set {:name "cmr-base-index-set"
-                 :id 1
-                 :create-reason "indexer app requires this index set"
-                 :collection {:indexes
-                              [;; This index contains the latest revision of each collection and
-                               ;; is used for normal searches.
-                               {:name "collections"
-                                :settings collection-setting}
-                               ;; This index contains all the revisions (including tombstones) and
-                               ;; is used for all-revisions searches.
-                               {:name "all-collection-revisions"
-                                :settings collection-setting}]
-                              :mapping collection-mapping}
-                 :granule {:indexes
-                           (cons {:name "small_collections"
-                                  :settings granule-settings-for-small-collections-index}
-                                 (map (fn [collection]
-                                        {:name collection
-                                         :settings granule-settings-for-individual-indexes})
-                                      granule-indices))
-                           :mapping granule-mapping}
-                 :tag {:indexes
-                       [{:name "tags"
-                         :settings tag-setting}]
-                       :mapping tag-mapping}}}))
+  "Returns the index-set configuration for a brand new index. Takes a list of the extra granule indexes
+   that should exist in addition to small_collections."
+  [extra-granule-indexes]
+  {:index-set {:name "cmr-base-index-set"
+               :id index-set-id
+               :create-reason "indexer app requires this index set"
+               :collection {:indexes
+                            [;; This index contains the latest revision of each collection and
+                             ;; is used for normal searches.
+                             {:name "collections"
+                              :settings collection-setting}
+                             ;; This index contains all the revisions (including tombstones) and
+                             ;; is used for all-revisions searches.
+                             {:name "all-collection-revisions"
+                              :settings collection-setting}]
+                            :mapping collection-mapping}
+               ;; The granule configuration here initially only specifies a single collection indexes
+               ;; Additional granule indexes are created over time via the index set application.
+               :granule {:indexes
+                         (cons {:name "small_collections"
+                                :settings granule-settings-for-small-collections-index}
+                               (for [idx extra-granule-indexes]
+                                 {:name idx
+                                  :settings granule-settings-for-individual-indexes}))
+
+                         ;; This specifies the settings for new granule indexes that contain data for a single collection
+                         ;; This allows the index set application to know what settings to use when creating
+                         ;; a new granule index.
+                         :individual-index-settings granule-settings-for-individual-indexes
+                         :mapping granule-mapping}
+               :tag {:indexes
+                     [{:name "tags"
+                       :settings tag-setting}]
+                     :mapping tag-mapping}}})
+
+(defn index-set->extra-granule-indexes
+  "Takes an index set and returns the extra granule indexes that are configured"
+  [index-set]
+  (->> (get-in index-set [:index-set :granule :indexes])
+       (map :name)
+       (remove #(= % "small_collections"))))
 
 (defn reset
   "Reset configured elastic indexes"

@@ -45,35 +45,35 @@
     (cs/concept-id->type (:concept-id concept))))
 
 (defn requires-update?
-  "Returns true if the existing index set does not match the configured index set and requires
+  "Returns true if the existing index set does not match the expected index set and requires
   update. Takes either the context which will be used to request index sets or the existing
-  and updated index sets."
+  and expected index sets."
   ([context]
-   (let [new-index-set (idx-set/index-set context)
-         index-set-id (get-in new-index-set [:index-set :id])
-         existing-index-set (index-set/get-index-set context index-set-id)]
-     (requires-update? existing-index-set new-index-set)))
-  ([existing-index-set new-index-set]
+   (let [existing-index-set (index-set/get-index-set context idx-set/index-set-id)
+         extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
+         expected-index-set (idx-set/index-set extra-granule-indexes)]
+     (requires-update? existing-index-set expected-index-set)))
+  ([existing-index-set expected-index-set]
    (not= (update-in existing-index-set [:index-set] dissoc :concepts)
-         new-index-set)))
+         expected-index-set)))
 
 (defn create-indexes
   "Create elastic index for each index name"
   [context]
-  (let [new-index-set (idx-set/index-set context)
-        index-set-id (get-in new-index-set [:index-set :id])
-        existing-index-set (index-set/get-index-set context index-set-id)]
+  (let [existing-index-set (index-set/get-index-set context idx-set/index-set-id)
+        extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
+        expected-index-set (idx-set/index-set extra-granule-indexes)]
     (cond
       (nil? existing-index-set)
       (do
         (info "Index set does not exist so creating it.")
-        (idx-set/create context new-index-set))
+        (idx-set/create context expected-index-set))
 
       ;; Compare them to see if they're the same
-      (requires-update? existing-index-set new-index-set)
+      (requires-update? existing-index-set expected-index-set)
       (do
         (warn "Index set does not match you may want to update it.")
-        (warn "Expecting:" (pr-str new-index-set))
+        (warn "Expecting:" (pr-str expected-index-set))
         (warn "Actual:" (pr-str existing-index-set)))
 
       :else
@@ -82,18 +82,19 @@
 (defn update-indexes
   "Updates the indexes to make sure they have the latest mappings"
   [context]
+  (let [existing-index-set (index-set/get-index-set context idx-set/index-set-id)
+        extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
+        ;; We use the extra granule indexes from the existing configured index set when determining
+        ;; the expected index set.
+        expected-index-set (idx-set/index-set extra-granule-indexes)]
 
-  (let [new-index-set (idx-set/index-set context)
-        index-set-id (get-in new-index-set [:index-set :id])
-        existing-index-set (index-set/get-index-set context index-set-id)]
-
-    (when-not (requires-update? existing-index-set new-index-set)
+    (when-not (requires-update? existing-index-set expected-index-set)
       (info "Existing index set:" (pr-str existing-index-set))
-      (info "New index set:" (pr-str new-index-set))
+      (info "New index set:" (pr-str expected-index-set))
       (errors/throw-service-error :bad-request "It appears the existing index set and the new index set are the same."))
 
-    (info "Updating the index set to " (pr-str new-index-set))
-    (idx-set/update context new-index-set)))
+    (info "Updating the index set to " (pr-str expected-index-set))
+    (idx-set/update context expected-index-set)))
 
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
