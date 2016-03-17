@@ -20,14 +20,15 @@
                        "-Dcom.sun.management.jmxremote"
                        "-Dcom.sun.management.jmxremote.ssl=false"
                        "-Dcom.sun.management.jmxremote.authenticate=false"
-                       "-Dcom.sun.management.jmxremote.port=1098"
-                       ]
+                       "-Dcom.sun.management.jmxremote.port=1098"]
+
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [pjstadig/humane-test-output "0.7.0"]
-                        [criterium "0.4.3"]]
+                        [criterium "0.4.3"]
+                        [proto-repl "0.1.2"]]
 
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)

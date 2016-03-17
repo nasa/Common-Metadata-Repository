@@ -111,15 +111,6 @@
   (when product-level-id
     (product-levels (str/replace product-level-id #"Level " ""))))
 
-(defn- generate-dataset-citations
-  "Generates a dataset citation given a umm-collection map"
-  [collection]
-  (for [citation (:collection-citations collection)
-        :let [other-reference-details (:other-reference-details citation)]
-        :when (some? other-reference-details)]
-    (x/element :Dataset_Citation {}
-               (x/element :Other_Citation_Details {} other-reference-details))))
-
 (extend-protocol dif10-core/UmmToDif10Xml
   UmmCollection
   (umm->dif10-xml
@@ -136,7 +127,7 @@
                                (x/element :Short_Name {} short-name)
                                (x/element :Version {} version-id))
                     (x/element :Entry_Title {} entry-title)
-                    (generate-dataset-citations collection)
+                    (ref/generate-dataset-citations collection)
                     (personnel/generate-personnel personnel)
                     (sk/generate-science-keywords science-keywords)
                     (platform/generate-platforms platforms)

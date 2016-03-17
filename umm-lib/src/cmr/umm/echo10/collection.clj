@@ -35,29 +35,6 @@
                    :processing-level-id (cx/string-at-path collection-content [:ProcessingLevelId])
                    :collection-data-type (cx/string-at-path collection-content [:CollectionDataType])}))
 
-(defn- xml-elem->PublicationReference
-  "Returns a seq of UMM PublicationReference from a parsed Collection Content XML structure"
-  [collection-content]
-  (let [ref (cx/string-at-path collection-content [:CitationForExternalPublication])]
-    (if (empty? ref)
-      nil
-       [(c/map->PublicationReference
-       {:author nil
-        :publication-date nil
-        :title nil
-        :series nil
-        :edition nil
-        :volume nil
-        :issue nil
-        :report-number nil
-        :publication-place nil
-        :publisher nil
-        :pages nil
-        :isbn nil
-        :doi nil
-        :related-url nil
-        :other-reference-details ref})])))
-
 (defn xml-elem->DataProviderTimestamps
   "Returns a UMM DataProviderTimestamps from a parsed Collection Content XML structure"
   [collection-content]
@@ -156,7 +133,7 @@
        :personnel (pe/xml-elem->personnel xml-struct)
        :associated-difs (seq (cx/strings-at-path xml-struct [:AssociatedDIFs :DIF :EntryId]))
        :collection-progress (progress/parse xml-struct)
-       :collection-citations (xml-elem->PublicationReference xml-struct)})))
+       :collection-citations (seq (cx/strings-at-path xml-struct [:CitationForExternalPublication]))})))
 
 (defn parse-collection
   "Parses ECHO10 XML into a UMM Collection record."
@@ -217,8 +194,8 @@
                     (org/generate-archive-center organizations)
                     (when version-description
                       (x/element :VersionDescription {} version-description))
-                    (when collection-citations
-                      (x/element :CitationForExternalPublication {} collection-citations))
+                    (when-let [citation (first collection-citations)]
+                      (x/element :CitationForExternalPublication {} citation))
                     (progress/generate collection)
                     (when restriction-flag
                       (x/element :RestrictionFlag {} restriction-flag))

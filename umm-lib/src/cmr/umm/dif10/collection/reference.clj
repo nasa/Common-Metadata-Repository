@@ -40,12 +40,6 @@
   (seq (map xml-elem->Reference
             (cx/elements-at-path collection-element [:Reference]))))
 
-(defn xml-elem->Citations
-  [collection-element]
-  (seq (for [citation (cx/strings-at-path collection-element [:Dataset_Citation :Other_Citation_Details])]
-         (c/map->PublicationReference
-          {:other-reference-details citation}))))
-
 (defn generate-references
   "Returns a seq of DIF 10 Reference elements from a seq of UMM publication references."
   [references]
@@ -55,3 +49,15 @@
                      :let [v (get reference umm-key)]
                      :when v]
                  (x/element dif-tag {} v)))))
+
+(defn xml-elem->Citations
+  "Returns a list of collection citations which are strings."
+  [collection-element]
+  (seq (cx/strings-at-path collection-element [:Dataset_Citation :Other_Citation_Details])))
+
+(defn generate-dataset-citations
+  "Generates a dataset citation given a umm-collection map"
+  [collection]
+  (for [citation (:collection-citations collection)]
+    (x/element :Dataset_Citation {}
+               (x/element :Other_Citation_Details {} citation))))

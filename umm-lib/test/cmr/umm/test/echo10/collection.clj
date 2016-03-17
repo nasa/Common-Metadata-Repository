@@ -63,6 +63,7 @@
         ;; ECHO10 does not support Organizations of distribution-center which only exists in DIF.
         ;; UMMC-72 is proposing to change this.
         (assoc :organizations organizations)
+        (update :collection-citations #(seq (take 1 %)))
         ;; ECHO10 OnlineResources' title is built as description plus resource-type
         (assoc :related-urls related-urls)
         (assoc :personnel personnel)
@@ -400,7 +401,7 @@
                                   :update-time (p/parse-datetime "1999-12-31T19:00:00-05:00")
                                   :delete-time (p/parse-datetime "2000-12-31T19:00:00-05:00")
                                   :revision-date-time (p/parse-datetime "1999-12-30T19:00:00-05:00")})
-     :collection-citations [(umm-c/map->PublicationReference {:other-reference-details "Some Citation for Publication"})]
+     :collection-citations ["Some Citation for Publication"]
      :spatial-keywords ["Word-2" "Word-1" "Word-0"]
      :access-value 5.3
      :temporal expected-parsed-temporal
@@ -552,6 +553,6 @@
         xml (echo10/umm->echo10-xml collection)
         parsed (c/parse-collection xml)]
     (println (= parsed collection))
-    (clojure.data/diff parsed collection))
+    (clojure.data/diff parsed collection)))
   ;;;;;;;;;;;;'
-  )
+
