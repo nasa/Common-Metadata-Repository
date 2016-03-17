@@ -47,10 +47,7 @@
 (defn- validate-params
   "Throws a service error when any keys exist in params other than those in allowed-param-names."
   [params & allowed-param-names]
-  (println "removed params:")
-  (prn (remove (set allowed-param-names) (keys params)))
   (when-let [invalid-param (first (remove (set allowed-param-names) (keys params)))]
-    (println "invalid param found:" (pr-str params) (pr-str invalid-param))
     (errors/throw-service-error :bad-request (format "Parameter [%s] was not recognized."
                                                      (name invalid-param)))))
 
