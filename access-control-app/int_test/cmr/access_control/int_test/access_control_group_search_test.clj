@@ -159,7 +159,9 @@
         cmr-groups {:provider "cmr" "options[provider][ignore_case]" false}
 
         "System level and provider groups"
-        (concat cmr-groups prov1-groups) {:provider ["CMR" "prov1"]}))))
+        (concat cmr-groups prov1-groups) {:provider ["CMR" "prov1"]}))
 
-
-
+    (testing "with invalid parameters"
+      (is (= {:status 400
+              :errors ["Parameter [echo_token] was not recognized."]}
+             (u/search token {"Echo-Token" "true"}))))))

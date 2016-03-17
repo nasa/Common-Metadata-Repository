@@ -150,6 +150,10 @@
       (is (= {:status 400
               :errors ["Concept-id [F100-CMR] is not valid."]}
              (u/get-group token "F100-CMR"))))
+    (testing "Retrieve group with invalid parameters"
+      (is (= {:status 400
+              :errors ["Parameter [Echo-Token] was not recognized."]}
+             (u/get-group token concept-id {"Echo-Token" "asdf"}))))
     (testing "Retrieve group with concept id for a different concept type"
       (is (= {:status 400
               :errors ["[C100-PROV1] is not a valid group concept id."]}

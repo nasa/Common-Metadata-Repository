@@ -44,6 +44,26 @@
   "The JSON schema used to validate a list of group members"
   (js/parse-json-schema group-members-schema-structure))
 
+(defn- validate-params
+  "Throws a service error when any keys exist in params other than those in allowed-param-names."
+  [params & allowed-param-names]
+  (println "removed params:")
+  (prn (remove (set allowed-param-names) (keys params)))
+  (when-let [invalid-param (first (remove (set allowed-param-names) (keys params)))]
+    (println "invalid param found:" (pr-str params) (pr-str invalid-param))
+    (errors/throw-service-error :bad-request (format "Parameter [%s] was not recognized."
+                                                     (name invalid-param)))))
+
+(defn- validate-standard-params
+  "Throws a service error if any parameters other than :token or :pretty are present."
+  [params]
+  (validate-params params :pretty :token))
+
+(defn- validate-group-route-params
+  "Same as validate-standard-params plus :group-id."
+  [params]
+  (validate-params params :pretty :token :group-id))
+
 (defn- api-response
   "Creates a successful response with the given data response"
   ([data]
@@ -157,39 +177,48 @@
       (cr/health-api-routes group-service/health)
 
       (context "/groups" []
-        (OPTIONS "/" req cr/options-response)
+        (OPTIONS "/" req
+          (validate-standard-params (:params req))
+          cr/options-response)
 
         ;; Search for groups
         (GET "/" {:keys [request-context headers params]}
           (search-for-groups request-context headers params))
 
         ;; Create a group
-        (POST "/" {:keys [request-context headers body]}
+        (POST "/" {:keys [request-context headers body params]}
+          (validate-standard-params params)
           (create-group request-context headers (slurp body)))
 
         (context "/:group-id" [group-id]
           (OPTIONS "/" req cr/options-response)
           ;; Get a group
-          (GET "/" {:keys [request-context]}
+          (GET "/" {:keys [request-context params]}
+            (validate-group-route-params params)
             (get-group request-context group-id))
 
           ;; Delete a group
-          (DELETE "/" {:keys [request-context]}
+          (DELETE "/" {:keys [request-context params]}
+            (validate-group-route-params params)
             (delete-group request-context group-id))
 
           ;; Update a group
-          (PUT "/" {:keys [request-context headers body]}
+          (PUT "/" {:keys [request-context headers body params]}
+            (validate-group-route-params params)
             (update-group request-context headers (slurp body) group-id))
 
           (context "/members" []
             (OPTIONS "/" req cr/options-response)
-            (GET "/" {:keys [request-context]}
+            (GET "/" {:keys [request-context params]}
+              (validate-group-route-params params)
               (get-members request-context group-id))
 
-            (POST "/" {:keys [request-context headers body]}
+            (POST "/" {:keys [request-context headers body params]}
+              (validate-group-route-params params)
               (add-members request-context headers (slurp body) group-id))
 
-            (DELETE "/" {:keys [request-context headers body]}
+            (DELETE "/" {:keys [request-context headers body params]}
+              (validate-group-route-params params)
               (remove-members request-context headers (slurp body) group-id))))))
 
     (route/not-found "Not Found")))
