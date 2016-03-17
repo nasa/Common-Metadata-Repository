@@ -18,7 +18,7 @@
         tag1-2 (tags/save-tag user1-token (dissoc tag1 :revision-id))
         tag2 (tags/save-tag user2-token (tags/make-tag {:tag-key "tag2"}))
         tag3 (tags/save-tag user1-token (tags/make-tag {:tag-key "tag3"}))
-        tag3-tombstone (tags/delete-tag user1-token (:concept-id tag3))
+        tag3-tombstone (tags/delete-tag user1-token (:tag-key tag3))
         all-tags [tag1-2 tag2]]
     (index/wait-until-indexed)
 
