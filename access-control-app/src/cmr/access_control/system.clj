@@ -12,6 +12,9 @@
             [cmr.access-control.config :as config]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.common.api.web-server :as web]
+            [cmr.acl.acl-fetcher :as af]
+            [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+            [cmr.common.jobs :as jobs]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.access-control.services.event-handler :as event-handler]
             [cmr.common-app.system :as common-sys]))
@@ -33,7 +36,11 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :search-index :queue-broker :web :nrepl])
+  component-order [:log :caches :search-index :queue-broker :scheduler :web :nrepl])
+
+(def system-holder
+  "Required for jobs"
+  (atom nil))
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -43,8 +50,14 @@
              :web (web/create-web-server (transmit-config/access-control-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
              :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))
+             :caches {af/acl-cache-key (af/create-acl-cache
+                                        (stl-cache/create-single-thread-lookup-cache)
+                                        [:system-object :provider-object :single-instance-object])}
              :public-conf public-conf
-             :relative-root-url (transmit-config/access-control-relative-root-url)}]
+             :relative-root-url (transmit-config/access-control-relative-root-url)
+             :scheduler (jobs/create-scheduler
+                         `system-holder
+                         [(af/refresh-acl-cache-job "access-control-acl-cache-refresh")])}]
     (transmit-config/system-with-connections sys [:echo-rest :metadata-db :urs])))
 
 (defn start

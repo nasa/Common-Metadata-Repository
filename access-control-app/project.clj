@@ -24,7 +24,8 @@
   :repl-options {:init-ns user}
   :profiles
   {:dev {:dependencies ~(into '[[org.clojure/tools.namespace "0.2.11"]
-                                [pjstadig/humane-test-output "0.7.0"]]
+                                [pjstadig/humane-test-output "0.7.0"]
+                                [proto-repl "0.1.2"]]
                           dev-cmr-deps)
          :source-paths ["src" "dev" "test" "int_test"]
          :test-paths ["test" "int_test"]
