@@ -100,8 +100,8 @@
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-colls (concat all-prov1-colls all-prov2-colls)
-        tag (tags/make-tag)
-        tag-key (:tag-key tag)
+        tag-key "tag1"
+        tag (tags/make-tag {:tag-key tag-key})
         token (e/login (s/context) "user1")
         {:keys [concept-id]} (tags/create-tag token tag)]
     (index/wait-until-indexed)
