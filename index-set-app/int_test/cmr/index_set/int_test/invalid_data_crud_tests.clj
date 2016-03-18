@@ -17,7 +17,7 @@
 (deftest invalid-index-set-id-test
   (testing "invalid index-set id"
     (let [index-set util/sample-index-set
-          {:keys [status errors-str]} (util/submit-create-index-set-req (assoc-in index-set [:index-set :id] "AA"))]
+          {:keys [status errors-str]} (util/create-index-set (assoc-in index-set [:index-set :id] "AA"))]
       (is (= 422 status))
       (is (re-find #"id: AA not a positive integer" errors-str)))))
 
@@ -28,7 +28,7 @@
                                                      (dissoc % :name)
                                                      %)
                                                   (list util/sample-index-set)))
-          {:keys [status errors-str]} (util/submit-create-index-set-req no-name-index-set)]
+          {:keys [status errors-str]} (util/create-index-set no-name-index-set)]
       (is (= 422 status))
       (is (re-find #"missing id or name in index-set" errors-str)))))
 
@@ -36,7 +36,7 @@
 (deftest index-config-missing-test
   (testing "missing index-config"
     (let [invalid-idx-set util/invalid-sample-index-set
-          {:keys [status errors-str]} (util/submit-create-index-set-req invalid-idx-set)]
+          {:keys [status errors-str]} (util/create-index-set invalid-idx-set)]
       (is (= 422 status))
       (is (re-find #"missing index names or settings or mapping in given index-set" errors-str)))))
 
@@ -45,7 +45,7 @@
 ;; try to fetch an index-set with invalid id to see 404
 (deftest get-non-existent-index-set-test
   (testing "create index-set"
-    (let [{:keys [status]} (util/submit-create-index-set-req util/sample-index-set)]
+    (let [{:keys [status]} (util/create-index-set util/sample-index-set)]
       (is (= 201 status))))
 
   (testing "get existent index-set"
@@ -61,7 +61,7 @@
 ; Verify non existent index-set results in 404
 (deftest del-non-existent-index-set-test
   (let [index-set-id (get-in util/sample-index-set [:index-set :id])
-        {:keys [status errors-str]} (util/submit-delete-index-set-req index-set-id)]
+        {:keys [status errors-str]} (util/delete-index-set index-set-id)]
     (is (= 404 status))
     (is (re-find #"index-set" errors-str))
     (is (re-find #"not found" errors-str))))
@@ -69,7 +69,7 @@
 ;; Verify incorrect mapping issues etc are handled correctly
 (deftest invalid-mapping-type-index-config-test
   (testing "index confing wrong mapping types"
-    (let [{:keys [status errors-str]} (util/submit-create-index-set-req util/index-set-w-invalid-idx-prop)]
+    (let [{:keys [status errors-str]} (util/create-index-set util/index-set-w-invalid-idx-prop)]
       (is (= 400 status))
       (is (re-find #"MapperParsingException\[mapping \[collection\]\]" errors-str)))))
 

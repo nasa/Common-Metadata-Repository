@@ -10,114 +10,120 @@
             [cmr.elastic-utils.config :as es-config]
             [cmr.transmit.config :as transmit-config]))
 
-(def index-set-root-url
+(defn index-set-root-url
+  []
   (format "%s:%s"  "http://localhost" (transmit-config/index-set-port)))
 
 ;; url applicable to create, get and delete index-set
-(def index-set-url
-  (format "%s/%s" index-set-root-url "index-sets"))
+(defn index-set-url
+  []
+  (format "%s/%s" (index-set-root-url) "index-sets"))
 
-(def reset-url
-  (format "%s/%s" index-set-root-url "reset"))
+(defn reset-url
+  []
+  (format "%s/%s" (index-set-root-url) "reset"))
 
 (def cmr-concepts [:collection :granule])
 
 ;;; test data
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (def sample-index-set
-  {:index-set {:name "cmr-base-index-set"
-               :id 3
-               :create-reason "include message about reasons for creating this index set"
-               :collection {:indexes
-                            [{:name "C4-collections"
-                             :settings {:index {:number_of_shards 1,
-                                                :number_of_replicas 0,
-                                                :refresh_interval "20s"}}}
-                            {:name "c6_Collections"
-                             :settings {:index {:number_of_shards 1,
-                                                :number_of_replicas 0,
-                                                :refresh_interval "20s"}}}]
-                            :mapping {:collection {:dynamic "strict",
-                                                   :_source {:enabled false},
-                                                   :_all {:enabled false},
-                                                   :_id   {:path "concept-id"},
-                                                   :properties {:concept-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
-                                                                :entry-title {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}
-               :granule {:indexes
-                         [{:name "G2-PROV1"
-                          :settings {:index {:number_of_shards 1,
-                                             :number_of_replicas 0,
-                                             :refresh_interval "10s"}}}
-                         {:name "G4-Prov3"
-                          :settings {:index {:number_of_shards 1,
-                                             :number_of_replicas 0,
-                                             :refresh_interval "10s"}}}
-                         {:name "g5_prov5"
-                          :settings {:index {:number_of_shards 1,
-                                             :number_of_replicas 0,
-                                             :refresh_interval "10s"}}}]
-                         :mapping {:granule {:dynamic "strict",
-                                             :_source { "enabled" false},
-                                             :_all {"enabled" false},
-                                             :_id  {:path "concept-id"},
-                                             :properties {:concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
-                                                          :collection-concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}}})
+  {:index-set
+   {:name "cmr-base-index-set"
+    :id 3
+    :create-reason "include message about reasons for creating this index set"
+    :collection {:indexes
+                 [{:name "C4-collections"
+                   :settings {:index {:number_of_shards 1,
+                                      :number_of_replicas 0,
+                                      :refresh_interval "20s"}}}
+                  {:name "c6_Collections"
+                   :settings {:index {:number_of_shards 1,
+                                      :number_of_replicas 0,
+                                      :refresh_interval "20s"}}}]
+                 :mapping {:collection {:dynamic "strict",
+                                        :_source {:enabled false},
+                                        :_all {:enabled false},
+                                        :_id   {:path "concept-id"},
+                                        :properties {:concept-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
+                                                     :entry-title {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}
+    :granule {:indexes
+              [{:name "G2-PROV1"
+                :settings {:index {:number_of_shards 1,
+                                   :number_of_replicas 0,
+                                   :refresh_interval "10s"}}}
+               {:name "G4-Prov3"
+                :settings {:index {:number_of_shards 1,
+                                   :number_of_replicas 0,
+                                   :refresh_interval "10s"}}}
+               {:name "g5_prov5"
+                :settings {:index {:number_of_shards 1,
+                                   :number_of_replicas 0,
+                                   :refresh_interval "10s"}}}]
+              :mapping {:granule {:dynamic "strict",
+                                  :_source { "enabled" false},
+                                  :_all {"enabled" false},
+                                  :_id  {:path "concept-id"},
+                                  :properties {:concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
+                                               :collection-concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}}})
 
 (def invalid-sample-index-set
-  {:index-set {:name "cmr-base-index-set"
-               :id 3
-               :create-reason "include message about reasons for creating this index set"
-               :collection {:indexes
-                            [{:name "C4-collections"}
-                             {:name "c6_Collections"
-                              :settings {:index {:number_of_shards 1,
-                                                 :number_of_replicas 0,
-                                                 :refresh_interval "20s"}}}]
-                            :mapping {:collection {:dynamic "strict",
-                                                   :_source {:enabled false},
-                                                   :_all {:enabled false},
-                                                   :_id   {:path "concept-id"},
-                                                   :properties {:concept-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
-                                                                :entry-title {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}
-               :granule {:indexes
-                         [{:name "G2-PROV1"
-                           :settings {:index {:number_of_shards 1,
-                                              :number_of_replicas 0,
-                                              :refresh_interval "10s"}}}
-                          {:name "G4-Prov3"
-                           :settings {:index {:number_of_shards 1,
-                                              :number_of_replicas 0,
-                                              :refresh_interval "10s"}}}
-                          {:name "g5_prov5"
-                           :settings {:index {:number_of_shards 1,
-                                              :number_of_replicas 0,
-                                              :refresh_interval "10s"}}}]
-                         :mapping {:granule {:dynamic "strict",
-                                             :_source { "enabled" false},
-                                             :_all {"enabled" false},
-                                             :_id  {:path "concept-id"},
-                                             :properties {:concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
-                                                          :collection-concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}}})
+  {:index-set
+   {:name "cmr-base-index-set"
+    :id 3
+    :create-reason "include message about reasons for creating this index set"
+    :collection {:indexes
+                 [{:name "C4-collections"}
+                  {:name "c6_Collections"
+                   :settings {:index {:number_of_shards 1,
+                                      :number_of_replicas 0,
+                                      :refresh_interval "20s"}}}]
+                 :mapping {:collection {:dynamic "strict",
+                                        :_source {:enabled false},
+                                        :_all {:enabled false},
+                                        :_id   {:path "concept-id"},
+                                        :properties {:concept-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
+                                                     :entry-title {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}
+    :granule {:indexes
+              [{:name "G2-PROV1"
+                :settings {:index {:number_of_shards 1,
+                                   :number_of_replicas 0,
+                                   :refresh_interval "10s"}}}
+               {:name "G4-Prov3"
+                :settings {:index {:number_of_shards 1,
+                                   :number_of_replicas 0,
+                                   :refresh_interval "10s"}}}
+               {:name "g5_prov5"
+                :settings {:index {:number_of_shards 1,
+                                   :number_of_replicas 0,
+                                   :refresh_interval "10s"}}}]
+              :mapping {:granule {:dynamic "strict",
+                                  :_source { "enabled" false},
+                                  :_all {"enabled" false},
+                                  :_id  {:path "concept-id"},
+                                  :properties {:concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
+                                               :collection-concept-id {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}}})
 
 (def index-set-w-invalid-idx-prop
-  {:index-set {:name "cmr-base-index-set"
-               :id 3
-               :create-reason "include message about reasons for creating this index set"
-               :collection {:indexes
-                            [{:name "C4-collections"
-                              :settings {:index {:number_of_shards 1,
-                                                 :number_of_replicas 0,
-                                                 :refresh_interval "20s"}}}
-                             {:name "c6_Collections"
-                              :settings {:index {:number_of_shards 1,
-                                                 :number_of_replicas 0,
-                                                 :refresh_interval "20s"}}}]
-                            :mapping {:collection {:dynamic "strict",
-                                                   :_source {:enabled false},
-                                                   :_all {:enabled false},
-                                                   :_id   {:path "concept-id"},
-                                                   :properties {:concept-id  {:type "XXX" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
-                                                                :entry-title {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}}})
+  {:index-set
+   {:name "cmr-base-index-set"
+    :id 3
+    :create-reason "include message about reasons for creating this index set"
+    :collection {:indexes
+                 [{:name "C4-collections"
+                   :settings {:index {:number_of_shards 1,
+                                      :number_of_replicas 0,
+                                      :refresh_interval "20s"}}}
+                  {:name "c6_Collections"
+                   :settings {:index {:number_of_shards 1,
+                                      :number_of_replicas 0,
+                                      :refresh_interval "20s"}}}]
+                 :mapping {:collection {:dynamic "strict",
+                                        :_source {:enabled false},
+                                        :_all {:enabled false},
+                                        :_id   {:path "concept-id"},
+                                        :properties {:concept-id  {:type "XXX" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
+                                                     :entry-title {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}}})
 
 
 ;;; utility methods
@@ -127,31 +133,31 @@
   []
   (format "http://%s:%s" (es-config/elastic-host) (es-config/elastic-port)))
 
-(defn submit-create-index-set-req
+(defn create-index-set
   "submit a request to index-set app to create indices"
   [idx-set]
   (let [response (client/request
-                   {:method :post
-                    :url index-set-url
-                    :body (cheshire.core/generate-string idx-set)
-                    :content-type :json
-                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                    :accept :json
-                    :throw-exceptions false})
+                  {:method :post
+                   :url (index-set-url)
+                   :body (cheshire.core/generate-string idx-set)
+                   :content-type :json
+                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                   :accept :json
+                   :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
         errors-str (cheshire/generate-string (flatten (get body "errors")))]
     {:status status :errors-str errors-str :response response}))
 
-(defn submit-delete-index-set-req
+(defn delete-index-set
   "submit a request to index-set app to delete index-set"
   [id]
   (let [response (client/request
-                   {:method :delete
-                    :url (format "%s/%s" index-set-url id)
-                    :accept :json
-                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                    :throw-exceptions false})
+                  {:method :delete
+                   :url (format "%s/%s" (index-set-url) id)
+                   :accept :json
+                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                   :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
         errors-str (cheshire/generate-string (flatten (get body "errors")))]
@@ -161,11 +167,11 @@
   "submit a request to index-set app to fetch an index-set assoc with an id"
   [id]
   (let [response (client/request
-                   {:method :get
-                    :url (format "%s/%s" index-set-url id)
-                    :accept :json
-                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                    :throw-exceptions false})
+                  {:method :get
+                   :url (format "%s/%s" (index-set-url) id)
+                   :accept :json
+                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                   :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
         errors-str (cheshire/generate-string (flatten (get body "errors")))]
@@ -175,11 +181,11 @@
   "submit a request to index-set app to fetch all index-sets"
   []
   (let [response (client/request
-                   {:method :get
-                    :url index-set-url
-                    :accept :json
-                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                    :throw-exceptions false})
+                  {:method :get
+                   :url (index-set-url)
+                   :accept :json
+                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                   :throw-exceptions false})
         status (:status response)
         body (cheshire/parse-string (:body response))
         errors-str (cheshire/generate-string (flatten (get body "errors")))]
@@ -189,10 +195,10 @@
   "test deletion of indices and index-sets"
   []
   (let [result (client/request
-                 {:method :post
-                  :url (format "%s/%s" index-set-root-url "reset")
-                  :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                  :accept :json})
+                {:method :post
+                 :url (reset-url)
+                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                 :accept :json})
         status (:status result)
         {:keys [status errors-str response]} result]
     {:status status :errors-str errors-str :response response}))
@@ -212,25 +218,3 @@
   (reset! elastic-connection (esr/connect (elastic-root)))
   (f)
   (reset))
-
-
-
-
-;;; comment stuff
-;;;;;;;;;;;;;;;;;;;;;;;;;;
-(comment
-  (reset)
-  (client/request
-    {:method :post
-     :url (format "%s/%s" index-set-root-url "reset")
-     :accept :json
-     :throw-exceptions false})
-  (client/request
-    {:method :get
-     :url (format "%s/%s" "http://localhost:3005/index-sets" 1)
-     :accept :json
-     :throw-exceptions false})
-  (get-index-set "1")
-  (submit-create-index-set-req sample-index-set)
-  (submit-create-index-set-req index-set-w-invalid-idx-prop))
-

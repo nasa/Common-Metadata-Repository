@@ -15,6 +15,7 @@
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
+                        [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
                         [clj-http "2.0.0"]]
          :source-paths ["src" "dev" "test" "int_test"]}
    :integration-test {:test-paths ["int_test"]

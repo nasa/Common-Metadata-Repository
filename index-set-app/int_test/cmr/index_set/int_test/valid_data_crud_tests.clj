@@ -8,15 +8,7 @@
             [cmr.index-set.services.index-service :as svc]
             [cmr.index-set.int-test.utility :as util]))
 
-
-
-;;; fixtures
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (use-fixtures :each util/reset-fixture)
-
-;;; tests
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Verify index-set creation is successful.
 ;; use elastisch to verify all indices of index-set exist and the index-set doc has been indexed
@@ -24,7 +16,7 @@
 (deftest create-index-set-test
   (testing "create index-set"
     (let [index-set util/sample-index-set
-          {:keys [status]} (util/submit-create-index-set-req index-set)]
+          {:keys [status]} (util/create-index-set index-set)]
       (is (= 201 status))))
   (testing "indices existence"
     (let [index-set util/sample-index-set
@@ -47,7 +39,7 @@
           suffix-idx-name "C4-collections"
           index-set-id (get-in index-set [:index-set :id])
           expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
-          {:keys [status]} (util/submit-create-index-set-req index-set)
+          {:keys [status]} (util/create-index-set index-set)
           body (-> (util/get-index-set index-set-id) :response :body)
           fetched-index-set (cheshire.core/decode body true)
           actual-idx-name (get-in fetched-index-set [:index-set :concepts :collection (keyword suffix-idx-name)])]
@@ -63,7 +55,7 @@
           suffix-idx-name "C4-collections"
           index-set-id (get-in index-set [:index-set :id])
           expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
-          {:keys [status]} (util/submit-create-index-set-req index-set)]
+          {:keys [status]} (util/create-index-set index-set)]
       (is (= 201 status))
       (is (esi/exists? @util/elastic-connection expected-idx-name))))
   (testing "delete index-set"
@@ -71,7 +63,7 @@
           index-set-id (get-in index-set [:index-set :id])
           suffix-idx-name "C99-Collections"
           expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
-          {:keys [status]} (util/submit-delete-index-set-req index-set-id)]
+          {:keys [status]} (util/delete-index-set index-set-id)]
       (is (= 204 status))
       (is (not (esi/exists? @util/elastic-connection expected-idx-name))))))
 
@@ -83,8 +75,8 @@
 (deftest get-index-sets-test
   (testing "fetch all index-sets"
     (let [index-set util/sample-index-set
-          _ (util/submit-create-index-set-req index-set)
-          _ (util/submit-create-index-set-req (assoc-in index-set [:index-set :id] 77))
+          _ (util/create-index-set index-set)
+          _ (util/create-index-set (assoc-in index-set [:index-set :id] 77))
           indices-cnt (->> util/cmr-concepts (map (:index-set index-set))
                            (mapcat :indexes)
                            count)
@@ -96,16 +88,31 @@
       (is (= expected-idx-cnt (count actual-es-indices))))))
 
 
+;; TODO coming in subsequent commits
+;; Tests adding a collection that is rebalancing its granules from small_collections to a separate
+;; granule index
+
+;; manual reset
+(comment
+ (util/reset-fixture (constantly true))
+
+ (deftest add-rebalancing-collection-test
+   (util/create-index-set util/sample-index-set)
+   (util/get-index-set (get-in util/sample-index-set [:index-set :id]))))
+
+
+
+
 ;; Verify creating same index-set twice will result in 409
 (deftest create-index-set-twice-test
   (testing "create index-set"
     (let [index-set util/sample-index-set
-          {:keys [status]} (util/submit-create-index-set-req index-set)]
+          {:keys [status]} (util/create-index-set index-set)]
       (is (= 201 status))))
   (testing "create same index-set"
     (let [index-set util/sample-index-set
           index-set-id (get-in index-set [:index-set :id])
-          {:keys [status errors-str]} (util/submit-create-index-set-req index-set)]
+          {:keys [status errors-str]} (util/create-index-set index-set)]
       (is (= 409 status))
       (is (re-find #"already exists" errors-str)))))
 
