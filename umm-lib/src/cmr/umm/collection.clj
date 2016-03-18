@@ -242,79 +242,42 @@
    roles
 
    ;; contact points (email, phone, etc.)
-   contacts
-   ])
+   contacts])
+
 
 (defrecord PublicationReference
-    [
-     author
+  [
+   author
 
-     publication-date
+   publication-date
 
-     title
+   title
 
-     series
+   series
 
-     edition
+   edition
 
-     volume
+   volume
 
-     issue
+   issue
 
-     report-number
+   report-number
 
-     publication-place
+   publication-place
 
-     publisher
+   publisher
 
-     pages
+   pages
 
-     isbn
+   isbn
 
-     ;; Digital Object Identifier
-     doi
+   ;; Digital Object Identifier
+   doi
 
-     related-url
+   related-url
 
-     ;; String for miscellaneous content
-     other-reference-details
-     ])
-
-
-(defrecord CollectionCitation
-    [
-     author
-
-     publication-date
-
-     title
-
-     series
-
-     edition
-
-     volume
-
-     issue
-
-     report-number
-
-     publication-place
-
-     publisher
-
-     pages
-
-     isbn
-
-     ;; Digital Object Identifier
-     doi
-
-     related-url
-
-     ;; String for miscellaneous content
-     other-reference-details
-     ])
+   ;; String for miscellaneous content
+   other-reference-details])
 
 (def collection-progress-states
   [:planned :in-work :complete])
@@ -386,9 +349,9 @@
    ;; keyword; one of the values defined in collection-progress-states
    collection-progress
 
-   ;; (seq of PublicationReference) This element describes DataSet Citations.
-   collection-citations
-   ])
+   ;; (seq of strings) This element describes DataSet Citations.
+   collection-citations])
+
 
 
 (record-pretty-printer/enable-record-pretty-printing

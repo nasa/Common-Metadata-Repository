@@ -129,6 +129,7 @@
         (assoc :personnel personnel)
         ;; publication-reference will be added later
         (dissoc :publication-references)
+        (dissoc :collection-citations)
         (dissoc :collection-progress)
         umm-c/map->UmmCollection)))
 
