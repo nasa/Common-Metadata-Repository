@@ -47,9 +47,10 @@
 (defn- validate-params
   "Throws a service error when any keys exist in params other than those in allowed-param-names."
   [params & allowed-param-names]
-  (when-let [invalid-param (first (remove (set allowed-param-names) (keys params)))]
-    (errors/throw-service-error :bad-request (format "Parameter [%s] was not recognized."
-                                                     (name invalid-param)))))
+  (when-let [invalid-params (seq (remove (set allowed-param-names) (keys params)))]
+    (errors/throw-service-errors :bad-request (for [param invalid-params]
+                                                (format "Parameter [%s] was not recognized."
+                                                        (name param))))))
 
 (defn- validate-standard-params
   "Throws a service error if any parameters other than :token or :pretty are present."
