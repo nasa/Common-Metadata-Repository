@@ -123,31 +123,35 @@
 
       ;; Get a tag
       (GET "/" {:keys [request-context]}
-        (get-tag request-context tag-key))
+        (get-tag request-context (str/lower-case tag-key)))
 
       ;; Delete a tag
       (DELETE "/" {:keys [request-context]}
-        (delete-tag request-context tag-key))
+        (delete-tag request-context (str/lower-case tag-key)))
 
       ;; Update a tag
       (PUT "/" {:keys [request-context headers body]}
-        (update-tag request-context headers (slurp body) tag-key))
+        (update-tag request-context headers (slurp body) (str/lower-case tag-key)))
 
       (context "/associations" []
 
         ;; Associate a tag with a list of collections
         (POST "/" {:keys [request-context headers body]}
-          (associate-tag-to-collections request-context headers (slurp body) tag-key))
+          (associate-tag-to-collections
+            request-context headers (slurp body) (str/lower-case tag-key)))
 
         ;; Disassociate a tag with a list of collections
         (DELETE "/" {:keys [request-context headers body]}
-          (disassociate-tag-to-collections request-context headers (slurp body) tag-key))
+          (disassociate-tag-to-collections
+            request-context headers (slurp body) (str/lower-case tag-key)))
 
         (context "/by_query" []
           ;; Associate a tag with collections
           (POST "/" {:keys [request-context headers body]}
-            (associate-tag-by-query request-context headers (slurp body) tag-key))
+            (associate-tag-by-query
+              request-context headers (slurp body) (str/lower-case tag-key)))
 
           ;; Disassociate a tag with collections
           (DELETE "/" {:keys [request-context headers body]}
-            (disassociate-tag-by-query request-context headers (slurp body) tag-key)))))))
+            (disassociate-tag-by-query
+              request-context headers (slurp body) (str/lower-case tag-key))))))))

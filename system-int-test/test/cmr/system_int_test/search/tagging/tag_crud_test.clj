@@ -126,21 +126,19 @@
   (let [tag (tags/make-tag {:tag-key "MixedCaseTagKey"})
         tag-key "mixedcasetagkey"
         token (e/login (s/context) "user1")
-        {:keys [concept-id]} (tags/create-tag token tag)]
+        _ (tags/create-tag token tag)
+        expected-tag (-> tag
+                         (update :tag-key str/lower-case)
+                         (assoc :originator-id "user1" :status 200))]
     (testing "Retrieve existing tag, verify tag-key is converted to lowercase"
-      (let [expected-tag (-> tag
-                             (update :tag-key str/lower-case)
-                             (assoc :originator-id "user1" :status 200))]
-        (is (= expected-tag (tags/get-tag tag-key)))))
+      (is (= expected-tag (tags/get-tag tag-key))))
 
-    (testing "Retrieve tag with tag-key is case sensitive"
-      (is (= {:status 404
-              :errors ["Tag could not be found with tag-key [MixedCaseTagKey]"]}
-             (tags/get-tag "MixedCaseTagKey"))))
+    (testing "Retrieve tag with tag-key is case insensitive"
+      (is (= expected-tag (tags/get-tag "MixedCaseTagKey"))))
     (testing "Retrieve unknown tag"
       (is (= {:status 404
-              :errors ["Tag could not be found with tag-key [T100-CMR]"]}
-             (tags/get-tag "T100-CMR"))))
+              :errors ["Tag could not be found with tag-key [tag100]"]}
+             (tags/get-tag "Tag100"))))
 
     (testing "Retrieve deleted tag"
       (tags/delete-tag token tag-key)
