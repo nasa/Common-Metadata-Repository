@@ -48,8 +48,9 @@
             (index-svc/delete-index-set request-context id)
             {:status 204})
 
-          ;; TODO document this here and in API docs
           (context "/rebalancing-collections/:concept-id" [concept-id]
+
+            ;; Marks the collection as rebalancing in the index set.
             (PUT "/" {request-context :request-context body :body params :params headers :headers}
               (acl/verify-ingest-management-permission request-context :update)
               (index-svc/mark-collection-as-rebalancing request-context id concept-id)
