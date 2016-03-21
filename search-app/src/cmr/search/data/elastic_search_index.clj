@@ -28,11 +28,6 @@
   (let [fetched-index-set (index-set/get-index-set context index-set-id)]
     (get-in fetched-index-set [:index-set :concepts])))
 
-(def context
-  {:system (get-in user/system [:apps :search])})
-
-(fetch-concept-type-index-names context)
-
 (def index-cache-name
   "The name of the cache for caching index names. It will contain a map of concept type to a map of
    index names to the name of the index used in elasticsearch.
