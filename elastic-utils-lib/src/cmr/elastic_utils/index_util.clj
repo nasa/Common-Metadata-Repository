@@ -173,6 +173,18 @@
            (errors/throw-service-error :conflict (str "Save to Elasticsearch failed " (str result))))
          (errors/internal-error! (str "Save to Elasticsearch failed " (str result))))))))
 
+(defn delete-by-id
+  "Delete a document from elastic by ID.
+    Takes parameters:
+      elastic-store - Connection to elastic
+      index-name - string name of the index
+      type-name - symbol of concept type to be deleted
+      id - ID of document to be deleted (concept id)
+
+    Returns a hashmap of the HTTP response"
+  [elastic-store index-name type-name id]
+  (doc/delete (:conn elastic-store) index-name type-name id))
+
 (defn delete-by-query
   "Delete document that match the given query"
   [elastic-store index-name type-name query]

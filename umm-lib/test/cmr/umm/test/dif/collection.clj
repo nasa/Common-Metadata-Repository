@@ -147,6 +147,10 @@
         (dissoc :associated-difs)
         ;; DIF does not have metadata-language
         (dissoc :metadata-language)
+
+        ;; DIF 9 does not have collection citation
+        (dissoc :collection-citations)
+
         ;; DIF9 does not support ranges for additional attributes
         (update-in [:product-specific-attributes]
                    (fn [psas]
@@ -180,7 +184,7 @@
           echo10-xml (echo10/umm->echo10-xml parsed-dif)
           parsed-echo10 (echo10-c/parse-collection echo10-xml)
           expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-dif collection))]
-      (and (= expected-parsed parsed-echo10 )
+      (and (= expected-parsed parsed-echo10)
            (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
 
 ;; This is a made-up include all fields collection xml sample for the parse collection test

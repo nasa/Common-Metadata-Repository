@@ -59,8 +59,10 @@
 
 (defn get-group
   "Retrieves a group by concept id"
-  [token concept-id]
-  (process-response (ac/get-group (conn-context) concept-id {:raw? true :token token})))
+  ([token concept-id params]
+   (process-response (ac/get-group (conn-context) concept-id {:raw? true :token token :http-options {:query-params params}})))
+  ([token concept-id]
+    (get-group token concept-id nil)))
 
 (defn update-group
   "Updates a group."

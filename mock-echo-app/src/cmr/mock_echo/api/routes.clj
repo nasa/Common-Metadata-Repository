@@ -16,13 +16,16 @@
             [cmr.mock-echo.api.urs :as urs-api]
             [cmr.mock-echo.data.token-db :as token-db]
             [cmr.mock-echo.data.provider-db :as provider-db]
-            [cmr.mock-echo.data.acl-db :as acl-db]))
+            [cmr.mock-echo.data.acl-db :as acl-db]
+            [cmr.mock-echo.data.urs-db :as urs-db]))
 
 (defn reset
   [context]
   (token-db/reset context)
   (provider-db/reset context)
-  (acl-db/reset context))
+  (acl-db/reset context)
+  (urs-db/reset context))
+
 
 (defn- build-routes [system]
   (routes

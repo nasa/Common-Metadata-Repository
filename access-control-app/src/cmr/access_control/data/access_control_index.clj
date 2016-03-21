@@ -59,6 +59,11 @@
   (fn [context concept-map]
     (:concept-type concept-map)))
 
+(defmulti delete-concept
+  "Deletes the concept map in elastic search."
+  (fn [context concept-map]
+    (:concept-type concept-map)))
+
 (defn- safe-lowercase
   [v]
   (when v (str/lower-case v)))
@@ -83,6 +88,14 @@
     (m/save-elastic-doc
      elastic-store group-index-name group-type-name concept-id elastic-doc revision-id
      {:ignore-conflict? true})))
+
+(defmethod delete-concept :access-group
+  [context concept-map]
+  (let [id (:concept-id concept-map)]
+    (m/delete-by-id (esi/context->search-index context)
+                    group-index-name
+                    group-type-name
+                    id)))
 
 (defn delete-provider-groups
   "Unindexes all access groups owned by provider-id."

@@ -25,11 +25,6 @@
             [cmr.indexer.services.event-handler :as event-handler]
             [cmr.common-app.system :as common-sys]))
 
-(defconfig colls-with-separate-indexes
-  "Configuration value that contains a list of collections with separate indexes for their
-  granule data.  The collections are comma separated."
-  {:default [] :parser #(str/split % #",")})
-
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
@@ -44,8 +39,6 @@
   []
   (let [sys {:log (log/create-logger)
              :db (es/create-elasticsearch-store (es-config/elastic-config))
-             ;; This is set as a dynamic lookup to enable easy replacement of the value for testing.
-             :colls-with-separate-indexes-fn colls-with-separate-indexes
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (config/indexer-nrepl-port))
              :relative-root-url (transmit-config/indexer-relative-root-url)
@@ -58,7 +51,6 @@
                       kf/kms-cache-key (kf/create-kms-cache)}
              :scheduler (jobs/create-scheduler
                           `system-holder
-                          :db
                           [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
                            (kf/refresh-kms-cache-job "indexer-kms-cache-refresh")])
              :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]

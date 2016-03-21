@@ -152,8 +152,8 @@
   [context path-w-extension params headers json-query]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         params (process-params params path-w-extension headers mt/xml)
-        _ (info (format "Searching for concepts from client %s in format %s with JSON %s and query parameters %s."
-                        (:client-id context) (:result-format params) json-query params))
+        _ (info (format "Searching for %ss from client %s in format %s with JSON %s and query parameters %s."
+                        (name concept-type)(:client-id context) (:result-format params) json-query params))
         results (query-svc/find-concepts-by-json-query context concept-type params json-query)]
     (cr/search-response results)))
 

@@ -290,6 +290,7 @@
                 :spatial-coverage (ext-gen/optional spatial-coverages)
                 :publication-references (ext-gen/nil-if-empty (gen/vector publication-references 0 3))
                 :personnel (ext-gen/nil-if-empty (gen/vector personnels 0 3))
+                :collection-citations (ext-gen/nil-if-empty (gen/vector (ext-gen/string-alpha-numeric 1 10) 0 3))
                 :collection-progress collection-progress)
               (ext-gen/optional processing-center-organizations)
               (ext-gen/optional archive-center-organizations)

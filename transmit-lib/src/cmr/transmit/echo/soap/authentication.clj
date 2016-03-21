@@ -5,7 +5,8 @@
             [cmr.common.xml.simple-xpath :as xpath]
             [cmr.common.log :refer (debug info warn error)]))
 
-(def security-token-info-tags "Keys within a security token info map"
+(def security-token-info-tags
+  "Keys within a security token info map"
   [ :token :user-guid :act-as-user-guid :on-behalf-of-provider-guid
     :created :expires :guest :revoked :client-id :user-name])
 

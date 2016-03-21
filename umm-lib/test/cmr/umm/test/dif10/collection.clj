@@ -31,10 +31,10 @@
 
 
   ((let [xml (dif10/umm->dif10-xml user/failing-value)]
-     (c/validate-xml xml)))
+     (c/validate-xml xml))))
 
 
-  )
+
 
 (defn- related-urls->expected-parsed
   [related-urls]
@@ -94,11 +94,11 @@
   [personnel]
   (seq (for [person personnel]
          (-> person
-         (update-in [:roles]
-                    (fn [roles]
-                      (or (seq (filter personnel/personnel-roles roles))
-                          ["TECHNICAL CONTACT"])))
-         (update-in [:contacts] umm-contacts->expected-contacts)))))
+          (update-in [:roles]
+                     (fn [roles]
+                       (or (seq (filter personnel/personnel-roles roles))
+                           ["TECHNICAL CONTACT"])))
+          (update-in [:contacts] umm-contacts->expected-contacts)))))
 
 (defn- projects->expected-parsed
   [projects]
@@ -166,12 +166,15 @@
 
 (comment
 
+
  (let [collection (first (gen/sample coll-gen/collections 1))]
-          (let [expected (umm->expected-parsed-dif10 collection)
-                xml (dif10/umm->dif10-xml collection)
-                actual (c/parse-collection xml)]
-            (is (= expected actual))))
- )
+   (let [expected (umm->expected-parsed-dif10 collection)
+         xml (dif10/umm->dif10-xml collection)
+         actual (c/parse-collection xml)]
+     (println xml)
+     (proto/save 1)
+     (is (= expected actual)))))
+
 
 (defn- remove-not-provided
   [values sub-key]
@@ -229,9 +232,9 @@
   "parameter-range-begin is a required field in DIF 10 Additional_Attributes"
   [psas orig-psas]
   (seq (for [[psa orig-psa] (map vector psas orig-psas)]
-             (assoc psa
-               :parameter-range-begin (:parameter-range-begin orig-psa)
-               :parsed-parameter-range-begin (:parsed-parameter-range-begin orig-psa)))))
+            (assoc psa
+              :parameter-range-begin (:parameter-range-begin orig-psa)
+              :parsed-parameter-range-begin (:parsed-parameter-range-begin orig-psa)))))
 
 (defn rectify-dif10-fields
   "Revert the UMM fields which are modified when a generated UMM is converted to DIF 10 XML and
@@ -256,6 +259,7 @@
 
 (defspec generate-and-parse-collection-between-formats-test 100
   (for-all [collection coll-gen/collections]
+
     (let [xml (dif10/umm->dif10-xml collection)
           parsed-dif10 (restore-modified-fields (c/parse-collection xml) collection)
           echo10-xml (echo10/umm->echo10-xml parsed-dif10)
@@ -264,6 +268,19 @@
                             (remove-unsupported-fields collection))]
       (and (= expected-parsed parsed-echo10)
            (empty? (echo10-c/validate-xml echo10-xml))))))
+
+(comment
+ (let [collection failing-value
+       xml (dif10/umm->dif10-xml collection)
+       parsed-dif10 (restore-modified-fields (c/parse-collection xml) collection)
+       echo10-xml (echo10/umm->echo10-xml parsed-dif10)
+       parsed-echo10 (echo10-c/parse-collection echo10-xml)
+       expected-parsed (test-echo10/umm->expected-parsed-echo10
+                         (remove-unsupported-fields collection))]
+   [expected-parsed
+    parsed-dif10
+    (and (= expected-parsed parsed-echo10)
+         (empty? (echo10-c/validate-xml echo10-xml)))]))
 
 (def dif10-collection-xml
   "<DIF xmlns=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\" xmlns:dif=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
@@ -486,151 +503,150 @@
                :long-name "A minimal dif dataset"
                :version-id "001"
                :collection-data-type "SCIENCE_QUALITY"})
-    :collection-citations [(umm-c/map->PublicationReference {:other-reference-details
-                                                            "Some Citation Details"})]
-     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
-                                 {:insert-time (p/parse-datetime "2000-03-24T22:20:41-05:00")
-                                  :update-time (p/parse-datetime "2000-03-24T22:20:41-05:00")})
-     :publication-references [(umm-c/map->PublicationReference
-                                {:author "author"
-                                 :publication-date "2015"
-                                 :title "title"
-                                 :series "1"
-                                 :edition "2"
-                                 :volume "3"
-                                 :issue "4"
-                                 :report-number "5"
-                                 :publication-place "Frederick, MD"
-                                 :publisher "publisher"
-                                 :pages "678"
-                                 :isbn "978-0-394-80001-1"
-                                 :related-url "http://example.com"
-                                 :other-reference-details "blah"})]
-     :platforms [(umm-c/map->Platform
-                   {:short-name "Short Name"
-                    :long-name "Long Name"
-                    :type "In Situ Land-based Platforms"
-                    :instruments [(umm-c/map->Instrument
-                                    {:short-name "Short Name"})]})]
-     :projects [(umm-c/map->Project
-                  {:short-name "short name"})]
-     :temporal expected-temporal
-     :science-keywords [(umm-c/map->ScienceKeyword
-                          {:category "EARTH SCIENCE"
-                           :topic "CRYOSPHERE"
-                           :term "SEA ICE"})]
-     :related-urls [(umm-c/map->RelatedURL
-                      {:url "http://www.foo.com"})]
-     :organizations [(umm-c/map->Organization
-                       {:type :archive-center
-                        :org-name "EU/JRC/IES"})]
-     :spatial-coverage (umm-c/map->SpatialCoverage
-                         {:granule-spatial-representation :geodetic
-                          :spatial-representation :cartesian,
-                          :geometries [(m/mbr -180.0 90.0 180.0 -90.0)]})
-     :personnel [(umm-c/map->Personnel
-                   {:first-name "first name"
-                    :last-name "last name"
-                    :middle-name "middle name"
-                    :roles ["TECHNICAL CONTACT"]
-                    :contacts [(umm-c/map->Contact
-                                 {:type :email
-                                  :value "dssweb@ucar.edu"})]})]
-     :product-specific-attributes [(umm-c/map->ProductSpecificAttribute
-                                     {:name "String add attrib"
-                                      :description "something string"
-                                      :data-type :string
-                                      :parameter-range-begin "alpha"
-                                      :parameter-range-end "bravo"
-                                      :value "alpha1"
-                                      :parsed-parameter-range-begin "alpha"
-                                      :parsed-parameter-range-end "bravo"
-                                      :parsed-value "alpha1"})
-                                   (umm-c/map->ProductSpecificAttribute
-                                     {:name "Float add attrib"
-                                      :description "something float"
-                                      :data-type :float
-                                      :parameter-range-begin "0.1"
-                                      :parameter-range-end "100.43"
-                                      :value "12.3"
-                                      :parsed-parameter-range-begin 0.1
-                                      :parsed-parameter-range-end 100.43
-                                      :parsed-value 12.3})
-                                   (umm-c/map->ProductSpecificAttribute
-                                     {:group "gov.nasa.gsfc.gcmd"
-                                      :name "metadata.uuid"
-                                      :data-type :string
-                                      :value "743933e5-1404-4502-915f-83cde56af440"
-                                      :parsed-value "743933e5-1404-4502-915f-83cde56af440"})
-                                   (umm-c/map->ProductSpecificAttribute
-                                     {:group "gov.nasa.gsfc.gcmd"
-                                      :name "metadata.extraction_date"
-                                      :data-type :string
-                                      :value "2013-09-30 09:45:15"
-                                      :parsed-value "2013-09-30 09:45:15"})
-                                   (umm-c/map->ProductSpecificAttribute
-                                     {:group "custom.group"
-                                      :name "String attribute"
-                                      :description "something string"
-                                      :data-type :string
-                                      :value "alpha"
-                                      :parsed-value "alpha"})
-                                   (umm-c/map->ProductSpecificAttribute
-                                     {:group "custom.group"
-                                      :name "Float attribute"
-                                      :description "something float"
-                                      :data-type :float
-                                      :value "12.3"
-                                      :parsed-value 12.3})
-                                   (umm-c/map->ProductSpecificAttribute
-                                     {:group "custom.group"
-                                      :name "Int attribute"
-                                      :description "something int"
-                                      :data-type :int
-                                      :value "42"
-                                      :parsed-value 42})
-                                   (umm-c/map->ProductSpecificAttribute
-                                     {:group "custom.group"
-                                      :name "Date attribute"
-                                      :description "something date"
-                                      :data-type :date
-                                      :value "2015-09-14"
-                                      :parsed-value (p/parse-datetime "2015-09-14")})
-                                   (umm-c/map->ProductSpecificAttribute
-                                     {:group "custom.group"
-                                      :name "Datetime attribute"
-                                      :description "something datetime"
-                                      :data-type :datetime
-                                      :value "2015-09-14T13:01:00Z"
-                                      :parsed-value (p/parse-datetime "2015-09-14T13:01:00Z")})
-                                   (umm-c/map->ProductSpecificAttribute
-                                     {:group "custom.group"
-                                      :name "Time attribute"
-                                      :description "something time"
-                                      :data-type :time
-                                      :value "13:01:00Z"
-                                      :parsed-value (p/parse-time "13:01:00Z")})
-                                   (umm-c/map->ProductSpecificAttribute
-                                     {:group "custom.group"
-                                      :name "Bool attribute"
-                                      :description "something bool"
-                                      :data-type :boolean
-                                      :value "false"
-                                      :parsed-value false})]
+    :collection-citations ["Some Citation Details"]
+    :data-provider-timestamps (umm-c/map->DataProviderTimestamps
+                               {:insert-time (p/parse-datetime "2000-03-24T22:20:41-05:00")
+                                :update-time (p/parse-datetime "2000-03-24T22:20:41-05:00")})
+    :publication-references [(umm-c/map->PublicationReference
+                              {:author "author"
+                               :publication-date "2015"
+                               :title "title"
+                               :series "1"
+                               :edition "2"
+                               :volume "3"
+                               :issue "4"
+                               :report-number "5"
+                               :publication-place "Frederick, MD"
+                               :publisher "publisher"
+                               :pages "678"
+                               :isbn "978-0-394-80001-1"
+                               :related-url "http://example.com"
+                               :other-reference-details "blah"})]
+    :platforms [(umm-c/map->Platform
+                 {:short-name "Short Name"
+                  :long-name "Long Name"
+                  :type "In Situ Land-based Platforms"
+                  :instruments [(umm-c/map->Instrument
+                                 {:short-name "Short Name"})]})]
+    :projects [(umm-c/map->Project
+                {:short-name "short name"})]
+    :temporal expected-temporal
+    :science-keywords [(umm-c/map->ScienceKeyword
+                        {:category "EARTH SCIENCE"
+                         :topic "CRYOSPHERE"
+                         :term "SEA ICE"})]
+    :related-urls [(umm-c/map->RelatedURL
+                    {:url "http://www.foo.com"})]
+    :organizations [(umm-c/map->Organization
+                     {:type :archive-center
+                      :org-name "EU/JRC/IES"})]
+    :spatial-coverage (umm-c/map->SpatialCoverage
+                       {:granule-spatial-representation :geodetic
+                        :spatial-representation :cartesian,
+                        :geometries [(m/mbr -180.0 90.0 180.0 -90.0)]})
+    :personnel [(umm-c/map->Personnel
+                 {:first-name "first name"
+                  :last-name "last name"
+                  :middle-name "middle name"
+                  :roles ["TECHNICAL CONTACT"]
+                  :contacts [(umm-c/map->Contact
+                              {:type :email
+                               :value "dssweb@ucar.edu"})]})]
+    :product-specific-attributes [(umm-c/map->ProductSpecificAttribute
+                                    {:name "String add attrib"
+                                     :description "something string"
+                                     :data-type :string
+                                     :parameter-range-begin "alpha"
+                                     :parameter-range-end "bravo"
+                                     :value "alpha1"
+                                     :parsed-parameter-range-begin "alpha"
+                                     :parsed-parameter-range-end "bravo"
+                                     :parsed-value "alpha1"})
+                                  (umm-c/map->ProductSpecificAttribute
+                                    {:name "Float add attrib"
+                                     :description "something float"
+                                     :data-type :float
+                                     :parameter-range-begin "0.1"
+                                     :parameter-range-end "100.43"
+                                     :value "12.3"
+                                     :parsed-parameter-range-begin 0.1
+                                     :parsed-parameter-range-end 100.43
+                                     :parsed-value 12.3})
+                                  (umm-c/map->ProductSpecificAttribute
+                                    {:group "gov.nasa.gsfc.gcmd"
+                                     :name "metadata.uuid"
+                                     :data-type :string
+                                     :value "743933e5-1404-4502-915f-83cde56af440"
+                                     :parsed-value "743933e5-1404-4502-915f-83cde56af440"})
+                                  (umm-c/map->ProductSpecificAttribute
+                                    {:group "gov.nasa.gsfc.gcmd"
+                                     :name "metadata.extraction_date"
+                                     :data-type :string
+                                     :value "2013-09-30 09:45:15"
+                                     :parsed-value "2013-09-30 09:45:15"})
+                                  (umm-c/map->ProductSpecificAttribute
+                                    {:group "custom.group"
+                                     :name "String attribute"
+                                     :description "something string"
+                                     :data-type :string
+                                     :value "alpha"
+                                     :parsed-value "alpha"})
+                                  (umm-c/map->ProductSpecificAttribute
+                                    {:group "custom.group"
+                                     :name "Float attribute"
+                                     :description "something float"
+                                     :data-type :float
+                                     :value "12.3"
+                                     :parsed-value 12.3})
+                                  (umm-c/map->ProductSpecificAttribute
+                                    {:group "custom.group"
+                                     :name "Int attribute"
+                                     :description "something int"
+                                     :data-type :int
+                                     :value "42"
+                                     :parsed-value 42})
+                                  (umm-c/map->ProductSpecificAttribute
+                                    {:group "custom.group"
+                                     :name "Date attribute"
+                                     :description "something date"
+                                     :data-type :date
+                                     :value "2015-09-14"
+                                     :parsed-value (p/parse-datetime "2015-09-14")})
+                                  (umm-c/map->ProductSpecificAttribute
+                                    {:group "custom.group"
+                                     :name "Datetime attribute"
+                                     :description "something datetime"
+                                     :data-type :datetime
+                                     :value "2015-09-14T13:01:00Z"
+                                     :parsed-value (p/parse-datetime "2015-09-14T13:01:00Z")})
+                                  (umm-c/map->ProductSpecificAttribute
+                                    {:group "custom.group"
+                                     :name "Time attribute"
+                                     :description "something time"
+                                     :data-type :time
+                                     :value "13:01:00Z"
+                                     :parsed-value (p/parse-time "13:01:00Z")})
+                                  (umm-c/map->ProductSpecificAttribute
+                                    {:group "custom.group"
+                                     :name "Bool attribute"
+                                     :description "something bool"
+                                     :data-type :boolean
+                                     :value "false"
+                                     :parsed-value false})]
 
-     :collection-associations [(umm-c/map->CollectionAssociation
-                                 {:short-name "COLLOTHER-237"
-                                  :version-id "1"})
-                               (umm-c/map->CollectionAssociation
-                                 {:short-name "COLLOTHER-238"
-                                  :version-id "1"})
-                               (umm-c/map->CollectionAssociation
-                                 {:short-name "COLLOTHER-239"
-                                  :version-id "1"})]
-     :collection-progress :in-work
-     :quality "Good quality"
-     :use-constraints "No Constraints"
-     :access-value 1.0}))
+    :collection-associations [(umm-c/map->CollectionAssociation
+                               {:short-name "COLLOTHER-237"
+                                :version-id "1"})
+                              (umm-c/map->CollectionAssociation
+                               {:short-name "COLLOTHER-238"
+                                :version-id "1"})
+                              (umm-c/map->CollectionAssociation
+                               {:short-name "COLLOTHER-239"
+                                :version-id "1"})]
+    :collection-progress :in-work
+    :quality "Good quality"
+    :use-constraints "No Constraints"
+    :access-value 1.0}))
 
 (deftest parse-collection-test
   (testing "parse collection"

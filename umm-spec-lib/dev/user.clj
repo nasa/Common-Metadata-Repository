@@ -2,7 +2,8 @@
   (:require [cmr.common.dev.capture-reveal]
             [clojure.pprint :refer (pprint pp)]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
-            [cmr.common.dev.util :as dev-util])
+            [cmr.common.dev.util :as dev-util]
+            proto)
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]))
