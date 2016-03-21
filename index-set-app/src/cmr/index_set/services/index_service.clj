@@ -203,7 +203,7 @@
     (dorun (map #(es/delete-index (context->es-store context) %) index-names))
     (es/delete-document context index-name idx-mapping-type index-set-id)))
 
-(defn- add-rebalancing-collections
+(defn- add-rebalancing-collection
   "Adds a new rebalancing collections to the set of rebalancing collections."
   [rebalancing-colls concept-id]
   (if rebalancing-colls
@@ -217,11 +217,20 @@
 (defn mark-collection-as-rebalancing
   "Marks the given collection as rebalancing in the index set."
   [context index-set-id concept-id]
-  (let [index-set (get-index-set context index-set-id)]
-    (index-requested-index-set
-     context
-     (update-in index-set [:index-set :granule :rebalancing-collections]
-                add-rebalancing-collections concept-id))))
+  (let [index-set (get-index-set context index-set-id)
+        ;; Add the collection to the list of rebalancing collections. Also does validation.
+        index-set (update-in index-set [:index-set :granule :rebalancing-collections]
+                   add-rebalancing-collection concept-id)
+        ;; Add a new index for the rebalancing collection.
+        individual-index-settings (get-in index-set [:index-set :granule :individual-index-settings])
+        index-set (update-in index-set [:index-set :granule :indexes]
+                             conj
+                             {:name concept-id
+                              :settings individual-index-settings})]
+
+    ;; Update the index set. This will create the new collection indexes as needed.
+    (update-index-set context index-set)))
+
 
 (defn reset
   "Put elastic in a clean state after deleting indices associated with index-sets and index-set docs."

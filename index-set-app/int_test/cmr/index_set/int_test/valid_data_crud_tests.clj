@@ -4,6 +4,7 @@
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
             [clojure.walk :as walk]
+            [clojure.string :as str]
             [clojurewerkz.elastisch.rest.index :as esi]
             [cmr.index-set.services.index-service :as svc]
             [cmr.index-set.int-test.utility :as util]))
@@ -91,32 +92,44 @@
 
 ;; manual reset
 (comment
- (util/reset-fixture (constantly true)))
+ (util/reset-fixture (constantly true))
+ (get-in (util/get-index-set util/sample-index-set-id) [:response :body]))
+
 
 (defn assert-rebalancing-collections
   "Asserts that the index set contains the listed rebalancing collections."
-  [index-set-id expected-colls]
-  (let [index-set (get-in (util/get-index-set index-set-id) [:response :body])]
-    (is (= (set expected-colls) (set (get-in index-set [:index-set :granule :rebalancing-collections]))))))
+  [expected-colls]
+  (let [index-set (get-in (util/get-index-set util/sample-index-set-id) [:response :body])
+        base-coll-indexes (->> (get-in util/sample-index-set [:index-set :granule :indexes]) (map :name))
+        expected-coll-indexes (set (concat base-coll-indexes expected-colls))]
+    (is (= (set expected-colls) (set (get-in index-set [:index-set :granule :rebalancing-collections]))))
+    (is (= expected-coll-indexes (->> (get-in index-set [:index-set :granule :indexes]) (map :name) set)))
+
+    ;; Verify the collection indexes were created in elasticsearch.
+    (doseq [collection expected-coll-indexes
+            :let [collection-index-part (-> collection (str/replace "-" "_") str/lower-case)
+                  elastic-index-name (str util/sample-index-set-id "_" collection-index-part)]]
+      (is (esi/exists? @util/elastic-connection elastic-index-name)))))
 
 ;; Tests adding a collection that is rebalancing its granules from small_collections to a separate
 ;; granule index
 (deftest add-rebalancing-collection-test
   (testing "Initial rebalancing collections"
     (util/create-index-set util/sample-index-set)
-    (assert-rebalancing-collections util/sample-index-set-id []))
+    (assert-rebalancing-collections []))
   (testing "Add first collection"
     (is (= 200 (:status (util/mark-collection-as-rebalancing util/sample-index-set-id "C5-PROV1"))))
-    (assert-rebalancing-collections util/sample-index-set-id ["C5-PROV1"]))
+    (assert-rebalancing-collections ["C5-PROV1"]))
   (testing "Add another collection"
     (is (= 200 (:status (util/mark-collection-as-rebalancing util/sample-index-set-id "C6-PROV1"))))
-    (assert-rebalancing-collections util/sample-index-set-id ["C5-PROV1" "C6-PROV1"]))
+    (assert-rebalancing-collections ["C5-PROV1" "C6-PROV1"]))
   (testing "Add duplicate collection"
     (is (= {:status 400
             :errors ["The index set already contains rebalancing collection [C5-PROV1]"]}
            (select-keys (util/mark-collection-as-rebalancing util/sample-index-set-id "C5-PROV1")
-                        [:status :errors])))))
-
+                        [:status :errors])))
+    ;; Rebalancing collections have not changed
+   (assert-rebalancing-collections ["C5-PROV1" "C6-PROV1"])))
 
 ;; Verify creating same index-set twice will result in 409
 (deftest create-index-set-twice-test

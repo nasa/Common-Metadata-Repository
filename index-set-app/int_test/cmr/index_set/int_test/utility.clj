@@ -59,18 +59,21 @@
                                         :properties {:concept-id  {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"},
                                                      :entry-title {:type "string" :index "not_analyzed" :omit_norms "true" :index_options "docs" :store "yes"}}}}}
     :granule {:indexes
-              [{:name "G2-PROV1"
+              [{:name "small_collections"
                 :settings {:index {:number_of_shards 1,
                                    :number_of_replicas 0,
                                    :refresh_interval "10s"}}}
-               {:name "G4-Prov3"
+               {:name "C4-Prov3"
                 :settings {:index {:number_of_shards 1,
                                    :number_of_replicas 0,
                                    :refresh_interval "10s"}}}
-               {:name "g5_prov5"
+               {:name "C5-prov5"
                 :settings {:index {:number_of_shards 1,
                                    :number_of_replicas 0,
                                    :refresh_interval "10s"}}}]
+              :individual-index-settings {:index {:number_of_shards 1,
+                                                  :number_of_replicas 0,
+                                                  :refresh_interval "10s"}}
               :mapping {:granule {:dynamic "strict",
                                   :_source { "enabled" false},
                                   :_all {"enabled" false},

@@ -111,8 +111,8 @@
    config
 
    ;; The connection to elasticsearch
-   conn
-   ]
+   conn]
+
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
@@ -163,5 +163,5 @@
       (errors/internal-error! (m/index-set-doc-delete-msg result)))))
 
 (comment
-  (doc/get "index-sets" "set" "1" "fields" "index-set-id,index-set-name,index-set-request")
-  )
+  (doc/get "index-sets" "set" "1" "fields" "index-set-id,index-set-name,index-set-request"))
+
