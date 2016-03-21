@@ -43,7 +43,6 @@
           {:keys [status]} (util/create-index-set index-set)
           fetched-index-set (-> (util/get-index-set index-set-id) :response :body)
           actual-idx-name (get-in fetched-index-set [:index-set :concepts :collection (keyword suffix-idx-name)])]
-      (proto/save 2)
       (is (= 201 status))
       (is (= expected-idx-name actual-idx-name)))))
 

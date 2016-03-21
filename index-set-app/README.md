@@ -40,7 +40,7 @@ curl -i -H "Accept: application/json" -H "Content-type: application/json" -XPOST
 
 ### Mark a collection as rebalancing
 
-There are multiple granule indexes for performance. Larger collections are split out into their own indexes. Smaller collections are grouped in a small_collections index. Marking a collection as rebalancing starts adds the collection to a list of collections are are being moved out of small collections. It also creates the new granule index.
+There are multiple granule indexes for performance. Larger collections are split out into their own indexes. Smaller collections are grouped in a small_collections index. Marking a collection as rebalancing adds the collection to a list of collections are are being moved out of small collections. It also creates the new granule index.
 
     curl -XPUT http://localhost:3005/index-sets/3/rebalancing-collections/C5-PROV1
 
