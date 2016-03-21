@@ -479,3 +479,26 @@
     ;; verify association
     (assert-tag-association token [coll2] "tag1")
     (assert-tag-association token [coll3] "tag2")))
+
+(deftest associate-tags-with-data-test
+  (e/grant-all (s/context) (e/coll-catalog-item-id "provguid1"))
+  (let [coll (d/ingest "PROV1" (dc/collection))
+        token (e/login (s/context) "user1")
+        tag-key "tag1"
+        _ (tags/create-tag token (tags/make-tag {:tag-key tag-key}))]
+    (index/wait-until-indexed)
+
+    (testing "Associate tag with collections by concept-id and data"
+      (are [data]
+           (let [{:keys [status]} (tags/associate-by-concept-ids
+                                    token tag-key [{:concept-id (:concept-id coll)
+                                                    :data data}])]
+             (is (= 200 status)))
+
+           "string data"
+           true
+           100
+           123.45
+           [true "some string" 100]
+           {"status" "reviewed" "action" "fix typos"}))))
+

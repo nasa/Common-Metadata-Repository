@@ -2211,12 +2211,12 @@ Content-Length: 48
 
 #### <a name="associating-collections-with-a-tag-by-concept-ids"></a> Associating Collections with a Tag by collection concept ids
 
-Tags can be associated with collections by POSTing a JSON array of collection concept-ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag-key of the tag. All referenced collections will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
+Tags can be associated with collections by POSTing a JSON array of collection concept-ids and arbitrary json data to `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag-key of the tag. All referenced collections will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
 
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality/associations -d \
-'[{"concept-id": "C1200000005-PROV1"} {"concept-id": "C1200000006-PROV1"}]'
+'[{"concept-id": "C1200000005-PROV1", "data": "tag association description"} {"concept-id": "C1200000006-PROV1", "data": {"status": "reviewed"}}]'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1

@@ -166,20 +166,24 @@
 (defn- update-tag-association-to-collections
   "Based on the input operation type (:insert or :delete), insert or delete tag associations to
   the list of collections."
-  [context tag-concept coll-concept-ids operation]
+  [context tag-concept collections operation]
   (let [existing-tag (edn/read-string (:metadata tag-concept))
         {:keys [tag-key originator-id]} existing-tag]
     ;; save tag-association for each collection concept-id
-    (for [coll-concept-id coll-concept-ids
-          :let [native-id (str tag-key native-id-separator-character coll-concept-id)]]
+    (for [coll collections
+          :let [coll-concept-id (:concept-id coll)
+                data (:data coll)
+                native-id (str tag-key native-id-separator-character coll-concept-id)]]
       (if (= :insert operation)
         (mdb/save-concept context {:concept-type :tag-association
                                    :native-id native-id
                                    :user-id (context->user-id context)
-                                   :format (mt/format->mime-type :edn)
-                                   :metadata (pr-str {:tag-key tag-key
-                                                      :originator-id originator-id
-                                                      :associated-concept-id coll-concept-id})
+                                   :format (mt/format->mime-type :json)
+                                   :metadata (json/generate-string
+                                               {:tag-key tag-key
+                                                :originator-id originator-id
+                                                :associated-concept-id coll-concept-id
+                                                :data data})
                                    :extra-fields {:tag-key tag-key
                                                   :associated-concept-id coll-concept-id}})
         (delete-tag-association context native-id)))))
@@ -197,7 +201,8 @@
                               :items
                               (map :concept-id))
         tag-concept (fetch-tag-concept context tag-key)]
-    (update-tag-association-to-collections context tag-concept coll-concept-ids operation)))
+    (update-tag-association-to-collections
+      context tag-concept (map #(hash-map :concept-id %) coll-concept-ids) operation)))
 
 (defn- collections-json->collections
   "Validates the collections json and returns the parsed collections"
@@ -228,10 +233,9 @@
   The ooperation type can be either :insert or :delete."
   [context tag-key collections-json operation-type]
   (let [tag-concept (fetch-tag-concept context tag-key)
-        coll-concept-ids (->> (collections-json->collections collections-json)
-                              (map :concept-id))]
-    (validate-collection-concept-ids context coll-concept-ids)
-    (update-tag-association-to-collections context tag-concept coll-concept-ids operation-type)))
+        collections (collections-json->collections collections-json)]
+    (validate-collection-concept-ids context (map :concept-id collections))
+    (update-tag-association-to-collections context tag-concept collections operation-type)))
 
 (defn associate-tag-to-collections
   "Associates a tag to the given list of collections."

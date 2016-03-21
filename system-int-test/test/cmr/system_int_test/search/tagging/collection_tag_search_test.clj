@@ -219,7 +219,7 @@
                (tags/make-tag {:tag-key "tag4"}))]
     (index/wait-until-indexed)
 
-    (testing "include-tags in json format has proper tags added to json response."
+    (testing "include-tags in atom/json format has proper tags added to atom/json response."
       (are2
         [include-tags dataset-id-tags]
         (let [expected-result
@@ -244,39 +244,32 @@
                (= [200 (expected-result :atom)] [atom-status atom-results])))
 
         "include all tags"
-        "*" {"coll1" ["tag1" "tag2"]
-             "coll2" ["tag2"]
-             "coll3" ["cmr.other"]}
+        "*" {"coll1" {"tag1" {} "tag2" {}}
+             "coll2" {"tag2" {}}
+             "coll3" {"cmr.other" {}}}
 
         "include one tag"
-        "tag1" {"coll1" ["tag1"]
-                "coll2" nil
-                "coll3" nil}
+        "tag1" {"coll1" {"tag1" {}}}
 
         "include tags with wildcard *"
-        "tag*" {"coll1" ["tag1" "tag2"]
-                "coll2" ["tag2"]
+        "tag*" {"coll1" {"tag1" {} "tag2" {}}
+                "coll2" {"tag2" {}}
                 "coll3" nil}
 
         "include tags with wildcard ?"
-        "tag?" {"coll1" ["tag1" "tag2"]
-                "coll2" ["tag2"]
-                "coll3" nil}
+        "tag?" {"coll1" {"tag1" {} "tag2" {}}
+                "coll2" {"tag2" {}}}
 
         "include no tag"
-        "tag3*" {"coll1" nil
-                 "coll2" nil
-                 "coll3" nil}
+        "tag3*" {}
 
         "include empty tag"
-        "" {"coll1" nil
-            "coll2" nil
-            "coll3" nil}
+        "" {}
 
         "match multiple tags"
-        "tag*,cmr.*" {"coll1" ["tag1" "tag2"]
-                      "coll2" ["tag2"]
-                      "coll3" ["cmr.other"]}))
+        "tag*,cmr.*" {"coll1" {"tag1" {} "tag2" {}}
+                      "coll2" {"tag2" {}}
+                      "coll3" {"cmr.other" {}}}))
 
     (testing "Invalid include-tags params"
       (testing "include-tags in collection search with metadata formats orther than JSON is invalid."

@@ -319,9 +319,9 @@
 
 (defn- tag->xml-element
   "Convert a tag to an XML element"
-  [tag-key]
+  [tag]
   (x/element :echo:tag {}
-             (x/element :echo:tagKey {} tag-key)))
+             (x/element :echo:tagKey {} (first tag))))
 
 (defn- orbit-parameters->attribute-map
   "Convert orbit parameters into attributes for an XML element"

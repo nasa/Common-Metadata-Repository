@@ -28,7 +28,13 @@
   {:type :array
    :items {:type :object
            :additionalProperties false
-           :properties {:concept-id {:type :string :minLength 1 :maxLength 255}}
+           :properties {:concept-id {:type :string :minLength 1 :maxLength 255}
+                        :data {:anyOf [{:type :string :minLength 1 :maxLength 32768}
+                                       {:type :boolean}
+                                       {:type :integer}
+                                       {:type :number}
+                                       {:type :array}
+                                       {:type :object}]}}
            :required [:concept-id]}})
 
 (def ^:private collections-tagging-schema
