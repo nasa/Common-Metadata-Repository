@@ -387,3 +387,12 @@
   []
   (format "http://localhost:%s/health" (transmit-config/access-control-port)))
 
+(defn access-control-clear-cache-url
+  "Clear cache in access-control-app."
+  []
+  (format "http://localhost:%s/caches/clear-cache" (transmit-config/access-control-port)))
+
+(defn access-control-read-caches-url
+  "URL to read the access-control-caches."
+  []
+  (format "http://localhost:%s/caches" (transmit-config/access-control-port)))

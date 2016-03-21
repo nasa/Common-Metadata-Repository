@@ -94,7 +94,6 @@
              :search-public-conf search-public-conf
              :scheduler (jobs/create-scheduler
                           `system-holder
-                          :db
                           [(af/refresh-acl-cache-job "search-acl-cache-refresh")
                            hgrf/refresh-has-granules-map-job
                            coll-cache/refresh-collections-cache-for-granule-acls-job])}]

@@ -174,6 +174,9 @@
       ;; add routes for checking health of the application
       (cr/health-api-routes group-service/health)
 
+      ;; add routes for accessing caches
+      cr/cache-api-routes
+
       (context "/groups" []
         (OPTIONS "/" req
           (validate-standard-params (:params req))

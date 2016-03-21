@@ -75,6 +75,7 @@
            (url/index-set-read-caches-url) ["token-imp"]
            (url/mdb-read-caches-url) ["token-imp"]
            (url/ingest-read-caches-url) ["token-imp" "providers" "acls" "token-user-ids" "kms"]
+           (url/access-control-read-caches-url) ["acls"]
            (url/search-read-caches-url) ["acls"
                                          "collections-for-gran-acls"
                                          "has-granules-map"
@@ -103,6 +104,7 @@
            (url/index-set-read-caches-url)
            (url/mdb-read-caches-url)
            (url/ingest-read-caches-url)
+           (url/access-control-read-caches-url)
            (url/search-read-caches-url))
       (s/only-with-real-database
         (testing "normal user cannot access cache list API for bootstrap"
@@ -138,6 +140,7 @@
            (str (url/index-set-read-caches-url) "/acls")
            (str (url/mdb-read-caches-url) "/acls")
            (str (url/ingest-read-caches-url) "/acls")
+           (str (url/access-control-read-caches-url) "/acls")
            (str (url/search-read-caches-url) "/acls"))
       (s/only-with-real-database
         (testing "normal user cannot retrieve cache keys for bootstrap"
@@ -168,6 +171,7 @@
            (url/ingest-read-caches-url) "token-imp" [[nil "update"]
                                                      ["ABC-1" "read"]
                                                      ["ABC-2" "read"]]
+           (url/access-control-read-caches-url) "acls" ["acls"]
            (url/search-read-caches-url) "acls" ["acls"]
            (url/search-read-caches-url) "collections-for-gran-acls" []
            (url/search-read-caches-url) "has-granules-map" []
@@ -196,6 +200,7 @@
            (str (url/indexer-read-caches-url) "/acls/acls")
            (str (url/index-set-read-caches-url) "/acls/acls")
            (str (url/mdb-read-caches-url) "/acls/acls")
+           (str (url/access-control-read-caches-url) "/acls/acls")
            (str (url/ingest-read-caches-url) "/acls/acls")
            (str (url/search-read-caches-url) "/acls/acls"))
       (s/only-with-real-database
