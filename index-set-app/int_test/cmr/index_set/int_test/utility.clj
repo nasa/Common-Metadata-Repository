@@ -15,9 +15,17 @@
   (format "%s:%s"  "http://localhost" (transmit-config/index-set-port)))
 
 ;; url applicable to create, get and delete index-set
-(defn index-set-url
+(defn index-sets-url
   []
-  (format "%s/%s" (index-set-root-url) "index-sets"))
+  (format "%s/index-sets" (index-set-root-url)))
+
+(defn index-set-url
+  [id]
+  (format "%s/%s" (index-sets-url) id))
+
+(defn rebalance-collection-url
+  [index-set-id concept-id]
+  (format "%s/rebalancing-collections/%s" (index-set-url index-set-id) concept-id))
 
 (defn reset-url
   []
@@ -27,10 +35,13 @@
 
 ;;; test data
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def sample-index-set-id 3)
+
 (def sample-index-set
   {:index-set
    {:name "cmr-base-index-set"
-    :id 3
+    :id sample-index-set-id
     :create-reason "include message about reasons for creating this index set"
     :collection {:indexes
                  [{:name "C4-collections"
@@ -70,7 +81,7 @@
 (def invalid-sample-index-set
   {:index-set
    {:name "cmr-base-index-set"
-    :id 3
+    :id sample-index-set-id
     :create-reason "include message about reasons for creating this index set"
     :collection {:indexes
                  [{:name "C4-collections"}
@@ -107,7 +118,7 @@
 (def index-set-w-invalid-idx-prop
   {:index-set
    {:name "cmr-base-index-set"
-    :id 3
+    :id sample-index-set-id
     :create-reason "include message about reasons for creating this index set"
     :collection {:indexes
                  [{:name "C4-collections"
@@ -138,70 +149,78 @@
   [idx-set]
   (let [response (client/request
                   {:method :post
-                   :url (index-set-url)
+                   :url (index-sets-url)
                    :body (cheshire.core/generate-string idx-set)
                    :content-type :json
                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                    :accept :json
                    :throw-exceptions false})
         status (:status response)
-        body (cheshire/parse-string (:body response))
-        errors-str (cheshire/generate-string (flatten (get body "errors")))]
-    {:status status :errors-str errors-str :response response}))
+        body (cheshire/decode (:body response) true)]
+    {:status status :errors (:errors body) :response (assoc response :body body)}))
+
+(defn mark-collection-as-rebalancing
+  "Submits a request to mark a colleciton as rebalancing"
+  [id concept-id]
+  (let [response (client/request
+                  {:method :put
+                   :url (rebalance-collection-url id concept-id)
+                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                   :accept :json
+                   :throw-exceptions false})
+        status (:status response)
+        body (cheshire/decode (:body response) true)]
+    {:status status :errors (:errors body) :response (assoc response :body body)}))
 
 (defn delete-index-set
   "submit a request to index-set app to delete index-set"
   [id]
   (let [response (client/request
                   {:method :delete
-                   :url (format "%s/%s" (index-set-url) id)
+                   :url (index-set-url id)
                    :accept :json
                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                    :throw-exceptions false})
         status (:status response)
-        body (cheshire/parse-string (:body response))
-        errors-str (cheshire/generate-string (flatten (get body "errors")))]
-    {:status status :errors-str errors-str :response response}))
+        body (cheshire/decode (:body response) true)]
+    {:status status :errors (:errors body) :response (assoc response :body body)}))
 
 (defn get-index-set
   "submit a request to index-set app to fetch an index-set assoc with an id"
   [id]
   (let [response (client/request
                   {:method :get
-                   :url (format "%s/%s" (index-set-url) id)
+                   :url (index-set-url id)
                    :accept :json
                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                    :throw-exceptions false})
         status (:status response)
-        body (cheshire/parse-string (:body response))
-        errors-str (cheshire/generate-string (flatten (get body "errors")))]
-    {:status status :errors-str errors-str :response response}))
+        body (cheshire/decode (:body response) true)]
+    {:status status :errors (:errors body) :response (assoc response :body body)}))
 
 (defn get-index-sets
   "submit a request to index-set app to fetch all index-sets"
   []
   (let [response (client/request
                   {:method :get
-                   :url (index-set-url)
+                   :url (index-sets-url)
                    :accept :json
                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                    :throw-exceptions false})
         status (:status response)
-        body (cheshire/parse-string (:body response))
-        errors-str (cheshire/generate-string (flatten (get body "errors")))]
-    {:status status :errors-str errors-str :response response}))
+        body (cheshire/decode (:body response) true)]
+    {:status status :errors (:errors body) :response (assoc response :body body)}))
 
 (defn reset
   "test deletion of indices and index-sets"
   []
-  (let [result (client/request
-                {:method :post
-                 :url (reset-url)
-                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                 :accept :json})
-        status (:status result)
-        {:keys [status errors-str response]} result]
-    {:status status :errors-str errors-str :response response}))
+  (let [response (client/request
+                  {:method :post
+                   :url (reset-url)
+                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                   :accept :json})
+        status (:status response)]
+    {:status status :response response}))
 
 (defn list-es-indices
   "List indices present in 'get index-sets' response"

@@ -40,9 +40,9 @@
           index-set-id (get-in index-set [:index-set :id])
           expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
           {:keys [status]} (util/create-index-set index-set)
-          body (-> (util/get-index-set index-set-id) :response :body)
-          fetched-index-set (cheshire.core/decode body true)
+          fetched-index-set (-> (util/get-index-set index-set-id) :response :body)
           actual-idx-name (get-in fetched-index-set [:index-set :concepts :collection (keyword suffix-idx-name)])]
+      (proto/save 2)
       (is (= 201 status))
       (is (= expected-idx-name actual-idx-name)))))
 
@@ -77,30 +77,45 @@
     (let [index-set util/sample-index-set
           _ (util/create-index-set index-set)
           _ (util/create-index-set (assoc-in index-set [:index-set :id] 77))
-          indices-cnt (->> util/cmr-concepts (map (:index-set index-set))
+          indices-cnt (->> util/cmr-concepts
+                           (map (:index-set index-set))
                            (mapcat :indexes)
                            count)
           expected-idx-cnt (* 2 indices-cnt)
-          body (-> (util/get-index-sets) :response :body (cheshire.core/decode true))
+          body (-> (util/get-index-sets) :response :body)
           actual-es-indices (util/list-es-indices body)]
       (for [es-idx-name actual-es-indices]
         (is (esi/exists? @util/elastic-connection es-idx-name)))
       (is (= expected-idx-cnt (count actual-es-indices))))))
 
 
-;; TODO coming in subsequent commits
-;; Tests adding a collection that is rebalancing its granules from small_collections to a separate
-;; granule index
-
 ;; manual reset
 (comment
- (util/reset-fixture (constantly true))
+ (util/reset-fixture (constantly true)))
 
- (deftest add-rebalancing-collection-test
-   (util/create-index-set util/sample-index-set)
-   (util/get-index-set (get-in util/sample-index-set [:index-set :id]))))
+(defn assert-rebalancing-collections
+  "Asserts that the index set contains the listed rebalancing collections."
+  [index-set-id expected-colls]
+  (let [index-set (get-in (util/get-index-set index-set-id) [:response :body])]
+    (is (= (set expected-colls) (set (get-in index-set [:index-set :granule :rebalancing-collections]))))))
 
-
+;; Tests adding a collection that is rebalancing its granules from small_collections to a separate
+;; granule index
+(deftest add-rebalancing-collection-test
+  (testing "Initial rebalancing collections"
+    (util/create-index-set util/sample-index-set)
+    (assert-rebalancing-collections util/sample-index-set-id []))
+  (testing "Add first collection"
+    (is (= 200 (:status (util/mark-collection-as-rebalancing util/sample-index-set-id "C5-PROV1"))))
+    (assert-rebalancing-collections util/sample-index-set-id ["C5-PROV1"]))
+  (testing "Add another collection"
+    (is (= 200 (:status (util/mark-collection-as-rebalancing util/sample-index-set-id "C6-PROV1"))))
+    (assert-rebalancing-collections util/sample-index-set-id ["C5-PROV1" "C6-PROV1"]))
+  (testing "Add duplicate collection"
+    (is (= {:status 400
+            :errors ["The index set already contains rebalancing collection [C5-PROV1]"]}
+           (select-keys (util/mark-collection-as-rebalancing util/sample-index-set-id "C5-PROV1")
+                        [:status :errors])))))
 
 
 ;; Verify creating same index-set twice will result in 409
@@ -112,9 +127,9 @@
   (testing "create same index-set"
     (let [index-set util/sample-index-set
           index-set-id (get-in index-set [:index-set :id])
-          {:keys [status errors-str]} (util/create-index-set index-set)]
+          {:keys [status errors]} (util/create-index-set index-set)]
       (is (= 409 status))
-      (is (re-find #"already exists" errors-str)))))
+      (is (re-find #"already exists" (first errors))))))
 
 ;; Verify reset deletes all of the indices assoc with index-sets and index-set docs
 (deftest reset-index-sets-test

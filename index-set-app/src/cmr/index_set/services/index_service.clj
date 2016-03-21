@@ -203,6 +203,26 @@
     (dorun (map #(es/delete-index (context->es-store context) %) index-names))
     (es/delete-document context index-name idx-mapping-type index-set-id)))
 
+(defn- add-rebalancing-collections
+  "Adds a new rebalancing collections to the set of rebalancing collections."
+  [rebalancing-colls concept-id]
+  (if rebalancing-colls
+    (if (contains? (set rebalancing-colls) concept-id)
+      (errors/throw-service-error
+       :bad-request
+       (format "The index set already contains rebalancing collection [%s]" concept-id))
+      (conj rebalancing-colls concept-id))
+    #{concept-id}))
+
+(defn mark-collection-as-rebalancing
+  "Marks the given collection as rebalancing in the index set."
+  [context index-set-id concept-id]
+  (let [index-set (get-index-set context index-set-id)]
+    (index-requested-index-set
+     context
+     (update-in index-set [:index-set :granule :rebalancing-collections]
+                add-rebalancing-collections concept-id))))
+
 (defn reset
   "Put elastic in a clean state after deleting indices associated with index-sets and index-set docs."
   [context]

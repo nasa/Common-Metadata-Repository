@@ -16,7 +16,8 @@
             [cmr.mock-echo.system :as mock-echo]
             [cmr.common.lifecycle :as l]
             [cmr.common.dev.repeat-last-request :as repeat-last-request :refer (repeat-last-request)]
-            [cmr.common.dev.util :as d]))
+            [cmr.common.dev.util :as d]
+            proto))
 
 (def system nil)
 
