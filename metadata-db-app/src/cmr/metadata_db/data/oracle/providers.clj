@@ -41,13 +41,7 @@
     ;; Access Group deletion is the same between all provider types. This does not remove the record
     ;; from search. access-control-app listens for :provider-delete messages and handles deleting the
     ;; relevant records from Elastic.
-    (sh/force-delete-concept-by-params db
-                                       ;; We need to pretend that the provider is small for
-                                       ;; force-delete-concept-by-params to include provider-id
-                                       ;; in the query.
-                                       (assoc provider :small true)
-                                       {:concept-type :access-group
-                                        :provider-id provider-id})
+    (j/delete! db (ct/get-table-name provider :access-group) ["provider_id = ?" provider-id])
     (if small
       (delete-small-provider-concepts db provider)
       (ct/delete-provider-concept-tables db provider))
