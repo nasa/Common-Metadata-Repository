@@ -46,7 +46,6 @@
             [cmr.common-app.cache.cubby-cache :as cubby-cache]
             [clojure.set :as set]))
 
-
 (defn- key->hash-cache-key
   "Returns the key to use to store the hash code."
   [k]
@@ -62,8 +61,8 @@
 
    ;; The cache that holds the hash values of items in the memory cache
    ;; Should implement CmrCache protocol.
-   hash-cache
-   ]
+   hash-cache]
+
 
   c/CmrCache
   (get-keys

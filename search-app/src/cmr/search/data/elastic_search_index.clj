@@ -6,6 +6,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.util :as util]
             [cmr.common.lifecycle :as lifecycle]
+            [cmr.common.jobs :refer [defjob]]
             [cmr.common.cache :as cache]
             [cmr.transmit.index-set :as index-set]
             [cmr.common-app.services.search.query-model :as qm]
@@ -27,8 +28,34 @@
   (let [fetched-index-set (index-set/get-index-set context index-set-id)]
     (get-in fetched-index-set [:index-set :concepts])))
 
+(def context
+  {:system (get-in user/system [:apps :search])})
+
+(fetch-concept-type-index-names context)
+
 (def index-cache-name
+  "The name of the cache for caching index names. It will contain a map of concept type to a map of
+   index names to the name of the index used in elasticsearch.
+
+   Example:
+   {:granule {:small_collections \"1_small_collections\"},
+    :tag {:tags \"1_tags\"},
+    :collection {:all-collection-revisions \"1_all_collection_revisions\",
+                 :collections \"1_collections\"}}"
   :index-names)
+
+;; A job for refreshing the index names cache.
+(defjob RefreshIndexNamesCacheJob
+  [ctx system]
+  (let [context {:system system}
+        index-names (fetch-concept-type-index-names context)
+        cache (cache/context->cache context index-cache-name)]
+    (cache/set-value cache index-cache-name index-names)))
+
+(def refresh-index-names-cache-job
+  {:job-type RefreshIndexNamesCacheJob
+   ;; 5 minutes
+   :interval 300})
 
 (defn- get-granule-index-names
   "Fetch index names associated with concepts."

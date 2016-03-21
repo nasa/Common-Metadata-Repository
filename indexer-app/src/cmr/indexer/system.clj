@@ -23,6 +23,7 @@
             [cmr.common-app.cache.consistent-cache :as consistent-cache]
             [cmr.common-app.services.kms-fetcher :as kf]
             [cmr.indexer.services.event-handler :as event-handler]
+            [cmr.indexer.data.index-set :as index-set]
             [cmr.common-app.system :as common-sys]))
 
 (def
@@ -46,7 +47,7 @@
                                          (stl-cache/create-single-thread-lookup-cache
                                            (consistent-cache/create-consistent-cache))
                                          [:catalog-item :system-object :provider-object])
-                      cache/general-cache-key (mem-cache/create-in-memory-cache)
+                      index-set/index-set-cache-key (consistent-cache/create-consistent-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
                       kf/kms-cache-key (kf/create-kms-cache)}
              :scheduler (jobs/create-scheduler

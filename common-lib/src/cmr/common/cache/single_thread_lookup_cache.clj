@@ -74,8 +74,8 @@
    lookup-request-channel
 
    ;; The channel returned when creating the single thread processes messages off the lookup-request-channel.
-   lookup-process-thread-channel
-   ]
+   lookup-process-thread-channel]
+
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   c/CmrCache
@@ -181,6 +181,6 @@
   (deref counter) ; => 1
 
   ;; Stop the cache
-  (l/stop slc nil)
+  (l/stop slc nil))
 
-  )
+
