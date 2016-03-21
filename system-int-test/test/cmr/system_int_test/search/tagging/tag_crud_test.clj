@@ -72,7 +72,8 @@
 
 (deftest create-tag-test
   (testing "Successful creation"
-    (let [tag (tags/make-tag)
+    (let [tag-key "tag1"
+          tag (tags/make-tag {:tag-key tag-key})
           token (e/login (s/context) "user1")
           {:keys [status concept-id revision-id]} (tags/create-tag token tag)]
       (is (= 200 status))
@@ -99,7 +100,7 @@
           (is (= 1 (:revision-id response)))))
 
       (testing "Creation of previously deleted tag"
-        (tags/delete-tag token concept-id)
+        (tags/delete-tag token tag-key)
         (let [new-tag (assoc tag :description "new description")
               token2 (e/login (s/context) "user2")
               response (tags/create-tag token2 new-tag)]
@@ -123,39 +124,31 @@
 
 (deftest get-tag-test
   (let [tag (tags/make-tag {:tag-key "MixedCaseTagKey"})
+        tag-key "mixedcasetagkey"
         token (e/login (s/context) "user1")
-        {:keys [concept-id]} (tags/create-tag token tag)]
+        _ (tags/create-tag token tag)
+        expected-tag (-> tag
+                         (update :tag-key str/lower-case)
+                         (assoc :originator-id "user1" :status 200))]
     (testing "Retrieve existing tag, verify tag-key is converted to lowercase"
-      (let [expected-tag (-> tag
-                             (update :tag-key str/lower-case)
-                             (assoc :originator-id "user1" :status 200))]
-        (is (= expected-tag (tags/get-tag concept-id)))))
+      (is (= expected-tag (tags/get-tag tag-key))))
 
+    (testing "Retrieve tag with tag-key is case insensitive"
+      (is (= expected-tag (tags/get-tag "MixedCaseTagKey"))))
     (testing "Retrieve unknown tag"
       (is (= {:status 404
-              :errors ["Tag could not be found with concept id [T100-CMR]"]}
-             (tags/get-tag "T100-CMR"))))
-    (testing "Retrieve tag with bad concept-id"
-      (is (= {:status 400
-              :errors ["Concept-id [F100-CMR] is not valid."]}
-             (tags/get-tag "F100-CMR"))))
-    (testing "Retrieve tag with bad provider in concept id"
-      (is (= {:status 400
-              :errors ["[T100-NOT_EXIST] is not a valid tag concept id."]}
-             (tags/get-tag "T100-NOT_EXIST"))))
-    (testing "Retrieve tag with collection concept-id"
-      (let [{coll-concept-id :concept-id} (d/ingest "PROV1" (dc/collection))]
-        (is (= {:status 400
-                :errors [(format "[%s] is not a valid tag concept id." coll-concept-id)]}
-               (tags/get-tag coll-concept-id)))))
+              :errors ["Tag could not be found with tag-key [tag100]"]}
+             (tags/get-tag "Tag100"))))
+
     (testing "Retrieve deleted tag"
-      (tags/delete-tag token concept-id)
+      (tags/delete-tag token tag-key)
       (is (= {:status 404
-              :errors [(format "Tag with concept id [%s] was deleted." concept-id)]}
-             (tags/get-tag concept-id))))))
+              :errors [(format "Tag with tag-key [%s] was deleted." tag-key)]}
+             (tags/get-tag tag-key))))))
 
 (deftest update-tag-test
-  (let [tag (tags/make-tag)
+  (let [tag-key "tag1"
+        tag (tags/make-tag {:tag-key tag-key})
         token (e/login (s/context) "user1")
         {:keys [concept-id revision-id]} (tags/create-tag token tag)]
 
@@ -164,7 +157,7 @@
                             (update-in [:description] #(str % " updated"))
                             (assoc :originator-id "user1"))
             token2 (e/login (s/context) "user2")
-            response (tags/update-tag token2 concept-id updated-tag)]
+            response (tags/update-tag token2 tag-key updated-tag)]
         (is (= {:status 200 :concept-id concept-id :revision-id 2}
                response))
         (tags/assert-tag-saved updated-tag "user2" concept-id 2)))
@@ -172,14 +165,15 @@
     (testing "Update without originator id"
       (let [updated-tag (dissoc tag :originator-id)
             token2 (e/login (s/context) "user2")
-            response (tags/update-tag token2 concept-id updated-tag)]
+            response (tags/update-tag token2 tag-key updated-tag)]
         (is (= {:status 200 :concept-id concept-id :revision-id 3}
                response))
         ;; The previous originator id should not change
         (tags/assert-tag-saved (assoc updated-tag :originator-id "user1") "user2" concept-id 3)))))
 
 (deftest update-tag-failure-test
-  (let [tag (tags/make-tag)
+  (let [tag-key "tag1"
+        tag (tags/make-tag {:tag-key tag-key})
         token (e/login (s/context) "user1")
         {:keys [concept-id revision-id]} (tags/create-tag token tag)
         ;; The stored updated tag would have user1 in the originator id
@@ -189,12 +183,12 @@
       (is (= {:status 400,
               :errors
               ["The mime types specified in the content-type header [application/xml] are not supported."]}
-             (tags/update-tag token concept-id tag {:http-options {:content-type :xml}}))))
+             (tags/update-tag token tag-key tag {:http-options {:content-type :xml}}))))
 
     (testing "Update without token"
       (is (= {:status 401
               :errors ["Tags cannot be modified without a valid user token."]}
-             (tags/update-tag nil concept-id tag))))
+             (tags/update-tag nil tag-key tag))))
 
     (testing "Fields that cannot be changed"
       (are [field human-name]
@@ -203,7 +197,7 @@
                                      " [%s] to [updated]")
                                 human-name
                                 (get tag field))]}
-              (tags/update-tag token concept-id (assoc tag field "updated")))
+              (tags/update-tag token tag-key (assoc tag field "updated")))
            :tag-key "Tag Key"
            :originator-id "Originator Id"))
 
@@ -214,39 +208,40 @@
 
     (testing "Update tag that doesn't exist"
       (is (= {:status 404
-              :errors ["Tag could not be found with concept id [T100-CMR]"]}
-             (tags/update-tag token "T100-CMR" tag))))
+              :errors ["Tag could not be found with tag-key [tag2]"]}
+             (tags/update-tag token "tag2" tag))))
 
     (testing "Update deleted tag"
-      (tags/delete-tag token concept-id)
+      (tags/delete-tag token tag-key)
       (is (= {:status 404
-              :errors [(format "Tag with concept id [%s] was deleted." concept-id)]}
-             (tags/update-tag token concept-id tag))))))
+              :errors [(format "Tag with tag-key [%s] was deleted." tag-key)]}
+             (tags/update-tag token tag-key tag))))))
 
 (deftest delete-tag-test
-  (let [tag (tags/make-tag)
+  (let [tag-key "tag1"
+        tag (tags/make-tag {:tag-key tag-key})
         token (e/login (s/context) "user1")
         {:keys [concept-id revision-id]} (tags/create-tag token tag)]
 
     (testing "Delete without token"
       (is (= {:status 401
               :errors ["Tags cannot be modified without a valid user token."]}
-             (tags/delete-tag nil concept-id))))
+             (tags/delete-tag nil tag-key))))
 
     (testing "Delete success"
       (is (= {:status 200 :concept-id concept-id :revision-id 2}
-             (tags/delete-tag token concept-id)))
+             (tags/delete-tag token tag-key)))
       (tags/assert-tag-deleted tag "user1" concept-id 2))
 
     (testing "Delete tag that was already deleted"
       (is (= {:status 404
-              :errors [(format "Tag with concept id [%s] was deleted." concept-id)]}
-             (tags/delete-tag token concept-id))))
+              :errors [(format "Tag with tag-key [%s] was deleted." tag-key)]}
+             (tags/delete-tag token tag-key))))
 
     (testing "Delete tag that doesn't exist"
       (is (= {:status 404
-              :errors ["Tag could not be found with concept id [T100-CMR]"]}
-             (tags/delete-tag token "T100-CMR"))))))
+              :errors ["Tag could not be found with tag-key [tag2]"]}
+             (tags/delete-tag token "tag2"))))))
 
 
 

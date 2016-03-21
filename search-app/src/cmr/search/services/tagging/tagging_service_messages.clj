@@ -14,16 +14,16 @@
   "%s may not contain the Group Separator character. ASCII decimal value: 29 Unicode: U+001D")
 
 (defn tag-does-not-exist
-  [concept-id]
-  (format "Tag could not be found with concept id [%s]" concept-id))
+  [tag-key]
+  (format "Tag could not be found with tag-key [%s]" tag-key))
 
 (defn bad-tag-concept-id
   [concept-id]
   (format "[%s] is not a valid tag concept id." concept-id))
 
 (defn tag-deleted
-  [concept-id]
-  (format "Tag with concept id [%s] was deleted." concept-id))
+  [tag-key]
+  (format "Tag with tag-key [%s] was deleted." tag-key))
 
 (defn inaccessible-collections
   [concept-ids]

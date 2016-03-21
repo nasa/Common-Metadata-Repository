@@ -122,7 +122,7 @@
     (tags/assert-tag-search all-tags (tags/search {}))
 
     ;; Delete tag1
-    (tags/delete-tag user1-token (:concept-id tag1))
+    (tags/delete-tag user1-token (:tag-key tag1))
 
     (index/wait-until-indexed)
 

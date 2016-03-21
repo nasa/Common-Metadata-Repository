@@ -2143,10 +2143,10 @@ Content-Length: 48
 
 #### <a name="retrieving-a-tag"></a> Retrieving a Tag
 
-A single tag can be retrieved by sending a GET request to `%CMR-ENDPOINT%/tags/<concept-id>` where `concept-id` is the concept id of the tag returned when it was created.
+A single tag can be retrieved by sending a GET request to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag-key is the tag-key of the tag.
 
 ```
-curl -i %CMR-ENDPOINT%/tags/T1200000000-CMR?pretty=true
+curl -i %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality?pretty=true
 
 HTTP/1.1 200 OK
 Content-Length: 216
@@ -2161,10 +2161,10 @@ Content-Type: application/json;charset=ISO-8859-1
 
 #### <a name="updating-a-tag"></a> Updating a Tag
 
-Tags are updated by sending a PUT request with the JSON representation of a tag to `%CMR-ENDPOINT%/tags/<concept-id>` where `concept-id` is the concept id of the tag returned when it was created. The same rules apply when updating a tag as when creating it but in addition tag-key and originator id cannot be modified. The response will contain the concept id along with the tag revision id.
+Tags are updated by sending a PUT request with the JSON representation of a tag to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag-key is the tag-key of the tag. The same rules apply when updating a tag as when creating it but in addition tag-key and originator id cannot be modified. The response will contain the concept id along with the tag revision id.
 
 ```
-curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR -d \
+curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality -d \
 '{
   "tag-key": "org.ceos.wgiss.cwic.quality",
   "description": "This is a sample tag for indicating some data is high quality."
@@ -2179,10 +2179,10 @@ Content-Length: 48
 
 #### <a name="deleting-a-tag"></a> Deleting a Tag
 
-Tags are deleted by sending a DELETE request to `%CMR-ENDPOINT%/tags/<concept-id>` where `concept-id` is the concept id of the tag returned when it was created. Deleting a tag creates a tombstone that marks the tag as deleted. The concept id of the tag and the revision id of the tombstone are returned from a delete request. Deleting a tag dissociates all collections with the tag.
+Tags are deleted by sending a DELETE request to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag-key is the tag-key of the tag. Deleting a tag creates a tombstone that marks the tag as deleted. The concept id of the tag and the revision id of the tombstone are returned from a delete request. Deleting a tag dissociates all collections with the tag.
 
 ```
-curl -XDELETE -i  -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR
+curl -XDELETE -i  -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
@@ -2193,11 +2193,11 @@ Content-Length: 48
 
 #### <a name="associating-collections-with-a-tag-by-query"></a> Associating Collections with a Tag by query
 
-Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<concept-id>/associations/by_query` where `concept-id` is the concept id of the tag returned when it was created. All collections found will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
+Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag-key of the tag. All collections found will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
 
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR/associations/by_query -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality/associations/by_query -d \
 '{
   "condition": {"provider": "PROV1"}
  }'
@@ -2211,11 +2211,11 @@ Content-Length: 48
 
 #### <a name="associating-collections-with-a-tag-by-concept-ids"></a> Associating Collections with a Tag by collection concept ids
 
-Tags can be associated with collections by POSTing a JSON array of collection concept-ids to `%CMR-ENDPOINT%/tags/<concept-id>/associations` where `concept-id` is the concept id of the tag returned when it was created. All referenced collections will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
+Tags can be associated with collections by POSTing a JSON array of collection concept-ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag-key of the tag. All referenced collections will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
 
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR/associations -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality/associations -d \
 '[{"concept-id": "C1200000005-PROV1"} {"concept-id": "C1200000006-PROV1"}]'
 
 HTTP/1.1 200 OK
@@ -2227,11 +2227,11 @@ Content-Length: 48
 
 #### <a name="disassociating-collections-with-a-tag-by-query"></a> Disassociating Collections with a Tag by query
 
-Tags can be disassociated with collections by sending a DELETE request with a JSON query for collections to `%CMR-ENDPOINT%/tags/<concept-id>/associations/by_query` where `concept-id` is the concept id of the tag returned when it was created. All collections found in the query will be _removed_ from the current set of associated collections.
+Tags can be disassociated with collections by sending a DELETE request with a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag-key of the tag. All collections found in the query will be _removed_ from the current set of associated collections.
 
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR/associations/by_query -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality/associations/by_query -d \
 '{
   "condition": {"provider": "PROV1"}
  }'
@@ -2245,11 +2245,11 @@ Content-Length: 48
 
 #### <a name="disassociating-collections-with-a-tag-by-concept-ids"></a> Disassociating Collections with a Tag by collection concept ids
 
-Tags can be disassociated with collections by sending a DELETE request with a JSON array of collection concept-ids to `%CMR-ENDPOINT%/tags/<concept-id>/associations/by_query` where `concept-id` is the concept id of the tag returned when it was created. All collections found in the query will be _removed_ from the current set of associated collections.
+Tags can be disassociated with collections by sending a DELETE request with a JSON array of collection concept-ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag-key of the tag. All collections found in the query will be _removed_ from the current set of associated collections.
 
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR/associations -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality/associations -d \
 '[{"concept-id": "C1200000005-PROV1"} {"concept-id": "C1200000006-PROV1"}]'
 
 HTTP/1.1 200 OK

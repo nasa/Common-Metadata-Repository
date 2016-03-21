@@ -35,8 +35,8 @@
    (or (mdb2/get-latest-concept context concept-id)
        (when throw-service-error?
          (errors/throw-service-error
-          :not-found
-          (str "Failed to retrieve concept " concept-id " from metadata-db."))))))
+           :not-found
+           (str "Failed to retrieve concept " concept-id " from metadata-db."))))))
 
 (defn-timed get-concept-id
   "Return the concept-id for the concept matches the given arguments.
@@ -134,20 +134,38 @@
                                     " "
                                     response))))))
 
+(defn- find-concepts-raw
+  "Searches metadata db for concepts matching the given parameters, returns the raw response from
+  the http get."
+  [context params concept-type]
+  (let [conn (config/context->app-connection context :metadata-db)
+        request-url (str (conn/root-url conn) (format "/concepts/search/%ss" (name concept-type)))]
+    (client/get request-url (merge
+                              (config/conn-params conn)
+                              {:accept :json
+                               :query-params params
+                               :headers (ch/context->http-headers context)
+                               :throw-exceptions false}))))
+
 (defn find-concepts
   "Searches metadata db for concepts matching the given parameters."
   [context params concept-type]
-  (let [conn (config/context->app-connection context :metadata-db)
-        request-url (str (conn/root-url conn) (format "/concepts/search/%ss" (name concept-type)))
-        response (client/get request-url (merge
-                                           (config/conn-params conn)
-                                           {:accept :json
-                                            :query-params params
-                                            :headers (ch/context->http-headers context)
-                                            :throw-exceptions false}))
-        {:keys [status body]} response]
+  (let [{:keys [status body]} (find-concepts-raw context params concept-type)]
     (case status
       200 (map mdb2/finish-parse-concept (json/decode body true))
+      ;; default
+      (errors/internal-error!
+        (format "%s search failed. status: %s body: %s"
+                (str/capitalize (name concept-type)) status body)))))
+
+(defn find-latest-concept
+  "Searches metadata db for the latest concept matching the given parameters. Do not throw serivce
+  excpetion, returns the status and error message in a map in case of error."
+  [context params concept-type]
+  (let [{:keys [status body]} (find-concepts-raw context params concept-type)]
+    (case status
+      200 (first (map mdb2/finish-parse-concept (json/decode body true)))
+      404 (errors/throw-service-error :not-found body)
       ;; default
       (errors/internal-error!
         (format "%s search failed. status: %s body: %s"
@@ -162,8 +180,8 @@
     ;; we only want the tag associations that have no associated revision id or one equal to the
     ;; revision of this collection
     (filter (fn [ta] (let [rev-id (:associated-revision-id ta)]
-                      (or (nil? rev-id)
-                          (= (rev-id (:revision-id concept))))))
+                       (or (nil? rev-id)
+                           (= (rev-id (:revision-id concept))))))
             tag-associations)))
 
 (defn-timed find-collections
