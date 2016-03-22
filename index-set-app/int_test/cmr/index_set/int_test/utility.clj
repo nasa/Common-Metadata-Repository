@@ -44,11 +44,11 @@
     :id sample-index-set-id
     :create-reason "include message about reasons for creating this index set"
     :collection {:indexes
-                 [{:name "C4-collections"
+                 [{:name "C4-PROV2"
                    :settings {:index {:number_of_shards 1,
                                       :number_of_replicas 0,
                                       :refresh_interval "20s"}}}
-                  {:name "c6_Collections"
+                  {:name "C6-PROV3"
                    :settings {:index {:number_of_shards 1,
                                       :number_of_replicas 0,
                                       :refresh_interval "20s"}}}]
@@ -63,11 +63,11 @@
                 :settings {:index {:number_of_shards 1,
                                    :number_of_replicas 0,
                                    :refresh_interval "10s"}}}
-               {:name "C4-Prov3"
+               {:name "C4-PROV3"
                 :settings {:index {:number_of_shards 1,
                                    :number_of_replicas 0,
                                    :refresh_interval "10s"}}}
-               {:name "C5-prov5"
+               {:name "C5-PROV5"
                 :settings {:index {:number_of_shards 1,
                                    :number_of_replicas 0,
                                    :refresh_interval "10s"}}}]

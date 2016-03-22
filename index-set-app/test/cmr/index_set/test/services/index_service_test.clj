@@ -25,11 +25,11 @@
 (deftest prune-index-set-test
   (let [pruned-index-set {:id 3
                           :name "cmr-base-index-set"
-                          :concepts {:collection  {:c6_Collections "3_c6_collections"
-                                                   :C4-collections "3_c4_collections"}
+                          :concepts {:collection  {:C6-PROV3 "3_c6_prov3"
+                                                   :C4-PROV2 "3_c4_prov2"}
                                      :granule {:small_collections "3_small_collections"
-                                               :C4-Prov3 "3_c4_prov3"
-                                               :C5-prov5 "3_c5_prov5"}
+                                               :C4-PROV3 "3_c4_prov3"
+                                               :C5-PROV5 "3_c5_prov5"}
                                      :tag {}}}]
     (is (= pruned-index-set (svc/prune-index-set (:index-set util/sample-index-set))))))
 

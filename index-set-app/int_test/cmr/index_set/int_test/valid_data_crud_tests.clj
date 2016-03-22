@@ -37,7 +37,7 @@
 (deftest get-index-set-test
   (testing "index-set fetch by id"
     (let [index-set util/sample-index-set
-          suffix-idx-name "C4-collections"
+          suffix-idx-name "C4-PROV2"
           index-set-id (get-in index-set [:index-set :id])
           expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
           {:keys [status]} (util/create-index-set index-set)
@@ -52,7 +52,7 @@
 (deftest delete-index-set-test
   (testing "create index-set"
     (let [index-set util/sample-index-set
-          suffix-idx-name "C4-collections"
+          suffix-idx-name "C4-PROV2"
           index-set-id (get-in index-set [:index-set :id])
           expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
           {:keys [status]} (util/create-index-set index-set)]
@@ -116,6 +116,12 @@
   (testing "Initial rebalancing collections"
     (util/create-index-set util/sample-index-set)
     (assert-rebalancing-collections []))
+  (testing "Add collection that is already an index"
+    (is (= {:status 400
+            :errors ["The collection [C4-PROV3] already has a separate granule index"]}
+           (select-keys (util/mark-collection-as-rebalancing util/sample-index-set-id "C4-PROV3")
+                        [:status :errors])))
+    (assert-rebalancing-collections []))
   (testing "Add first collection"
     (is (= 200 (:status (util/mark-collection-as-rebalancing util/sample-index-set-id "C5-PROV1"))))
     (assert-rebalancing-collections ["C5-PROV1"]))
@@ -128,7 +134,7 @@
            (select-keys (util/mark-collection-as-rebalancing util/sample-index-set-id "C5-PROV1")
                         [:status :errors])))
     ;; Rebalancing collections have not changed
-   (assert-rebalancing-collections ["C5-PROV1" "C6-PROV1"])))
+    (assert-rebalancing-collections ["C5-PROV1" "C6-PROV1"])))
 
 ;; Verify creating same index-set twice will result in 409
 (deftest create-index-set-twice-test

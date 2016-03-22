@@ -214,6 +214,21 @@
       (conj rebalancing-colls concept-id))
     #{concept-id}))
 
+(defn- add-new-granule-index
+  "Adds a new granule index for the given collection. Validates the collection does not already have
+   an index."
+  [index-set collection-concept-id]
+  (let [existing-index-names (->> (get-in index-set [:index-set :granule :indexes]) (map :name) set)
+        _ (when (contains? existing-index-names collection-concept-id)
+            (errors/throw-service-error
+             :bad-request
+             (format "The collection [%s] already has a separate granule index" collection-concept-id)))
+        individual-index-settings (get-in index-set [:index-set :granule :individual-index-settings])]
+    (update-in index-set [:index-set :granule :indexes]
+               conj
+               {:name collection-concept-id
+                :settings individual-index-settings})))
+
 (defn mark-collection-as-rebalancing
   "Marks the given collection as rebalancing in the index set."
   [context index-set-id concept-id]
@@ -221,12 +236,7 @@
         ;; Add the collection to the list of rebalancing collections. Also does validation.
         index-set (update-in index-set [:index-set :granule :rebalancing-collections]
                    add-rebalancing-collection concept-id)
-        ;; Add a new index for the rebalancing collection.
-        individual-index-settings (get-in index-set [:index-set :granule :individual-index-settings])
-        index-set (update-in index-set [:index-set :granule :indexes]
-                             conj
-                             {:name concept-id
-                              :settings individual-index-settings})]
+        index-set (add-new-granule-index index-set concept-id)]
 
     ;; Update the index set. This will create the new collection indexes as needed.
     (update-index-set context index-set)))
