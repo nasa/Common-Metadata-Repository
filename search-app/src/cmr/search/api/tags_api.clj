@@ -51,9 +51,9 @@
        tag-api-response))
 
 (defn get-tag
-  "Retrieves the tag with the given concept-id."
-  [context concept-id]
-  (-> (tagging-service/get-tag context concept-id)
+  "Retrieves the tag with the given tag-key."
+  [context tag-key]
+  (-> (tagging-service/get-tag context tag-key)
       ;; We don't return the associated concept ids on the fetch response.
       ;; This could be changed if we wanted to. It's just not part of the requirements.
       (dissoc :associated-concept-ids)
@@ -61,48 +61,48 @@
 
 (defn update-tag
   "Processes a request to update a tag."
-  [context headers body concept-id]
+  [context headers body tag-key]
   (verify-tag-modification-permission context :update)
   (validate-tag-content-type headers)
   (v/validate-update-tag-json body)
   (->> body
        request-body->tag
-       (tagging-service/update-tag context concept-id)
+       (tagging-service/update-tag context tag-key)
        tag-api-response))
 
 (defn delete-tag
-  "Deletes the tag with the given concept-id."
-  [context concept-id]
+  "Deletes the tag with the given tag-key."
+  [context tag-key]
   (verify-tag-modification-permission context :delete)
-  (tag-api-response (tagging-service/delete-tag context concept-id)))
+  (tag-api-response (tagging-service/delete-tag context tag-key)))
 
 (defn associate-tag-to-collections
   "Associate the tag to a list of collections."
-  [context headers body concept-id]
+  [context headers body tag-key]
   (verify-tag-modification-permission context :update)
   (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/associate-tag-to-collections context concept-id body)))
+  (tag-api-response (tagging-service/associate-tag-to-collections context tag-key body)))
 
 (defn disassociate-tag-to-collections
   "Disassociate the tag to a list of collections."
-  [context headers body concept-id]
+  [context headers body tag-key]
   (verify-tag-modification-permission context :update)
   (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/disassociate-tag-to-collections context concept-id body)))
+  (tag-api-response (tagging-service/disassociate-tag-to-collections context tag-key body)))
 
 (defn associate-tag-by-query
   "Processes a request to associate a tag."
-  [context headers body concept-id]
+  [context headers body tag-key]
   (verify-tag-modification-permission context :update)
   (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/associate-tag-by-query context concept-id body)))
+  (tag-api-response (tagging-service/associate-tag-by-query context tag-key body)))
 
 (defn disassociate-tag-by-query
   "Processes a request to disassociate a tag."
-  [context headers body concept-id]
+  [context headers body tag-key]
   (verify-tag-modification-permission context :update)
   (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/disassociate-tag-by-query context concept-id body)))
+  (tag-api-response (tagging-service/disassociate-tag-by-query context tag-key body)))
 
 (defn search-for-tags
   [context params]
@@ -119,35 +119,39 @@
     (GET "/" {:keys [request-context params]}
       (search-for-tags request-context params))
 
-    (context "/:tag-id" [tag-id]
+    (context "/:tag-key" [tag-key]
 
       ;; Get a tag
       (GET "/" {:keys [request-context]}
-        (get-tag request-context tag-id))
+        (get-tag request-context (str/lower-case tag-key)))
 
       ;; Delete a tag
       (DELETE "/" {:keys [request-context]}
-        (delete-tag request-context tag-id))
+        (delete-tag request-context (str/lower-case tag-key)))
 
       ;; Update a tag
       (PUT "/" {:keys [request-context headers body]}
-        (update-tag request-context headers (slurp body) tag-id))
+        (update-tag request-context headers (slurp body) (str/lower-case tag-key)))
 
       (context "/associations" []
 
         ;; Associate a tag with a list of collections
         (POST "/" {:keys [request-context headers body]}
-          (associate-tag-to-collections request-context headers (slurp body) tag-id))
+          (associate-tag-to-collections
+            request-context headers (slurp body) (str/lower-case tag-key)))
 
         ;; Disassociate a tag with a list of collections
         (DELETE "/" {:keys [request-context headers body]}
-          (disassociate-tag-to-collections request-context headers (slurp body) tag-id))
+          (disassociate-tag-to-collections
+            request-context headers (slurp body) (str/lower-case tag-key)))
 
         (context "/by_query" []
           ;; Associate a tag with collections
           (POST "/" {:keys [request-context headers body]}
-            (associate-tag-by-query request-context headers (slurp body) tag-id))
+            (associate-tag-by-query
+              request-context headers (slurp body) (str/lower-case tag-key)))
 
           ;; Disassociate a tag with collections
           (DELETE "/" {:keys [request-context headers body]}
-            (disassociate-tag-by-query request-context headers (slurp body) tag-id)))))))
+            (disassociate-tag-by-query
+              request-context headers (slurp body) (str/lower-case tag-key))))))))

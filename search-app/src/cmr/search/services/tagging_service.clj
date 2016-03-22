@@ -92,27 +92,26 @@
       (mdb/save-concept context (tag->new-concept tag)))))
 
 (defn- fetch-tag-concept
-  "Fetches the latest version of a tag concept by concept id"
-  [context concept-id]
-  (let [{:keys [concept-type provider-id]} (concepts/parse-concept-id concept-id)]
-    (when (or (not= :tag concept-type) (not= "CMR" provider-id))
-      (errors/throw-service-error :bad-request (msg/bad-tag-concept-id concept-id))))
-
-  (if-let [concept (mdb/get-latest-concept context concept-id false)]
+  "Fetches the latest version of a tag concept by tag-key"
+  [context tag-key]
+  (if-let [concept (mdb/find-latest-concept context
+                                            {:native-id tag-key
+                                             :latest true}
+                                            :tag)]
     (if (:deleted concept)
-      (errors/throw-service-error :not-found (msg/tag-deleted concept-id))
+      (errors/throw-service-error :not-found (msg/tag-deleted tag-key))
       concept)
-    (errors/throw-service-error :not-found (msg/tag-does-not-exist concept-id))))
+    (errors/throw-service-error :not-found (msg/tag-does-not-exist tag-key))))
 
 (defn get-tag
   "Retrieves a tag with the given concept id."
-  [context concept-id]
-  (edn/read-string (:metadata (fetch-tag-concept context concept-id))))
+  [context tag-key]
+  (edn/read-string (:metadata (fetch-tag-concept context tag-key))))
 
 (defn update-tag
   "Updates an existing tag with the given concept id"
-  [context concept-id updated-tag]
-  (let [existing-concept (fetch-tag-concept context concept-id)
+  [context tag-key updated-tag]
+  (let [existing-concept (fetch-tag-concept context tag-key)
         existing-tag (edn/read-string (:metadata existing-concept))]
     (validate-update-tag existing-tag updated-tag)
     ;; The updated tag won't change the originator of the existing tag or the associated collection ids.
@@ -129,8 +128,8 @@
 
 (defn delete-tag
   "Deletes a tag with the given concept id"
-  [context concept-id]
-  (let [existing-concept (fetch-tag-concept context concept-id)]
+  [context tag-key]
+  (let [existing-concept (fetch-tag-concept context tag-key)]
     (mdb/save-concept
       context
       (-> existing-concept
@@ -167,9 +166,8 @@
 (defn- update-tag-association-to-collections
   "Based on the input operation type (:insert or :delete), insert or delete tag associations to
   the list of collections."
-  [context concept-id coll-concept-ids operation]
-  (let [existing-concept (fetch-tag-concept context concept-id)
-        existing-tag (edn/read-string (:metadata existing-concept))
+  [context tag-concept coll-concept-ids operation]
+  (let [existing-tag (edn/read-string (:metadata tag-concept))
         {:keys [tag-key originator-id]} existing-tag]
     ;; save tag-association for each collection concept-id
     (for [coll-concept-id coll-concept-ids
@@ -189,7 +187,7 @@
 (defn- update-tag-associations-with-query
   "Based on the input operation type (:insert or :delete), insert or delete tag associations
   identified by the json query."
-  [context concept-id json-query operation]
+  [context tag-key json-query operation]
   (let [query (-> (jp/parse-json-query :collection {} json-query)
                   (assoc :page-size :unlimited
                          :result-format :query-specified
@@ -197,8 +195,9 @@
                          :skip-acls? false))
         coll-concept-ids (->> (qe/execute-query context query)
                               :items
-                              (map :concept-id))]
-    (update-tag-association-to-collections context concept-id coll-concept-ids operation)))
+                              (map :concept-id))
+        tag-concept (fetch-tag-concept context tag-key)]
+    (update-tag-association-to-collections context tag-concept coll-concept-ids operation)))
 
 (defn- collections-json->collections
   "Validates the collections json and returns the parsed collections"
@@ -224,31 +223,35 @@
       (errors/throw-service-error
         :invalid-data (msg/inaccessible-collections inaccessible-concept-ids)))))
 
-(defn associate-tag-to-collections
-  "Associates a tag to the given list of collections."
-  [context concept-id collections-json]
-  (let [coll-concept-ids (->> (collections-json->collections collections-json)
+(defn- link-tag-to-collections
+  "Associate/Disassocate a tag to a list of collections based on the given operation type.
+  The ooperation type can be either :insert or :delete."
+  [context tag-key collections-json operation-type]
+  (let [tag-concept (fetch-tag-concept context tag-key)
+        coll-concept-ids (->> (collections-json->collections collections-json)
                               (map :concept-id))]
     (validate-collection-concept-ids context coll-concept-ids)
-    (update-tag-association-to-collections context concept-id coll-concept-ids :insert)))
+    (update-tag-association-to-collections context tag-concept coll-concept-ids operation-type)))
+
+(defn associate-tag-to-collections
+  "Associates a tag to the given list of collections."
+  [context tag-key collections-json]
+  (link-tag-to-collections context tag-key collections-json :insert))
 
 (defn disassociate-tag-to-collections
   "Associates a tag to the given list of collections."
-  [context concept-id collections-json]
-  (let [coll-concept-ids (->> (collections-json->collections collections-json)
-                              (map :concept-id))]
-    (validate-collection-concept-ids context coll-concept-ids)
-    (update-tag-association-to-collections context concept-id coll-concept-ids :delete)))
+  [context tag-key collections-json]
+  (link-tag-to-collections context tag-key collections-json :delete))
 
 (defn associate-tag-by-query
   "Associates a tag with collections that are the result of a JSON query"
-  [context concept-id json-query]
-  (update-tag-associations-with-query context concept-id json-query :insert))
+  [context tag-key json-query]
+  (update-tag-associations-with-query context tag-key json-query :insert))
 
 (defn disassociate-tag-by-query
   "Disassociates a tag with collections that are the result of a JSON query"
-  [context concept-id json-query]
-  (update-tag-associations-with-query context concept-id json-query :delete))
+  [context tag-key json-query]
+  (update-tag-associations-with-query context tag-key json-query :delete))
 
 (defn search-for-tags
   "Searches for tags with the given result formats. Returns the results as a string."

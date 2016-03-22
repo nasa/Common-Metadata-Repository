@@ -189,3 +189,18 @@
                                    :connection-manager (s/conn-mgr)
                                    :query-params {:token "dummy-token"}})]
       (is (= 401 (:status response))))))
+
+(deftest provider-delete-cascades-to-concepts-test
+  (doseq [provider [{:provider-id "SMALL" :short-name "SP" :cmr-only true :small true}
+                    {:provider-id "NOTSMALL" :short-name "NSP"}]]
+    (ingest/create-ingest-provider provider)
+    (let [access-group (access-control/create-group (transmit-config/echo-system-token)
+                                                    {:name "Administrators"
+                                                     :description "A Group"
+                                                     :provider-id (:provider-id provider)})]
+      (is (mdb/concept-exists-in-mdb? (:concept-id access-group) (:revision-id access-group)))
+      (ingest/delete-ingest-provider (:provider-id provider))
+      (is (not (mdb/concept-exists-in-mdb? (:concept-id access-group) (:revision-id access-group))))
+      ;; re-create the provider to ensure nothing has stuck around in the DB
+      (ingest/create-ingest-provider provider)
+      (is (not (mdb/concept-exists-in-mdb? (:concept-id access-group) (:revision-id access-group)))))))

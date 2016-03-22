@@ -217,15 +217,14 @@
       (errors/internal-error! "Job scheduler already running"))
     (if-let [jobs (:jobs this)]
       (do
-        (let [db (get system db-system-key)
-              system-holder-var (:system-holder-var this)
+        (let [system-holder-var (:system-holder-var this)
               system-holder (-> system-holder-var find-var var-get)
               system-holder-var-name (str (namespace system-holder-var) "/"
                                           (name system-holder-var))]
           (reset! system-holder system)
 
           (when (:clustered? this)
-            (configure-quartz-clustering-system-properties db))
+            (configure-quartz-clustering-system-properties (get system db-system-key)))
 
           ;; Start quartz
           (let [scheduler (qs/start (qs/initialize))]
@@ -301,14 +300,21 @@
   a :job-type (a class), :interval keys and optionally :start-delay and :job-key. The job-key can be
   set to override the default in cases where you want multiple instances of a job to run with the
   same type."
-  [system-holder-var db-system-key jobs]
-  (->JobScheduler system-holder-var db-system-key jobs false false nil))
+  [system-holder-var jobs]
+  (map->JobScheduler
+   {:system-holder-var system-holder-var
+    :jobs jobs
+    :clustered? false}))
 
 (defn create-clustered-scheduler
   "Starts the quartz job processing in clustered mode. The system should contain :jobs as described
   in start."
   [system-holder-var db-system-key jobs]
-  (->JobScheduler system-holder-var db-system-key jobs true false nil))
+  (map->JobScheduler
+   {:system-holder-var system-holder-var
+    :db-system-key db-system-key
+    :jobs jobs
+    :clustered? true}))
 
 (defn create-non-running-scheduler
   "Creates an instance of a scheduler that does not run jobs at all. This is useful in situations

@@ -233,16 +233,17 @@
           _ (index/wait-until-indexed)
           user1-token (e/login (s/context) "user1")
           tag1-colls [coll1 coll2]
+          tag-key "tag1"
           tag1 (tags/save-tag
                  user1-token
-                 (tags/make-tag {:tag-key "tag1"})
+                 (tags/make-tag {:tag-key tag-key})
                  tag1-colls)]
 
       (index/wait-until-indexed)
       ;; disassociate tag1 from coll2 and not send indexing events
       (dev-sys-util/eval-in-dev-sys
         `(cmr.metadata-db.config/set-publish-messages! false))
-      (tags/disassociate-by-query user1-token (:concept-id tag1) {:concept_id (:concept-id coll2)})
+      (tags/disassociate-by-query user1-token tag-key {:concept_id (:concept-id coll2)})
       (dev-sys-util/eval-in-dev-sys
         `(cmr.metadata-db.config/set-publish-messages! true))
 

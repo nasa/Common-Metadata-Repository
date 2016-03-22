@@ -52,7 +52,6 @@
                       kf/kms-cache-key (kf/create-kms-cache)}
              :scheduler (jobs/create-scheduler
                           `system-holder
-                          :db
                           [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
                            (kf/refresh-kms-cache-job "indexer-kms-cache-refresh")])
              :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]

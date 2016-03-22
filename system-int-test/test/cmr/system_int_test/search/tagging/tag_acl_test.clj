@@ -50,15 +50,15 @@
       (let [tag (uniq-tag)
             {:keys [concept-id revision-id]} (tags/create-tag all-user tag)]
         (testing "Success"
-          (is (= 200 (:status (tags/update-tag update-user concept-id tag))))
-          (is (= 200 (:status (tags/update-tag all-user concept-id tag)))))
+          (is (= 200 (:status (tags/update-tag update-user tag))))
+          (is (= 200 (:status (tags/update-tag all-user tag)))))
 
         (testing "Failure Cases"
           (are
             [token]
             (= {:status 401
                 :errors ["You do not have permission to update a tag."]}
-               (tags/update-tag token concept-id (uniq-tag)))
+               (tags/update-tag token (uniq-tag)))
 
             guest-token
             reg-user-token
@@ -68,23 +68,21 @@
     (testing "Delete permissions"
       (testing "Success"
         (are [token]
-             (= 200 (->> (uniq-tag)
-                         (tags/create-tag all-user)
-                         :concept-id
-                         (tags/delete-tag token)
-                         :status))
+             (let [tag (uniq-tag)
+                   _ (tags/create-tag all-user tag)
+                   {:keys [status]} (tags/delete-tag token (:tag-key tag))]
+               (= 200 status))
              delete-user
              all-user))
 
       (testing "Failure Cases"
         (are
           [token]
-          (= {:status 401
-              :errors ["You do not have permission to delete a tag."]}
-             (->> (uniq-tag)
-                  (tags/create-tag all-user)
-                  :concept-id
-                  (tags/delete-tag token)))
+          (let [tag (uniq-tag)
+                _ (tags/create-tag all-user tag)]
+            (= {:status 401
+                :errors ["You do not have permission to delete a tag."]}
+               (tags/delete-tag token (:tag-key tag))))
 
           guest-token
           reg-user-token
@@ -95,15 +93,15 @@
       (let [tag (uniq-tag)
             {:keys [concept-id revision-id]} (tags/create-tag all-user tag)]
         (testing "Success"
-          (is (= 200 (:status (tags/associate-by-query update-user concept-id {:provider "foo"}))))
-          (is (= 200 (:status (tags/associate-by-query all-user concept-id {:provider "foo"})))))
+          (is (= 200 (:status (tags/associate-by-query update-user (:tag-key tag) {:provider "foo"}))))
+          (is (= 200 (:status (tags/associate-by-query all-user (:tag-key tag) {:provider "foo"})))))
 
         (testing "Failure Cases"
           (are
             [token]
             (= {:status 401
                 :errors ["You do not have permission to update a tag."]}
-               (tags/associate-by-query token concept-id {:provider "foo"}))
+               (tags/associate-by-query token (:tag-key tag) {:provider "foo"}))
 
             nil
             guest-token
@@ -115,15 +113,15 @@
       (let [tag (uniq-tag)
             {:keys [concept-id revision-id]} (tags/create-tag all-user tag)]
         (testing "Success"
-          (is (= 200 (:status (tags/disassociate-by-query update-user concept-id {:provider "foo"}))))
-          (is (= 200 (:status (tags/disassociate-by-query all-user concept-id {:provider "foo"})))))
+          (is (= 200 (:status (tags/disassociate-by-query update-user (:tag-key tag) {:provider "foo"}))))
+          (is (= 200 (:status (tags/disassociate-by-query all-user (:tag-key tag) {:provider "foo"})))))
 
         (testing "Failure Cases"
           (are
             [token]
             (= {:status 401
                 :errors ["You do not have permission to update a tag."]}
-               (tags/disassociate-by-query token concept-id {:provider "foo"}))
+               (tags/disassociate-by-query token (:tag-key tag) {:provider "foo"}))
 
             nil
             guest-token
