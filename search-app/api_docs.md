@@ -231,7 +231,7 @@ The CMR Atom format provides search results in an XML file representing a feed o
 |                         Atom Feed Level Feeds                         ||
 |   Field    |                        Description                        |
 | ---------- | --------------------------------------------------------- |
-| id         | the URL linking to this feed                               |
+| id         | the URL linking to this feed                              |
 | title      | Either 'ECHO dataset metadata' or 'ECHO granule metadata' |
 | updated    | The date/time the search was executed                     |
 
@@ -279,7 +279,7 @@ The following fields are specific to the CMR output and most correspond to ECHO1
 | echo:hasGranules (collections only)        | true if there are granules associated with the collection                                                            |
 | echo:granuleCount (collections only)       | granule count of the collection                                                                                      |
 | relevance:score (collections only)         | relevance score of the collection to search parameters                                                               |
-| echo:tag (collections only)                | tags associated with the collection                                                                                  |
+| echo:tag (collections only)                | tags associated with the collection. It includes sub-elements of tagKey and optional data which is in embedded JSON. |
 | echo:dayNightFlag (granules only)          | day night flag of the granule                                                                                        |
 | echo:cloudCover (granules only)            | cloud cover of the granule                                                                                           |
 
@@ -312,6 +312,13 @@ __Example__
       <echo:orbitParameters/>
       <echo:onlineAccessFlag>false</echo:onlineAccessFlag>
       <echo:browseFlag>false</echo:browseFlag>
+      <echo:tag>
+        <echo:tagKey>tag1</echo:tagKey>
+        <echo:data>{&quot;status&quot;:&quot;reviewed&quot;,&quot;score&quot;:85}</echo:data>
+      </echo:tag>
+      <echo:tag>
+        <echo:tagKey>tag2</echo:tagKey>
+      </echo:tag>
    </entry>
 </feed>
 ```
@@ -666,7 +673,8 @@ __Example__
       "original_format" : "ECHO10",
       "browse_flag" : false,
       "online_access_flag" : false,
-      "tags" : [["tag1"], ["tag2"]]
+      "tags" : {"tag1": {"data": {"score": 85, "status": "reviewed"}},
+                "tag2": {}}
     } ]
   }
 }
@@ -2211,18 +2219,18 @@ Content-Length: 48
 
 #### <a name="associating-collections-with-a-tag-by-concept-ids"></a> Associating Collections with a Tag by collection concept ids
 
-Tags can be associated with collections by POSTing a JSON array of collection concept-ids and arbitrary json data to `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag-key of the tag. All referenced collections will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
+Tags can be associated with collections by POSTing a JSON array of collection concept-ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag-key of the tag. User can also provide arbitrary JSON data which is optional during tag association. The max length of JSON data used for tag association is 32KB. All referenced collections will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
 
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality/associations -d \
-'[{"concept-id": "C1200000005-PROV1", "data": "tag association description"} {"concept-id": "C1200000006-PROV1", "data": {"status": "reviewed"}}]'
+'[{"concept-id": "C1200000005-PROV1", "data": "Global Maps of Atmospheric Nitrogen Deposition, 1860, 1993, and 2050"} {"concept-id": "C1200000006-PROV1", "data": {"status": "reviewed"}} {"concept-id": "C1200000007-PROV1"}]'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 48
 
-[{"concept-id":"TA1200000007-CMR","revision-id":1},{"concept-id":"TA1200000008-CMR","revision-id":1}]
+[{"concept-id":"TA1200000008-CMR","revision-id":1},{"concept-id":"TA1200000009-CMR","revision-id":1},{"concept-id":"TA1200000010-CMR","revision-id":1}]
 ```
 
 #### <a name="disassociating-collections-with-a-tag-by-query"></a> Disassociating Collections with a Tag by query

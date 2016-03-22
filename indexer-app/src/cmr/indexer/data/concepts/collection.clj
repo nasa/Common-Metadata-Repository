@@ -204,7 +204,7 @@
                                (pr-str
                                  (into {} (for [ta tag-associations]
                                             [(:tag-key ta) (util/remove-nil-keys
-                                                             {"data" (:data ta)})])))))}
+                                                             {:data (:data ta)})])))))}
 
            (get-in collection [:spatial-coverage :orbit-parameters])
            (spatial->elastic collection)

@@ -23,13 +23,17 @@
   (js/parse-json-schema (assoc-in base-tag-schema-structure [:properties :originator-id]
                                   {:type :string})))
 
+(def maximum-data-length
+  "The maximum length of data in bytes that can be passed to tag association"
+  32768)
+
 (def ^:private collections-tagging-schema-structure
   "Schema for tagging collections as json."
   {:type :array
    :items {:type :object
            :additionalProperties false
            :properties {:concept-id {:type :string :minLength 1 :maxLength 255}
-                        :data {:anyOf [{:type :string :minLength 1 :maxLength 32768}
+                        :data {:anyOf [{:type :string :minLength 1 :maxLength maximum-data-length}
                                        {:type :boolean}
                                        {:type :integer}
                                        {:type :number}

@@ -320,8 +320,7 @@
 (defn- tag->xml-element
   "Convert a tag to an XML element"
   [tag]
-  (let [[tag-key data] tag
-        data (data "data")
+  (let [[tag-key {:keys [data]}] tag
         data-str (when data
                    (json/generate-string data))]
     (x/element :echo:tag {}

@@ -1,7 +1,6 @@
 (ns cmr.indexer.data.concept-parser
   "Contains helper functions to parse a concept for indexing."
   (:require [clojure.edn :as edn]
-            [cheshire.core :as json]
             [cmr.umm-spec.legacy :as umm-legacy]))
 
 (defmulti parse-concept
@@ -16,7 +15,7 @@
 
 (defmethod parse-concept :tag-association
   [concept]
-  (json/parse-string (:metadata concept) true))
+  (edn/read-string (:metadata concept)))
 
 (defmethod parse-concept :default
   [concept]

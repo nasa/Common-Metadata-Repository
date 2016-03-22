@@ -178,8 +178,8 @@
         (mdb/save-concept context {:concept-type :tag-association
                                    :native-id native-id
                                    :user-id (context->user-id context)
-                                   :format (mt/format->mime-type :json)
-                                   :metadata (json/generate-string
+                                   :format (mt/format->mime-type :edn)
+                                   :metadata (pr-str
                                                {:tag-key tag-key
                                                 :originator-id originator-id
                                                 :associated-concept-id coll-concept-id
@@ -228,6 +228,16 @@
       (errors/throw-service-error
         :invalid-data (msg/inaccessible-collections inaccessible-concept-ids)))))
 
+(defn- validate-tag-association-data
+  "Validates the tag association data are within the maximum length requirement after written in JSON."
+  [collections]
+  (let [too-much-data-fn (fn [c]
+                           (> (count (json/generate-string (:data c))) tv/maximum-data-length))
+        data-too-long-colls (filter too-much-data-fn collections)]
+    (when (seq data-too-long-colls)
+      (errors/throw-service-error
+        :bad-request (msg/collections-data-too-long (map :concept-id data-too-long-colls))))))
+
 (defn- link-tag-to-collections
   "Associate/Disassocate a tag to a list of collections based on the given operation type.
   The ooperation type can be either :insert or :delete."
@@ -235,6 +245,7 @@
   (let [tag-concept (fetch-tag-concept context tag-key)
         collections (collections-json->collections collections-json)]
     (validate-collection-concept-ids context (map :concept-id collections))
+    (validate-tag-association-data collections)
     (update-tag-association-to-collections context tag-concept collections operation-type)))
 
 (defn associate-tag-to-collections
