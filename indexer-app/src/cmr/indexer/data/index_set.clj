@@ -581,11 +581,21 @@
       :granule (name (first (keys (get-in fetched-index-set [:index-set :granule :mapping]))))
       :tag (name (first (keys (get-in fetched-index-set [:index-set :tag :mapping]))))})))
 
+(def index-set-cache-key
+  "The name of the cache used for caching index set related data."
+  :indexer-index-set-cache)
+
 (defn get-concept-type-index-names
   "Fetch index names associated with concepts."
   [context]
-  (let [cache (cache/context->cache context cache/general-cache-key)]
+  (let [cache (cache/context->cache context index-set-cache-key)]
     (cache/get-value cache :concept-indices (partial fetch-concept-type-index-names context))))
+
+(defn get-concept-mapping-types
+  "Fetch mapping types associated with concepts."
+  [context]
+  (let [cache (cache/context->cache context index-set-cache-key)]
+    (cache/get-value cache :concept-mapping-types (partial fetch-concept-mapping-types context))))
 
 (defn get-concept-index-name
   "Return the concept index name for the given concept id"
@@ -621,8 +631,4 @@
                       (= :small_collections k)))]
     (map second (filter filter-fn indexes))))
 
-(defn get-concept-mapping-types
-  "Fetch mapping types associated with concepts."
-  [context]
-  (let [cache (cache/context->cache context cache/general-cache-key)]
-    (cache/get-value cache :concept-mapping-types (partial fetch-concept-mapping-types context))))
+

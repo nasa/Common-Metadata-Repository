@@ -206,8 +206,8 @@
    running?
 
    ;; Instance of a quartzite scheduler
-   qz-scheduler
-   ]
+   qz-scheduler]
+
 
   l/Lifecycle
 
@@ -265,9 +265,9 @@
 
 ;; A scheduler that does not track or run jobs
 (defrecord NonRunningJobScheduler
-  [
+  []
    ;; no fields
-   ]
+
 
   l/Lifecycle
 

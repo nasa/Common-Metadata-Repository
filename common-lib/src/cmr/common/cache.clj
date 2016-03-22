@@ -1,10 +1,6 @@
 (ns cmr.common.cache
   "Defines the core caching protocol for the CMR.")
 
-(def general-cache-key
-  "The key used to store the general cache in the system cache map."
-  :general)
-
 (defn context->cache
   "Get the cache for the given key from the context"
   [context cache-key]

@@ -14,10 +14,6 @@
             [cmr.acl.core :as acl]
             [cmr.common-app.system :as common-sys]))
 
-(defconfig index-set-port
-  "Port index-set application listens on."
-  {:default 3005 :type Long})
-
 (defconfig index-set-nrepl-port
   "Port to listen for nREPL connections"
   {:default nil
@@ -33,7 +29,7 @@
   []
   (let [sys {:log (log/create-logger)
              :index (es/create-elasticsearch-store (es-config/elastic-config))
-             :web (web/create-web-server (index-set-port) routes/make-api)
+             :web (web/create-web-server (transmit-config/index-set-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (index-set-nrepl-port))
              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}
              :relative-root-url (transmit-config/index-set-relative-root-url)}]

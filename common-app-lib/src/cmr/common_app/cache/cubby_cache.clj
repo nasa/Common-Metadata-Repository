@@ -20,8 +20,7 @@
 ;; Implements the CmrCache protocol by saving data in the cubby application
 (defrecord CubbyCache
   [;; A context containing a connection to cubby
-   context-with-conn
-   ]
+   context-with-conn]
 
   c/CmrCache
   (get-keys

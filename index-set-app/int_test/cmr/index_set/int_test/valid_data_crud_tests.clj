@@ -4,19 +4,12 @@
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
             [clojure.walk :as walk]
+            [clojure.string :as str]
             [clojurewerkz.elastisch.rest.index :as esi]
             [cmr.index-set.services.index-service :as svc]
             [cmr.index-set.int-test.utility :as util]))
 
-
-
-;;; fixtures
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (use-fixtures :each util/reset-fixture)
-
-;;; tests
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Verify index-set creation is successful.
 ;; use elastisch to verify all indices of index-set exist and the index-set doc has been indexed
@@ -24,7 +17,7 @@
 (deftest create-index-set-test
   (testing "create index-set"
     (let [index-set util/sample-index-set
-          {:keys [status]} (util/submit-create-index-set-req index-set)]
+          {:keys [status]} (util/create-index-set index-set)]
       (is (= 201 status))))
   (testing "indices existence"
     (let [index-set util/sample-index-set
@@ -44,12 +37,11 @@
 (deftest get-index-set-test
   (testing "index-set fetch by id"
     (let [index-set util/sample-index-set
-          suffix-idx-name "C4-collections"
+          suffix-idx-name "C4-PROV2"
           index-set-id (get-in index-set [:index-set :id])
           expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
-          {:keys [status]} (util/submit-create-index-set-req index-set)
-          body (-> (util/get-index-set index-set-id) :response :body)
-          fetched-index-set (cheshire.core/decode body true)
+          {:keys [status]} (util/create-index-set index-set)
+          fetched-index-set (-> (util/get-index-set index-set-id) :response :body)
           actual-idx-name (get-in fetched-index-set [:index-set :concepts :collection (keyword suffix-idx-name)])]
       (is (= 201 status))
       (is (= expected-idx-name actual-idx-name)))))
@@ -60,10 +52,10 @@
 (deftest delete-index-set-test
   (testing "create index-set"
     (let [index-set util/sample-index-set
-          suffix-idx-name "C4-collections"
+          suffix-idx-name "C4-PROV2"
           index-set-id (get-in index-set [:index-set :id])
           expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
-          {:keys [status]} (util/submit-create-index-set-req index-set)]
+          {:keys [status]} (util/create-index-set index-set)]
       (is (= 201 status))
       (is (esi/exists? @util/elastic-connection expected-idx-name))))
   (testing "delete index-set"
@@ -71,7 +63,7 @@
           index-set-id (get-in index-set [:index-set :id])
           suffix-idx-name "C99-Collections"
           expected-idx-name (svc/gen-valid-index-name index-set-id suffix-idx-name)
-          {:keys [status]} (util/submit-delete-index-set-req index-set-id)]
+          {:keys [status]} (util/delete-index-set index-set-id)]
       (is (= 204 status))
       (is (not (esi/exists? @util/elastic-connection expected-idx-name))))))
 
@@ -83,31 +75,79 @@
 (deftest get-index-sets-test
   (testing "fetch all index-sets"
     (let [index-set util/sample-index-set
-          _ (util/submit-create-index-set-req index-set)
-          _ (util/submit-create-index-set-req (assoc-in index-set [:index-set :id] 77))
-          indices-cnt (->> util/cmr-concepts (map (:index-set index-set))
+          _ (util/create-index-set index-set)
+          _ (util/create-index-set (assoc-in index-set [:index-set :id] 77))
+          indices-cnt (->> util/cmr-concepts
+                           (map (:index-set index-set))
                            (mapcat :indexes)
                            count)
           expected-idx-cnt (* 2 indices-cnt)
-          body (-> (util/get-index-sets) :response :body (cheshire.core/decode true))
+          body (-> (util/get-index-sets) :response :body)
           actual-es-indices (util/list-es-indices body)]
       (for [es-idx-name actual-es-indices]
         (is (esi/exists? @util/elastic-connection es-idx-name)))
       (is (= expected-idx-cnt (count actual-es-indices))))))
 
 
+;; manual reset
+(comment
+ (util/reset-fixture (constantly true))
+ (get-in (util/get-index-set util/sample-index-set-id) [:response :body]))
+
+
+(defn assert-rebalancing-collections
+  "Asserts that the index set contains the listed rebalancing collections."
+  [expected-colls]
+  (let [index-set (get-in (util/get-index-set util/sample-index-set-id) [:response :body])
+        base-coll-indexes (->> (get-in util/sample-index-set [:index-set :granule :indexes]) (map :name))
+        expected-coll-indexes (set (concat base-coll-indexes expected-colls))]
+    (is (= (set expected-colls) (set (get-in index-set [:index-set :granule :rebalancing-collections]))))
+    (is (= expected-coll-indexes (->> (get-in index-set [:index-set :granule :indexes]) (map :name) set)))
+
+    ;; Verify the collection indexes were created in elasticsearch.
+    (doseq [collection expected-coll-indexes
+            :let [collection-index-part (-> collection (str/replace "-" "_") str/lower-case)
+                  elastic-index-name (str util/sample-index-set-id "_" collection-index-part)]]
+      (is (esi/exists? @util/elastic-connection elastic-index-name)))))
+
+;; Tests adding a collection that is rebalancing its granules from small_collections to a separate
+;; granule index
+(deftest add-rebalancing-collection-test
+  (testing "Initial rebalancing collections"
+    (util/create-index-set util/sample-index-set)
+    (assert-rebalancing-collections []))
+  (testing "Add collection that is already an index"
+    (is (= {:status 400
+            :errors ["The collection [C4-PROV3] already has a separate granule index"]}
+           (select-keys (util/mark-collection-as-rebalancing util/sample-index-set-id "C4-PROV3")
+                        [:status :errors])))
+    (assert-rebalancing-collections []))
+  (testing "Add first collection"
+    (is (= 200 (:status (util/mark-collection-as-rebalancing util/sample-index-set-id "C5-PROV1"))))
+    (assert-rebalancing-collections ["C5-PROV1"]))
+  (testing "Add another collection"
+    (is (= 200 (:status (util/mark-collection-as-rebalancing util/sample-index-set-id "C6-PROV1"))))
+    (assert-rebalancing-collections ["C5-PROV1" "C6-PROV1"]))
+  (testing "Add duplicate collection"
+    (is (= {:status 400
+            :errors ["The index set already contains rebalancing collection [C5-PROV1]"]}
+           (select-keys (util/mark-collection-as-rebalancing util/sample-index-set-id "C5-PROV1")
+                        [:status :errors])))
+    ;; Rebalancing collections have not changed
+    (assert-rebalancing-collections ["C5-PROV1" "C6-PROV1"])))
+
 ;; Verify creating same index-set twice will result in 409
 (deftest create-index-set-twice-test
   (testing "create index-set"
     (let [index-set util/sample-index-set
-          {:keys [status]} (util/submit-create-index-set-req index-set)]
+          {:keys [status]} (util/create-index-set index-set)]
       (is (= 201 status))))
   (testing "create same index-set"
     (let [index-set util/sample-index-set
           index-set-id (get-in index-set [:index-set :id])
-          {:keys [status errors-str]} (util/submit-create-index-set-req index-set)]
+          {:keys [status errors]} (util/create-index-set index-set)]
       (is (= 409 status))
-      (is (re-find #"already exists" errors-str)))))
+      (is (re-find #"already exists" (first errors))))))
 
 ;; Verify reset deletes all of the indices assoc with index-sets and index-set docs
 (deftest reset-index-sets-test

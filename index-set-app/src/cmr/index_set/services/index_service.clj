@@ -203,6 +203,45 @@
     (dorun (map #(es/delete-index (context->es-store context) %) index-names))
     (es/delete-document context index-name idx-mapping-type index-set-id)))
 
+(defn- add-rebalancing-collection
+  "Adds a new rebalancing collections to the set of rebalancing collections."
+  [rebalancing-colls concept-id]
+  (if rebalancing-colls
+    (if (contains? (set rebalancing-colls) concept-id)
+      (errors/throw-service-error
+       :bad-request
+       (format "The index set already contains rebalancing collection [%s]" concept-id))
+      (conj rebalancing-colls concept-id))
+    #{concept-id}))
+
+(defn- add-new-granule-index
+  "Adds a new granule index for the given collection. Validates the collection does not already have
+   an index."
+  [index-set collection-concept-id]
+  (let [existing-index-names (->> (get-in index-set [:index-set :granule :indexes]) (map :name) set)
+        _ (when (contains? existing-index-names collection-concept-id)
+            (errors/throw-service-error
+             :bad-request
+             (format "The collection [%s] already has a separate granule index" collection-concept-id)))
+        individual-index-settings (get-in index-set [:index-set :granule :individual-index-settings])]
+    (update-in index-set [:index-set :granule :indexes]
+               conj
+               {:name collection-concept-id
+                :settings individual-index-settings})))
+
+(defn mark-collection-as-rebalancing
+  "Marks the given collection as rebalancing in the index set."
+  [context index-set-id concept-id]
+  (let [index-set (get-index-set context index-set-id)
+        ;; Add the collection to the list of rebalancing collections. Also does validation.
+        index-set (update-in index-set [:index-set :granule :rebalancing-collections]
+                   add-rebalancing-collection concept-id)
+        index-set (add-new-granule-index index-set concept-id)]
+
+    ;; Update the index set. This will create the new collection indexes as needed.
+    (update-index-set context index-set)))
+
+
 (defn reset
   "Put elastic in a clean state after deleting indices associated with index-sets and index-set docs."
   [context]

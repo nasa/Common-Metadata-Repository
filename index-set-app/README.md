@@ -1,6 +1,6 @@
 # cmr-index-set-app
 
-FIXME
+An application that maintains the set of indexes in elasticsearch for multiple concept types.
 
 ## Design
 
@@ -20,8 +20,11 @@ To start a web server for the application, run:
 
 ## Curls
 
--Create index-set using json string
- curl -i -H "Accept: application/json" -H "Content-type: application/json" -XPOST "http://localhost:3005/index-sets" -d "{\"index-set\":{\"name\":\"cmr-base-index-set\",\"create-reason\":\"include message about reasons for creating this index set\",\"granule\":{\"index-names\":[\"G2-PROV1\",\"G4-Prov3\",\"g5_prov5\"],\"mapping\":{\"granule\":{\"_all\":{\"enabled\":false},\"properties\":{\"collection-concept-id\":{\"store\":\"yes\",\"index_options\":\"docs\",\"omit_norms\":\"true\",\"type\":\"string\",\"index\":\"not_analyzed\"},\"concept-id\":{\"store\":\"yes\",\"index_options\":\"docs\",\"omit_norms\":\"true\",\"type\":\"string\",\"index\":\"not_analyzed\"}},\"dynamic\":\"strict\",\"_source\":{\"enabled\":false},\"_id\":{\"path\":\"concept-id\"}}},\"settings\":{\"index\":{\"number_of_replicas\":0,\"refresh_interval\":\"10s\",\"number_of_shards\":1}}},\"collection\":{\"index-names\":[\"C4-collections\",\"c6_Collections\"],\"mapping\":{\"collection\":{\"_all\":{\"enabled\":false},\"properties\":{\"entry-title\":{\"store\":\"yes\",\"index_options\":\"docs\",\"omit_norms\":\"true\",\"type\":\"string\",\"index\":\"not_analyzed\"},\"concept-id\":{\"store\":\"yes\",\"index_options\":\"docs\",\"omit_norms\":\"true\",\"type\":\"string\",\"index\":\"not_analyzed\"}},\"dynamic\":\"strict\",\"_source\":{\"enabled\":false},\"_id\":{\"path\":\"concept-id\"}}},\"settings\":{\"index\":{\"number_of_replicas\":0,\"refresh_interval\":\"20s\",\"number_of_shards\":1}}},\"id\":3}}"
+### Create index-set using json string
+
+```
+curl -i -H "Accept: application/json" -H "Content-type: application/json" -XPOST "http://localhost:3005/index-sets" -d "{\"index-set\":{\"name\":\"cmr-base-index-set\",\"create-reason\":\"include message about reasons for creating this index set\",\"granule\":{\"index-names\":[\"G2-PROV1\",\"G4-Prov3\",\"g5_prov5\"],\"mapping\":{\"granule\":{\"_all\":{\"enabled\":false},\"properties\":{\"collection-concept-id\":{\"store\":\"yes\",\"index_options\":\"docs\",\"omit_norms\":\"true\",\"type\":\"string\",\"index\":\"not_analyzed\"},\"concept-id\":{\"store\":\"yes\",\"index_options\":\"docs\",\"omit_norms\":\"true\",\"type\":\"string\",\"index\":\"not_analyzed\"}},\"dynamic\":\"strict\",\"_source\":{\"enabled\":false},\"_id\":{\"path\":\"concept-id\"}}},\"settings\":{\"index\":{\"number_of_replicas\":0,\"refresh_interval\":\"10s\",\"number_of_shards\":1}}},\"collection\":{\"index-names\":[\"C4-collections\",\"c6_Collections\"],\"mapping\":{\"collection\":{\"_all\":{\"enabled\":false},\"properties\":{\"entry-title\":{\"store\":\"yes\",\"index_options\":\"docs\",\"omit_norms\":\"true\",\"type\":\"string\",\"index\":\"not_analyzed\"},\"concept-id\":{\"store\":\"yes\",\"index_options\":\"docs\",\"omit_norms\":\"true\",\"type\":\"string\",\"index\":\"not_analyzed\"}},\"dynamic\":\"strict\",\"_source\":{\"enabled\":false},\"_id\":{\"path\":\"concept-id\"}}},\"settings\":{\"index\":{\"number_of_replicas\":0,\"refresh_interval\":\"20s\",\"number_of_shards\":1}}},\"id\":3}}"
+```
 
 ### Get index-set by id
 
@@ -34,6 +37,13 @@ To start a web server for the application, run:
 ### Delete index-set by id
 
     curl -XDELETE "http://localhost:3005/index-sets/3"
+
+### Mark a collection as rebalancing
+
+There are multiple granule indexes for performance. Larger collections are split out into their own indexes. Smaller collections are grouped in a small_collections index. Marking a collection as rebalancing adds the collection to a list of collections are are being moved out of small collections. It also creates the new granule index.
+
+    curl -XPUT http://localhost:3005/index-sets/3/rebalancing-collections/C5-PROV1
+
 
 ### Reset for dev purposes
 
