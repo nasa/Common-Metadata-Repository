@@ -310,4 +310,57 @@
                 :errors ["Parameter [include_tags] was not recognized."]}
                (search/find-concepts-json :granule {:include-tags true})))))))
 
+(deftest search-for-collections-with-associated-tag-data-test
+  (let [[coll1 coll2 coll3 coll4] (for [n (range 1 5)]
+                                    (d/ingest "PROV1" (dc/collection {:entry-title (str "coll" n)})))
+        all-prov1-colls [coll1 coll2 coll3 coll4]
+        user1-token (e/login (s/context) "user1")
+        tag1 (tags/save-tag
+               user1-token
+               (tags/make-tag {:tag-key "tag1"}))
+        tag2 (tags/save-tag
+               user1-token
+               (tags/make-tag {:tag-key "tag2"}))
+        tag3 (tags/save-tag
+               user1-token
+               (tags/make-tag {:tag-key "tag3"}))]
+    (index/wait-until-indexed)
+
+    (tags/associate-by-concept-ids user1-token "tag1" [{:concept-id (:concept-id coll1)
+                                                        :data "coll1 tag1 association"}
+                                                       {:concept-id (:concept-id coll2)
+                                                        :data ["coll2 tag1 association" true]}
+                                                       {:concept-id (:concept-id coll3)
+                                                        :data {:status "reviewed"
+                                                               :score 85}}])
+    (tags/associate-by-concept-ids user1-token "tag2" [{:concept-id (:concept-id coll1)
+                                                        :data {:description "coll1 tag2 association"}}
+                                                       {:concept-id (:concept-id coll2)
+                                                        :data 100}])
+    (tags/associate-by-concept-ids user1-token "tag3" [{:concept-id (:concept-id coll3)
+                                                        :data "tag 3 rocks"}])
+    (index/wait-until-indexed)
+    (let [dataset-id-tags {"coll1" {"tag1" {"data" "coll1 tag1 association"}
+                                    "tag2" {"data" {"description" "coll1 tag2 association"}}}
+                           "coll2" {"tag1" {"data" ["coll2 tag1 association" true]}
+                                    "tag2" {"data" 100}}
+                           "coll3" {"tag1" {"data" {"status" "reviewed"
+                                                    "score" 85}}
+                                    "tag3" {"data" "tag 3 rocks"}}}
+          expected-result
+          (fn [response-format]
+            (let [feed-id (format "collections.%s?provider=PROV1&include_tags=*"
+                                  (name response-format))]
+              (-> (da/collections->expected-atom all-prov1-colls feed-id)
+                  (update-in [:entries] add-tags-to-collections dataset-id-tags))))
+
+          {json-status :status json-results :results}
+          (search/find-concepts-json :collection {:provider "PROV1"
+                                                  :include-tags "*"})
+
+          {atom-status :status atom-results :results}
+          (search/find-concepts-atom :collection {:provider "PROV1"
+                                                  :include-tags "*"})]
+      (is (= [200 (expected-result :json)] [json-status json-results]))
+      (is (= [200 (expected-result :atom)] [atom-status atom-results])))))
 

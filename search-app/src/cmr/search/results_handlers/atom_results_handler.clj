@@ -320,8 +320,14 @@
 (defn- tag->xml-element
   "Convert a tag to an XML element"
   [tag]
-  (x/element :echo:tag {}
-             (x/element :echo:tagKey {} (first tag))))
+  (let [[tag-key data] tag
+        data (data "data")
+        data-str (when data
+                   (json/generate-string data))]
+    (x/element :echo:tag {}
+               (x/element :echo:tagKey {} tag-key)
+               (when data-str
+                 (x/element :echo:data {} data-str)))))
 
 (defn- orbit-parameters->attribute-map
   "Convert orbit parameters into attributes for an XML element"

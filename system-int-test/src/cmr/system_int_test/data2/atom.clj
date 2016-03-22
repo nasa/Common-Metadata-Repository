@@ -11,6 +11,7 @@
             [cmr.system-int-test.utils.fast-xml :as fx]
             [cmr.common.xml :as cx]
             [clojure.string :as str]
+            [cheshire.core :as json]
             [clj-time.format :as f]
             [camel-snake-kebab.core :as csk]
             [cmr.umm.spatial :as umm-s]
@@ -122,7 +123,9 @@
   "Extracts the tag from the XML entry."
   [tag-elem]
   (when-let [tag-key (cx/string-at-path tag-elem [:tagKey])]
-    [tag-key {}]))
+    (if-let [tag-data (cx/string-at-path tag-elem [:data])]
+      [tag-key {"data" (json/parse-string tag-data)}]
+      [tag-key {}])))
 
 (defmulti xml-elem->entry
   "Retrns an atom entry from a parsed atom xml structure"
