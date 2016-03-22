@@ -75,7 +75,7 @@
         (url/index-set-read-caches-url) ["token-imp"]
         (url/mdb-read-caches-url) ["token-imp"]
         (url/ingest-read-caches-url) ["token-imp" "providers" "acls" "token-user-ids" "kms"]
-                   (url/access-control-read-caches-url) ["acls"]
+        (url/access-control-read-caches-url) ["acls"]
         (url/search-read-caches-url) ["acls"
                                       "collections-for-gran-acls"
                                       "has-granules-map"
@@ -92,20 +92,20 @@
 
     (testing "normal user cannot access cache list API"
       (are [url]
-            (let [response (client/request {:url url
-                                           :method :get
-                                           :query-params {:token normal-user-token}
-                                           :connection-manager (s/conn-mgr)
-                                           :throw-exceptions false})
-                 errors (:errors (json/decode (:body response) true))]
-             (is (= 401 (:status response)))
-             (is (= ["You do not have permission to perform that action."] errors)))
-           (url/indexer-read-caches-url)
-           (url/index-set-read-caches-url)
-           (url/mdb-read-caches-url)
-           (url/ingest-read-caches-url)
-           (url/access-control-read-caches-url)
-           (url/search-read-caches-url))
+        (let [response (client/request {:url url
+                                        :method :get
+                                        :query-params {:token normal-user-token}
+                                        :connection-manager (s/conn-mgr)
+                                        :throw-exceptions false})
+              errors (:errors (json/decode (:body response) true))]
+          (is (= 401 (:status response)))
+          (is (= ["You do not have permission to perform that action."] errors)))
+        (url/indexer-read-caches-url)
+        (url/index-set-read-caches-url)
+        (url/mdb-read-caches-url)
+        (url/ingest-read-caches-url)
+        (url/access-control-read-caches-url)
+        (url/search-read-caches-url))
       (s/only-with-real-database
        (testing "normal user cannot access cache list API for bootstrap"
          (let [response (client/request {:url (url/bootstrap-read-caches-url)
@@ -128,20 +128,20 @@
 
     (testing "normal user cannot retrieve cache keys"
       (are [url]
-           (let [response (client/request {:url url
-                                           :method :get
-                                           :query-params {:token normal-user-token}
-                                           :connection-manager (s/conn-mgr)
-                                           :throw-exceptions false})
-                 errors (:errors (json/decode (:body response) true))]
-             (is (= 401 (:status response)))
-             (is (= ["You do not have permission to perform that action."] errors)))
-           (str (url/indexer-read-caches-url) "/acls")
-           (str (url/index-set-read-caches-url) "/acls")
-           (str (url/mdb-read-caches-url) "/acls")
-           (str (url/ingest-read-caches-url) "/acls")
-           (str (url/access-control-read-caches-url) "/acls")
-           (str (url/search-read-caches-url) "/acls"))
+        (let [response (client/request {:url url
+                                        :method :get
+                                        :query-params {:token normal-user-token}
+                                        :connection-manager (s/conn-mgr)
+                                        :throw-exceptions false})
+              errors (:errors (json/decode (:body response) true))]
+          (is (= 401 (:status response)))
+          (is (= ["You do not have permission to perform that action."] errors)))
+        (str (url/indexer-read-caches-url) "/acls")
+        (str (url/index-set-read-caches-url) "/acls")
+        (str (url/mdb-read-caches-url) "/acls")
+        (str (url/ingest-read-caches-url) "/acls")
+        (str (url/access-control-read-caches-url) "/acls")
+        (str (url/search-read-caches-url) "/acls"))
       (s/only-with-real-database
        (testing "normal user cannot retrieve cache keys for bootstrap"
          (let [response (client/request {:url (url/bootstrap-read-caches-url)
@@ -188,20 +188,20 @@
 
     (testing "normal user cannot retrieve cache values"
       (are [url]
-           (let [response (client/request {:url url
-                                           :method :get
-                                           :query-params {:token normal-user-token}
-                                           :connection-manager (s/conn-mgr)
-                                           :throw-exceptions false})
-                 errors (:errors (json/decode (:body response) true))]
-             (is (= 401 (:status response)))
-             (is (= ["You do not have permission to perform that action."] errors)))
-           (str (url/indexer-read-caches-url) "/acls/acls")
-           (str (url/index-set-read-caches-url) "/acls/acls")
-           (str (url/mdb-read-caches-url) "/acls/acls")
-           (str (url/access-control-read-caches-url) "/acls/acls")
-           (str (url/ingest-read-caches-url) "/acls/acls")
-           (str (url/search-read-caches-url) "/acls/acls"))
+        (let [response (client/request {:url url
+                                        :method :get
+                                        :query-params {:token normal-user-token}
+                                        :connection-manager (s/conn-mgr)
+                                        :throw-exceptions false})
+              errors (:errors (json/decode (:body response) true))]
+          (is (= 401 (:status response)))
+          (is (= ["You do not have permission to perform that action."] errors)))
+        (str (url/indexer-read-caches-url) "/acls/acls")
+        (str (url/index-set-read-caches-url) "/acls/acls")
+        (str (url/mdb-read-caches-url) "/acls/acls")
+        (str (url/access-control-read-caches-url) "/acls/acls")
+        (str (url/ingest-read-caches-url) "/acls/acls")
+        (str (url/search-read-caches-url) "/acls/acls"))
       (s/only-with-real-database
        (testing "normal user cannot retrieve cache values for bootstrap"
          (let [response (client/request {:url (url/bootstrap-read-caches-url)
