@@ -28,12 +28,24 @@
     (sh/force-delete-concept-by-params db provider {:concept-type :collection
                                                     :provider-id provider-id})
     (sh/force-delete-concept-by-params db provider {:concept-type :service
-                                                    :provider-id provider-id})
-    ;; Cascade deletes to access groups. This does not remove the record from search.
-    ;; access-control-app listens for :provider-delete messages and handles deleting the relevant
-    ;; records from Elastic.
-    (sh/force-delete-concept-by-params db provider {:concept-type :access-group
                                                     :provider-id provider-id})))
+
+(defn- purge-provider-data
+  "Purges all provider data from the system. When a provider is deleted its concepts are permanently
+   deleted from Oracle and not tombstoned. If the provider is a 'small' provider its data is deleted
+   from the respective common tables. If it is a non-'small' provider then its various concept
+   tables are simply dropped from the database schema. Access Groups are always in a common table
+   and have the same logic for deletion regardless of whether the provider is 'small' or non-'small'."
+  [db provider]
+  (let [{:keys [provider-id small]} provider]
+    ;; Access Group deletion is the same between all provider types. This does not remove the record
+    ;; from search. access-control-app listens for :provider-delete messages and handles deleting the
+    ;; relevant records from Elastic.
+    (j/delete! db (ct/get-table-name provider :access-group) ["provider_id = ?" provider-id])
+    (if small
+      (delete-small-provider-concepts db provider)
+      (ct/delete-provider-concept-tables db provider))
+    (j/delete! db :providers ["provider_id = ?" provider-id])))
 
 (extend-protocol p/ProvidersStore
   OracleStore
@@ -70,11 +82,7 @@
 
   (delete-provider
     [db provider]
-    (let [{:keys [provider-id small]} provider]
-      (if small
-        (delete-small-provider-concepts db provider)
-        (ct/delete-provider-concept-tables db provider))
-      (j/delete! db :providers ["provider_id = ?" provider-id])))
+    (purge-provider-data db provider))
 
   (reset-providers
     [db]
