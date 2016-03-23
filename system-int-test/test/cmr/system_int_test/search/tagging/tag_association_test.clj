@@ -504,9 +504,9 @@
            {"status" "reviewed" "action" "fix typos"}))
 
     (testing "Associate tag with collections with invalid data"
-      (let [{:keys [status body]} (tt/associate-tag
-                                    :concept-ids (s/context) tag-key nil {:raw? true
-                                                                          :body "{{{{"})
+      (let [{:keys [status body]} (tt/associate-tag :concept-ids (s/context) tag-key nil
+                                                    {:raw? true
+                                                     :http-options {:body "{{{{"}})
             error (-> body :errors first)]
         (is (= 400 status))
         (is (re-find #"Invalid JSON: Unexpected character" error))))
