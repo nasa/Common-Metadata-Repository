@@ -67,36 +67,40 @@
 
 (defmulti prepare-batch
   "Returns the batch of concepts into elastic docs for bulk indexing."
-  (fn [context batch all-revisions-index?]
+  (fn [context batch options]
     (cs/concept-id->type (:concept-id (first batch)))))
 
 (defmethod prepare-batch :default
-  [context batch all-revisions-index?]
-  (es/prepare-batch context (filter-expired-concepts batch) all-revisions-index?))
+  [context batch options]
+  (es/prepare-batch context (filter-expired-concepts batch) options))
 
 (defmethod prepare-batch :collection
-  [context batch all-revisions-index?]
+  [context batch options]
   ;; Get the tag associations as well.
   (let [batch (map (fn [concept]
                      (let [tag-associations (mdb/get-tag-associations-for-collection
                                               context concept)]
                        (assoc concept :tag-associations tag-associations)))
                    batch)]
-    (es/prepare-batch context (filter-expired-concepts batch) all-revisions-index?)))
+    (es/prepare-batch context (filter-expired-concepts batch) options)))
 
 (defn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
   directly to this function - it does not retrieve them from metadata db (tag associations for
-  collections WILL be retrieved, however). The bulk API is
-  invoked repeatedly if necessary - processing batch-size concepts each time. Returns the number
-  of concepts that have been indexed."
-  [context concept-batches all-revisions-index?]
-  (reduce (fn [num-indexed batch]
-            (let [batch (prepare-batch context batch all-revisions-index?)]
-              (es/bulk-index context batch all-revisions-index?)
-              (+ num-indexed (count batch))))
-          0
-          concept-batches))
+  collections WILL be retrieved, however). The bulk API is invoked repeatedly if necessary -
+  processing batch-size concepts each time. Returns the number of concepts that have been indexed.
+
+  Valid options:
+  * :all-revisions-index? - true indicates this should be indexed into the all revisions index"
+  ([context concept-batches]
+   (bulk-index context concept-batches nil))
+  ([context concept-batches options]
+   (reduce (fn [num-indexed batch]
+             (let [batch (prepare-batch context batch options)]
+               (es/bulk-index-documents context batch options)
+               (+ num-indexed (count batch))))
+           0
+           concept-batches)))
 
 (defn- indexing-applicable?
   "Returns true if indexing is applicable for the given concept-type and all-revisions-index? flag.
@@ -134,7 +138,7 @@
                                          :collection
                                          REINDEX_BATCH_SIZE
                                          {:provider-id provider-id :latest true})]
-         (bulk-index context latest-collection-batches false)))
+         (bulk-index context latest-collection-batches {:all-revisions-index? false})))
 
      (when (or (nil? all-revisions-index?) all-revisions-index?)
        ;; Note that this will not unindex revisions that were removed directly from the database.
@@ -145,7 +149,7 @@
                                      :collection
                                      REINDEX_BATCH_SIZE
                                      {:provider-id provider-id})]
-         (bulk-index context all-revisions-batches true))))))
+         (bulk-index context all-revisions-batches {:all-revisions-index? true}))))))
 
 (defn reindex-tags
   "Reindexes all the tags. Only the latest revisions will be indexed"
@@ -156,7 +160,7 @@
                              :tag
                              REINDEX_BATCH_SIZE
                              {:latest true})]
-    (bulk-index context latest-tag-batches false)))
+    (bulk-index context latest-tag-batches)))
 
 (defn- log-ingest-to-index-time
   "Add a log message indicating the time it took to go from ingest to completed indexing."

@@ -170,7 +170,7 @@
 
 (defn prepare-batch
   "Convert a batch of concepts into elastic docs for bulk indexing."
-  [context concept-batch all-revisions-index?]
+  [context concept-batch {:keys [all-revisions-index?]}]
   (doall
     ;; Remove nils because some granules may fail with an exception and return nil.
     (filter identity
@@ -223,13 +223,13 @@
                                       (pr-str concept))))))
                   concept-batch))))
 
-(defn bulk-index
+(defn bulk-index-documents
   "Save a batch of documents in Elasticsearch."
   ([context docs]
-   (bulk-index context docs nil))
-  ([context docs all-revisions-index?]
+   (bulk-index-documents context docs nil))
+  ([context docs {:keys [all-revisions-index?]}]
    (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
-     (let [bulk-operations (cmr-bulk/bulk-index docs-batch all-revisions-index?)
+     (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
            conn (context->conn context)
            response (bulk/bulk conn bulk-operations)
            ;; we don't care about version conflicts or deletes that aren't found
