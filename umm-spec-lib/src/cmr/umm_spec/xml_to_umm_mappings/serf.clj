@@ -106,7 +106,7 @@
     (for [person personnel
           role (values-at person "Role")]
       (let [translated-role (get serf-roles->umm-roles role role)]
-        ;;TODO: CMR-2298 Fix Responsibilities to have multiple roles. Then adjust accordingly below.
+        ;; CMR-2298 Fix Responsibilities to have multiple roles. Then adjust accordingly below.
         {:Role translated-role
          :Party (parse-party person organization service-provider translated-role)}))))
 

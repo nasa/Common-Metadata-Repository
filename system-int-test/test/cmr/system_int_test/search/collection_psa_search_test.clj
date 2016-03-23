@@ -1031,7 +1031,7 @@
         [dif9-coll] {:additional_attribute_value
                      {:name "metadata.extraction_date" :type "string" :value "2015-05-21 15:58:46"}}
 
-        ;; TODO CMR-2413 - This is failing due to 8.100000381469727 being sent to elasticsearch.
+        ;; CMR-2413 - This is failing due to 8.100000381469727 being sent to elasticsearch.
         ; "By value - float"
         ; [dif9-coll] {:additional_attribute_name {:name "metadata.keyword_version" :value 8.1 :type "float"}}
 

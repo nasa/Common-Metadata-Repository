@@ -17,7 +17,7 @@
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
    :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/serf/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/serf/serf_v9.9.3.xsd"})
 
-(def umm-roles->serf-roles 
+(def umm-roles->serf-roles
   "Maps UMM Roles to SERF roles"
   (set/map-invert utx/serf-roles->umm-roles))
 
@@ -25,7 +25,7 @@
   "Creates a SERF Service Parameter representation of a UMM-S Service Keyword element"
   [s]
   (for [sk (:ServiceKeywords s)]
-    [:Service_Parameters 
+    [:Service_Parameters
      [:Service_Category (:Category sk)]
      [:Service_Topic (:Topic sk)]
      [:Service_Term (:Term sk)]
@@ -56,12 +56,12 @@
         value (extract-contacts-by-type contacts type)]
     [(keyword (str/capitalize type) ) value]))
 
-(defn- address-to-serf 
+(defn- address-to-serf
   "Converts a UMM-S Addresses to the appropriate SERF Personnel elements as a vector.
-  Only takes the first address as required by the schema." 
+  Only takes the first address as required by the schema."
   [addresses]
   (when-let [address (first addresses)]
-    [:Contact_Address 
+    [:Contact_Address
      [:Address (first (:StreetAddresses address))]
      [:City (:City address)]
      [:Province_or_State (:StateProvince address)]
@@ -70,12 +70,12 @@
 
 (defn- create-root-personnel
   "Converts UMM-S Responsibilities to a SERF Personnel element"
-  [responsibilities] 
+  [responsibilities]
   (for [responsibility responsibilities
         :let [{{:keys [Contacts Addresses Person OrganizationName]} :Party} responsibility
               role (or (get umm-roles->serf-roles (:Role responsibility)) (:Role responsibility))]
         :when (and role (not= "SERVICE PROVIDER CONTACT" role))]
-    [:Personnel 
+    [:Personnel
      [:Role role]
      [:First_Name (:FirstName Person)]
      [:Middle_Name (:MiddleName Person)]
@@ -85,13 +85,13 @@
 
 (defn- create-service-provider-personnel
   "Converts a UMM-S Responsibility to a SERF Personnel element"
-  [responsibilities] 
+  [responsibilities]
   (let [responsibility (first (filter #(= "RESOURCEPROVIDER" (:Role %)) responsibilities))
         party (:Party responsibility)
         person (:Person party)
         contacts (:Contacts party)
         addresses (:Addresses party)]
-    [:Personnel 
+    [:Personnel
      [:Role (or (get umm-roles->serf-roles (:Role responsibility)) not-provided)]
      [:First_Name (:FirstName person)]
      [:Middle_Name (:MiddleName person)]
@@ -102,21 +102,21 @@
 
 (defn- create-service-provider
   "Converts a UMM-S Responsibilities element to a SERF Service Provider element
-  Required in SERF so if no RESOURCEPROVIDER is found it will generate a default one" 
+  Required in SERF so if no RESOURCEPROVIDER is found it will generate a default one"
   [responsibilities]
   (if-let [responsibility (first (filter #(= "RESOURCEPROVIDER" (:Role %)) responsibilities))]
   (let [party (:Party responsibility)]
-    [:Service_Provider 
-     [:Service_Organization 
+    [:Service_Provider
+     [:Service_Organization
       [:Short_Name (or (:ShortName (:OrganizationName party)) not-provided)]
       [:Long_Name (:LongName (:OrganizationName party))]]
-     [:Service_Organization_URL (-> party :RelatedUrls first :URLs first)] 
+     [:Service_Organization_URL (-> party :RelatedUrls first :URLs first)]
      (create-service-provider-personnel responsibilities)])
   ;;Default Case
-  [:Service_Provider 
-     [:Service_Organization 
+  [:Service_Provider
+     [:Service_Organization
       [:Short_Name not-provided]]
-     [:Personnel 
+     [:Personnel
        [:Role (get umm-roles->serf-roles "RESOURCEPROVIDER")]
        [:Last_Name not-provided]]]))
 
@@ -143,10 +143,10 @@
         [:Description (:Description related-url)]]))
 
 (defn- create-service-citations
-  "Creates a SERF Service Citation element from a UMM-S Service Citation" 
+  "Creates a SERF Service Citation element from a UMM-S Service Citation"
   [s]
   (for [service-citation (:ServiceCitation s)]
-    [:Service_Citation 
+    [:Service_Citation
      [:Originators (:Creator service-citation)]
      [:Title (:Title service-citation)]
      [:Provider (:Publisher service-citation)]
@@ -165,21 +165,21 @@
 (defn- create-source-names
   "Creates SERF Source Name elements from a UMM-S Platforms mapping"
   [s]
-  (for [platform (:Platforms s) 
+  (for [platform (:Platforms s)
            :when (not= (:ShortName platform) not-provided)]
        [:Source_Name
         [:Short_Name (:ShortName platform)]
         [:Long_Name (:LongName platform)]]))
 
-(defn- create-projects 
+(defn- create-projects
   "Creates SERF Project elements from a UMM-S Projects mapping"
   [s]
   (for [service-project (:Projects s)]
-    [:Project 
+    [:Project
      [:Short_Name (:ShortName service-project)]
      [:Long_Name (:LongName service-project)]]))
 
-(defn- create-idn-node 
+(defn- create-idn-node
   "Creates a SERF IDN_Node element from a UMM-S AdditionalAttributes mapping"
   [s]
   (for [idn-node (filter #(= "IDN_Node" (:Name %)) (:AdditionalAttributes s))
@@ -221,7 +221,7 @@
      [:Entry_ID (:EntryId s)]
      [:Entry_Title (:EntryTitle s)]
      (create-service-citations s)
-     ;;TODO: CMR-2298 needs to be resolved before we can properly implement this
+     ;; CMR-2298 needs to be resolved before we can properly implement this
      (create-root-personnel (:Responsibilities s))
      (create-service-parameters s)
      (create-science-parameters s)
@@ -230,7 +230,7 @@
      (for [ak (:AncillaryKeywords s)]
        [:Keyword ak])
      ;;Removing Instruments and Platforms conversion until we can get better parsing code
-     ;;CMR-2369 will allow us to do round-tripping. 
+     ;;CMR-2369 will allow us to do round-tripping.
      ;;(create-sensors s)
      ;;(create-source-names s)
      (create-projects s)
@@ -239,25 +239,25 @@
      [:Use_Constraints (:UseConstraints s)]
      [:Service_Language (:ServiceLanguage s)]
      (create-distributions s)
-     ;;Multimedia Samples should go here in order but we don't have a way to distinguish them from 
-     ;;Related URLs. 
+     ;;Multimedia Samples should go here in order but we don't have a way to distinguish them from
+     ;;Related URLs.
      (create-publication-references (:PublicationReferences s))
      (create-service-provider (:Responsibilities s))
-     [:Summary 
-      [:Abstract (:Abstract s)] 
+     [:Summary
+      [:Abstract (:Abstract s)]
       [:Purpose (:Purpose s)]]
      (create-related-urls s)
       [:Parent_SERF (:EntryId (first (:MetadataAssociations s)))]
      (create-idn-node s)
-     [:Metadata_Name 
+     [:Metadata_Name
       (or (:Value (first (filter #(= "Metadata_Name" (:Name %)) (:AdditionalAttributes s)))) not-provided)]
-     [:Metadata_Version 
+     [:Metadata_Version
       (or (:Value (first (filter #(= "Metadata_Version" (:Name %)) (:AdditionalAttributes s)))) not-provided)]
-     [:SERF_Creation_Date 
+     [:SERF_Creation_Date
       (:Date (first (filter #(= "CREATE" (:Type %)) (:MetadataDates s))))]
      [:Last_SERF_Revision_Date (:Date (first (filter #(= "UPDATE" (:Type %)) (:MetadataDates s))))]
      [:Future_SERF_Review_Date (:Date (first (filter #(= "REVIEW" (:Type %)) (:MetadataDates s))))]
-     [:Extended_Metadata 
+     [:Extended_Metadata
       (for [metadata  (:AdditionalAttributes s)
             :when (not (inserted-metadata (:Name metadata)))]
         [:Metadata [:Group (:Group metadata)]

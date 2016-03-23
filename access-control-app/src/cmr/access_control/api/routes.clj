@@ -91,7 +91,6 @@
 (defn create-group
   "Processes a create group request."
   [context headers body]
-  ;; TODO CMR-2133, CMR-2134 - verify permission in service (dependent on provider level or system level)
   (validate-content-type headers)
   (validate-group-json body)
   (->> (json/parse-string body true)

@@ -11,7 +11,7 @@
               (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"})
               (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 
-;; TODO CMR-2134, CMR-2133 test creating groups without various permissions
+;; CMR-2134, CMR-2133 test creating groups without various permissions
 
 (def field-maxes
   "A map of fields to their max lengths"

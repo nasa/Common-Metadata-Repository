@@ -236,26 +236,26 @@
         (when (or (nil? delete-time) (t/after? delete-time (tk/now)))
           (let [tag-associations (get-tag-associations context concept)
                 elastic-version (get-elastic-version-with-tag-associations
-                                  context concept tag-associations)
+                                 context concept tag-associations)
                 tag-associations (map cp/parse-concept (filter #(not (:deleted %)) tag-associations))
-                concept-index (idx-set/get-concept-index-name context concept-id revision-id
-                                                              all-revisions-index? concept)
-                es-doc (es/concept->elastic-doc context
-                                                (assoc concept :tag-associations tag-associations)
-                                                parsed-concept)
+                concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
+                                                                 options concept)
+                es-doc (es/parsed-concept->elastic-doc context
+                                                       (assoc concept :tag-associations tag-associations)
+                                                       parsed-concept)
                 elastic-options (-> options
                                     (select-keys [:all-revisions-index? :ignore-conflict?])
                                     (assoc :ttl (when delete-time
                                                   (t/in-millis (t/interval (tk/now) delete-time)))))]
             (es/save-document-in-elastic
-              context
-              concept-index
-              (concept-mapping-types concept-type)
-              es-doc
-              concept-id
-              revision-id
-              elastic-version
-              elastic-options)))))))
+             context
+             concept-indexes
+             (concept-mapping-types concept-type)
+             es-doc
+             concept-id
+             revision-id
+             elastic-version
+             elastic-options)))))))
 
 (defmethod index-concept :tag-association
   [context concept parsed-concept options]
@@ -298,29 +298,30 @@
     (when (indexing-applicable? concept-type all-revisions-index?)
       (info (format "Deleting concept %s, revision-id %s, all-revisions-index? %s"
                     concept-id revision-id all-revisions-index?))
-      (let [index-name (idx-set/get-concept-index-name
-                         context concept-id revision-id all-revisions-index?)
+      (let [index-names (idx-set/get-concept-index-names
+                         context concept-id revision-id options)
             concept-mapping-types (idx-set/get-concept-mapping-types context)
             elastic-options (select-keys options [:all-revisions-index? :ignore-conflict?])]
         (if all-revisions-index?
           ;; save tombstone in all revisions collection index
-          (let [es-doc (es/concept->elastic-doc context concept (:extra-fields concept))]
+          (let [es-doc (es/parsed-concept->elastic-doc context concept (:extra-fields concept))]
             (es/save-document-in-elastic
-              context index-name (concept-mapping-types concept-type)
-              es-doc concept-id revision-id elastic-version elastic-options))
+             context index-names (concept-mapping-types concept-type)
+             es-doc concept-id revision-id elastic-version elastic-options))
           ;; delete concept from primary concept index
           (do
             (es/delete-document
-              context index-name (concept-mapping-types concept-type)
-              concept-id elastic-version elastic-options)
+             context index-names (concept-mapping-types concept-type)
+             concept-id elastic-version elastic-options)
             ;; propagate collection deletion to granules
             (when (= :collection concept-type)
-              (es/delete-by-query
-                context
-                (idx-set/get-granule-index-name-for-collection context concept-id)
-                (concept-mapping-types :granule)
-                {:term {(query-field->elastic-field :collection-concept-id :granule)
-                        concept-id}}))))))))
+              (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
+                (es/delete-by-query
+                 context
+                 index
+                 (concept-mapping-types :granule)
+                 {:term {(query-field->elastic-field :collection-concept-id :granule)
+                         concept-id}})))))))))
 
 (defmethod delete-concept :tag-association
   [context concept-id revision-id options]
@@ -332,18 +333,18 @@
 (defn force-delete-collection-revision
   "Removes a collection revision from the all revisions index"
   [context concept-id revision-id]
-  (let [index-name (idx-set/get-concept-index-name
-                     context concept-id revision-id true)
+  (let [index-names (idx-set/get-concept-index-names
+                     context concept-id revision-id {:all-revisions-index? true})
         concept-mapping-types (idx-set/get-concept-mapping-types context)
         elastic-options {:ignore-conflict? false
                          :all-revisions-index? true}]
     (es/delete-document
-      context
-      index-name
-      (concept-mapping-types :collection)
-      concept-id
-      revision-id
-      elastic-options)))
+     context
+     index-names
+     (concept-mapping-types :collection)
+     concept-id
+     revision-id
+     elastic-options)))
 
 (defn delete-provider
   "Delete all the concepts within the given provider"
@@ -352,7 +353,7 @@
   ;; may be unindexed in other places when a :provider-delete message is handled,
   ;; e.g. unindexing access groups in access-control-app.
   (info (format "Deleting provider-id %s" provider-id))
-  (let [index-names (idx-set/get-concept-type-index-names context)
+  (let [{:keys [index-names]} (idx-set/get-concept-type-index-names context)
         concept-mapping-types (idx-set/get-concept-mapping-types context)]
     ;; delete the collections
     (es/delete-by-query

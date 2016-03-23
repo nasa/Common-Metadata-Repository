@@ -86,9 +86,9 @@
     {:status 202 :body {:message "Bootstrapping virtual products."}}))
 
 (defn rebalance-collection
-  "TODO"
-  [context concept-id]
-  (bs/rebalance-collection context concept-id)
+  "Kicks off rebalancing the granules in the collection into their own index."
+  [context concept-id params]
+  (bs/rebalance-collection context concept-id (= "true" (:synchronous params)))
   {:status 200
    :body {:message (str "Rebalancing started for collection " concept-id)}})
 
@@ -111,9 +111,10 @@
 
       (context "/rebalancing_collections/:concept-id" [concept-id]
 
+       ;; TODO document in README
        ;; Start rebalancing
-       (POST "/start" {:keys [request-context]}
-         (rebalance-collection request-context concept-id))
+       (POST "/start" {:keys [request-context params]}
+         (rebalance-collection request-context concept-id params))
 
        ;; Get counts of rebalancing data
        (GET "/status" {:keys [request-context]}

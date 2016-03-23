@@ -2,7 +2,7 @@
   (:require [cmr.common.xml.gen :refer :all]
             [cmr.umm-spec.util :as u]))
 
-;; TODO CMR-1990 - We need to consolidate the SpatialCoverageTypeEnum between UMM JSON and DIF10
+;; CMR-1990 - We need to consolidate the SpatialCoverageTypeEnum between UMM JSON and DIF10
 (def umm-spatial-type->dif10-spatial-type
   {"HORIZONTAL" "Horizontal"
    "VERTICAL" "Vertical"

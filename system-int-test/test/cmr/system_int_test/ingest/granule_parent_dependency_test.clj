@@ -125,7 +125,7 @@
          gran-for-iso-smap-coll)))
 
 ;; This tests for limitations when changing the format for a collection with granules.
-;; TODO CMR-2326 - Based on the test above, we would expect to see the same errors seen when saving
+;; CMR-2326 - Based on the test above, we would expect to see the same errors seen when saving
 ;; collections in formats that don't support some things referenced by child granules, but we
 ;; do not.
 (deftest collection-format-change-test

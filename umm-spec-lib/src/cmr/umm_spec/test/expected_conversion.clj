@@ -21,7 +21,7 @@
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as echo10-spatial-parse]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]))
 
-(def serf-organization-role 
+(def serf-organization-role
   "UMM-S Role that corresponds to SERVICE PROVIDER CONTACT role in SERF"
   "RESOURCEPROVIDER")
 
@@ -479,8 +479,8 @@
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
-      (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
-      (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
+      (assoc :Personnel nil) ;; Implement this as part of CMR-1841
+      (assoc :Organizations nil) ;; Implement this as part of CMR-1841
       (update-in [:TemporalExtents] (comp seq (partial take 1)))
       (update-in [:DataDates] fixup-echo10-data-dates)
       (assoc :DataLanguage nil)
@@ -571,8 +571,8 @@
       (update-in-each [:MetadataAssociations] assoc :Type nil :Description nil :Version nil)
       ;; DIF 9 does not support tiling identification system
       (assoc :TilingIdentificationSystems nil)
-      (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
-      (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
+      (assoc :Personnel nil) ;; Implement this as part of CMR-1841
+      (assoc :Organizations nil) ;; Implement this as part of CMR-1841
       ;; DIF 9 does not support DataDates
       (assoc :DataDates nil)
       ;; DIF 9 sets the UMM Version to 'Not provided' if it is not present in the DIF 9 XML
@@ -654,8 +654,8 @@
   (-> umm-coll
       (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
       (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
-      (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
-      (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
+      (assoc :Personnel nil) ;; Implement this as part of CMR-1841
+      (assoc :Organizations nil) ;; Implement this as part of CMR-1841
       (update-in [:SpatialExtent] expected-dif10-spatial-extent)
       (update-in [:DataDates] fixup-dif10-data-dates)
       (update-in [:Distributions] su/remove-empty-records)
@@ -703,8 +703,8 @@
 
 (defn- convert-serf-additional-attributes
   [additional-attributes]
-  (fix-expected-serf-additional-attributes 
-    (vec 
+  (fix-expected-serf-additional-attributes
+    (vec
       (for [attribute additional-attributes]
         (-> attribute
             default-serf-additional-attributes
@@ -719,14 +719,14 @@
   to a SERF 'SERVICE PROVIDER CONTACT' role"
   [resps]
   (if (some #(= serf-organization-role (:Role %)) resps)
-    (concat (remove #(= serf-organization-role (:Role %)) resps) 
+    (concat (remove #(= serf-organization-role (:Role %)) resps)
             (take 1 (filter #(= serf-organization-role (:Role %)) resps)))
     (conj resps
-          (cmn/map->ResponsibilityType 
+          (cmn/map->ResponsibilityType
             {:Role serf-organization-role
-             :Party (cmn/map->PartyType 
-                      {:OrganizationName 
-                       (cmn/map->OrganizationNameType 
+             :Party (cmn/map->PartyType
+                      {:OrganizationName
+                       (cmn/map->OrganizationNameType
                          {:ShortName su/not-provided})
                        :Person (cmn/map->PersonType
                                  {:LastName su/not-provided})})}))))
@@ -741,7 +741,7 @@
 
 (defn- serf-expected-person
   [person]
-  (-> person 
+  (-> person
       (assoc
         :Uuid nil
         :FirstName (:FirstName person)
@@ -761,12 +761,12 @@
   "Modifies generated UMM-S Responsibility to conform to SERF rules"
   [resp]
   (let [{:keys [Role Party]} resp]
-    ;; SERF only recognizes OrganizationName under a RESOURCEPROVIDER role. 
+    ;; SERF only recognizes OrganizationName under a RESOURCEPROVIDER role.
     (if (= serf-organization-role Role)
       (-> resp
           (update-in [:Party :Person] (fn [p] (or p (cmn/map->PersonType {:LastName su/not-provided}))))
-          (update-in [:Party :OrganizationName] (fn [o] (or o 
-                                                            (cmn/map->OrganizationNameType 
+          (update-in [:Party :OrganizationName] (fn [o] (or o
+                                                            (cmn/map->OrganizationNameType
                                                               {:ShortName su/not-provided
                                                                :Uuid nil}))))
           (assoc-in [:Party :OrganizationName :Uuid] nil)
@@ -776,15 +776,15 @@
           resp
           (assoc-in resp [:Party] (cmn/map->PersonType {:LastName su/not-provided})))))))
 
-(defn- serf-expected-addresses 
+(defn- serf-expected-addresses
   "Modify UMM-S Addresses to conform to SERF rules"
   [addresses]
   (when-let [address (first addresses)]
-    (-> address 
+    (-> address
         (assoc :StreetAddresses (seq (take 1 (:StreetAddresses address))))
         list)))
 
-(defn- remove-party-elements-not-in-serf 
+(defn- remove-party-elements-not-in-serf
   "Removes elements in a party element that are not in SERF"
   [party]
   (-> party
@@ -793,7 +793,7 @@
 
 (defn- expected-related-urls-for-serf-party
   [related-urls]
-  (when-let [related-url (first related-urls)] 
+  (when-let [related-url (first related-urls)]
     [(cmn/map->RelatedUrlType {:URLs (take 1 (:URLs related-url))})]))
 
 (defn- expected-serf-responsibility
@@ -810,7 +810,7 @@
 
 (defn- filter-unique-serf-dates
   [dates]
-  (let [dates-by-type (group-by :Type dates)] 
+  (let [dates-by-type (group-by :Type dates)]
     (keep #(first (get dates-by-type %))
           ["CREATE" "UPDATE" "REVIEW"])))
 
@@ -819,7 +819,7 @@
   [dates]
   (-> dates
       filter-unused-serf-datetypes
-      filter-unique-serf-dates 
+      filter-unique-serf-dates
       seq))
 
 (defn- fix-publication-reference-url
@@ -829,10 +829,10 @@
 
 (defn- expected-serf-service-citation
   [citation]
-  (assoc citation 
-         :DOI nil 
-         :ReleasePlace nil 
-         :SeriesName nil 
+  (assoc citation
+         :DOI nil
+         :ReleasePlace nil
+         :SeriesName nil
          :DataPresentationForm nil
          :IssueIdentification nil
          :Editor nil
@@ -891,7 +891,7 @@
 
 (defn propagate-first
   "Returns coll with the first element's value under k assoc'ed to each element in coll.
-  
+
   Example: (propagate-first :x [{:x 1} {:y 2}]) => [{:x 1} {:x 1 :y 2}]"
   [k coll]
   (let [v (get (first coll) k)]
@@ -1098,12 +1098,12 @@
       (update-in [:DataDates] expected-smap-data-dates)
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
-      ;; TODO - Implement this as part of CMR-2057
+      ;; Implement this as part of CMR-2057
       (update-in-each [:TemporalExtents] assoc :TemporalRangeType nil)
       ;; Fields not supported by ISO-SMAP
       (assoc :MetadataAssociations nil) ;; Not supported for ISO SMAP
-      (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
-      (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
+      (assoc :Personnel nil) ;; Implement this as part of CMR-1841
+      (assoc :Organizations nil) ;; Implement this as part of CMR-1841
       (assoc :UseConstraints nil)
       (assoc :AccessConstraints nil)
       (assoc :SpatialKeywords nil)

@@ -58,7 +58,7 @@
 
 (defn index-granules-for-collection
   "Index the granules for the given collection."
-  [system provider-id collection-id target-index]
+  [system provider-id collection-id target-index-key]
   (info "Indexing granule data for collection" collection-id)
   (let [db (helper/get-metadata-db-db system)
         provider (p/get-provider db provider-id)
@@ -66,8 +66,9 @@
                 :provider-id provider-id
                 :parent-collection-id collection-id}
         concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system))
-        ;; TODO pass in target index somehow
-        num-granules (index/bulk-index {:system (helper/get-indexer system)} concept-batches {})]
+        num-granules (index/bulk-index {:system (helper/get-indexer system)}
+                                       concept-batches
+                                       {:target-index-key target-index-key})]
     (info "Indexed" num-granules "granule(s) for provider" provider-id "collection" collection-id)
     num-granules))
 
@@ -125,7 +126,7 @@
   (let [channel (:collection-index-channel system)]
     (ca/thread (while true
                  (try ; catch any errors and log them, but don't let the thread die
-                   (let [{:keys [provider-id collection-id target-index]} (<!! channel)]
-                     (index-granules-for-collection system provider-id collection-id target-index))
+                   (let [{:keys [provider-id collection-id target-index-key]} (<!! channel)]
+                     (index-granules-for-collection system provider-id collection-id target-index-key))
                    (catch Throwable e
                      (error e (.getMessage e))))))))

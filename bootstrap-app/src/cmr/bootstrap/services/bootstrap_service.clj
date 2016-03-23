@@ -63,15 +63,15 @@
   "Bulk index all the granules in a collection"
   ([context provider-id collection-id synchronous]
    (index-collection context provider-id collection-id synchronous nil))
-  ([context provider-id collection-id synchronous target-index]
+  ([context provider-id collection-id synchronous target-index-key]
    (validate-collection context provider-id collection-id)
    (if synchronous
-     (bulk/index-granules-for-collection (:system context) provider-id collection-id target-index)
+     (bulk/index-granules-for-collection (:system context) provider-id collection-id target-index-key)
      (let [channel (get-in context [:system :collection-index-channel])]
        (info "Adding collection" collection-id "to collection index channel")
        (go (>! channel {:provider-id provider-id
                         :collection-id collection-id
-                        :target-index target-index}))))))
+                        :target-index-key target-index-key}))))))
 
 (defn bootstrap-virtual-products
   "Initializes virtual products."
@@ -83,7 +83,8 @@
       (-> context :system (get vp/channel-name) (>! {:provider-id provider-id
                                                      :entry-title entry-title})))))
 (defn rebalance-collection
-  "TODO"
+  "Kicks off collection rebalancing. Will run synchronously if synchronous is true. Throws exceptions
+  from failures to change the index set."
   [context concept-id synchronous]
   ;; This will throw an exception if the collection is already rebalancing
   (index-set/add-rebalancing-collection context concept-id)
@@ -91,4 +92,4 @@
   (indexer/clear-cache context)
   (let [provider-id (:provider-id (concepts/parse-concept-id concept-id))]
    ;; queue the collection for reindexing into the new index
-   (index-collection context provider-id concept-id synchronous)))
+   (index-collection context provider-id concept-id synchronous (keyword concept-id))))
