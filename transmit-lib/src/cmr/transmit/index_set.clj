@@ -7,6 +7,10 @@
             [cmr.transmit.config :as config]
             [cmr.transmit.connection :as conn]))
 
+(defn rebalance-collection-url
+  [conn index-set-id concept-id]
+  (format "%s/index-sets/%s/rebalancing-collections/%s" (conn/root-url conn) index-set-id concept-id))
+
 (defn get-index-set
   "Submit a request to index-set app to fetch an index-set assoc with an id"
   [context id]
@@ -30,3 +34,18 @@
 
 ;; Defines health check function
 (h/defhealther get-index-set-health :index-set 2)
+
+(defn add-rebalancing-collection
+  "Adds the specified collection to the set of rebalancing collections in the index set."
+  [context index-set-id concept-id]
+  (h/request context :index-set
+             {:url-fn #(rebalance-collection-url % index-set-id concept-id)
+              :method :put
+              :http-options {:headers {config/token-header (config/echo-system-token)}}
+              :response-handler (fn [_request {:keys [status body]}]
+                                  (cond
+                                    (= status 200) nil
+                                    (= status 400) (errors/throw-service-errors :bad-request (:errors body))
+                                    :else (errors/internal-error!
+                                           (str "Unexpected status code:"
+                                                status " response:" (pr-str body)))))}))

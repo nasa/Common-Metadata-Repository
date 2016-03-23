@@ -85,6 +85,14 @@
     (bs/bootstrap-virtual-products context (= "true" synchronous) provider-id entry-title)
     {:status 202 :body {:message "Bootstrapping virtual products."}}))
 
+(defn rebalance-collection
+  "TODO"
+  [context concept-id]
+  (bs/rebalance-collection context concept-id)
+  {:status 200
+   :body {:message (str "Rebalancing started for collection " concept-id)}})
+
+
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
@@ -100,6 +108,23 @@
 
         (POST "/collections" {:keys [request-context body params]}
           (bulk-index-collection request-context body params)))
+
+      (context "/rebalancing_collections/:concept-id" [concept-id]
+
+       ;; Start rebalancing
+       (POST "/start" {:keys [request-context]}
+         (rebalance-collection request-context concept-id))
+
+       ;; Get counts of rebalancing data
+       (GET "/status" {:keys [request-context]}
+         ;; not implemented yet
+         {:status 501})
+
+       ;; Complete reindexing
+       (POST "/complete" {:keys [request-context]}
+         ;; not implemented yet
+         {:status 501}))
+
 
       (context "/virtual_products" []
         (POST "/" {:keys [request-context params]}

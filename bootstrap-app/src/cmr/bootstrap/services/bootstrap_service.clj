@@ -3,10 +3,13 @@
   (:require [clojure.core.async :as async :refer [go >!]]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
+            [cmr.common.concepts :as concepts]
             [cmr.bootstrap.config :as cfg]
             [cmr.bootstrap.data.bulk-index :as bulk]
             [cmr.bootstrap.data.bulk-migration :as bm]
-            [cmr.bootstrap.data.virtual-products :as vp]))
+            [cmr.bootstrap.data.virtual-products :as vp]
+            [cmr.transmit.index-set :as index-set]
+            [cmr.transmit.indexer :as indexer]))
 
 (defn migrate-provider
   "Copy all the data for a provider (including collections and graunules) from catalog rest
@@ -58,13 +61,17 @@
 
 (defn index-collection
   "Bulk index all the granules in a collection"
-  [context provider-id collection-id synchronous]
-  (validate-collection context provider-id collection-id)
-  (if synchronous
-    (bulk/index-granules-for-collection (:system context) provider-id collection-id)
-    (let [channel (get-in context [:system :collection-index-channel])]
-      (info "Adding collection" collection-id "to collection index channel")
-      (go (>! channel [provider-id collection-id])))))
+  ([context provider-id collection-id synchronous]
+   (index-collection context provider-id collection-id synchronous nil))
+  ([context provider-id collection-id synchronous target-index]
+   (validate-collection context provider-id collection-id)
+   (if synchronous
+     (bulk/index-granules-for-collection (:system context) provider-id collection-id target-index)
+     (let [channel (get-in context [:system :collection-index-channel])]
+       (info "Adding collection" collection-id "to collection index channel")
+       (go (>! channel {:provider-id provider-id
+                        :collection-id collection-id
+                        :target-index target-index}))))))
 
 (defn bootstrap-virtual-products
   "Initializes virtual products."
@@ -75,3 +82,13 @@
       (info "Adding message to virtual products channel.")
       (-> context :system (get vp/channel-name) (>! {:provider-id provider-id
                                                      :entry-title entry-title})))))
+(defn rebalance-collection
+  "TODO"
+  [context concept-id synchronous]
+  ;; This will throw an exception if the collection is already rebalancing
+  (index-set/add-rebalancing-collection context concept-id)
+  ;; Clear the cache so that the newest index set data will be used.
+  (indexer/clear-cache context)
+  (let [provider-id (:provider-id (concepts/parse-concept-id concept-id))]
+   ;; queue the collection for reindexing into the new index
+   (index-collection context provider-id concept-id synchronous)))
