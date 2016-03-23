@@ -521,3 +521,11 @@
                                                       :data too-much-data}])]
         (is (= [400 [expected-msg]] [status errors]))))))
 
+(deftest retrieve-concept-by-tag-association-concept-id-test
+  (let [{:keys [status errors]} (search/get-search-failure-xml-data
+                                  (search/retrieve-concept
+                                    "TA10000-CMR" nil {:throw-exceptions true}))]
+    (testing "Retrieve concept by tag association concept-id is invalid"
+      (is (= [400 ["Retrieving concept by concept-id is not supported for concept-type [tag-association]."]]
+             [status errors])))))
+
