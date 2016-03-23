@@ -25,6 +25,11 @@
            :description "A very good tag"}
           attributes)))
 
+(defn string-of-length
+  "Creates a string of the specified length"
+  [n]
+  (str/join (repeat n "x")))
+
 (defn- process-response
   [{:keys [status body]}]
   (if (map? body)

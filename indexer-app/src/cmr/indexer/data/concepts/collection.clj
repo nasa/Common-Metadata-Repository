@@ -193,18 +193,18 @@
             ;; tags
             :tags (map tag/tag-association->elastic-doc tag-associations)
             ;; it is currently a list of tag-keys, but it will eventually be something like:
-            ;; {"org.ceos.wgiss.cwic.native_id": {"revisionId":"1",
-            ;;                                    "revisionDate":"2015-01-01T00:00:00.0Z",
+            ;; {"org.ceos.wgiss.cwic.native_id": {"associationDate":"2015-01-01T00:00:00.0Z",
             ;;                                    "data": "Global Maps of Atmospheric Nitrogen Deposition, 1860, 1993, and 2050"},
-            ;;  "org.ceos.wgiss.cwic.data_provider": {"revisionId":"1",
-            ;;                                        "revisionDate":"2015-01-01T00:00:00.0Z",
+            ;;  "org.ceos.wgiss.cwic.data_provider": {"associationDate":"2015-01-01T00:00:00.0Z",
             ;;                                        "data": "NASA"},
-            ;;  "org.ceos.wgiss.cwic.cwic_status": {"revisionId":"1",
-            ;;                                      "revisionDate":"2015-01-01T00:00:00.0Z",
+            ;;  "org.ceos.wgiss.cwic.cwic_status": {"associationDate":"2015-01-01T00:00:00.0Z",
             ;;                                      "data": "prod"}
             :tags-gzip-b64 (when (seq tag-associations)
                              (util/string->gzip-base64
-                               (pr-str (mapv :tag-key tag-associations))))}
+                               (pr-str
+                                 (into {} (for [ta tag-associations]
+                                            [(:tag-key ta) (util/remove-nil-keys
+                                                             {:data (:data ta)})])))))}
 
            (get-in collection [:spatial-coverage :orbit-parameters])
            (spatial->elastic collection)

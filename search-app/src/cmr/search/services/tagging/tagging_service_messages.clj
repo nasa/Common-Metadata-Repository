@@ -29,3 +29,8 @@
   [concept-ids]
   (format "The following collections do not exist or are not accessible: %s."
           (str/join ", " concept-ids)))
+
+(defn collections-data-too-long
+  [concept-ids]
+  (format "The following collections tag association data exceed the maximum length of 32KB: %s."
+          (str/join ", " concept-ids)))

@@ -10,6 +10,7 @@
             [cmr.system-int-test.utils.tag-util :as tags]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.collection :as dc]
+            [cmr.transmit.tag :as tt]
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.system :as s]))
 
@@ -479,3 +480,44 @@
     ;; verify association
     (assert-tag-association token [coll2] "tag1")
     (assert-tag-association token [coll3] "tag2")))
+
+(deftest associate-tags-with-data-test
+  (e/grant-all (s/context) (e/coll-catalog-item-id "provguid1"))
+  (let [coll (d/ingest "PROV1" (dc/collection))
+        token (e/login (s/context) "user1")
+        tag-key "tag1"
+        _ (tags/create-tag token (tags/make-tag {:tag-key tag-key}))]
+    (index/wait-until-indexed)
+
+    (testing "Associate tag with collections by concept-id and data"
+      (are [data]
+           (let [{:keys [status]} (tags/associate-by-concept-ids
+                                    token tag-key [{:concept-id (:concept-id coll)
+                                                    :data data}])]
+             (is (= 200 status)))
+
+           "string data"
+           true
+           100
+           123.45
+           [true "some string" 100]
+           {"status" "reviewed" "action" "fix typos"}))
+
+    (testing "Associate tag with collections with invalid data"
+      (let [{:keys [status body]} (tt/associate-tag :concept-ids (s/context) tag-key nil
+                                                    {:raw? true
+                                                     :http-options {:body "{{{{"}})
+            error (-> body :errors first)]
+        (is (= 400 status))
+        (is (re-find #"Invalid JSON: Unexpected character" error))))
+
+    (testing "Associate tag with collections with data exceed 32KB"
+      (let [too-much-data {"a" (tags/string-of-length 32768)}
+            expected-msg (format
+                           "The following collections tag association data exceed the maximum length of 32KB: %s."
+                           (:concept-id coll))
+            {:keys [status errors]} (tags/associate-by-concept-ids
+                                      token tag-key [{:concept-id (:concept-id coll)
+                                                      :data too-much-data}])]
+        (is (= [400 [expected-msg]] [status errors]))))))
+

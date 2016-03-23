@@ -28,7 +28,8 @@
   [context query elastic-results query-results feature]
   (let [include-tags (get-in query [:result-options :tags])
         matched-tags (fn [values]
-                       (seq (filter #(match-patterns? % include-tags) values)))]
+                       (when-let [tags (seq (filter #(match-patterns? (first %) include-tags) values))]
+                         (into {} tags)))]
     ;; only keep the tags that matches the include-tags result options
     ;; Note: right now, the :tags is a list of tag-keys,
     ;; the following code needs to change when tags are updated to a list of maps.
