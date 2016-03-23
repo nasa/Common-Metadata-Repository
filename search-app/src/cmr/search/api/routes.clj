@@ -92,6 +92,9 @@
     mt/dif10
     mt/umm-json})
 
+(def find-by-concept-id-concept-types
+  #{:collection :granule})
+
 (defn- concept-type-path-w-extension->concept-type
   "Parses the concept type and extension (\"granules.echo10\") into the concept type"
   [concept-type-w-extension]
@@ -215,7 +218,14 @@
   and returns the response"
   [context path-w-extension params headers]
   (let [concept-id (path-w-extension->concept-id path-w-extension)
-        revision-id (path-w-extension->revision-id path-w-extension)]
+        revision-id (path-w-extension->revision-id path-w-extension)
+        concept-type (concepts/concept-id->type concept-id)]
+    (when-not (contains? find-by-concept-id-concept-types concept-type)
+      (svc-errors/throw-service-error
+        :bad-request
+        (format "Retrieving concept by concept id is not supported for concept type [%s]."
+                (name concept-type))))
+
     (if revision-id
       ;; We don't support Atom or JSON (yet) for lookups that include revision-id due to
       ;; limitations of the current transformer implementation. This will be fixed with CMR-1935.
@@ -278,7 +288,7 @@
       ;; e.g., http://localhost:3003/concepts/C120000000-PROV1,
       ;;       http://localhost:3003/concepts/C120000000-PROV1/2
       ;;       http://localohst:3003/concepts/C120000000-PROV1/2.xml
-      (context ["/concepts/:path-w-extension" :path-w-extension #"[A-Z][0-9]+-[0-9A-Z_]+.*"] [path-w-extension]
+      (context ["/concepts/:path-w-extension" :path-w-extension #"[A-Z][A-Z]?[0-9]+-[0-9A-Z_]+.*"] [path-w-extension]
         ;; OPTIONS method is needed to support CORS when custom headers are used in requests to the endpoint.
         ;; In this case, the Echo-Token header is used in the GET request.
         (OPTIONS "/" req cr/options-response)

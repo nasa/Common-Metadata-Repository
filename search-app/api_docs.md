@@ -1686,8 +1686,7 @@ Example of sorting by start_date in descending order: (Most recent data first)
 
 ### <a name="retrieving-concepts-by-concept-id-and-revision-id"></a> Retrieve concept with a given concept-id or concept-id & revision-id
 
-This allows retrieving the metadata for a single concept. If no format
-is specified the native format of the metadata will be returned.
+This allows retrieving the metadata for a single concept. This is only supported for collections and granules. If no format is specified the native format of the metadata will be returned.
 
 By concept id
 
