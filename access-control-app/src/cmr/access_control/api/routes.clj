@@ -37,8 +37,8 @@
   (js/parse-json-schema group-schema-structure))
 
 (def ^:private group-members-schema-structure
- "Schema defining list of usernames sent to add or remove members in a group"
- {:type :array :items {:type :string :minLength 1 :maxLength 50}})
+  "Schema defining list of usernames sent to add or remove members in a group"
+  {:type :array :items {:type :string :minLength 1 :maxLength 50}})
 
 (def ^:private group-members-schema
   "The JSON schema used to validate a list of group members"
@@ -150,6 +150,7 @@
 (defn reset
   "Resets the app state. Compatible with cmr.dev-system.control."
   [context]
+  (cache/reset-caches context)
   (index/reset (-> context :system :search-index)))
 
 (def admin-api-routes
@@ -157,7 +158,6 @@
   (routes
     (POST "/reset" {:keys [request-context params headers]}
       (acl/verify-ingest-management-permission request-context :update)
-      (cache/reset-caches request-context)
       (reset request-context)
       {:status 204})))
 
@@ -179,8 +179,8 @@
 
       (context "/groups" []
         (OPTIONS "/" req
-          (validate-standard-params (:params req))
-          cr/options-response)
+                 (validate-standard-params (:params req))
+                 cr/options-response)
 
         ;; Search for groups
         (GET "/" {:keys [request-context headers params]}
