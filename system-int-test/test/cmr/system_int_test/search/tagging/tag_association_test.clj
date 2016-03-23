@@ -526,6 +526,6 @@
                                   (search/retrieve-concept
                                     "TA10000-CMR" nil {:throw-exceptions true}))]
     (testing "Retrieve concept by tag association concept-id is invalid"
-      (is (= [400 ["Retrieving concept by concept-id is not supported for concept-type [tag-association]."]]
+      (is (= [400 ["Retrieving concept by concept id is not supported for concept type [tag-association]."]]
              [status errors])))))
 

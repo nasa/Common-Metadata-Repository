@@ -144,6 +144,6 @@
                                   (search/retrieve-concept
                                     concept-id nil {:throw-exceptions true}))]
     (testing "Retrieve concept by tag concept-id is invalid"
-      (is (= [400 ["Retrieving concept by concept-id is not supported for concept-type [tag]."]]
+      (is (= [400 ["Retrieving concept by concept id is not supported for concept type [tag]."]]
              [status errors])))))
 

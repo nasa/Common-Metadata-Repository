@@ -223,7 +223,7 @@
     (when-not (contains? find-by-concept-id-concept-types concept-type)
       (svc-errors/throw-service-error
         :bad-request
-        (format "Retrieving concept by concept-id is not supported for concept-type [%s]."
+        (format "Retrieving concept by concept id is not supported for concept type [%s]."
                 (name concept-type))))
 
     (if revision-id
