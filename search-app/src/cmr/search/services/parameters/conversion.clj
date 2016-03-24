@@ -51,7 +51,8 @@
 
    ;; Tag parameters
    :tag-key :tag-query
-   :tag-originator-id :tag-query})
+   :tag-originator-id :tag-query
+   :tag-data :tag-query})
 
 (defmethod common-params/param-mappings :granule
   [_]
@@ -99,17 +100,33 @@
   [_ _ value _]
   (cqm/text-condition :keyword (str/lower-case value)))
 
+(defmulti tag-param->condition
+  "Convert tag param and value into query condition"
+  (fn [param value pattern?]
+    param))
+
+(defmethod tag-param->condition :tag-key
+  [param value pattern?]
+  (nf/parse-nested-condition :tags {param value} false pattern?))
+
+(defmethod tag-param->condition :tag-originator-id
+  [param value pattern?]
+  (nf/parse-nested-condition :tags {:originator-id value} false pattern?))
+
+(defmethod tag-param->condition :tag-data
+  [param value pattern?]
+  (let [tag-data-fn (fn [[tag-key tag-value]]
+                      (nf/parse-nested-condition :tags {:tag-key (name tag-key)
+                                                        :tag-value tag-value} false pattern?))]
+    (gc/and-conds (map tag-data-fn value))))
+
 (defmethod common-params/parameter->condition :tag-query
   [concept-type param value options]
-  (let [param->condition-key #(if (= :tag-originator-id %)
-                                :originator-id
-                                %)
-        condition-key (param->condition-key param)
-        ;; tag-key defaults to pattern true
+  (let [;; tag-key defaults to pattern true
         pattern? (if (= :tag-key param)
                    (not= "false" (get-in options [param :pattern]))
                    (common-params/pattern-field? concept-type param options))]
-    (nf/parse-nested-condition :tags {condition-key value} false pattern?)))
+    (tag-param->condition param value pattern?)))
 
 ;; Special case handler for concept-id. Concept id can refer to a granule or collection.
 ;; If it's a granule query with a collection concept id then we convert the parameter to :collection-concept-id

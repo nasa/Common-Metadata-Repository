@@ -112,13 +112,27 @@
         ;; exclude parameter processing can't handle nil value, so we remove it if it is nil.
         u/remove-nil-keys)))
 
+(defn- add-tag-data-to-params
+  "Returns the params with tag-data added if necessary"
+  [tag-data params]
+  (if tag-data
+    (assoc params :tag-data tag-data)
+    params))
+
 (defn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context concept-type params]
-  (let [[query-creation-time query] (u/time-execution
+  (let [;; tag-data param has tag-key as its key, which could be any arbitrary string.
+        ;; sanitize-params function traded data integrity for easier processing, e.g.
+        ;; it converts "tag1" into :tag-1 and it doesn't work for tag-keys.
+        ;; To work around this problem, we extract the tag-data param out first,
+        ;; then add it back in after the sanitize-params call.
+        tag-data (or (:tag-data params) (:tag_data params))
+        [query-creation-time query] (u/time-execution
                                       (->> params
                                            common-params/sanitize-params
+                                           (add-tag-data-to-params tag-data)
                                            ;; CMR-2553 remove the following line
                                            drop-ignored-params
                                            ;; handle legacy parameters

@@ -29,38 +29,38 @@
 (defmethod cpv/params-config :collection
   [_]
   (cpv/merge-params-config
-   cpv/basic-params-config
-   {:single-value #{:keyword :echo-compatible :include-granule-counts :include-has-granules
-                    :include-facets :hierarchical-facets :include-highlights :include-tags
-                    :all-revisions}
-    :multiple-value #{:short-name :instrument :two-d-coordinate-system-name :dif-entry-id
-                      :collection-data-type :project :entry-id :version :provider :entry-title
-                      :platform :processing-level-id :sensor}
-    :always-case-sensitive #{:echo-collection-id}
-    :disallow-pattern #{:echo-collection-id}
-    :allow-or #{:attribute :science-keywords}}))
+    cpv/basic-params-config
+    {:single-value #{:keyword :echo-compatible :include-granule-counts :include-has-granules
+                     :include-facets :hierarchical-facets :include-highlights :include-tags
+                     :all-revisions}
+     :multiple-value #{:short-name :instrument :two-d-coordinate-system-name :dif-entry-id
+                       :collection-data-type :project :entry-id :version :provider :entry-title
+                       :platform :processing-level-id :sensor}
+     :always-case-sensitive #{:echo-collection-id}
+     :disallow-pattern #{:echo-collection-id}
+     :allow-or #{:attribute :science-keywords}}))
 
 (defmethod cpv/params-config :granule
   [_]
   (cpv/merge-params-config
-   cpv/basic-params-config
-   {:single-value #{:echo-compatible}
-    :multiple-value #{:granule-ur :short-name :instrument :collection-concept-id
-                      :producer-granule-id :project :version :provider :entry-title
-                      :platform :sensor}
-    :always-case-sensitive #{:echo-granule-id}
-    :disallow-pattern #{:echo-granule-id}
-    :allow-or #{:attribute}}))
+    cpv/basic-params-config
+    {:single-value #{:echo-compatible}
+     :multiple-value #{:granule-ur :short-name :instrument :collection-concept-id
+                       :producer-granule-id :project :version :provider :entry-title
+                       :platform :sensor}
+     :always-case-sensitive #{:echo-granule-id}
+     :disallow-pattern #{:echo-granule-id}
+     :allow-or #{:attribute}}))
 
 (defmethod cpv/params-config :tag
   [_]
   (cpv/merge-params-config
-   cpv/basic-params-config
-   {:single-value #{}
-    :multiple-value #{:tag-key :originator-id}
-    :always-case-sensitive #{}
-    :disallow-pattern #{}
-    :allow-or #{}}))
+    cpv/basic-params-config
+    {:single-value #{}
+     :multiple-value #{:tag-key :originator-id}
+     :always-case-sensitive #{}
+     :disallow-pattern #{}
+     :allow-or #{}}))
 
 (def exclude-params
   "Map of concept-type to parameters which can be used to exclude items from results."
@@ -103,6 +103,7 @@
 
    ;; Tag parameters for use querying other concepts.
    :tag-key cpv/pattern-option
+   :tag-data cpv/pattern-option
    :tag-originator-id cpv/pattern-option})
 
 (defmethod cpv/valid-parameter-options :granule
@@ -233,6 +234,15 @@
       ["Search not allowed with multiple updated_since values"]
       (let [updated-since-val (if (sequential? param-value) (first param-value) param-value)]
         (cpv/validate-date-time "updated_since" updated-since-val)))
+    []))
+
+(defn tag-data-validation
+  "Validates tag-data parameter must be a map"
+  [concept-type params]
+  (if-let [param-value (:tag-data params)]
+    (if (map? param-value)
+      []
+      ["tag-data must be in the form of tag-data[tag-key]=tag-value"])
     []))
 
 (defn revision-date-validation
@@ -491,43 +501,44 @@
 (def parameter-validations
   "Lists of parameter validation functions by concept type"
   {:collection (concat
-                cpv/common-validations
-                [boosts-validation
-                 temporal-format-validation
-                 updated-since-validation
-                 revision-date-validation
-                 orbit-number-validation
-                 equator-crossing-longitude-validation
-                 equator-crossing-date-validation
-                 cloud-cover-validation
-                 attribute-validation
-                 science-keywords-validation
-                 exclude-validation
-                 boolean-value-validation
-                 polygon-validation
-                 bounding-box-validation
-                 point-validation
-                 line-validation
-                 no-highlight-options-without-highlights-validation
-                 highlights-numeric-options-validation
-                 include-tags-parameter-validation])
+                 cpv/common-validations
+                 [boosts-validation
+                  temporal-format-validation
+                  updated-since-validation
+                  revision-date-validation
+                  orbit-number-validation
+                  equator-crossing-longitude-validation
+                  equator-crossing-date-validation
+                  cloud-cover-validation
+                  attribute-validation
+                  science-keywords-validation
+                  exclude-validation
+                  boolean-value-validation
+                  polygon-validation
+                  bounding-box-validation
+                  point-validation
+                  line-validation
+                  tag-data-validation
+                  no-highlight-options-without-highlights-validation
+                  highlights-numeric-options-validation
+                  include-tags-parameter-validation])
    :granule (concat
-             cpv/common-validations
-             [temporal-format-validation
-              updated-since-validation
-              revision-date-validation
-              orbit-number-validation
-              equator-crossing-longitude-validation
-              equator-crossing-date-validation
-              cloud-cover-validation
-              attribute-validation
-              science-keywords-validation
-              exclude-validation
-              boolean-value-validation
-              polygon-validation
-              bounding-box-validation
-              point-validation
-              line-validation])
+              cpv/common-validations
+              [temporal-format-validation
+               updated-since-validation
+               revision-date-validation
+               orbit-number-validation
+               equator-crossing-longitude-validation
+               equator-crossing-date-validation
+               cloud-cover-validation
+               attribute-validation
+               science-keywords-validation
+               exclude-validation
+               boolean-value-validation
+               polygon-validation
+               bounding-box-validation
+               point-validation
+               line-validation])
    :tag cpv/common-validations})
 
 (def standard-query-parameter-validations
@@ -577,7 +588,7 @@
   [concept-type params]
   (let [[safe-params type-errors] (validate-parameter-data-types params)]
     (cpv/validate-parameters
-     concept-type safe-params (parameter-validations concept-type) type-errors))
+      concept-type safe-params (parameter-validations concept-type) type-errors))
   params)
 
 (defn validate-standard-query-parameters

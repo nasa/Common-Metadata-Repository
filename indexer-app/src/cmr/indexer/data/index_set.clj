@@ -68,7 +68,8 @@
 (defnestedmapping tag-associations-mapping
   "Defines mappings for tag associations."
   {:tag-key.lowercase m/string-field-mapping
-   :originator-id.lowercase m/string-field-mapping})
+   :originator-id.lowercase m/string-field-mapping
+   :tag-value.lowercase m/string-field-mapping})
 
 (defnestedmapping platform-hierarchical-mapping
   "Defines hierarchical mappings for platforms."

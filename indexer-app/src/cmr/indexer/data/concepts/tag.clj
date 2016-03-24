@@ -17,6 +17,8 @@
 (defn tag-association->elastic-doc
   "Converts the tag association into the portion going in the collection elastic document."
   [tag-association]
-  (let [{:keys [tag-key originator-id]} tag-association]
+  (let [{:keys [tag-key originator-id data]} tag-association]
     {:tag-key.lowercase (str/lower-case tag-key)
-     :originator-id.lowercase  (str/lower-case originator-id)}))
+     :originator-id.lowercase  (str/lower-case originator-id)
+     :tag-value.lowercase (when (string? data)
+                            (str/lower-case data))}))
