@@ -624,14 +624,6 @@
        ;; The collection is not rebalancing so it's either in a separate index or small Collections
        [(get indexes (keyword coll-concept-id) small-collections-index-name)]))))
 
-;; TODO figure out how to pass in a target index that would make sense
-(comment
- (def context {:system (get-in user/system [:apps :indexer])})
-
- (cmr.transmit.index-set/add-rebalancing-collection context 1 "C5-PROV1")
-
- (fetch-concept-type-index-names context))
-
 ;; TODO unit test this
 (defn get-concept-index-names
   "Return the concept index names for the given concept id.
