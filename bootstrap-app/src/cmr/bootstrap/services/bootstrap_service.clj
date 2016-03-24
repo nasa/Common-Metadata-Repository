@@ -9,7 +9,8 @@
             [cmr.bootstrap.data.bulk-migration :as bm]
             [cmr.bootstrap.data.virtual-products :as vp]
             [cmr.transmit.index-set :as index-set]
-            [cmr.transmit.indexer :as indexer]))
+            [cmr.transmit.indexer :as indexer]
+            [cmr.indexer.data.index-set :as indexer-index-set]))
 
 (defn migrate-provider
   "Copy all the data for a provider (including collections and graunules) from catalog rest
@@ -87,7 +88,7 @@
   from failures to change the index set."
   [context concept-id synchronous]
   ;; This will throw an exception if the collection is already rebalancing
-  (index-set/add-rebalancing-collection context concept-id)
+  (index-set/add-rebalancing-collection context indexer-index-set/index-set-id concept-id)
   ;; Clear the cache so that the newest index set data will be used.
   (indexer/clear-cache context)
   (let [provider-id (:provider-id (concepts/parse-concept-id concept-id))]

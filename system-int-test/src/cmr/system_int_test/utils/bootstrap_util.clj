@@ -44,6 +44,19 @@
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
+(defn start-rebalance-collection
+  "Call the bootstrap app to kickoff rebalancing a collection."
+  [collection-id]
+  (let [response (client/request
+                   {:method :post
+                    :query-params {:synchronous true}
+                    :url (url/start-rebalance-collection-url collection-id)
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
 (defn bulk-migrate-provider
   "Call the bootstrap app to bulk db migrate a provider."
   [provider-id]

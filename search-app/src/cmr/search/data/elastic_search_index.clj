@@ -25,8 +25,13 @@
 (defn- fetch-concept-type-index-names
   "Fetch index names for each concept type from index-set app"
   [context]
-  (let [fetched-index-set (index-set/get-index-set context index-set-id)]
-    (get-in fetched-index-set [:index-set :concepts])))
+  (let [fetched-index-set (index-set/get-index-set context index-set-id)
+        rebalancing-collections (get-in fetched-index-set
+                                        [:index-set :granule :rebalancing-collections])
+        index-names-map (get-in fetched-index-set [:index-set :concepts])]
+    ;; Remove any rebalancing collections from the set of granule index names we'll search through.
+    {:index-names index-names-map
+     :rebalancing-collections rebalancing-collections}))
 
 (def index-cache-name
   "The name of the cache for caching index names. It will contain a map of concept type to a map of
@@ -52,13 +57,17 @@
    ;; 5 minutes
    :interval 300})
 
-(defn- get-granule-index-names
+(defn- get-index-names-map
   "Fetch index names associated with concepts."
   [context]
-  (let [index-names (cache/get-value (cache/context->cache context index-cache-name)
-                                     :concept-indices
-                                     (partial fetch-concept-type-index-names context))]
-    (get index-names :granule)))
+  (cache/get-value (cache/context->cache context index-cache-name)
+                   :concept-indices
+                   (partial fetch-concept-type-index-names context)))
+(defn- get-granule-index-names
+  "Fetch index names associated with granules excluding rebalancing collections indexes"
+  [context]
+  (let [{:keys [index-names rebalancing-collections]} (get-index-names-map context)]
+    (apply dissoc (:granule index-names) (map keyword rebalancing-collections))))
 
 (defn- collection-concept-id->index-name
   "Return the granule index name for the input collection concept id"
@@ -79,9 +88,18 @@
           (map #(format "%d_c*_%s" index-set-id (s/lower-case %))
                provider-ids))))
 
-(def all-granule-indexes
+(defn all-granule-indexes
   "Returns all possible granule indexes in a string that can be used by elasticsearch query"
-  (format "%d_c*,%d_small_collections,-%d_collections" index-set-id index-set-id index-set-id))
+  [context]
+  (let [{:keys [index-names rebalancing-collections]} (get-index-names-map context)
+        granule-index-names (:granule index-names)
+        rebalancing-indexes (map granule-index-names (map keyword rebalancing-collections))
+        ;; Exclude all the rebalancing collection indexes.
+        excluded-collections-str (if (seq rebalancing-indexes)
+                                   (str "," (s/join "," (map #(str "-" %) rebalancing-indexes)))
+                                   "")]
+    (format "%d_c*,%d_small_collections,-%d_collections%s"
+            index-set-id index-set-id index-set-id excluded-collections-str)))
 
 (defn- get-granule-indexes
   "Returns the granule indexes that should be searched based on the input query"
@@ -98,7 +116,7 @@
       (s/join "," (provider-ids->index-names context provider-ids))
 
       :else
-      all-granule-indexes)))
+      (all-granule-indexes context))))
 
 (defmethod common-esi/concept-type->index-info :granule
   [context _ query]

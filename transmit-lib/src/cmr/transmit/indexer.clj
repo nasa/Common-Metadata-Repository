@@ -7,7 +7,7 @@
 
 (defn clear-cache-url
   [conn]
-  (format "%s/caches/clear-cache"))
+  (format "%s/caches/clear-cache" (transmit-conn/root-url conn)))
 
 ;; Defines health check function
 (h/defhealther get-indexer-health :indexer 2)

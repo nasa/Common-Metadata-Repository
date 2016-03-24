@@ -281,12 +281,30 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Bootstrap URLs
 
-(def bootstrap-root (URL. "http" "localhost" (transmit-config/bootstrap-port) "/"))
+(defn bootstrap-root
+  []
+  (URL. "http" "localhost" (transmit-config/bootstrap-port) "/"))
 
 (defn bootstrap-url
   "Returns a URL for a path in the bootstrap application."
   [path]
-  (str (URL. bootstrap-root path)))
+  (str (URL. (bootstrap-root) path)))
+
+(defn- rebalance-collection-url
+  [concept-id]
+  (format "http://localhost:%s/rebalancing_collections/%s" (transmit-config/bootstrap-port) concept-id))
+
+(defn start-rebalance-collection-url
+  [concept-id]
+  (format "%s/start" (rebalance-collection-url concept-id)))
+
+(defn status-rebalance-collection-url
+  [concept-id]
+  (format "%s/status" (rebalance-collection-url concept-id)))
+
+(defn complete-rebalance-collection-url
+  [concept-id]
+  (format "%s/complete" (rebalance-collection-url concept-id)))
 
 (defn bulk-index-provider-url
   []
