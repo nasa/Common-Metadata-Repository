@@ -115,10 +115,10 @@
 
 (defmethod tag-param->condition :tag-data
   [param value pattern?]
-  (let [tag-data-fn (fn [[tag-key tag-value]]
-                      (nf/parse-nested-condition :tags {:tag-key (name tag-key)
-                                                        :tag-value tag-value} false pattern?))]
-    (gc/and-conds (map tag-data-fn value))))
+  (let [conditions (for [[tag-key tag-value] value]
+                     (nf/parse-nested-condition :tags {:tag-key (name tag-key)
+                                                       :tag-value tag-value} false pattern?))]
+    (gc/and-conds conditions)))
 
 (defmethod common-params/parameter->condition :tag-query
   [concept-type param value options]

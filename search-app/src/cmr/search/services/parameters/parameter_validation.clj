@@ -239,11 +239,9 @@
 (defn tag-data-validation
   "Validates tag-data parameter must be a map"
   [concept-type params]
-  (if-let [param-value (:tag-data params)]
-    (if (map? param-value)
-      []
-      ["tag-data must be in the form of tag-data[tag-key]=tag-value"])
-    []))
+  (when-let [param-value (:tag-data params)]
+    (when-not (map? param-value)
+      ["tag-data must be in the form of tag-data[tag-key]=tag-value"])))
 
 (defn revision-date-validation
   "Validates that revision date parameter contains valid date time strings."
