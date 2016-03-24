@@ -19,16 +19,17 @@
             [cmr.common-app.api.routes :as cr]
             [cmr.common-app.api-docs :as api-docs]
             [cmr.access-control.services.group-service :as group-service]
-            [cmr.access-control.data.access-control-index :as index]))
+            [cmr.access-control.data.access-control-index :as index]
+            [cmr.common.util :as util]))
 
 (def ^:private group-schema-structure
   "Schema for groups as json."
   {:type :object
    :additionalProperties false
    :properties {:name {:type :string :minLength 1 :maxLength 100}
-                :provider-id {:type :string :minLength 1 :maxLength 50}
+                :provider_id {:type :string :minLength 1 :maxLength 50}
                 :description {:type :string :minLength 1 :maxLength 255}
-                :legacy-guid {:type :string :minLength 1 :maxLength 50}}
+                :legacy_guid {:type :string :minLength 1 :maxLength 50}}
    :required [:name :description]})
 
 
@@ -95,13 +96,16 @@
   (validate-content-type headers)
   (validate-group-json body)
   (->> (json/parse-string body true)
+       (util/map-keys->kebab-case)
        (group-service/create-group context)
+       (util/map-keys->snake_case)
        api-response))
 
 (defn get-group
   "Retrieves the group with the given concept-id."
   [context concept-id]
   (-> (group-service/get-group context concept-id)
+      (util/map-keys->snake_case)
       api-response))
 
 (defn update-group
@@ -110,13 +114,15 @@
   (validate-content-type headers)
   (validate-group-json body)
   (->> (json/parse-string body true)
+       (util/map-keys->kebab-case)
        (group-service/update-group context concept-id)
+       (util/map-keys->snake_case)
        api-response))
 
 (defn delete-group
   "Deletes the group with the given concept-id."
   [context concept-id]
-  (api-response (group-service/delete-group context concept-id)))
+  (api-response (util/map-keys->snake_case (group-service/delete-group context concept-id))))
 
 (defn get-members
   "Handles a request to fetch group members"
@@ -130,6 +136,7 @@
   (validate-group-members-json body)
   (->> (json/parse-string body true)
        (group-service/add-members context concept-id)
+       (util/map-keys->snake_case)
        api-response))
 
 (defn remove-members
@@ -139,6 +146,7 @@
   (validate-group-members-json body)
   (->> (json/parse-string body true)
        (group-service/remove-members context concept-id)
+       (util/map-keys->snake_case)
        api-response))
 
 (defn search-for-groups
@@ -235,6 +243,3 @@
       api-errors/exception-handler
       cr/pretty-print-response-handler
       params/wrap-params))
-
-
-

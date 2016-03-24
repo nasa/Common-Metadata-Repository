@@ -18,4 +18,6 @@
 
 (defmethod qs/search-results->response [:access-group :json]
   [context query results]
-  (json/generate-string (select-keys results [:hits :took :items])))
+  (let [results (select-keys results [:hits :took :items])
+        converted-items (map util/map-keys->snake_case (:items results))]
+  (json/generate-string (assoc results :items converted-items))))

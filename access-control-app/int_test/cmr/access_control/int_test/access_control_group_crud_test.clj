@@ -17,7 +17,7 @@
   "A map of fields to their max lengths"
   {:name 100
    :description 255
-   :legacy-guid 50})
+   :legacy_guid 50})
 
 (defn string-of-length
   "Creates a string of the specified length"
@@ -55,7 +55,7 @@
                              (name field))]}
            (u/create-group valid-user-token (assoc valid-group field "")))
 
-        :name :description :provider-id :legacy-guid))
+        :name :description :provider_id :legacy_guid))
 
     (testing "Maximum field length validations"
       (doseq [[field max-length] field-maxes]
@@ -71,29 +71,29 @@
   (testing "Successful creation"
     (let [group (u/make-group)
           token (e/login (u/conn-context) "user1")
-          {:keys [status concept-id revision-id]} (u/create-group token group)]
+          {:keys [status concept_id revision_id]} (u/create-group token group)]
       (is (= 200 status))
-      (is (re-matches #"AG\d+-CMR" concept-id) "Incorrect concept id for a system group")
-      (is (= 1 revision-id))
-      (u/assert-group-saved group "user1" concept-id revision-id)
+      (is (re-matches #"AG\d+-CMR" concept_id) "Incorrect concept id for a system group")
+      (is (= 1 revision_id))
+      (u/assert-group-saved group "user1" concept_id revision_id)
 
       (testing "Creation with an already existing name"
         (testing "Is rejected for another system group"
           (is (= {:status 409
                   :errors [(format "A system group with name [%s] already exists with concept id [%s]."
-                                   (:name group) concept-id)]}
+                                   (:name group) concept_id)]}
                  (u/create-group token group))))
 
         (testing "Works for a different provider"
-          (is (= 200 (:status (u/create-group token (assoc group :provider-id "PROV1")))))))
+          (is (= 200 (:status (u/create-group token (assoc group :provider_id "PROV1")))))))
 
       (testing "Creation of previously deleted group"
-        (u/delete-group token concept-id)
-        (let [new-group (assoc group :legacy-guid "the legacy guid" :description "new description")
+        (u/delete-group token concept_id)
+        (let [new-group (assoc group :legacy_guid "the legacy guid" :description "new description")
               response (u/create-group token new-group)]
-          (is (= {:status 200 :concept-id concept-id :revision-id 3}
+          (is (= {:status 200 :concept_id concept_id :revision_id 3}
                  response))
-          (u/assert-group-saved new-group "user1" concept-id 3))))
+          (u/assert-group-saved new-group "user1" concept_id 3))))
 
     (testing "Create group with fields at maximum length"
       (let [group (into {} (for [[field max-length] field-maxes]
@@ -101,46 +101,46 @@
         (is (= 200 (:status (u/create-group (e/login (u/conn-context) "user1") group)))))))
 
   (testing "Creation without optional fields is allowed"
-    (let [group (dissoc (u/make-group {:name "name2"}) :legacy-guid)
+    (let [group (dissoc (u/make-group {:name "name2"}) :legacy_guid)
           token (e/login (u/conn-context) "user1")
-          {:keys [status concept-id revision-id]} (u/create-group token group)]
+          {:keys [status concept_id revision_id]} (u/create-group token group)]
       (is (= 200 status))
-      (is concept-id)
-      (is (= 1 revision-id)))))
+      (is concept_id)
+      (is (= 1 revision_id)))))
 
 (deftest create-provider-group-test
   (testing "Successful creation"
-    (let [group (u/make-group {:provider-id "PROV1"})
+    (let [group (u/make-group {:provider_id "PROV1"})
           token (e/login (u/conn-context) "user1")
-          {:keys [status concept-id revision-id]} (u/create-group token group)]
+          {:keys [status concept_id revision_id]} (u/create-group token group)]
       (is (= 200 status))
-      (is (re-matches #"AG\d+-PROV1" concept-id) "Incorrect concept id for a provider group")
-      (is (= 1 revision-id))
-      (u/assert-group-saved group "user1" concept-id revision-id)
+      (is (re-matches #"AG\d+-PROV1" concept_id) "Incorrect concept id for a provider group")
+      (is (= 1 revision_id))
+      (u/assert-group-saved-with-provider-id group "user1" concept_id revision_id)
 
       (testing "Creation with an already existing name"
         (testing "Is rejected for the same provider"
           (is (= {:status 409
                   :errors [(format
                             "A provider group with name [%s] already exists with concept id [%s] for provider [PROV1]."
-                            (:name group) concept-id)]}
+                            (:name group) concept_id)]}
                  (u/create-group token group))))
 
         (testing "Works for a different provider"
-          (is (= 200 (:status (u/create-group token (assoc group :provider-id "PROV2")))))))))
+          (is (= 200 (:status (u/create-group token (assoc group :provider_id "PROV2")))))))))
   (testing "Creation for a non-existent provider"
     (is (= {:status 400
             :errors ["Provider with provider-id [NOT_EXIST] does not exist."]}
            (u/create-group (e/login (u/conn-context) "user1")
-                           (u/make-group {:provider-id "NOT_EXIST"}))))))
+                           (u/make-group {:provider_id "NOT_EXIST"}))))))
 
 (deftest get-group-test
   (let [group (u/make-group)
         token (e/login (u/conn-context) "user1")
-        {:keys [concept-id]} (u/create-group token group)]
+        {:keys [concept_id]} (u/create-group token group)]
     (testing "Retrieve existing group"
-      (is (= (assoc group :status 200 :num-members 0)
-             (u/get-group token concept-id))))
+      (is (= (assoc group :status 200 :num_members 0)
+             (u/get-group token concept_id))))
 
     (testing "Retrieve unknown group"
       (is (= {:status 404
@@ -151,7 +151,7 @@
               :errors ["Concept-id [F100-CMR] is not valid."]}
              (u/get-group token "F100-CMR"))))
     (testing "Retrieve group with invalid parameters"
-      (let [response (u/get-group token concept-id {"Echo-Token" "asdf" "bf2376tri7f" "true"})]
+      (let [response (u/get-group token concept_id {"Echo-Token" "asdf" "bf2376tri7f" "true"})]
         (is (= {:status 400
                 :errors #{"Parameter [Echo-Token] was not recognized." "Parameter [bf2376tri7f] was not recognized."}}
                (update-in response [:errors] set)))))
@@ -164,35 +164,35 @@
               :errors ["Group could not be found with concept id [AG100-PROV3]"]}
              (u/get-group token "AG100-PROV3"))))
     (testing "Retrieve deleted group"
-      (u/delete-group token concept-id)
+      (u/delete-group token concept_id)
       (is (= {:status 404
-              :errors [(format "Group with concept id [%s] was deleted." concept-id)]}
-             (u/get-group token concept-id))))))
+              :errors [(format "Group with concept id [%s] was deleted." concept_id)]}
+             (u/get-group token concept_id))))))
 
 (deftest delete-group-test
   (let [group1 (u/make-group)
         group2 (u/make-group {:name "Some other group"})
         token (e/login (u/conn-context) "user1")
-        {:keys [concept-id revision-id]} (u/create-group token group1)
-        group2-concept-id (:concept-id (u/create-group token group2))]
+        {:keys [concept_id revision_id]} (u/create-group token group1)
+        group2-concept-id (:concept_id (u/create-group token group2))]
     (u/wait-until-indexed)
     (testing "Delete without token"
       (is (= {:status 401
               :errors ["Groups cannot be modified without a valid user token."]}
-             (u/delete-group nil concept-id))))
+             (u/delete-group nil concept_id))))
 
     (testing "Delete success"
       (is (= 2 (:hits (u/search token nil))))
-      (is (= {:status 200 :concept-id concept-id :revision-id 2}
-             (u/delete-group token concept-id)))
+      (is (= {:status 200 :concept_id concept_id :revision_id 2}
+             (u/delete-group token concept_id)))
       (u/wait-until-indexed)
-      (u/assert-group-deleted group1 "user1" concept-id 2)
-      (is (= [group2-concept-id] (map :concept-id (:items (u/search token nil))))))
+      (u/assert-group-deleted group1 "user1" concept_id 2)
+      (is (= [group2-concept-id] (map :concept_id (:items (u/search token nil))))))
 
     (testing "Delete group that was already deleted"
       (is (= {:status 404
-              :errors [(format "Group with concept id [%s] was deleted." concept-id)]}
-             (u/delete-group token concept-id))))
+              :errors [(format "Group with concept id [%s] was deleted." concept_id)]}
+             (u/delete-group token concept_id))))
 
     (testing "Delete group that doesn't exist"
       (is (= {:status 404
@@ -202,30 +202,30 @@
 (deftest update-group-test
   (let [group (u/make-group)
         token (e/login (u/conn-context) "user1")
-        {:keys [concept-id revision-id]} (u/create-group token group)]
+        {:keys [concept_id revision_id]} (u/create-group token group)]
 
     (let [updated-group (update-in group [:description] #(str % " updated"))
           token2 (e/login (u/conn-context) "user2")
-          response (u/update-group token2 concept-id updated-group)]
-      (is (= {:status 200 :concept-id concept-id :revision-id 2}
+          response (u/update-group token2 concept_id updated-group)]
+      (is (= {:status 200 :concept_id concept_id :revision_id 2}
              response))
-      (u/assert-group-saved updated-group "user2" concept-id 2))))
+      (u/assert-group-saved updated-group "user2" concept_id 2))))
 
 (deftest update-group-failure-test
   (let [group (u/make-group)
         token (e/login (u/conn-context) "user1")
-        {:keys [concept-id revision-id]} (u/create-group token group)]
+        {:keys [concept_id revision_id]} (u/create-group token group)]
 
     (testing "Update group with invalid content type"
       (is (= {:status 400,
               :errors
               ["The mime types specified in the content-type header [application/xml] are not supported."]}
-             (u/update-group token concept-id group {:http-options {:content-type :xml}}))))
+             (u/update-group token concept_id group {:http-options {:content-type :xml}}))))
 
     (testing "Update without token"
       (is (= {:status 401
               :errors ["Groups cannot be modified without a valid user token."]}
-             (u/update-group nil concept-id group))))
+             (u/update-group nil concept_id group))))
 
     (testing "Fields that cannot be changed"
       (are [field human-name]
@@ -234,15 +234,15 @@
                                      " [%s] to [updated]")
                                 human-name
                                 (get group field))]}
-              (u/update-group token concept-id (assoc group field "updated")))
+              (u/update-group token concept_id (assoc group field "updated")))
            :name "Name"
-           :provider-id "Provider Id"
-           :legacy-guid "Legacy Guid"))
+           :provider_id "Provider Id"
+           :legacy_guid "Legacy Guid"))
 
     (testing "Updates applies JSON validations"
       (is (= {:status 400
               :errors ["/description string \"\" is too short (length: 0, required minimum: 1)"]}
-             (u/update-group token concept-id (assoc group :description "")))))
+             (u/update-group token concept_id (assoc group :description "")))))
 
     (testing "Update group that doesn't exist"
       (is (= {:status 404
@@ -250,7 +250,7 @@
              (u/update-group token "AG100-CMR" group))))
 
     (testing "Update deleted group"
-      (u/delete-group token concept-id)
+      (u/delete-group token concept_id)
       (is (= {:status 404
-              :errors [(format "Group with concept id [%s] was deleted." concept-id)]}
-             (u/update-group token concept-id group))))))
+              :errors [(format "Group with concept id [%s] was deleted." concept_id)]}
+             (u/update-group token concept_id group))))))
