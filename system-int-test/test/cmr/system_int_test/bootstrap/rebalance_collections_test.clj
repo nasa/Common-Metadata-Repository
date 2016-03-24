@@ -62,6 +62,19 @@
   (is (= (assoc expected-counts :status 200)
          (bootstrap/get-rebalance-status (:concept-id collection)))))
 
+(defn ingest-granule-for-coll
+  [coll n]
+  (let [granule-ur (str (:entry-title coll) "_gran_" n)]
+    (d/ingest (:provider-id coll) (dg/granule coll {:granule-ur granule-ur}))))
+
+(defn inc-provider-holdings-for-coll
+  "Updates the number of granules expected for a collection in the expected provider holdings"
+  [expected-provider-holdings coll num]
+  (for [coll-holding expected-provider-holdings]
+    (if (= (:concept-id coll-holding) (:concept-id coll))
+      (update coll-holding :granule-count + num)
+      coll-holding)))
+
 (deftest rebalance-collection-test
   (s/only-with-real-database
    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
@@ -69,13 +82,13 @@
          coll3 (d/ingest "PROV2" (dc/collection {:entry-title "coll3"}))
          coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}))
          granules (doall (for [coll [coll1 coll2 coll3 coll4]
-                               n (range 4)
-                               :let [granule-ur (str (:entry-title coll) "_gran_" n)]]
-                          (d/ingest (:provider-id coll) (dg/granule coll {:granule-ur granule-ur}))))
+                               n (range 4)]
+                           (ingest-granule-for-coll coll n)))
+
          expected-provider-holdings (for [coll [coll1 coll2 coll3 coll4]]
-                                     (-> coll
-                                         (select-keys [:provider-id :concept-id :entry-title])
-                                         (assoc :granule-count 4)))]
+                                      (-> coll
+                                          (select-keys [:provider-id :concept-id :entry-title])
+                                          (assoc :granule-count 4)))]
      (index/wait-until-indexed)
 
      (assert-rebalance-status {:small-collections 4} coll1)
@@ -85,13 +98,28 @@
      (bootstrap/start-rebalance-collection (:concept-id coll1))
      (index/wait-until-indexed)
 
+     ;; After rebalancing 4 granules are in small collections and in the new index.
      (assert-rebalance-status {:small-collections 4 :separate-index 4} coll1)
      ;; Clear the search cache so it will get the last index set
      (search/clear-caches)
-     (verify-provider-holdings expected-provider-holdings))))
+     (verify-provider-holdings expected-provider-holdings)
 
-    ;; TODO index data and make sure that counts are correct
-    ;; use verify to get the counts
+     ;; Index new data. It should go into both indexes
+     (ingest-granule-for-coll coll1 4)
+     (ingest-granule-for-coll coll1 5)
+     (index/wait-until-indexed)
+     (assert-rebalance-status {:small-collections 6 :separate-index 6} coll1)
+
+     (let [expected-provider-holdings (inc-provider-holdings-for-coll
+                                       expected-provider-holdings coll1 2)]
+       (verify-provider-holdings expected-provider-holdings)))))
+
+
+    ;; TODO finalize the rebalancing
+    ;; TODO verify counts
+    ;; TODO verify indexing new data goes into the right indexes
+
+    ;; TODO continue to rebalance other collections and check on status. (Do multiple at the same time.)
 
 
 ;; rebalance one and then test results. Make sure data when indexed goes to the right place.
