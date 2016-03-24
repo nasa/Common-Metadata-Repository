@@ -57,6 +57,18 @@
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
+(defn finalize-rebalance-collection
+  "Call the bootstrap app to finalize rebalancing a collection."
+  [collection-id]
+  (let [response (client/request
+                   {:method :post
+                    :url (url/finalize-rebalance-collection-url collection-id)
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
 (defn get-rebalance-status
   "Gets counts of granules in various places to check on bootstrap status."
   [collection-id]

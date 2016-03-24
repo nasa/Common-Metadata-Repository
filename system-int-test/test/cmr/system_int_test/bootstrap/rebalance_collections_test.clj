@@ -23,6 +23,11 @@
   (constantly true)))
 
 
+;; TODO test error cases (make a separate test for this)
+;; - rebalance collection already rebalanced
+;; - rebalance collection already started rebalancing
+;; - finalize collection not currently rebalancing
+
 ;; This is the initial test of kicking off balancing of collections.
 ;; Look at acceptance criteria for issues to make sure we're testing everything
 ;; including failure cases of rebalancing stuff that shouldn't be or has already been rebalanced.
@@ -112,15 +117,24 @@
 
      (let [expected-provider-holdings (inc-provider-holdings-for-coll
                                        expected-provider-holdings coll1 2)]
+       (verify-provider-holdings expected-provider-holdings)
+
+       ;; Finalize rebalancing
+       (bootstrap/finalize-rebalance-collection (:concept-id coll1))
+       (index/wait-until-indexed)
+
+       ;; The granules have been removed from small collections
+       (assert-rebalance-status {:small-collections 0 :separate-index 6} coll1)
+
+       ;; Note that after finalize has run but before search has updated to use the new index set
+       ;; it will find 0 granules for this collection. The job for refreshing that cache runs every
+       ;; 5 minutes.
+       ;; This check is here as a demonstration of the problem and not an assertion of what we want to happen.
+       (verify-provider-holdings (inc-provider-holdings-for-coll
+                                  expected-provider-holdings coll1 -6))
+       ;; After the cache is cleared the right amount of data is found
+       (search/clear-caches)
        (verify-provider-holdings expected-provider-holdings)))))
-
-
-    ;; TODO finalize the rebalancing
-    ;; TODO verify counts
-    ;; TODO verify indexing new data goes into the right indexes
 
     ;; TODO continue to rebalance other collections and check on status. (Do multiple at the same time.)
 
-
-;; rebalance one and then test results. Make sure data when indexed goes to the right place.
-;; make sure searches are correct

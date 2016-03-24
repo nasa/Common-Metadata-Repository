@@ -7,12 +7,21 @@
            [cmr.indexer.data.elasticsearch :as indexer-es]
            [cmr.metadata-db.services.concept-service :as cs]))
 
+(def granule-mapping-type-name
+  "The mapping type for granules in Elasticsearch"
+  (-> index-set/granule-mapping keys first name))
+
+(defn es-query-for-collection-concept-id
+  "Returns an elasticsearch query to find granules in the collection."
+  [concept-id]
+  {:filtered {:query (q/match-all)
+              :filter (q/term :collection-concept-id concept-id)}})
+
 (defn- granule-count-for-collection
+  "Gets the granule count for the collection in the elastic index."
   [indexer-context index-name concept-id]
   (let [conn (indexer-es/context->conn indexer-context)
-        granule-mapping-type-name (-> index-set/granule-mapping keys first name)
-        query {:filtered {:query (q/match-all)
-                          :filter (q/term :collection-concept-id concept-id)}}]
+        query (es-query-for-collection-concept-id concept-id)]
     (:count (esd/count conn index-name granule-mapping-type-name query))))
 
 (defn rebalancing-collection-counts
@@ -34,3 +43,14 @@
        :separate-index (granule-count-for-collection indexer-context sep-index concept-id)}
       {:small-collections small-count})))
 
+(defn delete-collection-granules-from-small-collections
+  "Deletes by query any granules in small collections for the given collection"
+  [context concept-id]
+  (let [indexer-context {:system (helper/get-indexer (:system context))}
+        index-names (index-set/fetch-concept-type-index-names
+                     indexer-context index-set/index-set-id)
+        small-coll-index (get-in index-names [:index-names :granule :small_collections])
+        granule-mapping-type-name (-> index-set/granule-mapping keys first name)]
+    (indexer-es/delete-by-query
+     indexer-context small-coll-index granule-mapping-type-name
+     (es-query-for-collection-concept-id concept-id))))

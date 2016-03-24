@@ -302,9 +302,9 @@
   [concept-id]
   (format "%s/status" (rebalance-collection-url concept-id)))
 
-(defn complete-rebalance-collection-url
+(defn finalize-rebalance-collection-url
   [concept-id]
-  (format "%s/complete" (rebalance-collection-url concept-id)))
+  (format "%s/finalize" (rebalance-collection-url concept-id)))
 
 (defn bulk-index-provider-url
   []

@@ -84,7 +84,7 @@
       (info "Adding message to virtual products channel.")
       (-> context :system (get vp/channel-name) (>! {:provider-id provider-id
                                                      :entry-title entry-title})))))
-(defn rebalance-collection
+(defn start-rebalance-collection
   "Kicks off collection rebalancing. Will run synchronously if synchronous is true. Throws exceptions
   from failures to change the index set."
   [context concept-id synchronous]
@@ -95,6 +95,28 @@
   (let [provider-id (:provider-id (concepts/parse-concept-id concept-id))]
    ;; queue the collection for reindexing into the new index
    (index-collection context provider-id concept-id synchronous (keyword concept-id))))
+
+(defn finalize-rebalance-collection
+  "Finalizes collection rebalancing."
+  [context concept-id]
+  ;; This will throw an exception if the collection is not rebalancing
+  (index-set/finalize-rebalancing-collection context indexer-index-set/index-set-id concept-id)
+  ;; Clear the cache so that the newest index set data will be used.
+  (indexer/clear-cache context)
+  ;; There is a race condition as noted here: https://wiki.earthdata.nasa.gov/display/CMR/Rebalancing+Collection+Indexes+Approach
+  ;; "There's a period of time during which the different indexer applications may be processing
+  ;; granules for this very collection and may have already decided which index its going to. It's
+  ;; possible that the indexer will index a granule into small collections after the bootstrap has
+  ;; issued the delete. The next step to verify should identify if the race conditions has occurred. "
+  ;; The sleep here decreases the probability of the race condition giving time for
+  ;; indexer to finish indexing any granule currently being processed.
+  ;; This doesn't remove the race condition. We still have steps in the overall process to detect it
+  ;; and resolve it. (manual fixes if necessary)
+  (Thread/sleep 5000)
+  ;; Remove all granules from small collections for this collection.
+  (rebalance-util/delete-collection-granules-from-small-collections context concept-id))
+
+
 
 (defn rebalance-status
   "Returns a map of counts of granules in the collection in metadata db, the small collections index,
