@@ -22,7 +22,6 @@
                          "provguid2" "PROV2"})
   (constantly true)))
 
-
 ;; TODO test error cases (make a separate test for this)
 ;; - rebalance collection already rebalanced
 ;; - rebalance collection already started rebalancing

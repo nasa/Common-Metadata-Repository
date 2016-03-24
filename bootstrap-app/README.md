@@ -46,9 +46,45 @@ You can provider additional arguments to migrate the database to a given version
 
 ```
 CMR_DB_URL=thin:@localhost:1521:orcl CMR_BOOTSTRAP_DB_PASSWORD=****** java -cp target/cmr-bootstrap-app-0.1.0-SNAPSHOT-standalone.jar cmr.db drop-user
+```
+
+## Rebalancing Collections
+
+### Start Rebalancing a Collection
+
+Starts moving all the granules in a specified collection from the small collections index into their own separate index. The work is performed asynchronously in the background. The job should be monitored through the bootstrap application's logs and using the status endpoint detailed below.
+
+```
+curl -i -XPOST http://localhost:3006/rebalancing_collections/C5-PROV1/start
+
+HTTP/1.1 200 OK
+{"message":"Rebalancing started for collection C5-PROV1"}
+```
+
+### Get Rebalancing Collection Status
+
+Fetches the status of rebalancing. It returns counts of the collection in the small collections index and in the separate index.
+
+```
+curl -i  -H "Accept: application/json" http://localhost:3006/rebalancing_collections/C5-PROV1/status
+
+HTTP/1.1 200 OK
+{"small-collections":4,"separate-index":4}
+```
 
 
-## Example curls
+### Finalize a Rebalancing Collection
+
+Finalizes a rebalancing collection. Removes the collection from the list of rebalancing collections in the index set and deletes all granules from the small collections index for the specified collection.
+
+```
+curl -i -XPOST  http://localhost:3006/rebalancing_collections/C5-PROV1/finalize
+
+HTTP/1.1 200 OK
+{"message":"Rebalancing completed for collection C5-PROV1"}
+```
+
+## Bulk Operations
 
 ### Bulk copy provider FIX_PROV1 and all it's collections and granules to the metadata db
 
