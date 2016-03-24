@@ -1090,3 +1090,22 @@
         (is (= expected-facets
                (:facets (search/find-refs :collection {:include-facets true}))))))))
 
+(deftest flat-facet-case-insensitivity-test
+  (grant-permissions)
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
+                                                :platforms [(dc/platform
+                                                              {:short-name "smap"
+                                                               :instruments [(dc/instrument {:short-name "atm"})]})]
+                                                :organizations [(dc/org :archive-center "OR-STATE/eoarc")]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"
+                                                :platforms [(dc/platform
+                                                              {:short-name "sMaP"
+                                                               :instruments [(dc/instrument {:short-name "aTM"})]})]
+                                                :organizations [(dc/org :archive-center "or-state/EOARC")]}))
+        _ (index/wait-until-indexed)
+        facet-results (:facets (search/find-refs :collection {:include-facets true}))]
+    (are [value-counts field]
+      (= value-counts (:value-counts (first (filter #(= field (:field %)) facet-results))))
+      [["SMAP" 2]] "platform"
+      [["ATM" 2]]  "instrument"
+      [["OR-STATE/EOARC" 2]] "archive_center")))
