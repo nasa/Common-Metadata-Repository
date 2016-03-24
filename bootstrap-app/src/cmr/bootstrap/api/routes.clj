@@ -92,6 +92,11 @@
   {:status 200
    :body {:message (str "Rebalancing started for collection " concept-id)}})
 
+(defn rebalance-status
+  "Gets the status of rebalancing a collection."
+  [context concept-id]
+  {:status 200
+   :body (bs/rebalance-status context concept-id)})
 
 (defn- build-routes [system]
   (routes
@@ -118,8 +123,7 @@
 
        ;; Get counts of rebalancing data
        (GET "/status" {:keys [request-context]}
-         ;; not implemented yet
-         {:status 501})
+         (rebalance-status request-context concept-id))
 
        ;; Complete reindexing
        (POST "/complete" {:keys [request-context]}

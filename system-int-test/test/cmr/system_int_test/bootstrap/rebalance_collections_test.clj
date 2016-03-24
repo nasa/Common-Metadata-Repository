@@ -17,14 +17,50 @@
                                            "provguid2" "PROV2"}))
 
 (comment
+ ;; Use this to manually run the fixture
  ((ingest/reset-fixture {"provguid1" "PROV1"
                          "provguid2" "PROV2"})
   (constantly true)))
 
 
-;; TODO look at acceptance criteria for issues to make sure we're testing everything
+;; This is the initial test of kicking off balancing of collections.
+;; Look at acceptance criteria for issues to make sure we're testing everything
 ;; including failure cases of rebalancing stuff that shouldn't be or has already been rebalanced.
 
+(defn count-by-params
+  "Returns the number of granules found by the given params"
+  [params]
+  (let [response (search/find-refs :granule (assoc params :page-size 0))]
+    (when (= 400 (:status response))
+      (throw (Exception. (str "Search by params failed:" (pr-str response)))))
+    (:hits response)))
+
+(defn verify-provider-holdings
+  "Verifies counts in the search application by searching several different ways for counts."
+  [expected-provider-holdings]
+  ;; Verify search counts in provider holdings
+  (is (= expected-provider-holdings (:results (search/provider-holdings-in-format :json))))
+
+  ;; Verify search counts when searching individually by concept id
+  (let [separate-holdings (for [coll-holding expected-provider-holdings]
+                            (assoc coll-holding
+                                   :granule-count
+                                   (count-by-params {:concept-id (:concept-id coll-holding)})))]
+
+    (is (= expected-provider-holdings separate-holdings)))
+  ;; Verify search counts when searching by provider id
+  (let [expected-counts-by-provider (reduce (fn [count-map {:keys [provider-id granule-count]}]
+                                              (update count-map provider-id #(+ (or % 0) granule-count)))
+                                            {}
+                                            expected-provider-holdings)
+        actual-counts-by-provider (into {} (for [provider-id (keys expected-counts-by-provider)]
+                                             [provider-id (count-by-params {:provider-id provider-id})]))]
+    (is (= expected-counts-by-provider actual-counts-by-provider))))
+
+(defn assert-rebalance-status
+  [expected-counts collection]
+  (is (= (assoc expected-counts :status 200)
+         (bootstrap/get-rebalance-status (:concept-id collection)))))
 
 (deftest rebalance-collection-test
   (s/only-with-real-database
@@ -42,18 +78,21 @@
                                          (assoc :granule-count 4)))]
      (index/wait-until-indexed)
 
-     (is (= expected-provider-holdings (:results (search/provider-holdings-in-format :json))))
+     (assert-rebalance-status {:small-collections 4} coll1)
+     (verify-provider-holdings expected-provider-holdings)
 
      ;; Start rebalancing of collection 1. After this it will be in small collections and a separate index
      (bootstrap/start-rebalance-collection (:concept-id coll1))
      (index/wait-until-indexed)
 
+     (assert-rebalance-status {:small-collections 4 :separate-index 4} coll1)
      ;; Clear the search cache so it will get the last index set
      (search/clear-caches)
-     (is (= expected-provider-holdings (:results (search/provider-holdings-in-format :json)))))))
+     (verify-provider-holdings expected-provider-holdings))))
+
+    ;; TODO index data and make sure that counts are correct
+    ;; use verify to get the counts
 
 
-;; setup some data with multiple collections, multiple providers and multiple granules
-;; test counts etc.
 ;; rebalance one and then test results. Make sure data when indexed goes to the right place.
 ;; make sure searches are correct

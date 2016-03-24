@@ -10,7 +10,8 @@
             [cmr.bootstrap.data.virtual-products :as vp]
             [cmr.transmit.index-set :as index-set]
             [cmr.transmit.indexer :as indexer]
-            [cmr.indexer.data.index-set :as indexer-index-set]))
+            [cmr.indexer.data.index-set :as indexer-index-set]
+            [cmr.bootstrap.data.rebalance-util :as rebalance-util]))
 
 (defn migrate-provider
   "Copy all the data for a provider (including collections and graunules) from catalog rest
@@ -94,3 +95,9 @@
   (let [provider-id (:provider-id (concepts/parse-concept-id concept-id))]
    ;; queue the collection for reindexing into the new index
    (index-collection context provider-id concept-id synchronous (keyword concept-id))))
+
+(defn rebalance-status
+  "Returns a map of counts of granules in the collection in metadata db, the small collections index,
+   and in the separate collection index if it exists."
+  [context concept-id]
+  (rebalance-util/rebalancing-collection-counts context concept-id))

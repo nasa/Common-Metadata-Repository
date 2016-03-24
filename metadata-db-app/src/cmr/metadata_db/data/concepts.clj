@@ -17,8 +17,8 @@
   (find-latest-concepts
     [db provider params]
     "Finds the latest concepts by the given provider and parameters.
-    :concept-type must present in the parameters.")
-  )
+    :concept-type must present in the parameters."))
+
 
 (defprotocol ConceptsStore
   "Functions for saving and retrieving concepts"

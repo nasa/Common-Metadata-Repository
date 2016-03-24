@@ -57,6 +57,18 @@
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
+(defn get-rebalance-status
+  "Gets counts of granules in various places to check on bootstrap status."
+  [collection-id]
+  (let [response (client/request
+                   {:method :get
+                    :url (url/status-rebalance-collection-url collection-id)
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
 (defn bulk-migrate-provider
   "Call the bootstrap app to bulk db migrate a provider."
   [provider-id]
