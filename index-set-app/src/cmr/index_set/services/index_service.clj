@@ -214,6 +214,16 @@
       (conj rebalancing-colls concept-id))
     #{concept-id}))
 
+(defn- remove-rebalancing-collection
+  "Removes a rebalancing collections from the set of rebalancing collections."
+  [rebalancing-colls concept-id]
+  (let [rebalancing-colls-set (set rebalancing-colls)]
+    (if (contains? rebalancing-colls-set concept-id)
+      (seq (disj rebalancing-colls-set concept-id))
+      (errors/throw-service-error
+       :bad-request
+       (format "The index set does not contain the rebalancing collection [%s]" concept-id)))))
+
 (defn- add-new-granule-index
   "Adds a new granule index for the given collection. Validates the collection does not already have
    an index."
@@ -241,6 +251,14 @@
     ;; Update the index set. This will create the new collection indexes as needed.
     (update-index-set context index-set)))
 
+(defn finalize-collection-rebalancing
+  "Removes the collection from the list of rebalancing collections"
+  [context index-set-id concept-id]
+  (let [index-set (get-index-set context index-set-id)
+        ;; Remove the collection from the list of rebalancing collections. Also does validation.
+        index-set (update-in index-set [:index-set :granule :rebalancing-collections]
+                   remove-rebalancing-collection concept-id)]
+    (update-index-set context index-set)))
 
 (defn reset
   "Put elastic in a clean state after deleting indices associated with index-sets and index-set docs."

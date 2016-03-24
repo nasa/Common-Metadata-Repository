@@ -27,6 +27,14 @@
   [index-set-id concept-id]
   (format "%s/rebalancing-collections/%s" (index-set-url index-set-id) concept-id))
 
+(defn start-rebalance-collection-url
+  [index-set-id concept-id]
+  (str (rebalance-collection-url index-set-id concept-id) "/start"))
+
+(defn finalize-rebalance-collection-url
+  [index-set-id concept-id]
+  (str (rebalance-collection-url index-set-id concept-id) "/finalize"))
+
 (defn reset-url
   []
   (format "%s/%s" (index-set-root-url) "reset"))
@@ -147,6 +155,10 @@
   []
   (format "http://%s:%s" (es-config/elastic-host) (es-config/elastic-port)))
 
+(defn safe-decode
+  [response]
+  (try (cheshire/decode (:body response) true) (catch Exception _ (:body response))))
+
 (defn create-index-set
   "submit a request to index-set app to create indices"
   [idx-set]
@@ -166,13 +178,26 @@
   "Submits a request to mark a colleciton as rebalancing"
   [id concept-id]
   (let [response (client/request
-                  {:method :put
-                   :url (rebalance-collection-url id concept-id)
+                  {:method :post
+                   :url (start-rebalance-collection-url id concept-id)
                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                    :accept :json
                    :throw-exceptions false})
         status (:status response)
-        body (cheshire/decode (:body response) true)]
+        body (safe-decode response)]
+    {:status status :errors (:errors body) :response (assoc response :body body)}))
+
+(defn finalize-rebalancing-collection
+  "Submits a request to finalize a rebalancing colleciton"
+  [id concept-id]
+  (let [response (client/request
+                  {:method :post
+                   :url (finalize-rebalance-collection-url id concept-id)
+                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                   :accept :json
+                   :throw-exceptions false})
+        status (:status response)
+        body (safe-decode response)]
     {:status status :errors (:errors body) :response (assoc response :body body)}))
 
 (defn delete-index-set
