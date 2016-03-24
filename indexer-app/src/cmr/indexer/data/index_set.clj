@@ -600,7 +600,6 @@
   (let [cache (cache/context->cache context index-set-cache-key)]
     (cache/get-value cache :concept-mapping-types (partial fetch-concept-mapping-types context))))
 
-;; TODO unit test this
 (defn get-granule-index-names-for-collection
   "Return the granule index names for the input collection concept id. Optionally a
    target-index-key can be specified which indicates that a specific index should be returned"
@@ -624,10 +623,12 @@
        ;; The collection is not rebalancing so it's either in a separate index or small Collections
        [(get indexes (keyword coll-concept-id) small-collections-index-name)]))))
 
-;; TODO unit test this
 (defn get-concept-index-names
   "Return the concept index names for the given concept id.
-   TODO document all parameters including options."
+   Valid options:
+   * target-index-key - Specifies a key into the index names map to choose an index to get to override
+     the default.
+   * all-revisions-index? - true indicates we should target the all collection revisions index."
   ([context concept-id revision-id options]
    (let [concept-type (cs/concept-id->type concept-id)
          concept (when (= :granule concept-type) (meta-db/get-concept context concept-id revision-id))]

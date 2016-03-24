@@ -80,9 +80,6 @@
   (let [indexes (get-granule-index-names context)]
     (distinct (map #(collection-concept-id->index-name indexes %) coll-concept-ids))))
 
-;; TODO fix this function. Write a test first that will detect it. It will fail once we are able to
-;; complete a rebalancing and start to rebalance a second collection for the same provider.
-
 (defn- provider-ids->index-names
   "Return the granule index names for the input provider-ids"
   [context provider-ids]
