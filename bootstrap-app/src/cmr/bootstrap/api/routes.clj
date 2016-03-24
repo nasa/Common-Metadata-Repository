@@ -123,7 +123,6 @@
 
       (context "/rebalancing_collections/:concept-id" [concept-id]
 
-       ;; TODO document in README
        ;; Start rebalancing
        (POST "/start" {:keys [request-context params]}
          (start-rebalance-collection request-context concept-id params))
