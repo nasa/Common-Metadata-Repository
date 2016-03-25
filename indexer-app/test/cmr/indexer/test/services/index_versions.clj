@@ -94,6 +94,12 @@
    (es/save-document-in-elastic
      context [es-index] es-type es-doc concept-id revision-id revision-id options)))
 
+(defn- delete-document-in-elastic
+  ([context es-index es-type concept-id revision-id]
+   (delete-document-in-elastic context es-index es-type concept-id revision-id nil))
+  ([context es-index es-type concept-id revision-id options]
+   (es/delete-document context es-index es-type concept-id revision-id revision-id options)))
+
 (deftest save-with-increment-versions-test
   (testing "Save with increment versions"
     (save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 1)
@@ -132,27 +138,27 @@
 (deftest delete-with-increment-versions-test
   (testing "Delete with increment versions"
     (save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 1)
-    (es/delete-document @context ["tests"] "collection" "C1234-PROV1" "2")
+    (delete-document-in-elastic @context ["tests"] "collection" "C1234-PROV1" "2")
     (assert-delete "C1234-PROV1")
-    (es/delete-document @context ["tests"] "collection" "C1234-PROV1" "8")
+    (delete-document-in-elastic @context ["tests"] "collection" "C1234-PROV1" "8")
     (assert-delete "C1234-PROV1")))
 
 (deftest delete-with-equal-versions-test
   (testing "Delete with equal versions"
     (save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 1)
-    (es/delete-document @context ["tests"] "collection" "C1234-PROV1" "1")
+    (delete-document-in-elastic @context ["tests"] "collection" "C1234-PROV1" "1")
     (assert-delete "C1234-PROV1")))
 
 (deftest delete-with-earlier-versions-test
   (testing "Delete with earlier versions ignore-conflict false"
     (save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 2)
     (try
-      (es/delete-document @context ["tests"] "collection" "C1234-PROV1" "1")
+      (delete-document-in-elastic @context ["tests"] "collection" "C1234-PROV1" "1")
       (catch java.lang.Exception e
         (is (re-find #"version conflict, current \[2\], provided \[1\]" (.getMessage e))))))
   (testing "Delete with earlier versions ignore-conflict true"
     (save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 2
                               {:ignore-conflict? true})
-    (es/delete-document @context ["tests"] "collection" "C1234-PROV1" "1" {:ignore-conflict? true})
+    (delete-document-in-elastic @context ["tests"] "collection" "C1234-PROV1" "1" {:ignore-conflict? true})
     (assert-version "C1234-PROV1" 2)))
 

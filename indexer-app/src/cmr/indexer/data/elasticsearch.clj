@@ -282,17 +282,19 @@
 
 (defn delete-document
   "Delete the document from Elasticsearch, raise error if failed."
-  ([context es-indexes es-type concept-id revision-id]
-   (delete-document context es-indexes es-type concept-id revision-id nil))
-  ([context es-indexes es-type concept-id revision-id options]
+  ([context es-indexes es-type concept-id revision-id elastic-version]
+   (delete-document context es-indexes es-type concept-id revision-id elastic-version nil))
+  ([context es-indexes es-type concept-id revision-id elastic-version options]
    (doseq [es-index es-indexes]
      ;; Cannot use elastisch for deletion as we require special headers on delete
      (let [{:keys [admin-token]} (context->es-config context)
            {:keys [uri http-opts]} (context->conn context)
            {:keys [ignore-conflict? all-revisions-index?]} options
            elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
-           delete-url (format "%s/%s/%s/%s?version=%s&version_type=external_gte" uri es-index es-type
-                              elastic-id revision-id)
+           delete-url (if elastic-version
+                        (format "%s/%s/%s/%s?version=%s&version_type=external_gte" uri es-index es-type
+                                elastic-id elastic-version)
+                        (format "%s/%s/%s/%s" uri es-index es-type elastic-id))
            response (client/delete delete-url
                                    (merge http-opts
                                           {:headers {"Authorization" admin-token

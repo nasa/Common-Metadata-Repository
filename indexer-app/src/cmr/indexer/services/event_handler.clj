@@ -37,11 +37,6 @@
     context concept-id revision-id {:ignore-conflict? true
                                     :all-revisions-index? all-revisions-index?}))
 
-(defn handle-deleted-collection-revision-event
-  "Handle the various actions that can be requested via the indexing queue"
-  [context {:keys [concept-id revision-id]}]
-  (indexer/force-delete-collection-revision context concept-id revision-id))
-
 (defmethod handle-ingest-event :concept-revision-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]
   ;; We should never receive a message that's not for the all revisions index
@@ -50,7 +45,7 @@
       (format (str "Received :concept-revision-delete event that wasn't for the all revisions "
                    "index.  concept-id: %s revision-id: %s")
               concept-id revision-id)))
-  (indexer/force-delete-collection-revision context concept-id revision-id))
+  (indexer/force-delete-all-collection-revision context concept-id revision-id))
 
 (defmethod handle-ingest-event :provider-delete
   [context _ {:keys [provider-id]}]

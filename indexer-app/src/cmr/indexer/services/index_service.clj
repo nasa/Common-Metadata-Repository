@@ -312,7 +312,7 @@
           (do
             (es/delete-document
              context index-names (concept-mapping-types concept-type)
-             concept-id elastic-version elastic-options)
+             concept-id revision-id elastic-version elastic-options)
             ;; propagate collection deletion to granules
             (when (= :collection concept-type)
               (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
@@ -330,7 +330,7 @@
     ;; This is the same thing we do when a tag association is update. So we call the same function.
     (index-concept context concept nil options)))
 
-(defn force-delete-collection-revision
+(defn force-delete-all-collection-revision
   "Removes a collection revision from the all revisions index"
   [context concept-id revision-id]
   (let [index-names (idx-set/get-concept-index-names
@@ -344,6 +344,8 @@
      (concept-mapping-types :collection)
      concept-id
      revision-id
+     nil ;; Null is sent in as the elastic version because we don't want to set a version for this
+     ;; delete. The collection is going to be gone now and should never be indexed again.
      elastic-options)))
 
 (defn delete-provider
