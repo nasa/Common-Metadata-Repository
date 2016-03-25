@@ -19,5 +19,5 @@
 (defmethod qs/search-results->response [:access-group :json]
   [context query results]
   (let [results (select-keys results [:hits :took :items])
-        converted-items (map util/map-keys->snake_case (:items results))]
-  (json/generate-string (assoc results :items converted-items))))
+        converted-items (util/map-keys->snake_case results)]
+  (json/generate-string converted-items)))
