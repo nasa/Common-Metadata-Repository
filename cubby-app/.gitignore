@@ -15,3 +15,5 @@ pom.xml.asc
 /.nrepl-port
 testreports.xml
 /es_data
+test2junit
+build.xml

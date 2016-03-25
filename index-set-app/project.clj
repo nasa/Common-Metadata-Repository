@@ -10,7 +10,7 @@
                  [compojure "1.4.0"]
                  [ring/ring-core "1.4.0" :exclusions [clj-time]]
                  [ring/ring-json "0.4.0"]]
-  :plugins [[lein-test-out "0.3.1"]]
+  :plugins [[test2junit "1.2.1"]]
   :repl-options {:init-ns user}
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
@@ -29,6 +29,6 @@
    :uberjar {:main cmr.index-set.runner
              :aot :all}}
   :aliases {;; Prints out documentation on configuration environment variables.
-            "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]})
-
-
+            "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
+            ;; Alias to test2junit for consistency with lein-test-out
+            "test-out" ["test2junit"]})

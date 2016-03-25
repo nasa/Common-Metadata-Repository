@@ -25,7 +25,7 @@
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]]
 
   :plugins [[lein-shell "0.4.0"]
-            [lein-test-out "0.3.1"]]
+            [test2junit "1.2.1"]]
 
   ;; This is the minimum that must be AOT'd for running in an embeded elastic. AOT :all for installing
   ;; in an elastic vm.
@@ -73,4 +73,5 @@
             "install-workload" ["do"
                                 "package,"
                                 "shell" "install_plugin_into_workload.sh" ~plugin-zip-name "spatialsearch-plugin"]
-            })
+            ;; Alias to test2junit for consistency with lein-test-out
+            "test-out" ["test2junit"]})

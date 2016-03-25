@@ -8,7 +8,7 @@
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]]
 
-  :plugins [[lein-test-out "0.3.1"]]
+  :plugins [[test2junit "1.2.1"]]
 
   ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
   ;; See https://github.com/technomancy/leiningen/wiki/Faster
@@ -32,6 +32,6 @@
 
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
-                      (pjstadig.humane-test-output/activate!)]}})
-
-
+                      (pjstadig.humane-test-output/activate!)]}}
+  :aliases { ;; Alias to test2junit for consistency with lein-test-out
+            "test-out" ["test2junit"]})

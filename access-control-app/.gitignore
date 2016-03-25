@@ -16,3 +16,5 @@ pom.xml.asc
 testreports.xml
 /resources/public/site/access_control_api_docs.html
 /es_data
+test2junit
+build.xml

@@ -13,3 +13,5 @@ pom.xml.asc
 log
 .nrepl-port
 /resources/public/site/ingest_api_docs.html
+test2junit
+build.xml

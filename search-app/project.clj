@@ -22,7 +22,7 @@
                  [org.clojure/tools.nrepl "0.2.11"]
                  [net.sf.saxon/Saxon-HE "9.6.0-7"]
                  [com.github.fge/json-schema-validator "2.2.6"]]
-  :plugins [[lein-test-out "0.3.1"]
+  :plugins [[test2junit "1.2.1"]
             [lein-exec "0.3.4"]]
   :repl-options {:init-ns user
                  :timeout 120000}
@@ -67,4 +67,6 @@
                          "api_docs.md"
                          "resources/public/site/search_api_docs.html")))]
             ;; Prints out documentation on configuration environment variables.
-            "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]})
+            "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
+            ;; Alias to test2junit for consistency with lein-test-out
+            "test-out" ["test2junit"]})

@@ -16,7 +16,7 @@
                  [inflections "0.9.14"]
                  [org.quartz-scheduler/quartz "2.2.2"]]
 
-  :plugins [[lein-test-out "0.3.1"]
+  :plugins [[test2junit "1.2.1"]
             [drift "1.5.3"]
             [lein-exec "0.3.2"]]
 
@@ -40,7 +40,6 @@
   :aliases {"create-user" ["exec" "-p" "./support/create_user.clj"]
             "drop-user" ["exec" "-p" "./support/drop_user.clj"]
             ;; Prints out documentation on configuration environment variables.
-            "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]})
-
-
-
+            "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
+            ;; Alias to test2junit for consistency with lein-test-out
+            "test-out" ["test2junit"]})
