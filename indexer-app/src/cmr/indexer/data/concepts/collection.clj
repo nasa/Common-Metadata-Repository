@@ -67,18 +67,19 @@
         entry-id (eid/entry-id short-name version-id)
         personnel (person-with-email personnel)
         platforms (:platforms collection)
-        platform-short-names (->> (map :short-name platforms)
-                                  (map str/trim))
         gcmd-keywords-map (kf/get-gcmd-keywords-map context)
         platforms-nested (map #(platform/platform-short-name->elastic-doc gcmd-keywords-map %)
-                              platform-short-names)
+                              (map :short-name platforms))
+        platform-short-names (->> (map :short-name platforms-nested)
+                                  (map str/trim))
         platform-long-names (->> (distinct (keep :long-name (concat platforms platforms-nested)))
                                  (map str/trim))
         instruments (mapcat :instruments platforms)
-        instrument-short-names (->> (keep :short-name instruments)
-                                    (map str/trim))
         instruments-nested (map #(instrument/instrument-short-name->elastic-doc gcmd-keywords-map %)
-                                instrument-short-names)
+                                (keep :short-name instruments))
+        instrument-short-names (->> instruments-nested
+                                    (map :short-name)
+                                    (map str/trim))
         instrument-long-names (->> (distinct (keep :long-name
                                                    (concat instruments instruments-nested)))
                                    (map str/trim))
@@ -90,13 +91,14 @@
         project-long-names (->> (keep :long-name (:projects collection))
                                 (map str/trim))
         two-d-coord-names (map :name (:two-d-coordinate-systems collection))
-        archive-center-names (map str/trim
-                                  (org/extract-data-center-names collection :archive-center))
         archive-centers (map #(org/data-center-short-name->elastic-doc gcmd-keywords-map %)
-                             archive-center-names)
-        data-center-names (map str/trim (org/extract-data-center-names collection))
+                             (map str/trim
+                                  (org/extract-data-center-names collection :archive-center)))
+        ;; get the normalized names back
+        archive-center-names (keep :short-name archive-centers)
         data-centers (map #(org/data-center-short-name->elastic-doc gcmd-keywords-map %)
-                          data-center-names)
+                          (map str/trim (org/extract-data-center-names collection)))
+        data-center-names (keep :short-name data-centers)
         start-date (sed/start-date :collection temporal)
         end-date (sed/end-date :collection temporal)
         atom-links (map json/generate-string (ru/atom-links related-urls))
@@ -193,18 +195,18 @@
             ;; tags
             :tags (map tag/tag-association->elastic-doc tag-associations)
             ;; it is currently a list of tag-keys, but it will eventually be something like:
-            ;; {"org.ceos.wgiss.cwic.native_id": {"revisionId":"1",
-            ;;                                    "revisionDate":"2015-01-01T00:00:00.0Z",
+            ;; {"org.ceos.wgiss.cwic.native_id": {"associationDate":"2015-01-01T00:00:00.0Z",
             ;;                                    "data": "Global Maps of Atmospheric Nitrogen Deposition, 1860, 1993, and 2050"},
-            ;;  "org.ceos.wgiss.cwic.data_provider": {"revisionId":"1",
-            ;;                                        "revisionDate":"2015-01-01T00:00:00.0Z",
+            ;;  "org.ceos.wgiss.cwic.data_provider": {"associationDate":"2015-01-01T00:00:00.0Z",
             ;;                                        "data": "NASA"},
-            ;;  "org.ceos.wgiss.cwic.cwic_status": {"revisionId":"1",
-            ;;                                      "revisionDate":"2015-01-01T00:00:00.0Z",
+            ;;  "org.ceos.wgiss.cwic.cwic_status": {"associationDate":"2015-01-01T00:00:00.0Z",
             ;;                                      "data": "prod"}
             :tags-gzip-b64 (when (seq tag-associations)
                              (util/string->gzip-base64
-                               (pr-str (mapv :tag-key tag-associations))))}
+                               (pr-str
+                                 (into {} (for [ta tag-associations]
+                                            [(:tag-key ta) (util/remove-nil-keys
+                                                             {:data (:data ta)})])))))}
 
            (get-in collection [:spatial-coverage :orbit-parameters])
            (spatial->elastic collection)

@@ -11,6 +11,7 @@
             [cmr.system-int-test.utils.fast-xml :as fx]
             [cmr.common.xml :as cx]
             [clojure.string :as str]
+            [cheshire.core :as json]
             [clj-time.format :as f]
             [camel-snake-kebab.core :as csk]
             [cmr.umm.spatial :as umm-s]
@@ -121,7 +122,10 @@
 (defn- xml-elem->tag
   "Extracts the tag from the XML entry."
   [tag-elem]
-  (cx/string-at-path tag-elem [:tagKey]))
+  (when-let [tag-key (cx/string-at-path tag-elem [:tagKey])]
+    (if-let [tag-data (cx/string-at-path tag-elem [:data])]
+      [tag-key {"data" (json/parse-string tag-data)}]
+      [tag-key {}])))
 
 (defmulti xml-elem->entry
   "Retrns an atom entry from a parsed atom xml structure"
@@ -159,7 +163,8 @@
      :score (cx/double-at-path entry-elem [:score])
      :granule-count (cx/long-at-path entry-elem [:granuleCount])
      :has-granules (cx/bool-at-path entry-elem [:hasGranules])
-     :tags (seq (map xml-elem->tag (cx/elements-at-path entry-elem [:tag])))}))
+     :tags (when-let [tags (seq (map xml-elem->tag (cx/elements-at-path entry-elem [:tag])))]
+             (into {} tags))}))
 
 (defmethod xml-elem->entry :granule
   [concept-type entry-elem]

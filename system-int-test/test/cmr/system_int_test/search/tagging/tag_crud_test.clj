@@ -21,11 +21,6 @@
   {:tag-key 1030
    :description 4000})
 
-(defn string-of-length
-  "Creates a string of the specified length"
-  [n]
-  (str/join (repeat n "x")))
-
 (deftest create-tag-validation-test
   (testing "Create without token"
     (is (= {:status 401
@@ -62,7 +57,7 @@
 
     (testing "Maximum field length validations"
       (doseq [[field max-length] field-maxes]
-        (let [long-value (string-of-length (inc max-length))]
+        (let [long-value (tags/string-of-length (inc max-length))]
           (is (= {:status 400
                   :errors [(format "/%s string \"%s\" is too long (length: %d, maximum allowed: %d)"
                                    (name field) long-value (inc max-length) max-length)]}
@@ -111,7 +106,7 @@
 
     (testing "Create tag with fields at maximum length"
       (let [tag (into {} (for [[field max-length] field-maxes]
-                           [field (string-of-length max-length)]))]
+                           [field (tags/string-of-length max-length)]))]
         (is (= 200 (:status (tags/create-tag (e/login (s/context) "user1") tag)))))))
 
   (testing "Creation without optional fields is allowed"
@@ -242,10 +237,4 @@
       (is (= {:status 404
               :errors ["Tag could not be found with tag-key [tag2]"]}
              (tags/delete-tag token "tag2"))))))
-
-
-
-
-
-
 

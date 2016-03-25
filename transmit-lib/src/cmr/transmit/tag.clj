@@ -57,13 +57,13 @@
   * token - the user token to use when creating the token. If not set the token in the context will
   be used.
   * http-options - Other http-options to be sent to clj-http."
-  ([association-type context concept-id content]
-   (associate-tag association-type context concept-id content nil))
-  ([association-type context concept-id content {:keys [raw? token http-options]}]
+  ([association-type context tag-key content]
+   (associate-tag association-type context tag-key content nil))
+  ([association-type context tag-key content {:keys [raw? token http-options]}]
    (let [token (or token (:token context))
          headers (when token {config/token-header token})]
      (h/request context :search
-                {:url-fn #(tag-associations-url % concept-id association-type)
+                {:url-fn #(tag-associations-url % tag-key association-type)
                  :method :post
                  :raw? raw?
                  :http-options (merge {:body (json/generate-string content)
