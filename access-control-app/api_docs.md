@@ -69,16 +69,16 @@ This header returns the unique id assigned to the request. This can be used to h
 
 Successful responses will return an HTTP Status code of 200 and a body containing the CMR Concept Id of the item that was updated or deleted along with the revision id.
 
-    {"concept-id":"AG12345-PROV","revision-id":1}
+    {"concept_id":"AG12345-PROV","revision_id":1}
 
 ## <a name="groups"></a> Groups
 
 Groups are used to identify sets of users for the assignment of access privileges. Groups are either owned by a provider or the system. Provider level groups define sets of users access to that providers data. System level groups define sets of users for assigning system level access. Groups have the following fields:
 
 * `name` - Required field that uniquely identifies a system group or a group within a provider.
-* `provider-id` - Id of the provider that owns the group. If this isn't present then the group will be a system level group.
+* `provider_id` - Id of the provider that owns the group. If this isn't present then the group will be a system level group.
 * `description` - Required field that describes the group.
-* `legacy-guid` - Internal use only. This is used for ECHO Kernel interoperability.
+* `legacy_guid` - Internal use only. This is used for ECHO Kernel interoperability.
 
 ### <a name="create-group"></a> Create Group
 
@@ -96,7 +96,7 @@ curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-E
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 
-{"revision-id":1,"concept-id":"AG1200000000-CMR"}
+{"revision_id":1,"concept_id":"AG1200000000-CMR"}
 ```
 
 #### Creating a Provider Level Group
@@ -105,14 +105,14 @@ Content-Type: application/json;charset=ISO-8859-1
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/groups -d \
 '{
   "name": "Administrators",
-  "provider-id": "PROV1",
+  "provider_id": "PROV1",
   "description": "The group of users that manages PROV1s data holdings."
  }'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 
-{"revision-id":1,"concept-id":"AG1200000001-PROV1"}
+{"revision_id":1,"concept_id":"AG1200000001-PROV1"}
 ```
 
 ### <a name="retrieve-group"></a> Retrieve Group
@@ -145,7 +145,7 @@ curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-EN
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 
-{"concept-id":"AG1200000000-CMR","revision-id":2}
+{"concept_id":"AG1200000000-CMR","revision_id":2}
 ```
 
 ### <a name="delete-group"></a> Delete Group
@@ -158,7 +158,7 @@ curl -XDELETE -i  -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/groups/AG1200000000-CMR
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 
-{"concept-id":"AG1200000000-CMR","revision-id":3}
+{"concept_id":"AG1200000000-CMR","revision_id":3}
 ```
 
 ### <a name="retrieve-group-members"></a> Retrieve Group Members
@@ -185,7 +185,7 @@ curl -i -XPOST -H "Echo-Token: XXXX" -H "Content-Type application/json" %CMR-END
 HTTP/1.1 200 OK
 Content-Type: application/json
 
-{"concept-id":"AG1200000000-CMR","revision-id":3}
+{"concept_id":"AG1200000000-CMR","revision_id":3}
 ```
 
 ### <a name="remove-group-members"></a> Remove Group Members
@@ -199,7 +199,7 @@ curl -i -XDELETE -H "Echo-Token: XXXX" -H "Content-Type application/json" %CMR-E
 HTTP/1.1 200 OK
 Content-Type: application/json
 
-{"concept-id":"AG1200000000-CMR","revision-id":4}
+{"concept_id":"AG1200000000-CMR","revision_id":4}
 ```
 
 ### <a name="search-groups"></a> Search Groups
@@ -237,12 +237,12 @@ The response is always returned in JSON and includes the following parts.
 * hits - How many total groups were found.
 * took - How long the search took in milliseconds
 * items - a list of the current page of groups with the following fields
-  * concept-id
-  * revision-id
+  * concept_id
+  * revision_id
   * name
   * description
-  * provider-id - if a provider level group
-  * member-count - The number of users in the group
+  * provider_id - if a provider level group
+  * member_count - The number of users in the group
 
 ##### Group Search Example
 
@@ -260,24 +260,24 @@ Content-Length: 702
   "hits" : 4,
   "took" : 5,
   "items" : [ {
-    "member-count" : 2,
+    "member_count" : 2,
     "name" : "Administrators",
     "description" : "na",
-    "revision-id" : 2,
-    "concept-id" : "AG1200000002-PROV1",
-    "provider-id" : "PROV1"
+    "revision_id" : 2,
+    "concept_id" : "AG1200000002-PROV1",
+    "provider_id" : "PROV1"
   }, {
     "name" : "Administrators",
-    "member-count" : 2,
+    "member_count" : 2,
     "description" : "na",
-    "revision-id" : 2,
-    "concept-id" : "AG1200000000-CMR"
+    "revision_id" : 2,
+    "concept_id" : "AG1200000000-CMR"
   }, {
     "name" : "Data Readers",
-    "member-count" : 2,
+    "member_count" : 2,
     "description" : "na",
-    "revision-id" : 2,
-    "concept-id" : "AG1200000001-CMR"
+    "revision_id" : 2,
+    "concept_id" : "AG1200000001-CMR"
   } ]
 }
 ```

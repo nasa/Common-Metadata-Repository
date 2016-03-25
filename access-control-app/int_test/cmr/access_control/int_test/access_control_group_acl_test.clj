@@ -20,16 +20,6 @@
       (is (some? concept_id))
       (is (= 1 revision_id))))
 
-  (comment
-     (testing "with permission"
-       (let [group (u/make-group)
-             token (e/login (u/conn-context) "user1" ["group-create-group"])
-             {:keys [status concept_id revision_id]} (u/create-group user/token user/group)]
-         (is (= 200 status))
-         (is (some? concept_id))
-         (is (= 1 revision_id))))
-   )
-
   (testing "without permission"
     (let [group (u/make-group)
           token (e/login (u/conn-context) "user2")
