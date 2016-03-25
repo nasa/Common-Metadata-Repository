@@ -6,7 +6,8 @@
             [cmr.transmit.metadata-db2 :as mdb]
             [cmr.elastic-utils.config :as es-config]
             [cmr.common.mime-types :as mt]
-            [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]))
+            [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
+            [cmr.common.util :as util]))
 
 (def conn-context-atom
   "An atom containing the cached connection context map."
@@ -119,10 +120,10 @@
   ([token group members options]
    (let [group (create-group token group options)]
      (if (seq members)
-       (let [{:keys [revision-id status] :as resp} (add-members token (:concept-id group) members options)]
+       (let [{:keys [revision_id status] :as resp} (add-members token (:concept_id group) members options)]
          (when-not (= status 200)
            (throw (Exception. (format "Unexpected status [%s] when adding members: %s" status (pr-str resp)))))
-         (assoc group :revision-id revision-id))
+         (assoc group :revision_id revision_id))
        group))))
 
 (defn assert-group-saved
@@ -132,9 +133,9 @@
   (let [concept (mdb/get-concept (conn-context) concept-id revision-id)]
     (is (= {:concept-type :access-group
             :native-id (:name group)
-            :provider-id (:provider-id group "CMR")
+            :provider-id (:provider_id group "CMR")
             :format mt/edn
-            :metadata (pr-str group)
+            :metadata (pr-str (util/map-keys->kebab-case group))
             :user-id user-id
             :deleted false
             :concept-id concept-id
@@ -147,7 +148,7 @@
   (let [concept (mdb/get-concept (conn-context) concept-id revision-id)]
     (is (= {:concept-type :access-group
             :native-id (:name group)
-            :provider-id (:provider-id group "CMR")
+            :provider-id (:provider_id group "CMR")
             :metadata ""
             :format mt/edn
             :user-id user-id

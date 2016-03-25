@@ -15,10 +15,10 @@
   (testing "with permission"
     (let [group (u/make-group)
           token (e/login (u/conn-context) "user1" ["group-create-group"])
-          {:keys [status concept-id revision-id]} (u/create-group token group)]
+          {:keys [status concept_id revision_id]} (u/create-group token group)]
       (is (= 200 status))
-      (is (some? concept-id))
-      (is (= 1 revision-id))))
+      (is (some? concept_id))
+      (is (= 1 revision_id))))
 
   (testing "without permission"
     (let [group (u/make-group)
@@ -33,16 +33,16 @@
   (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group-create-group" "prov1guid" :create)
 
   (testing "with permission"
-    (let [group (u/make-group {:provider-id "PROV1"})
+    (let [group (u/make-group {:provider_id "PROV1"})
           token (e/login (u/conn-context) "user1" ["prov1-group-create-group"])
-          {:keys [status concept-id revision-id]} (u/create-group token group)]
+          {:keys [status concept_id revision_id]} (u/create-group token group)]
       (is (= 200 status))
-      (is (re-matches #"AG\d+-PROV1" concept-id) "Incorrect concept id for a provider group")
-      (is (= 1 revision-id))))
+      (is (re-matches #"AG\d+-PROV1" concept_id) "Incorrect concept id for a provider group")
+      (is (= 1 revision_id))))
 
   (testing "without permission"
     (let [token (e/login (u/conn-context) "user2")
-          group (u/make-group {:provider-id "PROV1"})
+          group (u/make-group {:provider_id "PROV1"})
           response (u/create-group token group)]
       (is (= {:status 401
               :errors ["You do not have permission to create access control group [Administrators] in provider [PROV1]."]}
@@ -58,16 +58,16 @@
         no-group-token (e/login (u/conn-context) "user2")
         prov1-only-token (e/login (u/conn-context) "user3" ["prov1-group-readers"])
         system-group (u/make-group)
-        system-group-concept-id (:concept-id (u/create-group token system-group))
-        prov-group (u/make-group {:provider-id "PROV1"})
-        prov-group-concept-id (:concept-id (u/create-group token prov-group))
-        prov2-group (u/make-group {:provider-id "PROV2"})
+        system-group-concept-id (:concept_id (u/create-group token system-group))
+        prov-group (u/make-group {:provider_id "PROV1"})
+        prov-group-concept-id (:concept_id (u/create-group token prov-group))
+        prov2-group (u/make-group {:provider_id "PROV2"})
         prov2-creator-token (e/login (u/conn-context) "user3" ["prov2-group-creator"])
-        prov2-group-concept-id (:concept-id (u/create-group prov2-creator-token prov2-group))]
+        prov2-group-concept-id (:concept_id (u/create-group prov2-creator-token prov2-group))]
 
     (testing "reading system groups"
       (testing "with permission"
-        (is (= (assoc system-group :status 200 :num-members 0)
+        (is (= (assoc system-group :status 200 :num_members 0)
                (u/get-group token system-group-concept-id))))
 
       (testing "without permission"
@@ -77,7 +77,7 @@
 
     (testing "reading provider groups"
       (testing "with permission"
-        (is (= (assoc prov-group :num-members 0 :status 200)
+        (is (= (assoc prov-group :num_members 0 :status 200)
                (u/get-group token prov-group-concept-id))))
 
       (testing "without permission"
@@ -94,15 +94,15 @@
   (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group" "prov1guid" :create :read)
   (let [sys-token (e/login (u/conn-context) "sys-user" ["sys-group"])
         sys-group (u/make-group)
-        sys-group-concept-id (:concept-id (u/create-group sys-token sys-group))
+        sys-group-concept-id (:concept_id (u/create-group sys-token sys-group))
         prov1-token (e/login (u/conn-context) "prov1-user" ["prov1-group"])
-        prov1-group (u/make-group {:provider-id "PROV1"})
-        prov1-group-concept-id (:concept-id (u/create-group prov1-token prov1-group))]
+        prov1-group (u/make-group {:provider_id "PROV1"})
+        prov1-group-concept-id (:concept_id (u/create-group prov1-token prov1-group))]
     (u/wait-until-indexed)
     (is (= [sys-group-concept-id]
-           (map :concept-id (:items (u/search sys-token {:name "Administrators"})))))
+           (map :concept_id (:items (u/search sys-token {:name "Administrators"})))))
     (is (= [prov1-group-concept-id]
-           (map :concept-id (:items (u/search prov1-token {:name "Administrators"})))))
+           (map :concept_id (:items (u/search prov1-token {:name "Administrators"})))))
     (is (= 0 (:hits (u/search (e/login (u/conn-context) "non-permitted-user") {:name "Administrators"}))))))
 
 (deftest delete-group-acl-test
@@ -125,14 +125,14 @@
         prov-token (e/login (u/conn-context) "user2" ["prov1-group-delete"])
         prov2-token (e/login (u/conn-context) "user3" ["prov2-group-creator"])
 
-        sys-group (u/make-group {:legacy-guid "system-group-guid"})
-        sys-group-id (:concept-id (u/create-group sys-token sys-group))
+        sys-group (u/make-group {:legacy_guid "system-group-guid"})
+        sys-group-id (:concept_id (u/create-group sys-token sys-group))
 
-        prov-group (u/make-group {:provider-id "PROV1" :legacy-guid "prov1-group-guid"})
-        prov-group-id (:concept-id (u/create-group prov-token prov-group))
+        prov-group (u/make-group {:provider_id "PROV1" :legacy_guid "prov1-group-guid"})
+        prov-group-id (:concept_id (u/create-group prov-token prov-group))
 
-        prov2-group-id (:concept-id (u/create-group prov2-token
-                                                    (u/make-group {:provider-id "PROV2"})))]
+        prov2-group-id (:concept_id (u/create-group prov2-token
+                                                    (u/make-group {:provider_id "PROV2"})))]
 
     (testing "deleting system groups"
       (testing "without permission"
@@ -141,7 +141,7 @@
                (u/delete-group prov-token sys-group-id))))
 
       (testing "with permission"
-        (is (= {:status 200 :concept-id sys-group-id :revision-id 2}
+        (is (= {:status 200 :concept_id sys-group-id :revision_id 2}
                (u/delete-group sys-token sys-group-id)))
         (u/assert-group-deleted sys-group "user1" sys-group-id 2)))
 
@@ -152,7 +152,7 @@
                (u/delete-group prov2-token prov-group-id))))
 
       (testing "with permission"
-        (is (= {:status 200 :concept-id prov-group-id :revision-id 2}
+        (is (= {:status 200 :concept_id prov-group-id :revision_id 2}
                (u/delete-group prov-token prov-group-id)))
         (u/assert-group-deleted prov-group "user2" prov-group-id 2)))))
 
@@ -174,14 +174,14 @@
         prov-token (e/login (u/conn-context) "user2" ["prov1-group"])
         prov2-token (e/login (u/conn-context) "user3" ["prov2-group"])
 
-        sys-group (u/make-group {:legacy-guid "sys-group-guid"})
-        sys-group-id (:concept-id (u/create-group sys-token sys-group))
+        sys-group (u/make-group {:legacy_guid "sys-group-guid"})
+        sys-group-id (:concept_id (u/create-group sys-token sys-group))
 
-        prov-group (u/make-group {:provider-id "PROV1" :legacy-guid "prov1-group-guid"})
-        prov-group-id (:concept-id (u/create-group prov-token prov-group))
+        prov-group (u/make-group {:provider_id "PROV1" :legacy_guid "prov1-group-guid"})
+        prov-group-id (:concept_id (u/create-group prov-token prov-group))
 
-        prov2-group (u/make-group {:provider-id "PROV2"})
-        prov2-group-id (:concept-id (u/create-group prov2-token
+        prov2-group (u/make-group {:provider_id "PROV2"})
+        prov2-group-id (:concept_id (u/create-group prov2-token
                                                     prov2-group))]
 
     (testing "updating system groups"
@@ -191,7 +191,7 @@
                (u/update-group prov-token sys-group-id (assoc sys-group :description "Updated name")))))
 
       (testing "with permission"
-        (is (= {:status 200 :concept-id sys-group-id :revision-id 2}
+        (is (= {:status 200 :concept_id sys-group-id :revision_id 2}
                (u/update-group sys-token sys-group-id (assoc sys-group :description "Updated name"))))))
 
     (testing "updating provider groups"
@@ -201,7 +201,7 @@
                (u/update-group prov2-token prov-group-id (assoc prov-group :description "Updated name")))))
 
       (testing "with permission"
-        (is (= {:status 200 :concept-id prov-group-id :revision-id 2}
+        (is (= {:status 200 :concept_id prov-group-id :revision_id 2}
                (u/update-group prov-token prov-group-id (assoc prov-group :description "Updated name"))))))))
 
 (deftest group-members-acl-test
@@ -217,11 +217,11 @@
   ;; (e/grant-group-instance-permissions-to-group (u/conn-context) "prov1-group" "prov1-group-guid" :update)
 
   (let [sys-token (e/login (u/conn-context) "sys-user" ["sys-group"])
-        sys-group (u/make-group {:legacy-guid "sys-group-guid"})
-        sys-group-concept-id (:concept-id (u/create-group sys-token sys-group))
+        sys-group (u/make-group {:legacy_guid "sys-group-guid"})
+        sys-group-concept-id (:concept_id (u/create-group sys-token sys-group))
         prov1-token (e/login (u/conn-context) "prov1-user" ["prov1-group"])
-        prov1-group (u/make-group {:legacy-guid "prov1-group-guid" :provider-id "PROV1"})
-        prov1-group-concept-id (:concept-id (u/create-group prov1-token prov1-group))]
+        prov1-group (u/make-group {:legacy_guid "prov1-group-guid" :provider_id "PROV1"})
+        prov1-group-concept-id (:concept_id (u/create-group prov1-token prov1-group))]
 
     (testing "read group members"
       (testing "without permission"
