@@ -138,7 +138,7 @@
      ;; This is the same problem as noted below with the "After finalize before clear cache"
      ;; Search is using the cached index set and doesn't know about the rebalancing collection and
      ;; therefore doesn't know to exclude it.
-     ;; TODO talk to Chris about this and potentially file an issue for next sprint.
+     ;; Fix during CMR-2668. The problem is described there.
      ; (verify-provider-holdings expected-provider-holdings "After start before clear cache")
 
      ;; Clear the search cache so it will get the last index set
@@ -166,6 +166,7 @@
        ;; it will find 0 granules for this collection. The job for refreshing that cache runs every
        ;; 5 minutes.
        ;; This check is here as a demonstration of the problem and not an assertion of what we want to happen.
+       ;; Fix during CMR-2668
        (verify-provider-holdings
          (inc-provider-holdings-for-coll
           expected-provider-holdings coll1 -6)
@@ -175,6 +176,7 @@
        (verify-provider-holdings
          expected-provider-holdings
          "After finalize after clear cache")))))
+
 
 ;; Tests rebalancing multiple collections at the same time.
 (deftest rebalance-multiple-collections-test
@@ -202,7 +204,8 @@
      (assert-rebalance-status {:small-collections 4 :separate-index 4} coll2)
 
      ;; Searches are correct before and after clearing the cache
-     ;; Failing as noted in test above. TODO file issue for this.
+     ;; Failing as noted in test above.
+     ;; Fix during CMR-2668. The problem is described there.
      ; (verify-provider-holdings expected-provider-holdings)
      ;; Clear the search cache so it will get the last index set
      (search/clear-caches)

@@ -44,6 +44,7 @@
 (h/defhealther get-index-set-health :index-set 2)
 
 (defn- submit-rebalancing-collection-request
+  "A helper function for submitting a request to modify the list of rebalancing collections."
   [context index-set-id concept-id url-fn]
   (h/request context :index-set
              {:url-fn #(url-fn % index-set-id concept-id)

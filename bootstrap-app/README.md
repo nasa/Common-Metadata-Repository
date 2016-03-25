@@ -52,7 +52,7 @@ CMR_DB_URL=thin:@localhost:1521:orcl CMR_BOOTSTRAP_DB_PASSWORD=****** java -cp t
 
 ### Start Rebalancing a Collection
 
-Starts moving all the granules in a specified collection from the small collections index into their own separate index. The work is performed asynchronously in the background. The job should be monitored through the bootstrap application's logs and using the status endpoint detailed below.
+Starts moving all the granules in a specified collection from the small collections index into their own separate index. The work is performed asynchronously in the background. The job should be monitored through the bootstrap application's logs and using the status endpoint detailed below. This also supports a `synchronous=true` query parameter to cause the collection reindexing to happen synchronously with the request. This is mostly for testing purposes.
 
 ```
 curl -i -XPOST http://localhost:3006/rebalancing_collections/C5-PROV1/start

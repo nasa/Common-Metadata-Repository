@@ -156,8 +156,12 @@
   (format "http://%s:%s" (es-config/elastic-host) (es-config/elastic-port)))
 
 (defn safe-decode
+  "Safely decodes the response body as JSON. If there's an exception the body as a string is returned."
   [response]
-  (try (cheshire/decode (:body response) true) (catch Exception _ (:body response))))
+  (try
+    (cheshire/decode (:body response) true)
+    (catch Exception _
+      (:body response))))
 
 (defn create-index-set
   "submit a request to index-set app to create indices"

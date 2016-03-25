@@ -1,7 +1,6 @@
 (ns cmr.transmit.indexer
   "Provides functions for accessing the indexer application"
   (:require [cmr.transmit.http-helper :as h]
-            [cmr.common.api.context :as ch]
             [cmr.transmit.config :as config]
             [cmr.transmit.connection :as transmit-conn]))
 
