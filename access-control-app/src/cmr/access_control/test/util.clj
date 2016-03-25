@@ -133,23 +133,7 @@
   (let [concept (mdb/get-concept (conn-context) concept-id revision-id)]
     (is (= {:concept-type :access-group
             :native-id (:name group)
-            :provider-id (:provider-id group "CMR")
-            :format mt/edn
-            :metadata (pr-str (util/map-keys->kebab-case group))
-            :user-id user-id
-            :deleted false
-            :concept-id concept-id
-            :revision-id revision-id}
-           (dissoc concept :revision-date :transaction-id)))))
-
-(defn assert-group-saved-with-provider-id
-  "Checks that a group was persisted correctly in metadata db. The user-id indicates which user
-  updated this revision. Passes in a provider ID field to be changed at test-time"
-  [group user-id concept-id revision-id provider-id]
-  (let [concept (mdb/get-concept (conn-context) concept-id revision-id)]
-    (is (= {:concept-type :access-group
-            :native-id (:name group)
-            :provider-id (:provider-id group provider-id)
+            :provider-id (:provider_id group "CMR")
             :format mt/edn
             :metadata (pr-str (util/map-keys->kebab-case group))
             :user-id user-id
@@ -164,22 +148,7 @@
   (let [concept (mdb/get-concept (conn-context) concept-id revision-id)]
     (is (= {:concept-type :access-group
             :native-id (:name group)
-            :provider-id (:provider-id group "CMR")
-            :metadata ""
-            :format mt/edn
-            :user-id user-id
-            :deleted true
-            :concept-id concept-id
-            :revision-id revision-id}
-           (dissoc concept :revision-date :transaction-id)))))
-
-(defn assert-group-deleted-with-provider-id
-  "Checks that a group tombstone was persisted correctly in metadata db."
-  [group user-id concept-id revision-id provider-id]
-  (let [concept (mdb/get-concept (conn-context) concept-id revision-id)]
-    (is (= {:concept-type :access-group
-            :native-id (:name group)
-            :provider-id (:provider-id group "PROV1")
+            :provider-id (:provider_id group "CMR")
             :metadata ""
             :format mt/edn
             :user-id user-id

@@ -154,7 +154,7 @@
       (testing "with permission"
         (is (= {:status 200 :concept_id prov-group-id :revision_id 2}
                (u/delete-group prov-token prov-group-id)))
-        (u/assert-group-deleted-with-provider-id prov-group "user2" prov-group-id 2 "PROV1")))))
+        (u/assert-group-deleted prov-group "user2" prov-group-id 2)))))
 
 (deftest update-group-acl-test
   ;; members of "sys-group" can create system-level groups and delete the group with the guid "sys-group-guid"
