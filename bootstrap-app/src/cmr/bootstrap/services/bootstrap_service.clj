@@ -65,15 +65,15 @@
   "Bulk index all the granules in a collection"
   ([context provider-id collection-id synchronous]
    (index-collection context provider-id collection-id synchronous nil))
-  ([context provider-id collection-id synchronous target-index-key]
+  ([context provider-id collection-id synchronous options]
    (validate-collection context provider-id collection-id)
    (if synchronous
-     (bulk/index-granules-for-collection (:system context) provider-id collection-id target-index-key)
+     (bulk/index-granules-for-collection (:system context) provider-id collection-id options)
      (let [channel (get-in context [:system :collection-index-channel])]
        (info "Adding collection" collection-id "to collection index channel")
-       (go (>! channel {:provider-id provider-id
-                        :collection-id collection-id
-                        :target-index-key target-index-key}))))))
+       (go (>! channel (merge options
+                              {:provider-id provider-id
+                               :collection-id collection-id})))))))
 
 (defn bootstrap-virtual-products
   "Initializes virtual products."
@@ -91,11 +91,15 @@
   (validate-collection context (:provider-id (concepts/parse-concept-id concept-id)) concept-id)
   ;; This will throw an exception if the collection is already rebalancing
   (index-set/add-rebalancing-collection context indexer-index-set/index-set-id concept-id)
+
   ;; Clear the cache so that the newest index set data will be used.
   (indexer/clear-cache context)
   (let [provider-id (:provider-id (concepts/parse-concept-id concept-id))]
    ;; queue the collection for reindexing into the new index
-   (index-collection context provider-id concept-id synchronous (keyword concept-id))))
+   (index-collection
+    context provider-id concept-id synchronous
+    {:target-index-key (keyword concept-id)
+     :completion-message (format "Completed reindex of [%s] for rebalancing granule indexes." concept-id)})))
 
 (defn finalize-rebalance-collection
   "Finalizes collection rebalancing."
