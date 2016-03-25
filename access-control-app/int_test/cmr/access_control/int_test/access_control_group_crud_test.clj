@@ -116,7 +116,7 @@
       (is (= 200 status))
       (is (re-matches #"AG\d+-PROV1" concept_id) "Incorrect concept id for a provider group")
       (is (= 1 revision_id))
-      (u/assert-group-saved-with-provider-id group "user1" concept_id revision_id)
+      (u/assert-group-saved-with-provider-id group "user1" concept_id revision_id "PROV1")
 
       (testing "Creation with an already existing name"
         (testing "Is rejected for the same provider"

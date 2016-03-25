@@ -138,7 +138,7 @@
         sys-group (u/make-group {:legacy_guid "system-group-guid"})
         sys-group-id (:concept_id (u/create-group sys-token sys-group))
 
-        prov-group (u/make-group {:provider_id "PROV1" :legacy-guid "prov1-group-guid"})
+        prov-group (u/make-group {:provider_id "PROV1" :legacy_guid "prov1-group-guid"})
         prov-group-id (:concept_id (u/create-group prov-token prov-group))
 
         prov2-group-id (:concept_id (u/create-group prov2-token
@@ -164,7 +164,7 @@
       (testing "with permission"
         (is (= {:status 200 :concept_id prov-group-id :revision_id 2}
                (u/delete-group prov-token prov-group-id)))
-        (u/assert-group-deleted prov-group "user2" prov-group-id 2)))))
+        (u/assert-group-deleted-with-provider-id prov-group "user2" prov-group-id 2 "PROV1")))))
 
 (deftest update-group-acl-test
   ;; members of "sys-group" can create system-level groups and delete the group with the guid "sys-group-guid"
@@ -188,7 +188,7 @@
         sys-group-id (:concept_id (u/create-group sys-token sys-group))
 
         prov-group (u/make-group {:provider_id "PROV1" :legacy_guid "prov1-group-guid"})
-        prov-group-id (:concept-id (u/create-group prov-token prov-group))
+        prov-group-id (:concept_id (u/create-group prov-token prov-group))
 
         prov2-group (u/make-group {:provider_id "PROV2"})
         prov2-group-id (:concept_id (u/create-group prov2-token
@@ -206,6 +206,7 @@
 
     (testing "updating provider groups"
       (testing "without permission"
+        (println prov-token )
         (is (= {:status 401
                 :errors ["You do not have permission to update access control group [Administrators] in provider [PROV1]."]}
                (u/update-group prov2-token prov-group-id (assoc prov-group :description "Updated name")))))
