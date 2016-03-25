@@ -88,6 +88,7 @@
   "Kicks off collection rebalancing. Will run synchronously if synchronous is true. Throws exceptions
   from failures to change the index set."
   [context concept-id synchronous]
+  (validate-collection context (:provider-id (concepts/parse-concept-id concept-id)) concept-id)
   ;; This will throw an exception if the collection is already rebalancing
   (index-set/add-rebalancing-collection context indexer-index-set/index-set-id concept-id)
   ;; Clear the cache so that the newest index set data will be used.
@@ -99,6 +100,7 @@
 (defn finalize-rebalance-collection
   "Finalizes collection rebalancing."
   [context concept-id]
+  (validate-collection context (:provider-id (concepts/parse-concept-id concept-id)) concept-id)
   ;; This will throw an exception if the collection is not rebalancing
   (index-set/finalize-rebalancing-collection context indexer-index-set/index-set-id concept-id)
   ;; Clear the cache so that the newest index set data will be used.

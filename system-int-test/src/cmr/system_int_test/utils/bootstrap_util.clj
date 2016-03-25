@@ -46,16 +46,18 @@
 
 (defn start-rebalance-collection
   "Call the bootstrap app to kickoff rebalancing a collection."
-  [collection-id]
-  (let [response (client/request
+  ([collection-id]
+   (start-rebalance-collection collection-id true))
+  ([collection-id synchronous]
+   (let [response (client/request
                    {:method :post
-                    :query-params {:synchronous true}
+                    :query-params {:synchronous synchronous}
                     :url (url/start-rebalance-collection-url collection-id)
                     :accept :json
                     :throw-exceptions false
                     :connection-manager (s/conn-mgr)})
-        body (json/decode (:body response) true)]
-    (assoc body :status (:status response))))
+         body (json/decode (:body response) true)]
+     (assoc body :status (:status response)))))
 
 (defn finalize-rebalance-collection
   "Call the bootstrap app to finalize rebalancing a collection."
