@@ -1213,6 +1213,8 @@ Collections can be found by searching for associated tags. The following tag par
   * options: pattern
 * tag_originator_id
   * options: pattern
+* tag_data
+  * options: pattern
 
 `exclude` parameter can be used with tag_key to exclude any collections that are associated with the specified tag key from the search result.
 
@@ -1223,6 +1225,10 @@ Find collections matching tag key.
 Find collections with exclude tag key.
 
     curl "%CMR-ENDPOINT%/collections?exclude\[tag_key\]=gov.nasa.earthdata.search.cwic"
+
+Find collections with tag_data in the form of tag_data[tag_key]=tag_value. It finds collections match on both tag_key and tag_value, which is the string data that is associated with the collection during tag association.
+
+    curl "%CMR-ENDPOINT%/collections?tag_data[org.ceos.wgiss.cwic.quality]=foo"
 
 #### <a name="c-spatial"></a> Find collections by Spatial
 

@@ -364,3 +364,74 @@
       (is (= [200 (expected-result :json)] [json-status json-results]))
       (is (= [200 (expected-result :atom)] [atom-status atom-results])))))
 
+(deftest search-collections-by-tag-data-test
+  (let [[coll1 coll2 coll3 coll4] (for [n (range 1 5)]
+                                    (d/ingest "PROV1" (dc/collection {:entry-title (str "coll" n)})))
+        all-prov1-colls [coll1 coll2 coll3 coll4]
+        user1-token (e/login (s/context) "user1")
+        tag1 (tags/save-tag
+               user1-token
+               (tags/make-tag {:tag-key "tag1"}))
+        tag2 (tags/save-tag
+               user1-token
+               (tags/make-tag {:tag-key "tag2"}))
+        tag3 (tags/save-tag
+               user1-token
+               (tags/make-tag {:tag-key "tag3"}))]
+    (index/wait-until-indexed)
+
+    (tags/associate-by-concept-ids user1-token "tag1" [{:concept-id (:concept-id coll1)
+                                                        :data "cloud"}
+                                                       {:concept-id (:concept-id coll2)
+                                                        :data "snow"}
+                                                       {:concept-id (:concept-id coll3)
+                                                        :data {:status "cloud"
+                                                               :data "snow"}}])
+    (tags/associate-by-concept-ids user1-token "tag2" [{:concept-id (:concept-id coll1)
+                                                        :data "snow"}
+                                                       {:concept-id (:concept-id coll2)
+                                                        :data "cloud"}])
+    (tags/associate-by-concept-ids user1-token "tag3" [{:concept-id (:concept-id coll3)
+                                                        :data "TAG 3 ROCKS"}])
+    (index/wait-until-indexed)
+
+    (testing "search with valid tag-data"
+      (are [expected-colls query]
+           (d/refs-match? expected-colls
+                          (search/find-refs :collection query {:snake-kebab? false}))
+
+           ;; tag-data search is always case-insensitive
+           [coll3] {:tag-data {"TAG3" "Tag 3 Rocks"}}
+           [coll3] {:tag-data {"tag3" "tag 3 rocks"}}
+
+           ;; tag-data search is grouped by tag-key and tag-value
+           [coll1] {:tag-data {"tag1" "cloud"}}
+           [coll2] {:tag-data {"tag1" "snow"}}
+
+           ;; tag-data search is not pattern search by default"
+           [] {:tag-data {"tag*" "tag*"}}
+           [] {:tag-data {"tag*" "tag*"} "options[tag-data][pattern]" false}
+           [coll3] {:tag-data {"tag*" "tag*"} "options[tag-data][pattern]" true}
+           [] {:tag-data {"*" "snow"}}
+           [] {:tag-data {"*" "snow"} "options[tag-data][pattern]" false}
+           [coll1 coll2] {:tag-data {"*" "snow"} "options[tag-data][pattern]" true}
+
+           ;; multiple tag-data search is AND together
+           [coll1] {:tag-data {"tag1" "cloud" "tag2" "snow"}}
+           [] {:tag-data {"tag1" "cloud" "tag2" "cloud"}}))
+
+    (testing "search with invalid tag-data"
+      (is (= {:status 400
+              :errors ["tag-data must be in the form of tag-data[tag-key]=tag-value"]}
+             (search/find-refs :collection {:tag-data "foo"}))))
+
+    (testing "Unsupported tag-data options"
+      (are [option]
+           (= {:status 400
+               :errors [(format "Option [%s] is not supported for param [tag_data]" option)]}
+              (search/find-refs :collection
+                                {:tag_data {"foo" "bar"} (format "options[tag_data][%s]" option) true}))
+
+           "and"
+           "ignore_case"))))
+
