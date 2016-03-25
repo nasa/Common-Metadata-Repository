@@ -206,7 +206,6 @@
 
     (testing "updating provider groups"
       (testing "without permission"
-        (println prov-token )
         (is (= {:status 401
                 :errors ["You do not have permission to update access control group [Administrators] in provider [PROV1]."]}
                (u/update-group prov2-token prov-group-id (assoc prov-group :description "Updated name")))))
