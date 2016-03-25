@@ -238,6 +238,12 @@
       (let [{:keys [status]} (tags/disassociate-by-query token tag-key {:provider "PROV1"})]
         (is (= 200 status))
         (assert-tag-associated
+          (concat all-prov2-colls all-prov3-colls) {:tag-key "tag1"}))
+
+      ;; disassociate tag again is OK. Since there is no existing tag association, it does nothing.
+      (let [{:keys [status]} (tags/disassociate-by-query token tag-key {:provider "PROV1"})]
+        (is (= 200 status))
+        (assert-tag-associated
           (concat all-prov2-colls all-prov3-colls) {:tag-key "tag1"})))))
 
 (deftest disassociate-tags-with-collections-by-concept-ids-test
@@ -359,6 +365,47 @@
               (disassociate-tag-fn token tag-key request-json))
            tags/disassociate-by-query {:provider "foo"}
            tags/disassociate-by-concept-ids [{:concept-id coll-concept-id}]))))
+
+(deftest disassociate-tags-with-partial-match-query-test
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
+  (testing "disassociate tag with only some of the collections matching the query are associated with the tag is OK"
+    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"}))
+          coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"}))
+          token (e/login (s/context) "user1")
+          _ (index/wait-until-indexed)
+          tag (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll1])
+          assert-tag-associated (fn [expected-colls]
+                                  (is (d/refs-match?
+                                        expected-colls
+                                        (search/find-refs :collection
+                                                          {:tag-key "tag1"
+                                                            :token token}))))]
+      (assert-tag-associated [coll1])
+      (let [{:keys [status errors]} (tags/disassociate-by-query token "tag1" {:provider "PROV1"})]
+        (is (= 200 status))
+        (assert-tag-associated [])))))
+
+(deftest disassociate-tags-with-partial-concept-id-match-test
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
+  (testing "disassociate tag with only some of the collections associated with the tag is OK"
+    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"}))
+          coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"}))
+          token (e/login (s/context) "user1")
+          _ (index/wait-until-indexed)
+          tag (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll1])
+          assert-tag-associated (fn [expected-colls]
+                                  (is (d/refs-match?
+                                        expected-colls
+                                        (search/find-refs :collection
+                                                          {:tag-key "tag1"
+                                                            :token token}))))]
+      (assert-tag-associated [coll1])
+      (let [{:keys [status errors]} (tags/disassociate-by-concept-ids
+                                       token "tag1"
+                                       [{:concept-id (:concept-id coll1)}
+                                        {:concept-id (:concept-id coll2)}])]
+        (is (= 200 status))
+        (assert-tag-associated [])))))
 
 ;; This tests association retention when collections and tags are updated or deleted.
 (deftest association-retention-test
