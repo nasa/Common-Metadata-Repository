@@ -2,7 +2,7 @@
   "This tests associating tags with collections."
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
-            [cmr.common.util :refer [are2]]
+            [cmr.common.util :refer [are2] :as util]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -184,6 +184,15 @@
            tags/associate-by-query {:provider "foo"}
            tags/associate-by-concept-ids [{:concept-id coll-concept-id}]))))
 
+(defn- assert-tag-associated-with-query
+  "Assert the collections found by the tag query matches the given collections"
+  [token query expected-colls]
+  (let [refs (search/find-refs :collection (util/remove-nil-keys (assoc query
+                                                                        :token token
+                                                                        :page_size 30)))]
+    (is (nil? (:errors refs)))
+    (is (d/refs-match? expected-colls refs))))
+
 (deftest disassociate-tags-with-collections-by-query-test
   ;; Grant all collections in PROV1 and 2
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
@@ -210,13 +219,7 @@
         token (e/login (s/context) "user1")
         prov3-token (e/login (s/context) "prov3-user" ["groupguid1"])
         {:keys [concept-id]} (tags/create-tag token tag)
-        assert-tag-associated (fn [expected-colls query]
-                                (is (d/refs-match?
-                                      expected-colls
-                                      (search/find-refs :collection
-                                                        (assoc query
-                                                               :token prov3-token
-                                                               :page_size 30)))))]
+        assert-tag-associated (partial assert-tag-associated-with-query prov3-token {:tag-key "tag1"})]
     (index/wait-until-indexed)
     ;; Associate the tag with every collection
     (tags/associate-by-query prov3-token tag-key {:or [{:provider "PROV1"}
@@ -226,25 +229,23 @@
     (testing "Disassociate using query that finds nothing"
       (let [{:keys [status]} (tags/disassociate-by-query token tag-key {:provider "foo"})]
         (is (= 200 status))
-        (assert-tag-associated all-colls {:tag-key "tag1"})))
+        (assert-tag-associated all-colls)))
 
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible to normal users
       (let [{:keys [status]} (tags/disassociate-by-query token tag-key {:provider "PROV3"})]
         (is (= 200 status))
-        (assert-tag-associated all-colls {:tag-key "tag1"})))
+        (assert-tag-associated all-colls)))
 
     (testing "Successfully disassociate tag with collections"
       (let [{:keys [status]} (tags/disassociate-by-query token tag-key {:provider "PROV1"})]
         (is (= 200 status))
-        (assert-tag-associated
-          (concat all-prov2-colls all-prov3-colls) {:tag-key "tag1"}))
+        (assert-tag-associated (concat all-prov2-colls all-prov3-colls)))
 
       ;; disassociate tag again is OK. Since there is no existing tag association, it does nothing.
       (let [{:keys [status]} (tags/disassociate-by-query token tag-key {:provider "PROV1"})]
         (is (= 200 status))
-        (assert-tag-associated
-          (concat all-prov2-colls all-prov3-colls) {:tag-key "tag1"})))))
+        (assert-tag-associated (concat all-prov2-colls all-prov3-colls))))))
 
 (deftest disassociate-tags-with-collections-by-concept-ids-test
   ;; Grant all collections in PROV1 and 2
@@ -272,13 +273,7 @@
         token (e/login (s/context) "user1")
         prov3-token (e/login (s/context) "prov3-user" ["groupguid1"])
         {:keys [concept-id]} (tags/create-tag token tag)
-        assert-tag-associated (fn [expected-colls query]
-                                (is (d/refs-match?
-                                      expected-colls
-                                      (search/find-refs :collection
-                                                        (assoc query
-                                                               :token prov3-token
-                                                               :page_size 30)))))]
+        assert-tag-associated (partial assert-tag-associated-with-query prov3-token {:tag-key "tag1"})]
     (index/wait-until-indexed)
     ;; Associate the tag with every collection
     (tags/associate-by-query prov3-token tag-key {:or [{:provider "PROV1"}
@@ -291,8 +286,7 @@
                                tag-key
                                (map #(hash-map :concept-id (:concept-id %)) all-prov1-colls))]
         (is (= 200 status))
-        (assert-tag-associated
-          (concat all-prov2-colls all-prov3-colls) {:tag-key "tag1"})))
+        (assert-tag-associated (concat all-prov2-colls all-prov3-colls))))
 
     (testing "Disassociate to deleted or non-existent collections"
       (let [c1-p2-concept-id (:concept-id c1-p2)
@@ -374,12 +368,7 @@
           token (e/login (s/context) "user1")
           _ (index/wait-until-indexed)
           tag (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll1])
-          assert-tag-associated (fn [expected-colls]
-                                  (is (d/refs-match?
-                                        expected-colls
-                                        (search/find-refs :collection
-                                                          {:tag-key "tag1"
-                                                            :token token}))))]
+          assert-tag-associated (partial assert-tag-associated-with-query token {:tag-key "tag1"})]
       (assert-tag-associated [coll1])
       (let [{:keys [status errors]} (tags/disassociate-by-query token "tag1" {:provider "PROV1"})]
         (is (= 200 status))
@@ -393,17 +382,12 @@
           token (e/login (s/context) "user1")
           _ (index/wait-until-indexed)
           tag (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll1])
-          assert-tag-associated (fn [expected-colls]
-                                  (is (d/refs-match?
-                                        expected-colls
-                                        (search/find-refs :collection
-                                                          {:tag-key "tag1"
-                                                            :token token}))))]
+          assert-tag-associated (partial assert-tag-associated-with-query token {:tag-key "tag1"})]
       (assert-tag-associated [coll1])
       (let [{:keys [status errors]} (tags/disassociate-by-concept-ids
-                                       token "tag1"
-                                       [{:concept-id (:concept-id coll1)}
-                                        {:concept-id (:concept-id coll2)}])]
+                                      token "tag1"
+                                      [{:concept-id (:concept-id coll1)}
+                                       {:concept-id (:concept-id coll2)}])]
         (is (= 200 status))
         (assert-tag-associated [])))))
 
@@ -414,12 +398,7 @@
         token (e/login (s/context) "user1")
         _ (index/wait-until-indexed)
         tag (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll])
-        assert-tag-associated (fn [collection]
-                                (let [refs (search/find-refs :collection {:tag-key "tag1"})]
-                                  (is (nil? (:errors refs)))
-                                  (is (d/refs-match?
-                                        [collection]
-                                        (search/find-refs :collection {:tag-key "tag1"})))))
+        assert-tag-associated (partial assert-tag-associated-with-query nil {:tag-key "tag1"})
         assert-tag-not-associated (fn []
                                     (let [refs (search/find-refs :collection {:tag-key "tag1"})]
                                       (is (nil? (:errors refs)))
@@ -427,20 +406,20 @@
     (index/wait-until-indexed)
 
     (testing "Tag initially associated with collection"
-      (assert-tag-associated coll))
+      (assert-tag-associated [coll]))
 
     (testing "Tag still associated with collection after updating collection"
       (let [updated-coll (d/ingest "PROV1" (dissoc coll :revision-id))]
         (is (= 200 (:status updated-coll)))
         (index/wait-until-indexed)
-        (assert-tag-associated updated-coll)))
+        (assert-tag-associated [updated-coll])))
 
     (testing "Tag still associated with collection after deleting and recreating the collection"
       (is (= 200 (:status (ingest/delete-concept (d/item->concept coll)))))
       (let [recreated-coll (d/ingest "PROV1" (dissoc coll :revision-id))]
         (is (= 200 (:status recreated-coll)))
         (index/wait-until-indexed)
-        (assert-tag-associated recreated-coll)))
+        (assert-tag-associated [recreated-coll])))
 
     (let [latest-coll (assoc coll :revision-id 4)]
 
@@ -448,7 +427,7 @@
         (let [updated-tag (tags/save-tag token tag)]
           (is (= {:status 200 :revision-id 2} (select-keys updated-tag [:status :revision-id])))
           (index/wait-until-indexed)
-          (assert-tag-associated latest-coll)))
+          (assert-tag-associated [latest-coll])))
 
       (testing "Tag not associated with collection after deleting and recreating the tag"
         (is (= {:status 200 :concept-id (:concept-id tag) :revision-id 3}
