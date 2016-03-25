@@ -111,7 +111,7 @@
           (ocsd-map->vector %))
        (ocsd/ocsds->elastic-docs umm-granule)))
 
-(defmethod es/concept->elastic-doc :granule
+(defmethod es/parsed-concept->elastic-doc :granule
   [context concept umm-granule]
   (let [{:keys [concept-id extra-fields provider-id revision-date format]} concept
         {:keys [parent-collection-id]} extra-fields

@@ -246,7 +246,7 @@
      :permitted-group-ids tombstone-permitted-group-ids
      :access-value access-value}))
 
-(defmethod es/concept->elastic-doc :collection
+(defmethod es/parsed-concept->elastic-doc :collection
   [context concept collection]
   (if (:deleted concept)
     (get-elastic-doc-for-tombstone-collection context concept)

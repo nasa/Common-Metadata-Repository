@@ -196,7 +196,7 @@
               "project not matches"
               [] {:project "foo"}
 
-              ;; archive-center, data-center - TODO CMR-2265 still need to figure out how to tell them apart in UMM-C
+              ;; archive-center, data-center - CMR-2265 still need to figure out how to tell them apart in UMM-C
 
               "spatial keywords match"
               [result] {"spatial_keyword[]" "SPK1"}

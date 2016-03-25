@@ -94,7 +94,7 @@
     {"options[highlights][begin_tag]" "!!!!!"
      "options[highlights][end_tag]" "!!!!!"}
 
-    ;; TODO CMR-1986 There is a known bug in Elasticsearch highlighting with regard to snippet_length:
+    ;; CMR-1986 There is a known bug in Elasticsearch highlighting with regard to snippet_length:
     ;; https://github.com/elastic/elasticsearch/issues/9442
     ;; This test should be updated to expect the correct length when the bug is fixed
     "Search with keyword and snippet_length = 50 and num_snippets = 2"
@@ -151,7 +151,7 @@
     {:keyword "ocean collection"}
     {"options[highlights][end_tag]" "</br>"}
 
-    ;; TODO CMR-1986 - There is a known bug in Elasticsearch highlighting with regard to snippet_length:
+    ;; CMR-1986 - There is a known bug in Elasticsearch highlighting with regard to snippet_length:
     ;; https://github.com/elastic/elasticsearch/issues/9442
     ;; This test should be updated to expect the correct length when the bug is fixed.
     "Search with keyword and snippet_length and num_snippets"

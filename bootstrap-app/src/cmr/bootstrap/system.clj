@@ -75,7 +75,8 @@
              :relative-root-url (transmit-config/bootstrap-relative-root-url)
              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                       kf/kms-cache-key (kf/create-kms-cache)}}]
-    (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms :cubby ])))
+    (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms :cubby :index-set
+                                                  :indexer])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

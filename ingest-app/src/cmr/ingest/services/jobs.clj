@@ -5,7 +5,6 @@
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.acl.acl-fetcher :as acl-fetcher]
             [cmr.ingest.data.provider-acl-hash :as pah]
-            [cmr.ingest.data.indexer :as indexer]
             [cmr.ingest.data.ingest-events :as ingest-events]
             [cmr.common.log :refer (debug info warn error)]))
 

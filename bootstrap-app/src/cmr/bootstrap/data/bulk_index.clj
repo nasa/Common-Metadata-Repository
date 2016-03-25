@@ -58,7 +58,7 @@
 
 (defn index-granules-for-collection
   "Index the granules for the given collection."
-  [system provider-id collection-id]
+  [system provider-id collection-id {:keys [target-index-key completion-message]}]
   (info "Indexing granule data for collection" collection-id)
   (let [db (helper/get-metadata-db-db system)
         provider (p/get-provider db provider-id)
@@ -66,8 +66,12 @@
                 :provider-id provider-id
                 :parent-collection-id collection-id}
         concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system))
-        num-granules (index/bulk-index {:system (helper/get-indexer system)} concept-batches false)]
+        num-granules (index/bulk-index {:system (helper/get-indexer system)}
+                                       concept-batches
+                                       {:target-index-key target-index-key})]
     (info "Indexed" num-granules "granule(s) for provider" provider-id "collection" collection-id)
+    (when completion-message
+      (info completion-message))
     num-granules))
 
 (defn- index-granules-for-provider
@@ -79,7 +83,7 @@
         params {:concept-type :granule
                 :provider-id provider-id}
         concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system) start-index)
-        num-granules (index/bulk-index {:system (helper/get-indexer system)} concept-batches false)]
+        num-granules (index/bulk-index {:system (helper/get-indexer system)} concept-batches {})]
     (info "Indexed" num-granules "granule(s) for provider" provider-id)
     num-granules))
 
@@ -91,7 +95,7 @@
         params {:concept-type :collection
                 :provider-id provider-id}
         concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system))
-        num-collections (index/bulk-index {:system (helper/get-indexer system)} concept-batches false)]
+        num-collections (index/bulk-index {:system (helper/get-indexer system)} concept-batches {})]
     (info "Indexed" num-collections "collection(s) for provider" provider-id)
     num-collections))
 
@@ -124,7 +128,7 @@
   (let [channel (:collection-index-channel system)]
     (ca/thread (while true
                  (try ; catch any errors and log them, but don't let the thread die
-                   (let [[provider-id collection-id] (<!! channel)]
-                     (index-granules-for-collection system provider-id collection-id))
+                   (let [{:keys [provider-id collection-id] :as options} (<!! channel)]
+                     (index-granules-for-collection system provider-id collection-id options))
                    (catch Throwable e
                      (error e (.getMessage e))))))))

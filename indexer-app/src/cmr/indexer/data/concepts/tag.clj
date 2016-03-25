@@ -4,7 +4,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.indexer.data.elasticsearch :as es]))
 
-(defmethod es/concept->elastic-doc :tag
+(defmethod es/parsed-concept->elastic-doc :tag
   [context concept parsed-concept]
   (let [{:keys [concept-id]} concept
         {:keys [tag-key description originator-id]}

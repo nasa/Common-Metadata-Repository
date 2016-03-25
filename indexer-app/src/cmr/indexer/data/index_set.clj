@@ -562,13 +562,16 @@
                                       (:body response))))))
 
 (defn fetch-concept-type-index-names
-  "Fetch index names for each concept type from index-set app"
+  "Fetch a map containing index names for each concept type from index-set app along with the list
+   of rebalancing collections"
   ([context]
    (let [index-set-id (get-in (index-set context) [:index-set :id])]
      (fetch-concept-type-index-names context index-set-id)))
   ([context index-set-id]
    (let [fetched-index-set (index-set/get-index-set context index-set-id)]
-     (get-in fetched-index-set [:index-set :concepts]))))
+     {:index-names (get-in fetched-index-set [:index-set :concepts])
+      :rebalancing-collections (get-in fetched-index-set
+                                       [:index-set :granule :rebalancing-collections])})))
 
 (defn fetch-concept-mapping-types
   "Fetch mapping types for each concept type from index-set app"
@@ -597,34 +600,58 @@
   (let [cache (cache/context->cache context index-set-cache-key)]
     (cache/get-value cache :concept-mapping-types (partial fetch-concept-mapping-types context))))
 
-(defn get-concept-index-name
-  "Return the concept index name for the given concept id"
-  ([context concept-id revision-id all-revisions-index?]
+(defn get-granule-index-names-for-collection
+  "Return the granule index names for the input collection concept id. Optionally a
+   target-index-key can be specified which indicates that a specific index should be returned"
+  ([context coll-concept-id]
+   (get-granule-index-names-for-collection context coll-concept-id nil))
+  ([context coll-concept-id target-index-key]
+   (let [{:keys [index-names rebalancing-collections]} (get-concept-type-index-names context)
+         indexes (:granule index-names)
+         small-collections-index-name (get indexes :small_collections)]
+
+     (cond
+       target-index-key
+       [(get indexes target-index-key)]
+
+       ;; The collection is currently rebalancing so it will have granules in both small Collections
+       ;; and the separate index
+       (some #{coll-concept-id} rebalancing-collections)
+       [(get indexes (keyword coll-concept-id)) small-collections-index-name]
+
+       :else
+       ;; The collection is not rebalancing so it's either in a separate index or small Collections
+       [(get indexes (keyword coll-concept-id) small-collections-index-name)]))))
+
+(defn get-concept-index-names
+  "Return the concept index names for the given concept id.
+   Valid options:
+   * target-index-key - Specifies a key into the index names map to choose an index to get to override
+     the default.
+   * all-revisions-index? - true indicates we should target the all collection revisions index."
+  ([context concept-id revision-id options]
    (let [concept-type (cs/concept-id->type concept-id)
          concept (when (= :granule concept-type) (meta-db/get-concept context concept-id revision-id))]
-     (get-concept-index-name context concept-id revision-id all-revisions-index? concept)))
-  ([context concept-id revision-id all-revisions-index? concept]
-   (let [concept-type (cs/concept-id->type concept-id)
-         indexes (get (get-concept-type-index-names context) concept-type)]
+     (get-concept-index-names context concept-id revision-id options concept)))
+  ([context concept-id revision-id {:keys [target-index-key all-revisions-index?]} concept]
+   ;; Setting all-revisions-index? to true is short hand for saying we should target the all collections
+   ;; revision index.
+   (let [target-index-key (or target-index-key (when all-revisions-index? :all-collection-revisions))
+         concept-type (cs/concept-id->type concept-id)
+         indexes (get-in (get-concept-type-index-names context) [:index-names concept-type])]
      (case concept-type
        :collection
-       (get indexes (if all-revisions-index? :all-collection-revisions :collections))
+       [(get indexes (or target-index-key :collections))]
        :tag
-       (get indexes :tags)
+       [(get indexes (or target-index-key :tags))]
        :granule
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
-         (get indexes (keyword coll-concept-id) (get indexes :small_collections)))))))
-
-(defn get-granule-index-name-for-collection
-  "Return the granule index name for the input collection concept id"
-  [context coll-concept-id]
-  (let [indexes (get (get-concept-type-index-names context) :granule)]
-    (get indexes (keyword coll-concept-id) (get indexes :small_collections))))
+         (get-granule-index-names-for-collection context coll-concept-id target-index-key))))))
 
 (defn get-granule-index-names-for-provider
   "Return the granule index names for the input provider id"
   [context provider-id]
-  (let [indexes (get (get-concept-type-index-names context) :granule)
+  (let [indexes (get-in (get-concept-type-index-names context) [:index-names :granule])
         filter-fn (fn [[k v]]
                     (or
                       (.endsWith (name k) (str "_" provider-id))

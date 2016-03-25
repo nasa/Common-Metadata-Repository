@@ -42,4 +42,4 @@
                       :_index "3"}}
                     {:id "E"}]]
       (is (= expected
-             (bulk/bulk-index all-docs))))))
+             (bulk/create-bulk-index-operations all-docs))))))

@@ -85,6 +85,26 @@
     (bs/bootstrap-virtual-products context (= "true" synchronous) provider-id entry-title)
     {:status 202 :body {:message "Bootstrapping virtual products."}}))
 
+(defn start-rebalance-collection
+  "Kicks off rebalancing the granules in the collection into their own index."
+  [context concept-id params]
+  (bs/start-rebalance-collection context concept-id (= "true" (:synchronous params)))
+  {:status 200
+   :body {:message (str "Rebalancing started for collection " concept-id)}})
+
+(defn rebalance-status
+  "Gets the status of rebalancing a collection."
+  [context concept-id]
+  {:status 200
+   :body (bs/rebalance-status context concept-id)})
+
+(defn finalize-rebalance-collection
+  "Completes rebalancing the granules in the collection"
+  [context concept-id]
+  (bs/finalize-rebalance-collection context concept-id)
+  {:status 200
+   :body {:message (str "Rebalancing completed for collection " concept-id)}})
+
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
@@ -100,6 +120,20 @@
 
         (POST "/collections" {:keys [request-context body params]}
           (bulk-index-collection request-context body params)))
+
+      (context "/rebalancing_collections/:concept-id" [concept-id]
+
+       ;; Start rebalancing
+       (POST "/start" {:keys [request-context params]}
+         (start-rebalance-collection request-context concept-id params))
+
+       ;; Get counts of rebalancing data
+       (GET "/status" {:keys [request-context]}
+         (rebalance-status request-context concept-id))
+
+       ;; Complete reindexing
+       (POST "/finalize" {:keys [request-context]}
+         (finalize-rebalance-collection request-context concept-id)))
 
       (context "/virtual_products" []
         (POST "/" {:keys [request-context params]}

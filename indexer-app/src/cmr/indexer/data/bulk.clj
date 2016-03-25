@@ -30,13 +30,13 @@
   [{"index" (select-keys doc special-operation-keys)}
    (apply dissoc doc special-operation-keys)])
 
-(defn bulk-index
+(defn create-bulk-index-operations
   "generates the content for a bulk insert operation.  Elasticsearch's bulk operations take a
   series of lines of index information and documents to updates interleaved. This functions expects
   that the document will contain the index information. It extracts the index keys from each document
   and returns a sequence of index info, document, index info, document..., etc."
   ([documents]
-   (bulk-index documents false))
+   (create-bulk-index-operations documents false))
   ([documents all-revisions-index?]
    (if all-revisions-index?
      (mapcat index-operation-all-revisions documents)

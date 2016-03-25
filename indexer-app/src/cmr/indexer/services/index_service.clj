@@ -67,36 +67,40 @@
 
 (defmulti prepare-batch
   "Returns the batch of concepts into elastic docs for bulk indexing."
-  (fn [context batch all-revisions-index?]
+  (fn [context batch options]
     (cs/concept-id->type (:concept-id (first batch)))))
 
 (defmethod prepare-batch :default
-  [context batch all-revisions-index?]
-  (es/prepare-batch context (filter-expired-concepts batch) all-revisions-index?))
+  [context batch options]
+  (es/prepare-batch context (filter-expired-concepts batch) options))
 
 (defmethod prepare-batch :collection
-  [context batch all-revisions-index?]
+  [context batch options]
   ;; Get the tag associations as well.
   (let [batch (map (fn [concept]
                      (let [tag-associations (mdb/get-tag-associations-for-collection
                                               context concept)]
                        (assoc concept :tag-associations tag-associations)))
                    batch)]
-    (es/prepare-batch context (filter-expired-concepts batch) all-revisions-index?)))
+    (es/prepare-batch context (filter-expired-concepts batch) options)))
 
 (defn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
   directly to this function - it does not retrieve them from metadata db (tag associations for
-  collections WILL be retrieved, however). The bulk API is
-  invoked repeatedly if necessary - processing batch-size concepts each time. Returns the number
-  of concepts that have been indexed."
-  [context concept-batches all-revisions-index?]
-  (reduce (fn [num-indexed batch]
-            (let [batch (prepare-batch context batch all-revisions-index?)]
-              (es/bulk-index context batch all-revisions-index?)
-              (+ num-indexed (count batch))))
-          0
-          concept-batches))
+  collections WILL be retrieved, however). The bulk API is invoked repeatedly if necessary -
+  processing batch-size concepts each time. Returns the number of concepts that have been indexed.
+
+  Valid options:
+  * :all-revisions-index? - true indicates this should be indexed into the all revisions index"
+  ([context concept-batches]
+   (bulk-index context concept-batches nil))
+  ([context concept-batches options]
+   (reduce (fn [num-indexed batch]
+             (let [batch (prepare-batch context batch options)]
+               (es/bulk-index-documents context batch options)
+               (+ num-indexed (count batch))))
+           0
+           concept-batches)))
 
 (defn- indexing-applicable?
   "Returns true if indexing is applicable for the given concept-type and all-revisions-index? flag.
@@ -134,7 +138,7 @@
                                          :collection
                                          REINDEX_BATCH_SIZE
                                          {:provider-id provider-id :latest true})]
-         (bulk-index context latest-collection-batches false)))
+         (bulk-index context latest-collection-batches {:all-revisions-index? false})))
 
      (when (or (nil? all-revisions-index?) all-revisions-index?)
        ;; Note that this will not unindex revisions that were removed directly from the database.
@@ -145,7 +149,7 @@
                                      :collection
                                      REINDEX_BATCH_SIZE
                                      {:provider-id provider-id})]
-         (bulk-index context all-revisions-batches true))))))
+         (bulk-index context all-revisions-batches {:all-revisions-index? true}))))))
 
 (defn reindex-tags
   "Reindexes all the tags. Only the latest revisions will be indexed"
@@ -156,7 +160,7 @@
                              :tag
                              REINDEX_BATCH_SIZE
                              {:latest true})]
-    (bulk-index context latest-tag-batches false)))
+    (bulk-index context latest-tag-batches)))
 
 (defn- log-ingest-to-index-time
   "Add a log message indicating the time it took to go from ingest to completed indexing."
@@ -232,26 +236,26 @@
         (when (or (nil? delete-time) (t/after? delete-time (tk/now)))
           (let [tag-associations (get-tag-associations context concept)
                 elastic-version (get-elastic-version-with-tag-associations
-                                  context concept tag-associations)
+                                 context concept tag-associations)
                 tag-associations (map cp/parse-concept (filter #(not (:deleted %)) tag-associations))
-                concept-index (idx-set/get-concept-index-name context concept-id revision-id
-                                                              all-revisions-index? concept)
-                es-doc (es/concept->elastic-doc context
-                                                (assoc concept :tag-associations tag-associations)
-                                                parsed-concept)
+                concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
+                                                                 options concept)
+                es-doc (es/parsed-concept->elastic-doc context
+                                                       (assoc concept :tag-associations tag-associations)
+                                                       parsed-concept)
                 elastic-options (-> options
                                     (select-keys [:all-revisions-index? :ignore-conflict?])
                                     (assoc :ttl (when delete-time
                                                   (t/in-millis (t/interval (tk/now) delete-time)))))]
             (es/save-document-in-elastic
-              context
-              concept-index
-              (concept-mapping-types concept-type)
-              es-doc
-              concept-id
-              revision-id
-              elastic-version
-              elastic-options)))))))
+             context
+             concept-indexes
+             (concept-mapping-types concept-type)
+             es-doc
+             concept-id
+             revision-id
+             elastic-version
+             elastic-options)))))))
 
 (defmethod index-concept :tag-association
   [context concept parsed-concept options]
@@ -294,29 +298,30 @@
     (when (indexing-applicable? concept-type all-revisions-index?)
       (info (format "Deleting concept %s, revision-id %s, all-revisions-index? %s"
                     concept-id revision-id all-revisions-index?))
-      (let [index-name (idx-set/get-concept-index-name
-                         context concept-id revision-id all-revisions-index?)
+      (let [index-names (idx-set/get-concept-index-names
+                         context concept-id revision-id options)
             concept-mapping-types (idx-set/get-concept-mapping-types context)
             elastic-options (select-keys options [:all-revisions-index? :ignore-conflict?])]
         (if all-revisions-index?
           ;; save tombstone in all revisions collection index
-          (let [es-doc (es/concept->elastic-doc context concept (:extra-fields concept))]
+          (let [es-doc (es/parsed-concept->elastic-doc context concept (:extra-fields concept))]
             (es/save-document-in-elastic
-              context index-name (concept-mapping-types concept-type)
-              es-doc concept-id revision-id elastic-version elastic-options))
+             context index-names (concept-mapping-types concept-type)
+             es-doc concept-id revision-id elastic-version elastic-options))
           ;; delete concept from primary concept index
           (do
             (es/delete-document
-              context index-name (concept-mapping-types concept-type)
-              concept-id elastic-version elastic-options)
+             context index-names (concept-mapping-types concept-type)
+             concept-id elastic-version elastic-options)
             ;; propagate collection deletion to granules
             (when (= :collection concept-type)
-              (es/delete-by-query
-                context
-                (idx-set/get-granule-index-name-for-collection context concept-id)
-                (concept-mapping-types :granule)
-                {:term {(query-field->elastic-field :collection-concept-id :granule)
-                        concept-id}}))))))))
+              (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
+                (es/delete-by-query
+                 context
+                 index
+                 (concept-mapping-types :granule)
+                 {:term {(query-field->elastic-field :collection-concept-id :granule)
+                         concept-id}})))))))))
 
 (defmethod delete-concept :tag-association
   [context concept-id revision-id options]
@@ -328,18 +333,18 @@
 (defn force-delete-collection-revision
   "Removes a collection revision from the all revisions index"
   [context concept-id revision-id]
-  (let [index-name (idx-set/get-concept-index-name
-                     context concept-id revision-id true)
+  (let [index-names (idx-set/get-concept-index-names
+                     context concept-id revision-id {:all-revisions-index? true})
         concept-mapping-types (idx-set/get-concept-mapping-types context)
         elastic-options {:ignore-conflict? false
                          :all-revisions-index? true}]
     (es/delete-document
-      context
-      index-name
-      (concept-mapping-types :collection)
-      concept-id
-      revision-id
-      elastic-options)))
+     context
+     index-names
+     (concept-mapping-types :collection)
+     concept-id
+     revision-id
+     elastic-options)))
 
 (defn delete-provider
   "Delete all the concepts within the given provider"
@@ -348,7 +353,7 @@
   ;; may be unindexed in other places when a :provider-delete message is handled,
   ;; e.g. unindexing access groups in access-control-app.
   (info (format "Deleting provider-id %s" provider-id))
-  (let [index-names (idx-set/get-concept-type-index-names context)
+  (let [{:keys [index-names]} (idx-set/get-concept-type-index-names context)
         concept-mapping-types (idx-set/get-concept-mapping-types context)]
     ;; delete the collections
     (es/delete-by-query

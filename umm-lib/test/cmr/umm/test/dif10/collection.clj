@@ -164,18 +164,6 @@
                  actual (c/parse-collection xml)]
              (= expected actual))))
 
-(comment
-
-
- (let [collection (first (gen/sample coll-gen/collections 1))]
-   (let [expected (umm->expected-parsed-dif10 collection)
-         xml (dif10/umm->dif10-xml collection)
-         actual (c/parse-collection xml)]
-     (println xml)
-     (proto/save 1)
-     (is (= expected actual)))))
-
-
 (defn- remove-not-provided
   [values sub-key]
   (seq (remove #(= (sub-key %) "Not provided") values)))

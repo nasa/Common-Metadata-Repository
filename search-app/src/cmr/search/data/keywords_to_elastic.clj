@@ -86,7 +86,7 @@
   exact match on another"
   [regex-field exact-field keywords boost]
   {:weight boost
-   ;; TODO - should the 'and' below actually be an 'or'? Investigate this as part of CMR-1329
+   ;; Should the 'and' below actually be an 'or'? Investigate this as part of CMR-1329
    :filter {:or [{:and (map (partial keyword-regexp-filter regex-field) keywords)}
                  {:or (map (partial keyword-exact-match-filter exact-field) keywords)}]}})
 

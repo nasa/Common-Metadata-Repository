@@ -51,9 +51,15 @@
           (context "/rebalancing-collections/:concept-id" [concept-id]
 
             ;; Marks the collection as rebalancing in the index set.
-            (PUT "/" {request-context :request-context body :body params :params headers :headers}
+            (POST "/start" {request-context :request-context}
               (acl/verify-ingest-management-permission request-context :update)
               (index-svc/mark-collection-as-rebalancing request-context id concept-id)
+              {:status 200})
+
+            ;; Marks the collection as completed rebalancing
+            (POST "/finalize" {request-context :request-context}
+              (acl/verify-ingest-management-permission request-context :update)
+              (index-svc/finalize-collection-rebalancing request-context id concept-id)
               {:status 200}))))
 
 

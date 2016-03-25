@@ -4,7 +4,7 @@
             [cmr.transmit.metadata-db2 :as mdb2]
             [cmr.transmit.echo.rest :as rest]
             [cmr.transmit.cubby :as cubby]
-            [cmr.ingest.data.indexer :as indexer]
+            [cmr.transmit.indexer :as indexer]
             [cmr.ingest.data.ingest-events :as ingest-events]
             [cmr.ingest.data.provider-acl-hash :as pah]
             [cmr.ingest.services.messages :as msg]
