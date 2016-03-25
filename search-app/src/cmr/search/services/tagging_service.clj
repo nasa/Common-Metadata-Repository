@@ -149,19 +149,13 @@
                                                     :latest true}
                                                    :tag-association))
         concept-id (:concept-id existing-concept)]
-    (when-not concept-id
-      (errors/throw-service-error
-        :not-found (cmsg/invalid-native-id-msg :tag-association "CMR" native-id)))
-    (when (:deleted existing-concept)
-      (errors/throw-service-error
-        :not-found (format "Concept with native-id [%s] and concept-id [%s] is already deleted."
-                           native-id concept-id)))
-    (let [concept {:concept-type :tag-association
-                   :concept-id concept-id
-                   :user-id (context->user-id context)
-                   :deleted true}
-          {:keys [revision-id]} (mdb/save-concept context concept)]
-      {:concept-id concept-id, :revision-id revision-id})))
+    (when (and concept-id (not (:deleted existing-concept)))
+      (let [concept {:concept-type :tag-association
+                     :concept-id concept-id
+                     :user-id (context->user-id context)
+                     :deleted true}
+            {:keys [revision-id]} (mdb/save-concept context concept)]
+        {:concept-id concept-id, :revision-id revision-id}))))
 
 (defn- update-tag-association-to-collections
   "Based on the input operation type (:insert or :delete), insert or delete tag associations to
@@ -170,23 +164,24 @@
   (let [existing-tag (edn/read-string (:metadata tag-concept))
         {:keys [tag-key originator-id]} existing-tag]
     ;; save tag-association for each collection concept-id
-    (for [coll collections
-          :let [coll-concept-id (:concept-id coll)
-                data (:data coll)
-                native-id (str tag-key native-id-separator-character coll-concept-id)]]
-      (if (= :insert operation)
-        (mdb/save-concept context {:concept-type :tag-association
-                                   :native-id native-id
-                                   :user-id (context->user-id context)
-                                   :format (mt/format->mime-type :edn)
-                                   :metadata (pr-str
-                                               {:tag-key tag-key
-                                                :originator-id originator-id
-                                                :associated-concept-id coll-concept-id
-                                                :data data})
-                                   :extra-fields {:tag-key tag-key
-                                                  :associated-concept-id coll-concept-id}})
-        (delete-tag-association context native-id)))))
+    (remove nil?
+            (for [coll collections
+                  :let [coll-concept-id (:concept-id coll)
+                        data (:data coll)
+                        native-id (str tag-key native-id-separator-character coll-concept-id)]]
+              (if (= :insert operation)
+                (mdb/save-concept context {:concept-type :tag-association
+                                           :native-id native-id
+                                           :user-id (context->user-id context)
+                                           :format (mt/format->mime-type :edn)
+                                           :metadata (pr-str
+                                                       {:tag-key tag-key
+                                                        :originator-id originator-id
+                                                        :associated-concept-id coll-concept-id
+                                                        :data data})
+                                           :extra-fields {:tag-key tag-key
+                                                          :associated-concept-id coll-concept-id}})
+                (delete-tag-association context native-id))))))
 
 (defn- update-tag-associations-with-query
   "Based on the input operation type (:insert or :delete), insert or delete tag associations
