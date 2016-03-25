@@ -71,7 +71,7 @@
 
 
   :plugins [[lein-shell "0.4.0"]
-            [lein-test-out "0.3.1"]]
+            [test2junit "1.2.1"]]
 
   :repl-options {:init-ns user
                  :timeout 180000}
@@ -108,4 +108,6 @@
              :uberjar-merge-with {#"org\.apache\.lucene\.codecs\.*" [slurp str spit]}
              :aot :all}}
   :aliases {;; Creates the checkouts directory to the local projects
-            "create-checkouts" ~create-checkouts-commands})
+            "create-checkouts" ~create-checkouts-commands
+            ;; Alias to test2junit for consistency with lein-test-out
+            "test-out" ["test2junit"]})

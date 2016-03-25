@@ -13,9 +13,11 @@
                  ;; Markdown generator needed for API documentation
                  [org.pegdown/pegdown "1.6.0"]]
 
-  :plugins [[lein-test-out "0.3.1"]]
+  :plugins [[test2junit "1.2.1"]]
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
-         :source-paths ["src" "dev" "test"]}})
+         :source-paths ["src" "dev" "test"]}}
+  :aliases {;; Alias to test2junit for consistency with lein-test-out
+             "test-out" ["test2junit"]})

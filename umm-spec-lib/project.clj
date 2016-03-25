@@ -6,7 +6,7 @@
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]]
 
-  :plugins [[lein-test-out "0.3.1"]
+  :plugins [[test2junit "1.2.1"]
             [lein-exec "0.3.2"]]
 
   :profiles
@@ -30,8 +30,6 @@
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}}
 
-  :aliases {"generate-umm-records" ["exec" "-ep" "(do (use 'cmr.umm-spec.record-generator) (generate-umm-records))"]})
-
-
-
-
+  :aliases {"generate-umm-records" ["exec" "-ep" "(do (use 'cmr.umm-spec.record-generator) (generate-umm-records))"]
+            ;; Alias to test2junit for consistency with lein-test-out
+            "test-out" ["test2junit"]})

@@ -27,7 +27,7 @@
 
                  ; include ring-core to support encoding of params
                  [ring/ring-core "1.4.0" :exclusions [clj-time]]]
-  :plugins [[lein-test-out "0.3.1"]]
+  :plugins [[test2junit "1.2.1"]]
 
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"]
 
@@ -38,4 +38,6 @@
                         [pjstadig/humane-test-output "0.7.0"]]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]
-         :source-paths ["src" "dev"]}})
+         :source-paths ["src" "dev"]}}
+  :aliases { ;; Alias to test2junit for consistency with lein-test-out
+            "test-out" ["test2junit"]})

@@ -15,3 +15,5 @@ pom.xml.asc
 /scratch
 nohup.out
 *.kml
+test2junit
+build.xml

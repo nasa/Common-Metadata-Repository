@@ -18,7 +18,7 @@
                            [ring/ring-core "1.4.0" :exclusions [clj-time]]
                            [ring/ring-json "0.4.0"]]
                    cmr-deps)
-  :plugins [[lein-test-out "0.3.1"]
+  :plugins [[test2junit "1.2.1"]
             [lein-shell "0.4.0"]
             [lein-exec "0.3.4"]]
   :repl-options {:init-ns user}
@@ -52,4 +52,6 @@
             "create-checkouts" ~(reduce into ["do" "shell" "mkdir" "-p" "checkouts,"]
                                   (for [[group-artifact _] (concat cmr-deps dev-cmr-deps)
                                         :let [project-dir (.replace (name group-artifact) "cmr-" "")]]
-                                    ["shell" "ln" "-s" (str "../../" project-dir) "checkouts/,"]))})
+                                    ["shell" "ln" "-s" (str "../../" project-dir) "checkouts/,"]))
+            ;; Alias to test2junit for consistency with lein-test-out.
+            "test-out" ["test2junit"]})

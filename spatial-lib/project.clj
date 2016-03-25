@@ -32,7 +32,7 @@
                  [org.clojure/math.combinatorics "0.1.1"]]
 
 
-  :plugins [[lein-test-out "0.3.1"]]
+  :plugins [[test2junit "1.2.1"]]
 
   :global-vars {*warn-on-reflection* true}
 
@@ -57,4 +57,6 @@
                         [pjstadig/humane-test-output "0.7.0"]]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]
-         :source-paths ["src" "dev" "test"]}})
+         :source-paths ["src" "dev" "test"]}}
+  :aliases { ;; Alias to test2junit for consistency with lein-test-out
+            "test-out" ["test2junit"]})

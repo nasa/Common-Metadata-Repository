@@ -43,7 +43,7 @@
                                                               compojure
                                                               ring-json]]]
 
-  :plugins [[lein-test-out "0.3.1"]
+  :plugins [[test2junit "1.2.1"]
             [lein-exec "0.3.2"]]
 
   :profiles
@@ -51,6 +51,6 @@
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [proto-repl "0.1.2"]
                         [clj-http "2.0.0"]]
-         :source-paths ["src" "dev" "test"]}})
-
-
+         :source-paths ["src" "dev" "test"]}}
+  :aliases {;; Alias to test2junit for consistency with lein-test-out
+             "test-out" ["test2junit"]})
