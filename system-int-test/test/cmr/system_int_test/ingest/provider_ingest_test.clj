@@ -114,10 +114,12 @@
           coll3 (d/ingest "PROV2" (dc/collection))
           gran4 (d/ingest "PROV2" (dg/granule coll3))
           ;; create an access group to test cascading deletes
-          access-group (access-control/create-group (transmit-config/echo-system-token)
-                                                    {:name "Administrators"
-                                                     :description "A Group"
-                                                     :provider-id "PROV1"})]
+          access-group (u/map-keys->kebab-case
+                        (access-control/create-group
+                         (transmit-config/echo-system-token)
+                         {:name "Administrators"
+                          :description "A Group"
+                          :provider_id "PROV1"}))]
       (index/wait-until-indexed)
 
       (is (= 2 (count (:refs (search/find-refs :collection {:provider-id "PROV1"})))))
@@ -125,8 +127,9 @@
 
       ;; ensure PROV1 group is indexed
       (is (= [(:concept-id access-group)]
-             (map :concept-id (:items (access-control/search (transmit-config/echo-system-token)
-                                                             {:provider "PROV1"})))))
+             (map :concept-id (:items (u/map-keys->kebab-case
+                                       (access-control/search (transmit-config/echo-system-token)
+                                                              {:provider "PROV1"}))))))
 
       ;; delete provider PROV1
       (let [{:keys [status content-length]} (ingest/delete-ingest-provider "PROV1")]
@@ -136,40 +139,40 @@
 
       ;; PROV1 concepts are not in metadata-db
       (are [concept]
-           (not (mdb/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept)))
-           coll1
-           coll2
-           gran1
-           gran2
-           gran3
-           access-group)
+        (not (mdb/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept)))
+        coll1
+        coll2
+        gran1
+        gran2
+        gran3
+        access-group)
 
       ;; PROV1 access group is unindexed
       (is (= 0 (:hits
-                 (access-control/search (transmit-config/echo-system-token)
-                                        {:provider "PROV1"}))))
+                (access-control/search (transmit-config/echo-system-token)
+                                       {:provider "PROV1"}))))
 
       ;; PROV2 concepts are in metadata-db
       (are [concept]
-           (mdb/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept))
-           coll3
-           gran4)
+        (mdb/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept))
+        coll3
+        gran4)
 
       ;; search on PROV1 finds nothing
       (is (d/refs-match?
-            []
-            (search/find-refs :collection {:provider-id "PROV1"})))
+           []
+           (search/find-refs :collection {:provider-id "PROV1"})))
       (is (d/refs-match?
-            []
-            (search/find-refs :granule {:provider-id "PROV1"})))
+           []
+           (search/find-refs :granule {:provider-id "PROV1"})))
 
       ;; search on PROV2 finds the concepts
       (is (d/refs-match?
-            [coll3]
-            (search/find-refs :collection {:provider-id "PROV2"})))
+           [coll3]
+           (search/find-refs :collection {:provider-id "PROV2"})))
       (is (d/refs-match?
-            [gran4]
-            (search/find-refs :granule {:provider-id "PROV2"})))))
+           [gran4]
+           (search/find-refs :granule {:provider-id "PROV2"})))))
 
   (testing "delete non-existent provider"
     (let [{:keys [status errors content-type]} (ingest/delete-ingest-provider "NON_EXIST")]
@@ -194,10 +197,12 @@
   (doseq [provider [{:provider-id "SMALL" :short-name "SP" :cmr-only true :small true}
                     {:provider-id "NOTSMALL" :short-name "NSP"}]]
     (ingest/create-ingest-provider provider)
-    (let [access-group (access-control/create-group (transmit-config/echo-system-token)
-                                                    {:name "Administrators"
-                                                     :description "A Group"
-                                                     :provider-id (:provider-id provider)})]
+    (let [access-group (u/map-keys->kebab-case
+                        (access-control/create-group
+                         (transmit-config/echo-system-token)
+                         {:name "Administrators"
+                          :description "A Group"
+                          :provider_id (:provider-id provider)}))]
       (is (mdb/concept-exists-in-mdb? (:concept-id access-group) (:revision-id access-group)))
       (ingest/delete-ingest-provider (:provider-id provider))
       (is (not (mdb/concept-exists-in-mdb? (:concept-id access-group) (:revision-id access-group))))
