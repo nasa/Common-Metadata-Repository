@@ -44,13 +44,17 @@
                  :collections \"1_collections\"}}"
   :index-names)
 
+(def index-names-cache-key
+  "The key used for index names in the index cache."
+  :concept-indices)
+
 ;; A job for refreshing the index names cache.
 (defjob RefreshIndexNamesCacheJob
   [ctx system]
   (let [context {:system system}
         index-names (fetch-concept-type-index-names context)
         cache (cache/context->cache context index-cache-name)]
-    (cache/set-value cache index-cache-name index-names)))
+    (cache/set-value cache index-names-cache-key index-names)))
 
 (def refresh-index-names-cache-job
   {:job-type RefreshIndexNamesCacheJob
@@ -61,8 +65,9 @@
   "Fetch index names associated with concepts."
   [context]
   (cache/get-value (cache/context->cache context index-cache-name)
-                   :concept-indices
+                   index-names-cache-key
                    (partial fetch-concept-type-index-names context)))
+
 (defn- get-granule-index-names
   "Fetch index names associated with granules excluding rebalancing collections indexes"
   [context]
