@@ -6,13 +6,18 @@
 
 (defmethod es/parsed-concept->elastic-doc :tag
   [context concept parsed-concept]
-  (let [{:keys [concept-id]} concept
+  (let [{:keys [concept-id deleted]} concept
         {:keys [tag-key description originator-id]}
         parsed-concept]
-    {:concept-id concept-id
-     :tag-key.lowercase (str/lower-case tag-key)
-     :description description
-     :originator-id.lowercase  (str/lower-case originator-id)}))
+    (if deleted
+      ;; This is only called by re-indexing (bulk indexing)
+      ;; Regular deleted tags would have gone through the index-service/delete-concept path.
+      {:concept-id concept-id
+       :deleted deleted}
+      {:concept-id concept-id
+       :tag-key.lowercase (str/lower-case tag-key)
+       :description description
+       :originator-id.lowercase  (str/lower-case originator-id)})))
 
 (defn tag-association->elastic-doc
   "Converts the tag association into the portion going in the collection elastic document."
