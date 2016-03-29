@@ -161,6 +161,7 @@
           keywords (vals (gcmd-keyword-scheme (kf/get-gcmd-keywords-map context)))
           keyword-hierarchy (cmr-keyword-scheme kf/nested-fields-mappings)
           hierarchical-keywords (flat-keywords->hierarchical-keywords keywords keyword-hierarchy)]
+      (proto/save 1)
       {:staus 200
        :headers {"Content-Type" (mt/format->mime-type :json)}
        :body (json/generate-string hierarchical-keywords)})))
@@ -171,5 +172,3 @@
     (GET "/:keyword-scheme" {{:keys [keyword-scheme]} :params
                              request-context :request-context}
       (get-hierarchical-keywords request-context keyword-scheme))))
-
-

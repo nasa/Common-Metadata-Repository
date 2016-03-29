@@ -24,8 +24,8 @@
                                "long_name"
                                [{"value"
                                  "Woods Hole Science Center, Coastal and Marine Geology, U.S. Geological Survey, U.S. Department of the Interior",
-                                 "uuid"
-                                 "69db99c6-54d6-40b9-9f72-47eab9c34869"}]}]}]}]}
+                                   "uuid"
+                                   "69db99c6-54d6-40b9-9f72-47eab9c34869"}]}]}]}]}
                         {"value" "NSF",
                          "subfields" ["short_name"],
                          "short_name"
@@ -62,6 +62,11 @@
                          "long_name"
                          [{"value"
                            "Educational Office, Ecological Society of America",
+                           "subfields" ["url"],
+                           "url"
+                           [{"value" "http://www.esa.org/education/",
+                             "uuid"
+                             "2112a825-73c6-4b75-b33c-cc6e705a39ce"}]
                            "uuid" "2112a825-73c6-4b75-b33c-cc6e705a39ce"}]}],
                        "subfields" ["short_name"]}]}
    :science-keywords {"category"
@@ -361,5 +366,3 @@
                           "platforms, instruments, projects, temporal_keywords, spatial_keywords, "
                           "science_keywords, archive_centers, data_centers, and providers.")]}
            (search/get-keywords-by-keyword-scheme :foo)))))
-
-
