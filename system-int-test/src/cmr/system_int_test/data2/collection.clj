@@ -173,6 +173,7 @@
          temporal {:temporal (temporal attribs)}
          minimal-coll {:entry-title (str (:long-name product) " " (:version-id product))
                        :summary (:long-name product)
+                       :short-name (:short-name product)
                        :product product
                        :data-provider-timestamps data-provider-timestamps}
          attribs (select-keys attribs (concat (util/record-fields UmmCollection)

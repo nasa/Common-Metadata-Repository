@@ -18,6 +18,7 @@
   [provider entry-title begin end]
   (d/ingest provider
             (dc/collection {:entry-title entry-title
+                            :short-name entry-title
                             :beginning-date-time (d/make-datetime begin)
                             :ending-date-time (d/make-datetime end)})))
 (defn delete-coll
@@ -114,48 +115,56 @@
     (testing "all revisions sorting"
       (testing "various sort keys"
         (are [sort-key items]
-             (sort-order-correct? items sort-key true)
-             "entry-title" (sort-revisions-by-field :entry-title false all-revisions)
-             "+entry-title" (sort-revisions-by-field :entry-title false all-revisions)
-             "-entry-title" (sort-revisions-by-field :entry-title true all-revisions)
-             ;; alias for entry_title
-             "dataset_id" (sort-revisions-by-field :entry-title false all-revisions)
-             "-dataset_id" (sort-revisions-by-field :entry-title true all-revisions)
-             ;; Revision date is not returned (and therefore not available for
-             ;; sort-revisions-by-field, so we rely on the fact that revision date defaults to
-             ;; the current time, so ordering by revision date it the same as ordering by
-             ;; insertion order.
-             "revision_date" all-revisions
-             "-revision_date" (reverse all-revisions)
-             "entry_id" (sort-revisions-by-field :entry-id false all-revisions)
-             "-entry_id" (sort-revisions-by-field :entry-id true all-revisions)
-             "start_date" [c5 c1-2 c1-1 c11 c2 c6 c3 c7 c4 c8 c9-3 c9-2 c9-1 c10 c12-2 c12-1]
-             "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1-2 c1-1 c5 c9-3 c9-2 c9-1 c10 c12-2 c12-1]
-             "end_date" [c5 c1-2 c1-1 c2 c6 c7 c3 c4 c8 c9-3 c9-2 c9-1 c10 c11 c12-2 c12-1]
-             "-end_date" [c8 c4 c3 c7 c6 c2 c1-2 c1-1 c5 c9-3 c9-2 c9-1 c10 c11 c12-2 c12-1])))
+          (sort-order-correct? items sort-key true)
+          "entry-title" (sort-revisions-by-field :entry-title false all-revisions)
+          "+entry-title" (sort-revisions-by-field :entry-title false all-revisions)
+          "-entry-title" (sort-revisions-by-field :entry-title true all-revisions)
+          ;; alias for entry_title
+          "dataset_id" (sort-revisions-by-field :entry-title false all-revisions)
+          "-dataset_id" (sort-revisions-by-field :entry-title true all-revisions)
+          ;; Short-name sorting
+          "short-name" (sort-revisions-by-field :short-name false all-revisions)
+          "+short-name" (sort-revisions-by-field :short-name false all-revisions)
+          "-short-name" (sort-revisions-by-field :short-name true all-revisions)
+          ;; Revision date is not returned (and therefore not available for
+          ;; sort-revisions-by-field, so we rely on the fact that revision date defaults to
+          ;; the current time, so ordering by revision date it the same as ordering by
+          ;; insertion order.
+          "revision_date" all-revisions
+          "-revision_date" (reverse all-revisions)
+          "entry_id" (sort-revisions-by-field :entry-id false all-revisions)
+          "-entry_id" (sort-revisions-by-field :entry-id true all-revisions)
+          "start_date" [c5 c1-2 c1-1 c11 c2 c6 c3 c7 c4 c8 c9-3 c9-2 c9-1 c10 c12-2 c12-1]
+          "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1-2 c1-1 c5 c9-3 c9-2 c9-1 c10 c12-2 c12-1]
+          "end_date" [c5 c1-2 c1-1 c2 c6 c7 c3 c4 c8 c9-3 c9-2 c9-1 c10 c11 c12-2 c12-1]
+          "-end_date" [c8 c4 c3 c7 c6 c2 c1-2 c1-1 c5 c9-3 c9-2 c9-1 c10 c11 c12-2 c12-1])))
 
     (testing "latest revisions sorting"
       (testing "various sort keys"
         (are [sort-key items]
-             (sort-order-correct? items sort-key false)
-             "entry-title" (sort-revisions-by-field :entry-title false all-colls)
-             "+entry-title" (sort-revisions-by-field :entry-title false all-colls)
-             "-entry-title" (sort-revisions-by-field :entry-title true all-colls)
-             ;; alias for entry_title
-             "dataset_id" (sort-revisions-by-field :entry-title false all-colls)
-             "-dataset_id" (sort-revisions-by-field :entry-title true all-colls)
-             ;; Revision date is not returned (and therefore not available for
-             ;; sort-revisions-by-field, so we rely on the fact that revision date defaults to
-             ;; the current time, so ordering by revision date it the same as ordering by
-             ;; insertion order.
-             "revision_date" all-colls
-             "-revision_date" (reverse all-colls)
-             "entry_id" (sort-revisions-by-field :entry-id false all-colls)
-             "-entry_id" (sort-revisions-by-field :entry-id true all-colls)
-             "start_date" [c5 c1-2 c11 c2 c6 c3 c7 c4 c8 c9-3 c10]
-             "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1-2 c5 c9-3 c10]
-             "end_date" [c5 c1-2 c2 c6 c7 c3 c4 c8 c9-3 c10 c11]
-             "-end_date" [c8 c4 c3 c7 c6 c2 c1-2 c5 c9-3 c10 c11])))))
+          (sort-order-correct? items sort-key false)
+          "entry-title" (sort-revisions-by-field :entry-title false all-colls)
+          "+entry-title" (sort-revisions-by-field :entry-title false all-colls)
+          "-entry-title" (sort-revisions-by-field :entry-title true all-colls)
+          ;; alias for entry_title
+          "dataset_id" (sort-revisions-by-field :entry-title false all-colls)
+          "-dataset_id" (sort-revisions-by-field :entry-title true all-colls)
+          ;; Short-name sorting
+          "short-name" (sort-revisions-by-field :short-name false all-colls)
+          "+short-name" (sort-revisions-by-field :short-name false all-colls)
+          "-short-name" (sort-revisions-by-field :short-name true all-colls)
+          ;; Revision date is not returned (and therefore not available for
+          ;; sort-revisions-by-field, so we rely on the fact that revision date defaults to
+          ;; the current time, so ordering by revision date it the same as ordering by
+          ;; insertion order.
+          "revision_date" all-colls
+          "-revision_date" (reverse all-colls)
+          "entry_id" (sort-revisions-by-field :entry-id false all-colls)
+          "-entry_id" (sort-revisions-by-field :entry-id true all-colls)
+          "start_date" [c5 c1-2 c11 c2 c6 c3 c7 c4 c8 c9-3 c10]
+          "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1-2 c5 c9-3 c10]
+          "end_date" [c5 c1-2 c2 c6 c7 c3 c4 c8 c9-3 c10 c11]
+          "-end_date" [c8 c4 c3 c7 c6 c2 c1-2 c5 c9-3 c10 c11])))))
 
 (deftest default-sorting-test
   (let [c1 (make-coll "PROV1" "et99" 10 20)

@@ -184,7 +184,8 @@
 
 (defmethod q2e/concept-type->sort-key-map :collection
   [_]
-  {:entry-title :entry-title.lowercase
+  {:short-name :short-name.lowercase
+   :entry-title :entry-title.lowercase
    :entry-id :entry-id.lowercase
    :provider :provider-id.lowercase
    :platform :platform-sn.lowercase
