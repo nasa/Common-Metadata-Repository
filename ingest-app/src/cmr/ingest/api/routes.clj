@@ -47,7 +47,7 @@
             {:status 200})
           (POST "/reindex-all-collections" {:keys [headers params request-context]}
             (acl/verify-ingest-management-permission request-context :update)
-            (jobs/reindex-all-collections request-context)
+            (jobs/reindex-all-collections request-context (= "true" (:force_version params)))
             {:status 200})
           (POST "/cleanup-expired-collections" {:keys [headers params request-context]}
             (acl/verify-ingest-management-permission request-context :update)

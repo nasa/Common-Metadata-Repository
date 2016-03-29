@@ -18,12 +18,14 @@
 
 
 (defmethod handle-ingest-event :provider-collection-reindexing
-  [context _ {:keys [provider-id]}]
+  [context _ {:keys [provider-id force-version?]}]
   ;; We want to reindex all revisions and latest so we pass in nil for the all-revisions-index?
   ;; flag. This is a provider event which always applies to all the indexes.
   ;; We set the refresh acls flag to false because the ACLs should have been refreshed as part
   ;; of the ingest job that kicks this off.
-  (indexer/reindex-provider-collections context [provider-id] nil false))
+  (indexer/reindex-provider-collections
+   context [provider-id]
+   {:all-revisions-index? nil :refresh-acls? false :force-version? force-version?}))
 
 (defmethod handle-ingest-event :concept-update
   [context all-revisions-index? {:keys [concept-id revision-id]}]
