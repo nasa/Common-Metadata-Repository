@@ -13,10 +13,13 @@
     (queue/publish-message queue-broker exchange-name msg)))
 
 (defn provider-collections-require-reindexing-event
-  "Indicates that all the collections within a provider require reindexing"
-  [provider-id]
+  "Indicates that all the collections within a provider require reindexing. The force-version? attribute
+   indicates if during the reindexing we should force elasticsearch to take the version in the database
+   regardless of whether its older or not."
+  [provider-id force-version?]
   {:action :provider-collection-reindexing
-   :provider-id provider-id})
+   :provider-id provider-id
+   :force-version? force-version?})
 
 (defn provider-create-event
   "Creates an event representing a provider being created."

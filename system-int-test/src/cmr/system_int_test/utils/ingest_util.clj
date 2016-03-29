@@ -101,10 +101,13 @@
 
 (defn reindex-all-collections
   "Tells ingest to run the reindex all collections job"
-  []
-  (let [response (client/post (url/reindex-all-collections-url)
-                              {:connection-manager (s/conn-mgr)})]
-    (is (= 200 (:status response)))))
+  ([]
+   (reindex-all-collections nil))
+  ([{:keys [force-version]}]
+   (let [response (client/post (url/reindex-all-collections-url)
+                               {:connection-manager (s/conn-mgr)
+                                :query-params {:force_version force-version}})]
+     (is (= 200 (:status response))))))
 
 (defn cleanup-expired-collections
   "Tells ingest to run the cleanup-expired-collections job"

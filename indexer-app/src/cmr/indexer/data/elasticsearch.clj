@@ -211,7 +211,15 @@
                         ;; The concept is a tombstone
                         (parsed-concept->elastic-doc context concept concept)
                         ;; The concept is not a tombstone
-                        (non-tombstone-concept->bulk-elastic-doc context concept))]
+                        (non-tombstone-concept->bulk-elastic-doc context concept))
+          version-type (if (:force-version? options)
+                         ;; "the document will be indexed regardless of the version of the stored
+                         ;; document or if there is no existing document. The given version will be
+                         ;; used as the new version and will be stored with the new document."
+                         "force"
+                         ;; "only index the document if the given version is equal or higher than
+                         ;; the version of the stored document."
+                         "external_gte")]
 
       ;; elastic-doc may be nil if the concept has a delete time in the past
       (when elastic-doc
@@ -219,7 +227,7 @@
                                  {:_id elastic-id
                                   :_type type
                                   :_version elastic-version
-                                  :_version_type "external_gte"})]
+                                  :_version_type version-type})]
           ;; Return one elastic document for each index we're writing to.
           (mapv #(assoc elastic-doc :_index %) index-names))))
 

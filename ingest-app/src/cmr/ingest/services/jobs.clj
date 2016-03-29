@@ -27,7 +27,7 @@
 
 (defn reindex-all-collections
   "Reindexes all collections in all providers"
-  [context]
+  [context force-version?]
 
   ;; Refresh the acls
   ;; This is done because we want to make sure we have the latest acls cached. This will update
@@ -43,7 +43,7 @@
     (doseq [provider providers]
       (ingest-events/publish-provider-event
         context
-        (ingest-events/provider-collections-require-reindexing-event provider)))
+        (ingest-events/provider-collections-require-reindexing-event provider force-version?)))
 
     (debug "Reindexing all collection events submitted. Saving provider acl hashes")
     (pah/save-provider-id-acl-hashes context current-provider-id-acl-hashes)
@@ -75,7 +75,7 @@
       (doseq [provider providers-requiring-reindex]
         (ingest-events/publish-provider-event
           context
-          (ingest-events/provider-collections-require-reindexing-event provider))))
+          (ingest-events/provider-collections-require-reindexing-event provider false))))
 
     (pah/save-provider-id-acl-hashes context current-provider-id-acl-hashes)))
 

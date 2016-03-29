@@ -91,7 +91,9 @@
   processing batch-size concepts each time. Returns the number of concepts that have been indexed.
 
   Valid options:
-  * :all-revisions-index? - true indicates this should be indexed into the all revisions index"
+  * :all-revisions-index? - true indicates this should be indexed into the all revisions index
+  * :force-version? - true indicates that we should overwrite whatever is in elasticsearch with the
+    latest regardless of whether the version in the database is older than the _version in elastic."
   ([context concept-batches]
    (bulk-index context concept-batches nil))
   ([context concept-batches options]
@@ -122,8 +124,9 @@
   * true - only all revisions will be indexed
   * false - only the latest revisions will be indexed"
   ([context provider-ids]
-   (reindex-provider-collections context provider-ids nil true))
-  ([context provider-ids all-revisions-index? refresh-acls?]
+   (reindex-provider-collections context provider-ids
+                                 {:all-revisions-index? nil :refresh-acls? true :force-version? false}))
+  ([context provider-ids {:keys [all-revisions-index? refresh-acls? force-version?]}]
 
    (when refresh-acls?
      ;; Refresh the ACL cache.
@@ -138,7 +141,8 @@
                                          :collection
                                          REINDEX_BATCH_SIZE
                                          {:provider-id provider-id :latest true})]
-         (bulk-index context latest-collection-batches {:all-revisions-index? false})))
+         (bulk-index context latest-collection-batches {:all-revisions-index? false
+                                                        :force-version? force-version?})))
 
      (when (or (nil? all-revisions-index?) all-revisions-index?)
        ;; Note that this will not unindex revisions that were removed directly from the database.
@@ -149,7 +153,8 @@
                                      :collection
                                      REINDEX_BATCH_SIZE
                                      {:provider-id provider-id})]
-         (bulk-index context all-revisions-batches {:all-revisions-index? true}))))))
+         (bulk-index context all-revisions-batches {:all-revisions-index? true
+                                                    :force-version? force-version?}))))))
 
 (defn reindex-tags
   "Reindexes all the tags. Only the latest revisions will be indexed"

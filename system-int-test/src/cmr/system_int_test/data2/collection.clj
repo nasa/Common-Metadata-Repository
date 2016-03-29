@@ -201,8 +201,8 @@
    (let [;; The following fields are needed for DIF10 to pass xml validation
          required-extra-dif10-fields {:organizations [(org :distribution-center "Larc")]
                                       :science-keywords [(science-keyword {:category "upcase"
-                                                                         :topic "Cool"
-                                                                         :term "Mild"})]
+                                                                           :topic "Cool"
+                                                                           :term "Mild"})]
                                       :platforms [(platform {:short-name "plat"
                                                              :type "Aircraft"
                                                              :instruments [(instrument {:short-name "inst"})]})]

@@ -7,6 +7,7 @@
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
+            [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.atom :as da]
@@ -24,8 +25,8 @@
   (dev-sys-util/reset)
   (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
   (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"})
-  (ingest/create-provider {:provider-guid "provguid3" :provider-id "PROV3"})
-  )
+  (ingest/create-provider {:provider-guid "provguid3" :provider-id "PROV3"}))
+
 
 (deftest invalid-security-token-test
   (is (= {:errors ["Token ABC123 does not exist"], :status 401}
@@ -272,7 +273,11 @@
   (let [acl1 (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1"])))
         acl2 (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll3"])))
         coll1 (d/ingest "PROV1" (dc/collection-dif10 {:entry-title "coll1"}) {:format :dif10})
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
+        coll2-umm (dc/collection {:entry-title "coll2" :short-name "short1"})
+        coll2-1 (d/ingest "PROV1" coll2-umm)
+        ;; 2 versions of collection 2 will allow us to test the force reindex option after we
+        ;; force delete the latest version of coll2-2
+        coll2-2 (d/ingest "PROV1" (assoc-in coll2-umm [:product :short-name] "short2"))
         coll3 (d/ingest "PROV2" (dc/collection-dif10 {:entry-title "coll3"}) {:format :dif10})
         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}))]
 
@@ -297,7 +302,7 @@
       (index/wait-until-indexed)
 
       ;; Search after reindexing
-      (is (d/refs-match? [coll1 coll2] (search/find-refs :collection {}))))
+      (is (d/refs-match? [coll1 coll2-2] (search/find-refs :collection {}))))
 
     (testing "reindex all collections"
 
@@ -305,7 +310,7 @@
       (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll4"])))
 
       ;; Try before reindexing
-      (is (d/refs-match? [coll1 coll2] (search/find-refs :collection {})))
+      (is (d/refs-match? [coll1 coll2-2] (search/find-refs :collection {})))
 
       ;; Reindex all collections
       ;; manually check the logs here. It should say it's reindexing provider 1 and provider 3 as well.
@@ -313,7 +318,33 @@
       (index/wait-until-indexed)
 
       ;; Search after reindexing
-      (is (d/refs-match? [coll1 coll2 coll4] (search/find-refs :collection {}))))))
+      (is (d/refs-match? [coll1 coll2-2 coll4] (search/find-refs :collection {}))))
+
+    ;; Tests reindexing using the force current version option
+    (testing "Force version reindex all collections"
+      ;; Verify we can find coll2 with the lastest data
+      (d/assert-refs-match [coll2-2] (search/find-refs :collection {:short-name "short2"}))
+
+      ;; Delete the latest version of coll2
+      (is (= 200 (:status (mdb/force-delete-concept (:concept-id coll2-2) 2))))
+      (index/wait-until-indexed)
+
+      ;; After deleting the latest version of coll2 we will still find that.
+      (d/assert-refs-match [coll2-2] (search/find-refs :collection {:short-name "short2"}))
+
+      ;; Reindexing all the collections doesn't solve the problem
+      (ingest/reindex-all-collections)
+      (index/wait-until-indexed)
+      (d/assert-refs-match [coll2-2] (search/find-refs :collection {:short-name "short2"}))
+
+      ;; A force reindex all collections will make elastic take the earlier version of the collections.
+      (ingest/reindex-all-collections {:force-version true})
+      (index/wait-until-indexed)
+      (d/assert-refs-match [] (search/find-refs :collection {:short-name "short2"}))
+      (d/assert-refs-match [coll2-1] (search/find-refs :collection {:short-name "short1"})))))
+
+
+
 
 ;; Verifies that tokens are cached by checking that a logged out token still works after it was used.
 ;; This isn't the desired behavior. It's just a side effect that shows it's working.
