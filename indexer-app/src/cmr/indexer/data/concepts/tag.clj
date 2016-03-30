@@ -7,8 +7,7 @@
 (defmethod es/parsed-concept->elastic-doc :tag
   [context concept parsed-concept]
   (let [{:keys [concept-id deleted]} concept
-        {:keys [tag-key description originator-id]}
-        parsed-concept]
+        {:keys [tag-key description originator-id]} parsed-concept]
     (if deleted
       ;; This is only called by re-indexing (bulk indexing)
       ;; Regular deleted tags would have gone through the index-service/delete-concept path.
