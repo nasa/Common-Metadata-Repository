@@ -357,9 +357,11 @@
             lat1 (.lat_rad p1)
             lon2 (.lon_rad p2)
             lat2 (.lat_rad p2)
-            y (* (sin (- lon2 lon1)) (cos lat2))
+            lon2-lon1-diff (- lon2 lon1)
+            cos-lat2 (cos lat2)
+            y (* (sin lon2-lon1-diff) cos-lat2)
             x (- (* (cos lat1) (sin lat2))
-                 (* (sin lat1) (cos lat2) (cos (- lon2 lon1))))
+                 (* (sin lat1) cos-lat2 (cos lon2-lon1-diff)))
             normalized (degrees (atan2 y x))]
         (mod (+ (* -1.0 normalized) 360.0) 360.0)))))
 

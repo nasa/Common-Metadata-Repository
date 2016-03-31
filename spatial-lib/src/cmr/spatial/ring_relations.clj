@@ -15,7 +15,8 @@
             [clojure.math.combinatorics :as combo])
   (:import cmr.spatial.cartesian_ring.CartesianRing
            cmr.spatial.geodetic_ring.GeodeticRing
-           cmr.spatial.point.Point))
+           cmr.spatial.point.Point
+           cmr.spatial.mbr.Mbr))
 (primitive-math/use-primitive-operators)
 
 (defn ring
@@ -145,30 +146,36 @@
                ;; Or is every intersection and acceptable point?
                (every? acceptable-points intersections))))))
 
+(defn- lines-intersects-br-sides?
+  "Returns truthy value if any of the lines intersects any of the br sides"
+  [lines br]
+  ;; Optimized to avoid iteration. There can be up to 6 sides if it crosses the antimeridian
+  (let [[s1 s2 s3 s4 s5 s6] (s/mbr->line-segments br)]
+    (loop [[line & lines] lines]
+      (when line
+        (or (seq (asi/intersections line s1))
+            (when s2 (seq (asi/intersections line s2)))
+            (when s3 (seq (asi/intersections line s3)))
+            (when s4 (seq (asi/intersections line s4)))
+            (when s5 (seq (asi/intersections line s5)))
+            (when s6 (seq (asi/intersections line s6)))
+            (recur lines))))))
+
 (defn intersects-br?
   "Returns true if the ring intersects the br"
-  [ring br]
+  [ring ^Mbr br]
   (when (m/intersects-br? (coordinate-system ring) (:mbr ring) br)
     (if (m/single-point? br)
-      (covers-point? ring (p/point (:west br) (:north br)))
+      (covers-point? ring (p/point (.west br) (.north br)))
 
       (or
-        ;; Does the br cover any points of the ring?
-        (some #(m/covers-point? (coordinate-system ring) br %) (:points ring))
-        ;; Does the ring contain any points of the br?
-        (some #(covers-point? ring %) (m/corner-points br))
+       ;; Does the br cover any points of the ring?
+       (some #(m/covers-point? (coordinate-system ring) br %) (:points ring))
+       ;; Does the ring contain any points of the br?
+       (some #(covers-point? ring %) (m/corner-points br))
 
-        ;; Do any of the sides intersect?
-        (let [lines (segments ring)
-              mbr-lines (s/mbr->line-segments br)
-              pairs (for [ls1 lines
-                          ls2 mbr-lines]
-                      [ls1 ls2])]
-          (loop [[[ls1 ls2] & pairs] pairs]
-            (cond
-              (nil? ls1) false
-              (seq (asi/intersections ls1 ls2)) true
-              :else (recur pairs))))))))
+       ;; Do any of the sides intersect?
+       (lines-intersects-br-sides? (segments ring) br)))))
 
 (defn intersects-line-string?
   "Returns true if the ring intersects the line"

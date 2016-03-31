@@ -240,6 +240,27 @@
             (every? (fn [[e v]]
                       (approx= e v delta))
                     (map vector expected actual)))))))
+(defn- angle-delta
+  "Find the difference between a pair of angles."
+  ^double [[^double a1 ^double a2]]
+  (let [a2 (if (< a2 a1)
+             ;; Shift angle 2 so it is always greater than angle 1. This allows
+             ;; us to get the real radial distance between angle 2 and angle 1
+             (+ 360.0 a2)
+             a2)
+        ;; Then when we subtract angle 1 from angle 2 we're asking "How far do
+        ;; we have to turn to the  left to get to angle 2 from angle 1?"
+        left-turn-amount (- a2 a1)]
+    ;; Determine which is smaller: turning to the left or turning to the right
+    (cond
+      ;; In this case we can't determine whether turning to the left or the
+      ;; right is smaller. We handle this by returning 0. Summing the angle
+      ;; deltas in this case will == 180 or -180
+      (== 180.0 left-turn-amount) 0
+      ;; Turning to the right is less than turning to the left in this case.
+      ;; Returns a negative number between 0 and -180.0
+      (> left-turn-amount 180.0) (- left-turn-amount 360.0)
+      :else left-turn-amount)))
 
 (defn rotation-direction
   "A helper function that determines the final rotation direction based on a set of angles in
@@ -249,27 +270,7 @@
   Returns one of three keywords, :none, :counter-clockwise, or :clockwise, to indicate net direction
   of rotation"
   [angles]
-  (let [angle-delta (fn [[^double a1 ^double a2]]
-                      (let [a2 (if (< a2 a1)
-                                 ;; Shift angle 2 so it is always greater than angle 1. This allows
-                                 ;; us to get the real radial distance between angle 2 and angle 1
-                                 (+ 360.0 a2)
-                                 a2)
-                            ;; Then when we subtract angle 1 from angle 2 we're asking "How far do
-                            ;; we have to turn to the  left to get to angle 2 from angle 1?"
-                            left-turn-amount (- a2 a1)]
-                        ;; Determine which is smaller: turning to the left or turning to the right
-                        (cond
-                          ;; In this case we can't determine whether turning to the left or the
-                          ;; right is smaller. We handle this by returning 0. Summing the angle
-                          ;; deltas in this case will == 180 or -180
-                          (== 180.0 left-turn-amount) 0
-                          ;; Turning to the right is less than turning to the left in this case.
-                          ;; Returns a negative number between 0 and -180.0
-                          (> left-turn-amount 180.0) (- left-turn-amount 360.0)
-                          :else left-turn-amount)))
-
-        ;; Calculates the amount of change between each angle.
+  (let [;; Calculates the amount of change between each angle.
         ;; Positive numbers are turns to the left (counter-clockwise).
         ;; Negative numbers are turns to the right (clockwise)
         deltas (util/map-n angle-delta 2 1 angles)

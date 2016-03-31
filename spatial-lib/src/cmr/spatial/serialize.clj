@@ -251,7 +251,8 @@
     -180,0,180,90
 
     ;; w n e s
-    (def search-area (m/mbr -180 90 180 0))
+    ; (def search-area (m/mbr -180 90 180 0))
+    (def search-area (m/mbr -34.09 85.35 -28.16 84.17))
 
     (cmr.spatial.validation/validate search-area)
 
@@ -262,8 +263,7 @@
     (require '[criterium.core :refer [with-progress-reporting bench quick-bench]]))
 
   (do
-    (def ls (stored-ords->shape (:type stored-ords) (:ords stored-ords)))
-    (kml/display-shapes [search-area ls (l/line-string->mbr ls)]))
+    (kml/display-shapes [search-area]))
 
 
   (with-progress-reporting

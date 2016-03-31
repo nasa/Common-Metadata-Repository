@@ -197,7 +197,17 @@
   (or (.mbr ring)
       (let [arcs (ring->arcs ring)
             {:keys [contains-north-pole contains-south-pole]} (ring->pole-containment ring)
-            br (->> arcs (mapcat a/mbrs) (reduce mbr/union))
+            br (reduce (fn [br ^Arc arc]
+                         (let [mbr1 (.mbr1 arc)
+                               br (if br
+                                    (mbr/union br mbr1)
+                                    mbr1)
+                               mbr2 (.mbr2 arc)]
+                           (if mbr2
+                             (mbr/union br mbr2)
+                             br)))
+                       nil
+                       arcs)
             br (if (and contains-north-pole
                         (not (some p/is-north-pole? (:points ring)))
                         (not (some a/crosses-north-pole? arcs)))
