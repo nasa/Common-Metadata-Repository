@@ -60,7 +60,7 @@
     (is (= {:errors [(smsg/ring-not-closed)] :status 400}
            (search/find-refs :granule
                              {:polygon (codec/url-encode
-                                         (poly/polygon :geodetic [(rr/ords->ring :geodetic 0 0, 1 0, 1 1, 0 1)]))}))))
+                                         (poly/polygon :geodetic [(rr/ords->ring :geodetic [0 0, 1 0, 1 1, 0 1])]))}))))
   (testing "invalid bounding box"
     (is (= {:errors [(smsg/br-north-less-than-south 45 46)] :status 400}
            (search/find-refs
