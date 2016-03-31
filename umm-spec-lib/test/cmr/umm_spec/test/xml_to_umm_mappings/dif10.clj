@@ -22,3 +22,31 @@
                                         <Data_Creation>2014-05-01T02:30:24</Data_Creation>
                                       </Metadata_Dates>
                                     </DIF>")))))
+
+(deftest dif10-temporal-end-dates
+  (is (= (t/date-time 2015 1 1 23 59 59 999)
+         (-> (parse/parse-dif10-xml "<DIF>
+                                       <Temporal_Coverage>
+                                         <Range_DateTime>
+                                           <Ending_Date_Time>2015-01-01</Ending_Date_Time>
+                                         </Range_DateTime>
+                                       </Temporal_Coverage>
+                                     </DIF>")
+             :TemporalExtents
+             first
+             :RangeDateTimes
+             first
+             :EndingDateTime)))
+  (is (= (t/date-time 2015 1 1 4 30 12)
+         (-> (parse/parse-dif10-xml "<DIF>
+                                       <Temporal_Coverage>
+                                         <Range_DateTime>
+                                           <Ending_Date_Time>2015-01-01T04:30:12</Ending_Date_Time>
+                                         </Range_DateTime>
+                                       </Temporal_Coverage>
+                                     </DIF>")
+             :TemporalExtents
+             first
+             :RangeDateTimes
+             first
+             :EndingDateTime))))

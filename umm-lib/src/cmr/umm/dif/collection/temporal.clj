@@ -4,13 +4,11 @@
             [cmr.common.xml :as cx]
             [cmr.common.date-time-parser :as parser]
             [cmr.umm.collection :as c]
-            [cmr.umm.generator-util :as gu]))
+            [cmr.umm.dif.date-util :as date-util]))
 
-(defn string->datetime
-  "convert the string to joda datetime if it is in either DateTime or Date format."
-  [datetime-string]
-  (when datetime-string
-    (parser/parse-datetime datetime-string)))
+;; note: this is used in other projects
+
+(def string->datetime parser/try-parse-datetime)
 
 (defn xml-elem->Temporal
   "Returns a list of UMM RangeDateTimes from a parsed DIF XML structure"
@@ -18,8 +16,9 @@
   (let [elements (cx/elements-at-path collection-element [:Temporal_Coverage])]
     (when-not (empty? elements)
       (let [range-date-times (map #(c/map->RangeDateTime
-                                     {:beginning-date-time (string->datetime (cx/string-at-path % [:Start_Date]))
-                                      :ending-date-time (string->datetime (cx/string-at-path % [:Stop_Date]))})
+                                    {:beginning-date-time (parser/try-parse-datetime (cx/string-at-path % [:Start_Date]))
+                                     :ending-date-time (date-util/parse-dif-end-date
+                                                         (cx/string-at-path % [:Stop_Date]))})
                                   elements)]
         (c/map->Temporal {:range-date-times range-date-times
                           :single-date-times []

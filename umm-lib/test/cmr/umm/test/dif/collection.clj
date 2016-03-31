@@ -480,7 +480,7 @@
     {:range-date-times
      [(umm-c/map->RangeDateTime
         {:beginning-date-time (p/parse-datetime "1996-02-24")
-         :ending-date-time (p/parse-datetime "1997-03-24")})
+         :ending-date-time (p/parse-datetime "1997-03-24T23:59:59.999")})
       (umm-c/map->RangeDateTime
         {:beginning-date-time (p/parse-datetime "1998-02-24T22:20:41-05:00")
          :ending-date-time (p/parse-datetime "1999-03-24T22:20:41-05:00")})]
