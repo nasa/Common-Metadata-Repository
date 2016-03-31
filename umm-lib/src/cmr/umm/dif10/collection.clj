@@ -8,7 +8,6 @@
             [cmr.umm.dif10.core :as dif10-core]
             [cmr.umm.collection :as c]
             [cmr.common.xml :as v]
-            [camel-snake-kebab.core :as csk]
             [cmr.umm.dif10.collection.temporal :as t]
             [cmr.umm.dif10.collection.project-element :as pj]
             [cmr.umm.dif10.collection.related-url :as ru]
@@ -22,7 +21,8 @@
             [cmr.umm.dif10.collection.personnel :as personnel]
             [cmr.umm.dif10.collection.product-specific-attribute :as psa]
             [cmr.umm.dif10.collection.metadata-association :as ma]
-            [cmr.umm.dif.collection.extended-metadata :as em])
+            [cmr.umm.dif.collection.extended-metadata :as em]
+            [cmr.common.date-time-parser :as dtp])
   (:import cmr.umm.collection.UmmCollection))
 
 (def not-provided
@@ -48,9 +48,9 @@
         delete-time (cx/string-at-path collection-content [:Metadata_Dates :Metadata_Delete])]
     (when (or insert-time update-time)
       (c/map->DataProviderTimestamps
-        {:insert-time (t/string->datetime insert-time)
-         :update-time (t/string->datetime update-time)
-         :delete-time (t/string->datetime delete-time)}))))
+        {:insert-time (dtp/try-parse-datetime insert-time)
+         :update-time (dtp/try-parse-datetime update-time)
+         :delete-time (dtp/try-parse-datetime delete-time)}))))
 
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"

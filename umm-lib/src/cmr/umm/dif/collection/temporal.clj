@@ -6,10 +6,6 @@
             [cmr.umm.collection :as c]
             [cmr.umm.dif.date-util :as date-util]))
 
-;; note: this is used in other projects
-
-(def string->datetime parser/try-parse-datetime)
-
 (defn xml-elem->Temporal
   "Returns a list of UMM RangeDateTimes from a parsed DIF XML structure"
   [collection-element]
