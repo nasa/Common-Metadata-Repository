@@ -104,7 +104,7 @@
   [type s]
   (if-let [match (re-matches polygon-regex s)]
     (let [ordinates (map #(Double. ^String %) (str/split s #","))]
-      (poly/polygon :geodetic [(apply rr/ords->ring :geodetic ordinates)]))
+      (poly/polygon :geodetic [(rr/ords->ring :geodetic ordinates)]))
     {:errors [(smsg/shape-decode-msg :polygon s)]}))
 
 (defmethod url-decode :line

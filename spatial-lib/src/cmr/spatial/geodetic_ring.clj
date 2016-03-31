@@ -59,8 +59,8 @@
    ;; Three points that are not within the ring. These are used to test if a point is inside or
    ;; outside a ring. We generate multiple external points so that we have a backup if one external
    ;; point is antipodal to a point we're checking is inside a ring.
-   external-points
-   ])
+   external-points])
+
 (record-pretty-printer/enable-record-pretty-printing GeodeticRing)
 
 (defn-  arcs-and-arc-intersections

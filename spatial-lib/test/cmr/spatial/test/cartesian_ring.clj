@@ -21,25 +21,25 @@
   (testing "clockwise"
     (is (= :clockwise
            (cr/ring->winding
-             (d/calculate-derived (rr/ords->ring :cartesian 4 3, 4 9, 9 9, 9 3, 4 3))))))
+             (d/calculate-derived (rr/ords->ring :cartesian [4 3, 4 9, 9 9, 9 3, 4 3]))))))
   (testing "counter clockwise"
     (is (= :counter-clockwise
            (cr/ring->winding
-             (d/calculate-derived (rr/ords->ring :cartesian 4 3, 9 3, 9 9, 4 9, 4 3)))))))
+             (d/calculate-derived (rr/ords->ring :cartesian [4 3, 9 3, 9 9, 4 9, 4 3])))))))
 
 (deftest ring-validation-test
   (testing "valid ring"
     (testing "normal ring"
-      (is (nil? (seq (v/validate (rr/ords->ring :cartesian 0 0, 1 0, 0 1, 0 0))))))
+      (is (nil? (seq (v/validate (rr/ords->ring :cartesian [0 0, 1 0, 0 1, 0 0]))))))
     (testing "whole world"
-      (is (nil? (seq (v/validate (rr/ords->ring :cartesian -180 90, -180 -90, 180 -90, 180 90, -180 90))))))
+      (is (nil? (seq (v/validate (rr/ords->ring :cartesian [-180 90, -180 -90, 180 -90, 180 90, -180 90]))))))
     (testing "points on opposite sides of the antimeridian"
-      (is (nil? (seq (v/validate (rr/ords->ring :cartesian 0 -70, -180.0 -70, 180.0 -90.0, 180.0 -70, 0.0 -70)))))))
+      (is (nil? (seq (v/validate (rr/ords->ring :cartesian [0 -70, -180.0 -70, 180.0 -90.0, 180.0 -70, 0.0 -70])))))))
   (testing "invalid rings"
     (u/are2
       [ords msgs]
       (is (= (seq msgs)
-             (seq (v/validate (apply rr/ords->ring :cartesian ords)))))
+             (seq (v/validate (rr/ords->ring :cartesian ords)))))
 
       "invalid point"
       [0 0, 181 0, 0 1, 0 0]

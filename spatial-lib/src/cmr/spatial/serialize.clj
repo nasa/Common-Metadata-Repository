@@ -19,6 +19,7 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.line-string :as l]
             [cmr.spatial.mbr :as m]
+            [cmr.common.util :as u]
             [cmr.spatial.lr-binary-search :as lr]
             [clojure.set :as set]))
 
@@ -158,42 +159,34 @@
     (m/point->mbr (first (:points line)))))
 
 
-(defmulti stored-ords->shape
+(defn stored-ords->shape
   "Converts a type and stored ordinates into a spatial shape"
-  (fn [type ords]
-    type))
-
-(defmethod stored-ords->shape :geodetic-polygon
   [type ords]
-  (poly/polygon :geodetic [(apply rr/ords->ring :geodetic (map stored->ordinate ords))]))
+  (case type
+    :geodetic-polygon
+    (poly/polygon :geodetic [(rr/ords->ring :geodetic (mapv stored->ordinate ords))])
 
-(defmethod stored-ords->shape :cartesian-polygon
-  [type ords]
-  (poly/polygon :cartesian [(apply rr/ords->ring :cartesian (map stored->ordinate ords))]))
+    :cartesian-polygon
+    (poly/polygon :cartesian [(rr/ords->ring :cartesian (mapv stored->ordinate ords))])
 
-(defmethod stored-ords->shape :geodetic-hole
-  [type ords]
-  (apply rr/ords->ring :geodetic (map stored->ordinate ords)))
+    :geodetic-hole
+    (rr/ords->ring :geodetic (mapv stored->ordinate ords))
 
-(defmethod stored-ords->shape :cartesian-hole
-  [type ords]
-  (apply rr/ords->ring :cartesian (map stored->ordinate ords)))
+    :cartesian-hole
+    (rr/ords->ring :cartesian (mapv stored->ordinate ords))
 
-(defmethod stored-ords->shape :br
-  [type ords]
-  (apply m/mbr (map stored->ordinate ords)))
+    :br
+    (apply m/mbr (mapv stored->ordinate ords))
 
-(defmethod stored-ords->shape :point
-  [type ords]
-  (apply p/point (map stored->ordinate ords)))
+    :point
+    (apply p/point (mapv stored->ordinate ords))
 
-(defmethod stored-ords->shape :geodetic-line-string
-  [type ords]
-  (l/ords->line-string :geodetic (map stored->ordinate ords)))
+    :geodetic-line-string
+    (l/ords->line-string :geodetic (mapv stored->ordinate ords))
 
-(defmethod stored-ords->shape :cartesian-line-string
-  [type ords]
-  (l/ords->line-string :cartesian (map stored->ordinate ords)))
+    :cartesian-line-string
+    (l/ords->line-string :cartesian (mapv stored->ordinate ords))
+    (throw (Exception. (str "Uknown ords shape type " (pr-str type))))))
 
 (def shape-type->integer
   "Converts a shape type into an integer for storage"
@@ -215,19 +208,21 @@
   "Converts a sequence of shapes into a map contains the ordinate values and ordinate info"
   [shapes]
   (let [;; Convert each shape into a map of types and ordinates
-        infos (mapcat shape->stored-ords shapes)]
+        infos (u/mapcatv shape->stored-ords shapes)]
 
     {;; Create the ords-info sequence which is a sequence of types followed by the number of ordinates in the shape
-     :ords-info (mapcat (fn [{:keys [type ords]}]
-                            [(shape-type->integer type) (count ords)])
-                        infos)
-        ;; Create a combined sequence of all the shape ordinates
-     :ords (mapcat :ords infos)}))
+     :ords-info (u/mapcatv (fn [{:keys [type ords]}]
+                             [(shape-type->integer type) (count ords)])
+                           infos)
+     ;; Create a combined sequence of all the shape ordinates
+     :ords (u/mapcatv :ords infos)}))
 
 (defn ords-info->shapes
   "Converts the ords-info data and ordinates into a sequence of shapes"
   [ords-info ords]
-  (loop [ords-info-pairs (partition 2 ords-info) ords ords shapes []]
+  (loop [ords-info-pairs (partition 2 ords-info)
+         ords (vec ords)
+         shapes []]
     (if (empty? ords-info-pairs)
       shapes
       (let [[int-type size] (first ords-info-pairs)
@@ -236,16 +231,15 @@
                 (errors/internal-error!
                   (format "Could not get a shape type from integer [%s]. Ords info: %s"
                           int-type (pr-str ords-info))))
-            shape-ords (take size ords)
+            shape-ords (subvec ords 0 size)
             shape (stored-ords->shape type shape-ords)
             ;; If shape is a hole add it to the last shape
             shapes (if (or (= type :geodetic-hole) (= type :cartesian-hole))
                      (update-in shapes [(dec (count shapes)) :rings] conj shape)
                      (conj shapes shape))]
         (recur (rest ords-info-pairs)
-               (drop size ords)
+               (subvec ords size)
                shapes)))))
-
 
 ;; This comment left in to show how to test the performance of a spatial search intersection between
 ;; a search area and one possible area.
@@ -254,41 +248,29 @@
   (do
     ;;  lower left longitude, lower left latitude, upper right longitude, upper right latitude.
     ;; w s e n
-    10.013111114501953 30.266082763671875 36.218971252441406 36.933528900146484
+    -180,0,180,90
 
     ;; w n e s
-    (def search-area (m/mbr 10.013111114501953 36.933528900146484  36.218971252441406 30.266082763671875))
+    (def search-area (m/mbr -180 90 180 0))
 
     (cmr.spatial.validation/validate search-area)
 
     (require '[cmr.spatial.relations :as r])
     (def intersects-fn (r/shape->intersects-fn search-area))
 
-    ; (def ords [0.0 -55.1941715206348800 -2.4978480000000000 -49.4242940000000000 -9.0638480000000000 -28.7228830000000000 -13.88382400000000000 -7.79849400000000000 -18.3748780000000000 13.19385100000000000 -23.4621070000000000 34.1237340000000000 -31.046366000000000 54.8031620000000000 -51.6761930000000000 74.43060300000000000 -155.88189700000000000 78.8231350000000000 -179.9999000000000000000 65.38029173779580000])
-
-    ;; Intersects
-    ; (def ords [64.7397610000000000 -65.66164400000000000, 53.12870000000000000 -45.4130480000000000, 47.06934000000000000 -24.65024000000000000, 42.3668210000000000 -3.70534700000000000, 37.8168870000000000 17.284122, 32.4356990000000000 38.1763950000000000, 23.7577740000000000 58.7555890000000000, 0.0001 76.3484216184533200])
-
-    ;; Does not intersect
-    (def ords [127.8636400000000000 55.5112380000000000, 120.7463990000000000 37.17318700000000000, 115.9700090000000000 18.6080280000000000, 111.8991170000000000 -0.040996, 107.8287280000000000 -18.6764620000000000, 103.057800000000000000 -37.2000890000000000, 95.9646380000000000 -55.4745750000000000, 78.8153840000000000 -72.92000600000000000, 0.0001 -81.5268095134934800,])
-
-
     (require '[cmr.spatial.kml :as kml])
-
-    (def stored-ords
-      (first (shape->stored-ords (l/ords->line-string :geodetic ords))))
-
     (require '[criterium.core :refer [with-progress-reporting bench quick-bench]]))
 
   (do
     (def ls (stored-ords->shape (:type stored-ords) (:ords stored-ords)))
     (kml/display-shapes [search-area ls (l/line-string->mbr ls)]))
 
+
   (with-progress-reporting
     (bench
-      (let [{:keys [type ords]} stored-ords
-            shape (stored-ords->shape type ords)]
-        (intersects-fn shape)))))
+      (let [{:keys [ords-info ords]} scratch/ords-info-map
+            shapes (ords-info->shapes ords-info ords)]
+        (cmr.common.util/any? intersects-fn shapes)))))
 
 
 

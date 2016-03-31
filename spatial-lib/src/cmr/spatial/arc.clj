@@ -167,17 +167,23 @@
 
         :else [br]))))
 
+(defn- arc-from-ordered-points
+  "Creates an arc from the given points that are already ordered west to east."
+  [point1 point2 west-point east-point]
+  (let [great-circle (great-circle west-point east-point)
+        initial-course (p/course point1 point2)
+        ending-course (mod (+ 180.0 (p/course point2 point1)) 360.0)
+        [br1 br2] (bounding-rectangles west-point east-point great-circle initial-course ending-course)]
+    (->Arc west-point east-point great-circle initial-course ending-course br1 br2)))
+
 (defn arc
   [point1 point2]
   (pj/assert (not= point1 point2))
   (pj/assert (not (p/antipodal? point1 point2)))
 
-  (let [[west-point east-point] (p/order-points point1 point2)
-        great-circle (great-circle west-point east-point)
-        initial-course (p/course point1 point2)
-        ending-course (mod (+ 180.0 (p/course point2 point1)) 360.0)
-        [br1 br2] (bounding-rectangles west-point east-point great-circle initial-course ending-course)]
-    (->Arc west-point east-point great-circle initial-course ending-course br1 br2)))
+  (if (< (p/compare-points point1 point2) 0)
+    (arc-from-ordered-points point1 point2 point1 point2)
+    (arc-from-ordered-points point1 point2 point2 point1)))
 
 (defn points->arcs
   "Takes a list of points and returns arcs connecting all the points"

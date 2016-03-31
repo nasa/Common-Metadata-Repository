@@ -222,35 +222,32 @@
     (with-geodetic-equality p)
     (with-cartesian-equality p)))
 
-(defn order-longitudes
-  "Orders the longitudes from west to east such that traveling east crosses at most 180 degrees."
-  [^double l1 ^double l2]
+(defn compare-longitudes
+  "Compares the longitudes from west to east such that traveling east crosses at most 180 degrees.
+   Returns information following the same semantics as clojure.core/compare"
+  ^long [^double l1 ^double l2]
   (let [^double mod (mod (- l1 l2) 360)]
     (cond
       ;; use natural ordering in this case
-      (= mod 180.0) (sort [l1 l2])
-      (= mod 0.0) (if (= l1 180.0) [l1 l2] [l2 l1])
-      (< mod 180.0) [l2 l1]
-      :else [l1 l2])))
+      (= mod 180.0) (compare l1 l2)
+      (= mod 0.0) (if (= l1 180.0) LESS_THAN GREATER_THAN)
+      (< mod 180.0) GREATER_THAN
+      :else LESS_THAN)))
 
-(defn order-points
-  "Orders the points from west to east using the same rules as order longitudes. If points are the
-  same longitude ordered north to south"
-  [^Point p1 ^Point p2]
+(defn compare-points
+  "Compares the points from west to east using the same rules as order longitudes. If points are the
+   same longitude ordered south to north. Returns information following the same semantics as
+   clojure.core/compare"
+  ^long [^Point p1 ^Point p2]
   (let [lon1 (.lon p1)
         lat1 (.lat p1)
         lon2 (.lon p2)
         lat2 (.lat p2)]
     (if (= lon1 lon2)
       ;; Order by latitudes
-      (if (> lat2 lat1)
-        [p1 p2]
-        [p2 p1])
+      (compare lat1 lat2)
       ;; order by longitudes
-      (let [[west-lon east-lon] (order-longitudes lon1 lon2)]
-        (if (= lon1 west-lon)
-          [p1 p2]
-          [p2 p1])))))
+      (compare-longitudes lon1 lon2))))
 
 (defn round-point
   "Rounds the point the given number of decimal places"

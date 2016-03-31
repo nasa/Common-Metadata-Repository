@@ -18,22 +18,16 @@
            cmr.spatial.point.Point))
 (primitive-math/use-primitive-operators)
 
-(defmulti ring
+(defn ring
   "Creates a new ring in the coordinate system and points."
-  (fn [coordinate-system points]
-    coordinate-system))
-
-(defmethod ring :geodetic
   [coordinate-system points]
-  (gr/ring points))
-
-(defmethod ring :cartesian
-  [coordinate-system points]
-  (cr/ring points))
+  (case coordinate-system
+    :geodetic (gr/ring points)
+    :cartesian (cr/ring points)))
 
 (defn ords->ring
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates a ring."
-  [coordinate-system & ords]
+  [coordinate-system ords]
   (ring coordinate-system (p/ords->points ords)))
 
 (defn ring->ords [ring]

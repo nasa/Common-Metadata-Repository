@@ -32,6 +32,14 @@
 (defmacro atan2 [y x]
   `(StrictFastMath/atan2 ~y ~x))
 
+(def ^:const ^long LESS_THAN
+  "Value to return from compare functions to indicate a value is less than another value"
+  -1)
+
+(def ^:const ^long GREATER_THAN
+  "Value to return from compare functions to indicate a value is greater than another value"
+  1)
+
 (def ^:const ^double PI Math/PI)
 
 (def ^:const ^double TAU (* 2.0 PI))

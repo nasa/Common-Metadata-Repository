@@ -18,8 +18,8 @@
 (deftest modis-tile-geometry-intersection
   (testing "testing bouding box intersection with a modis tile"
     (let [tile (t/->ModisSinTile [7 0] (d/calculate-derived
-                                        (apply rr/ords->ring :geodetic [0,0,10,0,10,10,0,10,0,0])))
-          geom (d/calculate-derived (rr/ords->ring :geodetic 5 5,15 5,15 15,5 15,5 5))]
+                                        (rr/ords->ring :geodetic [0,0,10,0,10,10,0,10,0,0])))
+          geom (d/calculate-derived (rr/ords->ring :geodetic [5 5,15 5,15 15,5 15,5 5]))]
          (is (t/intersects? tile geom)))))
 
 (deftest modis-search-overalapping-tiles
@@ -33,8 +33,8 @@
           [19 10] [19 11] [20 8] [20 9]]
 
          "A small geodetic ring completely inside a tile"
-         (rr/ords->ring :geodetic -77.205, 39.112, -77.188, 39.134, -77.221,
-                                            39.143, -77.252, 39.130, -77.250,39.116,-77.205,39.112)
+         (rr/ords->ring :geodetic [-77.205, 39.112, -77.188, 39.134, -77.221,
+                                            39.143, -77.252, 39.130, -77.250,39.116,-77.205,39.112])
          [[12 5]]
 
          "A point"

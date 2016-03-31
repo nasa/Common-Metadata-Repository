@@ -20,8 +20,8 @@
 (comment
   ;; If you have trouble reloading this namespace, evaluate the
   ;; following expression:
-  (primitive-math/unuse-primitive-operators)
-  )
+  (primitive-math/unuse-primitive-operators))
+
 
 (primitive-math/use-primitive-operators)
 
@@ -340,17 +340,17 @@
               ;; The holes can go in the polygon if they don't intersect any of the other holes
               (let [[h1 h2 h3] potential-holes
                   ;; h2 can be used if it doesn't intersect h1
-                  h2-valid? (not (rr/intersects-ring? h1 h2))
+                    h2-valid? (not (rr/intersects-ring? h1 h2))
                   ;; h3 can be used if it doesn't intersect h1 or h2 (if h2 is valid)
-                  h3-valid? (and (not (rr/intersects-ring? h1 h3))
-                                 (or (not h2-valid?)
-                                     (not (rr/intersects-ring? h2 h3))))
-                  holes (cond
-                          (and h2-valid? h3-valid?) [h1 h2 h3]
-                          h2-valid? [h1 h2]
-                          h3-valid? [h1 h3]
-                          :else [h1])]
-              (poly/polygon coord-sys (cons outer-boundary holes))))
+                    h3-valid? (and (not (rr/intersects-ring? h1 h3))
+                                   (or (not h2-valid?)
+                                       (not (rr/intersects-ring? h2 h3))))
+                    holes (cond
+                            (and h2-valid? h3-valid?) [h1 h2 h3]
+                            h2-valid? [h1 h2]
+                            h3-valid? [h1 h3]
+                            :else [h1])]
+               (poly/polygon coord-sys (cons outer-boundary holes))))
           ;; Generates tuples of outer boundaries along with holes that are in the boundary.
           (gen/bind
            (rings coord-sys)

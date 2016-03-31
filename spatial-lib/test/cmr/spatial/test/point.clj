@@ -187,47 +187,49 @@
            (- l2 -180))
         180)))
 
-(deftest order-points
+(deftest compare-points-test
   (testing "when longitudes match"
     (let [p1 (p/point 95 23)
           p2 (p/point 95 22)]
-      (is (= [p2 p1] (p/order-points p1 p2)))
-      (is (= [p2 p1] (p/order-points p2 p1)))))
+      (is (> (p/compare-points p1 p2) 0))
+      (is (< (p/compare-points p2 p1) 0))))
   (testing "when 180 degrees apart"
     (let [p1 (p/point 180 25)
           p2 (p/point 0 25)]
-      (is (= [p2 p1] (p/order-points p1 p2)))
-      (is (= [p2 p1] (p/order-points p2 p1))))
+      (is (> (p/compare-points p1 p2) 0))
+      (is (< (p/compare-points p2 p1) 0)))
     (let [p1 (p/point -180 25)
           p2 (p/point 0 25)]
-      (is (= [p1 p2] (p/order-points p1 p2)))
-      (is (= [p1 p2] (p/order-points p2 p1))))))
+      (is (< (p/compare-points p1 p2) 0))
+      (is (> (p/compare-points p2 p1) 0)))))
+
+(defn order-points
+  "Orders the points using the compare points function"
+  [p1 p2]
+  (if (<= (p/compare-points p1 p2) 0)
+    [p1 p2]
+    [p2 p1]))
 
 (defspec order-points-test 100
   (for-all [p1 sgen/points
             p2 sgen/points]
-    (let [[op1 op2] (p/order-points p1 p2)]
+    (let [[op1 op2] (order-points p1 p2)]
       (and
         ;; should have original points
         (= #{op1 op2} #{p1 p2})
         ;; should stay in order
-        (= [op1 op2] (p/order-points op1 op2))
+        (= [op1 op2] (order-points op1 op2))
         ;; should be put back in the right order
-        (= [op1 op2] (p/order-points op2 op1))
+        (= [op1 op2] (order-points op2 op1))
         (crosses-at-most-180? (:lon op1) (:lon op2))))))
 
-(defspec order-longitudes-test 100
+(defspec compare-longitudes-test 100
   (for-all [lon1 sgen/lons
             lon2 sgen/lons]
-    (let [[l1 l2] (p/order-longitudes lon1 lon2)]
-      (and
-        ;; should have original values
-        (= (hash-set l1 l2) (hash-set lon1 lon2))
-        ;; should stay in order
-        (= [l1 l2] (p/order-longitudes l1 l2))
-        ;; should be put back in the right order
-        (= [l1 l2] (p/order-longitudes l2 l1))
-        (crosses-at-most-180? l1 l2)))))
+    (let [compare-l1-l2 (p/compare-longitudes lon1 lon2)
+          compare-l2-l1 (p/compare-longitudes lon2 lon1)]
+      (or (not= compare-l1-l2 compare-l2-l1)
+          (= lon1 lon2)))))
 
 (defspec angular-distance-spec 100
   (for-all [[p1 p2] (sgen/non-antipodal-points 2)]

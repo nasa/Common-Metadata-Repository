@@ -18,7 +18,7 @@
 
 (deftest ring-self-intersections-test
   (doseq [[ring-name {:keys [ords expected-intersects]}] ring-examples]
-    (let [ring (d/calculate-derived (apply rr/ords->ring :geodetic ords))
+    (let [ring (d/calculate-derived (rr/ords->ring :geodetic ords))
           self-intersections (rr/self-intersections ring)]
       (if expected-intersects
         (let [sorter (fn [{:keys [lon lat]}]

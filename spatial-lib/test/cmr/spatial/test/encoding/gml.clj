@@ -71,9 +71,9 @@
 
 (deftest test-decode-polygon
   (testing "decoding GML polygons"
-    (is (= (poly/polygon :cartesian [(rr/ords->ring :cartesian -110.45 45.256, -109.48 46.46, -109.86 43.84, -110.45 45.256)])
+    (is (= (poly/polygon :cartesian [(rr/ords->ring :cartesian [-110.45 45.256, -109.48 46.46, -109.86 43.84, -110.45 45.256])])
            (gml/decode (first (cx/elements-at-path (x/parse-str gml-xml) [:Polygon])))))
-    (is (= (poly/polygon :geodetic [(rr/ords->ring :geodetic -110.45 45.256, -109.48 46.46, -109.86 43.84, -110.45 45.256)])
+    (is (= (poly/polygon :geodetic [(rr/ords->ring :geodetic [-110.45 45.256, -109.48 46.46, -109.86 43.84, -110.45 45.256])])
            (gml/decode (second (cx/elements-at-path (x/parse-str gml-xml) [:Polygon])))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

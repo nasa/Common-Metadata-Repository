@@ -20,7 +20,7 @@
 (deftest ring-covers-br-test
   (testing "concave ring"
     (is (not (rr/covers-br? (d/calculate-derived
-                              (rr/ords->ring :geodetic -0.11,2.79,2.53,1.44,-0.01,3.79,-2.2,2.28,-0.11,2.79))
+                              (rr/ords->ring :geodetic [-0.11,2.79,2.53,1.44,-0.01,3.79,-2.2,2.28,-0.11,2.79]))
                             (m/mbr -0.7921474469772579
                                    3.2516294093733533
                                    0.5732165527343749
@@ -28,18 +28,18 @@
 
 (deftest ring-validation-test
   (testing "valid ring"
-    (is (nil? (seq (v/validate (rr/ords->ring :geodetic 0 0, 1 0, 0 1, 0 0))))))
+    (is (nil? (seq (v/validate (rr/ords->ring :geodetic [0 0, 1 0, 0 1, 0 0]))))))
   (testing "valid skinny ring"
     ;; This ring is very long and skinny. The arcs are about 18 meters apart.
     (is (nil? (seq (v/validate (rr/ords->ring :geodetic
-                                              -45.19377 68.63509
-                                              -44.67717 68.63509
-                                              -44.67717 68.63526
-                                              -45.19377 68.63526
-                                              -45.19377 68.63509))))))
+                                              [-45.19377 68.63509
+                                               -44.67717 68.63509
+                                               -44.67717 68.63526
+                                               -45.19377 68.63526
+                                               -45.19377 68.63509]))))))
 
   (testing "invalid rings"
-    (are [ords msgs] (= (seq msgs) (seq (v/validate (apply rr/ords->ring :geodetic ords))))
+    (are [ords msgs] (= (seq msgs) (seq (v/validate (rr/ords->ring :geodetic ords))))
 
          ;; invalid point
          [0 0, 181 0, 0 1, 0 0]
@@ -107,7 +107,7 @@
           :let [north-pole (if (nil? north-pole) false north-pole)
                 south-pole (if (nil? south-pole) false south-pole)]]
     (testing (str "Ring Example " ring-name)
-      (let [ring (apply rr/ords->ring :geodetic ords)
+      (let [ring (rr/ords->ring :geodetic ords)
             ring (d/calculate-derived ring)]
         (is (= bounds (:mbr ring)))
 
