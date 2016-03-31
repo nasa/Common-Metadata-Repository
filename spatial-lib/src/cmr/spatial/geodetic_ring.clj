@@ -63,7 +63,7 @@
 
 (record-pretty-printer/enable-record-pretty-printing GeodeticRing)
 
-(defn-  arcs-and-arc-intersections
+(defn- arcs-and-arc-intersections
   "Returns the set of intersection points between the arc and the list of arcs. "
   [arcs other-arc]
   (persistent!
@@ -173,7 +173,7 @@
           course-rotation-direction (arcs->course-rotation-direction arcs)
           ;; The net rotation direction of the longitudes of the ring around the earth if looking
           ;; down on the north pole
-          lon-rotation-direction (->> points (map :lon) rotation-direction)
+          lon-rotation-direction (->> points (mapv :lon) rotation-direction)
 
           contains-north-pole (or (some p/is-north-pole? points)
                                   (some a/crosses-north-pole? arcs)

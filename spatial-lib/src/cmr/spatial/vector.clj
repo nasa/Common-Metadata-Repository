@@ -8,8 +8,8 @@
   [
    ^double x
    ^double y
-   ^double z
-  ])
+   ^double z])
+
 (record-pretty-printer/enable-record-pretty-printing Vector)
 
 (defn new-vector
@@ -62,13 +62,11 @@
 
 (defn parallel?
   "Returns true if two vectors are parallel. Two vectors are parallel if they point in the same direction
-  or opposite directions."
+  or opposite directions. Assumes both vectors are normalized"
   [v1 v2]
-  (let [nv1 (normalize v1)
-        nv2 (normalize v2)]
-    (or
-      (vector-approx= nv1 nv2)
-      (vector-approx= (opposite nv1) nv2))))
+  (or (vector-approx= v1 v2)
+      (vector-approx= (opposite v1) v2)))
+
 
 
 

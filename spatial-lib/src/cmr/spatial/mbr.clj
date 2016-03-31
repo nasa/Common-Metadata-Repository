@@ -123,7 +123,6 @@
          south (- south tolerance)]
      (and (>= v south) (<= v north)))))
 
-
 (defn cartesian-covers-point?
   ([mbr ^Point p]
    (cartesian-covers-point? mbr p nil))
@@ -284,8 +283,6 @@
                 "Logic error: One of the other distances should have been largest it "
                 "should have crossed the antimeridian: "
                 (pr-str mbr))))))
-
-
 
 (defn non-crossing-intersects-br?
   "Specialized version of intersects-br? for two mbrs that don't cross the antimeridian.

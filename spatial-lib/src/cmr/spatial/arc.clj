@@ -81,8 +81,8 @@
 (defn- great-circle-equiv?
   "Returns true if two great circles are equivalent. Two great circles are equivalent if there
   vectors are parallel."
-  [gc1 gc2]
-  (v/parallel? (:plane-vector gc1) (:plane-vector gc2)))
+  [^GreatCircle gc1 ^GreatCircle gc2]
+  (v/parallel? (.plane_vector gc1) (.plane_vector gc2)))
 
 (defn crosses-north-pole?
   "Returns true if the arc crosses the northpole"
@@ -381,19 +381,6 @@
       ;; Not a vertical arc
       (point-at-lon arc (mid-lon (.lon west-point) (.lon east-point))))))
 
-(defn- points-within-arc-bounding-rectangles
-  "A helper function. Returns the points that are within the bounding rectangles of the arcs"
-  [points ^Arc a1 ^Arc a2]
-  (let [a1-br1 (.mbr1 a1)
-        a1-br2 (.mbr2 a1)
-        a2-br1 (.mbr1 a2)
-        a2-br2 (.mbr2 a2)]
-    (filter (fn [p] (and (or (mbr/geodetic-covers-point? a1-br1 p)
-                             (and a1-br2 (mbr/geodetic-covers-point? a1-br2 p)))
-                         (or (mbr/geodetic-covers-point? a2-br1 p)
-                             (and a2-br2 (mbr/geodetic-covers-point? a2-br2 p)))))
-            points)))
-
 (defn lat-segment-intersections
   "Returns the points where an arc intersects the latitude segment. The latitude segment is defined
   at lat between the lon-west and lon-east"
@@ -420,12 +407,23 @@
   [^Arc a1 ^Arc a2]
   (great-circle-equiv? (.great_circle a1) (.great_circle a2)))
 
+(defn- point-within-arc-bounding-rectangles?
+  "A helper function. Returns true if the point is within the bounding rectangles of the arcs"
+  [p ^Arc a1 ^Arc a2]
+  (let [a1-br1 (.mbr1 a1)
+        a1-br2 (.mbr2 a1)
+        a2-br1 (.mbr1 a2)
+        a2-br2 (.mbr2 a2)]
+    (and (or (mbr/geodetic-covers-point? a1-br1 p)
+             (and a1-br2 (mbr/geodetic-covers-point? a1-br2 p)))
+         (or (mbr/geodetic-covers-point? a2-br1 p)
+             (and a2-br2 (mbr/geodetic-covers-point? a2-br2 p))))))
+
 (defn great-circle-equivalency-arc-intersections
   "Special case arc intersections for both arcs having the same great circle"
   [a1 a2]
   (let [points (set (concat (arc->points a1) (arc->points a2)))]
-    (points-within-arc-bounding-rectangles
-      points a1 a2)))
+    (filterv #(point-within-arc-bounding-rectangles? % a1 a2) points)))
 
 (defn- arc-mbrs-intersect?
   "Returns true if any of the arc mbrs intersect"
@@ -447,11 +445,14 @@
           ;; defining the great circle planes.
           intersection-vector (v/cross-product pv1 pv2)
           intersection-point1 (c/vector->point intersection-vector)
-          intersection-point2 (p/antipodal intersection-point1)]
+          point1-within (point-within-arc-bounding-rectangles? intersection-point1 a1 a2)
+          intersection-point2 (p/antipodal intersection-point1)
+          point2-within (point-within-arc-bounding-rectangles? intersection-point2 a1 a2)]
       ;; Return the intersection points that are covered by bounding rectangles from both arcs
-      (points-within-arc-bounding-rectangles
-        [intersection-point1 intersection-point2]
-        a1 a2))))
+      (cond
+        (and point1-within point2-within) [intersection-point1 intersection-point2]
+        point1-within [intersection-point1]
+        point2-within [intersection-point2]))))
 
 (defn intersections
   "Returns a list of the points where the two arcs intersect."

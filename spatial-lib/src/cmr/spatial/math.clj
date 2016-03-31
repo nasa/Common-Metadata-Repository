@@ -240,9 +240,10 @@
             (every? (fn [[e v]]
                       (approx= e v delta))
                     (map vector expected actual)))))))
+
 (defn- angle-delta
   "Find the difference between a pair of angles."
-  ^double [[^double a1 ^double a2]]
+  ^double [^double a1 ^double a2]
   (let [a2 (if (< a2 a1)
              ;; Shift angle 2 so it is always greater than angle 1. This allows
              ;; us to get the real radial distance between angle 2 and angle 1
@@ -270,18 +271,15 @@
   Returns one of three keywords, :none, :counter-clockwise, or :clockwise, to indicate net direction
   of rotation"
   [angles]
-  (let [;; Calculates the amount of change between each angle.
-        ;; Positive numbers are turns to the left (counter-clockwise).
-        ;; Negative numbers are turns to the right (clockwise)
-        deltas (util/map-n angle-delta 2 1 angles)
-
-        ;; Summing the amounts of turn will give us a net turn. If it's positive then there
-        ;; is a net turn to the right. If it's negative then there's a net turn to the left.
-        ^double net (loop [m 0.0 deltas deltas]
-                      (if (empty? deltas)
+  (let [angles (vec angles)
+        num-angles (count angles)
+        ^double net (loop [index 0
+                           m 0.0]
+                      (if (or (>= index num-angles) (> (+ index 2) num-angles))
                         m
-                        (recur (+ m ^double (first deltas))
-                               (rest deltas))))]
+                        (recur (+ index 1)
+                               (+ m (angle-delta (nth angles index)
+                                                 (nth angles (+ index 1)))))))]
     (cond
       (< (abs net) 0.01) :none
       (> net 0.0) :counter-clockwise
