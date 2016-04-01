@@ -59,11 +59,11 @@
    ;; Three points that are not within the ring. These are used to test if a point is inside or
    ;; outside a ring. We generate multiple external points so that we have a backup if one external
    ;; point is antipodal to a point we're checking is inside a ring.
-   external-points
-   ])
+   external-points])
+
 (record-pretty-printer/enable-record-pretty-printing GeodeticRing)
 
-(defn-  arcs-and-arc-intersections
+(defn- arcs-and-arc-intersections
   "Returns the set of intersection points between the arc and the list of arcs. "
   [arcs other-arc]
   (persistent!
@@ -173,7 +173,7 @@
           course-rotation-direction (arcs->course-rotation-direction arcs)
           ;; The net rotation direction of the longitudes of the ring around the earth if looking
           ;; down on the north pole
-          lon-rotation-direction (->> points (map :lon) rotation-direction)
+          lon-rotation-direction (->> points (mapv :lon) rotation-direction)
 
           contains-north-pole (or (some p/is-north-pole? points)
                                   (some a/crosses-north-pole? arcs)
@@ -197,7 +197,17 @@
   (or (.mbr ring)
       (let [arcs (ring->arcs ring)
             {:keys [contains-north-pole contains-south-pole]} (ring->pole-containment ring)
-            br (->> arcs (mapcat a/mbrs) (reduce mbr/union))
+            br (reduce (fn [br ^Arc arc]
+                         (let [mbr1 (.mbr1 arc)
+                               br (if br
+                                    (mbr/union br mbr1)
+                                    mbr1)
+                               mbr2 (.mbr2 arc)]
+                           (if mbr2
+                             (mbr/union br mbr2)
+                             br)))
+                       nil
+                       arcs)
             br (if (and contains-north-pole
                         (not (some p/is-north-pole? (:points ring)))
                         (not (some a/crosses-north-pole? arcs)))

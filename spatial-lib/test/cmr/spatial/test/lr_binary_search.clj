@@ -36,13 +36,13 @@
          (poly/covers-br? polygon lr))))
 
 (defspec simple-geodetic-polygon-with-holes-has-lr {:times 100 :printer-fn sgen/print-failed-ring}
-  (let [boundary (d/calculate-derived (rr/ords->ring :geodetic 0 0, 10 0, 10 10, 0 10, 0 0))]
+  (let [boundary (d/calculate-derived (rr/ords->ring :geodetic [0 0, 10 0, 10 10, 0 10, 0 0]))]
     (for-all [hole (sgen/rings-in-ring boundary)]
       (let [polygon (d/calculate-derived (poly/polygon :geodetic [boundary hole]))]
         (polygon-has-valid-lr? polygon)))))
 
 (defspec simple-cartesian-polygon-with-holes-has-lr {:times 100 :printer-fn sgen/print-failed-ring}
-  (let [boundary (d/calculate-derived (rr/ords->ring :cartesian 0 0, 10 0, 10 10, 0 10, 0 0))]
+  (let [boundary (d/calculate-derived (rr/ords->ring :cartesian [0 0, 10 0, 10 10, 0 10, 0 0]))]
     (for-all [hole (sgen/rings-in-ring boundary)]
       (let [polygon (d/calculate-derived (poly/polygon :cartesian [boundary hole]))]
         (polygon-has-valid-lr? polygon)))))
@@ -90,7 +90,7 @@
                            -60.011338,77.189746, -60.005286,77.184739]]]]
     (doseq [polygon-ordses polygons-ordses]
       (let [polygon (d/calculate-derived (poly/polygon :geodetic
-                                                       (mapv (partial apply rr/ords->ring :geodetic)
+                                                       (mapv (partial rr/ords->ring :geodetic)
                                                              polygon-ordses)))]
         (is (polygon-has-valid-lr? polygon))))))
 

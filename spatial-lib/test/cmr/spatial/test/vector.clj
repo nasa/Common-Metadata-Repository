@@ -40,9 +40,9 @@
 
 (defspec parallel-vectors-spec 100
   (for-all [v sgen/vectors]
-    (let [unit-vector (v/normalize v)
+    (let [v (v/normalize v)
           opposite-vector (v/opposite v)
-          vectors [v unit-vector opposite-vector]]
+          vectors [v opposite-vector]]
       (every? #(apply v/parallel? %) (for [v1 vectors v2 vectors] [v1 v2])))))
 
 (defspec lon-lat-cross-product 100

@@ -367,7 +367,7 @@
                                 :spatial-coverage (dg/spatial
                                                     (poly/polygon
                                                       :geodetic
-                                                      [(rr/ords->ring :geodetic -70 20, 70 20, 70 30, -70 30, -70 20)])
+                                                      [(rr/ords->ring :geodetic [-70 20, 70 20, 70 30, -70 30, -70 20])])
                                                     polygon-with-holes
                                                     (p/point 1 2)
                                                     (p/point -179.9 89.4)

@@ -23,8 +23,8 @@
    rings
 
    ;; Derived fields
-   mbr
-   ])
+   mbr])
+
 (record-pretty-printer/enable-record-pretty-printing Polygon)
 
 (defn polygon
@@ -101,7 +101,7 @@
       polygon
 
       (as-> polygon p
-            (update-in p [:rings] #(mapv d/calculate-derived %))
+            (update p :rings #(mapv d/calculate-derived %))
             (assoc p :mbr (-> p :rings first :mbr))))))
 
 (defn- holes-inside-boundary-validation

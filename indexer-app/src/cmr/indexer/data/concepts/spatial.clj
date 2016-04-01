@@ -56,10 +56,10 @@
          [0.0001 -89.9999, 180.0 -89.9999, 180.0 -45.0, 180.0 0.0, 180.0 45.0, 180.0 89.9999,
           0.0001 89.9999, 0.0001 -89.9999]
          east-hemisphere}]
-        (into {}
-          (for [[ords equiv] ords-case-map]
-            [(poly/polygon :geodetic [(apply rr/ords->ring :geodetic ords)])
-             equiv]))))
+       (into {}
+         (for [[ords equiv] ords-case-map]
+           [(poly/polygon :geodetic [(rr/ords->ring :geodetic ords)])
+            equiv]))))
 
 (defn shapes->elastic-doc
   "Converts a spatial shapes into the nested elastic attributes"

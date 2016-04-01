@@ -76,7 +76,7 @@
   [line coordinate-system]
   (-> line
       (assoc :coordinate-system coordinate-system)
-      (update-in [:points] #(mapv (partial p/with-equality coordinate-system) %))
+      (update :points #(mapv (partial p/with-equality coordinate-system) %))
       ;; Set calculated data to nil.
       (assoc :point-set nil :segments nil :mbr nil)))
 

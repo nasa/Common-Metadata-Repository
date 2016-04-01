@@ -32,6 +32,14 @@
 (defmacro atan2 [y x]
   `(StrictFastMath/atan2 ~y ~x))
 
+(def ^:const ^long LESS_THAN
+  "Value to return from compare functions to indicate a value is less than another value"
+  -1)
+
+(def ^:const ^long GREATER_THAN
+  "Value to return from compare functions to indicate a value is greater than another value"
+  1)
+
 (def ^:const ^double PI Math/PI)
 
 (def ^:const ^double TAU (* 2.0 PI))
@@ -233,6 +241,28 @@
                       (approx= e v delta))
                     (map vector expected actual)))))))
 
+(defn- angle-delta
+  "Find the difference between a pair of angles."
+  ^double [^double a1 ^double a2]
+  (let [a2 (if (< a2 a1)
+             ;; Shift angle 2 so it is always greater than angle 1. This allows
+             ;; us to get the real radial distance between angle 2 and angle 1
+             (+ 360.0 a2)
+             a2)
+        ;; Then when we subtract angle 1 from angle 2 we're asking "How far do
+        ;; we have to turn to the  left to get to angle 2 from angle 1?"
+        left-turn-amount (- a2 a1)]
+    ;; Determine which is smaller: turning to the left or turning to the right
+    (cond
+      ;; In this case we can't determine whether turning to the left or the
+      ;; right is smaller. We handle this by returning 0. Summing the angle
+      ;; deltas in this case will == 180 or -180
+      (== 180.0 left-turn-amount) 0
+      ;; Turning to the right is less than turning to the left in this case.
+      ;; Returns a negative number between 0 and -180.0
+      (> left-turn-amount 180.0) (- left-turn-amount 360.0)
+      :else left-turn-amount)))
+
 (defn rotation-direction
   "A helper function that determines the final rotation direction based on a set of angles in
   degrees. It works by summing the differences between each angle. A net negative means clockwise,
@@ -241,38 +271,15 @@
   Returns one of three keywords, :none, :counter-clockwise, or :clockwise, to indicate net direction
   of rotation"
   [angles]
-  (let [angle-delta (fn [[^double a1 ^double a2]]
-                      (let [a2 (if (< a2 a1)
-                                 ;; Shift angle 2 so it is always greater than angle 1. This allows
-                                 ;; us to get the real radial distance between angle 2 and angle 1
-                                 (+ 360.0 a2)
-                                 a2)
-                            ;; Then when we subtract angle 1 from angle 2 we're asking "How far do
-                            ;; we have to turn to the  left to get to angle 2 from angle 1?"
-                            left-turn-amount (- a2 a1)]
-                        ;; Determine which is smaller: turning to the left or turning to the right
-                        (cond
-                          ;; In this case we can't determine whether turning to the left or the
-                          ;; right is smaller. We handle this by returning 0. Summing the angle
-                          ;; deltas in this case will == 180 or -180
-                          (== 180.0 left-turn-amount) 0
-                          ;; Turning to the right is less than turning to the left in this case.
-                          ;; Returns a negative number between 0 and -180.0
-                          (> left-turn-amount 180.0) (- left-turn-amount 360.0)
-                          :else left-turn-amount)))
-
-        ;; Calculates the amount of change between each angle.
-        ;; Positive numbers are turns to the left (counter-clockwise).
-        ;; Negative numbers are turns to the right (clockwise)
-        deltas (util/map-n angle-delta 2 1 angles)
-
-        ;; Summing the amounts of turn will give us a net turn. If it's positive then there
-        ;; is a net turn to the right. If it's negative then there's a net turn to the left.
-        ^double net (loop [m 0.0 deltas deltas]
-                      (if (empty? deltas)
+  (let [angles (vec angles)
+        num-angles (count angles)
+        ^double net (loop [index 0
+                           m 0.0]
+                      (if (or (>= index num-angles) (> (+ index 2) num-angles))
                         m
-                        (recur (+ m ^double (first deltas))
-                               (rest deltas))))]
+                        (recur (+ index 1)
+                               (+ m (angle-delta (nth angles index)
+                                                 (nth angles (+ index 1)))))))]
     (cond
       (< (abs net) 0.01) :none
       (> net 0.0) :counter-clockwise

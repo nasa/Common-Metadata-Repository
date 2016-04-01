@@ -130,18 +130,13 @@
     [line point]
     "Returns true if the point lies on the line"))
 
-(defmulti intersections
+(defn intersections
   "Determines if line 1 and 2 intersect. A line can be an arc or a line segment."
-  (fn [line1 line2]
-    (type line2)))
+  [line1 line2]
 
-(defmethod intersections Arc
-  [line arc]
-  (intersections-with-arc line arc))
-
-(defmethod intersections LineSegment
-  [line ls]
-  (intersections-with-line-segment line ls))
+  (if (= (type line2) Arc)
+    (intersections-with-arc line1 line2)
+    (intersections-with-line-segment line1 line2)))
 
 (extend-protocol ArcSegmentIntersects
   LineSegment
