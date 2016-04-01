@@ -153,7 +153,8 @@
 
 (defmethod cpv/valid-sort-keys :collection
   [_]
-  #{:entry-title
+  #{:short-name
+    :entry-title
     :entry-id
     :dataset-id
     :start-date
