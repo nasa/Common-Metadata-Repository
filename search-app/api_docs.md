@@ -1280,10 +1280,6 @@ Find an attribute attribute with name "PERCENTAGE" of type float with max value 
 
     curl "%CMR-ENDPOINT%/collections?attribute\[\]=float,PERCENTAGE,,30"
 
-Find an additional attribute with name "X,Y,Z" with value 7.
-
-    curl "%CMR-ENDPOINT%/collections?attribute\[\]=float,X\,Y\,Z,7"
-
 Find an additional attribute with name "X\Y\Z" with value 7.
 
     curl "%CMR-ENDPOINT%/collections?attribute\[\]=float,X\Y\Z,7"
