@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.collection-sorting-search-test
   "Tests searching for collections using basic collection identifiers"
   (:require [clojure.test :refer :all]
-            [clojure.string :as string]
+            [clojure.string :as str]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -18,7 +18,6 @@
   [provider entry-title begin end]
   (d/ingest provider
             (dc/collection {:entry-title entry-title
-                            :short-name (string/join [entry-title "_sn"])
                             :beginning-date-time (d/make-datetime begin)
                             :ending-date-time (d/make-datetime end)})))
 (defn delete-coll
@@ -75,8 +74,8 @@
         ;; Revision ids are in reverse order by default
         (compare (:revision-id c2) (:revision-id c1))
         (compare (:concept-id c1) (:concept-id c2)))
-      (let [processed-value1 (if (string? value1) (string/lower-case value1) value1)
-            processed-value2 (if (string? value2) (string/lower-case value2) value2)]
+      (let [processed-value1 (if (string? value1) (str/lower-case value1) value1)
+            processed-value2 (if (string? value2) (str/lower-case value2) value2)]
         (if descending?
           (compare processed-value2 processed-value1)
           (compare processed-value1 processed-value2))))))
@@ -99,7 +98,6 @@
         c3 (make-coll-with-sn "Zebra")
         c4 (make-coll-with-sn "Schwartz")
         c5 (make-coll-with-sn "bob1")
-        all-colls [c1 c2 c3 c4]
         correct-sort [c2 c5 c1 c4 c3]]
     (index/wait-until-indexed)
     (is (sort-order-correct? correct-sort "short-name"))
@@ -183,8 +181,8 @@
         c4 (make-coll "PROV1" "et80" 24 35)
         all-colls [c1 c2 c3 c4]]
     (index/wait-until-indexed)
-    (let [sorted-colls (sort-by (juxt (comp string/lower-case :entry-title)
-                                      (comp string/lower-case :provider-id)) all-colls)]
+    (let [sorted-colls (sort-by (juxt (comp str/lower-case :entry-title)
+                                      (comp str/lower-case :provider-id)) all-colls)]
       (is (d/refs-match-order?
             sorted-colls
             (search/find-refs :collection {:page-size 20})))
