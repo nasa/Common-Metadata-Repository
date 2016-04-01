@@ -145,6 +145,8 @@
 (defn- flat-keywords->hierarchical-keywords
   "Converts flat keywords into hierarchical keywords."
   [flat-keywords keyword-hierarchy]
+  (proto/save 1)
+  (proto/saved-values)
   (->> flat-keywords
        (map #(keyword->hierarchy % keyword-hierarchy))
        (reduce merge-hierarchical-maps sorted-hierarchical-map)
@@ -171,5 +173,3 @@
     (GET "/:keyword-scheme" {{:keys [keyword-scheme]} :params
                              request-context :request-context}
       (get-hierarchical-keywords request-context keyword-scheme))))
-
-

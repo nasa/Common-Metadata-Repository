@@ -39,8 +39,9 @@
 (defn- nested-facet
   "Returns the nested aggregation query for the given hierarchical field."
   [field]
+  ;; Removing field :url because it's necessary in keyword search but not in facets.
   {:nested {:path field}
-   :aggs (hierarchical-aggregation-builder field (field kms-fetcher/nested-fields-mappings))})
+   :aggs (hierarchical-aggregation-builder field (remove #{:url} (field kms-fetcher/nested-fields-mappings)))})
 
 (def ^:private flat-facet-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
@@ -345,5 +346,3 @@
   ;         "value" : "Popular",
   ;           ...
   ;
-
-
