@@ -262,8 +262,13 @@
     (require '[cmr.spatial.kml :as kml])
     (require '[criterium.core :refer [with-progress-reporting bench quick-bench]]))
 
-  (do
-    (kml/display-shapes [search-area]))
+
+
+  (kml/display-shapes [search-area])
+
+  ;; Create an instance of a shape like polygon
+  ;; Use this to get the ords info map
+  (shapes->ords-info-map [polygon])
 
 
   (with-progress-reporting
