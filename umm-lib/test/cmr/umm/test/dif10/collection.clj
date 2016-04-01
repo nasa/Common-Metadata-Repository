@@ -477,7 +477,7 @@
     {:range-date-times
      [(umm-c/map->RangeDateTime
         {:beginning-date-time (p/parse-datetime "1998-02-24T22:20:41-05:00")
-         :ending-date-time (t/date-time 1999 3 24)})]
+         :ending-date-time (t/date-time 1999 3 24 23 59 59 999)})]
      :single-date-times []
      :periodic-date-times []}))
 

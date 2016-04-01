@@ -4,7 +4,6 @@
             [clojure.java.io :as io]
             [cmr.common.util :as util]
             [cmr.common.xml :as cx]
-            [cmr.umm.dif.core :as dif-core]
             [cmr.umm.collection :as c]
             [cmr.umm.collection.entry-id :as eid]
             [cmr.common.xml :as v]
@@ -20,7 +19,8 @@
             [cmr.umm.dif.collection.platform :as platform]
             [cmr.umm.dif.collection.spatial-coverage :as sc]
             [cmr.umm.dif.collection.extended-metadata :as em]
-            [cmr.umm.dif.collection.personnel :as personnel])
+            [cmr.umm.dif.collection.personnel :as personnel]
+            [cmr.common.date-time-parser :as dtp])
   (:import cmr.umm.collection.UmmCollection))
 
 (defn- get-short-name
@@ -60,8 +60,8 @@
         update-time (cx/string-at-path collection-content [:Last_DIF_Revision_Date])]
     (when (or insert-time update-time)
       (c/map->DataProviderTimestamps
-        {:insert-time (t/string->datetime insert-time)
-         :update-time (t/string->datetime update-time)}))))
+        {:insert-time (dtp/try-parse-datetime insert-time)
+         :update-time (dtp/try-parse-datetime update-time)}))))
 
 (def umm-dif-publication-reference-mappings
   "A seq of [umm-key dif-tag-name] which maps between the UMM

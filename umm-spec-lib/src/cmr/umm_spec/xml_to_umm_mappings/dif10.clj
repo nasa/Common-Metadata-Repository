@@ -8,7 +8,8 @@
             [cmr.common.xml.parse :refer :all]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
             [cmr.umm-spec.util :as u :refer [without-default-value-of]]
-            [cmr.umm-spec.date-util :as date]))
+            [cmr.umm-spec.date-util :as date]
+            [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
 
 (defn- parse-characteristics
   [el]
@@ -95,12 +96,12 @@
                        :EndsAtPresentFlag (value-of temporal "Ends_At_Present_Flag")
                        :RangeDateTimes (for [rdt (select temporal "Range_DateTime")]
                                          {:BeginningDateTime (value-of rdt "Beginning_Date_Time")
-                                          :EndingDateTime (value-of rdt "Ending_Date_Time")})
+                                          :EndingDateTime (parse-dif-end-date (value-of rdt "Ending_Date_Time"))})
                        :SingleDateTimes (values-at temporal "Single_DateTime")
                        :PeriodicDateTimes (for [pdt (select temporal "Periodic_DateTime")]
                                             {:Name (value-of pdt "Name")
                                              :StartDate (value-of pdt "Start_Date")
-                                             :EndDate (value-of pdt "End_Date")
+                                             :EndDate (parse-dif-end-date (value-of pdt "End_Date"))
                                              :DurationUnit (value-of pdt "Duration_Unit")
                                              :DurationValue (value-of pdt "Duration_Value")
                                              :PeriodCycleDurationUnit (value-of pdt "Period_Cycle_Duration_Unit")
@@ -146,9 +147,9 @@
                                              [:DOI {:DOI (value-of pub-ref "Persistent_Identifier/Identifier")}])
                                            [:RelatedUrl
                                             {:URLs (seq
-                                                    (remove nil? [(value-of pub-ref "Online_Resource")]))}]
+                                                     (remove nil? [(value-of pub-ref "Online_Resource")]))}]
                                            :Other_Reference_Details])))
-   :AncillaryKeywords (values-at doc  "/DIF/Ancillary_Keyword")
+   :AncillaryKeywords (values-at doc "/DIF/Ancillary_Keyword")
    :RelatedUrls (for [related-url (select doc "/DIF/Related_URL")]
                   {:URLs (values-at related-url "URL")
                    :Description (value-of related-url "Description")

@@ -4,14 +4,16 @@
             [cmr.common.xml :as cx]
             [cmr.common.date-time-parser :as parser]
             [cmr.umm.collection :as c]
-            [cmr.umm.generator-util :as gu]))
+            [cmr.umm.generator-util :as gu]
+            [cmr.umm.dif.date-util :as date-util]))
 
 (defn- xml-elem->RangeDateTimes
   "Returns a list of UMM RangeDateTimes from a parsed Temporal XML structure"
   [temporal-element]
   (let [elements (cx/elements-at-path temporal-element [:Range_DateTime])]
     (map #(c/map->RangeDateTime {:beginning-date-time (cx/datetime-at-path % [:Beginning_Date_Time])
-                                 :ending-date-time (cx/datetime-at-path % [:Ending_Date_Time])})
+                                 :ending-date-time (date-util/parse-dif-end-date
+                                                     (cx/string-at-path % [:Ending_Date_Time]))})
          elements)))
 
 (defn- xml-elem->PeriodicDateTimes
@@ -22,7 +24,7 @@
            (c/map->PeriodicDateTime
              {:name (cx/string-at-path element [:Name])
               :start-date (cx/datetime-at-path element [:Start_Date])
-              :end-date (cx/datetime-at-path element [:End_Date])
+              :end-date (date-util/parse-dif-end-date (cx/string-at-path element [:End_Date]))
               :duration-unit (cx/string-at-path element [:Duration_Unit])
               :duration-value (cx/long-at-path element [:Duration_Value])
               :period-cycle-duration-unit (cx/string-at-path element [:Period_Cycle_Duration_Unit])

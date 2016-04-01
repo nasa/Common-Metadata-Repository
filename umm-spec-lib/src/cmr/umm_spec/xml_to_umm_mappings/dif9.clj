@@ -3,9 +3,9 @@
   (:require [cmr.common.xml.simple-xpath :refer [select text]]
             [cmr.common.xml.parse :refer :all]
             [camel-snake-kebab.core :as csk]
-            [cmr.common.util :as util]
             [cmr.umm-spec.util :as su]
-            [cmr.umm-spec.json-schema :as js]))
+            [cmr.umm-spec.json-schema :as js]
+            [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
 
 (def dif-iso-topic-category->umm-iso-topic-category
   "DIF ISOTopicCategory to UMM ISOTopicCategory mapping. Some of the DIF ISOTopicCategory are made
@@ -105,7 +105,7 @@
      :TemporalExtents (when-let [temporals (select doc "/DIF/Temporal_Coverage")]
                         [{:RangeDateTimes (for [temporal temporals]
                                             {:BeginningDateTime (value-of temporal "Start_Date")
-                                             :EndingDateTime    (value-of temporal "Stop_Date")})}])
+                                             :EndingDateTime (parse-dif-end-date (value-of temporal "Stop_Date"))})}])
      :SpatialExtent {:HorizontalSpatialDomain {:Geometry {:BoundingRectangles (parse-mbrs doc)}}}
      :Distributions (for [distribution (select doc "/DIF/:Distribution")]
                       {:DistributionMedia (value-of distribution "Distribution_Media")
@@ -153,7 +153,7 @@
                                               {:URLs (seq
                                                        (remove nil? [(value-of pub-ref "Online_Resource")]))}]
                                              :Other_Reference_Details])))
-     :AncillaryKeywords (values-at doc  "/DIF/Keyword")
+     :AncillaryKeywords (values-at doc "/DIF/Keyword")
      :ScienceKeywords (for [sk (select doc "/DIF/Parameters")]
                         {:Category (value-of sk "Category")
                          :Topic (value-of sk "Topic")
