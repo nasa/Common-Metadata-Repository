@@ -29,7 +29,8 @@
    :properties {:name {:type :string :minLength 1 :maxLength 100}
                 :provider_id {:type :string :minLength 1 :maxLength 50}
                 :description {:type :string :minLength 1 :maxLength 255}
-                :legacy_guid {:type :string :minLength 1 :maxLength 50}}
+                :legacy_guid {:type :string :minLength 1 :maxLength 50}
+                :members {:type :array :items {:type :string :minLength 1 :maxLength 100}}}
    :required [:name :description]})
 
 

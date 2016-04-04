@@ -134,6 +134,12 @@
            (u/create-group (e/login (u/conn-context) "user1")
                            (u/make-group {:provider_id "NOT_EXIST"}))))))
 
+(deftest create-group-with-members-test
+  (let [token (e/login (u/conn-context) "user1")
+        group (u/make-group {:members ["user1" "user2"]})
+        {:keys [concept_id]} (u/create-group token group)]
+    (is (= {:status 200 :body ["user1" "user2"]} (u/get-members token concept_id)))))
+
 (deftest get-group-test
   (let [group (u/make-group)
         token (e/login (u/conn-context) "user1")
@@ -200,11 +206,26 @@
              (u/delete-group token "AG100-CMR"))))))
 
 (deftest update-group-test
-  (let [group (u/make-group)
+  (let [group (u/make-group {:members ["user1" "user2"]})
         token (e/login (u/conn-context) "user1")
         {:keys [concept_id revision_id]} (u/create-group token group)]
 
-    (let [updated-group (update-in group [:description] #(str % " updated"))
+    ;; Do not specify members in the update
+    (let [updated-group {:name "Administrators" :description "A very good group updated"}
+          token2 (e/login (u/conn-context) "user2")
+          response (u/update-group token2 concept_id updated-group)]
+      (is (= {:status 200 :concept_id concept_id :revision_id 2}
+             response))
+      ;; Members should be intact
+      (u/assert-group-saved (assoc updated-group :members ["user1" "user2"]) "user2" concept_id 2))))
+
+(deftest update-group-with-members-test
+  (let [group (u/make-group {:members ["user1" "user2"]})
+        token (e/login (u/conn-context) "user1")
+        {:keys [concept_id revision_id]} (u/create-group token group)]
+
+    ;; Change members as part of the update
+    (let [updated-group {:name "Administrators" :description "A very good group updated" :members ["user1"]}
           token2 (e/login (u/conn-context) "user2")
           response (u/update-group token2 concept_id updated-group)]
       (is (= {:status 200 :concept_id concept_id :revision_id 2}

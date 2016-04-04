@@ -185,7 +185,9 @@
         existing-group (edn/read-string (:metadata existing-concept))]
     (validate-update-group context existing-group updated-group)
     (auth/verify-can-update-group context existing-group)
-    (save-updated-group-concept context existing-concept updated-group)))
+    ;; Avoid clobbering :members by merging the updated-group into existing-group. If updated-group
+    ;; specifies :members then it will overwrite the existing value.
+    (save-updated-group-concept context existing-concept (merge existing-group updated-group))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search functions
