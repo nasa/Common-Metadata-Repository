@@ -1,6 +1,7 @@
 (ns cmr.search.services.tagging.tagging-service-messages
   "This contains error response messages for the tagging service"
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [cmr.common.util :as util]))
 
 (def token-required-for-tag-modification
   "Tags cannot be modified without a valid user token.")
@@ -25,10 +26,29 @@
   [tag-key]
   (format "Tag with tag-key [%s] was deleted." tag-key))
 
+(defn no-collections
+  []
+  "At least one collection must be provided for tag association.")
+
+(defn conflict-collections
+  [concept-ids]
+  (format "Unable to tag a collection revision and the whole collection at the same time for the following collections: %s."
+          (str/join ", " concept-ids)))
+
 (defn inaccessible-collections
   [concept-ids]
   (format "The following collections do not exist or are not accessible: %s."
           (str/join ", " concept-ids)))
+
+(defn inaccessible-collection-revisions
+  [colls]
+  (format "The following collection revisions do not exist or are not accessible: %s."
+          (str/join ", " (map #(util/map-keys name %) colls))))
+
+(defn tombstone-collections
+  [colls]
+  (format "The following collections are tombstones which are not allowed for tag association: %s."
+          (str/join ", " (map #(util/map-keys name %) colls))))
 
 (defn collections-data-too-long
   [concept-ids]

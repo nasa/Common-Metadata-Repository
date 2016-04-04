@@ -129,6 +129,22 @@
           [(format "The following collections do not exist or are not accessible: C100-P5, %s." c1-p1)]
           response)))
 
+    (testing "Associate to no collections"
+      (let [response (tags/associate-by-concept-ids token tag-key [])]
+        (assert-tag-association-response-ok?
+          422
+          ["At least one collection must be provided for tag association."]
+          response)))
+
+    (testing "Associate to collection revision and whole collection at the same time"
+      (let [response (tags/associate-by-concept-ids token tag-key [{:concept-id c1-p1}
+                                                                   {:concept-id c1-p1 :revision-id 1}])]
+        (assert-tag-association-response-ok?
+          422
+          [(format "Unable to tag a collection revision and the whole collection at the same time for the following collections: %s."
+                   c1-p1)]
+          response)))
+
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible
       (let [response (tags/associate-by-concept-ids token tag-key [{:concept-id c4-p3}])]
