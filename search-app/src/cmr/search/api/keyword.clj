@@ -171,5 +171,3 @@
     (GET "/:keyword-scheme" {{:keys [keyword-scheme]} :params
                              request-context :request-context}
       (get-hierarchical-keywords request-context keyword-scheme))))
-
-
