@@ -39,10 +39,11 @@
   "Validates the collection revisions specified in tag association are valid,
   i.e. all collections for the given concept-id and revision-id exist, are viewable by the token
   and are not tombstones."
-  [context colls]
-  (when (seq colls)
+  [context tag-associations]
+  (when (seq tag-associations)
     (let [query (cqm/query {:concept-type :collection
-                            :condition (cqm/string-conditions :concept-id (map :concept-id colls) true)
+                            :condition (cqm/string-conditions
+                                         :concept-id (map :concept-id tag-associations) true)
                             :page-size :unlimited
                             :result-format :query-specified
                             :fields [:concept-id :revision-id :deleted]
@@ -52,7 +53,7 @@
                            :items
                            (map #(select-keys % [:concept-id :revision-id :deleted])))
           ids-fn (fn [coll] (select-keys coll [:concept-id :revision-id]))
-          colls-set (set (map ids-fn colls))
+          colls-set (set (map ids-fn tag-associations))
           matched-colls (filter #(contains? colls-set (ids-fn %)) collections)
           tombstone-colls (filter :deleted matched-colls)]
       (when (seq tombstone-colls)
@@ -108,9 +109,10 @@
                tag-key (:concept-id tag-association))])))
 
 (defn- validate-tag-association-conflicts
-  "Validate tag association conflict with existing tag associations in metadata-db in that a tag
-  cannot be associated with a collection revision and the same collection without revision at the
-  same time, throws service error if conflict is found."
+  "Validates the tag association (either on a specific revision or over the whole collection)
+  does not conflict with one or more existing tag associations in Metadata DB. Tag associations
+  cannot be associated with a collection revision and the same collection without revision
+  at the same time. It throws a service error if a conflict is found."
   [context tag-key tag-associations]
   (when (seq tag-associations)
     (when-let [err-msgs (seq (mapcat
