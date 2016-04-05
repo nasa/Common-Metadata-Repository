@@ -90,7 +90,8 @@ Groups are created by POSTing a JSON representation of a group to `%CMR-ENDPOINT
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/groups -d \
 '{
   "name": "Administrators",
-  "description": "The group of users that manages the CMR."
+  "description": "The group of users that manages the CMR.",
+  "members": ["user1", "user2"]
  }'
 
 HTTP/1.1 200 OK
@@ -134,6 +135,8 @@ Content-Type: application/json
 ### <a name="update-group"></a> Update Group
 
 Groups are updated by sending a PUT request with the JSON representation of a group to `%CMR-ENDPOINT%/groups/<concept-id>` where `concept-id` is the concept id of the group returned when it was created. The same rules apply when updating a group as when creating it but only the description can be modified. The response will contain the concept id along with the group revision id.
+
+Only keys present in the update request will be updated. For example: if a `"members"` key is specified, then the group's members will be updated with the supplied value, otherwise the group's members will remain unchanged. 
 
 ```
 curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/groups/AG1200000000-CMR -d \
