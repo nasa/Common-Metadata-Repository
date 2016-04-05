@@ -106,5 +106,18 @@
         (assert-collection-refs-found [] {:tag-data {"tag2" "cloud"}})
         ;; Found only the revisions tagged with all revisions true
         (assert-collection-refs-found [coll2-2] {:tag-data {"tag2" "cloud"}
-                                                 :all-revisions true})))))
+                                                 :all-revisions true})))
+
+    (testing "tag a collection revision again with different data"
+      ;; The state before collection revision is tagged again
+      (assert-collection-refs-found [coll1-1 coll1-3] {:tag-data {"tag1" "snow"} :all-revisions true})
+
+      ;; tag collection revision with different data
+      (tags/associate-by-concept-ids token "tag1" [{:concept-id (:concept-id coll1-1)
+                                                    :revision-id (:revision-id coll1-1)
+                                                    :data "ice"}])
+
+      ;; The state after collection revision is tagged again
+      (assert-collection-refs-found [coll1-3] {:tag-data {"tag1" "snow"} :all-revisions true})
+      (assert-collection-refs-found [coll1-1] {:tag-data {"tag1" "ice"} :all-revisions true}))))
 

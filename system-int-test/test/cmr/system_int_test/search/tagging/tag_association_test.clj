@@ -593,9 +593,11 @@
         coll3 (d/ingest "PROV2" (dc/collection {}))
         coll4 (d/ingest "PROV3" (dc/collection {}))
         token (e/login (s/context) "user1")
-        tag-key "tag1"
-        _ (tags/create-tag token (tags/make-tag {:tag-key tag-key}))]
+        tag-key "tag1"]
+
+    (tags/create-tag token (tags/make-tag {:tag-key tag-key}))
     (index/wait-until-indexed)
+
     (testing "successful case"
       (let [{:keys [status] :as response} (tags/associate-by-concept-ids
                                             token tag-key [{:concept-id (:concept-id coll1-1)
@@ -643,7 +645,7 @@
                                         :revision-id (:revision-id coll1-1)}
                                        {:concept-id (:concept-id coll1-2-tombstone)
                                         :revision-id (:revision-id coll1-2-tombstone)}])
-            expected-msg (str "The following collections are tombstones which are not allowed for tag association: "
+            expected-msg (str "The following collection revisions are tombstones which are not allowed for tag association: "
                               (format "{concept-id %s, revision-id %s}."
                                       (:concept-id coll1-2-tombstone)
                                       (:revision-id coll1-2-tombstone)))]
@@ -656,7 +658,7 @@
                            (str "There are already tag associations with tag key [%s] on "
                                 "collection [%s] revision ids [%s], cannot create tag association "
                                 "on the same collection without revision id.")
-                           tag-key (:concept-id coll1-3) (:revision-id coll3))]
+                           tag-key (:concept-id coll1-1) (:revision-id coll1-1))]
         (is (= [422 [expected-msg]] [status errors]))))
 
     (testing "Cannot tag collection revision that already has collection tagging"

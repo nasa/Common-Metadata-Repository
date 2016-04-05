@@ -208,21 +208,21 @@
 (defn- link-tag-to-collections
   "Associate/Disassocate a tag to a list of collections based on the given operation type.
   The ooperation type can be either :insert or :delete."
-  [context tag-key collections-json operation-type]
+  [context tag-key tag-associations-json operation-type]
   (let [tag-concept (fetch-tag-concept context tag-key)
-        collections (tv/collections-json->collections collections-json)]
+        collections (tv/tag-associations-json->tag-associations tag-associations-json)]
     (tv/validate-tag-association context tag-key collections)
     (update-tag-association-to-collections context tag-concept collections operation-type)))
 
 (defn associate-tag-to-collections
   "Associates a tag to the given list of collections."
-  [context tag-key collections-json]
-  (link-tag-to-collections context tag-key collections-json :insert))
+  [context tag-key tag-associations-json]
+  (link-tag-to-collections context tag-key tag-associations-json :insert))
 
 (defn disassociate-tag-to-collections
   "Associates a tag to the given list of collections."
-  [context tag-key collections-json]
-  (link-tag-to-collections context tag-key collections-json :delete))
+  [context tag-key tag-associations-json]
+  (link-tag-to-collections context tag-key tag-associations-json :delete))
 
 (defn associate-tag-by-query
   "Associates a tag with collections that are the result of a JSON query"
