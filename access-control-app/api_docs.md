@@ -78,6 +78,7 @@ Groups are used to identify sets of users for the assignment of access privilege
 * `name` - Required field that uniquely identifies a system group or a group within a provider.
 * `provider_id` - Id of the provider that owns the group. If this isn't present then the group will be a system level group.
 * `description` - Required field that describes the group.
+* `members` - Optional. May be specified in create and update operations.
 * `legacy_guid` - Internal use only. This is used for ECHO Kernel interoperability.
 
 ### <a name="create-group"></a> Create Group
