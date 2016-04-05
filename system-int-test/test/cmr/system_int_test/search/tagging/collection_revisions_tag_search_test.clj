@@ -110,7 +110,11 @@
 
     (testing "tag a collection revision again with different data"
       ;; The state before collection revision is tagged again
+      (assert-collection-refs-found [coll1-3] {:tag-data {"tag1" "snow"}})
       (assert-collection-refs-found [coll1-1 coll1-3] {:tag-data {"tag1" "snow"} :all-revisions true})
+      ;; nothing with ice
+      (assert-collection-refs-found [] {:tag-data {"tag1" "ice"}})
+      (assert-collection-refs-found [] {:tag-data {"tag1" "ice"} :all-revisions true})
 
       ;; tag collection revision with different data
       (tags/associate-by-concept-ids token "tag1" [{:concept-id (:concept-id coll1-1)
@@ -118,6 +122,10 @@
                                                     :data "ice"}])
 
       ;; The state after collection revision is tagged again
+      ;; search without all-revision true found the same result
+      (assert-collection-refs-found [coll1-3] {:tag-data {"tag1" "snow"}})
+      (assert-collection-refs-found [] {:tag-data {"tag1" "ice"}})
+      ;; search with all-revisions true find different result due to the new tag associated
       (assert-collection-refs-found [coll1-3] {:tag-data {"tag1" "snow"} :all-revisions true})
       (assert-collection-refs-found [coll1-1] {:tag-data {"tag1" "ice"} :all-revisions true}))))
 

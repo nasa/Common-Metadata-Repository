@@ -265,11 +265,17 @@
 (defmethod index-concept :tag-association
   [context concept parsed-concept options]
   (let [{{:keys [associated-concept-id associated-revision-id]} :extra-fields} concept
-        coll-concept (if associated-revision-id
+        {:keys [all-revisions-index?]} options
+        coll-concept (meta-db/get-latest-concept context associated-concept-id)
+        assoc-to-latest-revision? (or (nil? associated-revision-id)
+                                      (= associated-revision-id (:revision-id coll-concept)))
+        need-to-index? (or all-revisions-index? assoc-to-latest-revision?)
+        coll-concept (if (and need-to-index? (not assoc-to-latest-revision?))
                        (meta-db/get-concept context associated-concept-id associated-revision-id)
-                       (meta-db/get-latest-concept context associated-concept-id))
-        parsed-coll-concept (cp/parse-concept coll-concept)]
-    (index-concept context coll-concept parsed-coll-concept options)))
+                       coll-concept)]
+    (when need-to-index?
+      (let [parsed-coll-concept (cp/parse-concept coll-concept)]
+        (index-concept context coll-concept parsed-coll-concept options)))))
 
 (defn index-concept-by-concept-id-revision-id
   "Index the given concept and revision-id"
