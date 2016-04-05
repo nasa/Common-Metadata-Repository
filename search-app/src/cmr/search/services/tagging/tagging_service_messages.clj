@@ -40,15 +40,20 @@
   (format "The following collections do not exist or are not accessible: %s."
           (str/join ", " concept-ids)))
 
+(defn- coll->message
+  "Returns the message representation of the given collection"
+  [{:keys [concept-id revision-id]}]
+  (format "{concept-id %s, revision-id %s}" concept-id revision-id))
+
 (defn inaccessible-collection-revisions
   [colls]
   (format "The following collection revisions do not exist or are not accessible: %s."
-          (str/join ", " (map #(util/map-keys name %) colls))))
+          (str/join ", " (map coll->message colls))))
 
 (defn tombstone-collections
   [colls]
   (format "The following collections are tombstones which are not allowed for tag association: %s."
-          (str/join ", " (map #(util/map-keys name %) colls))))
+          (str/join ", " (map coll->message colls))))
 
 (defn collections-data-too-long
   [concept-ids]

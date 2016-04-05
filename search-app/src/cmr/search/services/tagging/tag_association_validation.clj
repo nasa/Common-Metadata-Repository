@@ -51,17 +51,17 @@
           collections (->> (qe/execute-query context query)
                            :items
                            (map #(select-keys % [:concept-id :revision-id :deleted])))
-          matched-colls (filter #(contains? (set colls) (select-keys % [:concept-id :revision-id]))
-                                collections)
-          tombstone-colls (map :deleted matched-colls)]
+          ids-fn (fn [coll] (select-keys coll [:concept-id :revision-id]))
+          colls-set (set (map ids-fn colls))
+          matched-colls (filter #(contains? colls-set (ids-fn %)) collections)
+          tombstone-colls (filter :deleted matched-colls)]
       (when (seq tombstone-colls)
         (errors/throw-service-error
           :invalid-data (msg/tombstone-collections tombstone-colls)))
       (when-let [inaccessible-coll-revisions (seq
                                                (set/difference
-                                                 (set colls)
-                                                 (set (map #(select-keys % [:concept-id :revision-id])
-                                                           matched-colls))))]
+                                                 colls-set
+                                                 (set (map ids-fn matched-colls))))]
         (errors/throw-service-error
           :invalid-data (msg/inaccessible-collection-revisions inaccessible-coll-revisions))))))
 
@@ -77,7 +77,7 @@
                                      :latest true}
                                     :tag-association)
                  (filter #(not (:deleted %))))
-        coll-revision-ids (map :associated-revision-id tas)
+        coll-revision-ids (map #(get-in % [:extra-fields :associated-revision-id]) tas)
         not-nil-revision-ids (remove nil? coll-revision-ids)]
     (cond
       ;; there is no existing tag association found, no need to validate
@@ -96,7 +96,7 @@
       (when-let [revision-id (:revision-id coll)]
         [(format (str "There are already tag associations with tag key [%s] on collection [%s] "
                       "without revision id, cannot create tag association on the same collection "
-                      "without revision id [%s].")
+                      "with revision id [%s].")
                  tag-key (:concept-id coll) revision-id)])
 
       ;; there are conflicts within the existing tag associations in metadata-db already

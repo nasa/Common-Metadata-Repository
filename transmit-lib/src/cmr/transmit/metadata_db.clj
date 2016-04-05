@@ -179,9 +179,9 @@
         tag-associations (find-concepts context params :tag-association)]
     ;; we only want the tag associations that have no associated revision id or one equal to the
     ;; revision of this collection
-    (filter (fn [ta] (let [rev-id (:associated-revision-id ta)]
+    (filter (fn [ta] (let [rev-id (get-in ta [:extra-fields :associated-revision-id])]
                        (or (nil? rev-id)
-                           (= (rev-id (:revision-id concept))))))
+                           (= rev-id (:revision-id concept)))))
             tag-associations)))
 
 (defn-timed find-collections
