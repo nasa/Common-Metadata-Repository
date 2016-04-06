@@ -5,7 +5,7 @@
             [cheshire.core :as json]
             [clojure.string :as str]
             [cmr.common.mime-types :as mt]
-            [cmr.search.services.tagging.validation :as v]
+            [cmr.search.services.tagging.json-schema-validation :as v]
             [cmr.search.services.tagging-service :as tagging-service]
             [cmr.common.services.errors :as errors]
             [cmr.acl.core :as acl]))

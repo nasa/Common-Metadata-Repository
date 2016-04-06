@@ -93,7 +93,7 @@
   Valid options:
   * :all-revisions-index? - true indicates this should be indexed into the all revisions index
   * :force-version? - true indicates that we should overwrite whatever is in elasticsearch with the
-    latest regardless of whether the version in the database is older than the _version in elastic."
+  latest regardless of whether the version in the database is older than the _version in elastic."
   ([context concept-batches]
    (bulk-index context concept-batches nil))
   ([context concept-batches options]
@@ -110,7 +110,7 @@
   collection concept type if all-revisions-index? is true."
   [concept-type all-revisions-index?]
   (if (or (not all-revisions-index?)
-          (and all-revisions-index? (= :collection concept-type)))
+          (and all-revisions-index? (contains?  #{:collection :tag-association} concept-type)))
     true
     false))
 
@@ -241,7 +241,7 @@
         (when (or (nil? delete-time) (t/after? delete-time (tk/now)))
           (let [tag-associations (get-tag-associations context concept)
                 elastic-version (get-elastic-version-with-tag-associations
-                                 context concept tag-associations)
+                                  context concept tag-associations)
                 tag-associations (map cp/parse-concept (filter #(not (:deleted %)) tag-associations))
                 concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
                                                                  options concept)
@@ -253,23 +253,29 @@
                                     (assoc :ttl (when delete-time
                                                   (t/in-millis (t/interval (tk/now) delete-time)))))]
             (es/save-document-in-elastic
-             context
-             concept-indexes
-             (concept-mapping-types concept-type)
-             es-doc
-             concept-id
-             revision-id
-             elastic-version
-             elastic-options)))))))
+              context
+              concept-indexes
+              (concept-mapping-types concept-type)
+              es-doc
+              concept-id
+              revision-id
+              elastic-version
+              elastic-options)))))))
 
 (defmethod index-concept :tag-association
   [context concept parsed-concept options]
   (let [{{:keys [associated-concept-id associated-revision-id]} :extra-fields} concept
-        coll-concept (if associated-revision-id
+        {:keys [all-revisions-index?]} options
+        coll-concept (meta-db/get-latest-concept context associated-concept-id)
+        assoc-to-latest-revision? (or (nil? associated-revision-id)
+                                      (= associated-revision-id (:revision-id coll-concept)))
+        need-to-index? (or all-revisions-index? assoc-to-latest-revision?)
+        coll-concept (if (and need-to-index? (not assoc-to-latest-revision?))
                        (meta-db/get-concept context associated-concept-id associated-revision-id)
-                       (meta-db/get-latest-concept context associated-concept-id))
-        parsed-coll-concept (cp/parse-concept coll-concept)]
-    (index-concept context coll-concept parsed-coll-concept options)))
+                       coll-concept)]
+    (when need-to-index?
+      (let [parsed-coll-concept (cp/parse-concept coll-concept)]
+        (index-concept context coll-concept parsed-coll-concept options)))))
 
 (defn index-concept-by-concept-id-revision-id
   "Index the given concept and revision-id"
@@ -304,29 +310,29 @@
       (info (format "Deleting concept %s, revision-id %s, all-revisions-index? %s"
                     concept-id revision-id all-revisions-index?))
       (let [index-names (idx-set/get-concept-index-names
-                         context concept-id revision-id options)
+                          context concept-id revision-id options)
             concept-mapping-types (idx-set/get-concept-mapping-types context)
             elastic-options (select-keys options [:all-revisions-index? :ignore-conflict?])]
         (if all-revisions-index?
           ;; save tombstone in all revisions collection index
           (let [es-doc (es/parsed-concept->elastic-doc context concept (:extra-fields concept))]
             (es/save-document-in-elastic
-             context index-names (concept-mapping-types concept-type)
-             es-doc concept-id revision-id elastic-version elastic-options))
+              context index-names (concept-mapping-types concept-type)
+              es-doc concept-id revision-id elastic-version elastic-options))
           ;; delete concept from primary concept index
           (do
             (es/delete-document
-             context index-names (concept-mapping-types concept-type)
-             concept-id revision-id elastic-version elastic-options)
+              context index-names (concept-mapping-types concept-type)
+              concept-id revision-id elastic-version elastic-options)
             ;; propagate collection deletion to granules
             (when (= :collection concept-type)
               (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
                 (es/delete-by-query
-                 context
-                 index
-                 (concept-mapping-types :granule)
-                 {:term {(query-field->elastic-field :collection-concept-id :granule)
-                         concept-id}})))))))))
+                  context
+                  index
+                  (concept-mapping-types :granule)
+                  {:term {(query-field->elastic-field :collection-concept-id :granule)
+                          concept-id}})))))))))
 
 (defmethod delete-concept :tag-association
   [context concept-id revision-id options]
@@ -339,19 +345,19 @@
   "Removes a collection revision from the all revisions index"
   [context concept-id revision-id]
   (let [index-names (idx-set/get-concept-index-names
-                     context concept-id revision-id {:all-revisions-index? true})
+                      context concept-id revision-id {:all-revisions-index? true})
         concept-mapping-types (idx-set/get-concept-mapping-types context)
         elastic-options {:ignore-conflict? false
                          :all-revisions-index? true}]
     (es/delete-document
-     context
-     index-names
-     (concept-mapping-types :collection)
-     concept-id
-     revision-id
-     nil ;; Null is sent in as the elastic version because we don't want to set a version for this
-     ;; delete. The collection is going to be gone now and should never be indexed again.
-     elastic-options)))
+      context
+      index-names
+      (concept-mapping-types :collection)
+      concept-id
+      revision-id
+      nil ;; Null is sent in as the elastic version because we don't want to set a version for this
+      ;; delete. The collection is going to be gone now and should never be indexed again.
+      elastic-options)))
 
 (defn delete-provider
   "Delete all the concepts within the given provider"

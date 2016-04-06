@@ -2,21 +2,19 @@
   "Provides functions for storing and manipulating tags"
   (:require [cmr.transmit.metadata-db :as mdb]
             [cmr.common.mime-types :as mt]
+            [cmr.common.util :as util]
             [cmr.transmit.echo.tokens :as tokens]
             [cmr.common.services.errors :as errors]
             [cmr.common.services.messages :as cmsg]
             [cmr.common.validations.core :as v]
-            [cmr.search.services.tagging.validation :as tv]
+            [cmr.search.services.tagging.tag-association-validation :as tv]
             [cmr.common.concepts :as concepts]
             [cmr.search.services.tagging.tagging-service-messages :as msg]
             [cmr.search.services.json-parameters.conversion :as jp]
-            [cmr.common-app.services.search.query-model :as cqm]
             [cmr.common-app.services.search.query-execution :as qe]
             [cmr.search.services.query-service :as query-service]
-            [clojure.string :as str]
             [cheshire.core :as json]
-            [clojure.edn :as edn]
-            [clojure.set :as set]))
+            [clojure.edn :as edn]))
 
 (def ^:private native-id-separator-character
   "This is the separator character used when creating the native id for a tag."
@@ -163,24 +161,32 @@
   [context tag-concept collections operation]
   (let [existing-tag (edn/read-string (:metadata tag-concept))
         {:keys [tag-key originator-id]} existing-tag]
-    ;; save tag-association for each collection concept-id
+    ;; save tag-association for each collection
     (remove nil?
             (for [coll collections
                   :let [coll-concept-id (:concept-id coll)
+                        coll-revision-id (:revision-id coll)
                         data (:data coll)
-                        native-id (str tag-key native-id-separator-character coll-concept-id)]]
+                        native-id (str tag-key native-id-separator-character coll-concept-id)
+                        native-id (if coll-revision-id
+                                    (str native-id native-id-separator-character coll-revision-id)
+                                    native-id)]]
               (if (= :insert operation)
-                (mdb/save-concept context {:concept-type :tag-association
-                                           :native-id native-id
-                                           :user-id (context->user-id context)
-                                           :format (mt/format->mime-type :edn)
-                                           :metadata (pr-str
-                                                       {:tag-key tag-key
-                                                        :originator-id originator-id
-                                                        :associated-concept-id coll-concept-id
-                                                        :data data})
-                                           :extra-fields {:tag-key tag-key
-                                                          :associated-concept-id coll-concept-id}})
+                (mdb/save-concept context
+                                  {:concept-type :tag-association
+                                   :native-id native-id
+                                   :user-id (context->user-id context)
+                                   :format (mt/format->mime-type :edn)
+                                   :metadata (pr-str
+                                               (util/remove-nil-keys
+                                                 {:tag-key tag-key
+                                                  :originator-id originator-id
+                                                  :associated-concept-id coll-concept-id
+                                                  :associated-revision-id coll-revision-id
+                                                  :data data}))
+                                   :extra-fields {:tag-key tag-key
+                                                  :associated-concept-id coll-concept-id
+                                                  :associated-revision-id coll-revision-id}})
                 (delete-tag-association context native-id))))))
 
 (defn- update-tag-associations-with-query
@@ -199,59 +205,24 @@
     (update-tag-association-to-collections
       context tag-concept (map #(hash-map :concept-id %) coll-concept-ids) operation)))
 
-(defn- collections-json->collections
-  "Validates the collections json and returns the parsed collections"
-  [collections-json]
-  (tv/validate-collections-json collections-json)
-  (json/parse-string collections-json true))
-
-(defn- validate-collection-concept-ids
-  "Validates the collection concept-ids are valid,
-  i.e. all collections for the given concept-ids exist and are viewable by the token."
-  [context coll-concept-ids]
-  (let [query (cqm/query {:concept-type :collection
-                          :condition (cqm/string-conditions :concept-id coll-concept-ids true)
-                          :page-size :unlimited
-                          :result-format :query-specified
-                          :fields [:concept-id]
-                          :skip-acls? false})
-        concept-ids (->> (qe/execute-query context query)
-                         :items
-                         (map :concept-id))
-        inaccessible-concept-ids (set/difference (set coll-concept-ids) (set concept-ids))]
-    (when (seq inaccessible-concept-ids)
-      (errors/throw-service-error
-        :invalid-data (msg/inaccessible-collections inaccessible-concept-ids)))))
-
-(defn- validate-tag-association-data
-  "Validates the tag association data are within the maximum length requirement after written in JSON."
-  [collections]
-  (let [too-much-data-fn (fn [c]
-                           (> (count (json/generate-string (:data c))) tv/maximum-data-length))
-        data-too-long-colls (filter too-much-data-fn collections)]
-    (when (seq data-too-long-colls)
-      (errors/throw-service-error
-        :bad-request (msg/collections-data-too-long (map :concept-id data-too-long-colls))))))
-
 (defn- link-tag-to-collections
   "Associate/Disassocate a tag to a list of collections based on the given operation type.
   The ooperation type can be either :insert or :delete."
-  [context tag-key collections-json operation-type]
+  [context tag-key tag-associations-json operation-type]
   (let [tag-concept (fetch-tag-concept context tag-key)
-        collections (collections-json->collections collections-json)]
-    (validate-collection-concept-ids context (map :concept-id collections))
-    (validate-tag-association-data collections)
+        collections (tv/tag-associations-json->tag-associations tag-associations-json)]
+    (tv/validate-tag-association context tag-key collections)
     (update-tag-association-to-collections context tag-concept collections operation-type)))
 
 (defn associate-tag-to-collections
   "Associates a tag to the given list of collections."
-  [context tag-key collections-json]
-  (link-tag-to-collections context tag-key collections-json :insert))
+  [context tag-key tag-associations-json]
+  (link-tag-to-collections context tag-key tag-associations-json :insert))
 
 (defn disassociate-tag-to-collections
   "Associates a tag to the given list of collections."
-  [context tag-key collections-json]
-  (link-tag-to-collections context tag-key collections-json :delete))
+  [context tag-key tag-associations-json]
+  (link-tag-to-collections context tag-key tag-associations-json :delete))
 
 (defn associate-tag-by-query
   "Associates a tag with collections that are the result of a JSON query"
