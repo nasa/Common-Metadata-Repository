@@ -1,16 +1,25 @@
 (ns cmr.access-control.services.group-service-messages
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [clojure.edn :as edn]))
 
 (def token-required-for-group-modification
   "Groups cannot be modified without a valid user token.")
 
+(defn- get-group-name-from-concept
+  "Gets a group name from a access-group concept's metadata.
+   This is because we lowercase the native-id so it does not match the actual group name."
+  [concept]
+  (let [metadata (:metadata concept)
+        name (:name (edn/read-string metadata))]
+    name))
+
 (defn group-already-exists
-  [group concept-id]
+  [group concept]
   (if (:provider-id group)
     (format "A provider group with name [%s] already exists with concept id [%s] for provider [%s]."
-            (:name group) concept-id (:provider-id group))
+            (get-group-name-from-concept concept) (:concept-id concept) (:provider-id group))
     (format "A system group with name [%s] already exists with concept id [%s]."
-            (:name group) concept-id)))
+            (get-group-name-from-concept concept) (:concept-id concept))))
 
 (defn group-does-not-exist
   [concept-id]
