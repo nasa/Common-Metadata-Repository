@@ -11,6 +11,14 @@
 
 (primitive-math/use-primitive-operators)
 
+(def ^:const INTERSECTION_POINT_PRECISION
+  "The precision in degrees to use when generating intersection points. We round the points because
+  in some cases the same point will be found multiple times with vary slight variations. Rounding it
+  within a set eliminates the duplication. This is important for determining if a point is inside a
+  ring which relies on knowing exactly how many times an arc between the test point and an external
+  point crosses over the arcs of the ring."
+  5)
+
 (declare is-north-pole?
          is-south-pole?
          on-antimeridian?

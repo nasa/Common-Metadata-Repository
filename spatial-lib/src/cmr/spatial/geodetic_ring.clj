@@ -16,14 +16,6 @@
   comparing a point for use with an external point."
   4)
 
-(def ^:const ^:private INTERSECTION_POINT_PRECISION
-  "The precision in degrees to use when generating intersection points. We round the points because
-  in some cases the same point will be found multiple times with vary slight variations. Rounding it
-  within a set eliminates the duplication. This is important for determining if a point is inside a
-  ring which relies on knowing exactly how many times an arc between the test point and an external
-  point crosses over the arcs of the ring."
-  5)
-
 (defrecord GeodeticRing
   [
    ;; The points that make up the ring. Points must be in counterclockwise order. The last point
@@ -72,9 +64,9 @@
                 ;; Round the points. If the crossing arc passes through a point on the ring the
                 ;; intersection algorithm will result in two very, very close points. By rounding to
                 ;; within an acceptable range they'll be seen as the same point.
-                (let [s (conj! s (p/round-point INTERSECTION_POINT_PRECISION point1))]
+                (let [s (conj! s (p/round-point p/INTERSECTION_POINT_PRECISION point1))]
                   (if point2
-                    (conj! s (p/round-point INTERSECTION_POINT_PRECISION point2))
+                    (conj! s (p/round-point p/INTERSECTION_POINT_PRECISION point2))
                     s))
                 s))
             (transient #{})

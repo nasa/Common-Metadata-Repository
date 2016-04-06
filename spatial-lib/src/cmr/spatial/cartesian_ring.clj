@@ -12,7 +12,7 @@
             [cmr.spatial.messages :as msg]
             [cmr.spatial.arc-line-segment-intersections :as asi]
             [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
-  (:import cmr.spatial.arc.Arc))
+  (:import cmr.spatial.line_segment.LineSegment))
 (primitive-math/use-primitive-operators)
 
 (def external-point
@@ -36,30 +36,38 @@
    line-segments
 
    ;; the minimum bounding rectangle
-   mbr
-   ])
+   mbr])
+
 (record-pretty-printer/enable-record-pretty-printing CartesianRing)
+
+(defn- lines-and-line-intersections
+  "Returns the set of intersection points between the line and the list of lines. "
+  [lines other-line]
+  (persistent!
+   (reduce (fn [s line]
+             (if-let [point (s/intersection line other-line)]
+               ;; Round the point. If the crossing line passes through a point on the ring the
+               ;; intersection algorithm will result in two very, very close points. By rounding to
+               ;; within an acceptable range they'll be seen as the same point.
+               (conj! s (p/round-point p/INTERSECTION_POINT_PRECISION point))
+               s))
+           (transient #{})
+           lines)))
 
 (defn covers-point?
   "Determines if a ring covers the given point. The algorithm works by counting the number of times
   an arc between the point and a known external point crosses the ring. An even count means the point
   is external. An odd count means the point is inside the ring."
-  [ring point]
+  [^CartesianRing ring point]
 
   ;; Only do real intersection if the mbr covers the point.
-  (when (mbr/cartesian-covers-point? (:mbr ring) point)
-    (if (some (:point-set ring) point)
+  (when (mbr/cartesian-covers-point? (.mbr ring) point)
+    (if (some (.point_set ring) point)
       true ; The point is actually one of the rings points
       ;; otherwise we'll do the real intersection algorithm
       (let [;; Create the test segment
             crossing-line (s/line-segment point external-point)
-            ;; Find all the points the line passes through
-            intersections (filter identity
-                                  (map #(s/intersection % crossing-line) (:line-segments ring)))
-            ;; Round the points. If the crossing arc passes through a point on the ring the
-            ;; intersection algorithm will result in two very, very close points. By rounding to
-            ;; within an acceptable range they'll be seen as the same point.
-            intersections (set (map (partial p/round-point 5) intersections))]
+            intersections (lines-and-line-intersections (.line_segments ring) crossing-line)]
         (or (odd? (count intersections))
             ;; if the point itself is one of the intersections then the ring covers it
             (intersections point))))))
@@ -80,8 +88,12 @@
   "Determines the mbr from the points in the ring."
   [^CartesianRing ring]
   (or (.mbr ring)
-      (let [line-segments (ring->line-segments ring)]
-        (->> line-segments (map :mbr) (reduce #(mbr/union %1 %2 false))))))
+      (reduce (fn [br ^LineSegment ls]
+                (if br
+                  (mbr/union br (.mbr ls))
+                  (.mbr ls)))
+              nil
+              (ring->line-segments ring))))
 
 (defn ring->winding
   "Determines the winding of the cartesian polygon returning :clockwise or :counter-clockwise.
@@ -100,10 +112,12 @@
 (extend-protocol d/DerivedCalculator
   cmr.spatial.cartesian_ring.CartesianRing
   (calculate-derived
-    [^CartesianRing ring]
-    (if (.line_segments ring)
-      ring
-      (as-> ring ring
-            (assoc ring :point-set (set (:points ring)))
-            (assoc ring :line-segments (ring->line-segments ring))
-            (assoc ring :mbr (ring->mbr ring))))))
+   [^CartesianRing ring]
+   (if (.line_segments ring)
+     ring
+     (let [^CartesianRing ring (assoc ring :point-set (set (.points ring)))
+           ^CartesianRing ring (assoc ring :line-segments (ring->line-segments ring))]
+       (assoc ring :mbr (ring->mbr ring))))))
+
+
+
