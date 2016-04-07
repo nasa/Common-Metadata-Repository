@@ -293,7 +293,6 @@
       (when (and (m/cartesian-covers-point? mbr point) (m/cartesian-covers-point? vert-mbr point))
         point))))
 
-;; TODO add test cases specifically for this new function
 (defn- intersection-both-horizontal
   "Returns the intersection point of two horizontal line segments if they do intersect"
   [^LineSegment ls1 ^LineSegment ls2]
@@ -320,7 +319,6 @@
         ;; the longitude ranges don't intersect
         nil))))
 
-;; TODO add test cases specifically for this new function
 (defn intersection-horizontal-and-vertical
   "Returns the intersection of one horizontal line and one vertical line"
   [^LineSegment horiz-ls ^LineSegment vert-ls]
