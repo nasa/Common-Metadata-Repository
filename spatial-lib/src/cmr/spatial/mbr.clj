@@ -81,28 +81,32 @@
     (let [{:keys [lon lat]} point]
       (mbr lon lat lon lat))))
 
-(defn- lon-range-covers-lon?
+(defn- geodetic-lon-range-covers-lon?
   "Returns true if lon is between west and east."
-  [coord-sys west east lon tolerance]
-  (let [;; This is necessary to specify primitive types here for math. We have more than clojure limit of 4 args.
-        ^double west west
-        ^double east east
-        ^double lon lon
-        ^double tolerance tolerance
-        west (- west tolerance)
+  [^double west ^double east ^double lon ^double tolerance]
+  (let [west (- west tolerance)
         east (+ east tolerance)
         crosses-antimeridian (> west east)]
     (cond
       crosses-antimeridian
       (or (>= lon west) (<= lon east))
 
-      (and (= coord-sys :geodetic)
-           (= (abs lon) 180.0))
+      (= (abs lon) 180.0)
       (let [within-180 (- 180.0 tolerance)]
         (or (>= (abs west) within-180)
             (>= (abs east) within-180)))
 
       :else
+      (and (>= lon west) (<= lon east)))))
+
+(defn- cartesian-lon-range-covers-lon?
+  "Returns true if lon is between west and east."
+  [^double west ^double east ^double lon ^double tolerance]
+  (let [west (- west tolerance)
+        east (+ east tolerance)
+        crosses-antimeridian (> west east)]
+    (if crosses-antimeridian
+      (or (>= lon west) (<= lon east))
       (and (>= lon west) (<= lon east)))))
 
 (defn covers-lon?
@@ -111,7 +115,9 @@
    (covers-lon? coord-sys mbr v COVERS_TOLERANCE))
   ([coord-sys ^Mbr mbr ^double v tolerance]
    (let [west (.west mbr) east (.east mbr)]
-     (lon-range-covers-lon? coord-sys west east v tolerance))))
+     (if (= coord-sys :geodetic)
+       (geodetic-lon-range-covers-lon?  west east v tolerance)
+       (cartesian-lon-range-covers-lon? west east v tolerance)))))
 
 (defn covers-lat?
   "Returns true if the mbr covers the given latitude"
@@ -126,15 +132,15 @@
 (defn cartesian-covers-point?
   ([mbr ^Point p]
    (cartesian-covers-point? mbr p nil))
-  ([mbr ^Point p delta]
+  ([^Mbr mbr ^Point p delta]
    (let [delta (or delta COVERS_TOLERANCE)]
      (and (covers-lat? mbr (.lat p) delta)
-          (covers-lon? :cartesian mbr (.lon p) delta)))))
+          (cartesian-lon-range-covers-lon? (.west mbr) (.east mbr) (.lon p) delta)))))
 
 (defn geodetic-covers-point?
   ([mbr ^Point p]
    (geodetic-covers-point? mbr p nil))
-  ([mbr ^Point p delta]
+  ([^Mbr mbr ^Point p delta]
    (let [delta (or delta COVERS_TOLERANCE)]
      (or
        (and (p/is-north-pole? p)
@@ -142,7 +148,7 @@
        (and (p/is-south-pole? p)
             (covers-lat? mbr -90.0 delta))
        (and (covers-lat? mbr (.lat p) delta)
-            (covers-lon? :geodetic mbr (.lon p) delta))))))
+            (geodetic-lon-range-covers-lon? (.west mbr) (.east mbr) (.lon p) delta))))))
 
 (defn covers-point?
   "Returns true if the mbr contains the given point"

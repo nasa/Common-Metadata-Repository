@@ -62,15 +62,16 @@
 
   ;; Only do real intersection if the mbr covers the point.
   (when (mbr/cartesian-covers-point? (.mbr ring) point)
-    (if (some (.point_set ring) point)
-      true ; The point is actually one of the rings points
-      ;; otherwise we'll do the real intersection algorithm
-      (let [;; Create the test segment
-            crossing-line (s/line-segment point external-point)
-            intersections (lines-and-line-intersections (.line_segments ring) crossing-line)]
-        (or (odd? (count intersections))
-            ;; if the point itself is one of the intersections then the ring covers it
-            (intersections point))))))
+    (or
+     ;; The point is actually one of the rings points
+     (contains? (.point_set ring) point)
+     ;; otherwise we'll do the real intersection algorithm
+     (let [;; Create the test segment
+           crossing-line (s/line-segment point external-point)
+           intersections (lines-and-line-intersections (.line_segments ring) crossing-line)]
+       (or (odd? (count intersections))
+           ;; if the point itself is one of the intersections then the ring covers it
+           (intersections point))))))
 
 (defn ring
   "Creates a new ring with the given points. If the other fields of a ring are needed. The

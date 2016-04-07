@@ -27,6 +27,13 @@
    ^Point point2
 
    ;; Derived Fields
+
+   ;; true if the line is vertical
+   vertical
+
+   ;; true if the line is horizontal
+   horizontal
+
    ;; Fields from the formula for a line: y = m*x + b
 
    ;; The slope of a line. A vertical line will not have meaningful slope or slope-intercept
@@ -53,7 +60,10 @@
                      (m/mbr lon2 lat2 lon2 lat2)
                      ;; Resulting MBR should not cross the antimeridian as this isn't allowed for cartesian polygons
                      false)]
-    (->LineSegment (p/with-cartesian-equality p1) (p/with-cartesian-equality p2)
+    (->LineSegment (p/with-cartesian-equality p1)
+                   (p/with-cartesian-equality p2)
+                   (= lon1 lon2)
+                   (= lat1 lat2)
                    m b mbr)))
 
 (defn ords->line-segment
@@ -81,16 +91,12 @@
 (defn vertical?
   "Returns true if this is a vertical line segment"
   [^LineSegment ls]
-  (let [^Point p1 (.point1 ls)
-        ^Point p2 (.point2 ls)]
-    (= (.lon p1) (.lon p2))))
+  (.vertical ls))
 
 (defn horizontal?
   "Returns true if this is a horizontal line segment"
   [^LineSegment ls]
-  (let [^Point p1 (.point1 ls)
-        ^Point p2 (.point2 ls)]
-    (= (.lat p1) (.lat p2))))
+  (.horizontal ls))
 
 (defn course
   "Returns the compass heading along the line"
@@ -115,7 +121,7 @@
 (defn segment+lon->lat
   "Returns the latitude of the line at the given longitude. Fails with runtime error for vertical lines."
   [^LineSegment ls ^double lon]
-  (when (vertical? ls)
+  (when (.vertical ls)
     (errors/internal-error! "Can not determine latitude of points at a given longitude in a vertical line"))
 
   (let [^double m (.m ls)
@@ -129,9 +135,9 @@
   line segment. Fails with runtime error for horizontal lines because the longitude at the latitude
   of the line would be every longitude"
   ^double [^LineSegment ls ^double lat]
-  (when (horizontal? ls)
+  (when (.horizontal ls)
     (errors/internal-error! "Can not determine longitude of points at a given latitude in a horizontal line"))
-  (if (vertical? ls)
+  (if (.vertical ls)
     (.lon ^Point (.point1 ls))
     (let [^double m (.m ls)
           ^double b (.b ls)
@@ -147,7 +153,7 @@
       (let [mbr (.mbr ls)
             ^Point point1 (.point1 ls)]
         (when (m/cartesian-covers-point? mbr point)
-          (if (horizontal? ls)
+          (if (.horizontal ls)
             (approx= ^double (.lat point1)
                      ^double (.lat point) COVERS_TOLERANCE)
             (when-let [expected-lon (segment+lat->lon ls (.lat point))]
@@ -172,7 +178,7 @@
   ([ls]
    (densify-line-segment ls 0.1))
   ([^LineSegment ls ^double densification-dist]
-   (if (vertical? ls)
+   (if (.vertical ls)
      [(:point1 ls) (:point2 ls)]
      (let [^Point p1 (.point1 ls)
            ^Point p2 (.point2 ls)
@@ -359,11 +365,11 @@
 
 (defn intersection
   "Returns the intersection point of the line segments if they do intersect."
-  [ls1 ls2]
-  (let [ls1-vert? (vertical? ls1)
-        ls2-vert? (vertical? ls2)
-        ls1-horz? (horizontal? ls1)
-        ls2-horz? (horizontal? ls2)]
+  [^LineSegment ls1 ^LineSegment ls2]
+  (let [ls1-vert? (.vertical ls1)
+        ls2-vert? (.vertical ls2)
+        ls1-horz? (.horizontal ls1)
+        ls2-horz? (.horizontal ls2)]
     (cond
       (and ls1-vert? ls2-vert?)
       (intersection-both-vertical ls1 ls2)
@@ -390,7 +396,7 @@
       ; ls1-horz?
       ; (intersection-one-horizontal ls1 ls2)
 
-      (= (:m ls1) (:m ls2))
+      (= (.m ls1) (.m ls2))
       (intersection-parallel ls1 ls2)
 
       :else
