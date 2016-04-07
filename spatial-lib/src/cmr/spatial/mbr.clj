@@ -343,72 +343,84 @@
                     new-south (max s1 s2)]
                 (mbr new-west new-north new-east new-south))))))
 
+(defn union-not-crossing-antimeridian
+  "A specialized union for mbrs that do not cross the antimeridian and are not allowed to crossed
+   the antimeridian"
+  [^Mbr m1 ^Mbr m2]
+  (pj/assert (not (or (crosses-antimeridian? m1)
+                      (crosses-antimeridian? m2)))
+             "allow-cross-antimeridian? was false and either m1 or m2 crossed the antimeridian")
+  (let [n (max (.north m1) (.north m2))
+        s (min (.south m1) (.south m2))]
+    (if (> (.west m2) (.west m1))
+      (mbr (min (.west m1) (.west m2))
+           n
+           (max (.east m1) (.east m2))
+           s)
+      (mbr (min (.west m2) (.west m1))
+           n
+           (max (.east m2) (.east m1))
+           s))))
+
 (defn union
-  "Returns the union of the minimum bounding rectangles. Accepts an optional argument to disable
-  crossing the antimeridian. That argument only makes sense if none of the input mbrs cross the
-  antimeridian."
-  ([m1 m2]
-   (union m1 m2 true))
-  ([^Mbr m1 ^Mbr m2 allow-cross-antimeridian?]
-   (pj/assert (or allow-cross-antimeridian?
-                  (not (or (crosses-antimeridian? m1)
-                           (crosses-antimeridian? m2))))
-              "allow-cross-antimeridian? was false and either m1 or m2 crossed the antimeridian")
-   (let [;; lon range union
-         [w e] (cond
-                 ;; both cross antimeridian
-                 (and (crosses-antimeridian? m1) (crosses-antimeridian? m2))
-                 (let [w (min (.west m1) (.west m2))
-                       e (max (.east m1) (.east m2))]
-                   (if (<= w e)
-                     ;; If the result covers the whole world then we'll set it to that.
-                     [-180.0 180.0]
-                     [w e]))
+  "Returns the union of the minimum bounding rectangles."
+  [^Mbr m1 ^Mbr m2]
 
-                 ;; one crosses the antimeridian
-                 (or (crosses-antimeridian? m1) (crosses-antimeridian? m2))
-                 ;; Make m1 cross the antimeridian
-                 (let [[^Mbr m1 ^Mbr m2] (if (crosses-antimeridian? m2)
-                                           [m2 m1]
-                                           [m1 m2])
-                       w1 (.west m1) e1 (.east m1)
-                       w2 (.west m2) e2 (.east m2)
-                       ;; We could expand m1 to the east or to the west. Pick the shorter of the two.
-                       west-dist (- w1 w2)
-                       east-dist (- e2 e1)
-                       [^double w ^double e] (cond
-                                               (or (<= west-dist 0.0) (<= east-dist 0.0)) [w1 e1]
-                                               (< east-dist west-dist) [w1 e2]
-                                               :else [w2 e1])]
+  (let [;; lon range union
+        [w e] (cond
+                ;; both cross antimeridian
+                (and (crosses-antimeridian? m1) (crosses-antimeridian? m2))
+                (let [w (min (.west m1) (.west m2))
+                      e (max (.east m1) (.east m2))]
+                  (if (<= w e)
+                    ;; If the result covers the whole world then we'll set it to that.
+                    [-180.0 180.0]
+                    [w e]))
 
-                   (if (<= w e)
-                     ;; If the result covers the whole world then we'll set it to that.
-                     [-180.0 180.0]
-                     [w e]))
+                ;; one crosses the antimeridian
+                (or (crosses-antimeridian? m1) (crosses-antimeridian? m2))
+                ;; Make m1 cross the antimeridian
+                (let [[^Mbr m1 ^Mbr m2] (if (crosses-antimeridian? m2)
+                                          [m2 m1]
+                                          [m1 m2])
+                      w1 (.west m1) e1 (.east m1)
+                      w2 (.west m2) e2 (.east m2)
+                      ;; We could expand m1 to the east or to the west. Pick the shorter of the two.
+                      west-dist (- w1 w2)
+                      east-dist (- e2 e1)
+                      [^double w ^double e] (cond
+                                              (or (<= west-dist 0.0) (<= east-dist 0.0)) [w1 e1]
+                                              (< east-dist west-dist) [w1 e2]
+                                              :else [w2 e1])]
 
-                 ;; none cross the antimeridian
-                 :else
-                 (let [[^Mbr m1 ^Mbr m2] (if (> (.west m1) (.west m2))
-                                           [m2 m1]
-                                           [m1 m2])
-                       w1 (.west m1) e1 (.east m1)
-                       w2 (.west m2) e2 (.east m2)
-                       w (min w1 w2)
-                       e (max e1 e2)
+                  (if (<= w e)
+                    ;; If the result covers the whole world then we'll set it to that.
+                    [-180.0 180.0]
+                    [w e]))
 
-                       ;; Check if it's shorter to cross the antimeridian
-                       dist (- e w)
-                       alt-west w2
-                       alt-east e1
-                       alt-dist (+ (- 180.0 alt-west) (- alt-east -180.0))]
-                   (if (and allow-cross-antimeridian? (< alt-dist dist))
-                     [alt-west alt-east]
-                     [w e])))
+                ;; none cross the antimeridian
+                :else
+                (let [[^Mbr m1 ^Mbr m2] (if (> (.west m1) (.west m2))
+                                          [m2 m1]
+                                          [m1 m2])
+                      w1 (.west m1) e1 (.east m1)
+                      w2 (.west m2) e2 (.east m2)
+                      w (min w1 w2)
+                      e (max e1 e2)
 
-         ;; lat range union
-         n (max (.north m1) (.north m2))
-         s (min (.south m1) (.south m2))]
-     (mbr w n e s))))
+                      ;; Check if it's shorter to cross the antimeridian
+                      dist (- e w)
+                      alt-west w2
+                      alt-east e1
+                      alt-dist (+ (- 180.0 alt-west) (- alt-east -180.0))]
+                  (if (< alt-dist dist)
+                    [alt-west alt-east]
+                    [w e])))
+
+        ;; lat range union
+        n (max (.north m1) (.north m2))
+        s (min (.south m1) (.south m2))]
+    (mbr w n e s)))
 
 (extend-protocol d/DerivedCalculator
   cmr.spatial.mbr.Mbr

@@ -56,10 +56,10 @@
         lat2 (.lat p2)
         m (/ (- lat2 lat1) (- lon2 lon1))
         b (- lat1 (* m lon1))
-        mbr (m/union (m/mbr lon1 lat1 lon1 lat1)
-                     (m/mbr lon2 lat2 lon2 lat2)
-                     ;; Resulting MBR should not cross the antimeridian as this isn't allowed for cartesian polygons
-                     false)]
+        ;; Resulting MBR should not cross the antimeridian as this isn't allowed for cartesian polygons
+        mbr (m/union-not-crossing-antimeridian
+             (m/mbr lon1 lat1 lon1 lat1)
+             (m/mbr lon2 lat2 lon2 lat2))]
     (->LineSegment (p/with-cartesian-equality p1)
                    (p/with-cartesian-equality p2)
                    (= lon1 lon2)
@@ -216,35 +216,41 @@
 
 (defn mbr->line-segments
   "Returns line segments representing the exerior of the MBR. The MBR must cover more than a single point"
-  [mbr]
-  (let [{:keys [west north east south]} mbr]
+  [^Mbr mbr]
+  (let [west (.west mbr)
+        east (.east mbr)
+        north (.north mbr)
+        south (.south mbr)]
     (cond
       (m/single-point? mbr)
       (errors/internal-error! "This function doesn't work for an MBR that's a single point.")
 
       (= west east)
       ;; zero width mbr
-      [(line-segment (p/point west north) (p/point east south))]
+      [(line-segment (p/point west north false) (p/point east south false))]
 
       (= north south)
       ;; zero height mbr
       (if (m/crosses-antimeridian? mbr)
-        [(line-segment (p/point west north) (p/point 180 north))
-         (line-segment (p/point -180 north) (p/point east north))]
-        [(line-segment (p/point west north) (p/point east south))])
+        [(line-segment (p/point west north false) (p/point 180.0 north false))
+         (line-segment (p/point -180.0 north false) (p/point east north false))]
+        [(line-segment (p/point west north false) (p/point east south false))])
 
       (m/crosses-antimeridian? mbr)
       (let [[ul ur lr ll] (m/corner-points mbr)
             {:keys [north south]} mbr]
-        [(line-segment ul (p/point 180 north))
-         (line-segment (p/point -180 north) ur)
+        [(line-segment ul (p/point 180.0 north false))
+         (line-segment (p/point -180.0 north false) ur)
          (line-segment ur lr)
-         (line-segment lr (p/point -180 south))
-         (line-segment (p/point 180 south) ll)
+         (line-segment lr (p/point -180.0 south false))
+         (line-segment (p/point 180.0 south false) ll)
          (line-segment ll ul)])
 
       :else
-      (let [[ul ur lr ll] (m/corner-points mbr)]
+      (let [ul (p/point west north false)
+            ur (p/point east north false)
+            lr (p/point east south false)
+            ll (p/point west south false)]
         [(line-segment ul ur)
          (line-segment ur lr)
          (line-segment lr ll)
@@ -282,9 +288,8 @@
   (let [lon (.lon ^Point (.point1 vert-ls))
         mbr (.mbr ls)
         vert-mbr (.mbr vert-ls)]
-    (when-let [point (some->> (segment+lon->lat ls lon)
-                              (p/point lon)
-                              p/with-cartesian-equality)]
+    (when-let [point (when-let [lat (segment+lon->lat ls lon)]
+                       (p/point lon lat false))]
       (when (and (m/cartesian-covers-point? mbr point) (m/cartesian-covers-point? vert-mbr point))
         point))))
 
@@ -329,7 +334,7 @@
         vert-north (.north vert-mbr)]
     (when (and (within-range? horiz-lat vert-south vert-north)
                (within-range? vert-lon horiz-west horiz-east))
-      (p/point vert-lon horiz-lat))))
+      (p/point vert-lon horiz-lat false))))
 
 (defn- intersection-parallel
   "Returns the intersection of two normal line segments that are parallel to each other"

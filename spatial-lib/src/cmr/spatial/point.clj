@@ -269,13 +269,15 @@
 
   user=> (ords->points [1 2 3 4])
   ((cmr-spatial.point/point 1.0 2.0) (cmr-spatial.point/point 3.0 4.0))"
-  [ords]
-  (let [ords (vec ords)]
-    (persistent!
-     (reduce (fn [points ^long index]
-               (conj! points (point (nth ords index) (nth ords (inc index)))))
-             (transient [])
-             (range 0 (count ords) 2)))))
+  ([ords]
+   (ords->points ords true))
+  ([ords geodetic-equality]
+   (let [ords (vec ords)]
+     (persistent!
+      (reduce (fn [points ^long index]
+                (conj! points (point (nth ords index) (nth ords (inc index)) geodetic-equality)))
+              (transient [])
+              (range 0 (count ords) 2))))))
 
 (defn points->ords
   "Takes points and converts them to a list of numbers lon1, lat1, lon2, lat2, ..."

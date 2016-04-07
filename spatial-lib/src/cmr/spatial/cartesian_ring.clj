@@ -18,7 +18,7 @@
 (def external-point
   "Defines a point external to all cartesian rings. It works because it's outside the area of the
   earth."
-  (p/point 181 91))
+  (p/point 181 91 false))
 
 (defrecord CartesianRing
   [

@@ -29,7 +29,7 @@
 (defn ords->ring
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates a ring."
   [coordinate-system ords]
-  (ring coordinate-system (p/ords->points ords)))
+  (ring coordinate-system (p/ords->points ords (= :geodetic coordinate-system))))
 
 (defn ring->ords [ring]
   (p/points->ords (:points ring)))
