@@ -9,9 +9,8 @@
   "Gets a group name from a access-group concept's metadata.
    This is because we lowercase the native-id so it does not match the actual group name."
   [concept]
-  (let [metadata (:metadata concept)
-        name (:name (edn/read-string metadata))]
-    name))
+  (-> concept :metadata edn/read-string :name))
+
 
 (defn group-already-exists
   [group concept]
