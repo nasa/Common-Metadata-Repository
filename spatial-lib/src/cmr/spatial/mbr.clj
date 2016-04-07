@@ -26,30 +26,61 @@
 
 (record-pretty-printer/enable-record-pretty-printing Mbr)
 
+(defn- mbr-wnes
+  [^double west ^double north ^double east ^double south]
+  (let [corner-points [(p/point west north)
+                       (p/point east north)
+                       (p/point east south)
+                       (p/point west south)]]
+    (->Mbr west north east south corner-points)))
+
 (defn mbr
   "Creates a new minimum bounding rectangle"
   [^double west ^double north ^double east ^double south]
   ;; Handle west or east being on the antimeridian.
-  (let [am? #(= (abs ^double %) 180.0)
-        [west east] (cond
-                      (and (am? west) (am? east))
-                      (if (= west east)
-                        [west east]
-                        [-180.0 180.0])
+  (let [am-west? (or (= west 180.0) (= west -180.0))
+        am-east? (or (= east 180.0) (= east -180.0))]
+    (cond
+      am-west?
+      (if am-east?
+        (if (= west east)
+          (mbr-wnes west north east south)
+          (mbr-wnes -180.0 north 180.0 south))
+        ;; east is not on antimeridian
+        ;; West should always be -180.0 if east isn't on AM.
+        (mbr-wnes -180.0 north east south))
 
-                      ;; West should always be -180.0 if east isn't on AM.
-                      (am? west) [-180.0 east]
+      am-east?
+      ;; East should always be positive 180.0 if west isnt' on AM.
+      (mbr-wnes west north 180.0 south)
 
-                      ;; East should always be positive 180.0 if west isnt' on AM.
-                      (am? east) [west 180.0]
+      :else
+      (mbr-wnes west north east south))))
 
-                      :else [west east])
-        corner-points [(p/point west north)
-                       (p/point east north)
-                       (p/point east south)
-                       (p/point west south)]]
-
-    (->Mbr west north east south corner-points)))
+; (defn mbr
+;   "Creates a new minimum bounding rectangle"
+;   [^double west ^double north ^double east ^double south]
+;   ;; Handle west or east being on the antimeridian.
+;   (let [am? #(= (abs ^double %) 180.0)
+;         [west east] (cond
+;                       (and (am? west) (am? east))
+;                       (if (= west east)
+;                         [west east]
+;                         [-180.0 180.0])
+;
+;                       ;; West should always be -180.0 if east isn't on AM.
+;                       (am? west) [-180.0 east]
+;
+;                       ;; East should always be positive 180.0 if west isnt' on AM.
+;                       (am? east) [west 180.0]
+;
+;                       :else [west east])
+;         corner-points [(p/point west north)
+;                        (p/point east north)
+;                        (p/point east south)
+;                        (p/point west south)]]
+;
+;     (->Mbr west north east south corner-points)))
 
 (defn corner-points
   "Returns the corner points of the mbr as upper left, upper right, lower right, lower left."
@@ -81,7 +112,7 @@
     (let [{:keys [lon lat]} point]
       (mbr lon lat lon lat))))
 
-(defn- geodetic-lon-range-covers-lon?
+(defn geodetic-lon-range-covers-lon?
   "Returns true if lon is between west and east."
   [^double west ^double east ^double lon ^double tolerance]
   (let [west (- west tolerance)
@@ -99,7 +130,7 @@
       :else
       (and (>= lon west) (<= lon east)))))
 
-(defn- cartesian-lon-range-covers-lon?
+(defn cartesian-lon-range-covers-lon?
   "Returns true if lon is between west and east."
   [^double west ^double east ^double lon ^double tolerance]
   (let [west (- west tolerance)
@@ -116,7 +147,7 @@
   ([coord-sys ^Mbr mbr ^double v tolerance]
    (let [west (.west mbr) east (.east mbr)]
      (if (= coord-sys :geodetic)
-       (geodetic-lon-range-covers-lon?  west east v tolerance)
+       (geodetic-lon-range-covers-lon? west east v tolerance)
        (cartesian-lon-range-covers-lon? west east v tolerance)))))
 
 (defn covers-lat?

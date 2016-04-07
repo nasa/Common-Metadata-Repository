@@ -47,6 +47,15 @@
 
 (record-pretty-printer/enable-record-pretty-printing LineSegment)
 
+(defn- points->mbr
+  "Returns an MBR that covers both points but does not cross the antimeridian"
+  [^double lon1 ^double lat1 ^double lon2 ^double lat2]
+  (let [n (max lat1 lat2)
+        s (min lat1 lat2)]
+    (if (> lon2 lon1)
+      (m/mbr lon1 n lon2 s)
+      (m/mbr lon2 n lon1 s))))
+
 (defn line-segment
   "Creates a new line segment"
   [^Point p1 ^Point p2]
@@ -54,16 +63,19 @@
         lat1 (.lat p1)
         lon2 (.lon p2)
         lat2 (.lat p2)
-        m (/ (- lat2 lat1) (- lon2 lon1))
+        vertical? (= lon1 lon2)
+        horizontal? (= lat1 lat2)
+        ^double m (cond
+                    vertical? infinity
+                    horizontal? 0.0
+                    :else (/ (- lat2 lat1) (- lon2 lon1)))
         b (- lat1 (* m lon1))
         ;; Resulting MBR should not cross the antimeridian as this isn't allowed for cartesian polygons
-        mbr (m/union-not-crossing-antimeridian
-             (m/mbr lon1 lat1 lon1 lat1)
-             (m/mbr lon2 lat2 lon2 lat2))]
+        mbr (points->mbr lon1 lat1 lon2 lat2)]
     (->LineSegment (p/with-cartesian-equality p1)
                    (p/with-cartesian-equality p2)
-                   (= lon1 lon2)
-                   (= lat1 lat2)
+                   vertical?
+                   horizontal?
                    m b mbr)))
 
 (defn ords->line-segment
@@ -126,8 +138,8 @@
 
   (let [^double m (.m ls)
         ^double b (.b ls)
-        mbr (.mbr ls)]
-    (when (m/covers-lon? :cartesian mbr lon)
+        ^Mbr mbr (.mbr ls)]
+    (when (m/cartesian-lon-range-covers-lon? (.west mbr) (.east mbr) lon m/COVERS_TOLERANCE)
       (+ (* m lon) b))))
 
 (defn segment+lat->lon
@@ -373,38 +385,27 @@
         ls2-vert? (.vertical ls2)
         ls1-horz? (.horizontal ls1)
         ls2-horz? (.horizontal ls2)]
+
     (cond
-      (and ls1-vert? ls2-vert?)
-      (intersection-both-vertical ls1 ls2)
+      ls1-vert?
+      (cond
+        ls2-vert? (intersection-both-vertical ls1 ls2)
+        ls2-horz? (intersection-horizontal-and-vertical ls2 ls1)
+        :else (intersection-one-vertical ls1 ls2))
+
+      ls2-vert?
+      (if ls1-horz?
+        (intersection-horizontal-and-vertical ls1 ls2)
+        (intersection-one-vertical ls2 ls1))
 
       (and ls1-horz? ls2-horz?)
       (intersection-both-horizontal ls1 ls2)
-
-      (and ls1-horz? ls2-vert?)
-      (intersection-horizontal-and-vertical ls1 ls2)
-
-      (and ls2-horz? ls1-vert?)
-      (intersection-horizontal-and-vertical ls2 ls1)
-
-      ls2-vert?
-      (intersection-one-vertical ls2 ls1)
-
-      ls1-vert?
-      (intersection-one-vertical ls1 ls2)
-
-      ;; In the future we can support this if it gives a performance improvement.
-      ; ls2-horz?
-      ; (intersection-one-horizontal ls2 ls1)
-      ;
-      ; ls1-horz?
-      ; (intersection-one-horizontal ls1 ls2)
 
       (= (.m ls1) (.m ls2))
       (intersection-parallel ls1 ls2)
 
       :else
       (intersection-normal ls1 ls2))))
-
 
 (defn mbr-intersections
   "Returns the points the line segment intersects the edges of the mbr"
@@ -415,7 +416,6 @@
         [point]))
     (let [edges (mbr->line-segments mbr)]
       (map p/with-cartesian-equality (filter identity (map (partial intersection ls) edges))))))
-
 
 (defn keep-farthest-points
   "Takes a list of points and returns the two points that are farthest from each other."

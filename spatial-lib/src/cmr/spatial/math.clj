@@ -40,6 +40,12 @@
   "Value to return from compare functions to indicate a value is greater than another value"
   1)
 
+(def ^:const ^double infinity
+  (double Double/POSITIVE_INFINITY))
+
+(def ^:const ^double negative-infinity
+  (double Double/NEGATIVE_INFINITY))
+
 (def ^:const ^double PI Math/PI)
 
 (def ^:const ^double TAU (* 2.0 PI))
