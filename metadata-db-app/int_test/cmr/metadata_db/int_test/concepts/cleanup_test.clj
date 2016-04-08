@@ -50,7 +50,16 @@
         coll3 (util/create-and-save-collection "SMAL_PROV1" 1 12 {:native-id "foo"})
         coll4 (util/create-and-save-collection "SMAL_PROV1" 4 3)
         coll5 (util/create-and-save-collection "SMAL_PROV2" 4 3 {:native-id "foo"})
-        collections [coll1 coll2 coll3 coll4 coll5]]
+        collections [coll1 coll2 coll3 coll4 coll5]
+        ;; set up tag and tag associations
+        tag1 (util/create-and-save-tag 1)
+        tag2 (util/create-and-save-tag 2)
+        tag3 (util/create-and-save-tag 3)
+        tag4 (util/create-and-save-tag 4)
+        ta1 (util/create-and-save-tag-association (dissoc coll1 :revision-id) tag1 1)
+        ta2 (util/create-and-save-tag-association (assoc coll1 :revision-id 1) tag2 2)
+        ta3 (util/create-and-save-tag-association (assoc coll3 :revision-id 9) tag3 3)
+        ta4 (util/create-and-save-tag-association (assoc coll3 :revision-id 1) tag4 4)]
 
     ;; Collection 4 has a tombstone
     (util/delete-concept (:concept-id coll4))
@@ -70,7 +79,15 @@
     (is (revisions-exist? coll3 (range 3 13)))
 
     (is (revisions-exist? coll4 (range 1 5)))
-    (is (revisions-exist? coll5 (range 1 4)))))
+    (is (revisions-exist? coll5 (range 1 4)))
+
+    ;; tag associations that are associated to deleted collection revisions are also deleted
+    (util/is-tag-association-deleted? ta2 true)
+    (util/is-tag-association-deleted? ta4 true)
+    ;; tag association associated to the whole collection is not deleted
+    (util/is-tag-association-deleted? ta1 false)
+    ;; tag association not associated to deleted collection revisions is not deleted
+    (util/is-tag-association-deleted? ta3 false)))
 
 (deftest old-granule-revisions-are-cleaned-up
   (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1)
