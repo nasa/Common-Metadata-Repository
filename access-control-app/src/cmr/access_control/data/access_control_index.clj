@@ -29,6 +29,7 @@
    :description (m/not-indexed (m/stored m/string-field-mapping))
 
    :legacy-guid (m/stored m/string-field-mapping)
+   :legacy-guid.lowercase m/string-field-mapping
 
    ;; Member search is always case insensitive
    :members.lowercase m/string-field-mapping
@@ -77,6 +78,7 @@
         (assoc :name.lowercase (safe-lowercase (:name group))
                :provider-id.lowercase (safe-lowercase (:provider-id group))
                :members.lowercase (map str/lower-case (:members group))
+               :legacy-guid.lowercase (safe-lowercase (:legacy-guid group))
                :member-count (count (:members group)))
         (dissoc :members))))
 
