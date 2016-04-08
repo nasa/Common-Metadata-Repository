@@ -99,11 +99,11 @@
                 ls2 (segments r2)]
             [ls1 ls2]))
 
-    ;; Are any of the points in ring 2 inside ring 1?
-    (some #(covers-point? r1 %) (:points r2))
+    ;; Is ring 2 inside ring 1? Only one point check is required
+    (covers-point? r1 (first (:points r2)))
 
-    ;; Are any of the points in ring 1 inside ring 2?
-    (some #(covers-point? r2 %) (:points r1))))
+    ;; Is ring 1 inside ring 2? Only one point check is required
+    (covers-point? r2 (first (:points r1)))))
 
 (defn covers-ring?
   "Returns true if the ring covers the other ring."
