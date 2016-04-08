@@ -110,9 +110,10 @@
 
 (deftest create-provider-group-test
   (testing "Successful creation"
-    (let [group (u/make-group {:provider_id "PROV1"})
+    (let [group (u/make-group {:name "TeSt GrOuP 1" :provider_id "PROV1"})
           token (e/login (u/conn-context) "user1")
-          {:keys [status concept_id revision_id]} (u/create-group token group)]
+          {:keys [status concept_id revision_id]} (u/create-group token group)
+          lowercase-group (assoc group :name (str/lower-case (:name group)))]
       (is (= 200 status))
       (is (re-matches #"AG\d+-PROV1" concept_id) "Incorrect concept id for a provider group")
       (is (= 1 revision_id))
@@ -125,9 +126,16 @@
                             "A provider group with name [%s] already exists with concept id [%s] for provider [PROV1]."
                             (:name group) concept_id)]}
                  (u/create-group token group))))
+        (testing "Is rejected for the same provider if case insensitive"
+          (is (= {:status 409
+                  :errors [(format
+                            "A provider group with name [%s] already exists with concept id [%s] for provider [PROV1]."
+                            (:name group) concept_id)]}
+                 (u/create-group token lowercase-group))))
 
         (testing "Works for a different provider"
           (is (= 200 (:status (u/create-group token (assoc group :provider_id "PROV2")))))))))
+
   (testing "Creation for a non-existent provider"
     (is (= {:status 400
             :errors ["Provider with provider-id [NOT_EXIST] does not exist."]}

@@ -7,7 +7,8 @@
             [cmr.elastic-utils.config :as es-config]
             [cmr.common.mime-types :as mt]
             [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [clojure.string :as str]))
 
 (def conn-context-atom
   "An atom containing the cached connection context map."
@@ -132,7 +133,7 @@
   [group user-id concept-id revision-id]
   (let [concept (mdb/get-concept (conn-context) concept-id revision-id)]
     (is (= {:concept-type :access-group
-            :native-id (:name group)
+            :native-id (str/lower-case (:name group))
             :provider-id (:provider_id group "CMR")
             :format mt/edn
             :metadata (pr-str (util/map-keys->kebab-case group))
@@ -147,7 +148,7 @@
   [group user-id concept-id revision-id]
   (let [concept (mdb/get-concept (conn-context) concept-id revision-id)]
     (is (= {:concept-type :access-group
-            :native-id (:name group)
+            :native-id (str/lower-case (:name group))
             :provider-id (:provider_id group "CMR")
             :metadata ""
             :format mt/edn

@@ -46,7 +46,7 @@
   "Converts a group into a new concept that can be persisted in metadata db."
   [context group]
   {:concept-type :access-group
-   :native-id (:name group)
+   :native-id (str/lower-case (:name group))
    ;; Provider id is optional in group. If it is a system level group then it's owned by the CMR.
    :provider-id (group->mdb-provider-id group)
    :metadata (pr-str group)
@@ -142,11 +142,11 @@
   [context group]
   (validate-create-group context group)
   (auth/verify-can-create-group context group)
-  ;; Check if the group already exists
+  ;; Check if the group already exists - lower case the name to prevent duplicates.(CMR-2466)
   (if-let [concept-id (mdb/get-concept-id context
                                           :access-group
                                           (group->mdb-provider-id group)
-                                          (:name group))]
+                                          (str/lower-case (:name group)))]
 
     ;; The group exists. Check if its latest revision is a tombstone
     (let [concept (mdb/get-latest-concept context concept-id)]
@@ -155,7 +155,7 @@
         (save-updated-group-concept context concept group)
 
         ;; The group exists and was not deleted. Reject this.
-        (errors/throw-service-error :conflict (msg/group-already-exists group concept-id))))
+        (errors/throw-service-error :conflict (msg/group-already-exists group concept))))
 
     ;; The group doesn't exist
     (mdb/save-concept context (group->new-concept context group))))
@@ -319,4 +319,3 @@
     {:ok? ok?
      :dependencies {:echo echo-rest-health
                     :metadata-db metadata-db-health}}))
-
