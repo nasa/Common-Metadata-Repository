@@ -57,31 +57,6 @@
       :else
       (mbr-wnes west north east south))))
 
-; (defn mbr
-;   "Creates a new minimum bounding rectangle"
-;   [^double west ^double north ^double east ^double south]
-;   ;; Handle west or east being on the antimeridian.
-;   (let [am? #(= (abs ^double %) 180.0)
-;         [west east] (cond
-;                       (and (am? west) (am? east))
-;                       (if (= west east)
-;                         [west east]
-;                         [-180.0 180.0])
-;
-;                       ;; West should always be -180.0 if east isn't on AM.
-;                       (am? west) [-180.0 east]
-;
-;                       ;; East should always be positive 180.0 if west isnt' on AM.
-;                       (am? east) [west 180.0]
-;
-;                       :else [west east])
-;         corner-points [(p/point west north)
-;                        (p/point east north)
-;                        (p/point east south)
-;                        (p/point west south)]]
-;
-;     (->Mbr west north east south corner-points)))
-
 (defn corner-points
   "Returns the corner points of the mbr as upper left, upper right, lower right, lower left."
   [^Mbr br]

@@ -91,7 +91,7 @@
   (or (.mbr ring)
       (reduce (fn [br ^LineSegment ls]
                 (if br
-                  (mbr/union br (.mbr ls))
+                  (mbr/union-not-crossing-antimeridian br (.mbr ls))
                   (.mbr ls)))
               nil
               (ring->line-segments ring))))
