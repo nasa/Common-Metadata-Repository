@@ -229,6 +229,8 @@ These parameters will match fields within a group. They are case insensitive by 
   * This allows searching for either system level groups or groups owned by a specific provider. Use the provider id of "CMR" to search for system level groups.
 * name
   * options: ignore_case, pattern
+* legacy_guid
+  * options: ignore_case, pattern
 * member
   * options: pattern, and
   * Allows searching for groups by member. The Earthdata Login username should be provided. It is always searched case-insensitively.
