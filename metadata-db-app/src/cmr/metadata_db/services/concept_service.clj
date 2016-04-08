@@ -378,6 +378,9 @@
           (validate-concept-revision-id db provider tombstone previous-revision)
           (let [revisioned-tombstone (->> (set-or-generate-revision-id db provider tombstone previous-revision)
                                           (try-to-save db provider))]
+            ;; skip publication flag is only set for tag association when its associated collection
+            ;; revision is force deleted. In this case, the tag association is no longer needed to
+            ;; be indexed, so we don't publish the deletion event.
             (when-not skip-publication
               (ingest-events/publish-event
                 context (ingest-events/concept-delete-event revisioned-tombstone)))
