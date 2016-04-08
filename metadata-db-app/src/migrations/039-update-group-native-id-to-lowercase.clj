@@ -1,11 +1,11 @@
-(ns migrations.039-ensure-group-name-uniqueness
+(ns migrations.039-update-group-native-id-to-lowercase
   (:require [config.mdb-migrate-helper :as h]
             [cmr.metadata-db.services.concept-validations :as v]))
 
 (defn up
   "Migrates the database up to version 39."
   []
-  (println "migrations.039-ensure-group-name-uniqueness up...")
+  (println "migrations.039-update-group-native-id-to-lowercase up...")
   ;; Lowercase all native_id fields so that we can detect duplicates.
   ;; Will throw an exception if duplicate group names are detected, they must be cleaned up manually.
 
@@ -19,5 +19,5 @@
 (defn down
   "Migrates the database down from version 39."
   []
-  (println "migrations.039-ensure-group-name-uniqueness down...")
+  (println "migrations.039-update-group-native-id-to-lowercase down...")
   (println "nothing to do: previous transaction-id values cannot be restored"))

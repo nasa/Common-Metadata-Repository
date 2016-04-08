@@ -110,7 +110,7 @@
 
 (deftest create-provider-group-test
   (testing "Successful creation"
-    (let [group (u/make-group {:provider_id "PROV1"})
+    (let [group (u/make-group {:name "TeSt GrOuP 1" :provider_id "PROV1"})
           token (e/login (u/conn-context) "user1")
           {:keys [status concept_id revision_id]} (u/create-group token group)
           lowercase-group (assoc group :name (str/lower-case (:name group)))]
