@@ -26,30 +26,36 @@
 
 (record-pretty-printer/enable-record-pretty-printing Mbr)
 
+(defn- mbr-wnes
+  [^double west ^double north ^double east ^double south]
+  (let [corner-points [(p/point west north)
+                       (p/point east north)
+                       (p/point east south)
+                       (p/point west south)]]
+    (->Mbr west north east south corner-points)))
+
 (defn mbr
   "Creates a new minimum bounding rectangle"
   [^double west ^double north ^double east ^double south]
   ;; Handle west or east being on the antimeridian.
-  (let [am? #(= (abs ^double %) 180.0)
-        [west east] (cond
-                      (and (am? west) (am? east))
-                      (if (= west east)
-                        [west east]
-                        [-180.0 180.0])
+  (let [am-west? (or (= west 180.0) (= west -180.0))
+        am-east? (or (= east 180.0) (= east -180.0))]
+    (cond
+      am-west?
+      (if am-east?
+        (if (= west east)
+          (mbr-wnes west north east south)
+          (mbr-wnes -180.0 north 180.0 south))
+        ;; east is not on antimeridian
+        ;; West should always be -180.0 if east isn't on AM.
+        (mbr-wnes -180.0 north east south))
 
-                      ;; West should always be -180.0 if east isn't on AM.
-                      (am? west) [-180.0 east]
+      am-east?
+      ;; East should always be positive 180.0 if west isnt' on AM.
+      (mbr-wnes west north 180.0 south)
 
-                      ;; East should always be positive 180.0 if west isnt' on AM.
-                      (am? east) [west 180.0]
-
-                      :else [west east])
-        corner-points [(p/point west north)
-                       (p/point east north)
-                       (p/point east south)
-                       (p/point west south)]]
-
-    (->Mbr west north east south corner-points)))
+      :else
+      (mbr-wnes west north east south))))
 
 (defn corner-points
   "Returns the corner points of the mbr as upper left, upper right, lower right, lower left."
@@ -81,28 +87,32 @@
     (let [{:keys [lon lat]} point]
       (mbr lon lat lon lat))))
 
-(defn- lon-range-covers-lon?
+(defn geodetic-lon-range-covers-lon?
   "Returns true if lon is between west and east."
-  [coord-sys west east lon tolerance]
-  (let [;; This is necessary to specify primitive types here for math. We have more than clojure limit of 4 args.
-        ^double west west
-        ^double east east
-        ^double lon lon
-        ^double tolerance tolerance
-        west (- west tolerance)
+  [^double west ^double east ^double lon ^double tolerance]
+  (let [west (- west tolerance)
         east (+ east tolerance)
         crosses-antimeridian (> west east)]
     (cond
       crosses-antimeridian
       (or (>= lon west) (<= lon east))
 
-      (and (= coord-sys :geodetic)
-           (= (abs lon) 180.0))
+      (= (abs lon) 180.0)
       (let [within-180 (- 180.0 tolerance)]
         (or (>= (abs west) within-180)
             (>= (abs east) within-180)))
 
       :else
+      (and (>= lon west) (<= lon east)))))
+
+(defn cartesian-lon-range-covers-lon?
+  "Returns true if lon is between west and east."
+  [^double west ^double east ^double lon ^double tolerance]
+  (let [west (- west tolerance)
+        east (+ east tolerance)
+        crosses-antimeridian (> west east)]
+    (if crosses-antimeridian
+      (or (>= lon west) (<= lon east))
       (and (>= lon west) (<= lon east)))))
 
 (defn covers-lon?
@@ -111,7 +121,9 @@
    (covers-lon? coord-sys mbr v COVERS_TOLERANCE))
   ([coord-sys ^Mbr mbr ^double v tolerance]
    (let [west (.west mbr) east (.east mbr)]
-     (lon-range-covers-lon? coord-sys west east v tolerance))))
+     (if (= coord-sys :geodetic)
+       (geodetic-lon-range-covers-lon? west east v tolerance)
+       (cartesian-lon-range-covers-lon? west east v tolerance)))))
 
 (defn covers-lat?
   "Returns true if the mbr covers the given latitude"
@@ -126,15 +138,15 @@
 (defn cartesian-covers-point?
   ([mbr ^Point p]
    (cartesian-covers-point? mbr p nil))
-  ([mbr ^Point p delta]
+  ([^Mbr mbr ^Point p delta]
    (let [delta (or delta COVERS_TOLERANCE)]
      (and (covers-lat? mbr (.lat p) delta)
-          (covers-lon? :cartesian mbr (.lon p) delta)))))
+          (cartesian-lon-range-covers-lon? (.west mbr) (.east mbr) (.lon p) delta)))))
 
 (defn geodetic-covers-point?
   ([mbr ^Point p]
    (geodetic-covers-point? mbr p nil))
-  ([mbr ^Point p delta]
+  ([^Mbr mbr ^Point p delta]
    (let [delta (or delta COVERS_TOLERANCE)]
      (or
        (and (p/is-north-pole? p)
@@ -142,7 +154,7 @@
        (and (p/is-south-pole? p)
             (covers-lat? mbr -90.0 delta))
        (and (covers-lat? mbr (.lat p) delta)
-            (covers-lon? :geodetic mbr (.lon p) delta))))))
+            (geodetic-lon-range-covers-lon? (.west mbr) (.east mbr) (.lon p) delta))))))
 
 (defn covers-point?
   "Returns true if the mbr contains the given point"
@@ -337,72 +349,84 @@
                     new-south (max s1 s2)]
                 (mbr new-west new-north new-east new-south))))))
 
+(defn union-not-crossing-antimeridian
+  "A specialized union for mbrs that do not cross the antimeridian and are not allowed to crossed
+   the antimeridian"
+  [^Mbr m1 ^Mbr m2]
+  (pj/assert (not (or (crosses-antimeridian? m1)
+                      (crosses-antimeridian? m2)))
+             "allow-cross-antimeridian? was false and either m1 or m2 crossed the antimeridian")
+  (let [n (max (.north m1) (.north m2))
+        s (min (.south m1) (.south m2))]
+    (if (> (.west m2) (.west m1))
+      (mbr (min (.west m1) (.west m2))
+           n
+           (max (.east m1) (.east m2))
+           s)
+      (mbr (min (.west m2) (.west m1))
+           n
+           (max (.east m2) (.east m1))
+           s))))
+
 (defn union
-  "Returns the union of the minimum bounding rectangles. Accepts an optional argument to disable
-  crossing the antimeridian. That argument only makes sense if none of the input mbrs cross the
-  antimeridian."
-  ([m1 m2]
-   (union m1 m2 true))
-  ([^Mbr m1 ^Mbr m2 allow-cross-antimeridian?]
-   (pj/assert (or allow-cross-antimeridian?
-                  (not (or (crosses-antimeridian? m1)
-                           (crosses-antimeridian? m2))))
-              "allow-cross-antimeridian? was false and either m1 or m2 crossed the antimeridian")
-   (let [;; lon range union
-         [w e] (cond
-                 ;; both cross antimeridian
-                 (and (crosses-antimeridian? m1) (crosses-antimeridian? m2))
-                 (let [w (min (.west m1) (.west m2))
-                       e (max (.east m1) (.east m2))]
-                   (if (<= w e)
-                     ;; If the result covers the whole world then we'll set it to that.
-                     [-180.0 180.0]
-                     [w e]))
+  "Returns the union of the minimum bounding rectangles."
+  [^Mbr m1 ^Mbr m2]
 
-                 ;; one crosses the antimeridian
-                 (or (crosses-antimeridian? m1) (crosses-antimeridian? m2))
-                 ;; Make m1 cross the antimeridian
-                 (let [[^Mbr m1 ^Mbr m2] (if (crosses-antimeridian? m2)
-                                           [m2 m1]
-                                           [m1 m2])
-                       w1 (.west m1) e1 (.east m1)
-                       w2 (.west m2) e2 (.east m2)
-                       ;; We could expand m1 to the east or to the west. Pick the shorter of the two.
-                       west-dist (- w1 w2)
-                       east-dist (- e2 e1)
-                       [^double w ^double e] (cond
-                                               (or (<= west-dist 0.0) (<= east-dist 0.0)) [w1 e1]
-                                               (< east-dist west-dist) [w1 e2]
-                                               :else [w2 e1])]
+  (let [;; lon range union
+        [w e] (cond
+                ;; both cross antimeridian
+                (and (crosses-antimeridian? m1) (crosses-antimeridian? m2))
+                (let [w (min (.west m1) (.west m2))
+                      e (max (.east m1) (.east m2))]
+                  (if (<= w e)
+                    ;; If the result covers the whole world then we'll set it to that.
+                    [-180.0 180.0]
+                    [w e]))
 
-                   (if (<= w e)
-                     ;; If the result covers the whole world then we'll set it to that.
-                     [-180.0 180.0]
-                     [w e]))
+                ;; one crosses the antimeridian
+                (or (crosses-antimeridian? m1) (crosses-antimeridian? m2))
+                ;; Make m1 cross the antimeridian
+                (let [[^Mbr m1 ^Mbr m2] (if (crosses-antimeridian? m2)
+                                          [m2 m1]
+                                          [m1 m2])
+                      w1 (.west m1) e1 (.east m1)
+                      w2 (.west m2) e2 (.east m2)
+                      ;; We could expand m1 to the east or to the west. Pick the shorter of the two.
+                      west-dist (- w1 w2)
+                      east-dist (- e2 e1)
+                      [^double w ^double e] (cond
+                                              (or (<= west-dist 0.0) (<= east-dist 0.0)) [w1 e1]
+                                              (< east-dist west-dist) [w1 e2]
+                                              :else [w2 e1])]
 
-                 ;; none cross the antimeridian
-                 :else
-                 (let [[^Mbr m1 ^Mbr m2] (if (> (.west m1) (.west m2))
-                                           [m2 m1]
-                                           [m1 m2])
-                       w1 (.west m1) e1 (.east m1)
-                       w2 (.west m2) e2 (.east m2)
-                       w (min w1 w2)
-                       e (max e1 e2)
+                  (if (<= w e)
+                    ;; If the result covers the whole world then we'll set it to that.
+                    [-180.0 180.0]
+                    [w e]))
 
-                       ;; Check if it's shorter to cross the antimeridian
-                       dist (- e w)
-                       alt-west w2
-                       alt-east e1
-                       alt-dist (+ (- 180.0 alt-west) (- alt-east -180.0))]
-                   (if (and allow-cross-antimeridian? (< alt-dist dist))
-                     [alt-west alt-east]
-                     [w e])))
+                ;; none cross the antimeridian
+                :else
+                (let [[^Mbr m1 ^Mbr m2] (if (> (.west m1) (.west m2))
+                                          [m2 m1]
+                                          [m1 m2])
+                      w1 (.west m1) e1 (.east m1)
+                      w2 (.west m2) e2 (.east m2)
+                      w (min w1 w2)
+                      e (max e1 e2)
 
-         ;; lat range union
-         n (max (.north m1) (.north m2))
-         s (min (.south m1) (.south m2))]
-     (mbr w n e s))))
+                      ;; Check if it's shorter to cross the antimeridian
+                      dist (- e w)
+                      alt-west w2
+                      alt-east e1
+                      alt-dist (+ (- 180.0 alt-west) (- alt-east -180.0))]
+                  (if (< alt-dist dist)
+                    [alt-west alt-east]
+                    [w e])))
+
+        ;; lat range union
+        n (max (.north m1) (.north m2))
+        s (min (.south m1) (.south m2))]
+    (mbr w n e s)))
 
 (extend-protocol d/DerivedCalculator
   cmr.spatial.mbr.Mbr

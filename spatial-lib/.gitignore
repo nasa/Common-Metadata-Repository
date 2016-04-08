@@ -11,3 +11,4 @@ testreports.xml
 *.kml
 test2junit
 build.xml
+scratch.clj

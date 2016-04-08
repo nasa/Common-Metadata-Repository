@@ -2218,14 +2218,14 @@ Content-Length: 48
 [{"concept-id":"TA1200000007-CMR","revision-id":1},{"concept-id":"TA1200000008-CMR","revision-id":1}]
 ```
 
-#### <a name="associating-collections-with-a-tag-by-concept-ids"></a> Associating Collections with a Tag by collection concept ids
+#### <a name="associating-collections-with-a-tag-by-concept-ids"></a> Associating Collections with a Tag by collection concept ids and optional revision ids
 
-Tags can be associated with collections by POSTing a JSON array of collection concept-ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag-key of the tag. User can also provide arbitrary JSON data which is optional during tag association. The max length of JSON data used for tag association is 32KB. All referenced collections will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
+Tags can be associated with collections by POSTing a JSON array of collection concept-ids and optional revision ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag-key of the tag. User can also provide arbitrary JSON data which is optional during tag association. The max length of JSON data used for tag association is 32KB. All referenced collections will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags. If a tag is already associated with a collection without revision, it cannot be associated with a specific revision of that collection again, and vice versa. Tags cannot be associated on tombstoned collection revisions.
 
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality/associations -d \
-'[{"concept-id": "C1200000005-PROV1", "data": "Global Maps of Atmospheric Nitrogen Deposition, 1860, 1993, and 2050"} {"concept-id": "C1200000006-PROV1", "data": {"status": "reviewed"}} {"concept-id": "C1200000007-PROV1"}]'
+'[{"concept-id": "C1200000005-PROV1", "revision-id": 2, "data": "Global Maps of Atmospheric Nitrogen Deposition, 1860, 1993, and 2050"} {"concept-id": "C1200000006-PROV1", "data": {"status": "reviewed"}} {"concept-id": "C1200000007-PROV1"}]'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1

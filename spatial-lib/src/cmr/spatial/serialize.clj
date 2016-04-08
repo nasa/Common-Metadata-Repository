@@ -248,11 +248,14 @@
   (do
     ;;  lower left longitude, lower left latitude, upper right longitude, upper right latitude.
     ;; w s e n
-    -180,0,180,90
+    -10.6875 35.15625 2.53125 43.875
+
 
     ;; w n e s
-    ; (def search-area (m/mbr -180 90 180 0))
-    (def search-area (m/mbr -34.09 85.35 -28.16 84.17))
+    ;; Does intersect
+    ; (def search-area (m/mbr -34.09 85.35 -28.16 84.17))
+    ;; Doesn't intersect
+    (def search-area (m/mbr -10.6875 43.875 2.53125 35.15625))
 
     (cmr.spatial.validation/validate search-area)
 
@@ -262,14 +265,7 @@
     (require '[cmr.spatial.kml :as kml])
     (require '[criterium.core :refer [with-progress-reporting bench quick-bench]]))
 
-
-
   (kml/display-shapes [search-area])
-
-  ;; Create an instance of a shape like polygon
-  ;; Use this to get the ords info map
-  (shapes->ords-info-map [polygon])
-
 
   (with-progress-reporting
     (bench

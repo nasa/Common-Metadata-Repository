@@ -29,7 +29,7 @@
 (defn ords->ring
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates a ring."
   [coordinate-system ords]
-  (ring coordinate-system (p/ords->points ords)))
+  (ring coordinate-system (p/ords->points ords (= :geodetic coordinate-system))))
 
 (defn ring->ords [ring]
   (p/points->ords (:points ring)))
@@ -99,11 +99,11 @@
                 ls2 (segments r2)]
             [ls1 ls2]))
 
-    ;; Are any of the points in ring 2 inside ring 1?
-    (some #(covers-point? r1 %) (:points r2))
+    ;; Is ring 2 inside ring 1? Only one point check is required
+    (covers-point? r1 (first (:points r2)))
 
-    ;; Are any of the points in ring 1 inside ring 2?
-    (some #(covers-point? r2 %) (:points r1))))
+    ;; Is ring 1 inside ring 2? Only one point check is required
+    (covers-point? r2 (first (:points r1)))))
 
 (defn covers-ring?
   "Returns true if the ring covers the other ring."
@@ -151,15 +151,15 @@
   [lines br]
   ;; Optimized to avoid iteration. There can be up to 6 sides if it crosses the antimeridian
   (let [[s1 s2 s3 s4 s5 s6] (s/mbr->line-segments br)]
-    (loop [[line & lines] lines]
-      (when line
+    (loop [lines lines]
+      (when-let [line (first lines)]
         (or (seq (asi/intersections line s1))
             (when s2 (seq (asi/intersections line s2)))
             (when s3 (seq (asi/intersections line s3)))
             (when s4 (seq (asi/intersections line s4)))
             (when s5 (seq (asi/intersections line s5)))
             (when s6 (seq (asi/intersections line s6)))
-            (recur lines))))))
+            (recur (rest lines)))))))
 
 (defn intersects-br?
   "Returns true if the ring intersects the br"
@@ -170,9 +170,12 @@
 
       (or
        ;; Does the br cover any points of the ring?
-       (some #(m/covers-point? (coordinate-system ring) br %) (:points ring))
-       ;; Does the ring contain any points of the br?
-       (some #(covers-point? ring %) (m/corner-points br))
+       (if (= :geodetic (coordinate-system ring))
+         (some #(m/geodetic-covers-point? br %) (:points ring))
+         (some #(m/cartesian-covers-point? br %) (:points ring)))
+
+       ;; Does the ring completely contain the br? We only need to check one point of the br
+       (covers-point? ring (p/point (.west br) (.north br)))
 
        ;; Do any of the sides intersect?
        (lines-intersects-br-sides? (segments ring) br)))))

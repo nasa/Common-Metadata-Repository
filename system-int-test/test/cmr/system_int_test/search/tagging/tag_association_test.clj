@@ -129,6 +129,22 @@
           [(format "The following collections do not exist or are not accessible: C100-P5, %s." c1-p1)]
           response)))
 
+    (testing "Associate to no collections"
+      (let [response (tags/associate-by-concept-ids token tag-key [])]
+        (assert-tag-association-response-ok?
+          422
+          ["At least one collection must be provided for tag association."]
+          response)))
+
+    (testing "Associate to collection revision and whole collection at the same time"
+      (let [response (tags/associate-by-concept-ids token tag-key [{:concept-id c1-p1}
+                                                                   {:concept-id c1-p1 :revision-id 1}])]
+        (assert-tag-association-response-ok?
+          422
+          [(format "Unable to tag a collection revision and the whole collection at the same time for the following collections: %s."
+                   c1-p1)]
+          response)))
+
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible
       (let [response (tags/associate-by-concept-ids token tag-key [{:concept-id c4-p3}])]
@@ -554,4 +570,106 @@
     (testing "Retrieve concept by tag association concept-id is invalid"
       (is (= [400 ["Retrieving concept by concept id is not supported for concept type [tag-association]."]]
              [status errors])))))
+
+(deftest tag-association-collection-revisions-test
+  ;; Grant all collections in PROV1 and 2
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid2"))
+
+  (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
+        concept1 {:provider-id "PROV1"
+                  :concept-type :collection
+                  :native-id (:entry-title coll1-1)}
+        coll1-2-tombstone (merge (ingest/delete-concept concept1) concept1 {:deleted true})
+        coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
+
+        coll2-1 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))
+        coll2-2 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))
+        concept2 {:provider-id "PROV1"
+                  :concept-type :collection
+                  :native-id (:entry-title coll2-2)}
+        coll2-3-tombstone (merge (ingest/delete-concept concept2) concept2 {:deleted true})
+
+        coll3 (d/ingest "PROV2" (dc/collection {}))
+        coll4 (d/ingest "PROV3" (dc/collection {}))
+        token (e/login (s/context) "user1")
+        tag-key "tag1"]
+
+    (tags/create-tag token (tags/make-tag {:tag-key tag-key}))
+    (index/wait-until-indexed)
+
+    (testing "successful case"
+      (let [{:keys [status] :as response} (tags/associate-by-concept-ids
+                                            token tag-key [{:concept-id (:concept-id coll1-1)
+                                                            :revision-id (:revision-id coll1-1)
+                                                            :data "snow"}
+                                                           {:concept-id (:concept-id coll3)
+                                                            :data "cloud"}])]
+        (index/wait-until-indexed)
+        (is (= 200 status))))
+
+    (testing "revision-id must be an integer"
+      (let [{:keys [status errors]} (tags/associate-by-concept-ids
+                                      token tag-key
+                                      [{:concept-id (:concept-id coll1-1)
+                                        :revision-id "1"}])
+            expected-msg "/0/revision-id instance type (string) does not match any allowed primitive type (allowed: [\"integer\"])"]
+        (is (= [400 [expected-msg]] [status errors]))))
+
+    (testing "tag a non-existent collection revision"
+      (let [{:keys [status errors]} (tags/associate-by-concept-ids
+                                      token tag-key
+                                      [{:concept-id (:concept-id coll1-1)
+                                        :revision-id 5}])
+            expected-msg (format
+                           (str "The following collection revisions do not exist or are not "
+                                "accessible: {concept-id %s, revision-id 5}.")
+                           (:concept-id coll1-1))]
+        (is (= [422 [expected-msg]] [status errors]))))
+
+    (testing "tag an invisible collection revision"
+      (let [{:keys [status errors]} (tags/associate-by-concept-ids
+                                      token tag-key
+                                      [{:concept-id (:concept-id coll4)
+                                        :revision-id (:revision-id coll4)}])
+            expected-msg (format
+                           (str "The following collection revisions do not exist or are not "
+                                "accessible: {concept-id %s, revision-id %s}.")
+                           (:concept-id coll4) (:revision-id coll4))]
+        (is (= [422 [expected-msg]] [status errors]))))
+
+    (testing "tag a tombstoned revision is invalid"
+      (let [{:keys [status errors]} (tags/associate-by-concept-ids
+                                      token tag-key
+                                      [{:concept-id (:concept-id coll1-1)
+                                        :revision-id (:revision-id coll1-1)}
+                                       {:concept-id (:concept-id coll1-2-tombstone)
+                                        :revision-id (:revision-id coll1-2-tombstone)}])
+            expected-msg (str "The following collection revisions are tombstones which are not allowed for tag association: "
+                              (format "{concept-id %s, revision-id %s}."
+                                      (:concept-id coll1-2-tombstone)
+                                      (:revision-id coll1-2-tombstone)))]
+        (is (= [422 [expected-msg]] [status errors]))))
+
+    (testing "Cannot tag collection that already has collection revision tagging"
+      (let [{:keys [status errors]} (tags/associate-by-concept-ids
+                                      token tag-key [{:concept-id (:concept-id coll1-3)}])
+            expected-msg (format
+                           (str "There are already tag associations with tag key [%s] on "
+                                "collection [%s] revision ids [%s], cannot create tag association "
+                                "on the same collection without revision id.")
+                           tag-key (:concept-id coll1-1) (:revision-id coll1-1))]
+        (is (= [422 [expected-msg]] [status errors]))))
+
+    (testing "Cannot tag collection revision that already has collection tagging"
+      (let [{:keys [status errors]} (tags/associate-by-concept-ids
+                                      token tag-key
+                                      [{:concept-id (:concept-id coll3)
+                                        :revision-id (:revision-id coll3)}])
+            expected-msg (format
+                           (str "There are already tag associations with tag key [%s] on "
+                                "collection [%s] without revision id, cannot create tag "
+                                "association on the same collection with revision id [%s].")
+                           tag-key (:concept-id coll3) (:revision-id coll3))]
+        (is (= [422 [expected-msg]] [status errors]))))))
 

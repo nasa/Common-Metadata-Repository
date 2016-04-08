@@ -196,7 +196,7 @@
   (validate-concept-default concept))
 
 (def valid-tombstone-keys
-  #{:concept-id :revision-id :revision-date :concept-type :deleted :user-id})
+  #{:concept-id :revision-id :revision-date :concept-type :deleted :user-id :skip-publication})
 
 (defn validate-tombstone-keys
   "Validates that there are no extraneous keys"

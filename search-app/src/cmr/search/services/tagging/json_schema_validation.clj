@@ -1,4 +1,4 @@
-(ns cmr.search.services.tagging.validation
+(ns cmr.search.services.tagging.json-schema-validation
   "This contains JSON schema validations related to the tagging service"
   (:require [cmr.common.validations.json-schema :as js]
             [cheshire.core :as json]
@@ -33,6 +33,7 @@
    :items {:type :object
            :additionalProperties false
            :properties {:concept-id {:type :string :minLength 1 :maxLength 255}
+                        :revision-id {:type :integer}
                         :data {:anyOf [{:type :string :minLength 1 :maxLength maximum-data-length}
                                        {:type :boolean}
                                        {:type :integer}
@@ -61,8 +62,8 @@
   [json-str]
   (validate-json update-tag-schema json-str))
 
-(defn validate-collections-json
-  "Validates the collections JSON string against the schema. Throws a service error if it is invalid."
+(defn validate-tag-associations-json
+  "Validates the tag associations JSON string against the schema. Throws a service error if it is invalid."
   [json-str]
   (validate-json collections-tagging-schema json-str))
 

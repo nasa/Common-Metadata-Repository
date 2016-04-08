@@ -359,11 +359,11 @@
 (defspec union-not-crossing-antimeridian-test 100
   (for-all [mbr1 sgen/mbrs-not-crossing-antimeridian
             mbr2 sgen/mbrs-not-crossing-antimeridian]
-    (let [unioned (m/union mbr1 mbr2 false)]
+    (let [unioned (m/union-not-crossing-antimeridian mbr1 mbr2)]
       (and
         (not (m/crosses-antimeridian? unioned))
         ;; is commutative
-        (= unioned (m/union mbr2 mbr1 false))
+        (= unioned (m/union-not-crossing-antimeridian mbr2 mbr1))
 
         ;; should cover all parts
         (every? #(m/covers-lon? :geodetic unioned %)

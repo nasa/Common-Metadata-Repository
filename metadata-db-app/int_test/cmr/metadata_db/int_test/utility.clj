@@ -498,6 +498,13 @@
         stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
     (is (= (expected-concept concept) (dissoc stored-concept :revision-date :transaction-id)))))
 
+(defn is-tag-association-deleted?
+  "Returns if the ta is marked as deleted in metadata-db"
+  [tag-association deleted?]
+  (let [{:keys [status concept]} (get-concept-by-id (:concept-id tag-association))]
+    (is (= 200 status))
+    (is (= deleted? (:deleted concept)))))
+
 (defn create-and-save-collection
   "Creates, saves, and returns a collection concept with its data from metadata-db. "
   ([provider-id uniq-num]
