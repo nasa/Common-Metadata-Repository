@@ -55,6 +55,11 @@
             ta2 (util/create-and-save-tag-association (assoc saved-concept :revision-id 2) tag2 2)
             ta3 (util/create-and-save-tag-association (assoc saved-concept :revision-id 3) tag3 3)]
 
+        ;; no tag associations are deleted before the force delete
+        (util/is-tag-association-deleted? ta1 false)
+        (util/is-tag-association-deleted? ta2 false)
+        (util/is-tag-association-deleted? ta3 false)
+
         ;; force delete collection revision 2
         (is (= 200 (:status (util/force-delete-concept concept-id 2))))
 

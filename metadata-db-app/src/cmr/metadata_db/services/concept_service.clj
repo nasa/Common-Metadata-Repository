@@ -381,7 +381,7 @@
             ;; skip publication flag is only set for tag association when its associated collection
             ;; revision is force deleted. In this case, the tag association is no longer needed to
             ;; be indexed, so we don't publish the deletion event.
-            ;; We can't let the message get publish because by the time indexer get the message,
+            ;; We can't let the message get published because by the time indexer get the message,
             ;; the associated collection revision is gone and indexer won't be able to find it.
             ;; The tag association is potentially created by a different user than the provider,
             ;; so a collection revision is force deleted doesn't necessarily mean that the tag
