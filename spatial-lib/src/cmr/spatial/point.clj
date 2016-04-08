@@ -11,6 +11,14 @@
 
 (primitive-math/use-primitive-operators)
 
+(def ^:const INTERSECTION_POINT_PRECISION
+  "The precision in degrees to use when generating intersection points. We round the points because
+  in some cases the same point will be found multiple times with vary slight variations. Rounding it
+  within a set eliminates the duplication. This is important for determining if a point is inside a
+  ring which relies on knowing exactly how many times an arc between the test point and an external
+  point crosses over the arcs of the ring."
+  5)
+
 (declare is-north-pole?
          is-south-pole?
          on-antimeridian?
@@ -261,13 +269,15 @@
 
   user=> (ords->points [1 2 3 4])
   ((cmr-spatial.point/point 1.0 2.0) (cmr-spatial.point/point 3.0 4.0))"
-  [ords]
-  (let [ords (vec ords)]
-    (persistent!
-     (reduce (fn [points ^long index]
-               (conj! points (point (nth ords index) (nth ords (inc index)))))
-             (transient [])
-             (range 0 (count ords) 2)))))
+  ([ords]
+   (ords->points ords true))
+  ([ords geodetic-equality]
+   (let [ords (vec ords)]
+     (persistent!
+      (reduce (fn [points ^long index]
+                (conj! points (point (nth ords index) (nth ords (inc index)) geodetic-equality)))
+              (transient [])
+              (range 0 (count ords) 2))))))
 
 (defn points->ords
   "Takes points and converts them to a list of numbers lon1, lat1, lon2, lat2, ..."

@@ -27,6 +27,13 @@
    ^Point point2
 
    ;; Derived Fields
+
+   ;; true if the line is vertical
+   vertical
+
+   ;; true if the line is horizontal
+   horizontal
+
    ;; Fields from the formula for a line: y = m*x + b
 
    ;; The slope of a line. A vertical line will not have meaningful slope or slope-intercept
@@ -40,6 +47,15 @@
 
 (record-pretty-printer/enable-record-pretty-printing LineSegment)
 
+(defn- points->mbr
+  "Returns an MBR that covers both points but does not cross the antimeridian"
+  [^double lon1 ^double lat1 ^double lon2 ^double lat2]
+  (let [n (max lat1 lat2)
+        s (min lat1 lat2)]
+    (if (> lon2 lon1)
+      (m/mbr lon1 n lon2 s)
+      (m/mbr lon2 n lon1 s))))
+
 (defn line-segment
   "Creates a new line segment"
   [^Point p1 ^Point p2]
@@ -47,13 +63,19 @@
         lat1 (.lat p1)
         lon2 (.lon p2)
         lat2 (.lat p2)
-        m (/ (- lat2 lat1) (- lon2 lon1))
+        vertical? (= lon1 lon2)
+        horizontal? (= lat1 lat2)
+        ^double m (cond
+                    vertical? infinity
+                    horizontal? 0.0
+                    :else (/ (- lat2 lat1) (- lon2 lon1)))
         b (- lat1 (* m lon1))
-        mbr (m/union (m/mbr lon1 lat1 lon1 lat1)
-                     (m/mbr lon2 lat2 lon2 lat2)
-                     ;; Resulting MBR should not cross the antimeridian as this isn't allowed for cartesian polygons
-                     false)]
-    (->LineSegment (p/with-cartesian-equality p1) (p/with-cartesian-equality p2)
+        ;; Resulting MBR should not cross the antimeridian as this isn't allowed for cartesian polygons
+        mbr (points->mbr lon1 lat1 lon2 lat2)]
+    (->LineSegment (p/with-cartesian-equality p1)
+                   (p/with-cartesian-equality p2)
+                   vertical?
+                   horizontal?
                    m b mbr)))
 
 (defn ords->line-segment
@@ -71,21 +93,22 @@
 (defn points->line-segments
   "Takes a list of points and returns arcs connecting all the points"
   [points]
-  (util/map-n (partial apply line-segment) 2 1 points))
+  (let [points (vec points)]
+    (persistent!
+     (reduce (fn [lines ^long index]
+               (conj! lines (line-segment (nth points index) (nth points (inc index)))))
+             (transient [])
+             (range 0 (dec (count points)))))))
 
 (defn vertical?
   "Returns true if this is a vertical line segment"
   [^LineSegment ls]
-  (let [^Point p1 (.point1 ls)
-        ^Point p2 (.point2 ls)]
-    (= (.lon p1) (.lon p2))))
+  (.vertical ls))
 
 (defn horizontal?
   "Returns true if this is a horizontal line segment"
   [^LineSegment ls]
-  (let [^Point p1 (.point1 ls)
-        ^Point p2 (.point2 ls)]
-    (= (.lat p1) (.lat p2))))
+  (.horizontal ls))
 
 (defn course
   "Returns the compass heading along the line"
@@ -109,39 +132,44 @@
 
 (defn segment+lon->lat
   "Returns the latitude of the line at the given longitude. Fails with runtime error for vertical lines."
-  [ls ^double lon]
-  (when (vertical? ls)
+  [^LineSegment ls ^double lon]
+  (when (.vertical ls)
     (errors/internal-error! "Can not determine latitude of points at a given longitude in a vertical line"))
 
-  (let [{:keys [^double m ^double b mbr]} ls]
-    (when (m/covers-lon? :cartesian mbr lon)
+  (let [^double m (.m ls)
+        ^double b (.b ls)
+        ^Mbr mbr (.mbr ls)]
+    (when (m/cartesian-lon-range-covers-lon? (.west mbr) (.east mbr) lon m/COVERS_TOLERANCE)
       (+ (* m lon) b))))
 
 (defn segment+lat->lon
   "Returns the longitude of the line at the given latitude. Returns nil if outside the bounds of the
   line segment. Fails with runtime error for horizontal lines because the longitude at the latitude
   of the line would be every longitude"
-  ^double [ls ^double lat]
-  (when (horizontal? ls)
+  ^double [^LineSegment ls ^double lat]
+  (when (.horizontal ls)
     (errors/internal-error! "Can not determine longitude of points at a given latitude in a horizontal line"))
-  (if (vertical? ls)
-    (-> ls :point1 :lon)
-    (let [{:keys [^double m ^double b mbr]} ls]
+  (if (.vertical ls)
+    (.lon ^Point (.point1 ls))
+    (let [^double m (.m ls)
+          ^double b (.b ls)
+          mbr (.mbr ls)]
       (when (m/covers-lat? mbr lat)
         (/ (- lat b) m)))))
 
 (defn point-on-segment?
   "Returns true if the point is approximately on the segment."
-  [ls point]
-  (or (= (:point1 ls) point)
-      (= (:point2 ls) point)
-      (let [mbr (:mbr ls)]
+  [^LineSegment ls ^Point point]
+  (or (= (.point1 ls) point)
+      (= (.point2 ls) point)
+      (let [mbr (.mbr ls)
+            ^Point point1 (.point1 ls)]
         (when (m/cartesian-covers-point? mbr point)
-          (if (horizontal? ls)
-            (approx= ^double (get-in ls [:point1 :lat])
-                     ^double (:lat point) COVERS_TOLERANCE)
-            (when-let [expected-lon (segment+lat->lon ls (:lat point))]
-              (approx= expected-lon ^double (:lon point) COVERS_TOLERANCE)))))))
+          (if (.horizontal ls)
+            (approx= ^double (.lat point1)
+                     ^double (.lat point) COVERS_TOLERANCE)
+            (when-let [expected-lon (segment+lat->lon ls (.lat point))]
+              (approx= expected-lon ^double (.lon point) COVERS_TOLERANCE)))))))
 
 (defn distance
   "Calculates the distance of the line segment using the equation for a right triangle's hypotenuse."
@@ -162,7 +190,7 @@
   ([ls]
    (densify-line-segment ls 0.1))
   ([^LineSegment ls ^double densification-dist]
-   (if (vertical? ls)
+   (if (.vertical ls)
      [(:point1 ls) (:point2 ls)]
      (let [^Point p1 (.point1 ls)
            ^Point p2 (.point2 ls)
@@ -200,35 +228,41 @@
 
 (defn mbr->line-segments
   "Returns line segments representing the exerior of the MBR. The MBR must cover more than a single point"
-  [mbr]
-  (let [{:keys [west north east south]} mbr]
+  [^Mbr mbr]
+  (let [west (.west mbr)
+        east (.east mbr)
+        north (.north mbr)
+        south (.south mbr)]
     (cond
       (m/single-point? mbr)
       (errors/internal-error! "This function doesn't work for an MBR that's a single point.")
 
       (= west east)
       ;; zero width mbr
-      [(line-segment (p/point west north) (p/point east south))]
+      [(line-segment (p/point west north false) (p/point east south false))]
 
       (= north south)
       ;; zero height mbr
       (if (m/crosses-antimeridian? mbr)
-        [(line-segment (p/point west north) (p/point 180 north))
-         (line-segment (p/point -180 north) (p/point east north))]
-        [(line-segment (p/point west north) (p/point east south))])
+        [(line-segment (p/point west north false) (p/point 180.0 north false))
+         (line-segment (p/point -180.0 north false) (p/point east north false))]
+        [(line-segment (p/point west north false) (p/point east south false))])
 
       (m/crosses-antimeridian? mbr)
       (let [[ul ur lr ll] (m/corner-points mbr)
             {:keys [north south]} mbr]
-        [(line-segment ul (p/point 180 north))
-         (line-segment (p/point -180 north) ur)
+        [(line-segment ul (p/point 180.0 north false))
+         (line-segment (p/point -180.0 north false) ur)
          (line-segment ur lr)
-         (line-segment lr (p/point -180 south))
-         (line-segment (p/point 180 south) ll)
+         (line-segment lr (p/point -180.0 south false))
+         (line-segment (p/point 180.0 south false) ll)
          (line-segment ll ul)])
 
       :else
-      (let [[ul ur lr ll] (m/corner-points mbr)]
+      (let [ul (p/point west north false)
+            ur (p/point east north false)
+            lr (p/point east south false)
+            ll (p/point west south false)]
         [(line-segment ul ur)
          (line-segment ur lr)
          (line-segment lr ll)
@@ -237,12 +271,14 @@
 (defn- intersection-both-vertical
   "Returns the intersection point of two vertical line segments if they do intersect"
   [^LineSegment ls1 ^LineSegment ls2]
-  (let [mbr1 (.mbr ls1)
-        mbr2 (.mbr ls2)
-        ^double lon1 (get-in ls1 [:point1 :lon])
-        ^double lon2 (get-in ls2 [:point1 :lon])
-        {^double ls1-north :north ^double ls1-south :south} mbr1
-        {^double ls2-north :north ^double ls2-south :south} mbr2]
+  (let [^Mbr mbr1 (.mbr ls1)
+        ^Mbr mbr2 (.mbr ls2)
+        lon1 (.lon ^Point (.point1 ls1))
+        lon2 (.lon ^Point (.point1 ls2))
+        ls1-north (.north mbr1)
+        ls1-south (.south mbr1)
+        ls2-north (.north mbr2)
+        ls2-south (.south mbr2)]
     (when (= lon1 lon2)
       (cond
         (within-range? ls2-north ls1-south ls1-north)
@@ -260,16 +296,55 @@
 
 (defn- intersection-one-vertical
   "Returns the intersection point of one vertical line and another not vertical."
-  [ls1 ls2]
-  (let [[ls vert-ls] (if (vertical? ls1) [ls2 ls1] [ls1 ls2])
-        lon (get-in vert-ls [:point1 :lon])
-        mbr (:mbr ls)
-        vert-mbr (:mbr vert-ls)]
-    (when-let [point (some->> (segment+lon->lat ls lon)
-                              (p/point lon)
-                              p/with-cartesian-equality)]
+  [^LineSegment vert-ls ^LineSegment ls]
+  (let [lon (.lon ^Point (.point1 vert-ls))
+        mbr (.mbr ls)
+        vert-mbr (.mbr vert-ls)]
+    (when-let [point (when-let [lat (segment+lon->lat ls lon)]
+                       (p/point lon lat false))]
       (when (and (m/cartesian-covers-point? mbr point) (m/cartesian-covers-point? vert-mbr point))
         point))))
+
+(defn- intersection-both-horizontal
+  "Returns the intersection point of two horizontal line segments if they do intersect"
+  [^LineSegment ls1 ^LineSegment ls2]
+  (let [^Mbr mbr1 (.mbr ls1)
+        ^Mbr mbr2 (.mbr ls2)
+        lat1 (.lat ^Point (.point1 ls1))
+        lat2 (.lat ^Point (.point1 ls2))
+        ls1-east (.east mbr1)
+        ls1-west (.west mbr1)
+        ls2-east (.east mbr2)
+        ls2-west (.west mbr2)]
+    (when (= lat1 lat2)
+      (cond
+        (within-range? ls2-east ls1-west ls1-east)
+        (p/point ls2-east lat1 false)
+
+        (within-range? ls2-west ls1-west ls1-east)
+        (p/point ls2-west lat1 false)
+
+        (within-range? ls1-west ls2-west ls2-east)
+        (p/point ls1-west lat1 false)
+
+        :else
+        ;; the longitude ranges don't intersect
+        nil))))
+
+(defn intersection-horizontal-and-vertical
+  "Returns the intersection of one horizontal line and one vertical line"
+  [^LineSegment horiz-ls ^LineSegment vert-ls]
+  (let [^Mbr horiz-mbr (.mbr horiz-ls)
+        horiz-lat (.north horiz-mbr)
+        horiz-west (.west horiz-mbr)
+        horiz-east (.east horiz-mbr)
+        ^Mbr vert-mbr (.mbr vert-ls)
+        vert-lon (.west vert-mbr)
+        vert-south (.south vert-mbr)
+        vert-north (.north vert-mbr)]
+    (when (and (within-range? horiz-lat vert-south vert-north)
+               (within-range? vert-lon horiz-west horiz-east))
+      (p/point vert-lon horiz-lat false))))
 
 (defn- intersection-parallel
   "Returns the intersection of two normal line segments that are parallel to each other"
@@ -305,22 +380,32 @@
 
 (defn intersection
   "Returns the intersection point of the line segments if they do intersect."
-  [ls1 ls2]
-  (let [ls1-vert? (vertical? ls1)
-        ls2-vert? (vertical? ls2)]
+  [^LineSegment ls1 ^LineSegment ls2]
+  (let [ls1-vert? (.vertical ls1)
+        ls2-vert? (.vertical ls2)
+        ls1-horz? (.horizontal ls1)
+        ls2-horz? (.horizontal ls2)]
+
     (cond
-      (and ls1-vert? ls2-vert?)
-      (intersection-both-vertical ls1 ls2)
+      ls1-vert?
+      (cond
+        ls2-vert? (intersection-both-vertical ls1 ls2)
+        ls2-horz? (intersection-horizontal-and-vertical ls2 ls1)
+        :else (intersection-one-vertical ls1 ls2))
 
-      (or ls1-vert? ls2-vert?)
-      (intersection-one-vertical ls1 ls2)
+      ls2-vert?
+      (if ls1-horz?
+        (intersection-horizontal-and-vertical ls1 ls2)
+        (intersection-one-vertical ls2 ls1))
 
-      (= (:m ls1) (:m ls2))
+      (and ls1-horz? ls2-horz?)
+      (intersection-both-horizontal ls1 ls2)
+
+      (= (.m ls1) (.m ls2))
       (intersection-parallel ls1 ls2)
 
       :else
       (intersection-normal ls1 ls2))))
-
 
 (defn mbr-intersections
   "Returns the points the line segment intersects the edges of the mbr"
@@ -331,7 +416,6 @@
         [point]))
     (let [edges (mbr->line-segments mbr)]
       (map p/with-cartesian-equality (filter identity (map (partial intersection ls) edges))))))
-
 
 (defn keep-farthest-points
   "Takes a list of points and returns the two points that are farthest from each other."
