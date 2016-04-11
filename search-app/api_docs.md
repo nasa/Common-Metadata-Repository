@@ -1302,6 +1302,7 @@ Collection results are sorted by ascending entry title by default. One or more s
 
   * `entry_title`
   * `dataset_id` - alias for entry_title
+  * `short_name`
   * `entry_id`
   * `start_date`
   * `end_date`
