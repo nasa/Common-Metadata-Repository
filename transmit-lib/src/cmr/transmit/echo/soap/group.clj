@@ -16,9 +16,9 @@
   {:name "A Group" :description "Description of a group" :member-guids []})
 
 (defn create-group
-  "Perform a CreateGroups request against the SOAP API. Takes a map containing request parameters:
+  "Perform a CreateGroup request against the SOAP API. Takes a map containing request parameters:
     [:token :guid :name :description :member-guids :owner-provider-id]
-    retruns the GUID of the new group."
+    returns the GUID of the new group."
   [param-map]
   (let [{:keys [token name description member-guids managing-group guid owner-provider-guid]} param-map
         body ["ns2:CreateGroup"
@@ -34,6 +34,24 @@
                 ["ns2:managingGroupGuid" managing-group]]]
       (-> (soap/post-soap :group2-management body)
           (soap/extract-string :create-group))))
+
+(defn update-group
+  "Perform an UpdateGroup request against the SOAP API. Takes a map containing request parameters:
+    [:token :guid :name :description :member-guids :owner-provider-id]."
+  [param-map]
+  (let [{:keys [token name description member-guids managing-group guid owner-provider-guid]} param-map
+        body ["ns2:UpdateGroup"
+              soap/soap-ns-map
+              ["ns2:token" token]
+              ["ns2:group"
+               (when guid ["ns3:Guid" guid])
+               ["ns3:Name" name]
+               ["ns3:Description" description]
+               ;; Currently need to provide at least one member.
+               ["ns3:MemberGuids" (soap/item-list member-guids)]
+               (when owner-provider-guid ["ns3:OwnerProviderGuid" owner-provider-guid])]]]
+    (-> (soap/post-soap :group2-management body)
+        (soap/extract-string :update-group))))
 
 (defn get-groups
   "Perform a GetGroups2 request against the SOAP API.  Takes a map containing request parameters:

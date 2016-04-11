@@ -197,7 +197,7 @@
   (cpv/merge-params-config
    cpv/basic-params-config
    {:single-value #{}
-    :multiple-value #{:provider :name :member}
+    :multiple-value #{:provider :name :member :legacy-guid}
     :always-case-sensitive #{}
     :disallow-pattern #{}
     :allow-or #{}}))
@@ -206,6 +206,7 @@
   [_]
   {:provider cpv/string-param-options
    :name cpv/string-param-options
+   :legacy-guid cpv/string-param-options
    :member #{:pattern :and}})
 
 (defn validate-group-search-params
@@ -216,13 +217,13 @@
                                    [(partial cpv/validate-map [:options])
                                     (partial cpv/validate-map [:options :provider])
                                     (partial cpv/validate-map [:options :name])
-                                    (partial cpv/validate-map [:options :member])])]
+                                    (partial cpv/validate-map [:options :member])
+                                    (partial cpv/validate-map [:options :legacy-guid])])]
     (cpv/validate-parameters
      :access-group safe-params
      cpv/common-validations
      type-errors))
   params)
-
 
 (defmethod common-qm/default-sort-keys :access-group
   [_]
@@ -233,7 +234,8 @@
   [_]
   {:provider :access-group-provider
    :name :string
-   :member :string})
+   :member :string
+   :legacy-guid :string})
 
 (defmethod cp/parameter->condition :access-group-provider
   [concept-type param value options]
