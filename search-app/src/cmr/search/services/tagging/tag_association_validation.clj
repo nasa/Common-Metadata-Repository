@@ -16,9 +16,9 @@
   (jv/validate-tag-associations-json tag-associations-json)
   (json/parse-string tag-associations-json true))
 
-(defn- validate-collection-concept-ids
-  "Validates the collection concept-ids are valid,
-  i.e. all collections for the given concept-ids exist and are viewable by the token."
+(defn- get-inaccessible-concept-ids
+  "Returns the collection concept-ids within the given list that are invalid,
+  i.e. the collections for the given concept-ids do not exist or are not viewable by the token."
   [context coll-concept-ids]
   (when (seq coll-concept-ids)
     (let [query (cqm/query {:concept-type :collection
@@ -29,16 +29,12 @@
                             :skip-acls? false})
           concept-ids (->> (qe/execute-query context query)
                            :items
-                           (map :concept-id))
-          inaccessible-concept-ids (set/difference (set coll-concept-ids) (set concept-ids))]
-      (when (seq inaccessible-concept-ids)
-        (errors/throw-service-error
-          :invalid-data (msg/inaccessible-collections inaccessible-concept-ids))))))
+                           (map :concept-id))]
+      (set/difference (set coll-concept-ids) (set concept-ids)))))
 
-(defn- validate-collection-revisions
-  "Validates the collection revisions specified in tag association are valid,
-  i.e. all collections for the given concept-id and revision-id exist, are viewable by the token
-  and are not tombstones."
+(defn- get-bad-collection-revisions
+  "Returns the bad collection revisions of the given tag associations partitioned into a set of
+  collection revisions that are tombstones and a set of collection revisions that are inaccessible."
   [context tag-associations]
   (when (seq tag-associations)
     (let [query (cqm/query {:concept-type :collection
@@ -55,16 +51,35 @@
           ids-fn (fn [coll] (select-keys coll [:concept-id :revision-id]))
           colls-set (set (map ids-fn tag-associations))
           matched-colls (filter #(contains? colls-set (ids-fn %)) collections)
-          tombstone-colls (filter :deleted matched-colls)]
-      (when (seq tombstone-colls)
-        (errors/throw-service-error
-          :invalid-data (msg/tombstone-collections tombstone-colls)))
-      (when-let [inaccessible-coll-revisions (seq
-                                               (set/difference
-                                                 colls-set
-                                                 (set (map ids-fn matched-colls))))]
-        (errors/throw-service-error
-          :invalid-data (msg/inaccessible-collection-revisions inaccessible-coll-revisions))))))
+          tombstone-coll-revisions (set (map ids-fn (filter :deleted matched-colls)))
+          inaccessible-coll-revisions (set/difference
+                                        colls-set
+                                        (set (map ids-fn matched-colls)))]
+      [tombstone-coll-revisions inaccessible-coll-revisions])))
+
+(defn- append-error
+  "Returns the tag association with the given error message appended to it."
+  [tag-association error-msg]
+  (update tag-association :errors concat [error-msg]))
+
+(defn- validate-collection-concept-id
+  "Validates the tag association collection concept-id is not in the set of inaccessible-concept-ids,
+  returns the tag association with errors appended if applicable."
+  [inaccessible-concept-ids tag-association]
+  (if (contains? inaccessible-concept-ids (:concept-id tag-association))
+    (append-error tag-association (msg/inaccessible-collection (:concept-id tag-association)))
+    tag-association))
+
+(defn- validate-collection-revision
+  "Validates the tag association collection revision is not in the set of tombstone-coll-revisions
+  and inaccessible-coll-revisions, returns the tag association with errors appended if applicable."
+  [tombstone-coll-revisions inaccessible-coll-revisions tag-association]
+  (let [coll-revision (select-keys tag-association [:concept-id :revision-id])]
+    (if (contains? tombstone-coll-revisions coll-revision)
+      (append-error tag-association (msg/tombstone-collection coll-revision))
+      (if (contains? inaccessible-coll-revisions coll-revision)
+        (append-error tag-association (msg/inaccessible-collection-revision coll-revision))
+        tag-association))))
 
 (defn- validate-tag-association-conflict-for-collection
   "Validate the given tag association does not conflict with existing tag associations in that
@@ -88,76 +103,111 @@
       ;; there are existing tag associations and they are all on collection revisions
       (= (count coll-revision-ids) (count not-nil-revision-ids))
       (when-not (:revision-id tag-association)
-        [(format (str "There are already tag associations with tag key [%s] on collection [%s] "
-                      "revision ids [%s], cannot create tag association on the same collection without revision id.")
-                 tag-key (:concept-id tag-association) (str/join ", " coll-revision-ids))])
+        (format (str "There are already tag associations with tag key [%s] on collection [%s] "
+                     "revision ids [%s], cannot create tag association on the same collection without revision id.")
+                tag-key (:concept-id tag-association) (str/join ", " coll-revision-ids)))
 
       ;; there are existing tag associations and they are all on collection without revision
       (= 0 (count not-nil-revision-ids))
       (when-let [revision-id (:revision-id tag-association)]
-        [(format (str "There are already tag associations with tag key [%s] on collection [%s] "
-                      "without revision id, cannot create tag association on the same collection "
-                      "with revision id [%s].")
-                 tag-key (:concept-id tag-association) revision-id)])
+        (format (str "There are already tag associations with tag key [%s] on collection [%s] "
+                     "without revision id, cannot create tag association on the same collection "
+                     "with revision id [%s].")
+                tag-key (:concept-id tag-association) revision-id))
 
       ;; there are conflicts within the existing tag associations in metadata-db already
       :else
-      [(format (str "Tag can only be associated with a collection or a collection revision, "
-                    "never both at the same time. There are already conflicting tag associations "
-                    "in metadata-db with tag key [%s] on collection [%s] , please delete "
-                    "one of the conflicting tag associations.")
-               tag-key (:concept-id tag-association))])))
+      (format (str "Tag can only be associated with a collection or a collection revision, "
+                   "never both at the same time. There are already conflicting tag associations "
+                   "in metadata-db with tag key [%s] on collection [%s] , please delete "
+                   "one of the conflicting tag associations.")
+              tag-key (:concept-id tag-association)))))
 
-(defn- validate-tag-association-conflicts
+(defn- validate-tag-association-conflict
   "Validates the tag association (either on a specific revision or over the whole collection)
   does not conflict with one or more existing tag associations in Metadata DB. Tag associations
   cannot be associated with a collection revision and the same collection without revision
-  at the same time. It throws a service error if a conflict is found."
-  [context tag-key tag-associations]
-  (when (seq tag-associations)
-    (when-let [err-msgs (seq (mapcat
-                               #(validate-tag-association-conflict-for-collection context tag-key %)
-                               tag-associations))]
-      (errors/throw-service-errors :invalid-data err-msgs))))
+  at the same time. Returns the tag association with errors appended if applicable."
+  [context tag-key tag-association]
+  (if-let [error-msg (validate-tag-association-conflict-for-collection
+                       context tag-key tag-association)]
+    (append-error tag-association error-msg)
+    tag-association))
 
-(defn- validate-collection-identifiers
-  "Validates the collection concept-ids and revision-ids (if given) satisfy tag association rules,
-  i.e. collections specified exist and are viewable by the token,
-  collections specified are not tombstones
-  tag associations specified do not conflict with the ones in the same request."
-  [context tag-associations]
-  (when-not (seq tag-associations)
-    (errors/throw-service-error
-      :invalid-data (msg/no-tag-associations)))
-
-  (let [has-revision-id? #(contains? % :revision-id)
-        {concept-id-only-colls false revision-colls true} (group-by has-revision-id? tag-associations)
-        conflict-colls (set/intersection (set (map :concept-id concept-id-only-colls))
-                                         (set (map :concept-id revision-colls)))]
-    ;; validate for tag association conflict within the request
-    (when (seq conflict-colls)
-      (errors/throw-service-error
-        :invalid-data (msg/conflict-tag-associations conflict-colls)))
-
-    (validate-collection-concept-ids context (map :concept-id concept-id-only-colls))
-    (validate-collection-revisions context revision-colls)))
+(defn- validate-collection-identifier
+  "Validates the tag association concept-id and revision-id (if given) satisfy tag association rules,
+  i.e. collection specified exist and are viewable by the token,
+  collection specified are not tombstones."
+  [context inaccessible-concept-ids tombstone-coll-revisions inaccessible-coll-revisions tag-association]
+  (if (:revision-id tag-association)
+    (validate-collection-revision
+      tombstone-coll-revisions inaccessible-coll-revisions tag-association)
+    (validate-collection-concept-id inaccessible-concept-ids tag-association)))
 
 (defn- validate-tag-association-data
   "Validates the tag association data are within the maximum length requirement after written in JSON."
+  [tag-association]
+  (if (> (count (json/generate-string (:data tag-association))) jv/maximum-data-length)
+    (append-error tag-association (msg/tag-association-data-too-long tag-association))
+    tag-association))
+
+(defn- validate-empty-tag-associations
+  "Validates the given tag association is not empty, throws service error if it is."
   [tag-associations]
-  (let [too-much-data-fn (fn [c]
-                           (> (count (json/generate-string (:data c))) jv/maximum-data-length))
-        data-too-long-tas (filter too-much-data-fn tag-associations)]
-    (when (seq data-too-long-tas)
+  (when-not (seq tag-associations)
+    (errors/throw-service-error :invalid-data (msg/no-tag-associations))))
+
+(defn- validate-conflicts-within-request
+  "Validates the two lists have no intersection, otherwise there are conflicts within the same
+  request, throws service error if conflicts are found."
+  [concept-id-only-tas revision-tas]
+  (let [conflict-tas (set/intersection (set (map :concept-id concept-id-only-tas))
+                                       (set (map :concept-id revision-tas)))]
+    (when (seq conflict-tas)
       (errors/throw-service-error
-        :bad-request (msg/tag-associations-data-too-long (map :concept-id data-too-long-tas))))))
+        :invalid-data (msg/conflict-tag-associations conflict-tas)))))
 
-(defn validate-tag-association
-  "Validates the tag association for the given tag-key and tag-associations,
-  throws service error if it is invalid."
-  [context tag-key tag-associations]
-  (validate-collection-identifiers context tag-associations)
-  (validate-tag-association-data tag-associations)
-  (validate-tag-association-conflicts context tag-key tag-associations))
+(defn- partition-tag-associations
+  "Returns tag associations as a list partitioned by if there is a revision-id."
+  [tag-associations]
+  (let [has-revision-id? #(contains? % :revision-id)
+        {concept-id-only-tas false revision-tas true} (group-by has-revision-id? tag-associations)]
+    [concept-id-only-tas revision-tas]))
 
+(defmulti validate-tag-associations
+  "Validates the tag association for the given tag key and tag associations based on the operation
+  type, which is either :insert or :delete. Returns the tag associations with errors found appended
+  to them. If the provided tag associations fail the basic rules validation (i.e. empty tag
+  associations, conflicts within the request), throws a service error."
+  (fn [context operation-type tag-key tag-associations]
+    operation-type))
+
+(defmethod validate-tag-associations :insert
+  [context operation-type tag-key tag-associations]
+  (validate-empty-tag-associations tag-associations)
+  (let [[concept-id-only-tas revision-tas] (partition-tag-associations tag-associations)
+        _ (validate-conflicts-within-request concept-id-only-tas revision-tas)
+        inaccessible-concept-ids (get-inaccessible-concept-ids
+                                   context (map :concept-id concept-id-only-tas))
+        [tombstone-coll-revisions inaccessible-coll-revisions] (get-bad-collection-revisions
+                                                                 context tag-associations)]
+    (->> tag-associations
+         (map #(validate-collection-identifier
+                 context inaccessible-concept-ids
+                 tombstone-coll-revisions inaccessible-coll-revisions %))
+         (map validate-tag-association-data)
+         (map #(validate-tag-association-conflict context tag-key %)))))
+
+(defmethod validate-tag-associations :delete
+  [context operation-type tag-key tag-associations]
+  (validate-empty-tag-associations tag-associations)
+  (let [[concept-id-only-tas revision-tas] (partition-tag-associations tag-associations)
+        inaccessible-concept-ids (get-inaccessible-concept-ids
+                                   context (map :concept-id concept-id-only-tas))
+        [tombstone-coll-revisions inaccessible-coll-revisions] (get-bad-collection-revisions
+                                                                 context tag-associations)]
+    (->> tag-associations
+         (map #(validate-collection-identifier
+                 context inaccessible-concept-ids
+                 tombstone-coll-revisions inaccessible-coll-revisions %)))))
 

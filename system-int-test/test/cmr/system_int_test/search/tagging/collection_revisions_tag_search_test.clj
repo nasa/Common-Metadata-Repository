@@ -127,5 +127,27 @@
       (assert-collection-refs-found [] {:tag-data {"tag1" "ice"}})
       ;; search with all-revisions true find different result due to the new tag associated
       (assert-collection-refs-found [coll1-3] {:tag-data {"tag1" "snow"} :all-revisions true})
-      (assert-collection-refs-found [coll1-1] {:tag-data {"tag1" "ice"} :all-revisions true}))))
+      (assert-collection-refs-found [coll1-1] {:tag-data {"tag1" "ice"} :all-revisions true}))
+
+    (testing "tag disassociation"
+      (tags/associate-by-concept-ids token "tag1" [{:concept-id (:concept-id coll2-1)
+                                                    :revision-id (:revision-id coll2-1)
+                                                    :data "ice"}
+                                                   {:concept-id (:concept-id coll2-2)
+                                                    :revision-id (:revision-id coll2-2)
+                                                    :data "ice"}])
+      ;; before tag disassociation
+      (assert-collection-refs-found [coll1-3] {:tag-data {"tag1" "snow"}})
+      (assert-collection-refs-found [coll1-1 coll2-1 coll2-2]
+                                    {:tag-data {"tag1" "ice"} :all-revisions true})
+
+      ;; disassociate tag
+      (tags/disassociate-by-concept-ids token "tag1" [{:concept-id (:concept-id coll2-1)
+                                                       :revision-id (:revision-id coll2-1)}
+                                                      {:concept-id (:concept-id coll1-3)
+                                                       :revision-id (:revision-id coll1-3)}])
+      ;; after tag disassociation
+      (assert-collection-refs-found [] {:tag-data {"tag1" "snow"}})
+      (assert-collection-refs-found [coll1-1 coll2-2]
+                                    {:tag-data {"tag1" "ice"} :all-revisions true}))))
 

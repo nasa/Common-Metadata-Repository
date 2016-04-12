@@ -19,16 +19,6 @@
                                              {:grant-all-search? false})
                        tags/grant-all-tag-fixture]))
 
-(defn- assert-tag-association-response-ok?
-  "Returns true if the tag association response is correct."
-  [expected-status expected-tag-associations response]
-  (let [{:keys [status body errors]} response
-        body (if (= 200 status)
-               (set body)
-               (set errors))]
-    (is (= [expected-status (set expected-tag-associations)]
-           [status body]))))
-
 (deftest associate-tags-by-query-with-collections-test
 
   ;; Grant all collections in PROV1 and 2
@@ -48,7 +38,6 @@
                                                                 :entry-title (str "ET" n)}))))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
-        all-colls (concat all-prov1-colls all-prov2-colls)
         tag (tags/make-tag)
         tag-key (:tag-key tag)
         token (e/login (s/context) "user1")
@@ -57,28 +46,32 @@
 
     (testing "Successfully Associate tag with collections"
       (let [response (tags/associate-by-query token tag-key {:provider "PROV1"})]
-        (assert-tag-association-response-ok? 200
-                                             [{:concept-id "TA1200000013-CMR", :revision-id 1}
-                                              {:concept-id "TA1200000014-CMR", :revision-id 1}
-                                              {:concept-id "TA1200000015-CMR", :revision-id 1}
-                                              {:concept-id "TA1200000016-CMR", :revision-id 1}]
+        (tags/assert-tag-association-response-ok? {["C1200000000-PROV1"] {:concept-id "TA1200000013-CMR"
+                                                                     :revision-id 1}
+                                              ["C1200000001-PROV1"] {:concept-id "TA1200000014-CMR"
+                                                                     :revision-id 1}
+                                              ["C1200000002-PROV1"] {:concept-id "TA1200000015-CMR"
+                                                                     :revision-id 1}
+                                              ["C1200000003-PROV1"] {:concept-id "TA1200000016-CMR"
+                                                                     :revision-id 1}}
                                              response)))
 
     (testing "Associate using query that finds nothing"
       (let [response (tags/associate-by-query token tag-key {:provider "foo"})]
-        (assert-tag-association-response-ok? 200 [] response)))
+        (tags/assert-tag-association-response-ok? {} response)))
 
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible
       (let [response (tags/associate-by-query token tag-key {:provider "PROV3"})]
-        (assert-tag-association-response-ok? 200 [] response)))
+        (tags/assert-tag-association-response-ok? {} response)))
 
     (testing "Associate more collections"
       ;; Associates all the version 2 collections which is c2-p1 (already in) and c2-p2 (new)
       (let [response (tags/associate-by-query token tag-key {:version "v2"})]
-        (assert-tag-association-response-ok? 200
-                                             [{:concept-id "TA1200000014-CMR", :revision-id 2}
-                                              {:concept-id "TA1200000017-CMR", :revision-id 1}]
+        (tags/assert-tag-association-response-ok? {["C1200000001-PROV1"] {:concept-id "TA1200000014-CMR"
+                                                                     :revision-id 2}
+                                              ["C1200000005-PROV2"] {:concept-id "TA1200000017-CMR"
+                                                                     :revision-id 1}}
                                              response)))))
 
 (deftest associate-tags-by-concept-ids-with-collections-test
@@ -100,7 +93,6 @@
                                                                 :entry-title (str "ET" n)}))))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
-        all-colls (concat all-prov1-colls all-prov2-colls)
         tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
         token (e/login (s/context) "user1")
@@ -111,52 +103,65 @@
       (let [response (tags/associate-by-concept-ids
                        token tag-key [{:concept-id c1-p1}
                                       {:concept-id c3-p2}])]
-        (assert-tag-association-response-ok? 200
-                                             [{:concept-id "TA1200000013-CMR", :revision-id 1}
-                                              {:concept-id "TA1200000014-CMR", :revision-id 1}]
-                                             response)))
-
-    (testing "Associate to deleted or non-existent collections"
-      (let [c1-p1-concept (mdb/get-concept c1-p1)
-            _ (ingest/delete-concept c1-p1-concept)
-            _ (index/wait-until-indexed)
-            response (tags/associate-by-concept-ids
-                       token tag-key [{:concept-id c1-p1}
-                                      {:concept-id c2-p1}
-                                      {:concept-id "C100-P5"}])]
-        (assert-tag-association-response-ok?
-          422
-          [(format "The following collections do not exist or are not accessible: C100-P5, %s." c1-p1)]
+        (tags/assert-tag-association-response-ok?
+          {["C1200000000-PROV1"] {:concept-id "TA1200000013-CMR"
+                                  :revision-id 1}
+           ["C1200000006-PROV2"] {:concept-id "TA1200000014-CMR"
+                                  :revision-id 1}}
           response)))
 
     (testing "Associate to no collections"
       (let [response (tags/associate-by-concept-ids token tag-key [])]
-        (assert-tag-association-response-ok?
-          422
+        (tags/assert-invalid-data-error
           ["At least one collection must be provided for tag association."]
           response)))
 
     (testing "Associate to collection revision and whole collection at the same time"
       (let [response (tags/associate-by-concept-ids token tag-key [{:concept-id c1-p1}
                                                                    {:concept-id c1-p1 :revision-id 1}])]
-        (assert-tag-association-response-ok?
-          422
+        (tags/assert-invalid-data-error
           [(format "Unable to tag a collection revision and the whole collection at the same time for the following collections: %s."
                    c1-p1)]
+          response)))
+
+    (testing "Associate to non-existent collections"
+      (let [response (tags/associate-by-concept-ids
+                       token tag-key [{:concept-id "C100-P5"}])]
+        (tags/assert-tag-association-response-ok?
+          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
+          response)))
+
+    (testing "Associate to deleted collections"
+      (let [c1-p1-concept (mdb/get-concept c1-p1)
+            _ (ingest/delete-concept c1-p1-concept)
+            _ (index/wait-until-indexed)
+            response (tags/associate-by-concept-ids
+                       token tag-key [{:concept-id c1-p1}])]
+        (tags/assert-tag-association-response-ok?
+          {[c1-p1] {:errors [(format "Collection [%s] does not exist or is not visible." c1-p1)]}}
           response)))
 
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible
       (let [response (tags/associate-by-concept-ids token tag-key [{:concept-id c4-p3}])]
-        (assert-tag-association-response-ok?
-          422
-          [(format "The following collections do not exist or are not accessible: %s." c4-p3)]
+        (tags/assert-tag-association-response-ok?
+          {[c4-p3] {:errors [(format "Collection [%s] does not exist or is not visible." c4-p3)]}}
+          response)))
+
+    (testing "Tag association mixed response"
+      (let [response (tags/associate-by-concept-ids
+                       token tag-key [{:concept-id c2-p1}
+                                      {:concept-id "C100-P5"}])]
+        (tags/assert-tag-association-response-ok?
+          {["C1200000001-PROV1"] {:concept-id "TA1200000015-CMR"
+                                  :revision-id 1}
+           ["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
           response)))))
 
 (deftest associate-tag-failure-test
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
-  (let [tag (tags/make-tag)
-        tag-key (:tag-key tag)
+  (let [tag-key "tag1"
+        tag (tags/make-tag {:tag-key tag-key})
         token (e/login (s/context) "user1")
         {:keys [concept-id revision-id]} (tags/create-tag token tag)
         ;; The stored updated tag would have user1 in the originator id
@@ -200,15 +205,6 @@
            tags/associate-by-query {:provider "foo"}
            tags/associate-by-concept-ids [{:concept-id coll-concept-id}]))))
 
-(defn- assert-tag-associated-with-query
-  "Assert the collections found by the tag query matches the given collections"
-  [token query expected-colls]
-  (let [refs (search/find-refs :collection (util/remove-nil-keys (assoc query
-                                                                        :token token
-                                                                        :page_size 30)))]
-    (is (nil? (:errors refs)))
-    (is (d/refs-match? expected-colls refs))))
-
 (deftest disassociate-tags-with-collections-by-query-test
   ;; Grant all collections in PROV1 and 2
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
@@ -235,7 +231,8 @@
         token (e/login (s/context) "user1")
         prov3-token (e/login (s/context) "prov3-user" ["groupguid1"])
         {:keys [concept-id]} (tags/create-tag token tag)
-        assert-tag-associated (partial assert-tag-associated-with-query prov3-token {:tag-key "tag1"})]
+        assert-tag-associated (partial tags/assert-tag-associated-with-query
+                                       prov3-token {:tag-key "tag1"})]
     (index/wait-until-indexed)
     ;; Associate the tag with every collection
     (tags/associate-by-query prov3-token tag-key {:or [{:provider "PROV1"}
@@ -289,7 +286,8 @@
         token (e/login (s/context) "user1")
         prov3-token (e/login (s/context) "prov3-user" ["groupguid1"])
         {:keys [concept-id]} (tags/create-tag token tag)
-        assert-tag-associated (partial assert-tag-associated-with-query prov3-token {:tag-key "tag1"})]
+        assert-tag-associated (partial tags/assert-tag-associated-with-query
+                                       prov3-token {:tag-key "tag1"})]
     (index/wait-until-indexed)
     ;; Associate the tag with every collection
     (tags/associate-by-query prov3-token tag-key {:or [{:provider "PROV1"}
@@ -304,19 +302,23 @@
         (is (= 200 status))
         (assert-tag-associated (concat all-prov2-colls all-prov3-colls))))
 
-    (testing "Disassociate to deleted or non-existent collections"
+    (testing "Disassociate non-existent collections"
+      (let [response (tags/disassociate-by-concept-ids
+                       token tag-key [{:concept-id "C100-P5"}])]
+        (tags/assert-tag-disassociation-response-ok?
+          {["C100-P5"] {:warnings ["Collection [C100-P5] does not exist or is not visible."]}}
+          response)))
+
+    (testing "Disassociate to deleted collections"
       (let [c1-p2-concept-id (:concept-id c1-p2)
             c1-p2-concept (mdb/get-concept c1-p2-concept-id)
             _ (ingest/delete-concept c1-p2-concept)
             _ (index/wait-until-indexed)
             response (tags/disassociate-by-concept-ids
-                       token tag-key [{:concept-id c1-p2-concept-id}
-                                      {:concept-id (:concept-id c2-p2)}
-                                      {:concept-id "C100-P5"}])]
-        (assert-tag-association-response-ok?
-          422
-          [(format "The following collections do not exist or are not accessible: C100-P5, %s."
-                   c1-p2-concept-id)]
+                       token tag-key [{:concept-id c1-p2-concept-id}])]
+        (tags/assert-tag-disassociation-response-ok?
+          {["C1200000004-PROV2"] {:warnings [(format "Collection [%s] does not exist or is not visible."
+                                                     c1-p2-concept-id)]}}
           response)))
 
     (testing "ACLs are applied to collections found"
@@ -324,15 +326,15 @@
       (let [coll-concept-id (:concept-id c4-p3)
             response (tags/disassociate-by-concept-ids
                        token tag-key [{:concept-id coll-concept-id}])]
-        (assert-tag-association-response-ok?
-          422
-          [(format "The following collections do not exist or are not accessible: %s." coll-concept-id)]
+        (tags/assert-tag-disassociation-response-ok?
+          {["C1200000011-PROV3"] {:warnings [(format "Collection [%s] does not exist or is not visible."
+                                                     coll-concept-id)]}}
           response)))))
 
 (deftest disassociate-tag-failure-test
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
-  (let [tag (tags/make-tag)
-        tag-key (:tag-key tag)
+  (let [tag-key "tag1"
+        tag (tags/make-tag {:tag-key tag-key})
         token (e/login (s/context) "user1")
         {:keys [concept-id revision-id]} (tags/create-tag token tag)
         ;; The stored updated tag would have user1 in the originator id
@@ -384,27 +386,41 @@
           token (e/login (s/context) "user1")
           _ (index/wait-until-indexed)
           tag (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll1])
-          assert-tag-associated (partial assert-tag-associated-with-query token {:tag-key "tag1"})]
+          assert-tag-associated (partial tags/assert-tag-associated-with-query token {:tag-key "tag1"})]
       (assert-tag-associated [coll1])
       (let [{:keys [status errors]} (tags/disassociate-by-query token "tag1" {:provider "PROV1"})]
         (is (= 200 status))
         (assert-tag-associated [])))))
 
-(deftest disassociate-tags-with-partial-concept-id-match-test
+(deftest disassociate-tags-with-mixed-response-test
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
-  (testing "disassociate tag with only some of the collections associated with the tag is OK"
+  (testing "disassociate tag with mixed success and failure response"
     (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"}))
           coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"}))
+          coll3 (d/ingest "PROV1" (dc/collection {:entry-title "ET3"}))
           token (e/login (s/context) "user1")
-          _ (index/wait-until-indexed)
-          tag (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll1])
-          assert-tag-associated (partial assert-tag-associated-with-query token {:tag-key "tag1"})]
-      (assert-tag-associated [coll1])
-      (let [{:keys [status errors]} (tags/disassociate-by-concept-ids
-                                      token "tag1"
-                                      [{:concept-id (:concept-id coll1)}
-                                       {:concept-id (:concept-id coll2)}])]
-        (is (= 200 status))
+          tag-key "tag1"
+          assert-tag-associated (partial tags/assert-tag-associated-with-query token {:tag-key "tag1"})]
+      (tags/create-tag token (tags/make-tag {:tag-key tag-key}))
+      (index/wait-until-indexed)
+      (tags/associate-by-concept-ids token tag-key [{:concept-id (:concept-id coll1)}
+                                                    {:concept-id (:concept-id coll2)
+                                                     :revision-id (:revision-id coll2)}])
+      (assert-tag-associated [coll1 coll2])
+
+      (let [response (tags/disassociate-by-concept-ids
+                       token tag-key
+                       [{:concept-id "C100-P5"} ;; non-existent collection
+                        {:concept-id (:concept-id coll1)} ;; success
+                        {:concept-id (:concept-id coll2) :revision-id 1} ;; success
+                        {:concept-id (:concept-id coll3)} ;; no tag association
+                        ])]
+        (tags/assert-tag-disassociation-response-ok?
+          {["C100-P5"] {:warnings ["Collection [C100-P5] does not exist or is not visible."]}
+           ["C1200000000-PROV1"] {:concept-id "TA1200000004-CMR" :revision-id 2}
+           ["C1200000001-PROV1" 1] {:concept-id "TA1200000005-CMR" :revision-id 2}
+           ["C1200000002-PROV1"] {:warnings ["There is no tag association with native-id [tag1/C1200000002-PROV1]."]}}
+          response)
         (assert-tag-associated [])))))
 
 ;; This tests association retention when collections and tags are updated or deleted.
@@ -414,7 +430,7 @@
         token (e/login (s/context) "user1")
         _ (index/wait-until-indexed)
         tag (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll])
-        assert-tag-associated (partial assert-tag-associated-with-query nil {:tag-key "tag1"})
+        assert-tag-associated (partial tags/assert-tag-associated-with-query nil {:tag-key "tag1"})
         assert-tag-not-associated (fn []
                                     (let [refs (search/find-refs :collection {:tag-key "tag1"})]
                                       (is (nil? (:errors refs)))
@@ -526,15 +542,16 @@
 (deftest associate-tags-with-data-test
   (e/grant-all (s/context) (e/coll-catalog-item-id "provguid1"))
   (let [coll (d/ingest "PROV1" (dc/collection))
+        coll-concept-id (:concept-id coll)
         token (e/login (s/context) "user1")
-        tag-key "tag1"
-        _ (tags/create-tag token (tags/make-tag {:tag-key tag-key}))]
+        tag-key "tag1"]
+    (tags/create-tag token (tags/make-tag {:tag-key tag-key}))
     (index/wait-until-indexed)
 
     (testing "Associate tag with collections by concept-id and data"
       (are [data]
            (let [{:keys [status]} (tags/associate-by-concept-ids
-                                    token tag-key [{:concept-id (:concept-id coll)
+                                    token tag-key [{:concept-id coll-concept-id
                                                     :data data}])]
              (is (= 200 status)))
 
@@ -556,12 +573,14 @@
     (testing "Associate tag with collections with data exceed 32KB"
       (let [too-much-data {"a" (tags/string-of-length 32768)}
             expected-msg (format
-                           "The following collections tag association data exceed the maximum length of 32KB: %s."
-                           (:concept-id coll))
-            {:keys [status errors]} (tags/associate-by-concept-ids
-                                      token tag-key [{:concept-id (:concept-id coll)
-                                                      :data too-much-data}])]
-        (is (= [400 [expected-msg]] [status errors]))))))
+                           "Tag association data exceed the maximum length of 32KB for collection with concept id [%s] revision id [%s]."
+                           coll-concept-id nil)
+            response (tags/associate-by-concept-ids
+                       token tag-key [{:concept-id coll-concept-id
+                                       :data too-much-data}])]
+        (tags/assert-tag-association-response-ok?
+          {[coll-concept-id] {:errors [expected-msg]}}
+          response)))))
 
 (deftest retrieve-concept-by-tag-association-concept-id-test
   (let [{:keys [status errors]} (search/get-search-failure-xml-data
@@ -570,106 +589,3 @@
     (testing "Retrieve concept by tag association concept-id is invalid"
       (is (= [400 ["Retrieving concept by concept id is not supported for concept type [tag-association]."]]
              [status errors])))))
-
-(deftest tag-association-collection-revisions-test
-  ;; Grant all collections in PROV1 and 2
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid2"))
-
-  (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
-        concept1 {:provider-id "PROV1"
-                  :concept-type :collection
-                  :native-id (:entry-title coll1-1)}
-        coll1-2-tombstone (merge (ingest/delete-concept concept1) concept1 {:deleted true})
-        coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
-
-        coll2-1 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))
-        coll2-2 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))
-        concept2 {:provider-id "PROV1"
-                  :concept-type :collection
-                  :native-id (:entry-title coll2-2)}
-        coll2-3-tombstone (merge (ingest/delete-concept concept2) concept2 {:deleted true})
-
-        coll3 (d/ingest "PROV2" (dc/collection {}))
-        coll4 (d/ingest "PROV3" (dc/collection {}))
-        token (e/login (s/context) "user1")
-        tag-key "tag1"]
-
-    (tags/create-tag token (tags/make-tag {:tag-key tag-key}))
-    (index/wait-until-indexed)
-
-    (testing "successful case"
-      (let [{:keys [status] :as response} (tags/associate-by-concept-ids
-                                            token tag-key [{:concept-id (:concept-id coll1-1)
-                                                            :revision-id (:revision-id coll1-1)
-                                                            :data "snow"}
-                                                           {:concept-id (:concept-id coll3)
-                                                            :data "cloud"}])]
-        (index/wait-until-indexed)
-        (is (= 200 status))))
-
-    (testing "revision-id must be an integer"
-      (let [{:keys [status errors]} (tags/associate-by-concept-ids
-                                      token tag-key
-                                      [{:concept-id (:concept-id coll1-1)
-                                        :revision-id "1"}])
-            expected-msg "/0/revision-id instance type (string) does not match any allowed primitive type (allowed: [\"integer\"])"]
-        (is (= [400 [expected-msg]] [status errors]))))
-
-    (testing "tag a non-existent collection revision"
-      (let [{:keys [status errors]} (tags/associate-by-concept-ids
-                                      token tag-key
-                                      [{:concept-id (:concept-id coll1-1)
-                                        :revision-id 5}])
-            expected-msg (format
-                           (str "The following collection revisions do not exist or are not "
-                                "accessible: {concept-id %s, revision-id 5}.")
-                           (:concept-id coll1-1))]
-        (is (= [422 [expected-msg]] [status errors]))))
-
-    (testing "tag an invisible collection revision"
-      (let [{:keys [status errors]} (tags/associate-by-concept-ids
-                                      token tag-key
-                                      [{:concept-id (:concept-id coll4)
-                                        :revision-id (:revision-id coll4)}])
-            expected-msg (format
-                           (str "The following collection revisions do not exist or are not "
-                                "accessible: {concept-id %s, revision-id %s}.")
-                           (:concept-id coll4) (:revision-id coll4))]
-        (is (= [422 [expected-msg]] [status errors]))))
-
-    (testing "tag a tombstoned revision is invalid"
-      (let [{:keys [status errors]} (tags/associate-by-concept-ids
-                                      token tag-key
-                                      [{:concept-id (:concept-id coll1-1)
-                                        :revision-id (:revision-id coll1-1)}
-                                       {:concept-id (:concept-id coll1-2-tombstone)
-                                        :revision-id (:revision-id coll1-2-tombstone)}])
-            expected-msg (str "The following collection revisions are tombstones which are not allowed for tag association: "
-                              (format "{concept-id %s, revision-id %s}."
-                                      (:concept-id coll1-2-tombstone)
-                                      (:revision-id coll1-2-tombstone)))]
-        (is (= [422 [expected-msg]] [status errors]))))
-
-    (testing "Cannot tag collection that already has collection revision tagging"
-      (let [{:keys [status errors]} (tags/associate-by-concept-ids
-                                      token tag-key [{:concept-id (:concept-id coll1-3)}])
-            expected-msg (format
-                           (str "There are already tag associations with tag key [%s] on "
-                                "collection [%s] revision ids [%s], cannot create tag association "
-                                "on the same collection without revision id.")
-                           tag-key (:concept-id coll1-1) (:revision-id coll1-1))]
-        (is (= [422 [expected-msg]] [status errors]))))
-
-    (testing "Cannot tag collection revision that already has collection tagging"
-      (let [{:keys [status errors]} (tags/associate-by-concept-ids
-                                      token tag-key
-                                      [{:concept-id (:concept-id coll3)
-                                        :revision-id (:revision-id coll3)}])
-            expected-msg (format
-                           (str "There are already tag associations with tag key [%s] on "
-                                "collection [%s] without revision id, cannot create tag "
-                                "association on the same collection with revision id [%s].")
-                           tag-key (:concept-id coll3) (:revision-id coll3))]
-        (is (= [422 [expected-msg]] [status errors]))))))
-

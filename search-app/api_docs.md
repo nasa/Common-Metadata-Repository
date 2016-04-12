@@ -202,7 +202,7 @@ Besides MimeTypes, client can also use extensions to specify the format for sear
   * `curl -i "%CMR-ENDPOINT%/collections"`
   * `curl -i "%CMR-ENDPOINT%/collections.json"`
   * `curl -i "%CMR-ENDPOINT%/collections.echo10"`
-  * `curl -i "%CMR-ENDPOINT%/collections.iso_mends"`
+  * `curl -i "%CMR-ENDPOINT%/collections.iso19115"`
 
 Here is a list of supported extensions and their corresponding MimeTypes:
 
@@ -2216,7 +2216,19 @@ HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 48
 
-[{"concept-id":"TA1200000007-CMR","revision-id":1},{"concept-id":"TA1200000008-CMR","revision-id":1}]
+[{"tag_association" : {
+   "concept_id" : "TA1200000009-CMR",
+   "revision_id" : 1
+ },
+ "tagged_item" : {
+   "concept_id" : "C1200000000-PROV1"
+ }},
+ {"tag_association" : {
+   "concept_id" : "TA1200000008-CMR",
+   "revision_id" : 1
+ },
+ "tagged_item" : {
+   "concept_id" : "C1200000001-PROV1"}}]
 ```
 
 #### <a name="associating-collections-with-a-tag-by-concept-ids"></a> Associating Collections with a Tag by collection concept ids and optional revision ids
@@ -2232,7 +2244,27 @@ HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 48
 
-[{"concept-id":"TA1200000008-CMR","revision-id":1},{"concept-id":"TA1200000009-CMR","revision-id":1},{"concept-id":"TA1200000010-CMR","revision-id":1}]
+[{"tag_association" : {
+   "concept_id" : "TA1200000008-CMR",
+   "revision_id" : 1
+ },
+ "tagged_item" : {
+   "concept_id" : "C1200000005-PROV1",
+   "revision_id" : 2
+ }},
+ {"tag_association" : {
+   "concept_id" : "TA1200000009-CMR",
+   "revision_id" : 1
+ },
+ "tagged_item" : {
+   "concept_id" : "C1200000006-PROV1"
+ }},
+ {"tag_association" : {
+   "concept_id" : "TA1200000010-CMR",
+   "revision_id" : 1
+ },
+ "tagged_item" : {
+   "concept_id" : "C1200000007-PROV1"}}]
 ```
 
 #### <a name="disassociating-collections-with-a-tag-by-query"></a> Disassociating Collections with a Tag by query
@@ -2250,7 +2282,19 @@ HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 48
 
-[{"concept-id":"TA1200000007-CMR","revision-id":2},{"concept-id":"TA1200000008-CMR","revision-id":2}]
+[{"tag_association" : {
+   "concept_id" : "TA1200000007-CMR",
+   "revision_id" : 2
+ },
+ "tagged_item" : {
+   "concept_id" : "C1200000000-PROV1"
+ }},
+ {"tag_association" : {
+   "concept_id" : "TA1200000008-CMR",
+   "revision_id" : 2
+ },
+ "tagged_item" : {
+   "concept_id" : "C1200000001-PROV1"}}]
 ```
 
 #### <a name="disassociating-collections-with-a-tag-by-concept-ids"></a> Disassociating Collections with a Tag by collection concept ids
@@ -2260,13 +2304,26 @@ Tags can be disassociated with collections by sending a DELETE request with a JS
 
 ```
 curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality/associations -d \
-'[{"concept-id": "C1200000005-PROV1"} {"concept-id": "C1200000006-PROV1"}]'
+'[{"concept-id": "C1200000005-PROV1"} {"concept-id": "C1200000006-PROV1" "revision-id" 2}]'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 48
 
-[{"concept-id":"TA1200000007-CMR","revision-id":2},{"concept-id":"TA1200000008-CMR","revision-id":2}]
+[{"tag_association" : {
+   "concept_id" : "TA1200000007-CMR",
+   "revision_id" : 2
+ },
+ "tagged_item" : {
+   "concept_id" : "C1200000005-PROV1"
+ }},
+ {"tag_association" : {
+   "concept_id" : "TA1200000008-CMR",
+   "revision_id" : 2
+ },
+ "tagged_item" : {
+   "concept_id" : "C1200000006-PROV1",
+   "revision_id" : 2}}]
 ```
 
 #### <a name="searching-for-tags"></a> Searching for Tags
