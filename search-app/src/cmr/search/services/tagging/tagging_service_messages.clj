@@ -46,13 +46,22 @@
 
 (defn tombstone-collection
   [{:keys [concept-id revision-id]}]
-  (format "Collection with concept id [%s] revision id [%s] is a tombstone." concept-id revision-id))
+  (format (str "Collection with concept id [%s] revision id [%s] is a tombstone. "
+               "We don't allow tagging individual revisions that are tombstones.")
+          concept-id revision-id))
 
 (defn tag-association-data-too-long
   [{:keys [concept-id revision-id]}]
   (format "Tag association data exceed the maximum length of 32KB for collection with concept id [%s] revision id [%s]."
           concept-id revision-id))
 
-
+(defn delete-tag-association-not-found
+  [native-id]
+  (let [[tag-key concept-id revision-id] (str/split native-id #"/")]
+    (if revision-id
+      (format (str "Tag [%s] is not associated with the specific collection concept revision "
+                   "concept id [%s] and revision id [%s].")
+              tag-key concept-id revision-id)
+      (format "Tag [%s] is not associated with collection [%s]." tag-key concept-id))))
 
 

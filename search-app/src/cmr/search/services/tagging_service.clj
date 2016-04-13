@@ -156,7 +156,7 @@
                        :deleted true}
               {:keys [revision-id]} (mdb/save-concept context concept)]
           {:concept-id concept-id, :revision-id revision-id}))
-      {:message {:warnings [(format "There is no tag association with native-id [%s]." native-id)]}})))
+      {:message {:warnings [(msg/delete-tag-association-not-found native-id)]}})))
 
 (defn- update-tag-associations
   "Based on the input operation type (:insert or :delete), insert or delete tag associations,
@@ -168,45 +168,42 @@
   [context tag-concept tag-associations operation]
   (let [existing-tag (edn/read-string (:metadata tag-concept))
         {:keys [tag-key originator-id]} existing-tag]
-    (map util/map-keys->snake_case
-         ;; save each tag-association if there is no errors on it, otherwise returns the errors.
-         (for [ta tag-associations
-               :let [{coll-concept-id :concept-id
-                      coll-revision-id :revision-id
-                      data :data
-                      errors :errors} ta
-                     native-id (str tag-key native-id-separator-character coll-concept-id)
-                     native-id (if coll-revision-id
-                                 (str native-id native-id-separator-character coll-revision-id)
-                                 native-id)
-                     tagged-item (util/remove-nil-keys
-                                   {:concept-id coll-concept-id :revision-id coll-revision-id})]]
-           (if (seq errors)
-             (if (= :insert operation)
-               {:errors errors :tagged-item tagged-item}
-               {:warnings errors :tagged-item tagged-item})
-             (let [{:keys [concept-id revision-id message]} ;; only delete-tag-association could potentially return message
-                   (if (= :insert operation)
-                     (mdb/save-concept context
-                                       {:concept-type :tag-association
-                                        :native-id native-id
-                                        :user-id (context->user-id context)
-                                        :format (mt/format->mime-type :edn)
-                                        :metadata (pr-str
-                                                    (util/remove-nil-keys
-                                                      {:tag-key tag-key
-                                                       :originator-id originator-id
-                                                       :associated-concept-id coll-concept-id
-                                                       :associated-revision-id coll-revision-id
-                                                       :data data}))
-                                        :extra-fields {:tag-key tag-key
-                                                       :associated-concept-id coll-concept-id
-                                                       :associated-revision-id coll-revision-id}})
-                     (delete-tag-association context native-id))]
-               (if (some? message)
-                 (merge {:tagged-item tagged-item} message)
-                 {:tag-association {:concept-id concept-id :revision-id revision-id}
-                  :tagged-item tagged-item})))))))
+    ;; save each tag-association if there is no errors on it, otherwise returns the errors.
+    (for [ta tag-associations
+          :let [{coll-concept-id :concept-id
+                 coll-revision-id :revision-id
+                 data :data
+                 errors :errors} ta
+                native-id (str tag-key native-id-separator-character coll-concept-id)
+                native-id (if coll-revision-id
+                            (str native-id native-id-separator-character coll-revision-id)
+                            native-id)
+                tagged-item (util/remove-nil-keys
+                              {:concept-id coll-concept-id :revision-id coll-revision-id})]]
+      (if (seq errors)
+        {:errors errors :tagged-item tagged-item}
+        (let [{:keys [concept-id revision-id message]} ;; only delete-tag-association could potentially return message
+              (if (= :insert operation)
+                (mdb/save-concept context
+                                  {:concept-type :tag-association
+                                   :native-id native-id
+                                   :user-id (context->user-id context)
+                                   :format (mt/format->mime-type :edn)
+                                   :metadata (pr-str
+                                               (util/remove-nil-keys
+                                                 {:tag-key tag-key
+                                                  :originator-id originator-id
+                                                  :associated-concept-id coll-concept-id
+                                                  :associated-revision-id coll-revision-id
+                                                  :data data}))
+                                   :extra-fields {:tag-key tag-key
+                                                  :associated-concept-id coll-concept-id
+                                                  :associated-revision-id coll-revision-id}})
+                (delete-tag-association context native-id))]
+          (if (some? message)
+            (merge {:tagged-item tagged-item} message)
+            {:tag-association {:concept-id concept-id :revision-id revision-id}
+             :tagged-item tagged-item}))))))
 
 (defn- update-tag-associations-with-query
   "Based on the input operation type (:insert or :delete), insert or delete tag associations

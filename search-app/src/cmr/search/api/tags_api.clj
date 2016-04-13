@@ -4,6 +4,7 @@
             [compojure.core :refer :all]
             [cheshire.core :as json]
             [clojure.string :as str]
+            [cmr.common.util :as util]
             [cmr.common.mime-types :as mt]
             [cmr.search.services.tagging.json-schema-validation :as v]
             [cmr.search.services.tagging-service :as tagging-service]
@@ -23,6 +24,13 @@
    {:status 200
     :body (if encode? (json/generate-string data) data)
     :headers {"Content-Type" mt/json}}))
+
+(defn- tag-association-api-response
+  "Creates a successful tag association response with the given data response"
+  [data]
+  (->> data
+      (map util/map-keys->snake_case)
+      tag-api-response))
 
 (defn- verify-tag-modification-permission
   "Verifies the current user has been granted permission to modify tags in ECHO ACLs"
@@ -81,28 +89,30 @@
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
   (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/associate-tag-to-collections context tag-key body)))
+  (tag-association-api-response
+    (tagging-service/associate-tag-to-collections context tag-key body)))
 
 (defn disassociate-tag-to-collections
   "Disassociate the tag to a list of collections."
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
   (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/disassociate-tag-to-collections context tag-key body)))
+  (tag-association-api-response
+    (tagging-service/disassociate-tag-to-collections context tag-key body)))
 
 (defn associate-tag-by-query
   "Processes a request to associate a tag."
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
   (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/associate-tag-by-query context tag-key body)))
+  (tag-association-api-response (tagging-service/associate-tag-by-query context tag-key body)))
 
 (defn disassociate-tag-by-query
   "Processes a request to disassociate a tag."
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
   (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/disassociate-tag-by-query context tag-key body)))
+  (tag-association-api-response (tagging-service/disassociate-tag-by-query context tag-key body)))
 
 (defn search-for-tags
   [context params]

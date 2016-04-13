@@ -55,7 +55,8 @@
           inaccessible-coll-revisions (set/difference
                                         colls-set
                                         (set (map ids-fn matched-colls)))]
-      [tombstone-coll-revisions inaccessible-coll-revisions])))
+      {:tombstones tombstone-coll-revisions
+       :inaccessibles inaccessible-coll-revisions})))
 
 (defn- append-error
   "Returns the tag association with the given error message appended to it."
@@ -189,12 +190,10 @@
         _ (validate-conflicts-within-request concept-id-only-tas revision-tas)
         inaccessible-concept-ids (get-inaccessible-concept-ids
                                    context (map :concept-id concept-id-only-tas))
-        [tombstone-coll-revisions inaccessible-coll-revisions] (get-bad-collection-revisions
-                                                                 context tag-associations)]
+        {:keys [tombstones inaccessibles]} (get-bad-collection-revisions context tag-associations)]
     (->> tag-associations
          (map #(validate-collection-identifier
-                 context inaccessible-concept-ids
-                 tombstone-coll-revisions inaccessible-coll-revisions %))
+                 context inaccessible-concept-ids tombstones inaccessibles %))
          (map validate-tag-association-data)
          (map #(validate-tag-association-conflict context tag-key %)))))
 
@@ -204,10 +203,8 @@
   (let [[concept-id-only-tas revision-tas] (partition-tag-associations tag-associations)
         inaccessible-concept-ids (get-inaccessible-concept-ids
                                    context (map :concept-id concept-id-only-tas))
-        [tombstone-coll-revisions inaccessible-coll-revisions] (get-bad-collection-revisions
-                                                                 context tag-associations)]
+        {:keys [tombstones inaccessibles]} (get-bad-collection-revisions context tag-associations)]
     (->> tag-associations
          (map #(validate-collection-identifier
-                 context inaccessible-concept-ids
-                 tombstone-coll-revisions inaccessible-coll-revisions %)))))
+                 context inaccessible-concept-ids tombstones inaccessibles %)))))
 

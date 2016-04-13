@@ -206,7 +206,9 @@
      (is (= expected-response (dissoc response :took))))))
 
 (defn- coll-tag-association->expected-tag-association
-  "Returns the expected tag association for the given collection concept id to tag association mapping."
+  "Returns the expected tag association for the given collection concept id to tag association
+  mapping, which is in the format of, e.g.
+  {[C1200000000-CMR 1] {:concept-id \"TA1200000005-CMR\" :revision-id 1}}."
   [coll-tag-association error?]
   (let [[[coll-concept-id coll-revision-id] tag-association] coll-tag-association
         {:keys [concept-id revision-id]} tag-association
