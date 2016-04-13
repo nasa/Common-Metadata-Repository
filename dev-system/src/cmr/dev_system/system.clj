@@ -47,8 +47,6 @@
 
             [cmr.transmit.config :as transmit-config]))
 
-(def external-elastic-port 9210)
-
 (def external-echo-port 10000)
 
 (defn external-echo-system-token
@@ -123,16 +121,15 @@
     type))
 
 (defmethod create-elastic :in-memory
-  [type]
-  (elastic-config/set-elastic-port! elastic-test-util/IN_MEMORY_ELASTIC_PORT)
-  (elastic-server/create-server
-    elastic-test-util/IN_MEMORY_ELASTIC_PORT
-    (+ elastic-test-util/IN_MEMORY_ELASTIC_PORT 10)
-    "es_data/dev_system"))
+  [_]
+  (let [http-port (elastic-config/elastic-port)]
+    (elastic-server/create-server http-port
+                                  (+ http-port 10)
+                                  "es_data/dev_system")))
 
 (defmethod create-elastic :external
-  [type]
-  (elastic-config/set-elastic-port! external-elastic-port)
+  [_]
+  ;; Nothing to do, Elastic is already running.
   nil)
 
 (defmulti create-db
