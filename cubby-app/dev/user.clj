@@ -10,7 +10,6 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.dev.util :as d]
             [cmr.common.lifecycle :as l]
-            [cmr.elastic-utils.test-util :as elastic-test-util]
             [cmr.elastic-utils.embedded-elastic-server :as es]
             [cmr.elastic-utils.config :as elastic-config]
             [cmr.transmit.config :as transmit-config]
@@ -31,15 +30,12 @@
   [system]
   (assoc-in system [:web :use-access-log?] false))
 
-(def elastic-port
-  "The elastic port to use"
-  (+ 2000 elastic-test-util/IN_MEMORY_ELASTIC_PORT))
-
 (defn- create-elastic-server
   "Creates an instance of an elasticsearch server in memory."
   []
-  (elastic-config/set-elastic-port! elastic-port)
-  (es/create-server elastic-port (+ elastic-port 10) "es_data/cubby"))
+  (let [port 11206]
+    (elastic-config/set-elastic-port! port)
+    (es/create-server port (+ port 10) "es_data/cubby")))
 
 (defn start
   "Starts the current development system."
