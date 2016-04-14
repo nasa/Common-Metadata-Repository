@@ -56,7 +56,7 @@ if [ $? -ne 0 ] ; then
   exit 1
 fi
 date && echo "Running tests" &&
-CMR_ELASTIC_PORT=9206 lein modules test-out
+lein modules test-out
 if [ $? -ne 0 ] ; then
   echo "Failed Tests" >&2
   cat */testreports.xml */test2junit/xml/*.xml
