@@ -2257,7 +2257,7 @@ Status code 422 is returned when:
 Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. All collections found will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.earthdata.search.in_modaps/associations/by_query -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations/by_query -d \
 '{
   "condition": {"provider": "PROV1"}
  }'
@@ -2320,7 +2320,7 @@ Content-Length: 168
     },
     "tagged_item":{
       "concept_id":"C1200000006-PROV1",
-      "revisoin_id":1
+      "revision_id":1
     }
   },
   {
@@ -2340,7 +2340,7 @@ Content-Length: 168
 A tag can be disassociated from collections through either a JSON query or a list of collection concept revisions similar to tag association requests. Tag disassociation by query only supports tag disassociation of the latest revision of collections. Tag disassociation by collections supports tag disassociation from any specified collection revisions. The tag disassociation response looks the same as tag association response. It normally returns status code 200 with a response of a list of individual tag disassociation responses, one for each tag association attempted to delete. Each tag disassociation response has a `tagged_item` field and either a `tag_association` field with the tag association concept id and revision id when the tag disassociation succeeded or an `errors` or `warnings` field with detailed message when the tag disassociation failed or inapplicable. The `tagged_item` field is the collection concept id and the optional revision id that is used to identify the collection during tag disassociation. Here is a sample tag disassociation request and its response:
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.earthdata.search.in_modaps/associations -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations -d \
 '[{"concept-id": "C1200000005-PROV1"},
   {"concept-id": "C1200000006-PROV1"},
   {"concept-id": "C1200000007-PROV1"}]'
@@ -2361,7 +2361,7 @@ Content-Length: 168
   },
   {
     "warnings":[
-      "Tag [gov.nasa.earthdata.search.in_modaps] is not associated with collection [C1200000006-PROV1]."
+      "Tag [edsc.in_modaps] is not associated with collection [C1200000006-PROV1]."
     ],
     "tagged_item":{
       "concept_id":"C1200000006-PROV1"
@@ -2398,7 +2398,7 @@ Tags can be disassociated from collections by sending a DELETE request with a JS
 
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.earthdata.search.in_modaps/associations/by_query -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations/by_query -d \
 '{
   "condition": {"provider": "PROV1"}
  }'
@@ -2450,7 +2450,7 @@ Content-Length: 168
     ],
     "tagged_item":{
       "concept_id":"C1200000005-PROV1",
-      "revisoin_id":1
+      "revision_id":1
     }
   },
   {
