@@ -124,10 +124,12 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Retrieving a Tag](#retrieving-a-tag)
     * [Updating a Tag](#updating-a-tag)
     * [Deleting a Tag](#deleting-a-tag)
+    * [Tag association](#tag-association)
     * [Associating Collections with a Tag by query](#associating-collections-with-a-tag-by-query)
     * [Associating Collections with a Tag by collection concept ids](#associating-collections-with-a-tag-by-concept-ids)
-    * [Disassociating Collections with a Tag by query](#disassociating-collections-with-a-tag-by-query)
-    * [Disassociating Collections with a Tag by collection concept ids](#disassociating-collections-with-a-tag-by-concept-ids)
+    * [Tag disassociation](#tag-disassociation)
+    * [Disassociating a Tag from Collections by query](#disassociating-collections-with-a-tag-by-query)
+    * [Disassociating a Tag from Collections by collection concept ids](#disassociating-collections-with-a-tag-by-concept-ids)
     * [Searching for Tags](#searching-for-tags)
   * [Administrative Tasks](#administrative-tasks)
     * [Clear the cache](#clear-the-cache)
@@ -2201,123 +2203,267 @@ Content-Length: 48
 {"concept-id":"T1200000000-CMR","revision-id":3}
 ```
 
-#### <a name="associating-collections-with-a-tag-by-query"></a> Associating Collections with a Tag by query
 
-Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag-key of the tag. All collections found will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
+#### <a name="tag-association"></a> Tag Association
+
+A tag can be associated with collections through either a JSON query or a list of collection concept revisions. Tag association by query only supports tagging the latest revision of collections. Tag association by collections supports tagging any specified collection revisions. The tag association request normally returns status code 200 with a response consists of a list of individual tag association responses, one for each tag association attempted to create. Each individual tag association response has a `tagged_item` field and either a `tag_association` field with the tag association concept id and revision id when the tag association succeeded or an `errors` field with detailed error message when the tag association failed. The `tagged_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tag association. Here is a sample tag association request and its response:
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality/associations/by_query -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.native_id/associations -d \
+'[{"concept-id": "C1200000005-PROV1", "data": "Global Maps of Atmospheric Nitrogen Deposition, 2016"},
+  {"concept-id": "C1200000006-PROV1", "data": "Global Maps of Atmospheric Nitrogen Deposition"}]'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 168
+
+[
+  {
+    "tag_association":{
+      "concept_id":"TA1200000009-CMR",
+      "revision_id":1
+    },
+    "tagged_item":{
+      "concept_id":"C1200000005-PROV1"
+    }
+  },
+  {
+    "errors":[
+      "Collection [C1200000006-PROV1] does not exist or is not visible."
+    ],
+    "tagged_item":{
+      "concept_id":"C1200000006-PROV1"
+    }
+  }
+]
+```
+
+On occassions when tag association cannot be processed at all due to invalid input, tag association request will return a failure status code. e.g.
+
+Status code 400 is returned when:
+* content type is unsupported
+* request body is invalid json
+
+Status code 404 is returned when:
+* the tag with the given tag key does not exist
+* the tag with the given tag key has been deleted
+
+Status code 422 is returned when:
+* request body is empty
+* there are conflicts of tagging on collection level and collection revision in the same request
+
+#### <a name="associating-collections-with-a-tag-by-query"></a> Associating Collections with a Tag by query
+
+Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. All collections found will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
+
+```
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations/by_query -d \
 '{
   "condition": {"provider": "PROV1"}
  }'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
-Content-Length: 48
+Content-Length: 168
 
-[{"tag_association" : {
-   "concept_id" : "TA1200000009-CMR",
-   "revision_id" : 1
- },
- "tagged_item" : {
-   "concept_id" : "C1200000000-PROV1"
- }},
- {"tag_association" : {
-   "concept_id" : "TA1200000008-CMR",
-   "revision_id" : 1
- },
- "tagged_item" : {
-   "concept_id" : "C1200000001-PROV1"}}]
+[
+  {
+    "tag_association":{
+      "concept_id":"TA1200000009-CMR",
+      "revision_id":1
+    },
+    "tagged_item":{
+      "concept_id":"C1200000000-PROV1"
+    }
+  },
+  {
+    "tag_association":{
+      "concept_id":"TA1200000008-CMR",
+      "revision_id":1
+    },
+    "tagged_item":{
+      "concept_id":"C1200000001-PROV1"
+    }
+  }
+]
 ```
 
 #### <a name="associating-collections-with-a-tag-by-concept-ids"></a> Associating Collections with a Tag by collection concept ids and optional revision ids
 
-Tags can be associated with collections by POSTing a JSON array of collection concept-ids and optional revision ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag-key of the tag. User can also provide arbitrary JSON data which is optional during tag association. The max length of JSON data used for tag association is 32KB. All referenced collections will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags. If a tag is already associated with a collection without revision, it cannot be associated with a specific revision of that collection again, and vice versa. Tags cannot be associated on tombstoned collection revisions.
-
-The response is a list of individual tag association responses, one for each tag association attempted to create. Each tag association response has a tagged item field and either a tag association field with the tag association concept id and revision id when the tag association is created successfully or an errors field with detailed message when the tag association creation failed. The tagged item field is the collection concept id and the optional revision id used to identify the collection during tag association.
+Tags can be associated with collections by POSTing a JSON array of collection concept-ids and optional revision ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag key of the tag. User can also provide arbitrary JSON data which is optional during tag association. The max length of JSON data used for tag association is 32KB. All referenced collections will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags. If a tag is already associated with a collection without revision, it cannot be associated with a specific revision of that collection again, and vice versa. Tags cannot be associated on tombstoned collection revisions.
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality/associations -d \
-'[{"concept-id": "C1200000005-PROV1", "revision-id": 2, "data": "Global Maps of Atmospheric Nitrogen Deposition, 1860, 1993, and 2050"} {"concept-id": "C1200000006-PROV1", "data": {"status": "reviewed"}} {"concept-id": "C1200000007-PROV1"}]'
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.gcmd.review_status/associations -d \
+'[{"concept-id": "C1200000005-PROV1", "revision-id": 2, "data": "APPROVED"},
+  {"concept-id": "C1200000006-PROV1", "revision-id": 1, "data": "IN_REVIEW"},
+  {"concept-id": "C1200000007-PROV1", "revision-id": 1, "data": "REVIEW_DISPUTED"}]'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
-Content-Length: 48
+Content-Length: 168
 
-[{"tag_association" : {
-   "concept_id" : "TA1200000008-CMR",
-   "revision_id" : 1
- },
- "tagged_item" : {
-   "concept_id" : "C1200000005-PROV1",
-   "revision_id" : 2
- }},
- {"tag_association" : {
-   "concept_id" : "TA1200000009-CMR",
-   "revision_id" : 1
- },
- "tagged_item" : {
-   "concept_id" : "C1200000006-PROV1"
- }},
- {"errors" : [ "Collection [C1200000007-PROV1] does not exist or is not visible." ],
- "tagged_item" : {
-   "concept_id" : "C1200000007-PROV1"}}]
+[
+  {
+    "tag_association":{
+      "concept_id":"TA1200000008-CMR",
+      "revision_id":1
+    },
+    "tagged_item":{
+      "concept_id":"C1200000005-PROV1",
+      "revision_id":2
+    }
+  },
+  {
+    "tag_association":{
+      "concept_id":"TA1200000009-CMR",
+      "revision_id":1
+    },
+    "tagged_item":{
+      "concept_id":"C1200000006-PROV1",
+      "revision_id":1
+    }
+  },
+  {
+    "errors":[
+      "Collection with concept id [C1200000007-PROV1] revision id [1] does not exist or is not visible."
+    ],
+    "tagged_item":{
+      "concept_id":"C1200000007-PROV1",
+      "revision_id":1
+    }
+  }
+]
 ```
 
-#### <a name="disassociating-collections-with-a-tag-by-query"></a> Disassociating Collections with a Tag by query
+#### <a name="tag-disassociation"></a> Tag Disassociation
 
-Tags can be disassociated with collections by sending a DELETE request with a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag-key of the tag. All collections found in the query will be _removed_ from the current set of associated collections.
+A tag can be disassociated from collections through either a JSON query or a list of collection concept revisions similar to tag association requests. Tag disassociation by query only supports tag disassociation of the latest revision of collections. Tag disassociation by collections supports tag disassociation from any specified collection revisions. The tag disassociation response looks the same as tag association response. It normally returns status code 200 with a response of a list of individual tag disassociation responses, one for each tag association attempted to delete. Each tag disassociation response has a `tagged_item` field and either a `tag_association` field with the tag association concept id and revision id when the tag disassociation succeeded or an `errors` or `warnings` field with detailed message when the tag disassociation failed or inapplicable. The `tagged_item` field is the collection concept id and the optional revision id that is used to identify the collection during tag disassociation. Here is a sample tag disassociation request and its response:
+
+```
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations -d \
+'[{"concept-id": "C1200000005-PROV1"},
+  {"concept-id": "C1200000006-PROV1"},
+  {"concept-id": "C1200000007-PROV1"}]'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 168
+
+[
+  {
+    "tag_association":{
+      "concept_id":"TA1200000008-CMR",
+      "revision_id":2
+    },
+    "tagged_item":{
+      "concept_id":"C1200000005-PROV1"
+    }
+  },
+  {
+    "warnings":[
+      "Tag [edsc.in_modaps] is not associated with collection [C1200000006-PROV1]."
+    ],
+    "tagged_item":{
+      "concept_id":"C1200000006-PROV1"
+    }
+  },
+  {
+    "errors":[
+      "Collection [C1200000007-PROV1] does not exist or is not visible."
+    ],
+    "tagged_item":{
+      "concept_id":"C1200000007-PROV1"
+    }
+  }
+]
+```
+
+On occassions when tag disassociation cannot be processed at all due to invalid input, tag disassociation request will return a failure status code. e.g.
+
+Status code 400 is returned when:
+* content type is unsupported
+* request body is invalid json
+
+Status code 404 is returned when:
+* the tag with the given tag key does not exist
+* the tag with the given tag key has been deleted
+
+Status code 422 is returned when:
+* request body is empty
+* there are conflicts of tagging on collection level and collection revision in the same request
+
+#### <a name="disassociating-collections-with-a-tag-by-query"></a> Disassociating a Tag from Collections by query
+
+Tags can be disassociated from collections by sending a DELETE request with a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. All collections found in the query will be _removed_ from the current set of associated collections.
 
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality/associations/by_query -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations/by_query -d \
 '{
   "condition": {"provider": "PROV1"}
  }'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
-Content-Length: 48
+Content-Length: 168
 
-[{"tag_association" : {
-   "concept_id" : "TA1200000007-CMR",
-   "revision_id" : 2
- },
- "tagged_item" : {
-   "concept_id" : "C1200000000-PROV1"
- }},
- {"tag_association" : {
-   "concept_id" : "TA1200000008-CMR",
-   "revision_id" : 2
- },
- "tagged_item" : {
-   "concept_id" : "C1200000001-PROV1"}}]
+[
+  {
+    "tag_association":{
+      "concept_id":"TA1200000007-CMR",
+      "revision_id":2
+    },
+    "tagged_item":{
+      "concept_id":"C1200000000-PROV1"
+    }
+  },
+  {
+    "tag_association":{
+      "concept_id":"TA1200000008-CMR",
+      "revision_id":2
+    },
+    "tagged_item":{
+      "concept_id":"C1200000001-PROV1"
+    }
+  }
+]
 ```
 
-#### <a name="disassociating-collections-with-a-tag-by-concept-ids"></a> Disassociating Collections with a Tag by collection concept ids
+#### <a name="disassociating-collections-with-a-tag-by-concept-ids"></a> Disassociating a Tag from Collections by collection concept ids
 
-Tags can be disassociated with collections by sending a DELETE request with a JSON array of collection concept-ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag-key of the tag. All collections found in the query will be _removed_ from the current set of associated collections.
+Tags can be disassociated from collections by sending a DELETE request with a JSON array of collection concept-ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. All collections found in the query will be _removed_ from the current set of associated collections.
 
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality/associations -d \
-'[{"concept-id": "C1200000005-PROV1"} {"concept-id": "C1200000006-PROV1" "revision-id" 2}]'
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.gcmd.review_status/associations -d \
+'[{"concept-id": "C1200000005-PROV1", "revision-id": 1},
+  {"concept-id": "C1200000006-PROV1", "revision-id": 2}]'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
-Content-Length: 48
+Content-Length: 168
 
-[{"warnings" : ["Tag [org.ceos.wgiss.cwic.quality] is not associated with collection [C1200000005-PROV1]."],
- "tagged_item" : {
-   "concept_id" : "C1200000005-PROV1"
- }},
- {"tag_association" : {
-   "concept_id" : "TA1200000008-CMR",
-   "revision_id" : 2
- },
- "tagged_item" : {
-   "concept_id" : "C1200000006-PROV1",
-   "revision_id" : 2}}]
+[
+  {
+    "warnings":[
+      "Tag [gov.nasa.gcmd.review_status] is not associated with the specific collection concept revision concept id [C1200000005-PROV1] and revision id [1]."
+    ],
+    "tagged_item":{
+      "concept_id":"C1200000005-PROV1",
+      "revision_id":1
+    }
+  },
+  {
+    "tag_association":{
+      "concept_id":"TA1200000008-CMR",
+      "revision_id":2
+    },
+    "tagged_item":{
+      "concept_id":"C1200000006-PROV1",
+      "revision_id":2
+    }
+  }
+]
 ```
 
 #### <a name="searching-for-tags"></a> Searching for Tags
