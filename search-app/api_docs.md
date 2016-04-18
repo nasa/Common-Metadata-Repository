@@ -2241,7 +2241,7 @@ Content-Length: 168
 On occassions when tag association cannot be processed at all due to invalid input, tag association request will return a failure status code. e.g.
 
 Status code 400 is returned when:
-* content type is unspported
+* content type is unsupported
 * request body is invalid json
 
 Status code 404 is returned when:
@@ -2381,7 +2381,7 @@ Content-Length: 168
 On occassions when tag disassociation cannot be processed at all due to invalid input, tag disassociation request will return a failure status code. e.g.
 
 Status code 400 is returned when:
-* content type is unspported
+* content type is unsupported
 * request body is invalid json
 
 Status code 404 is returned when:
