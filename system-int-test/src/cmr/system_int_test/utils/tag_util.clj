@@ -3,12 +3,15 @@
   (:require [cmr.transmit.tag :as tt]
             [clojure.test :refer [is]]
             [clojure.string :as str]
-            [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.transmit.echo.tokens :as tokens]
             [cmr.mock-echo.client.echo-util :as e]
+            [cmr.system-int-test.system :as s]
+            [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.utils.index-util :as index]
-            [cmr.common.mime-types :as mt]))
+            [cmr.system-int-test.utils.search-util :as search]
+            [cmr.system-int-test.utils.metadata-db-util :as mdb]
+            [cmr.common.mime-types :as mt]
+            [cmr.common.util :as util]))
 
 (defn grant-all-tag-fixture
   "A test fixture that grants all users the ability to create and modify tags"
@@ -201,3 +204,51 @@
                             :items expected-items}]
      (is (:took response))
      (is (= expected-response (dissoc response :took))))))
+
+(defn- coll-tag-association->expected-tag-association
+  "Returns the expected tag association for the given collection concept id to tag association
+  mapping, which is in the format of, e.g.
+  {[C1200000000-CMR 1] {:concept-id \"TA1200000005-CMR\" :revision-id 1}}."
+  [coll-tag-association error?]
+  (let [[[coll-concept-id coll-revision-id] tag-association] coll-tag-association
+        {:keys [concept-id revision-id]} tag-association
+        tagged-item (if coll-revision-id
+                      {:concept_id coll-concept-id :revision_id coll-revision-id}
+                      {:concept_id coll-concept-id})
+        errors (select-keys tag-association [:errors :warnings])]
+    (if (seq errors)
+      (merge {:tagged_item tagged-item} errors)
+      {:tag_association {:concept_id concept-id :revision_id revision-id}
+       :tagged_item tagged-item})))
+
+(defn assert-tag-association-response-ok?
+  "Assert the tag association response when status code is 200 is correct."
+  ([coll-tag-associations response]
+   (assert-tag-association-response-ok? coll-tag-associations response true))
+  ([coll-tag-associations response error?]
+   (let [{:keys [status body errors]} response]
+     (is (= [200
+             (set (map #(coll-tag-association->expected-tag-association % error?) coll-tag-associations))]
+            [status (set body)])))))
+
+(defn assert-tag-disassociation-response-ok?
+  "Assert the tag association response when status code is 200 is correct."
+  [coll-tag-associations response]
+  (assert-tag-association-response-ok? coll-tag-associations response false))
+
+(defn assert-invalid-data-error
+  "Assert tag association response when status code is 422 is correct"
+  [expected-errors response]
+  (let [{:keys [status body errors]} response]
+    (is (= [422 (set expected-errors)]
+           [status (set errors)]))))
+
+(defn assert-tag-associated-with-query
+  "Assert the collections found by the tag query matches the given collection revisions"
+  [token query expected-colls]
+  (let [refs (search/find-refs :collection
+                               (util/remove-nil-keys (assoc query :token token :page_size 30))
+                               {:all-revisions true})]
+    (is (nil? (:errors refs)))
+    (is (d/refs-match? expected-colls refs))))
+

@@ -202,7 +202,7 @@ Besides MimeTypes, client can also use extensions to specify the format for sear
   * `curl -i "%CMR-ENDPOINT%/collections"`
   * `curl -i "%CMR-ENDPOINT%/collections.json"`
   * `curl -i "%CMR-ENDPOINT%/collections.echo10"`
-  * `curl -i "%CMR-ENDPOINT%/collections.iso_mends"`
+  * `curl -i "%CMR-ENDPOINT%/collections.iso19115"`
 
 Here is a list of supported extensions and their corresponding MimeTypes:
 
@@ -2205,7 +2205,6 @@ Content-Length: 48
 
 Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag-key of the tag. All collections found will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
 
-
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality/associations/by_query -d \
 '{
@@ -2216,13 +2215,26 @@ HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 48
 
-[{"concept-id":"TA1200000007-CMR","revision-id":1},{"concept-id":"TA1200000008-CMR","revision-id":1}]
+[{"tag_association" : {
+   "concept_id" : "TA1200000009-CMR",
+   "revision_id" : 1
+ },
+ "tagged_item" : {
+   "concept_id" : "C1200000000-PROV1"
+ }},
+ {"tag_association" : {
+   "concept_id" : "TA1200000008-CMR",
+   "revision_id" : 1
+ },
+ "tagged_item" : {
+   "concept_id" : "C1200000001-PROV1"}}]
 ```
 
 #### <a name="associating-collections-with-a-tag-by-concept-ids"></a> Associating Collections with a Tag by collection concept ids and optional revision ids
 
 Tags can be associated with collections by POSTing a JSON array of collection concept-ids and optional revision ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag-key of the tag. User can also provide arbitrary JSON data which is optional during tag association. The max length of JSON data used for tag association is 32KB. All referenced collections will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags. If a tag is already associated with a collection without revision, it cannot be associated with a specific revision of that collection again, and vice versa. Tags cannot be associated on tombstoned collection revisions.
 
+The response is a list of individual tag association responses, one for each tag association attempted to create. Each tag association response has a tagged item field and either a tag association field with the tag association concept id and revision id when the tag association is created successfully or an errors field with detailed message when the tag association creation failed. The tagged item field is the collection concept id and the optional revision id used to identify the collection during tag association.
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality/associations -d \
@@ -2232,7 +2244,24 @@ HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 48
 
-[{"concept-id":"TA1200000008-CMR","revision-id":1},{"concept-id":"TA1200000009-CMR","revision-id":1},{"concept-id":"TA1200000010-CMR","revision-id":1}]
+[{"tag_association" : {
+   "concept_id" : "TA1200000008-CMR",
+   "revision_id" : 1
+ },
+ "tagged_item" : {
+   "concept_id" : "C1200000005-PROV1",
+   "revision_id" : 2
+ }},
+ {"tag_association" : {
+   "concept_id" : "TA1200000009-CMR",
+   "revision_id" : 1
+ },
+ "tagged_item" : {
+   "concept_id" : "C1200000006-PROV1"
+ }},
+ {"errors" : [ "Collection [C1200000007-PROV1] does not exist or is not visible." ],
+ "tagged_item" : {
+   "concept_id" : "C1200000007-PROV1"}}]
 ```
 
 #### <a name="disassociating-collections-with-a-tag-by-query"></a> Disassociating Collections with a Tag by query
@@ -2250,7 +2279,19 @@ HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 48
 
-[{"concept-id":"TA1200000007-CMR","revision-id":2},{"concept-id":"TA1200000008-CMR","revision-id":2}]
+[{"tag_association" : {
+   "concept_id" : "TA1200000007-CMR",
+   "revision_id" : 2
+ },
+ "tagged_item" : {
+   "concept_id" : "C1200000000-PROV1"
+ }},
+ {"tag_association" : {
+   "concept_id" : "TA1200000008-CMR",
+   "revision_id" : 2
+ },
+ "tagged_item" : {
+   "concept_id" : "C1200000001-PROV1"}}]
 ```
 
 #### <a name="disassociating-collections-with-a-tag-by-concept-ids"></a> Disassociating Collections with a Tag by collection concept ids
@@ -2260,13 +2301,23 @@ Tags can be disassociated with collections by sending a DELETE request with a JS
 
 ```
 curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality/associations -d \
-'[{"concept-id": "C1200000005-PROV1"} {"concept-id": "C1200000006-PROV1"}]'
+'[{"concept-id": "C1200000005-PROV1"} {"concept-id": "C1200000006-PROV1" "revision-id" 2}]'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 48
 
-[{"concept-id":"TA1200000007-CMR","revision-id":2},{"concept-id":"TA1200000008-CMR","revision-id":2}]
+[{"warnings" : ["Tag [org.ceos.wgiss.cwic.quality] is not associated with collection [C1200000005-PROV1]."],
+ "tagged_item" : {
+   "concept_id" : "C1200000005-PROV1"
+ }},
+ {"tag_association" : {
+   "concept_id" : "TA1200000008-CMR",
+   "revision_id" : 2
+ },
+ "tagged_item" : {
+   "concept_id" : "C1200000006-PROV1",
+   "revision_id" : 2}}]
 ```
 
 #### <a name="searching-for-tags"></a> Searching for Tags

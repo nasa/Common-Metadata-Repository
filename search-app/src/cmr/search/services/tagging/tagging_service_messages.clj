@@ -35,27 +35,33 @@
   (format "Unable to tag a collection revision and the whole collection at the same time for the following collections: %s."
           (str/join ", " concept-ids)))
 
-(defn inaccessible-collections
-  [concept-ids]
-  (format "The following collections do not exist or are not accessible: %s."
-          (str/join ", " concept-ids)))
+(defn inaccessible-collection
+  [concept-id]
+  (format "Collection [%s] does not exist or is not visible." concept-id))
 
-(defn- coll->message
-  "Returns the message representation of the given collection"
+(defn inaccessible-collection-revision
   [{:keys [concept-id revision-id]}]
-  (format "{concept-id %s, revision-id %s}" concept-id revision-id))
+  (format "Collection with concept id [%s] revision id [%s] does not exist or is not visible."
+          concept-id revision-id))
 
-(defn inaccessible-collection-revisions
-  [colls]
-  (format "The following collection revisions do not exist or are not accessible: %s."
-          (str/join ", " (map coll->message colls))))
+(defn tombstone-collection
+  [{:keys [concept-id revision-id]}]
+  (format (str "Collection with concept id [%s] revision id [%s] is a tombstone. "
+               "We don't allow tagging individual revisions that are tombstones.")
+          concept-id revision-id))
 
-(defn tombstone-collections
-  [colls]
-  (format "The following collection revisions are tombstones which are not allowed for tag association: %s."
-          (str/join ", " (map coll->message colls))))
+(defn tag-association-data-too-long
+  [{:keys [concept-id revision-id]}]
+  (format "Tag association data exceed the maximum length of 32KB for collection with concept id [%s] revision id [%s]."
+          concept-id revision-id))
 
-(defn tag-associations-data-too-long
-  [concept-ids]
-  (format "The following collections tag association data exceed the maximum length of 32KB: %s."
-          (str/join ", " concept-ids)))
+(defn delete-tag-association-not-found
+  [native-id]
+  (let [[tag-key concept-id revision-id] (str/split native-id #"/")]
+    (if revision-id
+      (format (str "Tag [%s] is not associated with the specific collection concept revision "
+                   "concept id [%s] and revision id [%s].")
+              tag-key concept-id revision-id)
+      (format "Tag [%s] is not associated with collection [%s]." tag-key concept-id))))
+
+

@@ -147,30 +147,42 @@
                                                     :latest true}
                                                    :tag-association))
         concept-id (:concept-id existing-concept)]
-    (when (and concept-id (not (:deleted existing-concept)))
-      (let [concept {:concept-type :tag-association
-                     :concept-id concept-id
-                     :user-id (context->user-id context)
-                     :deleted true}
-            {:keys [revision-id]} (mdb/save-concept context concept)]
-        {:concept-id concept-id, :revision-id revision-id}))))
+    (if concept-id
+      (if (:deleted existing-concept)
+        {:message {:warnings [(format "Tag association [%s] is already deleted." concept-id)]}}
+        (let [concept {:concept-type :tag-association
+                       :concept-id concept-id
+                       :user-id (context->user-id context)
+                       :deleted true}
+              {:keys [revision-id]} (mdb/save-concept context concept)]
+          {:concept-id concept-id, :revision-id revision-id}))
+      {:message {:warnings [(msg/delete-tag-association-not-found native-id)]}})))
 
-(defn- update-tag-association-to-collections
-  "Based on the input operation type (:insert or :delete), insert or delete tag associations to
-  the list of collections."
-  [context tag-concept collections operation]
+(defn- update-tag-associations
+  "Based on the input operation type (:insert or :delete), insert or delete tag associations,
+  returns the tag association result in the format of
+  [{tag_association: {concept_id: TA1-CMR, revision_id: 1},
+  tagged_item: {concept_id: C5-PROV1 revision_id: 2}},
+  {errors: [Collection [C6-PROV1] does not exist or is not visible.],
+  tagged_item: {concept_id: C6-PROV1}}]."
+  [context tag-concept tag-associations operation]
   (let [existing-tag (edn/read-string (:metadata tag-concept))
         {:keys [tag-key originator-id]} existing-tag]
-    ;; save tag-association for each collection
-    (remove nil?
-            (for [coll collections
-                  :let [coll-concept-id (:concept-id coll)
-                        coll-revision-id (:revision-id coll)
-                        data (:data coll)
-                        native-id (str tag-key native-id-separator-character coll-concept-id)
-                        native-id (if coll-revision-id
-                                    (str native-id native-id-separator-character coll-revision-id)
-                                    native-id)]]
+    ;; save each tag-association if there is no errors on it, otherwise returns the errors.
+    (for [ta tag-associations
+          :let [{coll-concept-id :concept-id
+                 coll-revision-id :revision-id
+                 data :data
+                 errors :errors} ta
+                native-id (str tag-key native-id-separator-character coll-concept-id)
+                native-id (if coll-revision-id
+                            (str native-id native-id-separator-character coll-revision-id)
+                            native-id)
+                tagged-item (util/remove-nil-keys
+                              {:concept-id coll-concept-id :revision-id coll-revision-id})]]
+      (if (seq errors)
+        {:errors errors :tagged-item tagged-item}
+        (let [{:keys [concept-id revision-id message]} ;; only delete-tag-association could potentially return message
               (if (= :insert operation)
                 (mdb/save-concept context
                                   {:concept-type :tag-association
@@ -187,40 +199,45 @@
                                    :extra-fields {:tag-key tag-key
                                                   :associated-concept-id coll-concept-id
                                                   :associated-revision-id coll-revision-id}})
-                (delete-tag-association context native-id))))))
+                (delete-tag-association context native-id))]
+          (if (some? message)
+            (merge {:tagged-item tagged-item} message)
+            {:tag-association {:concept-id concept-id :revision-id revision-id}
+             :tagged-item tagged-item}))))))
 
 (defn- update-tag-associations-with-query
   "Based on the input operation type (:insert or :delete), insert or delete tag associations
-  identified by the json query."
+  identified by the json query. Throws service error if the tag with the given tag key is not found."
   [context tag-key json-query operation]
-  (let [query (-> (jp/parse-json-query :collection {} json-query)
+  (let [tag-concept (fetch-tag-concept context tag-key)
+        query (-> (jp/parse-json-query :collection {} json-query)
                   (assoc :page-size :unlimited
                          :result-format :query-specified
                          :fields [:concept-id]
                          :skip-acls? false))
         coll-concept-ids (->> (qe/execute-query context query)
                               :items
-                              (map :concept-id))
-        tag-concept (fetch-tag-concept context tag-key)]
-    (update-tag-association-to-collections
+                              (map :concept-id))]
+    (update-tag-associations
       context tag-concept (map #(hash-map :concept-id %) coll-concept-ids) operation)))
 
 (defn- link-tag-to-collections
-  "Associate/Disassocate a tag to a list of collections based on the given operation type.
-  The ooperation type can be either :insert or :delete."
+  "Associate/Disassocate a tag to a list of collections in the tag associations json based on
+  the given operation type. The ooperation type can be either :insert or :delete.
+  Throws service error if the tag with the given tag key is not found."
   [context tag-key tag-associations-json operation-type]
   (let [tag-concept (fetch-tag-concept context tag-key)
-        collections (tv/tag-associations-json->tag-associations tag-associations-json)]
-    (tv/validate-tag-association context tag-key collections)
-    (update-tag-association-to-collections context tag-concept collections operation-type)))
+        tag-associations (->> (tv/tag-associations-json->tag-associations tag-associations-json)
+                              (tv/validate-tag-associations context operation-type tag-key))]
+    (update-tag-associations context tag-concept tag-associations operation-type)))
 
 (defn associate-tag-to-collections
-  "Associates a tag to the given list of collections."
+  "Associates a tag to the given list of tag associations in json."
   [context tag-key tag-associations-json]
   (link-tag-to-collections context tag-key tag-associations-json :insert))
 
 (defn disassociate-tag-to-collections
-  "Associates a tag to the given list of collections."
+  "Disassociates a tag from the given list of tag associations in json."
   [context tag-key tag-associations-json]
   (link-tag-to-collections context tag-key tag-associations-json :delete))
 
@@ -230,7 +247,7 @@
   (update-tag-associations-with-query context tag-key json-query :insert))
 
 (defn disassociate-tag-by-query
-  "Disassociates a tag with collections that are the result of a JSON query"
+  "Disassociates a tag from collections that are the result of a JSON query"
   [context tag-key json-query]
   (update-tag-associations-with-query context tag-key json-query :delete))
 
