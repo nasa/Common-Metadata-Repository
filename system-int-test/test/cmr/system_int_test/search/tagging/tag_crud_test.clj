@@ -41,6 +41,12 @@
               ["The mime types specified in the content-type header [application/xml] are not supported."]}
              (tags/create-tag valid-user-token valid-tag {:http-options {:content-type :xml}}))))
 
+    (testing "Create tag with invalid tag key"
+      (is (= {:status 422,
+              :errors
+              ["Tag-key [a/c] contains invalid character /"]}
+             (tags/create-tag valid-user-token (assoc valid-tag :tag-key "a/c")))))
+
     (testing "Missing field validations"
       (is (= {:status 400
               :errors ["object has missing required properties ([\"tag-key\"])"]}

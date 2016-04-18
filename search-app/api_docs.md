@@ -2127,7 +2127,7 @@ Tagging allows arbitrary sets of collections to be grouped under a single namesp
 
 Tags have the following fields:
 
-* Tag-key (REQUIRED): free text specifying the key of the tag. Tag-key is case-insensitive, it is always saved in lower case. When it is specified as mixed case, CMR will convert it into lower case. It normally consists of the name of the organization or the project who created the tag followed by a dot and the name of the tag. For example, org.ceos.wgiss.cwic.quality. The maximum length for tag-key is 1030 characters.
+* Tag-key (REQUIRED): free text specifying the key of the tag. Tag-key cannot contain `/` character. Tag-key is case-insensitive, it is always saved in lower case. When it is specified as mixed case, CMR will convert it into lower case. It normally consists of the name of the organization or the project who created the tag followed by a dot and the name of the tag. For example, org.ceos.wgiss.cwic.quality. The maximum length for tag-key is 1030 characters.
 * Description (OPTIONAL): a free text description of what this tag is and / or how it is used. The maximum length for description is 4000 characters.
 * Originator ID (REQUIRED): the Earthdata Login ID of the person who created the tag.
 

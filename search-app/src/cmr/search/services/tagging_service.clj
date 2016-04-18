@@ -56,6 +56,13 @@
   [existing-tag updated-tag]
   (v/validate! update-tag-validations (assoc updated-tag :existing existing-tag)))
 
+(defn- validate-tag-key
+  "Validates there is no / character in tag-key, throws service error if there is."
+  [tag-key]
+  (when (re-find #"/" tag-key)
+    (errors/throw-service-error
+      :invalid-data (format "Tag-key [%s] contains invalid character /" tag-key))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public API
 
@@ -63,6 +70,7 @@
   "Creates the tag saving it as a revision in metadata db. Returns the concept id and revision id of
   the saved tag."
   [context tag]
+  (validate-tag-key (:tag-key tag))
   (let [user-id (context->user-id context)
         tag (assoc tag
                    :originator-id user-id
