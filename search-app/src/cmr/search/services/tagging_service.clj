@@ -61,7 +61,9 @@
   [tag-key]
   (when (re-find #"/" tag-key)
     (errors/throw-service-error
-      :invalid-data (format "Tag-key [%s] contains invalid character /" tag-key))))
+      :invalid-data
+      (format "Tag key [%s] contains '/' character. Tag keys cannot contain this character."
+              tag-key))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public API

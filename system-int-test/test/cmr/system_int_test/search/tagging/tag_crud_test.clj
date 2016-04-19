@@ -44,7 +44,7 @@
     (testing "Create tag with invalid tag key"
       (is (= {:status 422,
               :errors
-              ["Tag-key [a/c] contains invalid character /"]}
+              ["Tag key [a/c] contains '/' character. Tag keys cannot contain this character."]}
              (tags/create-tag valid-user-token (assoc valid-tag :tag-key "a/c")))))
 
     (testing "Missing field validations"
