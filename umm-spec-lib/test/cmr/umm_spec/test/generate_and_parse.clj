@@ -88,11 +88,11 @@
            (xml-round-trip :service metadata-format umm-record)))))
 (comment
 
-      (is (= (expected-conversion/convert user/failing-value :serf)
-           (xml-round-trip :service :serf user/failing-value)))
-      
+      (is (= (expected-conversion/convert failing-value :serf)
+           (xml-round-trip :service :serf failing-value)))
+
       (= (type (expected-conversion/convert user/failing-value :serf)) (type (xml-round-trip :service :serf user/failing-value)))
-            
+
             (is (= (:Platforms (expected-conversion/convert user/failing-value :serf))
            (:Platforms (xml-round-trip :service :serf user/failing-value))))
 
@@ -135,7 +135,7 @@
 
 (comment
 
-  (println (core/generate-metadata :collection :iso-smap user/failing-value))
+  (println (core/generate-metadata :collection :iso-smap failing-value))
 
   (is (= (expected-conversion/convert user/failing-value :iso-smap)
          (xml-round-trip :collection user/failing-value :iso-smap)))
@@ -158,16 +158,16 @@
                                           umm-gen/umm-c-generator) 1)))
 
   ;; Evaluate this expression to use user/failing-value in the following expressions.
-  (def sample-record user/failing-value)
+  (def sample-record failing-value)
 
   ;; Evaluate this expression to use the standard UMM example record.
   (def sample-record expected-conversion/example-service-record)
 
   ;; Evaluate to print generated metadata from the record selected above.
-  (println (core/generate-metadata :service metadata-format sample-record))
+  (println (core/generate-metadata sample-record [:collection :dif10]))
 
   ;; our simple example record
-  (core/generate-metadata :collection metadata-format expected-conversion/example-record)
+  (core/generate-metadata :collection metadata-format sample-record)
   (core/generate-metadata :service metadata-format expected-conversion/example-service-record)
 
   (core/validate-xml :service metadata-format metadata-xml)

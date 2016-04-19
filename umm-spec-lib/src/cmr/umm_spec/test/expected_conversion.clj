@@ -1141,7 +1141,7 @@
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates :MetadataLanguage
     :DirectoryNames :MetadataLineages :SpatialInformation
-    :PaleoTemporalCoverage})
+    :PaleoTemporalCoverage :LocationKeywords})
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"
