@@ -93,7 +93,7 @@
 (def-stateful-job ReindexAllCollections
   [ctx system]
   (let [context {:system system}]
-    (reindex-all-collections context)))
+    (reindex-all-collections context false)))
 
 (defn cleanup-expired-collections
   "Finds collections that have expired (have a delete date in the past) and removes them from
