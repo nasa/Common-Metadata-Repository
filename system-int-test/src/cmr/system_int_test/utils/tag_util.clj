@@ -221,15 +221,28 @@
       {:tag_association {:concept_id concept-id :revision_id revision-id}
        :tagged_item tagged-item})))
 
+(defn- comparable-tag-associations
+  "Returns the tag associations with the concept_id removed from the tag_association field.
+  We do this to make comparision of created tag associations possible, as we can't assure
+  the order of which the tag assocaitions are created."
+  [tag-associations]
+  (let [fix-ta-fn (fn [ta]
+                    (if (:tag_association ta)
+                      (update ta :tag_association dissoc :concept_id)
+                      ta))]
+    (map fix-ta-fn tag-associations)))
+
 (defn assert-tag-association-response-ok?
   "Assert the tag association response when status code is 200 is correct."
   ([coll-tag-associations response]
    (assert-tag-association-response-ok? coll-tag-associations response true))
   ([coll-tag-associations response error?]
-   (let [{:keys [status body errors]} response]
+   (let [{:keys [status body errors]} response
+         expected-tas (map #(coll-tag-association->expected-tag-association % error?)
+                           coll-tag-associations)]
      (is (= [200
-             (set (map #(coll-tag-association->expected-tag-association % error?) coll-tag-associations))]
-            [status (set body)])))))
+             (set (comparable-tag-associations expected-tas))]
+            [status (set (comparable-tag-associations body))])))))
 
 (defn assert-tag-disassociation-response-ok?
   "Assert the tag association response when status code is 200 is correct."
