@@ -18,6 +18,8 @@
   [provider entry-title begin end]
   (d/ingest provider
             (dc/collection {:entry-title entry-title
+                            :short-name entry-title
+                            :version-id "1"
                             :beginning-date-time (d/make-datetime begin)
                             :ending-date-time (d/make-datetime end)})))
 (defn delete-coll
@@ -64,27 +66,59 @@
 (defn- compare-field
   "Compares collections by the given field for sorting. descending? indicates if
   the sort is descending or ascending. When the given field matches for two
-  revisions the sort order is by concept-id ascending and revision-id descending. Field values
+  revisions the sort order is by short name ascending, version id descending, concept-id ascending,
+  and revision-id descending. All revisions does not sort by short name and version id. Field values
   must implement Comparable. Strings are converted to lower case for the comparison."
-  [field descending? c1 c2]
+  [field descending? all-revisions? c1 c2]
   (let [value1 (get-field-value c1 field)
-        value2 (get-field-value c2 field)]
-    (if (= value1 value2)
-      (if (= (:concept-id c1) (:concept-id c2))
-        ;; Revision ids are in reverse order by default
-        (compare (:revision-id c2) (:revision-id c1))
-        (compare (:concept-id c1) (:concept-id c2)))
+        value2 (get-field-value c2 field)
+        short-name #(str/lower-case (get-in % [:product :short-name]))
+        version #(str/lower-case (get-in % [:product :version-id]))
+        s1 (short-name c1)
+        s2 (short-name c2)
+        v1 (version c1)
+        v2 (version c2)]
+
+    (if (not= value1 value2)
       (let [processed-value1 (if (string? value1) (str/lower-case value1) value1)
             processed-value2 (if (string? value2) (str/lower-case value2) value2)]
         (if descending?
           (compare processed-value2 processed-value1)
-          (compare processed-value1 processed-value2))))))
+          (compare processed-value1 processed-value2)))
+
+      (if all-revisions?
+        ;; All revisions search
+        ;; Concept Id ascending
+        (if (not= (:concept-id c1) (:concept-id c2))
+          (compare (:concept-id c1) (:concept-id c2))
+
+          ;; Revision descending
+          (compare (:revision-id c2) (:revision-id c1)))
+
+        ;; Latest revisions search
+        ;; Short name ascending
+        (if (not= s1 s2)
+          (compare s1 s2)
+
+          ;; Version descending
+          (if (not= v1 v2)
+            (compare v2 v1)
+
+            ;; Concept Id ascending
+            (if (not= (:concept-id c1) (:concept-id c2))
+              (compare (:concept-id c1) (:concept-id c2))
+
+              ;; Revision descending
+              (compare (:revision-id c2) (:revision-id c1)))))))))
+
 
 (defn- sort-revisions-by-field
   "Sort revisions using the given field with sub-sorting by concept-id ascending, revision-id
   descending. The field values must implement Comparable and strings are converted to lower case."
-  [field descending? colls]
-  (sort-by identity (partial compare-field field descending?) colls))
+  ([field descending? colls]
+   (sort-revisions-by-field field descending? colls false))
+  ([field descending? colls all-revisions?]
+   (sort-by identity (partial compare-field field descending? all-revisions?) colls)))
 
 (defn- make-coll-with-sn
   "Makes a minimal collection with a shortname and ingests it."
@@ -132,20 +166,20 @@
       (testing "various sort keys"
         (are [sort-key items]
           (sort-order-correct? items sort-key true)
-          "entry-title" (sort-revisions-by-field :entry-title false all-revisions)
-          "+entry-title" (sort-revisions-by-field :entry-title false all-revisions)
-          "-entry-title" (sort-revisions-by-field :entry-title true all-revisions)
+          "entry-title" (sort-revisions-by-field :entry-title false all-revisions true)
+          "+entry-title" (sort-revisions-by-field :entry-title false all-revisions true)
+          "-entry-title" (sort-revisions-by-field :entry-title true all-revisions true)
           ;; alias for entry_title
-          "dataset_id" (sort-revisions-by-field :entry-title false all-revisions)
-          "-dataset_id" (sort-revisions-by-field :entry-title true all-revisions)
+          "dataset_id" (sort-revisions-by-field :entry-title false all-revisions true)
+          "-dataset_id" (sort-revisions-by-field :entry-title true all-revisions true)
           ;; Revision date is not returned (and therefore not available for
           ;; sort-revisions-by-field, so we rely on the fact that revision date defaults to
           ;; the current time, so ordering by revision date it the same as ordering by
           ;; insertion order.
           "revision_date" all-revisions
           "-revision_date" (reverse all-revisions)
-          "entry_id" (sort-revisions-by-field :entry-id false all-revisions)
-          "-entry_id" (sort-revisions-by-field :entry-id true all-revisions)
+          "entry_id" (sort-revisions-by-field :entry-id false all-revisions true)
+          "-entry_id" (sort-revisions-by-field :entry-id true all-revisions true)
           "start_date" [c5 c1-2 c1-1 c11 c2 c6 c3 c7 c4 c8 c9-3 c9-2 c9-1 c10 c12-2 c12-1]
           "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1-2 c1-1 c5 c9-3 c9-2 c9-1 c10 c12-2 c12-1]
           "end_date" [c5 c1-2 c1-1 c2 c6 c7 c3 c4 c8 c9-3 c9-2 c9-1 c10 c11 c12-2 c12-1]
@@ -169,10 +203,10 @@
           "-revision_date" (reverse all-colls)
           "entry_id" (sort-revisions-by-field :entry-id false all-colls)
           "-entry_id" (sort-revisions-by-field :entry-id true all-colls)
-          "start_date" [c5 c1-2 c11 c2 c6 c3 c7 c4 c8 c9-3 c10]
-          "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1-2 c5 c9-3 c10]
-          "end_date" [c5 c1-2 c2 c6 c7 c3 c4 c8 c9-3 c10 c11]
-          "-end_date" [c8 c4 c3 c7 c6 c2 c1-2 c5 c9-3 c10 c11])))))
+          "start_date" [c5 c1-2 c11 c2 c6 c3 c7 c4 c8 c10 c9-3]
+          "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1-2 c5 c10 c9-3]
+          "end_date" [c5 c1-2 c2 c6 c7 c3 c4 c8 c10 c9-3 c11]
+          "-end_date" [c8 c4 c3 c7 c6 c2 c1-2 c5 c10 c9-3 c11])))))
 
 (deftest default-sorting-test
   (let [c1 (make-coll "PROV1" "et99" 10 20)
