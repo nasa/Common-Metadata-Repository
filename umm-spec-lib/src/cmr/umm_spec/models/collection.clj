@@ -24,11 +24,12 @@
    ;; date is the date that the metadata record is scheduled to be reviewed.
    MetadataDates
 
-   ;; Controlled hierarchical keywords used to specify the spatial location of the collection. The
-   ;; controlled vocabulary for spatial keywords is maintained in the Keyword Management System
-   ;; (KMS). The Spatial Keyword hierarchy includes one or more of the following layers:
-   ;; Location_Category (e.g., Continent), Location_Type (e.g. Africa), Location_Subregion1 (e.g.,
-   ;; Central Africa), Location_Subregion2 (e.g., Cameroon), and Location_Subregion3
+   ;; This is deprecated and will be removed. Use LocationKeywords instead. Controlled hierarchical
+   ;; keywords used to specify the spatial location of the collection. The controlled vocabulary for
+   ;; spatial keywords is maintained in the Keyword Management System (KMS). The Spatial Keyword
+   ;; hierarchy includes one or more of the following layers: Location_Category (e.g., Continent),
+   ;; Location_Type (e.g. Africa), Location_Subregion1 (e.g., Central Africa), Location_Subregion2
+   ;; (e.g., Cameroon), and Location_Subregion3.
    SpatialKeywords
 
    ;; Identifies the topic categories from the EN ISO 19115-1:2014 Geographic Information – Metadata
@@ -222,23 +223,23 @@
   [
    ;; Top-level controlled keyword hierarchical level that contains the largest general location
    ;; where the collection data was taken from.
-   LocationCategory
+   Category
 
    ;; Second-tier controlled keyword hierarchical level that contains the regional location where
    ;; the collection data was taken from
-   LocationType
+   Type
 
    ;; Third-tier controlled keyword heirarchical level that contains the regional sub-location where
    ;; the collection data was taken from
-   Location_Subregion1
+   Subregion1
 
    ;; Fourth-tier controlled keyword heirarchical level that contains the regional sub-location
    ;; where the collection data was taken from
-   Location_Subregion2
+   Subregion2
 
    ;; Fifth-tier controlled keyword heirarchical level that contains the regional sub-location where
    ;; the collection data was taken from
-   Location_Subregion3
+   Subregion3
 
    ;; Uncontrolled keyword heirarchical level that contains the specific location where the
    ;; collection data was taken from. Exists outside the heirarchy.
