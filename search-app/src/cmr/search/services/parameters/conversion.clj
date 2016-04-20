@@ -246,7 +246,7 @@
 (defmethod common-params/parse-query-level-params :collection
   [concept-type params]
   (let [[params query-attribs] (common-params/default-parse-query-level-params
-                                 :collection params lp/param-aliases)
+                                :collection params lp/param-aliases)
         {:keys [begin-tag end-tag snippet-length num-snippets]} (get-in params [:options :highlights])
         result-features (concat (when (= (:include-granule-counts params) "true")
                                   [:granule-counts])

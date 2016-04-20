@@ -185,6 +185,7 @@
 (defmethod q2e/concept-type->sort-key-map :collection
   [_]
   {:short-name :short-name.lowercase
+   :version-id :version-id.lowercase
    :entry-title :entry-title.lowercase
    :entry-id :entry-id.lowercase
    :provider :provider-id.lowercase
@@ -233,9 +234,17 @@
                                :cloud-cover :cloud-cover-doc-values})
       default-mappings)))
 
-(defmethod q2e/concept-type->sub-sort-fields :collection
-  [_]
+(def collection-all-revision-sub-sort-fields
+  "This defines the sub sort fields for an all revisions search."
   [{(q2e/query-field->elastic-field :concept-seq-id :collection) {:order "asc"}}
+   {(q2e/query-field->elastic-field :revision-id :collection) {:order "desc"}}])
+
+(def collection-latest-sub-sort-fields
+  "This defines the sub sort fields for a latest revision collection search. Short name and version id
+   are included for better relevancy with search results where all the other sort keys were identical."
+  [{(q2e/query-field->elastic-field :short-name :collection) {:order "asc"}}
+   {(q2e/query-field->elastic-field :version-id :collection) {:order "desc"}}
+   {(q2e/query-field->elastic-field :concept-seq-id :collection) {:order "asc"}}
    {(q2e/query-field->elastic-field :revision-id :collection) {:order "desc"}}])
 
 (defmethod q2e/concept-type->sub-sort-fields :granule
@@ -250,8 +259,11 @@
         keyword-sort (when (keywords-in-query query)
                        [{:_score {:order :desc}}])
         specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
-        default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))]
-    (concat (or specified-sort keyword-sort default-sort) (q2e/concept-type->sub-sort-fields concept-type))))
+        default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))
+        sub-sort-fields (if (:all-revisions? query)
+                          collection-all-revision-sub-sort-fields
+                          collection-latest-sub-sort-fields)]
+    (concat (or specified-sort keyword-sort default-sort) sub-sort-fields)))
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.CollectionQueryCondition
