@@ -3,18 +3,21 @@
   (:require [clojure.set :as set]
             [clojure.string :as str]
             [cheshire.core :as json]
+            [cmr.common.util :as util]
             [cmr.common.services.errors :as errors]
             [cmr.common-app.services.search.query-model :as cqm]
             [cmr.common-app.services.search.query-execution :as qe]
             [cmr.transmit.metadata-db :as mdb]
+            [cmr.search.services.tagging.tag-validation :as tv]
             [cmr.search.services.tagging.json-schema-validation :as jv]
             [cmr.search.services.tagging.tagging-service-messages :as msg]))
 
 (defn tag-associations-json->tag-associations
   "Validates the tag associations json and returns the parsed json"
   [tag-associations-json]
-  (jv/validate-tag-associations-json tag-associations-json)
-  (json/parse-string tag-associations-json true))
+  (jv/validate-tag-associations-json (tv/sanitized-json tag-associations-json))
+  (->> (json/parse-string tag-associations-json true)
+       (map util/map-keys->kebab-case)))
 
 (defn- get-inaccessible-concept-ids
   "Returns the collection concept-ids within the given list that are invalid,

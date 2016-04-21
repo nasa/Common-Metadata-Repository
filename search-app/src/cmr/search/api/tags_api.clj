@@ -6,7 +6,6 @@
             [clojure.string :as str]
             [cmr.common.util :as util]
             [cmr.common.mime-types :as mt]
-            [cmr.search.services.tagging.json-schema-validation :as v]
             [cmr.search.services.tagging-service :as tagging-service]
             [cmr.common.services.errors :as errors]
             [cmr.acl.core :as acl]))
@@ -29,8 +28,8 @@
   "Creates a successful tag association response with the given data response"
   [data]
   (->> data
-      (map util/map-keys->snake_case)
-      tag-api-response))
+       (map util/map-keys->snake_case)
+       tag-api-response))
 
 (defn- verify-tag-modification-permission
   "Verifies the current user has been granted permission to modify tags in ECHO ACLs"
@@ -40,23 +39,12 @@
       :unauthorized
       (format "You do not have permission to %s a tag." (name permission-type)))))
 
-(defn- request-body->tag
-  "Returns the tag in JSON from the given request body with the tag-key converted to lowercase."
-  [body]
-  (-> (json/parse-string body true)
-      ;; tag-key is always in lowercase
-      (update :tag-key str/lower-case)))
-
 (defn create-tag
   "Processes a create tag request."
   [context headers body]
   (verify-tag-modification-permission context :create)
   (validate-tag-content-type headers)
-  (v/validate-create-tag-json body)
-  (->> body
-       request-body->tag
-       (tagging-service/create-tag context)
-       tag-api-response))
+  (tag-api-response (tagging-service/create-tag context body)))
 
 (defn get-tag
   "Retrieves the tag with the given tag-key."
@@ -72,11 +60,7 @@
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
   (validate-tag-content-type headers)
-  (v/validate-update-tag-json body)
-  (->> body
-       request-body->tag
-       (tagging-service/update-tag context tag-key)
-       tag-api-response))
+  (tag-api-response (tagging-service/update-tag context tag-key body)))
 
 (defn delete-tag
   "Deletes the tag with the given tag-key."

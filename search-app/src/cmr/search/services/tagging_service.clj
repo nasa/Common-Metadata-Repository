@@ -7,8 +7,8 @@
             [cmr.transmit.echo.tokens :as tokens]
             [cmr.common.services.errors :as errors]
             [cmr.common.services.messages :as cmsg]
-            [cmr.common.validations.core :as v]
-            [cmr.search.services.tagging.tag-association-validation :as tv]
+            [cmr.search.services.tagging.tag-validation :as tv]
+            [cmr.search.services.tagging.tag-association-validation :as av]
             [cmr.common.concepts :as concepts]
             [cmr.search.services.tagging.tagging-service-messages :as msg]
             [cmr.search.services.json-parameters.conversion :as jp]
@@ -16,7 +16,7 @@
             [cmr.search.services.query-service :as query-service]
             [cmr.metadata-db.services.concept-service :as mdb-cs]
             [cmr.metadata-db.services.search-service :as mdb-ss]
-            [cheshire.core :as json]
+            [clojure.string :as str]
             [clojure.edn :as edn]))
 
 (def ^:private native-id-separator-character
@@ -46,40 +46,16 @@
    :format mt/edn})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Validations
-
-(def ^:private update-tag-validations
-  "Service level validations when updating a tag."
-  [(v/field-cannot-be-changed :tag-key)
-   ;; Originator id cannot change but we allow it if they don't specify a value.
-   (v/field-cannot-be-changed :originator-id true)])
-
-(defn- validate-update-tag
-  "Validates a tag update."
-  [existing-tag updated-tag]
-  (v/validate! update-tag-validations (assoc updated-tag :existing existing-tag)))
-
-(defn- validate-tag-key
-  "Validates there is no / character in tag-key, throws service error if there is."
-  [tag-key]
-  (when (re-find #"/" tag-key)
-    (errors/throw-service-error
-      :invalid-data
-      (format "Tag key [%s] contains '/' character. Tag keys cannot contain this character."
-              tag-key))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public API
 
 (defn create-tag
   "Creates the tag saving it as a revision in metadata db. Returns the concept id and revision id of
   the saved tag."
-  [context tag]
-  (validate-tag-key (:tag-key tag))
+  [context tag-json-str]
   (let [user-id (context->user-id context)
-        tag (assoc tag
-                   :originator-id user-id
-                   :associated-concept-ids #{})]
+        tag (-> (tv/create-tag-json->tag tag-json-str)
+                (assoc :originator-id user-id
+                       :associated-concept-ids #{}))]
     ;; Check if the tag already exists
     (if-let [concept-id (mdb/get-concept-id context :tag "CMR" (:tag-key tag) false)]
 
@@ -121,10 +97,11 @@
 
 (defn update-tag
   "Updates an existing tag with the given concept id"
-  [context tag-key updated-tag]
-  (let [existing-concept (fetch-tag-concept context tag-key)
+  [context tag-key tag-json-str]
+  (let [updated-tag (tv/update-tag-json->tag tag-json-str)
+        existing-concept (fetch-tag-concept context tag-key)
         existing-tag (edn/read-string (:metadata existing-concept))]
-    (validate-update-tag existing-tag updated-tag)
+    (tv/validate-update-tag existing-tag updated-tag)
     ;; The updated tag won't change the originator of the existing tag or the associated collection ids.
     (let [updated-tag (assoc updated-tag
                              :originator-id (:originator-id existing-tag)
@@ -281,9 +258,9 @@
   Throws service error if the tag with the given tag key is not found."
   [context tag-key tag-associations-json operation-type]
   (let [tag-concept (fetch-tag-concept context tag-key)
-        tag-associations (tv/tag-associations-json->tag-associations tag-associations-json)
+        tag-associations (av/tag-associations-json->tag-associations tag-associations-json)
         [validation-time tag-associations] (util/time-execution
-                                             (tv/validate-tag-associations
+                                             (av/validate-tag-associations
                                                context operation-type tag-key tag-associations))]
     (debug "link-tag-to-collections validation-time:" validation-time)
     (update-tag-associations context tag-concept tag-associations operation-type)))
