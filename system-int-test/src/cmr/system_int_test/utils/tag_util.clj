@@ -63,7 +63,6 @@
    (let [options (merge {:raw? true :token token} options)]
      (process-response (tt/update-tag (s/context) tag-key tag options)))))
 
-
 (defn delete-tag
   "Deletes a tag"
   ([token tag-key]
@@ -224,7 +223,7 @@
 (defn- comparable-tag-associations
   "Returns the tag associations with the concept_id removed from the tag_association field.
   We do this to make comparision of created tag associations possible, as we can't assure
-  the order of which the tag assocaitions are created."
+  the order of which the tag associations are created."
   [tag-associations]
   (let [fix-ta-fn (fn [ta]
                     (if (:tag_association ta)
