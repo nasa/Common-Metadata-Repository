@@ -31,6 +31,27 @@
    :xmlns:swe "http://schemas.opengis.net/sweCommon/2.0/"
    :xmlns:gsr "http://www.isotc211.org/2005/gsr"})
 
+(def iso-topic-categories
+  #{"farming"
+    "biota"
+    "boundaries"
+    "climatologyMeteorologyAtmosphere"
+    "economy"
+    "elevation"
+    "environment"
+    "geoscientificInformation"
+    "health"
+    "imageryBaseMapsEarthCover"
+    "intelligenceMilitary"
+    "inlandWaters"
+    "location"
+    "oceans"
+    "planningCadastre"
+    "society"
+    "structure"
+    "transportation"
+    "utilitiesCommunication"})
+
 (defn- generate-data-dates
   "Returns ISO XML elements for the DataDates of given UMM collection."
   [c]
@@ -46,6 +67,13 @@
         [:gmd:dateType
          [:gmd:CI_DateTypeCode {:codeList (str (:ngdc iso/code-lists) "#CI_DateTypeCode")
                                 :codeListValue type-code} type-code]]]])))
+
+
+(defn iso-topic-value->sanitized-iso-topic-category
+  "Ensures an uncontrolled IsoTopicCategory value is on the schema-defined list or substitues a
+  default value."
+  [category-value]
+  (get iso-topic-categories category-value "location"))
 
 (def attribute-data-type-code-list
   "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode")
@@ -209,7 +237,7 @@
          [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
          (for [topic-category (:ISOTopicCategories c)]
            [:gmd:topicCategory
-            [:gmd:MD_TopicCategoryCode topic-category]])
+            [:gmd:MD_TopicCategoryCode (iso-topic-value->sanitized-iso-topic-category topic-category)]])
          [:gmd:extent
           [:gmd:EX_Extent {:id "boundingExtent"}
            [:gmd:description
@@ -288,4 +316,3 @@
          (platform/generate-instruments platforms)
          (generate-projects (:Projects c))
          (platform/generate-platforms platforms)]]])))
-

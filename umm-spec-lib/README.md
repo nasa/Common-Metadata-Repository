@@ -87,6 +87,10 @@ See the DSL documentation and existing formats for examples.
 
 * Update the example record in cmr.system-int-test.ingest.translation-test.
 
+### 6. Update the schemas in the EMFD project
+
+Update the EMFD project with the new directory. The repo can be located here: ***REMOVED***projects/EMFD/repos/unified-metadata-model/
+
 ## License
 
 Copyright © 2015 NASA
