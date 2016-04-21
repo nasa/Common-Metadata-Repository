@@ -1256,8 +1256,7 @@
         "MaximumValue": {
           "type": "number"
         }
-      },
-      "required": ["MinimumValue"]
+      }
     },
     "UuidType": {
       "description": "A Level 3 UUID, see wiki link http://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_.28random.29",
@@ -1320,7 +1319,7 @@
     },
     "ISOTopicCategoryType": {
       "type": "string",
-      "maxLength": "4000"
+      "maxLength": 4000
     },
     "ISOTopicCategoryEnum": {
       "description": "High-level geospatial data thematic classification to assist in the grouping and search of available geospatial collections.",
