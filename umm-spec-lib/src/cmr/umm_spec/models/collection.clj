@@ -219,6 +219,8 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing PaleoTemporalCoverageType)
 
+;; This element defines a mapping to the GCMD KMS hierarchical location list. It replaces
+;; SpatialKeywords. Each tier must have data in the tier above it.
 (defrecord LocationKeywordType
   [
    ;; Top-level controlled keyword hierarchical level that contains the largest general location
