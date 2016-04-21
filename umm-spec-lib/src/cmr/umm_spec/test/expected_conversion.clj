@@ -7,7 +7,7 @@
             [clojure.string :as str]
             [cmr.common.util :as util :refer [update-in-each]]
             [cmr.umm-spec.util :as su]
-            [cmr.umm-spec.iso19115-2-util :as iso]
+            [cmr.umm-spec.iso19115-2-util :as iso-util]
             [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.date-util :as du]
@@ -19,7 +19,8 @@
             [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as echo10-spatial-gen]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.related-url :as echo10-ru-gen]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as echo10-spatial-parse]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]))
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]))
 
 (def serf-organization-role
   "UMM-S Role that corresponds to SERVICE PROVIDER CONTACT role in SERF"
@@ -441,6 +442,10 @@
         (update-in [:Boundary :Points] fix-points)
         (update-in-each [:ExclusiveZone :Boundaries] update-in [:Points] fix-points))))
 
+(def relation-set #{"GET DATA"
+                    "GET RELATED VISUALIZATION"
+                    "VIEW RELATED INFORMATION"})
+
 (defn- expected-echo10-related-urls
   [related-urls]
   (seq (for [related-url related-urls
@@ -455,9 +460,7 @@
                                                                (:Size file-size) (:Unit file-size))]
                                           (assoc file-size :Size (float (int byte-size)) :Unit "Bytes")))))
              (update-in [:Relation] (fn [[rel]]
-                                      (when (#{"GET DATA"
-                                               "GET RELATED VISUALIZATION"
-                                               "VIEW RELATED INFORMATION"} rel)
+                                      (when (relation-set rel)
                                         [rel])))))))
 
 (defn- geometry-with-coordinate-system
@@ -926,7 +929,7 @@
   (for [extent temporal-extents]
     (update-in extent [:TemporalRangeType] (fn [x]
                                              (when x
-                                               (iso/sanitize-value x))))))
+                                               (iso-util/sanitize-value x))))))
 
 (defn expected-iso-19115-2-temporal
   [temporal-extents]
@@ -964,9 +967,7 @@
              (assoc :Title nil :MimeType nil :FileSize nil :URLs [url])
              (update-in [:Relation]
                         (fn [[rel]]
-                          (when (#{"GET DATA"
-                                   "GET RELATED VISUALIZATION"
-                                   "VIEW RELATED INFORMATION"} rel)
+                          (when (relation-set rel)
                             [rel])))))))
 
 (defn- fix-iso-vertical-spatial-domain-values
@@ -976,7 +977,7 @@
                     ;; Vertical spatial domain values are encoded in a comma-separated string in ISO
                     ;; XML, so the values must be updated to match what we expect in the resulting
                     ;; XML document.
-                    (iso/sanitize-value x)))]
+                    (iso-util/sanitize-value x)))]
     (-> vsd
         (update-in [:Type] fix-val)
         (update-in [:Value] fix-val))))
@@ -1036,6 +1037,11 @@
   (let [{input-types true other-types false} (group-by (fn [ma] (= "INPUT" (:Type ma))) mas)]
     (seq (concat other-types input-types))))
 
+(defn- update-iso-topic-categories
+  "Update ISOTopicCategories values to a default value if it's not one of the specified values."
+  [categories]
+  (seq (map iso/iso-topic-value->sanitized-iso-topic-category categories)))
+
 (defmethod convert-internal :iso19115
   [umm-coll _]
   (-> umm-coll
@@ -1059,7 +1065,8 @@
                  expected-responsibilities ["POINTOFCONTACT"])
       (update-in [:Organizations]
                  expected-responsibilities ["POINTOFCONTACT" "ORIGINATOR" "DISTRIBUTOR" "PROCESSOR"])
-      (update-in [:MetadataAssociations] group-metadata-assocations)))
+      (update-in [:MetadataAssociations] group-metadata-assocations)
+      (update-in [:ISOTopicCategories] update-iso-topic-categories)))
 
 ;; ISO-SMAP
 (defn- normalize-smap-instruments
