@@ -232,12 +232,15 @@
 
 (defn create-search-app
   "Create an instance of the search application."
-  [db-component]
-  (if db-component
-    (assoc-in (search-system/create-system)
-              [:embedded-systems :metadata-db :db]
-              db-component)
-    (search-system/create-system)))
+  [db-component queue-broker]
+  (let [search-app (if db-component
+                     (assoc-in (search-system/create-system)
+                               [:embedded-systems :metadata-db :db]
+                               db-component)
+                     (search-system/create-system))]
+    (assoc-in search-app
+              [:embedded-systems :metadata-db :queue-broker]
+              queue-broker)))
 
 (defn parse-dev-system-component-type
   [value]
@@ -296,7 +299,7 @@
               :indexer (create-indexer-app queue-broker)
               :index-set (index-set-system/create-system)
               :ingest (create-ingest-app db queue-broker)
-              :search (create-search-app db-component)
+              :search (create-search-app db-component queue-broker)
               :virtual-product (create-virtual-product-app queue-broker)})
      :pre-components (u/remove-nil-keys
                        {:elastic-server elastic-server

@@ -3,6 +3,7 @@
   (:require [cmr.transmit.metadata-db :as mdb]
             [cmr.common.mime-types :as mt]
             [cmr.common.util :as util]
+            [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.transmit.echo.tokens :as tokens]
             [cmr.common.services.errors :as errors]
             [cmr.common.services.messages :as cmsg]
@@ -13,6 +14,8 @@
             [cmr.search.services.json-parameters.conversion :as jp]
             [cmr.common-app.services.search.query-execution :as qe]
             [cmr.search.services.query-service :as query-service]
+            [cmr.metadata-db.services.concept-service :as mdb-cs]
+            [cmr.metadata-db.services.search-service :as mdb-ss]
             [cheshire.core :as json]
             [clojure.edn :as edn]))
 
@@ -148,25 +151,92 @@
           (dissoc :revision-date)
           (update-in [:revision-id] inc)))))
 
+(defn- save-concept-in-mdb
+  "Save the given concept in metadata-db using the given embedded metadata-db context."
+  [mdb-context concept]
+  (let [{:keys [concept-id revision-id]} (mdb-cs/save-concept-revision mdb-context concept)]
+    {:concept-id concept-id, :revision-id revision-id}))
+
 (defn- delete-tag-association
-  "Delete the tag association with the given native-id"
-  [context native-id]
-  (let [existing-concept (first (mdb/find-concepts context
-                                                   {:native-id native-id
-                                                    :exclude-metadata true
-                                                    :latest true}
-                                                   :tag-association))
+  "Delete the tag association with the given native-id using the given embedded metadata-db context."
+  [mdb-context native-id]
+  (let [existing-concept (first (mdb-ss/find-concepts mdb-context
+                                                      {:concept-type :tag-association
+                                                       :native-id native-id
+                                                       :exclude-metadata true
+                                                       :latest true}))
         concept-id (:concept-id existing-concept)]
     (if concept-id
       (if (:deleted existing-concept)
         {:message {:warnings [(format "Tag association [%s] is already deleted." concept-id)]}}
         (let [concept {:concept-type :tag-association
                        :concept-id concept-id
-                       :user-id (context->user-id context)
-                       :deleted true}
-              {:keys [revision-id]} (mdb/save-concept context concept)]
-          {:concept-id concept-id, :revision-id revision-id}))
+                       :user-id (context->user-id mdb-context)
+                       :deleted true}]
+          (save-concept-in-mdb mdb-context concept)))
       {:message {:warnings [(msg/delete-tag-association-not-found native-id)]}})))
+
+(defn- tag-association->native-id
+  "Returns the native id of the given tag association."
+  [tag-association]
+  (let [{coll-concept-id :concept-id
+         coll-revision-id :revision-id
+         tag-key :tag-key} tag-association
+        native-id (str tag-key native-id-separator-character coll-concept-id)]
+    (if coll-revision-id
+      (str native-id native-id-separator-character coll-revision-id)
+      native-id)))
+
+(defn- tag-association->concept-map
+  "Returns the concept map for inserting into metadata-db for the given tag association."
+  [tag-association]
+  (let [{:keys [tag-key originator-id native-id user-id data errors]
+         coll-concept-id :concept-id
+         coll-revision-id :revision-id} tag-association]
+    {:concept-type :tag-association
+     :native-id native-id
+     :user-id user-id
+     :format mt/edn
+     :metadata (pr-str
+                 (util/remove-nil-keys
+                   {:tag-key tag-key
+                    :originator-id originator-id
+                    :associated-concept-id coll-concept-id
+                    :associated-revision-id coll-revision-id
+                    :data data}))
+     :extra-fields {:tag-key tag-key
+                    :associated-concept-id coll-concept-id
+                    :associated-revision-id coll-revision-id}}))
+
+(defn- update-tag-association
+  "Based on the input operation type (:insert or :delete), insert or delete the given tag
+  association using the embedded metadata-db, returns the tag association result in the format of
+  {tag_association: {concept_id: TA1-CMR, revision_id: 1},
+  tagged_item: {concept_id: C5-PROV1 revision_id: 2}}
+  or
+  {errors: [Collection [C6-PROV1] does not exist or is not visible.],
+  tagged_item: {concept_id: C6-PROV1}}."
+  [mdb-context tag-association operation]
+  ;; save each tag-association if there is no errors on it, otherwise returns the errors.
+  (let [{coll-concept-id :concept-id
+         coll-revision-id :revision-id
+         errors :errors} tag-association
+        native-id (tag-association->native-id tag-association)
+        tag-association (-> tag-association
+                            (assoc :native-id native-id)
+                            (assoc :user-id (context->user-id mdb-context)))
+        tagged-item (util/remove-nil-keys
+                      {:concept-id coll-concept-id :revision-id coll-revision-id})]
+    (if (seq errors)
+      {:errors errors :tagged-item tagged-item}
+      (let [{:keys [concept-id revision-id message]} ;; only delete-tag-association could potentially return message
+            (if (= :insert operation)
+              (save-concept-in-mdb mdb-context (tag-association->concept-map tag-association))
+              (delete-tag-association mdb-context native-id))]
+        (if (some? message)
+          (merge {:tagged-item tagged-item} message)
+          {:tag-association {:concept-id concept-id :revision-id revision-id}
+           :tagged-item tagged-item})))))
 
 (defn- update-tag-associations
   "Based on the input operation type (:insert or :delete), insert or delete tag associations,
@@ -177,43 +247,17 @@
   tagged_item: {concept_id: C6-PROV1}}]."
   [context tag-concept tag-associations operation]
   (let [existing-tag (edn/read-string (:metadata tag-concept))
-        {:keys [tag-key originator-id]} existing-tag]
-    ;; save each tag-association if there is no errors on it, otherwise returns the errors.
-    (for [ta tag-associations
-          :let [{coll-concept-id :concept-id
-                 coll-revision-id :revision-id
-                 data :data
-                 errors :errors} ta
-                native-id (str tag-key native-id-separator-character coll-concept-id)
-                native-id (if coll-revision-id
-                            (str native-id native-id-separator-character coll-revision-id)
-                            native-id)
-                tagged-item (util/remove-nil-keys
-                              {:concept-id coll-concept-id :revision-id coll-revision-id})]]
-      (if (seq errors)
-        {:errors errors :tagged-item tagged-item}
-        (let [{:keys [concept-id revision-id message]} ;; only delete-tag-association could potentially return message
-              (if (= :insert operation)
-                (mdb/save-concept context
-                                  {:concept-type :tag-association
-                                   :native-id native-id
-                                   :user-id (context->user-id context)
-                                   :format (mt/format->mime-type :edn)
-                                   :metadata (pr-str
-                                               (util/remove-nil-keys
-                                                 {:tag-key tag-key
-                                                  :originator-id originator-id
-                                                  :associated-concept-id coll-concept-id
-                                                  :associated-revision-id coll-revision-id
-                                                  :data data}))
-                                   :extra-fields {:tag-key tag-key
-                                                  :associated-concept-id coll-concept-id
-                                                  :associated-revision-id coll-revision-id}})
-                (delete-tag-association context native-id))]
-          (if (some? message)
-            (merge {:tagged-item tagged-item} message)
-            {:tag-association {:concept-id concept-id :revision-id revision-id}
-             :tagged-item tagged-item}))))))
+        {:keys [tag-key originator-id]} existing-tag
+        mdb-context (assoc context :system
+                           (get-in context [:system :embedded-systems :metadata-db]))
+        [t1 result] (util/time-execution
+                      (doall
+                        (pmap #(update-tag-association
+                                 mdb-context (merge % {:tag-key tag-key
+                                                       :originator-id originator-id}) operation)
+                              tag-associations)))]
+    (debug "update-tag-associations:" t1)
+    result))
 
 (defn- update-tag-associations-with-query
   "Based on the input operation type (:insert or :delete), insert or delete tag associations
@@ -237,8 +281,11 @@
   Throws service error if the tag with the given tag key is not found."
   [context tag-key tag-associations-json operation-type]
   (let [tag-concept (fetch-tag-concept context tag-key)
-        tag-associations (->> (tv/tag-associations-json->tag-associations tag-associations-json)
-                              (tv/validate-tag-associations context operation-type tag-key))]
+        tag-associations (tv/tag-associations-json->tag-associations tag-associations-json)
+        [validation-time tag-associations] (util/time-execution
+                                             (tv/validate-tag-associations
+                                               context operation-type tag-key tag-associations))]
+    (debug "link-tag-to-collections validation-time:" validation-time)
     (update-tag-associations context tag-concept tag-associations operation-type)))
 
 (defn associate-tag-to-collections
