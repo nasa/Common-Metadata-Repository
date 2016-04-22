@@ -17,16 +17,33 @@
             ["ns3:GroupGuid" group-guid]]]
         ["ns3:Permissions" (soap/item-list permissions)]]))
 
-(defn generate-access-control-list
-  "Build an Access Control List (ACL) based on the provided parameters.  This is pretty simplistic
+(defn generate-system-access-control-list
+  "Build a System Object  Access Control List (ACL) based on the provided parameters.  This is pretty simplistic
     at the moment and will need to be updated as more complex ACEs are needed."
-  [aces system-object-identity]
-  ;; The seq here is a hack to get this to be processed right when we turn it into XML.  A wrapping
-  ;; vector with no element name string causes an error, but a sequence of vectors works properly.
-  ;; Update this if we think of a better way.
-  (seq [["ns3:AccessControlEntries" (soap/item-list aces)]
-        ["ns3:SystemObjectIdentity"
-          ["ns3:Target" system-object-identity]]]))
+  [aces target]
+  ["ns2:acl" ["ns3:AccessControlEntries" (soap/item-list aces)]
+             ["ns3:SystemObjectIdentity"
+                ["ns3:Target" target]]])
+
+(defn generate-provider-access-control-list
+  "Build a Provider Object Access Control List (ACL) based on the provided parameters.  This is pretty simplistic
+    at the moment and will need to be updated as more complex ACEs are needed."
+  [aces provider-guid target]
+  ["ns2:acl" ["ns3:AccessControlEntries" (soap/item-list aces)]
+             ["ns3:ProviderObjectIdentity"
+              ["ns3:ProviderGuid" provider-guid]
+              ["ns3:Target" target]]])
+
+(defn generate-catalog-item-access-control-list
+  "Build a Catalog Item Access Control List (ACL) based on the provided parameters.  This is pretty simplistic
+    at the moment and will need to be updated as more complex ACEs are needed."
+  [aces name provider-guid collection-applicable granule-applicable]
+  ["ns2:acl" ["ns3:AccessControlEntries" (soap/item-list aces)]
+             ["ns3:CatalogItemIdentity"
+              ["ns3:Name" name]
+              ["ns3:ProviderGuid" provider-guid]
+              ["ns3:CollectionApplicable" collection-applicable]
+              ["ns3:GranuleApplicable" granule-applicable]]])
 
 (defn- remove-acls-request
   "Returns a hiccup representation of the SOAP body for a RemoveAcls request using the provided parameters."
@@ -46,7 +63,7 @@
         body ["ns2:CreateAcl"
                 soap/soap-ns-map
                 ["ns2:token" token]
-                ["ns2:acl" acl]]]
+                acl]]
       (-> (soap/post-soap :access-control body)
           (soap/extract-string :create-acl))))
 
