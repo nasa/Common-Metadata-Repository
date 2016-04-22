@@ -99,7 +99,7 @@
      :LocationKeywords  (for [lk (select doc "/DIF/Location")]
                         {:Category (value-of lk "Location_Category")
                          :Type (value-of lk "Location_Type")
-                         :Locaiton_Subregion1 (value-of lk "Location_Subregion1")
+                         :Location_Subregion1 (value-of lk "Location_Subregion1")
                          :Location_Subregion2 (value-of lk "Location_Subregion2")
                          :Location_Subregion3 (value-of lk "Location_Subregion3")
                          :DetailedLocation (value-of lk "Detailed_Location")})
