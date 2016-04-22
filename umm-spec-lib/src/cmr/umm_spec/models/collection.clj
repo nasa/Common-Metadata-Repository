@@ -15,9 +15,9 @@
 
    ;; Controlled hierarchical keywords used to specify the spatial location of the collection. The
    ;; controlled vocabulary for spatial keywords is maintained in the Keyword Management System
-   ;; (KMS). The Spatial Keyword hierarchy includes one or more of the following layers:
-   ;; Location_Category (e.g., Continent), Location_Type (e.g. Africa), Location_Subregion1 (e.g.,
-   ;; Central Africa), Location_Subregion2 (e.g., Cameroon), and Location_Subregion3
+   ;; (KMS). The Spatial Keyword hierarchy includes one or more of the following layers: Category
+   ;; (e.g., Continent), Type (e.g. Africa), Subregion1 (e.g., Central Africa), Subregion2 (e.g.,
+   ;; Cameroon), and Subregion3. DetailedLocation exists outside the hierarchy.
    LocationKeywords
 
    ;; Dates related to activities involving the metadata record itself. For example, Future Review
