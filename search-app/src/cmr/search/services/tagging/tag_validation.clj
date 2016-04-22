@@ -29,11 +29,17 @@
   e.g. tag-key will be changed to tag_key."
   [json-str]
   (jv/validate-json-structure json-str)
-  (let [parsed (json/parse-string json-str true)
-        parsed (if (sequential? parsed)
-                 (map util/map-keys->snake_case parsed)
-                 (util/map-keys->snake_case parsed))]
-    (json/generate-string parsed)))
+  (try
+    (let [parsed (json/parse-string json-str true)
+          parsed (if (sequential? parsed)
+                   (map util/map-keys->snake_case parsed)
+                   (util/map-keys->snake_case parsed))]
+      (json/generate-string parsed))
+    (catch Exception _
+      ;; If the json-str contains data that cannot be handled by the map-keys->snake_case function,
+      ;; exception will be thrown.
+      ;; We just return json-str in this case, as the error will be caught later on.
+      json-str)))
 
 (defn create-tag-json->tag
   "Validates the create tag json and returns the parsed tag"
