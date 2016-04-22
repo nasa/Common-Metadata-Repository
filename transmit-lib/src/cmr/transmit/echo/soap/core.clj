@@ -70,10 +70,14 @@
 
 (defn parse-keyword-from-xml
   "Given a clojure.data.xml object and an keyword, return a vector containing the keyword
-    and the value found at an xpath constructed from that keyword."
+    and the value found at an xpath constructed from that keyword.  If a keyword ends with 's'
+    will look for a sequence of <Item> elements under the correponding xpath and return a vector of
+    the values there associated with the keyword."
   [xml key]
   (let [xpath (xpath-from-keyword key)]
-    [key (xp/value-of xml xpath)]))
+    (if (.endsWith (str key) "s")
+      [key (xp/values-at xml (str xpath "/Item"))]
+      [key (xp/value-of xml xpath)])))
 
 (defn parse-keywords-from-xml
   "Given a clojure.data.xml object and a vector of keywords, return a map of the values at xpaths
