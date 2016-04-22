@@ -18,7 +18,7 @@
 
 (def field-maxes
   "A map of fields to their max lengths"
-  {:tag-key 1030
+  {:tag_key 1030
    :description 4000})
 
 (deftest create-tag-validation-test
@@ -49,7 +49,7 @@
 
     (testing "Missing field validations"
       (is (= {:status 400
-              :errors ["object has missing required properties ([\"tag-key\"])"]}
+              :errors ["object has missing required properties ([\"tag_key\"])"]}
              (tags/create-tag valid-user-token (dissoc valid-tag :tag-key)))))
 
     (testing "Minimum field length validations"
@@ -59,7 +59,7 @@
                                 (name field))]}
               (tags/create-tag valid-user-token (assoc valid-tag field "")))
 
-           :tag-key :description))
+           :tag_key :description))
 
     (testing "Maximum field length validations"
       (doseq [[field max-length] field-maxes]

@@ -1,10 +1,10 @@
-(ns cmr.search.test.services.tagging-service
+(ns cmr.search.test.services.tagging.tag-validation
   (:require [clojure.test :refer :all]
-            [cmr.search.services.tagging-service :as ts]
+            [cmr.search.services.tagging.tag-validation :as tv]
             [cmr.common.validations.core :as v]
             [cmr.search.services.tagging.tagging-service-messages :as msg]))
 
-(def update-tag-validations (var-get #'ts/update-tag-validations))
+(def update-tag-validations (var-get #'tv/update-tag-validations))
 
 (defn is-valid
   [validation tag]

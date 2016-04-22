@@ -56,10 +56,10 @@
     (tags/create-tag token (tags/make-tag {:tag-key tag-key}))
     (index/wait-until-indexed)
 
-    (testing "successful case"
+    (testing "successful case, the tag association keys can have either _ or -"
       (let [response (tags/associate-by-concept-ids
-                       token tag-key [{:concept-id (:concept-id coll1-1)
-                                       :revision-id (:revision-id coll1-1)
+                       token tag-key [{:concept_id (:concept-id coll1-1)
+                                       :revision_id (:revision-id coll1-1)
                                        :data "snow"}
                                       {:concept-id (:concept-id coll3)
                                        :data "cloud"}])]
@@ -76,7 +76,7 @@
                                       token tag-key
                                       [{:concept-id (:concept-id coll1-1)
                                         :revision-id "1"}])
-            expected-msg "/0/revision-id instance type (string) does not match any allowed primitive type (allowed: [\"integer\"])"]
+            expected-msg "/0/revision_id instance type (string) does not match any allowed primitive type (allowed: [\"integer\"])"]
         (is (= [400 [expected-msg]] [status errors]))))
 
     (testing "tag a non-existent collection revision"
@@ -218,7 +218,7 @@
                                       token tag-key
                                       [{:concept-id (:concept-id coll1-1)
                                         :revision-id "1"}])
-            expected-msg "/0/revision-id instance type (string) does not match any allowed primitive type (allowed: [\"integer\"])"]
+            expected-msg "/0/revision_id instance type (string) does not match any allowed primitive type (allowed: [\"integer\"])"]
         (is (= [400 [expected-msg]] [status errors]))))
 
     (testing "disassociate tag of a non-existent collection revision"

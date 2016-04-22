@@ -497,7 +497,8 @@
     (index/wait-until-indexed)
 
     ;; associate tag1 to coll1, tag2 to coll2
-    (tags/associate-by-concept-ids token "tag1" [{:concept-id coll1-id}])
+    ;; both :concept-id and :concept_id works as keys
+    (tags/associate-by-concept-ids token "tag1" [{:concept_id coll1-id}])
     (tags/associate-by-concept-ids token "tag2" [{:concept-id coll2-id}])
     (index/wait-until-indexed)
     ;; verify association
