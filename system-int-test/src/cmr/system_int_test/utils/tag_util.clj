@@ -33,12 +33,30 @@
   [n]
   (str/join (repeat n "x")))
 
+(defn- assert-convert-kebab-case
+  "Assert that the field names in the map does not have dashes, and convert the given concept map
+  to use kebab case keys."
+  [concept-map]
+  ;; This is to assert that the tags api response will use underscore, not dash
+  (is (empty? (select-keys concept-map [:concept-id :revision-id :tag-key
+                                        :originator-id :tag-association :tagged-item])))
+  (util/map-keys->kebab-case concept-map))
+
+(defn- kebab-case-body
+  "Returns the body with tags converted to kebab case."
+  [body]
+  (cond
+    (sequential? body) (map assert-convert-kebab-case body)
+    (map? body) (assert-convert-kebab-case body)
+    :else body))
+
 (defn- process-response
   [{:keys [status body]}]
-  (if (map? body)
-    (assoc body :status status)
-    {:status status
-     :body body}))
+  (let [body (kebab-case-body body)]
+    (if (map? body)
+      (assoc body :status status)
+      {:status status
+       :body body})))
 
 (defn create-tag
   "Creates a tag."
@@ -150,9 +168,7 @@
   "Checks that a tag was persisted correctly in metadata db. The tag should already have originator
   id set correctly. The user-id indicates which user updated this revision."
   [tag user-id concept-id revision-id]
-  (let [concept (mdb/get-concept concept-id revision-id)
-        ;; make sure a tag has associated collection ids for comparison in metadata db
-        tag (update-in tag [:associated-concept-ids] #(or % #{}))]
+  (let [concept (mdb/get-concept concept-id revision-id)]
     (is (= {:concept-type :tag
             :native-id (:tag-key tag)
             :provider-id "CMR"
@@ -212,13 +228,13 @@
   (let [[[coll-concept-id coll-revision-id] tag-association] coll-tag-association
         {:keys [concept-id revision-id]} tag-association
         tagged-item (if coll-revision-id
-                      {:concept_id coll-concept-id :revision_id coll-revision-id}
-                      {:concept_id coll-concept-id})
+                      {:concept-id coll-concept-id :revision-id coll-revision-id}
+                      {:concept-id coll-concept-id})
         errors (select-keys tag-association [:errors :warnings])]
     (if (seq errors)
-      (merge {:tagged_item tagged-item} errors)
-      {:tag_association {:concept_id concept-id :revision_id revision-id}
-       :tagged_item tagged-item})))
+      (merge {:tagged-item tagged-item} errors)
+      {:tag-association {:concept-id concept-id :revision-id revision-id}
+       :tagged-item tagged-item})))
 
 (defn- comparable-tag-associations
   "Returns the tag associations with the concept_id removed from the tag_association field.
@@ -226,8 +242,8 @@
   the order of which the tag associations are created."
   [tag-associations]
   (let [fix-ta-fn (fn [ta]
-                    (if (:tag_association ta)
-                      (update ta :tag_association dissoc :concept_id)
+                    (if (:tag-association ta)
+                      (update ta :tag-association dissoc :concept-id)
                       ta))]
     (map fix-ta-fn tag-associations)))
 

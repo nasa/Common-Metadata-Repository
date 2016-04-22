@@ -17,6 +17,7 @@
             [cmr.metadata-db.services.concept-service :as mdb-cs]
             [cmr.metadata-db.services.search-service :as mdb-ss]
             [clojure.string :as str]
+            [cheshire.core :as json]
             [clojure.edn :as edn]))
 
 (def ^:private native-id-separator-character
@@ -54,8 +55,7 @@
   [context tag-json-str]
   (let [user-id (context->user-id context)
         tag (-> (tv/create-tag-json->tag tag-json-str)
-                (assoc :originator-id user-id
-                       :associated-concept-ids #{}))]
+                (assoc :originator-id user-id))]
     ;; Check if the tag already exists
     (if-let [concept-id (mdb/get-concept-id context :tag "CMR" (:tag-key tag) false)]
 
@@ -102,10 +102,8 @@
         existing-concept (fetch-tag-concept context tag-key)
         existing-tag (edn/read-string (:metadata existing-concept))]
     (tv/validate-update-tag existing-tag updated-tag)
-    ;; The updated tag won't change the originator of the existing tag or the associated collection ids.
-    (let [updated-tag (assoc updated-tag
-                             :originator-id (:originator-id existing-tag)
-                             :associated-concept-ids (:associated-concept-ids existing-tag))]
+    ;; The updated tag won't change the originator of the existing tag
+    (let [updated-tag (assoc updated-tag :originator-id (:originator-id existing-tag))]
       (mdb/save-concept
         context
         (-> existing-concept
@@ -286,7 +284,10 @@
   (update-tag-associations-with-query context tag-key json-query :delete))
 
 (defn search-for-tags
-  "Searches for tags with the given result formats. Returns the results as a string."
+  "Returns the tag search result in JSON format."
   [context params]
-  (:results (query-service/find-concepts-by-parameters
-              context :tag (assoc params :result-format :json))))
+  (let [results (:results (query-service/find-concepts-by-parameters
+                            context :tag (assoc params :result-format :json)))]
+    (-> (json/parse-string results true)
+        util/map-keys->snake_case)))
+
