@@ -75,6 +75,7 @@
     the values there associated with the keyword."
   [xml key]
   (let [xpath (xpath-from-keyword key)]
+    ;; Generate vector value for a plural keyword, scalar otherwise.
     (if (.endsWith (str key) "s")
       [key (xp/values-at xml (str xpath "/Item"))]
       [key (xp/value-of xml xpath)])))
