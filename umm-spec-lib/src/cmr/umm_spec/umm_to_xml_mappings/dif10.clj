@@ -314,9 +314,14 @@
      (map temporal-coverage-without-temporal-keywords (drop 1 (:TemporalExtents c)))
      (generate-dataset-progress c)
      (spatial/spatial-element c)
-     (for [skw (:SpatialKeywords c)]
+     (for [location-category (:LocationCategories c)]
        [:Location
-        [:Location_Category skw]])
+        [:Location_Category (:Category location-category)]
+        [:Location_Type (:Type location-category)]
+        [:Location_Subregion1 (:Subregion1 location-category)]
+        [:Location_Subregion2 (:Subregion2 location-category)]
+        [:Location_Subregion3 (:Subregion3 location-category)]
+        [:Detailed_Location (:DetailedLocation location-category)]])
      (generate-projects (:Projects c))
      [:Quality (:Quality c)]
      [:Access_Constraints (-> c :AccessConstraints :Description)]

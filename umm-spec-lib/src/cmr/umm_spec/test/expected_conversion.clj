@@ -68,7 +68,12 @@
                        {:Category "EARTH SCIENCE SERVICES" :Topic "topic" :Term "term"
                         :VariableLevel1 "var 1" :VariableLevel2 "var 2"
                         :VariableLevel3 "var 3" :DetailedVariable "detailed"}]
-     :SpatialKeywords ["SPK1" "SPK2"]
+     :LocationKeywords [{:Category "CONTINENT"
+                         :Type "AFRICA"
+                         :Subregion1 "CENTRAL AFRICA"
+                         :Subregion2 "CAMEROON"
+                         :Subregion3 "Douala"
+                         :Detailed_Location "Some 7-11"}]
      :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                      :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
                                                :Geometry {:CoordinateSystem "GEODETIC"
@@ -604,7 +609,9 @@
       (update-in-each [:AdditionalAttributes] assoc :Group "AdditionalAttribute")
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
       (update-in-each [:PublicationReferences] dif-publication-reference)
-      (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)))
+      (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
+      ;;CMR-2716 SpatialKeywords are being replaced by LocationKeywords.
+      (assoc :SpatialKeywords nil)))
 
 ;; DIF 10
 (defn dif10-platform
@@ -670,7 +677,9 @@
       (update-in-each [:PublicationReferences] dif-publication-reference)
       (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
       ;; DIF 10 required element
-      (update-in [:Abstract] #(or % su/not-provided))))
+      (update-in [:Abstract] #(or % su/not-provided))
+      ;; CMR-2716 SpatialKeywords are replaced by LocationKeywords
+      (assoc :SpatialKeywords nil)))
 
 (defn- default-serf-required-additional-attributes
   "Populate a default not-provided value for additional attributes if none exist"

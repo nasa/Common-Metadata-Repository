@@ -85,9 +85,14 @@
         [:Northernmost_Latitude (:NorthBoundingCoordinate mbr)]
         [:Westernmost_Longitude (:WestBoundingCoordinate mbr)]
         [:Easternmost_Longitude (:EastBoundingCoordinate mbr)]])
-     (for [spatial-keyword (:SpatialKeywords c)]
+     (for [location-category (:LocationCategories c)]
        [:Location
-        [:Location_Category spatial-keyword]])
+        [:Location_Category (:Category location-category)]
+        [:Location_Type (:Type location-category)]
+        [:Location_Subregion1 (:Subregion1 location-category)]
+        [:Location_Subregion2 (:Subregion2 location-category)]
+        [:Location_Subregion3 (:Subregion3 location-category)]
+        [:Detailed_Location (:DetailedLocation location-category)]])
      (for [temproal-keywod (:TemporalKeywords c)]
        [:Data_Resolution
         [:Temporal_Resolution temproal-keywod]])
