@@ -314,7 +314,7 @@
      (map temporal-coverage-without-temporal-keywords (drop 1 (:TemporalExtents c)))
      (generate-dataset-progress c)
      (spatial/spatial-element c)
-     (for [location-category (:LocationCategories c)]
+     (for [location-category (:LocationKeywords c)]
        [:Location
         [:Location_Category (:Category location-category)]
         [:Location_Type (:Type location-category)]

@@ -73,7 +73,7 @@
                          :Subregion1 "CENTRAL AFRICA"
                          :Subregion2 "CAMEROON"
                          :Subregion3 "Douala"
-                         :Detailed_Location "Some 7-11"}]
+                         :DetailedLocation "Some 7-11"}]
      :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                      :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
                                                :Geometry {:CoordinateSystem "GEODETIC"
@@ -508,7 +508,8 @@
                       :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
                       :ValueAccuracyExplanation nil :UpdateDate nil)
       (update-in-each [:Projects] assoc :Campaigns nil)
-      (update-in [:RelatedUrls] expected-echo10-related-urls)))
+      (update-in [:RelatedUrls] expected-echo10-related-urls)
+      (assoc :LocationKeywords nil)))
 
 ;; DIF 9
 
@@ -572,6 +573,13 @@
                                       :Instruments instruments}))
         platforms))))
 
+(defn- cleanup-location-keywords
+  "DIF9 Location element only accepts one value."
+  [location-keywords]
+  (let [location-keyword (first location-keywords)
+        location-type (umm-c/map->LocationKeywordType location-keyword)]
+    (if (some? location-keyword) [location-type] nil)))
+
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
@@ -611,7 +619,9 @@
       (update-in-each [:PublicationReferences] dif-publication-reference)
       (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
       ;;CMR-2716 SpatialKeywords are being replaced by LocationKeywords.
-      (assoc :SpatialKeywords nil)))
+      (assoc :SpatialKeywords nil)
+      ;;Dif9 Does not support multiple LocationKeywords
+      (update-in [:LocationKeywords] cleanup-location-keywords)))
 
 ;; DIF 10
 (defn dif10-platform
@@ -1075,7 +1085,8 @@
       (update-in [:Organizations]
                  expected-responsibilities ["POINTOFCONTACT" "ORIGINATOR" "DISTRIBUTOR" "PROCESSOR"])
       (update-in [:MetadataAssociations] group-metadata-assocations)
-      (update-in [:ISOTopicCategories] update-iso-topic-categories)))
+      (update-in [:ISOTopicCategories] update-iso-topic-categories)
+      (assoc :LocationKeywords nil)))
 
 ;; ISO-SMAP
 (defn- normalize-smap-instruments
@@ -1157,7 +1168,7 @@
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates :MetadataLanguage
     :DirectoryNames :MetadataLineages :SpatialInformation
-    :PaleoTemporalCoverage :LocationKeywords})
+    :PaleoTemporalCoverage})
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"

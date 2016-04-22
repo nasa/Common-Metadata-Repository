@@ -85,7 +85,7 @@
         [:Northernmost_Latitude (:NorthBoundingCoordinate mbr)]
         [:Westernmost_Longitude (:WestBoundingCoordinate mbr)]
         [:Easternmost_Longitude (:EastBoundingCoordinate mbr)]])
-     (for [location-category (:LocationCategories c)]
+     (let [location-category (first (:LocationKeywords c))]
        [:Location
         [:Location_Category (:Category location-category)]
         [:Location_Type (:Type location-category)]
