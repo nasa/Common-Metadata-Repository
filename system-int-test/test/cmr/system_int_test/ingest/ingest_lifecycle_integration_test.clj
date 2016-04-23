@@ -122,6 +122,7 @@
                                                        :concept-type :collection
                                                        :format       mime-type
                                                        :metadata     json})]
+        (proto/save 1)
         (index/wait-until-indexed)
         ;; parameter queries
         (are2 [items params]
@@ -197,12 +198,7 @@
               [] {:project "foo"}
 
               ;; archive-center, data-center - CMR-2265 still need to figure out how to tell them apart in UMM-C
-
-              "spatial keywords match"
-              [result] {"spatial_keyword[]" "SPK1"}
-              "non-matching spatial keyword"
-              [] {"spatial_keyword[]" "foobar"}
-
+              ;; Got rid of spatial keywords, moving to location keywords.
               "temporal keywords match"
               [result] {:keyword "temporal keyword 1"}
 
@@ -299,4 +295,3 @@
           ;; Reingest the collection
           (let [coll1 (ingest-coll coll1)]
             (assert-collections-and-granules-found [coll1 coll2 coll3] [gr3 gr4])))))))
-
