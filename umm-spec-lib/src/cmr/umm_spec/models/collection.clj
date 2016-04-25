@@ -13,23 +13,15 @@
    ;; collection is listed here.
    CollectionCitations
 
+   ;; Dates related to activities involving the metadata record itself. For example, Future Review
+   ;; date is the date that the metadata record is scheduled to be reviewed.
+   MetadataDates
+
    ;; Controlled hierarchical keywords used to specify the spatial location of the collection. The
    ;; controlled vocabulary for spatial keywords is maintained in the Keyword Management System
    ;; (KMS). The Spatial Keyword hierarchy includes one or more of the following layers:
    ;; Location_Category (e.g., Continent), Location_Type (e.g. Africa), Location_Subregion1 (e.g.,
    ;; Central Africa), Location_Subregion2 (e.g., Cameroon), and Location_Subregion3
-   LocationKeywords
-
-   ;; Dates related to activities involving the metadata record itself. For example, Future Review
-   ;; date is the date that the metadata record is scheduled to be reviewed.
-   MetadataDates
-
-   ;; This is deprecated and will be removed. Use LocationKeywords instead. Controlled hierarchical
-   ;; keywords used to specify the spatial location of the collection. The controlled vocabulary for
-   ;; spatial keywords is maintained in the Keyword Management System (KMS). The Spatial Keyword
-   ;; hierarchy includes one or more of the following layers: Location_Category (e.g., Continent),
-   ;; Location_Type (e.g. Africa), Location_Subregion1 (e.g., Central Africa), Location_Subregion2
-   ;; (e.g., Cameroon), and Location_Subregion3.
    SpatialKeywords
 
    ;; Identifies the topic categories from the EN ISO 19115-1:2014 Geographic Information – Metadata
@@ -218,36 +210,6 @@
    EndDate
   ])
 (record-pretty-printer/enable-record-pretty-printing PaleoTemporalCoverageType)
-
-;; This element defines a mapping to the GCMD KMS hierarchical location list. It replaces
-;; SpatialKeywords. Each tier must have data in the tier above it.
-(defrecord LocationKeywordType
-  [
-   ;; Top-level controlled keyword hierarchical level that contains the largest general location
-   ;; where the collection data was taken from.
-   Category
-
-   ;; Second-tier controlled keyword hierarchical level that contains the regional location where
-   ;; the collection data was taken from
-   Type
-
-   ;; Third-tier controlled keyword heirarchical level that contains the regional sub-location where
-   ;; the collection data was taken from
-   Subregion1
-
-   ;; Fourth-tier controlled keyword heirarchical level that contains the regional sub-location
-   ;; where the collection data was taken from
-   Subregion2
-
-   ;; Fifth-tier controlled keyword heirarchical level that contains the regional sub-location where
-   ;; the collection data was taken from
-   Subregion3
-
-   ;; Uncontrolled keyword heirarchical level that contains the specific location where the
-   ;; collection data was taken from. Exists outside the heirarchy.
-   DetailedLocation
-  ])
-(record-pretty-printer/enable-record-pretty-printing LocationKeywordType)
 
 (defrecord LocalCoordinateSystemType
   [
