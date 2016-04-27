@@ -38,7 +38,7 @@
    :instruments "instruments/instruments.csv"
    :projects "projects/projects.csv"
    :temporal-keywords "temporalresolutionrange/temporalresolutionrange.csv"
-   :spatial-keywords "locations/locations.csv"
+   :spatial-keywords "locations/locations_full.csv"
    :science-keywords "sciencekeywords/sciencekeywords.csv"})
 
 (def keyword-scheme->field-names
@@ -196,4 +196,3 @@
 
 (comment
   (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :spatial-keywords))
-
