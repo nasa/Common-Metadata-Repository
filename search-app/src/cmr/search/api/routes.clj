@@ -170,7 +170,7 @@
         _ (info (format "Searching for %ss from client %s in format %s with params %s."
                         (name concept-type) (:client-id context) result-format
                         (pr-str params)))
-        search-params (lp/process-legacy-psa params body)
+        search-params (lp/process-legacy-psa params)
         results (query-svc/find-concepts-by-parameters context concept-type search-params)]
     (cr/search-response results)))
 
@@ -198,7 +198,7 @@
   (let [params (process-params params path-w-extension headers mt/json)
         _ (info (format "Getting granule timeline from client %s with params %s."
                         (:client-id context) (pr-str params)))
-        search-params (lp/process-legacy-psa params query-string)
+        search-params (lp/process-legacy-psa params)
         results (query-svc/get-granule-timeline context search-params)]
     {:status 200
      :headers {cr/CORS_ORIGIN_HEADER "*"}
