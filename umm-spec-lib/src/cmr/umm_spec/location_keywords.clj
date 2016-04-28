@@ -28,7 +28,9 @@
   returns the map of hierarichies which contain the keyword. You can also look by entering the
   uuid of the entry if you know it."
   [keyword-map-list keyword]
-  (first (sort-by count (find-spatial-keyword-in-map keyword-map-list keyword))))
+  (if (contains? duplicate-keywords keyword)
+  (first (find-spatial-keyword-in-map keyword-map-list (:uuid (get duplicate-keywords "SPACE"))))
+  (first (sort-by count (find-spatial-keyword-in-map keyword-map-list keyword)))))
 
 ;; Example
 (comment
@@ -37,5 +39,5 @@
 
   (find-spatial-keyword  (spatial-keywords-map (kf/get-gcmd-keywords-map local-test-system-context)) "a028edce-a3d9-4a16-a8c7-d2cb12d3a318")
   (find-spatial-keyword  (spatial-keywords-map (kf/get-gcmd-keywords-map local-test-system-context)) "CENTRAL AFRICA")
-  (find-spatial-keyword-in-map  (spatial-keywords-map (kf/get-gcmd-keywords-map local-test-system-context)) "CENTRAL AFRICA")
-  )
+  (find-spatial-keyword-in-map  (spatial-keywords-map (kf/get-gcmd-keywords-map local-test-system-context)) "SPACE")
+)

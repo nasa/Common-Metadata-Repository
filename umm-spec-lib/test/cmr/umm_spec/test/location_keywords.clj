@@ -2,7 +2,10 @@
   (:require [clojure.test :refer :all]
             [cmr.umm-spec.location-keywords :as lk]))
 
-(def sample-keyword-map (list {:category "CONTINENT", :uuid "0a672f19-dad5-4114-819a-2eb55bdbb56a"}
+(def sample-keyword-map (list
+                         {:category "SPACE", :uuid "3ffa2d97-a066-4b3c-87f9-06779f12e726"}
+                         {:category "SPACE", :type "EARTH MAGNETIC FIELD", :subregion-1 "SPACE", :uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"}
+                         {:category "CONTINENT", :uuid "0a672f19-dad5-4114-819a-2eb55bdbb56a"}
                          {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :uuid "f2ffbe58-8792-413b-805b-3e1c8de1c6ff"}
                          {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :subregion-2 "CHAD", :uuid "9b328d2c-07c9-4fd8-945d-f8d4d12e0bb3"}
                          {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :subregion-2 "CAMEROON", :uuid "a028edce-a3d9-4a16-a8c7-d2cb12d3a318"}
@@ -32,4 +35,10 @@
     (let [uuid "a028edce-a3d9-4a16-a8c7-d2cb12d3a318"
           expected {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :subregion-2 "CAMEROON", :uuid "a028edce-a3d9-4a16-a8c7-d2cb12d3a318"}
           actual (lk/find-spatial-keyword sample-keyword-map uuid)]
-      (is (= expected actual)))))
+      (is (= expected actual))))
+
+  (testing "Searching for a duplicate keyword retrieves the correct result"
+    (let [keyword "SPACE"
+          expected "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+          actual (:uuid (lk/find-spatial-keyword sample-keyword-map keyword))]
+          (is (= expected actual)))))
