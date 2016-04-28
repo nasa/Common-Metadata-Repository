@@ -122,7 +122,7 @@
         attribute-type (psa-pre-validation attributes)
         attr-maps (when (= :legacy-style attribute-type)
                     (if (vector? attributes)
-                      (vector (reduce checked-merge attributes))
+                      [(reduce checked-merge attributes)]
                       (vec (vals attributes))))
         psa (map attr-map->cmr-param attr-maps)]
     (if (seq psa)
