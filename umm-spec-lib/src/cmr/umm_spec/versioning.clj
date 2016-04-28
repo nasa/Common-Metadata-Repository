@@ -1,7 +1,8 @@
 (ns cmr.umm-spec.versioning
   "Contains functions for migrating between versions of UMM schema."
   (:require [clojure.set :as set]
-            [cmr.common.mime-types :as mt]))
+            [cmr.common.mime-types :as mt]
+            [cmr.umm-spec.location-keywords :as lk]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Important Constants
@@ -86,13 +87,12 @@
 
 (defmethod migrate-umm-version [:collection "1.1" "1.2"]
   [c & _]
-  ;; Do nothing by default. LocationType is not required in UMM-C and we just removed a restriction
-  ;; on the IsoTopicCategories field
+  ;; Need to modify location
   c)
 
 (defmethod migrate-umm-version [:collection "1.2" "1.1"]
   [c & _]
-  ;;Assume that IsoTopicCategories will not deviate from the 1.1 list of allowed values. 
+  ;;Assume that IsoTopicCategories will not deviate from the 1.1 list of allowed values.
   (-> c
       (dissoc :LocationKeywords)))
 
