@@ -3,7 +3,9 @@
   (:require [clojure.test :refer :all]
             [cmr.umm-spec.location-keywords :as lk]
             [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.transmit.config :as transmit-config]))
+            [cmr.transmit.config :as transmit-config]
+            [cmr.common.cache :as cache]
+            [cmr.common.cache.in-memory-cache :as imc]))
 
 (def sample-keyword-map
   (list
@@ -30,10 +32,19 @@
 (def test-system-context
        {:system {:config (transmit-config/system-with-connections {} [:common-app :cubby :kms])
                  :caches {kf/kms-cache-key (cmr.common.cache.in-memory-cache/create-in-memory-cache)}}})
+
+(defn setup-context-for-test
+  "Sets up a cache by taking values necessary for the cache and returns a map of context"
+  [cache-values]
+  (let [cache (imc/create-in-memory-cache)]
+        (cache/set-value cache kf/kms-cache-key cache-values)
+        {:system {:caches {kf/kms-cache-key cache}}}))
+
 (comment
 (clojure.pprint/pprint test-system-context)
-(clojure.pprint/pprint (-> {:system (get-in user/system [:apps :indexer])} :system :caches :kms ))
+(clojure.pprint/pprint (-> {:system (get-in user/system [:apps :indexer])}))
 )
+
 (deftest test-location-keyword-lookup
   (testing "Looking up a root keyword returns the top heirarchy result."
   (let [keyword "CONTINENT"
@@ -58,5 +69,5 @@
           expected [{:category "SPACE", :type "EARTH MAGNETIC FIELD", :subregion-1 "SPACE", :uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"}
                     {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :subregion-2 "ANGOLA", :uuid "9b0a194d-d617-4fed-9625-df176319892d"}
                     {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :uuid "f2ffbe58-8792-413b-805b-3e1c8de1c6ff"}]
-          actual (lk/spatial-keywords->location-keywords test-system-context sample-keyword-map keywords)]
+          actual (lk/spatial-keywords->location-keywords sample-keyword-map keywords)]
       (is (= expected actual)))))

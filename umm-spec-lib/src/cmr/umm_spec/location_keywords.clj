@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.location-keywords
   "Helper utilities for converting GCMD Spatial Keywords -> UMM LocationKeywords"
   (:require [cmr.common-app.services.kms-fetcher :as kf]
-            [clojure.string :as str]))
+            [cmr.umm-spec.models.collection :as umm-c]))
 
 (def duplicate-keywords
   "Temporary lookup table to account for any duplicate keywords. Key is :uuid which is a field in
@@ -14,7 +14,7 @@
   "Returns a list of maps that correspond to the spatial keywords hierarchy of the full map of GCMD keywords.
   Keys are :category :type :subregion-1 :subregion-2 :subregion-3 :uuid. Values are single string-type.
   Not all keys are present in every map."
-  (vals (:spatial-keywords full-map)))
+  (:spatial-keywords full-map))
 
 (defn find-spatial-keyword-in-map
   "Finds a spatial keyword in the gcmd spatial-keywords map.
@@ -34,11 +34,20 @@
   (first (sort-by count (find-spatial-keyword-in-map keyword-map-list keyword)))))
 
 (defn spatial-keywords->location-keywords
-  "Takes a context and a list of Spatial Keywords and returns a list of location keyword objects
+  "Takes a context and a list of Spatial Keywords and returns a list of location keyword maps
   for that context"
-  [context keyword-map-list spatial-keywords]
+  [keyword-map-list spatial-keywords]
   (map #(find-spatial-keyword keyword-map-list %) spatial-keywords))
-;; Example
+
+(defn translate-spatial-keywords
+  "Translates a list of spatial keywords into an array of LocationKeyword type objects"
+  [context spatial-keywords]
+  (let [spatial-keyword-maps (spatial-keywords-map (kf/get-gcmd-keywords-map context))
+        location-keyword-maps (spatial-keywords->location-keywords spatial-keyword-maps spatial-keywords)]
+    (map #(umm-c/map->LocationKeywordType %) location-keyword-maps))
+  )
+
+;; Examples
 (comment
   (def local-test-system-context
     {:system (get-in user/system [:apps :indexer])})

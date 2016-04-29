@@ -38,7 +38,8 @@
             [cmr.umm-spec.core :as umm-spec]
             [cmr.umm-spec.versioning :as ver]
             [cmr.umm-spec.umm-json :as umm-json]
-            [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
+            [cmr.umm-spec.test.expected-conversion :as expected-conversion]
+            [cmr.umm-spec.test.location-keywords :as lkt]))
 
 (use-fixtures
   :each
@@ -149,7 +150,8 @@
                        (:concept-id coll1) nil {:query-params {:token user1-token}
                                                 :url-extension "umm-json"})
             _ (is (= 200 (:status response)))
-            parsed-collection (umm-json/json->umm :collection (:body response))]
+            context (lkt/setup-context-for-test)
+            parsed-collection (umm-json/json->umm context :collection (:body response))]
         (is (search/mime-type-matches-response? response mt/umm-json))
         (is (= (:entry-title umm-coll) (:EntryTitle parsed-collection)))))))
 
@@ -581,5 +583,3 @@
         (is (= 404 status))
         (is(= #{"Concept with concept-id [C1200000001-PROV4] and revision-id [1] could not be found."}
               (set errors)))))))
-
-

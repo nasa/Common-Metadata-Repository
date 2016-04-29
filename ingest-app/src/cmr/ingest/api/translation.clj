@@ -45,7 +45,7 @@
 (defn translate
   "Fulfills the translate request using the body, content type header, and accept header. Returns
   a ring response with translated metadata."
-  [concept-type headers body skip-umm-validation]
+  [context concept-type headers body skip-umm-validation]
   (let [supported-formats (concept-type->supported-formats concept-type)
         content-type (get headers "content-type")]
 
@@ -59,7 +59,7 @@
 
       ;; If there were no errors, then proceed to convert it to UMM and check for UMM schema
       ;; validation errors.
-      (let [umm (umm-spec/parse-metadata concept-type content-type body)]
+      (let [umm (umm-spec/parse-metadata context concept-type content-type body)]
         (if-let [umm-errors (when-not skip-umm-validation (umm-errors concept-type umm))]
           (errors/throw-service-errors :invalid-data umm-errors)
           ;; Otherwise, if the parsed UMM validates, return a response with the metadata in the
@@ -69,7 +69,7 @@
 (def translation-routes
   (context "/translate" []
     (POST "/collection" {:keys [body headers request-context params]}
-          (translate :collection headers (slurp body)
+          (translate request-context :collection headers (slurp body)
                      (= "true" (:skip_umm_validation params))))))
 
 ;; NOTE: Granule translation is not supported yet. This will be done when granules are added to the UMM spec.
