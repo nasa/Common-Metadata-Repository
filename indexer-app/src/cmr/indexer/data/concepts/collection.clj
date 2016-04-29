@@ -24,6 +24,7 @@
             [cmr.common.concepts :as concepts]
             [cmr.umm.collection :as umm-c]
             [cmr.umm.collection.entry-id :as eid]
+            [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
             [cmr.common-app.services.kms-fetcher :as kf])
   (:import cmr.spatial.mbr.Mbr))
 
@@ -52,13 +53,38 @@
   [personnel]
   (first (filter person->email-contact personnel)))
 
+(defn- date->elastic
+  "Takes a clj-time date and returns it in a format suitable for indexing in elasticsearch."
+  [date-time]
+  (when date-time
+    (f/unparse (f/formatters :date-time) date-time)))
+
+(defn- collection-temporal-elastic
+  "Returns a map of collection temporal fields for indexing in Elasticsearch."
+  [context concept-id collection]
+  (let [temporal (:temporal collection)
+        start-date (sed/start-date :collection temporal)
+        end-date (sed/end-date :collection temporal)
+        granule-aggregate-info (cgac/get-coll-gran-aggregates context concept-id)
+        coll-start (date->elastic start-date)
+        coll-end (date->elastic end-date)]
+    (merge {:start-date coll-start
+            :end-date coll-end}
+           (or (when granule-aggregate-info
+                 (util/map-values
+                  date->elastic
+                  (select-keys granule-aggregate-info [:granule-end-date :granule-start-date])))
+               ;; Use the collection start and end date if there are no granule start and end dates.
+               {:granule-start-date coll-start
+                :granule-end-date coll-end}))))
+
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
   (let [{:keys [concept-id revision-id provider-id user-id
                 native-id revision-date deleted format extra-fields tag-associations]} concept
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
-         :keys [entry-title summary temporal related-urls spatial-keywords associated-difs
+         :keys [entry-title summary related-urls spatial-keywords associated-difs
                 temporal-keywords access-value personnel distribution]} collection
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
@@ -99,16 +125,14 @@
         data-centers (map #(org/data-center-short-name->elastic-doc gcmd-keywords-map %)
                           (map str/trim (org/extract-data-center-names collection)))
         data-center-names (keep :short-name data-centers)
-        start-date (sed/start-date :collection temporal)
-        end-date (sed/end-date :collection temporal)
         atom-links (map json/generate-string (ru/atom-links related-urls))
         ;; not empty is used below to get a real true/false value
         downloadable (not (empty? (ru/downloadable-urls related-urls)))
         browsable (not (empty? (ru/browse-urls related-urls)))
         update-time (get-in collection [:data-provider-timestamps :update-time])
-        update-time (f/unparse (f/formatters :date-time) update-time)
+        update-time (date->elastic update-time)
         insert-time (get-in collection [:data-provider-timestamps :insert-time])
-        insert-time (f/unparse (f/formatters :date-time) insert-time)
+        insert-time (date->elastic insert-time)
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         permitted-group-ids (acl/get-coll-permitted-group-ids context provider-id collection)]
     (merge {:concept-id concept-id
@@ -162,8 +186,6 @@
             :attributes (attrib/psas->elastic-docs collection)
             :science-keywords-flat (sk/flatten-science-keywords collection)
             :personnel (json/generate-string personnel)
-            :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
-            :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
             :archive-center archive-center-names
             :archive-center.lowercase (map str/lower-case archive-center-names)
             :data-center data-center-names
@@ -207,7 +229,7 @@
                                  (into {} (for [ta tag-associations]
                                             [(:tag-key ta) (util/remove-nil-keys
                                                              {:data (:data ta)})])))))}
-
+           (collection-temporal-elastic context concept-id collection)
            (get-in collection [:spatial-coverage :orbit-parameters])
            (spatial->elastic collection)
            (sk/science-keywords->facet-fields collection))))

@@ -124,7 +124,6 @@
     (when (es/index-set-exists? (context->es-store context) index-name idx-mapping-type index-set-id)
       (m/index-set-exists-msg index-set-id))))
 
-
 (defn validate-requested-index-set
   "Verify input index-set is valid."
   [context index-set allow-update?]

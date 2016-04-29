@@ -21,6 +21,16 @@
   (qb-side-api/wait-for-terminal-states)
   (refresh-elastic-index))
 
+(defn refresh-collection-granule-aggregate-cache
+  "Refreshes the collection granule aggregate cache in the indexer."
+  []
+  (let [response (client/post
+                  (url/refresh-collection-granule-aggregate-cache-url)
+                  {:connection-manager (s/conn-mgr)
+                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                   :throw-exceptions false})]
+    (is (= 200 (:status response)) (:body response))))
+
 (defn update-indexes
   "Makes the indexer update the index set mappings and indexes"
   []

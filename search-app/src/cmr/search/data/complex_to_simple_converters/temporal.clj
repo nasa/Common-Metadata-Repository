@@ -15,22 +15,25 @@
   "Convert a temporal condition with INTERSECT mask into a combination of simpler conditions
   so that it will be easier to convert into elastic json"
   [temporal]
-  (let [{:keys [start-date end-date exclusive?]} temporal
+  (let [{:keys [start-date end-date exclusive? limit-to-granules]} temporal
+        [start-date-field end-date-field] (if limit-to-granules
+                                            [:granule-start-date :granule-end-date]
+                                            [:start-date :end-date])
         conditions (if end-date
-                     [(cqm/map->DateRangeCondition {:field :start-date
+                     [(cqm/map->DateRangeCondition {:field start-date-field
                                                     :end-date end-date
                                                     :exclusive? exclusive?})
-                      (gc/or-conds [(cqm/map->MissingCondition {:field :end-date})
-                                    (cqm/map->DateRangeCondition {:field :end-date
+                      (gc/or-conds [(cqm/map->MissingCondition {:field end-date-field})
+                                    (cqm/map->DateRangeCondition {:field end-date-field
                                                                   :start-date start-date
                                                                   :exclusive? exclusive?})])]
-                     [(gc/or-conds [(cqm/map->MissingCondition {:field :end-date})
-                                    (cqm/map->DateRangeCondition {:field :end-date
+                     [(gc/or-conds [(cqm/map->MissingCondition {:field end-date-field})
+                                    (cqm/map->DateRangeCondition {:field end-date-field
                                                                   :start-date start-date
                                                                   :exclusive? exclusive?})])])]
     (gc/and-conds (concat
-                    [(cqm/map->ExistCondition {:field :start-date})]
-                    conditions))))
+                   [(cqm/map->ExistCondition {:field start-date-field})]
+                   conditions))))
 
 (defn current-end-date
   "Returns the current end datetime for a given year and attributes of a periodic temporal condition"
@@ -57,27 +60,28 @@
 
 (defn- simple-conditions-for-year
   "Returns simple-conditions constructed for a given year with the periodic temporal condition"
-  [current-year start-date end-date start-day end-day end-year]
+  [current-year start-date end-date start-day end-day end-year limit-to-granules]
   (let [current-start (t/plus (t/date-time current-year) (t/days (dec start-day)))
         current-start (if (t/before? current-start start-date) start-date current-start)
         current-end (current-end-date current-year end-date start-day end-day end-year)]
     (when-not (t/before? current-end current-start)
       (intersect-temporal->simple-conditions
         (qm/map->TemporalCondition {:start-date current-start
-                                    :end-date current-end})))))
+                                    :end-date current-end
+                                    :limit-to-granules limit-to-granules})))))
 
 (defn- periodic-temporal->simple-conditions
   "Convert a periodic temporal condition into a combination of simpler conditions
   so that it will be easier to convert into elastic json"
   [temporal]
-  (let [{:keys [start-day end-day start-date end-date]} temporal
+  (let [{:keys [start-day end-day start-date end-date limit-to-granules]} temporal
         start-date (or start-date h/earliest-start-date-joda-time)]
     (if (or start-date end-date)
       (let [end-year (if end-date (t/year end-date) (t/year (tk/now)))
             start-day (if start-day start-day 1)
             conditions (map
                          #(simple-conditions-for-year
-                            % start-date end-date start-day end-day end-year)
+                            % start-date end-date start-day end-day end-year limit-to-granules)
                          (range (t/year start-date) (inc end-year)))]
         (gc/or-conds (remove nil? conditions)))
       (errors/throw-service-error
