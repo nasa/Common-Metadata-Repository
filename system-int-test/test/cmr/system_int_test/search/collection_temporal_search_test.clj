@@ -1,6 +1,8 @@
 (ns cmr.system-int-test.search.collection-temporal-search-test
   "Integration test for CMR collection temporal search"
   (:require [clojure.test :refer :all]
+            [clj-time.core :as t]
+            [clj-time.format :as f]
             [cmr.common.util :refer [are2]]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
@@ -56,7 +58,16 @@
                                                    :beginning-date-time "2006-01-01T00:00:00Z"
                                                    :ending-date-time "2007-01-01T00:00:00Z"}))
         c5-g2 (d/ingest "PROV1" (dg/granule coll5 {:granule-ur "c5-g2"
-                                                   :beginning-date-time "2008-01-01T00:00:00Z"}))]
+                                                   :beginning-date-time "2008-01-01T00:00:00Z"}))
+
+        ;; Coll6 is an NRT collection with granules that have temporal in recent time
+        coll6 (d/ingest "PROV1" (dc/collection {:entry-title "coll6"
+                                                :beginning-date-time "2006-01-01T00:00:00Z"}))
+        dt-2-days-ago (f/unparse (f/formatters :date-time) (t/minus (t/now) (t/days 2)))
+        dt-1-day-ago (f/unparse (f/formatters :date-time) (t/minus (t/now) (t/days 1)))
+        c6-g1 (d/ingest "PROV1" (dg/granule coll6 {:granule-ur "c6-g1"
+                                                   :beginning-date-time "2009-01-01T00:00:00Z"
+                                                   :ending-date-time dt-2-days-ago}))]
     (index/wait-until-indexed)
 
     ;; Refresh the aggregate cache so that it includes all the granules that were added.
@@ -69,8 +80,8 @@
       (is (d/refs-match? items (search/find-refs :collection search)))
 
       "All are found"
-      [coll1 coll2 coll3 coll4 coll5] {"temporal[]" "2000-01-01T00:00:00Z,2010-01-01T00:00:00Z"
-                                       "options[temporal][limit_to_granules]" true}
+      [coll1 coll2 coll3 coll4 coll5 coll6] {"temporal[]" "2000-01-01T00:00:00Z,2010-01-01T00:00:00Z"
+                                             "options[temporal][limit_to_granules]" true}
 
       "coll1 is not found because it has no granules before this point"
       [coll2 coll3] {"temporal[]" "2001-01-01T00:00:00Z,2002-01-01T00:00:00Z"
@@ -85,11 +96,11 @@
 
 
       "coll2 is not found because it has no granules after this point"
-      [coll1 coll3 coll4 coll5] {"temporal[]" "2004-06-01T00:00:00Z,"
-                                 "options[temporal][limit_to_granules]" true}
+      [coll1 coll3 coll4 coll5 coll6] {"temporal[]" "2004-06-01T00:00:00Z,"
+                                       "options[temporal][limit_to_granules]" true}
 
       "coll2 is found when not limited to granules"
-      [coll1 coll2 coll3 coll4 coll5] {"temporal[]" "2004-06-01T00:00:00Z,"}
+      [coll1 coll2 coll3 coll4 coll5 coll6] {"temporal[]" "2004-06-01T00:00:00Z,"}
 
 
       "coll5 is not found because it has no granules before 2006"
@@ -97,8 +108,15 @@
                            "options[temporal][limit_to_granules]" true}
 
       "Collections with no end date are found"
-      [coll4 coll5] {"temporal[]" "2011-01-01T00:00:00Z,2012-01-01T00:00:00Z"
-                     "options[temporal][limit_to_granules]" true})))
+      [coll4 coll5 coll6] {"temporal[]" "2011-01-01T00:00:00Z,2012-01-01T00:00:00Z"
+                           "options[temporal][limit_to_granules]" true}
+
+      "An NRT collection with granules that have temporal in the past 3 days will be found when searching with later dates"
+      ;; coll6 is found because it has a granule with a temporal ending within 2 days ago.
+      ;; This is a special rule for collections with recent data.
+      [coll4 coll5 coll6] {"temporal[]" (str dt-1-day-ago ",")
+                           "options[temporal][limit_to_granules]" true})))
+
 
 (deftest search-by-temporal
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"

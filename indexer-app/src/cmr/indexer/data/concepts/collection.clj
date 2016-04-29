@@ -3,6 +3,8 @@
   (:require [clojure.string :as str]
             [clj-time.format :as f]
             [cheshire.core :as json]
+            [clj-time.core :as t]
+            [cmr.common.time-keeper :as tk]
             [camel-snake-kebab.core :as csk]
             [cmr.indexer.services.index-service :as idx]
             [cmr.indexer.data.elasticsearch :as es]
@@ -12,6 +14,7 @@
             [cmr.common.util :as util]
             [cmr.umm.related-url-helper :as ru]
             [cmr.umm.start-end-date :as sed]
+            [cmr.elastic-utils.index-util :as index-util]
             [cmr.indexer.data.concepts.attribute :as attrib]
             [cmr.indexer.data.concepts.science-keyword :as sk]
             [cmr.indexer.data.concepts.platform :as platform]
@@ -53,27 +56,27 @@
   [personnel]
   (first (filter person->email-contact personnel)))
 
-(defn- date->elastic
-  "Takes a clj-time date and returns it in a format suitable for indexing in elasticsearch."
-  [date-time]
-  (when date-time
-    (f/unparse (f/formatters :date-time) date-time)))
-
 (defn- collection-temporal-elastic
   "Returns a map of collection temporal fields for indexing in Elasticsearch."
   [context concept-id collection]
   (let [temporal (:temporal collection)
         start-date (sed/start-date :collection temporal)
         end-date (sed/end-date :collection temporal)
-        granule-aggregate-info (cgac/get-coll-gran-aggregates context concept-id)
-        coll-start (date->elastic start-date)
-        coll-end (date->elastic end-date)]
+        {:keys [granule-start-date granule-end-date]} (cgac/get-coll-gran-aggregates context concept-id)
+        last-3-days (t/interval (t/minus (tk/now) (t/days 3)) (tk/now))
+        granule-end-date (if (and granule-end-date (t/within? last-3-days granule-end-date))
+                           ;; If the granule end date is within the last 3 days we indicate that
+                           ;; the collection has no end date. This allows NRT collections to be
+                           ;; found even if the collection has been reindexed recently.
+                          nil
+                          granule-end-date)
+        coll-start (index-util/date->elastic start-date)
+        coll-end (index-util/date->elastic end-date)]
     (merge {:start-date coll-start
             :end-date coll-end}
-           (or (when granule-aggregate-info
-                 (util/map-values
-                  date->elastic
-                  (select-keys granule-aggregate-info [:granule-end-date :granule-start-date])))
+           (or (when granule-start-date
+                 {:granule-start-date (index-util/date->elastic granule-start-date)
+                  :granule-end-date (index-util/date->elastic granule-end-date)})
                ;; Use the collection start and end date if there are no granule start and end dates.
                {:granule-start-date coll-start
                 :granule-end-date coll-end}))))
@@ -130,9 +133,9 @@
         downloadable (not (empty? (ru/downloadable-urls related-urls)))
         browsable (not (empty? (ru/browse-urls related-urls)))
         update-time (get-in collection [:data-provider-timestamps :update-time])
-        update-time (date->elastic update-time)
+        update-time (index-util/date->elastic update-time)
         insert-time (get-in collection [:data-provider-timestamps :insert-time])
-        insert-time (date->elastic insert-time)
+        insert-time (index-util/date->elastic insert-time)
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         permitted-group-ids (acl/get-coll-permitted-group-ids context provider-id collection)]
     (merge {:concept-id concept-id

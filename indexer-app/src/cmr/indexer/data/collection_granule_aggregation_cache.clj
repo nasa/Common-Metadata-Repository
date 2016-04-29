@@ -4,6 +4,7 @@
    functions in this namespace can be used to fetch the information when indexing a collection.
    The data will be somewhat stale but should be adequate for the searching needs here."
   (require [cmr.common.jobs :refer [def-stateful-job]]
+           [cmr.common.services.errors :as errors]
            ;; cache dependencies
            [cmr.common.cache :as c]
            [cmr.common.cache.fallback-cache :as fallback-cache]
@@ -41,6 +42,8 @@
   {:collection-concept-id
    ;; Aggregate by collection concept id
    {:terms {:field :collection-concept-id
+            ;; If we get more than 50K collections the parse-aggregations will detect that and throw
+            ;; an exception.
             :size 50000}
     ;; Within that aggregation find these
     :aggs {;; Find the earliest occurence of a granule temporal
@@ -61,20 +64,25 @@
   "Parses the response back from Elasticsearch of collection aggregations. Returns a map of collection
    concept id to a map of information about that collection."
   [aggregate-response]
-  (into
-   {}
-   (for [bucket (get-in aggregate-response [:aggregations :collection-concept-id :buckets])
-         :let [concept-id (:key bucket)
-               earliest-start (parse-numeric-date-value
-                               (get-in bucket [:min-temporal :value]))
-               latest-end (parse-numeric-date-value
-                           (get-in bucket [:max-temporal :value]))
-               some-with-no-end (> (get-in bucket [:no-end-date :doc_count]) 0)]]
-     [concept-id
-      {:granule-start-date earliest-start
-       ;; Max end date will be nil if there are some that have no end date. This indicates they go on
-       ;; forever.
-       :granule-end-date (when-not some-with-no-end latest-end)}])))
+  (let [coll-concept-id-result (get-in aggregate-response [:aggregations :collection-concept-id])]
+    (when (> (:sum_other_doc_count coll-concept-id-result)) 0
+      (errors/internal-error!
+       (str "Found more collections that expected when fetching collection concept ids: "
+            (:sum_other_doc_count coll-concept-id-result))))
+    (into
+     {}
+     (for [bucket (:buckets coll-concept-id-result)
+           :let [concept-id (:key bucket)
+                 earliest-start (parse-numeric-date-value
+                                 (get-in bucket [:min-temporal :value]))
+                 latest-end (parse-numeric-date-value
+                             (get-in bucket [:max-temporal :value]))
+                 some-with-no-end (> (get-in bucket [:no-end-date :doc_count]) 0)]]
+       [concept-id
+        {:granule-start-date earliest-start
+         ;; Max end date will be nil if there are some that have no end date. This indicates they go on
+         ;; forever.
+         :granule-end-date (when-not some-with-no-end latest-end)}]))))
 
 (defn- fetch-coll-gran-aggregates
   "Searches across all the granule indexes to aggregate by collection. Returns a map of collection
