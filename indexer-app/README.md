@@ -21,6 +21,12 @@ This will un-index all concepts within the given provider.
 These tasks require an admin user token with the INGEST_MANAGEMENT_ACL with read or update
 permission.
 
+### Refresh Collection Granule Aggregate Cache
+
+The collection granule aggregate cache is used to cache information about all the granules within a collection that are indexed with that collection. That's currently limited to the granule temporal minimum and maximum. The cache is refreshed by a period job. That job can be manually run to refresh the cache with the following curl.
+
+    curl -i -XPOST http://localhost:3004/jobs/refresh-collection-granule-aggregate-cache?token=XXXX
+
 ### Reset elastic and cache
 
 *WARNING - this endpoint drops all data from the index.*

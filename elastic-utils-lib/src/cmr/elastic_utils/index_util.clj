@@ -4,7 +4,14 @@
             [cmr.elastic-utils.connect :as esc]
             [clojurewerkz.elastisch.rest.document :as doc]
             [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [clj-time.format :as f]))
+
+(defn date->elastic
+  "Takes a clj-time date and returns it in a format suitable for indexing in elasticsearch."
+  [date-time]
+  (when date-time
+    (f/unparse (f/formatters :date-time) date-time)))
 
 (def string-field-mapping
   {:type "string" :index "not_analyzed"})

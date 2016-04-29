@@ -208,8 +208,16 @@
           :processing-level-id.lowercase  m/string-field-mapping
           :collection-data-type           (m/stored m/string-field-mapping)
           :collection-data-type.lowercase m/string-field-mapping
+
+          ;; Temporal date range
           :start-date                     (m/stored m/date-field-mapping)
           :end-date                       (m/stored m/date-field-mapping)
+
+          ;; Temporal range of min and max granule values or the same as collection start and end date
+          ;; if the collection has not granules.
+          :granule-start-date             m/date-field-mapping
+          :granule-end-date               m/date-field-mapping
+
           :platform-sn                    m/string-field-mapping
           :platform-sn.lowercase          m/string-field-mapping
           :instrument-sn                  m/string-field-mapping

@@ -20,3 +20,8 @@ Items to include in each issue
 
 ## 1.50
 
+* CMR-2748 - Allow searching for collections by the granules' temporal range
+  * Configuration Patch Dependency: None
+  * Deployment Impacts:
+    * Requires update of indexes and reindexing of collections.
+    * The collection index was changed to add two new fields for granule start and end date.

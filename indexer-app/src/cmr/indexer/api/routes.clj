@@ -13,6 +13,7 @@
             [cmr.common.api.errors :as errors]
             [cmr.common.cache :as cache]
             [cmr.acl.core :as acl]
+            [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
 
             ;; These must be required here to make multimethod implementations available.
             [cmr.indexer.data.concepts.collection]
@@ -68,6 +69,14 @@
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes
+
+      ;; add routes for managing jobs
+      (common-routes/job-api-routes
+        (routes
+          (POST "/refresh-collection-granule-aggregate-cache" {:keys [request-context]}
+            (acl/verify-ingest-management-permission request-context :update)
+            (cgac/refresh-cache request-context)
+            {:status 200})))
 
       (POST "/reindex-provider-collections" {:keys [request-context params headers body]}
         (acl/verify-ingest-management-permission request-context :update)
