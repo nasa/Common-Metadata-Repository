@@ -65,7 +65,7 @@
    concept id to a map of information about that collection."
   [aggregate-response]
   (let [coll-concept-id-result (get-in aggregate-response [:aggregations :collection-concept-id])]
-    (when (> (:sum_other_doc_count coll-concept-id-result)) 0
+    (when (> (:sum_other_doc_count coll-concept-id-result) 0)
       (errors/internal-error!
        (str "Found more collections that expected when fetching collection concept ids: "
             (:sum_other_doc_count coll-concept-id-result))))
