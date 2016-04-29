@@ -16,6 +16,8 @@
                                  (cc/concept-id->type (:concept-id msg)))]
       (let [queue-broker (get-in context [:system :queue-broker])]
         (when queue-broker
+          (def saved-queue-broker queue-broker)
+          (def enf (exchange-name-fn))
           (queue/publish-message queue-broker (exchange-name-fn) msg))))))
 
 (defmulti concept-update-event

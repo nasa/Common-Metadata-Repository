@@ -280,6 +280,7 @@
 (defn index-concept-by-concept-id-revision-id
   "Index the given concept and revision-id"
   [context concept-id revision-id options]
+  (println "INDEXING CONCEPT " concept-id " REVISION " revision-id)
   (when-not (and concept-id revision-id)
     (errors/throw-service-error
       :bad-request
@@ -288,9 +289,11 @@
   (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)]
     (when (indexing-applicable? concept-type all-revisions-index?)
+      (println "INDEXING APPLICABLE")
       (let [concept (meta-db/get-concept context concept-id revision-id)
             parsed-concept (cp/parse-concept concept)]
         (index-concept context concept parsed-concept options)
+        (println "CONCEPT INDEXED")
         (log-ingest-to-index-time concept)))))
 
 (defmulti delete-concept

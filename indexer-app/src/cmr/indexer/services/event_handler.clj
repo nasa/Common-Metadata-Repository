@@ -28,7 +28,8 @@
    {:all-revisions-index? nil :refresh-acls? false :force-version? force-version?}))
 
 (defmethod handle-ingest-event :concept-update
-  [context all-revisions-index? {:keys [concept-id revision-id]}]
+  [context all-revisions-index? {:keys [concept-id revision-id] :as msg}]
+  (println "CONCEPT UPDATE: " msg)
   (indexer/index-concept-by-concept-id-revision-id
     context concept-id revision-id {:ignore-conflict? true
                                     :all-revisions-index? all-revisions-index?}))
