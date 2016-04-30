@@ -9,7 +9,8 @@
    :_shards {:total 35, :successful 35, :failed 0},
    :hits {:total 5, :max_score 0.0, :hits []},
    :aggregations {:collection-concept-id
-                  {:buckets
+                  {:sum_other_doc_count 0
+                   :buckets
                    [{:key "C1-PROV1",
                      :doc_count 3,
                      :min-temporal {:value 1.0413792E12}
