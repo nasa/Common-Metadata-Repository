@@ -89,12 +89,12 @@
 
         orbit-coll (d/ingest "PROV1"
                              (dc/collection
-                               {:entry-id "orbit-coll"
-                                :entry-title "orbit-coll"
-                                :spatial-coverage (dc/spatial {:sr :geodetic
-                                                               :geometries [m/whole-world]
-                                                               :gsr :orbit
-                                                               :orbit orbit-parameters})}))
+                              {:entry-id "orbit-coll"
+                               :entry-title "orbit-coll"
+                               :spatial-coverage (dc/spatial {:sr :geodetic
+                                                              :geometries [m/whole-world]
+                                                              :gsr :orbit
+                                                              :orbit orbit-parameters})}))
 
         all-colls [coll1 coll2 coll3 coll4 coll5 coll6 orbit-coll]]
 
@@ -133,6 +133,17 @@
     (make-orbit-gran orbit-coll "orbit-gran" 70.80471 50.0 :asc  50.0 :desc)
 
     (index/wait-until-indexed)
+    ;; Refresh the aggregate cache so that it includes all the granules that were added.
+    (index/refresh-collection-granule-aggregate-cache)
+    ;; Reindex all the collections to get the latest information.
+    (ingest/reindex-all-collections)
+    (index/wait-until-indexed)
+
+    (testing "Sorting by has_granules"
+      (is (d/refs-match-order? [coll1 coll3 coll4 coll5 coll6 orbit-coll coll2]
+                               (search/find-refs :collection {:sort-key ["has_granules" "revision-date"]})))
+      (is (d/refs-match-order? [coll2 coll1 coll3 coll4 coll5 coll6 orbit-coll]
+                               (search/find-refs :collection {:sort-key ["-has_granules" "revision-date"]}))))
 
     (testing "granule counts"
       (testing "invalid include-granule-counts"
@@ -145,10 +156,10 @@
         (let [refs (search/find-refs :collection {:include-granule-counts true})]
           (is (gran-counts/granule-counts-match? :xml {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3
                                                        coll6 3 orbit-coll 1} refs))))
-      
+
       (testing "granule counts for native collections"
         (let [granules (search/find-metadata :collection :native {:include-granule-counts true})]
-          (is (gran-counts/granule-counts-match? :echo10 {coll1 5 coll2 0 coll3 3 coll4 3 
+          (is (gran-counts/granule-counts-match? :echo10 {coll1 5 coll2 0 coll3 3 coll4 3
                                                           coll5 3 coll6 3 orbit-coll 1} granules))))
       ;; CMR-712
       (testing "granule counts with science keywords query"
@@ -158,26 +169,26 @@
 
       (testing "granule counts for spatial queries"
         (are [wnes expected-counts]
-             (let [refs (search/find-refs :collection {:include-granule-counts true
-                                                       :bounding-box (codec/url-encode (apply m/mbr wnes))})]
-               (gran-counts/granule-counts-match? :xml expected-counts refs))
+          (let [refs (search/find-refs :collection {:include-granule-counts true
+                                                    :bounding-box (codec/url-encode (apply m/mbr wnes))})]
+            (gran-counts/granule-counts-match? :xml expected-counts refs))
 
-             ;; Whole world
-             [-180 90 180 -90] {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 orbit-coll 1}
-             ;; north west quadrant
-             [-180 90 0 0] {coll1 3 coll2 0 coll3 1 coll4 2 coll5 0 orbit-coll 1}
-             ;; south east quadrant
-             [0 0 180 -90] {coll1 3 coll2 0 coll3 2 coll4 0 coll5 2 orbit-coll 0}
-             ;; Smaller area around one granule in coll4
-             [130 47 137 44] {coll1 0 coll3 0 coll4 1 orbit-coll 0}))
+          ;; Whole world
+          [-180 90 180 -90] {coll1 5 coll2 0 coll3 3 coll4 3 coll5 3 orbit-coll 1}
+          ;; north west quadrant
+          [-180 90 0 0] {coll1 3 coll2 0 coll3 1 coll4 2 coll5 0 orbit-coll 1}
+          ;; south east quadrant
+          [0 0 180 -90] {coll1 3 coll2 0 coll3 2 coll4 0 coll5 2 orbit-coll 0}
+          ;; Smaller area around one granule in coll4
+          [130 47 137 44] {coll1 0 coll3 0 coll4 1 orbit-coll 0}))
 
       (testing "granule counts for temporal queries"
         (are [start stop expected-counts]
-             (let [refs (search/find-refs :collection {:include-granule-counts true
-                                                       :temporal (temporal-search-range start stop)})]
-               (gran-counts/granule-counts-match? :xml expected-counts refs))
-             1 6 {coll2 0 coll3 3 coll4 3 coll5 3 coll6 3}
-             2 3 {coll2 0 coll3 2 coll4 1 coll6 1}))
+          (let [refs (search/find-refs :collection {:include-granule-counts true
+                                                    :temporal (temporal-search-range start stop)})]
+            (gran-counts/granule-counts-match? :xml expected-counts refs))
+          1 6 {coll2 0 coll3 3 coll4 3 coll5 3 coll6 3}
+          2 3 {coll2 0 coll3 2 coll4 1 coll6 1}))
 
       (testing "granule counts for both spatial and temporal queries"
         (let [refs (search/find-refs :collection {:include-granule-counts true
@@ -222,19 +233,19 @@
 
       (testing "in results"
         (are [result-format results]
-             (let [expected-has-granules (util/map-keys :concept-id
-                                                        {coll1 true coll2 false coll3 true coll4 true
-                                                         coll5 true coll6 true orbit-coll true})
-                   actual-has-granules (gran-counts/results->actual-has-granules result-format results)
-                   has-granules-match? (= expected-has-granules actual-has-granules)]
-               (when-not has-granules-match?
-                 (println "Expected:" (pr-str expected-has-granules))
-                 (println "Actual:" (pr-str actual-has-granules)))
-               has-granules-match?)
-             :xml (search/find-refs :collection {:include-has-granules true})
-             :echo10 (search/find-metadata :collection :echo10 {:include-has-granules true})
-             :atom (search/find-concepts-atom :collection {:include-has-granules true})
-             :atom (search/find-concepts-json :collection {:include-has-granules true}))))
+          (let [expected-has-granules (util/map-keys :concept-id
+                                                     {coll1 true coll2 false coll3 true coll4 true
+                                                      coll5 true coll6 true orbit-coll true})
+                actual-has-granules (gran-counts/results->actual-has-granules result-format results)
+                has-granules-match? (= expected-has-granules actual-has-granules)]
+            (when-not has-granules-match?
+              (println "Expected:" (pr-str expected-has-granules))
+              (println "Actual:" (pr-str actual-has-granules)))
+            has-granules-match?)
+          :xml (search/find-refs :collection {:include-has-granules true})
+          :echo10 (search/find-metadata :collection :echo10 {:include-has-granules true})
+          :atom (search/find-concepts-atom :collection {:include-has-granules true})
+          :atom (search/find-concepts-json :collection {:include-has-granules true}))))
 
     (testing "has_granules parameter"
 
@@ -251,6 +262,9 @@
                                                                  :concept-id (map :concept-id all-colls)})]
           (is (= (set (map :concept-id [coll1 coll3 coll4 coll5 coll6 orbit-coll]))
                  (set (map :concept-id (:items results))))))))))
+
+
+
 
 (deftest collection-has-granules-caching-test
   (let [;; Create collections
