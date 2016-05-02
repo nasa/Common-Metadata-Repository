@@ -218,6 +218,8 @@
           :granule-start-date             m/date-field-mapping
           :granule-end-date               m/date-field-mapping
 
+          :has-granules (m/stored m/bool-field-mapping)
+
           :platform-sn                    m/string-field-mapping
           :platform-sn.lowercase          m/string-field-mapping
           :instrument-sn                  m/string-field-mapping

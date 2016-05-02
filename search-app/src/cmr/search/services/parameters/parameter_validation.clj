@@ -164,7 +164,8 @@
     :instrument
     :sensor
     :revision-date
-    :score})
+    :score
+    :has-granules})
 
 (defmethod cpv/valid-sort-keys :granule
   [_]

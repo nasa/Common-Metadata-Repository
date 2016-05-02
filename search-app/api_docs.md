@@ -1316,6 +1316,7 @@ Collection results are sorted by ascending entry title by default. One or more s
   * `provider`
   * `revision_date`
   * `score` - document relevance score, only valid with keyword search, defaults to descending
+  * `has_granules` - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.
 
 Example of sorting by start_date in descending order: (Most recent data first)
 

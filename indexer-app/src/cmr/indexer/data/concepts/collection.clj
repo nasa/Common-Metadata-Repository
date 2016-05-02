@@ -145,6 +145,8 @@
             :native-id.lowercase (str/lower-case native-id)
             :user-id user-id
             :permitted-group-ids permitted-group-ids
+            ;; If there's an entry in the collection granule aggregates then the collection has granules.
+            :has-granules (some? (cgac/get-coll-gran-aggregates context concept-id))
             :entry-id entry-id
             :entry-id.lowercase (str/lower-case entry-id)
             :entry-title entry-title
