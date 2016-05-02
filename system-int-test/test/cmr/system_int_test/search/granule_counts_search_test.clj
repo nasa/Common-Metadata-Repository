@@ -263,9 +263,6 @@
           (is (= (set (map :concept-id [coll1 coll3 coll4 coll5 coll6 orbit-coll]))
                  (set (map :concept-id (:items results))))))))))
 
-
-
-
 (deftest collection-has-granules-caching-test
   (let [;; Create collections
         ;; whole world, no temporal, and science keywords
