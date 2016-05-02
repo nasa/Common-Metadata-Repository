@@ -4,6 +4,7 @@
    functions in this namespace can be used to fetch the information when indexing a collection.
    The data will be somewhat stale but should be adequate for the searching needs here."
   (require [cmr.common.jobs :refer [def-stateful-job]]
+           [cmr.common.util :as util]
            [cmr.common.services.errors :as errors]
            ;; cache dependencies
            [cmr.common.cache :as c]
@@ -16,6 +17,7 @@
            [clojurewerkz.elastisch.rest.document :as esd]
            [clojurewerkz.elastisch.query :as esq]
            [clj-time.core :as t]
+           [clj-time.format :as f]
            [clj-time.coerce :as tc]))
 
 (def coll-gran-aggregate-cache-key
@@ -96,20 +98,61 @@
                    :aggs collection-aggregations})
       parse-aggregations))
 
+(def ^:private date-time-format
+  "The format Joda Time is written to when stored in the cache."
+  (f/formatters :date-time))
+
+(defn- joda-time->cachable-value
+  "Takes a Joda time instance and converts it to a value that can be used with the cache. It must
+   be convertable to and from EDN"
+  [t]
+  (when t
+   (f/unparse date-time-format t)))
+
+(defn- cached-value->joda-time
+  "Parses a Joda time instance from a cached value."
+  [v]
+  (when v
+   (f/parse date-time-format v)))
+
+(defn- coll-gran-aggregates->cachable-value
+  "Converts a collection granule aggregates map to a cachable-value value. It must be convertable to
+   and from EDN"
+  [coll-gran-aggregates]
+  (util/map-values
+   (fn [aggregate-map]
+     (-> aggregate-map
+         (update :granule-start-date joda-time->cachable-value)
+         (update :granule-end-date joda-time->cachable-value)))
+   coll-gran-aggregates))
+
+(defn- cached-value->coll-gran-aggregates
+  "Parses a cached value into a collection granule aggregates map."
+  [cached-value]
+  (util/map-values
+   (fn [aggregate-map]
+     (-> aggregate-map
+         (update :granule-start-date cached-value->joda-time)
+         (update :granule-end-date cached-value->joda-time)))
+   cached-value))
+
 (defn refresh-cache
   "Refreshes the collection granule aggregates in the cache."
   [context]
   (let [cache (c/context->cache context coll-gran-aggregate-cache-key)]
-    (c/set-value cache coll-gran-aggregate-cache-key (fetch-coll-gran-aggregates context))))
+    (c/set-value cache coll-gran-aggregate-cache-key
+                 (coll-gran-aggregates->cachable-value (fetch-coll-gran-aggregates context)))))
 
 (defn get-coll-gran-aggregates
   "Returns the map of granule aggregate information for the collection. Will return nil if the
    collection has no granules."
   [context concept-id]
   (let [cache (c/context->cache context coll-gran-aggregate-cache-key)
-        cga-map (c/get-value cache
-                             coll-gran-aggregate-cache-key
-                             (partial fetch-coll-gran-aggregates context))]
+        cached-value (c/get-value cache
+                                  coll-gran-aggregate-cache-key
+                                  (fn [] (coll-gran-aggregates->cachable-value
+                                          (fetch-coll-gran-aggregates context))))
+        cga-map (cached-value->coll-gran-aggregates cached-value)]
     (get cga-map concept-id)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
