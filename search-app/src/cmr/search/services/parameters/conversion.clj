@@ -250,10 +250,10 @@
   [query-attribs]
   (update query-attribs :sort-keys
           (fn [sort-keys]
-            (for [{:keys [field order] :as sort-key} sort-keys]
-              (if (= field :has-granules)
-                {:field field :order (if (= order :asc) :desc :asc)}
-                sort-key)))))
+            (seq (for [{:keys [field order] :as sort-key} sort-keys]
+                   (if (= field :has-granules)
+                     {:field field :order (if (= order :asc) :desc :asc)}
+                     sort-key))))))
 
 (defmethod common-params/parse-query-level-params :collection
   [concept-type params]
