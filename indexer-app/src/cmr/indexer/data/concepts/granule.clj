@@ -1,8 +1,8 @@
 (ns cmr.indexer.data.concepts.granule
   "Contains functions to parse and convert granule concept"
   (:require [clojure.string :as s]
-            [clj-time.format :as f]
             [cheshire.core :as json]
+            [cmr.elastic-utils.index-util :as index-util]
             [camel-snake-kebab.core :as csk]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.umm.core :as umm]
@@ -134,7 +134,7 @@
         downloadable (not (empty? (ru/downloadable-urls related-urls)))
         browsable (not (empty? (ru/browse-urls related-urls)))
         update-time (get-in umm-granule [:data-provider-timestamps :update-time])
-        update-time (f/unparse (f/formatters :date-time) update-time)
+        update-time (index-util/date->elastic update-time)
         {:keys [short-name version-id]} (:product parent-collection)
         granule-spatial-representation (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
     (merge {:concept-id concept-id
@@ -197,10 +197,10 @@
             :revision-date-doc-values revision-date
             :downloadable downloadable
             :browsable browsable
-            :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
-            :start-date-doc-values (when start-date (f/unparse (f/formatters :date-time) start-date))
-            :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
-            :end-date-doc-values (when end-date (f/unparse (f/formatters :date-time) end-date))
+            :start-date (index-util/date->elastic start-date)
+            :start-date-doc-values (index-util/date->elastic start-date)
+            :end-date (index-util/date->elastic end-date)
+            :end-date-doc-values (index-util/date->elastic end-date)
             :two-d-coord-name two-d-coord-name
             :two-d-coord-name.lowercase (when two-d-coord-name (s/lower-case two-d-coord-name))
             :start-coordinate-1 start-coordinate-1

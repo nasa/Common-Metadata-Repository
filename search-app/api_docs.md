@@ -180,7 +180,7 @@ These are query parameters that control what extra data is included with collect
   * `include_facets` - If this parameter is set to "true" facets will be included in the collection results (not applicable to opendata results). Facets are described in detail below.
   * `hierarchical_facets` - If this parameter is set to "true" and the parameter `include_facets` is set to "true" the facets that are returned will be hierarchical. Hierarchical facets are described in the facets section below.
   * `include_highlights` - If this parameter is set to "true", the collection results will contain an additional field, 'highlighted_summary_snippets'. The field is an array of strings which contain a snippet of the summary which highlight any terms which match the terms provided in the keyword portion of a search. By default up to 5 snippets may be returned with each individual snippet being up to 100 characters, and keywords in the snippets are delineated with begin tag `<em>` and end tag `</em>`. This is configurable using `options[highlights][param]=value`. Supported option params are `begin_tag`, `end_tag`, `snippet_length` and `num_snippets`. The values for `snippet_length` and `num_snippets` must be integers greater than 0.
-  * `include_tags` - If this parameter is set (e.g. `include_tags=gov.nasa.earthdata.search.*,gov.nasa.echo.*`), the collection results will contain an additional field 'tags' within each collection. The value of the tags field is a list of tag-keys that are associated with the collection. Only the tags with tag-key matching the values of `include_tags` parameter (with wildcard support) are included in the results. This parameter is supported in JSON and ATOM result formats.
+  * `include_tags` - If this parameter is set (e.g. `include_tags=gov.nasa.earthdata.search.*,gov.nasa.echo.*`), the collection results will contain an additional field 'tags' within each collection. The value of the tags field is a list of tag_keys that are associated with the collection. Only the tags with tag_key matching the values of `include_tags` parameter (with wildcard support) are included in the results. This parameter is supported in JSON and ATOM result formats.
 
   _There is a known bug with the `snippet_length` parameter that occasionally leads to snippets that are longer than `snippet_length` characters._
 
@@ -879,7 +879,7 @@ __Example__
 
 ### <a name="temporal-range-searches"></a> Temporal Range searches
 
-A couple of parameters used in search expect a date range as input. For example, the parameter "temporal" used in collection and granule searches and the parameter "equator_crossing_longitude" used in granule searches both accept date ranges. All these parameters expect temporal ranges in the same format. The temporal ranges can be specified as a pair of date-time values separated by comma(,). Exactly one of the two bounds of the interval can be omitted. In addition to comma seperated values, one can also specify temporal ranges as [ISO 8601 time intervals](https://en.wikipedia.org/?title=ISO_8601#Time_intervals). Some examples of valid temporal range values are:
+A couple of parameters used in search expect a date range as input. For example, the parameter "temporal" used in collection and granule searches and the parameter "equator_crossing_longitude" used in granule searches both accept date ranges. All these parameters expect temporal ranges in the same format. The temporal ranges can be specified as a pair of date-time values separated by comma(,). Exactly one of the two bounds of the interval can be omitted. In addition to comma separated values, one can also specify temporal ranges as [ISO 8601 time intervals](https://en.wikipedia.org/?title=ISO_8601#Time_intervals). Some examples of valid temporal range values are:
 
 `2000-01-01T10:00:00Z,2010-03-10T12:00:00Z` - matches data between `2000-01-01T10:00:00Z` and `2010-03-10T12:00:00Z`
 `,2010-03-10T12:00:00Z` - matches data before `2010-03-10T12:00:00Z`
@@ -993,6 +993,8 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 The first two values of the parameter together define the temporal bounds. See under [Temporal Range searches](#temporal-range-searches) for different ways of specifying the temporal bounds including ISO 8601.
 
 For temporal range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[temporal][exclude_boundary]=true`. This option has no impact on periodic temporal searches.
+
+The collection's temporal range or the temporal range of the granules in the collection can be searched. `options[temporal][limit_to_granules]=true` will indicate that the temporal search should find collections based on the minimum and maximum values of each collection's granules' temporal range. If a collection does not have any granules it will search the collection's temporal range.
 
 #### <a name="c-project"></a> Find collections by project
 
@@ -2127,9 +2129,9 @@ Tagging allows arbitrary sets of collections to be grouped under a single namesp
 
 Tags have the following fields:
 
-* Tag-key (REQUIRED): free text specifying the key of the tag. Tag-key cannot contain `/` character. Tag-key is case-insensitive, it is always saved in lower case. When it is specified as mixed case, CMR will convert it into lower case. It normally consists of the name of the organization or the project who created the tag followed by a dot and the name of the tag. For example, org.ceos.wgiss.cwic.quality. The maximum length for tag-key is 1030 characters.
-* Description (OPTIONAL): a free text description of what this tag is and / or how it is used. The maximum length for description is 4000 characters.
-* Originator ID (REQUIRED): the Earthdata Login ID of the person who created the tag.
+* tag_key (REQUIRED): free text specifying the key of the tag. Tag key cannot contain `/` character. Tag key is case-insensitive, it is always saved in lower case. When it is specified as mixed case, CMR will convert it into lower case. It normally consists of the name of the organization or the project who created the tag followed by a dot and the name of the tag. For example, org.ceos.wgiss.cwic.quality. The maximum length for tag key is 1030 characters.
+* description (OPTIONAL): a free text description of what this tag is and / or how it is used. The maximum length for description is 4000 characters.
+* originator_id (REQUIRED): the Earthdata Login ID of the person who created the tag.
 
 #### <a name="tag-access-control"></a> Tag Access Control
 
@@ -2142,7 +2144,7 @@ Tags are created by POSTing a JSON representation of a tag to `%CMR-ENDPOINT%/ta
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags -d \
 '{
-  "tag-key": "org.ceos.wgiss.cwic.quality",
+  "tag_key": "org.ceos.wgiss.cwic.quality",
   "description": "This is a sample tag."
  }'
 
@@ -2150,12 +2152,12 @@ HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 48
 
-{"concept-id":"T1200000000-CMR","revision-id":1}
+{"concept_id":"T1200000000-CMR","revision_id":1}
 ```
 
 #### <a name="retrieving-a-tag"></a> Retrieving a Tag
 
-A single tag can be retrieved by sending a GET request to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag-key is the tag-key of the tag.
+A single tag can be retrieved by sending a GET request to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag key of the tag.
 
 ```
 curl -i %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality?pretty=true
@@ -2165,20 +2167,20 @@ Content-Length: 216
 Content-Type: application/json;charset=ISO-8859-1
 
 {
-  "originator-id" : "mock-admin",
-  "tag-key": "org.ceos.wgiss.cwic.quality",
+  "originator_id" : "mock-admin",
+  "tag_key": "org.ceos.wgiss.cwic.quality",
   "description" : "This is a sample tag for indicating some data is high quality."
 }
 ```
 
 #### <a name="updating-a-tag"></a> Updating a Tag
 
-Tags are updated by sending a PUT request with the JSON representation of a tag to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag-key is the tag-key of the tag. The same rules apply when updating a tag as when creating it but in addition tag-key and originator id cannot be modified. The response will contain the concept id along with the tag revision id.
+Tags are updated by sending a PUT request with the JSON representation of a tag to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag key of the tag. The same rules apply when updating a tag as when creating it but in addition tag key and originator id cannot be modified. The response will contain the concept id along with the tag revision id.
 
 ```
 curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality -d \
 '{
-  "tag-key": "org.ceos.wgiss.cwic.quality",
+  "tag_key": "org.ceos.wgiss.cwic.quality",
   "description": "This is a sample tag for indicating some data is high quality."
  }'
 
@@ -2186,12 +2188,12 @@ HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 48
 
-{"concept-id":"T1200000000-CMR","revision-id":2}
+{"concept_id":"T1200000000-CMR","revision_id":2}
 ```
 
 #### <a name="deleting-a-tag"></a> Deleting a Tag
 
-Tags are deleted by sending a DELETE request to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag-key is the tag-key of the tag. Deleting a tag creates a tombstone that marks the tag as deleted. The concept id of the tag and the revision id of the tombstone are returned from a delete request. Deleting a tag dissociates all collections with the tag.
+Tags are deleted by sending a DELETE request to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag key of the tag. Deleting a tag creates a tombstone that marks the tag as deleted. The concept id of the tag and the revision id of the tombstone are returned from a delete request. Deleting a tag dissociates all collections with the tag.
 
 ```
 curl -XDELETE -i  -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality
@@ -2200,7 +2202,7 @@ HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 48
 
-{"concept-id":"T1200000000-CMR","revision-id":3}
+{"concept_id":"T1200000000-CMR","revision_id":3}
 ```
 
 
@@ -2210,8 +2212,8 @@ A tag can be associated with collections through either a JSON query or a list o
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.native_id/associations -d \
-'[{"concept-id": "C1200000005-PROV1", "data": "Global Maps of Atmospheric Nitrogen Deposition, 2016"},
-  {"concept-id": "C1200000006-PROV1", "data": "Global Maps of Atmospheric Nitrogen Deposition"}]'
+'[{"concept_id": "C1200000005-PROV1", "data": "Global Maps of Atmospheric Nitrogen Deposition, 2016"},
+  {"concept_id": "C1200000006-PROV1", "data": "Global Maps of Atmospheric Nitrogen Deposition"}]'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
@@ -2294,9 +2296,9 @@ Tags can be associated with collections by POSTing a JSON array of collection co
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.gcmd.review_status/associations -d \
-'[{"concept-id": "C1200000005-PROV1", "revision-id": 2, "data": "APPROVED"},
-  {"concept-id": "C1200000006-PROV1", "revision-id": 1, "data": "IN_REVIEW"},
-  {"concept-id": "C1200000007-PROV1", "revision-id": 1, "data": "REVIEW_DISPUTED"}]'
+'[{"concept_id": "C1200000005-PROV1", "revision_id": 2, "data": "APPROVED"},
+  {"concept_id": "C1200000006-PROV1", "revision_id": 1, "data": "IN_REVIEW"},
+  {"concept_id": "C1200000007-PROV1", "revision_id": 1, "data": "REVIEW_DISPUTED"}]'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
@@ -2341,9 +2343,9 @@ A tag can be disassociated from collections through either a JSON query or a lis
 
 ```
 curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations -d \
-'[{"concept-id": "C1200000005-PROV1"},
-  {"concept-id": "C1200000006-PROV1"},
-  {"concept-id": "C1200000007-PROV1"}]'
+'[{"concept_id": "C1200000005-PROV1"},
+  {"concept_id": "C1200000006-PROV1"},
+  {"concept_id": "C1200000007-PROV1"}]'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
@@ -2436,8 +2438,8 @@ Tags can be disassociated from collections by sending a DELETE request with a JS
 
 ```
 curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.gcmd.review_status/associations -d \
-'[{"concept-id": "C1200000005-PROV1", "revision-id": 1},
-  {"concept-id": "C1200000006-PROV1", "revision-id": 2}]'
+'[{"concept_id": "C1200000005-PROV1", "revision_id": 1},
+  {"concept_id": "C1200000006-PROV1", "revision_id": 2}]'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
@@ -2482,9 +2484,9 @@ The following parameters are supported when searching for tags.
 
 ##### Tag Matching Parameters
 
-These parameters will match fields within a tag. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `tag-key[]=key1&tag-key[]=key2`.
+These parameters will match fields within a tag. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `tag_key[]=key1&tag_key[]=key2`.
 
-* tag-key
+* tag_key
   * options: pattern
 * originator_id
   * options: pattern
@@ -2496,16 +2498,16 @@ The response is always returned in JSON and includes the following parts.
 * hits - How many total tags were found.
 * took - How long the search took in milliseconds
 * items - a list of the current page of tags with the following fields
-  * concept-id
-  * revision-id
-  * tag-key
+  * concept_id
+  * revision_id
+  * tag_key
   * description
-  * originator-id - The id of the user that created the tag.
+  * originator_id - The id of the user that created the tag.
 
 ##### Tag Search Example
 
 ```
-curl -g -i "%CMR-ENDPOINT%/tags?pretty=true&tag-key=org\\.ceos\\.*&options[tag-key][pattern]=true"
+curl -g -i "%CMR-ENDPOINT%/tags?pretty=true&tag_key=org\\.ceos\\.*&options[tag_key][pattern]=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
@@ -2513,11 +2515,11 @@ Content-Length: 292
 
 {
   "items" : [ {
-    "concept-id" : "T1200000000-CMR",
-    "revision-id" : 1,
-    "tag-key" : "org.ceos.wgiss.cwic",
+    "concept_id" : "T1200000000-CMR",
+    "revision_id" : 1,
+    "tag_key" : "org.ceos.wgiss.cwic",
     "description" : "This is a sample tag.",
-    "originator-id" : "mock-admin"
+    "originator_id" : "mock-admin"
   } ],
   "took" : 5,
   "hits" : 1

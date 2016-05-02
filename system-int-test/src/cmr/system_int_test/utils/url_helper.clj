@@ -364,6 +364,10 @@
   []
   (format "http://localhost:%s/update-indexes" (transmit-config/indexer-port)))
 
+(defn refresh-collection-granule-aggregate-cache-url
+  []
+  (format "http://localhost:%s/jobs/refresh-collection-granule-aggregate-cache" (transmit-config/indexer-port)))
+
 (defn indexer-read-caches-url
   "URL to read the indexer caches."
   []

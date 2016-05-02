@@ -30,11 +30,13 @@
                                     :end-date (:end-date date-time-range)
                                     :start-day (string->int-value start-day)
                                     :end-day (string->int-value end-day)
-                                    :exclusive? (= "true" (get-in options [:temporal :exclude-boundary]))}))
+                                    :exclusive? (= "true" (get-in options [:temporal :exclude-boundary]))
+                                    :limit-to-granules (= "true" (get-in options [:temporal :limit-to-granules]))}))
       (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
         (qm/map->TemporalCondition {:start-date (when-not (s/blank? start-date) (parser/parse-datetime start-date))
                                     :end-date (when-not (s/blank? end-date) (parser/parse-datetime end-date))
                                     :start-day (string->int-value start-day)
                                     :end-day (string->int-value end-day)
-                                    :exclusive? (= "true" (get-in options [:temporal :exclude-boundary]))})))))
+                                    :exclusive? (= "true" (get-in options [:temporal :exclude-boundary]))
+                                    :limit-to-granules (= "true" (get-in options [:temporal :limit-to-granules]))})))))
 

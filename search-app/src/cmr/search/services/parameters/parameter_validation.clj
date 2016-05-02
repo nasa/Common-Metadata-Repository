@@ -97,7 +97,7 @@
    :dif-entry-id cpv/string-plus-and-options
    :provider cpv/string-param-options
    :attribute exclude-plus-or-option
-   :temporal exclude-plus-and-or-option
+   :temporal (conj exclude-plus-and-or-option :limit-to-granules)
    :revision-date cpv/and-option
    :highlights highlights-option
 
