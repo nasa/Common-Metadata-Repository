@@ -17,7 +17,7 @@
 
 (defn create-group
   "Perform a CreateGroup request against the SOAP API. Takes a map containing request parameters:
-    [:token :guid :name :description :member-guids :owner-provider-id]
+    [:token :guid :name :description :member-guids :owner-provider-id :managing-group]
     returns the GUID of the new group."
   [param-map]
   (let [{:keys [token name description member-guids managing-group guid owner-provider-guid]} param-map
@@ -95,3 +95,15 @@
           (-> (get-groups {:token token :group-guids [group-guid]})
              (first))
           (cmr.common.services.errors/throw-service-error :soap-fault (str "Group [" group-name "] does not exist or does not include the specified user.")))))
+
+(defn remove-group
+  "Perform a RemoveGroup request against the SOAP API. Takes a map containing request parameters:
+    [:token :guid]"
+  [param-map]
+  (let [{:keys [token guid]} param-map
+        body ["ns2:RemoveGroup"
+              soap/soap-ns-map
+              ["ns2:token" token]
+              ["ns2:groupGuid" guid]]]
+    (-> (soap/post-soap :group2-management body)
+        (soap/extract-string :remove-group))))
