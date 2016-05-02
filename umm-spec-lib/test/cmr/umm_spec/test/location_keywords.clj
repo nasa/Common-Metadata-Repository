@@ -25,32 +25,19 @@
    {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :subregion-2 "ANGOLA", :uuid "9b0a194d-d617-4fed-9625-df176319892d"}
    {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :subregion-2 "LAKE CHAD", :uuid "a1810ec4-2d03-4d98-b049-2cad380fb789"}))
 
- ;;Use for local system testing
-(def local-test-system-context
-  {:system {:caches {kf/kms-cache-key (cmr.common.cache.in-memory-cache/create-in-memory-cache)}}})
-
-(def test-system-context
-       {:system {:config (transmit-config/system-with-connections {} [:common-app :cubby :kms])
-                 :caches {kf/kms-cache-key (cmr.common.cache.in-memory-cache/create-in-memory-cache)}}})
-
 (defn setup-context-for-test
   "Sets up a cache by taking values necessary for the cache and returns a map of context"
   [cache-values]
   (let [cache (imc/create-in-memory-cache)]
-        (cache/set-value cache kf/kms-cache-key cache-values)
-        {:system {:caches {kf/kms-cache-key cache}}}))
-
-(comment
-(clojure.pprint/pprint test-system-context)
-(clojure.pprint/pprint (-> {:system (get-in user/system [:apps :indexer])}))
-)
+    (cache/set-value cache kf/kms-cache-key cache-values)
+    {:system {:caches {kf/kms-cache-key cache}}}))
 
 (deftest test-location-keyword-lookup
   (testing "Looking up a root keyword returns the top heirarchy result."
-  (let [keyword "CONTINENT"
-        expected {:category "CONTINENT", :uuid "0a672f19-dad5-4114-819a-2eb55bdbb56a"}
-        actual (lk/find-spatial-keyword sample-keyword-map keyword)]
-  (is (= expected actual))))
+    (let [keyword "CONTINENT"
+          expected {:category "CONTINENT", :uuid "0a672f19-dad5-4114-819a-2eb55bdbb56a"}
+          actual (lk/find-spatial-keyword sample-keyword-map keyword)]
+      (is (= expected actual))))
 
   (testing "Looking up a uuid returns a valid result"
     (let [uuid "a028edce-a3d9-4a16-a8c7-d2cb12d3a318"

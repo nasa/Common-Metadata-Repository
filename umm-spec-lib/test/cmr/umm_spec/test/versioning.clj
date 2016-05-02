@@ -24,9 +24,11 @@
 (defspec all-migrations-produce-valid-umm-spec 100
   (for-all [umm-record   (gen/no-shrink umm-gen/umm-c-generator)
             dest-version (gen/elements v/versions)]
-    (let [dest-media-type (str mt/umm-json "; version=" dest-version)
-          metadata (core/generate-metadata (lkt/setup-context-for-test {:spatial-keywords lkt/sample-keyword-map}) umm-record dest-media-type)]
-      (empty? (core/validate-metadata :collection dest-media-type metadata)))))
+           (let [dest-media-type (str mt/umm-json "; version=" dest-version)
+                 metadata (core/generate-metadata (lkt/setup-context-for-test
+                                                   {:spatial-keywords lkt/sample-keyword-map})
+                                                  umm-record dest-media-type)]
+             (empty? (core/validate-metadata :collection dest-media-type metadata)))))
 
 (deftest migrate-1_0-up-to-1_1
   (is (nil?
@@ -54,10 +56,21 @@
                                                          {:TilingIdentificationSystemName "bar"}]})))))
 
 (deftest migrate-1_1-up-to-1_2
-  (is (nil?
-      (seq (:LocationKeywords (v/migrate-umm (lkt/setup-context-for-test {:spatial-keywords lkt/sample-keyword-map})  :collection "1.1" "1.2" {:SpatialKeywords nil})))))
-  (is (nil?
-       (seq (:LocationKeywords (v/migrate-umm (lkt/setup-context-for-test {:spatial-keywords lkt/sample-keyword-map}) :collection "1.1" "1.2" {:SpatialKeywords []})))))
+  (is (empty? (:LocationKeywords
+             (v/migrate-umm (lkt/setup-context-for-test {:spatial-keywords lkt/sample-keyword-map})
+                            :collection "1.1" "1.2" {:SpatialKeywords nil}))))
+  (is (empty? (:LocationKeywords
+             (v/migrate-umm (lkt/setup-context-for-test {:spatial-keywords lkt/sample-keyword-map})
+                            :collection "1.1" "1.2" {:SpatialKeywords []}))))
 
-  (is (= [({:category "CONTINENT", :uuid "0a672f19-dad5-4114-819a-2eb55bdbb56a"})]
-         (seq (:LocationKeywords (v/migrate-umm (lkt/setup-context-for-test {:spatial-keywords lkt/sample-keyword-map}) :collection "1.1" "1.2" {:SpatialKeywords ["CONTINENT"] }))))))
+  (is (= [{:category "CONTINENT", :uuid "0a672f19-dad5-4114-819a-2eb55bdbb56a"}]
+         (seq (:LocationKeywords
+               (v/migrate-umm (lkt/setup-context-for-test {:spatial-keywords lkt/sample-keyword-map})
+                              :collection "1.1" "1.2" {:SpatialKeywords ["CONTINENT"] }))))))
+
+(deftest migrate_1_2-down-to-1_1
+  (is (nil?
+       (:LocationKeywords
+        (v/migrate-umm {} :collection "1.2" "1.1"
+                       {:LocationKeywords
+                        {:category "CONTINENT", :uuid "0a672f19-dad5-4114-819a-2eb55bdbb56a"}})))))
