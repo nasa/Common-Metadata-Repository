@@ -67,8 +67,11 @@
   "Check to see if the client has specified BOTH legacy format psa parameters and the current csv
   format, which is an error. Also check to make sure that cmr style uses 'attribute[]=' and not
   'attribute='."
-  [params]
-  (if-let [attributes (:attribute params)]
+  [attributes]
+  (when-let [attributes (if (map? attributes)
+                          ;; treat it as legacy style
+                          (vec (vals attributes))
+                          attributes)]
     (if (vector? attributes)
       (reduce (fn [memo x]
                 (cond
@@ -102,46 +105,27 @@
       (str base value)
       (str base minValue "," maxValue))))
 
-(defn- legacy-psa-param->tuple
-  "Convert a legacy attribute url parameter to a tuple"
-  [param]
-  (let [[_ key value] (re-find #"(?s)attribute\[\]\[(.*?)\]=(.*)" param)]
-    (when key [(keyword key) value])))
-
 (defn- checked-merge
-  "Merge a tuple into a map only if the key does not already exist. Throws an
-  exception if it does. This allows us to catch client errors where they try to specify
-  the same attribute field twice, e.g., &attribute[][name]=a&attribute[name]=b."
-  [map tuple]
-  (if (get map (first tuple))
-    (msg/data-error :bad-request a-msg/duplicate-parameter-msg tuple)
-    (merge map tuple)))
-
-
-(defn- group-legacy-psa-tuples
-  "Take a list of tuples created from a legacy query string and group them together as attributes"
-  [big-list]
-  (reduce (fn [results item]
-            (if (or (empty? results)
-                    (and (= :name (first item))
-                         (:name (last results))))
-              ;; We create a new set when the results is empty or a new name comes in
-              (conj results (merge {} item))
-              ;; Update the current set (last set on results)
-              (update-in results [(dec (count results))] checked-merge item)))
-          []
-          big-list))
+  "Merge the given attribute map into the result map only if the key does not already exist.
+  Throws an exception if it does. This allows us to catch client errors where they try to specify
+  the same attribute field twice, e.g., &attribute[][name]=a&attribute[][name]=b."
+  [result attr-map]
+  (if (get result (first (keys attr-map)))
+    (msg/data-error :bad-request a-msg/duplicate-parameter-msg (first attr-map))
+    (merge result attr-map)))
 
 (defn process-legacy-psa
-  "Process legacy product specific attributes by parsing the query string and updating params
-  with attributes matching the new cmr csv style"
-  [params query-string]
-  (psa-pre-validation params)
-  (let [param-strings (if (empty? query-string) [] (map rc/url-decode (s/split query-string #"&")))
-        param-tuples (keep legacy-psa-param->tuple param-strings)
-        param-maps (group-legacy-psa-tuples param-tuples)
-        psa (map attr-map->cmr-param param-maps)]
-    (if-not (empty? psa)
+  "Process legacy product specific attributes by updating params with attributes
+  matching the new cmr csv style"
+  [params]
+  (let [attributes (:attribute params)
+        attribute-type (psa-pre-validation attributes)
+        attr-maps (when (= :legacy-style attribute-type)
+                    (if (vector? attributes)
+                      [(reduce checked-merge attributes)]
+                      (vec (vals attributes))))
+        psa (map attr-map->cmr-param attr-maps)]
+    (if (seq psa)
       (assoc params :attribute psa)
       params)))
 
@@ -242,9 +226,6 @@
                 :echo-granule-id ["G1000000002-PROV1" "G1000000003-PROV1"
                                   "G1000000004-PROV1" "G1000000005-PROV2" "G1000000006-PROV2"]}]
     (replace-parameter-aliases params)))
-
-
-  ;;;;;;;;;;;;;;;;;
 
 
 
