@@ -118,7 +118,8 @@
 
 (defn get-full-hierarchy-for-location-keywords
   [gcmd-keywords-map location-map]
-  (get-full-hierarchy-for-keyword gcmd-keywords-map :spatial-keywords location-map [:category :type :subregion-1 :subregion-2 :subregion-3]))
+  (get-full-hierarchy-for-keyword gcmd-keywords-map :spatial-keywords location-map
+                                  [:category :type :subregion-1 :subregion-2 :subregion-3]))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache because
 ;; we use a consistent cache which uses cubby to coordinate any changes to the cache.

@@ -38,7 +38,7 @@
    :instruments "instruments/instruments.csv"
    :projects "projects/projects.csv"
    :temporal-keywords "temporalresolutionrange/temporalresolutionrange.csv"
-   :spatial-keywords "locations/locations_full.csv"
+   :spatial-keywords "locations/locations.csv"
    :science-keywords "sciencekeywords/sciencekeywords.csv"})
 
 (def keyword-scheme->field-names
