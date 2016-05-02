@@ -59,5 +59,5 @@
   (is (nil?
        (seq (:LocationKeywords (v/migrate-umm (lkt/setup-context-for-test {:spatial-keywords lkt/sample-keyword-map}) :collection "1.1" "1.2" {:SpatialKeywords []})))))
 
-  (is (= [(umm-c/map->LocationKeywordType {:category "CONTINENT", :uuid "0a672f19-dad5-4114-819a-2eb55bdbb56a"})]
+  (is (= [({:category "CONTINENT", :uuid "0a672f19-dad5-4114-819a-2eb55bdbb56a"})]
          (seq (:LocationKeywords (v/migrate-umm (lkt/setup-context-for-test {:spatial-keywords lkt/sample-keyword-map}) :collection "1.1" "1.2" {:SpatialKeywords ["CONTINENT"] }))))))

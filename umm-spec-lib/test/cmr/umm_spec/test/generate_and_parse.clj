@@ -44,16 +44,16 @@
   "Returns record after being converted to XML and back to UMM through
   the given to-xml and to-umm mappings."
   [concept-type metadata-format record]
-  (let [metadata-xml (core/generate-metadata record metadata-format)]
+  (let [metadata-xml (core/generate-metadata {} record metadata-format)]
     ;; validate against xml schema
     (is (empty? (core/validate-xml concept-type metadata-format metadata-xml)))
-    (core/parse-metadata concept-type metadata-format metadata-xml)))
+    (core/parse-metadata {} concept-type metadata-format metadata-xml)))
 
 (defn- generate-and-validate-xml
   "Returns a vector of errors (empty if none) from attempting to convert the given UMM record
   to valid XML in the given format."
   [concept-type metadata-format record]
-  (let [metadata-xml (core/generate-metadata record metadata-format)]
+  (let [metadata-xml (core/generate-metadata {} record metadata-format)]
     (core/validate-xml concept-type metadata-format metadata-xml)))
 
 (deftest roundtrip-example-collection-record
@@ -69,7 +69,7 @@
 (deftest roundrobin-collection-example-record
   (doseq [[origin-format filename] collection-format-examples
           :let [metadata (slurp (io/resource (str "example_data/" filename)))
-                umm-c-record (core/parse-metadata :collection origin-format metadata)]
+                umm-c-record (core/parse-metadata {} :collection origin-format metadata)]
           dest-format collection-destination-formats
           :when (not= origin-format dest-format)]
     (testing (str origin-format " to " dest-format)
@@ -117,8 +117,8 @@
 ;; This test is to verify that we populate UMM Projects in gmd:descriptiveKeywords correctly as well.
 (defspec iso19115-projects-keywords 100
   (for-all [umm-record umm-gen/umm-c-generator]
-    (let [metadata-xml (core/generate-metadata umm-record :iso19115)
-          projects (:Projects (core/parse-metadata :collection :iso19115 metadata-xml))
+    (let [metadata-xml (core/generate-metadata {} umm-record :iso19115)
+          projects (:Projects (core/parse-metadata {} :collection :iso19115 metadata-xml))
           expected-projects-keywords (seq (map iu/generate-title projects))]
       (is (= expected-projects-keywords
              (parse-iso19115-projects-keywords metadata-xml))))))
@@ -135,7 +135,7 @@
 
 (comment
 
-  (println (core/generate-metadata :collection :iso-smap failing-value))
+  (println (core/generate-metadata {} :collection :iso-smap failing-value))
 
   (is (= (expected-conversion/convert user/failing-value :iso-smap)
          (xml-round-trip :collection user/failing-value :iso-smap)))
@@ -164,7 +164,7 @@
   (def sample-record expected-conversion/example-service-record)
 
   ;; Evaluate to print generated metadata from the record selected above.
-  (println (core/generate-metadata sample-record [:collection :dif10]))
+  (println (core/generate-metadata {} sample-record [:collection :dif10]))
 
   ;; our simple example record
   (core/generate-metadata :collection metadata-format sample-record)

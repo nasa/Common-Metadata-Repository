@@ -49,7 +49,7 @@
   [context spatial-keywords]
   (let [spatial-keyword-maps (get-spatial-keywords-maps (kf/get-gcmd-keywords-map context))
         location-keyword-maps (spatial-keywords->location-keywords spatial-keyword-maps spatial-keywords)]
-    (map #(umm-c/map->LocationKeywordType %) location-keyword-maps)))
+    location-keyword-maps))
 
 ;; Examples
 (comment
