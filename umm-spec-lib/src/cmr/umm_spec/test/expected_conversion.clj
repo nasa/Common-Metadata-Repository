@@ -13,6 +13,7 @@
             [cmr.umm-spec.date-util :as du]
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as cmn]
+            [cmr.spatial.mbr :as m]
             ;; Required for loading service models for testing
             [cmr.umm-spec.models.service]
             [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
@@ -188,8 +189,8 @@
                      {:Role "PROCESSOR"
                       :Party {:OrganizationName {:ShortName "org 3"}}}]
      :Personnel [{:Role "POINTOFCONTACT"
-                  :Party {:Person {:LastName "person 2"}}}]
-     }))
+                  :Party {:Person {:LastName "person 2"}}}]}))
+
 
 
 (def example-service-record
@@ -234,7 +235,7 @@
                                                        :Country "USA"}]}
                                   :Role "AUTHOR"}
                                  {:Party {:OrganizationName {:ShortName "NASA/GSFC/SED/ESD/GCDC/GESDISC"
-                                                             :LongName "Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA" }
+                                                             :LongName "Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA"}
                                           :Person {:FirstName "FIRSTNAME"
                                                    :LastName "LASTNAME"}
                                           :Contacts [{:Type "email"
@@ -255,7 +256,7 @@
                                    "IMAGERY/BASE MAPS/EARTH COVER"]
               :Abstract "This is one of the GES DISC's OGC Web Coverage Service (WCS) instances which provides Level 3 Gridded atmospheric data products derived from the Atmospheric Infrared Sounder (AIRS) on board NASA's Aqua spacecraft."
               :ServiceCitation [{:Creator "NASA Goddard Earth Sciences (GES) Data and Information Services Center (DISC)"
-                                 :Title "OGC Web Coverage Service (WCS) for accessing Atmospheric Infrared Sounder (AIRS) Data" }]
+                                 :Title "OGC Web Coverage Service (WCS) for accessing Atmospheric Infrared Sounder (AIRS) Data"}]
               :RelatedUrls [{:Description "\n   This Web Coverage Service (WCS) is one of the multiple GES DISC data service instances used to provide gridded Level 3 Atmospheric Infrared Sounder (AIRS) data products. Accessing to this URL will result in a brief description of coverages (i.e., data layers or variables), or a getCapabilities response. A client can request more detailed information about the served coverages by sending a describeCoverage request to the server. Finally, a client can request actual data using a getCoverage request. \n"
                              :Relation ["GET SERVICE" "GET WEB COVERAGE SERVICE (WCS)"]
                              :URLs ["http://acdisc.sci.gsfc.nasa.gov/daac-bin/wcsAIRSL3?Service=WCS&Version=1.0.0&Request=getCapabilities"]}]
@@ -360,13 +361,13 @@
     (seq? x)    (seq (keep prune-empty-maps x))
     :else x))
 
-(defmulti ^:private convert-internal
+(defmulti ^:private umm->expected-convert
   "Returns UMM collection that would be expected when converting the source UMM-C record into the
   destination XML format and parsing it back to a UMM-C record."
   (fn [umm-coll metadata-format]
     metadata-format))
 
-(defmethod convert-internal :default
+(defmethod umm->expected-convert :default
   [umm-coll _]
   umm-coll)
 
@@ -484,7 +485,7 @@
                  geometry-with-coordinate-system)
       spatial-extent)))
 
-(defmethod convert-internal :echo10
+(defmethod umm->expected-convert :echo10
   [umm-coll _]
   (-> umm-coll
       (assoc :Personnel nil) ;; Implement this as part of CMR-1841
@@ -580,7 +581,7 @@
         location-type (umm-c/map->LocationKeywordType location-keyword)]
     (if (some? location-keyword) [location-type] nil)))
 
-(defmethod convert-internal :dif
+(defmethod umm->expected-convert :dif
   [umm-coll _]
   (-> umm-coll
       ;; DIF 9 only supports entry-id in metadata associations
@@ -669,7 +670,7 @@
       (update-in-each [:HorizontalSpatialDomain :Geometry :GPolygons] fix-echo10-dif10-polygon)
       prune-empty-maps))
 
-(defmethod convert-internal :dif10
+(defmethod umm->expected-convert :dif10
   [umm-coll _]
   (-> umm-coll
       (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
@@ -872,7 +873,7 @@
   [pubref]
   (if (:DOI pubref)
     (assoc-in pubref [:DOI :Authority] nil)
-    pubref ))
+    pubref))
 
 (defn- fix-access-constraints
   [access-constraint]
@@ -890,7 +891,7 @@
     ma
     metadata-association))
 
-(defmethod convert-internal :serf
+(defmethod umm->expected-convert :serf
   [umm-service _]
   (-> umm-service
       (update-in [:Responsibilities] make-sure-organization-exists)
@@ -1061,9 +1062,37 @@
   [categories]
   (seq (map iso/iso-topic-value->sanitized-iso-topic-category categories)))
 
-(defmethod convert-internal :iso19115
+(defn- normalize-bounding-rectangle
+  [{:keys [WestBoundingCoordinate NorthBoundingCoordinate
+           EastBoundingCoordinate SouthBoundingCoordinate
+           CenterPoint]}]
+  (let [{:keys [west north east south]} (m/mbr WestBoundingCoordinate
+                                               NorthBoundingCoordinate
+                                               EastBoundingCoordinate
+                                               SouthBoundingCoordinate)]
+    (cmn/map->BoundingRectangleType
+     {:CenterPoint CenterPoint
+      :WestBoundingCoordinate west
+      :NorthBoundingCoordinate north
+      :EastBoundingCoordinate east
+      :SouthBoundingCoordinate south})))
+
+(def bounding-rectangles-path
+  "The path in UMM to bounding rectangles."
+  [:SpatialExtent :HorizontalSpatialDomain :Geometry :BoundingRectangles])
+
+(defn fix-bounding-rectangles
+  "Bounding rectangles in UMM JSON during conversion will be passed to the MBR namespace which does
+   some normalization on them. The result is still the same area but the values will not be identical."
+  [umm]
+  (if-let [brs (seq (get-in umm bounding-rectangles-path))]
+    (assoc-in umm bounding-rectangles-path (mapv normalize-bounding-rectangle brs))
+    umm))
+
+(defmethod umm->expected-convert :iso19115
   [umm-coll _]
   (-> umm-coll
+      fix-bounding-rectangles
       (update-in [:SpatialExtent] update-iso-spatial)
       ;; ISO only supports a single tiling identification system
       (update-in [:TilingIdentificationSystems] #(seq (take 1 %)))
@@ -1117,50 +1146,54 @@
     data-dates
     [(cmn/map->DateType {:Type "CREATE" :Date du/parsed-default-date})]))
 
-(defmethod convert-internal :iso-smap
+(defmethod umm->expected-convert :iso-smap
   [umm-coll _]
-  (-> umm-coll
-      (convert-internal :iso19115)
-      (update-in [:SpatialExtent] expected-smap-iso-spatial-extent)
-      (update-in [:DataDates] expected-smap-data-dates)
-      ;; ISO SMAP does not support the PrecisionOfSeconds field.
-      (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
-      ;; Implement this as part of CMR-2057
-      (update-in-each [:TemporalExtents] assoc :TemporalRangeType nil)
-      ;; Fields not supported by ISO-SMAP
-      (assoc :MetadataAssociations nil) ;; Not supported for ISO SMAP
-      (assoc :Personnel nil) ;; Implement this as part of CMR-1841
-      (assoc :Organizations nil) ;; Implement this as part of CMR-1841
-      (assoc :UseConstraints nil)
-      (assoc :AccessConstraints nil)
-      (assoc :SpatialKeywords nil)
-      (assoc :TemporalKeywords nil)
-      (assoc :CollectionDataType nil)
-      (assoc :AdditionalAttributes nil)
-      (assoc :ProcessingLevel nil)
-      (assoc :Distributions nil)
-      (assoc :Projects nil)
-      (assoc :PublicationReferences nil)
-      (assoc :AncillaryKeywords nil)
-      (assoc :RelatedUrls nil)
-      (assoc :ISOTopicCategories nil)
-      ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
-      ;; Platform Characteristics are also not supported.
-      (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
-      ;; The following instrument fields are not supported by SMAP.
-      (update-in-each [:Platforms] update-in-each [:Instruments] assoc
-                      :Characteristics nil
-                      :OperationalModes nil
-                      :NumberOfSensors nil
-                      :Sensors nil
-                      :Technique nil)
-      ;; ISO-SMAP checks on the Category of theme descriptive keywords to determine if it is
-      ;; science keyword.
-      (update-in [:ScienceKeywords]
-                 (fn [sks]
-                   (seq
-                     (filter #(.contains kws/science-keyword-categories (:Category %)) sks))))
-      (update-in [:Platforms] normalize-smap-instruments)))
+  (let [original-brs (get-in umm-coll bounding-rectangles-path)
+        umm-coll (umm->expected-convert umm-coll :iso19115)
+        umm-coll (if (seq original-brs)
+                   (assoc-in umm-coll bounding-rectangles-path original-brs)
+                   umm-coll)]
+    (-> umm-coll
+        (update-in [:SpatialExtent] expected-smap-iso-spatial-extent)
+        (update-in [:DataDates] expected-smap-data-dates)
+        ;; ISO SMAP does not support the PrecisionOfSeconds field.
+        (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
+        ;; Implement this as part of CMR-2057
+        (update-in-each [:TemporalExtents] assoc :TemporalRangeType nil)
+        ;; Fields not supported by ISO-SMAP
+        (assoc :MetadataAssociations nil) ;; Not supported for ISO SMAP
+        (assoc :Personnel nil) ;; Implement this as part of CMR-1841
+        (assoc :Organizations nil) ;; Implement this as part of CMR-1841
+        (assoc :UseConstraints nil)
+        (assoc :AccessConstraints nil)
+        (assoc :SpatialKeywords nil)
+        (assoc :TemporalKeywords nil)
+        (assoc :CollectionDataType nil)
+        (assoc :AdditionalAttributes nil)
+        (assoc :ProcessingLevel nil)
+        (assoc :Distributions nil)
+        (assoc :Projects nil)
+        (assoc :PublicationReferences nil)
+        (assoc :AncillaryKeywords nil)
+        (assoc :RelatedUrls nil)
+        (assoc :ISOTopicCategories nil)
+        ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
+        ;; Platform Characteristics are also not supported.
+        (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
+        ;; The following instrument fields are not supported by SMAP.
+        (update-in-each [:Platforms] update-in-each [:Instruments] assoc
+                        :Characteristics nil
+                        :OperationalModes nil
+                        :NumberOfSensors nil
+                        :Sensors nil
+                        :Technique nil)
+        ;; ISO-SMAP checks on the Category of theme descriptive keywords to determine if it is
+        ;; science keyword.
+        (update-in [:ScienceKeywords]
+                   (fn [sks]
+                     (seq
+                      (filter #(.contains kws/science-keyword-categories (:Category %)) sks))))
+        (update-in [:Platforms] normalize-smap-instruments))))
 
 ;;; Unimplemented Fields
 
@@ -1189,7 +1222,7 @@
    (if (contains? #{:umm-json} metadata-format)
      umm-record
      (-> umm-record
-         (convert-internal metadata-format)
+         (umm->expected-convert metadata-format)
          (dissoc-not-implemented-fields metadata-format))))
   ([umm-record src dest]
    (-> umm-record

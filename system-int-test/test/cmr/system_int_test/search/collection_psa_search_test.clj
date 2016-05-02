@@ -121,8 +121,11 @@
            ["string,alpha,ab" "string,bravo,,bc"] [] nil))
 
     (testing "searching with multiple attribute conditions catalog-rest style"
+      ;; the query is in the format of
+      ;; attribute[0][name]=alpha&attribute[0][type]=string&attribute[0][value]=ab&attribute[1][name]=bravo&attribute[1][type]=string&attribute[1][maxValue]=bc
       (are [v items operation]
-           (let [query (mapcat search/csv->tuples v)
+           (let [query (->> (map-indexed search/csv->tuples v)
+                            (mapcat identity))
                  query (if operation
                          (merge query ["options[attribute][or]" (= operation :or)])
                          query)]

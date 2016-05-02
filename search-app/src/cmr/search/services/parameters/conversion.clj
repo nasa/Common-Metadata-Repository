@@ -243,10 +243,23 @@
      (common-params/string-parameter->condition concept-type  :associated-difs value
                                                 (set/rename-keys options {:dif-entry-id :associated-difs}))]))
 
+(defn- reverse-has-granules-sort
+  "The has-granules sort is the opposite of natural sorting. Collections with granules are first then
+   collections without sorting. This reverses the order of that sort key in the query attributes if
+   it is present."
+  [query-attribs]
+  (update query-attribs :sort-keys
+          (fn [sort-keys]
+            (seq (for [{:keys [field order] :as sort-key} sort-keys]
+                   (if (= field :has-granules)
+                     {:field field :order (if (= order :asc) :desc :asc)}
+                     sort-key))))))
+
 (defmethod common-params/parse-query-level-params :collection
   [concept-type params]
   (let [[params query-attribs] (common-params/default-parse-query-level-params
                                 :collection params lp/param-aliases)
+        query-attribs (reverse-has-granules-sort query-attribs)
         {:keys [begin-tag end-tag snippet-length num-snippets]} (get-in params [:options :highlights])
         result-features (concat (when (= (:include-granule-counts params) "true")
                                   [:granule-counts])

@@ -88,23 +88,24 @@
            (xml-round-trip :service metadata-format umm-record)))))
 (comment
 
-      (is (= (expected-conversion/convert failing-value :serf)
-           (xml-round-trip :service :serf failing-value)))
+ (is (= (expected-conversion/convert failing-value :serf)
+        (xml-round-trip :service :serf failing-value)))
 
-      (= (type (expected-conversion/convert user/failing-value :serf)) (type (xml-round-trip :service :serf user/failing-value)))
+ (= (type (expected-conversion/convert user/failing-value :serf))
+    (type (xml-round-trip :service :serf user/failing-value)))
 
-            (is (= (:Platforms (expected-conversion/convert user/failing-value :serf))
-           (:Platforms (xml-round-trip :service :serf user/failing-value))))
+ (is (= (:Platforms (expected-conversion/convert user/failing-value :serf))
+        (:Platforms (xml-round-trip :service :serf user/failing-value))))
 
-  (is (= (:Responsibilities (expected-conversion/convert expected-conversion/example-service-record :serf))
-    (:Responsibilities (xml-round-trip :service :serf expected-conversion/example-service-record))))
+ (is (= (:Responsibilities (expected-conversion/convert expected-conversion/example-service-record :serf))
+        (:Responsibilities (xml-round-trip :service :serf expected-conversion/example-service-record))))
 
-(is (= (expected-conversion/convert expected-conversion/example-service-record :serf)
-    (xml-round-trip :service :serf expected-conversion/example-service-record)))
+ (is (= (expected-conversion/convert expected-conversion/example-service-record :serf)
+        (xml-round-trip :service :serf expected-conversion/example-service-record)))
 
-  (is (= (:Responsibilities (:Party (last (:Responsibilities (expected-conversion/convert expected-conversion/example-service-record :serf)))))
-    (:Responsibilities (:Party (last (:Responsibilities (xml-round-trip :service :serf expected-conversion/example-service-record)))))))
-  )
+ (is (= (:Responsibilities (:Party (last (:Responsibilities (expected-conversion/convert expected-conversion/example-service-record :serf)))))
+        (:Responsibilities (:Party (last (:Responsibilities (xml-round-trip :service :serf expected-conversion/example-service-record))))))))
+
 
 (defn- parse-iso19115-projects-keywords
   "Returns the parsed projects keywords for the given ISO19115-2 xml"
@@ -135,10 +136,8 @@
 
 (comment
 
-  (println (core/generate-metadata {} :collection :iso-smap failing-value))
-
-  (is (= (expected-conversion/convert user/failing-value :iso-smap)
-         (xml-round-trip :collection user/failing-value :iso-smap)))
+  (is (= (expected-conversion/convert failing-value :iso19115)
+         (xml-round-trip :collection failing-value :iso19115)))
 
   ;; random XML gen
   (def metadata-format :echo10)
@@ -159,6 +158,7 @@
 
   ;; Evaluate this expression to use user/failing-value in the following expressions.
   (def sample-record failing-value)
+  (def umm-record failing-value)
 
   ;; Evaluate this expression to use the standard UMM example record.
   (def sample-record expected-conversion/example-service-record)

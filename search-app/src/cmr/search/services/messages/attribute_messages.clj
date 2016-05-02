@@ -33,11 +33,11 @@
   "'attribute' is not a valid parameter. You must use 'attribute[]'.")
 
 ;; This message is for clients that mistakenly specify a field of an attribute twice when
-;; using the legacy format, e.g., attribute[][name]=ABC&attribute[name]=DEF.
+;; using the legacy format, e.g., attribute[][name]=ABC&attribute[][name]=DEF.
 (defn duplicate-parameter-msg
   [parameter]
   (let [[param value] parameter]
-    (format "Duplicate parameters are not allowed [%s => %s]." (name param) value)))
+    (format "Duplicate parameters are not allowed [%s = %s]." (name param) value)))
 
 (defn mixed-legacy-and-cmr-style-parameters-msg
   []
