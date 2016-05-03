@@ -165,14 +165,14 @@
 
 (defn- parse-non-tombstone-tag-associations
   "Returns the parsed tag associations that are not tombstones"
-  [tag-associations]
+  [context tag-associations]
   (map cp/parse-concept (filter #(not (:deleted %)) tag-associations)))
 
 (defn- non-tombstone-concept->bulk-elastic-doc
   "Takes a non-tombstoned concept map (a normal revision) and returns an elastic document suitable
    with ttl fields for bulk indexing. "
   [context concept]
-  (let [parsed-concept (cp/parse-concept concept)
+  (let [parsed-concept (cp/parse-concept context concept)
         delete-time (get-in parsed-concept
                             [:data-provider-timestamps :delete-time])
         now (tk/now)
@@ -202,7 +202,7 @@
     (let [{:keys [concept-id revision-id]} concept
           type (name (concept->type concept))
           elastic-version (get-elastic-version concept)
-          concept (update concept :tag-associations parse-non-tombstone-tag-associations)
+          concept (update concept :tag-associations (parse-non-tombstone-tag-associations context))
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
           index-names (idx-set/get-concept-index-names
                        context concept-id revision-id options

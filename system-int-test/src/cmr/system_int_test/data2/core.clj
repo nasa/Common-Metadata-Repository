@@ -14,7 +14,8 @@
             [clj-time.format :as f]
             [cheshire.core :as json]
             [cmr.system-int-test.system :as s]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [cmr.umm-spec.test.location-keywords :as lkt]))
 
 (defn- item->native-id
   "Returns the native id of a UMM record."
@@ -30,7 +31,7 @@
      (merge {:concept-type (umm-legacy/item->concept-type item)
              :provider-id (or (:provider-id item) "PROV1")
              :native-id (or (:native-id item) (item->native-id item))
-             :metadata (when-not (:deleted item) (umm-legacy/generate-metadata (dissoc item :provider-id) format-key))
+             :metadata (when-not (:deleted item) (umm-legacy/generate-metadata (lkt/setup-context-for-test lkt/sample-keyword-map) (dissoc item :provider-id) format-key))
              :format format}
             (when (:concept-id item)
               {:concept-id (:concept-id item)})
@@ -76,19 +77,18 @@
 
 (defn ingest-concept-with-metadata
   "Ingest the given concept with the given metadata."
-  [{:keys [provider-id concept-type format format-key metadata native-id]}]
+  [context {:keys [provider-id concept-type format format-key metadata native-id]}]
   (let [concept  {:concept-type concept-type
                   :provider-id  provider-id
                   :native-id    (or native-id "native-id")
                   :metadata     metadata
                   :format       (or format (mime-types/format->mime-type format-key))}
         response (ingest/ingest-concept concept)]
-    (merge (umm-legacy/parse-concept concept) response)))
+    (merge (umm-legacy/parse-concept context concept) response)))
 
 (defn ingest-concept-with-metadata-file
   "Ingest the given concept with the metadata file. The metadata file has to be located on the
   classpath. Takes a metadata-filename and an ingest parameter map.
-
   ingest-params must contain the following keys: provider-id concept-type, and format-key. It can
   optionally contain native-id."
   [metadata-filename ingest-params]

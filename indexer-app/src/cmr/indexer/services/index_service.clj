@@ -242,7 +242,7 @@
           (let [tag-associations (get-tag-associations context concept)
                 elastic-version (get-elastic-version-with-tag-associations
                                   context concept tag-associations)
-                tag-associations (map cp/parse-concept (filter #(not (:deleted %)) tag-associations))
+                tag-associations (map cp/parse-concept context (filter #(not (:deleted %)) tag-associations))
                 concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
                                                                  options concept)
                 es-doc (es/parsed-concept->elastic-doc context
@@ -274,7 +274,7 @@
                        (meta-db/get-concept context associated-concept-id associated-revision-id)
                        coll-concept)]
     (when need-to-index?
-      (let [parsed-coll-concept (cp/parse-concept coll-concept)]
+      (let [parsed-coll-concept (cp/parse-concept context coll-concept)]
         (index-concept context coll-concept parsed-coll-concept options)))))
 
 (defn index-concept-by-concept-id-revision-id
@@ -289,7 +289,7 @@
         concept-type (cs/concept-id->type concept-id)]
     (when (indexing-applicable? concept-type all-revisions-index?)
       (let [concept (meta-db/get-concept context concept-id revision-id)
-            parsed-concept (cp/parse-concept concept)]
+            parsed-concept (cp/parse-concept context concept)]
         (index-concept context concept parsed-concept options)
         (log-ingest-to-index-time concept)))))
 

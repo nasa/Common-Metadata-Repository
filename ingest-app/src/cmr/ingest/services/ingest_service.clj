@@ -47,7 +47,7 @@
   (v/validate-concept-request collection-concept)
   (v/validate-concept-metadata collection-concept)
 
-  (let [collection (umm-legacy/parse-concept collection-concept)]
+  (let [collection (umm-legacy/parse-concept context collection-concept)]
     (when (ingest-validation-enabled?)
       (v/validate-collection-umm context collection validate-keywords?))
     collection))
@@ -90,7 +90,7 @@
       (cmsg/data-error :invalid-data
                        msg/parent-collection-does-not-exist provider-id granule-ur collection-ref))
 
-    [coll-concept (umm-legacy/parse-concept coll-concept)]))
+    [coll-concept (umm-legacy/parse-concept context coll-concept)]))
 
 (defn- add-extra-fields-for-granule
   "Adds the extra fields for a granule concept."
@@ -117,7 +117,7 @@
    (v/validate-concept-request concept)
    (v/validate-concept-metadata concept)
 
-   (let [granule (umm-legacy/parse-concept concept)
+   (let [granule (umm-legacy/parse-concept context concept)
          [parent-collection-concept
           parent-collection] (fetch-parent-collection-concept-fn
                                context concept granule)]
@@ -204,6 +204,3 @@
         ok? (every? :ok? (vals dep-health))]
     {:ok? ok?
      :dependencies dep-health}))
-
-
-

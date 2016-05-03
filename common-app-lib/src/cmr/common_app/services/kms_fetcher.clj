@@ -75,6 +75,7 @@
 (defn get-gcmd-keywords-map
   "Retrieves the GCMD keywords map from the cache."
   [context]
+  (proto/save 1)
   (let [cache (cache/context->cache context kms-cache-key)]
     (cache/get-value cache kms-cache-key (partial fetch-gcmd-keywords-map context))))
 

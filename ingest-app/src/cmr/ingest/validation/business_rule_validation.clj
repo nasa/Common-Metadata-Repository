@@ -71,7 +71,7 @@
         prev-concept (first (h/find-visible-collections context {:provider-id provider-id
                                                                  :native-id native-id}))]
     (when prev-concept
-      (let [prev-umm-concept (umm-legacy/parse-concept prev-concept)
+      (let [prev-umm-concept (umm-legacy/parse-concept context prev-concept)
             has-granule-searches (mapcat #(% (:concept-id prev-concept) umm-concept prev-umm-concept)
                                          collection-update-searches)
             search-errors (->> has-granule-searches

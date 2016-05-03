@@ -13,7 +13,8 @@
             [cmr.umm-spec.core :as umm-spec]
             [cmr.umm.collection.entry-id :as eid]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]
-            [cmr.umm-spec.versioning :as ver]))
+            [cmr.umm-spec.versioning :as ver]
+            [cmr.umm-spec.test.location-keywords :as lkt]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -106,7 +107,8 @@
 (comment
   ;; for REPL testing purposes
   (def example-collection-record expected-conversion/example-collection-record)
-  (cmr.umm.core/parse-concept {:metadata (cmr.umm-spec.core/generate-metadata example-collection-record :echo10)
+  (cmr.umm.core/parse-concept {:metadata (cmr.umm-spec.core/generate-metadata
+                                          example-collection-record :echo10)
                                :concept-type :collection
                                :format "application/echo10+xml"}))
 
@@ -117,11 +119,13 @@
     (doseq [v ver/versions]
       (let [coll      expected-conversion/example-collection-record
             mime-type (str "application/vnd.nasa.cmr.umm+json;version=" v)
-            json      (umm-spec/generate-metadata coll mime-type)
-            result    (d/ingest-concept-with-metadata {:provider-id  "PROV1"
-                                                       :concept-type :collection
-                                                       :format       mime-type
-                                                       :metadata     json})]
+            json      (umm-spec/generate-metadata
+                       (lkt/setup-context-for-test lkt/sample-keyword-map) coll mime-type)
+            result    (d/ingest-concept-with-metadata  (lkt/setup-context-for-test lkt/sample-keyword-map)
+                       {:provider-id  "PROV1"
+                                                                            :concept-type :collection
+                                                                            :format       mime-type
+                                                                            :metadata     json})]
         (proto/save 1)
         (index/wait-until-indexed)
         ;; parameter queries
