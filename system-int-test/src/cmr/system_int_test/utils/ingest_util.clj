@@ -18,7 +18,8 @@
             [cmr.mock-echo.client.echo-util :as echo-util]
             [cmr.common.util :as util]
             [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util])
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+            [cmr.common.log :as log :refer (debug info warn error)])
   (:import [java.lang.NumberFormatException]))
 
 (defn- create-provider-through-url
@@ -126,6 +127,20 @@
                  :query-params (:query-params options)
                  :headers {"content-type" (mt/format->mime-type input-format)
                            "accept" (mt/format->mime-type output-format)}}))
+  ([concept-type input-format metadata output-format]
+   (translate-metadata concept-type input-format metadata output-format nil)))
+
+(defn translate-between-umm-versions
+  "Translates two umm-versions using the ingest translation endpoint. Returns the response."
+  ([concept-type input-format metadata output-format options]
+   (proto/save 5)
+   (client/post (url/translate-metadata-url concept-type)
+                {:connection-manager (s/conn-mgr)
+                 :throw-exceptions false
+                 :body metadata
+                 :query-params (:query-params options)
+                 :headers {"Content-Type" input-format
+                           "Accept" output-format}}))
   ([concept-type input-format metadata output-format]
    (translate-metadata concept-type input-format metadata output-format nil)))
 

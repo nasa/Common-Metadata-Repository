@@ -72,9 +72,10 @@
      :LocationKeywords [{:Category "CONTINENT"
                          :Type "AFRICA"
                          :Subregion1 "CENTRAL AFRICA"
-                         :Subregion2 "CAMEROON"
-                         :Subregion3 "Douala"
+                         :Subregion2 "ANGOLA"
+                         :Subregion3 nil
                          :DetailedLocation "Some 7-11"}]
+     :SpatialKeywords ["ANGOLA"]
      :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                      :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
                                                :Geometry {:CoordinateSystem "GEODETIC"

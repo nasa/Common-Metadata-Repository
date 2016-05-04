@@ -84,6 +84,7 @@
                   :metadata     metadata
                   :format       (or format (mime-types/format->mime-type format-key))}
         response (ingest/ingest-concept concept)]
+    (proto/save 1)
     (merge (umm-legacy/parse-concept context concept) response)))
 
 (defn ingest-concept-with-metadata-file

@@ -1,7 +1,8 @@
 (ns cmr.umm-spec.location-keywords
   "Helper utilities for converting Keywords -> UMM LocationKeywords"
   (:require [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.umm-spec.models.collection :as umm-c]))
+            [cmr.umm-spec.models.collection :as umm-c]
+            [clojure.set :as set]))
 
 (def duplicate-keywords
   "Lookup table to account for any duplicate keywords. Will choose the preferred value.
@@ -25,7 +26,8 @@
   Takes a string keyword as a parameter, e.g. 'OCEAN' and a list of spatial keyword maps;
   returns a list of maps of hierarchies which contain the keyword."
   [keyword-map-list keyword]
-  (filter (fn [map] (some #{keyword} (vals map))) keyword-map-list))
+  (proto/save 2)
+  (filter (fn [map] (some #{keyword} (vals map))) (vals keyword-map-list)))
 
 (defn find-spatial-keyword
   "Finds spatial keywords in the heirarchy and pick the one with the fewest keys
@@ -48,5 +50,12 @@
   "Translates a list of spatial keywords into an array of LocationKeyword type objects"
   [context spatial-keywords]
   (let [spatial-keyword-maps (get-spatial-keywords-maps context)
-        location-keyword-maps (spatial-keywords->location-keywords spatial-keyword-maps spatial-keywords)]
-    location-keyword-maps))
+        location-keyword-maps (spatial-keywords->location-keywords spatial-keyword-maps spatial-keywords)
+        umm-location-keyword-maps (seq
+                                   (map #(dissoc (set/rename-keys % {:category :Category
+                                                             :type :Type
+                                                             :subregion-1 :Subregion1
+                                                             :subregion-2 :Subregion2
+                                                             :subregion-3 :Subregion3}) :uuid nil)
+                                        location-keyword-maps))]
+    umm-location-keyword-maps))

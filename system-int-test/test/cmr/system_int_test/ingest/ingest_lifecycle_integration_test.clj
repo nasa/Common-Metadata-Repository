@@ -14,7 +14,12 @@
             [cmr.umm.collection.entry-id :as eid]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]
             [cmr.umm-spec.versioning :as ver]
-            [cmr.umm-spec.test.location-keywords :as lkt]))
+            [cmr.umm-spec.test.location-keywords :as lkt]
+            [clj-time.core :as t]
+            [cmr.umm-spec.models.common :as umm-cmn]
+            [cmr.umm-spec.models.collection :as umm-c]
+            [cmr.common.mime-types :as mt]
+            [cheshire.core :as json]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -112,6 +117,18 @@
                                :concept-type :collection
                                :format "application/echo10+xml"}))
 
+(deftest spatial-keywords-migration-test
+  (let [coll (assoc expected-conversion/example-collection-record :LocationKeywords nil)
+        mime-type "application/vnd.nasa.cmr.umm+json;version=1.1"
+        input-str (umm-spec/generate-metadata
+              (lkt/setup-context-for-test lkt/sample-keyword-map) coll mime-type)
+        input-format "application/vnd.nasa.cmr.umm+json;version=1.1"
+        output-format "application/vnd.nasa.cmr.umm+json;version=1.2"
+        {:keys [status headers body]} (ingest/translate-between-umm-versions :collection input-format input-str output-format nil)
+        content-type (first (mt/extract-mime-types (:content-type headers)))]
+        (is (= (:content-type headers) output-format))
+        (is (some? (get (json/parse-string body) "LocationKeywords")))
+      ))
 
 (deftest mmt-ingest-round-trip
   (testing "ingest and search UMM JSON metadata"
@@ -126,7 +143,6 @@
                                                                             :concept-type :collection
                                                                             :format       mime-type
                                                                             :metadata     json})]
-        (proto/save 1)
         (index/wait-until-indexed)
         ;; parameter queries
         (are2 [items params]
