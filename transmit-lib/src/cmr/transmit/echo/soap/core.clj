@@ -81,7 +81,7 @@
     ;; Generate vector value for a plural keyword, scalar otherwise.
     (if (and
           (.endsWith (str key) "s")
-          (not (= nil (xp/value-of xml (str xpath "/Item")))))
+          (xp/value-of xml (str xpath "/Item")))
       [key (xp/values-at xml (str xpath "/Item"))]
       [key (xp/value-of xml xpath)])))
 

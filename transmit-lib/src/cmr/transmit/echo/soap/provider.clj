@@ -15,15 +15,15 @@
   [param-map]
   (let [{:keys [:provider-id :organization-name :provider-types :rest-only :discovery-urls :guid
                 :description-of-holdings :contacts :provider-schema-name :small-provider]} param-map]
-    (seq  [ ["ns3:Guid" (or guid nil)]
+    (seq  [ ["ns3:Guid" guid]
             ["ns3:ProviderId" provider-id]
             ["ns3:OrganizationName" (or organization-name "Not Specified")]
             ["ns3:ProviderTypes" (soap/item-list (or provider-types ["CMR"]))]
-            ["ns3:RestOnly" (or rest-only true)]
+            ["ns3:RestOnly" (if (nil? rest-only) true rest-only)]
             ["ns3:DiscoveryUrls" (soap/item-list (or discovery-urls ["www.example.com"]))]
             ["ns3:DescriptionOfHoldings" (or description-of-holdings "Not Specified")]
             ["ns3:Contacts"
-              (soap/item-list (or contacts
+              (soap/item-list (or (seq contacts)
                                   [["ns3:Item"
                                     ["ns3:Role" "Default Contact"]
                                     ["ns3:FirstName" "First"]
