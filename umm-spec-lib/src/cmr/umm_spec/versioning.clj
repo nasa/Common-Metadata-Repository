@@ -95,7 +95,8 @@
   ;;Assume that IsoTopicCategories will not deviate from the 1.1 list of allowed values.
   (-> c
       (assoc :SpatialKeywords
-             (lk/location-keywords->spatial-keywords context (:LocationKeywords c)))))
+             (lk/location-keywords->spatial-keywords (:LocationKeywords c)))
+      (assoc :LocationKeywords nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface

@@ -121,14 +121,13 @@
 
 (deftest spatial-keywords-migration-test
   (testing "Make sure that spatial keywords are converted to LocationKeywords from 1.1->1.2"
-    (let [coll (assoc expected-conversion/example-collection-record :LocationKeywords nil)
+    (let [coll expected-conversion/example-collection-record
           mime-type "application/vnd.nasa.cmr.umm+json;version=1.1"
           input-str (umm-spec/generate-metadata context coll mime-type)
-          input-format "application/vnd.nasa.cmr.umm+json;version=1.1"
-          output-format "application/vnd.nasa.cmr.umm+json;version=1.2"
-          {:keys [status headers body]} (ingest/translate-between-umm-versions :collection input-format input-str output-format nil)
+          input-version "1.1"
+          output-version "1.2"
+          {:keys [status headers body]} (ingest/translate-between-umm-versions :collection input-version input-str output-version nil)
           content-type (first (mt/extract-mime-types (:content-type headers)))]
-      (is (= (:content-type headers) output-format))
       (is (some? (get (json/parse-string body) "LocationKeywords"))))))
 
 (deftest mmt-ingest-round-trip
