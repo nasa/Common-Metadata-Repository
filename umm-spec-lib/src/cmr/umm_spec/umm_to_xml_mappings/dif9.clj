@@ -93,9 +93,9 @@
         [:Location_Subregion2 (:Subregion2 location-category)]
         [:Location_Subregion3 (:Subregion3 location-category)]
         [:Detailed_Location (:DetailedLocation location-category)]])
-     (for [temproal-keywod (:TemporalKeywords c)]
+     (for [temporal-keyword (:TemporalKeywords c)]
        [:Data_Resolution
-        [:Temporal_Resolution temproal-keywod]])
+        [:Temporal_Resolution temporal-keyword]])
      (for [{:keys [ShortName LongName]} (:Projects c)]
        [:Project
         [:Short_Name ShortName]

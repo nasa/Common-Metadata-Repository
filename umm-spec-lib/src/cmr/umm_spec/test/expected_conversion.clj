@@ -21,7 +21,9 @@
             [cmr.umm-spec.umm-to-xml-mappings.echo10.related-url :as echo10-ru-gen]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as echo10-spatial-parse]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]))
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
+            [cmr.umm-spec.location-keywords :as lk]
+            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
 (def serf-organization-role
   "UMM-S Role that corresponds to SERVICE PROVIDER CONTACT role in SERF"
@@ -73,8 +75,9 @@
                          :Type "AFRICA"
                          :Subregion1 "CENTRAL AFRICA"
                          :Subregion2 "ANGOLA"
-                         :Subregion3 nil
-                         :DetailedLocation "Some 7-11"}]
+                         :Subregion3 nil}
+                        {:Category "CONTINENT"
+                         :DetailedLocation "Somewhereville"}]
      :SpatialKeywords ["ANGOLA"]
      :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                      :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
@@ -486,6 +489,16 @@
                  geometry-with-coordinate-system)
       spatial-extent)))
 
+(defn fix-location-keyword-conversion
+  "Takes a non-kms keyword and converts it to the expected value"
+  [location-keywords]
+  ;;Convert the Location Keyword to a leaf.
+  (let [leaf-values (lk/location-keywords->spatial-keywords location-keywords)
+        translated-values (lk/translate-spatial-keywords
+          (lkt/setup-context-for-test lkt/sample-keyword-map) leaf-values)]
+    ;;If the keyword exists in the hierarchy
+    (seq (map #(umm-c/map->LocationKeywordType %) translated-values))))
+
 (defmethod umm->expected-convert :echo10
   [umm-coll _]
   (-> umm-coll
@@ -511,7 +524,10 @@
                       :ValueAccuracyExplanation nil :UpdateDate nil)
       (update-in-each [:Projects] assoc :Campaigns nil)
       (update-in [:RelatedUrls] expected-echo10-related-urls)
-      (assoc :LocationKeywords nil)))
+      ;; We can't restore Detailed Location because it doesn't exist in the hierarchy.
+      (update-in [:LocationKeywords] fix-location-keyword-conversion)
+      ;; CMR 2716 Getting rid of SpatialKeywords but keeping them for legacy purposes.
+      (assoc :SpatialKeywords nil)))
 
 ;; DIF 9
 

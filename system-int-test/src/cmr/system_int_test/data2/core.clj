@@ -22,6 +22,8 @@
   [item]
   (some #(get item %) [:granule-ur :entry-title :EntryTitle :native-id]))
 
+(def context (lkt/setup-context-for-test lkt/sample-keyword-map))
+
 (defn item->concept
   "Returns a concept map from a UMM item or tombstone. Default provider-id to PROV1 if not present."
   ([item]
@@ -33,7 +35,7 @@
              :native-id (or (:native-id item) (item->native-id item))
              :metadata (when-not (:deleted item)
                          (umm-legacy/generate-metadata
-                          (lkt/setup-context-for-test lkt/sample-keyword-map)
+                          context
                           (dissoc item :provider-id) format-key))
              :format format}
             (when (:concept-id item)
@@ -80,7 +82,7 @@
 
 (defn ingest-concept-with-metadata
   "Ingest the given concept with the given metadata."
-  [context {:keys [provider-id concept-type format format-key metadata native-id]}]
+  [{:keys [provider-id concept-type format format-key metadata native-id]}]
   (let [concept  {:concept-type concept-type
                   :provider-id  provider-id
                   :native-id    (or native-id "native-id")

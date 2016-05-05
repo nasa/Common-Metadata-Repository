@@ -72,7 +72,7 @@
   [context concept-type fmt metadata]
   (condp = [concept-type (mt/format-key fmt)]
     [:collection :umm-json] (umm-json/json->umm context :collection metadata (umm-json-version fmt))
-    [:collection :echo10]   (echo10-to-umm/echo10-xml-to-umm-c (xpath/context metadata))
+    [:collection :echo10]   (echo10-to-umm/echo10-xml-to-umm-c context (xpath/context metadata))
     [:collection :dif]      (dif9-to-umm/dif9-xml-to-umm-c (xpath/context metadata))
     [:collection :dif10]    (dif10-to-umm/dif10-xml-to-umm-c (xpath/context metadata))
     [:collection :iso19115] (iso19115-2-to-umm/iso19115-2-xml-to-umm-c (xpath/context metadata))

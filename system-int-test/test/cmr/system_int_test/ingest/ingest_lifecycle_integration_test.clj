@@ -23,6 +23,8 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
+(def context (lkt/setup-context-for-test lkt/sample-keyword-map))
+
 (defn- unparse-date-time
   "Parse a date-time into a string that can be used in a parameter query"
   [date-time]
@@ -118,17 +120,16 @@
                                :format "application/echo10+xml"}))
 
 (deftest spatial-keywords-migration-test
-  (let [coll (assoc expected-conversion/example-collection-record :LocationKeywords nil)
-        mime-type "application/vnd.nasa.cmr.umm+json;version=1.1"
-        input-str (umm-spec/generate-metadata
-              (lkt/setup-context-for-test lkt/sample-keyword-map) coll mime-type)
-        input-format "application/vnd.nasa.cmr.umm+json;version=1.1"
-        output-format "application/vnd.nasa.cmr.umm+json;version=1.2"
-        {:keys [status headers body]} (ingest/translate-between-umm-versions :collection input-format input-str output-format nil)
-        content-type (first (mt/extract-mime-types (:content-type headers)))]
-        (is (= (:content-type headers) output-format))
-        (is (some? (get (json/parse-string body) "LocationKeywords")))
-      ))
+  (testing "Make sure that spatial keywords are converted to LocationKeywords from 1.1->1.2"
+    (let [coll (assoc expected-conversion/example-collection-record :LocationKeywords nil)
+          mime-type "application/vnd.nasa.cmr.umm+json;version=1.1"
+          input-str (umm-spec/generate-metadata context coll mime-type)
+          input-format "application/vnd.nasa.cmr.umm+json;version=1.1"
+          output-format "application/vnd.nasa.cmr.umm+json;version=1.2"
+          {:keys [status headers body]} (ingest/translate-between-umm-versions :collection input-format input-str output-format nil)
+          content-type (first (mt/extract-mime-types (:content-type headers)))]
+      (is (= (:content-type headers) output-format))
+      (is (some? (get (json/parse-string body) "LocationKeywords"))))))
 
 (deftest mmt-ingest-round-trip
   (testing "ingest and search UMM JSON metadata"
@@ -136,13 +137,11 @@
     (doseq [v ver/versions]
       (let [coll      expected-conversion/example-collection-record
             mime-type (str "application/vnd.nasa.cmr.umm+json;version=" v)
-            json      (umm-spec/generate-metadata
-                       (lkt/setup-context-for-test lkt/sample-keyword-map) coll mime-type)
-            result    (d/ingest-concept-with-metadata  (lkt/setup-context-for-test lkt/sample-keyword-map)
-                       {:provider-id  "PROV1"
-                                                                            :concept-type :collection
-                                                                            :format       mime-type
-                                                                            :metadata     json})]
+            json      (umm-spec/generate-metadata context coll mime-type)
+            result    (d/ingest-concept-with-metadata  {:provider-id  "PROV1"
+                                                        :concept-type :collection
+                                                        :format       mime-type
+                                                        :metadata     json})]
         (index/wait-until-indexed)
         ;; parameter queries
         (are2 [items params]

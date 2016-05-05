@@ -5,7 +5,7 @@
             [cmr.common.cache.in-memory-cache :as imc]))
 
 (def sample-keyword-map
-   { "some_guid1" {:category "SPACE", :uuid "3ffa2d97-a066-4b3c-87f9-06779f12e726"}
+   {:spatial-keywords { "some_guid1" {:category "SPACE", :uuid "3ffa2d97-a066-4b3c-87f9-06779f12e726"}
      "some_guid2" {:category "SPACE", :type "EARTH MAGNETIC FIELD", :subregion-1 "SPACE", :uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"}
      "some_guid3" {:category "CONTINENT", :uuid "0a672f19-dad5-4114-819a-2eb55bdbb56a"}
      "some_guid4" {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :uuid "f2ffbe58-8792-413b-805b-3e1c8de1c6ff"}
@@ -19,7 +19,7 @@
      "some_guid12" {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :subregion-2 "GABON", :uuid "864e3511-3326-4b8f-a534-1a8945fcc3eb"}
      "some_guid13"  {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :subregion-2 "EQUATORIAL GUINEA", :uuid "3b515cd8-bc42-4fab-9990-df3be2817938"}
      "some_guid14" {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :subregion-2 "ANGOLA", :uuid "9b0a194d-d617-4fed-9625-df176319892d"}
-     "some_guid15" {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :subregion-2 "LAKE CHAD", :uuid "a1810ec4-2d03-4d98-b049-2cad380fb789"}})
+     "some_guid15" {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :subregion-2 "LAKE CHAD", :uuid "a1810ec4-2d03-4d98-b049-2cad380fb789"}}})
 
 (defn setup-context-for-test
   "Sets up a cache by taking values necessary for the cache and returns a map of context"

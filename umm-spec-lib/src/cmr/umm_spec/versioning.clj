@@ -56,7 +56,7 @@
 ;; Private Migration Functions
 
 (defn- dispatch-migrate
-  [_ _ concept-type source-version dest-version]
+  [_context _collection concept-type source-version dest-version]
   [concept-type source-version dest-version])
 
 (defmulti ^:private migrate-umm-version
@@ -94,7 +94,8 @@
   [context c & _]
   ;;Assume that IsoTopicCategories will not deviate from the 1.1 list of allowed values.
   (-> c
-      (dissoc :LocationKeywords)))
+      (assoc :SpatialKeywords
+             (lk/location-keywords->spatial-keywords context (:LocationKeywords c)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface

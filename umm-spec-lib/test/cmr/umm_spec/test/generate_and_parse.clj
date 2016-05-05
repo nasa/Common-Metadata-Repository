@@ -18,11 +18,14 @@
             [cmr.umm-spec.umm-to-xml-mappings.echo10 :as echo10]
             [cmr.common.util :refer [are2]]
             [cmr.umm-spec.test.umm-generators :as umm-gen]
-            [cmr.umm-spec.json-schema :as js]))
+            [cmr.umm-spec.json-schema :as js]
+            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
 (def tested-collection-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
   [:dif :dif10 :echo10 :iso19115 :iso-smap])
+
+(def test-context (lkt/setup-context-for-test lkt/sample-keyword-map))
 
 (def tested-service-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
@@ -44,16 +47,16 @@
   "Returns record after being converted to XML and back to UMM through
   the given to-xml and to-umm mappings."
   [concept-type metadata-format record]
-  (let [metadata-xml (core/generate-metadata {} record metadata-format)]
+  (let [metadata-xml (core/generate-metadata test-context record metadata-format)]
     ;; validate against xml schema
     (is (empty? (core/validate-xml concept-type metadata-format metadata-xml)))
-    (core/parse-metadata {} concept-type metadata-format metadata-xml)))
+    (core/parse-metadata test-context concept-type metadata-format metadata-xml)))
 
 (defn- generate-and-validate-xml
   "Returns a vector of errors (empty if none) from attempting to convert the given UMM record
   to valid XML in the given format."
   [concept-type metadata-format record]
-  (let [metadata-xml (core/generate-metadata {} record metadata-format)]
+  (let [metadata-xml (core/generate-metadata test-context record metadata-format)]
     (core/validate-xml concept-type metadata-format metadata-xml)))
 
 (deftest roundtrip-example-collection-record
@@ -69,7 +72,7 @@
 (deftest roundrobin-collection-example-record
   (doseq [[origin-format filename] collection-format-examples
           :let [metadata (slurp (io/resource (str "example_data/" filename)))
-                umm-c-record (core/parse-metadata {} :collection origin-format metadata)]
+                umm-c-record (core/parse-metadata test-context :collection origin-format metadata)]
           dest-format collection-destination-formats
           :when (not= origin-format dest-format)]
     (testing (str origin-format " to " dest-format)
@@ -118,8 +121,8 @@
 ;; This test is to verify that we populate UMM Projects in gmd:descriptiveKeywords correctly as well.
 (defspec iso19115-projects-keywords 100
   (for-all [umm-record umm-gen/umm-c-generator]
-    (let [metadata-xml (core/generate-metadata {} umm-record :iso19115)
-          projects (:Projects (core/parse-metadata {} :collection :iso19115 metadata-xml))
+    (let [metadata-xml (core/generate-metadata test-context umm-record :iso19115)
+          projects (:Projects (core/parse-metadata test-context :collection :iso19115 metadata-xml))
           expected-projects-keywords (seq (map iu/generate-title projects))]
       (is (= expected-projects-keywords
              (parse-iso19115-projects-keywords metadata-xml))))))
@@ -164,7 +167,7 @@
   (def sample-record expected-conversion/example-service-record)
 
   ;; Evaluate to print generated metadata from the record selected above.
-  (println (core/generate-metadata {} sample-record [:collection :dif10]))
+  (println (core/generate-metadata test-context sample-record [:collection :dif10]))
 
   ;; our simple example record
   (core/generate-metadata :collection metadata-format sample-record)

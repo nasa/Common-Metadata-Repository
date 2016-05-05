@@ -18,8 +18,7 @@
             [cmr.mock-echo.client.echo-util :as echo-util]
             [cmr.common.util :as util]
             [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-            [cmr.common.log :as log :refer (debug info warn error)])
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util])
   (:import [java.lang.NumberFormatException]))
 
 (defn- create-provider-through-url
