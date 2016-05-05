@@ -14,7 +14,7 @@
             [cmr.umm.collection.entry-id :as eid]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]
             [cmr.umm-spec.versioning :as ver]
-            [cmr.umm-spec.test.location-keywords :as lkt]
+            [cmr.umm-spec.test.location-keywords-helper :as lkt]
             [clj-time.core :as t]
             [cmr.umm-spec.models.common :as umm-cmn]
             [cmr.umm-spec.models.collection :as umm-c]

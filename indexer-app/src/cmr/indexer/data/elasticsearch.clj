@@ -202,7 +202,7 @@
     (let [{:keys [concept-id revision-id]} concept
           type (name (concept->type concept))
           elastic-version (get-elastic-version concept)
-          concept (update concept :tag-associations (parse-non-tombstone-tag-associations context))
+          concept (update concept :tag-associations #(parse-non-tombstone-tag-associations context %))
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
           index-names (idx-set/get-concept-index-names
                        context concept-id revision-id options

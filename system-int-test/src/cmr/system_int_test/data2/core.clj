@@ -15,7 +15,7 @@
             [cheshire.core :as json]
             [cmr.system-int-test.system :as s]
             [clojure.string :as str]
-            [cmr.umm-spec.test.location-keywords :as lkt]))
+            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
 (defn- item->native-id
   "Returns the native id of a UMM record."
@@ -31,7 +31,10 @@
      (merge {:concept-type (umm-legacy/item->concept-type item)
              :provider-id (or (:provider-id item) "PROV1")
              :native-id (or (:native-id item) (item->native-id item))
-             :metadata (when-not (:deleted item) (umm-legacy/generate-metadata (lkt/setup-context-for-test lkt/sample-keyword-map) (dissoc item :provider-id) format-key))
+             :metadata (when-not (:deleted item)
+                         (umm-legacy/generate-metadata
+                          (lkt/setup-context-for-test lkt/sample-keyword-map)
+                          (dissoc item :provider-id) format-key))
              :format format}
             (when (:concept-id item)
               {:concept-id (:concept-id item)})
@@ -84,7 +87,6 @@
                   :metadata     metadata
                   :format       (or format (mime-types/format->mime-type format-key))}
         response (ingest/ingest-concept concept)]
-    (proto/save 1)
     (merge (umm-legacy/parse-concept context concept) response)))
 
 (defn ingest-concept-with-metadata-file

@@ -26,7 +26,6 @@
   Takes a string keyword as a parameter, e.g. 'OCEAN' and a list of spatial keyword maps;
   returns a list of maps of hierarchies which contain the keyword."
   [keyword-map-list keyword]
-  (proto/save 2)
   (filter (fn [map] (some #{keyword} (vals map))) (vals keyword-map-list)))
 
 (defn find-spatial-keyword

@@ -39,7 +39,7 @@
             [cmr.umm-spec.versioning :as ver]
             [cmr.umm-spec.umm-json :as umm-json]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]
-            [cmr.umm-spec.test.location-keywords :as lkt]))
+            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
 (use-fixtures
   :each

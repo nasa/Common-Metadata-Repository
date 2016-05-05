@@ -70,7 +70,6 @@
   "Convert a concept into a map containing metadata in a desired format as well as
   concept-id, revision-id, and possibly collection-concept-id"
   [context concept target-format]
-  (proto/save 4)
   (let [collection-concept-id (get-in concept [:extra-fields :parent-collection-id])
         concept-format (mt/mime-type->format (:format concept))
         _ (when-not concept-format

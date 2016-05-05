@@ -101,7 +101,6 @@
 
 (defn migrate-umm
   [context concept-type source-version dest-version data]
-  (proto/save 3)
   (if (= source-version dest-version)
     data
     ;; Migrating across versions is just reducing over the discrete steps between each version.

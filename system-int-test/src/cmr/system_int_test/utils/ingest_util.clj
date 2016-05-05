@@ -133,7 +133,6 @@
 (defn translate-between-umm-versions
   "Translates two umm-versions using the ingest translation endpoint. Returns the response."
   ([concept-type input-format metadata output-format options]
-   (proto/save 5)
    (client/post (url/translate-metadata-url concept-type)
                 {:connection-manager (s/conn-mgr)
                  :throw-exceptions false
