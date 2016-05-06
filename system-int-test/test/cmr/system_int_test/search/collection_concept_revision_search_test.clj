@@ -9,9 +9,12 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.util :refer [are2] :as util]
             [cmr.umm-spec.core :as umm-spec]
-            [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
+            [cmr.umm-spec.test.expected-conversion :as expected-conversion]
+            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
+
+(def test-context (lkt/setup-context-for-test lkt/sample-keyword-map))
 
 (deftest search-collection-all-revisions
   (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"
@@ -123,7 +126,7 @@
 (deftest search-umm-json-tombstones
   (let [coll4-umm expected-conversion/example-collection-record
         mime-type "application/vnd.nasa.cmr.umm+json;version=1.0"
-        json (umm-spec/generate-metadata coll4-umm mime-type)
+        json (umm-spec/generate-metadata test-context coll4-umm mime-type)
         coll (d/ingest-concept-with-metadata {:provider-id "PROV1"
                                                  :concept-type :collection
                                                  :format mime-type

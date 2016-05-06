@@ -127,7 +127,7 @@
        :revision-id revision-id
        :format format-key
        :collection-concept-id collection-concept-id
-       :metadata (umm-legacy/generate-metadata item format-key)})))
+       :metadata (umm-legacy/generate-metadata context item format-key)})))
 
 (defmethod item->metadata-result true
   [_ format-key item]
@@ -137,11 +137,11 @@
         {:echo_granule_id concept-id
          :echo_dataset_id collection-concept-id
          :format format-key
-         :metadata (umm-legacy/generate-metadata item format-key)})
+         :metadata (umm-legacy/generate-metadata context item format-key)})
       (util/remove-nil-keys
         {:echo_dataset_id concept-id
          :format format-key
-         :metadata (umm-legacy/generate-metadata item format-key)}))))
+         :metadata (umm-legacy/generate-metadata context item format-key)}))))
 
 (defn- items-match?
   "Returns true if the search result items match the expected items. The argument echo-compatible?

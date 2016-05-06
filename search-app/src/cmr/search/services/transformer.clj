@@ -53,13 +53,13 @@
       (xslt/transform (:metadata concept) (get-template context xsl))
       (cond
         (mt/umm-json? concept-format)
-        (umm-spec/generate-metadata
-          (umm-spec/parse-metadata :collection concept-format (:metadata concept))
+        (umm-spec/generate-metadata context
+          (umm-spec/parse-metadata context :collection concept-format (:metadata concept))
           target-format)
 
         (= :umm-json target-format)
         (umm-json/umm->json
-         (umm-spec/parse-metadata :collection concept-format (:metadata concept)))
+         (umm-spec/parse-metadata context :collection concept-format (:metadata concept)))
 
         :else
         (-> concept

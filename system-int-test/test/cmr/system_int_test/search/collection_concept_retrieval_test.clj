@@ -56,6 +56,7 @@
 ;; Utility functions
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(def test-context (lkt/setup-context-for-test lkt/sample-keyword-map))
 
 (defn- get-concept-by-id-helper
   [concept options]
@@ -150,8 +151,7 @@
                        (:concept-id coll1) nil {:query-params {:token user1-token}
                                                 :url-extension "umm-json"})
             _ (is (= 200 (:status response)))
-            context (lkt/setup-context-for-test)
-            parsed-collection (umm-json/json->umm context :collection (:body response))]
+            parsed-collection (umm-json/json->umm test-context :collection (:body response))]
         (is (search/mime-type-matches-response? response mt/umm-json))
         (is (= (:entry-title umm-coll) (:EntryTitle parsed-collection)))))))
 
@@ -160,7 +160,7 @@
   (let [user1-token (e/login (s/context) "user1")
         coll        expected-conversion/example-collection-record
         mime-type   (str "application/vnd.nasa.cmr.umm+json;version=1.0")
-        json        (umm-spec/generate-metadata coll mime-type)
+        json        (umm-spec/generate-metadata test-context coll mime-type)
         result      (d/ingest-concept-with-metadata {:provider-id  "PROV1"
                                                      :concept-type :collection
                                                      :format       mime-type
@@ -195,7 +195,7 @@
   (let [user1-token (e/login (s/context) "user1")
         coll        expected-conversion/example-collection-record
         mime-type   (str "application/vnd.nasa.cmr.umm+json")
-        json        (umm-spec/generate-metadata coll mime-type)
+        json        (umm-spec/generate-metadata test-context coll mime-type)
         result      (d/ingest-concept-with-metadata {:provider-id  "PROV1"
                                                      :concept-type :collection
                                                      :format       mime-type
