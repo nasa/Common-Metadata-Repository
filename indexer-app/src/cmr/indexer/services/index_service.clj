@@ -242,7 +242,7 @@
           (let [tag-associations (get-tag-associations context concept)
                 elastic-version (get-elastic-version-with-tag-associations
                                   context concept tag-associations)
-                tag-associations (map cp/parse-concept context (filter #(not (:deleted %)) tag-associations))
+                tag-associations (map #(cp/parse-concept context %) (filter #(not (:deleted %)) tag-associations))
                 concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
                                                                  options concept)
                 es-doc (es/parsed-concept->elastic-doc context

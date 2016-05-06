@@ -17,8 +17,8 @@
 (defn- assert-collection-refs-found
   "Assert collection references are found by searching with the given params, including tag-data"
   [expected-colls params]
-  (is (d/refs-match? expected-colls
-                     (search/find-refs :collection params {:snake-kebab? false}))))
+  (d/assert-refs-match expected-colls
+                       (search/find-refs :collection params {:snake-kebab? false})))
 
 (deftest search-collection-revisions-by-tag-test
   (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))

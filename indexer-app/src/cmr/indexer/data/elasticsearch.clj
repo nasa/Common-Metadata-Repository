@@ -166,7 +166,7 @@
 (defn- parse-non-tombstone-tag-associations
   "Returns the parsed tag associations that are not tombstones"
   [context tag-associations]
-  (map cp/parse-concept (filter #(not (:deleted %)) tag-associations)))
+  (map #(cp/parse-concept context %) (filter #(not (:deleted %)) tag-associations)))
 
 (defn- non-tombstone-concept->bulk-elastic-doc
   "Takes a non-tombstoned concept map (a normal revision) and returns an elastic document suitable
