@@ -165,7 +165,7 @@
   [_]
   {:condition (common-qm/->MatchAllCondition)
    :page-size common-qm/default-page-size
-   :page-num common-qm/default-page-num
+   :offset common-qm/default-offset
    :result-format :xml
    :echo-compatible? false
    :all-revisions? false})
@@ -174,7 +174,7 @@
   [_]
   {:condition (common-qm/->MatchAllCondition)
    :page-size common-qm/default-page-size
-   :page-num common-qm/default-page-num
+   :offset common-qm/default-offset
    :result-format :json
    :echo-compatible? false
    :all-revisions? false})
@@ -183,7 +183,7 @@
   [_]
   {:condition (common-qm/->MatchAllCondition)
    :page-size common-qm/default-page-size
-   :page-num common-qm/default-page-num
+   :offset common-qm/default-offset
    :result-format :xml
    :echo-compatible? false
    :all-revisions? false})

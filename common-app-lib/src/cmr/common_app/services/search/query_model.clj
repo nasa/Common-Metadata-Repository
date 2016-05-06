@@ -6,7 +6,10 @@
             [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
 (def default-page-size 10)
+
 (def default-page-num 1)
+
+(def default-offset 0)
 
 (defrecord Query
   [
@@ -19,8 +22,8 @@
    ;; the desired number of results
    page-size
 
-   ;; the desired page in the result set - starting at zero
-   page-num
+   ;; the desired offset, equivalent to Elasticsearch's "from"
+   offset
 
    ;; a sequence of maps with :order and :field for sorting
    sort-keys
@@ -252,12 +255,12 @@
   [_]
   {:condition (->MatchAllCondition)
    :page-size default-page-size
-   :page-num default-page-num
+   :offset default-offset
    :result-format :json})
 
 (defn query
   "Constructs a query with the given attributes and root condition. If root condition is not
-  provided it matches everything. If page-size, page-num, or result-format are not specified
+  provided it matches everything. If page-size, offset, or result-format are not specified
   then they are given default values."
   [attribs]
   (let [concept-type (:concept-type attribs)]

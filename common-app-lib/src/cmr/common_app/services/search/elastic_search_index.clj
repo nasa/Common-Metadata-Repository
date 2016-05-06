@@ -53,15 +53,14 @@
 
 (defmethod send-query-to-elastic :default
   [context query]
-  (let [{:keys [page-size page-num offset concept-type result-format aggregations highlights]} query
+  (let [{:keys [page-size offset concept-type aggregations highlights]} query
         elastic-query (q2e/query->elastic query)
         sort-params (q2e/query->sort-params query)
         index-info (concept-type->index-info context concept-type query)
         fields (query-fields->elastic-fields
                 concept-type
                 (or (:result-fields query) (concept-type+result-format->fields concept-type query)))
-        from (or offset
-                 (* (dec page-num) page-size))
+        from offset
         query-map (util/remove-nil-keys {:query elastic-query
                                          :version true
                                          :sort sort-params
@@ -109,9 +108,9 @@
   (when (:aggregations query)
     (e/internal-error! "Aggregations are not supported with queries with an unlimited page size."))
 
-  (loop [page-num 1 prev-items [] took-total 0]
+  (loop [offset 0 prev-items [] took-total 0]
     (let [results (send-query-to-elastic
-                    context (assoc query :page-num page-num :page-size unlimited-page-size))
+                    context (assoc query :offset offset :page-size unlimited-page-size))
           total-hits (get-in results [:hits :total])
           current-items (get-in results [:hits :hits])]
 
@@ -126,7 +125,9 @@
             (update-in [:took] + took-total)
             (update-in [:hits :hits] concat prev-items))
         ;; We need to keep searching subsequent pages
-        (recur (inc page-num) (concat prev-items current-items) (+ took-total (:took results)))))))
+        (recur (+ offset (:page-size query))
+               (concat prev-items current-items)
+               (+ took-total (:took results)))))))
 
 
 (defn execute-query

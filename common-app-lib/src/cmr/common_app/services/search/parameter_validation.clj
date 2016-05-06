@@ -28,7 +28,7 @@
 (def basic-params-config
   "Defines a map of parameter validation types to a set of the parameters."
   {;; Parameters that must take a single value, never a vector of values.
-   :single-value #{:page-size :page-num :result-format}
+   :single-value #{:page-size :page-num :offset :result-format}
    ;; Parameters that must take a single value or a vector of values, never a map of values.
    :multiple-value #{:concept-id}
    ;; Parameters which do not allow option with ignore_case set to true.
@@ -104,7 +104,9 @@
     (catch NumberFormatException e
       ["page_size must be a number between 0 and 2000"])))
 
-(def ^:private offset-error-message "offset must be a number greater than or equal to zero")
+(defn- offset-error-message
+  []
+  (str "offset must be an integer between zero and " (search-paging-depth-limit)))
 
 (defn offset-validation
   "Returns a seq of any errors in the offset parameter"
@@ -113,10 +115,10 @@
     ["Only one of offset or page-num may be specified"]
     (try
       (when-let [n (get-ivalue-from-params params :offset)]
-        (when (neg? n)
-          [offset-error-message]))
+        (when-not (<= 0 n (search-paging-depth-limit))
+          [(offset-error-message)]))
       (catch NumberFormatException _
-        [offset-error-message]))))
+        [(offset-error-message)]))))
 
 (defn page-num-validation
   "Validates that the page-num (if present) is a number in the valid range."
