@@ -31,7 +31,10 @@
 (defn item-list
   "Return a list of 'Item' elements for the items in a vector."
   [items]
-  (for [item items]["ns3:Item" item]))
+  (for [item items]
+    (if (= (first item) "ns3:Item")
+      item
+      ["ns3:Item" item])))
 
 (defn- keyword-from-xpath
   "Generate a keyword based on the last token of an xpath."
@@ -76,7 +79,9 @@
   [xml key]
   (let [xpath (xpath-from-keyword key)]
     ;; Generate vector value for a plural keyword, scalar otherwise.
-    (if (.endsWith (str key) "s")
+    (if (and
+          (.endsWith (str key) "s")
+          (xp/value-of xml (str xpath "/Item")))
       [key (xp/values-at xml (str xpath "/Item"))]
       [key (xp/value-of xml xpath)])))
 
