@@ -32,4 +32,5 @@
     (is (= (:refs (search/find-refs :collection {"page_num" 1 "page_size" 5}))
            (:refs (search/find-refs :collection {"offset" 0 "page_size" 5}))))
     (is (= (:refs (search/find-refs :collection {"page_num" 2 "page_size" 5}))
-           (:refs (search/find-refs :collection {"offset" 5 "page_size" 5}))))))
+           (:refs (search/find-refs :collection {"offset" 5 "page_size" 5}))))
+    (is (= [] (:refs (search/find-refs :collection {"offset" 25 "page_size" 10}))))))
