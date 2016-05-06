@@ -13,7 +13,8 @@
             [cmr.umm-spec.iso19115-2-util :as iso]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as dru]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.metadata-association :as ma]))
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.metadata-association :as ma]
+            [cmr.umm-spec.location-keywords :as lk]))
 
 (def iso19115-2-xml-namespaces
   {:xmlns:xs "http://www.w3.org/2001/XMLSchema"
@@ -220,7 +221,9 @@
          (generate-projects-keywords (:Projects c))
          (kws/generate-iso19115-descriptive-keywords
            "theme" (map kws/science-keyword->iso-keyword-string (:ScienceKeywords c)))
-         (kws/generate-iso19115-descriptive-keywords "place" (:SpatialKeywords c))
+         (kws/generate-iso19115-descriptive-keywords "place"
+                                                     (lk/location-keywords->spatial-keywords
+                                                      (:LocationKeywords c)))
          (kws/generate-iso19115-descriptive-keywords "temporal" (:TemporalKeywords c))
          (kws/generate-iso19115-descriptive-keywords nil (:AncillaryKeywords c))
          (platform/generate-platform-keywords platforms)

@@ -75,7 +75,8 @@
     [:collection :echo10]   (echo10-to-umm/echo10-xml-to-umm-c context (xpath/context metadata))
     [:collection :dif]      (dif9-to-umm/dif9-xml-to-umm-c (xpath/context metadata))
     [:collection :dif10]    (dif10-to-umm/dif10-xml-to-umm-c (xpath/context metadata))
-    [:collection :iso19115] (iso19115-2-to-umm/iso19115-2-xml-to-umm-c (xpath/context metadata))
+    [:collection :iso19115] (iso19115-2-to-umm/iso19115-2-xml-to-umm-c context
+                                                                       (xpath/context metadata))
     [:collection :iso-smap] (iso-smap-to-umm/iso-smap-xml-to-umm-c (xpath/context metadata))
     [:service :serf]        (serf-to-umm/serf-xml-to-umm-s (xpath/context metadata))))
 

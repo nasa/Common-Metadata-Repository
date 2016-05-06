@@ -1123,7 +1123,8 @@
                  expected-responsibilities ["POINTOFCONTACT" "ORIGINATOR" "DISTRIBUTOR" "PROCESSOR"])
       (update-in [:MetadataAssociations] group-metadata-assocations)
       (update-in [:ISOTopicCategories] update-iso-topic-categories)
-      (assoc :LocationKeywords nil)))
+      (update-in [:LocationKeywords] fix-location-keyword-conversion)
+      (assoc :SpatialKeywords nil)))
 
 ;; ISO-SMAP
 (defn- normalize-smap-instruments
@@ -1201,7 +1202,8 @@
                    (fn [sks]
                      (seq
                       (filter #(.contains kws/science-keyword-categories (:Category %)) sks))))
-        (update-in [:Platforms] normalize-smap-instruments))))
+        (update-in [:Platforms] normalize-smap-instruments)
+        (assoc :LocationKeywords nil))))
 
 ;;; Unimplemented Fields
 
