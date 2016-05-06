@@ -104,6 +104,20 @@
     (catch NumberFormatException e
       ["page_size must be a number between 0 and 2000"])))
 
+(def ^:private offset-error-message "offset must be a number greater than or equal to zero")
+
+(defn offset-validation
+  "Returns a seq of any errors in the offset parameter"
+  [_ params]
+  (if (and (:offset params) (:page-num params))
+    ["Only one of offset or page-num may be specified"]
+    (try
+      (when-let [n (get-ivalue-from-params params :offset)]
+        (when (neg? n)
+          [offset-error-message]))
+      (catch NumberFormatException _
+        [offset-error-message]))))
+
 (defn page-num-validation
   "Validates that the page-num (if present) is a number in the valid range."
   [concept-type params]
@@ -205,7 +219,7 @@
 
 (def standard-valid-params
   "The set of standard valid query level parameters."
-  #{:page-size :page-num :sort-key :result-format :options})
+  #{:page-size :page-num :offset :sort-key :result-format :options})
 
 (defn unrecognized-params-validation
   "Validates that no invalid parameters were supplied"
@@ -328,6 +342,7 @@
    multiple-value-validation
    page-size-validation
    page-num-validation
+   offset-validation
    paging-depth-validation
    sort-key-validation
    unrecognized-params-validation

@@ -53,14 +53,15 @@
 
 (defmethod send-query-to-elastic :default
   [context query]
-  (let [{:keys [page-size page-num concept-type result-format aggregations highlights]} query
+  (let [{:keys [page-size page-num offset concept-type result-format aggregations highlights]} query
         elastic-query (q2e/query->elastic query)
         sort-params (q2e/query->sort-params query)
         index-info (concept-type->index-info context concept-type query)
         fields (query-fields->elastic-fields
                 concept-type
                 (or (:result-fields query) (concept-type+result-format->fields concept-type query)))
-        from (* (dec page-num) page-size)
+        from (or offset
+                 (* (dec page-num) page-size))
         query-map (util/remove-nil-keys {:query elastic-query
                                          :version true
                                          :sort sort-params

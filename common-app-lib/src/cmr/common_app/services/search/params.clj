@@ -155,10 +155,13 @@
   ([concept-type params]
    (default-parse-query-level-params concept-type params {}))
   ([concept-type params aliases]
-   [(dissoc params :page-size :page-num :sort-key :result-format)
+   [(dissoc params :page-size :page-num :sort-key :result-format :offset)
     {:concept-type concept-type
      :page-size (Integer. (get params :page-size qm/default-page-size))
-     :page-num (Integer. (get params :page-num qm/default-page-num))
+     :page-num (when-not (:offset params)
+                 (Integer. (get params :page-num qm/default-page-num)))
+     :offset (when-not (:page-num params)
+               (Integer. (get params :offset 0)))
      :sort-keys (parse-sort-key (:sort-key params) aliases)
      :result-format (:result-format params)}]))
 
