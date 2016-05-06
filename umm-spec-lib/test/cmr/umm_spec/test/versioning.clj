@@ -6,7 +6,10 @@
             [cmr.umm-spec.test.umm-generators :as umm-gen]
             [clojure.test.check.generators :as gen]
             [com.gfredericks.test.chuck.clojure-test :refer [for-all]]
-            [cmr.umm-spec.core :as core]))
+            [cmr.umm-spec.core :as core]
+            [cmr.umm-spec.models.collection :as umm-c]
+            [cmr.umm-spec.test.location-keywords-helper :as lkt]
+            [cmr.umm-spec.models.common :as umm-cmn]))
 
 (deftest test-valid-version
   (is (v/valid-version? "1.0"))
@@ -21,31 +24,84 @@
 (defspec all-migrations-produce-valid-umm-spec 100
   (for-all [umm-record   (gen/no-shrink umm-gen/umm-c-generator)
             dest-version (gen/elements v/versions)]
-    (let [dest-media-type (str mt/umm-json "; version=" dest-version)
-          metadata (core/generate-metadata umm-record dest-media-type)]
-      (empty? (core/validate-metadata :collection dest-media-type metadata)))))
+           (let [dest-media-type (str mt/umm-json "; version=" dest-version)
+                 metadata (core/generate-metadata (lkt/setup-context-for-test
+                                                   {:spatial-keywords lkt/sample-keyword-map})
+                                                  umm-record dest-media-type)]
+             (empty? (core/validate-metadata :collection dest-media-type metadata)))))
 
 (deftest migrate-1_0-up-to-1_1
   (is (nil?
         (:TilingIdentificationSystems
-          (v/migrate-umm :collection "1.0" "1.1"
+          (v/migrate-umm {} :collection "1.0" "1.1"
                          {:TilingIdentificationSystem nil}))))
   (is (= [{:TilingIdentificationSystemName "foo"}]
          (:TilingIdentificationSystems
-           (v/migrate-umm :collection "1.0" "1.1"
+           (v/migrate-umm {} :collection "1.0" "1.1"
                           {:TilingIdentificationSystem {:TilingIdentificationSystemName "foo"}})))))
 
 (deftest migrate-1_1-down-to-1_0
   (is (nil?
         (:TilingIdentificationSystem
-          (v/migrate-umm :collection "1.1" "1.0"
+          (v/migrate-umm {} :collection "1.1" "1.0"
                          {:TilingIdentificationSystems nil}))))
   (is (nil?
         (:TilingIdentificationSystem
-          (v/migrate-umm :collection "1.1" "1.0"
+          (v/migrate-umm {} :collection "1.1" "1.0"
                          {:TilingIdentificationSystems []}))))
   (is (= {:TilingIdentificationSystemName "foo"}
          (:TilingIdentificationSystem
-           (v/migrate-umm :collection "1.1" "1.0"
+           (v/migrate-umm {} :collection "1.1" "1.0"
                           {:TilingIdentificationSystems [{:TilingIdentificationSystemName "foo"}
                                                          {:TilingIdentificationSystemName "bar"}]})))))
+
+(deftest migrate-1_1-up-to-1_2
+  (is (empty? (:LocationKeywords
+             (v/migrate-umm (lkt/setup-context-for-test lkt/sample-keyword-map)
+                            :collection "1.1" "1.2" {:SpatialKeywords nil}))))
+  (is (empty? (:LocationKeywords
+             (v/migrate-umm (lkt/setup-context-for-test lkt/sample-keyword-map)
+                            :collection "1.1" "1.2" {:SpatialKeywords []}))))
+
+  (is (= [{:Category "CONTINENT"}]
+         (seq (:LocationKeywords
+               (v/migrate-umm
+                (lkt/setup-context-for-test lkt/sample-keyword-map)
+                :collection "1.1" "1.2" {:SpatialKeywords ["CONTINENT"]})))))
+  ;; If not in the hierarchy, convert to CATEGORY OTHER and put the value as Type.
+  (is (= [{:Category "OTHER" :Type "Somewhereville"}]
+         (seq (:LocationKeywords
+               (v/migrate-umm
+                (lkt/setup-context-for-test lkt/sample-keyword-map)
+                :collection "1.1" "1.2" {:SpatialKeywords ["Somewhereville"]})))))
+
+  (is (= [{:Category "CONTINENT" :Type "AFRICA" :Subregion1 "CENTRAL AFRICA" :Subregion2 "ANGOLA"}]
+      (seq (:LocationKeywords
+            (v/migrate-umm
+             (lkt/setup-context-for-test lkt/sample-keyword-map)
+             :collection "1.1" "1.2" {:SpatialKeywords ["ANGOLA"]}))))))
+
+
+(deftest migrate_1_2-down-to-1_1
+  (is (nil?
+       (:LocationKeywords
+        (v/migrate-umm {} :collection "1.2" "1.1"
+                       {:LocationKeywords
+                        [{:Category "CONTINENT"}]}))))
+  (is (= ["CONTINENT"]
+          (:SpatialKeywords
+           (v/migrate-umm {} :collection "1.2" "1.1"
+                          {:LocationKeywords
+                           [{:Category "CONTINENT"}]}))))
+  (is (= ["ANGOLA"]
+         (:SpatialKeywords
+          (v/migrate-umm {} :collection "1.2" "1.1"
+                         {:LocationKeywords [{:Category "CONTINENT"
+                                              :Type "AFRICA"
+                                              :Subregion1 "CENTRAL AFRICA"
+                                              :Subregion2 "ANGOLA"}]}))))
+  (is (= ["Somewhereville" "Nowhereville"]
+         (:SpatialKeywords
+          (v/migrate-umm {} :collection "1.2" "1.1"
+                         {:LocationKeywords [{:Category "OTHER" :Type "Somewhereville"}
+                                             {:Category "OTHER" :Type "Nowhereville"}]})))))

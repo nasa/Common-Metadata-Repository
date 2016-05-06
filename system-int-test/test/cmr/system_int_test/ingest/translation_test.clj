@@ -6,7 +6,8 @@
             [clj-time.core :as t]
             [cmr.umm-spec.core :as umm-spec]
             [cmr.common.mime-types :as mt]
-            [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
+            [cmr.umm-spec.test.expected-conversion :as expected-conversion]
+            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
 (def valid-formats
   [
@@ -18,6 +19,8 @@
    ;; :dif10
    ;; :echo10
    ])
+
+(def test-context (lkt/setup-context-for-test lkt/sample-keyword-map))
 
 (defn assert-translate-failure
   [error-regex & args]
@@ -49,13 +52,13 @@
   (doseq [input-format valid-formats
           output-format valid-formats]
     (testing (format "Translating %s to %s" (name input-format) (name output-format))
-      (let [input-str (umm-spec/generate-metadata expected-conversion/example-collection-record input-format)
+      (let [input-str (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
             expected (expected-conversion/convert expected-conversion/example-collection-record input-format output-format)
             {:keys [status headers body]} (ingest/translate-metadata :collection input-format input-str output-format)
             content-type (first (mt/extract-mime-types (:content-type headers)))]
         (is (= 200 status))
         (is (= (mt/format->mime-type output-format) content-type))
-        (is (= expected (umm-spec/parse-metadata :collection output-format body))))))
+        (is (= expected (umm-spec/parse-metadata test-context :collection output-format body))))))
 
   (testing "Failure cases"
     (testing "unsupported input format"
@@ -87,7 +90,7 @@
       (testing "wrong xml format"
         (assert-translate-failure
           #"Element 'Entry_ID' is a simple type, so it must have no element information item"
-          :collection :dif (umm-spec/generate-metadata expected-conversion/example-collection-record :dif10) :umm-json))
+          :collection :dif (umm-spec/generate-metadata test-context expected-conversion/example-collection-record :dif10) :umm-json))
 
       (testing "bad json"
         (assert-translate-failure #"object has missing required properties"
@@ -153,13 +156,13 @@
     (def output :dif)
 
 
-    (def metadata (umm-spec/generate-metadata expected-conversion/example-collection-record input))
+    (def metadata (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input))
 
-    (def parsed-from-metadata (umm-spec/parse-metadata :collection input metadata))
+    (def parsed-from-metadata (umm-spec/parse-metadata test-context :collection input metadata))
 
-    (def metadata-regen (umm-spec/generate-metadata parsed-from-metadata output))
+    (def metadata-regen (umm-spec/generate-metadata test-context parsed-from-metadata output))
 
-    (def parsed-from-metadata-regen (umm-spec/parse-metadata :collection output metadata-regen))
+    (def parsed-from-metadata-regen (umm-spec/parse-metadata test-context :collection output metadata-regen))
     )
 
   (println metadata)

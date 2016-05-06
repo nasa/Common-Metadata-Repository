@@ -2,6 +2,7 @@
   :description "Defines the Unified Metadata Model and mappings from various metadata standards into UMM."
   :url "***REMOVED***projects/CMR/repos/cmr/browse/umm-spec-lib"
   :dependencies [[org.clojure/clojure "1.7.0"]
+                 [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]]

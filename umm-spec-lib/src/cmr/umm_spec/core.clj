@@ -69,10 +69,10 @@
 
 (defn parse-metadata
   "Parses metadata of the specific concept type and format into UMM records"
-  [concept-type fmt metadata]
+  [context concept-type fmt metadata]
   (condp = [concept-type (mt/format-key fmt)]
-    [:collection :umm-json] (umm-json/json->umm :collection metadata (umm-json-version fmt))
-    [:collection :echo10]   (echo10-to-umm/echo10-xml-to-umm-c (xpath/context metadata))
+    [:collection :umm-json] (umm-json/json->umm context :collection metadata (umm-json-version fmt))
+    [:collection :echo10]   (echo10-to-umm/echo10-xml-to-umm-c context (xpath/context metadata))
     [:collection :dif]      (dif9-to-umm/dif9-xml-to-umm-c (xpath/context metadata))
     [:collection :dif10]    (dif10-to-umm/dif10-xml-to-umm-c (xpath/context metadata))
     [:collection :iso19115] (iso19115-2-to-umm/iso19115-2-xml-to-umm-c (xpath/context metadata))
@@ -80,10 +80,11 @@
     [:service :serf]        (serf-to-umm/serf-xml-to-umm-s (xpath/context metadata))))
 
 (defn generate-metadata
-  [umm fmt]
+  [context umm fmt]
   (let [concept-type (concept-type umm)]
     (condp = [concept-type (mt/format-key fmt)]
-      [:collection :umm-json] (umm-json/umm->json (ver/migrate-umm concept-type
+      [:collection :umm-json] (umm-json/umm->json (ver/migrate-umm context
+                                                                   concept-type
                                                                    ver/current-version
                                                                    (umm-json-version fmt)
                                                                    umm))

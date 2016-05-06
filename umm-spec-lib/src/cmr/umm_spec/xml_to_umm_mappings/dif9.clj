@@ -95,7 +95,14 @@
                  {:ShortName (value-of proj "Short_Name")
                   :LongName (value-of proj "Long_Name")})
      :CollectionProgress (value-of doc "/DIF/Data_Set_Progress")
-     :SpatialKeywords (values-at doc "/DIF/Location/Location_Category")
+     :LocationKeywords  (let [lks (select doc "/DIF/Location")]
+                          (for [lk lks]
+                            {:Category (value-of lk "Location_Category")
+                             :Type (value-of lk "Location_Type")
+                             :Subregion1 (value-of lk "Location_Subregion1")
+                             :Subregion2 (value-of lk "Location_Subregion2")
+                             :Subregion3 (value-of lk "Location_Subregion3")
+                             :DetailedLocation (value-of lk "Detailed_Location")}))
      :Quality (value-of doc "/DIF/Quality")
      :AccessConstraints {:Description (value-of doc "/DIF/Access_Constraints")
                          :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}

@@ -6,7 +6,8 @@
             [cmr.umm-spec.util :as spec-util]
             [cmr.umm-spec.date-util :as dates]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as spatial]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [cmr.umm-spec.location-keywords :as lk]))
 
 (defn characteristic-mapping
   [data]
@@ -142,7 +143,7 @@
                  (catch NumberFormatException e)))]
      [:DataFormat (-> c :Distributions first :DistributionFormat)]
      [:SpatialKeywords
-      (for [kw (:SpatialKeywords c)]
+      (for [kw (lk/location-keywords->spatial-keywords (:LocationKeywords c))]
         [:Keyword kw])]
      [:TemporalKeywords
       (for [kw (:TemporalKeywords c)]

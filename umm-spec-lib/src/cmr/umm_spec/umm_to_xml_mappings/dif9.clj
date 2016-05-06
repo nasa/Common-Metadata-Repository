@@ -85,12 +85,18 @@
         [:Northernmost_Latitude (:NorthBoundingCoordinate mbr)]
         [:Westernmost_Longitude (:WestBoundingCoordinate mbr)]
         [:Easternmost_Longitude (:EastBoundingCoordinate mbr)]])
-     (for [spatial-keyword (:SpatialKeywords c)]
+     (let [location-keywords (:LocationKeywords c)]
+       (for [lk location-keywords]
        [:Location
-        [:Location_Category spatial-keyword]])
-     (for [temproal-keywod (:TemporalKeywords c)]
+        [:Location_Category (:Category lk)]
+        [:Location_Type (:Type lk)]
+        [:Location_Subregion1 (:Subregion1 lk)]
+        [:Location_Subregion2 (:Subregion2 lk)]
+        [:Location_Subregion3 (:Subregion3 lk)]
+        [:Detailed_Location (:DetailedLocation lk)]]))
+     (for [temporal-keyword (:TemporalKeywords c)]
        [:Data_Resolution
-        [:Temporal_Resolution temproal-keywod]])
+        [:Temporal_Resolution temporal-keyword]])
      (for [{:keys [ShortName LongName]} (:Projects c)]
        [:Project
         [:Short_Name ShortName]

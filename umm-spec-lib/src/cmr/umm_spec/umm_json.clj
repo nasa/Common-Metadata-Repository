@@ -98,13 +98,13 @@
 
 (defn json->umm
   "Parses the JSON string and returns Clojure UMM records."
-  ([concept-type json-str json-version]
+  ([context concept-type json-str json-version]
    (let [schema (js/concept-schema concept-type)
          root-type-def (get-in schema [:definitions (:root schema)])
          ;; migrate the decoded JSON object up to the latest UMM before running it through the schema
          json-obj (json/decode json-str true)
-         migrated (ver/migrate-umm concept-type json-version ver/current-version json-obj)]
+         migrated (ver/migrate-umm context concept-type json-version ver/current-version json-obj)]
      (parse-json schema [(:root schema)] (:root schema) root-type-def migrated)))
-  ([concept-type json-str]
+  ([context concept-type json-str]
     ;; default to trying to parse the current UMM version
-   (json->umm concept-type json-str ver/current-version)))
+   (json->umm context concept-type json-str ver/current-version)))

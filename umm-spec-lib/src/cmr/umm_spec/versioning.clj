@@ -1,7 +1,8 @@
 (ns cmr.umm-spec.versioning
   "Contains functions for migrating between versions of UMM schema."
   (:require [clojure.set :as set]
-            [cmr.common.mime-types :as mt]))
+            [cmr.common.mime-types :as mt]
+            [cmr.umm-spec.location-keywords :as lk]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Important Constants
@@ -9,7 +10,7 @@
 (def versions
   "A sequence of valid UMM Schema versions, with the newest one last. This sequence must be updated
    when new schema versions are added to the CMR."
-  ["1.0" "1.1"])
+  ["1.0" "1.1" "1.2"])
 
 (def current-version
   "The current version of the UMM schema."
@@ -49,14 +50,13 @@
     (with-default-version fmt)
     fmt))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Migrating Between Versions
 
 ;; Private Migration Functions
 
 (defn- dispatch-migrate
-  [_ concept-type source-version dest-version]
+  [_context _collection concept-type source-version dest-version]
   [concept-type source-version dest-version])
 
 (defmulti ^:private migrate-umm-version
@@ -65,7 +65,7 @@
           #'dispatch-migrate)
 
 (defmethod migrate-umm-version :default
-  [c & _]
+  [context c & _]
   ;; Do nothing by default. This lets us skip over "holes" in the version sequence, where the UMM
   ;; version may be updated but a particular concept type's schema may not be affected.
   c)
@@ -73,27 +73,40 @@
 ;; Collection Migrations
 
 (defmethod migrate-umm-version [:collection "1.0" "1.1"]
-  [c & _]
+  [context c & _]
   (-> c
       (update-in [:TilingIdentificationSystem] #(when % [%]))
       (set/rename-keys {:TilingIdentificationSystem :TilingIdentificationSystems})))
 
 (defmethod migrate-umm-version [:collection "1.1" "1.0"]
-  [c & _]
+  [context c & _]
   (-> c
       (update-in [:TilingIdentificationSystems] first)
       (set/rename-keys {:TilingIdentificationSystems :TilingIdentificationSystem})))
 
+(defmethod migrate-umm-version [:collection "1.1" "1.2"]
+  [context c & _]
+  ;; Change SpatialKeywords to LocationKeywords
+  (-> c
+    (assoc :LocationKeywords (lk/translate-spatial-keywords context (:SpatialKeywords c)))))
+
+(defmethod migrate-umm-version [:collection "1.2" "1.1"]
+  [context c & _]
+  ;;Assume that IsoTopicCategories will not deviate from the 1.1 list of allowed values.
+  (-> c
+      (assoc :SpatialKeywords
+             (lk/location-keywords->spatial-keywords (:LocationKeywords c)))
+      (assoc :LocationKeywords nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface
 
 (defn migrate-umm
-  [concept-type source-version dest-version data]
+  [context concept-type source-version dest-version data]
   (if (= source-version dest-version)
     data
     ;; Migrating across versions is just reducing over the discrete steps between each version.
     (reduce (fn [data [v1 v2]]
-              (migrate-umm-version data concept-type v1 v2))
+              (migrate-umm-version context data concept-type v1 v2))
             data
             (version-steps source-version dest-version))))

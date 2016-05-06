@@ -304,4 +304,3 @@
                 :xml {coll1 0 coll2 0 coll3 1 coll4 1 coll5 0
                       coll6 0 coll7 0 coll51 1 coll52 2 coll53 2}
                 refs-result)))))))
-

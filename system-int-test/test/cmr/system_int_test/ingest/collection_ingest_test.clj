@@ -20,10 +20,13 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
             [cmr.umm-spec.core :as umm-spec]
-            [cmr.umm-spec.test.expected-conversion :as exc]))
+            [cmr.umm-spec.test.expected-conversion :as exc]
+            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
+
+(def test-context (lkt/setup-context-for-test lkt/sample-keyword-map))
 
 ;; tests
 ;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp;
@@ -493,7 +496,7 @@
        :iso-smap ["Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
 
 (deftest ingest-umm-json
-  (let [json (umm-spec/generate-metadata exc/example-collection-record :umm-json)
+  (let [json (umm-spec/generate-metadata test-context exc/example-collection-record :umm-json)
         coll-map {:provider-id "PROV1"
                   :native-id "umm_json_coll_V1"
                   :revision-id "1"
@@ -518,7 +521,7 @@
         (is (= 2 (:revision-id response))))))
 
   (testing "ingesting UMM JSON with parsing errors"
-    (let [json (umm-spec/generate-metadata (assoc exc/example-collection-record
+    (let [json (umm-spec/generate-metadata test-context (assoc exc/example-collection-record
                                              :DataDates
                                              [{:Date "invalid date"
                                                :Type "CREATE"}])
@@ -534,7 +537,7 @@
       (is (= 400 (:status response))))))
 
 (deftest ingest-old-json-versions
-  (let [json     (umm-spec/generate-metadata exc/example-collection-record "application/vnd.nasa.cmr.umm+json;version=1.0")
+  (let [json     (umm-spec/generate-metadata test-context exc/example-collection-record "application/vnd.nasa.cmr.umm+json;version=1.0")
         coll-map {:provider-id  "PROV1"
                   :native-id    "umm_json_coll_V1"
                   :concept-type :collection

@@ -7,7 +7,8 @@
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
             [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.util :as u]))
+            [cmr.umm-spec.util :as u]
+            [cmr.umm-spec.location-keywords :as lk]))
 
 (defn parse-temporal
   "Returns seq of UMM temporal extents from an ECHO10 XML document."
@@ -84,7 +85,7 @@
 
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
-  [doc]
+  [context doc]
   {:EntryTitle (value-of doc "/Collection/DataSetId")
    :ShortName  (value-of doc "/Collection/ShortName")
    :Version    (without-default-value-of doc "/Collection/VersionId")
@@ -98,7 +99,9 @@
    :Distributions [{:DistributionFormat (value-of doc "/Collection/DataFormat")
                     :Fees (value-of doc "/Collection/Price")}]
    :TemporalKeywords (values-at doc "/Collection/TemporalKeywords/Keyword")
-   :SpatialKeywords  (values-at doc "/Collection/SpatialKeywords/Keyword")
+   :LocationKeywords (lk/spatial-keywords->location-keywords
+                      (lk/get-spatial-keywords-maps context)
+                      (values-at doc "/Collection/SpatialKeywords/Keyword"))
    :SpatialExtent    (spatial/parse-spatial doc)
    :TemporalExtents  (parse-temporal doc)
    :Platforms (for [plat (select doc "/Collection/Platforms/Platform")]
@@ -135,5 +138,5 @@
 
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document."
-  [metadata]
-  (js/parse-umm-c (parse-echo10-xml metadata)))
+  [context metadata]
+  (js/parse-umm-c (parse-echo10-xml context metadata)))

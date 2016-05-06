@@ -196,4 +196,3 @@
 
 (comment
   (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :spatial-keywords))
-

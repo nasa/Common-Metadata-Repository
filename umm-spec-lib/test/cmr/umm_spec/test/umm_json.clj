@@ -54,30 +54,30 @@
 
 (deftest generate-and-parse-umm-s-json
   (testing "minimal umm-s record"
-    (let [json (uj/umm->json minimal-example-umm-s-record)
+    (let [json (uj/umm->json  minimal-example-umm-s-record)
           _ (is (empty? (js/validate-umm-json json :service)))
-          parsed (uj/json->umm :service json)]
+          parsed (uj/json->umm {} :service json)]
       (is (= minimal-example-umm-s-record parsed)))))
 
 (deftest generate-and-parse-umm-c-json
   (testing "minimal umm-c record"
     (let [json (uj/umm->json minimal-example-umm-c-record)
           _ (is (empty? (js/validate-umm-json json :collection)))
-          parsed (uj/json->umm :collection json)]
+          parsed (uj/json->umm {} :collection json)]
       (is (= minimal-example-umm-c-record parsed)))))
 
 (defspec all-umm-c-records 100
   (for-all [umm-c-record umm-gen/umm-c-generator]
     (let [json (uj/umm->json umm-c-record)
           _ (is (empty? (js/validate-umm-json json :collection)))
-          parsed (uj/json->umm :collection json)]
+          parsed (uj/json->umm {} :collection json)]
       (is (= umm-c-record parsed)))))
 
 (defspec all-umm-s-records 100
   (for-all [umm-s-record umm-gen/umm-s-generator]
     (let [json (uj/umm->json umm-s-record)
           _ (is (empty? (js/validate-umm-json json :service)))
-          parsed (uj/json->umm :service json)]
+          parsed (uj/json->umm {} :service json)]
       (is (= umm-s-record parsed)))))
 
 (deftest validate-json-with-extra-fields

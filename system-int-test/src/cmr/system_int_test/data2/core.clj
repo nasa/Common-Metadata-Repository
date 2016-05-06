@@ -14,12 +14,15 @@
             [clj-time.format :as f]
             [cheshire.core :as json]
             [cmr.system-int-test.system :as s]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
 (defn- item->native-id
   "Returns the native id of a UMM record."
   [item]
   (some #(get item %) [:granule-ur :entry-title :EntryTitle :native-id]))
+
+(def context (lkt/setup-context-for-test lkt/sample-keyword-map))
 
 (defn item->concept
   "Returns a concept map from a UMM item or tombstone. Default provider-id to PROV1 if not present."
@@ -30,7 +33,10 @@
      (merge {:concept-type (umm-legacy/item->concept-type item)
              :provider-id (or (:provider-id item) "PROV1")
              :native-id (or (:native-id item) (item->native-id item))
-             :metadata (when-not (:deleted item) (umm-legacy/generate-metadata (dissoc item :provider-id) format-key))
+             :metadata (when-not (:deleted item)
+                         (umm-legacy/generate-metadata
+                          context
+                          (dissoc item :provider-id) format-key))
              :format format}
             (when (:concept-id item)
               {:concept-id (:concept-id item)})
@@ -83,12 +89,11 @@
                   :metadata     metadata
                   :format       (or format (mime-types/format->mime-type format-key))}
         response (ingest/ingest-concept concept)]
-    (merge (umm-legacy/parse-concept concept) response)))
+    (merge (umm-legacy/parse-concept context concept) response)))
 
 (defn ingest-concept-with-metadata-file
   "Ingest the given concept with the metadata file. The metadata file has to be located on the
   classpath. Takes a metadata-filename and an ingest parameter map.
-
   ingest-params must contain the following keys: provider-id concept-type, and format-key. It can
   optionally contain native-id."
   [metadata-filename ingest-params]
@@ -122,7 +127,7 @@
        :revision-id revision-id
        :format format-key
        :collection-concept-id collection-concept-id
-       :metadata (umm-legacy/generate-metadata item format-key)})))
+       :metadata (umm-legacy/generate-metadata context item format-key)})))
 
 (defmethod item->metadata-result true
   [_ format-key item]
@@ -132,11 +137,11 @@
         {:echo_granule_id concept-id
          :echo_dataset_id collection-concept-id
          :format format-key
-         :metadata (umm-legacy/generate-metadata item format-key)})
+         :metadata (umm-legacy/generate-metadata context item format-key)})
       (util/remove-nil-keys
         {:echo_dataset_id concept-id
          :format format-key
-         :metadata (umm-legacy/generate-metadata item format-key)}))))
+         :metadata (umm-legacy/generate-metadata context item format-key)}))))
 
 (defn- items-match?
   "Returns true if the search result items match the expected items. The argument echo-compatible?

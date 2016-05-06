@@ -13,9 +13,17 @@
             [cmr.umm-spec.core :as umm-spec]
             [cmr.umm.collection.entry-id :as eid]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]
-            [cmr.umm-spec.versioning :as ver]))
+            [cmr.umm-spec.versioning :as ver]
+            [cmr.umm-spec.test.location-keywords-helper :as lkt]
+            [clj-time.core :as t]
+            [cmr.umm-spec.models.common :as umm-cmn]
+            [cmr.umm-spec.models.collection :as umm-c]
+            [cmr.common.mime-types :as mt]
+            [cheshire.core :as json]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+
+(def context (lkt/setup-context-for-test lkt/sample-keyword-map))
 
 (defn- unparse-date-time
   "Parse a date-time into a string that can be used in a parameter query"
@@ -106,10 +114,30 @@
 (comment
   ;; for REPL testing purposes
   (def example-collection-record expected-conversion/example-collection-record)
-  (cmr.umm.core/parse-concept {:metadata (cmr.umm-spec.core/generate-metadata example-collection-record :echo10)
+  (cmr.umm.core/parse-concept {:metadata (cmr.umm-spec.core/generate-metadata
+                                          example-collection-record :echo10)
                                :concept-type :collection
                                :format "application/echo10+xml"}))
 
+(deftest spatial-keywords-migration-test
+  (testing "Make sure that spatial keywords are converted to LocationKeywords from 1.1->1.2"
+    (let [coll expected-conversion/example-collection-record
+          mime-type "application/vnd.nasa.cmr.umm+json;version=1.1"
+          input-str (umm-spec/generate-metadata context coll mime-type)
+          input-version "1.1"
+          output-version "1.2"
+          {:keys [status headers body]} (ingest/translate-between-umm-versions :collection input-version input-str output-version nil)
+          content-type (first (mt/extract-mime-types (:content-type headers)))
+          response (json/parse-string body)]
+      (is (some? (get response "LocationKeywords")))
+      (is (some? (get response "SpatialKeywords")))
+      (is (= [{"Category" "CONTINENT",
+               "Type" "AFRICA",
+               "Subregion1" "CENTRAL AFRICA",
+               "Subregion2" "ANGOLA"}
+              {"Category" "OTHER",
+               "Type" "Somewhereville"}] (get response "LocationKeywords")))
+      (is (= ["ANGOLA" "Somewhereville"] (get response "SpatialKeywords"))))))
 
 (deftest mmt-ingest-round-trip
   (testing "ingest and search UMM JSON metadata"
@@ -117,11 +145,11 @@
     (doseq [v ver/versions]
       (let [coll      expected-conversion/example-collection-record
             mime-type (str "application/vnd.nasa.cmr.umm+json;version=" v)
-            json      (umm-spec/generate-metadata coll mime-type)
-            result    (d/ingest-concept-with-metadata {:provider-id  "PROV1"
-                                                       :concept-type :collection
-                                                       :format       mime-type
-                                                       :metadata     json})]
+            json      (umm-spec/generate-metadata context coll mime-type)
+            result    (d/ingest-concept-with-metadata  {:provider-id  "PROV1"
+                                                        :concept-type :collection
+                                                        :format       mime-type
+                                                        :metadata     json})]
         (index/wait-until-indexed)
         ;; parameter queries
         (are2 [items params]
@@ -197,12 +225,7 @@
               [] {:project "foo"}
 
               ;; archive-center, data-center - CMR-2265 still need to figure out how to tell them apart in UMM-C
-
-              "spatial keywords match"
-              [result] {"spatial_keyword[]" "SPK1"}
-              "non-matching spatial keyword"
-              [] {"spatial_keyword[]" "foobar"}
-
+              ;; Got rid of spatial keywords, moving to location keywords.
               "temporal keywords match"
               [result] {:keyword "temporal keyword 1"}
 
@@ -299,4 +322,3 @@
           ;; Reingest the collection
           (let [coll1 (ingest-coll coll1)]
             (assert-collections-and-granules-found [coll1 coll2 coll3] [gr3 gr4])))))))
-
