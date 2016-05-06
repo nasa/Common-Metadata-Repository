@@ -65,8 +65,22 @@
 
   (is (= [{:Category "CONTINENT"}]
          (seq (:LocationKeywords
-               (v/migrate-umm (lkt/setup-context-for-test lkt/sample-keyword-map)
-                              :collection "1.1" "1.2" {:SpatialKeywords ["CONTINENT"] }))))))
+               (v/migrate-umm
+                (lkt/setup-context-for-test lkt/sample-keyword-map)
+                :collection "1.1" "1.2" {:SpatialKeywords ["CONTINENT"]})))))
+  ;; If not in the hierarchy, convert to CATEGORY OTHER and put the value as Type.
+  (is (= [{:Category "OTHER" :Type "Somewhereville"}]
+         (seq (:LocationKeywords
+               (v/migrate-umm
+                (lkt/setup-context-for-test lkt/sample-keyword-map)
+                :collection "1.1" "1.2" {:SpatialKeywords ["Somewhereville"]})))))
+
+  (is (= [{:Category "CONTINENT" :Type "AFRICA" :Subregion1 "CENTRAL AFRICA" :Subregion2 "ANGOLA"}]
+      (seq (:LocationKeywords
+            (v/migrate-umm
+             (lkt/setup-context-for-test lkt/sample-keyword-map)
+             :collection "1.1" "1.2" {:SpatialKeywords ["ANGOLA"]}))))))
+
 
 (deftest migrate_1_2-down-to-1_1
   (is (nil?
@@ -74,8 +88,20 @@
         (v/migrate-umm {} :collection "1.2" "1.1"
                        {:LocationKeywords
                         [{:Category "CONTINENT"}]}))))
-  (is (= '("CONTINENT")
+  (is (= ["CONTINENT"]
           (:SpatialKeywords
            (v/migrate-umm {} :collection "1.2" "1.1"
                           {:LocationKeywords
-                           [{:Category "CONTINENT"}]})))))
+                           [{:Category "CONTINENT"}]}))))
+  (is (= ["ANGOLA"]
+         (:SpatialKeywords
+          (v/migrate-umm {} :collection "1.2" "1.1"
+                         {:LocationKeywords [{:Category "CONTINENT"
+                                              :Type "AFRICA"
+                                              :Subregion1 "CENTRAL AFRICA"
+                                              :Subregion2 "ANGOLA"}]}))))
+  (is (= ["Somewhereville" "Nowhereville"]
+         (:SpatialKeywords
+          (v/migrate-umm {} :collection "1.2" "1.1"
+                         {:LocationKeywords [{:Category "OTHER" :Type "Somewhereville"}
+                                             {:Category "OTHER" :Type "Nowhereville"}]})))))

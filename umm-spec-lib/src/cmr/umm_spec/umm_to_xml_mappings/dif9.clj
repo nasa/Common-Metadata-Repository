@@ -85,14 +85,15 @@
         [:Northernmost_Latitude (:NorthBoundingCoordinate mbr)]
         [:Westernmost_Longitude (:WestBoundingCoordinate mbr)]
         [:Easternmost_Longitude (:EastBoundingCoordinate mbr)]])
-     (let [location-category (first (:LocationKeywords c))]
+     (let [location-keywords (:LocationKeywords c)]
+       (for [lk location-keywords]
        [:Location
-        [:Location_Category (:Category location-category)]
-        [:Location_Type (:Type location-category)]
-        [:Location_Subregion1 (:Subregion1 location-category)]
-        [:Location_Subregion2 (:Subregion2 location-category)]
-        [:Location_Subregion3 (:Subregion3 location-category)]
-        [:Detailed_Location (:DetailedLocation location-category)]])
+        [:Location_Category (:Category lk)]
+        [:Location_Type (:Type lk)]
+        [:Location_Subregion1 (:Subregion1 lk)]
+        [:Location_Subregion2 (:Subregion2 lk)]
+        [:Location_Subregion3 (:Subregion3 lk)]
+        [:Detailed_Location (:DetailedLocation lk)]]))
      (for [temporal-keyword (:TemporalKeywords c)]
        [:Data_Resolution
         [:Temporal_Resolution temporal-keyword]])

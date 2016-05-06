@@ -495,7 +495,7 @@
   ;;Convert the Location Keyword to a leaf.
   (let [leaf-values (lk/location-keywords->spatial-keywords location-keywords)
         translated-values (lk/translate-spatial-keywords
-          (lkt/setup-context-for-test lkt/sample-keyword-map) leaf-values)]
+                           (lkt/setup-context-for-test lkt/sample-keyword-map) leaf-values)]
     ;;If the keyword exists in the hierarchy
     (seq (map #(umm-c/map->LocationKeywordType %) translated-values))))
 
@@ -591,13 +591,6 @@
                                       :Instruments instruments}))
         platforms))))
 
-(defn- cleanup-location-keywords
-  "DIF9 Location element only accepts one value."
-  [location-keywords]
-  (let [location-keyword (first location-keywords)
-        location-type (umm-c/map->LocationKeywordType location-keyword)]
-    (if (some? location-keyword) [location-type] nil)))
-
 (defmethod umm->expected-convert :dif
   [umm-coll _]
   (-> umm-coll
@@ -637,9 +630,7 @@
       (update-in-each [:PublicationReferences] dif-publication-reference)
       (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
       ;;CMR-2716 SpatialKeywords are being replaced by LocationKeywords.
-      (assoc :SpatialKeywords nil)
-      ;;Dif9 Does not support multiple LocationKeywords
-      (update-in [:LocationKeywords] cleanup-location-keywords)))
+      (assoc :SpatialKeywords nil)))
 
 ;; DIF 10
 (defn dif10-platform

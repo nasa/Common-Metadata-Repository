@@ -127,9 +127,17 @@
           input-version "1.1"
           output-version "1.2"
           {:keys [status headers body]} (ingest/translate-between-umm-versions :collection input-version input-str output-version nil)
-          content-type (first (mt/extract-mime-types (:content-type headers)))]
-      (is (some? (get (json/parse-string body) "LocationKeywords")))
-      (is (some? (get (json/parse-string body) "SpatialKeywords"))))))
+          content-type (first (mt/extract-mime-types (:content-type headers)))
+          response (json/parse-string body)]
+      (is (some? (get response "LocationKeywords")))
+      (is (some? (get response "SpatialKeywords")))
+      (is (= [{"Category" "CONTINENT",
+               "Type" "AFRICA",
+               "Subregion1" "CENTRAL AFRICA",
+               "Subregion2" "ANGOLA"}
+              {"Category" "OTHER",
+               "Type" "Somewhereville"}] (get response "LocationKeywords")))
+      (is (= ["ANGOLA" "Somewhereville"] (get response "SpatialKeywords"))))))
 
 (deftest mmt-ingest-round-trip
   (testing "ingest and search UMM JSON metadata"
