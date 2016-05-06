@@ -24,10 +24,10 @@
 
 (defn- specific-items-query?
   "Returns true if the query is only for specific items."
-  [{:keys [condition page-num page-size] :as query}]
+  [{:keys [condition offset page-size] :as query}]
   (and (#{StringCondition StringsCondition} (type condition))
        (= :concept-id (:field condition))
-       (= page-num 1)
+       (= 0 offset)
        (or (= page-size :unlimited)
            (>= page-size (count (:values condition))))))
 
