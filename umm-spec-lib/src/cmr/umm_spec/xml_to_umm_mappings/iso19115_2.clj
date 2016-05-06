@@ -15,7 +15,8 @@
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.organizations-personnel :as org-per]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.metadata-association :as ma]
-            [cmr.umm-spec.iso19115-2-util :refer :all]))
+            [cmr.umm-spec.iso19115-2-util :refer :all]
+            [cmr.umm-spec.location-keywords :as lk]))
 
 (def md-data-id-base-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification")
@@ -124,7 +125,7 @@
 
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
-  [doc]
+  [context doc]
   (let [md-data-id-el (first (select doc md-data-id-base-xpath))
         citation-el (first (select doc citation-base-xpath))
         id-el (first (select doc identifier-base-xpath))
@@ -151,7 +152,8 @@
      :UseConstraints
      (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
                   #"^(?!Restriction Comment:).+")
-     :SpatialKeywords (kws/descriptive-keywords md-data-id-el "place")
+     :LocationKeywords (lk/translate-spatial-keywords
+                        context (kws/descriptive-keywords md-data-id-el "place"))
      :TemporalKeywords (kws/descriptive-keywords md-data-id-el "temporal")
      :DataLanguage (char-string-value md-data-id-el "gmd:language")
      :ISOTopicCategories (values-at doc topic-categories-xpath)
@@ -208,7 +210,5 @@
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document."
-  [metadata]
-  (js/parse-umm-c (parse-iso19115-xml metadata)))
-
-
+  [context metadata]
+  (js/parse-umm-c (parse-iso19115-xml context metadata)))
