@@ -129,8 +129,6 @@
           {:keys [status headers body]} (ingest/translate-between-umm-versions :collection input-version input-str output-version nil)
           content-type (first (mt/extract-mime-types (:content-type headers)))
           response (json/parse-string body)]
-      (is (some? (get response "LocationKeywords")))
-      (is (some? (get response "SpatialKeywords")))
       (is (= [{"Category" "CONTINENT",
                "Type" "AFRICA",
                "Subregion1" "CENTRAL AFRICA",

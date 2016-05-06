@@ -64,22 +64,22 @@
                             :collection "1.1" "1.2" {:SpatialKeywords []}))))
 
   (is (= [{:Category "CONTINENT"}]
-         (seq (:LocationKeywords
-               (v/migrate-umm
-                (lkt/setup-context-for-test lkt/sample-keyword-map)
-                :collection "1.1" "1.2" {:SpatialKeywords ["CONTINENT"]})))))
+         (:LocationKeywords
+          (v/migrate-umm
+           (lkt/setup-context-for-test lkt/sample-keyword-map)
+           :collection "1.1" "1.2" {:SpatialKeywords ["CONTINENT"]}))))
   ;; If not in the hierarchy, convert to CATEGORY OTHER and put the value as Type.
   (is (= [{:Category "OTHER" :Type "Somewhereville"}]
-         (seq (:LocationKeywords
-               (v/migrate-umm
-                (lkt/setup-context-for-test lkt/sample-keyword-map)
-                :collection "1.1" "1.2" {:SpatialKeywords ["Somewhereville"]})))))
+         (:LocationKeywords
+          (v/migrate-umm
+           (lkt/setup-context-for-test lkt/sample-keyword-map)
+           :collection "1.1" "1.2" {:SpatialKeywords ["Somewhereville"]}))))
 
   (is (= [{:Category "CONTINENT" :Type "AFRICA" :Subregion1 "CENTRAL AFRICA" :Subregion2 "ANGOLA"}]
-      (seq (:LocationKeywords
-            (v/migrate-umm
-             (lkt/setup-context-for-test lkt/sample-keyword-map)
-             :collection "1.1" "1.2" {:SpatialKeywords ["ANGOLA"]}))))))
+         (:LocationKeywords
+          (v/migrate-umm
+           (lkt/setup-context-for-test lkt/sample-keyword-map)
+           :collection "1.1" "1.2" {:SpatialKeywords ["ANGOLA"]})))))
 
 
 (deftest migrate_1_2-down-to-1_1
