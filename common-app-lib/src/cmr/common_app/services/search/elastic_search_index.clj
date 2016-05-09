@@ -125,7 +125,7 @@
             (update-in [:took] + took-total)
             (update-in [:hits :hits] concat prev-items))
         ;; We need to keep searching subsequent pages
-        (recur (+ offset (:page-size query))
+        (recur (+ offset unlimited-page-size)
                (concat prev-items current-items)
                (+ took-total (:took results)))))))
 
