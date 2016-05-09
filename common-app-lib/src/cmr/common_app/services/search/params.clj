@@ -155,12 +155,17 @@
   ([concept-type params]
    (default-parse-query-level-params concept-type params {}))
   ([concept-type params aliases]
-   [(dissoc params :page-size :page-num :sort-key :result-format)
-    {:concept-type concept-type
-     :page-size (Integer. (get params :page-size qm/default-page-size))
-     :page-num (Integer. (get params :page-num qm/default-page-num))
-     :sort-keys (parse-sort-key (:sort-key params) aliases)
-     :result-format (:result-format params)}]))
+   (let [page-size (Integer. (get params :page-size qm/default-page-size))
+         {:keys [offset page-num]} params]
+     [(dissoc params :page-size :page-num :offset :sort-key :result-format)
+      {:concept-type concept-type
+       :page-size page-size
+       :offset (cond
+                 page-num (* (dec (Integer. page-num)) page-size)
+                 offset (Integer. offset)
+                 :else qm/default-offset)
+       :sort-keys (parse-sort-key (:sort-key params) aliases)
+       :result-format (:result-format params)}])))
 
 (defmulti parse-query-level-params
   "Extracts parameters apply at the query level page-size and result format and returns a tuple of

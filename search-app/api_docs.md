@@ -153,6 +153,7 @@ The CORS headers are supported on search endpoints. Check [CORS Documentation](h
 
  * `page_size` - number of results per page - default is 10, max is 2000
  * `page_num` - The page number to return
+ * `offset` - As an alternative to page_num, a 0-based offset of individual results may be specified
  * `sort_key` - Indicates one or more fields to sort on. Described below
  * `pretty` - return formatted results if set to true
  * `token` - specifies a user/guest token from ECHO to use to authenticate yourself. This can also be specified as the header Echo-Token

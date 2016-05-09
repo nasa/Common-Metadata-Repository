@@ -211,3 +211,23 @@
             {:keys [status errors]} resp]
         (is (= 400 status))
         (is (= "Parameter [page_num] must have a single value." (first errors)))))))
+
+
+(deftest search-with-offset
+  (create-collections)
+  (testing "invalid offset param values"
+    (are [offset]
+      (= "offset must be an integer between zero and 1000000"
+         (first (:errors (search/find-refs :collection {"offset" offset}))))
+      "asdf"
+      "-1"
+      "9999999"))
+  (testing "invalid combination of offset and page-num"
+    (is (= "Only one of offset or page-num may be specified"
+           (first (:errors (search/find-refs :collection {"page_num" 2 "offset" 100}))))))
+  (testing "with valid offset"
+    (is (= (:refs (search/find-refs :collection {"page_num" 1 "page_size" 5}))
+           (:refs (search/find-refs :collection {"offset" 0 "page_size" 5}))))
+    (is (= (:refs (search/find-refs :collection {"page_num" 2 "page_size" 5}))
+           (:refs (search/find-refs :collection {"offset" 5 "page_size" 5}))))
+    (is (= [] (:refs (search/find-refs :collection {"offset" 25 "page_size" 10}))))))

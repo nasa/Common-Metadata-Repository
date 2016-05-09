@@ -18,7 +18,7 @@
         [clojure.repl]
         [alex-and-georges.debug-repl]))
 
-(def system nil)
+(defonce system nil)
 
 (defn configure-systems-logging
   "Configures the systems in the system map to the indicated level"
