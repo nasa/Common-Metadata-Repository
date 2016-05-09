@@ -384,7 +384,7 @@ To disable validation of the parsed UMM metadata against the UMM spec, pass `ski
 Example: Translate ECHO10 metadata to UMM JSON
 
 ```
-curl -i -XPOST -H "Content-Type: application/echo10+xml" -H "Accept: application/umm+json" %CMR-ENDPOINT%/translate/collection?skip_umm_validation=true -d \
+curl -i -XPOST -H "Content-Type: application/echo10+xml" -H "Accept:  application/vnd.nasa.cmr.umm+json;version=1.2" %CMR-ENDPOINT%/translate/collection?skip_umm_validation=true -d \
 "<Collection>
   <ShortName>ShortName_Larc</ShortName>
   <VersionId>Version01</VersionId>
