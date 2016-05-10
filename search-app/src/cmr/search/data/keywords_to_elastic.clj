@@ -62,26 +62,26 @@
   "Regex to match characters that need to be escaped for an elastic regexp query"
   #"([\.\+\|~\{\}\[\]\(\)\"\\\<\>]|&&|\|\|)")
 
-(defn process-keyword
+(defn- process-keyword
   "Appends a '.' to wildcard symbols (? and *) and escapes characters that are Regex operators
   in elastic"
   [keyword]
   (let [escaped-keyword (str/replace keyword elastic-regex-special-chars-re "\\$1")]
     (str/replace escaped-keyword elastic-regex-wildcard-chars-re ".$1")))
 
-(defn keyword-regexp-filter
+(defn- keyword-regexp-filter
   "Create a regexp filter for a given field and keyword (allows wildcards)"
   [field keyword]
   (let [regex (str ".*" (process-keyword keyword) ".*")]
     {:regexp {field regex}}))
 
-(defn keyword-exact-match-filter
+(defn- keyword-exact-match-filter
   "Create a filter that checks for an exact match on a field (allows wildcards)"
   [field keyword]
   (let [regex (process-keyword keyword)]
     {:regexp {field regex}}))
 
-(defn keywords->name-filter
+(defn- keywords->name-filter
   "Create a filter for keyword searches that checks for a loose match on one field or an
   exact match on another"
   [regex-field exact-field keywords boost]
@@ -90,7 +90,7 @@
    :filter {:or [{:and (map (partial keyword-regexp-filter regex-field) keywords)}
                  {:or (map (partial keyword-exact-match-filter exact-field) keywords)}]}})
 
-(defn science-keywords-or-filter
+(defn- science-keywords-or-filter
   "Create an or filter containing the science keyword fields related to keyword searches"
   [keywd]
   (let [processed-keyword (process-keyword keywd)]
@@ -98,14 +98,14 @@
                                processed-keyword}})
          [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3])))
 
-(defn keywords->sk-filter
+(defn- keywords->sk-filter
   "Create a filter for keyword searches that checks science keywords"
   [keywords boost]
   {:weight boost
    :filter {:nested {:path :science-keywords
                      :filter {:or (science-keywords-or-filter (str/join " " keywords))}}}})
 
-(defn keywords->boosted-exact-match-filter
+(defn- keywords->boosted-exact-match-filter
   "Create a boosted filter for keyword searches that requires an exact match on the given field"
   [field keywords boost]
   (let [keyword (str/join " " keywords)]

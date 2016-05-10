@@ -285,56 +285,87 @@
         "near?real?time" [coll22]))
 
     (testing "Default boosts on fields"
-      (are2 [keyword-str scores] (= (map #(/ % 2.0) scores)
-                                    (map :score (:refs (search/find-refs :collection
-                                                                         {:keyword keyword-str}))))
+      (are2 [params scores] (= (map #(/ % 2.0) scores)
+                               (map :score (:refs (search/find-refs :collection
+                                                                    params))))
+
+        ;; Q: Are there any in facets that are not in keywords? They may not be scored appropriately.
+
+        ;; TODO test cases
+        ;; - every field that is part of facets
+        ;; - case sensitive search
+        ;; - spaces and special characters in search term
+        ;; - pattern search (how does that apply to boosting)
+
         "short-name"
-        "SNFoobar" [short-name-boost]
+        {:keyword "SNFoobar"} [short-name-boost]
         "long-name"
-        "LNFoobar" [short-name-boost]
+        {:keyword "LNFoobar"} [short-name-boost]
 
-        "project short-name"
-        (:short-name (first pr1)) [project-boost]
+        "project short-name as keyword"
+        {:keyword (:short-name (first pr1))} [project-boost]
+        "project short-name as parameter"
+        {:project (:short-name (first pr1))} [project-boost]
         "project long-name"
-        (:long-name (first pr1)) [project-boost]
+        {:keyword (:long-name (first pr1))} [project-boost]
 
-        "platform short-name"
-        (:short-name p1) [platform-boost]
+        "platform short-name as keyword"
+        {:keyword (:short-name p1)} [platform-boost]
+        "platform short-name as parameter"
+        {:platform (:short-name p1)} [platform-boost]
         "platform long-name (from metadata)"
-        (:long-name p1) [platform-boost]
+        {:keyword (:long-name p1)} [platform-boost]
         "platform long-name (from KMS)"
-        "Soil Moisture Active and Passive Observatory" [platform-boost]
+        {:keyword "Soil Moisture Active and Passive Observatory"} [platform-boost]
 
-        "instrument short-name"
-        (:short-name (first (:instruments p1))) [instrument-boost]
+        "instrument short-name as keyword"
+        {:keyword (:short-name (first (:instruments p1)))} [instrument-boost]
+        "instrument short-name as parameter"
+        {:instrument (:short-name (first (:instruments p1)))} [instrument-boost]
         "instrument long-name (from metadata)"
-        (:long-name (first (:instruments p1))) [instrument-boost]
+        {:keyword (:long-name (first (:instruments p1)))} [instrument-boost]
         "instrument long-name (from KMS)"
-        "L-Band Radiometer" [instrument-boost]
+        {:keyword "L-Band Radiometer"} [instrument-boost]
 
-        "sensor short-name"
-        (:short-name (first (:sensors (first (:instruments p1))))) [sensor-boost]
+        "sensor short-name as keyword"
+        {:keyword (:short-name (first (:sensors (first (:instruments p1)))))} [sensor-boost]
+        "sensor short-name as parameter"
+        {:sensor (:short-name (first (:sensors (first (:instruments p1)))))} [sensor-boost]
         "sensor long-name"
-        (:long-name (first (:sensors (first (:instruments p1))))) [sensor-boost]
+        {:keyword (:long-name (first (:sensors (first (:instruments p1)))))} [sensor-boost]
 
         "temporal-keywords"
-        "tk1" [(k2e/get-boost nil :temporal-keyword)]
+        {:keyword "tk1"} [(k2e/get-boost nil :temporal-keyword)]
 
         "spatial-keyword"
-        "in out" [(k2e/get-boost nil :spatial-keyword)]
+        {:keyword "in out"} [(k2e/get-boost nil :spatial-keyword)]
 
-        "science-keywords"
-        (:category sk1) [science-keywords-boost]
+        "science-keywords as keyword"
+        {:keyword (:category sk1)} [science-keywords-boost]
+        "science-keywords category as parameter"
+        {:science-keywords {:0 {:category (:category sk1)}}} [science-keywords-boost]
+
+        "science-keywords topic as parameter"
+        {:science-keywords {:0 {:topic (:topic sk1)}}} [science-keywords-boost science-keywords-boost]
+        "science-keywords term as parameter"
+        {:science-keywords {:0 {:term (:term sk1)}}} [science-keywords-boost science-keywords-boost]
+        "science-keywords variable-level-1 as parameter"
+        {:science-keywords {:0 {:variable-level-1 (:variable-level-1 sk1)}}} [science-keywords-boost]
+        "science-keywords variable-level-2 as parameter"
+        {:science-keywords {:0 {:variable-level-2 (:variable-level-2 sk1)}}} [science-keywords-boost]
+        "science-keywords variable-level-3 as parameter"
+        {:science-keywords {:0 {:variable-level-3 (:variable-level-3 sk1)}}} [science-keywords-boost]
+        "science-keywords any as parameter"
+        {:science-keywords {:0 {:any (:category sk1)}}} [science-keywords-boost]
 
         "version-id"
-        "V001" [(k2e/get-boost nil :version-id)]
+        {:keyword "V001"} [(k2e/get-boost nil :version-id)]
 
         "entry-title"
-        "coll5" [(k2e/get-boost nil :entry-title)]
+        {:keyword "coll5"} [(k2e/get-boost nil :entry-title)]
 
         "provider-id"
-        "PROV1" [provider-boost provider-boost provider-boost provider-boost]))
-
+        {:keyword "PROV1"} [provider-boost provider-boost provider-boost provider-boost]))
     (testing "Specified boosts on fields"
       (are [params scores] (= (map #(/ % 2.0) scores)
                               (map :score (:refs (search/find-refs :collection params))))
