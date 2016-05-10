@@ -45,7 +45,6 @@
                  (x/element :Name {} name)
                  (x/element :DataType {} (psa/gen-data-type data-type))
                  (x/element :Description {} description)
-                 ;; ParameterRangeBegin is a required field in DIF 10
-                 (x/element :ParameterRangeBegin {} (or parameter-range-begin dif/value-not-provided))
+                 (gu/optional-elem :ParameterRangeBegin parameter-range-begin)
                  (gu/optional-elem :ParameterRangeEnd parameter-range-end)
                  (gu/optional-elem :Value value)))))
