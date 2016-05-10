@@ -32,7 +32,10 @@
     :science-keywords.variable-level-1
     :science-keywords.variable-level-2
     :science-keywords.variable-level-3
-    :science-keywords.any})
+    :science-keywords.any
+    :two-d-coordinate-system-name
+    :processing-level-id
+    :data-center})
 
 
 ;; TODO don't we do this during parameter conversion or something? Where do we split on special

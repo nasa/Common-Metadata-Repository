@@ -20,7 +20,10 @@
         concept-id-boost (k2e/get-boost nil :concept-id)
         provider-boost (k2e/get-boost nil :provider)
         entry-title-boost (k2e/get-boost nil :entry-title)
+        two-d-boost (k2e/get-boost nil :two-d-coord-name)
+        processing-level-boost (k2e/get-boost nil :processing-level-id)
         science-keywords-boost (k2e/get-boost nil :science-keywords)
+        data-center-boost (k2e/get-boost nil :data-center)
         psa1 (dc/psa {:name "alpha" :data-type :string :value "ab"})
         psa2 (dc/psa {:name "bravo" :data-type :string :value "bf"})
         psa3 (dc/psa {:name "charlie" :data-type :string :value "foo"})
@@ -80,6 +83,8 @@
                                      :variable-level-3 "boost"
                                      :detailed-variable "boost"})
         tdcs1 (dc/two-d "XYZ")
+        tdcs2 (dc/two-d "twoduniq")
+        org (dc/org :archive-center "Some&Place")
         coll1 (d/ingest "PROV1" (dc/collection
                                  {:entry-title "coll1" :version-description "VersionDescription"}))
         coll2 (d/ingest "PROV1" (dc/collection
@@ -87,7 +92,7 @@
         coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3" :collection-data-type "OTHER"}))
         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4" :collection-data-type "OTHER"}))
         coll5 (d/ingest "PROV2" (dc/collection {:entry-title "coll5" :long-name "ABC" :short-name "Space!Laser"}))
-        coll6 (d/ingest "PROV2" (dc/collection {:entry-title "coll6" :organizations [(dc/org :archive-center "Some&Place")]}))
+        coll6 (d/ingest "PROV2" (dc/collection {:entry-title "coll6" :organizations [org]}))
         coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7" :version-id "Laser"}))
         coll8 (d/ingest "PROV2" (dc/collection {:entry-title "coll8" :processing-level-id "PDQ123"}))
 
@@ -100,7 +105,7 @@
         coll11 (d/ingest "PROV2" (dc/collection {:entry-title "coll11" :platforms [p2 p3 p5 p6]
                                                  :product-specific-attributes [psa5]}))
         coll12 (d/ingest "PROV2" (dc/collection {:entry-title "coll12" :product-specific-attributes [psa1 psa2 psa3 psa4]}))
-        coll13 (d/ingest "PROV2" (dc/collection {:entry-title "coll13" :two-d-coordinate-systems [tdcs1]}))
+        coll13 (d/ingest "PROV2" (dc/collection {:entry-title "coll13" :two-d-coordinate-systems [tdcs1 tdcs2]}))
         coll14 (d/ingest "PROV2" (dc/collection {:entry-title "coll14" :long-name "spoonA laser"}))
         coll15 (d/ingest "PROV2" (dc/collection {:entry-title "coll15" :processing-level-id "plid1"
                                                  :collection-data-type "SCIENCE_QUALITY" :platforms [p1]
@@ -358,6 +363,21 @@
         "science-keywords any as parameter"
         {:science-keywords {:0 {:any (:category sk1)}}} [science-keywords-boost]
 
+        "2d coordinate system as keyword"
+        {:keyword (:name tdcs2)} [two-d-boost]
+        "2d coordinate system as parameter"
+        {:two-d-coordinate-system-name (:name tdcs2)} [two-d-boost]
+
+        "processing level id as keyword"
+        {:keyword "PDQ123"} [processing-level-boost]
+        "processing level id as parameter"
+        {:processing-level-id "PDQ123"} [processing-level-boost]
+
+        "data center as keyword"
+        {:keyword (:org-name org)} [data-center-boost]
+        "data center as parameter"
+        {:data-center (:org-name org)} [data-center-boost]
+
         "version-id"
         {:keyword "V001"} [(k2e/get-boost nil :version-id)]
 
@@ -370,7 +390,7 @@
       (are [params scores] (= (map #(/ % 2.0) scores)
                               (map :score (:refs (search/find-refs :collection params))))
         ;; short-name
-        {:keyword "SNFoobar":boosts {:short-name 2.0}} [2.0]
+        {:keyword "SNFoobar" :boosts {:short-name 2.0}} [2.0]
 
         ;; project short-name
         {:keyword (:short-name (first pr1)) :boosts {:project 3.0}} [3.0]
