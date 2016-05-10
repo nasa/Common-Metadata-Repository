@@ -7,7 +7,8 @@ Items to include in each issue
 * Configuration Patch Dependency
   * Are there any configuration changes required?
 * Deployment Impacts
-  * Does the feature require any special work as part of deployment in the new environment.
+  * Does the feature require any special work as part of deployment in the new environment?
+  * Was there a spatial library change requiring a spatial plugin deployment.
 
 
 ## 1.XX
@@ -16,7 +17,10 @@ Items to include in each issue
   * Configuration Patch Dependency:
     * Requires cubby connection config information for the Ingest application
   * Deployment Impacts
-    * Will need to reindex all collections to start using new feature. If collections have not been reindexed everything will continue to work fine.
+    * Update Indexes and Reindex all Collection
+      * Will need to reindex all collections to start using new feature. If collections have not been reindexed everything will continue to work fine.
+    * Deploy Spatial Plugin
+      * We made performance improvements to polygon intersections
 
 ## 1.50
 
