@@ -147,13 +147,6 @@
       (merge default-mappings query-field->lowercase-granule-doc-values-fields-map)
       default-mappings)))
 
-;; TODO change this function to use a protocol. It should return a set. We'll traverse the entire
-;; query and return the set of keywords that should apply to scoring.
-
-;; TODO we'll probably need to convert the search to lower case and split on whitepsace etc.
-;; TODO add test of searching platforms with specific cases of things. We'll want to make sure
-;; that the score is correct in those cases.
-
 (defn- keywords-in-query
   "Returns a list of keywords if the query contains a keyword condition or nil if not.
   Used to set sort and use function score for keyword queries."
@@ -252,7 +245,6 @@
   [query]
   (let [{:keys [concept-type sort-keys]} query
         ;; If the sort keys are given as parameters then keyword-sort will not be used.
-        ;; TODO we walk across the entire query. We really just need to know if there's keywords in the query at all.
         keyword-sort (when (keywords-in-query query)
                        [{:_score {:order :desc}}])
         specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)

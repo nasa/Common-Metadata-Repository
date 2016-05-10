@@ -5,8 +5,6 @@
             [clojure.string :as str]
             [cmr.search.models.query :as qm]))
 
-;; TODO create unit test for this
-
 (defprotocol ExtractKeywords
   "Defines a function to extract keywords"
   (extract-keywords-seq
@@ -35,15 +33,13 @@
     :science-keywords.any
     :two-d-coordinate-system-name
     :processing-level-id
-    :data-center})
+    :data-center
+    :archive-center})
 
-
-;; TODO don't we do this during parameter conversion or something? Where do we split on special
-;; characters?
 (defn- extract-keywords-seq-from-value
-  "TODO"
+  "Converts value to lower case and splits on whitespace to create a list of keywords"
   [value]
-  (-> value str/lower-case (str/split #" ")))
+  (-> value str/lower-case (str/split #"\s+")))
 
 (extend-protocol ExtractKeywords
   cmr.common_app.services.search.query_model.Query

@@ -294,14 +294,6 @@
                                (map :score (:refs (search/find-refs :collection
                                                                     params))))
 
-        ;; Q: Are there any in facets that are not in keywords? They may not be scored appropriately.
-
-        ;; TODO test cases
-        ;; - every field that is part of facets
-        ;; - case sensitive search
-        ;; - spaces and special characters in search term
-        ;; - pattern search (how does that apply to boosting)
-
         "short-name"
         {:keyword "SNFoobar"} [short-name-boost]
         "long-name"
@@ -318,6 +310,8 @@
         {:keyword (:short-name p1)} [platform-boost]
         "platform short-name as parameter"
         {:platform (:short-name p1)} [platform-boost]
+        "platform short-name as parameter with pattern"
+        {:platform "*spoonA" "options[platform][pattern]" true} [platform-boost]
         "platform long-name (from metadata)"
         {:keyword (:long-name p1)} [platform-boost]
         "platform long-name (from KMS)"
@@ -377,6 +371,8 @@
         {:keyword (:org-name org)} [data-center-boost]
         "data center as parameter"
         {:data-center (:org-name org)} [data-center-boost]
+        "archive center as parameter"
+        {:archive-center (:org-name org)} [data-center-boost]
 
         "version-id"
         {:keyword "V001"} [(k2e/get-boost nil :version-id)]
@@ -462,18 +458,18 @@
         (is (= 400 status))
         (is (= "Relevance boost value [foo] for field [short_name] is not a number." (first errors)))))
 
-    (testing "sorted search by keywords."
-      (are [keyword-str items]
-        (let [refs (search/find-refs :collection {:keyword keyword-str})
+    (testing "sorted search"
+      (are [params items]
+        (let [refs (search/find-refs :collection params)
               matches? (d/refs-match-order? items refs)]
           (when-not matches?
             (println "Expected:" (map :entry-title items))
             (println "Actual:" (map :name (:refs refs))))
           matches?)
-        "Laser spoonA" [coll14 coll9]
-        "La?er spoonA" [coll14 coll9]
-        "L*er spo*A" [coll14 coll9]
-        "L?s* s?o*A" [coll14 coll9]))
+        {:keyword "Laser spoonA"} [coll14 coll9]
+        {:keyword "La?er spoonA"} [coll14 coll9]
+        {:keyword "L*er spo*A"} [coll14 coll9]
+        {:keyword "L?s* s?o*A"} [coll14 coll9]))
 
     (testing "sorted search by keywords JSON query."
       (are [keyword-str items]
