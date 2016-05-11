@@ -11,6 +11,7 @@
             [cmr.common-app.services.search.query-order-by-expense :as query-expense]
             [cmr.common-app.services.search.query-to-elastic :as q2e]
             [cmr.common-app.services.search.complex-to-simple :as c2s]
+            [cmr.search.services.query-walkers.keywords-extractor :as keywords-extractor]
             [cmr.common.config :refer [defconfig]]))
 
 (defconfig use-doc-values-fields
@@ -146,28 +147,16 @@
       (merge default-mappings query-field->lowercase-granule-doc-values-fields-map)
       default-mappings)))
 
-(defn- keywords-in-condition
-  "Returns a list of keywords if the condition contains a keyword condition or nil if not."
-  [condition]
-  (when (not= (type condition) cmr.common_app.services.search.query_model.NegatedCondition)
-    (or (when (= :keyword (:field condition))
-          (str/split (str/lower-case (:query-str condition)) #" "))
-        ;; Call this function recursively on nested conditions, e.g., AND or OR conditions.
-        (when-let [conds (:conditions condition)]
-          (some #(keywords-in-condition %1) conds))
-        ;; Call this function recursively for a single nested condition.
-        (when-let [con (:condition condition)] (keywords-in-condition con)))))
-
 (defn- keywords-in-query
   "Returns a list of keywords if the query contains a keyword condition or nil if not.
   Used to set sort and use function score for keyword queries."
   [query]
-  (keywords-in-condition (:condition query)))
+  (keywords-extractor/extract-keywords query))
 
 (defmethod q2e/query->elastic :collection
   [query]
   (let [boosts (:boosts query)
-        {:keys [concept-type condition keywords]} (query-expense/order-conditions query)
+        {:keys [concept-type condition]} (query-expense/order-conditions query)
         core-query (q2e/condition->elastic condition concept-type)]
     (if-let [keywords (keywords-in-query query)]
       ;; function_score query allows us to compute a custom relevance score for each document
