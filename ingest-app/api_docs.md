@@ -42,7 +42,13 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 | application/echo10+xml   | ECHO 10           | collection, granule |
 | application/iso19115+xml | ISO 19115 (MENDS) | collection, granule |
 | application/iso:smap+xml | ISO 19115 SMAP    | collection, granule |
+| application/vnd.nasa.cmr.umm+json| UMM JSON  | collection          |
 
+Note: UMM JSON accepts an additional version parameter for both Content-Type: and Accept: headers. Like charset, it is appended with a semicolon (;). If no version is appended, the latest version is assumed. The UMM schema and its associated versions can be found in the EMFD repository located [here](***REMOVED***projects/EMFD/repos/unified-metadata-model/).
+
+```
+application/vnd.nasa.cmr.umm+json;version=1.1
+```
 
 #### <a name="echo-token-header"></a> Echo-Token Header
 
@@ -384,7 +390,7 @@ To disable validation of the parsed UMM metadata against the UMM spec, pass `ski
 Example: Translate ECHO10 metadata to UMM JSON
 
 ```
-curl -i -XPOST -H "Content-Type: application/echo10+xml" -H "Accept: application/umm+json" %CMR-ENDPOINT%/translate/collection?skip_umm_validation=true -d \
+curl -i -XPOST -H "Content-Type: application/echo10+xml" -H "Accept:  application/vnd.nasa.cmr.umm+json;version=1.2" %CMR-ENDPOINT%/translate/collection?skip_umm_validation=true -d \
 "<Collection>
   <ShortName>ShortName_Larc</ShortName>
   <VersionId>Version01</VersionId>
