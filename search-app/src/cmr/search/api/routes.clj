@@ -81,6 +81,9 @@
 
 (def supported-concept-id-retrieval-mime-types
   #{mt/any
+
+    ;; TODO we need some kind of validation that this is only supported for collections.
+    mt/html
     mt/xml ; allows retrieving native format
     mt/native ; retrieve in native format
     mt/atom

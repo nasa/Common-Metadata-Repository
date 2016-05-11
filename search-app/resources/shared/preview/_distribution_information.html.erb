@@ -1,0 +1,82 @@
+<div class="distribution-information-preview preview-collection">
+  <% if (metadata['RelatedUrls'] || metadata['Distributions']).blank? %>
+    <p class="empty-section">
+      There is no distribution information for this collection.
+    </p>
+  <% end %>
+  <% if metadata['Distributions'] %>
+    <h5>Distributions</h5>
+    <table>
+      <thead>
+        <tr>
+          <th>Media</th>
+          <th>Format</th>
+          <th>Sizes</th>
+          <th>Fees</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% metadata['Distributions'].each do |distribution| %>
+          <tr>
+            <td><%= distribution['DistributionMedia'] %></td>
+            <td><%= distribution['DistributionFormat'] %></td>
+            <td>
+              <% if distribution['Sizes'] %>
+                <% distribution['Sizes'].each do |size| %>
+                  <%= size['Size'] %><%= size['Unit'] %>
+                <% end %>
+              <% end %>
+            </td>
+            <td><%= distribution['Fees'] %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+
+  <% if metadata['RelatedUrls'].blank? %>
+    <p class="empty-section">There are no related URLs for this collection.</p>
+  <% else %>
+    <h5>Related URLs</h5>
+    <ul class="related-urls-cards cards">
+      <% metadata['RelatedUrls'].each do |url| %>
+        <li class="card">
+          <div class="card-header">
+            <% if url['Title'].blank? %>
+              <h5 class="card-header-title">Related URL</h5>
+              <span class="card-header-badge ocean-blue">
+                <i class="eui-icon eui-fa-link"></i>
+              </span>
+            <% else %>
+              <h5 class="card-header-title"><%= url['Title'] %></h5>
+              <span class="card-header-badge ocean-blue">
+                <i class="eui-icon eui-fa-link"></i>
+              </span>
+            <% end %>
+          </div>
+          <div class="card-body active">
+            <div class="card-body-details-full">
+              <% if url['Description'] %>
+                <p><%= url['Description'] %></p>
+              <% end %>
+              <% if url['URLs'] %>
+                <% url['URLs'].each do |url| %>
+                  <a href="<%= url %>"><%= url %></a></br>
+                <% end %>
+              <% end %>
+            </div>
+            <% if url['Relation'] %>
+              <div class="card-body-aside">
+                <ul>
+                  <% url['Relation'].each do |relation| %>
+                    <li><%= relation %></li>
+                  <% end %>
+                </ul>
+              </div>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>

@@ -1,0 +1,5 @@
+<%
+require 'json'
+metadata =  JSON.parse(umm_json)
+%>
+<%= render partial: 'shared/preview/metadata_preview', locals: { metadata: metadata } %>

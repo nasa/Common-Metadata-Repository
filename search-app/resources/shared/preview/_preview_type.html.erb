@@ -1,0 +1,41 @@
+<% if data.is_a? Hash %>
+  <% is_array = false %>
+  <% data = Array.wrap(data) %>
+<% else %>
+  <% is_array = true %>
+<% end %>
+
+<% top_field = true if top_field.nil? %>
+
+<% if data %>
+    <% data.each_with_index do |data_value, index| %>
+      <ul class='sub-field <%= name_to_class(name) %><%= "-#{index}" if is_array %>'>
+        <% type.each do |key| %>
+          <% options = key[:options] || [] %>
+          <% if options.include?(:array_field) %>
+            <%= render partial: 'shared/preview/fields/display_array_with_header', locals: {
+                key_name: key[:name],
+                hash_for_key: data_value } %>
+          <% elsif options.include?(:sub_type) %>
+            <% new_type = "TypesHelper::#{key[:name] == 'Sizes' ? 'FileSize' : key[:name]}Type".constantize %>
+            <%= render partial: 'shared/preview/preview_type', locals: {
+                data: data_value[key[:name]],
+                name: key[:name],
+                type: new_type,
+                top_field: false } %>
+          <% elsif options.include?(:select_type) %>
+            <%= render :partial => 'shared/preview/fields/display_single_select_field_line', locals: {
+                key_name: key[:name],
+                hash_for_key: data_value,
+                options: "DraftsHelper::#{key[:select_type]}".constantize } %>
+          <% else %>
+            <%= render partial: 'shared/preview/fields/display_field_line', locals: {
+                key_name: key[:name],
+                hash_for_key: data_value,
+                options: options.clone } %>
+          <% end %>
+
+        <% end %>
+      </ul>
+    <% end %>
+<% end %>

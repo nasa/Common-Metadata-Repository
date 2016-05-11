@@ -67,6 +67,7 @@
    :dif              "application/dif+xml"
    :dif10            "application/dif10+xml"
    :csv              "text/csv"
+   :html             "text/html"
    :atom             "application/atom+xml"
    :kml              "application/vnd.google-earth.kml+xml"
    :opendata         "application/opendata+json"
