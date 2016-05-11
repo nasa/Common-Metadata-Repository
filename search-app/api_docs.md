@@ -1301,7 +1301,7 @@ When `has_granules` is set to "true" or "false", results will be restricted to c
 
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 
-Collection results are sorted by ascending entry title by default when a search does not result in a score. One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` can be used to explicitly request ascending.
+Collection results are sorted by ascending entry title by default when a search does not result in a score. If one of the scored search fields is searched and a score is produced then the search results will be sorted by relevance (score descending). One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` can be used to explicitly request ascending.
 
 ##### Valid Collection Sort Keys
 
@@ -1316,7 +1316,7 @@ Collection results are sorted by ascending entry title by default when a search 
   * `sensor`
   * `provider`
   * `revision_date`
-  * `score` - document relevance score, only usefule when a search will return a score, defaults to descending
+  * `score` - document relevance score, only useful when a search will return a score, defaults to descending
   * `has_granules` - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.
 
 Example of sorting by start_date in descending order: (Most recent data first)
