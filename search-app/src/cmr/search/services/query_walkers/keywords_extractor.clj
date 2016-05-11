@@ -1,5 +1,5 @@
 (ns cmr.search.services.query-walkers.keywords-extractor
-  "Defines protocols and functions to extract keywords from a query. "
+  "Defines protocols and functions to extract keywords from a query."
   (:require [cmr.common.services.errors :as errors]
             [cmr.common-app.services.search.query-model :as cqm]
             [clojure.string :as str]
@@ -20,6 +20,9 @@
     (distinct keywords)))
 
 (def ^:private keyword-string-fields
+  "This defines the set of string condition fields that we will extract keyword terms from. Any condition
+   that's a string condition in this list will be a source of keywords that are used to adjust the
+   score and determine if we're sorting by relevance."
   #{:project
     :platform
     :instrument
@@ -52,7 +55,6 @@
     [{:keys [conditions]}]
     (mapcat extract-keywords-seq conditions))
 
-
   cmr.common_app.services.search.query_model.NestedCondition
   (extract-keywords-seq
     [{:keys [condition]}]
@@ -75,8 +77,6 @@
     [{:keys [field values]}]
     (when (contains? keyword-string-fields field)
       (mapcat extract-keywords-seq-from-value values)))
-
-
 
   cmr.search.models.query.CollectionQueryCondition
   (extract-keywords-seq
