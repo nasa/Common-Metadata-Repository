@@ -108,7 +108,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * [Retrieve Provider Holdings](#retrieve-provider-holdings)
   * [Search with JSON Query](#search-with-json-query)
   * [Search with AQL](#search-with-aql)
-  * [Document Scoring for Keyword (Free Text) Search](#document-scoring-for-keyword-search)
+  * [Document Scoring](#document-scoring)
   * [Facets](#facets)
     * [Facets in XML Responses](#facets-in-xml-responses)
         * [Flat XML Facets](#flat-xml-facets)
@@ -1301,7 +1301,7 @@ When `has_granules` is set to "true" or "false", results will be restricted to c
 
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 
-Collection results are sorted by ascending entry title by default. One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` can be used to explicitly request ascending.
+Collection results are sorted by ascending entry title by default when a search does not result in a score. One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` can be used to explicitly request ascending.
 
 ##### Valid Collection Sort Keys
 
@@ -1316,7 +1316,7 @@ Collection results are sorted by ascending entry title by default. One or more s
   * `sensor`
   * `provider`
   * `revision_date`
-  * `score` - document relevance score, only valid with keyword search, defaults to descending
+  * `score` - document relevance score, only usefule when a search will return a score, defaults to descending
   * `has_granules` - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.
 
 Example of sorting by start_date in descending order: (Most recent data first)
@@ -1537,7 +1537,10 @@ Find granules matching any of the 'project' param values
      curl "%CMR-ENDPOINT%/granules?project\[\]=2009_GR_NASA&project\[\]=2013_GR_NASA"
 
 Find granules matching the given pattern for the 'project' param value
-     curl "%CMR-ENDPOINT%/granules?project\[\]=20??_GR_NASA&options\[project\]\[pattern\]=true"
+
+```
+curl "%CMR-ENDPOINT%/granules?project\[\]=20??_GR_NASA&options\[project\]\[pattern\]=true"
+```
 
 Find granules that match all of the 'project' param values
 
@@ -1790,37 +1793,34 @@ that is defined in `%CMR-ENDPOINT%/site/IIMSAQLQueryLanguage.xsd`.
     <query><for value="collections"/><dataCenterId><all/></dataCenterId>
     <where><collectionCondition><shortName><value>S1</value></shortName></collectionCondition></where></query>'
 
-### <a name="document-scoring-for-keyword-search"></a> Document Scoring For Keyword (Free Text) Search
+### <a name="document-scoring"></a> Document Scoring
 
-When a keyword search is requested, matched documents receive relevancy scores as follows:
+Collection search results are scored when any of the following parameters are searched:
 
-A series of filters are executed against each document. Each of these has an associated boost
-value. The boost values of all the filters that match a given document are multiplied together
-to get the final document score. Documents that match none of the filters have a default
+* keyword
+* platform
+* instrument
+* sensor
+* two_d_coordinate_system_name
+* science_keywords
+* project
+* processing_level_id
+* data_center
+* archive_center
+
+Any terms found in the those parameters are used to score results across other fields in the search results. A term is a contiguous set of characters not containing whitespace. A series of filters are executed against each document. Each of these has an associated boost value. The boost values of all the filters that match a given document are multiplied together to get the final document score. Documents that match none of the filters have a default
 score of 1.0.
 
 The filters are case insensitive, support wild-cards * and ?, and are given below:
 
-1. All keywords are contained in the long-name field OR one of the keywords exactly matches
-the short-name field - weight 1.4
-
-2. All keywords are contained in the Project/long-name field OR one of the keywords
-exactly matches the Project/short-name field - weight 1.3
-
-3. All keywords are contained in the Platform/long-name field OR one of the keywords
-exactly matches the Platform/short-name field - weight 1.3
-
-4. All keywords are contained in the Platform/Instrument/long-name field OR one of the keywords
-exactly matches the Platform/Instrument/short-name field - weight 1.2
-
-5. All keywords are contained in the Platform/Instrument/Sensor/long-name field OR one of the keywords exactly matches the Platform/Instrument/Sensor/short-name field - weight 1.2
-
-6. The keyword field is a single string that exactly matches the science-keyword field - weight 1.2
-
-7. The keyword field is a single string that exactly matches the spatial-keyword field - weight 1.1
-
-8. The keyword field is a single string that exactly matches the temporal-keyword field  - weight 1.1
-
+1. All terms are contained in the long-name field OR one of the terms exactly matches the short-name field - weight 1.4
+2. All terms are contained in the Project/long-name field OR one of the terms exactly matches the Project/short-name field - weight 1.3
+3. All terms are contained in the Platform/long-name field OR one of the terms exactly matches the Platform/short-name field - weight 1.3
+4. All terms are contained in the Platform/Instrument/long-name field OR one of the terms exactly matches the Platform/Instrument/short-name field - weight 1.2
+5. All terms are contained in the Platform/Instrument/Sensor/long-name field OR one of the terms exactly matches the Platform/Instrument/Sensor/short-name field - weight 1.2
+6. The term field is a single string that exactly matches the science-keyword field - weight 1.2
+7. The term field is a single string that exactly matches the spatial-keyword field - weight 1.1
+8. The term field is a single string that exactly matches the temporal-keyword field  - weight 1.1
 
 ### <a name="facets"></a> Facets
 
