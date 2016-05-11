@@ -106,16 +106,6 @@
     [(umm-c/map->Project {:short-name "Not provided"})]
     projects))
 
-(defn- product-specific-attributes->expected-parsed
-  [psas]
-  (seq (for [psa psas]
-         (if (nil? (:parameter-range-begin psa))
-           (assoc psa
-             :parameter-range-begin "Not provided"
-             :parsed-parameter-range-begin
-             (psa/safe-parse-value (:data-type psa) "Not provided"))
-           psa))))
-
 (defn- remove-field-from-records
   [records field]
   (seq (map #(assoc % field nil) records)))
@@ -142,7 +132,6 @@
       (update-in [:personnel] personnel->expected-parsed)
       (update-in [:projects] projects->expected-parsed)
       (update-in [:related-urls] related-urls->expected-parsed)
-      (update-in [:product-specific-attributes] product-specific-attributes->expected-parsed)
       (update-in [:spatial-coverage] spatial-coverage->expected-parsed)))
 
 (defn- umm->expected-parsed-dif10
@@ -216,14 +205,6 @@
   (seq (for [[person orig-person] (map vector personnel orig-personnel)]
          (assoc person :roles (:roles orig-person)))))
 
-(defn- revert-psas
-  "parameter-range-begin is a required field in DIF 10 Additional_Attributes"
-  [psas orig-psas]
-  (seq (for [[psa orig-psa] (map vector psas orig-psas)]
-            (assoc psa
-              :parameter-range-begin (:parameter-range-begin orig-psa)
-              :parsed-parameter-range-begin (:parsed-parameter-range-begin orig-psa)))))
-
 (defn rectify-dif10-fields
   "Revert the UMM fields which are modified when a generated UMM is converted to DIF 10 XML and
   parsed back to UMM. The fields are modified during the creation of the XML to satisfy the schema
@@ -234,8 +215,7 @@
         (update-in [:platforms] revert-platform-type platforms)
         (update-in [:spatial-coverage] revert-spatial-coverage spatial-coverage)
         (update-in [:product] revert-product product)
-        (update-in [:personnel] revert-personnel personnel)
-        (update-in [:product-specific-attributes] revert-psas product-specific-attributes))))
+        (update-in [:personnel] revert-personnel personnel))))
 
 (defn restore-modified-fields
   "Some of the UMM fields which are lost/modified/added during translation from UMM to DIF 10 XML
