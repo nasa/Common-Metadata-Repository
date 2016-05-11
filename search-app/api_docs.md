@@ -899,6 +899,9 @@ Note: ISO 8601 does not allow open-ended time intervals but the CMR API does all
 
     curl "%CMR-ENDPOINT%/collections"
 
+
+The number of search results you can return in a single request is limited. The query parameters `page_num` and `page_size` control the amount of items you can request. `page_num` and `page_size` are implied to be 1 and 10 respectively if not provided explicitly. There is an upper bound of 2000 items for `page_size` and the combination of `page size` and `page num` should not exceed 1 million items. See [Query Parameters](#query-parameters) for more information on `page_size` and `page_num`.
+
 #### <a name="c-concept-id"></a> Find collections by concept id
 
 A CMR concept id is in the format `<concept-type-prefix> <unique-number> "-" <provider-id>`
@@ -1365,6 +1368,9 @@ __Sample response__
 #### <a name="find-all-granules"></a> Find all granules
 
     curl "%CMR-ENDPOINT%/granules"
+
+
+The number of search results you can return in a single request is limited. The query parameters `page_num` and `page_size` control the amount of items you can request. `page_num` and `page_size` are implied to be 1 and 10 respectively if not provided explicitly. There is an upper bound of 2000 items for `page_size` and the combination of `page size` and `page num` should not exceed 1 million items. See [Query Parameters](#query-parameters) for more information on `page_size` and `page_num`.
 
 #### <a name="g-granule-ur"></a> Find granules with a granule-ur
 
@@ -2473,6 +2479,8 @@ Content-Length: 168
 #### <a name="searching-for-tags"></a> Searching for Tags
 
 Tags can be searched for by sending a request to `%CMR-ENDPOINT%/tags`.
+
+The number of search results you can return in a single request is limited. The query parameters `page_num` and `page_size` control the amount of items you can request. `page_num` and `page_size` are implied to be 1 and 10 respectively if not provided explicitly. There is an upper bound of 2000 items for `page_size` and the combination of `page size` and `page num` should not exceed 1 million items. See [Query Parameters](#query-parameters) for more information on `page_size` and `page_num`.
 
 ##### Tag Search Parameters
 
