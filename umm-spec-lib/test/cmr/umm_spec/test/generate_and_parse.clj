@@ -91,23 +91,23 @@
            (xml-round-trip :service metadata-format umm-record)))))
 (comment
 
- (is (= (expected-conversion/convert failing-value :serf)
-        (xml-round-trip :service :serf failing-value)))
+  (is (= (expected-conversion/convert failing-value :serf)
+         (xml-round-trip :service :serf failing-value)))
 
- (= (type (expected-conversion/convert user/failing-value :serf))
-    (type (xml-round-trip :service :serf user/failing-value)))
+  (= (type (expected-conversion/convert user/failing-value :serf))
+     (type (xml-round-trip :service :serf user/failing-value)))
 
- (is (= (:Platforms (expected-conversion/convert user/failing-value :serf))
-        (:Platforms (xml-round-trip :service :serf user/failing-value))))
+  (is (= (:Platforms (expected-conversion/convert user/failing-value :serf))
+         (:Platforms (xml-round-trip :service :serf user/failing-value))))
 
- (is (= (:Responsibilities (expected-conversion/convert expected-conversion/example-service-record :serf))
-        (:Responsibilities (xml-round-trip :service :serf expected-conversion/example-service-record))))
+  (is (= (:Responsibilities (expected-conversion/convert expected-conversion/example-service-record :serf))
+         (:Responsibilities (xml-round-trip :service :serf expected-conversion/example-service-record))))
 
- (is (= (expected-conversion/convert expected-conversion/example-service-record :serf)
-        (xml-round-trip :service :serf expected-conversion/example-service-record)))
+  (is (= (expected-conversion/convert expected-conversion/example-service-record :serf)
+         (xml-round-trip :service :serf expected-conversion/example-service-record)))
 
- (is (= (:Responsibilities (:Party (last (:Responsibilities (expected-conversion/convert expected-conversion/example-service-record :serf)))))
-        (:Responsibilities (:Party (last (:Responsibilities (xml-round-trip :service :serf expected-conversion/example-service-record))))))))
+  (is (= (:Responsibilities (:Party (last (:Responsibilities (expected-conversion/convert expected-conversion/example-service-record :serf)))))
+         (:Responsibilities (:Party (last (:Responsibilities (xml-round-trip :service :serf expected-conversion/example-service-record))))))))
 
 
 (defn- parse-iso19115-projects-keywords

@@ -59,6 +59,24 @@
       [:Period_Cycle_Duration_Unit (:PeriodCycleDurationUnit pdt)]
       [:Period_Cycle_Duration_Value (:PeriodCycleDurationValue pdt)]])])
 
+(defn- generate-paleo-temporal
+  "Returns the given paleo temporal in DIF10 format."
+  [paleo-temporal]
+  (when (seq paleo-temporal)
+    [:Temporal_Coverage
+     (for [{:keys [StartDate EndDate ChronostratigraphicUnits]} paleo-temporal]
+       [:Paleo_DateTime
+        [:Paleo_Start_Date StartDate]
+        [:Paleo_Stop_Date EndDate]
+        (for [{:keys [Eon Era Period Epoch Stage DetailedClassification]} ChronostratigraphicUnits]
+          [:Chronostratigraphic_Unit
+           [:Eon Eon]
+           [:Era Era]
+           [:Period Period]
+           [:Epoch Epoch]
+           [:Stage Stage]
+           [:Detailed_Classification DetailedClassification]])])]))
+
 (defn characteristics-for
   [obj]
   (for [characteristic (:Characteristics obj)]
@@ -312,6 +330,7 @@
          [:Beginning_Date_Time date/default-date-value]]])
 
      (map temporal-coverage-without-temporal-keywords (drop 1 (:TemporalExtents c)))
+     (generate-paleo-temporal (:PaleoTemporalCoverages c))
      (generate-dataset-progress c)
      (spatial/spatial-element c)
      (for [location-keyword-map (:LocationKeywords c)]

@@ -7,6 +7,7 @@
             [clojure.string :as string]
             [cmr.common.xml.parse :refer :all]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
+            [cmr.umm-spec.xml-to-umm-mappings.dif10.paleo-temporal :as pt]
             [cmr.umm-spec.util :as u :refer [without-default-value-of]]
             [cmr.umm-spec.date-util :as date]
             [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
@@ -79,12 +80,12 @@
    :TemporalKeywords (values-at doc "/DIF/Temporal_Coverage/Temporal_Info/Ancillary_Temporal_Keyword")
    :CollectionProgress (value-of doc "/DIF/Dataset_Progress")
    :LocationKeywords (for [lk (select doc "/DIF/Location")]
-                      {:Category (value-of lk "Location_Category")
-                       :Type (value-of lk "Location_Type")
-                       :Subregion1 (value-of lk "Location_Subregion1")
-                       :Subregion2 (value-of lk "Location_Subregion2")
-                       :Subregion3 (value-of lk "Location_Subregion3")
-                       :DetailedLocation (value-of lk "Detailed_Location")})
+                       {:Category (value-of lk "Location_Category")
+                        :Type (value-of lk "Location_Type")
+                        :Subregion1 (value-of lk "Location_Subregion1")
+                        :Subregion2 (value-of lk "Location_Subregion2")
+                        :Subregion3 (value-of lk "Location_Subregion3")
+                        :DetailedLocation (value-of lk "Detailed_Location")})
    :Projects (parse-projects doc)
    :Quality (value-of doc "/DIF/Quality")
    :AccessConstraints {:Description (value-of doc "/DIF/Access_Constraints")
@@ -112,6 +113,7 @@
                                              :DurationValue (value-of pdt "Duration_Value")
                                              :PeriodCycleDurationUnit (value-of pdt "Period_Cycle_Duration_Unit")
                                              :PeriodCycleDurationValue (value-of pdt "Period_Cycle_Duration_Value")})})
+   :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
    :SpatialExtent (spatial/parse-spatial doc)
    :TilingIdentificationSystems (spatial/parse-tiling doc)
    :Distributions (for [dist (select doc "/DIF/Distribution")]

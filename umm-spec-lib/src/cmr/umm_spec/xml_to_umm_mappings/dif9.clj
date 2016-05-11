@@ -5,7 +5,8 @@
             [camel-snake-kebab.core :as csk]
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.json-schema :as js]
-            [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
+            [cmr.umm.dif.date-util :refer [parse-dif-end-date]]
+            [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]))
 
 (def dif-iso-topic-category->umm-iso-topic-category
   "DIF ISOTopicCategory to UMM ISOTopicCategory mapping. Some of the DIF ISOTopicCategory are made
@@ -112,6 +113,7 @@
                         [{:RangeDateTimes (for [temporal temporals]
                                             {:BeginningDateTime (value-of temporal "Start_Date")
                                              :EndingDateTime (parse-dif-end-date (value-of temporal "Stop_Date"))})}])
+     :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
      :SpatialExtent {:HorizontalSpatialDomain {:Geometry {:BoundingRectangles (parse-mbrs doc)}}}
      :Distributions (for [distribution (select doc "/DIF/:Distribution")]
                       {:DistributionMedia (value-of distribution "Distribution_Media")
