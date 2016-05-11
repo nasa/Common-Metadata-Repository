@@ -98,10 +98,17 @@
              (lk/location-keywords->spatial-keywords (:LocationKeywords c)))
       (assoc :LocationKeywords nil)))
 
+(defmethod migrate-umm-version [:collection "1.2" "1.3"]
+  [context c & _]
+  (-> c
+      (update-in [:PaleoTemporalCoverage] #(when % [%]))
+      (set/rename-keys {:PaleoTemporalCoverage :PaleoTemporalCoverages})))
+
 (defmethod migrate-umm-version [:collection "1.3" "1.2"]
   [context c & _]
   (-> c
-      (assoc :PaleoTemporalCoverages nil)))
+      (update-in [:PaleoTemporalCoverages] first)
+      (set/rename-keys {:PaleoTemporalCoverages :PaleoTemporalCoverage})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface

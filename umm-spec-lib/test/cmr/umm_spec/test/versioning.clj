@@ -105,3 +105,42 @@
           (v/migrate-umm {} :collection "1.2" "1.1"
                          {:LocationKeywords [{:Category "OTHER" :Type "Somewhereville"}
                                              {:Category "OTHER" :Type "Nowhereville"}]})))))
+
+(deftest migrate-1_2-up-to-1_3
+  (is (nil?
+        (:PaleoTemporalCoverages
+          (v/migrate-umm {} :collection "1.2" "1.3"
+                         {:PaleoTemporalCoverage nil}))))
+  (let [paleo-coverage {:StartDate "5 Ma"
+                        :EndDate "2 Ma"
+                        :ChronostratigraphicUnits [{:Eon "PHANEROZOIC"
+                                                    :Era "CENOZOIC"
+                                                    :Period "NEOGENE"
+                                                    :Epoch "Pliocene"}]}]
+    (is (= [paleo-coverage]
+           (:PaleoTemporalCoverages
+             (v/migrate-umm {} :collection "1.2" "1.3" {:PaleoTemporalCoverage paleo-coverage}))))))
+
+(deftest migrate-1_3-down-to-1_2
+  (is (nil?
+        (:PaleoTemporalCoverage
+          (v/migrate-umm {} :collection "1.3" "1.2"
+                         {:PaleoTemporalCoverages nil}))))
+  (is (nil?
+        (:PaleoTemporalCoverage
+          (v/migrate-umm {} :collection "1.3" "1.2"
+                         {:PaleoTemporalCoverages []}))))
+  (let [paleo-coverage-1 {:StartDate "5 Ma"
+                          :EndDate "2 Ma"
+                          :ChronostratigraphicUnits [{:Eon "PHANEROZOIC"
+                                                      :Era "CENOZOIC"
+                                                      :Period "NEOGENE"
+                                                      :Epoch "Pliocene"}]}
+        paleo-coverage-2 {:StartDate "2000 ybp"
+                          :EndDate "0 ybp"}]
+    (is (= paleo-coverage-1
+           (:PaleoTemporalCoverage
+             (v/migrate-umm {} :collection "1.3" "1.2"
+                            {:PaleoTemporalCoverages [paleo-coverage-1 paleo-coverage-2]}))))))
+
+
