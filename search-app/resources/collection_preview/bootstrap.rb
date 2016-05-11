@@ -1,8 +1,23 @@
+# encoding: utf-8
 #From https://gist.github.com/ato/5935594
 
 require 'erb'
 require 'ostruct'
 require 'java'
+require 'set'
+require 'active_support/all'
+# require 'active_support'
+require 'action_view'
+load 'collection_preview/drafts_helper.rb'
+load 'collection_preview/collections_helper.rb'
+
+include ActionView::Helpers
+
+include DraftsHelper
+include CollectionsHelper
+
+####################################################################################################
+## Rendering
 
 # Renders an ERB template against a hashmap of variables.
 # template should be a Java InputStream

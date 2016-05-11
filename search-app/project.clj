@@ -27,6 +27,7 @@
   :repl-options {:init-ns user
                  :timeout 120000}
   :jvm-opts []
+  :resource-paths ["resources" "gems"]
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]
                         [org.clojure/tools.namespace "0.2.11"]

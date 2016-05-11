@@ -28,10 +28,23 @@
     (.eval jruby (io/reader bootstrap-erb))
     jruby))
 
+
 (comment
+ (def context {:system (get-in user/system [:apps :search])})
+
+ (defn jruby-eval
+   [s]
+   (try
+     (let [jruby (context->jruby-runtime context)]
+       (.eval jruby s))
+     (catch Exception e
+       (.printStackTrace e)
+       (throw e))))
+
+ (jruby-eval "require 'active_support/all'")
+
  (try
-   (let [;context {:system (get-in user/system [:apps :search])}
-         jruby (context->jruby-runtime context)]
+   (let [jruby (context->jruby-runtime context)]
      (.eval jruby (io/reader bootstrap-erb))
      (render-collection context collection))
    (catch Exception e
