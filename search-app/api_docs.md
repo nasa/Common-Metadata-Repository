@@ -11,6 +11,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Maximum URL Length](#maximum-url-length)
     * [CORS Header support](#cors-header-support)
     * [Query Parameters](#query-parameters)
+    * [Paging Limitations](#paging-details)
     * [Parameter Options](#parameter-options)
     * [Collection Result Feature Parameters](#collection-result-features)
     * [Headers](#headers)
@@ -158,6 +159,10 @@ The CORS headers are supported on search endpoints. Check [CORS Documentation](h
  * `pretty` - return formatted results if set to true
  * `token` - specifies a user/guest token from ECHO to use to authenticate yourself. This can also be specified as the header Echo-Token
  * `echo_compatible` - When set to true results will be returned in an ECHO compatible format. This mostly removes fields and features specific to the CMR such as revision id, granule counts and facets in collection results. Metadata format style results will also use ECHO style names for concept ids such as `echo_granule_id` and `echo_dataset_id`.
+
+#### <a name="paging-details"></a> Paging Limitations
+
+The number of search results you can return in a single request is limited. The query parameters `page_num` and `page_size` control the amount of items you can request. `page_num` and `page_size` default to 1 and 10 respectively if not provided explicitly. There is an upper bound of 2000 items for `page_size`; and the combination of `page size` and `page num` should not exceed 1 million items. The `offset` and `page size` parameters are an alternative way to page through results, which are subject to the same restrictions of approximately a million items. See [Query Parameters](#query-parameters) for more information on `offset`,`page_size`, and `page_num`.
 
 #### <a name="parameter-options"></a> Parameter Options
 
@@ -899,8 +904,7 @@ Note: ISO 8601 does not allow open-ended time intervals but the CMR API does all
 
     curl "%CMR-ENDPOINT%/collections"
 
-
-The number of search results you can return in a single request is limited. The query parameters `page_num` and `page_size` control the amount of items you can request. `page_num` and `page_size` are implied to be 1 and 10 respectively if not provided explicitly. There is an upper bound of 2000 items for `page_size` and the combination of `page size` and `page num` should not exceed 1 million items. See [Query Parameters](#query-parameters) for more information on `page_size` and `page_num`.
+Collection search results are paged. See [Paging Limitations](#paging-details) for more information on how to page through collection search results.
 
 #### <a name="c-concept-id"></a> Find collections by concept id
 
@@ -1370,7 +1374,7 @@ __Sample response__
     curl "%CMR-ENDPOINT%/granules"
 
 
-The number of search results you can return in a single request is limited. The query parameters `page_num` and `page_size` control the amount of items you can request. `page_num` and `page_size` are implied to be 1 and 10 respectively if not provided explicitly. There is an upper bound of 2000 items for `page_size` and the combination of `page size` and `page num` should not exceed 1 million items. See [Query Parameters](#query-parameters) for more information on `page_size` and `page_num`.
+Granule search results are paged. See [Paging Limitations](#paging-details) for more information on how to page through granule search results.
 
 #### <a name="g-granule-ur"></a> Find granules with a granule-ur
 
@@ -2480,7 +2484,7 @@ Content-Length: 168
 
 Tags can be searched for by sending a request to `%CMR-ENDPOINT%/tags`.
 
-The number of search results you can return in a single request is limited. The query parameters `page_num` and `page_size` control the amount of items you can request. `page_num` and `page_size` are implied to be 1 and 10 respectively if not provided explicitly. There is an upper bound of 2000 items for `page_size` and the combination of `page size` and `page num` should not exceed 1 million items. See [Query Parameters](#query-parameters) for more information on `page_size` and `page_num`.
+Tag search results are paged. See [Paging Limitations](#paging-details) for more information on how to page through tag search results.
 
 ##### Tag Search Parameters
 
