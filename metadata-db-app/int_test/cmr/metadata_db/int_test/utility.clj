@@ -137,6 +137,10 @@
             :description "Contains users with permission to manage LPDAAC_ECS holdings."
             :members ["jsmith" "prevere" "ndrew"]}))
 
+(def acl-edn
+  (pr-str {:name "Some ACL"
+           :etc "TBD"}))
+
 (def concept-dummy-metadata
   "Index events are now created by MDB when concepts are saved. So the Indexer will attempt
   to look up the metadata for the concepts and parse it. So we need to provide valid
@@ -147,7 +151,8 @@
    :service service-xml
    :tag tag-edn
    :tag-association tag-association-edn
-   :access-group group-edn})
+   :access-group group-edn
+   :acl acl-edn})
 
 (defn- concept
   "Create a concept map for any concept type. "
@@ -241,6 +246,16 @@
                             :format "application/edn"}
                            attributes)]
      (concept provider-id :access-group uniq-num attributes))))
+
+(defn acl-concept
+  "Returns an :acl concept map for use in integration tests."
+  ([provider-id uniq-num]
+   (acl-concept provider-id uniq-num {}))
+  ([provider-id uniq-num attributes]
+   (let [attributes (merge {:user-id (str "user" uniq-num)
+                            :format "application/edn"}
+                           attributes)]
+     (concept provider-id :acl uniq-num attributes))))
 
 (defn service-concept
   "Creates a service concept"
@@ -581,6 +596,19 @@
    (create-and-save-group provider-id uniq-num num-revisions {}))
   ([provider-id uniq-num num-revisions attributes]
    (let [concept (group-concept provider-id uniq-num attributes)
+         _ (dotimes [n (dec num-revisions)]
+             (assert-no-errors (save-concept concept)))
+         {:keys [concept-id revision-id]} (save-concept concept)]
+     (assoc concept :concept-id concept-id :revision-id revision-id))))
+
+(defn create-and-save-acl
+  "Creates, saves, and returns an ACL concept with its data from metadata-db."
+  ([provider-id uniq-num]
+   (create-and-save-acl provider-id uniq-num 1))
+  ([provider-id uniq-num num-revisions]
+   (create-and-save-acl provider-id uniq-num num-revisions {}))
+  ([provider-id uniq-num num-revisions attributes]
+   (let [concept (acl-concept provider-id uniq-num attributes)
          _ (dotimes [n (dec num-revisions)]
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]
