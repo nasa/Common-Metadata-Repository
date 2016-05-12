@@ -284,10 +284,10 @@
           "description": "Uncontrolled keyword heirarchical level that contains the specific location where the collection data was taken from. Exists outside the heirarchy.",
           "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
         }
-    },
-    "required": ["Category"]
-  }
-},
+      },
+      "required": ["Category"]
+    }
+  },
   "title": "UMM-C",
   "type": "object",
   "additionalProperties": false,
