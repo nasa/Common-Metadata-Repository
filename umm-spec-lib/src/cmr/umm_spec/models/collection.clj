@@ -125,6 +125,11 @@
    ;; collection will be made. For Example: Nimbus-7 SMMR data collection has been completed.
    CollectionProgress
 
+   ;; For paleoclimate or geologic data, PaleoTemporalCoverage is the length of time represented by
+   ;; the data collected. PaleoTemporalCoverage should be used when the data spans time frames
+   ;; earlier than yyyy-mm-dd = 0001-01-01.
+   PaleoTemporalCoverages
+
    ;; The reference frame or system in which altitudes (elevations) are given. The information
    ;; contains the datum name, distance units and encoding method, which provide the definition for
    ;; the system. This field also stores the characteristics of the reference frame or system from
@@ -170,11 +175,6 @@
 
    ;; The Version of the collection.
    Version
-
-   ;; For paleoclimate or geologic data, PaleoTemporalCoverage is the length of time represented by
-   ;; the data collected. PaleoTemporalCoverage should be used when the data spans time frames
-   ;; earlier than yyyy-mm-dd = 0001-01-01.
-   PaleoTemporalCoverage
 
    ;; This class contains attributes which describe the temporal range of a specific collection.
    ;; Temporal Extent includes a specification of the Temporal Range Type of the collection, which
