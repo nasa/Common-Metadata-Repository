@@ -6,15 +6,29 @@ require 'ostruct'
 require 'java'
 require 'set'
 require 'active_support/all'
-# require 'active_support'
 require 'action_view'
+require 'action_dispatch'
 load 'collection_preview/drafts_helper.rb'
 load 'collection_preview/collections_helper.rb'
+load 'collection_preview/pages_helper.rb'
 
 include ActionView::Helpers
+include ActionDispatch::Routing
 
 include DraftsHelper
 include CollectionsHelper
+include PagesHelper
+
+
+## TODO implementthis
+def url_for(options)
+  puts "url_for #{options.inspect}"
+  "http://good_url.com"
+end
+
+def edit_collection_path(*args)
+  "http://good_url.com/edit_collection_path"
+end
 
 ####################################################################################################
 ## Rendering
@@ -26,6 +40,8 @@ def java_render(template, variables)
     variables.each do |k, v|
       instance_variable_set(k, v) if k[0] == '@'
     end
+    # MMT ERBs expect a current user
+    @current_user = OpenStruct.new()
 
     def partial(partial_name, options={})
       new_variables = marshal_dump.merge(options[:locals] || {})
@@ -47,16 +63,22 @@ end
 # Renders an ERB template against a hashmap of variables.
 def render(args)
   begin
-    partial_path = args[:partial]
-    if partial_path.respond_to? :call
-      partial_path = partial_path()
+    if args.is_a? Hash
+      partial_path = args[:partial]
+      locals = args[:locals]
+
+      if partial_path.respond_to? :call
+        partial_path = partial_path()
+      end
+    else
+      partial_path = args
+      locals = {}
     end
 
     resource_path = partial_path_to_resource_path(partial_path)
     class_loader = Java::Java::lang::Thread.currentThread.getContextClassLoader
     input_stream = class_loader.getResourceAsStream(resource_path)
 
-    locals = args[:locals]
     puts "Rendering #{resource_path} with #{locals.inspect}"
     java_render(input_stream, locals)
   rescue Exception => e

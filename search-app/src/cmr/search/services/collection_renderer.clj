@@ -41,12 +41,14 @@
        (.printStackTrace e)
        (throw e))))
 
- (jruby-eval "require 'active_support/all'")
+ (jruby-eval "include Rails.application.routes.url_helpers")
+ (jruby-eval "require 'action_dispatch'")
+ (jruby-eval "include ActionDispatch::Routing::UrlFor")
 
  (try
    (let [jruby (context->jruby-runtime context)]
      (.eval jruby (io/reader bootstrap-erb))
-     (render-collection context collection))
+     (println (render-collection context collection)))
    (catch Exception e
      (.printStackTrace e)
      (throw e))))

@@ -2,4 +2,26 @@
 require 'json'
 metadata =  JSON.parse(umm_json)
 %>
-<%= render partial: 'shared/preview/metadata_preview', locals: { metadata: metadata } %>
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"  lang="en"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"  lang="en"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"  lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+
+<body class="">
+  <a href="#main-content" class="skip-nav">Skip to main content</a>
+
+  <div class="wrapper">
+
+    <div id="main-content">
+      <%= render partial: 'collection_preview/show', locals: { metadata: metadata} %>
+    </div>
+
+    <div class="push">
+      <!-- For pushing the footer to the bottom of a page with minimal content -->
+    </div>
+  </div>
+
+
+</body>
+</html>
