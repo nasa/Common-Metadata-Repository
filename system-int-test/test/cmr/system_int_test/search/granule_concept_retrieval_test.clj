@@ -20,6 +20,8 @@
             [cmr.common.mime-types :as mt]
             [clj-time.format :as f]))
 
+;; TODO add html rejection test for granules
+
 (use-fixtures
   :each
   (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}

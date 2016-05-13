@@ -10,19 +10,19 @@
 # run the database migrations to setup an Oracle database for use with CMR. Note that the caller
 # should also set CMR_DB_URL to the URL to connect to the external database.
 
+date && echo "Installing collection renderer gems" &&
+# deps is run first so that JRuby jar will be available
+(cd collection-renderer-lib && lein do deps, install-gems)
+if [ $? -ne 0 ] ; then
+  echo "Failed to install gems" >&2
+  exit 1
+fi
 date && echo "Installing all apps" &&
 lein modules do clean, install
 if [ $? -ne 0 ] ; then
   echo "Failed to install apps" >&2
   exit 1
 fi
-date && echo "Installing collection renderer gems" &&
-(cd collection-renderer-lib && lein install-gems)
-if [ $? -ne 0 ] ; then
-  echo "Failed to install gems" >&2
-  exit 1
-fi
-date && echo "Generating Search API documentation" &&
 (cd search-app && lein with-profile docs generate-docs)
 if [ $? -ne 0 ] ; then
   echo "Failed to generate search docs" >&2

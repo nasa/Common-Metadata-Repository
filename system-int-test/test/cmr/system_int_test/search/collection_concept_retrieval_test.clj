@@ -146,6 +146,20 @@
                                                                       user1-token}}))]
         (is (= 404 status))
         (is (= ["Concept with concept-id [C1111-PROV1] could not be found."] errors))))
+    (testing "retrieval of HTML with extension"
+      (let [response (search/retrieve-concept
+                       (:concept-id coll1) nil {:query-params {:token user1-token}
+                                                :url-extension "html"})
+            _ (is (= 200 (:status response)))]
+        (is (search/mime-type-matches-response? response mt/html))
+        (is (.contains ^String (:body response) (:entry-title umm-coll)))))
+    (testing "retrieval of HTML with accept headers"
+      (let [response (search/retrieve-concept
+                       (:concept-id coll1) nil {:query-params {:token user1-token}
+                                                :accept "text/html"})
+            _ (is (= 200 (:status response)))]
+        (is (search/mime-type-matches-response? response mt/html))
+        (is (.contains ^String (:body response) (:entry-title umm-coll)))))
     (testing "retrieval of UMM JSON"
       (let [response (search/retrieve-concept
                        (:concept-id coll1) nil {:query-params {:token user1-token}

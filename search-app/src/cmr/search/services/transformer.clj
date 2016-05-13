@@ -47,7 +47,7 @@
    #(xslt/read-template f)))
 
 (defn- generate-html-response
-  "TODO"
+  "Returns an HTML representation of the collection concept."
   [context concept]
   (let [collection (umm-spec/parse-metadata
                     context :collection (:format concept) (:metadata concept))]
