@@ -1,4 +1,7 @@
 # encoding: utf-8
+# Bootstraps an empty JRuby environment in the CMR so that it will have the appropriate functions
+# available for rendering collections. Sets up enough functions so the the ERB partials from MMT
+# will be renderable.
 
 require 'erb'
 require 'ostruct'

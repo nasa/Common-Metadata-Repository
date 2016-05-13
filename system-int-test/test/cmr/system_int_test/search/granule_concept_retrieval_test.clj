@@ -122,7 +122,6 @@
                       {:headers {transmit-config/token-header user1-token}
                        :accept mt/html})
             err-msg (first (:errors (json/decode (:body response) true)))]
-            ; err-msg (:body response)]
         (is (= 400 (:status response)))
         (is (= (str "The mime types specified in the accept header ["
                     mt/html "] are not supported.")
