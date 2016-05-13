@@ -13,7 +13,7 @@
       (= mime-type (mt/accept-mime-type headers))
 
           "extract first preferred valid mime type"
-          {"accept" "text/html, application/json"} mt/json
+          {"accept" "text/foo, application/json"} mt/json
 
           "accept parameters are ignored"
           {"accept" "application/xml; q=1"} mt/xml
@@ -22,7 +22,7 @@
           {"content-type" "application/xml; q=1"} nil
 
           "nil if no acceptable type"
-          {"accept" "text/html, application/foo"} nil
+          {"accept" "text/foo, application/foo"} nil
 
           "*/* header is ignored"
           {"accept" "*/*"} nil))
@@ -38,7 +38,7 @@
           {"accept" "application/xml; q=1"} nil
 
           "nil if no acceptable type"
-          {"content-type" "text/html, application/foo"} nil)))
+          {"content-type" "text/html2, application/foo"} nil)))
 
 
 
@@ -54,6 +54,7 @@
     (is (= mt/dif (mt/path->mime-type "granules.dif")))
     (is (= mt/csv (mt/path->mime-type "granules.csv")))
     (is (= mt/kml (mt/path->mime-type "granules.kml")))
+    (is (= mt/html (mt/path->mime-type "granules.html")))
     (is (= mt/opendata (mt/path->mime-type "granules.opendata"))))
   (testing "invalid extensions"
     (are [uri]

@@ -1,5 +1,6 @@
 (ns cmr.collection-renderer.services.collection-renderer
-  "TODO"
+  "Defines a component which can be used to generate an HTML response of a UMM-C collection. Uses the
+   MMT ERB code along with JRuby to generate it."
   (require [cmr.common.lifecycle :as l]
            [clojure.java.io :as io]
            [cmr.umm-spec.umm-json :as umm-json])
@@ -14,20 +15,21 @@
   "The key to use when storing the collection renderer"
   :collection-renderer)
 
-(def bootstrap-erb
-  "TODO"
+(def bootstrap-rb
+  "A ruby script that will bootstrap the JRuby environment to contain the appropriate functions for
+   generating ERB code."
   (io/resource "collection_preview/bootstrap.rb"))
 
 (def collection-preview-erb
-  "TODO"
+  "The main ERB used to generate the Collection HTML."
   (io/resource "collection_preview/collection_preview.erb"))
 
 (defn- create-jruby-runtime
-  "TODO"
+  "Creates and initializes a JRuby runtime."
   []
   (let [jruby (.. (ScriptEngineManager.)
                   (getEngineByName "jruby"))]
-    (.eval jruby (io/reader bootstrap-erb))
+    (.eval jruby (io/reader bootstrap-rb))
     jruby))
 
 ;; An wrapper component for the JRuby runtime
@@ -43,12 +45,13 @@
     (dissoc this :jruby-runtime)))
 
 (defn create-collection-renderer
-  "TODO"
+  "Returns an instance of the collection renderer component."
   []
   (->CollectionRenderer nil))
 
 (defn- render-erb
-  "TODO"
+  "Renders the ERB resource with the given JRuby runtime, URL to an ERB on the classpath, and a map
+   of arguments to pass the ERB."
   [jruby-runtime erb-resource args]
   (.invokeFunction
    ^Invocable jruby-runtime
@@ -60,7 +63,7 @@
   (get-in context [:system system-key :jruby-runtime]))
 
 (defn render-collection
-  "TODO"
+  "Renders a UMM-C collection record and returns the HTML as a string."
   [context collection]
   (let [umm-json (umm-json/umm->json collection)]
    (render-erb (context->jruby-runtime context) collection-preview-erb {"umm_json" umm-json})))
