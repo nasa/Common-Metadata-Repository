@@ -155,12 +155,12 @@
 
     (extract-mime-types \"audio/*; q=0.2, audio/basic\")
 
-  will return: (\"audio/basic\" \"audio/*\").
+  will return: (\"audio/*\" \"audio/basic\").
 
   Wildcards (e.g. \"*/xml\") are not supported."
   [header-value]
   (when header-value
-    (map base-mime-type-of (reverse (str/split header-value #"\s*,\s*")))))
+    (map base-mime-type-of (str/split header-value #"\s*,\s*"))))
 
 (defn- get-header
   "Gets a value from a header map in a case-insensitive way."
@@ -197,6 +197,7 @@
   If validate? is true it will throw an error if the header was passed by the client but no mime type
   in the header value was acceptable."
   [valid-mime-types headers header validate?]
+
   (when-let [header-value (get headers header)]
     (or (some valid-mime-types (extract-mime-types header-value))
         (when validate?

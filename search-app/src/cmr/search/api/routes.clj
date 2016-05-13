@@ -230,7 +230,7 @@
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id (and possibly revision id)
   and returns the response"
-  [context path-w-extension params headers]
+  [request-context path-w-extension params headers]
   (let [concept-id (path-w-extension->concept-id path-w-extension)
         revision-id (path-w-extension->revision-id path-w-extension)
         concept-type (concepts/concept-id->type concept-id)
@@ -253,12 +253,12 @@
                       revision-id))
         ;; else, revision-id is nil
         (cr/search-response (query-svc/find-concept-by-id-and-revision
-                              context result-format concept-id revision-id)))
+                              request-context result-format concept-id revision-id)))
       (let [result-format (get-search-results-format path-w-extension headers
                                                      concept-type-supported-mime-types
                                                      mt/xml)]
         (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
-        (cr/search-response (query-svc/find-concept-by-id context result-format concept-id))))))
+        (cr/search-response (query-svc/find-concept-by-id request-context result-format concept-id))))))
 
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"

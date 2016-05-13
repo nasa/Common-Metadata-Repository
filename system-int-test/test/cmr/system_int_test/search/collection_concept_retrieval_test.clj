@@ -156,7 +156,7 @@
     (testing "retrieval of HTML with accept headers"
       (let [response (search/retrieve-concept
                        (:concept-id coll1) nil {:query-params {:token user1-token}
-                                                :accept "text/html"})
+                                                :accept "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"})
             _ (is (= 200 (:status response)))]
         (is (search/mime-type-matches-response? response mt/html))
         (is (.contains ^String (:body response) (:entry-title umm-coll)))))
