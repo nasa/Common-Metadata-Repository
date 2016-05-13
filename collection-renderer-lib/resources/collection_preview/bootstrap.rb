@@ -37,9 +37,9 @@ end
 ## Rendering
 ## Based on https://gist.github.com/ato/5935594
 
-# Renders an ERB template against a hashmap of variables.
-# template should be a Java InputStream
-def java_render(template, variables)
+# Takes a Java InputStream to an ERB template and a map of variables to pass to the template.
+# Renders the ERB template returning the generating content string.
+def java_render(template_input_stream, variables)
   context = OpenStruct.new(variables).instance_eval do
     variables.each do |k, v|
       instance_variable_set(k, v) if k[0] == '@'
@@ -54,7 +54,7 @@ def java_render(template, variables)
 
     binding
   end
-  ERB.new(template.to_io.read).result(context);
+  ERB.new(template_input_stream.to_io.read).result(context);
 end
 
 # Takes a path like foo/bar and returns the path to the ERB partial file name: foo/_bar.html.erb
@@ -66,6 +66,8 @@ def partial_path_to_resource_path(partial_path)
 end
 
 # Renders an ERB template against a hashmap of variables.
+# Implements the normal Rails render method but makes it find resources on the classpath and delegates
+# to the java_render function.
 def render(args)
   begin
     if args.is_a? Hash
@@ -94,10 +96,6 @@ def render(args)
    end
 end
 
-# Renders an ERB template wrapped in an ERB layout.
-# template and layout should both be Java InputStreams
-def render_with_layout(template, layout, variables)
-  render(layout, variables) do
-    render(template, variables)
-  end
-end
+
+
+

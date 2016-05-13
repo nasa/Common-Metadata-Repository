@@ -3,7 +3,7 @@
 # installed leiningen and Java
 
 date && echo "Installing all apps" &&
-lein modules do clean, install
+lein modules do clean, install, clean
 if [ $? -ne 0 ] ; then
   echo "Failed to install apps" >&2
   exit 1
