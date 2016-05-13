@@ -67,3 +67,5 @@
   [context collection]
   (let [umm-json (umm-json/umm->json collection)]
    (render-erb (context->jruby-runtime context) collection-preview-erb {"umm_json" umm-json})))
+
+
