@@ -21,7 +21,9 @@
             [cmr.umm.collection :as c]
             [cmr.umm.echo10.collection :as ec]
             [cmr.common.util :as u]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+            [cmr.common.mime-types :as mime-types]
+            [clojure.java.io :as io]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -45,6 +47,28 @@
                  :spatial-coverage (dc/spatial {:gsr coord-sys
                                                 :sr coord-sys
                                                 :geometries shapes})}))))
+
+(defn- make-iso-metadata-request
+  "Makes a bad ISO Metadata Request"
+  [metadata]
+  (let [format (mime-types/format->mime-type :iso19115)]
+    (merge {:concept-type :collection
+            :provider-id "PROV1"
+            :native-id "foo"
+            :metadata metadata
+            :format format})))
+
+(deftest spatial-with-no-representation
+  ;; This replicates an issue we saw in CMR-2927.
+  (testing "A granule with spatial data but no representation should not fail ingest"
+    (let [good-metadata (slurp (io/resource "iso-samples/good-iso-sample.iso19115"))
+          bad-metadata (slurp (io/resource "iso-samples/bad-iso-sample.iso19115"))
+          bad-request (make-iso-metadata-request bad-metadata)
+          good-request (make-iso-metadata-request good-metadata)
+          bad-ingest (ingest/ingest-concept bad-request)]
+          (index/wait-until-indexed)
+          (is (= 200 (:status (ingest/ingest-concept good-request {:raw? true})))))))
+
 
 (deftest spatial-search-test
   (let [;; Lines
