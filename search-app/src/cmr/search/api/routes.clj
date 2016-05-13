@@ -286,6 +286,32 @@
         (get-in system [:search-public-conf :relative-root-url])
         "public/index.html")
 
+      ;; Routes for collection html resources
+      ;; TODO move to ahelper function.
+
+      ;; TODO these should return a 404 if the resource doesn't exist
+
+      (context "/javascripts" []
+        (GET "/:resource" {headers :headers, {resource :resource} :params}
+          {:status 200
+           :headers {"content-type" "application/javascript"}
+           :body (some-> (io/resource (str "public/javascripts/" resource))
+                         slurp)}))
+
+      (context "/stylesheets" []
+        (GET "/:resource" {headers :headers, {resource :resource} :params}
+          {:status 200
+           :headers {"content-type" "text/css"}
+           :body (some-> (io/resource (str "public/stylesheets/" resource))
+                         slurp)}))
+
+      (context "/images" []
+        (GET "/:resource" {headers :headers, {resource :resource} :params}
+          {:status 200
+           :headers {"content-type" (str "image/" (last (str/split resource #"\.")))}
+           :body (some-> (io/resource (str "public/images/" resource))
+                         io/input-stream)}))
+
       ;; Retrieve by cmr concept id or concept id and revision id
       ;; Matches URL paths of the form /concepts/:concept-id[/:revision-id][.:format],
       ;; e.g., http://localhost:3003/concepts/C120000000-PROV1,

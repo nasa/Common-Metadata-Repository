@@ -85,6 +85,6 @@
 (defn render-collection
   "TODO"
   [context collection]
-  (cmr.common.dev.capture-reveal/capture-all)
+  ; (cmr.common.dev.capture-reveal/capture-all)
   (let [umm-json (umm-json/umm->json collection)]
    (render-erb (context->jruby-runtime context) collection-preview-erb {"umm_json" umm-json})))
