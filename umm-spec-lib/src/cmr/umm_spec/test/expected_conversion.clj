@@ -527,7 +527,8 @@
       ;; We can't restore Detailed Location because it doesn't exist in the hierarchy.
       (update-in [:LocationKeywords] fix-location-keyword-conversion)
       ;; CMR 2716 Getting rid of SpatialKeywords but keeping them for legacy purposes.
-      (assoc :SpatialKeywords nil)))
+      (assoc :SpatialKeywords nil)
+      (assoc :PaleoTemporalCoverages nil)))
 
 ;; DIF 9
 
@@ -1124,7 +1125,8 @@
       (update-in [:MetadataAssociations] group-metadata-assocations)
       (update-in [:ISOTopicCategories] update-iso-topic-categories)
       (update-in [:LocationKeywords] fix-location-keyword-conversion)
-      (assoc :SpatialKeywords nil)))
+      (assoc :SpatialKeywords nil)
+      (assoc :PaleoTemporalCoverages nil)))
 
 ;; ISO-SMAP
 (defn- normalize-smap-instruments
@@ -1203,15 +1205,15 @@
                      (seq
                       (filter #(.contains kws/science-keyword-categories (:Category %)) sks))))
         (update-in [:Platforms] normalize-smap-instruments)
-        (assoc :LocationKeywords nil))))
+        (assoc :LocationKeywords nil)
+        (assoc :PaleoTemporalCoverages nil))))
 
 ;;; Unimplemented Fields
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates :MetadataLanguage
-    :DirectoryNames :MetadataLineages :SpatialInformation
-    :PaleoTemporalCoverage})
+    :DirectoryNames :MetadataLineages :SpatialInformation})
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"

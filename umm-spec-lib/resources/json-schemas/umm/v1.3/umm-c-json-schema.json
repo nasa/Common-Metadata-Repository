@@ -50,11 +50,15 @@
         },
         "StartDate": {
           "description": "A string indicating the number of years furthest back in time, including units, e.g., 100 Ga.  Units may be Ga (billions of years before present), Ma (millions of years before present), ka (thousands of years before present) or ybp (years before present).",
-          "type": "string"
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
         },
         "EndDate": {
           "description": "A string indicating the number of years closest to the present time, including units, e.g., 10 ka.  Units may be Ga (billions of years before present), Ma (millions of years before present), ka (thousands of years before present) or ybp (years before present).",
-          "type": "string"
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
         }
       }
     },
@@ -457,9 +461,13 @@
       },
       "minItems": 1
     },
-    "PaleoTemporalCoverage": {
+    "PaleoTemporalCoverages": {
       "description": "For paleoclimate or geologic data, PaleoTemporalCoverage is the length of time represented by the data collected. PaleoTemporalCoverage should be used when the data spans time frames earlier than yyyy-mm-dd = 0001-01-01.",
-      "$ref": "#/definitions/PaleoTemporalCoverageType"
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/PaleoTemporalCoverageType"
+      },
+      "minItems": 0
     },
     "TemporalKeywords": {
       "description": "One or more words or phrases that describe the temporal resolution of the dataset.",

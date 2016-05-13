@@ -280,9 +280,6 @@
              :boosts :include-granule-counts :include-has-granules :include-facets :echo-compatible
              :hierarchical-facets :include-highlights :include-tags :all-revisions)
      (-> query-attribs
-         ;; If there is no sort key specified and keyword parameter exists then we default to
-         ;; sorting by document relevance score
-         (update :sort-keys #(or % (when (:keyword params) [{:order :desc :field :score}])))
          (merge {:boosts (:boosts params)
                  :result-features (seq result-features)
                  :echo-compatible? (= "true" (:echo-compatible params))

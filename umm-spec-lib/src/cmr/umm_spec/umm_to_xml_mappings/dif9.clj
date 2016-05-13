@@ -78,6 +78,19 @@
        [:Temporal_Coverage
         [:Start_Date sdt]
         [:Stop_Date sdt]])
+     (for [paleo (:PaleoTemporalCoverages c)
+           :let [{:keys [StartDate EndDate ChronostratigraphicUnits]} paleo]]
+       [:Paleo_Temporal_Coverage
+        [:Paleo_Start_Date StartDate]
+        [:Paleo_Stop_Date EndDate]
+        (for [{:keys [Eon Era Period Epoch Stage DetailedClassification]} ChronostratigraphicUnits]
+          [:Chronostratigraphic_Unit
+           [:Eon Eon]
+           [:Era Era]
+           [:Period Period]
+           [:Epoch Epoch]
+           [:Stage Stage]
+           [:Detailed_Classification DetailedClassification]])])
      [:Data_Set_Progress (:CollectionProgress c)]
      (for [mbr (-> c :SpatialExtent :HorizontalSpatialDomain :Geometry :BoundingRectangles)]
        [:Spatial_Coverage
@@ -87,13 +100,13 @@
         [:Easternmost_Longitude (:EastBoundingCoordinate mbr)]])
      (let [location-keywords (:LocationKeywords c)]
        (for [lk location-keywords]
-       [:Location
-        [:Location_Category (:Category lk)]
-        [:Location_Type (:Type lk)]
-        [:Location_Subregion1 (:Subregion1 lk)]
-        [:Location_Subregion2 (:Subregion2 lk)]
-        [:Location_Subregion3 (:Subregion3 lk)]
-        [:Detailed_Location (:DetailedLocation lk)]]))
+         [:Location
+          [:Location_Category (:Category lk)]
+          [:Location_Type (:Type lk)]
+          [:Location_Subregion1 (:Subregion1 lk)]
+          [:Location_Subregion2 (:Subregion2 lk)]
+          [:Location_Subregion3 (:Subregion3 lk)]
+          [:Detailed_Location (:DetailedLocation lk)]]))
      (for [temporal-keyword (:TemporalKeywords c)]
        [:Data_Resolution
         [:Temporal_Resolution temporal-keyword]])

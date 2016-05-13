@@ -10,7 +10,7 @@
 (def versions
   "A sequence of valid UMM Schema versions, with the newest one last. This sequence must be updated
    when new schema versions are added to the CMR."
-  ["1.0" "1.1" "1.2"])
+  ["1.0" "1.1" "1.2" "1.3"])
 
 (def current-version
   "The current version of the UMM schema."
@@ -97,6 +97,18 @@
       (assoc :SpatialKeywords
              (lk/location-keywords->spatial-keywords (:LocationKeywords c)))
       (assoc :LocationKeywords nil)))
+
+(defmethod migrate-umm-version [:collection "1.2" "1.3"]
+  [context c & _]
+  (-> c
+      (update-in [:PaleoTemporalCoverage] #(when % [%]))
+      (set/rename-keys {:PaleoTemporalCoverage :PaleoTemporalCoverages})))
+
+(defmethod migrate-umm-version [:collection "1.3" "1.2"]
+  [context c & _]
+  (-> c
+      (update-in [:PaleoTemporalCoverages] first)
+      (set/rename-keys {:PaleoTemporalCoverages :PaleoTemporalCoverage})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface

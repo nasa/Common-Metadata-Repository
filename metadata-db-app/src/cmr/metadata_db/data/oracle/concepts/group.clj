@@ -14,7 +14,8 @@
           (assoc :concept-type :access-group)
           (assoc :user-id (:user_id result))))
 
-(defn- group-concept->insert-args
+(defn group-concept->insert-args
+  "Returns common insert args plus user_id and provider_id."
   [concept]
   (let [{:keys [user-id provider-id]} concept
         [cols values] (c/concept->common-insert-args concept)]

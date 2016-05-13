@@ -225,6 +225,56 @@
             (search/find-refs-with-aql :collection [] {}
                                        {:query-params {:page-size 20}}))))))
 
+;; This tests that the default sorting for parameters that are scored is by the score found.
+(deftest default-sorting-for-scored-parameters-is-by-score-test
+  (let [platform (dc/platform {:short-name "wood"
+                               :instruments [(dc/instrument {:short-name "wood"
+                                                             :sensors [(dc/sensor {:short-name "wood"})]})]})
+        science-keyword (dc/science-keyword {:category "wood"
+                                             :topic "wood"
+                                             :term "wood"})
+        projects (dc/projects "wood")
+        two-d (dc/two-d "wood")
+
+        ;; Common attributes for all collections
+        common-attribs {:projects projects
+                        :platforms [platform]
+                        :two-d-coordinate-systems [two-d]
+                        :science-keywords [science-keyword]
+                        :processing-level-id "wood"
+                        :organizations [(dc/org :archive-center "wood")]}
+
+        ;; 1 will have the least relevance
+        coll1 (d/ingest "PROV1" (dc/collection
+                                 (merge common-attribs
+                                        {:entry-title "coll1"})))
+        ;; 2 has the most by having both spatial and temporal keywords that match the search term
+        coll2 (d/ingest "PROV1" (dc/collection
+                                 (merge common-attribs
+                                        {:entry-title "coll2"
+                                         :spatial-keywords ["wood"]
+                                         :temporal-keywords ["wood"]})))
+        ;; 3 has more than 1 but less than 2. It has spatial keywords that match the search term but
+        ;; no temporal keywords
+        coll3 (d/ingest "PROV1" (dc/collection
+                                 (merge common-attribs
+                                        {:entry-title "coll3"
+                                         :spatial-keywords ["wood"]})))]
+    (index/wait-until-indexed)
+
+    (are [params]
+      (d/refs-match-order? [coll2 coll3 coll1] (search/find-refs :collection params))
+      {:keyword "wood"}
+      {:platform "wood"}
+      {:instrument "wood"}
+      {:sensor "wood"}
+      {:science-keywords {"0" {:any "wood"}}}
+      {:project "wood"}
+      {:two-d-coordinate-system-name "wood"}
+      {:processing-level-id "wood"}
+      {:data-center "wood"}
+      {:archive-center "wood"})))
+
 (deftest multiple-sort-key-test
   (let [c1 (make-coll "PROV1" "et10" 10 nil)
         c2 (make-coll "PROV1" "et20" 10 nil)
