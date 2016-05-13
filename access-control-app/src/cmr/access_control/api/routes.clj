@@ -33,7 +33,6 @@
                 :members {:type :array :items {:type :string :minLength 1 :maxLength 100}}}
    :required [:name :description]})
 
-
 (def ^:private group-schema
   "The JSON schema used to validate groups"
   (js/parse-json-schema group-schema-structure))
