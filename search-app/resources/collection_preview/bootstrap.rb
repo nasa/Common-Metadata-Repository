@@ -8,9 +8,9 @@ require 'set'
 require 'active_support/all'
 require 'action_view'
 require 'action_dispatch'
-load 'collection_preview/drafts_helper.rb'
-load 'collection_preview/collections_helper.rb'
-load 'collection_preview/pages_helper.rb'
+require 'collection_preview/drafts_helper'
+require 'collection_preview/collections_helper'
+require 'collection_preview/pages_helper'
 
 include ActionView::Helpers
 include ActionDispatch::Routing
@@ -79,7 +79,8 @@ def render(args)
     class_loader = Java::Java::lang::Thread.currentThread.getContextClassLoader
     input_stream = class_loader.getResourceAsStream(resource_path)
 
-    puts "Rendering #{resource_path} with #{locals.inspect}"
+    # Uncomment this for debugging.
+    # puts "Rendering #{resource_path} with #{locals.inspect}"
     java_render(input_stream, locals)
   rescue Exception => e
     puts e.message

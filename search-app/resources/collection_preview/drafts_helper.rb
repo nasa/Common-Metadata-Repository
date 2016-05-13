@@ -1,19 +1,19 @@
 module DraftsHelper
-  CollectionDataTypeOptions = [
+  CollectionDataTypeOptions ||= [
     ['Science Quality', 'SCIENCE_QUALITY'],
     ['Near Real Time', 'NEAR_REAL_TIME'],
     ['Other', 'OTHER']
   ]
-  CollectionProgressOptions = [
+  CollectionProgressOptions ||= [
     ['Planned', 'PLANNED'],
     ['In work', 'IN WORK'],
     ['Complete', 'COMPLETE']
   ]
-  CoordinateSystemOptions = [
+  CoordinateSystemOptions ||= [
     ['Cartesian', 'CARTESIAN'],
     ['Geodetic', 'GEODETIC']
   ]
-  ContactTypeOptions = [
+  ContactTypeOptions ||= [
     ['Direct Line'],
     ['Email'],
     ['Facebook'],
@@ -27,7 +27,7 @@ module DraftsHelper
     ['U.S. toll free'],
     ['Other'],
   ]
-  DataTypeOptions = [
+  DataTypeOptions ||= [
     ['String', 'STRING'],
     ['Float', 'FLOAT'],
     ['Integer', 'INT'],
@@ -39,31 +39,31 @@ module DraftsHelper
     ['Time String', 'TIMESTRING'],
     ['Date Time String', 'DATETIMESTRING']
   ]
-  DurationOptions = [
+  DurationOptions ||= [
     ['Day', 'DAY'],
     ['Month', 'MONTH'],
     ['Year', 'YEAR']
   ]
-  DateTypeOptions = [
+  DateTypeOptions ||= [
     ['Creation', 'CREATE'],
     ['Last Revision', 'UPDATE'],
     ['Future Review', 'REVIEW'],
     ['Planned Deletion', 'DELETE']
   ]
-  FileSizeUnitTypeOptions = [
+  FileSizeUnitTypeOptions ||= [
     ['KB'],
     ['MB'],
     ['GB'],
     ['TB'],
     ['PB']
   ]
-  GranuleSpatialRepresentationOptions = [
+  GranuleSpatialRepresentationOptions ||= [
     ['Cartesian', 'CARTESIAN'],
     ['Geodetic', 'GEODETIC'],
     ['Orbit', 'ORBIT'],
     ['No Spatial', 'NO_SPATIAL'],
   ]
-  ISOTopicCategoriesOptions = [
+  ISOTopicCategoriesOptions ||= [
     ['Farming', 'farming'],
     ['Biota', 'biota'],
     ['Boundaries', 'boundaries'],
@@ -84,7 +84,7 @@ module DraftsHelper
     ['Transportation', 'transportation'],
     ['Utilities / Communication', 'utilitiesCommunication']
   ]
-  MetadataAssociationTypeOptions = [
+  MetadataAssociationTypeOptions ||= [
     ['Science Associated', 'SCIENCE ASSOCIATED'],
     ['Dependent', 'DEPENDENT'],
     ['Input', 'INPUT'],
@@ -93,7 +93,7 @@ module DraftsHelper
     ['Related', 'RELATED'],
     ['Larger Citation Works', 'LARGER CITATION WORKS']
   ]
-  MimeTypeOptions = [
+  MimeTypeOptions ||= [
     ['application/msword'],
     ['application/pdf'],
     ['application/xml'],
@@ -101,7 +101,7 @@ module DraftsHelper
     ['text/html'],
     ['text/plain']
   ]
-  ProcessingLevelIdOptions = [
+  ProcessingLevelIdOptions ||= [
     ['Not Provided'],
     ['Level 0'],
     ['Level 1'],
@@ -116,7 +116,7 @@ module DraftsHelper
     ['Level 4'],
     ['NA']
   ]
-  RoleOptions = [
+  RoleOptions ||= [
     ['Resource Provider', 'RESOURCEPROVIDER'],
     ['Custodian', 'CUSTODIAN'],
     ['Owner', 'OWNER'],
@@ -138,7 +138,7 @@ module DraftsHelper
     ['Funder', 'FUNDER'],
     ['Stakeholder', 'STAKEHOLDER']
   ]
-  SpatialCoverageTypeOptions = [
+  SpatialCoverageTypeOptions ||= [
     ['Horizontal', 'HORIZONTAL'],
     ['Vertical', 'VERTICAL'],
     ['Orbital', 'ORBITAL'],
