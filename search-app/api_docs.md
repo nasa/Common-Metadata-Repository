@@ -170,7 +170,6 @@ The CMR contains many more results than can be returned in a single response so 
 
 You can not page past the 1 millionth item. Please contact the CMR Team through the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum) if you need to retrieve items in excess of 1 million from the CMR.
 
-
 #### <a name="parameter-options"></a> Parameter Options
 
 The behavior of search with respect to each parameter can be modified using the `options` parameter. The `options` parameter takes the following form:
@@ -221,6 +220,7 @@ Besides MimeTypes, client can also use extensions to specify the format for sear
 
 Here is a list of supported extensions and their corresponding MimeTypes:
 
+  * `html`      "text/html"
   * `json`      "application/json"
   * `xml`       "application/xml"
   * `echo10`    "application/echo10+xml"
@@ -236,6 +236,14 @@ Here is a list of supported extensions and their corresponding MimeTypes:
   * `umm-json`   "application/umm+json" (only supported for collections)
 
 ### <a name="supported-result-formats"></a> Supported Result Formats
+
+#### <a name="html"></a> HTML
+
+The HTML response format is supported for collections. It allows a single collection record to be viewed in a web browser. HTML is only supported for retrieving a single collection at a time with a URL of the format:
+
+```
+%CMR-ENDPOINT%/concepts/<concept-id>
+```
 
 #### <a name="atom"></a> Atom
 
@@ -1738,6 +1746,7 @@ Note that attempting to retrieve a revision that is a tombstone is an error and 
 The following extensions and MIME types are supported by the
 `/concepts/` resource:
 
+  * `html`      "text/html" (Collections only)
   * `json`      "application/json"
   * `xml`       "application/xml" (same as .native)
   * `native`    "application/metadata+xml"

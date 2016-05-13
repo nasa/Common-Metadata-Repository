@@ -1,0 +1,279 @@
+<div class="preview-collection eui-accordion">
+  <div class="eui-accordion__header">
+    <h4 class="eui-accordion__title">Spatial Information Fields:</h4>
+    <div class="eui-accordion__icon" tabindex="0">
+      <i class="eui-icon eui-fa-chevron-circle-down"></i>
+      <span class="eui-sr-only">Toggle Spatial Information Fields</span>
+    </div>
+  </div>
+  <div class="eui-accordion__body">
+    <% if (metadata['SpatialExtent'] || metadata['SpatialInformation']).blank? %>
+      <p class="empty-section">
+        There is no spatial information for this collection.
+      </p>
+    <% else %>
+      <ul class="spatial-extent-preview">
+        <table class="spatial-extent-table">
+          <% if @draft.present? %>
+            <%= link_to '<i class="fa fa-edit"></i> <span class="is-invisible">Edit Spatial Extent</span>'.html_safe, draft_edit_form_path(@draft, 'spatial_information', { anchor: 'spatial-extent' }), { class: 'hash-link' } %>
+          <% end %>
+
+          <% spatial_extent = metadata['SpatialExtent'] || {} %>
+          <% spatial_coverage_type = spatial_extent['SpatialCoverageType'] || {} %>
+
+          <% if spatial_coverage_type['HORIZONTAL'] %>
+            <% horizontal_spatial_domain = spatial_extent['HorizontalSpatialDomain'] || {} %>
+            <% geometry = horizontal_spatial_domain['Geometry'] || {} %>
+            <thead>
+              <tr>
+                <th>Coverage Type</th>
+                <th>Zone Identifier</th>
+                <th>Geometry</th>
+                <th>Granule Representation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><%= spatial_coverage_type %></td>
+                <td><%= horizontal_spatial_domain['ZoneIdentifier'] %></td>
+                <td><%= geometry['CoordinateSystem'] %></td>
+                <td><%= spatial_extent['GranuleSpatialRepresentation'] %></td>
+              </tr>
+            </tbody>
+          <% end %>
+
+          <% if spatial_coverage_type['Vertical'] %>
+            <thead>
+              <tr>
+                <th>Coverage Type</th>
+                <th>Vertical Spatial Domains</th>
+                <th>Granule Representation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><%= spatial_coverage_type %></td>
+                <td>
+                  <ul>
+                    <% vertical_spatial_domains = spatial_extent['VerticalSpatialDomains'] || [] %>
+                    <% vertical_spatial_domains.each do |domain| %>
+                      <li>
+                        <b>Type: </b>
+                        <%= domain['Type'] %>
+                        <b>Value: </b>
+                        <%= domain['Value'] %>
+                      </li>
+                    <% end %>
+                  </ul>
+                </td>
+                <td>
+                  <%= spatial_extent['GranuleSpatialRepresentation'] %>
+                </td>
+              </tr>
+            </tbody>
+          <% end %>
+
+          <% if spatial_coverage_type['ORBITAL'] %>
+            <% orbit_parameters = spatial_extent['OrbitParameters'] || {} %>
+            <thead>
+              <tr>
+                <th>Coverage Type</th>
+                <th>Swath Width</th>
+                <th>Period</th>
+                <th>Inclination Angle</th>
+                <th>Number of Orbits</th>
+                <th>Start Circular Latitude</th>
+                <th>Granule Representation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="align-c">
+                <td class="align-l"><%= spatial_coverage_type %></td>
+                <td>
+                  <%= orbit_parameters['SwathWidth'] %>
+                </td>
+                <td>
+                  <%= orbit_parameters['Period'] %>
+                </td>
+                <td>
+                  <%= orbit_parameters['InclinationAngle'] %>
+                </td>
+                <td>
+                  <%= orbit_parameters['NumberOfOrbits'] %>
+                </td>
+                <td>
+                  <%= orbit_parameters['StartCircularLatitude'] %>
+                </td>
+                <td>
+                  <%= spatial_extent['GranuleSpatialRepresentation'] %>
+                </td>
+              </tr>
+            </tbody>
+          <% end %>
+        </table>
+
+        <% if metadata['TilingIdentificationSystems'] %>
+          <h5>
+            Tiling Identification Systems
+            <% if @draft.present? %>
+              <%= link_to '<i class="fa fa-edit"></i> <span class="is-invisible">Edit Tiling Identification Systems</span>'.html_safe, draft_edit_form_path(@draft, 'spatial_information', { anchor: 'tiling-identification-system' }), { class: 'hash-link' } %>
+            <% end %>
+          </h5>
+          <table class="tiling-identification-systems-table">
+            <thead>
+              <tr>
+                <th>System Name</th>
+                <th>Coordinate 1 Min</th>
+                <th>Coordinate 1 Max</th>
+                <th>Coordinate 2 Min</th>
+                <th>Coordinate 2 Max</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% tiling_identification_systems = metadata['TilingIdentificationSystems'] || []%>
+              <% tiling_identification_systems.each do |tiling_system| %>
+                <% coordinate_1 = tiling_system['Coordinate1'] || {} %>
+                <% coordinate_2 = tiling_system['Coordinate2'] || {} %>
+                <tr class="align-c">
+                  <td class="align-l">
+                    <%= tiling_system['TilingIdentificationSystemName'] %>
+                  </td>
+                  <td><%= coordinate_1['MinimumValue'] %></td>
+                  <td><%= coordinate_1['MaximumValue'] %></td>
+                  <td><%= coordinate_2['MinimumValue'] %></td>
+                  <td><%= coordinate_2['MaximumValue'] %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+
+        <% if metadata['SpatialInformation'] %>
+          <% spatial_information = metadata['SpatialInformation'] %>
+          <% spatial_coverage_type = spatial_information['SpatialCoverageType'] || {} %>
+          <% horizontal_coordinate_system = spatial_information['HorizontalCoordinateSystem'] || {} %>
+          <% geodetic_model = horizontal_coordinate_system['GeodeticModel'] || {} %>
+          <% vertical_coordinate_system = spatial_information['VerticalCoordinateSystem'] || {} %>
+          <% altitude_system_definition = vertical_coordinate_system['AltitudeSystemDefinition'] || {} %>
+
+          <h5>
+            Spatial Information
+            <% if @draft.present? %>
+              <%= link_to '<i class="fa fa-edit"></i> <span class="is-invisible">Edit Spatial Information</span>'.html_safe, draft_edit_form_path(@draft, 'spatial_information', { anchor: 'spatial-representation-information' }), { class: 'hash-link' } %>
+            <% end %>
+          </h5>
+
+          <table class="spatial-information-table">
+            <% if spatial_coverage_type['HORIZONTAL'] %>
+              <thead>
+                <tr>
+                  <th>Coverage Type</th>
+                  <th>Datum Name</th>
+                  <th>Ellipsoid Name</th>
+                  <th>Semi Major Axis</th>
+                  <th>Flattening Ratio Denominator</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><%= spatial_coverage_type %></td>
+                  <td><%= geodetic_model['HorizontalDatumName'] %></td>
+                  <td><%= geodetic_model['EllipsoidName'] %></td>
+                  <td><%= geodetic_model['SemiMajorAxis'] %></td>
+                  <td><%= geodetic_model['DenominatorOfFlatteningRatio'] %></td>
+                </tr>
+              </tbody>
+            <% end %>
+
+            <% if spatial_coverage_type['VERTICAL'] %>
+              <thead>
+                <tr>
+                  <th>Coverage Type</th>
+                  <th>Datum Name</th>
+                  <th>Distance Units</th>
+                  <th>Encoding Method</th>
+                  <th>Resolutions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <%= spatial_coverage_type %>
+                  </td>
+                  <td>
+                    <%= altitude_system_definition['DatumName'] %>
+                  </td>
+                  <td>
+                    <%= altitude_system_definition['DistanceUnits'] %>
+                  </td>
+                  <td>
+                    <%= altitude_system_definition['EncodingMethod'] %>
+                  </td>
+                  <td>
+                    <%= altitude_system_definition['Resolutions'] %>
+                  </td>
+                </tr>
+              </tbody>
+            <% end %>
+
+            <% if spatial_coverage_type['BOTH'] %>
+              <thead>
+                <tr>
+                  <th colspan="4" class="table-header-span">
+                    Spatial Coverage Type: Vertical &amp; Horizontal
+                  </th>
+                </tr>
+                <tr>
+                  <th>Hor. Datum Name</th>
+                  <th>Ellipsoid Name</th>
+                  <th>Semi Major Axis</th>
+                  <th>Flattening Ratio Denominator</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <%= geodetic_model['HorizontalDatumName'] %>
+                  </td>
+                  <td>
+                    <%= geodetic_model['EllipsoidName'] %>
+                  </td>
+                  <td>
+                    <%= geodetic_model['SemiMajorAxis'] %>
+                  </td>
+                  <td>
+                    <%= geodetic_model['DenominatorOfFlatteningRatio'] %>
+                  </td>
+                </tr>
+              </tbody>
+              <thead>
+                <tr>
+                  <th>Vert. Datum Name</th>
+                  <th>Distance Units</th>
+                  <th>Encoding Method</th>
+                  <th>Resolutions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <%= altitude_system_definition['DatumName'] %>
+                  </td>
+                  <td>
+                    <%= altitude_system_definition['DistanceUnits'] %>
+                  </td>
+                  <td>
+                    <%= altitude_system_definition['EncodingMethod'] %>
+                  </td>
+                  <td>
+                    <%= altitude_system_definition['Resolutions'] %>
+                  </td>
+                </tr>
+              </tbody>
+            <% end %>
+          </table>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
+</div>

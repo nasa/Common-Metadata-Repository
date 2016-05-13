@@ -13,17 +13,20 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.common.mime-types :as mt]
             [cmr.umm.core :as umm]
+            [cheshire.core :as json]
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.system :as s]
             [cmr.umm.iso-mends.collection :as umm-c]
             [clojure.string :as str]
             [cmr.common.mime-types :as mt]
-            [clj-time.format :as f]))
+            [clj-time.format :as f]
+            [cmr.common.xml :as cx]
+            [cmr.system-int-test.utils.fast-xml :as fx]))
 
 (use-fixtures
   :each
   (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
-                        {:grant-all-search? false}))
+                        {:grant-all-search? true}))
 
 (defmulti result-matches?
   "Compare UMM record to the response from search."
@@ -103,14 +106,33 @@
     (testing "retrieve metadata from search by concept-id/revision-id"
       (testing "collections and granules"
         (are2 [item format-key accept concept-id revision-id]
-              (let [headers {transmit-config/token-header user1-token
-                             "Accept" accept}
-                    response (search/retrieve-concept concept-id revision-id {:headers headers})]
-                (result-matches? format-key item response))
+          (let [headers {transmit-config/token-header user1-token
+                         "Accept" accept}
+                response (search/retrieve-concept concept-id revision-id {:headers headers})]
+            (result-matches? format-key item response))
 
-              "echo10 granule revision 1"
-              umm-gran1-1 :echo10 mt/echo10 "G1200000003-PROV1" 1
+          "echo10 granule revision 1"
+          umm-gran1-1 :echo10 mt/echo10 "G1200000003-PROV1" 1
 
-              "echo10 granule revision 2"
-              umm-gran1-2 :echo10 mt/echo10 "G1200000003-PROV1" 2)))))
+          "echo10 granule revision 2"
+          umm-gran1-2 :echo10 mt/echo10 "G1200000003-PROV1" 2)))
+    (testing "unsupported formats"
+      (let [response (search/retrieve-concept
+                      "G1200000003-PROV1" nil
+                      {:headers {transmit-config/token-header user1-token}
+                       :accept mt/html})
+            err-msg (first (:errors (json/decode (:body response) true)))]
+        (is (= 400 (:status response)))
+        (is (= (str "The mime types specified in the accept header ["
+                    mt/html "] are not supported.")
+               err-msg)))
+      (let [response (search/retrieve-concept
+                      "G1200000003-PROV1" nil
+                      {:headers {transmit-config/token-header user1-token}
+                       :url-extension "html"})
+            err-msg (first (:errors (json/decode (:body response) true)))]
+        (is (= 400 (:status response)))
+        (is (= "The URL extension [html] is not supported."
+               err-msg))))))
+
 

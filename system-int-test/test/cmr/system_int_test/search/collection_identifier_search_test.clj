@@ -15,6 +15,16 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
+
+(comment
+ (do
+   ((ingest/reset-fixture {"provguid1" "PROV1"}) (constantly "done"))
+   (d/ingest "PROV1" (dc/collection
+                      {:short-name (str "S" 1)
+                       :version-id (str "V" 1)
+                       :entry-title (str "ET" 1)}))))
+
+
 (deftest identifier-search-test
 
   ;; Create 4 collections in each provider that are identical.
