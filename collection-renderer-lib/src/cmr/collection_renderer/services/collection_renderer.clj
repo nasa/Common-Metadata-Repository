@@ -55,7 +55,7 @@
   [jruby-runtime erb-resource args]
   (.invokeFunction
    ^Invocable jruby-runtime
-   "java_render"
+   "java_render" ;; Defined in bootstrap.rb
    (to-array [(io/input-stream erb-resource) args])))
 
 (defn- context->jruby-runtime
