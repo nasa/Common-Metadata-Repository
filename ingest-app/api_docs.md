@@ -40,7 +40,7 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 | application/dif10+xml    | DIF 10            | collection          |
 | application/dif+xml      | DIF 9             | collection          |
 | application/echo10+xml   | ECHO 10           | collection, granule |
-| application/iso19115+xml | ISO 19115 (MENDS) | collection, granule |
+| application/iso19115+xml | ISO 19115 (MENDS) | collection          |
 | application/iso:smap+xml | ISO 19115 SMAP    | collection, granule |
 | application/vnd.nasa.cmr.umm+json| UMM JSON  | collection          |
 
