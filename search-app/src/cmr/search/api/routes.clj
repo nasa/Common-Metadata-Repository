@@ -81,20 +81,30 @@
     mt/csv})
 
 (def supported-concept-id-retrieval-mime-types
-  #{mt/any
+  {:collection #{mt/any
+                 mt/html
+                 mt/xml ; allows retrieving native format
+                 mt/native ; retrieve in native format
+                 mt/atom
+                 mt/json
+                 mt/echo10
+                 mt/iso
+                 mt/iso-smap
+                 mt/dif
+                 mt/dif10
+                 mt/umm-json}
+   :granule #{mt/any
+              mt/xml ; allows retrieving native format
+              mt/native ; retrieve in native format
+              mt/atom
+              mt/json
+              mt/echo10
+              mt/iso
+              mt/iso-smap
+              mt/dif
+              mt/dif10
+              mt/umm-json}})
 
-    ;; TODO we need some kind of validation that this is only supported for collections.
-    mt/html
-    mt/xml ; allows retrieving native format
-    mt/native ; retrieve in native format
-    mt/atom
-    mt/json
-    mt/echo10
-    mt/iso
-    mt/iso-smap
-    mt/dif
-    mt/dif10
-    mt/umm-json})
 
 (def find-by-concept-id-concept-types
   #{:collection :granule})
@@ -223,7 +233,8 @@
   [context path-w-extension params headers]
   (let [concept-id (path-w-extension->concept-id path-w-extension)
         revision-id (path-w-extension->revision-id path-w-extension)
-        concept-type (concepts/concept-id->type concept-id)]
+        concept-type (concepts/concept-id->type concept-id)
+        concept-type-supported-mime-types (supported-concept-id-retrieval-mime-types concept-type)]
     (when-not (contains? find-by-concept-id-concept-types concept-type)
       (svc-errors/throw-service-error
         :bad-request
@@ -233,7 +244,7 @@
     (if revision-id
       ;; We don't support Atom or JSON (yet) for lookups that include revision-id due to
       ;; limitations of the current transformer implementation. This will be fixed with CMR-1935.
-      (let [supported-mime-types (disj supported-concept-id-retrieval-mime-types mt/atom mt/json)
+      (let [supported-mime-types (disj concept-type-supported-mime-types mt/atom mt/json)
             result-format (get-search-results-format path-w-extension headers
                                                      supported-mime-types
                                                      mt/xml)]
@@ -244,7 +255,7 @@
         (cr/search-response (query-svc/find-concept-by-id-and-revision
                               context result-format concept-id revision-id)))
       (let [result-format (get-search-results-format path-w-extension headers
-                                                     supported-concept-id-retrieval-mime-types
+                                                     concept-type-supported-mime-types
                                                      mt/xml)]
         (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
         (cr/search-response (query-svc/find-concept-by-id context result-format concept-id))))))
