@@ -1,5 +1,4 @@
 # encoding: utf-8
-#From https://gist.github.com/ato/5935594
 
 require 'erb'
 require 'ostruct'
@@ -20,18 +19,18 @@ include CollectionsHelper
 include PagesHelper
 
 
-## TODO implementthis
+## Thesee need to work but they don't need to return real URLs.
 def url_for(options)
-  puts "url_for #{options.inspect}"
-  "http://good_url.com"
+  "http://example.com"
 end
 
 def edit_collection_path(*args)
-  "http://good_url.com/edit_collection_path"
+  "http://example.com/edit_collection_path"
 end
 
 ####################################################################################################
 ## Rendering
+## Based on https://gist.github.com/ato/5935594
 
 # Renders an ERB template against a hashmap of variables.
 # template should be a Java InputStream
@@ -53,6 +52,7 @@ def java_render(template, variables)
   ERB.new(template.to_io.read).result(context);
 end
 
+# Takes a path like foo/bar and returns the path to the ERB partial file name: foo/_bar.html.erb
 def partial_path_to_resource_path(partial_path)
   parts = partial_path.split("/")
   file_name = "_#{parts.last}.html.erb"
