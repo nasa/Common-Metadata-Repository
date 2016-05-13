@@ -11,6 +11,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Maximum URL Length](#maximum-url-length)
     * [CORS Header support](#cors-header-support)
     * [Query Parameters](#query-parameters)
+    * [Paging Details](#paging-details)
     * [Parameter Options](#parameter-options)
     * [Collection Result Feature Parameters](#collection-result-features)
     * [Headers](#headers)
@@ -158,6 +159,17 @@ The CORS headers are supported on search endpoints. Check [CORS Documentation](h
  * `pretty` - return formatted results if set to true
  * `token` - specifies a user/guest token from ECHO to use to authenticate yourself. This can also be specified as the header Echo-Token
  * `echo_compatible` - When set to true results will be returned in an ECHO compatible format. This mostly removes fields and features specific to the CMR such as revision id, granule counts and facets in collection results. Metadata format style results will also use ECHO style names for concept ids such as `echo_granule_id` and `echo_dataset_id`.
+
+#### <a name="paging-details"></a> Paging Details
+
+The CMR contains many more results than can be returned in a single response so the number of results that can be returned is limited. The parameters `page_num`, `offset`, and `page_size` along with the sort specified by `sort_key` control which items will be returned. The query parameter `page_size`, defaulting to 10, controls the amount of items that will be returned in a response. One of `page_num` or `offset` can be provided to index into the search results.
+
+`page_num`, defaulting to 1, chooses a "page" of items to return. If a search matched 50 items the parameters `page=3&page_size=5` would return the 11th item through the 15th item.
+
+`offset` is a 0 based index into the result set of a query. If a search matched 50 items the parameters `offset=3&page_size=5` would return 4th result through the 8th result.
+
+You can not page past the 1 millionth item. Please contact the CMR Team through the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum) if you need to retrieve items in excess of 1 million from the CMR.
+
 
 #### <a name="parameter-options"></a> Parameter Options
 
@@ -899,6 +911,8 @@ Note: ISO 8601 does not allow open-ended time intervals but the CMR API does all
 
     curl "%CMR-ENDPOINT%/collections"
 
+Collection search results are paged. See [Paging Details](#paging-details) for more information on how to page through collection search results.
+
 #### <a name="c-concept-id"></a> Find collections by concept id
 
 A CMR concept id is in the format `<concept-type-prefix> <unique-number> "-" <provider-id>`
@@ -1365,6 +1379,9 @@ __Sample response__
 #### <a name="find-all-granules"></a> Find all granules
 
     curl "%CMR-ENDPOINT%/granules"
+
+
+Granule search results are paged. See [Paging Details](#paging-details) for more information on how to page through granule search results.
 
 #### <a name="g-granule-ur"></a> Find granules with a granule-ur
 
@@ -2473,6 +2490,8 @@ Content-Length: 168
 #### <a name="searching-for-tags"></a> Searching for Tags
 
 Tags can be searched for by sending a request to `%CMR-ENDPOINT%/tags`.
+
+Tag search results are paged. See [Paging Details](#paging-details) for more information on how to page through tag search results.
 
 ##### Tag Search Parameters
 
