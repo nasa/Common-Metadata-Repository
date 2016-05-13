@@ -60,6 +60,8 @@
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}}
   :aliases {"install-gems" ~(install-gems-command gem-versions)
-            "clean-gems" ["shell" "rm" "-rf" ~gem-install-path]})
+            "clean-gems" ["shell" "rm" "-rf" ~gem-install-path]
+            ;; Alias to test2junit for consistency with lein-test-out
+            "test-out" ["test2junit"]})
 
 
