@@ -16,7 +16,7 @@
             [cmr.common.xml.xslt :as xslt]
             [cmr.common.util :as u]
             [cmr.umm.iso-smap.granule :as smap-g]
-            [cmr.search.services.collection-renderer :as collection-renderer]))
+            [cmr.collection-renderer.services.collection-renderer :as collection-renderer]))
 
 
 (def transformer-supported-format?

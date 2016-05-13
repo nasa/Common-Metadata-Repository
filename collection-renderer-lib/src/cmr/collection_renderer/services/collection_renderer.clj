@@ -1,4 +1,4 @@
-(ns cmr.search.services.collection-renderer
+(ns cmr.collection-renderer.services.collection-renderer
   "TODO"
   (require [cmr.common.lifecycle :as l]
            [clojure.java.io :as io]
@@ -10,14 +10,16 @@
           [java.io
            ByteArrayInputStream]))
 
+(def system-key
+  "The key to use when storing the collection renderer"
+  :collection-renderer)
+
 (def bootstrap-erb
   "TODO"
-  ;; TODO should this be moved or refactored to remove unused things?
   (io/resource "collection_preview/bootstrap.rb"))
 
 (def collection-preview-erb
   "TODO"
-  ;; TODO should this be moved or refactored to remove unused things?
   (io/resource "collection_preview/collection_preview.erb"))
 
 (defn- create-jruby-runtime
@@ -28,33 +30,8 @@
     (.eval jruby (io/reader bootstrap-erb))
     jruby))
 
-
-(comment
- (def context {:system (get-in user/system [:apps :search])})
-
- (defn jruby-eval
-   [s]
-   (try
-     (let [jruby (context->jruby-runtime context)]
-       (.eval jruby s))
-     (catch Exception e
-       (.printStackTrace e)
-       (throw e))))
-
- (jruby-eval "include Rails.application.routes.url_helpers")
- (jruby-eval "require 'action_dispatch'")
- (jruby-eval "include ActionDispatch::Routing::UrlFor")
-
- (try
-   (let [jruby (context->jruby-runtime context)]
-     (.eval jruby (io/reader bootstrap-erb))
-     (println (render-collection context collection)))
-   (catch Exception e
-     (.printStackTrace e)
-     (throw e))))
-
 ;; An wrapper component for the JRuby runtime
-(defrecord ErbRenderer
+(defrecord CollectionRenderer
   [jruby-runtime]
   l/Lifecycle
 
@@ -65,10 +42,10 @@
     [this _system]
     (dissoc this :jruby-runtime)))
 
-(defn create-erb-render
+(defn create-collection-renderer
   "TODO"
   []
-  (->ErbRenderer nil))
+  (->CollectionRenderer nil))
 
 (defn- render-erb
   "TODO"
@@ -80,11 +57,10 @@
 
 (defn- context->jruby-runtime
   [context]
-  (get-in context [:system :erb-renderer :jruby-runtime]))
+  (get-in context [:system system-key :jruby-runtime]))
 
 (defn render-collection
   "TODO"
   [context collection]
-  ; (cmr.common.dev.capture-reveal/capture-all)
   (let [umm-json (umm-json/umm->json collection)]
    (render-erb (context->jruby-runtime context) collection-preview-erb {"umm_json" umm-json})))

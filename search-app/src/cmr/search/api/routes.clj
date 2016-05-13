@@ -31,6 +31,7 @@
             [cmr.search.api.keyword :as keyword-api]
             [cmr.common-app.api.routes :as cr]
             [cmr.common-app.api-docs :as api-docs]
+            [cmr.collection-renderer.api.routes :as collection-renderer-routes]
 
             ;; Required here to make sure the multimethod function implementation is available
             [cmr.search.data.elastic-results-to-query-results]
@@ -287,30 +288,7 @@
         "public/index.html")
 
       ;; Routes for collection html resources
-      ;; TODO move to ahelper function.
-
-      ;; TODO these should return a 404 if the resource doesn't exist
-
-      (context "/javascripts" []
-        (GET "/:resource" {headers :headers, {resource :resource} :params}
-          {:status 200
-           :headers {"content-type" "application/javascript"}
-           :body (some-> (io/resource (str "public/javascripts/" resource))
-                         slurp)}))
-
-      (context "/stylesheets" []
-        (GET "/:resource" {headers :headers, {resource :resource} :params}
-          {:status 200
-           :headers {"content-type" "text/css"}
-           :body (some-> (io/resource (str "public/stylesheets/" resource))
-                         slurp)}))
-
-      (context "/images" []
-        (GET "/:resource" {headers :headers, {resource :resource} :params}
-          {:status 200
-           :headers {"content-type" (str "image/" (last (str/split resource #"\.")))}
-           :body (some-> (io/resource (str "public/images/" resource))
-                         io/input-stream)}))
+      collection-renderer-routes/resource-routes
 
       ;; Retrieve by cmr concept id or concept id and revision id
       ;; Matches URL paths of the form /concepts/:concept-id[/:revision-id][.:format],

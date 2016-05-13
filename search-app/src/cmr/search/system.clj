@@ -14,7 +14,7 @@
             [cmr.search.data.elastic-search-index :as idx]
             [cmr.search.models.query :as q]
             [cmr.search.services.acls.acl-helper :as ah]
-            [cmr.search.services.collection-renderer :as collection-renderer]
+            [cmr.collection-renderer.services.collection-renderer :as collection-renderer]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.transmit.config :as transmit-config]
@@ -58,7 +58,8 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :caches :erb-renderer :search-index :scheduler :web :nrepl])
+  component-order
+  [:log :caches collection-renderer/system-key :search-index :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -93,7 +94,7 @@
                       ;; application will also pick up the updated KMS keywords.
                       kf/kms-cache-key (kf/create-kms-cache)}
              :search-public-conf search-public-conf
-             :erb-renderer (collection-renderer/create-erb-render)
+             collection-renderer/system-key (collection-renderer/create-collection-renderer)
              :scheduler (jobs/create-scheduler
                           `system-holder
                           [(af/refresh-acl-cache-job "search-acl-cache-refresh")

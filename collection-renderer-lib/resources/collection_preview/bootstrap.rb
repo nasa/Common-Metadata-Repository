@@ -10,6 +10,7 @@ require 'action_dispatch'
 require 'collection_preview/drafts_helper'
 require 'collection_preview/collections_helper'
 require 'collection_preview/pages_helper'
+require 'collection_preview/metadata_preview_helper'
 
 include ActionView::Helpers
 include ActionDispatch::Routing
@@ -17,6 +18,7 @@ include ActionDispatch::Routing
 include DraftsHelper
 include CollectionsHelper
 include PagesHelper
+include MetadataPreviewHelper
 
 
 ## Thesee need to work but they don't need to return real URLs.

@@ -14,6 +14,7 @@
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+                 [nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"]
                  [nasa-echo/echo-orbits-java "0.1.11"]
                  [ring/ring-core "1.4.0" :exclusions [clj-time]]
                  [ring/ring-json "0.4.0"]
@@ -27,7 +28,6 @@
   :repl-options {:init-ns user
                  :timeout 120000}
   :jvm-opts []
-  :resource-paths ["resources" "gems"]
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]
                         [org.clojure/tools.namespace "0.2.11"]
