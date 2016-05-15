@@ -12,8 +12,14 @@
       (errors/throw-service-error :not-found
                                   (str "Could not find " resource))))
 
-(def resource-routes
+(defn- replace-relative-root-url
+  "Replaces any occurences of %RELATIVE_ROOT_URL% with the applications relative root url"
+  [system content]
+  (str/replace content "%RELATIVE_ROOT_URL%" (get-in system [:search-public-conf :relative-root-url])))
+
+(defn resource-routes
   "Defines routes for returning resources used in the generated collection HTML"
+  [system]
   (routes
     (context "/javascripts" []
       (GET "/:resource" {{resource :resource} :params}
@@ -25,7 +31,10 @@
       (GET "/:resource" {{resource :resource} :params}
         {:status 200
          :headers {"content-type" "text/css"}
-         :body (slurp (resource-or-not-found (str "public/stylesheets/" resource)))}))
+         :body
+         (replace-relative-root-url
+          system
+          (slurp (resource-or-not-found (str "public/stylesheets/" resource))))}))
 
     (context "/images" []
       (GET "/:resource" {{resource :resource} :params}

@@ -18,7 +18,7 @@
   </section>
 
   <aside class="geographic-coverage" role="complementary">
-    <%= image_tag("plate_carree_earth.png", alt: "Map of Earth", id: 'preview-map') %>
+    <%= image_tag(relative_root_url + "/images/plate_carree_earth.png", alt: "Map of Earth", id: 'preview-map') %>
     <section>
       <h4>Spatial Coordinates</h4>
       <% preview_spatial = get_preview_spatial(metadata) %>

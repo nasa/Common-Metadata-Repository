@@ -1,4 +1,8 @@
 <%
+# Expected arguments
+# * umm_json - A string containing UMM JSON of the collection
+# * relative_root_url - A string containing the root of the application URL that's always present.
+
 require 'json'
 metadata =  JSON.parse(umm_json)
 %>
@@ -11,7 +15,7 @@ metadata =  JSON.parse(umm_json)
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Metadata Management Tool</title>
+  <title>Common Metadata Repository</title>
   <meta name="description" content="">
   <%= csrf_meta_tag %>
 
@@ -24,9 +28,9 @@ metadata =  JSON.parse(umm_json)
   <!--<link rel="stylesheet" href="/dist/stylesheets/font-awesome.min.css">-->
   <!--link rel="stylesheet" href="/dist/stylesheets/mmt.css"-->
 
-  <%= stylesheet_link_tag 'application', media: 'all' %>
+  <%= stylesheet_link_tag relative_root_url + "/stylesheets/application", media: 'all' %>
 
-  <%= javascript_include_tag 'application' %>
+  <%= javascript_include_tag relative_root_url + "/javascripts/application" %>
 
 </head>
 
@@ -36,7 +40,7 @@ metadata =  JSON.parse(umm_json)
   <div class="wrapper">
 
     <div id="main-content">
-      <%= render partial: 'collection_preview/show', locals: { metadata: metadata} %>
+      <%= render partial: 'collection_preview/show', locals: { metadata: metadata, relative_root_url: relative_root_url} %>
     </div>
 
     <div class="push">

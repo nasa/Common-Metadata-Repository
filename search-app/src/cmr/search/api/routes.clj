@@ -299,7 +299,7 @@
         "public/index.html")
 
       ;; Routes for collection html resources
-      collection-renderer-routes/resource-routes
+      (collection-renderer-routes/resource-routes system)
 
       ;; Retrieve by cmr concept id or concept id and revision id
       ;; Matches URL paths of the form /concepts/:concept-id[/:revision-id][.:format],

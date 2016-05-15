@@ -3,25 +3,12 @@
     <div class="row content">
       <div class="collection-basics">
         <div class="eui-breadcrumbs">
-          <ol class="eui-breadcrumbs__list">
-            <li class="eui-breadcrumbs__item">
-              <%= link_to 'Manage Metadata', manage_metadata_path %>
-            </li>
-            <li class="eui-breadcrumbs__item">
-              <%= display_entry_id(metadata, 'collection') %>
-            </li>
-          </ol>
         </div>
         <h2><%= display_entry_id(metadata, 'collection') %></h2>
         <p class="subtitle"><%= display_collection_entry_title(metadata) %></p>
         <% unless @error %>
           <p class="subnav current">Published Record</p>
           <p class="subnav">
-            <% if @current_user.provider_id == @provider_id %>
-              <%= link_to 'Edit Record', edit_collection_path(revision_id: @revision_id)%>
-            <% elsif @current_user.available_providers.include?(@provider_id) %>
-              <%= link_to 'Edit Record', '#not-current-provider-modal', class: 'display-modal not-current-provider', data: { 'provider'=> @provider_id, record_action: 'edit-collection' } %>
-            <% end %>
           </p>
         <% end %>
       </div>
@@ -116,7 +103,7 @@
 
         </section> -->
 
-        <%= render partial: 'shared/preview/metadata_preview', locals: { metadata: metadata} %>
+        <%= render partial: 'shared/preview/metadata_preview', locals: { metadata: metadata, relative_root_url: relative_root_url} %>
       <% end %>
     </div>
   <% end %>

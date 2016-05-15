@@ -32,6 +32,18 @@
     (.eval jruby (io/reader bootstrap-rb))
     jruby))
 
+;; Allows easily evaluating Ruby code in the Clojure REPL.
+(comment
+ (def jruby (create-jruby-runtime))
+
+ (defn eval-jruby
+   [s]
+   (.eval jruby (java.io.StringReader. s)))
+
+ (eval-jruby "javascript_include_tag '/search/javascripts/application'  ")
+ (eval-jruby "stylesheet_link_tag \"/search/stylesheets/application\", media: 'all' "))
+
+
 ;; An wrapper component for the JRuby runtime
 (defrecord CollectionRenderer
   [jruby-runtime]
@@ -62,10 +74,17 @@
   [context]
   (get-in context [:system system-key :jruby-runtime]))
 
+(defn- context->relative-root-url
+  [context]
+  (get-in context [:system :search-public-conf :relative-root-url]))
+
 (defn render-collection
   "Renders a UMM-C collection record and returns the HTML as a string."
   [context collection]
   (let [umm-json (umm-json/umm->json collection)]
-   (render-erb (context->jruby-runtime context) collection-preview-erb {"umm_json" umm-json})))
+   (render-erb (context->jruby-runtime context) collection-preview-erb
+               ;; Arguments for collection preview. See the ERB file for documentation.
+               {"umm_json" umm-json
+                "relative_root_url" (context->relative-root-url context)})))
 
 
