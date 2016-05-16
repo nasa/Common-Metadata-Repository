@@ -18,9 +18,48 @@
             [cmr.acl.core :as acl]
             [cmr.common-app.api.routes :as cr]
             [cmr.common-app.api-docs :as api-docs]
-            [cmr.access-control.services.group-service :as group-service]
             [cmr.access-control.data.access-control-index :as index]
+            [cmr.access-control.data.acl-schema :as acl-schema]
+            [cmr.access-control.services.acl-service :as acl-service]
+            [cmr.access-control.services.group-service :as group-service]
             [cmr.common.util :as util]))
+
+;;; Utility Functions
+
+(defn- validate-params
+  "Throws a service error when any keys exist in params other than those in allowed-param-names."
+  [params & allowed-param-names]
+  (when-let [invalid-params (seq (remove (set allowed-param-names) (keys params)))]
+    (errors/throw-service-errors :bad-request (for [param invalid-params]
+                                                (format "Parameter [%s] was not recognized."
+                                                        (name param))))))
+
+(defn- validate-standard-params
+  "Throws a service error if any parameters other than :token or :pretty are present."
+  [params]
+  (validate-params params :pretty :token))
+
+(defn- api-response
+  "Creates a successful response with the given data response"
+  ([data]
+   (api-response data true))
+  ([data encode?]
+   {:status 200
+    :body (if encode? (json/generate-string data) data)
+    :headers {"Content-Type" mt/json}}))
+
+(defn- validate-content-type
+  "Validates that content type sent is JSON"
+  [headers]
+  (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
+
+(defn- validate-json
+  "Throws :bad-request service error if json-str fails to validate against given schema."
+  [schema json-str]
+  (when-let [errors (seq (js/validate-json schema json-str))]
+    (errors/throw-service-errors :bad-request errors)))
+
+;;; Group Schema and Params Utils
 
 (def ^:private group-schema-structure
   "Schema for groups as json."
@@ -45,49 +84,22 @@
   "The JSON schema used to validate a list of group members"
   (js/parse-json-schema group-members-schema-structure))
 
-(defn- validate-params
-  "Throws a service error when any keys exist in params other than those in allowed-param-names."
-  [params & allowed-param-names]
-  (when-let [invalid-params (seq (remove (set allowed-param-names) (keys params)))]
-    (errors/throw-service-errors :bad-request (for [param invalid-params]
-                                                (format "Parameter [%s] was not recognized."
-                                                        (name param))))))
-
-(defn- validate-standard-params
-  "Throws a service error if any parameters other than :token or :pretty are present."
-  [params]
-  (validate-params params :pretty :token))
-
 (defn- validate-group-route-params
   "Same as validate-standard-params plus :group-id."
   [params]
   (validate-params params :pretty :token :group-id))
 
-(defn- api-response
-  "Creates a successful response with the given data response"
-  ([data]
-   (api-response data true))
-  ([data encode?]
-   {:status 200
-    :body (if encode? (json/generate-string data) data)
-    :headers {"Content-Type" mt/json}}))
-
-(defn- validate-content-type
-  "Validates that content type sent is JSON"
-  [headers]
-  (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
-
 (defn- validate-group-json
   "Validates the group JSON string against the schema. Throws a service error if it is invalid."
   [json-str]
-  (when-let [errors (seq (js/validate-json group-schema json-str))]
-    (errors/throw-service-errors :bad-request errors)))
+  (validate-json group-schema json-str))
 
 (defn- validate-group-members-json
   "Validates the group mebers JSON string against the schema. Throws a service error if it is invalid."
   [json-str]
-  (when-let [errors (seq (js/validate-json group-members-schema json-str))]
-    (errors/throw-service-errors :bad-request errors)))
+  (validate-json group-members-schema json-str))
+
+;;; Group Route Functions
 
 (defn create-group
   "Processes a create group request."
@@ -154,6 +166,21 @@
   (-> (group-service/search-for-groups context params)
       cr/search-response))
 
+;;; ACL Route Functions
+
+(defn create-acl
+  "Returns a Ring response with the result of trying to create the ACL
+  represented by the request headers and parameters"
+  [request-context headers body]
+  (validate-json acl-schema/acl-schema body)
+  (->> (json/parse-string body)
+       util/map-keys->kebab-case
+       (acl-service/create-acl request-context)
+       util/map-keys->snake_case
+       api-response))
+
+;;; Various Admin Route Functions
+
 (defn reset
   "Resets the app state. Compatible with cmr.dev-system.control."
   [context]
@@ -167,6 +194,8 @@
       (acl/verify-ingest-management-permission request-context :update)
       (reset request-context)
       {:status 204})))
+
+;;; Handler
 
 (defn- build-routes [system]
   (routes
@@ -227,7 +256,12 @@
 
             (DELETE "/" {:keys [request-context headers body params]}
               (validate-group-route-params params)
-              (remove-members request-context headers (slurp body) group-id))))))
+              (remove-members request-context headers (slurp body) group-id)))))
+
+      (context "/acls" []
+        (POST "/" {:keys [request-context headers body params]}
+          (validate-standard-params params)
+          (create-acl request-context headers (slurp body)))))
 
     (route/not-found "Not Found")))
 

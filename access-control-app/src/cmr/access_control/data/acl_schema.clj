@@ -2,20 +2,28 @@
   (:require [cmr.common.validations.json-schema :as js]))
 
 (defn- ref-def
-  "Returns a JSON Schema $ref pointing to #/definitions/name. Short for \"reference to definition\"."
+  "Returns a JSON Schema $ref object pointing to #/definitions/name.
+  Short for \"reference to definitions\"."
   [id]
-  (str "#/definitions/"
-       (if (keyword? id)
-         (name id)
-         id)))
+  {:$ref (str "#/definitions/"
+              (if (keyword? id)
+                (name id)
+                id))})
 
 (def acl-schema
   (js/parse-json-schema
     {:type :object
      :additionalProperties false
-     :properties {:legacy_guid {:$ref "#/definitions/identifierType"}
-                  :group_permissions {:$ref "#/definitions/groupPermissionsType"}
-                  :system_identity {:$ref "#/definitions/systemIdentityType"}}
+     :properties {:legacy_guid (ref-def :identifierType)
+                  :group_permissions (ref-def :groupPermissionsType)
+                  :system_identity (ref-def :systemIdentityType)
+                  :provider_identity (ref-def :providerIdentityType)
+                  :single_instance_identity (ref-def :singleInstanceIdentityType)
+                  :catalog_item_identity (ref-def :catalogItemIdentityType)}
+     :oneOf [{:required [:group_permissions :system_identity]}
+             {:required [:group_permissions :provider_identity]}
+             {:required [:group_permissions :single_instance_identity]}
+             {:required [:group_permissions :catalog_item_identity]}]
      :definitions {:identifierType {:type :string
                                     :minLength 1
                                     :maxLength 100}
@@ -25,7 +33,8 @@
                                                                                     "read"
                                                                                     "update"
                                                                                     "delete"
-                                                                                    "order"]}}
+                                                                                    "order"]}
+                                                                     :minLength 1}
                                                        :group_id {:type :string
                                                                   :minLength 1
                                                                   :maxLength 100}
@@ -82,20 +91,24 @@
                                                      "DATA_QUALITY_SUMMARY_ASSIGNMENT"
                                                      "PROVIDER_CALENDAR_EVENT"]}
                    :systemIdentityType {:type :object
-                                        :properties {:target (ref-def :systemObjectTargetType)}}
+                                        :properties {:target (ref-def :systemObjectTargetType)}
+                                        :required [:target]}
                    :providerIdentityType {:type :object
                                           :properties {:provider_id (ref-def :identifierType)
-                                                       :target (ref-def :providerObjectTargetType)}}
+                                                       :target (ref-def :providerObjectTargetType)}
+                                          :required [:provider_id :target]}
                    :singleInstanceIdentityType {:type :object
                                                 :properties {:target_id (ref-def :identifierType)
                                                              ;; this seems silly
-                                                             :target {:enum ["GROUP_MANAGEMENT"]}}}
+                                                             :target {:enum ["GROUP_MANAGEMENT"]}}
+                                                :required [:target_id :target]}
                    :catalogItemIdentityType {:type :object
                                              :properties {:name (ref-def :identifierType)
                                                           :provider_id (ref-def :identifierType)
                                                           :collection_applicable {:type :boolean}
                                                           :granule_applicable {:type :boolean}
-                                                          :collection_identifier (ref-def :collectionIdentifierType)}}
+                                                          :collection_identifier (ref-def :collectionIdentifierType)}
+                                             :required [:name :provider_id :collection_identifier]}
                    :accessValueType {:type :object
                                      :properties {:min_value {:type :number}
                                                   :max_value {:type :number}
@@ -104,10 +117,10 @@
                                             :properties {:start_date {:type :string
                                                                       :format :date-time}
                                                          :stop_date {:type :string
-                                                                     :format :date-time
-                                                                     :mask {:enum ["intersect"
-                                                                                   "contains"
-                                                                                   "disjoint"]}}}}
+                                                                     :format :date-time}
+                                                         :mask {:enum ["intersect"
+                                                                       "contains"
+                                                                       "disjoint"]}}}
                    :collectionIdentifierType {:type :object
                                               :properties {:entry_titles {:type :array
                                                                           :items {:type :string
