@@ -48,7 +48,7 @@
                                                 :sr coord-sys
                                                 :geometries shapes})}))))
 
-(defn- make-iso-metadata-request
+(defn- iso-metadata-concept
   "Makes a bad ISO Metadata Request"
   [metadata]
   (let [format (mime-types/format->mime-type :iso19115)]
@@ -59,12 +59,19 @@
             :format format})))
 
 (deftest spatial-with-no-representation
+  ;; ISO19115 allows you to ingest metadata with no spatial coordinate reference but have spatial
+  ;; points. It would ingest properly because it is valid ISO19115, then fail indexing. If you
+  ;; corrected this and re-ingested the data, the reingest would throw a 500 error because the
+  ;; previously ingested metadata gsr would be nil, and throw an error when converted to
+  ;; screaming-snake-case-string.
+  ;; This test will change when CMR-2928 is implemented, because we will reject ingest that fails
+  ;; UMM validation for spatial references.
   ;; This replicates an issue we saw in CMR-2927.
   (testing "A granule with spatial data but no representation should not fail ingest"
-    (let [good-metadata (slurp (io/resource "iso-samples/good-iso-sample.iso19115"))
-          bad-metadata (slurp (io/resource "iso-samples/bad-iso-sample.iso19115"))
-          bad-request (make-iso-metadata-request bad-metadata)
-          good-request (make-iso-metadata-request good-metadata)
+    (let [good-metadata (slurp (io/resource "iso-samples/good-iso-spatial-data.iso19115"))
+          bad-metadata (slurp (io/resource "iso-samples/bad-iso-spatial-data.iso19115"))
+          bad-request (iso-metadata-concept bad-metadata)
+          good-request (iso-metadata-concept good-metadata)
           bad-ingest (ingest/ingest-concept bad-request)]
           (index/wait-until-indexed)
           (is (= 200 (:status (ingest/ingest-concept good-request {:raw? true})))))))
