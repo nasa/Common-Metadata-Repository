@@ -4,7 +4,7 @@
 
 (def initial-db-state
   "Initial database state which is a map of usernames to passwords"
-  {:users {}})
+  {})
 
 (defn create-db
   []
@@ -21,10 +21,23 @@
 (defn create-users
   "Creates the list of users in the user db"
   [context users]
-  (let [user-map (into {} (for [{:keys [username password]} users]
-                            [(str/lower-case username) password]))
+  (let [user-map (into {} (for [{:keys [username password email affiliation] :as user} users]
+                            [(str/lower-case username) user]))
         user-db (context->urs-db context)]
     (swap! user-db update-in [:users] merge user-map)))
+
+(defn remove-user
+  "Removes a user from the user db"
+  [context username]
+  (println "userdb before delete" (deref (context->urs-db context)))
+  (let [user-db (context->urs-db context)]
+    (swap! user-db update-in [:users] dissoc username))
+  (println "userdb after delete" (deref (context->urs-db context))))
+
+(defn get-user
+  "Returns the user map"
+  [context username]
+  (get-in (deref (context->urs-db context)) [:users (str/lower-case username)]))
 
 (defn user-exists?
   "Returns true if the user exists"
@@ -34,6 +47,6 @@
 (defn password-matches?
   "Returns true if the user exists and their password matches"
   [context username password]
-  (= password (get-in (deref (context->urs-db context)) [:users username])))
-
-
+  (let [user (get-in (deref (context->urs-db context)) [:users (str/lower-case username)])
+        correct-password (get user :password)]
+    (= password correct-password)))

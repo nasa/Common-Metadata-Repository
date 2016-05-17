@@ -8,21 +8,62 @@
             [clojure.string :as str]
             [cmr.common.services.errors :as errors]
             [cmr.mock-echo.data.urs-db :as urs-db]
-            [clojure.data.codec.base64 :as b64]))
-
-(defn create-users
-  "Processes a request to create multiple users."
-  [context body]
-  (let [users (json/decode body true)]
-    (urs-db/create-users context users)))
+            [clojure.data.codec.base64 :as b64]
+            [ring.util.response :as rsp]))
 
 (defn get-user
   "Processes a request to get a user."
-  [context username]
-  (if (urs-db/user-exists? context username)
-    ;; The status code is the only thing the CMR cares about.
-    {:status 200 :body "<user>...</user>"}
+  [context name]
+  (if (urs-db/user-exists? context name)
+    (let [{:keys [username password email affiliation studyArea country phone firstName lastName organization]} (urs-db/get-user context name)]
+      {:status 200 :body (str
+                          "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>
+                           <user>
+                            <accountCreatedDate>2003-08-24T00:00:00Z</accountCreatedDate>
+                            <accountStatus>ACTIVE</accountStatus>
+                            <affiliation>" affiliation "</affiliation>
+                            <country>" country "</country>
+                            <emailAddress>" email "</emailAddress>
+                            <firstName>" firstName "</firstName>
+                            <lastName>" lastName "</lastName>
+                            <studyArea>" studyArea "</studyArea>"
+                            (if organization (str "<organization>" organization "</organization>"))
+                            (if phone (str "<phone>" phone "</phone>"))
+                            "<userName>" username "</userName>
+                          </user>")
+       :headers {"content-type" mt/xml}})
     {:status 404 :body "Not found.\n"}))
+
+(defn create-users-json
+  "Processes a request to create multiple users."
+  [context body]
+  (println "JSON BODY = " body)
+  (let [users (json/decode body true)]
+    (urs-db/create-users context users)))
+
+(defn parse-user-request-xml
+  "Parses a login request into a map of username and password"
+  [body]
+  (let [parsed (x/parse-str body)]
+    {:username (cx/string-at-path parsed [:userName])
+     :password (cx/string-at-path parsed [:password])
+     :email    (cx/string-at-path parsed [:emailAddress])
+     :affiliation (cx/string-at-path parsed [:affiliation])
+     :studyArea (cx/string-at-path parsed [:studyArea])
+     :country (cx/string-at-path parsed [:country])
+     :phone (cx/string-at-path parsed [:phone])
+     :firstName (cx/string-at-path parsed [:firstName])
+     :lastName (cx/string-at-path parsed [:lastName])
+     :organization (cx/string-at-path parsed [:organization])}))
+
+(defn create-users-xml
+  "Processes a request to create multiple users."
+  [context body]
+  (println "creating user(s): " body)
+  (let [{:keys [username password] :as user} (parse-user-request-xml body)]
+    (urs-db/create-users context [user])
+    (println "returning user " (get-user context username))
+    (assoc (get-user context username) :status 201)))
 
 (def successful-login-response
   {:status 200
@@ -41,14 +82,26 @@
     {:username (cx/string-at-path parsed [:username])
      :password (cx/string-at-path parsed [:password])}))
 
-(defn login
+(defn login-xml
   "Processes a login request"
   [context body]
+  (println "XML BODY = " body)
   (let [{:keys [username password]} (parse-login-request body)]
     (if (and (urs-db/user-exists? context username)
              (urs-db/password-matches? context username password))
       successful-login-response
       unsuccessful-login-response)))
+
+(defn login-form
+  "Processes a login request"
+  [context body]
+  (println "Form BODY = " body)
+  (comment
+    (let [{:keys [username password]} (parse-login-request body)]
+      (if (and (urs-db/user-exists? context username)
+               (urs-db/password-matches? context username password))
+        successful-login-response
+        unsuccessful-login-response))))
 
 (defn decode-base64
   [string]
@@ -80,22 +133,45 @@
 
       (POST "/login" {:keys [request-context body] :as request}
         (assert-urs-basic-auth-info request)
-        (login request-context (slurp body)))
+        (login-xml request-context (slurp body)))
+
+      ;; echo kernel adds a / for some reason to the request it sends...
+      (POST "/login/" {:keys [request-context body content-type] :as request}
+        (assert-urs-basic-auth-info request)
+        (case content-type
+          "application/x-www-form-urlencoded" (login-form request-context (slurp body))
+          (login-xml request-context (slurp body))))
+
+      (context "/groups/:group" [group]
+        (context "/:username" [username]
+          (DELETE "/" {context :request-context :as request}
+            (urs-db/remove-user context username))))
 
       (context "/users" []
 
         ;; Create a bunch of users all at once
         ;; This is used for adding test data. Body should be a list of
         ;; maps with username and password
-        (POST "/" {context :request-context body :body}
-          (create-users context (slurp body))
-          {:status 201})
+        (POST "/" {context :request-context body :body content-type :content-type}
+          (case content-type
+            ;; Not sure why, but I cant use mt/xml here in place of the string
+            "application/xml" (create-users-xml context (slurp body))
+            (create-users-json context (slurp body))))
+
+        (PUT "/:username" {context :request-context body :body content-type :content-type}
+          (case content-type
+            ;; Not sure why, but I cant use mt/xml here in place of the string
+            "application/xml" (create-users-xml context (slurp body))
+            (create-users-json context (slurp body))))
 
         (context "/:username" [username]
           (GET "/" {:keys [request-context] :as request}
             (assert-urs-basic-auth-info request)
-            (get-user request-context username)))))))
+            (println "returning user " (get-user request-context username))
+            (get-user request-context username))))
 
-
-
-
+      (context "/oauth" []
+        (GET "/authorize" {params :query-params}
+          (let [redirect-uri (get params "redirect_uri")
+                state (get params "state")]
+            (rsp/redirect (str redirect-uri "?state=" state "&code=12345&username=User123"))))))))
