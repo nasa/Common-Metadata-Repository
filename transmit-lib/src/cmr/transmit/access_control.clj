@@ -92,6 +92,14 @@
                                        :accept :json}
                                       http-options)}))))
 
+;;; ACL Functions
+
+(h/defcreator create-acl :access-control (fn [ctx] (str (conn/root-url ctx) "/acls/")))
+
+(h/defgetter get-acl :access-control (fn [ctx concept-id] (str (conn/root-url ctx) "/acls/" concept-id)))
+
+;;; Misc. Functions
+
 ;; Defines health check function
 (h/defhealther get-access-control-health :access-control 2)
 

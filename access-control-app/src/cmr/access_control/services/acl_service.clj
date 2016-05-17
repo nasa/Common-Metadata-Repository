@@ -4,7 +4,9 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
             [cmr.transmit.echo.tokens :as tokens]
-            [cmr.transmit.metadata-db2 :as mdb]))
+            [cmr.transmit.metadata-db2 :as mdb]
+            [cheshire.core :as json]
+            [clojure.edn :as edn]))
 
 (def acl-provider-id "CMR")
 
@@ -29,7 +31,7 @@
 
 (defn save-updated-acl-concept
   [context concept acl]
-  )
+  (errors/throw-service-error :bad-request "Sorry, you can't update this ACL yet"))
 
 (defn acl->new-concept
   "Returns a concept map appropriate for saving the given ACL record in Metadata DB."
@@ -60,3 +62,8 @@
 
       ;; The acl doesn't exist
       (mdb/save-concept context (acl->new-concept context acl)))))
+
+(defn get-acl
+  "Returns the parsed metadata of the latest revision of the ACL concept by id."
+  [context concept-id]
+  (edn/read-string (:metadata (mdb/get-latest-concept context concept-id))))

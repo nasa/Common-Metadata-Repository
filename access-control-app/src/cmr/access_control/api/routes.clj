@@ -179,6 +179,13 @@
        util/map-keys->snake_case
        api-response))
 
+(defn get-acl
+  "Returns a Ring response with the metadata of the ACL identified by concept-id."
+  [request-context headers concept-id]
+  (-> (acl-service/get-acl request-context concept-id)
+      (util/map-keys->snake_case)
+      api-response))
+
 ;;; Various Admin Route Functions
 
 (defn reset
@@ -261,7 +268,10 @@
       (context "/acls" []
         (POST "/" {:keys [request-context headers body params]}
           (validate-standard-params params)
-          (create-acl request-context headers (slurp body)))))
+          (create-acl request-context headers (slurp body)))
+
+        (GET "/:concept-id" {:keys [request-context headers params]}
+          (get-acl request-context headers (:concept-id params)))))
 
     (route/not-found "Not Found")))
 
