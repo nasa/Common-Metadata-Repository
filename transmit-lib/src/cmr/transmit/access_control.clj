@@ -2,7 +2,6 @@
   "This contains functions for interacting with the access control API."
   (:require [cmr.transmit.connection :as conn]
             [cmr.transmit.config :as config]
-            [ring.util.codec :as codec]
             [cmr.transmit.http-helper :as h]
             [cheshire.core :as json]))
 
@@ -94,7 +93,12 @@
 
 ;;; ACL Functions
 
-(h/defcreator create-acl :access-control (fn [ctx] (str (conn/root-url ctx) "/acls/")))
+(defn acl-root-url
+  "Returns the URL of the ACL API root."
+  [ctx]
+  (str (conn/root-url ctx) "/acls/"))
+
+(h/defcreator create-acl :access-control acl-root-url)
 
 (h/defgetter get-acl :access-control (fn [ctx concept-id] (str (conn/root-url ctx) "/acls/" concept-id)))
 

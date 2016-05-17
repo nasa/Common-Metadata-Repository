@@ -8,7 +8,10 @@
             [cheshire.core :as json]
             [clojure.edn :as edn]))
 
-(def acl-provider-id "CMR")
+(def acl-provider-id
+  "The provider ID for all ACLs. Since ACLs are not owned by individual
+   providers, they fall under the CMR system provider ID."
+  "CMR")
 
 (defn acl-native-id
   "Returns a native ID to uniquely identify a given ACL."

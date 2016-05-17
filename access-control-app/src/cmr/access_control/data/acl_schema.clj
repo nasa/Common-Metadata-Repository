@@ -14,20 +14,20 @@
   (js/parse-json-schema
     {:type :object
      :additionalProperties false
-     :properties {:legacy_guid (ref-def :identifierType)
-                  :group_permissions (ref-def :groupPermissionsType)
-                  :system_identity (ref-def :systemIdentityType)
-                  :provider_identity (ref-def :providerIdentityType)
-                  :single_instance_identity (ref-def :singleInstanceIdentityType)
-                  :catalog_item_identity (ref-def :catalogItemIdentityType)}
+     :properties {:legacy_guid (ref-def :IdentifierType)
+                  :group_permissions (ref-def :GroupPermissionsType)
+                  :system_identity (ref-def :SystemIdentityType)
+                  :provider_identity (ref-def :ProviderIdentityType)
+                  :single_instance_identity (ref-def :SingleInstanceIdentityType)
+                  :catalog_item_identity (ref-def :CatalogItemIdentityType)}
      :oneOf [{:required [:group_permissions :system_identity]}
              {:required [:group_permissions :provider_identity]}
              {:required [:group_permissions :single_instance_identity]}
              {:required [:group_permissions :catalog_item_identity]}]
-     :definitions {:identifierType {:type :string
+     :definitions {:IdentifierType {:type :string
                                     :minLength 1
                                     :maxLength 100}
-                   :groupPermissionsType {:type :object
+                   :GroupPermissionsType {:type :object
                                           :properties {:permissions {:type :array
                                                                      :items {:enum ["create"
                                                                                     "read"
@@ -42,7 +42,7 @@
                                                                           "guest"]}}
                                           :oneOf [{:required [:permissions :group_id]}
                                                   {:required [:permissions :user_type]}]}
-                   :systemObjectTargetType {:enum ["SYSTEM_AUDIT_REPORT"
+                   :SystemObjectTargetType {:enum ["SYSTEM_AUDIT_REPORT"
                                                    "METRIC_DATA_POINT_SAMPLE"
                                                    "SYSTEM_INITIALIZER"
                                                    "ARCHIVE_RECORD"
@@ -65,7 +65,7 @@
                                                    "SYSTEM_OPTION_DEFINITION_DEPRECATION"
                                                    "INGEST_MANAGEMENT_ACL"
                                                    "SYSTEM_CALENDAR_EVENT"]}
-                   :providerObjectTargetType {:enum ["AUDIT_REPORT"
+                   :ProviderObjectTargetType {:enum ["AUDIT_REPORT"
                                                      "OPTION_ASSIGNMENT"
                                                      "OPTION_DEFINITION"
                                                      "OPTION_DEFINITION_DEPRECATION"
@@ -90,30 +90,34 @@
                                                      "DATA_QUALITY_SUMMARY_DEFINITION"
                                                      "DATA_QUALITY_SUMMARY_ASSIGNMENT"
                                                      "PROVIDER_CALENDAR_EVENT"]}
-                   :systemIdentityType {:type :object
-                                        :properties {:target (ref-def :systemObjectTargetType)}
+                   :SystemIdentityType {:type :object
+                                        :properties {:target (ref-def :SystemObjectTargetType)}
                                         :required [:target]}
-                   :providerIdentityType {:type :object
-                                          :properties {:provider_id (ref-def :identifierType)
-                                                       :target (ref-def :providerObjectTargetType)}
+                   :ProviderIdentityType {:type :object
+                                          :properties {:provider_id (ref-def :IdentifierType)
+                                                       :target (ref-def :ProviderObjectTargetType)}
                                           :required [:provider_id :target]}
-                   :singleInstanceIdentityType {:type :object
-                                                :properties {:target_id (ref-def :identifierType)
+                   :SingleInstanceIdentityType {:type :object
+                                                :properties {:target_id (ref-def :IdentifierType)
                                                              ;; this seems silly
                                                              :target {:enum ["GROUP_MANAGEMENT"]}}
                                                 :required [:target_id :target]}
-                   :catalogItemIdentityType {:type :object
-                                             :properties {:name (ref-def :identifierType)
-                                                          :provider_id (ref-def :identifierType)
+                   :CatalogItemIdentityType {:type :object
+                                             :properties {:name (ref-def :IdentifierType)
+                                                          :provider_id (ref-def :IdentifierType)
                                                           :collection_applicable {:type :boolean}
                                                           :granule_applicable {:type :boolean}
-                                                          :collection_identifier (ref-def :collectionIdentifierType)}
+                                                          :collection_identifier (ref-def :CollectionIdentifierType)
+                                                          :granule_identifier (ref-def :GranuleIdentifierType)}
                                              :required [:name :provider_id :collection_identifier]}
-                   :accessValueType {:type :object
+                   :AccessValueType {:type :object
                                      :properties {:min_value {:type :number}
                                                   :max_value {:type :number}
-                                                  :include_undefined_value {:type :boolean}}}
-                   :temporalIdentifierType {:type :object
+                                                  :include_undefined_value {:type :boolean}}
+                                     :oneOf [{:required [:min_value :max_value]}
+                                             {:required [:min_value :max_value :include_undefined_value]}
+                                             {:required [:include_undefined_value]}]}
+                   :TemporalIdentifierType {:type :object
                                             :properties {:start_date {:type :string
                                                                       :format :date-time}
                                                          :stop_date {:type :string
@@ -121,13 +125,13 @@
                                                          :mask {:enum ["intersect"
                                                                        "contains"
                                                                        "disjoint"]}}}
-                   :collectionIdentifierType {:type :object
+                   :CollectionIdentifierType {:type :object
                                               :properties {:entry_titles {:type :array
                                                                           :items {:type :string
                                                                                   :minLength 1
                                                                                   :maxLength 100}}
-                                                           :access_value (ref-def :accessValueType)
-                                                           :temporal (ref-def :temporalIdentifierType)
-                                                           :granule_identifier {:type :object
-                                                                                :properties {:access_value (ref-def :accessValueType)
-                                                                                             :temporal (ref-def :temporalIdentifierType)}}}}}}))
+                                                           :access_value (ref-def :AccessValueType)
+                                                           :temporal (ref-def :TemporalIdentifierType)}}
+                   :GranuleIdentifierType {:type :object
+                                           :properties {:access_value (ref-def :AccessValueType)
+                                                        :temporal (ref-def :TemporalIdentifierType)}}}}))

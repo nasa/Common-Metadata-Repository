@@ -6,7 +6,8 @@
             [clj-http.client :as client]
             [cmr.access-control.test.util :as u]
             [cmr.transmit.access-control :as ac]
-            [cheshire.core :as json]))
+            [cheshire.core :as json]
+            [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each
               (fixtures/int-test-fixtures)
@@ -34,6 +35,7 @@
 (deftest create-acl-test
   (let [token (e/login (u/conn-context) "admin")
         resp (ac/create-acl (u/conn-context) system-acl {:token token})]
+    ;; Acceptance criteria: A concept id and revision id of the created ACL should be returned.
     (is (re-find #"^ACL.*" (:concept_id resp)))
     (is (= 1 (:revision_id resp)))))
 
@@ -42,6 +44,8 @@
     (are [re acl]
       (thrown-with-msg? Exception re (ac/create-acl (u/conn-context) acl {:token token}))
 
+      ;; Acceptance criteria: I receive an error if creating an ACL missing required fields.
+      ;; Note: this tests a few fields, and is not exhaustive. The JSON schema handles this check.
       #"object has missing required properties.*group_permissions"
       (dissoc system-acl :group_permissions)
 
@@ -49,24 +53,44 @@
       (assoc system-acl :group_permissions {})
 
       #"system_identity object has missing required properties"
-      (update-in system-acl [:system_identity] dissoc :target))))
+      (update-in system-acl [:system_identity] dissoc :target)
+
+      ;; Acceptance criteria: I receive an error if creating an ACL with a non-existent system identity,
+      ;; provider identity, or single instance identity target.
+      #"instance value .* not found in enum"
+      (update-in system-acl [:system_identity] assoc :target "WHATEVER")
+
+      #"instance value .* not found in enum"
+      (update-in provider-acl [:provider_identity] assoc :target "WHATEVER")
+      )
+
+    ;; Acceptance criteria: I receive an error if creating an ACL with invalid JSON
+    (is
+      (re-find #"Invalid JSON:"
+               (:body
+                 (client/post (ac/acl-root-url (transmit-config/context->app-connection (u/conn-context) :access-control))
+                              {:body "{\"bad-json:"
+                               :headers {"Content-Type" "application/json"
+                                         "ECHO-Token" token}
+                               :throw-exceptions false}))))))
 
 (deftest create-duplicate-acl-test
   (let [token (e/login (u/conn-context) "admin")]
     (testing "system ACL"
       (is (= 1 (:revision_id (ac/create-acl (u/conn-context) system-acl {:token token}))))
       (is (thrown-with-msg? Exception #"ACL already exists"
-        (ac/create-acl (u/conn-context) system-acl {:token token}))))
+            (ac/create-acl (u/conn-context) system-acl {:token token}))))
     (testing "provider ACL"
       (is (= 1 (:revision_id (ac/create-acl (u/conn-context) provider-acl {:token token}))))
       (is (thrown-with-msg? Exception #"ACL already exists"
-        (ac/create-acl (u/conn-context) provider-acl {:token token}))))
+            (ac/create-acl (u/conn-context) provider-acl {:token token}))))
     (testing "catalog item ACL"
       (is (= 1 (:revision_id (ac/create-acl (u/conn-context) catalog-item-acl {:token token}))))
       (is (thrown-with-msg? Exception #"ACL already exists"
-        (ac/create-acl (u/conn-context) catalog-item-acl {:token token}))))))
+            (ac/create-acl (u/conn-context) catalog-item-acl {:token token}))))))
 
 (deftest get-acl-test
   (let [token (e/login (u/conn-context) "admin")
         concept-id (:concept_id (ac/create-acl (u/conn-context) system-acl {:token token}))]
+    ;; Acceptance criteria: A created ACL can be retrieved after it is created.
     (is (= system-acl (ac/get-acl (u/conn-context) concept-id {:token token})))))
