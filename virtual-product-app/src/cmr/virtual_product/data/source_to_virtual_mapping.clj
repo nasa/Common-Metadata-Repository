@@ -2,6 +2,7 @@
   "Defines source to vritual granule mapping rules."
   (:require [cmr.umm.granule :as umm-g]
             [cmr.umm.collection :as umm-c]
+            [cmr.umm.related-url-helper :as ruh]
             [clojure.string :as str]
             [cmr.common.mime-types :as mt]
             [cmr.virtual-product.config :as vp-config]
@@ -240,7 +241,7 @@
     (-> src-granule-umm
         (assoc :granule-ur virt-granule-ur
                :collection-ref (umm-g/map->CollectionRef
-                                   (select-keys virtual-coll [:short-name :version-id])))
+                                 (select-keys virtual-coll [:short-name :version-id])))
         (update-in [:product-specific-attributes]
                    conj
                    (umm-g/map->ProductSpecificAttributeRef
@@ -344,22 +345,42 @@
   [virtual-umm provider-id source-short-name virtual-short-name]
   (update-related-urls provider-id source-short-name virtual-short-name virtual-umm "Rainf_tavg,AvgSurfT_inst,SoilMoi0_10cm_inst,time,lat,lon"))
 
-(defn- update-ast-l1t-related-urls
-  "Filter online access urls corresponding to the virtual collection from the source related urls"
+(defn- ast-l1t-virtual-online-access-urls
+  "Returns the online access urls for virtual granule of the given AST_L1T granule"
   [virtual-umm virtual-short-name]
-  (let [online-access-urls (filter #(= (:type %) "GET DATA") (:related-urls virtual-umm))
+  (let [online-access-urls (filter ruh/downloadable-url? (:related-urls virtual-umm))
         frb-url-matches (fn [related-url suffix fmt]
                           (let [url (:url related-url)]
                             (or (.endsWith url suffix) (.contains url (format "FORMAT=%s" fmt)))))]
-    (assoc virtual-umm :related-urls
-           (cond
-             (and (= "AST_FRBT" virtual-short-name)
-                  ((matches-on-psa "FullResolutionThermalBrowseAvailable" "YES") virtual-umm))
-             (seq (filter #(frb-url-matches % "_T.tif" "TIR") online-access-urls))
+    (cond
+      (and (= "AST_FRBT" virtual-short-name)
+           ((matches-on-psa "FullResolutionThermalBrowseAvailable" "YES") virtual-umm))
+      (seq (filter #(frb-url-matches % "_T.tif" "TIR") online-access-urls))
 
-             (and (= "AST_FRBV" virtual-short-name)
-                  ((matches-on-psa "FullResolutionVisibleBrowseAvailable" "YES") virtual-umm))
-             (seq (filter #(frb-url-matches % "_V.tif" "VNIR") online-access-urls))))))
+      (and (= "AST_FRBV" virtual-short-name)
+           ((matches-on-psa "FullResolutionVisibleBrowseAvailable" "YES") virtual-umm))
+      (seq (filter #(frb-url-matches % "_V.tif" "VNIR") online-access-urls)))))
+
+(defn- ast-l1t-virtual-browse-qa-urls
+  "Returns the online resource urls for virtual granule of the given AST_L1T granule"
+  [virtual-umm virtual-short-name]
+  (let [browse-qa-urls (filter #(not (ruh/downloadable-url? %)) (:related-urls virtual-umm))
+        [browse-psa browse-suffix] (if (= "AST_FRBT" virtual-short-name)
+                                     ["FullResolutionThermalBrowseAvailable" ".TIR.jpg"]
+                                     ["FullResolutionVisibleBrowseAvailable" ".VNIR.jpg"])
+        psa-match? ((matches-on-psa browse-psa "YES") virtual-umm)
+        frb-url-matches (fn [related-url]
+                          (or (and (.endsWith (:url related-url) browse-suffix) psa-match?)
+                              (.endsWith (:url related-url) ".QA.jpg")
+                              (.endsWith (:url related-url) "_QA.txt")))]
+    (seq (filter frb-url-matches browse-qa-urls))))
+
+(defn- update-ast-l1t-related-urls
+  "Filter online access urls corresponding to the virtual collection from the source related urls"
+  [virtual-umm virtual-short-name]
+  (assoc virtual-umm :related-urls
+         (concat (ast-l1t-virtual-online-access-urls virtual-umm virtual-short-name)
+                 (ast-l1t-virtual-browse-qa-urls virtual-umm virtual-short-name))))
 
 
 (defmethod update-virtual-granule-umm ["LPDAAC_ECS" "AST_L1T"]
