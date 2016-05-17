@@ -351,7 +351,8 @@
   (let [online-access-urls (filter ruh/downloadable-url? (:related-urls virtual-umm))
         frb-url-matches (fn [related-url suffix fmt]
                           (let [url (:url related-url)]
-                            (or (.endsWith url suffix) (.contains url (format "FORMAT=%s" fmt)))))]
+                            (or (.endsWith ^String url suffix)
+                                (.contains ^String url (format "FORMAT=%s" fmt)))))]
     (cond
       (and (= "AST_FRBT" virtual-short-name)
            ((matches-on-psa "FullResolutionThermalBrowseAvailable" "YES") virtual-umm))
@@ -370,9 +371,9 @@
                                      ["FullResolutionVisibleBrowseAvailable" ".VNIR.jpg"])
         psa-match? ((matches-on-psa browse-psa "YES") virtual-umm)
         frb-url-matches (fn [related-url]
-                          (or (and (.endsWith (:url related-url) browse-suffix) psa-match?)
-                              (.endsWith (:url related-url) ".QA.jpg")
-                              (.endsWith (:url related-url) "_QA.txt")))]
+                          (or (and (.endsWith ^String (:url related-url) browse-suffix) psa-match?)
+                              (.endsWith ^String (:url related-url) ".QA.jpg")
+                              (.endsWith ^String (:url related-url) "_QA.txt")))]
     (seq (filter frb-url-matches browse-qa-urls))))
 
 (defn- update-ast-l1t-related-urls
