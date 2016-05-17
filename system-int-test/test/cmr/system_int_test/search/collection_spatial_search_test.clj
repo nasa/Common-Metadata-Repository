@@ -62,8 +62,8 @@
   ;; ISO19115 allows you to ingest metadata with no spatial coordinate reference but have spatial
   ;; points. It would ingest properly because it is valid ISO19115, then fail indexing. If you
   ;; corrected this and re-ingested the data, the reingest would throw a 500 error because the
-  ;; previously ingested metadata gsr would be nil, and throw an error when converted to
-  ;; screaming-snake-case-string.
+  ;; previously ingested metadata granule spatial representation would be nil, and throw an error
+  ;; when converted to screaming-snake-case-string.
   ;; This test will change when CMR-2928 is implemented, because we will reject ingest that fails
   ;; UMM validation for spatial references.
   ;; This replicates an issue we saw in CMR-2927.
