@@ -21,9 +21,7 @@
             [cmr.umm.collection :as c]
             [cmr.umm.echo10.collection :as ec]
             [cmr.common.util :as u]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-            [cmr.common.mime-types :as mime-types]
-            [clojure.java.io :as io]))
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -47,45 +45,6 @@
                  :spatial-coverage (dc/spatial {:gsr coord-sys
                                                 :sr coord-sys
                                                 :geometries shapes})}))))
-
-(defn- iso-metadata-concept
-  "Makes a bad ISO Metadata Request"
-  [metadata]
-  (let [format (mime-types/format->mime-type :iso19115)]
-    (merge {:concept-type :collection
-            :provider-id "PROV1"
-            :native-id "foo"
-            :metadata metadata
-            :format format})))
-
-(deftest spatial-with-no-representation
-  ;; ISO19115 allows you to ingest metadata with no spatial coordinate reference but have spatial
-  ;; points. It would ingest properly because it is valid ISO19115, then fail indexing. If you
-  ;; corrected this and re-ingested the data, the reingest would throw a 500 error because the
-  ;; previously ingested metadata granule spatial representation would be nil, and throw an error
-  ;; when converted to screaming-snake-case-string.
-  ;; This test will change when CMR-2928 is implemented, because we will reject ingest that fails
-  ;; UMM validation for spatial references.
-  ;; This replicates an issue we saw in CMR-2927.
-  (testing "A granule with spatial data but no representation should not fail ingest"
-    (let [good-metadata (slurp (io/resource "iso-samples/good-iso-spatial-data.iso19115"))
-          bad-metadata (slurp
-                        (io/resource
-                         "iso-samples/iso-spatial-data-missing-coordinate-system.iso19115"))
-          bad-request (iso-metadata-concept bad-metadata)
-          good-request (iso-metadata-concept good-metadata)
-          bad-ingest (ingest/ingest-concept bad-request)
-          {:keys [status errors]} bad-ingest]
-      (is (= 422 status))
-      (is (= [{:errors
-               ["Spatial coordinate reference type must be supplied."]
-               :path ["SpatialCoverage"]}] errors))
-      (is (= 200 (:status (ingest/ingest-concept good-request {:raw? true}))))
-      (index/wait-until-indexed)
-      (let [found (search/find-refs :collection {:native-id "foo"})]
-      (is (= 1 (:hits found)))
-      (is (= 1 (-> found :refs first :revision-id)))))))
-
 
 (deftest spatial-search-test
   (let [;; Lines
