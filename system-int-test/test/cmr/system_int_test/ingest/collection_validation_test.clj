@@ -11,9 +11,38 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.line-string :as l]
             [cmr.spatial.mbr :as m]
-            [cmr.ingest.services.messages :as msg]))
+            [cmr.ingest.services.messages :as msg]
+            [cmr.common.mime-types :as mime-types]
+            [cmr.system-int-test.utils.index-util :as index]
+            [cmr.system-int-test.utils.search-util :as search]
+            [clojure.java.io :as io]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
+
+(defn- iso-metadata-concept
+  "Makes a bad ISO Metadata Request"
+  [metadata]
+  (let [format (mime-types/format->mime-type :iso19115)]
+    (merge {:concept-type :collection
+            :provider-id "PROV1"
+            :native-id "foo"
+            :metadata metadata
+            :format format})))
+
+(deftest spatial-with-no-representation
+  ;; ISO19115 allows you to ingest metadata with no spatial coordinate reference but have spatial
+  ;; points. We should reject it because UMM requires a spatial coordinate reference.
+  (testing "A collection with spatial data but no representation should fail ingest validation"
+    (let [bad-metadata (slurp
+                        (io/resource
+                         "iso-samples/iso-spatial-data-missing-coordinate-system.iso19115"))
+          bad-request (iso-metadata-concept bad-metadata)
+          bad-ingest (ingest/ingest-concept bad-request)
+          {:keys [status errors]} bad-ingest]
+      (is (= 422 status))
+      (is (= [{:errors
+               ["Spatial coordinate reference type must be supplied."]
+               :path ["SpatialCoverage"]}] errors)))))
 
 (deftest validation-endpoint-test
   (testing "successful validation of collection"

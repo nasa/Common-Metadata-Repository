@@ -25,6 +25,15 @@
       :geometries
       (map #(umm-s/set-coordinate-system spatial-representation %) geometries))))
 
+(defn- spatial-representation-present-validation
+  "Enforces presence of a spatial representation because translation from some schemas allow spatial
+   data with no reference. (ISO19115 for example)"
+  [field-path spatial-coverage]
+  (let [{:keys [spatial-representation geometries]} spatial-coverage]
+    (when (seq geometries)
+      (when (nil? spatial-representation)
+        {field-path ["Spatial coordinate reference type must be supplied."]}))))
+
 (def spatial-coverage-validations
   "Defines spatial coverage validations for collections."
   [orbit-collection-has-orbit-parameters
@@ -81,7 +90,8 @@
   {:product-specific-attributes [(vu/unique-by-name-validator :name)
                                  (v/every psa/psa-validations)]
    :projects (vu/unique-by-name-validator :short-name)
-   :spatial-coverage spatial-coverage-validations
+   :spatial-coverage [spatial-representation-present-validation
+                      spatial-coverage-validations]
    :platforms [(v/every platform-validations)
                (vu/unique-by-name-validator :short-name)]
    :associated-difs (vu/unique-by-name-validator identity)
@@ -90,5 +100,3 @@
    :two-d-coordinate-systems [(vu/unique-by-name-validator :name)
                               (v/every two-d-coord-validations)]
    :collection-associations (vu/unique-by-name-validator collection-association-name)})
-
-
