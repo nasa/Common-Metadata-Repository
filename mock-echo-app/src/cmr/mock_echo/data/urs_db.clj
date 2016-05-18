@@ -29,10 +29,8 @@
 (defn remove-user
   "Removes a user from the user db"
   [context username]
-  (println "userdb before delete" (deref (context->urs-db context)))
   (let [user-db (context->urs-db context)]
-    (swap! user-db update-in [:users] dissoc username))
-  (println "userdb after delete" (deref (context->urs-db context))))
+    (swap! user-db update-in [:users] dissoc username)))
 
 (defn get-user
   "Returns the user map"

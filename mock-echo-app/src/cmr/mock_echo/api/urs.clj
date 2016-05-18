@@ -43,16 +43,8 @@
        :headers {"content-type" mt/xml}})
     {:status 404 :body "Not found.\n"}))
 
-(defn create-users-json
-  "Processes a request to create multiple users."
-  [context body]
-  (println "JSON BODY = " body)
-  (let [users (json/decode body true)]
-    (urs-db/create-users context users)
-    {:status 201}))
-
-(defn parse-user-request-xml
-  "Parses a login request into a map of username and password"
+(defn parse-create-user-xml
+  "Parses a create user request into a map of user fields"
   [body]
   (let [parsed (x/parse-str body)]
     {:username (cx/string-at-path parsed [:userName])
@@ -73,13 +65,19 @@
      :state (cx/string-at-path parsed [:state])
      :zip (cx/string-at-path parsed [:zip])}))
 
-(defn create-users-xml
-  "Processes a request to create multiple users."
+(defn create-users-json
+  "Processes a JSON request to create one or more users."
   [context body]
-  (println "creating user(s): " body)
-  (let [{:keys [username password] :as user} (parse-user-request-xml body)]
+  (let [users (json/decode body true)]
+    (urs-db/create-users context users)
+    {:status 201}))
+
+
+(defn create-users-xml
+  "Processes an XML request to create one or more users."
+  [context body]
+  (let [{:keys [username password] :as user} (parse-create-user-xml body)]
     (urs-db/create-users context [user])
-    (println "returning user " (get-user context username))
     (assoc (get-user context username) :status 201)))
 
 (def successful-login-response
@@ -108,17 +106,6 @@
              (urs-db/password-matches? context username password))
       successful-login-response
       unsuccessful-login-response)))
-
-(defn login-form
-  "Processes a login request"
-  [context body]
-  (println "Form BODY = " body)
-  (comment
-    (let [{:keys [username password]} (parse-login-request body)]
-      (if (and (urs-db/user-exists? context username)
-               (urs-db/password-matches? context username password))
-        successful-login-response
-        unsuccessful-login-response))))
 
 (defn decode-base64
   [string]
@@ -168,7 +155,7 @@
 
         ;; Create a bunch of users all at once
         ;; This is used for adding test data. Body should be a list of
-        ;; maps with username and password
+        ;; maps with username, password, and other URS user fields
         (POST "/" {context :request-context body :body content-type :content-type}
           (case content-type
             ;; Not sure why, but I cant use mt/xml here in place of the string
