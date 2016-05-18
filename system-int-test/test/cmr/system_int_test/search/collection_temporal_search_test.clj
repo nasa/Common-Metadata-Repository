@@ -276,7 +276,11 @@
   (testing "search by invalid iso8601 temporal interval."
     (let [{:keys [status errors]} (search/find-refs :collection {"temporal[]" "2010-01-01T10:00:00Z/P10D2H"})]
       (is (= 422 status))
-      (is (re-find #"\[2010-01-01T10:00:00Z/P10D2H\] is not a valid date-range : Invalid format: \"P10D2H\" is malformed at \"2H\"" (first errors))))))
+      (is (re-find #"\[2010-01-01T10:00:00Z/P10D2H\] is not a valid date-range : Invalid format: \"P10D2H\" is malformed at \"2H\"" (first errors)))))
+  (testing "search by invalid optional parameters will return a valid error message"
+    (let [{:keys [status errors]} (search/find-refs :collection {"temporal[][temporal_start]" "2010-01-01T10:00:00Z/P10D2H"})]
+      (is (= 400 status))
+      (is (re-find #"Temporal queries do not support optional parameters. Please check your query." (first errors))))))
 
 (deftest search-temporal-json-error-scenarios
   (testing "search by invalid temporal date format"
