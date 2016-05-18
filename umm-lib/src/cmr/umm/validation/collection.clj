@@ -29,7 +29,7 @@
   "Enforces presence of a spatial representation because translation from some schemas allow spatial
    data with no reference. (ISO19115 for example)"
   [field-path spatial-coverage]
-  (let [{:keys [spatial-representation granule-spatial-representation geometries]} spatial-coverage]
+  (let [{:keys [spatial-representation geometries]} spatial-coverage]
     (when (seq geometries)
       (when (nil? spatial-representation)
         {field-path ["Spatial coordinate reference type must be supplied."]}))))
