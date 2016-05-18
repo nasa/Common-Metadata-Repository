@@ -1834,8 +1834,7 @@ Collection search results are scored when any of the following parameters are se
 * data_center
 * archive_center
 
-Any terms found in the those parameters are used to score results across other fields in the search results. A term is a contiguous set of characters not containing whitespace. A series of filters are executed against each document. Each of these has an associated boost value. The boost values of all the filters that match a given document are multiplied together to get the final document score. Documents that match none of the filters have a default
-score of 1.0.
+Any terms found in the those parameters are used to score results across other fields in the search results. A term is a contiguous set of characters not containing whitespace. A series of filters are executed against each document. Each of these has an associated boost value. The boost values of all the filters that match a given document are multiplied together to get the final document score.
 
 The filters are case insensitive, support wild-cards * and ?, and are given below:
 
