@@ -48,7 +48,8 @@
   [context body]
   (println "JSON BODY = " body)
   (let [users (json/decode body true)]
-    (urs-db/create-users context users)))
+    (urs-db/create-users context users)
+    {:status 201}))
 
 (defn parse-user-request-xml
   "Parses a login request into a map of username and password"
