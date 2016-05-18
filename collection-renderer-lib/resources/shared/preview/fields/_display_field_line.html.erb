@@ -1,0 +1,20 @@
+<% options = [] if options.nil? %>
+<% title_override = false if title_override.nil? %>
+
+<%# Typical call: render :partial=>'shared/preview/fields/display_field_line', :locals=>{:key_name=>'Fees', :hash_for_key=>r, :handle_as_currency=>true} %>
+<%# Typical call: render :partial=>'shared/preview/fields/display_field_line', :locals=>{:key_name=>'Id', :hash_for_key=>r, :title_override=>'ID'} %>
+<% if !hash_for_key.nil? %>
+  <% value = hash_for_key[key_name] %>
+  <% value = value.to_s if [true, false].include? value # Convert booleans back to strings & detect nils %>
+  <% if !value.blank? %>
+    <% if options.include?(:handle_as_currency) %>
+      <% value = number_to_currency(value) %>
+    <% end %>
+
+    <li class="<%= name_to_class(key_name)%>">
+      <span class="field-name"><%= title_override || name_to_title(key_name) %></span><br />
+      <%= value %>
+    </li>
+
+  <% end %>
+<% end %>

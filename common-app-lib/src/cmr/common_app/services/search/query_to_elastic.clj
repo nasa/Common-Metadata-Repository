@@ -87,8 +87,8 @@
   [query]
   (let [{:keys [concept-type condition]} (query-expense/order-conditions query)
         core-query (condition->elastic condition concept-type)]
-    {:filtered {:query (q/match-all)
-                :filter core-query}}))
+    {:query {:filtered {:query (q/match-all)
+                        :filter core-query}}}))
 
 (defmulti concept-type->sort-key-map
   "Returns a submaps for the concept type of the sort key fields given by the user to the elastic

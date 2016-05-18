@@ -10,7 +10,10 @@
   (extract-keywords-seq
     [c]
     "Extracts keywords and keyword like values from keyword conditions and conditions which apply
-     to keywords scoring. Returns a sequence of the keywords."))
+     to keywords scoring. Returns a sequence of the keywords.")
+  (contains-keyword-condition?
+   [c]
+   "Returns true if the query contains a keyword condition?"))
 
 (defn extract-keywords
   "Extracts keywords and keyword like values from keyword conditions and conditions which apply
@@ -45,47 +48,82 @@
   (-> value str/lower-case (str/split #"\s+")))
 
 (extend-protocol ExtractKeywords
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.common_app.services.search.query_model.Query
   (extract-keywords-seq
-    [query]
-    (extract-keywords-seq (:condition query)))
+   [query]
+   (extract-keywords-seq (:condition query)))
+  (contains-keyword-condition?
+   [query]
+   (contains-keyword-condition? (:condition query)))
 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.common_app.services.search.query_model.ConditionGroup
   (extract-keywords-seq
-    [{:keys [conditions]}]
-    (mapcat extract-keywords-seq conditions))
+   [{:keys [conditions]}]
+   (mapcat extract-keywords-seq conditions))
+  (contains-keyword-condition?
+   [{:keys [conditions]}]
+   (reduce (fn [_ condition]
+             (when (contains-keyword-condition? condition)
+               (reduced true)))
+           false
+           conditions))
 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.common_app.services.search.query_model.NestedCondition
   (extract-keywords-seq
-    [{:keys [condition]}]
-    (extract-keywords-seq condition))
+   [{:keys [condition]}]
+   (extract-keywords-seq condition))
+  (contains-keyword-condition?
+   [{:keys [condition]}]
+   (contains-keyword-condition? condition))
 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.common_app.services.search.query_model.TextCondition
   (extract-keywords-seq
-    [{:keys [field query-str]}]
-    (when (= field :keyword)
-      (extract-keywords-seq-from-value query-str)))
+   [{:keys [field query-str]}]
+   (when (= field :keyword)
+     (extract-keywords-seq-from-value query-str)))
+  (contains-keyword-condition?
+   [{:keys [field]}]
+   (= field :keyword))
 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.common_app.services.search.query_model.StringCondition
   (extract-keywords-seq
-    [{:keys [field value]}]
-    (when (contains? keyword-string-fields field)
-      (extract-keywords-seq-from-value value)))
+   [{:keys [field value]}]
+   (when (contains? keyword-string-fields field)
+     (extract-keywords-seq-from-value value)))
+  (contains-keyword-condition?
+   [_]
+   false)
 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.common_app.services.search.query_model.StringsCondition
   (extract-keywords-seq
-    [{:keys [field values]}]
-    (when (contains? keyword-string-fields field)
-      (mapcat extract-keywords-seq-from-value values)))
+   [{:keys [field values]}]
+   (when (contains? keyword-string-fields field)
+     (mapcat extract-keywords-seq-from-value values)))
+  (contains-keyword-condition?
+   [_]
+   false)
 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.search.models.query.CollectionQueryCondition
   (extract-keywords-seq
-    [_]
-    (errors/internal-error! "extract-keywords-seq does not support CollectionQueryCondition"))
+   [_]
+   (errors/internal-error! "extract-keywords-seq does not support CollectionQueryCondition"))
+  (contains-keyword-condition?
+   [_]
+   (errors/internal-error! "contains-keyword-condition? does not support CollectionQueryCondition"))
 
   ;; catch all extractor
   java.lang.Object
   (extract-keywords-seq
-    [this]
-    nil))
+   [this]
+   nil)
+  (contains-keyword-condition?
+   [this]
+   false))
 

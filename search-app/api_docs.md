@@ -11,6 +11,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Maximum URL Length](#maximum-url-length)
     * [CORS Header support](#cors-header-support)
     * [Query Parameters](#query-parameters)
+    * [Paging Details](#paging-details)
     * [Parameter Options](#parameter-options)
     * [Collection Result Feature Parameters](#collection-result-features)
     * [Headers](#headers)
@@ -159,6 +160,16 @@ The CORS headers are supported on search endpoints. Check [CORS Documentation](h
  * `token` - specifies a user/guest token from ECHO to use to authenticate yourself. This can also be specified as the header Echo-Token
  * `echo_compatible` - When set to true results will be returned in an ECHO compatible format. This mostly removes fields and features specific to the CMR such as revision id, granule counts and facets in collection results. Metadata format style results will also use ECHO style names for concept ids such as `echo_granule_id` and `echo_dataset_id`.
 
+#### <a name="paging-details"></a> Paging Details
+
+The CMR contains many more results than can be returned in a single response so the number of results that can be returned is limited. The parameters `page_num`, `offset`, and `page_size` along with the sort specified by `sort_key` control which items will be returned. The query parameter `page_size`, defaulting to 10, controls the amount of items that will be returned in a response. One of `page_num` or `offset` can be provided to index into the search results.
+
+`page_num`, defaulting to 1, chooses a "page" of items to return. If a search matched 50 items the parameters `page=3&page_size=5` would return the 11th item through the 15th item.
+
+`offset` is a 0 based index into the result set of a query. If a search matched 50 items the parameters `offset=3&page_size=5` would return 4th result through the 8th result.
+
+You can not page past the 1 millionth item. Please contact the CMR Team through the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum) if you need to retrieve items in excess of 1 million from the CMR.
+
 #### <a name="parameter-options"></a> Parameter Options
 
 The behavior of search with respect to each parameter can be modified using the `options` parameter. The `options` parameter takes the following form:
@@ -209,6 +220,7 @@ Besides MimeTypes, client can also use extensions to specify the format for sear
 
 Here is a list of supported extensions and their corresponding MimeTypes:
 
+  * `html`      "text/html"
   * `json`      "application/json"
   * `xml`       "application/xml"
   * `echo10`    "application/echo10+xml"
@@ -224,6 +236,14 @@ Here is a list of supported extensions and their corresponding MimeTypes:
   * `umm-json`   "application/umm+json" (only supported for collections)
 
 ### <a name="supported-result-formats"></a> Supported Result Formats
+
+#### <a name="html"></a> HTML
+
+The HTML response format is supported for collections. It allows a single collection record to be viewed in a web browser. HTML is only supported for retrieving a single collection at a time with a URL of the format:
+
+```
+%CMR-ENDPOINT%/concepts/<concept-id>
+```
 
 #### <a name="atom"></a> Atom
 
@@ -899,6 +919,8 @@ Note: ISO 8601 does not allow open-ended time intervals but the CMR API does all
 
     curl "%CMR-ENDPOINT%/collections"
 
+Collection search results are paged. See [Paging Details](#paging-details) for more information on how to page through collection search results.
+
 #### <a name="c-concept-id"></a> Find collections by concept id
 
 A CMR concept id is in the format `<concept-type-prefix> <unique-number> "-" <provider-id>`
@@ -1301,7 +1323,7 @@ When `has_granules` is set to "true" or "false", results will be restricted to c
 
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 
-Collection results are sorted by ascending entry title by default when a search does not result in a score. If one of the scored search fields is searched and a score is produced then the search results will be sorted by relevance (score descending). One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` can be used to explicitly request ascending.
+Collection results are sorted by ascending entry title by default when a search does not result in a score. If a keyword search is performed then the search results will be sorted by relevance (score descending). One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` can be used to explicitly request ascending.
 
 ##### Valid Collection Sort Keys
 
@@ -1316,7 +1338,7 @@ Collection results are sorted by ascending entry title by default when a search 
   * `sensor`
   * `provider`
   * `revision_date`
-  * `score` - document relevance score, only useful when a search will return a score, defaults to descending
+  * `score` - document relevance score, defaults to descending. See [Document Scoring](#document-scoring).
   * `has_granules` - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.
 
 Example of sorting by start_date in descending order: (Most recent data first)
@@ -1365,6 +1387,9 @@ __Sample response__
 #### <a name="find-all-granules"></a> Find all granules
 
     curl "%CMR-ENDPOINT%/granules"
+
+
+Granule search results are paged. See [Paging Details](#paging-details) for more information on how to page through granule search results.
 
 #### <a name="g-granule-ur"></a> Find granules with a granule-ur
 
@@ -1721,6 +1746,7 @@ Note that attempting to retrieve a revision that is a tombstone is an error and 
 The following extensions and MIME types are supported by the
 `/concepts/` resource:
 
+  * `html`      "text/html" (Collections only)
   * `json`      "application/json"
   * `xml`       "application/xml" (same as .native)
   * `native`    "application/metadata+xml"
@@ -1808,8 +1834,7 @@ Collection search results are scored when any of the following parameters are se
 * data_center
 * archive_center
 
-Any terms found in the those parameters are used to score results across other fields in the search results. A term is a contiguous set of characters not containing whitespace. A series of filters are executed against each document. Each of these has an associated boost value. The boost values of all the filters that match a given document are multiplied together to get the final document score. Documents that match none of the filters have a default
-score of 1.0.
+Any terms found in the those parameters are used to score results across other fields in the search results. A term is a contiguous set of characters not containing whitespace. A series of filters are executed against each document. Each of these has an associated boost value. The boost values of all the filters that match a given document are multiplied together to get the final document score.
 
 The filters are case insensitive, support wild-cards * and ?, and are given below:
 
@@ -2473,6 +2498,8 @@ Content-Length: 168
 #### <a name="searching-for-tags"></a> Searching for Tags
 
 Tags can be searched for by sending a request to `%CMR-ENDPOINT%/tags`.
+
+Tag search results are paged. See [Paging Details](#paging-details) for more information on how to page through tag search results.
 
 ##### Tag Search Parameters
 

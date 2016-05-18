@@ -1,0 +1,53 @@
+<%
+# Expected arguments
+# * umm_json - A string containing UMM JSON of the collection
+# * relative_root_url - A string containing the root of the application URL that's always present.
+
+require 'json'
+metadata =  JSON.parse(umm_json)
+%>
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"  lang="en"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"  lang="en"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"  lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Common Metadata Repository</title>
+  <meta name="description" content="">
+  <%= csrf_meta_tag %>
+
+  <!-- Open Sans Font - Google Font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,700">
+  <!-- Font Awesome: Use this link for development since icons do not show up properly on local dev -->
+  <!-- TODO huh? fix this ^ -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  <!-- Font Awesome: Local file linked below for production -->
+  <!--<link rel="stylesheet" href="/dist/stylesheets/font-awesome.min.css">-->
+  <!--link rel="stylesheet" href="/dist/stylesheets/mmt.css"-->
+
+  <%= stylesheet_link_tag relative_root_url + "/stylesheets/application", media: 'all' %>
+
+  <%= javascript_include_tag relative_root_url + "/javascripts/application" %>
+
+</head>
+
+<body class="">
+  <a href="#main-content" class="skip-nav">Skip to main content</a>
+
+  <div class="wrapper">
+
+    <div id="main-content">
+      <%= render partial: 'collection_preview/show', locals: { metadata: metadata, relative_root_url: relative_root_url} %>
+    </div>
+
+    <div class="push">
+      <!-- For pushing the footer to the bottom of a page with minimal content -->
+    </div>
+  </div>
+
+
+</body>
+</html>

@@ -31,6 +31,7 @@
             [cmr.search.api.keyword :as keyword-api]
             [cmr.common-app.api.routes :as cr]
             [cmr.common-app.api-docs :as api-docs]
+            [cmr.collection-renderer.api.routes :as collection-renderer-routes]
 
             ;; Required here to make sure the multimethod function implementation is available
             [cmr.search.data.elastic-results-to-query-results]
@@ -80,17 +81,30 @@
     mt/csv})
 
 (def supported-concept-id-retrieval-mime-types
-  #{mt/any
-    mt/xml ; allows retrieving native format
-    mt/native ; retrieve in native format
-    mt/atom
-    mt/json
-    mt/echo10
-    mt/iso
-    mt/iso-smap
-    mt/dif
-    mt/dif10
-    mt/umm-json})
+  {:collection #{mt/any
+                 mt/html
+                 mt/xml ; allows retrieving native format
+                 mt/native ; retrieve in native format
+                 mt/atom
+                 mt/json
+                 mt/echo10
+                 mt/iso
+                 mt/iso-smap
+                 mt/dif
+                 mt/dif10
+                 mt/umm-json}
+   :granule #{mt/any
+              mt/xml ; allows retrieving native format
+              mt/native ; retrieve in native format
+              mt/atom
+              mt/json
+              mt/echo10
+              mt/iso
+              mt/iso-smap
+              mt/dif
+              mt/dif10
+              mt/umm-json}})
+
 
 (def find-by-concept-id-concept-types
   #{:collection :granule})
@@ -216,10 +230,11 @@
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id (and possibly revision id)
   and returns the response"
-  [context path-w-extension params headers]
+  [request-context path-w-extension params headers]
   (let [concept-id (path-w-extension->concept-id path-w-extension)
         revision-id (path-w-extension->revision-id path-w-extension)
-        concept-type (concepts/concept-id->type concept-id)]
+        concept-type (concepts/concept-id->type concept-id)
+        concept-type-supported-mime-types (supported-concept-id-retrieval-mime-types concept-type)]
     (when-not (contains? find-by-concept-id-concept-types concept-type)
       (svc-errors/throw-service-error
         :bad-request
@@ -229,7 +244,7 @@
     (if revision-id
       ;; We don't support Atom or JSON (yet) for lookups that include revision-id due to
       ;; limitations of the current transformer implementation. This will be fixed with CMR-1935.
-      (let [supported-mime-types (disj supported-concept-id-retrieval-mime-types mt/atom mt/json)
+      (let [supported-mime-types (disj concept-type-supported-mime-types mt/atom mt/json)
             result-format (get-search-results-format path-w-extension headers
                                                      supported-mime-types
                                                      mt/xml)]
@@ -238,12 +253,12 @@
                       revision-id))
         ;; else, revision-id is nil
         (cr/search-response (query-svc/find-concept-by-id-and-revision
-                              context result-format concept-id revision-id)))
+                              request-context result-format concept-id revision-id)))
       (let [result-format (get-search-results-format path-w-extension headers
-                                                     supported-concept-id-retrieval-mime-types
+                                                     concept-type-supported-mime-types
                                                      mt/xml)]
         (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
-        (cr/search-response (query-svc/find-concept-by-id context result-format concept-id))))))
+        (cr/search-response (query-svc/find-concept-by-id request-context result-format concept-id))))))
 
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
@@ -282,6 +297,9 @@
         (get-in system [:search-public-conf :protocol])
         (get-in system [:search-public-conf :relative-root-url])
         "public/index.html")
+
+      ;; Routes for collection html resources
+      (collection-renderer-routes/resource-routes system)
 
       ;; Retrieve by cmr concept id or concept id and revision id
       ;; Matches URL paths of the form /concepts/:concept-id[/:revision-id][.:format],

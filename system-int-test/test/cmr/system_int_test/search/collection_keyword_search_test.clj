@@ -291,8 +291,7 @@
 
     (testing "Default boosts on fields"
       (are2 [params scores] (= (map #(/ % 2.0) scores)
-                               (map :score (:refs (search/find-refs :collection
-                                                                    params))))
+                               (map :score (:refs (search/find-refs :collection params))))
 
         "short-name"
         {:keyword "SNFoobar"} [short-name-boost]

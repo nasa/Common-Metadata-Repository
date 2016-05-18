@@ -159,17 +159,19 @@
         {:keys [concept-type condition]} (query-expense/order-conditions query)
         core-query (q2e/condition->elastic condition concept-type)]
     (if-let [keywords (keywords-in-query query)]
-      ;; function_score query allows us to compute a custom relevance score for each document
-      ;; matched by the primary query. The final document relevance is given by multiplying
-      ;; a boosting term for each matching filter in a set of filters.
-      {:function_score {:score_mode :multiply
-                        :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
-                        :query {:filtered {:query (eq/match-all)
-                                           :filter core-query}}}}
+      ;; Forces score to be returned even if not sorting by score.
+      {:track_scores true
+       ;; function_score query allows us to compute a custom relevance score for each document
+       ;; matched by the primary query. The final document relevance is given by multiplying
+       ;; a boosting term for each matching filter in a set of filters.
+       :query {:function_score {:score_mode :multiply
+                                :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
+                                :query {:filtered {:query (eq/match-all)
+                                                   :filter core-query}}}}}
       (if boosts
         (errors/throw-service-errors :bad-request ["Relevance boosting is only supported for keyword queries"])
-        {:filtered {:query (eq/match-all)
-                    :filter core-query}}))))
+        {:query {:filtered {:query (eq/match-all)
+                            :filter core-query}}}))))
 
 (defmethod q2e/concept-type->sort-key-map :collection
   [_]
@@ -245,7 +247,7 @@
   [query]
   (let [{:keys [concept-type sort-keys]} query
         ;; If the sort keys are given as parameters then keyword-sort will not be used.
-        keyword-sort (when (keywords-in-query query)
+        keyword-sort (when (keywords-extractor/contains-keyword-condition? query)
                        [{:_score {:order :desc}}])
         specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
         default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))
