@@ -3,12 +3,19 @@
   (:require [cmr.transmit.echo.soap.core :as soap]
             [cmr.common.xml.parse :as xp]
             [cmr.common.xml.simple-xpath :as xpath]
-            [cmr.common.log :refer (debug info warn error)]))
+            [cmr.common.log :refer (debug info warn error)]
+            [camel-snake-kebab.core :as csk]))
 
 (def provider-keys
   "Keys within a provider map."
   [:provider-id :organization-name :provider-types :rest-only :discovery-urls
    :description-of-holdings :contacts :provider-schema-name :small-provider :guid])
+
+(def provider-policy-keys
+  "Keys within a provider policy map."
+  [:end-point :retry-attempts :retry-wait-time :routing :ssl-enabled :ssl-certificate :ssl-last-update :order-supports-duplicate-catalog-items
+   :collections-supporting-duplicate-order-items :supported-transactions :max-items-per-order :properties
+   :ordering-suspended-until-date :override-notification-enabled])
 
 (defn map->provider
   "Generate a provider xml structure from a map"
@@ -131,3 +138,62 @@
                     ["ns2:token" token]
                     ["ns2:providerGuid" provider-guid]])
       (soap/extract-string :force-remove-provider))))
+
+(defn set-provider-policies
+  "Sets Provider Policies for a provider.  Takes a map containing request parameters:
+    [token provider-guid provider-id end-point retry-attempts retry-wait-time routing
+     ssl-enabled ssl-certificate ssl-last-update order-supports-duplicate-catalog-items
+     collections-supporting-duplicate-order-items supported-transactions max-items-per-order properties
+     ordering-suspended-until-date override-notification-enabled]"
+  [param-map]
+  (let [{:keys [token provider-guid provider-id end-point retry-attempts retry-wait-time routing
+                ssl-enabled ssl-certificate ssl-last-update order-supports-duplicate-catalog-items
+                collections-supporting-duplicate-order-items supported-transactions max-items-per-order properties
+                ordering-suspended-until-date override-notification-enabled param-map]}]
+    (soap/post-soap
+      :provider ["ns2:SetProviderPolicies"
+                  soap/soap-ns-map
+                  ["ns2:token" token]
+                  (if provider-id ["ns2:providerId" provider-id])
+                  (if provider-guid ["ns2:providerGuid" provider-guid])
+                  ["ns2:policies"
+                    ["ns3:EndPoint" end-point]
+                    ["ns3:RetryAttempts" retry-attempts]
+                    ["ns3:RetryWaitTime" retry-wait-time]
+                    ["ns3:Routing" (or routing "ORDER_FULFILLMENT_V9")]
+                    ["ns3:SslPolicy"
+                      ["ns3:SslEnabled" ssl-enabled]
+                      (if ssl-certificate ["ns3:SslCertificate" ssl-certificate])
+                      (if ssl-last-update ["ns3:SslLastrUpdate" ssl-last-update])]
+                    ["ns3:OrderSupportsDuplicateCatalogItems" order-supports-duplicate-catalog-items]
+                    (if collections-supporting-duplicate-order-items ["ns3:CollectionsSupportingDuplicateCatalogItems"
+                                                                      (soap/item-list collections-supporting-duplicate-order-items)])
+                    ["ns3:SupportedTransactions" (soap/item-list (map csk/->SCREAMING_SNAKE_CASE_STRING supported-transactions))]
+                    (if max-items-per-order ["ns3:MaxItemsPerOrder" max-items-per-order])
+                    (if properties ["ns3:Properties" properties])
+                    (if ordering-suspended-until-date ["ns3:OrderingSuspendedUntilDate" ordering-suspended-until-date])
+                    (if override-notification-enabled ["ns3:OverrideNotificationEnabled" override-notification-enabled])]])
+    nil))
+
+(defn get-provider-policies
+  "Get provider policies for the provider specified by the behalfOfProvider field of the specified token."
+  [param-map]
+  (let [{:keys [token]} param-map]
+    (->
+      (soap/post-soap
+        :provider ["ns2:GetProviderPolicies"
+                    soap/soap-ns-map
+                    ["ns2:token" token]])
+      (soap/extract-item-map :get-provider-policies provider-policy-keys))))
+
+(defn get-providers-policies
+  "Get a list of provider polcies for the specified providers (by guid)"
+  [param-map]
+  (let [{:keys [token provider-guids]} param-map]
+    (->
+      (soap/post-soap
+        :provider ["ns2:GetProvidersPolicies"
+                    soap/soap-ns-map
+                    ["ns2:token" token]
+                    ["ns2:providerGuids" (soap/item-list provider-guids)]])
+      (soap/extract-item-map-list :get-providers-policies provider-policy-keys))))
