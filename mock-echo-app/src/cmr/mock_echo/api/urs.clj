@@ -15,22 +15,31 @@
   "Processes a request to get a user."
   [context name]
   (if (urs-db/user-exists? context name)
-    (let [{:keys [username password email affiliation studyArea country phone firstName lastName organization]} (urs-db/get-user context name)]
+    (let [{:keys [username password email affiliation studyArea country phone firstName lastName
+                  organization userType address1 address2 address3 city state zip]}
+          (urs-db/get-user context name)]
       {:status 200 :body (str
                           "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>
                            <user>
                             <accountCreatedDate>2003-08-24T00:00:00Z</accountCreatedDate>
-                            <accountStatus>ACTIVE</accountStatus>
-                            <affiliation>" affiliation "</affiliation>
-                            <country>" country "</country>
-                            <emailAddress>" email "</emailAddress>
-                            <firstName>" firstName "</firstName>
-                            <lastName>" lastName "</lastName>
-                            <studyArea>" studyArea "</studyArea>"
+                            <accountStatus>ACTIVE</accountStatus>"
+                            (if address1 (str "<address1>" address1 "</address1>"))
+                            (if address2 (str "<address2>" address2 "</address2>"))
+                            (if address3 (str "<address3>" address3 "</address3>"))
+                            (if affiliation (str "<affiliation>" affiliation "</affiliation>"))
+                            (if city (str "<city>" city "</city>"))
+                            (if country (str "<country>" country "</country>"))
+                            "<emailAddress>" email "</emailAddress>"
+                            (if firstName (str "<firstName>" firstName "</firstName>"))
+                            (if lastName (str "<lastName>" lastName "</lastName>"))
+                            (if state (str "<state>" state "</state>"))
+                            (if studyArea (str "<studyArea>" studyArea "</studyArea>"))
                             (if organization (str "<organization>" organization "</organization>"))
                             (if phone (str "<phone>" phone "</phone>"))
-                            "<userName>" username "</userName>
-                          </user>")
+                            "<userName>" username "</userName>"
+                            (if userType (str "<userType>" userType "</userType>"))
+                            (if zip (str "<zip>" zip "</zip>"))
+                          "</user>")
        :headers {"content-type" mt/xml}})
     {:status 404 :body "Not found.\n"}))
 
@@ -54,7 +63,14 @@
      :phone (cx/string-at-path parsed [:phone])
      :firstName (cx/string-at-path parsed [:firstName])
      :lastName (cx/string-at-path parsed [:lastName])
-     :organization (cx/string-at-path parsed [:organization])}))
+     :organization (cx/string-at-path parsed [:organization])
+     :userType (cx/string-at-path parsed [:userType])
+     :address1 (cx/string-at-path parsed [:address1])
+     :address2 (cx/string-at-path parsed [:address2])
+     :address3 (cx/string-at-path parsed [:address3])
+     :city (cx/string-at-path parsed [:city])
+     :state (cx/string-at-path parsed [:state])
+     :zip (cx/string-at-path parsed [:zip])}))
 
 (defn create-users-xml
   "Processes a request to create multiple users."
