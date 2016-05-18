@@ -36,12 +36,12 @@
 
 (defn coll-with-geometries
   ([geometries]
-  ;; Insert a default coordinate reference system in order to pass validation (See CMR-2928)
-  (coll-with-geometries "GEODETIC" geometries))
+   ;; Insert a default coordinate reference system in order to pass validation (See CMR-2928)
+   (coll-with-geometries "GEODETIC" geometries))
   ([coordinate-reference geometries]
-  (c/map->UmmCollection {:spatial-coverage (c/map->SpatialCoverage
-                                            {:spatial-representation coordinate-reference
-                                             :geometries geometries})})))
+   (c/map->UmmCollection {:spatial-coverage (c/map->SpatialCoverage
+                                             {:spatial-representation coordinate-reference
+                                              :geometries geometries})})))
 
 ;; This is built on top of the existing spatial validation. It just ensures that the spatial
 ;; validation is being called
