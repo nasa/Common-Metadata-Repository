@@ -32,7 +32,7 @@
 (deftest spatial-with-no-representation
   ;; ISO19115 allows you to ingest metadata with no spatial coordinate reference but have spatial
   ;; points. We should reject it because UMM requires a spatial coordinate reference.
-  (testing "A granule with spatial data but no representation should fail ingest validation"
+  (testing "A collection with spatial data but no representation should fail ingest validation"
     (let [bad-metadata (slurp
                         (io/resource
                          "iso-samples/iso-spatial-data-missing-coordinate-system.iso19115"))

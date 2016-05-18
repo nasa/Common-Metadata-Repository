@@ -31,7 +31,7 @@
   [field-path spatial-coverage]
   (let [{:keys [spatial-representation granule-spatial-representation geometries]} spatial-coverage]
     (when geometries
-      (when (nil? (and spatial-representation granule-spatial-representation))
+      (when (nil? spatial-representation)
         {field-path ["Spatial coordinate reference type must be supplied."]}))))
 
 (def spatial-coverage-validations
