@@ -69,12 +69,22 @@
   ;; This replicates an issue we saw in CMR-2927.
   (testing "A granule with spatial data but no representation should not fail ingest"
     (let [good-metadata (slurp (io/resource "iso-samples/good-iso-spatial-data.iso19115"))
-          bad-metadata (slurp (io/resource "iso-samples/bad-iso-spatial-data.iso19115"))
+          bad-metadata (slurp
+                        (io/resource
+                         "iso-samples/iso-spatial-data-missing-coordinate-system.iso19115"))
           bad-request (iso-metadata-concept bad-metadata)
           good-request (iso-metadata-concept good-metadata)
-          bad-ingest (ingest/ingest-concept bad-request)]
-          (index/wait-until-indexed)
-          (is (= 200 (:status (ingest/ingest-concept good-request {:raw? true})))))))
+          bad-ingest (ingest/ingest-concept bad-request)
+          {:keys [status errors]} bad-ingest]
+      (is (= 422 status))
+      (is (= [{:errors
+               ["Spatial coordinate reference type must be supplied."]
+               :path ["SpatialCoverage"]}] errors))
+      (is (= 200 (:status (ingest/ingest-concept good-request {:raw? true}))))
+      (index/wait-until-indexed)
+      (let [found (search/find-refs :collection {:native-id "foo"})]
+      (is (= 1 (:hits found)))
+      (is (= 1 (-> found :refs first :revision-id)))))))
 
 
 (deftest spatial-search-test
