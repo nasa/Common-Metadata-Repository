@@ -1,0 +1,147 @@
+<div class="row content">
+  <section class="preview">
+    <!-- <p>
+      <input type="checkbox" name="markdown"></input>
+      <label for="markdown">Show as markdown</label>
+    </p> -->
+    <%= render partial: 'shared/preview/collection_information', locals: { metadata: metadata } %>
+    <%= render partial: 'shared/preview/data_identification', locals: { metadata: metadata } %>
+    <%= render partial: 'shared/preview/distribution_information', locals: { metadata: metadata } %>
+    <%= render partial: 'shared/preview/descriptive_keywords', locals: { metadata: metadata } %>
+    <%= render partial: 'shared/preview/acquisition_information', locals: { metadata: metadata } %>
+    <%= render partial: 'shared/preview/temporal_information', locals: { metadata: metadata } %>
+    <%= render partial: 'shared/preview/spatial_information', locals: { metadata: metadata } %>
+    <%= render partial: 'shared/preview/organizations', locals: { metadata: metadata } %>
+    <%= render partial: 'shared/preview/personnel', locals: { metadata: metadata } %>
+    <%= render partial: 'shared/preview/collection_citations', locals: { metadata: metadata } %>
+    <%= render partial: 'shared/preview/metadata_information', locals: { metadata: metadata } %>
+  </section>
+
+  <aside class="geographic-coverage" role="complementary">
+    <%= image_tag(relative_root_url + "/images/plate_carree_earth.png", alt: "Map of Earth", id: 'preview-map') %>
+    <section>
+      <h4>Spatial Coordinates</h4>
+      <% preview_spatial = get_preview_spatial(metadata) %>
+      <ol class="spatial-coordinates-sidebar coordinates no-bullets sidebar-list" id="coordinates">
+        <% if preview_spatial['point_coordinate_array'].size > 0 %>
+          <li class="label">Points</li>
+          <% preview_spatial['point_coordinate_array'].each do |point| %>
+            <li>
+              <span class="preview-sidebar-item">
+                Lat: <%= point['lat'] %>
+              </span>
+            </li>
+            <li>
+              <span class="preview-sidebar-item">
+                Lon: <%= point['lon'] %>
+              </span>
+            </li>
+          <% end %>
+        <% end %>
+
+        <% if preview_spatial['rectangle_coordinate_array'].size > 0 %>
+          <li class="label">Bounding Rectangle</li>
+          <% preview_spatial['rectangle_coordinate_array'].each do |rectangle| %>
+            <li>
+              <span class="preview-sidebar-item">
+                N: <%= rectangle['north_bounding_coordinate'] %>
+              </span>
+            </li>
+            <li>
+              <span class="preview-sidebar-item">
+                S: <%= rectangle['south_bounding_coordinate'] %>
+              </span>
+            </li>
+            <li>
+              <span class="preview-sidebar-item">
+                E: <%= rectangle['east_bounding_coordinate'] %>
+              </span>
+            </li>
+            <li>
+              <span class="preview-sidebar-item">
+                W: <%= rectangle['west_bounding_coordinate'] %>
+              </span>
+            </li>
+          <% end %>
+        <% end %>
+
+        <% if preview_spatial['point_coordinate_array'].size == 0 && preview_spatial['rectangle_coordinate_array'].size == 0 %>
+          <li>No Spatial Coordinates found</li>
+        <% end %>
+      </ol>
+
+      <% spatial_keywords = metadata['SpatialKeywords'] || [] %>
+      <h4>Location Keywords</h4>
+      <ul class="location-keyword-sidebar no-bullets sidebar-list">
+        <% if spatial_keywords.size > 0 %>
+          <% spatial_keywords.each do |keyword| %>
+            <li>
+              <span class="preview-sidebar-item">
+                <%= keyword %>
+              </span>
+            </li>
+          <% end %>
+        <% else %>
+          <li>No Spatial Keywords found</li>
+        <% end %>
+      </ul>
+
+      <% preview_temporal = get_preview_temporal(metadata) %>
+
+      <h4>Temporal Coverages</h4>
+      <ul class="temporal-coverage-sidebar no-bullets sidebar-list">
+        <% single_date_times = preview_temporal['single_date_times'] || [] %>
+        <% if single_date_times.size > 0 %>
+          <li class="label">Single DateTimes</li>
+          <% single_date_times.each do |single_date_time| %>
+            <li>
+              <span class="preview-sidebar-item">
+                <%= single_date_time.split('T')[0] %>
+              </span>
+            </li>
+          <% end %>
+        <% end %>
+
+        <% range_date_times = preview_temporal['range_date_times'] || [] %>
+        <% if range_date_times.size > 0 %>
+          <li class="label">DateTime Ranges</li>
+          <% range_date_times.each do |range_date_time| %>
+            <% beginning_date_time =  range_date_time['beginning_date_time'] || '' %>
+            <% ending_date_time =  range_date_time['ending_date_time'] || '' %>
+            <li>
+              <span class="preview-sidebar-item">
+                <%= beginning_date_time.split('T')[0] %>
+                to
+                <%= ending_date_time.split('T')[0] %>
+              </span>
+            </li>
+          <% end %>
+        <% end %>
+
+        <% periodic_date_times = preview_temporal['periodic_date_times'] || [] %>
+        <% if periodic_date_times.size > 0 %>
+          <li class="label">Periodic Ranges</li>
+          <% periodic_date_times.each do |periodic_date_time| %>
+            <% start_date =  periodic_date_time['start_date'] || '' %>
+            <% end_date =  periodic_date_time['end_date'] || '' %>
+            <li>
+              <span class="preview-sidebar-item">
+                <%= start_date.split('T')[0] %>
+                to
+                <%= end_date.split('T')[0] %>
+              </span>
+            </li>
+          <% end %>
+        <% end %>
+
+        <% if single_date_times.blank? && range_date_times.blank? && periodic_date_times.blank? %>
+          <li>No Temporal Coverages found</li>
+        <% end  %>
+      </ul>
+    </section>
+  </aside>
+</div>
+
+<script>
+  window.previewSpatial = <%= raw preview_spatial.to_json %>
+</script>

@@ -12,6 +12,7 @@
    :cmr-common-lib "0.1.1-SNAPSHOT"
    :cmr-acl-lib "0.1.0-SNAPSHOT"
    :cmr-transmit-lib "0.1.0-SNAPSHOT"
+   :cmr-collection-renderer-lib "0.1.0-SNAPSHOT"
    :cmr-spatial-lib "0.1.0-SNAPSHOT"
    :cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
    :cmr-umm-lib "0.1.0-SNAPSHOT"

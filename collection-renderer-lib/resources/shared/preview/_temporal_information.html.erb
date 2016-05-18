@@ -1,0 +1,60 @@
+<div class="preview-collection eui-accordion">
+  <div class="eui-accordion__header">
+    <h4 class="eui-accordion__title">Temporal Information Fields:</h4>
+    <div class="eui-accordion__icon" tabindex="0">
+      <i class="eui-icon eui-fa-chevron-circle-down"></i>
+      <span class="eui-sr-only">Toggle Temporal Information Fields</span>
+    </div>
+  </div>
+  <div class="eui-accordion__body">
+    <% if metadata['PaleoTemporalCoverage'] %>
+      <% paleo_temporal_coverage = metadata['PaleoTemporalCoverage'] %>
+      <table class="paleo-temporal-coverage-table">
+        <% if @draft.present? %><%= link_to '<i class="fa fa-edit"></i> <span class="is-invisible">Edit Paleo Temporal Coverage</span>'.html_safe, draft_edit_form_path(@draft, 'temporal_information', { anchor: 'paleo-temporal-coverage' }), { class: 'hash-link' } %><% end %>
+        <thead>
+          <tr>
+            <th colspan="5" class="table-header-span">
+              Paleo Temporal Coverage
+              <%= paleo_temporal_coverage['StartDate'] %>
+              to
+              <%= paleo_temporal_coverage['EndDate'] %>
+            </th>
+          </tr>
+          <tr>
+            <th>Eon</th>
+            <th>Era</th>
+            <th>Period</th>
+            <th>Epoch</th>
+            <th>Stage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% chronostratigraphic_units = paleo_temporal_coverage['ChronostratigraphicUnits'] || [] %>
+          <% chronostratigraphic_units.each do |unit| %>
+            <tr>
+              <td><%= unit['Eon'] %></td>
+              <td><%= unit['Era'] %></td>
+              <td><%= unit['Period'] %></td>
+              <td><%= unit['Epoch'] %></td>
+              <td><%= unit['Stage'] %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+
+    <% if metadata['TemporalKeywords'] %>
+      <h5>
+        Temporal Keywords
+        <% if @draft.present? %>
+          <%= link_to '<i class="fa fa-edit"></i> <span class="is-hidden">Edit Temporal Keywords</span>'.html_safe, draft_edit_form_path(@draft, 'temporal_information', { anchor: 'draft_temporal_keywords' }), { class: 'hash-link' } %>
+        <% end %>
+      </h5>
+      <ul class="temporal-keywords-preview">
+        <% metadata['TemporalKeywords'].each do |temporal_keyword| %>
+          <li><%= temporal_keyword %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
+</div>

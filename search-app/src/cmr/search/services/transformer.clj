@@ -15,7 +15,9 @@
             [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
             [cmr.common.xml.xslt :as xslt]
             [cmr.common.util :as u]
-            [cmr.umm.iso-smap.granule :as smap-g]))
+            [cmr.umm.iso-smap.granule :as smap-g]
+            [cmr.collection-renderer.services.collection-renderer :as collection-renderer]))
+
 
 (def transformer-supported-format?
   "The set of formats supported by the transformer."
@@ -44,6 +46,13 @@
    f
    #(xslt/read-template f)))
 
+(defn- generate-html-response
+  "Returns an HTML representation of the collection concept."
+  [context concept]
+  (let [collection (umm-spec/parse-metadata
+                    context :collection (:format concept) (:metadata concept))]
+    (collection-renderer/render-collection context collection)))
+
 (defn- transform-metadata
   "Transforms the metadata of the concept to the given format"
   [context concept target-format]
@@ -52,6 +61,9 @@
       ; xsl is defined for the transformation, so use xslt
       (xslt/transform (:metadata concept) (get-template context xsl))
       (cond
+        (= :html target-format)
+        (generate-html-response context concept)
+
         (mt/umm-json? concept-format)
         (umm-spec/generate-metadata context
           (umm-spec/parse-metadata context :collection concept-format (:metadata concept))
