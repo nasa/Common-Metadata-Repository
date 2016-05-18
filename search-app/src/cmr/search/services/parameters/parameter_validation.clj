@@ -245,9 +245,9 @@
     (if (map? param-value)
       ;; validate that tag-value cannot be empty
       (when-let [empty-value-keys (seq (map first (filter #(empty? (second %)) param-value)))]
-        [(format "tag value cannot be empty for tag data search, but were for tag keys [%s]."
+        [(format "Tag value cannot be empty for tag data search, but were for tag keys [%s]."
                  (s/join ", " (map name empty-value-keys)))])
-      ["tag-data must be in the form of tag-data[tag-key]=tag-value"])))
+      ["Tag data search must be in the form of tag-data[tag-key]=tag-value"])))
 
 (defn revision-date-validation
   "Validates that revision date parameter contains valid date time strings."
