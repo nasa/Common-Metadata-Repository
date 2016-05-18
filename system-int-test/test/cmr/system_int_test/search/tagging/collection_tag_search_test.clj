@@ -420,10 +420,25 @@
            [coll1] {:tag-data {"tag1" "cloud" "tag2" "snow"}}
            [] {:tag-data {"tag1" "cloud" "tag2" "cloud"}}))
 
-    (testing "search with invalid tag-data"
+    (testing "search with invalid tag-data format"
+      (are2 [params]
+            (= {:status 400
+                :errors ["Tag data search must be in the form of tag-data[tag-key]=tag-value"]}
+               (search/find-refs :collection params))
+
+            "tag-data=foo is invalid"
+            {:tag-data "foo"}
+
+            "tag-data[]=foo is invalid"
+            {"tag-data[]" "foo"}))
+
+    (testing "search with empty tag value for tag-data search"
       (is (= {:status 400
-              :errors ["tag-data must be in the form of tag-data[tag-key]=tag-value"]}
-             (search/find-refs :collection {:tag-data "foo"}))))
+              :errors ["Tag value cannot be empty for tag data search, but were for tag keys [foo]."]}
+             (search/find-refs :collection {:tag-data {"foo" nil}})))
+      (is (= {:status 400
+              :errors ["Tag value cannot be empty for tag data search, but were for tag keys [foo, bar]."]}
+             (search/find-refs :collection {:tag-data {"foo" nil "x" "y" "bar" ""}}))))
 
     (testing "Unsupported tag-data options"
       (are [option]
