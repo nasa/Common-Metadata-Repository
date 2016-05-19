@@ -206,8 +206,7 @@
 (defn- temporal-input-format-valid?
   "Validates the temporal input format and makes sure it was passed in as a valid string not a map"
   [temporal]
-  (when-not (map? (first temporal))
-    temporal))
+  (every? string? temporal))
 
 (defn temporal-format-validation
   "Validates that temporal datetime parameter conforms to the :date-time-no-ms format,
@@ -233,7 +232,7 @@
                 (day-valid? start-day "temporal_start_day")
                 (day-valid? end-day "temporal_end_day")))))
          temporal)
-        ["Temporal queries do not support optional parameters. Please check your query."]))
+        ["The valid format for temporal parameters are temporal[]=startdate,stopdate and temporal[]=startdate,stopdate,startday,endday"]))
     []))
 
 (defn updated-since-validation
