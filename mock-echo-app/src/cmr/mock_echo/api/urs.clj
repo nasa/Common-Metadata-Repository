@@ -100,7 +100,6 @@
 (defn login-xml
   "Processes a login request"
   [context body]
-  (println "XML BODY = " body)
   (let [{:keys [username password]} (parse-login-request body)]
     (if (and (urs-db/user-exists? context username)
              (urs-db/password-matches? context username password))
@@ -142,9 +141,7 @@
       ;; echo kernel adds a / for some reason to the request it sends...
       (POST "/login/" {:keys [request-context body content-type] :as request}
         (assert-urs-basic-auth-info request)
-        (case content-type
-          "application/x-www-form-urlencoded" (login-form request-context (slurp body))
-          (login-xml request-context (slurp body))))
+        (login-xml request-context (slurp body)))
 
       (context "/groups/:group" [group]
         (context "/:username" [username]
@@ -157,21 +154,18 @@
         ;; This is used for adding test data. Body should be a list of
         ;; maps with username, password, and other URS user fields
         (POST "/" {context :request-context body :body content-type :content-type}
-          (case content-type
-            ;; Not sure why, but I cant use mt/xml here in place of the string
-            "application/xml" (create-users-xml context (slurp body))
+          (if (= mt/xml content-type)
+            (create-users-xml context (slurp body))
             (create-users-json context (slurp body))))
 
         (PUT "/:username" {context :request-context body :body content-type :content-type}
-          (case content-type
-            ;; Not sure why, but I cant use mt/xml here in place of the string
-            "application/xml" (create-users-xml context (slurp body))
+          (if (= mt/xml content-type)
+            (create-users-xml context (slurp body))
             (create-users-json context (slurp body))))
 
         (context "/:username" [username]
           (GET "/" {:keys [request-context] :as request}
             (assert-urs-basic-auth-info request)
-            (println "returning user " (get-user request-context username))
             (get-user request-context username))))
 
       (context "/oauth" []
