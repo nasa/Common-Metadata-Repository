@@ -913,10 +913,6 @@ A couple of parameters used in search expect a date range as input. For example,
 
 Note: ISO 8601 does not allow open-ended time intervals but the CMR API does allow specification of intervals which are open ended on one side. For example, `2000-01-01T10:00:00Z/` and `/2000-01-01T10:00:00Z` are valid ranges.
 
-```
-curl -i -XGET -H "Cmr-pretty:true" "%CMR-ENDPOINT%/collections.xml?temporal=2015-11-04T15:30:29.746Z,2015-12-04T15:30:29.746Z"
-```
-
 ### <a name="collection-search-by-parameters"></a> Collection Search Examples
 
 #### <a name="find-all-collections"></a> Find all collections
