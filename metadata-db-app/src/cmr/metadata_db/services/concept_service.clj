@@ -27,8 +27,7 @@
             [clojure.string]
             [clj-time.core :as t]
             [cmr.common.time-keeper :as time-keeper]
-            [cmr.metadata-db.services.concept-constraints :as cc])
-  )
+            [cmr.metadata-db.services.concept-constraints :as cc]))
 
 
 (def num-revisions-to-keep-per-concept-type
