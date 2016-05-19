@@ -3,7 +3,8 @@
   (:require [cmr.transmit.echo.soap.core :as soap]
             [cmr.common.xml.parse :as xp]
             [cmr.common.xml.simple-xpath :as xpath]
-            [cmr.common.log :refer (debug info warn error)]))
+            [cmr.common.log :refer (debug info warn error)]
+            [clojure.string :as str]))
 
 (def user-keys
   "Keys within a user map."
@@ -56,18 +57,26 @@
       (-> (soap/post-soap :user body)
           (soap/extract-string :create-user))))
 
-(defn get-user-by-user-name
+(defn get-user-by-user-name-case-sensitive
   "Perform a GetUserByUserName request against the SOAP API.  Takes a map containing request parameters:
     [:token :user-name]
     Note that for now this returns a flat map, and does not contain nested elements like addresses."
-  [param-map]
-  (let [{:keys [token user-name]} param-map
-        body ["ns2:GetUserByUserName"
+  [token user-name]
+  (let [body ["ns2:GetUserByUserName"
                 soap/soap-ns-map
                 ["ns2:token" token]
                 ["ns2:userName" user-name]]]
       (-> (soap/post-soap :user body)
           (soap/extract-item-map :get-user-by-user-name user-keys))))
+
+(defn get-user-by-user-name
+  "Perform a GetUserByUserName request against the SOAP API.  Takes a map containing request parameters:
+    [:token :user-name]
+    Note that for now this returns a flat map, and does not contain nested elements like addresses."
+  [param-map]
+  (let [{:keys [token user-name]} param-map]
+    (or (get-user-by-user-name-case-sensitive token (str/lower-case user-name))
+        (get-user-by-user-name-case-sensitive token user-name))))
 
 (defn get-current-user
   "Perform a GetCurrentUser request against the SOAP API using the provided token."
