@@ -269,6 +269,11 @@
     (let [{:keys [status errors]} (search/find-refs :collection {"temporal[]" "2010-13-12T12:00:00,"})]
       (is (= 400 status))
       (is (re-find #"temporal start datetime is invalid: \[2010-13-12T12:00:00\] is not a valid datetime" (first errors)))))
+  (testing "periodic temporal search that produces empty search ranges."
+    (let [{:keys [status errors]} (search/find-refs :collection
+                            {"temporal[]" "2016-05-10T08:18:16Z,2016-05-10T08:34:31Z,131,131"})]
+      (is (= 400 status))
+      (is (re-find #"Periodic temporal search produced no searchable ranges and is invalid." (first errors)))))
   (testing "search by invalid temporal start-date after end-date."
     (let [{:keys [status errors]} (search/find-refs :collection {"temporal[]" "2011-01-01T10:00:00Z,2010-01-10T12:00:00Z"})]
       (is (= 400 status))
