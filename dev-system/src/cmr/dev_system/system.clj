@@ -100,7 +100,7 @@
 
 (def use-access-log?
   "Indicates whether the servers will use the access log."
-  false)
+  true)
 
 (defn- set-web-server-options
   "Modifies the app server instances to configure web server options. Takes the system

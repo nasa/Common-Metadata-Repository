@@ -16,15 +16,11 @@
             [cmr.metadata-db.services.search-service :as search]
 
             ;; Required to get code loaded
-            [cmr.metadata-db.data.oracle.concepts]
-            [cmr.metadata-db.data.oracle.concepts.collection]
-            [cmr.metadata-db.data.oracle.concepts.granule]
-            [cmr.metadata-db.data.oracle.concepts.tag]
-            [cmr.metadata-db.data.oracle.concepts.tag-association]
-            [cmr.metadata-db.data.oracle.concepts.service]
-            [cmr.metadata-db.data.oracle.concepts.group]
-            [cmr.metadata-db.data.oracle.providers]
-            [cmr.metadata-db.data.oracle.search]
+            cmr.metadata-db.data.oracle.concepts
+            (cmr.metadata-db.data.oracle.concepts collection granule
+                                                  tag tag-association
+                                                  service group acl)
+            (cmr.metadata-db.data.oracle providers search)
 
             [cmr.common.log :refer (debug info warn error)]
             [clojure.set :as set]
