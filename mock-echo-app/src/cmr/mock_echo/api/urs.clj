@@ -166,10 +166,4 @@
         (context "/:username" [username]
           (GET "/" {:keys [request-context] :as request}
             (assert-urs-basic-auth-info request)
-            (get-user request-context username))))
-
-      (context "/oauth" []
-        (GET "/authorize" {params :query-params}
-          (let [redirect-uri (get params "redirect_uri")
-                state (get params "state")]
-            (rsp/redirect (str redirect-uri "?state=" state "&code=12345&username=User123"))))))))
+            (get-user request-context username)))))))
