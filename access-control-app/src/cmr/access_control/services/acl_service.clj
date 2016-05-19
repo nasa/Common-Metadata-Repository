@@ -1,12 +1,14 @@
 (ns cmr.access-control.services.acl-service
   (:require [clojure.string :as str]
+            [cmr.access-control.services.acl-service-messages :as msg]
             [cmr.common.log :refer [info]]
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
             [cmr.transmit.echo.tokens :as tokens]
             [cmr.transmit.metadata-db2 :as mdb]
             [cheshire.core :as json]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [cmr.common.concepts :as concepts]))
 
 (def acl-provider-id
   "The provider ID for all ACLs. Since ACLs are not owned by individual
@@ -31,6 +33,20 @@
                                          (:name catalog-item-identity))
         :else                    (errors/throw-service-error
                                    :bad-request "malformed ACL")))))
+
+(defn- fetch-acl-concept
+  "Fetches the latest version of ACL concept by concept id. Handles unknown concept ids by
+  throwing a service error."
+  [context concept-id]
+  (let [{:keys [concept-type provider-id]} (concepts/parse-concept-id concept-id)]
+    (when (not= :acl concept-type)
+      (errors/throw-service-error :bad-request (msg/bad-acl-concept-id concept-id))))
+
+  (if-let [concept (mdb/get-latest-concept context concept-id false)]
+    (if (:deleted concept)
+      (errors/throw-service-error :not-found (msg/acl-deleted concept-id))
+      concept)
+    (errors/throw-service-error :not-found (msg/acl-does-not-exist concept-id))))
 
 (defn save-updated-acl-concept
   [context concept acl]
@@ -69,4 +85,4 @@
 (defn get-acl
   "Returns the parsed metadata of the latest revision of the ACL concept by id."
   [context concept-id]
-  (edn/read-string (:metadata (mdb/get-latest-concept context concept-id))))
+  (edn/read-string (:metadata (fetch-acl-concept context concept-id))))
