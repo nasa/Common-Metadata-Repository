@@ -93,4 +93,10 @@
   (let [token (e/login (u/conn-context) "admin")
         concept-id (:concept_id (ac/create-acl (u/conn-context) system-acl {:token token}))]
     ;; Acceptance criteria: A created ACL can be retrieved after it is created.
-    (is (= system-acl (ac/get-acl (u/conn-context) concept-id {:token token})))))
+    (is (= system-acl (ac/get-acl (u/conn-context) concept-id {:token token})))
+    (let [resp (ac/get-acl (u/conn-context) "NOTACONCEPTID" {:token token :raw? true})]
+      (is (= 400 (:status resp)))
+      (is (= ["Concept-id [NOTACONCEPTID] is not valid."] (:errors (:body resp)))))
+    (let [resp (ac/get-acl (u/conn-context) "ACL999999-CMR" {:token token :raw? true})]
+      (is (= 404 (:status resp)))
+      (is (= ["ACL could not be found with concept id [ACL999999-CMR]"] (:errors (:body resp)))))))
