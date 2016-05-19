@@ -514,7 +514,6 @@
   {:collection (concat
                  cpv/common-validations
                  [boosts-validation
-
                   temporal-format-validation
                   updated-since-validation
                   revision-date-validation
