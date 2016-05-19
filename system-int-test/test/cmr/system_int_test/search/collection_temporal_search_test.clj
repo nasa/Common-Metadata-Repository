@@ -292,7 +292,7 @@
     (let [{:keys [status errors]} (search/find-refs :collection {"temporal[]" "2010-01-01T00:00:00Z,2011-01-10T00:00:00Z"
                                                                  "temporal[][temporal_start]" "2010-01-01T10:00:00Z/P10D2H"})]
       (is (= 400 status))
-      (is (re-find #"Parameter [temporal] may be either single valued or multivalued, but not both." (first errors))))))
+      (is (re-find #"Parameter \[temporal\] may be either single valued or multivalued, but not both\." (first errors))))))
 
 (deftest search-temporal-json-error-scenarios
   (testing "search by invalid temporal date format"
