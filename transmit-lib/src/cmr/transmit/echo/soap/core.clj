@@ -7,7 +7,8 @@
             [cmr.common.log :refer (debug info warn error)]
             [clojure.string :as s]
             [camel-snake-kebab.core :as csk]
-            [cmr.common.xml.simple-xpath :as xpath]))
+            [cmr.common.xml.simple-xpath :as xpath]
+            [cmr.common.util :as util]))
 
 (defconfig soap-url-base
   "Base URL for SOAP requests"
@@ -90,7 +91,8 @@
     constucted from each keyword."
   [xml keywords]
   (when xml
-    (into {} (map #(parse-keyword-from-xml xml %) keywords))))
+    (util/remove-nil-keys
+      (into {} (map #(parse-keyword-from-xml xml %) keywords)))))
 
 (defn post-xml
   "Post an XML object to the specified endpoint.  The XML must be a hiccup style object."

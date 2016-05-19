@@ -149,13 +149,13 @@
   (let [{:keys [token provider-guid provider-id end-point retry-attempts retry-wait-time routing
                 ssl-enabled ssl-certificate ssl-last-update order-supports-duplicate-catalog-items
                 collections-supporting-duplicate-order-items supported-transactions max-items-per-order properties
-                ordering-suspended-until-date override-notification-enabled param-map]}]
+                ordering-suspended-until-date override-notification-enabled]} param-map]
     (soap/post-soap
       :provider ["ns2:SetProviderPolicies"
                   soap/soap-ns-map
                   ["ns2:token" token]
-                  (if provider-id ["ns2:providerId" provider-id])
-                  (if provider-guid ["ns2:providerGuid" provider-guid])
+                  (when provider-id ["ns2:providerId" provider-id])
+                  (when provider-guid ["ns2:providerGuid" provider-guid])
                   ["ns2:policies"
                     ["ns3:EndPoint" end-point]
                     ["ns3:RetryAttempts" retry-attempts]
@@ -163,16 +163,17 @@
                     ["ns3:Routing" (or routing "ORDER_FULFILLMENT_V9")]
                     ["ns3:SslPolicy"
                       ["ns3:SslEnabled" ssl-enabled]
-                      (if ssl-certificate ["ns3:SslCertificate" ssl-certificate])
-                      (if ssl-last-update ["ns3:SslLastrUpdate" ssl-last-update])]
+                      (when ssl-certificate ["ns3:SslCertificate" ssl-certificate])
+                      (when ssl-last-update ["ns3:SslLastrUpdate" ssl-last-update])]
                     ["ns3:OrderSupportsDuplicateCatalogItems" order-supports-duplicate-catalog-items]
-                    (if collections-supporting-duplicate-order-items ["ns3:CollectionsSupportingDuplicateCatalogItems"
-                                                                      (soap/item-list collections-supporting-duplicate-order-items)])
+                    (when collections-supporting-duplicate-order-items
+                      ["ns3:CollectionsSupportingDuplicateCatalogItems"
+                        (soap/item-list collections-supporting-duplicate-order-items)])
                     ["ns3:SupportedTransactions" (soap/item-list (map csk/->SCREAMING_SNAKE_CASE_STRING supported-transactions))]
-                    (if max-items-per-order ["ns3:MaxItemsPerOrder" max-items-per-order])
-                    (if properties ["ns3:Properties" properties])
-                    (if ordering-suspended-until-date ["ns3:OrderingSuspendedUntilDate" ordering-suspended-until-date])
-                    (if override-notification-enabled ["ns3:OverrideNotificationEnabled" override-notification-enabled])]])
+                    (when max-items-per-order ["ns3:MaxItemsPerOrder" max-items-per-order])
+                    (when properties ["ns3:Properties" properties])
+                    (when ordering-suspended-until-date ["ns3:OrderingSuspendedUntilDate" ordering-suspended-until-date])
+                    (when override-notification-enabled ["ns3:OverrideNotificationEnabled" override-notification-enabled])]])
     nil))
 
 (defn get-provider-policies

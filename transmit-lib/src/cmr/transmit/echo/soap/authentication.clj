@@ -11,7 +11,10 @@
     :created :expires :guest :revoked :client-id :user-name])
 
 (defn login
-  "Perform a login request against the SOAP API using the specified username and pass and return the generated token."
+  "Perform a login request against the SOAP API using the specified username and pass and return the generated token.
+    Can also pass an optional parameter map which can include any of the following:
+    [user-guid act-as-user-guid on-behalf-of-provider-guid
+     created expires guest revoked client-id user-name]"
   ([user pass]
    (login user pass {}))
   ([user pass param-map]
