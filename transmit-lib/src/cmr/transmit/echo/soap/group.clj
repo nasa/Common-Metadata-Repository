@@ -86,7 +86,7 @@
   "Convenience function to allow retrieving a group by the group name and user id of one of its members, without needing to know any guids.
     returns a map containing the group information for the matched group, if any."
   [token group-name member-name]
-  (let [member ((user/get-user-by-user-name {:token token :user-name member-name}))
+  (let [member (user/get-user-by-user-name {:token token :user-name member-name})
         member-guid (:guid member)
         group (->> (get-group-names-by-member {:token token :member-guid member-guid})
                    (filter #(= (:name %) group-name))
