@@ -83,6 +83,10 @@
   "The port to use for connections to ECHO Rest"
   {:default 3008 :type Long})
 
+(defconfig mock-echo-port
+  "The port to start mock echo and urs on"
+  {:default 3008 :type Long})
+
 (defconfig echo-rest-context
   "The root context for connections to ECHO Rest."
   {:default ""})
@@ -181,7 +185,3 @@
   [connection]
   {:connection-manager (conn/conn-mgr connection)
    :socket-timeout (http-socket-timeout)})
-
-
-
-
