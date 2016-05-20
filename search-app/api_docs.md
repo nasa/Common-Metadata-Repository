@@ -705,7 +705,7 @@ __Example__
 
 #### <a name="umm-json"></a> UMM JSON
 
-The JSON response contains meta-metadata of the collection and its UMM fields. The UMM JSON format is only applicable to collection searches. It is an alpha feature and subject to change in the future.
+The JSON response contains meta-metadata of the collection and its UMM fields. The UMM JSON format is only applicable to collection searches. It is an alpha feature and subject to change in the future. The UMM-JSON response is helpful if you wish to get the native-id of a collection after ingesting it.
 
 __Example__
 
