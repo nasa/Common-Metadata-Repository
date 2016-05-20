@@ -35,4 +35,4 @@ Items to include in each issue
 ## 1.51
 
 * CMR-2745 As a client user, I want my facet search results to be sorted by relevance
-  * Collection searches with any of the following parameters will now be scored and sorted by relevance: platform, instrument, sensor, two_d_coordinate_system_name, science_keywords, project, processing_level_id, data_center, archive_center
+  * Collection searches with any of the following parameters will now be scored: platform, instrument, sensor, two_d_coordinate_system_name, science_keywords, project, processing_level_id, data_center, archive_center
