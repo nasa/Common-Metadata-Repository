@@ -28,6 +28,7 @@
 
    :uberjar {:main cmr.index-set.runner
              :aot :all}}
+  :test-paths ["test" "int_test"]
   :aliases {;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
             ;; Alias to test2junit for consistency with lein-test-out
