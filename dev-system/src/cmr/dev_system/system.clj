@@ -159,9 +159,7 @@
   [type]
   (transmit-config/set-echo-rest-port! external-echo-port)
   (transmit-config/set-echo-system-token! (external-echo-system-token))
-  (transmit-config/set-echo-rest-context! "/echo-rest")
-  ;;start mock echo even when running an external echo so we can use the mock urs
-  (mock-echo-system/create-system))
+  (transmit-config/set-echo-rest-context! "/echo-rest"))
 
 (defmulti create-queue-broker
   "Sets message queue configuration values and returns an instance of the message queue broker
