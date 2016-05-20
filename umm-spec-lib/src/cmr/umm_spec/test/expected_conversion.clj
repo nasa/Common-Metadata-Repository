@@ -592,6 +592,26 @@
                                       :Instruments instruments}))
         platforms))))
 
+(defn- expected-dif-spatial-extent
+  "Returns the expected DIF parsed spatial extent for the given spatial extent."
+  [spatial]
+  (let [brs (get-in spatial [:HorizontalSpatialDomain :Geometry :BoundingRectangles])]
+    (when (seq brs)
+      (-> spatial
+          (assoc :SpatialCoverageType "HORIZONTAL"
+                 :OrbitParameters nil
+                 :GranuleSpatialRepresentation "CARTESIAN"
+                 :VerticalSpatialDomains nil)
+          (update-in [:HorizontalSpatialDomain] assoc
+                     :ZoneIdentifier nil)
+          (update-in [:HorizontalSpatialDomain :Geometry] assoc
+                     :CoordinateSystem "CARTESIAN"
+                     :Points nil
+                     :Lines nil
+                     :GPolygons nil)
+          (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc
+                          :CenterPoint nil)))))
+
 (defmethod umm->expected-convert :dif
   [umm-coll _]
   (-> umm-coll
@@ -606,21 +626,7 @@
       ;; DIF 9 sets the UMM Version to 'Not provided' if it is not present in the DIF 9 XML
       (assoc :Version (or (:Version umm-coll) su/not-provided))
       (update-in [:TemporalExtents] dif9-temporal)
-      (update-in [:SpatialExtent] assoc
-                 :SpatialCoverageType nil
-                 :OrbitParameters nil
-                 :GranuleSpatialRepresentation nil
-                 :VerticalSpatialDomains nil)
-      (update-in [:SpatialExtent :HorizontalSpatialDomain] assoc
-                 :ZoneIdentifier nil)
-      (update-in [:SpatialExtent :HorizontalSpatialDomain :Geometry] assoc
-                 :CoordinateSystem nil
-                 :Points nil
-                 :Lines nil
-                 :GPolygons nil)
-      (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc
-                      :CenterPoint nil)
-      (update-in [:SpatialExtent] prune-empty-maps)
+      (update-in [:SpatialExtent] expected-dif-spatial-extent)
       (update-in [:Distributions] su/remove-empty-records)
       ;; DIF 9 does not support Platform Type or Characteristics. The mapping for Instruments is
       ;; unable to be implemented as specified.
