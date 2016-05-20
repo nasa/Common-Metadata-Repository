@@ -203,6 +203,11 @@
         [(format "%s [%s] must be an integer between 1 and 366" tag day)]))
     []))
 
+(defn- temporal-input-format-valid?
+  "Validates the temporal input format and makes sure it was passed in as a valid string not a map"
+  [temporal]
+  (every? string? temporal))
+
 (defn temporal-format-validation
   "Validates that temporal datetime parameter conforms to the :date-time-no-ms format,
   start-day and end-day are integer between 1 and 366"
@@ -211,21 +216,23 @@
     (let [temporal (if (sequential? temporal)
                      temporal
                      [temporal])]
-      (mapcat
-        (fn [value]
-          (if (re-find #"/" value)
-            (let [[iso-range start-day end-day] (map s/trim (s/split value #","))]
-              (concat
+      (if (temporal-input-format-valid? temporal)
+        (mapcat
+         (fn [value]
+           (if (re-find #"/" value)
+             (let [[iso-range start-day end-day] (map s/trim (s/split value #","))]
+               (concat
                 (cpv/validate-date-time-range nil)
                 (day-valid? start-day "temporal_start_day")
                 (day-valid? end-day "temporal_end_day")))
-            (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
-              (concat
+             (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
+               (concat
                 (cpv/validate-date-time "temporal start" start-date)
                 (cpv/validate-date-time "temporal end" end-date)
                 (day-valid? start-day "temporal_start_day")
                 (day-valid? end-day "temporal_end_day")))))
-        temporal))
+         temporal)
+        ["The valid format for temporal parameters are temporal[]=startdate,stopdate and temporal[]=startdate,stopdate,startday,endday"]))
     []))
 
 (defn updated-since-validation
@@ -242,8 +249,12 @@
   "Validates tag-data parameter must be a map"
   [concept-type params]
   (when-let [param-value (:tag-data params)]
-    (when-not (map? param-value)
-      ["tag-data must be in the form of tag-data[tag-key]=tag-value"])))
+    (if (map? param-value)
+      ;; validate that tag-value cannot be empty
+      (when-let [empty-value-keys (seq (map first (filter #(empty? (second %)) param-value)))]
+        [(format "Tag value cannot be empty for tag data search, but were for tag keys [%s]."
+                 (s/join ", " (map name empty-value-keys)))])
+      ["Tag data search must be in the form of tag-data[tag-key]=tag-value"])))
 
 (defn revision-date-validation
   "Validates that revision date parameter contains valid date time strings."

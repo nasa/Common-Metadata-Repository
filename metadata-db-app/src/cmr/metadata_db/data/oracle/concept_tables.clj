@@ -24,6 +24,10 @@
   [_ _]
   "cmr_groups")
 
+(defmethod get-table-name :acl
+  [_ _]
+  "cmr_acls")
+
 (defmethod get-table-name :tag
   [_ _]
   "cmr_tags")

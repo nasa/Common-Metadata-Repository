@@ -1323,7 +1323,7 @@ When `has_granules` is set to "true" or "false", results will be restricted to c
 
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 
-Collection results are sorted by ascending entry title by default when a search does not result in a score. If one of the scored search fields is searched and a score is produced then the search results will be sorted by relevance (score descending). One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` can be used to explicitly request ascending.
+Collection results are sorted by ascending entry title by default when a search does not result in a score. If a keyword search is performed then the search results will be sorted by relevance (score descending). One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` can be used to explicitly request ascending.
 
 ##### Valid Collection Sort Keys
 
@@ -1338,7 +1338,7 @@ Collection results are sorted by ascending entry title by default when a search 
   * `sensor`
   * `provider`
   * `revision_date`
-  * `score` - document relevance score, only useful when a search will return a score, defaults to descending
+  * `score` - document relevance score, defaults to descending. See [Document Scoring](#document-scoring).
   * `has_granules` - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.
 
 Example of sorting by start_date in descending order: (Most recent data first)
@@ -1834,8 +1834,7 @@ Collection search results are scored when any of the following parameters are se
 * data_center
 * archive_center
 
-Any terms found in the those parameters are used to score results across other fields in the search results. A term is a contiguous set of characters not containing whitespace. A series of filters are executed against each document. Each of these has an associated boost value. The boost values of all the filters that match a given document are multiplied together to get the final document score. Documents that match none of the filters have a default
-score of 1.0.
+Any terms found in the those parameters are used to score results across other fields in the search results. A term is a contiguous set of characters not containing whitespace. A series of filters are executed against each document. Each of these has an associated boost value. The boost values of all the filters that match a given document are multiplied together to get the final document score.
 
 The filters are case insensitive, support wild-cards * and ?, and are given below:
 

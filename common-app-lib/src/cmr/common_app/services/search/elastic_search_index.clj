@@ -61,14 +61,14 @@
                 concept-type
                 (or (:result-fields query) (concept-type+result-format->fields concept-type query)))
         from offset
-        query-map (util/remove-nil-keys {:query elastic-query
-                                         :version true
-                                         :sort sort-params
-                                         :size page-size
-                                         :from from
-                                         :fields fields
-                                         :aggs aggregations
-                                         :highlight highlights})]
+        query-map (util/remove-nil-keys (merge elastic-query
+                                               {:version true
+                                                :sort sort-params
+                                                :size page-size
+                                                :from from
+                                                :fields fields
+                                                :aggs aggregations
+                                                :highlight highlights}))]
     (debug "Executing against indexes [" (:index-name index-info) "] the elastic query:"
            (pr-str elastic-query)
            "with sort" (pr-str sort-params)

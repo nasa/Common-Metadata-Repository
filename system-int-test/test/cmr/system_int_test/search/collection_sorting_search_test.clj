@@ -262,18 +262,26 @@
                                          :spatial-keywords ["wood"]})))]
     (index/wait-until-indexed)
 
-    (are [params]
-      (d/refs-match-order? [coll2 coll3 coll1] (search/find-refs :collection params))
-      {:keyword "wood"}
-      {:platform "wood"}
-      {:instrument "wood"}
-      {:sensor "wood"}
-      {:science-keywords {"0" {:any "wood"}}}
-      {:project "wood"}
-      {:two-d-coordinate-system-name "wood"}
-      {:processing-level-id "wood"}
-      {:data-center "wood"}
-      {:archive-center "wood"})))
+    (testing "Keyword searching is by score"
+      (is (d/refs-match-order? [coll2 coll3 coll1] (search/find-refs :collection {:keyword "wood"})))
+      (testing "Adding in other parameters still sorts by score"
+        (is (d/refs-match-order?
+             [coll2 coll3 coll1]
+             (search/find-refs :collection {:keyword "wood"
+                                            :platform "wood"})))))
+
+    (testing "Everything else should default to entry title"
+      (are [params]
+        (d/refs-match-order? [coll1 coll2 coll3] (search/find-refs :collection params))
+        {:platform "wood"}
+        {:instrument "wood"}
+        {:sensor "wood"}
+        {:science-keywords {"0" {:any "wood"}}}
+        {:project "wood"}
+        {:two-d-coordinate-system-name "wood"}
+        {:processing-level-id "wood"}
+        {:data-center "wood"}
+        {:archive-center "wood"}))))
 
 (deftest multiple-sort-key-test
   (let [c1 (make-coll "PROV1" "et10" 10 nil)

@@ -42,8 +42,11 @@
         ast-l1t "ASTER Level 1 precision terrain corrected registered at-sensor radiance V003"
         ;; Generate access url objects from string urls
         gen-access-urls (fn [urls] (map #(hash-map :type "GET DATA" :url %) urls))
-        gen-resource-urls (fn [urls] (map #(hash-map :type "OPENDAP DATA ACCESS"
-                                                     :url %) urls))
+        gen-resource-urls (fn [urls] (map #(hash-map :type "OPENDAP DATA ACCESS" :url %) urls))
+        gen-browse-urls (fn [urls] (map #(hash-map :type "GET RELATED VISUALIZATION" :url %) urls))
+        gen-qa-urls (fn [urls] (map #(hash-map :type "Quality Assurance"
+                                               :mime-type "text/plain"
+                                               :url %) urls))
         gen-measured-parameter (fn [{:keys [parameter-name qa-stats qa-flags]}]
                                  (umm-g/map->MeasuredParameter
                                    {:parameter-name parameter-name
@@ -55,6 +58,10 @@
         frbt-egi-url "http://f5eil01v.edn.ecs.nasa.gov:22500/egi_DEV07/request?REQUEST_MODE=STREAM&amp;SUBAGENT_ID=FRI&amp;FORMAT=TIR&amp;FILE_IDS=94306"
         frbv-data-pool-url "ftp://f5eil01v.edn.ecs.nasa.gov/FS1/ASTT/AST_L1T.003/2014.04.27/AST_L1T_00304272014172403_20140428144310_12345_V.tif"
         frbv-egi-url "http://f5eil01v.edn.ecs.nasa.gov:22500/egi_DEV07/request?REQUEST_MODE=STREAM&amp;SUBAGENT_ID=FRI&amp;FORMAT=VNIR&amp;FILE_IDS=94306"
+        frbt-browse-url "ftp://f5eil01v.edn.ecs.nasa.gov/FS1/BRWS/Browse.001/2015.09.18/AST_L1T_00304122000183005_20150409110105_78507_BR.3.TIR.jpg"
+        frbv-browse-url "ftp://f5eil01v.edn.ecs.nasa.gov/FS1/BRWS/Browse.001/2015.09.18/AST_L1T_00304122000183005_20150409110105_78507_BR.2.VNIR.jpg"
+        ast-l1t-qa-url "ftp://f5eil01v.edn.ecs.nasa.gov/FS1/OTHR/QA.001/2015.09.18/AST_L1T_00304122000183005_20150409110105_78507_QA.txt"
+        ast-l1t-qa-browse-url "ftp://f5eil01v.edn.ecs.nasa.gov/FS1/BRWS/Browse.001/2015.09.18/AST_L1T_00304122000183005_20150409110105_78507_BR.4.QA.jpg"
         random-url "http://www.foo.com"]
 
     (are [provider-id src-entry-title virt-short-name virt-version-id
@@ -261,32 +268,51 @@
          "LPDAAC_ECS" ast-l1t "AST_FRBT" "003"
          {:granule-ur "SC:AST_L1T.003:2148809731"
           :related-urls (concat [{:type "GET RELATED VISUALIZATION" :url random-url}]
-                                (gen-access-urls [frbt-data-pool-url frbt-egi-url random-url]))
+                                (gen-access-urls [frbt-data-pool-url frbt-egi-url random-url])
+                                (gen-browse-urls [frbt-browse-url frbv-browse-url ast-l1t-qa-browse-url random-url])
+                                (gen-qa-urls [ast-l1t-qa-url random-url]))
           :product-specific-attributes [{:name "FullResolutionThermalBrowseAvailable" :values ["YES"]}
                                         {:name "identifier_product_doi_authority" :values ["authority"]}]}
          {:granule-ur "SC:AST_FRBT.003:2148809731"
-          :related-urls (gen-access-urls [frbt-data-pool-url frbt-egi-url])}
+          :related-urls (concat (gen-access-urls [frbt-data-pool-url frbt-egi-url])
+                                (gen-browse-urls [frbt-browse-url ast-l1t-qa-browse-url])
+                                (gen-qa-urls [ast-l1t-qa-url]))}
 
          "LPDAAC_ECS" ast-l1t "AST_FRBT" "003"
          {:granule-ur "SC:AST_L1T.003:2148809731"
-          :related-urls (gen-access-urls [frbt-data-pool-url frbt-egi-url random-url])
+          :related-urls (concat [{:type "GET RELATED VISUALIZATION" :url random-url}]
+                                (gen-access-urls [frbt-data-pool-url frbt-egi-url random-url])
+                                (gen-browse-urls [frbt-browse-url frbv-browse-url ast-l1t-qa-browse-url random-url])
+                                (gen-qa-urls [ast-l1t-qa-url random-url]))
           :product-specific-attributes [{:name "FullResolutionThermalBrowseAvailable" :values ["NO"]}]}
-         {:granule-ur "SC:AST_FRBT.003:2148809731"}
+         {:granule-ur "SC:AST_FRBT.003:2148809731"
+          :related-urls (concat (gen-browse-urls [ast-l1t-qa-browse-url])
+                                (gen-qa-urls [ast-l1t-qa-url]))}
 
          ;; AST_FRBV
          "LPDAAC_ECS" ast-l1t "AST_FRBV" "003"
          {:granule-ur "SC:AST_L1T.003:2148809731"
           :related-urls (concat [{:type "GET RELATED VISUALIZATION" :url random-url}]
-                                (gen-access-urls [frbv-data-pool-url frbv-egi-url random-url]))
+                                (gen-access-urls [frbt-data-pool-url frbt-egi-url frbv-data-pool-url frbv-egi-url random-url])
+                                (gen-browse-urls [frbt-browse-url frbv-browse-url ast-l1t-qa-browse-url random-url])
+                                (gen-qa-urls [ast-l1t-qa-url random-url]))
           :product-specific-attributes [{:name "FullResolutionVisibleBrowseAvailable" :values ["YES"]}
                                         {:name "identifier_product_doi" :values ["doi"]}
                                         {:name "some other psa" :values ["psa-val"]}]}
          {:granule-ur "SC:AST_FRBV.003:2148809731"
-          :related-urls (gen-access-urls [frbv-data-pool-url frbv-egi-url])
+          :related-urls (concat (gen-access-urls [frbv-data-pool-url frbv-egi-url])
+                                (gen-browse-urls [frbv-browse-url ast-l1t-qa-browse-url])
+                                (gen-qa-urls [ast-l1t-qa-url]))
           :product-specific-attributes [{:name "some other psa" :values ["psa-val"]}]}
 
          "LPDAAC_ECS" ast-l1t "AST_FRBV" "003"
          {:granule-ur "SC:AST_L1T.003:2148809731"
-          :related-urls (gen-access-urls [frbv-data-pool-url frbv-egi-url random-url])}
-         {:granule-ur "SC:AST_FRBV.003:2148809731"})))
+          :related-urls (concat [{:type "GET RELATED VISUALIZATION" :url random-url}]
+                                (gen-access-urls [frbt-data-pool-url frbt-egi-url frbv-data-pool-url frbv-egi-url random-url])
+                                (gen-browse-urls [frbt-browse-url frbv-browse-url ast-l1t-qa-browse-url random-url])
+                                (gen-qa-urls [ast-l1t-qa-url random-url]))}
+         {:granule-ur "SC:AST_FRBV.003:2148809731"
+          :related-urls (concat (gen-browse-urls [ast-l1t-qa-browse-url])
+                                (gen-qa-urls [ast-l1t-qa-url]))})))
+
 

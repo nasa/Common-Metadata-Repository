@@ -32,8 +32,8 @@
                                                                   :start-date start-date
                                                                   :exclusive? exclusive?})])])]
     (gc/and-conds (concat
-                   [(cqm/map->ExistCondition {:field start-date-field})]
-                   conditions))))
+                    [(cqm/map->ExistCondition {:field start-date-field})]
+                    conditions))))
 
 (defn current-end-date
   "Returns the current end datetime for a given year and attributes of a periodic temporal condition"
@@ -82,8 +82,12 @@
             conditions (map
                          #(simple-conditions-for-year
                             % start-date end-date start-day end-day end-year limit-to-granules)
-                         (range (t/year start-date) (inc end-year)))]
-        (gc/or-conds (remove nil? conditions)))
+                         (range (t/year start-date) (inc end-year)))
+            conditions (remove nil? conditions)]
+        (if (seq conditions)
+          (gc/or-conds conditions)
+          (errors/throw-service-error
+            :bad-request "Periodic temporal search produced no searchable ranges and is invalid.")))
       (errors/throw-service-error
         :bad-request
         "At least temporal_start or temporal_end must be supplied for each temporal condition."))))

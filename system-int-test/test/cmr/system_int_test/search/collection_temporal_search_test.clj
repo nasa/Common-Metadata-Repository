@@ -269,6 +269,11 @@
     (let [{:keys [status errors]} (search/find-refs :collection {"temporal[]" "2010-13-12T12:00:00,"})]
       (is (= 400 status))
       (is (re-find #"temporal start datetime is invalid: \[2010-13-12T12:00:00\] is not a valid datetime" (first errors)))))
+  (testing "periodic temporal search that produces empty search ranges."
+    (let [{:keys [status errors]} (search/find-refs :collection
+                            {"temporal[]" "2016-05-10T08:18:16Z,2016-05-10T08:34:31Z,131,131"})]
+      (is (= 400 status))
+      (is (re-find #"Periodic temporal search produced no searchable ranges and is invalid." (first errors)))))
   (testing "search by invalid temporal start-date after end-date."
     (let [{:keys [status errors]} (search/find-refs :collection {"temporal[]" "2011-01-01T10:00:00Z,2010-01-10T12:00:00Z"})]
       (is (= 400 status))
@@ -276,7 +281,18 @@
   (testing "search by invalid iso8601 temporal interval."
     (let [{:keys [status errors]} (search/find-refs :collection {"temporal[]" "2010-01-01T10:00:00Z/P10D2H"})]
       (is (= 422 status))
-      (is (re-find #"\[2010-01-01T10:00:00Z/P10D2H\] is not a valid date-range : Invalid format: \"P10D2H\" is malformed at \"2H\"" (first errors))))))
+      (is (re-find #"\[2010-01-01T10:00:00Z/P10D2H\] is not a valid date-range : Invalid format: \"P10D2H\" is malformed at \"2H\"" (first errors)))))
+  (testing "search by invalid optional parameters will return a valid error message"
+    (let [{:keys [status errors]} (search/find-refs :collection {"temporal[][temporal_start]" "2010-01-01T10:00:00Z/P10D2H"})]
+      (is (= 400 status))
+      (is (re-find #"The valid format for temporal parameters are temporal\[\]=startdate,stopdate and temporal\[\]=startdate,stopdate,startday,endday" (first errors))))
+    (let [{:keys [status errors]} (search/find-refs :collection {"temporal[temporal_start]" "2010-01-01T10:00:00Z/P10D2H"})]
+      (is (= 400 status))
+      (is (re-find #"The valid format for temporal parameters are temporal\[\]=startdate,stopdate and temporal\[\]=startdate,stopdate,startday,endday" (first errors))))
+    (let [{:keys [status errors]} (search/find-refs :collection {"temporal[]" "2010-01-01T00:00:00Z,2011-01-10T00:00:00Z"
+                                                                 "temporal[][temporal_start]" "2010-01-01T10:00:00Z/P10D2H"})]
+      (is (= 400 status))
+      (is (re-find #"Parameter [temporal] may be either single valued or multivalued, but not both." (first errors))))))
 
 (deftest search-temporal-json-error-scenarios
   (testing "search by invalid temporal date format"
