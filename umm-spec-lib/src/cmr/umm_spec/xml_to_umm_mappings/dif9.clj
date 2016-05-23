@@ -115,7 +115,7 @@
                                              :EndingDateTime (parse-dif-end-date (value-of temporal "Stop_Date"))})}])
      :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
      :SpatialExtent (merge {:GranuleSpatialRepresentation (or (value-of doc "/DIF/Extended_Metadata/Metadata[Name='GranuleSpatialRepresentation']/Value")
-                                                              "CARTESIAN")}
+                                                              "NO_SPATIAL")}
                            (when-let [brs (seq (parse-mbrs doc))]
                              {:SpatialCoverageType "HORIZONTAL"
                               :HorizontalSpatialDomain
