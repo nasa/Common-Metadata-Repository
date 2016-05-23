@@ -595,22 +595,22 @@
 (defn- expected-dif-spatial-extent
   "Returns the expected DIF parsed spatial extent for the given spatial extent."
   [spatial]
-  (let [brs (get-in spatial [:HorizontalSpatialDomain :Geometry :BoundingRectangles])]
-    (when (seq brs)
-      (-> spatial
-          (assoc :SpatialCoverageType "HORIZONTAL"
-                 :OrbitParameters nil
-                 :GranuleSpatialRepresentation "CARTESIAN"
-                 :VerticalSpatialDomains nil)
-          (update-in [:HorizontalSpatialDomain] assoc
-                     :ZoneIdentifier nil)
-          (update-in [:HorizontalSpatialDomain :Geometry] assoc
-                     :CoordinateSystem "CARTESIAN"
-                     :Points nil
-                     :Lines nil
-                     :GPolygons nil)
-          (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc
-                          :CenterPoint nil)))))
+  (let [spatial (-> spatial
+                    (assoc :SpatialCoverageType "HORIZONTAL"
+                           :OrbitParameters nil
+                           :VerticalSpatialDomains nil)
+                    (update-in [:HorizontalSpatialDomain] assoc
+                               :ZoneIdentifier nil)
+                    (update-in [:HorizontalSpatialDomain :Geometry] assoc
+                               :CoordinateSystem "CARTESIAN"
+                               :Points nil
+                               :Lines nil
+                               :GPolygons nil)
+                    (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc
+                                    :CenterPoint nil))]
+    (if (seq (get-in spatial [:HorizontalSpatialDomain :Geometry :BoundingRectangles]))
+      spatial
+      (assoc spatial :SpatialCoverageType nil :HorizontalSpatialDomain nil))))
 
 (defmethod umm->expected-convert :dif
   [umm-coll _]
