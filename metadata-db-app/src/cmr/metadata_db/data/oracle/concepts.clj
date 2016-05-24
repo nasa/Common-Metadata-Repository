@@ -85,28 +85,34 @@
   [values top-n]
   (drop-last top-n (sort values)))
 
-(defmulti by-provider
-  "Converts the sql condition clause into provider aware condition clause, i.e. adding the provider-id
-  condition to the condition clause when the given provider is small; otherwise returns the same
-  condition clause. For example:
-  `(= :native-id \"blah\") becomes `(and (= :native-id \"blah\") (= :provider-id \"PROV1\"))"
-  (fn [concept-type provider base-clause]
-    concept-type))
-
-(defmethod by-provider :access-group
-  [_ {:keys [provider-id small]} base-clause]
+(defn- add-provider-clause
+  "Insert a provider clause at the beginning of a query base clause."
+  [provider-id base-clause]
   (if (= (first base-clause) 'clojure.core/and)
     ;; Insert the provider id clause at the beginning.
     `(and (= :provider-id ~provider-id) ~@(rest base-clause))
     `(and (= :provider-id ~provider-id) ~base-clause)))
 
+(defmulti by-provider
+  "Converts the sql condition clause into provider aware condition clause, i.e. adding the provider-id
+  condition to the condition clause when the given provider is small or the type is acl/access-group;
+  otherwise returns the same condition clause. For example:
+  `(= :native-id \"blah\") becomes `(and (= :native-id \"blah\") (= :provider-id \"PROV1\"))"
+  (fn [concept-type provider base-clause]
+    concept-type))
+
+(defmethod by-provider :acl
+  [_ {:keys [provider-id]} base-clause]
+  (add-provider-clause provider-id base-clause))
+
+(defmethod by-provider :access-group
+  [_ {:keys [provider-id]} base-clause]
+  (add-provider-clause provider-id base-clause))
+
 (defmethod by-provider :default
   [_ {:keys [provider-id small]} base-clause]
   (if small
-    (if (= (first base-clause) 'clojure.core/and)
-      ;; Insert the provider id clause at the beginning.
-      `(and (= :provider-id ~provider-id) ~@(rest base-clause))
-      `(and (= :provider-id ~provider-id) ~base-clause))
+    (add-provider-clause provider-id base-clause)
     base-clause))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
