@@ -114,7 +114,13 @@
                                             {:BeginningDateTime (value-of temporal "Start_Date")
                                              :EndingDateTime (parse-dif-end-date (value-of temporal "Stop_Date"))})}])
      :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
-     :SpatialExtent {:HorizontalSpatialDomain {:Geometry {:BoundingRectangles (parse-mbrs doc)}}}
+     :SpatialExtent (merge {:GranuleSpatialRepresentation (or (value-of doc "/DIF/Extended_Metadata/Metadata[Name='GranuleSpatialRepresentation']/Value")
+                                                              "NO_SPATIAL")}
+                           (when-let [brs (seq (parse-mbrs doc))]
+                             {:SpatialCoverageType "HORIZONTAL"
+                              :HorizontalSpatialDomain
+                              {:Geometry {:CoordinateSystem "CARTESIAN" ;; DIF9 doesn't have CoordinateSystem, default to CARTESIAN
+                                          :BoundingRectangles brs}}}))
      :Distributions (for [distribution (select doc "/DIF/:Distribution")]
                       {:DistributionMedia (value-of distribution "Distribution_Media")
                        :Sizes (su/parse-data-sizes (value-of distribution "Distribution_Size"))

@@ -193,6 +193,9 @@
       [:Metadata
        [:Name "ProcessingLevelDescription"]
        [:Value (-> c :ProcessingLevel :ProcessingLevelDescription)]]
+      [:Metadata
+       [:Name "GranuleSpatialRepresentation"]
+       [:Value (-> c :SpatialExtent :GranuleSpatialRepresentation)]]
       (when-let [access-value (get-in c [:AccessConstraints :Value])]
         [:Metadata
          [:Name "Restriction"]
