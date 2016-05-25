@@ -68,9 +68,9 @@
   (let [{:keys [concept-type result-format result-features]} query
         hits (get-in elastic-results [:hits :total])
         elastic-matches (get-in elastic-results [:hits :hits])
-        result-items (map (partial elastic-result->query-result-item concept-type) elastic-matches)
-        concept-tags-map (into {} (map #(hash-map [(:concept-id %) (:revision-id %)] (:tags %)) result-items))
-        tuples (map #(vector (:concept-id %) (:revision-id %)) result-items)
+        result-items (mapv #(elastic-result->query-result-item concept-type %) elastic-matches)
+        concept-tags-map (into {} (mapv #(hash-map [(:concept-id %) (:revision-id %)] (:tags %)) result-items))
+        tuples (mapv #(vector (:concept-id %) (:revision-id %)) result-items)
         [req-time tresults] (u/time-execution
                               (t/get-formatted-concept-revisions context tuples result-format false))
         items (map #(select-keys % qe/metadata-result-item-fields) tresults)

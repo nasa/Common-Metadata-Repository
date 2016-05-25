@@ -380,6 +380,7 @@
            response (find-concepts-in-format format-mime-type concept-type params options)
            body (:body response)
            parsed (fx/parse-str body)
+           ;; First we parse out the metadata and tags from each result, then we parse tags out.
            metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
                        (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
            items (map (fn [result metadata]

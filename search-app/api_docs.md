@@ -337,10 +337,11 @@ __Example__
       <echo:browseFlag>false</echo:browseFlag>
       <echo:tag>
         <echo:tagKey>tag1</echo:tagKey>
-        <echo:data>{&quot;status&quot;:&quot;reviewed&quot;,&quot;score&quot;:85}</echo:data>
+        <echo:data>{"status":"Reviewed","score":85}</echo:data>
       </echo:tag>
       <echo:tag>
         <echo:tagKey>tag2</echo:tagKey>
+        <echo:data>"cloud cover &gt; 80"</echo:data>
       </echo:tag>
    </entry>
 </feed>
@@ -406,6 +407,16 @@ __Example__
             <DIF_Creation_Date>2008-04-22T12:53:38.320Z</DIF_Creation_Date>
             <Last_DIF_Revision_Date>2010-10-06T11:45:39.530Z</Last_DIF_Revision_Date>
         </DIF>
+        <tags>
+          <tag>
+            <tagKey>tag1</tagKey>
+            <data>{"status":"Reviewed","score":85}</data>
+          </tag>
+          <tag>
+            <tagKey>tag2</tagKey>
+            <data>"cloud cover &gt; 80"</data>
+          </tag>
+        </tags>
     </result>
 </results>
 ```
@@ -464,6 +475,16 @@ __Example__
                 <Data_Last_Revision>1970-01-01T00:00:00</Data_Last_Revision>
             </Metadata_Dates>
         </DIF>
+        <tags>
+          <tag>
+            <tagKey>tag1</tagKey>
+            <data>{"status":"Reviewed","score":85}</data>
+          </tag>
+          <tag>
+            <tagKey>tag2</tagKey>
+            <data>"cloud cover &gt; 80"</data>
+          </tag>
+        </tags>
     </result>
 </results>
 ```
@@ -492,6 +513,16 @@ __Example__
             <Orderable>false</Orderable>
             <Visible>true</Visible>
         </Collection>
+        <tags>
+          <tag>
+            <tagKey>tag1</tagKey>
+            <data>{"status":"Reviewed","score":85}</data>
+          </tag>
+          <tag>
+            <tagKey>tag2</tagKey>
+            <data>"cloud cover &gt; 80"</data>
+          </tag>
+        </tags>
     </result>
 </results>
 ```
@@ -581,11 +612,21 @@ __Example__
                 <gmi:MI_AcquisitionInformation/>
             </gmi:acquisitionInformation>
         </gmi:MI_Metadata>
+        <tags>
+          <tag>
+            <tagKey>tag1</tagKey>
+            <data>{"status":"Reviewed","score":85}</data>
+          </tag>
+          <tag>
+            <tagKey>tag2</tagKey>
+            <data>"cloud cover &gt; 80"</data>
+          </tag>
+        </tags>
     </result>
 </results>
 ```
 
-#### <a name="iso-smap"></a> ISO-SMAP (ISO-19115)
+#### <a name="iso-smap"></a> ISO-SMAP
 
 See the [specification](https://cdn.earthdata.nasa.gov/iso/schema/1.0/)
 
@@ -697,7 +738,7 @@ __Example__
       "browse_flag" : false,
       "online_access_flag" : false,
       "tags" : {"tag1": {"data": {"score": 85, "status": "reviewed"}},
-                "tag2": {}}
+                "tag2": {"data" : "cloud cover > 80"}}
     } ]
   }
 }
