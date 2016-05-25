@@ -98,6 +98,7 @@
    (let [start-time (System/currentTimeMillis)]
      (loop [current-states (set (current-message-states broker-wrapper))]
        (when (seq (set/difference current-states terminal-states))
+         (warn "CURRENT-STATES: " current-states)
          (Thread/sleep 10)
          (if (< (- (System/currentTimeMillis) start-time) ms-to-wait)
            (recur (set (current-message-states broker-wrapper)))
