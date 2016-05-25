@@ -51,35 +51,36 @@
    are running these fixtures won't do anything. If it isn't running these fixtures will start up the
    applications and the test will work."
   []
-  (let [queue-broker (queue-broker-wrapper/create-queue-broker-wrapper (create-memory-queue-broker))]
-    (ct/join-fixtures
-      [elastic-test-util/run-elastic-fixture
-       (common-client-test-util/run-app-fixture
-         conn-context
-         :access-control
-         (assoc (system/create-system) :queue-broker queue-broker)
-         system/start
-         system/stop)
-
-       ;; Create a side API that will allow waiting for the queue broker terminal states to be achieved.
-       (common-client-test-util/side-api-fixture
-         (fn [_]
-           (qb-side-api/build-routes queue-broker))
-         nil)
-
-       (common-client-test-util/run-app-fixture
-         conn-context
-         :echo-rest
-         (mock-echo-system/create-system)
-         mock-echo-system/start
-         mock-echo-system/stop)
-
-       (common-client-test-util/run-app-fixture
-         conn-context
-         :metadata-db
-         (assoc (create-mdb-system) :queue-broker queue-broker)
-         mdb-system/start
-         mdb-system/stop)])))
+  (fn [f] (println "I'm doing nothing except continuing") (f) )  )
+  ; (let [queue-broker (queue-broker-wrapper/create-queue-broker-wrapper (create-memory-queue-broker))]
+  ;   (ct/join-fixtures
+  ;     [elastic-test-util/run-elastic-fixture
+  ;      (common-client-test-util/run-app-fixture
+  ;        conn-context
+  ;        :access-control
+  ;        (assoc (system/create-system) :queue-broker queue-broker)
+  ;        system/start
+  ;        system/stop)
+  ;
+  ;      ;; Create a side API that will allow waiting for the queue broker terminal states to be achieved.
+  ;      (common-client-test-util/side-api-fixture
+  ;        (fn [_]
+  ;          (qb-side-api/build-routes queue-broker))
+  ;        nil)
+  ;
+  ;      (common-client-test-util/run-app-fixture
+  ;        conn-context
+  ;        :echo-rest
+  ;        (mock-echo-system/create-system)
+  ;        mock-echo-system/start
+  ;        mock-echo-system/stop)
+  ;
+  ;      (common-client-test-util/run-app-fixture
+  ;        conn-context
+  ;        :metadata-db
+  ;        (assoc (create-mdb-system) :queue-broker queue-broker)
+  ;        mdb-system/start
+  ;        mdb-system/stop)])))
 
 (defn reset-fixture
   "Test fixture that resets the application before each test and creates providers and users listed.
