@@ -183,35 +183,35 @@
               :errors [(format "Group with concept id [%s] was deleted." concept_id)]}
              (u/get-group token concept_id))))))
 
-(deftest delete-group-test
-  (let [group1 (u/make-group)
-        group2 (u/make-group {:name "Some other group"})
-        token (e/login (u/conn-context) "user1")
-        {:keys [concept_id revision_id]} (u/create-group token group1)
-        group2-concept-id (:concept_id (u/create-group token group2))]
-    (u/wait-until-indexed)
-    (testing "Delete without token"
-      (is (= {:status 401
-              :errors ["Groups cannot be modified without a valid user token."]}
-             (u/delete-group nil concept_id))))
-
-    (testing "Delete success"
-      (is (= 2 (:hits (u/search token nil))))
-      (is (= {:status 200 :concept_id concept_id :revision_id 2}
-             (u/delete-group token concept_id)))
-      (u/wait-until-indexed)
-      (u/assert-group-deleted group1 "user1" concept_id 2)
-      (is (= [group2-concept-id] (map :concept_id (:items (u/search token nil))))))
-
-    (testing "Delete group that was already deleted"
-      (is (= {:status 404
-              :errors [(format "Group with concept id [%s] was deleted." concept_id)]}
-             (u/delete-group token concept_id))))
-
-    (testing "Delete group that doesn't exist"
-      (is (= {:status 404
-              :errors ["Group could not be found with concept id [AG100-CMR]"]}
-             (u/delete-group token "AG100-CMR"))))))
+; (deftest delete-group-test
+;   (let [group1 (u/make-group)
+;         group2 (u/make-group {:name "Some other group"})
+;         token (e/login (u/conn-context) "user1")
+;         {:keys [concept_id revision_id]} (u/create-group token group1)
+;         group2-concept-id (:concept_id (u/create-group token group2))]
+;     (u/wait-until-indexed)
+;     (testing "Delete without token"
+;       (is (= {:status 401
+;               :errors ["Groups cannot be modified without a valid user token."]}
+;              (u/delete-group nil concept_id))))
+;
+;     (testing "Delete success"
+;       (is (= 2 (:hits (u/search token nil))))
+;       (is (= {:status 200 :concept_id concept_id :revision_id 2}
+;              (u/delete-group token concept_id)))
+;       (u/wait-until-indexed)
+;       (u/assert-group-deleted group1 "user1" concept_id 2)
+;       (is (= [group2-concept-id] (map :concept_id (:items (u/search token nil))))))
+;
+;     (testing "Delete group that was already deleted"
+;       (is (= {:status 404
+;               :errors [(format "Group with concept id [%s] was deleted." concept_id)]}
+;              (u/delete-group token concept_id))))
+;
+;     (testing "Delete group that doesn't exist"
+;       (is (= {:status 404
+;               :errors ["Group could not be found with concept id [AG100-CMR]"]}
+;              (u/delete-group token "AG100-CMR"))))))
 
 (deftest update-group-test
   (let [group (u/make-group {:members ["user1" "user2"]})
