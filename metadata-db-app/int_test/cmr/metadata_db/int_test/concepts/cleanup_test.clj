@@ -7,6 +7,7 @@
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.services.messages :as messages]
             [cmr.metadata-db.services.concept-service :as concept-service]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
             [cmr.common.time-keeper :as tk]))
 
 (use-fixtures :each (join-fixtures
@@ -230,7 +231,7 @@
 
     ;; Back to the future!
     ;; Advance one second past granule 1's tombstone cleanup time
-    (tk/advance-time! (+ 1 (* (+ 2 days-to-keep-tombstone) 24 3600)))
+    (dev-sys-util/eval-in-dev-sys `(tk/advance-time! (+ 1 (* (+ 2 ~days-to-keep-tombstone) 24 3600))))
 
     ;; Do the cleanup again
     (is (= 204 (util/old-revision-concept-cleanup)))
