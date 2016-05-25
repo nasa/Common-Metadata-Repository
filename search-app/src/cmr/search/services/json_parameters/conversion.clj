@@ -45,6 +45,7 @@
    :archive-center :nested-condition
    :data-center :nested-condition
    :spatial-keyword :string
+   :location-keyword :nested-condition
    :two-d-coordinate-system-name :string
    :keyword :keyword
    :bounding-box :bounding-box

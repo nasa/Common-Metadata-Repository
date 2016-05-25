@@ -17,7 +17,10 @@
         coll4 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["DC" "LA"]}))
         coll5 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["Detroit"]}))
         coll6 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["LL"]}))
-        coll7 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["detroit"]}))]
+        coll7 (d/ingest "PROV2" (dc/collection {:spatial-keywords ["detroit"]}))
+        coll-angola (d/ingest "PROV2" (dc/collection {:spatial-keywords ["ANGOLA"]}))
+        coll-c-africa (d/ingest "PROV2" (dc/collection {:spatial-keywords ["central africa"]}))
+        coll-gaza (d/ingest "PROV2" (dc/collection {:spatial-keywords ["Gaza Strip"]}))]
 
     (index/wait-until-indexed)
 
@@ -88,7 +91,7 @@
            [coll5 coll7] {:and [{:spatial_keyword "Detroit"}]}
            [coll5 coll6 coll7] {:or [{:spatial_keyword "LL"} {:spatial_keyword "Detroit"}]}
            [] {:and [{:spatial_keyword "LL"} {:spatial_keyword "Detroit"}]}
-           [coll1 coll2 coll5 coll6 coll7] {:not {:spatial_keyword "DC"}}
+           [coll1 coll2 coll5 coll6 coll7 coll-angola coll-c-africa coll-gaza] {:not {:spatial_keyword "DC"}}
            [] {:spatial_keyword "BLAH"}
 
            ;; pattern
@@ -97,4 +100,17 @@
            ;;ignore case
            [coll5 coll7] {:spatial_keyword {:value "detroit"}}
            [coll5 coll7] {:spatial_keyword {:value "detroit" :ignore_case true}}
-           [coll7] {:spatial_keyword {:value "detroit" :ignore_case false}}))))
+           [coll7] {:spatial_keyword {:value "detroit" :ignore_case false}}))
+
+    (testing "Search collections by location keywords using JSON Query."
+      (are [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+           [coll-angola coll-c-africa] {:location_keyword {:subregion_1 "CeNTRAL aFRiCA"}}
+           [coll-gaza coll-angola coll-c-africa] {:location_keyword {:any "Cont*" :pattern true}}
+           [coll-gaza] {:location_keyword {:category "CONTINENT"
+                                            :type "ASIA"
+                                            :subregion_1 "WESTERN ASIA"
+                                            :subregion_2 "MIDDLE EAST"
+                                            :subregion_3 "GAZA STRIP"
+                                            :uuid "302ab5f2-5fa2-482d-9d22-8a7a1546a62d"}}))))

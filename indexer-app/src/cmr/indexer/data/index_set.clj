@@ -120,6 +120,21 @@
    :uuid m/string-field-mapping
    :uuid.lowercase m/string-field-mapping})
 
+(defnestedmapping location-keywords-hierarchical-mapping
+  "Defines hierarchical mappings for location keywords."
+  {:category m/string-field-mapping
+   :category.lowercase m/string-field-mapping
+   :type m/string-field-mapping
+   :type.lowercase m/string-field-mapping
+   :subregion-1 m/string-field-mapping
+   :subregion-1.lowercase m/string-field-mapping
+   :subregion-2 m/string-field-mapping
+   :subregion-2.lowercase m/string-field-mapping
+   :subregion-3 m/string-field-mapping
+   :subregion-3.lowercase m/string-field-mapping
+   :uuid m/string-field-mapping
+   :uuid.lowercase m/string-field-mapping})
+
 (defnestedmapping orbit-calculated-spatial-domain-mapping
   "Defines mappings for storing orbit calculated spatial domains."
   {:orbital-model-name m/string-field-mapping
@@ -245,6 +260,7 @@
           :platforms platform-hierarchical-mapping
           :instruments instrument-hierarchical-mapping
           :archive-centers data-center-hierarchical-mapping
+          :location-keywords location-keywords-hierarchical-mapping
           ;; Contains all four types of data centers combined - archive,
           ;; centers, distribution centers, processing centers, and
           ;; originating centers.
@@ -668,5 +684,3 @@
                       (.endsWith (name k) (str "_" provider-id))
                       (= :small_collections k)))]
     (map second (filter filter-fn indexes))))
-
-

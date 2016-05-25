@@ -1,7 +1,8 @@
 (ns cmr.umm-spec.location-keywords
-  "Helper utilities for converting Keywords -> UMM LocationKeywords"
+  "Helper utilities for converting Spatial or Location Keywords to UMM LocationKeywords."
   (:require [cmr.common-app.services.kms-fetcher :as kf]
             [cmr.umm-spec.models.collection :as umm-c]
+            [clojure.string :as str]
             [clojure.set :as set]))
 
 (def duplicate-keywords
@@ -39,17 +40,19 @@
   Takes a string keyword as a parameter, e.g. 'OCEAN' and a list of spatial keyword maps;
   returns a list of maps of hierarchies which contain the keyword."
   [keyword-map-list keyword]
-  (filter (fn [map] (some #{keyword} (vals map))) (vals keyword-map-list)))
+  (filter (fn [map]
+            (some #{(str/upper-case keyword)} (mapv str/upper-case (vals map))))
+          (vals keyword-map-list)))
 
 (defn find-spatial-keyword
-  "Finds spatial keywords in the heirarchy and pick the one with the fewest keys
-  (e.g. shortest hierarchical depth.) Takes a string keyword as a parameter (assumes no case) a list
-  of keyword maps and returns the map of hierarichies which contain the keyword.
+  "Finds spatial keywords in the hierarchy and pick the one with the fewest keys (e.g. shortest
+  hierarchical depth.) Takes a string keyword as a parameter, a list of keyword maps and returns
+  the map of hierarichies which contain the keyword (treated case insensitive).
   You can also pass :uuid as a keyword argument e.g. 'afbc0a01-742e-49da-939e-3eaa3cf431b0' for
   'BLACK SEA'. If the keyword is a duplicate, it will substitute the correct one."
   [keyword-map-list keyword]
   (if (contains? duplicate-keywords keyword)
-    (first (find-spatial-keywords-in-map keyword-map-list (:uuid (get duplicate-keywords keyword))))
+    (first (find-spatial-keywords-in-map keyword-map-list (:uuid (get duplicate-keywords (str/upper-case keyword)))))
     (let [result (first (sort-by count (find-spatial-keywords-in-map keyword-map-list keyword)))]
       (or result {:Category "OTHER" :Type keyword}))))
 
