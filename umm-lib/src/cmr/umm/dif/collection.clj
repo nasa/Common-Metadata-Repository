@@ -11,6 +11,7 @@
             [cmr.umm.dif.collection.project-element :as pj]
             [cmr.umm.dif.collection.related-url :as ru]
             [cmr.umm.dif.collection.science-keyword :as sk]
+            [cmr.umm.dif.collection.location-keywords :as lk]
             [cmr.umm.dif.collection.org :as org]
             [cmr.umm.dif.collection.progress :as progress]
             [cmr.umm.dif.collection.temporal :as t]
@@ -105,8 +106,7 @@
      :quality (cx/string-at-path xml-struct [:Quality])
      :use-constraints (cx/string-at-path xml-struct [:Use_Constraints])
      :data-provider-timestamps (xml-elem->DataProviderTimestamps xml-struct)
-     ;; See CMR-588
-     ;:spatial-keywords (seq (cx/strings-at-path xml-struct [:Location]))
+     :spatial-keywords (lk/xml-elem->spatial-keywords xml-struct)
      :temporal-keywords (seq (cx/strings-at-path xml-struct [:Data_Resolution :Temporal_Resolution]))
      :temporal (t/xml-elem->Temporal xml-struct)
      :science-keywords (sk/xml-elem->ScienceKeywords xml-struct)
@@ -227,4 +227,3 @@
   "Validates the XML against the DIF schema."
   [xml]
   (v/validate-xml (io/resource "schema/dif/dif_v9.9.3.xsd") xml))
-

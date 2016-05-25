@@ -519,7 +519,7 @@
                                  :related-url "http://example.com"
                                  :doi "http://dx.doi.org/12.3456/ABC012XYZ"
                                  :other-reference-details "blah"})]
-     ;:spatial-keywords ["Word-2" "Word-1" "Word-0"]
+     :spatial-keywords ["GLOBAL"]
      :platforms [(umm-c/map->Platform
                    {:short-name "Not provided"
                     :long-name "Not provided"
