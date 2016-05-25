@@ -119,7 +119,7 @@
                                                            equatorCrossingLongitude))
                            :equator-crossing-date-time equatorCrossingDateTime})))
 
-(defn- xml-elem->tag
+(defn xml-elem->tag
   "Extracts the tag from the XML entry."
   [tag-elem]
   (when-let [tag-key (cx/string-at-path tag-elem [:tagKey])]

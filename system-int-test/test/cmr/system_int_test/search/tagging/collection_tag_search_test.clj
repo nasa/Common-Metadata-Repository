@@ -2,7 +2,7 @@
   "This tests searching for collections by tag parameters"
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
-            [cmr.common.util :refer [are2]]
+            [cmr.common.util :as util :refer [are2]]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -184,14 +184,19 @@
            c))
        colls))
 
+(defn- assert-metadata-results-tags-match
+  "Assert the metadata search result tags info matches the given collection tags map."
+  [coll-tags search-result]
+  (let [expected-result (into {}
+                              (for [[k v] coll-tags]
+                                [(:concept-id k) v]))]
+    (is (= expected-result search-result))))
+
 (deftest search-for-collections-with-include-tags-test
   (let [[coll1 coll2 coll3 coll4] (for [n (range 1 5)]
                                     (d/ingest "PROV1" (dc/collection {:entry-title (str "coll" n)})))
         coll5 (d/ingest "PROV2" (dc/collection))
         all-prov1-colls [coll1 coll2 coll3 coll4]
-
-        ;; Wait until collections are indexed so tags can be associated with them
-        _ (index/wait-until-indexed)
 
         user1-token (e/login (s/context) "user1")
         user2-token (e/login (s/context) "user2")
@@ -200,10 +205,10 @@
         tag2-colls [coll1 coll2]
         tag3-colls [coll3]
 
-        tag1 (tags/save-tag
-               user1-token
-               (tags/make-tag {:tag-key "Tag1"})
-               tag1-colls)
+        tag1 (tags/save-tag user1-token (tags/make-tag {:tag-key "tag1"}))
+        ;; Wait until collections are indexed so tags can be associated with them
+        _ (index/wait-until-indexed)
+
         tag2 (tags/save-tag
                user2-token
                (tags/make-tag {:tag-key "Tag2"})
@@ -217,6 +222,13 @@
         tag4 (tags/save-tag
                user1-token
                (tags/make-tag {:tag-key "tag4"}))]
+
+    (tags/associate-by-concept-ids user1-token "tag1" [{:concept-id (:concept-id coll1)
+                                                        :revision-id (:revision-id coll1)
+                                                        :data "snow"}
+                                                       {:concept-id (:concept-id coll5)
+                                                        :revision-id (:revision-id coll5)
+                                                        :data "<cloud>"}])
     (index/wait-until-indexed)
 
     (testing "include-tags in atom/json format has proper tags added to atom/json response."
@@ -244,20 +256,20 @@
                (= [200 (expected-result :atom)] [atom-status atom-results])))
 
         "include all tags"
-        "*" {"coll1" {"tag1" {} "tag2" {}}
+        "*" {"coll1" {"tag1" {"data" "snow"} "tag2" {}}
              "coll2" {"tag2" {}}
              "coll3" {"cmr.other" {}}}
 
         "include one tag"
-        "tag1" {"coll1" {"tag1" {}}}
+        "tag1" {"coll1" {"tag1" {"data" "snow"}}}
 
         "include tags with wildcard *"
-        "tag*" {"coll1" {"tag1" {} "tag2" {}}
+        "tag*" {"coll1" {"tag1" {"data" "snow"} "tag2" {}}
                 "coll2" {"tag2" {}}
                 "coll3" nil}
 
         "include tags with wildcard ?"
-        "tag?" {"coll1" {"tag1" {} "tag2" {}}
+        "tag?" {"coll1" {"tag1" {"data" "snow"} "tag2" {}}
                 "coll2" {"tag2" {}}}
 
         "include no tag"
@@ -267,43 +279,63 @@
         "" {}
 
         "match multiple tags"
-        "tag*,cmr.*" {"coll1" {"tag1" {} "tag2" {}}
+        "tag*,cmr.*" {"coll1" {"tag1" {"data" "snow"} "tag2" {}}
                       "coll2" {"tag2" {}}
                       "coll3" {"cmr.other" {}}}))
 
+    (testing "include-tags in supported metadata format has proper tags added to the response."
+      (are [metadata-format]
+           (assert-metadata-results-tags-match
+             {coll1 {"tag1" {"data" "snow"} "tag2" {}}
+              coll2 {"tag2" {}}
+              coll3 {"cmr.other" {}}
+              coll4 nil
+              coll5 {"tag1" {"data" "<cloud>"}}}
+             (search/find-metadata-tags :collection metadata-format {:include-tags "*"}))
+
+           :dif
+           :dif10
+           :echo10
+           :native
+           :iso19115)
+
+      (are [metadata-format]
+           (assert-metadata-results-tags-match
+             {coll1 {"tag1" {"data" "snow"}}
+              coll2 nil
+              coll3 nil
+              coll4 nil}
+             (search/find-metadata-tags
+               :collection metadata-format {:provider "PROV1" :include-tags "tag1"}))
+
+           :dif
+           :dif10
+           :echo10
+           :native
+           :iso19115))
+
     (testing "Invalid include-tags params"
-      (testing "include-tags in collection search with metadata formats orther than JSON is invalid."
-        (are [metadata-format]
-             (= {:status 400
-                 :errors ["Parameter [include_tags] is only supported in ATOM or JSON format search."]}
-                (search/find-metadata
-                  :collection metadata-format {:provider "PROV1" :include-tags "*"}))
-
-             :dif
-             :dif10
-             :echo10
-             :iso19115))
-
       (testing "include-tags in collection search with result formats orther than JSON is invalid."
-        (are2 [search-fn]
+        (are2 [search-fn format-type]
               (= {:status 400
-                  :errors ["Parameter [include_tags] is only supported in ATOM or JSON format search."]}
+                  :errors [(format "Parameter [include_tags] is not supported for %s format search."
+                                   (name format-type))]}
                  (search-fn :collection {:include-tags "*"}))
 
               "search in xml reference"
-              search/find-refs
+              search/find-refs :xml
 
               "search in kml format"
-              search/find-concepts-kml
+              search/find-concepts-kml :kml
 
               "search in csv format"
-              search/find-concepts-csv
+              search/find-concepts-csv :csv
 
               "search in opendata format"
-              search/find-concepts-opendata
+              search/find-concepts-opendata :opendata
 
               "search in umm-json format"
-              search/find-concepts-umm-json))
+              search/find-concepts-umm-json :umm-json))
 
       (testing "include-tags is not supported on granule searches."
         (is (= {:status 400

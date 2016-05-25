@@ -369,6 +369,32 @@
        (util/remove-nil-keys {:items items
                               :facets facets})))))
 
+(defn find-metadata-tags
+  "Search metadata, parse out the collection concept id to tags mapping from the search response
+  and returns it."
+  ([concept-type format-key params]
+   (find-metadata-tags concept-type format-key params {}))
+  ([concept-type format-key params options]
+   (get-search-failure-xml-data
+     (let [format-mime-type (mime-types/format->mime-type format-key)
+           response (find-concepts-in-format format-mime-type concept-type params options)
+           body (:body response)
+           parsed (fx/parse-str body)
+           metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
+                       (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
+           items (map (fn [result metadata]
+                        (let [{{:keys [concept-id]} :attrs} result
+                              tags (when-let [tags-metadata (second (str/split metadata #"<tags>"))]
+                                     (->> (cx/elements-at-path
+                                            (fx/parse-str (str "<tags>" tags-metadata)) [:tag])
+                                          (map da/xml-elem->tag)
+                                          (into {})))]
+                          [concept-id tags]))
+                      (cx/elements-at-path parsed [:result])
+                      metadatas)]
+       (when (seq items)
+         (into {} items))))))
+
 (defmulti parse-reference-response
   (fn [echo-compatible? response]
     echo-compatible?))

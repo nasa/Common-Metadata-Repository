@@ -6,11 +6,13 @@
             [cmr.search.services.query-execution :as qe]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.services.query-execution.facets-results-feature :as frf]
+            [cmr.search.services.query-execution.tags-results-feature :as trf]
             [cmr.common-app.services.search.results-model :as results]
             [cmr.search.services.transformer :as t]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [clojure.string :as str]
+            [cheshire.core :as json]
             [cmr.umm.dif.collection :as dif-c]
             [cmr.umm.iso-mends.collection]
             [cmr.umm.iso-mends.collection]
@@ -25,14 +27,16 @@
 ;; define functions to return fields for collection
 (doseq [format (:collection result-formats)]
   (defmethod elastic-search-index/concept-type+result-format->fields [:collection format]
-    [concept-type result-format]
-    ["metadata-format"
-     "revision-id"]))
+    [concept-type query]
+    (let [fields ["metadata-format" "revision-id"]]
+      (if (contains? (set (:result-features query)) :tags)
+        (conj fields trf/stored-tags-field)
+        fields))))
 
 ;; define functions to return fields for granule
 (doseq [format (:granule result-formats)]
   (defmethod elastic-search-index/concept-type+result-format->fields [:granule format]
-    [concept-type result-format]
+    [concept-type query]
     ["metadata-format"]))
 
 (def concept-type->name-key
@@ -40,16 +44,40 @@
   {:collection :entry-title
    :granule :granule-ur})
 
+(defn- elastic-result->query-result-item
+  "Returns the query result item for the given elastic result"
+  [concept-type elastic-result]
+  {:concept-id (:_id elastic-result)
+   :revision-id (elastic-results/get-revision-id-from-elastic-result concept-type elastic-result)
+   :tags (when (= :collection concept-type)
+           (trf/collection-elastic-result->tags elastic-result))})
+
+(defn- add-tags
+  "Returns the result items with tags added by matching with the concept tags map which is a map of
+  [concept-id revision-id] to tags associated with the concept."
+  [items concept-tags-map]
+  (let [assoc-tag (fn [it]
+                    (if-let [tags (concept-tags-map [(:concept-id it) (:revision-id it)])]
+                      (assoc it :tags tags)
+                      it))]
+    (map assoc-tag items)))
+
 (defn- elastic-results->query-metadata-results
   "A helper for converting elastic results into metadata results."
   [context query elastic-results]
-  (let [{:keys [concept-type result-format]} query
+  (let [{:keys [concept-type result-format result-features]} query
         hits (get-in elastic-results [:hits :total])
-        tuples (map #(vector (:_id %) (elastic-results/get-revision-id-from-elastic-result concept-type %))
-                    (get-in elastic-results [:hits :hits]))
+        elastic-matches (get-in elastic-results [:hits :hits])
+        result-items (map (partial elastic-result->query-result-item concept-type) elastic-matches)
+        concept-tags-map (into {} (map #(hash-map [(:concept-id %) (:revision-id %)] (:tags %)) result-items))
+        tuples (map #(vector (:concept-id %) (:revision-id %)) result-items)
         [req-time tresults] (u/time-execution
                               (t/get-formatted-concept-revisions context tuples result-format false))
-        items (map #(select-keys % qe/metadata-result-item-fields) tresults)]
+        items (map #(select-keys % qe/metadata-result-item-fields) tresults)
+        ;; add tags to result items if necessary
+        items (if (contains? (set result-features) :tags)
+                (add-tags items concept-tags-map)
+                items)]
     (debug "Transformer metadata request time was" req-time "ms.")
     (results/map->Results {:hits hits :items items :result-format result-format})))
 
@@ -64,6 +92,19 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search results handling
+
+(defn- tags->result-string
+  "Returns the list of result strings for the given tags."
+  [tags]
+  (when (seq tags)
+    [(cx/remove-xml-processing-instructions
+       (x/emit-str
+         (x/element :tags {}
+                    (for [[tag-key {:keys [data]}] tags]
+                      (x/element :tag {}
+                                 (x/element :tagKey {} tag-key)
+                                 (when data
+                                   (x/element :data {} (json/generate-string data))))))))]))
 
 (defmulti metadata-item->result-string
   "Converts a search result + metadata into a string containing a single result for the metadata format."
@@ -90,7 +131,7 @@
 (defmethod metadata-item->result-string [:collection false]
   [concept-type echo-compatible? results metadata-item]
   (let [{:keys [has-granules-map granule-counts-map]} results
-        {:keys [concept-id revision-id format metadata]} metadata-item
+        {:keys [concept-id revision-id format metadata tags]} metadata-item
         granule-count (get granule-counts-map concept-id 0)
         attribs (concat [[:concept-id concept-id]
                          [:revision-id revision-id]
@@ -105,7 +146,9 @@
                       (str " " (name k) "=\"" v "\""))]
     (concat ["<result"]
             attrib-strs
-            [">" (cx/remove-xml-processing-instructions metadata) "</result>"])))
+            [">" (cx/remove-xml-processing-instructions metadata)]
+            (tags->result-string tags)
+            ["</result>"])))
 
 ;; ECHO Compatible Response Handling
 
@@ -122,12 +165,11 @@
 
 (defmethod metadata-item->result-string [:collection true]
   [concept-type echo-compatible? results metadata-item]
-  (let [{:keys [concept-id metadata]} metadata-item]
-    ["<result echo_dataset_id=\""
-     concept-id
-     "\">"
-     (cx/remove-xml-processing-instructions metadata)
-     "</result>"]))
+  (let [{:keys [concept-id metadata tags]} metadata-item]
+    (concat ["<result echo_dataset_id=\"" concept-id "\">"
+             (cx/remove-xml-processing-instructions metadata)]
+            (tags->result-string tags)
+            ["</result>"])))
 
 (defn- facets->xml-string
   "Converts facets into an XML string."
