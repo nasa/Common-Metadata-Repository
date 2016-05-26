@@ -3,6 +3,7 @@
   (:require [cmr.common.lifecycle :as lifecycle]
             [ring.adapter.jetty :as jetty]
             [cmr.common.log :refer (debug info warn error)]
+            [clojure.java.io :as io]
             [cmr.common.mime-types :as mt])
   (:import [org.eclipse.jetty.server
             Server
@@ -35,6 +36,37 @@
 (def MAX_REQUEST_HEADER_SIZE
   "The maximum request header size. This is set to 1MB to handle requests with long urls."
   1048576)
+
+(def MAX_REQUEST_BODY_SIZE
+ "The maximum size of a request to body. This is set to 200KB prevent large requests coming in
+  that cause out of memory exceptions"
+ 200000)
+
+(defn routes-fn-verify-size
+  "Before calling routes-fn function, check to make sure the request body size is not too large (greater
+   than MAX_REQUEST_BODY_SIZE). If the body size is too large, throw an error, otherwise call the
+   routes-fn function"
+  [system routes-fn]
+  (fn [request]
+    ; init byte array to size MAX_REQUEST_BODY_SIZE + 1
+    (let [input-byte-array (byte-array (inc MAX_REQUEST_BODY_SIZE))]
+       (loop [total-bytes-read 0]
+          ; read bytes into the byte array up to length MAX_REQUEST_BODY_SIZE + 1. If more is read,
+          ; we know the request is too large and can return an error
+          (let [bytes-read (.read (:body request) input-byte-array total-bytes-read (- (inc MAX_REQUEST_BODY_SIZE) total-bytes-read))]
+            ; If the entire request body has been read or if the amount of bytes read is
+            ; greater than MAX_REQUEST_BODY_SIZE, process based on num bytes read
+            ; otherwise loop to continue reading the request body
+            (if (or (= true (.isFinished (:body request)))
+                    (> (+ total-bytes-read bytes-read) MAX_REQUEST_BODY_SIZE))
+              (if (> (+ total-bytes-read bytes-read) MAX_REQUEST_BODY_SIZE)
+                {:status 413
+                 :content-type :json
+                 :errors ["Request body exceeds maximum size"]}
+                ; Put the request body into a new input stream since the current has been read from
+                (routes-fn (assoc request :body (io/input-stream input-byte-array))))
+              (recur (+ total-bytes-read bytes-read))))))))
+
 
 (defn create-access-log-handler
   "Setup access logging for each application. Access log entries will go to stdout similar to
@@ -80,7 +112,7 @@
     [this system]
     (try
       (let [{:keys [port routes-fn use-compression?]} this
-            routes (routes-fn system)
+            routes (routes-fn-verify-size system (routes-fn system))
             ^Server server (jetty/run-jetty
                              routes
                              {:port port
@@ -95,7 +127,9 @@
                                                     (.getHttpConfiguration http-conn-factory)
                                                     MAX_REQUEST_HEADER_SIZE))))})]
 
+
         (.stop server)
+
         (let [request-handler (if use-compression?
                                 (create-gzip-handler (.getHandler server) MIN_GZIP_SIZE)
                                 (.getHandler server))

@@ -5,6 +5,7 @@
             [cmr.common.lifecycle :as l]
             [clj-http.client :as h]
             [clojure.string :as str]
+            [clojure.java.io :as io]
             [cmr.common.util :as u]))
 
 (def PORT 3123)
@@ -16,6 +17,7 @@
 (def short-body
   "A body short enough that it shouldn't be compressed"
   (str/join (repeat (dec s/MIN_GZIP_SIZE) "0")))
+
 
 (defn routes-fn
   "The routes function to use with the web server. Returns a response long enough that it should be
@@ -64,3 +66,22 @@
       (finally
         (l/stop server nil)))))
 
+(deftest test-max-post-size
+  (let [server (l/start (s/create-web-server PORT routes-fn false false) nil)]
+    (try
+      (testing "post body size too large"
+        ; For this test, it should go in the exception handler, but need to assert on anything
+        ; other than a 413 to fail the test if it doesn't come back with an exception and instead
+        ; a 200 or something
+        (try
+          (let [result (h/post "http://localhost:3123" {:body (str/join (repeat 200001 "0"))
+                                                        :headers {"Content-Type" "application/x-www-form-urlencoded"}})]
+            (is (= 413 (:status result))))
+          (catch Exception e
+            (is (= (.getMessage e) "clj-http: status 413")))))
+      (testing "maximum post body size ok"
+        (let [result (h/post "http://localhost:3123" {:body (str/join (repeat 200000 "0"))
+                                                      :headers {"Content-Type" "application/x-www-form-urlencoded"}})]
+          (is (= 200 (:status result)))))
+      (finally
+        (l/stop server nil)))))
