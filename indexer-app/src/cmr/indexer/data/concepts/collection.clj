@@ -221,13 +221,13 @@
 
             ;; tags
             :tags (map tag/tag-association->elastic-doc tag-associations)
-            ;; it is currently a list of tag-keys, but it will eventually be something like:
+            ;; tag-data saved in elasticsearch for retrieving purpose in the format of:
             ;; {"org.ceos.wgiss.cwic.native_id": {"associationDate":"2015-01-01T00:00:00.0Z",
             ;;                                    "data": "Global Maps of Atmospheric Nitrogen Deposition, 1860, 1993, and 2050"},
             ;;  "org.ceos.wgiss.cwic.data_provider": {"associationDate":"2015-01-01T00:00:00.0Z",
             ;;                                        "data": "NASA"},
             ;;  "org.ceos.wgiss.cwic.cwic_status": {"associationDate":"2015-01-01T00:00:00.0Z",
-            ;;                                      "data": "prod"}
+            ;;                                      "data": "prod"}}
             :tags-gzip-b64 (when (seq tag-associations)
                              (util/string->gzip-base64
                                (pr-str
