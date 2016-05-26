@@ -360,7 +360,7 @@ SC:SPL1AA.001:12345,SMAP_L1C_S0_HIRES_00016_A_20150530T160100_R03001_001.h5,,,,,
 
 #### Metadata Responses (DIF, DIF 10, ECHO 10, ISO-SMAP, ISO-MENDS)
 
-All of the XML Metadata formats (except the XML used in returning references only) have the same structure, differing only in the way each result is returned. These formats return a single XML document with a `<results>` tag containing the following fields as sub-tags:
+All of the XML Metadata formats (except the XML used in returning references only) have the same structure, differing only in the way each result is returned. These formats return a single XML document with a `<results>` XML element containing the following fields as sub-elements:
 
 |         Field         |                    Description                     |
 | --------------------- | -------------------------------------------------- |
@@ -368,7 +368,7 @@ All of the XML Metadata formats (except the XML used in returning references onl
 | took                  | time in milliseconds it took to perform the search |
 | result (zero or more) | a single search result - documented below          |
 
-The results are returned as a seqeuence of `<result>` tags, the contents of which are documents in the specified format (DIF, ECHO 10 , etc.). Each `<result>` tag contains the following attributes:
+The results are returned as a seqeuence of `<result>` XML elements, the contents of which are documents in the specified format (DIF, ECHO 10 , etc.). If tags are included in the response a `<tags>` element will directly follow the metadata in the `<result>` element. Each `<result>` XML element contains the following attributes:
 
 |  Attribute  |                  Description                  |
 | ----------- | --------------------------------------------- |
