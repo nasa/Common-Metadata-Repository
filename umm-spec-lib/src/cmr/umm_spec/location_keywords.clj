@@ -54,7 +54,7 @@
   (if (contains? duplicate-keywords keyword)
     (first (find-spatial-keywords-in-map keyword-map-list (:uuid (get duplicate-keywords (str/upper-case keyword)))))
     (let [result (first (sort-by count (find-spatial-keywords-in-map keyword-map-list keyword)))]
-      (or result {:Category "OTHER" :Type keyword}))))
+      (or result {:category "OTHER" :type keyword}))))
 
 (defn spatial-keywords->location-keywords
   "Takes a keyword map list and a list of Spatial Keywords and returns a list of location keyword maps
