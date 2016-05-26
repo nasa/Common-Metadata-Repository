@@ -12,7 +12,6 @@
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
             [clojure.string :as str]))
 
-
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
                                           {:grant-all-search? false}))
 
@@ -361,7 +360,55 @@
       [{:value "POPULAR",
         :count 2,
         :subfields ["term"],
-        :term [{:value "EXTREME", :count 2}]}]}]}])
+        :term [{:value "EXTREME", :count 2}]}]}]}
+   {:subfields ["category"],
+    :category
+    [{:subfields ["type"],
+      :type
+      [{:subfields ["subregion_1"],
+        :subregion_1
+        [{:subfields ["subregion_2"],
+          :subregion_2
+          [{:subfields ["subregion_3"],
+            :subregion_3 [{:count 2, :value "Not Provided"}],
+            :count 2,
+            :value "ANGOLA"}],
+          :count 2,
+          :value "CENTRAL AFRICA"}],
+        :count 2,
+        :value "AFRICA"}
+       {:subfields ["subregion_1"],
+        :subregion_1
+        [{:subfields ["subregion_2"],
+          :subregion_2
+          [{:subfields ["subregion_3"],
+            :subregion_3
+            [{:count 1, :value "GAZA STRIP"}],
+            :count 1,
+            :value "MIDDLE EAST"}],
+          :count 1,
+          :value "WESTERN ASIA"}],
+        :count 1,
+        :value "ASIA"}],
+      :count 2,
+      :value "CONTINENT"}
+     {:subfields ["type"],
+      :type
+      [{:subfields ["subregion_1"],
+        :subregion_1
+        [{:subfields ["subregion_2"],
+          :subregion_2
+          [{:subfields ["subregion_3"],
+            :subregion_3 [{:count 1, :value "Not Provided"}],
+            :count 1,
+            :value "Not Provided"}],
+          :count 1,
+          :value "Not Provided"}],
+        :count 1,
+        :value "NOT IN KMS"}],
+      :count 1,
+      :value "OTHER"}],
+    :field "location_keywords"}])
 
 (deftest all-hierarchical-fields-test
   (grant-permissions)
@@ -371,14 +418,16 @@
                          (platforms FROM_KMS 2 2 1)
                          (twod-coords "Alpha")
                          (processing-level-id "PL1")
-                         {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})
+                         {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]
+                          :spatial-keywords ["ANGOLA"]})
         coll2 (make-coll 2 "PROV1"
                          (science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7)
                          (projects "proj1" "PROJ2")
                          (platforms FROM_KMS 2 2 1)
                          (twod-coords "Alpha")
                          (processing-level-id "PL1")
-                         {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})
+                         {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]
+                          :spatial-keywords ["ANGOLA" "GAZA STRIP" "NOT IN KMS"]})
         actual-facets (get-facet-results :hierarchical)]
     (is (= expected-all-hierarchical-facets (:xml-facets actual-facets)))
     (is (= expected-all-hierarchical-facets (:json-facets actual-facets)))))
@@ -417,7 +466,8 @@
                                          [{:value "POPULAR",
                                            :count 1,
                                            :subfields ["term"],
-                                           :term [{:value "EXTREME", :count 1}]}]}]}]
+                                           :term [{:value "EXTREME", :count 1}]}]}]}
+                                      {:field "location_keywords", :subfields []}]
         expected-flat-facets [{:field "data_center", :value-counts []}
                               {:field "archive_center", :value-counts []}
                               {:field "project", :value-counts []}
@@ -452,7 +502,8 @@
                          {:field "archive_centers", :subfields []}
                          {:field "platforms", :subfields []}
                          {:field "instruments", :subfields []}
-                         {:field "science_keywords", :subfields []}]
+                         {:field "science_keywords", :subfields []}
+                         {:field "location_keywords", :subfields []}]
         actual-facets (get-facet-results :hierarchical)]
     (is (= expected-facets (:xml-facets actual-facets)))
     (is (= expected-facets (:json-facets actual-facets)))))
@@ -484,7 +535,8 @@
                                            [{:value "TERM",
                                              :count 1,
                                              :subfields ["variable_level_1"],
-                                             :variable_level_1 [{:value "V-L1", :count 1}]}]}]}]}]
+                                             :variable_level_1 [{:value "V-L1", :count 1}]}]}]}]}
+                                      {:field "location_keywords", :subfields []}]
         expected-flat-facets [{:field "data_center", :value-counts []}
                               {:field "archive_center", :value-counts []}
                               {:field "project", :value-counts []}

@@ -1,4 +1,4 @@
-(ns cmr.umm.umm-matchers
+(ns cmr.umm.acl-matchers
   "Contains code for determining if a collection matches an acl"
   (:require [clojure.set :as set]
             [clojure.string :as str]
