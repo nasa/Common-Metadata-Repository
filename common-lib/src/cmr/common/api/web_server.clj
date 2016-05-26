@@ -42,30 +42,35 @@
   that cause out of memory exceptions"
  200000)
 
-(defn routes-fn-verify-size
-  "Before calling routes-fn function, check to make sure the request body size is not too large (greater
+(defn- routes-fn-verify-size
+  "Takes the passed in routes function and wraps it with another function that will verify request
+   sizes do not exceed the maximum size.
+   Before calling routes-fn function, check to make sure the request body size is not too large (greater
    than MAX_REQUEST_BODY_SIZE). If the body size is too large, throw an error, otherwise call the
    routes-fn function"
-  [system routes-fn]
+  [routes-fn]
   (fn [request]
-    ; init byte array to size MAX_REQUEST_BODY_SIZE + 1
-    (let [input-byte-array (byte-array (inc MAX_REQUEST_BODY_SIZE))]
-       (loop [total-bytes-read 0]
-          ; read bytes into the byte array up to length MAX_REQUEST_BODY_SIZE + 1. If more is read,
-          ; we know the request is too large and can return an error
-          (let [bytes-read (.read (:body request) input-byte-array total-bytes-read (- (inc MAX_REQUEST_BODY_SIZE) total-bytes-read))]
-            ; If the entire request body has been read or if the amount of bytes read is
-            ; greater than MAX_REQUEST_BODY_SIZE, process based on num bytes read
-            ; otherwise loop to continue reading the request body
-            (if (or (= true (.isFinished (:body request)))
-                    (> (+ total-bytes-read bytes-read) MAX_REQUEST_BODY_SIZE))
-              (if (> (+ total-bytes-read bytes-read) MAX_REQUEST_BODY_SIZE)
-                {:status 413
-                 :content-type :json
-                 :errors ["Request body exceeds maximum size"]}
-                ; Put the request body into a new input stream since the current has been read from
-                (routes-fn (assoc request :body (io/input-stream input-byte-array))))
-              (recur (+ total-bytes-read bytes-read))))))))
+    (let [^org.eclipse.jetty.server.HttpInput body-input-stream (:body request)]
+      ;; Init byte array to size MAX_REQUEST_BODY_SIZE + 1
+     (let [input-byte-array (byte-array (inc MAX_REQUEST_BODY_SIZE))]
+        (loop [total-bytes-read 0]
+           ;; Read bytes into the byte array up to length MAX_REQUEST_BODY_SIZE + 1. If more is read,
+           ;; we know the request is too large and can return an error
+           (let [bytes-read
+                 (max 0  ; If bytes-read is -1, still want 0, so when adding it to total bytes doesn't subtract
+                   (.read body-input-stream input-byte-array total-bytes-read (- (inc MAX_REQUEST_BODY_SIZE) total-bytes-read)))]
+             ;; If the entire request body has been read or if the amount of bytes read is
+             ;; greater than MAX_REQUEST_BODY_SIZE, process based on num bytes read
+             ;; otherwise loop to continue reading the request body
+             (if (or (= true (.isFinished body-input-stream))
+                     (> (+ total-bytes-read bytes-read) MAX_REQUEST_BODY_SIZE))
+               (if (> (+ total-bytes-read bytes-read) MAX_REQUEST_BODY_SIZE)
+                 {:status 413
+                  :content-type :text
+                  :body "Request body exceeds maximum size"}
+                 ;; Put the request body into a new input stream since the current has been read from
+                 (routes-fn (assoc request :body (java.io.ByteArrayInputStream. input-byte-array 0 (+ total-bytes-read bytes-read)))))
+               (recur (+ total-bytes-read bytes-read)))))))))
 
 
 (defn create-access-log-handler
@@ -112,7 +117,7 @@
     [this system]
     (try
       (let [{:keys [port routes-fn use-compression?]} this
-            routes (routes-fn-verify-size system (routes-fn system))
+            routes (routes-fn-verify-size (routes-fn system))
             ^Server server (jetty/run-jetty
                              routes
                              {:port port

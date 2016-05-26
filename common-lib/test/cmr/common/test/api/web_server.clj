@@ -32,6 +32,13 @@
        :headers {"Content-Type" "application/xml; charset=utf-8"}
        :body long-body})))
 
+(defn routes-fn-return-body
+  "A routes function to use with the web server. Returns back what was sent"
+  [system]
+  (fn [request]
+    {:status 200
+     :body (:body request)}))
+
 (defn get-uri
   [path accept-encoding]
   (h/with-middleware
@@ -67,21 +74,44 @@
         (l/stop server nil)))))
 
 (deftest test-max-post-size
-  (let [server (l/start (s/create-web-server PORT routes-fn false false) nil)]
+  (let [server (l/start (s/create-web-server PORT routes-fn-return-body false false) nil)]
     (try
       (testing "post body size too large"
-        ; For this test, it should go in the exception handler, but need to assert on anything
-        ; other than a 413 to fail the test if it doesn't come back with an exception and instead
-        ; a 200 or something
-        (try
-          (let [result (h/post (str "http://localhost:" PORT) {:body (str/join (repeat 200001 "0"))}
-                                                        :headers {"Content-Type" "application/x-www-form-urlencoded"})]
-            (is (= 413 (:status result))))
-          (catch Exception e
-            (is (= (.getMessage e) "clj-http: status 413")))))
+        (let [result (h/post (str "http://localhost:" PORT) {:body (str/join (repeat 200001 "0"))
+                                                             :headers {"Content-Type" "application/x-www-form-urlencoded"}
+                                                             :throw-exceptions false})]
+          (is (= 413 (:status result)))
+          (is (= "Request body exceeds maximum size" (:body result)))))
       (testing "maximum post body size ok"
         (let [result (h/post (str "http://localhost:" PORT) {:body (str/join (repeat 200000 "0"))
-                                                             :headers {"Content-Type" "application/x-www-form-urlencoded"}})]
+                                                             :headers {"Content-Type" "application/x-www-form-urlencoded"}
+                                                             :throw-exceptions false})]
           (is (= 200 (:status result)))))
+      (testing "post request small body"
+        (let [result (h/post (str "http://localhost:" PORT) {:body "test data"
+                                                             :headers {"Content-Type" "application/x-www-form-urlencoded"}
+                                                             :throw-exceptions false})]
+          (is (= "test data" (:body result)))))
       (finally
+        (l/stop server nil)))))
+
+;; Code for running a performance analysis on functionality to kick back a request with
+;; a body that is too large
+(comment
+ (require '[criterium.core :refer [with-progress-reporting bench quick-bench]])
+ ; Large example
+ (with-progress-reporting
+   (bench
+     (let [server (l/start (s/create-web-server PORT routes-fn-return-body false false) nil)]
+       (h/post (str "http://localhost:" PORT) {:body (str/join (repeat 200001 "0"))
+                                               :headers {"Content-Type" "application/x-www-form-urlencoded"}
+                                               :throw-exceptions false})
+       (l/stop server nil))))
+  ; Small example
+ (with-progress-reporting
+   (bench
+     (let [server (l/start (s/create-web-server PORT routes-fn-return-body false false) nil)]
+        (h/post (str "http://localhost:" PORT) {:body (str/join (repeat 10 "0"))
+                                                :headers {"Content-Type" "application/x-www-form-urlencoded"}
+                                                :throw-exceptions false})
         (l/stop server nil)))))
