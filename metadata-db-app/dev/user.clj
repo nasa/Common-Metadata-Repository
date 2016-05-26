@@ -16,6 +16,7 @@
 
 (def system nil)
 (def mock-echo nil)
+(def side-api-server nil)
 
 (def use-external-db?
   "Set to true to use the Oracle DB"
@@ -30,6 +31,14 @@
 (defn start
   "Starts the current development system."
   []
+
+  ;; Start side api server so we can eval things in the dev system jvm
+  (alter-var-root
+   #'side-api-server
+   (constantly (-> (side-api/create-side-server
+                     ;; We need no extra routes beyond what the side server provides.
+                     (fn [_]))
+                   (l/start nil))))
 
   (alter-var-root #'mock-echo
                   (constantly

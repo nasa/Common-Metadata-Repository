@@ -7,6 +7,7 @@
             [clj-time.format :as f]
             [clj-time.local :as l]
             [cmr.common.log :refer (info)]
+            cmr.common-app.test.side-api :as side]
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.services.messages :as msg]
             [cmr.metadata-db.services.concept-constraints :as cc]
@@ -54,52 +55,46 @@
     :granule ["REG_PROV" "SMAL_PROV1"] [:concept-type :provider-id :native-id :extra-fields]))
 
 (deftest save-granule-post-commit-constraint-violations
-  (try ;; TODO remove this try wrapper when implementing CMR-2987
-    ;; This line is a hack to workaround the problem specified in CMR-2987.
-    (require 'cmr.system-int-test.utils.dev-system-util)
+  (testing "duplicate granule URs"
+    (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
+      ;; Turn on enforcement of duplicate granule UR constraint
+      (side/eval-form `(cc/set-enforce-granule-ur-constraint! true))
+      (let [parent-collection (util/create-and-save-collection provider-id 1)
+            existing-gran-concept-id (str "G1-" provider-id)
+            existing-granule (util/granule-concept provider-id parent-collection 1
+                                                   {:concept-id existing-gran-concept-id
+                                                    :revision-id 1
+                                                    :extra-fields {:granule-ur "GR-UR1"}})
+            test-gran-concept-id (str "G2-" provider-id)
+            test-granule (util/granule-concept provider-id parent-collection 2
+                                               {:concept-id test-gran-concept-id
+                                                :revision-id 1
+                                                :extra-fields {:granule-ur "GR-UR1"}})
+            _ (util/save-concept existing-granule)
+            test-granule-response (util/save-concept test-granule)]
 
-    (testing "duplicate granule URs"
-      (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
-        ;; Turn on enforcement of duplicate granule UR constraint
-        (cc/set-enforce-granule-ur-constraint! true)
-        (let [parent-collection (util/create-and-save-collection provider-id 1)
-              existing-gran-concept-id (str "G1-" provider-id)
-              existing-granule (util/granule-concept provider-id parent-collection 1
-                                                     {:concept-id existing-gran-concept-id
-                                                      :revision-id 1
-                                                      :extra-fields {:granule-ur "GR-UR1"}})
-              test-gran-concept-id (str "G2-" provider-id)
-              test-granule (util/granule-concept provider-id parent-collection 2
-                                                 {:concept-id test-gran-concept-id
-                                                  :revision-id 1
-                                                  :extra-fields {:granule-ur "GR-UR1"}})
-              _ (util/save-concept existing-granule)
-              test-granule-response (util/save-concept test-granule)]
+        ;; The granule should be rejected due to another granule having the same granule-ur
+        (is (= {:status 409,
+                :errors [(msg/duplicate-field-msg :granule-ur [existing-granule])]}
+               (select-keys test-granule-response [:status :errors])))
 
-          ;; The granule should be rejected due to another granule having the same granule-ur
-          (is (= {:status 409,
-                  :errors [(msg/duplicate-field-msg :granule-ur [existing-granule])]}
-                 (select-keys test-granule-response [:status :errors])))
-
-          ;; We need to verify that the granule which was inserted and failed the post commit
-          ;; constraint checks is cleaned up from the database. We do this by verifying that
-          ;; the db only contains the original granule.
-          (let [found-concepts (util/find-concepts :granule
-                                                   {:granule-ur "GR-UR1" :provider-id provider-id})]
-            (is (= [(update-in existing-granule [:extra-fields] dissoc :parent-entry-title)]
-                   (map #(dissoc % :revision-date :transaction-id) (:concepts found-concepts)))))
-          (testing "duplicate granule URs are allowed when the constraint is configured as off"
-            (try
-              (cc/set-enforce-granule-ur-constraint! false)
-              (is (= {:status 201
-                      :revision-id (:revision-id test-granule)
-                      :concept-id (:concept-id test-granule)
-                      :errors nil}
-                     (util/save-concept test-granule)))
-              (finally
-                (cc/set-enforce-granule-ur-constraint! true)))))))
-    (catch FileNotFoundException e ;; TODO  Remove this when implimenting CMR-2987.
-      (info "Skipping duplicate granule UR test.")))
+        ;; We need to verify that the granule which was inserted and failed the post commit
+        ;; constraint checks is cleaned up from the database. We do this by verifying that
+        ;; the db only contains the original granule.
+        (let [found-concepts (util/find-concepts :granule
+                                                 {:granule-ur "GR-UR1" :provider-id provider-id})]
+          (is (= [(update-in existing-granule [:extra-fields] dissoc :parent-entry-title)]
+                 (map #(dissoc % :revision-date :transaction-id) (:concepts found-concepts)))))
+        (testing "duplicate granule URs are allowed when the constraint is configured as off"
+          (try
+            (cc/set-enforce-granule-ur-constraint! false)
+            (is (= {:status 201
+                    :revision-id (:revision-id test-granule)
+                    :concept-id (:concept-id test-granule)
+                    :errors nil}
+                   (util/save-concept test-granule)))
+            (finally
+              (side/eval-form `(cc/set-enforce-granule-ur-constraint! true))))))))
 
   (testing "duplicate granule urs within multiple small providers is OK"
     (let [coll1 (util/create-and-save-collection "SMAL_PROV1" 1)

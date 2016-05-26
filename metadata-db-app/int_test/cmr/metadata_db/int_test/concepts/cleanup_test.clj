@@ -4,6 +4,7 @@
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
             [clj-time.core :as t]
+            [cmr.common-app.test.side-api :as side]
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.services.messages :as messages]
             [cmr.metadata-db.services.concept-service :as concept-service]
@@ -228,24 +229,18 @@
 
     (let [concepts-after-cleanup (:concepts (util/get-concepts all-concept-tuples true))]
       (is (= (set (map util/expected-concept [gran1 gran2 gran4-3]))
-             (set (map #(dissoc % :transaction-id) concepts-after-cleanup)))))
+             (set (map #(dissoc % :transaction-id) concepts-after-cleanup))))
 
-    (try ;; TODO remove this try wrapper when implementing CMR-2987
-      ;; This line is a hack to workaround the problem specified in CMR-2987.
-      (require 'cmr.system-int-test.utils.dev-system-util)
-
-    ;; Back to the future!
-    ;; Advance one second past granule 1's tombstone cleanup time
-      (tk/advance-time! (+ 1 (* (+ 2 days-to-keep-tombstone) 24 3600)))
+      ;; Back to the future!
+      ;; Advance one second past granule 1's tombstone cleanup time
+      (side/eval-form `(tk/advance-time! ~(+ 1 (* (+ 2 days-to-keep-tombstone) 24 3600))))
 
       ;; Do the cleanup again
       (is (= 204 (util/old-revision-concept-cleanup)))
 
       (let [concepts-after-cleanup (:concepts (util/get-concepts all-concept-tuples true))]
         (is (= (set (map util/expected-concept [gran2 gran4-3]))
-               (set (map #(dissoc % :transaction-id) concepts-after-cleanup)))))
-      (catch FileNotFoundException eval ;; TODO  Remove this when implimenting CMR-2987.
-        (info "Skipping concept cleanup test.")))))
+               (set (map #(dissoc % :transaction-id) concepts-after-cleanup))))))))
 
 (deftest old-tag-revisions-are-cleaned-up
   (let [tag1 (util/create-and-save-tag 1 13)
