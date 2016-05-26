@@ -31,7 +31,7 @@
             [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
             [cmr.common-app.services.kms-fetcher :as kf]
             [cmr.acl.acl-fetcher :as acl-fetcher]
-            [cmr.umm.umm-matchers :as umm-matchers])
+            [cmr.umm.acl-matchers :as umm-matchers])
   (:import cmr.spatial.mbr.Mbr))
 
 (defn spatial->elastic
