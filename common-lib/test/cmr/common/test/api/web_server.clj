@@ -74,14 +74,14 @@
         ; other than a 413 to fail the test if it doesn't come back with an exception and instead
         ; a 200 or something
         (try
-          (let [result (h/post "http://localhost:3123" {:body (str/join (repeat 200001 "0"))
-                                                        :headers {"Content-Type" "application/x-www-form-urlencoded"}})]
+          (let [result (h/post (str "http://localhost:" PORT) {:body (str/join (repeat 200001 "0"))}
+                                                        :headers {"Content-Type" "application/x-www-form-urlencoded"})]
             (is (= 413 (:status result))))
           (catch Exception e
             (is (= (.getMessage e) "clj-http: status 413")))))
       (testing "maximum post body size ok"
-        (let [result (h/post "http://localhost:3123" {:body (str/join (repeat 200000 "0"))
-                                                      :headers {"Content-Type" "application/x-www-form-urlencoded"}})]
+        (let [result (h/post (str "http://localhost:" PORT) {:body (str/join (repeat 200000 "0"))
+                                                             :headers {"Content-Type" "application/x-www-form-urlencoded"}})]
           (is (= 200 (:status result)))))
       (finally
         (l/stop server nil)))))
