@@ -109,8 +109,8 @@
            [coll-angola coll-c-africa] {:location_keyword {:subregion_1 "CeNTRAL aFRiCA"}}
            [coll-gaza coll-angola coll-c-africa] {:location_keyword {:any "Cont*" :pattern true}}
            [coll-gaza] {:location_keyword {:category "CONTINENT"
-                                            :type "ASIA"
-                                            :subregion_1 "WESTERN ASIA"
-                                            :subregion_2 "MIDDLE EAST"
-                                            :subregion_3 "GAZA STRIP"
-                                            :uuid "302ab5f2-5fa2-482d-9d22-8a7a1546a62d"}}))))
+                                           :type "ASIA"
+                                           :subregion_1 "WESTERN ASIA"
+                                           :subregion_2 "MIDDLE EAST"
+                                           :subregion_3 "GAZA STRIP"
+                                           :uuid "302ab5f2-5fa2-482d-9d22-8a7a1546a62d"}}))))

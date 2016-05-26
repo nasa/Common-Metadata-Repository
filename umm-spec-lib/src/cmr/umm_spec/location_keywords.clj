@@ -40,8 +40,8 @@
   Takes a string keyword as a parameter, e.g. 'OCEAN' and a list of spatial keyword maps;
   returns a list of maps of hierarchies which contain the keyword."
   [keyword-map-list keyword]
-  (filter (fn [map]
-            (some #{(str/upper-case keyword)} (mapv str/upper-case (vals map))))
+  (filter (fn [keyword-map]
+            (some #{(str/upper-case keyword)} (mapv str/upper-case (vals keyword-map))))
           (vals keyword-map-list)))
 
 (defn find-spatial-keyword

@@ -115,35 +115,32 @@
         subregion-1 (cx/string-at-path location-elem [:Location_Subregion1])
         subregion-2 (cx/string-at-path location-elem [:Location_Subregion2])
         subregion-3 (cx/string-at-path location-elem [:Location_Subregion3])
-        detailed-location (cx/string-at-path location-elem [:Detailed_Location])
-        location-keyword
-        {:Category category
-         :Type type
-         :Subregion1 subregion-1
-         :Subregion2 subregion-2
-         :Subregion3 subregion-3
-         :DetailedLocation detailed-location}]
-    location-keyword))
+        detailed-location (cx/string-at-path location-elem [:Detailed_Location])]
+    {:Category category
+     :Type type
+     :Subregion1 subregion-1
+     :Subregion2 subregion-2
+     :Subregion3 subregion-3
+     :DetailedLocation detailed-location}))
 
 (defn xml-elem->spatial-keywords
   "Returns spatial keywords from all of the Location elements within a DIF9 or DIF10 collection."
   [collection-element]
   (seq
    (location-keywords->spatial-keywords
-    (map xml-elem->location-keyword
-         (cx/elements-at-path collection-element [:Location])))))
+     (map xml-elem->location-keyword
+          (cx/elements-at-path collection-element [:Location])))))
 
 (defn generate-locations
   "Generate DIF9 or DIF10 locations based on UMM spatial keywords. Note this requires a context
   which umm-lib is not setup for yet, so this function is not used yet."
   [context spatial-keywords]
-  (when-let [location-keywords (seq (translate-spatial-keywords context spatial-keywords))]
-    (for [location location-keywords]
-      (let [{:keys [category type subregion-1 subregion-2 subregion-3 detailed-location]} location]
-        (x/element :Location {}
-                   (x/element :Location_Category {} category)
-                   (gu/optional-elem :Location_Type {} type)
-                   (gu/optional-elem :Location_Subregion1 subregion-1)
-                   (gu/optional-elem :Location_Subregion2 subregion-2)
-                   (gu/optional-elem :Location_Subregion3 subregion-3)
-                   (gu/optional-elem :Detailed_Location detailed-location))))))
+  (for [location (translate-spatial-keywords context spatial-keywords)]
+    (let [{:keys [category type subregion-1 subregion-2 subregion-3 detailed-location]} location]
+      (x/element :Location {}
+                 (x/element :Location_Category {} category)
+                 (gu/optional-elem :Location_Type {} type)
+                 (gu/optional-elem :Location_Subregion1 subregion-1)
+                 (gu/optional-elem :Location_Subregion2 subregion-2)
+                 (gu/optional-elem :Location_Subregion3 subregion-3)
+                 (gu/optional-elem :Detailed_Location detailed-location)))))

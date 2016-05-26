@@ -59,7 +59,7 @@
          {:providers [:bucket-level-0 :bucket-level-1 :bucket-level-2 :bucket-level-3 :short-name
                       :long-name :data-center-url :uuid]
           :spatial-keywords [:location-category :location-type :location-subregion-1
-                              :location-subregion-2 :location-subregion-3 :uuid]}))
+                             :location-subregion-2 :location-subregion-3 :uuid]}))
 
 (def keyword-scheme->required-field
   "Maps each keyword scheme to a field that must be present for a keyword to be valid."
