@@ -27,7 +27,7 @@
    :provider-db (provider-db/create-db)
    :acl-db (acl-db/create-db)
    :urs-db (urs-db/create-db)
-   :web (web/create-web-server (transmit-config/echo-rest-port) routes/make-api)})
+   :web (web/create-web-server (transmit-config/mock-echo-port) routes/make-api)})
 
 (def start
   "Performs side effects to initialize the system, acquire resources,
@@ -38,4 +38,3 @@
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
   (common-sys/stop-fn "mock-echo" component-order))
-

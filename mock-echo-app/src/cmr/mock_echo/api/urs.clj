@@ -133,6 +133,8 @@
 (defn build-routes [system]
   (routes
     (context "/urs" []
+      ;;availability endpoint
+      (GET "/" [] {:status 200})
 
       (POST "/login" {:keys [request-context body] :as request}
         (assert-urs-basic-auth-info request)
