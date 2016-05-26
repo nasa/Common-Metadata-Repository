@@ -11,7 +11,7 @@
             [cmr.common.date-time-parser :as date-time-parser]
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as coll-id-extractor]
             [cmr.search.services.query-walkers.collection-query-resolver :as r]
-            [cmr.acl.umm-matchers :as umm-matchers]
+            [cmr.umm.umm-matchers :as umm-matchers]
             [cmr.search.services.acls.collections-cache :as coll-cache]
             [cmr.common.services.errors :as errors]
             [cmr.common.time-keeper :as tk]
@@ -261,5 +261,3 @@
 (defmethod acl-service/acls-match-concept? :granule
   [context acls concept]
   (some #(acl-match-concept? context % concept) acls))
-
-
