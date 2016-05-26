@@ -1,8 +1,9 @@
-(ns cmr.acl.test.core
+(ns cmr.indexer.test.data.concepts.collection_acls
   (:require [clojure.test :refer :all]
             [cmr.common.cache :as cache]
             [cmr.acl.core :as a]
             [cmr.acl.acl-fetcher :as af]
+            [cmr.indexer.data.concepts.collection :as coll]
             [cmr.common.cache.in-memory-cache :as mem-cache]))
 
 (defn context-with-acls
@@ -24,6 +25,10 @@
   {:permissions permissions
    :user-type user-type})
 
+(def get-coll-permitted-group-ids
+  "Allow testing private function"
+  #'coll/get-coll-permitted-group-ids)
+
 (deftest test-get-coll-permitted-group-ids
   (testing "group access"
     (let [acl1 {:aces [(group-ace "read-order" :read :order)
@@ -41,7 +46,7 @@
                                         :collection-applicable true}}
           context (context-with-acls acl1 acl2 acl3)]
       (is (= ["read-order" "just-read" "order-read" "group3"]
-             (a/get-coll-permitted-group-ids context "PROV1" {:fake-coll "foo"})))))
+             (get-coll-permitted-group-ids context "PROV1" {:fake-coll "foo"})))))
 
   (testing "guest access"
     (let [acl1 {:aces [(group-ace "group1" :read)
@@ -53,7 +58,7 @@
                                         :collection-applicable true}}
           context (context-with-acls acl1 acl2)]
       (is (= ["group1" "guest"]
-             (a/get-coll-permitted-group-ids context "PROV1" {:fake-coll "foo"})))))
+             (get-coll-permitted-group-ids context "PROV1" {:fake-coll "foo"})))))
 
   (testing "registered user access"
     (let [acl1 {:aces [(group-ace "group1" :read)
@@ -65,7 +70,7 @@
                                         :collection-applicable true}}
           context (context-with-acls acl1 acl2)]
       (is (= ["group1" "registered"]
-             (a/get-coll-permitted-group-ids context "PROV1" {:fake-coll "foo"})))))
+             (get-coll-permitted-group-ids context "PROV1" {:fake-coll "foo"})))))
 
   (testing "registered user access"
     (let [acl1 {:aces [(group-ace "group1" :read)
@@ -76,4 +81,4 @@
                 :catalog-item-identity {:provider-id "PROV2"
                                         :collection-applicable true}}
           context (context-with-acls acl1 acl2)]
-      (is (empty? (a/get-coll-permitted-group-ids context "PROV1" {:fake-coll "foo"}))))))
+      (is (empty? (get-coll-permitted-group-ids context "PROV1" {:fake-coll "foo"}))))))
