@@ -89,21 +89,21 @@
                 :errors ["You do not have permission to read access control group [Administrators] in provider [PROV2]."]}
                (u/get-group prov1-only-token prov2-group-concept-id)))))))
 
-; (deftest group-search-acl-test
-;   (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group" :create :read)
-;   (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group" "prov1guid" :create :read)
-;   (let [sys-token (e/login (u/conn-context) "sys-user" ["sys-group"])
-;         sys-group (u/make-group)
-;         sys-group-concept-id (:concept_id (u/create-group sys-token sys-group))
-;         prov1-token (e/login (u/conn-context) "prov1-user" ["prov1-group"])
-;         prov1-group (u/make-group {:provider_id "PROV1"})
-;         prov1-group-concept-id (:concept_id (u/create-group prov1-token prov1-group))]
-;     (u/wait-until-indexed)
-;     (is (= [sys-group-concept-id]
-;            (map :concept_id (:items (u/search sys-token {:name "Administrators"})))))
-;     (is (= [prov1-group-concept-id]
-;            (map :concept_id (:items (u/search prov1-token {:name "Administrators"})))))
-;     (is (= 0 (:hits (u/search (e/login (u/conn-context) "non-permitted-user") {:name "Administrators"}))))))
+(deftest group-search-acl-test
+  (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group" :create :read)
+  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group" "prov1guid" :create :read)
+  (let [sys-token (e/login (u/conn-context) "sys-user" ["sys-group"])
+        sys-group (u/make-group)
+        sys-group-concept-id (:concept_id (u/create-group sys-token sys-group))
+        prov1-token (e/login (u/conn-context) "prov1-user" ["prov1-group"])
+        prov1-group (u/make-group {:provider_id "PROV1"})
+        prov1-group-concept-id (:concept_id (u/create-group prov1-token prov1-group))]
+    (u/wait-until-indexed)
+    (is (= [sys-group-concept-id]
+           (map :concept_id (:items (u/search sys-token {:name "Administrators"})))))
+    (is (= [prov1-group-concept-id]
+           (map :concept_id (:items (u/search prov1-token {:name "Administrators"})))))
+    (is (= 0 (:hits (u/search (e/login (u/conn-context) "non-permitted-user") {:name "Administrators"}))))))
 
 (deftest delete-group-acl-test
 
