@@ -1,10 +1,16 @@
-(ns cmr.umm-spec.location-keywords
-  "Helper utilities for converting Spatial or Location Keywords to UMM LocationKeywords."
-  (:require [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.umm-spec.models.collection :as umm-c]
+(ns cmr.umm.dif.collection.location-keywords
+  "Provide functions to parse and generate DIF location / spatial keyword elements."
+  (:require [clojure.data.xml :as x]
+            [cmr.common.xml :as cx]
+            [cmr.umm.collection :as c]
+            [cmr.umm.dif.core :as dif]
+            [cmr.umm.generator-util :as gu]
+            [cmr.common-app.services.kms-fetcher :as kf]
             [clojure.string :as str]
             [clojure.set :as set]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The following functions are all copied directly from the cmr.umm-spec.location-keywords namespace
 (def duplicate-keywords
   "Lookup table to account for any duplicate keywords. Will choose the preferred value.
   Common key is :uuid which is a field in the location-keyword map. "
@@ -40,8 +46,8 @@
   Takes a string keyword as a parameter, e.g. 'OCEAN' and a list of spatial keyword maps;
   returns a list of maps of hierarchies which contain the keyword."
   [keyword-map-list keyword]
-  (filter (fn [keyword-map]
-            (some #{(str/upper-case keyword)} (mapv str/upper-case (vals keyword-map))))
+  (filter (fn [map]
+            (some #{(str/upper-case keyword)} (mapv str/upper-case (vals map))))
           (vals keyword-map-list)))
 
 (defn find-spatial-keyword
@@ -98,3 +104,43 @@
                                       :uuid)
                                     location-keyword-maps))]
     umm-location-keyword-maps))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn xml-elem->location-keyword
+  "Return a location keyword from a location element."
+  [location-elem]
+  (let [category (cx/string-at-path location-elem [:Location_Category])
+        type (cx/string-at-path location-elem [:Location_Type])
+        subregion-1 (cx/string-at-path location-elem [:Location_Subregion1])
+        subregion-2 (cx/string-at-path location-elem [:Location_Subregion2])
+        subregion-3 (cx/string-at-path location-elem [:Location_Subregion3])
+        detailed-location (cx/string-at-path location-elem [:Detailed_Location])]
+    {:Category category
+     :Type type
+     :Subregion1 subregion-1
+     :Subregion2 subregion-2
+     :Subregion3 subregion-3
+     :DetailedLocation detailed-location}))
+
+(defn xml-elem->spatial-keywords
+  "Returns spatial keywords from all of the Location elements within a DIF9 or DIF10 collection."
+  [collection-element]
+  (seq
+   (location-keywords->spatial-keywords
+     (map xml-elem->location-keyword
+          (cx/elements-at-path collection-element [:Location])))))
+
+(defn generate-locations
+  "Generate DIF9 or DIF10 locations based on UMM spatial keywords. Note this requires a context
+  which umm-lib is not setup for yet, so this function is not used yet."
+  [context spatial-keywords]
+  (for [location (translate-spatial-keywords context spatial-keywords)]
+    (let [{:keys [category type subregion-1 subregion-2 subregion-3 detailed-location]} location]
+      (x/element :Location {}
+                 (x/element :Location_Category {} category)
+                 (gu/optional-elem :Location_Type {} type)
+                 (gu/optional-elem :Location_Subregion1 subregion-1)
+                 (gu/optional-elem :Location_Subregion2 subregion-2)
+                 (gu/optional-elem :Location_Subregion3 subregion-3)
+                 (gu/optional-elem :Detailed_Location detailed-location)))))

@@ -12,6 +12,7 @@
             [cmr.umm.dif10.collection.project-element :as pj]
             [cmr.umm.dif10.collection.related-url :as ru]
             [cmr.umm.dif10.collection.science-keyword :as sk]
+            [cmr.umm.dif.collection.location-keywords :as lk]
             [cmr.umm.dif10.collection.spatial :as s]
             [cmr.umm.dif10.collection.org :as org]
             [cmr.umm.dif10.collection.platform :as platform]
@@ -76,6 +77,7 @@
      :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
      :product (xml-elem->Product xml-struct)
      :data-provider-timestamps (xml-elem->DataProviderTimestamps xml-struct)
+     :spatial-keywords (lk/xml-elem->spatial-keywords xml-struct)
      :temporal-keywords (seq (cx/strings-at-path xml-struct [:Data_Resolution :Temporal_Resolution]))
      :access-value (em/xml-elem->access-value xml-struct)}))
 

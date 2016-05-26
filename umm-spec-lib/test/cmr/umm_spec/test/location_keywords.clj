@@ -10,7 +10,7 @@
             [cmr.umm-spec.models.collection :as umm-c]))
 
 (deftest test-location-keyword-lookup
-  (testing "Looking up a root keyword returns the top heirarchy result."
+  (testing "Looking up a root keyword returns the top hierarchy result."
     (let [keyword "CONTINENT"
           context lkt/setup-context-for-test
           expected {:category "CONTINENT", :uuid "0a672f19-dad5-4114-819a-2eb55bdbb56a"}
@@ -29,7 +29,7 @@
           expected "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
           context lkt/setup-context-for-test
           actual (:uuid (lk/find-spatial-keyword (:spatial-keywords lkt/sample-keyword-map) keyword))]
-          (is (= expected actual))))
+         (is (= expected actual))))
 
   (testing "Passing in a list of keywords returns a list of Location Keyword maps"
     (let [keywords ["SPACE" "ANGOLA" "CENTRAL AFRICA"]
@@ -54,4 +54,4 @@
           location-keyword-list (map #(umm-c/map->LocationKeywordType %) location-keyword-maps)
           actual (lk/location-keywords->spatial-keywords location-keyword-list)
           expected ["SPACE" "ANGOLA" "CENTRAL AFRICA"]]
-          (is (= expected actual)))))
+         (is (= expected actual)))))

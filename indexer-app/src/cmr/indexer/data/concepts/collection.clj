@@ -23,6 +23,7 @@
             [cmr.indexer.data.concepts.keyword :as k]
             [cmr.indexer.data.concepts.organization :as org]
             [cmr.indexer.data.concepts.tag :as tag]
+            [cmr.indexer.data.concepts.location-keyword :as lk]
             [cmr.acl.core :as acl]
             [cmr.common.concepts :as concepts]
             [cmr.umm.collection :as umm-c]
@@ -177,6 +178,8 @@
             :data-centers data-centers
             :science-keywords (map #(sk/science-keyword->elastic-doc gcmd-keywords-map %)
                                    (:science-keywords collection))
+            :location-keywords (map #(lk/spatial-keyword->elastic-doc gcmd-keywords-map %)
+                                   (:spatial-keywords collection))
 
             :instrument-sn instrument-short-names
             :instrument-sn.lowercase  (map str/lower-case instrument-short-names)

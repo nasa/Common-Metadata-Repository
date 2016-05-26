@@ -12,13 +12,13 @@
 (def valid-formats
   [
    :umm-json
-   :iso19115
+   :iso19115])
    ;; the following formats will be re-enabled once ISO support is complete
    ;; :iso-smap
    ;; :dif
    ;; :dif10
    ;; :echo10
-   ])
+
 
 (def test-context (lkt/setup-context-for-test lkt/sample-keyword-map))
 
@@ -162,8 +162,8 @@
 
     (def metadata-regen (umm-spec/generate-metadata test-context parsed-from-metadata output))
 
-    (def parsed-from-metadata-regen (umm-spec/parse-metadata test-context :collection output metadata-regen))
-    )
+    (def parsed-from-metadata-regen (umm-spec/parse-metadata test-context :collection output metadata-regen)))
+
 
   (println metadata)
 
@@ -176,7 +176,4 @@
 
   (def expected (-> expected-conversion/example-collection-record
                     (expected-conversion/convert input)
-                    (expected-conversion/convert output)
-                    ))
-
-  )
+                    (expected-conversion/convert output))))

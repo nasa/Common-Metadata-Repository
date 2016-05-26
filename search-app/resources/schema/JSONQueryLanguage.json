@@ -192,6 +192,48 @@
 					"description": "UMM spatial keyword",
 					"$ref": "#/definitions/StringCondition"
 				},
+				"location_keyword": {
+					"description": "Search against any of the subfields in the UMM location keyword hierarchy",
+					"type": "object",
+					"additionalProperties": false,
+					"minProperties": 1,
+					"properties": {
+						"category": {
+							"description": "Top level classification of locations.",
+							"type": "string"
+						},
+						"type": {
+							"description": "Second level classification under category.",
+							"type": "string"
+						},
+						"subregion_1": {
+							"description": "Third level classification under type.",
+							"type": "string"
+						},
+						"subregion_2": {
+							"description": "Fourth level classification under subregion_1.",
+							"type": "string"
+						},
+						"subregion_3": {
+							"description": "Fifth level classification under subregion_2.",
+							"type": "string"
+						},
+						"uuid": {
+							"description": "Unique identifier for the location keyword within the GCMD Keyword Management System.",
+							"type": "string"
+						},
+						"ignore_case": {
+							"$ref": "#/definitions/IgnoreCaseOption"
+						},
+						"pattern": {
+							"$ref": "#/definitions/PatternOption"
+						},
+						"any": {
+							"description": "Search against any of the location keyword subfields (category, type, etc.) for the provided value.",
+							"type": "string"
+						}
+					}
+				},
 				"two_d_coordinate_system_name": {
 					"description": "UMM two dimensional coordinate system name",
 					"$ref": "#/definitions/StringCondition"
