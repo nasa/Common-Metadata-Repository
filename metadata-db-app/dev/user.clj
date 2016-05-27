@@ -9,6 +9,7 @@
             [cmr.metadata-db.data.memory-db :as memory]
             [cmr.common.dev.util :as d]
             [cmr.common.lifecycle :as l]
+            [cmr.common-app.test.side-api :as side-api]
             [cmr.mock-echo.system :as mock-echo])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
