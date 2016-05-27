@@ -106,4 +106,3 @@
                                          :native-id native-id
                                          :extra-fields extra-field-params})]
     (util/filter-matching-maps query-map concepts)))
-
