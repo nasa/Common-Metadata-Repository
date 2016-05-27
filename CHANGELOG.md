@@ -37,6 +37,9 @@ Items to include in each issue
 * CMR-2745 As a client user, I want my facet search results to be sorted by relevance
   * Collection searches with any of the following parameters will now be scored: platform, instrument, sensor, two_d_coordinate_system_name, science_keywords, project, processing_level_id, data_center, archive_center
 
+* CMR-1860 As a client user, I want to be able to retrieve UMM JSON with paleo temporal coverage
+  * Updated UMM JSON schema to 1.3 which changed singular PaleoTemporalCoverage to plural PaleoTemporalCoverages
+
 ## 1.52
 
 * CMR-1876 - Indexer needs to index full hierarchy for locations
