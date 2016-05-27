@@ -144,6 +144,7 @@
     (is (revisions-exist? serv5 (range 1 4)))))
 
 (deftest old-tombstones-are-cleaned-up
+  (side/eval-form `(tk/set-time-override! (tk/now)))
   (let [coll1 (util/create-and-save-collection "REG_PROV" 1)
         base-revision-date (tk/now)
         offset->date #(t/plus base-revision-date (t/days %))
@@ -233,6 +234,7 @@
 
       ;; Back to the future!
       ;; Advance one second past granule 1's tombstone cleanup time
+
       (side/eval-form `(tk/advance-time! ~(+ 1 (* (+ 2 days-to-keep-tombstone) 24 3600))))
 
       ;; Do the cleanup again

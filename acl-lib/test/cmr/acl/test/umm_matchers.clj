@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [cmr.acl.umm-matchers :as a]
             [cmr.common.util :refer [are2]]
+            [cmr.common-app.test.side-api :as side]
             [cmr.common.test.time-util :as tu]
             [cmr.common.time-keeper :as tk]))
 
@@ -167,7 +168,7 @@
       :ending-date-time (tu/n->date-time end-n)}]}})
 
 (deftest collection-applicable-temporal-acl-test
-  (tk/set-time-override! (tu/n->date-time now-n))
+  (side/eval-form `(tk/set-time-override! ~(tu/n->date-time now-n)))
   (are2 [applicable? tf coll]
         (= applicable? (boolean (a/coll-applicable-acl?
                                   "PROV1" coll
