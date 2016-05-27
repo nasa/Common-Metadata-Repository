@@ -87,7 +87,7 @@
                  (map #(dissoc % :revision-date :transaction-id) (:concepts found-concepts)))))
         (testing "duplicate granule URs are allowed when the constraint is configured as off"
           (try
-            (cc/set-enforce-granule-ur-constraint! false)
+            (side/eval-form `(cc/set-enforce-granule-ur-constraint! false))
             (is (= {:status 201
                     :revision-id (:revision-id test-granule)
                     :concept-id (:concept-id test-granule)
