@@ -233,7 +233,7 @@
 
       ;; Back to the future!
       ;; Advance one second past granule 1's tombstone cleanup time
-      (side/eval-form `(tk/advance-time! ~(+ 1 (* (+ 2 days-to-keep-tombstone) 24 3600))))
+      (side/eval-form `(tk/advance-time! (+ 1 (* (+ 2 days-to-keep-tombstone) 24 3600))))
 
       ;; Do the cleanup again
       (is (= 204 (util/old-revision-concept-cleanup)))

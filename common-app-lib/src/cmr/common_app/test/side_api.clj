@@ -36,7 +36,7 @@
     ;; curl -XPOST -H "Content-Type: text" http://localhost:2999/eval -d "(+ 1 1)"
     (POST "/eval" {:keys [body]}
       (let [body-str (slurp body)]
-        (error (str "Evaling [" body-str "]"))
+        (debug (str "Evaling [" body-str "]"))
         {:status 200
          :body (pr-str (eval (read-string body-str)))}))
 

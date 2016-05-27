@@ -7,7 +7,7 @@
             [clj-time.format :as f]
             [clj-time.local :as l]
             [cmr.common.log :refer (info)]
-            cmr.common-app.test.side-api :as side]
+            [cmr.common-app.test.side-api :as side]
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.services.messages :as msg]
             [cmr.metadata-db.services.concept-constraints :as cc]
