@@ -46,3 +46,7 @@ Items to include in each issue
   * Configuration Patch Dependency: None
   * Deployment Impacts:
     * Requires update of indexes and reindexing of collections.
+* CMR-3008 - Create collection index with new shard configuration and index to multiple indexes
+  * Configuration Patch Dependency: None
+  * Deployment Impacts:
+    * Requires update of indexes and reindexing of collections.

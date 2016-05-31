@@ -78,7 +78,7 @@
   "Fixture that creates an index and drops it."
   [f]
   (let [conn (get-in @context [:system :db :conn])]
-    (esi/create conn "tests" :settings idx-set/collection-setting :mappings idx-set/collection-mapping)
+    (esi/create conn "tests" :settings idx-set/collection-setting-v2 :mappings idx-set/collection-mapping)
     (try
       (f)
       (finally
@@ -161,4 +161,3 @@
                               {:ignore-conflict? true})
     (delete-document-in-elastic @context ["tests"] "collection" "C1234-PROV1" "1" {:ignore-conflict? true})
     (assert-version "C1234-PROV1" 2)))
-

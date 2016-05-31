@@ -129,8 +129,7 @@
 
 (defmethod create-elastic :external
   [_]
-  ;; Nothing to do, Elastic is already running.
-  nil)
+  (elastic-config/set-elastic-port! 9209))
 
 (defmulti create-db
   "Returns an instance of the database component to use."

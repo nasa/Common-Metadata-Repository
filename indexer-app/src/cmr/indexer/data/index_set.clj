@@ -12,21 +12,54 @@
             [cmr.transmit.connection :as transmit-conn]
             [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
             [cmr.common.cache :as cache]
-            [cmr.common.config :as cfg]))
+            [cmr.common.config :as cfg :refer [defconfig]]))
+
+
+(def default-num-collection-index-shards
+  "Default number of shards to use for the collection index."
+  10)
+
+(def orig-default-num-collection-index-shards
+  "Original default number of shards to use for the collection index. Still used for original
+  collections index and all revisions index."
+  5)
 
 ;; The number of shards to use for the collections index, the granule indexes containing granules
 ;; for a single collection, and the granule index containing granules for the remaining collections
 ;; can all be configured separately.
-(def elastic-collection-index-num-shards (cfg/config-value-fn :elastic-collection-index-num-shards 5 #(Long. %)))
-(def elastic-granule-index-num-shards (cfg/config-value-fn :elastic-granule-index-num-shards 5 #(Long. %)))
-(def elastic-small-collections-index-num-shards (cfg/config-value-fn :elastic-small-collections-index-num-shards 20 #(Long. %)))
-;; The number of shards to use for the tags index
-(def elastic-tag-index-num-shards (cfg/config-value-fn :elastic-tag-index-num-shards 5 #(Long. %)))
+(defconfig elastic-collection-index-num-shards
+  "Number of shards to use for the collection index"
+  {:default default-num-collection-index-shards :type Long})
 
-(def collection-setting {:index
-                         {:number_of_shards (elastic-collection-index-num-shards),
-                          :number_of_replicas 1,
-                          :refresh_interval "1s"}})
+(defconfig elastic-granule-index-num-shards
+  "Number of shards to use for the individual collection granule indexes."
+  {:default 5 :type Long})
+
+(defconfig elastic-small-collections-index-num-shards
+  "Number of shards to use for the small collections granule index."
+  {:default 20 :type Long})
+
+(defconfig elastic-tag-index-num-shards
+  "Number of shards to use for the tags index."
+  {:default 5 :type Long})
+
+(defn get-original-number-of-collection-shards
+  "Returns how many shards should be used for the original collections index."
+  []
+  (let [num-configured-shards (elastic-collection-index-num-shards)]
+    (if (= default-num-collection-index-shards num-configured-shards)
+      orig-default-num-collection-index-shards
+      num-configured-shards)))
+
+(def collection-setting-v1 {:index
+                            {:number_of_shards (get-original-number-of-collection-shards)
+                             :number_of_replicas 1,
+                             :refresh_interval "1s"}})
+
+(def collection-setting-v2 {:index
+                            {:number_of_shards (elastic-collection-index-num-shards),
+                             :number_of_replicas 1,
+                             :refresh_interval "1s"}})
 
 (def tag-setting {:index
                   {:number_of_shards (elastic-tag-index-num-shards)
@@ -506,14 +539,18 @@
                :id index-set-id
                :create-reason "indexer app requires this index set"
                :collection {:indexes
-                            [;; This index contains the latest revision of each collection and
-                             ;; is used for normal searches.
+                            [;; This index will be removed once searches have been switched over to
+                             ;; use the new collections-v2 index with modified shard configuration.
                              {:name "collections"
-                              :settings collection-setting}
+                              :settings collection-setting-v1}
+                             ;; This index contains the latest revision of each collection and
+                             ;; is used for normal searches.
+                             {:name "collections-v2"
+                              :settings collection-setting-v2}
                              ;; This index contains all the revisions (including tombstones) and
                              ;; is used for all-revisions searches.
                              {:name "all-collection-revisions"
-                              :settings collection-setting}]
+                              :settings collection-setting-v1}]
                             :mapping collection-mapping}
                ;; The granule configuration here initially only specifies a single collection indexes
                ;; Additional granule indexes are created over time via the index set application.
@@ -674,9 +711,18 @@
          indexes (get-in (get-concept-type-index-names context) [:index-names concept-type])]
      (case concept-type
        :collection
-       [(get indexes (or target-index-key :collections))]
+       ;; If a target index is specified index to just that index. Otherwise index to all collection
+       ;; indexes except for the all-collection-revisions index.
+       (if target-index-key
+          [(get indexes target-index-key)]
+          (keep (fn [[k v]]
+                  (when-not (= :all-collection-revisions (keyword k))
+                    v))
+                indexes))
+
        :tag
        [(get indexes (or target-index-key :tags))]
+
        :granule
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
          (get-granule-index-names-for-collection context coll-concept-id target-index-key))))))
