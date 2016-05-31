@@ -312,6 +312,19 @@
            :dif10
            :echo10
            :native
+           :iso19115)
+
+      ;; direct transformer query special case
+      (are [metadata-format]
+           (assert-metadata-results-tags-match
+             {coll1 {"tag1" {"data" "snow"} "tag2" {}}}
+             (search/find-metadata-tags
+               :collection metadata-format {:concept-id (:concept-id coll1) :include-tags "*"}))
+
+           :dif
+           :dif10
+           :echo10
+           :native
            :iso19115))
 
     (testing "Invalid include-tags params"
