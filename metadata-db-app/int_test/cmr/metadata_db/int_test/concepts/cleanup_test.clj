@@ -112,7 +112,11 @@
     (is (= 204 (util/old-revision-concept-cleanup)))
 
     (is (every? #(revisions-removed? % (range 1 3)) granules))
-    (is (every? #(concept-revision-exists? % 3) [gran1 gran2 gran3 gran4]))
+    ; (is (every? #(concept-revision-exists? % 3) [gran1 gran2 gran3 gran4]))
+    (is (concept-revision-exists? gran1 3))
+    (is (concept-revision-exists? gran2 3))
+    (is (concept-revision-exists? gran3 3))
+    (is (concept-revision-exists? gran4 3))
     (is (concept-revision-exists? gran5 12))))
 
 (deftest old-service-revisions-are-cleaned-up
