@@ -8,7 +8,11 @@
   (:import [org.eclipse.jetty.server
             Server
             NCSARequestLog
+            Connector
             HttpConnectionFactory]
+           [java.io
+            ByteArrayInputStream
+            InputStream]
            org.eclipse.jetty.servlets.gzip.GzipHandler
            org.eclipse.jetty.server.handler.RequestLogHandler))
 
@@ -33,14 +37,17 @@
   Akamai recommend 860 bytes. We're transmitting UTF-8 which should be about a byte a character."
   860)
 
+(def ONE_MB 1048576)
+
 (def MAX_REQUEST_HEADER_SIZE
   "The maximum request header size. This is set to 1MB to handle requests with long urls."
-  1048576)
+  ONE_MB)
 
 (def MAX_REQUEST_BODY_SIZE
  "The maximum size of a request to body. This is set to 200KB prevent large requests coming in
-  that cause out of memory exceptions"
- 200000)
+  that cause out of memory exceptions. A large ISO document like AST_L1A can be 120K characters which
+  would take up about 240KB in Java. This value is set to 3 MB."
+ (* 3 ONE_MB))
 
 (defn- routes-fn-verify-size
   "Takes the passed in routes function and wraps it with another function that will verify request
@@ -50,27 +57,37 @@
    routes-fn function"
   [routes-fn]
   (fn [request]
-    (let [^org.eclipse.jetty.server.HttpInput body-input-stream (:body request)]
+    (let [^InputStream body-input-stream (:body request)]
       ;; Init byte array to size MAX_REQUEST_BODY_SIZE + 1
-     (let [input-byte-array (byte-array (inc MAX_REQUEST_BODY_SIZE))]
+      (let [buffer-size (inc MAX_REQUEST_BODY_SIZE)
+            input-byte-array (byte-array buffer-size)]
         (loop [total-bytes-read 0]
-           ;; Read bytes into the byte array up to length MAX_REQUEST_BODY_SIZE + 1. If more is read,
-           ;; we know the request is too large and can return an error
-           (let [bytes-read
-                 (max 0  ; If bytes-read is -1, still want 0, so when adding it to total bytes doesn't subtract
-                   (.read body-input-stream input-byte-array total-bytes-read (- (inc MAX_REQUEST_BODY_SIZE) total-bytes-read)))]
-             ;; If the entire request body has been read or if the amount of bytes read is
-             ;; greater than MAX_REQUEST_BODY_SIZE, process based on num bytes read
-             ;; otherwise loop to continue reading the request body
-             (if (or (= true (.isFinished body-input-stream))
-                     (> (+ total-bytes-read bytes-read) MAX_REQUEST_BODY_SIZE))
-               (if (> (+ total-bytes-read bytes-read) MAX_REQUEST_BODY_SIZE)
-                 {:status 413
-                  :content-type :text
-                  :body "Request body exceeds maximum size"}
-                 ;; Put the request body into a new input stream since the current has been read from
-                 (routes-fn (assoc request :body (java.io.ByteArrayInputStream. input-byte-array 0 (+ total-bytes-read bytes-read)))))
-               (recur (+ total-bytes-read bytes-read)))))))))
+          ;; Read bytes into the byte array up to length MAX_REQUEST_BODY_SIZE + 1. If more is read,
+          ;; we know the request is too large and can return an error
+          (let [bytes-read (.read body-input-stream
+                                  input-byte-array
+                                  total-bytes-read
+                                  (- buffer-size total-bytes-read))
+                at-end? (= -1 bytes-read)
+                ; If bytes-read is -1, still want 0, so when adding it to total bytes doesn't subtract
+                bytes-read (max 0 bytes-read)]
+
+            ;; If the entire request body has been read or if the amount of bytes read is
+            ;; greater than MAX_REQUEST_BODY_SIZE, process based on num bytes read
+            ;; otherwise loop to continue reading the request body
+            (if (or at-end?
+                    (> (+ total-bytes-read bytes-read) MAX_REQUEST_BODY_SIZE))
+              (if (> (+ total-bytes-read bytes-read) MAX_REQUEST_BODY_SIZE)
+                {:status 413
+                 :content-type :text
+                 :body "Request body exceeds maximum size"}
+                ;; Put the request body into a new input stream since the current has been read from
+                (routes-fn (assoc request :body (ByteArrayInputStream.
+                                                 input-byte-array
+                                                 0 ;; offset
+                                                 (+ total-bytes-read bytes-read)))))
+              (recur (+ total-bytes-read bytes-read)))))))))
+
 
 
 (defn create-access-log-handler
@@ -91,7 +108,7 @@
   (doto (GzipHandler.)
     (.setHandler existing-handler)
     ;; All the mime types that we want to support compression with must be specified here.
-    (.setMimeTypes (set mt/all-supported-mime-types))
+    (.setMimeTypes ^java.util.Set (set mt/all-supported-mime-types))
     (.setMinGzipSize min_gzip_size)))
 
 (defrecord WebServer
@@ -124,8 +141,8 @@
                               :join? false
                               :min-threads MIN_THREADS
                               :max-threads MAX_THREADS
-                              :configurator (fn [jetty]
-                                              (doseq [connector (.getConnectors jetty)]
+                              :configurator (fn [^Server jetty]
+                                              (doseq [^Connector connector (.getConnectors jetty)]
                                                 (let [^HttpConnectionFactory http-conn-factory
                                                       (first (.getConnectionFactories connector))]
                                                   (.setRequestHeaderSize

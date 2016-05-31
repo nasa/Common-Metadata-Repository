@@ -77,20 +77,20 @@
   (let [server (l/start (s/create-web-server PORT routes-fn-return-body false false) nil)]
     (try
       (testing "post body size too large"
-        (let [result (h/post (str "http://localhost:" PORT) {:body (str/join (repeat 200001 "0"))
-                                                             :headers {"Content-Type" "application/x-www-form-urlencoded"}
-                                                             :throw-exceptions false})]
+        (let [result (h/post (str "http://localhost:" PORT)
+                             {:body (str/join (repeat (inc s/MAX_REQUEST_BODY_SIZE) "0"))
+                              :throw-exceptions false})]
           (is (= 413 (:status result)))
           (is (= "Request body exceeds maximum size" (:body result)))))
       (testing "maximum post body size ok"
-        (let [result (h/post (str "http://localhost:" PORT) {:body (str/join (repeat 200000 "0"))
-                                                             :headers {"Content-Type" "application/x-www-form-urlencoded"}
-                                                             :throw-exceptions false})]
+        (let [result (h/post (str "http://localhost:" PORT)
+                             {:body (str/join (repeat s/MAX_REQUEST_BODY_SIZE "0"))
+                              :throw-exceptions false})]
           (is (= 200 (:status result)))))
       (testing "post request small body"
-        (let [result (h/post (str "http://localhost:" PORT) {:body "test data"
-                                                             :headers {"Content-Type" "application/x-www-form-urlencoded"}
-                                                             :throw-exceptions false})]
+        (let [result (h/post (str "http://localhost:" PORT)
+                             {:body "test data"
+                              :throw-exceptions false})]
           (is (= "test data" (:body result)))))
       (finally
         (l/stop server nil)))))
@@ -99,19 +99,21 @@
 ;; a body that is too large
 (comment
  (require '[criterium.core :refer [with-progress-reporting bench quick-bench]])
+
+ (def test-fn
+   (#'s/routes-fn-verify-size (constantly nil)))
+
  ; Large example
- (with-progress-reporting
-   (bench
-     (let [server (l/start (s/create-web-server PORT routes-fn-return-body false false) nil)]
-       (h/post (str "http://localhost:" PORT) {:body (str/join (repeat 200001 "0"))
-                                               :headers {"Content-Type" "application/x-www-form-urlencoded"}
-                                               :throw-exceptions false})
-       (l/stop server nil))))
-  ; Small example
- (with-progress-reporting
-   (bench
-     (let [server (l/start (s/create-web-server PORT routes-fn-return-body false false) nil)]
-        (h/post (str "http://localhost:" PORT) {:body (str/join (repeat 10 "0"))
-                                                :headers {"Content-Type" "application/x-www-form-urlencoded"}
-                                                :throw-exceptions false})
-        (l/stop server nil)))))
+ (let [lots-of-bytes (.getBytes (str/join (repeat (dec s/MAX_REQUEST_BODY_SIZE) "0")))]
+   (with-progress-reporting
+    (bench
+     (test-fn {:body (java.io.ByteArrayInputStream. lots-of-bytes)}))))
+
+
+ ; Small example
+ (let [small-bytes (.getBytes (str/join (repeat 10 "0")))]
+   (with-progress-reporting
+    (bench
+     (test-fn {:body (java.io.ByteArrayInputStream. small-bytes)})))))
+
+

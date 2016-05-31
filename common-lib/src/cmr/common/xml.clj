@@ -159,11 +159,11 @@
 
 (defn pretty-print-xml
   "Returns the pretty printed xml for the given xml string"
-  [xml]
+  [^String xml]
   (let [src (InputSource. (StringReader. xml))
         builder (.newDocumentBuilder (DocumentBuilderFactory/newInstance))
         document (.getDocumentElement (.parse builder src))
-        ^Boolean keep-declaration (.startsWith xml "<?xml")
+        keep-declaration (.startsWith xml "<?xml")
         registry (DOMImplementationRegistry/newInstance)
         ^DOMImplementationLS impl (.getDOMImplementation registry "LS")
         writer (.createLSSerializer impl)
