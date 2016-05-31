@@ -1,5 +1,5 @@
-(ns ^{:doc "Search CMR Collections by Data Centers."}
-  cmr.system-int-test.search.coll-archive-ctr-search-test
+(ns cmr.system-int-test.search.coll-archive-ctr-search-test
+  "Search CMR Collections by Data Centers."
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
@@ -189,5 +189,3 @@
            [kms-coll1] {:data_center {:url "http://www.eol.ucar.edu/projects/ceop/dm/"}}
            [kms-coll2] {:data_center {:uuid "69db99c6-54d6-40b9-9f72-47eab9c34869"}}
            [kms-coll2] {:data_center {:any "69db99c6*" :pattern true}}))))
-
-
