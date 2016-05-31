@@ -37,7 +37,7 @@
   (and (specific-items-query? query)
        (t/transformer-supported-format? result-format)
        (not all-revisions?)
-       ;; Facets ant tags require elastic search
+       ;; Facets and tags require elastic search
        (not-any? #(contains? #{:facets :tags} %) result-features)
        ;; Sorting hasn't been specified or is set to the default value
        ;; Note that we don't actually sort items by the default sort keys
