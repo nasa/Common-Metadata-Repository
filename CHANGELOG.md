@@ -50,3 +50,4 @@ Items to include in each issue
   * Configuration Patch Dependency: None
   * Deployment Impacts:
     * Requires update of indexes and reindexing of collections.
+    * Create a new alias for the collection index used by search.
