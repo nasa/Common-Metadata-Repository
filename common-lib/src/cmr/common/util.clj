@@ -290,7 +290,8 @@
 (defn numeric-string?
   "Returns true if the string can be converted to a double. False otherwise."
   [val]
-  (try (Double. val)
+  (try
+    (Double. ^String val)
     true
     (catch NumberFormatException _
       false)))
@@ -391,11 +392,12 @@
   "Converts a string to another string that is the base64 encoded bytes obtained by gzip
   compressing the bytes of the original string."
   [input]
-  (-> input string->gzip-bytes b64/encode (String. (java.nio.charset.Charset/forName "UTF-8"))))
+  (let [^bytes b64-bytes (-> input string->gzip-bytes b64/encode)]
+   (String. b64-bytes (java.nio.charset.Charset/forName "UTF-8"))))
 
 (defn gzip-base64->string
   "Converts a base64 encoded gzipped string back to the original string."
-  [input]
+  [^String input]
   (-> input
       .getBytes
       b64/decode
