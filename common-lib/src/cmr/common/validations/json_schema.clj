@@ -4,8 +4,11 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.log :as log :refer (warn)]
             [clojure.string :as str])
-  (:import com.github.fge.jsonschema.main.JsonSchemaFactory
+  (:import [com.github.fge.jsonschema.main
+            JsonSchema
+            JsonSchemaFactory]
            com.github.fge.jackson.JsonLoader
+           com.github.fge.jsonschema.core.report.ListProcessingReport
            com.fasterxml.jackson.core.JsonParseException))
 
 (defn- parse-error-report
@@ -34,10 +37,10 @@
   "Takes a validation report and returns a sequence of any errors contained in the report. Returns
   nil if there are no errors. Takes a com.github.fge.jsonschema.core.report.ListProcessingReport.
   See http://fge.github.io/json-schema-validator/2.2.x/index.html for details."
-  [report]
+  [^ListProcessingReport report]
   (flatten
     (for [error-report (seq (.asJson report))
-          :let [json-error-report (json/decode (.toString error-report) true)]]
+          :let [json-error-report (json/decode (.toString ^Object error-report) true)]]
       (conj (parse-nested-error-report (:reports json-error-report))
             (parse-error-report json-error-report)))))
 
@@ -74,7 +77,7 @@
   Uses com.github.fge.jsonschema to perform the validation. The JSON schema must be provided as
   a com.github.fge.jsonschema.main.JsonSchema object and the json-to-validate must be a string.
   Returns a list of the errors found."
-  [json-schema json-to-validate]
+  [^JsonSchema json-schema json-to-validate]
   (let [validation-report (.validate json-schema (json-string->JsonNode json-to-validate))]
     (parse-validation-report validation-report)))
 

@@ -12,7 +12,8 @@
             [clojurewerkz.quartzite.stateful :as qst]
             [clojurewerkz.quartzite.schedule.calendar-interval :as qcal]
             [clojurewerkz.quartzite.schedule.cron :as qcron]
-            [clojurewerkz.quartzite.conversion :as qc]))
+            [clojurewerkz.quartzite.conversion :as qc])
+  (:import org.quartz.core.QuartzScheduler))
 
 (defn defjob*
   "The function that does the bulk of the work for the def job macros."
@@ -206,7 +207,7 @@
    running?
 
    ;; Instance of a quartzite scheduler
-   qz-scheduler]
+   ^QuartzScheduler qz-scheduler]
 
 
   l/Lifecycle
