@@ -186,6 +186,12 @@
       (util/map-keys->snake_case)
       api-response))
 
+(defn search-for-acls
+  [context headers params]
+  (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
+  (-> (acl-service/search-for-acls context params)
+      cr/search-response))
+
 ;;; Various Admin Route Functions
 
 (defn reset
@@ -266,12 +272,25 @@
               (remove-members request-context headers (slurp body) group-id)))))
 
       (context "/acls" []
+        (OPTIONS "/" req
+                 (validate-standard-params (:params req))
+                 cr/options-response)
+
+        ;; Search for ACLs
+        (GET "/" {:keys [request-context headers params]}
+          (search-for-acls request-context headers params))
+
+        ;; Create an ACL
         (POST "/" {:keys [request-context headers body params]}
           (validate-standard-params params)
           (create-acl request-context headers (slurp body)))
 
-        (GET "/:concept-id" {:keys [request-context headers params]}
-          (get-acl request-context headers (:concept-id params)))))
+        (context "/:concept-id" [concept-id]
+          (OPTIONS "/" req cr/options-response)
+
+          ;; Retrieve an ACL
+          (GET "/" {:keys [request-context headers params]}
+            (get-acl request-context headers concept-id)))))
 
     (route/not-found "Not Found")))
 

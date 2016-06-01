@@ -61,8 +61,8 @@
       (update-in system-acl [:system_identity] assoc :target "WHATEVER")
 
       #"instance value .* not found in enum"
-      (update-in provider-acl [:provider_identity] assoc :target "WHATEVER")
-      )
+      (update-in provider-acl [:provider_identity] assoc :target "WHATEVER"))
+
 
     ;; Acceptance criteria: I receive an error if creating an ACL with invalid JSON
     (is

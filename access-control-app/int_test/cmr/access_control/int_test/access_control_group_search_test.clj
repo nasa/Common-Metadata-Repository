@@ -7,7 +7,8 @@
               [cmr.access-control.test.util :as u]))
 
 (use-fixtures :each
-              (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"} ["user1" "user2" "user3" "user4" "user5"])
+              (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"}
+                                      ["user1" "user2" "user3" "user4" "user5"])
               (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 (use-fixtures :once (fixtures/int-test-fixtures))
 
