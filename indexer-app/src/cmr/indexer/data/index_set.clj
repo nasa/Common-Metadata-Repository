@@ -690,21 +690,18 @@
          concept (when (= :granule concept-type) (meta-db/get-concept context concept-id revision-id))]
      (get-concept-index-names context concept-id revision-id options concept)))
   ([context concept-id revision-id {:keys [target-index-key all-revisions-index?]} concept]
-   ;; Setting all-revisions-index? to true is short hand for saying we should target the all collections
-   ;; revision index.
-   (let [target-index-key (or target-index-key (when all-revisions-index? :all-collection-revisions))
-         concept-type (cs/concept-id->type concept-id)
+   (let [concept-type (cs/concept-id->type concept-id)
          indexes (get-in (get-concept-type-index-names context) [:index-names concept-type])]
      (case concept-type
        :collection
-       ;; If a target index is specified index to just that index. Otherwise index to all collection
-       ;; indexes except for the all-collection-revisions index.
-       (if target-index-key
-          [(get indexes target-index-key)]
-          (keep (fn [[k v]]
-                  (when-not (= :all-collection-revisions (keyword k))
-                    v))
-                indexes))
+       (cond
+         target-index-key [(get indexes target-index-key)]
+         all-revisions-index? [:all-collection-revisions]
+         ;; Else index to all collection indexes except for the all-collection-revisions index.
+         :else (keep (fn [[k v]]
+                      (when-not (= :all-collection-revisions (keyword k))
+                        v))
+                     indexes))
 
        :tag
        [(get indexes (or target-index-key :tags))]
