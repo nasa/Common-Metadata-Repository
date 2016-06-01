@@ -14,22 +14,16 @@
             [cmr.common.cache :as cache]
             [cmr.common.config :as cfg :refer [defconfig]]))
 
-
-(def default-num-collection-index-shards
-  "Default number of shards to use for the collection index."
-  10)
-
-(def orig-default-num-collection-index-shards
-  "Original default number of shards to use for the collection index. Still used for original
-  collections index and all revisions index."
-  5)
-
 ;; The number of shards to use for the collections index, the granule indexes containing granules
 ;; for a single collection, and the granule index containing granules for the remaining collections
 ;; can all be configured separately.
 (defconfig elastic-collection-index-num-shards
   "Number of shards to use for the collection index"
-  {:default default-num-collection-index-shards :type Long})
+  {:default 5 :type Long})
+
+(defconfig elastic-collection-v2-index-num-shards
+  "Number of shards to use for the collection index"
+  {:default 10 :type Long})
 
 (defconfig elastic-granule-index-num-shards
   "Number of shards to use for the individual collection granule indexes."
@@ -43,21 +37,13 @@
   "Number of shards to use for the tags index."
   {:default 5 :type Long})
 
-(defn get-original-number-of-collection-shards
-  "Returns how many shards should be used for the original collections index."
-  []
-  (let [num-configured-shards (elastic-collection-index-num-shards)]
-    (if (= default-num-collection-index-shards num-configured-shards)
-      orig-default-num-collection-index-shards
-      num-configured-shards)))
-
 (def collection-setting-v1 {:index
-                            {:number_of_shards (get-original-number-of-collection-shards)
+                            {:number_of_shards (elastic-collection-index-num-shards)
                              :number_of_replicas 1,
                              :refresh_interval "1s"}})
 
 (def collection-setting-v2 {:index
-                            {:number_of_shards (elastic-collection-index-num-shards),
+                            {:number_of_shards (elastic-collection-v2-index-num-shards),
                              :number_of_replicas 1,
                              :refresh_interval "1s"}})
 

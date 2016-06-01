@@ -47,7 +47,9 @@ Items to include in each issue
   * Deployment Impacts:
     * Requires update of indexes and reindexing of collections.
 * CMR-3008 - Create collection index with new shard configuration and index to multiple indexes
-  * Configuration Patch Dependency: None
+  * Configuration Patch Dependency: Yes
+    * Configuration patch must be installed first to add the elastic-collection-v2-index-num-shards parameter.
   * Deployment Impacts:
-    * Requires update of indexes and reindexing of collections.
+    * Requires update of indexes and reindexing of collections. Note that collection indexing will be broken until update-indexes has been called.
     * Create a new alias for the collection index used by search.
+      * See ***REMOVED*** for instructions.
