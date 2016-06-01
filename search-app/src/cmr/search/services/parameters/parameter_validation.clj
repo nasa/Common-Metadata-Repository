@@ -384,8 +384,8 @@
   "Validates that all of the boolean parameters have values of true, false or unset."
   [concept-type params]
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts
-                                         :include-has-granules :include-facets :has-granules
-                                         :hierarchical-facets :include-highlights :all-revisions])]
+                                         :include-has-granules :has-granules :hierarchical-facets
+                                         :include-highlights :all-revisions])]
     (mapcat
       (fn [[param value]]
         (if (contains? #{"true" "false" "unset"} (when value (s/lower-case value)))
@@ -393,6 +393,16 @@
           [(format "Parameter %s must take value of true, false, or unset, but was [%s]"
                    (csk/->snake_case_string param) value)]))
       bool-params)))
+
+(defn- include-facets-validation
+  "Validates that all of the boolean parameters have values of true, false or unset."
+  [concept-type params]
+  (if-let [include-facets (:include-facets params)]
+    (if (contains? #{"true" "false" "v2"} (s/lower-case include-facets))
+      []
+      [(format "Parameter include_facets must take value of true, false, or v2, but was [%s]"
+               include-facets)])
+    []))
 
 (defn- spatial-validation
   "Validate a geometry of the given type in the params"
@@ -533,7 +543,8 @@
                   tag-data-validation
                   no-highlight-options-without-highlights-validation
                   highlights-numeric-options-validation
-                  include-tags-parameter-validation])
+                  include-tags-parameter-validation
+                  include-facets-validation])
    :granule (concat
               cpv/common-validations
               [temporal-format-validation

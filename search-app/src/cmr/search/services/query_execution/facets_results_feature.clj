@@ -17,7 +17,7 @@
   [field]
   {:terms {:field field :size UNLIMITED_TERMS_SIZE}})
 
-(def ^:private collection-count-aggregation
+(def collection-count-aggregation
   "Used to build an aggregation to get a count of unique concepts included in the current nested
   aggregation."
   {:reverse_nested {}
@@ -88,7 +88,7 @@
   [context query feature]
   (assoc query :aggregations hierarchical-facet-aggregations))
 
-(defn- buckets->value-count-pairs
+(defn buckets->value-count-pairs
   "Processes an elasticsearch aggregation response of buckets to a sequence of value and count
   tuples"
   [bucket-map]
@@ -97,7 +97,7 @@
        (map (fn [{v :key n :doc_count}]
               [v n]))))
 
-(defn- bucket-map->facets
+(defn bucket-map->facets
   "Takes a map of elastic aggregation results containing keys to buckets and a list of the bucket
   names. Returns a facet map of those specific names with value count pairs"
   [bucket-map field-names]
@@ -124,7 +124,7 @@
            field-snake-case value-counts})
         empty-response))))
 
-(defn- hierarchical-bucket-map->facets
+(defn hierarchical-bucket-map->facets
   "Takes a map of elastic aggregation results for a nested field. Returns a hierarchical facet for
   that field."
   [field bucket-map]
