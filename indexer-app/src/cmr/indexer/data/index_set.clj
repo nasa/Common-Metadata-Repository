@@ -696,7 +696,7 @@
        :collection
        (cond
          target-index-key [(get indexes target-index-key)]
-         all-revisions-index? [:all-collection-revisions]
+         all-revisions-index? [(get indexes :all-collection-revisions)]
          ;; Else index to all collection indexes except for the all-collection-revisions index.
          :else (keep (fn [[k v]]
                       (when-not (= :all-collection-revisions (keyword k))
