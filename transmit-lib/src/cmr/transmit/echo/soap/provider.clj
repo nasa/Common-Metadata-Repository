@@ -176,6 +176,21 @@
                     (when override-notification-enabled ["ns3:OverrideNotificationEnabled" override-notification-enabled])]])
     nil))
 
+(defn remove-provider-policies
+  "Removes provider policies for a provider. Takes a map containing the token, provider-id, and
+   provider-guid. provider-id and provider-guid are optional. If one or the other is specified they
+   will indicate the provider otherwise the provider will be assumed to be one the user has logged in
+   as."
+  [param-map]
+  (let [{:keys [token provider-id provider-guid]} param-map]
+    (soap/post-soap
+     :provider ["ns2:RemoveProviderPolicies"
+                soap/soap-ns-map
+                ["ns2:token" token]
+                (when provider-id ["ns2:providerId" provider-id])
+                (when provider-guid ["ns2:providerGuid" provider-guid])])
+    nil))
+
 (defn get-provider-policies
   "Get provider policies for the provider specified by the behalfOfProvider field of the specified token."
   [param-map]
