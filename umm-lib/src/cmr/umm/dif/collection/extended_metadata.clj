@@ -24,12 +24,6 @@
   #{product_level_id_external_meta_name collection_data_type_external_meta_name
     spatial_coverage_external_meta_name restriction_flag_external_meta_name})
 
-(defn- string-value-with-attr
-  "Returns the string value of the first element with the given attribute"
-  [elements attr]
-  (when-let [elem (first (filter #(= (name attr) (get-in % [:attrs :type])) elements))]
-    (str (first (:content elem)))))
-
 (defn- xml-elem->additional-attribute
   "Translates extended metadata element to a UMM additional attribute. DIF 9 extended metadata does
   not support the concept of ranges for values."
