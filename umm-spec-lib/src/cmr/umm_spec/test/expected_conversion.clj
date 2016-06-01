@@ -700,7 +700,9 @@
       (update-in [:DataDates] fixup-dif10-data-dates)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
-      (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil)
+      (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil
+                      :MeasurementResolution nil :ParameterUnitsOfMeasure nil
+                      :ParameterValueAccuracy nil :ValueAccuracyExplanation nil)
       (update-in [:ProcessingLevel] dif10-processing-level)
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] prune-empty-maps)

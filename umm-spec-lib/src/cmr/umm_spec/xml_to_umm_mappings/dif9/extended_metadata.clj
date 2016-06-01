@@ -3,29 +3,10 @@
   (:require [cmr.common.xml.simple-xpath :refer [select text]]
             [cmr.common.xml.parse :refer :all]))
 
-(def product_level_id_external_meta_name
-  "ProcessingLevelId")
-
-(def product_level_desc_external_meta_name
-  "ProcessingLevelDescription")
-
-(def collection_data_type_external_meta_name
-  "CollectionDataType")
-
-(def spatial_coverage_external_meta_name
-  "GranuleSpatialRepresentation")
-
-(def restriction_flag_external_meta_name
-  "Restriction")
-
-(def additional_attribute_external_meta_name
-  "AdditionalAttribute")
-
 (def non-additional-attributes
   "Set of extended metadata names which do not map to additional attributes"
-  #{product_level_id_external_meta_name product_level_desc_external_meta_name
-    collection_data_type_external_meta_name spatial_coverage_external_meta_name
-    restriction_flag_external_meta_name})
+  #{"ProcessingLevelId" "ProcessingLevelDescription""CollectionDataType"
+    "GranuleSpatialRepresentation""Restriction"})
 
 (defn- xml-elem->additional-attribute
   "Translates extended metadata element to a UMM additional attribute. DIF 9 extended metadata does
