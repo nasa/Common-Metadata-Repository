@@ -81,14 +81,19 @@
   (let [{:keys [concept_id revision_id]} (ac/create-acl (u/conn-context) acl {:token token})]
     (assoc acl :concept-id concept_id :revision-id revision_id)))
 
+
 (defn acl->search-response-item
   "Returns the expected search response item for an ACL."
   [acl]
-  (let [acl (util/map-keys->kebab-case acl)]
+  (let [acl (util/map-keys->kebab-case acl)
+        {:keys [protocol host port context]} (get-in (u/conn-context) [:system :access-control-connection])
+        expected-location (format "%s://%s:%s%s/acls/%s"
+                                  protocol host port context (:concept-id acl))]
     {:name (access-control-index/acl->display-name acl)
      :revision_id (:revision-id acl),
      :concept_id (:concept-id acl)
-     :identity_type (access-control-index/acl->identity-type acl)}))
+     :identity_type (access-control-index/acl->identity-type acl)
+     :location expected-location}))
 
 (defn acls->search-response
   "Returns the expected search response for a given number of hits and the acls."

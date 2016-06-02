@@ -15,7 +15,7 @@
 (defn- replace-relative-root-url
   "Replaces any occurences of %RELATIVE_ROOT_URL% with the applications relative root url"
   [system content]
-  (str/replace content "%RELATIVE_ROOT_URL%" (get-in system [:search-public-conf :relative-root-url])))
+  (str/replace content "%RELATIVE_ROOT_URL%" (get-in system [:public-conf :relative-root-url])))
 
 (defn resource-routes
   "Defines routes for returning resources used in the generated collection HTML"

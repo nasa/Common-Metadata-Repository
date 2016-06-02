@@ -28,9 +28,21 @@
   "The protocol to use in documentation examples for the access-control application."
   {:default "http"})
 
-(def public-conf
+(defconfig access-control-public-host
+  "The host name to use in links returned by the access-control application."
+  {:default "localhost"})
+
+(defconfig access-control-public-port
+  "The port to use in links returned by the access-control application."
+  {:default 3011
+   :type Long})
+
+(defn public-conf
   "Public access-control configuration used for generating example requests in documentation"
+  []
   {:protocol (access-control-public-protocol)
+   :host (access-control-public-host)
+   :port (access-control-public-port)
    :relative-root-url (transmit-config/access-control-relative-root-url)})
 
 (def
@@ -53,7 +65,7 @@
              :caches {af/acl-cache-key (af/create-acl-cache
                                         (stl-cache/create-single-thread-lookup-cache)
                                         [:system-object :provider-object :single-instance-object])}
-             :public-conf public-conf
+             :public-conf (public-conf)
              :relative-root-url (transmit-config/access-control-relative-root-url)
              :scheduler (jobs/create-scheduler
                          `system-holder

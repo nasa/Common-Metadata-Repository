@@ -93,7 +93,7 @@
                       ;; already refreshes the cache. Since we use a consistent cache, the search
                       ;; application will also pick up the updated KMS keywords.
                       kf/kms-cache-key (kf/create-kms-cache)}
-             :search-public-conf search-public-conf
+             :public-conf search-public-conf
              collection-renderer/system-key (collection-renderer/create-collection-renderer)
              :scheduler (jobs/create-scheduler
                           `system-holder

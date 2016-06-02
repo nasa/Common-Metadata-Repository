@@ -287,15 +287,15 @@
 
 (defn- build-routes [system]
   (routes
-    (context (get-in system [:search-public-conf :relative-root-url]) []
+    (context (get-in system [:public-conf :relative-root-url]) []
 
       ;; Add routes for tagging
       tags-api/tag-api-routes
 
       ;; Add routes for API documentation
       (api-docs/docs-routes
-        (get-in system [:search-public-conf :protocol])
-        (get-in system [:search-public-conf :relative-root-url])
+        (get-in system [:public-conf :protocol])
+        (get-in system [:public-conf :relative-root-url])
         "public/index.html")
 
       ;; Routes for collection html resources

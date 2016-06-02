@@ -60,6 +60,7 @@
 
   ;; Configure ports so that it won't conflict with another REPL containing the same applications.
   (transmit-config/set-access-control-port! 4011)
+  (system/set-access-control-public-port! 4011)
   (transmit-config/set-metadata-db-port! 4001)
   (transmit-config/set-echo-rest-port! 4008)
   (transmit-config/set-mock-echo-port! 4008)

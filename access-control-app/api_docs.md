@@ -423,8 +423,7 @@ The response is always returned in JSON and includes the following parts.
   * revision_id
   * name - This will be the catalog item identity name or a string containing "<identity type> - <target>". For example "System - PROVIDER"
   * identity_type - String of "provider", "system", "single_instance", or "catalog_item"
-
-TODO include the URL
+  * location - A URL to retrieve the ACL
 
 ##### ACL Search Example
 
@@ -440,22 +439,25 @@ Content-Length: 702
 
 {
   "hits" : 3,
-  "took" : 4,
+  "took" : 6,
   "items" : [ {
     "revision_id" : 1,
     "concept_id" : "ACL1200000008-CMR",
     "identity_type" : "Catalog Item",
-    "name" : "All Collections"
+    "name" : "All Collections",
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000008-CMR"
   }, {
     "revision_id" : 1,
     "concept_id" : "ACL1200000009-CMR",
     "identity_type" : "Catalog Item",
-    "name" : "All Granules"
+    "name" : "All Granules",
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000009-CMR"
   }, {
     "revision_id" : 1,
     "concept_id" : "ACL1200000006-CMR",
     "identity_type" : "Group",
-    "name" : "Group - AG1234-CMR"
+    "name" : "Group - AG1234-CMR",
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000006-CMR"
   } ]
 }
 ```
