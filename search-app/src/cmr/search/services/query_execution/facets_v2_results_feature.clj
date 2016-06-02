@@ -7,7 +7,8 @@
             [camel-snake-kebab.core :as csk]
             [cmr.common.util :as util]
             [ring.util.codec :as codec]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [cmr.transmit.connection :as conn]))
 
 
 (def UNLIMITED_TERMS_SIZE
@@ -108,9 +109,7 @@
   "Creates either a remove or an apply link based on whether this particular term is already
   selected within a query. Returns a tuple of the type of link created and the link itself."
   [base-link query-params field-name term]
-  (println "Checking for field" field-name)
   (let [terms-for-field (get query-params (str (csk/->snake_case_string field-name) "[]"))
-        _ (when terms-for-field (println "The terms are" terms-for-field))
         term-exists (some #{(str/lower-case term)} (if (coll? terms-for-field)
                                                      (map str/lower-case terms-for-field)
                                                      [(str/lower-case terms-for-field)]))]
@@ -192,7 +191,11 @@
   [context elastic-aggregations query]
   (let [flat-fields [:platform :instrument :data-center :project :processing-level-id]
         hierarchical-fields [:science-keywords]
-        base-link "http://localhost:3003/collections.json"
+        search-public-conf (get-in context [:system :search-public-conf])
+        base-link (format "%s/collections.json"
+                          (conn/root-url
+                            (assoc search-public-conf
+                                   :context (:relative-root-url search-public-conf))))
         query-params (parse-params (:query-string context) "UTF-8")
         facets (concat (keep (fn [field]
                                 (when-let [sub-facets (hierarchical-bucket-map->facets-v2
