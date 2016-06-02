@@ -4,7 +4,8 @@
   (:require [cmr.common-app.services.search.query-execution :as query-execution]
             [cmr.common-app.services.kms-fetcher :as kms-fetcher]
             [cmr.search.services.query-execution.facets-results-feature :as frf]
-            [camel-snake-kebab.core :as csk]))
+            [camel-snake-kebab.core :as csk]
+            [cmr.common.util :as util]))
 
 
 (def UNLIMITED_TERMS_SIZE
@@ -69,16 +70,24 @@
    :processing-level-id "Processing levels"
    :science-keywords "Keywords"})
 
+(def sorted-facet-map
+  "A map that sorts the keys of the facet map so it is presented in a pleasing way to Users
+  of the API. The nested hierarchical maps API can be hard to understand if the maps are ordered
+  randomly."
+  (util/key-sorted-map [:title :type :applied :count :links :has_children :children]))
+
 (defn- parse-hierarchical-bucket-v2
   "Parses the elasticsearch aggregations response for hierarchical fields."
   [field-hierarchy bucket-map]
   (when-let [field (first field-hierarchy)]
-    (let [empty-response {:has_children false
-                          :type :group}
+    (let [empty-response (merge sorted-facet-map
+                                {:has_children false
+                                 :type :group})
           value-counts (for [bucket (get-in bucket-map [field :buckets])
                              :let [sub-facets (parse-hierarchical-bucket-v2 (rest field-hierarchy)
                                                                             bucket)]]
-                         (merge {:has_children false}
+                         (merge sorted-facet-map
+                                {:has_children false}
                                 (when-not (= sub-facets empty-response)
                                   sub-facets)
                                 {:title (:key bucket)
@@ -103,16 +112,13 @@
   names. Returns a facet map of those specific names with value count pairs"
   [bucket-map field-names]
   (for [field-name field-names
-        ; :let [value-counts (frf/buckets->value-count-pairs (get bucket-map field-name))]
         :let [value-counts (frf/buckets->value-count-pairs (field-name bucket-map))
               has-children (some? (seq value-counts))
-              ; base-node {:title (get fields->human-readable-label (keyword field-name))}
               base-node {:title (field-name fields->human-readable-label)
                          :type :group
                          ;; TODO with another ticket
                          ;  :applied ;; either true or false
                          :has_children has-children}]]
-    ; (println "The field name is ")
     (if has-children
       (assoc base-node :children (map (fn [[term count]]
                                         {:title term
@@ -126,11 +132,9 @@
                                       value-counts))
       base-node)))
 
-;; :value-counts [["Larc" 3] ["Dist" 1] ["GSFC" 1] ["Proc" 1]]
 (defn create-v2-facets
   "Create the facets v2 response. Takes an elastic aggregations result and returns the facets."
   [elastic-aggregations]
-  (println "Elastic aggregations response" elastic-aggregations)
   (let [flat-fields [:data-center :project :platform :instrument :processing-level-id]
         hierarchical-fields [:science-keywords]
         facets (concat (flat-bucket-map->facets-v2
@@ -141,17 +145,6 @@
                                      :title (field fields->human-readable-label)))
                             hierarchical-fields))]
     (assoc v2-facets-root :children facets)))
-
-; (defn create-v2-facets-orig
-;   "Create the facets v2 response. Takes an elastic aggregations result and returns the facets."
-;   [elastic-aggregations]
-;   (println "Elastic aggregations response" elastic-aggregations)
-;   (concat (frf/bucket-map->facets (apply dissoc elastic-aggregations [:science-keywords])
-;                                   [:data-center :project :platform :instrument :processing-level-id])
-;           (map (fn [field]
-;                  (assoc (frf/hierarchical-bucket-map->facets field (field elastic-aggregations))
-;                         :field (csk/->snake_case_string field)))
-;                [:science-keywords])))
 
 (defmethod query-execution/pre-process-query-result-feature :facets-v2
   [context query feature]
