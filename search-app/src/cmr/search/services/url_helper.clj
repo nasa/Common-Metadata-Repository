@@ -13,4 +13,5 @@
   [context concept-type result-format]
   (let [{:keys [query-string]} context
         query-string (if (empty? query-string) "" (str "?" query-string))]
-    (format "%s%ss.%s%s" (search-root context) (name concept-type) (name result-format) query-string)))
+    (format "%s%ss.%s%s" (tconfig/application-public-root-url context)
+            (name concept-type) (name result-format) query-string)))
