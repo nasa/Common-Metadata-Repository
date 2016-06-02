@@ -33,24 +33,24 @@
 
 (def sample-system-acl
   "A sample system ACL."
-  {:group_permissions {:user_type "guest" :permissions ["create"]}
+  {:group_permissions [{:user_type "guest" :permissions ["create"]}]
    :system_identity {:target "REPLACME"}})
 
 (def sample-provider-acl
   "A sample provider ACL."
-  {:group_permissions {:user_type "guest" :permissions ["create"]}
+  {:group_permissions [{:user_type "guest" :permissions ["create"]}]
    :provider_identity {:target "REPLACME"
                        :provider_id "PROV1"}})
 
 (def sample-single-instance-acl
   "A sample single instance ACL."
-  {:group_permissions {:user_type "guest" :permissions ["create"]}
+  {:group_permissions [{:user_type "guest" :permissions ["create"]}]
    :single_instance_identity {:target "GROUP_MANAGEMENT"
                               :target_id "REPLACEME"}})
 
 (def sample-catalog-item-acl
   "A sample catalog item ACL."
-  {:group_permissions {:user_type "guest" :permissions ["create"]}
+  {:group_permissions [{:user_type "guest" :permissions ["create"]}]
    :catalog_item_identity {:name "REPLACEME"
                            :provider_id "PROV1"
                            :collection_applicable true}})

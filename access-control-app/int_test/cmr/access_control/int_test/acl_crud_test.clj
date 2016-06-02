@@ -15,19 +15,19 @@
               (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 
 (def system-acl
-  {:group_permissions {:user_type "guest"
-                       :permissions ["create" "delete"]}
+  {:group_permissions [{:user_type "guest"
+                        :permissions ["create" "delete"]}]
    :system_identity {:target "TAG_GROUP"}})
 
 (def provider-acl
-  {:group_permissions {:group_id "admins"
-                       :permissions ["read" "create"]}
+  {:group_permissions [{:group_id "admins"
+                        :permissions ["read" "create"]}]
    :provider_identity {:provider_id "PROV1"
                        :target "INGEST_MANAGEMENT_ACL"}})
 
 (def catalog-item-acl
-  {:group_permissions {:user_type "guest"
-                       :permissions ["create" "delete"]}
+  {:group_permissions [{:user_type "guest"
+                        :permissions ["create" "delete"]}]
    :catalog_item_identity {:name "A Catalog Item ACL"
                            :provider_id "PROV1"
                            :collection_identifier {:entry_titles ["foo" "bar"]}}})
@@ -46,11 +46,11 @@
 
       ;; Acceptance criteria: I receive an error if creating an ACL missing required fields.
       ;; Note: this tests a few fields, and is not exhaustive. The JSON schema handles this check.
-      #"object has missing required properties.*group_permissions"
+      #"object has missing required properties"
       (dissoc system-acl :group_permissions)
 
-      #"group_permissions object has missing required properties"
-      (assoc system-acl :group_permissions {})
+      #"group_permissions.* object has missing required properties"
+      (assoc system-acl :group_permissions [{}])
 
       #"system_identity object has missing required properties"
       (update-in system-acl [:system_identity] dissoc :target)

@@ -47,4 +47,4 @@ Items to include in each issue
   * Deployment Impacts:
     * Requires update of indexes and reindexing of collections.
 * CMR-2904 - Added ACL Searching
-  * TODO
+  * Added ACL index and indexing of ACLs. The ACL index will automatically be created as part of migrations during a deployment.

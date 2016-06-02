@@ -1,8 +1,5 @@
 ## API Documentation
 
-
-TODO document ACLs.
-
 ***
 
 See the [CMR Data Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Data+Partner+User+Guide) for a general guide to utilizing the CMR Ingest API as a data partner.
@@ -22,6 +19,11 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [GET - Retrieve group members] (#retrieve-group-members)
     * [POST - Add group members] (#add-group-members)
     * [DELETE - Remove group members] (#remove-group-members)
+  * [/acls](#acls)
+    * [POST - Create ACL](#create-acl)
+    * [GET - Search ACLs](#search-acls)
+  * /acls/:acl-id
+    * [GET - Retrieve an ACL](#retrieve-acl)
   * /health
     * [GET - Get the health of the access control application.](#application-health)
 
@@ -291,6 +293,172 @@ Content-Length: 702
 }
 ```
 
+## <a name="acls"></a> Access Control Lists (ACLs)
+
+Access Control Lists (ACLs) define the permissions with the CMR. Everything is restricted in the CMR by default. ACLs give permission to specific users to take some action on some data.
+
+Every ACL defines three parts like a simple sentence: subject, predicate, and object. The simple sentence "Science Users can view Provider Foo's granules" is an example. "Science Users" is the subject. "can view" is the predicate. "Provider FOO's granules" is the object.
+
+ACLs are represented by JSON. If "Science Users" was an existing group defined in Provider FOO with concept id AG1234-FOO then an ACL granting that group access to view and order and guests permission to view FOO's granules would look like the following:
+
+```
+{
+    "group_permissions": [{
+        "group_id": "AG1234-FOO",          // Subject
+        "permissions": ["read", "order"]   // Predicates
+    }, {
+        "user_type": "guest",              // Subject
+        "permissions": ["read"]            // Predicates
+    }],
+    "catalog_item_identity": {             // Object
+        "name": "All Granules",
+        "provider_id": "FOO",
+        "granule_applicable": true
+    }
+}
+```
+
+This is like a sentence saying "Science Users can view and order and Guests can view Provider FOO's granules."
+
+The subject and predicate are in `group_permissions`. An ACL can identify multiple permissions per group. There can be multiple subjects and multiple predicates per subject in a single ACL.
+
+Every ACL refers to aobject called an "identity". The "identity" identifies what in the CMR is being granted permission by the the ACL. There are 4 kinds of identities:
+
+* System Identities - Identifies a system level thing in the CMR.
+* Provider Identities - Identifies a kind of object owned by a specific provider.
+* Single Instance Identities - Identifies a single instance of something in the CMR. Currently this only applies to managing specific groups.
+* Catalog Item Identities - Identifies groups of catalog items owned by a provider.
+
+### ACL Uniqueness
+
+ACLs are uniquely identified by their identity. There can only be one ACL to a specific target. For example provider identities contain a provider id and a target. There can only be one ACL in the system for granting permissions to Provider FOO's Option Definitions. The rules for uniquely identifying each type is listed below.
+
+* System Identities - Unique by target
+* Provider Identities - Unique by provider id and target
+* Single Instance Identities - Unique by target id (Group concept id)
+* Catalog Item Identities - Unique by provider id and name.
+
+
+### <a name="create-acl"></a> Create ACL
+
+ACLs are created by POSTing a JSON representation of an ACL to `%CMR-ENDPOINT%/acls` along with a valid ECHO token. The response will contain a concept id identifying the ACL along with the ACL revision id.
+
+#### Creating an ACL
+
+```
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/acls -d \
+'{
+    "group_permissions": [{
+        "group_id": "AG1234-FOO",
+        "permissions": ["read", "order"]
+    }, {
+        "user_type": "guest",
+        "permissions": ["read"]
+    }],
+    "catalog_item_identity": {
+        "name": "All Granules",
+        "provider_id": "FOO",
+        "granule_applicable": true
+    }
+}'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+
+{"revision_id":1,"concept_id":"ACL1200000000-CMR"}
+```
+
+### <a name="retrieve-acl"></a> Retrieve ACL
+
+A single ACL can be retrieved by sending a GET request to `%CMR-ENDPOINT%/acls/<concept-id>` where `concept-id` is the concept id of the ACL returned when it was created.
+
+```
+curl -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/acls/ACL1200000000-CMR?pretty=true
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "group_permissions" : [ {
+    "group_id" : "AG1234-FOO",
+    "permissions" : [ "read", "order" ]
+  }, {
+    "user_type" : "guest",
+    "permissions" : [ "read" ]
+  } ],
+  "catalog_item_identity" : {
+    "name" : "All Granules",
+    "provider_id" : "FOO",
+    "granule_applicable" : true
+  }
+}
+```
+
+### <a name="search-acls"></a> Search ACLs
+
+ACLs can be searched for by sending a GET request to `%CMR-ENDPOINT%/acls`
+
+##### ACL Search Parameters
+
+The following parameters are supported when searching for ACLs.
+
+##### Standard Parameters:
+
+* page_size
+* page_num
+* pretty
+
+##### ACL Matching Parameters
+
+This section will be expanded in the future as ACLs can be searched by additional fields.
+
+##### ACL Search Response
+
+The response is always returned in JSON and includes the following parts.
+
+* hits - How many total ACLs were found.
+* took - How long the search took in milliseconds
+* items - a list of the current page of ACLs with the following fields
+  * concept_id
+  * revision_id
+  * name - This will be the catalog item identity name or a string containing "<identity type> - <target>". For example "System - PROVIDER"
+  * identity_type - String of "provider", "system", "single_instance", or "catalog_item"
+
+TODO include the URL
+
+##### ACL Search Example
+
+```
+curl -i %CMR-ENDPOINT%/acls?pretty=true
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+CMR-Hits: 4
+CMR-Took: 5
+CMR-Request-Id: 5689303f-574d-4edf-b2f1-5219dc0ae6c5
+Content-Length: 702
+
+{
+  "hits" : 3,
+  "took" : 4,
+  "items" : [ {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000008-CMR",
+    "identity_type" : "Catalog Item",
+    "name" : "All Collections"
+  }, {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000009-CMR",
+    "identity_type" : "Catalog Item",
+    "name" : "All Granules"
+  }, {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000006-CMR",
+    "identity_type" : "Group",
+    "name" : "Group - AG1234-CMR"
+  } ]
+}
+```
 
 ### <a name="application-health"></a> Application Health
 

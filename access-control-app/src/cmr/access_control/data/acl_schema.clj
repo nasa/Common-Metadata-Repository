@@ -15,7 +15,8 @@
     {:type :object
      :additionalProperties false
      :properties {:legacy_guid (ref-def :IdentifierType)
-                  :group_permissions (ref-def :GroupPermissionsType)
+                  :group_permissions {:type :array
+                                      :items (ref-def :GroupPermissionsType)}
                   :system_identity (ref-def :SystemIdentityType)
                   :provider_identity (ref-def :ProviderIdentityType)
                   :single_instance_identity (ref-def :SingleInstanceIdentityType)
@@ -99,7 +100,6 @@
                                           :required [:provider_id :target]}
                    :SingleInstanceIdentityType {:type :object
                                                 :properties {:target_id (ref-def :IdentifierType)
-                                                             ;; this seems silly
                                                              :target {:enum ["GROUP_MANAGEMENT"]}}
                                                 :required [:target_id :target]}
                    :CatalogItemIdentityType {:type :object
