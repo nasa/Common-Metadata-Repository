@@ -172,6 +172,7 @@
                              :ParameterRangeBegin "0.0"
                              :ParameterRangeEnd "100.0"
                              :ParameterUnitsOfMeasure "Percent"
+                             :UpdateDate "2015-10-22"
                              :Value "50"
                              :ParameterValueAccuracy "1"
                              :ValueAccuracyExplanation "explaination for value accuracy"}
@@ -633,7 +634,9 @@
       ;; unable to be implemented as specified.
       (update-in [:Platforms] expected-dif-platforms)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
-      (update-in-each [:AdditionalAttributes] assoc :Group "AdditionalAttribute")
+      (update-in-each [:AdditionalAttributes] assoc :ParameterRangeBegin nil :ParameterRangeEnd nil
+                      :MeasurementResolution nil :ParameterUnitsOfMeasure nil
+                      :ParameterValueAccuracy nil :ValueAccuracyExplanation nil)
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
       (update-in-each [:PublicationReferences] dif-publication-reference)
       (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
@@ -697,7 +700,9 @@
       (update-in [:DataDates] fixup-dif10-data-dates)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
-      (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil)
+      (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil
+                      :MeasurementResolution nil :ParameterUnitsOfMeasure nil
+                      :ParameterValueAccuracy nil :ValueAccuracyExplanation nil)
       (update-in [:ProcessingLevel] dif10-processing-level)
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] prune-empty-maps)

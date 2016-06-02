@@ -48,3 +48,10 @@ Items to include in each issue
     * Requires update of indexes and reindexing of collections.
 * CMR-2904 - Added ACL Searching
   * Added ACL index and indexing of ACLs. The ACL index will automatically be created as part of migrations during a deployment.
+* CMR-3008 - Create collection index with new shard configuration and index to multiple indexes
+  * Configuration Patch Dependency: Yes
+    * Configuration patch must be installed first to add the elastic-collection-v2-index-num-shards parameter.
+  * Deployment Impacts:
+    * Requires update of indexes and reindexing of collections. Note that collection indexing will be broken until update-indexes has been called.
+    * Create a new alias for the collection index used by search.
+      * See ***REMOVED*** for instructions.

@@ -1,0 +1,167 @@
+(ns cmr.umm-spec.test.xml-to-umm-mappings.dif10.additional-attribute
+  (:require [clj-time.core :as t]
+            [clojure.test :refer :all]
+            [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]))
+
+(deftest dif10-metadata-additional-attributes-test
+  (testing "parse additional attributes from Extended_Metadata"
+    (is (= [{:Group "gov.nasa.gsfc.gcmd"
+              :Name "metadata.uuid"
+              :DataType "STRING"
+              :Value "743933e5-1404-4502-915f-83cde56af440"}
+             {:Group "gov.nasa.gsfc.gcmd"
+              :Name "metadata.extraction_date"
+              :DataType "STRING"
+              :Value "2013-09-30 09:45:15"}
+             {:Group "custom.group"
+              :Name "String attribute"
+              :Description "something string"
+              :DataType "STRING"
+              :Value "alpha"}
+             {:Group "custom.group"
+              :Name "Float attribute"
+              :Description "something float"
+              :DataType "FLOAT"
+              :Value "12.3"}
+             {:Group "custom.group"
+              :Name "Int attribute"
+              :Description "something int"
+              :DataType "INT"
+              :Value "42"}
+             {:Group "custom.group"
+              :Name "Date attribute"
+              :Description "something date"
+              :DataType "DATE"
+              :Value "2015-09-14"}
+             {:Group "custom.group"
+              :Name "Datetime attribute"
+              :Description "something datetime"
+              :DataType "DATETIME"
+              :Value "2015-09-14T13:01:00Z"}
+             {:Group "custom.group"
+              :Name "Time attribute"
+              :Description "something time"
+              :DataType "TIME"
+              :Value "13:01:00Z"}
+             {:Group "custom.group"
+              :Name "Bool attribute"
+              :Description "something bool"
+              :DataType "BOOLEAN"
+              :Value "false"}]
+           (aa/xml-elem->AdditionalAttributes
+             "<DIF>
+                <Extended_Metadata>
+                  <Metadata>
+                    <Group>gov.nasa.gsfc.gcmd</Group>
+                    <Name>metadata.uuid</Name>
+                    <DataType>STRING</DataType>
+                    <Value>743933e5-1404-4502-915f-83cde56af440</Value>
+                  </Metadata>
+                  <Metadata>
+                    <Group>gov.nasa.gsfc.gcmd</Group>
+                    <Name>metadata.extraction_date</Name>
+                    <Value>2013-09-30 09:45:15</Value>
+                  </Metadata>
+                  <Metadata>
+                    <Group>custom.group</Group>
+                    <Name>String attribute</Name>
+                    <Description>something string</Description>
+                    <Value>alpha</Value>
+                  </Metadata>
+                  <Metadata>
+                    <Group>custom.group</Group>
+                    <Name>Float attribute</Name>
+                    <Description>something float</Description>
+                    <Value>12.3</Value>
+                  </Metadata>
+                  <Metadata>
+                    <Group>custom.group</Group>
+                    <Name>Int attribute</Name>
+                    <Description>something int</Description>
+                    <Value>42</Value>
+                  </Metadata>
+                  <Metadata>
+                    <Group>custom.group</Group>
+                    <Name>Date attribute</Name>
+                    <Description>something date</Description>
+                    <Value>2015-09-14</Value>
+                  </Metadata>
+                  <Metadata>
+                    <Group>custom.group</Group>
+                    <Name>Datetime attribute</Name>
+                    <Description>something datetime</Description>
+                    <Value>2015-09-14T13:01:00Z</Value>
+                  </Metadata>
+                  <Metadata>
+                    <Group>custom.group</Group>
+                    <Name>Time attribute</Name>
+                    <Description>something time</Description>
+                    <Value>13:01:00Z</Value>
+                  </Metadata>
+                  <Metadata>
+                    <Group>custom.group</Group>
+                    <Name>Bool attribute</Name>
+                    <Description>something bool</Description>
+                    <Value>false</Value>
+                  </Metadata>
+                  <Metadata>
+                    <Group>gov.nasa.earthdata.cmr</Group>
+                    <Name>Restriction</Name>
+                    <Value>1</Value>
+                  </Metadata>
+                  <Metadata>
+                    <Group>gov.nasa.earthdata.cmr</Group>
+                    <Name>ProcessingLevelId</Name>
+                    <Value>1</Value>
+                  </Metadata>
+                </Extended_Metadata>
+              </DIF>"))))
+  (testing "parse additional attributes from Additional_Attributes and Extended_Metadata together"
+    (is (= [{:Name "String add attrib"
+              :Description "something string"
+              :DataType "STRING"
+              :ParameterRangeBegin "alpha"
+              :ParameterRangeEnd "bravo"
+              :Value "alpha1"}
+             {:Name "Float add attrib"
+              :Description "something float"
+              :DataType "FLOAT"
+              :ParameterRangeBegin "0.1"
+              :ParameterRangeEnd "100.43"
+              :Value "12.3"}
+             {:Group "gov.nasa.gsfc.gcmd"
+              :Name "metadata.uuid"
+              :DataType "STRING"
+              :Value "743933e5-1404-4502-915f-83cde56af440"}]
+           (aa/xml-elem->AdditionalAttributes
+             "<DIF>
+                <Additional_Attributes>
+                  <Name>String add attrib</Name>
+                  <DataType>STRING</DataType>
+                  <Description>something string</Description>
+                  <ParameterRangeBegin>alpha</ParameterRangeBegin>
+                  <ParameterRangeEnd>bravo</ParameterRangeEnd>
+                  <Value>alpha1</Value>
+                </Additional_Attributes>
+                <Additional_Attributes>
+                  <Name>Float add attrib</Name>
+                  <DataType>FLOAT</DataType>
+                  <Description>something float</Description>
+                  <ParameterRangeBegin>0.1</ParameterRangeBegin>
+                  <ParameterRangeEnd>100.43</ParameterRangeEnd>
+                  <Value>12.3</Value>
+                </Additional_Attributes>
+                <Extended_Metadata>
+                  <Metadata>
+                    <Group>gov.nasa.gsfc.gcmd</Group>
+                    <Name>metadata.uuid</Name>
+                    <Value>743933e5-1404-4502-915f-83cde56af440</Value>
+                  </Metadata>
+                  <Metadata>
+                    <Group>gov.nasa.earthdata.cmr</Group>
+                    <Name>Restriction</Name>
+                    <Value>1</Value>
+                  </Metadata>
+                </Extended_Metadata>
+              </DIF>")))))
+
