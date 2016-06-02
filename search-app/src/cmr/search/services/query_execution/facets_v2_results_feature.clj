@@ -48,18 +48,17 @@
   from a collection search. Size specifies the number of results to return. Only a subset of the
   facets are returned in the v2 facets, specifically those that help enable dataset discovery."
   [size]
-  {:data-center (terms-facet :data-center size)
-   :project (terms-facet :project-sn2 size)
+  {:science-keywords (nested-facet :science-keywords size)
    :platform (terms-facet :platform-sn size)
    :instrument (terms-facet :instrument-sn size)
-   :processing-level-id (terms-facet :processing-level-id size)
-   :science-keywords (nested-facet :science-keywords size)})
+   :data-center (terms-facet :data-center size)
+   :project (terms-facet :project-sn2 size)
+   :processing-level-id (terms-facet :processing-level-id size)})
 
 (def v2-facets-root
   "Root element for the facet response"
   {:title "Browse Collections"
-   :type :group
-   :has_children true})
+   :type :group})
 
 (def fields->human-readable-label
   "Map of facet fields to their human readable label."
@@ -99,7 +98,7 @@
            :type :group
            :has_children true
            :children value-counts})
-        empty-response))))
+        nil))))
 
 (defn hierarchical-bucket-map->facets-v2
   "Takes a map of elastic aggregation results for a nested field. Returns a hierarchical facet for
@@ -111,45 +110,56 @@
   "Takes a map of elastic aggregation results containing keys to buckets and a list of the bucket
   names. Returns a facet map of those specific names with value count pairs"
   [bucket-map field-names]
-  (for [field-name field-names
-        :let [value-counts (frf/buckets->value-count-pairs (field-name bucket-map))
-              has-children (some? (seq value-counts))
-              base-node {:title (field-name fields->human-readable-label)
-                         :type :group
-                         ;; TODO with another ticket
-                         ;  :applied ;; either true or false
-                         :has_children has-children}]]
-    (if has-children
-      (assoc base-node :children (map (fn [[term count]]
-                                        {:title term
-                                         :type :filter
-                                         ;; TODO with another ticket
-                                         ;; applied ;; either true or false
-                                         :count count
-                                         ;; TODO with another ticket
-                                         ; :links ;; Apply or remove the given term to the provided search
-                                         :has_children false})
-                                      value-counts))
-      base-node)))
+  (remove nil?
+    (for [field-name field-names
+          :let [value-counts (frf/buckets->value-count-pairs (field-name bucket-map))
+                has-children (some? (seq value-counts))
+                base-node {:title (field-name fields->human-readable-label)
+                           :type :group
+                           ;; TODO with another ticket
+                           ;  :applied ;; either true or false
+                           :has_children has-children}]]
+      (when has-children
+        (assoc base-node :children (map (fn [[term count]]
+                                          {:title term
+                                           :type :filter
+                                           ;; TODO with another ticket
+                                           ;; applied ;; either true or false
+                                           :count count
+                                           ;; TODO with another ticket
+                                           ; :links ;; Apply or remove the given term to the provided search
+                                           :has_children false})
+                                        value-counts))))))
+
+
+(defn- add-links-to-facets
+  "Adds applied and links keys to the facets-v2 map."
+  [query facets-map]
+  (println "Query is " query)
+  facets-map)
 
 (defn create-v2-facets
   "Create the facets v2 response. Takes an elastic aggregations result and returns the facets."
-  [elastic-aggregations]
-  (let [flat-fields [:data-center :project :platform :instrument :processing-level-id]
+  [elastic-aggregations query]
+  (let [flat-fields [:platform :instrument :data-center :project :processing-level-id]
         hierarchical-fields [:science-keywords]
-        facets (concat (flat-bucket-map->facets-v2
-                        (apply dissoc elastic-aggregations hierarchical-fields) flat-fields)
-                       (map (fn [field]
-                              (assoc (hierarchical-bucket-map->facets-v2
-                                      field (field elastic-aggregations))
-                                     :title (field fields->human-readable-label)))
-                            hierarchical-fields))]
-    (assoc v2-facets-root :children facets)))
+        facets (concat (keep (fn [field]
+                                (when-let [sub-facets (hierarchical-bucket-map->facets-v2
+                                                        field (field elastic-aggregations))]
+                                  (assoc sub-facets :title (field fields->human-readable-label))))
+                             hierarchical-fields)
+                       (flat-bucket-map->facets-v2
+                        (apply dissoc elastic-aggregations hierarchical-fields) flat-fields))]
+    (if (seq facets)
+      (add-links-to-facets query (assoc v2-facets-root :has_children true :children facets))
+      (assoc v2-facets-root :has_children false))))
+
 
 (defmethod query-execution/pre-process-query-result-feature :facets-v2
-  [context query feature]
+  [_ query _]
   (assoc query :aggregations (facets-v2-aggregations DEFAULT_TERMS_SIZE)))
 
+;; [context query elastic-results query-results feature]
 (defmethod query-execution/post-process-query-result-feature :facets-v2
-  [_ _ {:keys [aggregations]} query-results _]
-  (assoc query-results :facets (create-v2-facets aggregations)))
+  [_ query {:keys [aggregations]} query-results _]
+  (assoc query-results :facets (create-v2-facets aggregations query)))
