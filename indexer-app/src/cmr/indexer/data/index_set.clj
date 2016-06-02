@@ -12,21 +12,40 @@
             [cmr.transmit.connection :as transmit-conn]
             [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
             [cmr.common.cache :as cache]
-            [cmr.common.config :as cfg]))
+            [cmr.common.config :as cfg :refer [defconfig]]))
 
 ;; The number of shards to use for the collections index, the granule indexes containing granules
 ;; for a single collection, and the granule index containing granules for the remaining collections
 ;; can all be configured separately.
-(def elastic-collection-index-num-shards (cfg/config-value-fn :elastic-collection-index-num-shards 5 #(Long. %)))
-(def elastic-granule-index-num-shards (cfg/config-value-fn :elastic-granule-index-num-shards 5 #(Long. %)))
-(def elastic-small-collections-index-num-shards (cfg/config-value-fn :elastic-small-collections-index-num-shards 20 #(Long. %)))
-;; The number of shards to use for the tags index
-(def elastic-tag-index-num-shards (cfg/config-value-fn :elastic-tag-index-num-shards 5 #(Long. %)))
+(defconfig elastic-collection-index-num-shards
+  "Number of shards to use for the collection index"
+  {:default 5 :type Long})
 
-(def collection-setting {:index
-                         {:number_of_shards (elastic-collection-index-num-shards),
-                          :number_of_replicas 1,
-                          :refresh_interval "1s"}})
+(defconfig elastic-collection-v2-index-num-shards
+  "Number of shards to use for the collection index"
+  {:default 10 :type Long})
+
+(defconfig elastic-granule-index-num-shards
+  "Number of shards to use for the individual collection granule indexes."
+  {:default 5 :type Long})
+
+(defconfig elastic-small-collections-index-num-shards
+  "Number of shards to use for the small collections granule index."
+  {:default 20 :type Long})
+
+(defconfig elastic-tag-index-num-shards
+  "Number of shards to use for the tags index."
+  {:default 5 :type Long})
+
+(def collection-setting-v1 {:index
+                            {:number_of_shards (elastic-collection-index-num-shards)
+                             :number_of_replicas 1,
+                             :refresh_interval "1s"}})
+
+(def collection-setting-v2 {:index
+                            {:number_of_shards (elastic-collection-v2-index-num-shards),
+                             :number_of_replicas 1,
+                             :refresh_interval "1s"}})
 
 (def tag-setting {:index
                   {:number_of_shards (elastic-tag-index-num-shards)
@@ -117,6 +136,27 @@
    :long-name.lowercase m/string-field-mapping
    :url m/string-field-mapping
    :url.lowercase m/string-field-mapping
+   :uuid m/string-field-mapping
+   :uuid.lowercase m/string-field-mapping})
+
+(defnestedmapping location-keywords-hierarchical-mapping
+  "Defines hierarchical mappings for location keywords."
+  {:category m/string-field-mapping
+   :category.lowercase m/string-field-mapping
+   :type m/string-field-mapping
+   :type.lowercase m/string-field-mapping
+   :subregion-1 m/string-field-mapping
+   :subregion-1.lowercase m/string-field-mapping
+   :subregion-2 m/string-field-mapping
+   :subregion-2.lowercase m/string-field-mapping
+   :subregion-3 m/string-field-mapping
+   :subregion-3.lowercase m/string-field-mapping
+   ;; CMR-2991
+   ;; Note that we are not indexing detailed-location. Detailed-location is not part of KMS, but
+   ;; can be provided as part of the collection metadata from DIF9 and DIF10. Since we are still
+   ;; using umm-lib which use a single spatial-keyword string rather than the full hierarchy we do
+   ;; not have the detailed location information. Once we switch to using umm-spec-lib in ingest
+   ;; and indexer we can make Detailed location searchable.
    :uuid m/string-field-mapping
    :uuid.lowercase m/string-field-mapping})
 
@@ -245,6 +285,7 @@
           :platforms platform-hierarchical-mapping
           :instruments instrument-hierarchical-mapping
           :archive-centers data-center-hierarchical-mapping
+          :location-keywords location-keywords-hierarchical-mapping
           ;; Contains all four types of data centers combined - archive,
           ;; centers, distribution centers, processing centers, and
           ;; originating centers.
@@ -484,14 +525,18 @@
                :id index-set-id
                :create-reason "indexer app requires this index set"
                :collection {:indexes
-                            [;; This index contains the latest revision of each collection and
-                             ;; is used for normal searches.
+                            [;; This index will be removed once searches have been switched over to
+                             ;; use the new collections-v2 index with modified shard configuration.
                              {:name "collections"
-                              :settings collection-setting}
+                              :settings collection-setting-v1}
+                             ;; This index contains the latest revision of each collection and
+                             ;; is used for normal searches.
+                             {:name "collections-v2"
+                              :settings collection-setting-v2}
                              ;; This index contains all the revisions (including tombstones) and
                              ;; is used for all-revisions searches.
                              {:name "all-collection-revisions"
-                              :settings collection-setting}]
+                              :settings collection-setting-v1}]
                             :mapping collection-mapping}
                ;; The granule configuration here initially only specifies a single collection indexes
                ;; Additional granule indexes are created over time via the index set application.
@@ -645,16 +690,22 @@
          concept (when (= :granule concept-type) (meta-db/get-concept context concept-id revision-id))]
      (get-concept-index-names context concept-id revision-id options concept)))
   ([context concept-id revision-id {:keys [target-index-key all-revisions-index?]} concept]
-   ;; Setting all-revisions-index? to true is short hand for saying we should target the all collections
-   ;; revision index.
-   (let [target-index-key (or target-index-key (when all-revisions-index? :all-collection-revisions))
-         concept-type (cs/concept-id->type concept-id)
+   (let [concept-type (cs/concept-id->type concept-id)
          indexes (get-in (get-concept-type-index-names context) [:index-names concept-type])]
      (case concept-type
        :collection
-       [(get indexes (or target-index-key :collections))]
+       (cond
+         target-index-key [(get indexes target-index-key)]
+         all-revisions-index? [(get indexes :all-collection-revisions)]
+         ;; Else index to all collection indexes except for the all-collection-revisions index.
+         :else (keep (fn [[k v]]
+                      (when-not (= :all-collection-revisions (keyword k))
+                        v))
+                     indexes))
+
        :tag
        [(get indexes (or target-index-key :tags))]
+
        :granule
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
          (get-granule-index-names-for-collection context coll-concept-id target-index-key))))))
@@ -668,5 +719,3 @@
                       (.endsWith (name k) (str "_" provider-id))
                       (= :small_collections k)))]
     (map second (filter filter-fn indexes))))
-
-

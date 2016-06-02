@@ -6,7 +6,8 @@
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm.dif.date-util :refer [parse-dif-end-date]]
-            [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]))
+            [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
+            [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as aa]))
 
 (def dif-iso-topic-category->umm-iso-topic-category
   "DIF ISOTopicCategory to UMM ISOTopicCategory mapping. Some of the DIF ISOTopicCategory are made
@@ -114,31 +115,27 @@
                                             {:BeginningDateTime (value-of temporal "Start_Date")
                                              :EndingDateTime (parse-dif-end-date (value-of temporal "Stop_Date"))})}])
      :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
-     :SpatialExtent {:HorizontalSpatialDomain {:Geometry {:BoundingRectangles (parse-mbrs doc)}}}
+     :SpatialExtent (merge {:GranuleSpatialRepresentation (or (value-of doc "/DIF/Extended_Metadata/Metadata[Name='GranuleSpatialRepresentation']/Value")
+                                                              "NO_SPATIAL")}
+                           (when-let [brs (seq (parse-mbrs doc))]
+                             {:SpatialCoverageType "HORIZONTAL"
+                              :HorizontalSpatialDomain
+                              {:Geometry {:CoordinateSystem "CARTESIAN" ;; DIF9 doesn't have CoordinateSystem, default to CARTESIAN
+                                          :BoundingRectangles brs}}}))
      :Distributions (for [distribution (select doc "/DIF/:Distribution")]
                       {:DistributionMedia (value-of distribution "Distribution_Media")
                        :Sizes (su/parse-data-sizes (value-of distribution "Distribution_Size"))
                        :DistributionFormat (value-of distribution "Distribution_Format")
                        :Fees (value-of distribution "Fees")})
+     ;; umm-lib only has ProcessingLevelId and it is from Metadata Name "ProductLevelId"
+     ;; Need to double check which implementation is correct.
      :ProcessingLevel {:Id
                        (value-of doc "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelId']/Value")
 
                        :ProcessingLevelDescription
                        (value-of doc "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelDescription']/Value")}
 
-     :AdditionalAttributes (for [aa (select doc "/DIF/Extended_Metadata/Metadata[Group='AdditionalAttribute']")]
-                             {:Name (value-of aa "Name")
-                              :Description (value-of aa "Description")
-                              :DataType (value-of aa "Type")
-                              :Group "AdditionalAttribute"
-                              :ParameterRangeBegin (value-of aa "Value[@type='ParamRangeBegin']")
-                              :ParameterRangeEnd (value-of aa "Value[@type='ParamRangeEnd']")
-                              :Value (value-of aa "Value[@type='Value']")
-                              :MeasurementResolution (value-of aa "Value[@type='MeasurementResolution']")
-                              :ParameterUnitsOfMeasure (value-of aa "Value[@type='ParameterUnitsOfMeasure']")
-                              :ParameterValueAccuracy (value-of aa "Value[@type='ParameterValueAccuracy']")
-                              :ValueAccuracyExplanation (value-of aa "Value[@type='ValueAccuracyExplanation']")
-                              :UpdateDate (value-of aa "Value[@type='UpdateDate']")})
+     :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc)
      :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
                               (into {} (map (fn [x]
                                               (if (keyword? x)

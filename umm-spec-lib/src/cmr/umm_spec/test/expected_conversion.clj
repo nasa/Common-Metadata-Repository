@@ -77,8 +77,9 @@
                          :Subregion2 "ANGOLA"
                          :Subregion3 nil}
                         {:Category "CONTINENT"
-                         :DetailedLocation "Somewhereville"}]
-     :SpatialKeywords ["ANGOLA"]
+                         :Type "Somewhereville"
+                         :DetailedLocation "Detailed Somewhereville"}]
+     :SpatialKeywords ["ANGOLA" "Somewhereville"]
      :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                      :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
                                                :Geometry {:CoordinateSystem "GEODETIC"
@@ -171,6 +172,7 @@
                              :ParameterRangeBegin "0.0"
                              :ParameterRangeEnd "100.0"
                              :ParameterUnitsOfMeasure "Percent"
+                             :UpdateDate "2015-10-22"
                              :Value "50"
                              :ParameterValueAccuracy "1"
                              :ValueAccuracyExplanation "explaination for value accuracy"}
@@ -592,6 +594,26 @@
                                       :Instruments instruments}))
         platforms))))
 
+(defn- expected-dif-spatial-extent
+  "Returns the expected DIF parsed spatial extent for the given spatial extent."
+  [spatial]
+  (let [spatial (-> spatial
+                    (assoc :SpatialCoverageType "HORIZONTAL"
+                           :OrbitParameters nil
+                           :VerticalSpatialDomains nil)
+                    (update-in [:HorizontalSpatialDomain] assoc
+                               :ZoneIdentifier nil)
+                    (update-in [:HorizontalSpatialDomain :Geometry] assoc
+                               :CoordinateSystem "CARTESIAN"
+                               :Points nil
+                               :Lines nil
+                               :GPolygons nil)
+                    (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc
+                                    :CenterPoint nil))]
+    (if (seq (get-in spatial [:HorizontalSpatialDomain :Geometry :BoundingRectangles]))
+      spatial
+      (assoc spatial :SpatialCoverageType nil :HorizontalSpatialDomain nil))))
+
 (defmethod umm->expected-convert :dif
   [umm-coll _]
   (-> umm-coll
@@ -606,27 +628,15 @@
       ;; DIF 9 sets the UMM Version to 'Not provided' if it is not present in the DIF 9 XML
       (assoc :Version (or (:Version umm-coll) su/not-provided))
       (update-in [:TemporalExtents] dif9-temporal)
-      (update-in [:SpatialExtent] assoc
-                 :SpatialCoverageType nil
-                 :OrbitParameters nil
-                 :GranuleSpatialRepresentation nil
-                 :VerticalSpatialDomains nil)
-      (update-in [:SpatialExtent :HorizontalSpatialDomain] assoc
-                 :ZoneIdentifier nil)
-      (update-in [:SpatialExtent :HorizontalSpatialDomain :Geometry] assoc
-                 :CoordinateSystem nil
-                 :Points nil
-                 :Lines nil
-                 :GPolygons nil)
-      (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc
-                      :CenterPoint nil)
-      (update-in [:SpatialExtent] prune-empty-maps)
+      (update-in [:SpatialExtent] expected-dif-spatial-extent)
       (update-in [:Distributions] su/remove-empty-records)
       ;; DIF 9 does not support Platform Type or Characteristics. The mapping for Instruments is
       ;; unable to be implemented as specified.
       (update-in [:Platforms] expected-dif-platforms)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
-      (update-in-each [:AdditionalAttributes] assoc :Group "AdditionalAttribute")
+      (update-in-each [:AdditionalAttributes] assoc :ParameterRangeBegin nil :ParameterRangeEnd nil
+                      :MeasurementResolution nil :ParameterUnitsOfMeasure nil
+                      :ParameterValueAccuracy nil :ValueAccuracyExplanation nil)
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
       (update-in-each [:PublicationReferences] dif-publication-reference)
       (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
@@ -690,7 +700,9 @@
       (update-in [:DataDates] fixup-dif10-data-dates)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
-      (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil)
+      (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil
+                      :MeasurementResolution nil :ParameterUnitsOfMeasure nil
+                      :ParameterValueAccuracy nil :ValueAccuracyExplanation nil)
       (update-in [:ProcessingLevel] dif10-processing-level)
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] prune-empty-maps)

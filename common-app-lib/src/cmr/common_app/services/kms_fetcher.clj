@@ -34,7 +34,7 @@
    :instruments [:category :class :type :subtype :short-name :long-name]
    :projects [:short-name :long-name]
    :temporal-keywords [:temporal-resolution-range]
-   :spatial-keywords [:category :type :subregion-1 :subregion-2 :subregion-3]
+   :location-keywords [:category :type :subregion-1 :subregion-2 :subregion-3]
    :science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3]})
 
 (def FIELD_NOT_PRESENT
@@ -118,7 +118,7 @@
 
 (defn get-full-hierarchy-for-location-keywords
   [gcmd-keywords-map location-map]
-  (get-full-hierarchy-for-keyword gcmd-keywords-map :spatial-keywords location-map
+  (get-full-hierarchy-for-keyword gcmd-keywords-map :location-keywords location-map
                                   [:category :type :subregion-1 :subregion-2 :subregion-3]))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache because

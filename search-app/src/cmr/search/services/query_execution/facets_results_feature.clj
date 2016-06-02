@@ -25,7 +25,7 @@
 
 (def hierarchical-facet-order
   "Order in which hierarchical facets are returned in the facet response."
-  [:data-centers :archive-centers :platforms :instruments :science-keywords])
+  [:data-centers :archive-centers :platforms :instruments :science-keywords :location-keywords])
 
 (defn- hierarchical-aggregation-builder
   "Build an aggregations query for the given hierarchical field."
@@ -73,6 +73,7 @@
    :sensor (terms-facet :sensor-sn)
    :two-d-coordinate-system-name (terms-facet :two-d-coord-name)
    :processing-level-id (terms-facet :processing-level-id)
+   :location-keywords (nested-facet :location-keywords)
    :science-keywords (nested-facet :science-keywords)
    ;; Detailed variable is technically part of the science keyword hierarchy directly below
    ;; variable level 1 (at the same level as variable level 2.)

@@ -168,20 +168,18 @@
      [:Metadata_Name "CEOS IDN DIF"]
      [:Metadata_Version "VERSION 9.9.3"]
      [:Extended_Metadata
-      (for [aa (:AdditionalAttributes c)]
+      (for [{:keys [Group Name Description DataType Value ParamRangeBegin ParamRangeEnd UpdateDate]}
+            (:AdditionalAttributes c)
+            ;; DIF9 does not support ranges in Extended_Metadata - Order of preference for the value
+            ;; is value, then parameter-range-begin, then parameter-range-end.
+            :let [aa-value (or Value ParamRangeBegin ParamRangeEnd)]]
         [:Metadata
-         [:Group "AdditionalAttribute"]
-         [:Name (:Name aa)]
-         [:Description (:Description aa)]
-         [:Type (:DataType aa)]
-         [:Value {:type "Value"} (:Value aa)]
-         [:Value {:type "ParamRangeBegin"} (:ParameterRangeBegin aa)]
-         [:Value {:type "ParamRangeEnd"} (:ParameterRangeEnd aa)]
-         [:Value {:type "MeasurementResolution"} (:MeasurementResolution aa)]
-         [:Value {:type "ParameterUnitsOfMeasure"} (:ParameterUnitsOfMeasure aa)]
-         [:Value {:type "ParameterValueAccuracy"} (:ParameterValueAccuracy aa)]
-         [:Value {:type "ValueAccuracyExplanation"} (:ValueAccuracyExplanation aa)]
-         [:Value {:type "UpdateDate"} (:UpdateDate aa)]])
+         [:Group Group]
+         [:Name Name]
+         [:Description Description]
+         [:Type DataType]
+         [:Update_Date UpdateDate]
+         [:Value {} aa-value]])
       (when-let [collection-data-type (:CollectionDataType c)]
         [:Metadata
          [:Group "ECHO"]
@@ -193,6 +191,9 @@
       [:Metadata
        [:Name "ProcessingLevelDescription"]
        [:Value (-> c :ProcessingLevel :ProcessingLevelDescription)]]
+      [:Metadata
+       [:Name "GranuleSpatialRepresentation"]
+       [:Value (-> c :SpatialExtent :GranuleSpatialRepresentation)]]
       (when-let [access-value (get-in c [:AccessConstraints :Value])]
         [:Metadata
          [:Name "Restriction"]

@@ -23,12 +23,15 @@
             [cmr.indexer.data.concepts.keyword :as k]
             [cmr.indexer.data.concepts.organization :as org]
             [cmr.indexer.data.concepts.tag :as tag]
+            [cmr.indexer.data.concepts.location-keyword :as lk]
             [cmr.acl.core :as acl]
             [cmr.common.concepts :as concepts]
             [cmr.umm.collection :as umm-c]
             [cmr.umm.collection.entry-id :as eid]
             [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
-            [cmr.common-app.services.kms-fetcher :as kf])
+            [cmr.common-app.services.kms-fetcher :as kf]
+            [cmr.acl.acl-fetcher :as acl-fetcher]
+            [cmr.umm.acl-matchers :as umm-matchers])
   (:import cmr.spatial.mbr.Mbr))
 
 (defn spatial->elastic
@@ -80,6 +83,21 @@
                ;; Use the collection start and end date if there are no granule start and end dates.
                {:granule-start-date coll-start
                 :granule-end-date coll-end}))))
+
+(defn- get-coll-permitted-group-ids
+  "Returns the groups ids (group guids, 'guest', 'registered') that have permission to read
+  this collection"
+  [context provider-id coll]
+  (->> (acl-fetcher/get-acls context [:catalog-item])
+       ;; Find only acls that are applicable to this collection
+       (filter (partial umm-matchers/coll-applicable-acl? provider-id coll))
+       ;; Get the permissions they grant
+       (mapcat :aces)
+       ;; Find permissions that grant read
+       (filter #(some (partial = :read) (:permissions %)))
+       ;; Get the group guids or user type of those permissions
+       (map #(or (:group-guid %) (some-> % :user-type name)))
+       distinct))
 
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
@@ -137,7 +155,7 @@
         insert-time (get-in collection [:data-provider-timestamps :insert-time])
         insert-time (index-util/date->elastic insert-time)
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
-        permitted-group-ids (acl/get-coll-permitted-group-ids context provider-id collection)]
+        permitted-group-ids (get-coll-permitted-group-ids context provider-id collection)]
     (merge {:concept-id concept-id
             :revision-id revision-id
             :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
@@ -177,6 +195,8 @@
             :data-centers data-centers
             :science-keywords (map #(sk/science-keyword->elastic-doc gcmd-keywords-map %)
                                    (:science-keywords collection))
+            :location-keywords (map #(lk/spatial-keyword->elastic-doc gcmd-keywords-map %)
+                                   (:spatial-keywords collection))
 
             :instrument-sn instrument-short-names
             :instrument-sn.lowercase  (map str/lower-case instrument-short-names)
@@ -221,13 +241,13 @@
 
             ;; tags
             :tags (map tag/tag-association->elastic-doc tag-associations)
-            ;; it is currently a list of tag-keys, but it will eventually be something like:
+            ;; tag-data saved in elasticsearch for retrieving purpose in the format of:
             ;; {"org.ceos.wgiss.cwic.native_id": {"associationDate":"2015-01-01T00:00:00.0Z",
             ;;                                    "data": "Global Maps of Atmospheric Nitrogen Deposition, 1860, 1993, and 2050"},
             ;;  "org.ceos.wgiss.cwic.data_provider": {"associationDate":"2015-01-01T00:00:00.0Z",
             ;;                                        "data": "NASA"},
             ;;  "org.ceos.wgiss.cwic.cwic_status": {"associationDate":"2015-01-01T00:00:00.0Z",
-            ;;                                      "data": "prod"}
+            ;;                                      "data": "prod"}}
             :tags-gzip-b64 (when (seq tag-associations)
                              (util/string->gzip-base64
                                (pr-str
@@ -248,8 +268,8 @@
                 native-id revision-date deleted format]} concept
         ;; only used to get default ACLs for tombstones
         tombstone-umm (umm-c/map->UmmCollection {:entry-title entry-title})
-        tombstone-permitted-group-ids (acl/get-coll-permitted-group-ids context
-                                                                        provider-id tombstone-umm)
+        tombstone-permitted-group-ids (get-coll-permitted-group-ids context
+                                                                    provider-id tombstone-umm)
         {:keys [access-value]} tombstone-umm]
     {:concept-id concept-id
      :revision-id revision-id

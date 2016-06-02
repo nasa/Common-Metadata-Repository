@@ -10,9 +10,11 @@
     :id 1,
     :create-reason "indexer app requires this index set",
     :collection {:indexes [{:name "collections",
-                            :settings i/collection-setting}
+                            :settings i/collection-setting-v1}
+                           {:name "collections-v2",
+                            :settings i/collection-setting-v2}
                            {:name "all-collection-revisions",
-                            :settings i/collection-setting}],
+                            :settings i/collection-setting-v1},]
                  :mapping i/collection-mapping},
     :granule {:indexes
               [{:name "small_collections",
@@ -53,6 +55,3 @@
   (testing "Updates required from individual index settings"
     (is (es/requires-update? (update-in test-index-set [:index-set :granule] dissoc :individual-index-settings)
                              (i/index-set (i/index-set->extra-granule-indexes test-index-set))))))
-
-
-

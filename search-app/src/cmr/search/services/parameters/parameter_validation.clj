@@ -476,9 +476,10 @@
   "Validates parameters against result format."
   [concept-type params]
   (concat
-    (when (and (not (#{:json :atom} (:result-format params)))
+    (when (and (not (#{:json :atom :echo10 :dif :dif10 :iso19115 :native} (:result-format params)))
                (not (s/blank? (:include-tags params))))
-      [(format "Parameter [include_tags] is only supported in ATOM or JSON format search.")])))
+      [(format "Parameter [include_tags] is not supported for %s format search."
+               (name (:result-format params)))])))
 
 (def valid-timeline-intervals
   "A list of the valid values for timeline intervals."

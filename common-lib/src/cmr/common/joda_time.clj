@@ -5,13 +5,14 @@
   - Implements the clojure multimethod print-dup for Joda Time. This allows instances of the Joda
   time classes to be written and parsed from strings. This feature can be made available simply by
   requiring this namespace."
-  (:require [cheshire.generate :as json-gen]))
+  (:require [cheshire.generate :as json-gen])
+  (:import com.fasterxml.jackson.core.JsonGenerator))
 
 
 ;; Adds the ability for Joda DateTimes to be converted to JSON.
 (json-gen/add-encoder
   org.joda.time.DateTime
-  (fn [c jsonGenerator]
+  (fn [c ^JsonGenerator jsonGenerator]
     (.writeString jsonGenerator (str c))))
 
 
@@ -39,7 +40,7 @@
     (str "#=" (date-time-instant->construction-code d))))
 
 (defmethod print-method org.joda.time.base.AbstractInstant
-  [d writer]
+  [d ^java.io.Writer writer]
   (.write
     writer
     (str "#=" (date-time-instant->construction-code d))))

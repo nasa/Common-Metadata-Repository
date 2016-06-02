@@ -37,8 +37,8 @@
   (and (specific-items-query? query)
        (t/transformer-supported-format? result-format)
        (not all-revisions?)
-       ;; Facets requires elastic search
-       (not-any? #(= % :facets) result-features)
+       ;; Facets and tags require elastic search
+       (not-any? #(contains? #{:facets :tags} %) result-features)
        ;; Sorting hasn't been specified or is set to the default value
        ;; Note that we don't actually sort items by the default sort keys
        ;; See issue CMR-607

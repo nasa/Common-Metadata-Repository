@@ -5,7 +5,6 @@
             [cmr.transmit.config :as tc]
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.transmit.echo.tokens :as echo-tokens]
-            [cmr.acl.umm-matchers :as um]
             [cmr.common.cache :as cache]
             [cmr.common.cache.in-memory-cache :as mem-cache]
             [clojure.core.cache :as clj-cache]))
@@ -71,22 +70,6 @@
                        (some #(= % permission) (:permissions ace))))
                 (:aces acl)))
         sids))
-
-(defn get-coll-permitted-group-ids
-  "Returns the groups ids (group guids, 'guest', 'registered') that have permission to read
-  this collection"
-  [context provider-id coll]
-
-  (->> (acl-fetcher/get-acls context [:catalog-item])
-       ;; Find only acls that are applicable to this collection
-       (filter (partial um/coll-applicable-acl? provider-id coll))
-       ;; Get the permissions they grant
-       (mapcat :aces)
-       ;; Find permissions that grant read
-       (filter #(some (partial = :read) (:permissions %)))
-       ;; Get the group guids or user type of those permissions
-       (map #(or (:group-guid %) (some-> % :user-type name)))
-       distinct))
 
 (def token-imp-cache-key
   "The cache key for the token to ingest management permission cache."

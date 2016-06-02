@@ -13,7 +13,8 @@
   (some-> (c/db-result->concept-map :default db provider-id result)
           (assoc :concept-type :tag-association)
           (assoc-in [:extra-fields :associated-concept-id] (:associated_concept_id result))
-          (assoc-in [:extra-fields :associated-revision-id] (:associated_revision_id result))
+          (assoc-in [:extra-fields :associated-revision-id] (when-let [ari (:associated_revision_id result)]
+                                                              (long ari)))
           (assoc-in [:extra-fields :tag-key] (:tag_key result))
           (assoc :user-id (:user_id result))))
 

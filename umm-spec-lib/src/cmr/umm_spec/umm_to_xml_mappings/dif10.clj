@@ -136,7 +136,7 @@
     [:Additional_Attributes
      [:Name (:Name aa)]
      [:DataType (:DataType aa)]
-     [:Description (with-default (:Description aa))]
+     [:Description (:Description aa)]
      [:MeasurementResolution (:MeasurementResolution aa)]
      [:ParameterRangeBegin (:ParameterRangeBegin aa)]
      [:ParameterRangeEnd (:ParameterRangeEnd aa)]

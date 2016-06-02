@@ -8,6 +8,7 @@
             [cmr.common.xml.parse :refer :all]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.paleo-temporal :as pt]
+            [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]
             [cmr.umm-spec.util :as u :refer [without-default-value-of]]
             [cmr.umm-spec.date-util :as date]
             [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
@@ -122,18 +123,7 @@
                      :DistributionFormat (value-of dist "Distribution_Format")
                      :Fees (value-of dist "Fees")})
    :ProcessingLevel {:Id (value-of doc "/DIF/Product_Level_Id")}
-   :AdditionalAttributes
-   (for [aa (select doc "/DIF/Additional_Attributes")]
-     {:Name (value-of aa "Name")
-      :DataType (value-of aa "DataType")
-      :Description (without-default-value-of aa "Description")
-      :MeasurementResolution (value-of aa "MeasurementResolution")
-      :ParameterRangeBegin (without-default-value-of aa "ParameterRangeBegin")
-      :ParameterRangeEnd (value-of aa "ParameterRangeEnd")
-      :ParameterUnitsOfMeasure (value-of aa "ParameterUnitsOfMeasure")
-      :ParameterValueAccuracy (value-of aa "ParameterValueAccuracy")
-      :ValueAccuracyExplanation (value-of aa "ValueAccuracyExplanation")
-      :Value (value-of aa "Value")})
+   :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc)
    :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
                             (into {} (map (fn [x]
                                             (if (keyword? x)

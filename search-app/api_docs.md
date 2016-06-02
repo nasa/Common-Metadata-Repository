@@ -192,7 +192,7 @@ These are query parameters that control what extra data is included with collect
   * `include_facets` - If this parameter is set to "true" facets will be included in the collection results (not applicable to opendata results). Facets are described in detail below.
   * `hierarchical_facets` - If this parameter is set to "true" and the parameter `include_facets` is set to "true" the facets that are returned will be hierarchical. Hierarchical facets are described in the facets section below.
   * `include_highlights` - If this parameter is set to "true", the collection results will contain an additional field, 'highlighted_summary_snippets'. The field is an array of strings which contain a snippet of the summary which highlight any terms which match the terms provided in the keyword portion of a search. By default up to 5 snippets may be returned with each individual snippet being up to 100 characters, and keywords in the snippets are delineated with begin tag `<em>` and end tag `</em>`. This is configurable using `options[highlights][param]=value`. Supported option params are `begin_tag`, `end_tag`, `snippet_length` and `num_snippets`. The values for `snippet_length` and `num_snippets` must be integers greater than 0.
-  * `include_tags` - If this parameter is set (e.g. `include_tags=gov.nasa.earthdata.search.*,gov.nasa.echo.*`), the collection results will contain an additional field 'tags' within each collection. The value of the tags field is a list of tag_keys that are associated with the collection. Only the tags with tag_key matching the values of `include_tags` parameter (with wildcard support) are included in the results. This parameter is supported in JSON and ATOM result formats.
+  * `include_tags` - If this parameter is set (e.g. `include_tags=gov.nasa.earthdata.search.*,gov.nasa.echo.*`), the collection results will contain an additional field 'tags' within each collection. The value of the tags field is a list of tag_keys that are associated with the collection. Only the tags with tag_key matching the values of `include_tags` parameter (with wildcard support) are included in the results. This parameter is supported in JSON, ATOM, ECHO10, DIF, DIF10, ISO19115 and native result formats.
 
   _There is a known bug with the `snippet_length` parameter that occasionally leads to snippets that are longer than `snippet_length` characters._
 
@@ -337,10 +337,11 @@ __Example__
       <echo:browseFlag>false</echo:browseFlag>
       <echo:tag>
         <echo:tagKey>tag1</echo:tagKey>
-        <echo:data>{&quot;status&quot;:&quot;reviewed&quot;,&quot;score&quot;:85}</echo:data>
+        <echo:data>{"status":"Reviewed","score":85}</echo:data>
       </echo:tag>
       <echo:tag>
         <echo:tagKey>tag2</echo:tagKey>
+        <echo:data>"cloud cover &gt; 80"</echo:data>
       </echo:tag>
    </entry>
 </feed>
@@ -359,7 +360,7 @@ SC:SPL1AA.001:12345,SMAP_L1C_S0_HIRES_00016_A_20150530T160100_R03001_001.h5,,,,,
 
 #### Metadata Responses (DIF, DIF 10, ECHO 10, ISO-SMAP, ISO-MENDS)
 
-All of the XML Metadata formats (except the XML used in returning references only) have the same structure, differing only in the way each result is returned. These formats return a single XML document with a `<results>` tag containing the following fields as sub-tags:
+All of the XML Metadata formats (except the XML used in returning references only) have the same structure, differing only in the way each result is returned. These formats return a single XML document with a `<results>` XML element containing the following fields as sub-elements:
 
 |         Field         |                    Description                     |
 | --------------------- | -------------------------------------------------- |
@@ -367,7 +368,7 @@ All of the XML Metadata formats (except the XML used in returning references onl
 | took                  | time in milliseconds it took to perform the search |
 | result (zero or more) | a single search result - documented below          |
 
-The results are returned as a seqeuence of `<result>` tags, the contents of which are documents in the specified format (DIF, ECHO 10 , etc.). Each `<result>` tag contains the following attributes:
+The results are returned as a seqeuence of `<result>` XML elements, the contents of which are documents in the specified format (DIF, ECHO 10 , etc.). If tags are included in the response a `<tags>` element will directly follow the metadata in the `<result>` element. Each `<result>` XML element contains the following attributes:
 
 |  Attribute  |                  Description                  |
 | ----------- | --------------------------------------------- |
@@ -406,6 +407,16 @@ __Example__
             <DIF_Creation_Date>2008-04-22T12:53:38.320Z</DIF_Creation_Date>
             <Last_DIF_Revision_Date>2010-10-06T11:45:39.530Z</Last_DIF_Revision_Date>
         </DIF>
+        <tags>
+          <tag>
+            <tagKey>tag1</tagKey>
+            <data>{"status":"Reviewed","score":85}</data>
+          </tag>
+          <tag>
+            <tagKey>tag2</tagKey>
+            <data>"cloud cover &gt; 80"</data>
+          </tag>
+        </tags>
     </result>
 </results>
 ```
@@ -464,6 +475,16 @@ __Example__
                 <Data_Last_Revision>1970-01-01T00:00:00</Data_Last_Revision>
             </Metadata_Dates>
         </DIF>
+        <tags>
+          <tag>
+            <tagKey>tag1</tagKey>
+            <data>{"status":"Reviewed","score":85}</data>
+          </tag>
+          <tag>
+            <tagKey>tag2</tagKey>
+            <data>"cloud cover &gt; 80"</data>
+          </tag>
+        </tags>
     </result>
 </results>
 ```
@@ -492,6 +513,16 @@ __Example__
             <Orderable>false</Orderable>
             <Visible>true</Visible>
         </Collection>
+        <tags>
+          <tag>
+            <tagKey>tag1</tagKey>
+            <data>{"status":"Reviewed","score":85}</data>
+          </tag>
+          <tag>
+            <tagKey>tag2</tagKey>
+            <data>"cloud cover &gt; 80"</data>
+          </tag>
+        </tags>
     </result>
 </results>
 ```
@@ -581,11 +612,21 @@ __Example__
                 <gmi:MI_AcquisitionInformation/>
             </gmi:acquisitionInformation>
         </gmi:MI_Metadata>
+        <tags>
+          <tag>
+            <tagKey>tag1</tagKey>
+            <data>{"status":"Reviewed","score":85}</data>
+          </tag>
+          <tag>
+            <tagKey>tag2</tagKey>
+            <data>"cloud cover &gt; 80"</data>
+          </tag>
+        </tags>
     </result>
 </results>
 ```
 
-#### <a name="iso-smap"></a> ISO-SMAP (ISO-19115)
+#### <a name="iso-smap"></a> ISO-SMAP
 
 See the [specification](https://cdn.earthdata.nasa.gov/iso/schema/1.0/)
 
@@ -697,7 +738,7 @@ __Example__
       "browse_flag" : false,
       "online_access_flag" : false,
       "tags" : {"tag1": {"data": {"score": 85, "status": "reviewed"}},
-                "tag2": {}}
+                "tag2": {"data" : "cloud cover > 80"}}
     } ]
   }
 }
@@ -2074,7 +2115,7 @@ The keyword endpoint is used to retrieve the full list of keywords for each of t
 
 The keywords are returned in a hierarchical JSON format. The response format is such that the caller does not need to know the hierarchy, but it can be inferred from the results. Keywords are not guaranteed to have values for every subfield in the hierarchy, so the response will indicate the next subfield below the current field in the hierarchy which has a value. It is possible for the keywords to have multiple potential subfields below it for different keywords with the same value for the current field in the hierarchy. When this occurs the subfields property will include each of the subfields.
 
-Supported keywords include `platforms`, `instruments`, `projects`, `temporal_keywords`, `spatial_keywords`, `science_keywords`, `archive_centers`, and `data_centers`. The endpoint also supports `providers` which is an alias to `data_centers`.
+Supported keywords include `platforms`, `instruments`, `projects`, `temporal_keywords`, `location_keywords`, `science_keywords`, `archive_centers`, and `data_centers`. The endpoint also supports `providers` which is an alias to `data_centers` and `spatial_keywords` which is an alias to `location_keywords`.
 
     curl -i "%CMR-ENDPOINT%/keywords/instruments?pretty=true"
 

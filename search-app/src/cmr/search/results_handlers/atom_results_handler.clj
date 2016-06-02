@@ -29,7 +29,9 @@
   {"echo10" "ECHO10"
    "iso-smap" "ISO-SMAP"
    "iso19115" "ISO19115"
-   "dif" "DIF"})
+   "dif" "DIF"
+   "dif10" "DIF10"
+   "umm-json" "UMM_JSON"})
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :atom]
   [concept-type query]

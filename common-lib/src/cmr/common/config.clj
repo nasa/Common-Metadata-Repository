@@ -129,13 +129,13 @@
   "Returns a Long parsed from s when s is not nil, otherwise nil."
   [s]
   (when s
-    (Long. s)))
+    (Long. ^String s)))
 
 (def type->parser
   "Maps config types to value parser functions"
   {String identity
-   Long #(Long. %)
-   Double #(Double. %)
+   Long #(Long. ^String %)
+   Double #(Double. ^String %)
    Boolean parse-boolean
    :edn edn/read-string})
 

@@ -56,7 +56,7 @@
   (let [matcher (re-matcher #"([A-Z]+)(\d+)-(.+)" concept-id)
         [_ prefix seq-num provider-id] (re-find matcher)]
     {:concept-type (concept-prefix->concept-type prefix)
-     :sequence-number (Long. seq-num)
+     :sequence-number (Long. ^String seq-num)
      :provider-id provider-id}))
 
 (defn- concept-id->concept-prefix

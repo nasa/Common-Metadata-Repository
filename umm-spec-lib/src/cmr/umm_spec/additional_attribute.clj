@@ -1,0 +1,88 @@
+(ns cmr.umm-spec.additional-attribute
+  "Defines helper functions for parsing additional attributes."
+  (:require [cmr.common.xml.parse :refer :all]
+            [cmr.common.xml.simple-xpath :refer [select text]]
+            [cmr.common.services.errors :as errors]
+            [clojure.string :as str]
+            [clj-time.format :as f]))
+
+(defn parse-data-type
+  "Parses the string data type from the XML into the uppercase UMM data type."
+  [data-type]
+  (when data-type
+    (str/upper-case data-type)))
+
+(defmulti parse-value
+  "Parses a value based on the data type given"
+  (fn [data-type value]
+    data-type))
+
+(defmethod parse-value :default
+  [data-type value]
+  (when value
+    (str value)))
+
+(defmethod parse-value "INT"
+  [data-type ^String value]
+  (when value (Long. value)))
+
+(defmethod parse-value "FLOAT"
+  [data-type ^String value]
+  (when value (Double. value)))
+
+(defmethod parse-value "BOOLEAN"
+  [data-type ^String value]
+  (when value
+    (case value
+      "true" true
+      "false" false
+      "1" true
+      "0" false
+      :else (errors/internal-error! (format "Unexpected boolean value [%s]" value)))))
+
+(def datetime-regex->formatter
+  "A map of regular expressions matching a date time to the formatter to use"
+  {#"^[^T]+T[^.]+\.\d+(?:(?:[+-]\d\d:\d\d)|Z)$" (f/formatters :date-time)
+   #"^[^T]+T[^.]+(?:(?:[+-]\d\d:\d\d)|Z)$" (f/formatters :date-time-no-ms)
+   #"^[^T]+T[^.]+\.\d+$" (f/formatters :date-hour-minute-second-ms)
+   #"^[^T]+T[^.]+$" (f/formatters :date-hour-minute-second)})
+
+(def time-regex->formatter
+  "A map of regular expressions matching a time to the formatter to use"
+  {#"^[^.]+\.\d+(?:(?:[+-]\d\d:\d\d)|Z)$" (f/formatters :time)
+   #"^[^.]+(?:(?:[+-]\d\d:\d\d)|Z)$" (f/formatters :time-no-ms)
+   #"^[^.]+\.\d+$" (f/formatters :hour-minute-second-ms)
+   #"^[^.]+$" (f/formatters :hour-minute-second)})
+
+(defn find-formatter
+  [datetime regex-formatter-map]
+  (->> regex-formatter-map
+       (filter (fn [[regex formatter]]
+                 (re-matches regex datetime)))
+       first
+       second))
+
+(defmethod parse-value "DATETIME"
+  [data-type value]
+  (when value
+    (f/parse (find-formatter value datetime-regex->formatter) value)))
+
+(defmethod parse-value "TIME"
+  [data-type value]
+  (when value
+    (f/parse (find-formatter value time-regex->formatter) value)))
+
+(defmethod parse-value "DATE"
+  [data-type value]
+  (when value
+    (let [value (str/replace value "Z" "")]
+      (f/parse (f/formatters :date) value))))
+
+(defn safe-parse-value
+  "Returns the parsed value. It is different from parse-value function in that it will catch any
+  parsing exceptions and returns nil when the value is invalid to parse for the given data type."
+  [data-type value]
+  (try
+    (parse-value data-type value)
+    (catch Exception _ nil)))
+
