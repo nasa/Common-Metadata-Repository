@@ -15,8 +15,7 @@
 (use-fixtures :each (join-fixtures
                       [(util/reset-database-fixture {:provider-id "REG_PROV" :small false}
                                                     {:provider-id "SMAL_PROV1" :small true}
-                                                    {:provider-id "SMAL_PROV2" :small true})
-                       tk/freeze-resume-time-fixture]))
+                                                    {:provider-id "SMAL_PROV2" :small true})]))
 
 (defn concept-revision-exists?
   "Returns true if the revision of the concept exists"
