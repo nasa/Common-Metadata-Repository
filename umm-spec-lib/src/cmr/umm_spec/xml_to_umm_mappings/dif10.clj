@@ -9,6 +9,7 @@
             [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.paleo-temporal :as pt]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]
+            [cmr.umm-spec.xml-to-umm-mappings.dif10.related-url :as ru]
             [cmr.umm-spec.util :as u :refer [without-default-value-of]]
             [cmr.umm-spec.date-util :as date]
             [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
@@ -148,12 +149,7 @@
                                                      (remove nil? [(value-of pub-ref "Online_Resource")]))}]
                                            :Other_Reference_Details])))
    :AncillaryKeywords (values-at doc "/DIF/Ancillary_Keyword")
-   :RelatedUrls (for [related-url (select doc "/DIF/Related_URL")]
-                  {:URLs (values-at related-url "URL")
-                   :Description (value-of related-url "Description")
-                   :Relation [(value-of related-url "URL_Content_Type/Type")
-                              (value-of related-url "URL_Content_Type/Subtype")]
-                   :MimeType (value-of related-url "Mime_Type")})
+   :RelatedUrls (ru/parse-related-urls doc)
    :MetadataAssociations (for [ma (select doc "/DIF/Metadata_Association")]
                            {:EntryId (value-of ma "Entry_ID/Short_Name")
                             :Version (without-default-value-of ma "Entry_ID/Version")
