@@ -5,7 +5,9 @@
             [cmr.common-app.services.kms-fetcher :as kms-fetcher]
             [cmr.search.services.query-execution.facets-results-feature :as frf]
             [camel-snake-kebab.core :as csk]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [ring.util.codec :as codec]
+            [clojure.string :as str]))
 
 
 (def UNLIMITED_TERMS_SIZE
@@ -100,45 +102,132 @@
   [field bucket-map]
   (parse-hierarchical-bucket-v2 (field kms-fetcher/nested-fields-mappings) bucket-map))
 
+(defn- generate-query-string
+  "Creates a query string from a root URL and a map of query params"
+  [base-link query-params]
+  (format "%s?%s" base-link (codec/form-encode query-params)))
+
+(comment
+ (codec/form-encode
+  {"include_facets" "v2"
+   "pretty" "true"
+   "processing_level_id[]" "pl1"
+   "data_center[]" ["Larc" "Larc2"]}))
+
+(defn- create-apply-link
+  "Create a link to apply a term."
+  [base-link query-params field-name term]
+  (let [param-name (str (csk/->snake_case_string field-name) "[]")
+        existing-values (flatten [(get query-params param-name)])
+        updated-query-params (assoc query-params param-name (keep identity (conj existing-values term)))]
+    {:apply (generate-query-string base-link updated-query-params)}))
+
+(defn- create-remove-link
+  "Create a link to remove a term from a query."
+  [base-link query-params field-name term]
+  (let [param-name (str (csk/->snake_case_string field-name) "[]")
+        existing-values (get query-params param-name)
+        updated-query-params (if (coll? existing-values)
+                                 (update query-params param-name
+                                         (fn [_]
+                                           (remove (fn [value]
+                                                     (= (str/lower-case term) value))
+                                                   (map str/lower-case existing-values))))
+                                 (dissoc query-params param-name))]
+    {:remove (generate-query-string base-link updated-query-params)}))
+
+(defn- create-links
+  "Creates either a remove or an apply link based on whether this particular term is already
+  selected within a query."
+  [base-link query-params field-name term]
+  (let [terms-for-field (get query-params (str (csk/->snake_case_string field-name) "[]"))
+        term-exists (some #{(str/lower-case term)} (map str/lower-case terms-for-field))]
+    (if term-exists
+      [:remove (create-remove-link base-link query-params field-name term)]
+      [:apply (create-apply-link base-link query-params field-name term)])))
+
 (defn flat-bucket-map->facets-v2
   "Takes a map of elastic aggregation results containing keys to buckets and a list of the bucket
   names. Returns a facet map of those specific names with value count pairs"
-  [bucket-map field-names]
+  [bucket-map field-names base-link query-params]
   (remove nil?
     (for [field-name field-names
           :let [value-counts (frf/buckets->value-count-pairs (field-name bucket-map))
-                has-children (some? (seq value-counts))]]
+                has-children (some? (seq value-counts))
+                some-term-applied? (some? (get query-params (csk/->snake_case_string field-name)))]]
       (when has-children
         {:title (field-name fields->human-readable-label)
          :type :group
+         :applied some-term-applied?
          :has_children true
          :children (map (fn [[term count]]
-                          {:title term
-                           :type :filter
-                           :count count
-                           :has_children false})
+                          (let [[type links] (if some-term-applied?
+                                               [:apply (create-apply-link base-link query-params field-name term)]
+                                               (create-links base-link query-params field-name term))]
+                           {:title term
+                            :type :filter
+                            :applied (= type :remove)
+                            :links links
+                            :count count
+                            :has_children false}))
                         value-counts)}))))
 
-(defn- add-links-to-facets
-  "Adds applied and links keys to the facets-v2 map."
-  [query facets-map]
-  (println "Query is " query)
-  facets-map)
+(comment
+ (proto/saved-values)
+ (proto/clear-saved-values!))
+
+(defn- parse-params
+  "Parse parameters from a query string into a map. Taking directly from ring."
+  [params encoding]
+  (let [params (codec/form-decode params encoding)]
+    (if (map? params) params {})))
+
+;; NOTE this seems like the wrong approach. Instead we should supply a base link and have the link
+;; added as part of the initial parsing
+; (defn- add-links-to-facets
+;   "Adds :applied and :links keys to the facets-v2 map."
+;   [context query facets-map]
+;   (println "Query is " query)
+;   (let [search-condition (:condition query)
+;         request (:request context)
+;         query-string (:query-string context)
+;         query-params (parse-params query-string "UTF-8")
+;         result-format (:result-format query)
+;         params-to-apply (into {}
+;                               (keep (fn [k]
+;                                       (when (or
+;                                              (contains? query-params (name k))
+;                                              (contains? query-params (str (name k) "[]")))
+;                                         [k (or (get query-params (name k))
+;                                                (get query-params (str (name k) "[]")))]))
+;                                     [:science_keywords :data_center :platform :instrument :project
+;                                      :processing_level_id]))]
+;     (println "Query string is " query-string)
+;     (println "Context is " (dissoc context :system))
+;     (println "Result format is " result-format)
+;     (println "Params to apply: " params-to-apply)
+;     (println "Search condition" search-condition))
+;   facets-map)
 
 (defn create-v2-facets
   "Create the facets v2 response. Takes an elastic aggregations result and returns the facets."
-  [elastic-aggregations query]
+  [context elastic-aggregations query]
   (let [flat-fields [:platform :instrument :data-center :project :processing-level-id]
         hierarchical-fields [:science-keywords]
+        base-link "http://localhost:3003/collections.json"
+        query-params (parse-params (:query-string context) "UTF-8")
         facets (concat (keep (fn [field]
                                 (when-let [sub-facets (hierarchical-bucket-map->facets-v2
                                                         field (field elastic-aggregations))]
                                   (assoc sub-facets :title (field fields->human-readable-label))))
                              hierarchical-fields)
                        (flat-bucket-map->facets-v2
-                        (apply dissoc elastic-aggregations hierarchical-fields) flat-fields))]
+                        (apply dissoc elastic-aggregations hierarchical-fields)
+                        flat-fields
+                        base-link
+                        query-params))]
     (if (seq facets)
-      (add-links-to-facets query (assoc v2-facets-root :has_children true :children facets))
+      (assoc v2-facets-root :has_children true :children facets)
       (assoc v2-facets-root :has_children false))))
 
 
@@ -146,7 +235,6 @@
   [_ query _]
   (assoc query :aggregations (facets-v2-aggregations DEFAULT_TERMS_SIZE)))
 
-;; [context query elastic-results query-results feature]
 (defmethod query-execution/post-process-query-result-feature :facets-v2
-  [_ query {:keys [aggregations]} query-results _]
-  (assoc query-results :facets (create-v2-facets aggregations query)))
+  [context query {:keys [aggregations]} query-results _]
+  (assoc query-results :facets (create-v2-facets context aggregations query)))
