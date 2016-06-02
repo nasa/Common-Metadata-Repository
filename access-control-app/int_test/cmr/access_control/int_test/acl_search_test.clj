@@ -81,7 +81,6 @@
   (let [{:keys [concept_id revision_id]} (ac/create-acl (u/conn-context) acl {:token token})]
     (assoc acl :concept-id concept_id :revision-id revision_id)))
 
-
 (defn acl->search-response-item
   "Returns the expected search response item for an ACL."
   [acl]
@@ -97,12 +96,18 @@
 
 (defn acls->search-response
   "Returns the expected search response for a given number of hits and the acls."
-  [hits acls]
-  {:hits hits
-   :items (->> acls
-              (map acl->search-response-item)
-              (sort-by :name)
-              vec)})
+  ([hits acls]
+   (acls->search-response hits acls 10 1))
+  ([hits acls page-size page-num]
+   (let [all-items (->> acls
+                        (map acl->search-response-item)
+                        (sort-by :name)
+                        vec)
+         start (* (dec page-num) page-size)
+         end (+ start page-size)
+         items (subvec all-items start end)]
+    {:hits hits
+     :items items})))
 
 (deftest acl-search-test
   (let [token (e/login (u/conn-context) "user1")
@@ -144,5 +149,12 @@
                   "System - METRIC_DATA_POINT_SAMPLE"
                   "System - SYSTEM_AUDIT_REPORT"
                   "System - SYSTEM_INITIALIZER"]
-                 (map :name (:items response)))))))))
+                 (map :name (:items response)))))))
+    (testing "ACL Search Paging"
+      (testing "Page Size"
+        (is (= (acls->search-response (count all-acls) all-acls 4 1)
+               (dissoc (ac/search-for-acls (u/conn-context) {:page_size 4}) :took))))
+      (testing "Page Number"
+        (is (= (acls->search-response (count all-acls) all-acls 4 2)
+               (dissoc (ac/search-for-acls (u/conn-context) {:page_size 4 :page_num 2}) :took)))))))
 
