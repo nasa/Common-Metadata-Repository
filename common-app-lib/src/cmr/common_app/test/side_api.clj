@@ -25,12 +25,12 @@
   (format "http://localhost:%s/eval" (side-api-port)))
 
 (def eval-routes
-  ;; Reads and evaluates code then encodes the response as clojure EDN for the
-  ;; caller to read. This avoids having to add a million different endpoints to dev system control
-  ;; to do different things inside the system.
-  ;;
-  ;; Example usage:
-  ;; curl -XPOST -H "Content-Type: text" http://localhost:2999/eval -d "(+ 1 1)"
+  "Reads and evaluates code then encodes the response as clojure EDN for the
+   caller to read. This avoids having to add a million different endpoints to dev system control
+   to do different things inside the system.
+
+   Example usage:
+   curl -XPOST -H \"Content-Type: text\" http://localhost:2999/eval -d \"(+ 1 1)\""
   (POST "/eval" {:keys [body]}
     (let [body-str (slurp body)]
       (debug (str "Evaling [" body-str "]"))
