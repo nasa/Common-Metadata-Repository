@@ -15,8 +15,7 @@
 (use-fixtures :each (join-fixtures
                       [(util/reset-database-fixture {:provider-id "REG_PROV" :small false}
                                                     {:provider-id "SMAL_PROV1" :small true}
-                                                    {:provider-id "SMAL_PROV2" :small true})
-                       tk/freeze-resume-time-fixture]))
+                                                    {:provider-id "SMAL_PROV2" :small true})]))
 
 (defn concept-revision-exists?
   "Returns true if the revision of the concept exists"
@@ -48,6 +47,7 @@
   (= 200 (:status (util/get-concept-by-id (:concept-id concept)))))
 
 (deftest old-collection-revisions-are-cleaned-up
+  (side/eval-form `(tk/set-time-override! (tk/now)))
   (let [coll1 (util/create-and-save-collection "REG_PROV" 1 13)
         coll2 (util/create-and-save-collection "REG_PROV" 2 3)
         coll3 (util/create-and-save-collection "SMAL_PROV1" 1 12 {:native-id "foo"})
@@ -90,9 +90,11 @@
     ;; tag association associated to the whole collection is not deleted
     (util/is-tag-association-deleted? ta1 false)
     ;; tag association not associated to deleted collection revisions is not deleted
-    (util/is-tag-association-deleted? ta3 false)))
+    (util/is-tag-association-deleted? ta3 false))
+ (side/eval-form `(tk/clear-current-time!)))
 
 (deftest old-granule-revisions-are-cleaned-up
+  (side/eval-form `(tk/set-time-override! (tk/now)))
   (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1)
         gran1 (util/create-and-save-granule "REG_PROV" coll1 1 3)
         gran2 (util/create-and-save-granule "REG_PROV" coll1 2 3)
@@ -113,9 +115,11 @@
 
     (is (every? #(revisions-removed? % (range 1 3)) granules))
     (is (every? #(concept-revision-exists? % 3) [gran1 gran2 gran3 gran4]))
-    (is (concept-revision-exists? gran5 12))))
+    (is (concept-revision-exists? gran5 12)))
+ (side/eval-form `(tk/clear-current-time!)))
 
 (deftest old-service-revisions-are-cleaned-up
+  (side/eval-form `(tk/set-time-override! (tk/now)))
   (let [serv1 (util/create-and-save-service "REG_PROV" 1 13)
         serv2 (util/create-and-save-service "REG_PROV" 2 3)
         serv3 (util/create-and-save-service "SMAL_PROV1" 1 12 {:native-id "foo"})
@@ -141,7 +145,8 @@
     (is (revisions-exist? serv3 (range 3 13)))
 
     (is (revisions-exist? serv4 (range 1 5)))
-    (is (revisions-exist? serv5 (range 1 4)))))
+    (is (revisions-exist? serv5 (range 1 4))))
+ (side/eval-form `(tk/clear-current-time!)))
 
 (deftest old-tombstones-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
@@ -246,6 +251,7 @@
   (side/eval-form `(tk/clear-current-time!)))
 
 (deftest old-tag-revisions-are-cleaned-up
+  (side/eval-form `(tk/set-time-override! (tk/now)))
   (let [tag1 (util/create-and-save-tag 1 13)
         tag2 (util/create-and-save-tag 2 3)
         tags [tag1 tag2]]
@@ -259,9 +265,11 @@
     (is (revisions-removed? tag1 (range 1 4)))
     (is (revisions-exist? tag1 (range 4 13)))
 
-    (is (all-revisions-exist? tag2))))
+    (is (all-revisions-exist? tag2)))
+ (side/eval-form `(tk/clear-current-time!)))
 
 (deftest old-tag-association-revisions-are-cleaned-up
+  (side/eval-form `(tk/set-time-override! (tk/now)))
   (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1)
         tag1 (util/create-and-save-tag 1 1)
         tag2 (util/create-and-save-tag 2 1)
@@ -278,4 +286,5 @@
     (is (revisions-removed? ta1 (range 1 4)))
     (is (revisions-exist? ta1 (range 4 13)))
 
-    (is (all-revisions-exist? ta2))))
+    (is (all-revisions-exist? ta2)))
+ (side/eval-form `(tk/clear-current-time!)))
