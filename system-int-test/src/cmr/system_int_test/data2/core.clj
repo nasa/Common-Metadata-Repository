@@ -20,7 +20,10 @@
 (defn- item->native-id
   "Returns the native id of a UMM record."
   [item]
-  (some #(get item %) [:granule-ur :entry-title :EntryTitle :native-id]))
+  (let [entry-title (some #(get item %) [:entry-title :EntryTitle])]
+    ;; If the item contains an entry title it will be trimmed.
+    (or (some-> entry-title str/trim)
+        (some #(get item %) [:granule-ur :native-id]))))
 
 (def context (lkt/setup-context-for-test lkt/sample-keyword-map))
 

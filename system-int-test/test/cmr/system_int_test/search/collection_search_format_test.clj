@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.search.collection-search-format-test
   "This tests ingesting and searching for collections in different formats."
   (:require [clojure.test :refer :all]
+            [clojure.string :as str]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -34,12 +35,19 @@
 (use-fixtures :each (ingest/reset-fixture
                       {"provguid1" "PROV1" "provguid2" "PROV2" "usgsguid" "USGS_EROS"}))
 
+(comment
+ ((ingest/reset-fixture
+                       {"provguid1" "PROV1" "provguid2" "PROV2" "usgsguid" "USGS_EROS"})
+  (constantly nil)))
+
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
   (let [
         c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
                                                   :version-id "V1"
-                                                  :entry-title "ET1"})
+                                                  ;; Whitespace here but not stripped out for expected
+                                                  ;; results. It will be present in metadata.
+                                                  :entry-title "   ET1   "})
                           {:format :echo10})
         c2-echo (d/ingest "PROV2" (dc/collection {:short-name "S2"
                                                   :version-id "V2"
@@ -85,19 +93,19 @@
 
     (testing "Finding refs ingested in different formats"
       (are [search expected]
-           (d/refs-match? expected (search/find-refs :collection search))
-           {} all-colls
-           {:short-name "S4"} [c4-dif]
-           {:entry-title "ET3"} [c3-dif]
-           {:version ["V3" "V2"]} [c2-echo c3-dif]
-           {:short-name "S5"} [c5-iso]
-           {:short-name "S6"} [c6-iso]
-           {:version "V50"} [c5-iso]
-           {:version ["V50" "V6"]} [c5-iso c6-iso]
-           {:short-name "S7"} [c7-smap]
-           {:version "V7"} [c7-smap]
-           {:short-name "S8"} [c8-dif10]
-           {:version "V9"} [c9-dif10]))
+        (d/refs-match? expected (search/find-refs :collection search))
+        {} all-colls
+        {:short-name "S4"} [c4-dif]
+        {:entry-title "ET3"} [c3-dif]
+        {:version ["V3" "V2"]} [c2-echo c3-dif]
+        {:short-name "S5"} [c5-iso]
+        {:short-name "S6"} [c6-iso]
+        {:version "V50"} [c5-iso]
+        {:version ["V50" "V6"]} [c5-iso c6-iso]
+        {:short-name "S7"} [c7-smap]
+        {:version "V7"} [c7-smap]
+        {:short-name "S8"} [c8-dif10]
+        {:version "V9"} [c9-dif10]))
 
     (testing "Retrieving results in native format"
       ;; Native format for search can be specified using Accept header application/metadata+xml
@@ -120,54 +128,54 @@
 
     (testing "Retrieving results in echo10"
       (d/assert-metadata-results-match
-        :echo10 all-colls
-        (search/find-metadata :collection :echo10 {}))
+       :echo10 all-colls
+       (search/find-metadata :collection :echo10 {}))
       (testing "as extension"
         (d/assert-metadata-results-match
-          :echo10 all-colls
-          (search/find-metadata :collection :echo10 {} {:url-extension "echo10"}))))
+         :echo10 all-colls
+         (search/find-metadata :collection :echo10 {} {:url-extension "echo10"}))))
 
     (testing "Retrieving results in dif"
       (d/assert-metadata-results-match
-        :dif all-colls
-        (search/find-metadata :collection :dif {}))
+       :dif all-colls
+       (search/find-metadata :collection :dif {}))
       (testing "as extension"
         (d/assert-metadata-results-match
-          :dif all-colls
-          (search/find-metadata :collection :dif {} {:url-extension "dif"}))))
+         :dif all-colls
+         (search/find-metadata :collection :dif {} {:url-extension "dif"}))))
 
     (testing "Retrieving results in MENDS ISO and its aliases"
       (d/assert-metadata-results-match
-        :iso19115 all-colls
-        (search/find-metadata :collection :iso19115 {}))
+       :iso19115 all-colls
+       (search/find-metadata :collection :iso19115 {}))
       (testing "as extension"
         (are [url-extension]
-             (d/assert-metadata-results-match
-               :iso19115 all-colls
-               (search/find-metadata :collection :iso19115 {} {:url-extension url-extension}))
-             "iso"
-             "iso19115")))
+          (d/assert-metadata-results-match
+           :iso19115 all-colls
+           (search/find-metadata :collection :iso19115 {} {:url-extension url-extension}))
+          "iso"
+          "iso19115")))
 
     (testing "Retrieving results in SMAP ISO format is not supported"
       (is (= {:errors ["The mime types specified in the accept header [application/iso:smap+xml] are not supported."],
               :status 400}
              (search/get-search-failure-xml-data
-               (search/find-metadata :collection :iso-smap {}))))
+              (search/find-metadata :collection :iso-smap {}))))
       (testing "as extension"
         (is (= {:errors ["The URL extension [iso_smap] is not supported."],
                 :status 400}
                (search/get-search-failure-xml-data
-                 (search/find-concepts-in-format
-                   nil :collection {} {:url-extension "iso_smap"}))))))
+                (search/find-concepts-in-format
+                 nil :collection {} {:url-extension "iso_smap"}))))))
 
     (testing "Retrieving results in dif10"
       (d/assert-metadata-results-match
-        :dif10 all-colls
-        (search/find-metadata :collection :dif10 {}))
+       :dif10 all-colls
+       (search/find-metadata :collection :dif10 {}))
       (testing "as extension"
         (d/assert-metadata-results-match
-          :dif10 all-colls
-          (search/find-metadata :collection :dif10 {} {:url-extension "dif10"}))))
+         :dif10 all-colls
+         (search/find-metadata :collection :dif10 {} {:url-extension "dif10"}))))
 
 
     (testing "Retrieving results as XML References"
@@ -187,15 +195,15 @@
     (testing "ECHO Compatibility mode"
       (testing "XML References"
         (are [refs]
-             (and (d/echo-compatible-refs-match? all-colls refs)
-                  (= "array" (:type refs)))
-             (search/find-refs :collection {:echo-compatible true})
-             (search/find-refs-with-aql :collection [] [] {:query-params {:echo_compatible true}})))
+          (and (d/echo-compatible-refs-match? all-colls refs)
+               (= "array" (:type refs)))
+          (search/find-refs :collection {:echo-compatible true})
+          (search/find-refs-with-aql :collection [] [] {:query-params {:echo_compatible true}})))
 
       (testing "ECHO10"
         (d/assert-echo-compatible-metadata-results-match
-          :echo10 all-colls
-          (search/find-metadata :collection :echo10 {:echo-compatible true}))))))
+         :echo10 all-colls
+         (search/find-metadata :collection :echo10 {:echo-compatible true}))))))
 
 ; Tests that we can ingest and find difs with spatial and that granules in the dif can also be
 ; ingested and found
@@ -282,31 +290,32 @@
         polygon-with-holes (poly/polygon [outer hole1 hole2])
         polygon-without-holes (poly/polygon [(umm-s/ords->ring -70 20, 70 20, 70 30, -70 30, -70 20)])
 
-        coll1 (d/ingest "PROV1"
-                        (dc/collection {:entry-title "Dataset1"
-                                        :short-name "ShortName#1"
-                                        :version-id "Version1"
-                                        :summary "Summary of coll1"
-                                        :organizations [(dc/org :archive-center "Larc")]
-                                        :personnel [p1]
-                                        :collection-data-type "NEAR_REAL_TIME"
-                                        :processing-level-id "L1"
-                                        :beginning-date-time "2010-01-01T12:00:00Z"
-                                        :ending-date-time "2010-01-11T12:00:00Z"
-                                        :related-urls [ru1 ru2]
-                                        :associated-difs ["DIF-1" "DIF-2"]
-                                        :science-keywords [sk1]
-                                        :spatial-coverage
-                                        (dc/spatial {:sr :geodetic
-                                                     :gsr :geodetic
-                                                     :geometries [polygon-without-holes
-                                                                  polygon-with-holes
-                                                                  (p/point 1 2)
-                                                                  (p/point -179.9 89.4)
-                                                                  (l/ords->line-string nil [0 0, 0 1, 0 -90, 180 0])
-                                                                  (l/ords->line-string nil [1 2, 3 4, 5 6, 7 8])
-                                                                  (m/mbr -180 90 180 -90)
-                                                                  (m/mbr -10 20 30 -40)]})}))
+        coll1 (-> (d/ingest "PROV1"
+                            (dc/collection {:entry-title "    Dataset1    " ;; Whitespace to ensure it's stripped out later.
+                                            :short-name "ShortName#1"
+                                            :version-id "Version1"
+                                            :summary "Summary of coll1"
+                                            :organizations [(dc/org :archive-center "Larc")]
+                                            :personnel [p1]
+                                            :collection-data-type "NEAR_REAL_TIME"
+                                            :processing-level-id "L1"
+                                            :beginning-date-time "2010-01-01T12:00:00Z"
+                                            :ending-date-time "2010-01-11T12:00:00Z"
+                                            :related-urls [ru1 ru2]
+                                            :associated-difs ["DIF-1" "DIF-2"]
+                                            :science-keywords [sk1]
+                                            :spatial-coverage
+                                            (dc/spatial {:sr :geodetic
+                                                         :gsr :geodetic
+                                                         :geometries [polygon-without-holes
+                                                                      polygon-with-holes
+                                                                      (p/point 1 2)
+                                                                      (p/point -179.9 89.4)
+                                                                      (l/ords->line-string nil [0 0, 0 1, 0 -90, 180 0])
+                                                                      (l/ords->line-string nil [1 2, 3 4, 5 6, 7 8])
+                                                                      (m/mbr -180 90 180 -90)
+                                                                      (m/mbr -10 20 30 -40)]})}))
+                  (update :entry-title str/trim))
         coll2 (d/ingest "PROV1"
                         (dc/collection {:entry-title "Dataset2"
                                         :short-name "ShortName#2"
@@ -323,10 +332,10 @@
                                                      :geometries [polygon-without-holes]})}))
         coll3 (d/ingest "PROV1"
                         (dc/collection
-                          {:entry-title "Dataset3"
-                           :personnel [p3]
-                           :spatial-coverage (dc/spatial {:gsr :orbit
-                                                          :orbit op1})}))
+                         {:entry-title "Dataset3"
+                          :personnel [p3]
+                          :spatial-coverage (dc/spatial {:gsr :orbit
+                                                         :orbit op1})}))
         coll4 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset4"}) {:format :iso-smap})
         coll5 (d/ingest "PROV1" (dc/collection-dif {:entry-title "Dataset5"}) {:format :dif})
         coll6 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset6"
@@ -423,13 +432,13 @@
 
       (testing "as extension"
         (is (= (select-keys
-                 (search/find-concepts-atom :collection {:dataset-id "Dataset1"})
-                 [:status :results])
+                (search/find-concepts-atom :collection {:dataset-id "Dataset1"})
+                [:status :results])
                (select-keys
-                 (search/find-concepts-atom :collection
-                                            {:dataset-id "Dataset1"}
-                                            {:url-extension "atom"})
-                 [:status :results])))))
+                (search/find-concepts-atom :collection
+                                           {:dataset-id "Dataset1"}
+                                           {:url-extension "atom"})
+                [:status :results])))))
 
     (testing "JSON"
       (let [coll-json (da/collections->expected-atom [coll1] "collections.json?dataset_id=Dataset1")
@@ -445,13 +454,13 @@
 
       (testing "as extension"
         (is (= (select-keys
-                 (search/find-concepts-json :collection {:dataset-id "Dataset1"})
-                 [:status :results])
+                (search/find-concepts-json :collection {:dataset-id "Dataset1"})
+                [:status :results])
                (select-keys
-                 (search/find-concepts-json :collection
-                                            {:dataset-id "Dataset1"}
-                                            {:url-extension "json"})
-                 [:status :results])))))))
+                (search/find-concepts-json :collection
+                                           {:dataset-id "Dataset1"}
+                                           {:url-extension "json"})
+                [:status :results])))))))
 
 (deftest formats-have-scores-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:long-name "ABC!XYZ" :entry-title "Foo"}))]
