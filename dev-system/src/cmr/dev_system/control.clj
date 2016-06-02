@@ -87,7 +87,9 @@
     ;; Allow random metadata retrieval
     ingest-translation-api/random-metadata-routes
 
-
+    ;; Allow code eval
+    side-api/eval-routes
+    
     ;; Retrieve KMS resources
     (GET "/kms/:keyword-scheme/:filename" [keyword-scheme filename]
       (let [resource (io/resource (str "kms_examples/" keyword-scheme "/" filename))]

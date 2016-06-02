@@ -38,8 +38,8 @@
   (alter-var-root
    #'side-api-server
    (constantly (-> (side-api/create-side-server
-                     ;; We need no extra routes beyond what the side server provides.
-                     (fn [_]))
+                     (fn [_]
+                       side-api/eval-routes))
                    (l/start nil))))
 
   (alter-var-root #'mock-echo
