@@ -295,9 +295,9 @@ Content-Length: 702
 
 ## <a name="acls"></a> Access Control Lists (ACLs)
 
-Access Control Lists (ACLs) define the permissions with the CMR. Everything is restricted in the CMR by default. ACLs give permission to specific users to take some action on some data.
+Access Control Lists (ACLs) define permissions within the CMR. Everything is restricted in the CMR by default. ACLs give permission to specific users to take some action on some data.
 
-Every ACL defines three parts like a simple sentence: subject, predicate, and object. The simple sentence "Science Users can view Provider Foo's granules" is an example. "Science Users" is the subject. "can view" is the predicate. "Provider FOO's granules" is the object.
+Every ACL defines three parts like a simple sentence: subject, predicate, and object. The sentence "Science Users can view Provider FOO's granules" is an example. "Science Users" is the subject. "can view" is the predicate. "Provider FOO's granules" is the object.
 
 ACLs are represented by JSON. If "Science Users" was an existing group defined in Provider FOO with concept id AG1234-FOO then an ACL granting that group access to view and order and guests permission to view FOO's granules would look like the following:
 
@@ -322,22 +322,21 @@ This is like a sentence saying "Science Users can view and order and Guests can 
 
 The subject and predicate are in `group_permissions`. An ACL can identify multiple permissions per group. There can be multiple subjects and multiple predicates per subject in a single ACL.
 
-Every ACL refers to aobject called an "identity". The "identity" identifies what in the CMR is being granted permission by the the ACL. There are 4 kinds of identities:
+Every ACL refers to an object called an "identity". The "identity" identifies what in the CMR is being granted permission by the the ACL. There are 4 kinds of identities:
 
 * System Identities - Identifies a system level thing in the CMR.
-* Provider Identities - Identifies a kind of object owned by a specific provider.
+* Provider Identities - Identifies a type of object owned by a specific provider.
 * Single Instance Identities - Identifies a single instance of something in the CMR. Currently this only applies to managing specific groups.
-* Catalog Item Identities - Identifies groups of catalog items owned by a provider.
+* Catalog Item Identities - Identifies sets of catalog items (collections and granules) owned by a provider.
 
 ### ACL Uniqueness
 
-ACLs are uniquely identified by their identity. There can only be one ACL to a specific target. For example provider identities contain a provider id and a target. There can only be one ACL in the system for granting permissions to Provider FOO's Option Definitions. The rules for uniquely identifying each type is listed below.
+ACLs are uniquely identified by their identity. There can only be one ACL to a specific identity. For example provider identities contain a provider id and a target. There can only be one ACL in the system for granting permissions to Provider FOO's Option Definitions. The rules for uniquely identifying each type is listed below.
 
 * System Identities - Unique by target
 * Provider Identities - Unique by provider id and target
 * Single Instance Identities - Unique by target id (Group concept id)
 * Catalog Item Identities - Unique by provider id and name.
-
 
 ### <a name="create-acl"></a> Create ACL
 
@@ -410,6 +409,8 @@ The following parameters are supported when searching for ACLs.
 
 ##### ACL Matching Parameters
 
+**Coming Soon**
+
 This section will be expanded in the future as ACLs can be searched by additional fields.
 
 ##### ACL Search Response
@@ -463,7 +464,6 @@ Content-Length: 702
 ```
 
 ### <a name="application-health"></a> Application Health
-
 
 This will report the current health of the application. It checks all resources and services used by the application and reports their health status in the response body in JSON format. The report includes an "ok?" status and a "problem" field for each resource. The report includes an overall "ok?" status and health reports for each of a service's dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.
 
