@@ -87,7 +87,9 @@
     ;; Allow random metadata retrieval
     ingest-translation-api/random-metadata-routes
 
-
+    ;; Allow code eval
+    side-api/eval-routes
+    
     ;; Retrieve KMS resources
     (GET "/kms/:keyword-scheme/:filename" [keyword-scheme filename]
       (let [resource (io/resource (str "kms_examples/" keyword-scheme "/" filename))]
@@ -133,18 +135,6 @@
       (exec-dev-system-function "stop" system)
       (System/exit 0))
 
-    ;; Reads and evaluates code sent to dev system then encodes the response as clojure EDN for the
-    ;; caller to read. This avoids having to add a million different endpoints to dev system control
-    ;; to do different things inside the system.
-    ;;
-    ;; Example usage:
-    ;; curl -XPOST -H "Content-Type: text" http://localhost:2999/eval -d "(+ 1 1)"
-    (POST "/eval" {:keys [body]}
-      (let [body-str (slurp body)]
-        (debug (str "dev-system evaling [" body-str "]"))
-        {:status 200
-         :body (pr-str (eval (read-string body-str)))}))
-
     ;; Defines the time keeper API that allows programmatic HTTP control of the time of the CMR
     ;; running in dev-system.
     (context "/time-keeper" []
@@ -167,8 +157,3 @@
 (defn create-server
   []
   (side-api/create-side-server build-routes))
-
-
-
-
-

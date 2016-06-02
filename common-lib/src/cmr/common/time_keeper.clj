@@ -43,4 +43,3 @@
   "Returns the current time"
   []
   (or @time-override (t/now)))
-

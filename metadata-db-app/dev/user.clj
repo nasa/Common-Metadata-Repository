@@ -8,6 +8,8 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.metadata-db.data.memory-db :as memory]
             [cmr.common.dev.util :as d]
+            [cmr.common.lifecycle :as l]
+            [cmr.common-app.test.side-api :as side-api]
             [cmr.mock-echo.system :as mock-echo])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
@@ -16,6 +18,7 @@
 
 (def system nil)
 (def mock-echo nil)
+(def side-api-server nil)
 
 (def use-external-db?
   "Set to true to use the Oracle DB"
@@ -30,6 +33,14 @@
 (defn start
   "Starts the current development system."
   []
+
+  ;; Start side api server so we can eval things in the dev system jvm
+  (alter-var-root
+   #'side-api-server
+   (constantly (-> (side-api/create-side-server
+                     (fn [_]
+                       side-api/eval-routes))
+                   (l/start nil))))
 
   (alter-var-root #'mock-echo
                   (constantly

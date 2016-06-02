@@ -35,7 +35,7 @@
                       :dependencies [[clj-http "2.0.0"]]}
    :uberjar {:main cmr.metadata-db.runner
              :aot :all}}
-
+  :test-paths ["test" "int_test"]
   ;; Database migrations run by executing "lein migrate"
   :aliases {"create-user" ["exec" "-p" "./support/create_user.clj"]
             "drop-user" ["exec" "-p" "./support/drop_user.clj"]
