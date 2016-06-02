@@ -109,7 +109,7 @@
                                                           :granule_applicable {:type :boolean}
                                                           :collection_identifier (ref-def :CollectionIdentifierType)
                                                           :granule_identifier (ref-def :GranuleIdentifierType)}
-                                             :required [:name :provider_id :collection_identifier]}
+                                             :required [:name :provider_id]}
                    :AccessValueType {:type :object
                                      :properties {:min_value {:type :number}
                                                   :max_value {:type :number}

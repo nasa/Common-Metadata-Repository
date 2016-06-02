@@ -103,10 +103,6 @@
        (mock-urs-client/create-users (conn-context) (for [username usernames]
                                                       {:username username
                                                        :password (str username "pass")})))
-
-     ;; TODO Temporarily granting all admin. Remove this when implementing  CMR-2133, CMR-2134
-     (e/grant-all-admin (conn-context))
-
      (f))))
 
 (defn grant-all-group-fixture

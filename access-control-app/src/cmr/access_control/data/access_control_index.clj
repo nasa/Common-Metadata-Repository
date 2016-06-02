@@ -5,6 +5,7 @@
             [cmr.common-app.services.search.query-to-elastic :as q2e]
             [cmr.common.lifecycle :as l]
             [cmr.common.services.errors :as errors]
+            [cmr.transmit.metadata-db2 :as mdb]
             [clojure.string :as str]
             [clojure.edn :as edn]))
 
@@ -144,7 +145,6 @@
    :number_of_replicas 1,
    :refresh_interval "1s"})
 
-;; TODO unit test this
 (defn acl->display-name
   "Returns the display name to index with the ACL. This will be the catalog item identity name or a
    string containing \"<identity type> - <target>\". For example \"System - PROVIDER\""
@@ -152,7 +152,11 @@
   (let [{:keys [system-identity provider-identity single-instance-identity catalog-item-identity]} acl]
     (cond
       system-identity          (str "System - " (:target system-identity))
-      ;; TODO we should index the group name.
+      ;; We index the display name for a single instance identity using "Group" because they're only for
+      ;; groups currently. We use the group concept id here instead of the name. We could support
+      ;; indexing the group name with the ACL but then if the group name changes we'd have to
+      ;; locate and reindex the related acls. We'll do it this way for now and file a new issue
+      ;; if this feature is desired.
       single-instance-identity (str "Group - " (:target-id single-instance-identity))
       provider-identity        (format "Provider - %s - %s"
                                        (:provider-id provider-identity)
@@ -160,8 +164,6 @@
       catalog-item-identity    (:name catalog-item-identity)
       :else                    (errors/internal-error!
                                 (str "ACL was missing identity " (pr-str acl))))))
-
-;; TODO unit test this
 
 (defn acl->identity-type
   "Returns the identity type to index with the ACL. This will be the catalog item identity name or a

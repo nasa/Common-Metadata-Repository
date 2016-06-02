@@ -1,5 +1,8 @@
 ## API Documentation
 
+
+TODO document ACLs.
+
 ***
 
 See the [CMR Data Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Data+Partner+User+Guide) for a general guide to utilizing the CMR Ingest API as a data partner.
@@ -137,7 +140,7 @@ Content-Type: application/json
 
 Groups are updated by sending a PUT request with the JSON representation of a group to `%CMR-ENDPOINT%/groups/<concept-id>` where `concept-id` is the concept id of the group returned when it was created. The same rules apply when updating a group as when creating it but only the description can be modified. The response will contain the concept id along with the group revision id.
 
-Only keys present in the update request will be updated. For example: if a `"members"` key is specified, then the group's members will be updated with the supplied value, otherwise the group's members will remain unchanged. 
+Only keys present in the update request will be updated. For example: if a `"members"` key is specified, then the group's members will be updated with the supplied value, otherwise the group's members will remain unchanged.
 
 ```
 curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/groups/AG1200000000-CMR -d \
