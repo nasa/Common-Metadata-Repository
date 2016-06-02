@@ -76,29 +76,23 @@
   (util/key-sorted-map [:title :type :applied :count :links :has_children :children]))
 
 (defn- parse-hierarchical-bucket-v2
-  "Parses the elasticsearch aggregations response for hierarchical fields."
+  "Parses the elasticsearch aggregations response to generate version 2 facets."
   [field-hierarchy bucket-map]
   (when-let [field (first field-hierarchy)]
-    (let [empty-response (merge sorted-facet-map
-                                {:has_children false
-                                 :type :group})
-          value-counts (for [bucket (get-in bucket-map [field :buckets])
+    (let [value-counts (for [bucket (get-in bucket-map [field :buckets])
                              :let [sub-facets (parse-hierarchical-bucket-v2 (rest field-hierarchy)
                                                                             bucket)]]
                          (merge sorted-facet-map
                                 {:has_children false}
-                                (when-not (= sub-facets empty-response)
-                                  sub-facets)
+                                sub-facets
                                 {:title (:key bucket)
                                  :count (get-in bucket [:coll-count :doc_count] (:doc_count bucket))
                                  :type :filter}))]
-      (if (seq value-counts)
-        (let [field-snake-case (csk/->snake_case_string field)]
-          {:title field-snake-case
-           :type :group
-           :has_children true
-           :children value-counts})
-        nil))))
+      (when (seq value-counts)
+        {:title (csk/->snake_case_string field)
+         :type :group
+         :has_children true
+         :children value-counts}))))
 
 (defn hierarchical-bucket-map->facets-v2
   "Takes a map of elastic aggregation results for a nested field. Returns a hierarchical facet for
@@ -113,24 +107,17 @@
   (remove nil?
     (for [field-name field-names
           :let [value-counts (frf/buckets->value-count-pairs (field-name bucket-map))
-                has-children (some? (seq value-counts))
-                base-node {:title (field-name fields->human-readable-label)
-                           :type :group
-                           ;; TODO with another ticket
-                           ;  :applied ;; either true or false
-                           :has_children has-children}]]
+                has-children (some? (seq value-counts))]]
       (when has-children
-        (assoc base-node :children (map (fn [[term count]]
-                                          {:title term
-                                           :type :filter
-                                           ;; TODO with another ticket
-                                           ;; applied ;; either true or false
-                                           :count count
-                                           ;; TODO with another ticket
-                                           ; :links ;; Apply or remove the given term to the provided search
-                                           :has_children false})
-                                        value-counts))))))
-
+        {:title (field-name fields->human-readable-label)
+         :type :group
+         :has_children true
+         :children (map (fn [[term count]]
+                          {:title term
+                           :type :filter
+                           :count count
+                           :has_children false})
+                        value-counts)}))))
 
 (defn- add-links-to-facets
   "Adds applied and links keys to the facets-v2 map."
