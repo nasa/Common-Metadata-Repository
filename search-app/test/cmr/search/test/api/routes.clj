@@ -4,7 +4,7 @@
   (:use ring.mock.request))
 
 (def ^:private api (#'cmr.search.api.routes/build-routes
-                     {:search-public-conf {:protocol "https" :relative-root-url "/search"}}))
+                     {:public-conf {:protocol "https" :relative-root-url "/search"}}))
 
 (defn- substring?
   [test-value string]
@@ -55,12 +55,12 @@
          "C1-PROV1.xml" "C1-PROV1"
          "C1-PROV1/3.echo10" "C1-PROV1")
 
-  (testing "revision-id"
-    (are [path-w-extension revision-id]
-         (= revision-id (r/path-w-extension->revision-id path-w-extension))
+   (testing "revision-id"
+     (are [path-w-extension revision-id]
+          (= revision-id (r/path-w-extension->revision-id path-w-extension))
 
-         "C1-PROV1/2" 2
-         "C1-PROV1/3.echo10" 3))))
+          "C1-PROV1/2" 2
+          "C1-PROV1/3.echo10" 3))))
 
 (deftest get-search-results-format-test
   (testing "format from headers"

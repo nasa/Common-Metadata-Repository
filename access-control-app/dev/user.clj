@@ -15,6 +15,7 @@
             [cmr.common.lifecycle :as l]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.transmit.config :as transmit-config]
+            [cmr.common.jobs :as jobs]
             [cmr.common.dev.util :as d]
             [cmr.common-app.test.side-api :as side-api]
             [cmr.message-queue.test.queue-broker-wrapper :as queue-broker-wrapper]
@@ -55,10 +56,14 @@
 (defn start
   "Starts the current development system."
   []
+  (jobs/set-default-job-start-delay! (* 3 3600))
+
   ;; Configure ports so that it won't conflict with another REPL containing the same applications.
   (transmit-config/set-access-control-port! 4011)
+  (system/set-access-control-public-port! 4011)
   (transmit-config/set-metadata-db-port! 4001)
   (transmit-config/set-echo-rest-port! 4008)
+  (transmit-config/set-mock-echo-port! 4008)
   (transmit-config/set-urs-port! 4008)
   (side-api/set-side-api-port! 3999)
 

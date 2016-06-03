@@ -20,4 +20,4 @@
   [context query results]
   (let [results (select-keys results [:hits :took :items])
         converted-items (util/map-keys->snake_case results)]
-  (json/generate-string converted-items)))
+   (json/generate-string converted-items)))

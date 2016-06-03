@@ -196,12 +196,12 @@
              (u/delete-group nil concept_id))))
 
     (testing "Delete success"
-      (is (= 2 (:hits (u/search token nil))))
+      (is (= 2 (:hits (u/search-for-groups token nil))))
       (is (= {:status 200 :concept_id concept_id :revision_id 2}
              (u/delete-group token concept_id)))
       (u/wait-until-indexed)
       (u/assert-group-deleted group1 "user1" concept_id 2)
-      (is (= [group2-concept-id] (map :concept_id (:items (u/search token nil))))))
+      (is (= [group2-concept-id] (map :concept_id (:items (u/search-for-groups token nil))))))
 
     (testing "Delete group that was already deleted"
       (is (= {:status 404

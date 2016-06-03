@@ -13,7 +13,7 @@
   "Returns a context to use with testing collection"
   []
   {:system (l/start {cr/system-key (cr/create-collection-renderer)
-                     :search-public-conf {:relative-root-url "/search"}}
+                     :public-conf {:relative-root-url "/search"}}
                     nil)})
 
 (def renderer-context

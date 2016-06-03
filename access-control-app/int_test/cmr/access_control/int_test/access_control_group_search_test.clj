@@ -7,7 +7,8 @@
               [cmr.access-control.test.util :as u]))
 
 (use-fixtures :each
-              (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"} ["user1" "user2" "user3" "user4" "user5"])
+              (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"}
+                                      ["user1" "user2" "user3" "user4" "user5"])
               (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 (use-fixtures :once (fixtures/int-test-fixtures))
 
@@ -37,21 +38,21 @@
   (let [token (e/login (u/conn-context) "user1")]
     (is (= {:status 400
             :errors ["The mime types specified in the accept header [application/text] are not supported."]}
-           (u/search token {} {:http-options {:accept "application/text"}})))
+           (u/search-for-groups token {} {:http-options {:accept "application/text"}})))
     (is (= {:status 400 :errors ["Parameter [foo] was not recognized."]}
-           (u/search token {:foo "bar"})))
+           (u/search-for-groups token {:foo "bar"})))
     (is (= {:status 400 :errors ["Parameter [options[provider]] must include a nested key, options[provider][...]=value."]}
-           (u/search token {:provider "foo"
+           (u/search-for-groups token {:provider "foo"
                             "options[provider]" "foo"})))
     (is (= {:status 400 :errors ["Parameter [options] must include a nested key, options[...]=value."]}
-           (u/search token {"options" "bar"})))
+           (u/search-for-groups token {"options" "bar"})))
     (is (= {:status 400 :errors ["Option [foo] is not supported for param [provider]"]}
-           (u/search token {:provider "PROV1"
+           (u/search-for-groups token {:provider "PROV1"
                             "options[provider][foo]" "bar"})))
 
     ;; Members search is always case insensitive
     (is (= {:status 400 :errors ["Option [ignore_case] is not supported for param [member]"]}
-           (u/search token {:member "foo"
+           (u/search-for-groups token {:member "foo"
                             "options[member][ignore_case]" true})))))
 
 (deftest group-search-test
@@ -73,7 +74,7 @@
     (testing "Search by member"
       (are2 [expected-groups params]
         (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
-               (select-keys (u/search token params) [:status :items :hits :errors])))
+               (select-keys (u/search-for-groups token params) [:status :items :hits :errors])))
 
         "Normal case is case insensitive"
         [cmr-group1 cmr-group2 prov1-group1 prov1-group2] {:member "UsEr1"}
@@ -97,7 +98,7 @@
     (testing "Search by name"
       (are2 [expected-groups params]
         (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
-               (select-keys (u/search token params) [:status :items :hits])))
+               (select-keys (u/search-for-groups token params) [:status :items :hits])))
 
         "Normal case insensitive"
         [cmr-group1 prov1-group1 prov2-group1] {:name "Group1"}
@@ -120,7 +121,7 @@
     (testing "Search by provider"
       (are2 [expected-groups params]
         (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
-               (select-keys (u/search token params) [:status :items :hits])))
+               (select-keys (u/search-for-groups token params) [:status :items :hits])))
 
         "No parameters finds all groups"
         all-groups {}
@@ -164,4 +165,4 @@
     (testing "with invalid parameters"
       (is (= {:status 400
               :errors ["Parameter [echo_token] was not recognized."]}
-             (u/search token {"Echo-Token" "true"}))))))
+             (u/search-for-groups token {"Echo-Token" "true"}))))))

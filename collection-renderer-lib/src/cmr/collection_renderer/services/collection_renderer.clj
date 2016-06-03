@@ -76,7 +76,7 @@
 
 (defn- context->relative-root-url
   [context]
-  (get-in context [:system :search-public-conf :relative-root-url]))
+  (get-in context [:system :public-conf :relative-root-url]))
 
 (defn render-collection
   "Renders a UMM-C collection record and returns the HTML as a string."
