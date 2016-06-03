@@ -10,12 +10,8 @@
             [clojure.string :as str]
             [cmr.transmit.connection :as conn]))
 
-
 (def UNLIMITED_TERMS_SIZE
   "The maximum number of results to return from any terms query"
-  ;; FIXME: We shouldn't try to handle this many different values.
-  ;; We should have a limit and if that's exceeded in the elastic response we should note that in
-  ;; the values returned. This can be handled as a part of CMR-1101.
   10000)
 
 (def DEFAULT_TERMS_SIZE
@@ -105,20 +101,67 @@
                                  (dissoc query-params param-name))]
     {:remove (generate-query-string base-link updated-query-params)}))
 
+
 (defn- create-links
   "Creates either a remove or an apply link based on whether this particular term is already
   selected within a query. Returns a tuple of the type of link created and the link itself."
   [base-link query-params field-name term]
   (let [terms-for-field (get query-params (str (csk/->snake_case_string field-name) "[]"))
-        term-exists (some #{(str/lower-case term)} (if (coll? terms-for-field)
-                                                     (map str/lower-case terms-for-field)
-                                                     [(str/lower-case terms-for-field)]))]
+        term-exists (when terms-for-field
+                      (some #{(str/lower-case term)}
+                            (if (coll? terms-for-field)
+                                (map str/lower-case terms-for-field)
+                                [(str/lower-case terms-for-field)])))]
     (if term-exists
       [:remove (create-remove-link base-link query-params field-name term)]
       [:apply (create-apply-link base-link query-params field-name term)])))
 
+(defn- create-hierarchical-apply-link
+  "Create a hierarchical link to apply a term."
+  [base-link query-params param-name term]
+  (let [[base-field sub-field] (str/split param-name #"\[0\]")
+        field-regex (re-pattern (format "%s.*" base-field))
+        matches (keep #(re-matches field-regex %) (keys query-params))
+        indexes (keep #(second (re-matches #".*(\d).*" %)) matches)
+        indexes-int (map #(Integer/parseInt %) indexes)
+        max-index (if (seq indexes-int)
+                    (apply max indexes-int)
+                    -1)
+        updated-param-name (format "%s[%d]%s" base-field (inc max-index) sub-field)
+        updated-query-params (assoc query-params updated-param-name term)]
+    {:apply (generate-query-string base-link updated-query-params)}))
+
+(defn- create-hierarchical-remove-link
+  "Create a hierarchical link to remove a term from a query."
+  ;; TODO Fix this to find a term regardless of the index - e.g. science_keywords[0][topic]=foo or
+  ;; science_keywords[1][topic]=foo
+  [base-link query-params param-name term]
+  (let [existing-values (get query-params param-name)
+        updated-query-params (if (coll? existing-values)
+                                 (update query-params param-name
+                                         (fn [_]
+                                           (remove (fn [value]
+                                                     (= (str/lower-case term) value))
+                                                   (map str/lower-case existing-values))))
+                                 (dissoc query-params param-name))]
+    {:remove (generate-query-string base-link updated-query-params)}))
+
+(defn- create-hierarchical-links
+  "Creates either a remove or an apply link based on whether this particular term is already
+  selected within a query. Returns a tuple of the type of link created and the link itself."
+  [base-link query-params field-name term]
+  (let [terms-for-field (get query-params field-name)
+        term-exists (when terms-for-field
+                      (some #{(str/lower-case term)}
+                            (if (coll? terms-for-field)
+                                (map str/lower-case terms-for-field)
+                                [(str/lower-case terms-for-field)])))]
+    (if term-exists
+      [:remove (create-hierarchical-remove-link base-link query-params field-name term)]
+      [:apply (create-hierarchical-apply-link base-link query-params field-name term)])))
+
 (defn- parse-hierarchical-bucket-v2
-  "Parses the elasticsearch aggregations response to generate version 2 facets."
+  "Parses the elasticsearch aggregations response and generates version 2 facets."
   [parent-field field-hierarchy bucket-map base-link query-params]
   (when-let [field (first field-hierarchy)]
     (let [value-counts (for [bucket (get-in bucket-map [field :buckets])
@@ -127,11 +170,25 @@
                                                 (rest field-hierarchy)
                                                 bucket
                                                 base-link
-                                                query-params)]]
+                                                query-params)
+                                   snake-parent-field (csk/->snake_case_string parent-field)
+                                   snake-field (csk/->snake_case_string field)
+                                   subfield-reg-ex (re-pattern (str snake-parent-field ".*"
+                                                                    snake-field ".*"))
+                                   relevant-query-params (filter (fn [[k v]] (re-matches subfield-reg-ex k)) query-params)
+                                   some-term-applied? (some? (seq relevant-query-params))
+                                   field-name (format "%s[0][%s]" snake-parent-field snake-field)
+                                   [type links] (if some-term-applied?
+                                                    (create-hierarchical-links base-link query-params field-name (:key bucket))
+                                                    [:apply (create-hierarchical-apply-link base-link query-params
+                                                                                            field-name (:key bucket))])]]
                          (merge sorted-facet-map
-                                {:has_children false}
+                                {:has_children false
+                                 :applied false}
                                 sub-facets
                                 {:title (:key bucket)
+                                 :applied (= type :remove)
+                                 :links links
                                  :count (get-in bucket [:coll-count :doc_count] (:doc_count bucket))
                                  :type :filter}))]
       (when (seq value-counts)
@@ -186,28 +243,49 @@
   (let [params (codec/form-decode params encoding)]
     (if (map? params) params {})))
 
+(defn- create-hierarchical-v2-facets
+  "Helper function to generate the v2 facets for all hierarchical fields."
+  [elastic-aggregations base-link query-params]
+  (let [hierarchical-fields [:science-keywords]]
+    (keep (fn [field]
+              (when-let [sub-facets (hierarchical-bucket-map->facets-v2
+                                      field (field elastic-aggregations)
+                                      base-link query-params)]
+                (let [field-reg-ex (re-pattern
+                                    (str (csk/->snake_case_string field)
+                                         ".*"))
+                      applied? (some? (seq (filter (fn [[k v]]
+                                                     (re-matches field-reg-ex k))
+                                                   query-params)))]
+                  (merge sorted-facet-map
+                         (assoc sub-facets
+                                :title (field fields->human-readable-label)
+                                :applied applied?)))))
+          hierarchical-fields)))
+
+(defn- create-flat-v2-facets
+  "Helper function to generate the v2 facets for all flat fields."
+  [elastic-aggregations base-link query-params]
+  (let [flat-fields [:platform :instrument :data-center :project :processing-level-id]]
+    (flat-bucket-map->facets-v2
+     (select-keys elastic-aggregations flat-fields)
+     flat-fields
+     base-link
+     query-params)))
+
 (defn create-v2-facets
   "Create the facets v2 response. Takes an elastic aggregations result and returns the facets."
   [context elastic-aggregations query]
-  (let [flat-fields [:platform :instrument :data-center :project :processing-level-id]
-        hierarchical-fields [:science-keywords]
-        search-public-conf (get-in context [:system :search-public-conf])
+  (let [search-public-conf (get-in context [:system :search-public-conf])
         base-link (format "%s/collections.json"
                           (conn/root-url
                             (assoc search-public-conf
                                    :context (:relative-root-url search-public-conf))))
         query-params (parse-params (:query-string context) "UTF-8")
-        facets (concat (keep (fn [field]
-                                (when-let [sub-facets (hierarchical-bucket-map->facets-v2
-                                                        field (field elastic-aggregations)
-                                                        base-link query-params)]
-                                  (assoc sub-facets :title (field fields->human-readable-label))))
-                             hierarchical-fields)
-                       (flat-bucket-map->facets-v2
-                        (apply dissoc elastic-aggregations hierarchical-fields)
-                        flat-fields
-                        base-link
-                        query-params))]
+        ;; TODO get rid of debug
+        ; _ (println "Query params: " query-params)
+        facets (concat (create-hierarchical-v2-facets elastic-aggregations base-link query-params)
+                       (create-flat-v2-facets elastic-aggregations base-link query-params))]
     (if (seq facets)
       (assoc v2-facets-root :has_children true :children facets)
       (assoc v2-facets-root :has_children false))))
