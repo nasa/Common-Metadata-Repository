@@ -7,6 +7,7 @@
             [cmr.acl.core :as acl]
             [cheshire.core :as json]
             [cmr.common.xml :as cx]
+            [ring.util.response :as ring-resp]
             [cmr.common.mime-types :as mt]
             [cmr.common.api.context :as cxt]
             [compojure.core :refer :all]
@@ -177,8 +178,8 @@
   (let [new-body (f (:body response))]
     (-> response
         (assoc-in [:body] new-body)
-        (assoc-in [:headers "Content-Length"] (str (count (.getBytes new-body "UTF-8")))))))
-
+        (assoc-in [:headers "Content-Length"] (str (count (.getBytes new-body "UTF-8"))))
+        (ring-resp/charset "UTF-8"))))
 
 (defn- pretty-print-body
   "Update the body of the response to a pretty printed string based on the content type"
