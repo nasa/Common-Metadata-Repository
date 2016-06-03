@@ -1,9 +1,10 @@
-(ns cmr.search.services.query-execution.facets-v2-results-feature
+(ns cmr.search.services.query-execution.facets.facets-v2-results-feature
   "Returns facets v2 along with collection search results. See
   https://wiki.earthdata.nasa.gov/display/CMR/Updated+facet+response"
   (:require [cmr.common-app.services.search.query-execution :as query-execution]
             [cmr.common-app.services.kms-fetcher :as kms-fetcher]
-            [cmr.search.services.query-execution.facets-results-feature :as frf]
+            [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
+            [cmr.search.services.query-execution.facets.links-helper :as lh]
             [camel-snake-kebab.core :as csk]
             [cmr.common.util :as util]
             [ring.util.codec :as codec]
@@ -74,92 +75,6 @@
   randomly."
   (util/key-sorted-map [:title :type :applied :count :links :has_children :children]))
 
-(defn- generate-query-string
-  "Creates a query string from a root URL and a map of query params"
-  [base-link query-params]
-  (format "%s?%s" base-link (codec/form-encode query-params)))
-
-(defn- create-apply-link
-  "Create a link to apply a term."
-  [base-link query-params field-name term]
-  (let [param-name (str (csk/->snake_case_string field-name) "[]")
-        existing-values (flatten [(get query-params param-name)])
-        updated-query-params (assoc query-params param-name (keep identity (conj existing-values term)))]
-    {:apply (generate-query-string base-link updated-query-params)}))
-
-(defn- create-remove-link
-  "Create a link to remove a term from a query."
-  [base-link query-params field-name term]
-  (let [param-name (str (csk/->snake_case_string field-name) "[]")
-        existing-values (get query-params param-name)
-        updated-query-params (if (coll? existing-values)
-                                 (update query-params param-name
-                                         (fn [_]
-                                           (remove (fn [value]
-                                                     (= (str/lower-case term) value))
-                                                   (map str/lower-case existing-values))))
-                                 (dissoc query-params param-name))]
-    {:remove (generate-query-string base-link updated-query-params)}))
-
-
-(defn- create-links
-  "Creates either a remove or an apply link based on whether this particular term is already
-  selected within a query. Returns a tuple of the type of link created and the link itself."
-  [base-link query-params field-name term]
-  (let [terms-for-field (get query-params (str (csk/->snake_case_string field-name) "[]"))
-        term-exists (when terms-for-field
-                      (some #{(str/lower-case term)}
-                            (if (coll? terms-for-field)
-                                (map str/lower-case terms-for-field)
-                                [(str/lower-case terms-for-field)])))]
-    (if term-exists
-      [:remove (create-remove-link base-link query-params field-name term)]
-      [:apply (create-apply-link base-link query-params field-name term)])))
-
-(defn- create-hierarchical-apply-link
-  "Create a hierarchical link to apply a term."
-  [base-link query-params param-name term]
-  (let [[base-field sub-field] (str/split param-name #"\[0\]")
-        field-regex (re-pattern (format "%s.*" base-field))
-        matches (keep #(re-matches field-regex %) (keys query-params))
-        indexes (keep #(second (re-matches #".*(\d).*" %)) matches)
-        indexes-int (map #(Integer/parseInt %) indexes)
-        max-index (if (seq indexes-int)
-                    (apply max indexes-int)
-                    -1)
-        updated-param-name (format "%s[%d]%s" base-field (inc max-index) sub-field)
-        updated-query-params (assoc query-params updated-param-name term)]
-    {:apply (generate-query-string base-link updated-query-params)}))
-
-(defn- create-hierarchical-remove-link
-  "Create a hierarchical link to remove a term from a query."
-  ;; TODO Fix this to find a term regardless of the index - e.g. science_keywords[0][topic]=foo or
-  ;; science_keywords[1][topic]=foo
-  [base-link query-params param-name term]
-  (let [existing-values (get query-params param-name)
-        updated-query-params (if (coll? existing-values)
-                                 (update query-params param-name
-                                         (fn [_]
-                                           (remove (fn [value]
-                                                     (= (str/lower-case term) value))
-                                                   (map str/lower-case existing-values))))
-                                 (dissoc query-params param-name))]
-    {:remove (generate-query-string base-link updated-query-params)}))
-
-(defn- create-hierarchical-links
-  "Creates either a remove or an apply link based on whether this particular term is already
-  selected within a query. Returns a tuple of the type of link created and the link itself."
-  [base-link query-params field-name term]
-  (let [terms-for-field (get query-params field-name)
-        term-exists (when terms-for-field
-                      (some #{(str/lower-case term)}
-                            (if (coll? terms-for-field)
-                                (map str/lower-case terms-for-field)
-                                [(str/lower-case terms-for-field)])))]
-    (if term-exists
-      [:remove (create-hierarchical-remove-link base-link query-params field-name term)]
-      [:apply (create-hierarchical-apply-link base-link query-params field-name term)])))
-
 (defn- parse-hierarchical-bucket-v2
   "Parses the elasticsearch aggregations response and generates version 2 facets."
   [parent-field field-hierarchy bucket-map base-link query-params]
@@ -179,9 +94,9 @@
                                    some-term-applied? (some? (seq relevant-query-params))
                                    field-name (format "%s[0][%s]" snake-parent-field snake-field)
                                    [type links] (if some-term-applied?
-                                                    (create-hierarchical-links base-link query-params field-name (:key bucket))
-                                                    [:apply (create-hierarchical-apply-link base-link query-params
-                                                                                            field-name (:key bucket))])]]
+                                                    (lh/create-hierarchical-links base-link query-params field-name (:key bucket))
+                                                    [:apply (lh/create-hierarchical-apply-link base-link query-params
+                                                                                               field-name (:key bucket))])]]
                          (merge sorted-facet-map
                                 {:has_children false
                                  :applied false}
@@ -221,9 +136,9 @@
          :has_children true
          :children (map (fn [[term count]]
                           (let [[type links] (if some-term-applied?
-                                               (create-links base-link query-params field-name term)
-                                               [:apply (create-apply-link base-link query-params
-                                                                          field-name term)])]
+                                               (lh/create-links base-link query-params field-name term)
+                                               [:apply (lh/create-apply-link base-link query-params
+                                                                             field-name term)])]
                            (merge sorted-facet-map
                                   {:title term
                                    :type :filter

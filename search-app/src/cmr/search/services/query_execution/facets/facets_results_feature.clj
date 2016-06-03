@@ -1,4 +1,4 @@
-(ns cmr.search.services.query-execution.facets-results-feature
+(ns cmr.search.services.query-execution.facets.facets-results-feature
   "This enables returning facets with collection search results"
   (:require [cmr.common-app.services.search.query-execution :as query-execution]
             [cmr.common-app.services.kms-fetcher :as kms-fetcher]
@@ -17,7 +17,7 @@
   [field]
   {:terms {:field field :size UNLIMITED_TERMS_SIZE}})
 
-(def collection-count-aggregation
+(def ^:public collection-count-aggregation
   "Used to build an aggregation to get a count of unique concepts included in the current nested
   aggregation."
   {:reverse_nested {}
