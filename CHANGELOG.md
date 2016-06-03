@@ -55,3 +55,7 @@ Items to include in each issue
     * Requires update of indexes and reindexing of collections. Note that collection indexing will be broken until update-indexes has been called.
     * Create a new alias for the collection index used by search.
       * See ***REMOVED*** for instructions.
+* CMR-2912 - Whitespace trimming of Entry title
+  * Whitespace is trimmed from entry titles during indexing.
+  * Deployment Impacts:
+    * Requires reindexing of collections
