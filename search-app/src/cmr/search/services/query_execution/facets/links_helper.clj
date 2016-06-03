@@ -62,56 +62,60 @@
     {:apply (generate-query-string base-url updated-query-params)}))
 
 (defn- get-keys-to-update
-  [])
+  "Returns a sequence of keys that have multiple values at least one of which needs to be removed"
+  [query-params matching-term]
+  (let [matching-term (str/lower-case matching-term)]
+    (flatten
+      (keep (fn [[k values]]
+              (when (coll? values)
+                (keep (fn [single-value]
+                        (when (= (str/lower-case single-value) matching-term)
+                          k))
+                      values)))
+            query-params))))
 
 (defn- get-keys-to-remove
-  [])
+  "Returns a sequence of keys that have a single value which needs to be removed"
+  [query-params matching-term]
+  (let [matching-term (str/lower-case matching-term)]
+    (keep (fn [[k v]]
+            (when-not (coll? v)
+              (when (= (str/lower-case v) matching-term)
+                k)))
+          query-params)))
 
 (defn create-hierarchical-remove-link
   "Create a hierarchical link to remove a term from a query."
   [base-url query-params param-name term]
-  (let [[base-field sub-field] (str/split param-name #"\[0\]")
-        field-regex (re-pattern (format "%s.*" base-field))
+  (let [term (str/lower-case term)
+        [base-field sub-field] (str/split param-name #"\[0\]")
+        field-regex (re-pattern (format "%s.*%s" base-field (subs sub-field 1 (count sub-field))))
         matching-keys (keep #(re-matches field-regex %) (keys query-params))
-        potential-matching-query-params (when (seq matching-keys)
-                                          (select-keys query-params matching-keys))
-        values-to-remove (keep (fn [[k v]]
-                                 (when (= (str/lower-case term) (str/lower-case v))
-                                   k))
-                               potential-matching-query-params)
-        updated-query-params (if (seq values-to-remove)
-                               (apply dissoc query-params values-to-remove)
-                               query-params)]
-        ; keys-to-update (get-keys-to-update)
-        ; keys-to-remove (get-keys-to-remove)
-        ; updated-query-params (update (apply dissoc query-params keys-to-remove))
-        ;
-        ;
-        ;
-        ;
-        ;
-        ;
-        ; (for [param (keys potential-matching-query-params)
-        ;        :let [existing-values (get query-params param-name)
-        ;              updated-query-params (if (coll? existing-values)
-        ;                                       (update query-params param-name
-        ;                                               (fn [_]
-        ;                                                 (remove (fn [value]
-        ;                                                           (= (str/lower-case term) value))
-        ;                                                         (map str/lower-case existing-values))))
-        ;                                       (dissoc query-params param-name))]])]
+        potential-query-params (when (seq matching-keys)
+                                 (select-keys query-params matching-keys))
+        updated-query-params (reduce (fn [updated-params k]
+                                       (update updated-params k
+                                         (fn [existing-values]
+                                           (remove (fn [value]
+                                                     (= term (str/lower-case value)))
+                                                   existing-values))))
+                                     query-params
+                                     (get-keys-to-update potential-query-params term))
+        updated-query-params (apply dissoc updated-query-params
+                                    (get-keys-to-remove potential-query-params term))]
     {:remove (generate-query-string base-url updated-query-params)}))
 
 (defn create-hierarchical-links
   "Creates either a remove or an apply link based on whether this particular term is already
   selected within a query. Returns a tuple of the type of link created and the link itself."
   [base-url query-params field-name term]
-  (let [terms-for-field (get query-params field-name)
-        term-exists (when terms-for-field
-                      (some #{(str/lower-case term)}
-                            (if (coll? terms-for-field)
-                                (map str/lower-case terms-for-field)
-                                [(str/lower-case terms-for-field)])))]
+  (let [[base-field sub-field] (str/split field-name #"\[0\]")
+        field-regex (re-pattern (format "%s.*%s" base-field (subs sub-field 1 (count sub-field))))
+        matching-keys (keep #(re-matches field-regex %) (keys query-params))
+        potential-query-params (when (seq matching-keys)
+                                 (select-keys query-params matching-keys))
+        term-exists (or (seq (get-keys-to-remove potential-query-params term))
+                        (seq (get-keys-to-update potential-query-params term)))]
     (if term-exists
       [:remove (create-hierarchical-remove-link base-url query-params field-name term)]
       [:apply (create-hierarchical-apply-link base-url query-params field-name term)])))
