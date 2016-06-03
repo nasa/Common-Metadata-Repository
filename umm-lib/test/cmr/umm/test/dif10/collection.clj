@@ -319,6 +319,13 @@
         </Contact_Person>
       </Personnel>
     </Organization>
+    <Multimedia_Sample>
+      <File>Soil Moisture</File>
+      <URL>http://hydro1.gesdisc.eosdis.nasa.gov/browse/NLDAS/NLDAS_MOS0125_H.002/2007/NLDAS_MOS0125_H.002_soilm0_10cm.A20070701.1800.gif</URL>
+      <Format>GIF</Format>
+      <Caption>0-10 cm Layer 1 Soil Moisture Content</Caption>
+      <Description>NLDAS-2 Mosaic Hourly 0.125 degree 0-10 cm Layer 1 Soil Moisture Content on July 01, 2007 at 18Z [kg/m2]</Description>
+    </Multimedia_Sample>
     <Reference>
       <Author>author</Author>
       <Publication_Date>2015</Publication_Date>
@@ -504,6 +511,11 @@
                          :topic "CRYOSPHERE"
                          :term "SEA ICE"})]
     :related-urls [(umm-c/map->RelatedURL
+                    {:url "http://hydro1.gesdisc.eosdis.nasa.gov/browse/NLDAS/NLDAS_MOS0125_H.002/2007/NLDAS_MOS0125_H.002_soilm0_10cm.A20070701.1800.gif"
+                     :title "0-10 cm Layer 1 Soil Moisture Content"
+                     :description "NLDAS-2 Mosaic Hourly 0.125 degree 0-10 cm Layer 1 Soil Moisture Content on July 01, 2007 at 18Z [kg/m2]"
+                     :type "GET RELATED VISUALIZATION"})
+                   (umm-c/map->RelatedURL
                     {:url "http://www.foo.com"})]
     :organizations [(umm-c/map->Organization
                      {:type :archive-center

@@ -155,7 +155,8 @@
     [:Data_Delete (date/data-delete-date c)]))
 
 (defn- generate-related-urls
-  "Returns DIF10 Related_URLs for the provided UMM-C collection record."
+  "Returns DIF10 Related_URLs for the provided UMM-C collection record. Even though UMM RelatedUrls
+  can come from DIF10 Related_URLs or Multimedia_Sample elements, we write out only to Related_URLs."
   [c]
   (if-let [urls (:RelatedUrls c)]
     (for [related-url urls]
