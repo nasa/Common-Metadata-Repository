@@ -191,7 +191,7 @@
 (defn create-v2-facets
   "Create the facets v2 response. Takes an elastic aggregations result and returns the facets."
   [context elastic-aggregations query]
-  (let [search-public-conf (get-in context [:system :search-public-conf])
+  (let [search-public-conf (get-in context [:system :public-conf])
         base-link (format "%s/collections.json"
                           (conn/root-url
                             (assoc search-public-conf
