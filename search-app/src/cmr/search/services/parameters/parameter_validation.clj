@@ -395,7 +395,7 @@
       bool-params)))
 
 (defn- include-facets-validation
-  "Validates that all of the boolean parameters have values of true, false or unset."
+  "Validates that the include_facets parameter has a value of true, false or v2."
   [concept-type params]
   (if-let [include-facets (:include-facets params)]
     (if (contains? #{"true" "false" "v2"} (s/lower-case include-facets))
