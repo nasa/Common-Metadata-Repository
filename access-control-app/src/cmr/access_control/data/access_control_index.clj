@@ -166,8 +166,7 @@
                                 (str "ACL was missing identity " (pr-str acl))))))
 
 (defn acl->identity-type
-  "Returns the identity type to index with the ACL. This will be the catalog item identity name or a
-   string containing \"<identity type> - <target>\". For example \"System - PROVIDER\""
+  "Returns the identity type to index with the ACL."
   [acl]
   (cond
     (:system-identity acl)          "System"

@@ -82,10 +82,10 @@
    (let [options (merge {:raw? true :token token} options)]
      (process-response (ac/delete-group (conn-context) concept-id options)))))
 
-(defn search
+(defn search-for-groups
   "Searches for groups using the given parameters"
   ([token params]
-   (search token params nil))
+   (search-for-groups token params nil))
   ([token params options]
    (let [options (merge {:raw? true :token token} options)]
     (process-response (ac/search-for-groups (conn-context) params options)))))

@@ -14,22 +14,30 @@
 (use-fixtures :once (fixtures/int-test-fixtures))
 
 
+(ac/search-for-acls {:system {:access-control-connection {:protocol "http"
+                                                          :port 5011
+                                                          :context ""
+                                                          :host "localhost"}}}
+                    {}
+                    {:http-options {:accept nil}
+                     :raw? true})
+
 (deftest invalid-search-test
-  (let [token (e/login (u/conn-context) "user1")]
+  (testing "Accept header"
+    (testing "Other than JSON is rejected"
+      (is (= {:status 400
+              :body {:errors ["The mime types specified in the accept header [application/text] are not supported."]}
+              :content-type :json}
+             (ac/search-for-acls (u/conn-context) {} {:http-options {:accept "application/text"}
+                                                      :raw? true}))))
+    (testing "No Accept header is ok"
+      (is (= 200
+             (:status (ac/search-for-acls (u/conn-context) {} {:http-options {:accept nil} :raw? true}))))))
+  (testing "Unknown parameters are rejected"
     (is (= {:status 400
-            :errors ["The mime types specified in the accept header [application/text] are not supported."]}
-           (u/search token {} {:http-options {:accept "application/text"}})))
-    (is (= {:status 400 :errors ["Parameter [foo] was not recognized."]}
-           (u/search token {:foo "bar"})))))
-    ;; These will come in handy once we start supporting parameters with options
-    ; (is (= {:status 400 :errors ["Parameter [options[provider]] must include a nested key, options[provider][...]=value."]}
-    ;        (u/search token {:provider "foo"
-    ;                         "options[provider]" "foo"})))
-    ; (is (= {:status 400 :errors ["Parameter [options] must include a nested key, options[...]=value."]}
-    ;        (u/search token {"options" "bar"})))
-    ; (is (= {:status 400 :errors ["Option [foo] is not supported for param [provider]"]}
-    ;        (u/search token {:provider "PROV1"
-    ;                         "options[provider][foo]" "bar"})))
+            :body {:errors ["Parameter [foo] was not recognized."]}
+            :content-type :json}
+           (ac/search-for-acls (u/conn-context) {:foo "bar"} {:raw? true})))))
 
 (def sample-system-acl
   "A sample system ACL."

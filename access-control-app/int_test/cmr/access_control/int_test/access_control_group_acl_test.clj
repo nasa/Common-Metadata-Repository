@@ -100,10 +100,10 @@
         prov1-group-concept-id (:concept_id (u/create-group prov1-token prov1-group))]
     (u/wait-until-indexed)
     (is (= [sys-group-concept-id]
-           (map :concept_id (:items (u/search sys-token {:name "Administrators"})))))
+           (map :concept_id (:items (u/search-for-groups sys-token {:name "Administrators"})))))
     (is (= [prov1-group-concept-id]
-           (map :concept_id (:items (u/search prov1-token {:name "Administrators"})))))
-    (is (= 0 (:hits (u/search (e/login (u/conn-context) "non-permitted-user") {:name "Administrators"}))))))
+           (map :concept_id (:items (u/search-for-groups prov1-token {:name "Administrators"})))))
+    (is (= 0 (:hits (u/search-for-groups (e/login (u/conn-context) "non-permitted-user") {:name "Administrators"}))))))
 
 (deftest delete-group-acl-test
 
