@@ -4,7 +4,7 @@
             [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
             [cmr.common-app.services.search :as qs]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
-            [cmr.search.services.query-execution.facets-results-feature :as frf]
+            [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
             [cmr.search.services.query-execution.tags-results-feature :as trf]
             [clojure.data.xml :as x]
             [clojure.walk :as walk]

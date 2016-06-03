@@ -9,7 +9,7 @@
             [cheshire.core :as json]
             [cmr.search.models.query :as q]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
-            [cmr.search.services.query-execution.facets-results-feature :as frf]))
+            [cmr.search.services.query-execution.facets.facets-results-feature :as frf]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :xml]
   [concept-type query]

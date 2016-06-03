@@ -61,19 +61,45 @@
         updated-query-params (assoc query-params updated-param-name term)]
     {:apply (generate-query-string base-url updated-query-params)}))
 
+(defn- get-keys-to-update
+  [])
+
+(defn- get-keys-to-remove
+  [])
+
 (defn create-hierarchical-remove-link
   "Create a hierarchical link to remove a term from a query."
-  ;; TODO Fix this to find a term regardless of the index - e.g. science_keywords[0][topic]=foo or
-  ;; science_keywords[1][topic]=foo
   [base-url query-params param-name term]
-  (let [existing-values (get query-params param-name)
-        updated-query-params (if (coll? existing-values)
-                                 (update query-params param-name
-                                         (fn [_]
-                                           (remove (fn [value]
-                                                     (= (str/lower-case term) value))
-                                                   (map str/lower-case existing-values))))
-                                 (dissoc query-params param-name))]
+  (let [[base-field sub-field] (str/split param-name #"\[0\]")
+        field-regex (re-pattern (format "%s.*" base-field))
+        matching-keys (keep #(re-matches field-regex %) (keys query-params))
+        potential-matching-query-params (when (seq matching-keys)
+                                          (select-keys query-params matching-keys))
+        values-to-remove (keep (fn [[k v]]
+                                 (when (= (str/lower-case term) (str/lower-case v))
+                                   k))
+                               potential-matching-query-params)
+        updated-query-params (if (seq values-to-remove)
+                               (apply dissoc query-params values-to-remove)
+                               query-params)]
+        ; keys-to-update (get-keys-to-update)
+        ; keys-to-remove (get-keys-to-remove)
+        ; updated-query-params (update (apply dissoc query-params keys-to-remove))
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ; (for [param (keys potential-matching-query-params)
+        ;        :let [existing-values (get query-params param-name)
+        ;              updated-query-params (if (coll? existing-values)
+        ;                                       (update query-params param-name
+        ;                                               (fn [_]
+        ;                                                 (remove (fn [value]
+        ;                                                           (= (str/lower-case term) value))
+        ;                                                         (map str/lower-case existing-values))))
+        ;                                       (dissoc query-params param-name))]])]
     {:remove (generate-query-string base-url updated-query-params)}))
 
 (defn create-hierarchical-links

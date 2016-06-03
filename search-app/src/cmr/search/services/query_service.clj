@@ -63,7 +63,8 @@
             [cmr.search.services.query-execution]
             [cmr.search.services.query-execution.granule-counts-results-feature]
             [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
-            [cmr.search.services.query-execution.facets-results-feature]
+            [cmr.search.services.query-execution.facets.facets-results-feature]
+            [cmr.search.services.query-execution.facets.facets-v2-results-feature]
             [cmr.search.services.query-execution.highlight-results-feature]
             [cmr.search.services.query-execution.tags-results-feature]
 

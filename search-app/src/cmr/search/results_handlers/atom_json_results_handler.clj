@@ -2,7 +2,7 @@
   "Handles the JSON results format and related functions"
   (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
             [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-            [cmr.search.services.query-execution.facets-results-feature :as frf]
+            [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.common-app.services.search :as qs]
             [cheshire.core :as json]

@@ -32,7 +32,7 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.util :as util]
             [cmr.common.services.errors :as errors]
-            [cmr.search.services.query-execution.facets-results-feature :as frf]
+            [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
             [clojure.string :as str]
             [clojure.set :as set]
             [cmr.transmit.kms :as kms]))

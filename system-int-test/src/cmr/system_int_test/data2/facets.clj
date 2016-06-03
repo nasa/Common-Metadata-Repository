@@ -4,7 +4,7 @@
             [clojure.set :as set]
             [camel-snake-kebab.core :as csk]
             [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.search.services.query-execution.facets-results-feature :as frf]))
+            [cmr.search.services.query-execution.facets.facets-results-feature :as frf]))
 
 (defn- parse-facet-xml
   "Converts an XML facet element into a nested map representation."
