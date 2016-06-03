@@ -14,14 +14,6 @@
 (use-fixtures :once (fixtures/int-test-fixtures))
 
 
-(ac/search-for-acls {:system {:access-control-connection {:protocol "http"
-                                                          :port 5011
-                                                          :context ""
-                                                          :host "localhost"}}}
-                    {}
-                    {:http-options {:accept nil}
-                     :raw? true})
-
 (deftest invalid-search-test
   (testing "Accept header"
     (testing "Other than JSON is rejected"
