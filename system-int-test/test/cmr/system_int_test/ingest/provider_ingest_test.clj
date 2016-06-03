@@ -128,8 +128,8 @@
       ;; ensure PROV1 group is indexed
       (is (= [(:concept-id access-group)]
              (map :concept-id (:items (u/map-keys->kebab-case
-                                       (access-control/search (transmit-config/echo-system-token)
-                                                              {:provider "PROV1"}))))))
+                                       (access-control/search-for-groups (transmit-config/echo-system-token)
+                                                                         {:provider "PROV1"}))))))
 
       ;; delete provider PROV1
       (let [{:keys [status content-length]} (ingest/delete-ingest-provider "PROV1")]
@@ -149,8 +149,8 @@
 
       ;; PROV1 access group is unindexed
       (is (= 0 (:hits
-                (access-control/search (transmit-config/echo-system-token)
-                                       {:provider "PROV1"}))))
+                (access-control/search-for-groups (transmit-config/echo-system-token)
+                                                  {:provider "PROV1"}))))
 
       ;; PROV2 concepts are in metadata-db
       (are [concept]

@@ -6,10 +6,13 @@
             [clj-time.core :as t]
             [clj-time.format :as f]
             [clj-time.local :as l]
+            [cmr.common.log :refer (info)]
+            [cmr.common-app.test.side-api :as side]
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.services.messages :as msg]
             [cmr.metadata-db.services.concept-constraints :as cc]
-            [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]))
+            [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec])
+  (:import java.io.FileNotFoundException))
 
 
 ;;; fixtures
@@ -55,7 +58,7 @@
   (testing "duplicate granule URs"
     (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
       ;; Turn on enforcement of duplicate granule UR constraint
-      (cc/set-enforce-granule-ur-constraint! true)
+      (side/eval-form `(cc/set-enforce-granule-ur-constraint! true))
       (let [parent-collection (util/create-and-save-collection provider-id 1)
             existing-gran-concept-id (str "G1-" provider-id)
             existing-granule (util/granule-concept provider-id parent-collection 1
@@ -84,14 +87,15 @@
                  (map #(dissoc % :revision-date :transaction-id) (:concepts found-concepts)))))
         (testing "duplicate granule URs are allowed when the constraint is configured as off"
           (try
-            (cc/set-enforce-granule-ur-constraint! false)
+            (side/eval-form `(cc/set-enforce-granule-ur-constraint! false))
             (is (= {:status 201
                     :revision-id (:revision-id test-granule)
                     :concept-id (:concept-id test-granule)
                     :errors nil}
                    (util/save-concept test-granule)))
             (finally
-              (cc/set-enforce-granule-ur-constraint! true)))))))
+              (side/eval-form `(cc/set-enforce-granule-ur-constraint! true))))))))
+
   (testing "duplicate granule urs within multiple small providers is OK"
     (let [coll1 (util/create-and-save-collection "SMAL_PROV1" 1)
           coll2 (util/create-and-save-collection "SMAL_PROV2" 2)

@@ -2,10 +2,15 @@
   (:require [clojure.string :as str]
             [cmr.access-control.services.acl-service-messages :as msg]
             [cmr.common.log :refer [info]]
+            [cmr.common.util :as u]
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
             [cmr.transmit.echo.tokens :as tokens]
             [cmr.transmit.metadata-db2 :as mdb]
+            [cmr.common-app.services.search :as cs]
+            [cmr.common-app.services.search.params :as cp]
+            [cmr.common-app.services.search.parameter-validation :as cpv]
+            [cmr.common-app.services.search.query-model :as common-qm]
             [cheshire.core :as json]
             [clojure.edn :as edn]
             [cmr.common.concepts :as concepts]))
@@ -81,6 +86,60 @@
 
       ;; The acl doesn't exist
       (mdb/save-concept context (acl->new-concept context acl)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Search functions
+
+(defmethod cpv/params-config :acl
+  [_]
+  (cpv/merge-params-config
+   cpv/basic-params-config
+   {:single-value #{}
+    :multiple-value #{}
+    :always-case-sensitive #{}
+    :disallow-pattern #{}
+    :allow-or #{}}))
+
+(defmethod cpv/valid-parameter-options :acl
+  [_]
+  {})
+
+(defn validate-acl-search-params
+  "Validates the parameters for an ACL search. Returns the parameters or throws an error if invalid."
+  [context params]
+  (let [[safe-params type-errors] (cpv/apply-type-validations
+                                   params
+                                   [(partial cpv/validate-map [:options])])]
+    (cpv/validate-parameters
+     :acl safe-params
+     cpv/common-validations
+     type-errors))
+  params)
+
+(defmethod common-qm/default-sort-keys :acl
+  [_]
+  [{:field :display-name :order :asc}])
+
+(defmethod cp/param-mappings :acl
+  [_]
+  {})
+
+(defn search-for-acls
+  [context params]
+  (let [[query-creation-time query] (u/time-execution
+                                     (->> params
+                                          cp/sanitize-params
+                                          (validate-acl-search-params :acl)
+                                          (cp/parse-parameter-query :acl)))
+        [find-concepts-time results] (u/time-execution
+                                      (cs/find-concepts context :acl query))
+        total-took (+ query-creation-time find-concepts-time)]
+    (info (format "Found %d acls in %d ms in format %s with params %s."
+                  (:hits results) total-took (:result-format query) (pr-str params)))
+    (assoc results :took total-took)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Member functions
 
 (defn get-acl
   "Returns the parsed metadata of the latest revision of the ACL concept by id."

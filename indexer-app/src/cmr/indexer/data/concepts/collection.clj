@@ -167,8 +167,8 @@
             :has-granules (some? (cgac/get-coll-gran-aggregates context concept-id))
             :entry-id entry-id
             :entry-id.lowercase (str/lower-case entry-id)
-            :entry-title entry-title
-            :entry-title.lowercase (str/lower-case entry-title)
+            :entry-title (str/trim entry-title)
+            :entry-title.lowercase (str/trim (str/lower-case entry-title))
             :provider-id provider-id
             :provider-id.lowercase (str/lower-case provider-id)
             :short-name short-name

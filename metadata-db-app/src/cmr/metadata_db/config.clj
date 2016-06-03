@@ -54,7 +54,8 @@
    :tag-association ingest-exchange-name
    ;; Add service when we add service indexing
    :service nil
-   :access-group access-control-exchange-name})
+   :access-group access-control-exchange-name
+   :acl access-control-exchange-name})
 
 (defconfig deleted-collection-revision-exchange-name
   "An exchange that will have messages passed to it whenever a collection revision is removed

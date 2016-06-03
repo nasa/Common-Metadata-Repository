@@ -555,7 +555,7 @@
       (when (= :collection concept-type)
         (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
           ;; delete the related tag associations
-          (delete-associated-tag-associations context concept-id revision-id)
+          (delete-associated-tag-associations context concept-id (long revision-id))
           (ingest-events/publish-collection-revision-delete-msg context concept-id revision-id)))
       (c/force-delete-concepts db provider concept-type concept-id-revision-id-tuples))))
 

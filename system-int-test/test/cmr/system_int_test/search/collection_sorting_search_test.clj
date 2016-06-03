@@ -72,6 +72,9 @@
   [field descending? all-revisions? c1 c2]
   (let [value1 (get-field-value c1 field)
         value2 (get-field-value c2 field)
+        [value1 value2] (if (= field :entry-title)
+                          [(str/trim value1) (str/trim value2)]
+                          [value1 value2])
         short-name #(str/lower-case (get-in % [:product :short-name]))
         version #(str/lower-case (get-in % [:product :version-id]))
         s1 (short-name c1)
@@ -141,10 +144,11 @@
   (let [c1-1 (make-coll "PROV1" "et99" 10 20)
         c1-2 (make-coll "PROV1" "et99" 10 20)
         c2 (make-coll "PROV1" "et90" 14 24)
-        c3 (make-coll "PROV1" "et80" 19 30)
-        c4 (make-coll "PROV1" "et70" 24 35)
+        ;; Whitespace included in fields to ensure that sorting ignores whitespace at the beginning.
+        c3 (make-coll "PROV1" "   et80" 19 30)
+        c4 (make-coll "PROV1" "\tet70" 24 35)
 
-        c5 (make-coll "PROV2" "et98" 9 19)
+        c5 (make-coll "PROV2" "\net98" 9 19)
         c6 (make-coll "PROV2" "et91" 15 25)
         c7 (make-coll "PROV2" "et79" 20 29)
         c8 (make-coll "PROV2" "ET94" 25 36)

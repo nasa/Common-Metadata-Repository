@@ -11,6 +11,7 @@
             [clj-time.local :as l]
             [clj-time.coerce :as cr]
             [inflections.core :as inf]
+            [cmr.common-app.test.side-api :as side]
             [cmr.common.util :as util]
             [cmr.metadata-db.config :as config]
             [clj-http.conn-mgr :as conn-mgr]
@@ -723,7 +724,7 @@
     (try
       ;; We set this to false during a test so that messages won't be published when this is run
       ;; in dev system and cause exceptions in the indexer.
-      (mdb-config/set-publish-messages! false)
+      (side/eval-form `(mdb-config/set-publish-messages! false))
       (reset-database)
       (doseq [provider providers]
         (let [{:keys [provider-id short-name cmr-only small]} provider
@@ -734,4 +735,4 @@
                           :small (if small true false)})))
       (f)
       (finally
-        (mdb-config/set-publish-messages! true)))))
+        (side/eval-form `(mdb-config/set-publish-messages! true))))))

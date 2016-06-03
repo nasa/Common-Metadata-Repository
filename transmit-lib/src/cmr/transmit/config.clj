@@ -185,3 +185,11 @@
   [connection]
   {:connection-manager (conn/conn-mgr connection)
    :socket-timeout (http-socket-timeout)})
+
+(defn application-public-root-url
+  "Returns the public root url for an application given a context. Assumes public configuration is
+   stored in a :public-conf key of the system."
+  [context]
+  (let [{:keys [protocol host port relative-root-url]} (get-in context [:system :public-conf])
+        port (if (empty? relative-root-url) port (format "%s%s" port relative-root-url))]
+    (format "%s://%s:%s/" protocol host port)))

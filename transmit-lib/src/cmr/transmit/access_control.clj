@@ -99,7 +99,7 @@
   (str (conn/root-url ctx) "/acls/"))
 
 (h/defcreator create-acl :access-control acl-root-url)
-
+(h/defsearcher search-for-acls :access-control acl-root-url)
 (h/defgetter get-acl :access-control (fn [ctx concept-id] (str (conn/root-url ctx) "/acls/" concept-id)))
 
 ;;; Misc. Functions

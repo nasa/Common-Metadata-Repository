@@ -40,6 +40,7 @@
 
    :uberjar {:main cmr.access-control.runner
              :aot :all}}
+  :test-paths ["test" "int_test"]
   :aliases {"generate-docs" ["exec" "-ep" (pr-str '(do
                                                      (use 'cmr.common-app.api-docs)
                                                      (generate

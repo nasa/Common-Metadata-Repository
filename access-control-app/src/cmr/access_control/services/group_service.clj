@@ -21,6 +21,7 @@
             [clojure.string :as str]
     ;; Must be required to be available at runtime
             [cmr.access-control.data.group-json-results-handler]
+            [cmr.access-control.data.acl-json-results-handler]
             [cmr.acl.core :as acl]))
 
 (defn- context->user-id

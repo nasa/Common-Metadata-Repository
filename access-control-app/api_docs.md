@@ -19,6 +19,11 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [GET - Retrieve group members] (#retrieve-group-members)
     * [POST - Add group members] (#add-group-members)
     * [DELETE - Remove group members] (#remove-group-members)
+  * [/acls](#acls)
+    * [POST - Create ACL](#create-acl)
+    * [GET - Search ACLs](#search-acls)
+  * /acls/:acl-id
+    * [GET - Retrieve an ACL](#retrieve-acl)
   * /health
     * [GET - Get the health of the access control application.](#application-health)
 
@@ -137,7 +142,7 @@ Content-Type: application/json
 
 Groups are updated by sending a PUT request with the JSON representation of a group to `%CMR-ENDPOINT%/groups/<concept-id>` where `concept-id` is the concept id of the group returned when it was created. The same rules apply when updating a group as when creating it but only the description can be modified. The response will contain the concept id along with the group revision id.
 
-Only keys present in the update request will be updated. For example: if a `"members"` key is specified, then the group's members will be updated with the supplied value, otherwise the group's members will remain unchanged. 
+Only keys present in the update request will be updated. For example: if a `"members"` key is specified, then the group's members will be updated with the supplied value, otherwise the group's members will remain unchanged.
 
 ```
 curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/groups/AG1200000000-CMR -d \
@@ -288,9 +293,177 @@ Content-Length: 702
 }
 ```
 
+## <a name="acls"></a> Access Control Lists (ACLs)
+
+Access Control Lists (ACLs) define permissions within the CMR. Everything is restricted in the CMR by default. ACLs give permission to specific users to take some action on some data.
+
+Every ACL defines three parts like a simple sentence: subject, predicate, and object. The sentence "Science Users can view Provider FOO's granules" is an example. "Science Users" is the subject. "can view" is the predicate. "Provider FOO's granules" is the object.
+
+ACLs are represented by JSON. If "Science Users" was an existing group defined in Provider FOO with concept id AG1234-FOO then an ACL granting that group access to view and order and guests permission to view FOO's granules would look like the following:
+
+```
+{
+    "group_permissions": [{
+        "group_id": "AG1234-FOO",          // Subject
+        "permissions": ["read", "order"]   // Predicates
+    }, {
+        "user_type": "guest",              // Subject
+        "permissions": ["read"]            // Predicates
+    }],
+    "catalog_item_identity": {             // Object
+        "name": "All Granules",
+        "provider_id": "FOO",
+        "granule_applicable": true
+    }
+}
+```
+
+This is like a sentence saying "Science Users can view and order and Guests can view Provider FOO's granules."
+
+The subject and predicate are in `group_permissions`. An ACL can identify multiple permissions per group. There can be multiple subjects and multiple predicates per subject in a single ACL.
+
+Every ACL refers to an object called an "identity". The "identity" identifies what in the CMR is being granted permission by the the ACL. There are 4 kinds of identities:
+
+* System Identities - Identifies a system level thing in the CMR.
+* Provider Identities - Identifies a type of object owned by a specific provider.
+* Single Instance Identities - Identifies a single instance of something in the CMR. Currently this only applies to managing specific groups.
+* Catalog Item Identities - Identifies sets of catalog items (collections and granules) owned by a provider.
+
+### ACL Uniqueness
+
+ACLs are uniquely identified by their identity. There can only be one ACL to a specific identity. For example provider identities contain a provider id and a target. There can only be one ACL in the system for granting permissions to Provider FOO's Option Definitions. The rules for uniquely identifying each type is listed below.
+
+* System Identities - Unique by target
+* Provider Identities - Unique by provider id and target
+* Single Instance Identities - Unique by target id (Group concept id)
+* Catalog Item Identities - Unique by provider id and name.
+
+### <a name="create-acl"></a> Create ACL
+
+ACLs are created by POSTing a JSON representation of an ACL to `%CMR-ENDPOINT%/acls` along with a valid ECHO token. The response will contain a concept id identifying the ACL along with the ACL revision id.
+
+#### Creating an ACL
+
+```
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/acls -d \
+'{
+    "group_permissions": [{
+        "group_id": "AG1234-FOO",
+        "permissions": ["read", "order"]
+    }, {
+        "user_type": "guest",
+        "permissions": ["read"]
+    }],
+    "catalog_item_identity": {
+        "name": "All Granules",
+        "provider_id": "FOO",
+        "granule_applicable": true
+    }
+}'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+
+{"revision_id":1,"concept_id":"ACL1200000000-CMR"}
+```
+
+### <a name="retrieve-acl"></a> Retrieve ACL
+
+A single ACL can be retrieved by sending a GET request to `%CMR-ENDPOINT%/acls/<concept-id>` where `concept-id` is the concept id of the ACL returned when it was created.
+
+```
+curl -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/acls/ACL1200000000-CMR?pretty=true
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "group_permissions" : [ {
+    "group_id" : "AG1234-FOO",
+    "permissions" : [ "read", "order" ]
+  }, {
+    "user_type" : "guest",
+    "permissions" : [ "read" ]
+  } ],
+  "catalog_item_identity" : {
+    "name" : "All Granules",
+    "provider_id" : "FOO",
+    "granule_applicable" : true
+  }
+}
+```
+
+### <a name="search-acls"></a> Search ACLs
+
+ACLs can be searched for by sending a GET request to `%CMR-ENDPOINT%/acls`
+
+##### ACL Search Parameters
+
+The following parameters are supported when searching for ACLs.
+
+##### Standard Parameters:
+
+* page_size
+* page_num
+* pretty
+
+##### ACL Matching Parameters
+
+**Coming Soon**
+
+This section will be expanded in the future as ACLs can be searched by additional fields.
+
+##### ACL Search Response
+
+The response is always returned in JSON and includes the following parts.
+
+* hits - How many total ACLs were found.
+* took - How long the search took in milliseconds
+* items - a list of the current page of ACLs with the following fields
+  * concept_id
+  * revision_id
+  * name - This will be the catalog item identity name or a string containing "<identity type> - <target>". For example "System - PROVIDER"
+  * identity_type - String of "provider", "system", "single_instance", or "catalog_item"
+  * location - A URL to retrieve the ACL
+
+##### ACL Search Example
+
+```
+curl -i %CMR-ENDPOINT%/acls?pretty=true
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+CMR-Hits: 4
+CMR-Took: 5
+CMR-Request-Id: 5689303f-574d-4edf-b2f1-5219dc0ae6c5
+Content-Length: 702
+
+{
+  "hits" : 3,
+  "took" : 6,
+  "items" : [ {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000008-CMR",
+    "identity_type" : "Catalog Item",
+    "name" : "All Collections",
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000008-CMR"
+  }, {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000009-CMR",
+    "identity_type" : "Catalog Item",
+    "name" : "All Granules",
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000009-CMR"
+  }, {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000006-CMR",
+    "identity_type" : "Group",
+    "name" : "Group - AG1234-CMR",
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000006-CMR"
+  } ]
+}
+```
 
 ### <a name="application-health"></a> Application Health
-
 
 This will report the current health of the application. It checks all resources and services used by the application and reports their health status in the response body in JSON format. The report includes an "ok?" status and a "problem" field for each resource. The report includes an overall "ok?" status and health reports for each of a service's dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.
 

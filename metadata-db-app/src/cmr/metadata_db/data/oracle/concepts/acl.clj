@@ -7,7 +7,8 @@
 
 (defmethod c/db-result->concept-map :acl
   [_ db provider-id result]
-  (c/db-result->concept-map :access-group db provider-id result))
+  (some-> (c/db-result->concept-map :access-group db provider-id result)
+          (assoc :concept-type :acl)))
 
 (defmethod c/concept->insert-args [:acl false]
   [concept _]
