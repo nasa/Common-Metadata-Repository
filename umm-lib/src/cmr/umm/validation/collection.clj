@@ -85,6 +85,12 @@
   {:coordinate-1 coordinate-validator
    :coordinate-2 coordinate-validator})
 
+(def science-keyword-validations
+  "Defines the science keyword validations for collections"
+  {:category v/required
+   :topic v/required
+   :term v/required})
+
 (def collection-validations
   "Defines validations for collections"
   {:product-specific-attributes [(vu/unique-by-name-validator :name)
@@ -99,4 +105,8 @@
    :related-urls h/online-access-urls-validation
    :two-d-coordinate-systems [(vu/unique-by-name-validator :name)
                               (v/every two-d-coord-validations)]
-   :collection-associations (vu/unique-by-name-validator collection-association-name)})
+   :collection-associations (vu/unique-by-name-validator collection-association-name)
+   :science-keywords (v/every science-keyword-validations)})
+
+
+

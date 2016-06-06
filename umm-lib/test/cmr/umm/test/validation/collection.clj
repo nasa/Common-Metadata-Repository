@@ -40,8 +40,8 @@
    (coll-with-geometries "GEODETIC" geometries))
   ([coordinate-reference geometries]
    (c/map->UmmCollection {:spatial-coverage (c/map->SpatialCoverage
-                                             {:spatial-representation coordinate-reference
-                                              :geometries geometries})})))
+                                              {:spatial-representation coordinate-reference
+                                               :geometries geometries})})))
 
 ;; This is built on top of the existing spatial validation. It just ensures that the spatial
 ;; validation is being called
@@ -550,3 +550,64 @@
           coll
           [:collection-associations]
           ["Collection Associations must be unique. This contains duplicates named [(ShortName [S1] & VersionId [V1])]."])))))
+
+
+(deftest collection-science-keywords-validation
+  (testing "valid collection science keywords"
+    (assert-valid (c/map->UmmCollection
+                    {:science-keywords
+                     [(c/map->ScienceKeyword {:category "c1"
+                                              :topic "t1"
+                                              :term "term1"
+                                              :variable-level-1 "v1"
+                                              :variable-level-2 "v2"
+                                              :variable-level-3 "v3"
+                                              :detailed-variable "dv"})
+                      (c/map->ScienceKeyword {:category "c2"
+                                              :topic "t2"
+                                              :term "term2"})]})))
+
+  (testing "invalid collection science keywords"
+    (testing "missing category"
+      (let [coll (c/map->UmmCollection
+                   {:science-keywords
+                    [(c/map->ScienceKeyword {:topic "t1"
+                                             :term "term1"})]})]
+        (assert-invalid
+          coll
+          [:science-keywords 0 :category]
+          ["Category is required."])))
+    (testing "missing topic"
+      (let [coll (c/map->UmmCollection
+                   {:science-keywords
+                    [(c/map->ScienceKeyword {:category "c1"
+                                             :term "term1"})]})]
+        (assert-invalid
+          coll
+          [:science-keywords 0 :topic]
+          ["Topic is required."])))
+    (testing "missing terms"
+      (let [coll (c/map->UmmCollection
+                   {:science-keywords
+                    [(c/map->ScienceKeyword {:category "c1"
+                                             :topic "t1"})]})]
+        (assert-invalid
+          coll
+          [:science-keywords 0 :term]
+          ["Term is required."])))
+    (testing "multiple errors"
+      (let [coll (c/map->UmmCollection
+                   {:science-keywords
+                    [(c/map->ScienceKeyword {:category "c1"
+                                             :topic "t1"})
+                     (c/map->ScienceKeyword {:category "c1"
+                                             :term "term1"})]})]
+        (assert-multiple-invalid
+          coll
+          [{:path [:science-keywords 0 :term]
+            :errors
+            ["Term is required."]}
+           {:path [:science-keywords 1 :topic]
+            :errors
+            ["Topic is required."]}])))))
+
