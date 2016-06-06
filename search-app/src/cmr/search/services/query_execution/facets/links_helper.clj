@@ -7,7 +7,9 @@
 (defn- generate-query-string
   "Creates a query string from a root URL and a map of query params"
   [base-url query-params]
-  (format "%s?%s" base-url (codec/form-encode query-params)))
+  (if (seq query-params)
+    (format "%s?%s" base-url (codec/form-encode query-params))
+    base-url))
 
 (defn create-apply-link
   "Create a link to apply a term."
@@ -20,28 +22,39 @@
 (defn create-remove-link
   "Create a link to remove a term from a query."
   [base-url query-params field-name term]
-  (let [param-name (str (csk/->snake_case_string field-name) "[]")
-        existing-values (get query-params param-name)
-        updated-query-params (if (coll? existing-values)
-                                 (update query-params param-name
-                                         (fn [_]
-                                           (remove (fn [value]
-                                                     (= (str/lower-case term) value))
-                                                   (map str/lower-case existing-values))))
-                                 (dissoc query-params param-name))]
+  (let [term (str/lower-case term)
+        field-name-snake-case (csk/->snake_case_string field-name)
+        updated-query-params
+         (reduce
+          (fn [query-params param-name]
+             (let [existing-values (get query-params param-name)]
+               (if (coll? existing-values)
+                  (update query-params param-name
+                          (fn [_]
+                            (remove (fn [value]
+                                      (= (str/lower-case value) term))
+                                    existing-values)))
+                  (dissoc query-params param-name))))
+          query-params
+          [field-name-snake-case (str field-name-snake-case "[]")])]
     {:remove (generate-query-string base-url updated-query-params)}))
-
 
 (defn create-links
   "Creates either a remove or an apply link based on whether this particular term is already
   selected within a query. Returns a tuple of the type of link created and the link itself."
   [base-url query-params field-name term]
-  (let [terms-for-field (get query-params (str (csk/->snake_case_string field-name) "[]"))
-        term-exists (when terms-for-field
-                      (some #{(str/lower-case term)}
-                            (if (coll? terms-for-field)
-                                (map str/lower-case terms-for-field)
-                                [(str/lower-case terms-for-field)])))]
+  (let [field-name-snake-case (csk/->snake_case_string field-name)
+        terms-for-field (reduce (fn [terms-for-field field]
+                                  (let [terms (get query-params field)]
+                                    (if (coll? terms)
+                                      (conj terms terms-for-field)
+                                      (if terms
+                                        (cons terms terms-for-field)
+                                        terms-for-field))))
+                                []
+                                [field-name-snake-case (str field-name-snake-case "[]")])
+        term-exists (some #{(str/lower-case term)}
+                          (map #(when % (str/lower-case %)) terms-for-field))]
     (if term-exists
       [:remove (create-remove-link base-url query-params field-name term)]
       [:apply (create-apply-link base-url query-params field-name term)])))
