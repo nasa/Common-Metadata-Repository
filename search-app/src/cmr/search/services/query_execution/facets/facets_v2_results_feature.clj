@@ -127,8 +127,9 @@
     (for [field-name field-names
           :let [value-counts (frf/buckets->value-count-pairs (field-name bucket-map))
                 has-children (some? (seq value-counts))
-                some-term-applied? (some? (get query-params
-                                               (str (csk/->snake_case_string field-name) "[]")))]]
+                snake-case-field (csk/->snake_case_string field-name)
+                some-term-applied? (some? (or (get query-params snake-case-field)
+                                              (get query-params (str snake-case-field "[]"))))]]
       (when has-children
         {:title (field-name fields->human-readable-label)
          :type :group
@@ -147,10 +148,6 @@
                                    :count count
                                    :has_children false})))
                         value-counts)}))))
-
-(comment
- (proto/saved-values)
- (proto/clear-saved-values!))
 
 (defn- parse-params
   "Parse parameters from a query string into a map. Taken directly from ring code."
@@ -197,8 +194,6 @@
                             (assoc search-public-conf
                                    :context (:relative-root-url search-public-conf))))
         query-params (parse-params (:query-string context) "UTF-8")
-        ;; TODO get rid of debug
-        ; _ (println "Query params: " query-params)
         facets (concat (create-hierarchical-v2-facets elastic-aggregations base-link query-params)
                        (create-flat-v2-facets elastic-aggregations base-link query-params))]
     (if (seq facets)
@@ -207,7 +202,8 @@
 
 (defmethod query-execution/pre-process-query-result-feature :facets-v2
   [_ query _]
-  ;; TODO Add in ticket number mentioning we will support a parameter specifying a number of terms
+  ;; With CMR-1101 we will support a parameter to specify the number of terms to return. For now
+  ;; always use the DEFAULT_TERMS_SIZE
   (assoc query :aggregations (facets-v2-aggregations DEFAULT_TERMS_SIZE)))
 
 (defmethod query-execution/post-process-query-result-feature :facets-v2

@@ -65,7 +65,7 @@
   (let [[base-field sub-field] (str/split param-name #"\[0\]")
         field-regex (re-pattern (format "%s.*" base-field))
         matches (keep #(re-matches field-regex %) (keys query-params))
-        indexes (keep #(second (re-matches #".*(\d).*" %)) matches)
+        indexes (keep #(second (re-matches #".*\[(\d)\].*" %)) matches)
         indexes-int (map #(Integer/parseInt %) indexes)
         max-index (if (seq indexes-int)
                     (apply max indexes-int)

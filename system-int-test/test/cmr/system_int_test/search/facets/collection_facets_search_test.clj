@@ -1,6 +1,8 @@
-(ns cmr.system-int-test.search.collection-facets-search-test
+(ns cmr.system-int-test.search.facets.collection-facets-search-test
   "This tests the retrieving facets when searching for collections"
   (:require [clojure.test :refer :all]
+            [cmr.system-int-test.search.facets.facets-util :as fu]
+            [cmr.system-int-test.search.facets.facet-responses :as fr]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -15,68 +17,32 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
                                           {:grant-all-search? false}))
 
-(defn- make-coll
-  "Helper for creating and ingesting an ECHO10 collection"
-  [n prov & attribs]
-  (d/ingest prov (dc/collection (apply merge {:entry-title (str "coll" n)} attribs))))
-
 (defn- make-dif-coll
   "Helper for creating and ingesting a DIF collection"
   [n prov & attribs]
   (d/ingest prov (dc/collection (apply merge {:entry-title (str "coll" n)} attribs))
             {:format :dif}))
 
-;; Attrib functions - These are helpers for creating maps with collection attributes
-(defn- projects
-  [& project-names]
-  {:projects (apply dc/projects project-names)})
+(defn- grant-permissions
+  "Grant permissions to all collections in PROV1 and a subset of collections in PROV2"
+  []
+  (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1"))
+  (e/grant-guest (s/context)
+                 (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll2" "coll3" "coll5"]))))
 
-(def platform-short-names
-  "List of platform short names that exist in the test KMS hierarchy. Note we are testing case
-  insensivity of the short name. DIADEM-1D is the actual short-name value in KMS, but we expect
-  diadem-1D to match."
-  ["diadem-1D" "DMSP 5B/F3" "A340-600" "SMAP"])
-
-(def instrument-short-names
-  "List of instrument short names that exist in the test KMS hierarchy. Note we are testing case
-  insensivity of the short name. LVIS is the actual short-name value in KMS, but we expect
-  lVIs to match."
-  ["ATM" "lVIs" "ADS" "SMAP L-BAND RADIOMETER"])
-
-(def FROM_KMS
-  "Constant indicating that the short name for the field should be a short name found in KMS."
-  "FROM_KMS")
-
-(defn- platforms
-  "Creates a specified number of platforms each with a certain number of instruments and sensors"
-  ([prefix num-platforms]
-   (platforms prefix num-platforms 0 0))
-  ([prefix num-platforms num-instruments]
-   (platforms prefix num-platforms num-instruments 0))
-  ([prefix num-platforms num-instruments num-sensors]
-   {:platforms
-    (for [pn (range 0 num-platforms)
-          :let [platform-name (str prefix "-p" pn)]]
-      (dc/platform
-        {:short-name (if (= FROM_KMS prefix)
-                       (or (get platform-short-names pn) platform-name)
-                       platform-name)
-         :long-name platform-name
-         :instruments
-         (for [in (range 0 num-instruments)
-               :let [instrument-name (str platform-name "-i" in)]]
-           (dc/instrument
-             {:short-name (if (= FROM_KMS prefix)
-                            (or (get instrument-short-names in) instrument-name)
-                            instrument-name)
-              :sensors (for [sn (range 0 num-sensors)
-                             :let [sensor-name (str instrument-name "-s" sn)]]
-                         (dc/sensor {:short-name sensor-name}))}))}))}))
-
-(defn- twod-coords
-  [& names]
-  {:two-d-coordinate-systems (map dc/two-d names)})
-
+(defn- get-facet-results
+  "Returns the facets returned by a search in both JSON and XML reference formats. Takes the type
+  of facets to be returned - either :flat or :hierarchical. The format of the response is:
+  {:xml-facets xml-facets
+  :json-facets json-results}"
+  [type]
+  (index/wait-until-indexed)
+  (let [search-options {:page-size 0
+                        :include-facets true
+                        :hierarchical-facets (= :hierarchical type)}]
+    {:xml-facets (:facets (search/find-refs :collection search-options))
+     :json-facets (get-in (search/find-concepts-json :collection search-options)
+                          [:results :facets])}))
 
 (def sk1 (dc/science-keyword {:category "Cat1"
                               :topic "Topic1"
@@ -85,7 +51,6 @@
                               :variable-level-2 "Level1-2"
                               :variable-level-3 "Level1-3"
                               :detailed-variable "Detail1"}))
-
 
 (def sk2 (dc/science-keyword {:category "Hurricane"
                               :topic "Popular"
@@ -122,323 +87,35 @@
                               :variable-level-1 "V-L1"
                               :detailed-variable "Detailed-No-Level2-or-3"}))
 
-(defn- science-keywords
-  [& sks]
-  {:science-keywords sks})
-
-(defn- processing-level-id
-  [id]
-  {:processing-level-id id})
-
-(defn- generate-science-keywords
-  "Generate science keywords based on a unique number."
-  [n]
-  (dc/science-keyword {:category (str "Cat-" n)
-                       :topic (str "Topic-" n)
-                       :term (str "Term-" n)
-                       :variable-level-1 "Level1-1"
-                       :variable-level-2 "Level1-2"
-                       :variable-level-3 "Level1-3"
-                       :detailed-variable (str "Detail-" n)}))
-
-(defn- grant-permissions
-  "Grant permissions to all collections in PROV1 and a subset of collections in PROV2"
-  []
-  (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1"))
-  (e/grant-guest (s/context)
-                 (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll2" "coll3" "coll5"]))))
-
-(defn- get-facet-results
-  "Returns the facets returned by a search in both JSON and XML reference formats. Takes the type
-  of facets to be returned - either :flat or :hierarchical. The format of the response is:
-  {:xml-facets xml-facets
-  :json-facets json-results}"
-  [type]
-  (index/wait-until-indexed)
-  (let [search-options {:page-size 0
-                        :include-facets true
-                        :hierarchical-facets (= :hierarchical type)}]
-    {:xml-facets (:facets (search/find-refs :collection search-options))
-     :json-facets (get-in (search/find-concepts-json :collection search-options)
-                          [:results :facets])}))
-
-(def expected-all-hierarchical-facets
-  "Expected value for the all-hierarchical-fields-test."
-  [{:field "project", :value-counts [["PROJ2" 2] ["proj1" 2]]}
-   {:field "sensor",
-    :value-counts
-    [["FROM_KMS-p0-i0-s0" 2]
-     ["FROM_KMS-p0-i1-s0" 2]
-     ["FROM_KMS-p1-i0-s0" 2]
-     ["FROM_KMS-p1-i1-s0" 2]]}
-   {:field "two_d_coordinate_system_name",
-    :value-counts [["Alpha" 2]]}
-   {:field "processing_level_id", :value-counts [["PL1" 2]]}
-   {:field "detailed_variable",
-    :value-counts [["DETAIL1" 2] ["UNIVERSAL" 2]]}
-   {:field "data_centers",
-    :subfields ["level_0"],
-    :level_0
-    [{:value "GOVERNMENT AGENCIES-U.S. FEDERAL AGENCIES",
-      :count 2,
-      :subfields ["level_1"],
-      :level_1
-      [{:value "DOI",
-        :count 2,
-        :subfields ["level_2"],
-        :level_2
-        [{:value "USGS",
-          :count 2,
-          :subfields ["level_3"],
-          :level_3
-          [{:value "Added level 3 value",
-            :count 2,
-            :subfields ["short_name"],
-            :short_name
-            [{:value "DOI/USGS/CMG/WHSC",
-              :count 2,
-              :subfields ["long_name"],
-              :long_name
-              [{:value
-                "Woods Hole Science Center, Coastal and Marine Geology, U.S. Geological Survey, U.S. Department of the Interior",
-                :count 2}]}]}]}]}]}]}
-   {:field "archive_centers",
-    :subfields ["level_0"],
-    :level_0
-    [{:value "GOVERNMENT AGENCIES-U.S. FEDERAL AGENCIES",
-      :count 2,
-      :subfields ["level_1"],
-      :level_1
-      [{:value "DOI",
-        :count 2,
-        :subfields ["level_2"],
-        :level_2
-        [{:value "USGS",
-          :count 2,
-          :subfields ["level_3"],
-          :level_3
-          [{:value "Added level 3 value",
-            :count 2,
-            :subfields ["short_name"],
-            :short_name
-            [{:value "DOI/USGS/CMG/WHSC",
-              :count 2,
-              :subfields ["long_name"],
-              :long_name
-              [{:value
-                "Woods Hole Science Center, Coastal and Marine Geology, U.S. Geological Survey, U.S. Department of the Interior",
-                :count 2}]}]}]}]}]}]}
-   {:field "platforms",
-    :subfields ["category"],
-    :category
-    [{:value "Earth Observation Satellites",
-      :count 2,
-      :subfields ["series_entity"],
-      :series_entity
-      [{:value "DIADEM",
-        :count 2,
-        :subfields ["short_name"],
-        :short_name
-        [{:value "DIADEM-1D",
-          :count 2,
-          :subfields ["long_name"],
-          :long_name [{:value "Not Provided", :count 2}]}]}
-       {:value
-        "DMSP (Defense Meteorological Satellite Program)",
-        :count 2,
-        :subfields ["short_name"],
-        :short_name
-        [{:value "DMSP 5B/F3",
-          :count 2,
-          :subfields ["long_name"],
-          :long_name
-          [{:value
-            "Defense Meteorological Satellite Program-F3",
-            :count 2}]}]}]}]}
-   {:field "instruments",
-    :subfields ["category"],
-    :category
-    [{:value "Earth Remote Sensing Instruments",
-      :count 2,
-      :subfields ["class"],
-      :class
-      [{:value "Active Remote Sensing",
-        :count 2,
-        :subfields ["type"],
-        :type
-        [{:value "Altimeters",
-          :count 2,
-          :subfields ["subtype"],
-          :subtype
-          [{:value "Lidar/Laser Altimeters",
-            :count 2,
-            :subfields ["short_name"],
-            :short_name
-            [{:value "ATM",
-              :count 2,
-              :subfields ["long_name"],
-              :long_name
-              [{:value "Airborne Topographic Mapper",
-                :count 2}]}
-             {:value "LVIS",
-              :count 2,
-              :subfields ["long_name"],
-              :long_name
-              [{:value "Land, Vegetation, and Ice Sensor",
-                :count 2}]}]}]}]}]}]}
-   {:field "science_keywords",
-    :subfields ["category"],
-    :category
-    [{:value "HURRICANE",
-      :count 2,
-      :subfields ["topic"],
-      :topic
-      [{:value "POPULAR",
-        :count 2,
-        :subfields ["term"],
-        :term
-        [{:value "EXTREME",
-          :count 2,
-          :subfields ["variable_level_1"],
-          :variable_level_1
-          [{:value "LEVEL2-1",
-            :count 2,
-            :subfields ["variable_level_2"],
-            :variable_level_2
-            [{:value "LEVEL2-2",
-              :count 2,
-              :subfields ["variable_level_3"],
-              :variable_level_3
-              [{:value "LEVEL2-3", :count 2}]}]}]}
-         {:value "UNIVERSAL", :count 2}]}
-       {:value "COOL",
-        :count 2,
-        :subfields ["term"],
-        :term
-        [{:value "TERM4",
-          :count 2,
-          :subfields ["variable_level_1"],
-          :variable_level_1
-          [{:value "UNIVERSAL", :count 2}]}]}]}
-     {:value "UPCASE",
-      :count 2,
-      :subfields ["topic"],
-      :topic
-      [{:value "COOL",
-        :count 2,
-        :subfields ["term"],
-        :term [{:value "MILD", :count 2}]}
-       {:value "POPULAR",
-        :count 2,
-        :subfields ["term"],
-        :term [{:value "MILD", :count 2}]}]}
-     {:value "CAT1",
-      :count 2,
-      :subfields ["topic"],
-      :topic
-      [{:value "TOPIC1",
-        :count 2,
-        :subfields ["term"],
-        :term
-        [{:value "TERM1",
-          :count 2,
-          :subfields ["variable_level_1"],
-          :variable_level_1
-          [{:value "LEVEL1-1",
-            :count 2,
-            :subfields ["variable_level_2"],
-            :variable_level_2
-            [{:value "LEVEL1-2",
-              :count 2,
-              :subfields ["variable_level_3"],
-              :variable_level_3
-              [{:value "LEVEL1-3", :count 2}]}]}]}]}]}
-     {:value "TORNADO",
-      :count 2,
-      :subfields ["topic"],
-      :topic
-      [{:value "POPULAR",
-        :count 2,
-        :subfields ["term"],
-        :term [{:value "EXTREME", :count 2}]}]}]}
-   {:subfields ["category"],
-    :category
-    [{:subfields ["type"],
-      :type
-      [{:subfields ["subregion_1"],
-        :subregion_1
-        [{:subfields ["subregion_2"],
-          :subregion_2
-          [{:subfields ["subregion_3"],
-            :subregion_3 [{:count 2, :value "Not Provided"}],
-            :count 2,
-            :value "ANGOLA"}],
-          :count 2,
-          :value "CENTRAL AFRICA"}],
-        :count 2,
-        :value "AFRICA"}
-       {:subfields ["subregion_1"],
-        :subregion_1
-        [{:subfields ["subregion_2"],
-          :subregion_2
-          [{:subfields ["subregion_3"],
-            :subregion_3
-            [{:count 1, :value "GAZA STRIP"}],
-            :count 1,
-            :value "MIDDLE EAST"}],
-          :count 1,
-          :value "WESTERN ASIA"}],
-        :count 1,
-        :value "ASIA"}],
-      :count 2,
-      :value "CONTINENT"}
-     {:subfields ["type"],
-      :type
-      [{:subfields ["subregion_1"],
-        :subregion_1
-        [{:subfields ["subregion_2"],
-          :subregion_2
-          [{:subfields ["subregion_3"],
-            :subregion_3 [{:count 1, :value "Not Provided"}],
-            :count 1,
-            :value "Not Provided"}],
-          :count 1,
-          :value "Not Provided"}],
-        :count 1,
-        :value "NOT IN KMS"}],
-      :count 1,
-      :value "OTHER"}],
-    :field "location_keywords"}])
-
 (deftest all-hierarchical-fields-test
   (grant-permissions)
-  (let [coll1 (make-coll 1 "PROV1"
-                         (science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7)
-                         (projects "proj1" "PROJ2")
-                         (platforms FROM_KMS 2 2 1)
-                         (twod-coords "Alpha")
-                         (processing-level-id "PL1")
-                         {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]
-                          :spatial-keywords ["ANGOLA"]})
-        coll2 (make-coll 2 "PROV1"
-                         (science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7)
-                         (projects "proj1" "PROJ2")
-                         (platforms FROM_KMS 2 2 1)
-                         (twod-coords "Alpha")
-                         (processing-level-id "PL1")
-                         {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]
-                          :spatial-keywords ["ANGOLA" "GAZA STRIP" "NOT IN KMS"]})
+  (let [coll1 (fu/make-coll 1 "PROV1"
+                            (fu/science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7)
+                            (fu/projects "proj1" "PROJ2")
+                            (fu/platforms fu/FROM_KMS 2 2 1)
+                            (fu/twod-coords "Alpha")
+                            (fu/processing-level-id "PL1")
+                            {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]
+                             :spatial-keywords ["ANGOLA"]})
+        coll2 (fu/make-coll 2 "PROV1"
+                            (fu/science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7)
+                            (fu/projects "proj1" "PROJ2")
+                            (fu/platforms fu/FROM_KMS 2 2 1)
+                            (fu/twod-coords "Alpha")
+                            (fu/processing-level-id "PL1")
+                            {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]
+                             :spatial-keywords ["ANGOLA" "GAZA STRIP" "NOT IN KMS"]})
         actual-facets (get-facet-results :hierarchical)]
-    (is (= expected-all-hierarchical-facets (:xml-facets actual-facets)))
-    (is (= expected-all-hierarchical-facets (:json-facets actual-facets)))))
+    (is (= fr/expected-all-hierarchical-facets (:xml-facets actual-facets)))
+    (is (= fr/expected-all-hierarchical-facets (:json-facets actual-facets)))))
 
 ;; The purpose of the test is to make sure when the same topic "Popular" is used under two different
 ;; categories, the flat facets correctly say 2 collections have the "Popular topic and the
 ;; hierarchical facets report just one collection with "Popular" below each category.
 (deftest nested-duplicate-topics
   (grant-permissions)
-  (let [coll1 (make-coll 1 "PROV1" (science-keywords sk3))
-        coll2 (make-coll 2 "PROV1" (science-keywords sk5))
+  (let [coll1 (fu/make-coll 1 "PROV1" (fu/science-keywords sk3))
+        coll2 (fu/make-coll 2 "PROV1" (fu/science-keywords sk5))
         expected-hierarchical-facets [{:field "project", :value-counts []}
                                       {:field "sensor", :value-counts []}
                                       {:field "two_d_coordinate_system_name", :value-counts []}
@@ -510,7 +187,7 @@
 
 (deftest detailed-variable-test
   (grant-permissions)
-  (let [coll1 (make-coll 1 "PROV1" (science-keywords sk8))
+  (let [coll1 (fu/make-coll 1 "PROV1" (fu/science-keywords sk8))
         expected-hierarchical-facets [{:field "project", :value-counts []}
                                       {:field "sensor", :value-counts []}
                                       {:field "two_d_coordinate_system_name", :value-counts []}
@@ -562,46 +239,46 @@
 
 (deftest flat-facets-test
   (grant-permissions)
-  (let [coll1 (make-coll 1 "PROV1"
-                         (projects "proj1" "PROJ2")
-                         (platforms "A" 2 2 1)
-                         (twod-coords "Alpha")
-                         (science-keywords sk1 sk4 sk5)
-                         (processing-level-id "PL1")
-                         {:organizations [(dc/org :archive-center "Larc")
-                                          (dc/org :processing-center "Larc")]})
-        coll2 (make-coll 2 "PROV2"
-                         (projects "proj3" "PROJ2")
-                         (platforms "B" 2 2 1)
-                         (science-keywords sk1 sk2 sk3)
-                         (processing-level-id "pl1")
-                         {:organizations [(dc/org :archive-center "GSFC")
-                                          (dc/org :processing-center "Proc")]})
-        coll3 (make-coll 3 "PROV2"
-                         (platforms "A" 1 1 1)
-                         (twod-coords "Alpha" "Bravo")
-                         (science-keywords sk5 sk6 sk7)
-                         (processing-level-id "PL1")
-                         {:organizations [(dc/org :archive-center "Larc")]})
-        coll4 (make-coll 4 "PROV1"
-                         (twod-coords "alpha")
-                         (science-keywords sk3)
-                         (processing-level-id "PL2")
-                         {:organizations [(dc/org :archive-center "Larc")]})
+  (let [coll1 (fu/make-coll 1 "PROV1"
+                            (fu/projects "proj1" "PROJ2")
+                            (fu/platforms "A" 2 2 1)
+                            (fu/twod-coords "Alpha")
+                            (fu/science-keywords sk1 sk4 sk5)
+                            (fu/processing-level-id "PL1")
+                            {:organizations [(dc/org :archive-center "Larc")
+                                             (dc/org :processing-center "Larc")]})
+        coll2 (fu/make-coll 2 "PROV2"
+                            (fu/projects "proj3" "PROJ2")
+                            (fu/platforms "B" 2 2 1)
+                            (fu/science-keywords sk1 sk2 sk3)
+                            (fu/processing-level-id "pl1")
+                            {:organizations [(dc/org :archive-center "GSFC")
+                                             (dc/org :processing-center "Proc")]})
+        coll3 (fu/make-coll 3 "PROV2"
+                            (fu/platforms "A" 1 1 1)
+                            (fu/twod-coords "Alpha" "Bravo")
+                            (fu/science-keywords sk5 sk6 sk7)
+                            (fu/processing-level-id "PL1")
+                            {:organizations [(dc/org :archive-center "Larc")]})
+        coll4 (fu/make-coll 4 "PROV1"
+                            (fu/twod-coords "alpha")
+                            (fu/science-keywords sk3)
+                            (fu/processing-level-id "PL2")
+                            {:organizations [(dc/org :archive-center "Larc")]})
 
-        coll5 (make-coll 5 "PROV2")
+        coll5 (fu/make-coll 5 "PROV2")
 
         ;; Guests do not have permission to this collection so it will not appear in results
-        coll6 (make-coll 6 "PROV2"
-                         (projects "proj1")
-                         (platforms "A" 1 1 1)
-                         (twod-coords "Alpha")
-                         (science-keywords sk1)
-                         (processing-level-id "PL1"))
+        coll6 (fu/make-coll 6 "PROV2"
+                            (fu/projects "proj1")
+                            (fu/platforms "A" 1 1 1)
+                            (fu/twod-coords "Alpha")
+                            (fu/science-keywords sk1)
+                            (fu/processing-level-id "PL1"))
 
         ;; Need a dif collection because echo10 does not have a way to specify distribution centers
         coll7 (make-dif-coll 7 "PROV1"
-                             (science-keywords sk1)
+                             (fu/science-keywords sk1)
                              {:organizations [(dc/org :distribution-center "Dist")]})
 
         all-colls [coll1 coll2 coll3 coll4 coll5 coll6 coll7]]
@@ -828,8 +505,8 @@
 (deftest large-hierarchy-science-keyword-test
   (grant-permissions)
   (let [science-keywords (for [n (range 25)]
-                           (generate-science-keywords n))
-        _ (make-coll 1 "PROV1" {:science-keywords science-keywords})
+                           (fu/generate-science-keywords n))
+        _ (fu/make-coll 1 "PROV1" {:science-keywords science-keywords})
         categories (->> (get-facet-results :hierarchical)
                         :json-facets
                         (filter #(= "science_keywords" (:field %)))
@@ -844,10 +521,10 @@
   (grant-permissions)
   ;; Test that if the platforms do not exist in KMS, they will still be returned, but with a value
   ;; of "Not Provided" for all of the values in the hierarchy other than short name.
-  (make-coll 1 "PROV1" (platforms "Platform" 2 2 1))
+  (fu/make-coll 1 "PROV1" (fu/platforms "Platform" 2 2 1))
   ;; Test that even with a nil series-entity the platform will still be returned, but with a
   ;; value of "Not Provided" for the series-entity
-  (make-coll 2 "PROV1" {:platforms [(dc/platform {:short-name "A340-600"})]})
+  (fu/make-coll 2 "PROV1" {:platforms [(dc/platform {:short-name "A340-600"})]})
   (let [expected-platforms [{:subfields ["category"],
                              :field "platforms",
                              :category
@@ -889,11 +566,11 @@
   (grant-permissions)
   ;; Test that if the instruments do not exist in KMS, they will still be returned, but with a value
   ;; of "Not Provided" for all of the values in the hierarchy other than short name.
-  (make-coll 1 "PROV1" (platforms "instrument-test" 2 2 1))
+  (fu/make-coll 1 "PROV1" (fu/platforms "instrument-test" 2 2 1))
   ;; Test that even with a nil type and sub-type the instrument will still be returned, but with a
   ;; value of "Not Provided" for those fields.
-  (make-coll 2 "PROV1" {:platforms [(dc/platform
-                                      {:instruments [(dc/instrument {:short-name "ADS"})]})]})
+  (fu/make-coll 2 "PROV1" {:platforms [(dc/platform
+                                         {:instruments [(dc/instrument {:short-name "ADS"})]})]})
   (let [expected-instruments [{:field "instruments",
                                :subfields ["category"],
                                :category
@@ -961,10 +638,10 @@
   (grant-permissions)
   ;; Test that if the archive-centers do not exist in KMS, they will still be returned, but with a
   ;; value of "Not Provided" for all of the values in the hierarchy other than short name.
-  (make-coll 1 "PROV1" {:organizations [(dc/org :archive-center "Larc")]})
+  (fu/make-coll 1 "PROV1" {:organizations [(dc/org :archive-center "Larc")]})
   ;; Test that even with a nil Level-1, Level-2, and Level-3 the archive-center will still be
   ;; returned, but with a value of "Not Provided" for each nil field
-  (make-coll 2 "PROV1" {:organizations [(dc/org :archive-center "ESA/ED")]})
+  (fu/make-coll 2 "PROV1" {:organizations [(dc/org :archive-center "ESA/ED")]})
   (let [expected-archive-centers [{:field "archive_centers",
                                    :subfields ["level_0"],
                                    :level_0
@@ -1043,31 +720,31 @@
                                                          :variable-level-3 " Level1-3    "
                                                          :detailed-variable "  Detail1 "})
 
-        coll1 (make-coll 1 "PROV1"
-                         (projects "proj1" "PROJ2")
-                         (platforms "A" 2 2 1)
-                         (twod-coords "Alpha")
-                         (science-keywords sk1 sk4 sk5)
-                         (processing-level-id "PL1")
-                         {:organizations [(dc/org :archive-center "Larc")
-                                          (dc/org :processing-center "Larc")]})
-        coll2 (make-coll 2 "PROV2"
-                         (projects "proj3" "PROJ2")
-                         (platforms "B" 2 2 1)
-                         (science-keywords sk1 sk2 sk3)
-                         (processing-level-id "pl1")
-                         {:organizations [(dc/org :archive-center "GSFC")
-                                          (dc/org :processing-center "Proc")]})
-        coll3 (make-coll 3 "PROV2"
-                         (science-keywords sk1-leading-ws))
+        coll1 (fu/make-coll 1 "PROV1"
+                            (fu/projects "proj1" "PROJ2")
+                            (fu/platforms "A" 2 2 1)
+                            (fu/twod-coords "Alpha")
+                            (fu/science-keywords sk1 sk4 sk5)
+                            (fu/processing-level-id "PL1")
+                            {:organizations [(dc/org :archive-center "Larc")
+                                             (dc/org :processing-center "Larc")]})
+        coll2 (fu/make-coll 2 "PROV2"
+                            (fu/projects "proj3" "PROJ2")
+                            (fu/platforms "B" 2 2 1)
+                            (fu/science-keywords sk1 sk2 sk3)
+                            (fu/processing-level-id "pl1")
+                            {:organizations [(dc/org :archive-center "GSFC")
+                                             (dc/org :processing-center "Proc")]})
+        coll3 (fu/make-coll 3 "PROV2"
+                            (fu/science-keywords sk1-leading-ws))
 
-        coll4 (make-coll 4 "PROV2"
-                         (science-keywords sk1-trailing-ws))
+        coll4 (fu/make-coll 4 "PROV2"
+                            (fu/science-keywords sk1-trailing-ws))
 
-        coll5 (make-coll 5 "PROV2"
-                         (platforms " A" 1)
-                         (projects "proj3 " " PROJ2")
-                         (science-keywords sk1-leading-and-trailing-ws))]
+        coll5 (fu/make-coll 5 "PROV2"
+                            (fu/platforms " A" 1)
+                            (fu/projects "proj3 " " PROJ2")
+                            (fu/science-keywords sk1-leading-and-trailing-ws))]
 
     (index/wait-until-indexed)
 
@@ -1157,7 +834,7 @@
         _ (index/wait-until-indexed)
         facet-results (:facets (search/find-refs :collection {:include-facets true}))]
     (are [value-counts field]
-      (= value-counts (:value-counts (first (filter #(= field (:field %)) facet-results))))
-      [["SMAP" 2]] "platform"
-      [["ATM" 2]]  "instrument"
-      [["OR-STATE/EOARC" 2]] "archive_center")))
+         (= value-counts (:value-counts (first (filter #(= field (:field %)) facet-results))))
+         [["SMAP" 2]] "platform"
+         [["ATM" 2]]  "instrument"
+         [["OR-STATE/EOARC" 2]] "archive_center")))
