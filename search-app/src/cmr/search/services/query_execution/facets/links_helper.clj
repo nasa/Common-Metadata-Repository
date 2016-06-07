@@ -163,34 +163,11 @@
                                     (get-keys-to-remove potential-query-params value))]
     {:remove (generate-query-string base-url updated-query-params)}))
 
-
-(defn create-hierarchical-remove-link
-  "Create a link that will modify the current search to no longer filter on the given hierarchical
-  field-name and value. Looks for matches case insensitively."
-  [base-url query-params field-name value]
-  (let [value (str/lower-case value)
-        potential-query-params (get-potential-matching-query-params query-params field-name)
-        updated-query-params (reduce (fn [updated-params k]
-                                       (update updated-params k
-                                         (fn [existing-values]
-                                           (remove (fn [existing-value]
-                                                     (= value (str/lower-case existing-value)))
-                                                   existing-values))))
-                                     query-params
-                                     (get-keys-to-update potential-query-params value))
-        updated-query-params (apply dissoc updated-query-params
-                                    (get-keys-to-remove potential-query-params value))]
-    {:remove (generate-query-string base-url updated-query-params)}))
-
 (defn create-hierarchical-links
   "Creates either a remove or an apply link based on whether this particular value is already
   selected within a query. Returns a tuple of the type of link created and the link itself."
   [base-url query-params field-name value]
-  (let [[base-field sub-field] (str/split field-name #"\[0\]")
-        field-regex (re-pattern (format "%s.*%s" base-field (subs sub-field 1 (count sub-field))))
-        matching-keys (keep #(re-matches field-regex %) (keys query-params))
-        potential-query-params (when (seq matching-keys)
-                                 (select-keys query-params matching-keys))
+  (let [potential-query-params (get-potential-matching-query-params query-params field-name)
         value-exists (or (seq (get-keys-to-remove potential-query-params value))
                          (seq (get-keys-to-update potential-query-params value)))]
     (if value-exists
