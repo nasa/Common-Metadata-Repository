@@ -6,7 +6,8 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]))
+            [cmr.system-int-test.utils.index-util :as index]
+            [cmr.common.mime-types :as mt]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -79,3 +80,25 @@
                 (fu/science-keywords sk3 sk2)
                 (fu/processing-level-id "PL1"))
   (is (= fr/partial-v2-facets (search-and-return-v2-facets))))
+
+(deftest invalid-facets-v2-response-formats
+  (testing "invalid xml response formats"
+    (are [resp-format]
+         (= {:status 400 :errors ["V2 facets are only supported in the JSON format."]}
+            (search/get-search-failure-xml-data
+              (search/find-concepts-in-format resp-format :collection {:include-facets "v2"})))
+         mt/echo10
+         mt/dif
+         mt/dif10
+         mt/xml
+         mt/kml
+         mt/atom
+         mt/iso19115))
+
+  (testing "invalid json response formats"
+     (are [resp-format]
+         (= {:status 400 :errors ["V2 facets are only supported in the JSON format."]}
+            (search/get-search-failure-data
+              (search/find-concepts-in-format resp-format :collection {:include-facets "v2"})))
+         mt/umm-json
+         mt/opendata)))
