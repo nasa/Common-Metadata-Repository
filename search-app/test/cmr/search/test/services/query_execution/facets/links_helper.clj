@@ -109,6 +109,15 @@
             [type result2] (lh/create-links base-url query-params param-name term)]
         (is (= :remove type))
         (is (= expected-result result))
+        (is (= expected-result result2))))
+    (testing "Terms are matched case insensitively"
+      (let [query-params {"foo" "bar"}
+            term "BAR"
+            expected-result {:remove "http://localhost:3003/collections.json"}
+            result (lh/create-remove-link base-url query-params param-name term)
+            [type result2] (lh/create-links base-url query-params param-name term)]
+        (is (= :remove type))
+        (is (= expected-result result))
         (is (= expected-result result2))))))
 
 (deftest apply-hierarchical-link-test
@@ -142,7 +151,6 @@
       (is (= :apply type))
       (is (= expected-result result))
       (is (= expected-result result2)))))
-
 
 (deftest remove-hierarchical-link-test
   (let [query-params {"foo" "bar"
@@ -193,7 +201,7 @@
         (is (= :remove type))
         (is (= expected-result result))
         (is (= expected-result result2)))))
-  (testing "Remove all links"
+  (testing "Remove all links and case insensitivity"
     (let [query-params {"science_keywords[0][category]" "EARTH SCIENCE"}
           term "Earth Science"
           param-name "science_keywords[0][category]"
@@ -203,3 +211,15 @@
       (is (= :remove type))
       (is (= expected-result result))
       (is (= expected-result result2)))))
+
+(deftest non-ascii-character-test
+  (let [query-params {"foo" "El niño"
+                      "umlaut" "Ü"}
+        term "El niño"
+        param-name "foo"
+        expected-result {:remove (str "http://localhost:3003/collections.json?umlaut=%C3%9C")}
+        result (lh/create-remove-link base-url query-params param-name term)
+        [type result2] (lh/create-links base-url query-params param-name term)]
+    (is (= :remove type))
+    (is (= expected-result result))
+    (is (= expected-result result2))))

@@ -7,6 +7,7 @@
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
+            [cmr.search.services.query-execution.facets.facets-v2-results-feature :as frf2]
             [cmr.common.mime-types :as mt]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
@@ -41,6 +42,14 @@
      (get-in (search/find-concepts-json :collection query-params)
              [:results :facets]))))
 
+(defn- applied?
+  "Returns whether the provided facet field is marked as applied in the facet response."
+  [facet-response field]
+  (let [child-facets (:children facet-response)
+        field-title (frf2/fields->human-readable-label field)
+        group-facet (first (filter #(= (:title %) field-title) child-facets))]
+    (:applied group-facet)))
+
 (deftest all-facets-v2-test
   (fu/make-coll 1 "PROV1"
                 (fu/science-keywords sk1 sk2)
@@ -67,7 +76,16 @@
                          :instrument ["ATM"]
                          :processing-level-id ["PL1"]
                          :data-center "DOI/USGS/CMG/WHSC"}]
-      (is (= fr/expected-v2-facets-remove-links (search-and-return-v2-facets search-params))))))
+      (is (= fr/expected-v2-facets-remove-links (search-and-return-v2-facets search-params)))
+      (testing "Some group fields not applied"
+        (let [response (search-and-return-v2-facets
+                        (dissoc search-params :platform :project :data-center))]
+          (is (not (applied? response :platform)))
+          (is (not (applied? response :project)))
+          (is (not (applied? response :data-center)))
+          (is (applied? response :science-keywords))
+          (is (applied? response :instrument))
+          (is (applied? response :processing-level-id)))))))
 
 (deftest empty-hierarchical-facets-test
   (let [expected-empty-facets {:title "Browse Collections"

@@ -9,6 +9,7 @@
             [cmr.common.util :as util]
             [ring.util.codec :as codec]
             [clojure.string :as str]
+            [clojure.set :as set]
             [cmr.transmit.connection :as conn]))
 
 (def UNLIMITED_TERMS_SIZE
@@ -75,60 +76,24 @@
   randomly."
   (util/key-sorted-map [:title :type :applied :count :links :has_children :children]))
 
-(defn- parse-hierarchical-bucket-v2
-  "Parses the elasticsearch aggregations response and generates version 2 facets."
-  [parent-field field-hierarchy bucket-map base-url query-params]
-  (when-let [field (first field-hierarchy)]
-    (let [value-counts (for [bucket (get-in bucket-map [field :buckets])
-                             :let [sub-facets (parse-hierarchical-bucket-v2
-                                                parent-field
-                                                (rest field-hierarchy)
-                                                bucket
-                                                base-url
-                                                query-params)
-                                   snake-parent-field (csk/->snake_case_string parent-field)
-                                   snake-field (csk/->snake_case_string field)
-                                   subfield-reg-ex (re-pattern (str snake-parent-field ".*"
-                                                                    snake-field ".*"))
-                                   relevant-query-params (filter (fn [[k v]] (re-matches subfield-reg-ex k)) query-params)
-                                   some-term-applied? (some? (seq relevant-query-params))
-                                   field-name (format "%s[0][%s]" snake-parent-field snake-field)
-                                   [type links] (if some-term-applied?
-                                                    (lh/create-hierarchical-links base-url query-params field-name (:key bucket))
-                                                    [:apply (lh/create-hierarchical-apply-link base-url query-params
-                                                                                               field-name (:key bucket))])]]
-                         (merge sorted-facet-map
-                                {:has_children false
-                                 :applied false}
-                                sub-facets
-                                {:title (:key bucket)
-                                 :applied (= type :remove)
-                                 :links links
-                                 :count (get-in bucket [:coll-count :doc_count] (:doc_count bucket))
-                                 :type :filter}))]
-      (when (seq value-counts)
-        {:title (csk/->snake_case_string field)
-         :type :group
-         :has_children true
-         :children value-counts}))))
+(defn- generate-group-node
+  "Returns a group node for the provided title, applied?, and children."
+  [title applied? children]
+  {:title title
+   :type :group
+   :applied applied?
+   :has_children (some? children)
+   :children children})
 
-(defn hierarchical-bucket-map->facets-v2
-  "Takes a map of elastic aggregation results for a nested field. Returns a hierarchical facet for
-  that field."
-  [field bucket-map base-url query-params]
-  (parse-hierarchical-bucket-v2 field (field kms-fetcher/nested-fields-mappings) bucket-map
-                                base-url query-params))
-
-(defn- generate-child-node
-  "Returns a function to generate a child node with the provided base-url query-params and
+(defn- generate-filter-node
+  "Returns a function to generate a child node with the provided base-url, query-params, and
   field-name. Returned function takes two arguments (a term and a count of collections containing
   that term)."
   [base-url query-params field-name some-term-applied?]
   (fn [[term count]]
     (let [[type links] (if some-term-applied?
                          (lh/create-links base-url query-params field-name term)
-                         [:apply (lh/create-apply-link base-url query-params
-                                                       field-name term)])]
+                         [:apply (lh/create-apply-link base-url query-params field-name term)])]
      (merge sorted-facet-map
             {:title term
              :type :filter
@@ -137,30 +102,65 @@
              :count count
              :has_children false}))))
 
-(defn- create-flat-v2-facets
-  "Parses the elastic aggregations and generates the v2 facets for all flat fields."
-  [elastic-aggregations base-url query-params]
-  (let [flat-fields [:platform :instrument :data-center :project :processing-level-id]]
-    (remove nil?
-      (for [field-name flat-fields
-            :let [value-counts (frf/buckets->value-count-pairs (field-name elastic-aggregations))
-                  has-children (some? (seq value-counts))
-                  snake-case-field (csk/->snake_case_string field-name)
-                  group-applied? (some? (or (get query-params snake-case-field)
-                                            (get query-params (str snake-case-field "[]"))))]]
-        (when has-children
-          {:title (field-name fields->human-readable-label)
-           :type :group
-           :applied group-applied?
-           :has_children true
-           :children (map (generate-children-node base-url query-params field-name group-applied?)
-                          value-counts)})))))
+(defn- field-applied?
+  "Returns whether any value is set in the passed in query-params for the provided hierarchical
+  field."
+  [query-params parent-field sub-field]
+  (let [sub-field-reg-ex (re-pattern (str parent-field ".*" sub-field ".*"))
+        relevant-query-params (filter (fn [[k v]] (re-matches sub-field-reg-ex k)) query-params)]
+    (some? (seq relevant-query-params))))
 
-(defn- parse-params
-  "Parse parameters from a query string into a map. Taken directly from ring code."
-  [params encoding]
-  (let [params (codec/form-decode params encoding)]
-    (if (map? params) params {})))
+(defn- generate-hierarchical-filter-node
+  "Generates a filter node for a hierarchical field. Takes a title, count, link-type, links and
+  sub-facets."
+  [title count link-type links sub-facets]
+  (merge sorted-facet-map
+         {:has_children false
+          :applied false}
+         sub-facets
+         {:title title
+          :applied (= link-type :remove)
+          :links links
+          :count count
+          :type :filter}))
+
+(defn- parse-hierarchical-bucket-v2
+  "Parses the elasticsearch aggregations response and generates version 2 facets."
+  [parent-field field-hierarchy elastic-aggregations base-url query-params]
+  (when-let [field (first field-hierarchy)]
+    (let [children
+          (for [bucket (get-in elastic-aggregations [field :buckets])
+                       :let [value (:key bucket)
+                             count (get-in bucket [:coll-count :doc_count] (:doc_count bucket))
+                             snake-parent-field (csk/->snake_case_string parent-field)
+                             snake-field (csk/->snake_case_string field)
+                             applied? (field-applied? query-params snake-parent-field snake-field)
+                               ;; Index in the field name does not matter
+                             field-name (format "%s[0][%s]" snake-parent-field snake-field)
+                             [type links] (if applied?
+                                            (lh/create-hierarchical-links base-url query-params
+                                                                          field-name value)
+                                            [:apply (lh/create-hierarchical-apply-link base-url
+                                                                                       query-params
+                                                                                       field-name
+                                                                                       value)])
+                             sub-facets (parse-hierarchical-bucket-v2 parent-field
+                                                                      (rest field-hierarchy)
+                                                                      bucket
+                                                                      base-url
+                                                                      query-params)]]
+            (generate-hierarchical-filter-node value count type links sub-facets))]
+
+      (when (seq children)
+        (generate-group-node (csk/->snake_case_string field) true children)))))
+
+(defn hierarchical-bucket-map->facets-v2
+  "Takes a map of elastic aggregation results for a nested field. Returns a hierarchical facet for
+  that field."
+  [field bucket-map base-url query-params]
+  (parse-hierarchical-bucket-v2 field (field kms-fetcher/nested-fields-mappings) bucket-map
+                                base-url query-params))
+
 
 (defn- create-hierarchical-v2-facets
   "Parses the elastic aggregations and generates the v2 facets for all hierarchical fields."
@@ -180,17 +180,41 @@
                                 :applied applied?)))))
           hierarchical-fields)))
 
+(defn- create-flat-v2-facets
+  "Parses the elastic aggregations and generates the v2 facets for all flat fields."
+  [elastic-aggregations base-url query-params]
+  (let [flat-fields [:platform :instrument :data-center :project :processing-level-id]]
+    (remove nil?
+      (for [field-name flat-fields
+            :let [value-counts (frf/buckets->value-count-pairs (field-name elastic-aggregations))
+                  snake-case-field (csk/->snake_case_string field-name)
+                  applied? (some? (or (get query-params snake-case-field
+                                            (get query-params (str snake-case-field "[]")))))
+                  children (map (generate-filter-node base-url query-params field-name applied?)
+                                value-counts)]]
+        (when (seq children)
+          (generate-group-node (field-name fields->human-readable-label) applied? children))))))
+
+(defn- parse-params
+  "Parse parameters from a query string into a map. Taken directly from ring code."
+  [params encoding]
+  (let [params (codec/form-decode params encoding)]
+    (if (map? params) params {})))
+
+(defn- collection-search-root-url
+  "The root URL for executing a collection search against the CMR."
+  [context]
+  (let [public-search-config (set/rename-keys (get-in context [:system :public-conf])
+                                              {:relative-root-url :context})]
+    (format "%s/collections.json" (conn/root-url public-search-config))))
+
 (defn create-v2-facets
-  "Create the facets v2 response. Takes an elastic aggregations result and returns the facets."
-  [context elastic-aggregations]
-  (let [search-public-conf (get-in context [:system :public-conf])
-        base-url (format "%s/collections.json"
-                          (conn/root-url
-                            (assoc search-public-conf
-                                   :context (:relative-root-url search-public-conf))))
+  "Create the facets v2 response. Parses an elastic aggregations result and returns the facets."
+  [context aggs]
+  (let [base-url (collection-search-root-url context)
         query-params (parse-params (:query-string context) "UTF-8")
-        facets (concat (create-hierarchical-v2-facets elastic-aggregations base-url query-params)
-                       (create-flat-v2-facets elastic-aggregations base-url query-params))]
+        facets (concat (create-hierarchical-v2-facets aggs base-url query-params)
+                       (create-flat-v2-facets aggs base-url query-params))]
     (if (seq facets)
       (assoc v2-facets-root :has_children true :children facets)
       (assoc v2-facets-root :has_children false))))

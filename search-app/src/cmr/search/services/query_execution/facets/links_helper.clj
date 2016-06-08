@@ -99,9 +99,10 @@
 
 (defn create-hierarchical-apply-link
   "Create a link that will modify the current search to also filter by the given hierarchical
-  field-name and value."
+  field-name and value.
+  Field-name must be of the form <string>[<int>][<string>]."
   [base-url query-params field-name value]
-  (let [[base-field sub-field] (str/split field-name #"\[0\]")
+  (let [[base-field sub-field] (str/split field-name #"\[\d+\]")
         max-index (get-max-index-for-field-name query-params base-field)
         updated-field-name (format "%s[%d]%s" base-field (inc max-index) sub-field)
         updated-query-params (assoc query-params updated-field-name value)]
@@ -137,7 +138,8 @@
   index.
 
   For example query parameters of foo[0][alpha]=bar, foo[0][beta]=cat, and foo[1][alpha]=dog
-  would return foo[0][alpha]=bar and foo[1][alpha]=dog, but not foo[0][beta]=cat."
+  would return foo[0][alpha]=bar and foo[1][alpha]=dog, but not foo[0][beta]=cat.
+  Field-name must be of the form <string>[<int>][<string>]."
   [query-params field-name]
   (let [[base-field sub-field] (str/split field-name #"\[0\]")
         field-regex (re-pattern (format "%s.*%s" base-field (subs sub-field 1 (count sub-field))))
@@ -147,7 +149,8 @@
 
 (defn create-hierarchical-remove-link
   "Create a link that will modify the current search to no longer filter on the given hierarchical
-  field-name and value. Looks for matches case insensitively."
+  field-name and value. Looks for matches case insensitively.
+  Field-name must be of the form <string>[<int>][<string>]."
   [base-url query-params field-name value]
   (let [value (str/lower-case value)
         potential-query-params (get-potential-matching-query-params query-params field-name)
@@ -165,7 +168,8 @@
 
 (defn create-hierarchical-links
   "Creates either a remove or an apply link based on whether this particular value is already
-  selected within a query. Returns a tuple of the type of link created and the link itself."
+  selected within a query. Returns a tuple of the type of link created and the link itself.
+  Field-name must be of the form <string>[<int>][<string>]."
   [base-url query-params field-name value]
   (let [potential-query-params (get-potential-matching-query-params query-params field-name)
         value-exists (or (seq (get-keys-to-remove potential-query-params value))
