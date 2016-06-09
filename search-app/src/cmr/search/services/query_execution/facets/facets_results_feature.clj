@@ -17,7 +17,7 @@
   [field]
   {:terms {:field field :size UNLIMITED_TERMS_SIZE}})
 
-(def ^:public collection-count-aggregation
+(def collection-count-aggregation
   "Used to build an aggregation to get a count of unique concepts included in the current nested
   aggregation."
   {:reverse_nested {}

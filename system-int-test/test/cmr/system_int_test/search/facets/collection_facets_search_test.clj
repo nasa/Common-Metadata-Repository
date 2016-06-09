@@ -834,7 +834,7 @@
         _ (index/wait-until-indexed)
         facet-results (:facets (search/find-refs :collection {:include-facets true}))]
     (are [value-counts field]
-         (= value-counts (:value-counts (first (filter #(= field (:field %)) facet-results))))
-         [["SMAP" 2]] "platform"
-         [["ATM" 2]]  "instrument"
-         [["OR-STATE/EOARC" 2]] "archive_center")))
+      (= value-counts (:value-counts (first (filter #(= field (:field %)) facet-results))))
+      [["SMAP" 2]] "platform"
+      [["ATM" 2]]  "instrument"
+      [["OR-STATE/EOARC" 2]] "archive_center")))

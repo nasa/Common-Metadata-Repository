@@ -279,8 +279,8 @@
 
 (deftest exclude-validation-test
   (testing "concept-id is a valid key to exclude"
-    (is (= [] (pv/exclude-validation :granule {:exclude {:concept-id "G1-PROV1"}})))
-    (is (= [] (pv/exclude-validation :granule {:exclude {:concept-id "G1-CPROV1"}}))))
+    (is (= nil (pv/exclude-validation :granule {:exclude {:concept-id "G1-PROV1"}})))
+    (is (= nil (pv/exclude-validation :granule {:exclude {:concept-id "G1-CPROV1"}}))))
   (testing "after parameter replacement, anything other than concept-id is not a valid key to exclude"
     (is (= ["Parameter(s) [echo-collection-id] can not be used with exclude."]
            (pv/exclude-validation :granule {:exclude {:echo-collection-id "G1-PROV1"}})))
