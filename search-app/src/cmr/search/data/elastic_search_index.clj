@@ -132,7 +132,7 @@
   [context _ query]
   {:index-name (if (:all-revisions? query)
                  "1_all_collection_revisions"
-                 "1_collections")
+                 "collection_search_alias")
    :type-name "collection"})
 
 (defmethod common-esi/concept-type->index-info :tag

@@ -9,6 +9,7 @@
             [cmr.common.concepts :as cs]
             [cmr.common.mime-types :as mt]
             [cmr.elastic-utils.connect :as es]
+            [cmr.elastic-utils.index-util :as esi]
             [cmr.transmit.index-set :as index-set]
             [cmr.indexer.data.index-set :as idx-set]
             [cmr.umm.core :as umm]
@@ -100,7 +101,8 @@
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
   [context]
   (idx-set/reset context)
-  (create-indexes context))
+  (create-indexes context)
+  (esi/create-collections-index-alias (get-in context [:system :db :conn])))
 
 (defrecord ESstore
   [

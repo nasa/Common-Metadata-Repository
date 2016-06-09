@@ -28,7 +28,7 @@
     :tag {:indexes [{:name "tags",
                      :settings i/tag-setting}],
           :mapping i/tag-mapping},
-    :concepts {:collection {:collections "1_collections",
+    :concepts {:collection {:collections "1_collections_v2",
                             :all-collection-revisions "1_all_collection_revisions"},
                :granule {:small_collections "1_small_collections",
                          :C274209-USGS_EROS "1_c274209_usgs_eros",

@@ -6,6 +6,7 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.nrepl :as nrepl]
             [cmr.common.api.web-server :as web]
+            [cmr.elastic-utils.index-util :as esi]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.indexer.config :as config]
             [cmr.common.cache :as cache]
@@ -79,14 +80,14 @@
   [system]
   (let [started-system (start system)
         context {:system started-system}]
-    ;; The indexes will not be created if they already exist.
+    ;; The indexes/alias will not be created if they already exist.
     (es/create-indexes context)
     (when (es/requires-update? context)
       (es/update-indexes context))
+    (esi/create-collections-index-alias (es/context->conn context))
     started-system))
 
 (def stop
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
   (common-sys/stop-fn "indexer" component-order))
-

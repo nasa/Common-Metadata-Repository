@@ -196,3 +196,10 @@
   "Delete document that match the given query"
   [elastic-store index-name type-name query]
   (doc/delete-by-query (:conn elastic-store) index-name type-name query))
+
+(defn create-collections-index-alias
+  "Creates the alias for the collections index if it does not already exist."
+  [conn]
+  (let [aliases (esi/get-aliases conn "1_collections_v2")]
+    (when-not (seq (:aliases aliases))
+     (esi/update-aliases conn [{:add {:index "1_collections_v2" :alias "collection_search_alias"}}]))))
