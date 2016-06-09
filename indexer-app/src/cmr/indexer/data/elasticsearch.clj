@@ -102,7 +102,7 @@
   [context]
   (idx-set/reset context)
   (create-indexes context)
-  (esi/create-collections-index-alias (get-in context [:system :db :conn])))
+  (esi/create-index-alias (get-in context [:system :db :conn]) "1_collections_v2" "collection_search_alias"))
 
 (defrecord ESstore
   [

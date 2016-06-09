@@ -197,9 +197,9 @@
   [elastic-store index-name type-name query]
   (doc/delete-by-query (:conn elastic-store) index-name type-name query))
 
-(defn create-collections-index-alias
+(defn create-index-alias
   "Creates the alias for the collections index if it does not already exist."
-  [conn]
-  (let [aliases (esi/get-aliases conn "1_collections_v2")]
+  [conn index alias]
+  (let [aliases (esi/get-aliases conn index)]
     (when-not (seq (:aliases aliases))
-     (esi/update-aliases conn [{:add {:index "1_collections_v2" :alias "collection_search_alias"}}]))))
+     (esi/update-aliases conn [{:add {:index index :alias alias}}]))))
