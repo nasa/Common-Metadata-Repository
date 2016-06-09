@@ -100,7 +100,7 @@
 (defn create-hierarchical-apply-link
   "Create a link that will modify the current search to also filter by the given hierarchical
   field-name and value.
-  Field-name must be of the form <string>[<int>][<string>]."
+  Field-name must be of the form <string>[<int>][<string>] such as science_keywords[0][topic]."
   [base-url query-params field-name value]
   (let [[base-field sub-field] (str/split field-name #"\[\d+\]")
         max-index (get-max-index-for-field-name query-params base-field)
