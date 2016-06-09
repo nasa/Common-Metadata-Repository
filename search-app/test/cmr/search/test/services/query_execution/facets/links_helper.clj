@@ -15,8 +15,7 @@
             expected-result {:apply (str "http://localhost:3003/collections.json?"
                                          "foo%5B%5D=bar&foo%5B%5D=alpha&foo%5B%5D=bravo")}
             result (lh/create-apply-link base-url query-params param-name term)
-            [type result2] (lh/create-links base-url query-params param-name term)]
-        (is (= :apply type))
+            result2 (lh/create-links base-url query-params param-name term)]
         (is (= expected-result result))
         (is (= expected-result result2))))
     (testing "Apply link with single existing value"
@@ -24,8 +23,7 @@
             expected-result {:apply (str "http://localhost:3003/collections.json?"
                                          "foo%5B%5D=bar&foo%5B%5D=alpha")}
             result (lh/create-apply-link base-url query-params param-name term)
-            [type result2] (lh/create-links base-url query-params param-name term)]
-        (is (= :apply type))
+            result2 (lh/create-links base-url query-params param-name term)]
         (is (= expected-result result))
         (is (= expected-result result2))))
     (testing "Apply link when value is already applied"
@@ -33,8 +31,7 @@
             expected-result {:apply (str "http://localhost:3003/collections.json?"
                                          "foo%5B%5D=bar&foo%5B%5D=bar")}
             result (lh/create-apply-link base-url query-params param-name term)
-            [type result2] (lh/create-links base-url query-params param-name term)]
-        (is (= :remove type))
+            result2 (lh/create-links base-url query-params param-name term)]
         (is (= expected-result result))
         (is (= {:remove "http://localhost:3003/collections.json"} result2))))
     (testing "Apply link without any existing values"
@@ -42,8 +39,7 @@
             expected-result {:apply (str "http://localhost:3003/collections.json?"
                                          "foo%5B%5D=bar")}
             result (lh/create-apply-link base-url query-params param-name term)
-            [type result2] (lh/create-links base-url query-params param-name term)]
-        (is (= :apply type))
+            result2 (lh/create-links base-url query-params param-name term)]
         (is (= expected-result result))
         (is (= expected-result result2))))
     (testing "Apply link with other params"
@@ -51,8 +47,7 @@
             expected-result {:apply (str "http://localhost:3003/collections.json?"
                                          "charlie%5B%5D=delta&foo%5B%5D=bar")}
             result (lh/create-apply-link base-url query-params param-name term)
-            [type result2] (lh/create-links base-url query-params param-name term)]
-        (is (= :apply type))
+            result2 (lh/create-links base-url query-params param-name term)]
         (is (= expected-result result))
         (is (= expected-result result2))))))
 
@@ -64,16 +59,14 @@
             expected-result {:remove (str "http://localhost:3003/collections.json?"
                                           "foo%5B%5D=alpha")}
             result (lh/create-remove-link base-url query-params param-name term)
-            [type result2] (lh/create-links base-url query-params param-name term)]
-        (is (= :remove type))
+            result2 (lh/create-links base-url query-params param-name term)]
         (is (= expected-result result))
         (is (= expected-result result2))))
     (testing "Remove link without any other values"
       (let [query-params {"foo[]" "bar"}
             expected-result {:remove "http://localhost:3003/collections.json"}
             result (lh/create-remove-link base-url query-params param-name term)
-            [type result2] (lh/create-links base-url query-params param-name term)]
-        (is (= :remove type))
+            result2 (lh/create-links base-url query-params param-name term)]
         (is (= expected-result result))
         (is (= expected-result result2))))
     (testing "Remove link when value does not exist creates remove link without any change"
@@ -87,8 +80,7 @@
             expected-result {:remove (str "http://localhost:3003/collections.json?"
                                           "charlie%5B%5D=delta")}
             result (lh/create-remove-link base-url query-params param-name term)
-            [type result2] (lh/create-links base-url query-params param-name term)]
-        (is (= :remove type))
+            result2 (lh/create-links base-url query-params param-name term)]
         (is (= expected-result result))
         (is (= expected-result result2))))
     (testing "Remove link referenced multiple times"
@@ -98,16 +90,14 @@
                                           "charlie%5B%5D=delta&"
                                           "foo%5B%5D=soap")}
             result (lh/create-remove-link base-url query-params param-name term)
-            [type result2] (lh/create-links base-url query-params param-name term)]
-        (is (= :remove type))
+            result2 (lh/create-links base-url query-params param-name term)]
         (is (= expected-result result))
         (is (= expected-result result2))))
     (testing "Remove link referenced as single param rather than array"
       (let [query-params {"foo" "bar"}
             expected-result {:remove "http://localhost:3003/collections.json"}
             result (lh/create-remove-link base-url query-params param-name term)
-            [type result2] (lh/create-links base-url query-params param-name term)]
-        (is (= :remove type))
+            result2 (lh/create-links base-url query-params param-name term)]
         (is (= expected-result result))
         (is (= expected-result result2))))
     (testing "Terms are matched case insensitively"
@@ -115,8 +105,7 @@
             term "BAR"
             expected-result {:remove "http://localhost:3003/collections.json"}
             result (lh/create-remove-link base-url query-params param-name term)
-            [type result2] (lh/create-links base-url query-params param-name term)]
-        (is (= :remove type))
+            result2 (lh/create-links base-url query-params param-name term)]
         (is (= expected-result result))
         (is (= expected-result result2))))))
 
@@ -128,8 +117,7 @@
           expected-result {:apply (str "http://localhost:3003/collections.json?foo=bar&"
                                        "science_keywords%5B0%5D%5Btopic%5D=BIOMASS")}
           result (lh/create-hierarchical-apply-link base-url query-params param-name term)
-          [type result2] (lh/create-hierarchical-links base-url query-params param-name term)]
-      (is (= :apply type))
+          result2 (lh/create-hierarchical-links base-url query-params param-name term)]
       (is (= expected-result result))
       (is (= expected-result result2))))
   (testing "Apply link causes index to be increased by one"
@@ -147,8 +135,7 @@
                                        "science_keywords%5B1%5D%5Bvariable_level_3%5D=VAR3&"
                                        "science_keywords%5B2%5D%5Btopic%5D=BIOMASS")}
           result (lh/create-hierarchical-apply-link base-url query-params param-name term)
-          [type result2] (lh/create-hierarchical-links base-url query-params param-name term)]
-      (is (= :apply type))
+          result2 (lh/create-hierarchical-links base-url query-params param-name term)]
       (is (= expected-result result))
       (is (= expected-result result2)))))
 
@@ -164,8 +151,7 @@
                                           "science_keywords%5B0%5D%5Bcategory%5D=EARTH+SCIENCE&"
                                           "science_keywords%5B1%5D%5Btopic%5D=ATMOSPHERE")}
             result (lh/create-hierarchical-remove-link base-url query-params param-name term)
-            [type result2] (lh/create-hierarchical-links base-url query-params param-name term)]
-        (is (= :remove type))
+            result2 (lh/create-hierarchical-links base-url query-params param-name term)]
         (is (= expected-result result))
         (is (= expected-result result2))))
     (testing "Different index param name being matched: science_keywords[1] vs. science_keywords[0]"
@@ -174,8 +160,7 @@
                                           "science_keywords%5B0%5D%5Bcategory%5D=EARTH+SCIENCE&"
                                           "science_keywords%5B0%5D%5Btopic%5D=AGRICULTURE")}
             result (lh/create-hierarchical-remove-link base-url query-params param-name term)
-            [type result2] (lh/create-hierarchical-links base-url query-params param-name term)]
-        (is (= :remove type))
+            result2 (lh/create-hierarchical-links base-url query-params param-name term)]
         (is (= expected-result result))
         (is (= expected-result result2))))
     (testing "Multiple values for the term to be removed"
@@ -186,8 +171,7 @@
                                           "science_keywords%5B0%5D%5Btopic%5D=AGRICULTURE&"
                                           "science_keywords%5B1%5D%5Btopic%5D=BIOMASS")}
             result (lh/create-hierarchical-remove-link base-url query-params param-name term)
-            [type result2] (lh/create-hierarchical-links base-url query-params param-name term)]
-        (is (= :remove type))
+            result2 (lh/create-hierarchical-links base-url query-params param-name term)]
         (is (= expected-result result))
         (is (= expected-result result2))))
     (testing "Term being removed is referenced multiple times"
@@ -197,8 +181,7 @@
                                           "science_keywords%5B0%5D%5Bcategory%5D=EARTH+SCIENCE&"
                                           "science_keywords%5B0%5D%5Btopic%5D=AGRICULTURE")}
             result (lh/create-hierarchical-remove-link base-url query-params param-name term)
-            [type result2] (lh/create-hierarchical-links base-url query-params param-name term)]
-        (is (= :remove type))
+            result2 (lh/create-hierarchical-links base-url query-params param-name term)]
         (is (= expected-result result))
         (is (= expected-result result2)))))
   (testing "Remove all links and case insensitivity"
@@ -207,8 +190,7 @@
           param-name "science_keywords[0][category]"
           expected-result {:remove (str "http://localhost:3003/collections.json")}
           result (lh/create-hierarchical-remove-link base-url query-params param-name term)
-          [type result2] (lh/create-hierarchical-links base-url query-params param-name term)]
-      (is (= :remove type))
+          result2 (lh/create-hierarchical-links base-url query-params param-name term)]
       (is (= expected-result result))
       (is (= expected-result result2)))))
 
@@ -219,7 +201,6 @@
         param-name "foo"
         expected-result {:remove (str "http://localhost:3003/collections.json?umlaut=%C3%9C")}
         result (lh/create-remove-link base-url query-params param-name term)
-        [type result2] (lh/create-links base-url query-params param-name term)]
-    (is (= :remove type))
+        result2 (lh/create-links base-url query-params param-name term)]
     (is (= expected-result result))
     (is (= expected-result result2))))

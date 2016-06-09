@@ -91,13 +91,13 @@
   that term)."
   [base-url query-params field-name some-term-applied?]
   (fn [[term count]]
-    (let [[type links] (if some-term-applied?
-                         (lh/create-links base-url query-params field-name term)
-                         [:apply (lh/create-apply-link base-url query-params field-name term)])]
+    (let [links (if some-term-applied?
+                    (lh/create-links base-url query-params field-name term)
+                    (lh/create-apply-link base-url query-params field-name term))]
      (merge sorted-facet-map
             {:title term
              :type :filter
-             :applied (= type :remove)
+             :applied (= :remove (first (keys links)))
              :links links
              :count count
              :has_children false}))))
@@ -113,44 +113,67 @@
 (defn- generate-hierarchical-filter-node
   "Generates a filter node for a hierarchical field. Takes a title, count, link-type, links and
   sub-facets."
-  [title count link-type links sub-facets]
+  [title count links sub-facets]
   (merge sorted-facet-map
          {:has_children false
           :applied false}
          sub-facets
          {:title title
-          :applied (= link-type :remove)
+          :applied (= :remove (first (keys links)))
           :links links
           :count count
           :type :filter}))
 
-(defn- parse-hierarchical-bucket-v2
-  "Parses the elasticsearch aggregations response and generates version 2 facets."
-  [parent-field field-hierarchy elastic-aggregations base-url query-params]
-  (when-let [field (first field-hierarchy)]
-    (let [children
-          (for [bucket (get-in elastic-aggregations [field :buckets])
-                       :let [value (:key bucket)
-                             count (get-in bucket [:coll-count :doc_count] (:doc_count bucket))
-                             snake-parent-field (csk/->snake_case_string parent-field)
-                             snake-field (csk/->snake_case_string field)
-                             applied? (field-applied? query-params snake-parent-field snake-field)
-                               ;; Index in the field name does not matter
-                             field-name (format "%s[0][%s]" snake-parent-field snake-field)
-                             [type links] (if applied?
-                                            (lh/create-hierarchical-links base-url query-params
-                                                                          field-name value)
-                                            [:apply (lh/create-hierarchical-apply-link base-url
-                                                                                       query-params
-                                                                                       field-name
-                                                                                       value)])
-                             sub-facets (parse-hierarchical-bucket-v2 parent-field
-                                                                      (rest field-hierarchy)
-                                                                      bucket
-                                                                      base-url
-                                                                      query-params)]]
-            (generate-hierarchical-filter-node value count type links sub-facets))]
+(defn- generate-hierarchical-children
+  "Generate children nodes for a hierarchical facet v2 response.
+  recursive-parse-fn - function to call to recursively generate any children filter nodes.
+  generate-links-fn - function to call to generate the links field in the facets v2 response for
+                      the passed in field.
+  field - the hierarchical subfield to generate the filter nodes for in the v2 response.
+  elastic-aggregations - the portion of the elastic aggregations response to parse to generate
+                         the part of the facets v2 response related to the passed in field."
+  [recursive-parse-fn generate-links-fn field elastic-aggregations]
+  ;; Each value for this field has its own bucket in the elastic aggregations response
+  (for [bucket (get-in elastic-aggregations [field :buckets])
+        :let [value (:key bucket)
+              count (get-in bucket [:coll-count :doc_count] (:doc_count bucket))
+              links (generate-links-fn value)
+              sub-facets (recursive-parse-fn bucket)]]
+    (generate-hierarchical-filter-node value count links sub-facets)))
 
+(defn- parse-hierarchical-bucket-v2
+  "Recursively parses the elasticsearch aggregations response and generates version 2 facets.
+  parent-field - The top level field name for a hierarchical field - for example :science-keywords
+  field-hierarchy - An ordered array of all the unprocessed subfields within the parent field
+                    hierarchy. For example the first time the function is called the array may be
+                    [:category :topic :term] and on the next recursion it will be [:topic :term]
+                    The recursion ends once the field hierarchy is empty.
+  base-url - The root URL to use for the links that are generated in the facet response.
+  query-params - the query parameters from the current search as a map with a key for each
+                 parameter name and the value as either a single value or a collection of values.
+  elastic-aggregations - the portion of the elastic-aggregations response to parse. As each field
+                         is parsed recursively the aggregations are reduced to just the portion
+                         relevant to that field."
+  [parent-field field-hierarchy base-url query-params elastic-aggregations]
+  ;; Iterate through the next field in the hierarchy. Return nil if there are no more fields in
+  ;; the hierarchy
+  (when-let [field (first field-hierarchy)]
+    (let [snake-parent-field (csk/->snake_case_string parent-field)
+          snake-field (csk/->snake_case_string field)
+          applied? (field-applied? query-params snake-parent-field snake-field)
+          ;; Index in the param name does not matter
+          param-name (format "%s[0][%s]" snake-parent-field snake-field)
+          ;; If no value is applied in the search for the given field we can safely call create
+          ;; apply link. Otherwise we need to determine if an apply or a remove link should be
+          ;; generated.
+          generate-links-fn (if applied?
+                              (partial lh/create-hierarchical-links base-url query-params param-name)
+                              (partial lh/create-hierarchical-apply-link base-url query-params
+                                       param-name))
+          recursive-parse-fn (partial parse-hierarchical-bucket-v2 parent-field
+                                      (rest field-hierarchy) base-url query-params)
+          children (generate-hierarchical-children recursive-parse-fn generate-links-fn field
+                                                   elastic-aggregations)]
       (when (seq children)
         (generate-group-node (csk/->snake_case_string field) true children)))))
 
@@ -158,8 +181,8 @@
   "Takes a map of elastic aggregation results for a nested field. Returns a hierarchical facet for
   that field."
   [field bucket-map base-url query-params]
-  (parse-hierarchical-bucket-v2 field (field kms-fetcher/nested-fields-mappings) bucket-map
-                                base-url query-params))
+  (parse-hierarchical-bucket-v2 field (field kms-fetcher/nested-fields-mappings) base-url
+                                query-params bucket-map))
 
 
 (defn- create-hierarchical-v2-facets

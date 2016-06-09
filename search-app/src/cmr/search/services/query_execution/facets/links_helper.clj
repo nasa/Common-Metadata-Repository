@@ -80,8 +80,8 @@
         value-exists (some #{(str/lower-case value)}
                           (map #(when % (str/lower-case %)) values-for-field))]
     (if value-exists
-      [:remove (create-remove-link base-url query-params field-name value)]
-      [:apply (create-apply-link base-url query-params field-name value)])))
+      (create-remove-link base-url query-params field-name value)
+      (create-apply-link base-url query-params field-name value))))
 
 (defn- get-max-index-for-field-name
   "Returns the max index for the provided field-name within the query parameters.
@@ -175,5 +175,5 @@
         value-exists (or (seq (get-keys-to-remove potential-query-params value))
                          (seq (get-keys-to-update potential-query-params value)))]
     (if value-exists
-      [:remove (create-hierarchical-remove-link base-url query-params field-name value)]
-      [:apply (create-hierarchical-apply-link base-url query-params field-name value)])))
+      (create-hierarchical-remove-link base-url query-params field-name value)
+      (create-hierarchical-apply-link base-url query-params field-name value))))
