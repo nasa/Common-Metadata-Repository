@@ -37,6 +37,14 @@
   "Number of shards to use for the tags index."
   {:default 5 :type Long})
 
+(defconfig collections-index-alias
+  "The alias to use for the collections index."
+  {:default "collection_search_alias" :type String})
+
+(defconfig collections-index
+  "The index to use for collections"
+  {:default "1_collections_v2" :type String})
+
 (def collection-setting-v1 {:index
                             {:number_of_shards (elastic-collection-index-num-shards)
                              :number_of_replicas 1,

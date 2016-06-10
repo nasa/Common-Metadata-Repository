@@ -68,7 +68,10 @@
       (nil? existing-index-set)
       (do
         (info "Index set does not exist so creating it.")
-        (idx-set/create context expected-index-set))
+        (idx-set/create context expected-index-set)
+        (info "Creating collection index alias.")
+        (esi/create-index-alias (get-in context [:system :db :conn]) (idx-set/collections-index) (idx-set/collections-index-alias)))
+
 
       ;; Compare them to see if they're the same
       (requires-update? existing-index-set expected-index-set)
@@ -95,14 +98,15 @@
       (errors/throw-service-error :bad-request "It appears the existing index set and the new index set are the same."))
 
     (info "Updating the index set to " (pr-str expected-index-set))
-    (idx-set/update context expected-index-set)))
+    (idx-set/update context expected-index-set)
+    (info "Creating colleciton index alias.")
+    (esi/create-index-alias (get-in context [:system :db :conn]) idx-set/collections-index idx-set/collections-index-alias)))
 
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
   [context]
   (idx-set/reset context)
-  (create-indexes context)
-  (esi/create-index-alias (get-in context [:system :db :conn]) "1_collections_v2" "collection_search_alias"))
+  (create-indexes context))
 
 (defrecord ESstore
   [

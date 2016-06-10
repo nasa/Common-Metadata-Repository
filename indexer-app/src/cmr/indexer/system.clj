@@ -84,7 +84,6 @@
     (es/create-indexes context)
     (when (es/requires-update? context)
       (es/update-indexes context))
-    (esi/create-index-alias (es/context->conn context) "1_collections_v2" "collection_search_alias")
     started-system))
 
 (def stop
