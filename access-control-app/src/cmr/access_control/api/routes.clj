@@ -169,13 +169,25 @@
 ;;; ACL Route Functions
 
 (defn create-acl
-  "Returns a Ring response with the result of trying to create the ACL
-  represented by the request headers and parameters"
+  "Returns a Ring response with the result of trying to create the ACL with the given request body."
   [request-context headers body]
+  (validate-content-type headers)
   (validate-json acl-schema/acl-schema body)
   (->> (json/parse-string body)
        util/map-keys->kebab-case
        (acl-service/create-acl request-context)
+       util/map-keys->snake_case
+       api-response))
+
+(defn update-acl
+  "Returns a Ring response with the result of trying to update the ACL with the given concept id
+  and request body."
+  [request-context concept-id headers body]
+  (validate-content-type headers)
+  (validate-json acl-schema/acl-schema body)
+  (->> (json/parse-string body)
+       util/map-keys->kebab-case
+       (acl-service/update-acl request-context concept-id)
        util/map-keys->snake_case
        api-response))
 
@@ -287,6 +299,10 @@
 
         (context "/:concept-id" [concept-id]
           (OPTIONS "/" req cr/options-response)
+
+          ;; Update an ACL
+          (PUT "/" {:keys [request-context headers body]}
+            (update-acl request-context concept-id headers (slurp body)))
 
           ;; Retrieve an ACL
           (GET "/" {:keys [request-context headers params]}

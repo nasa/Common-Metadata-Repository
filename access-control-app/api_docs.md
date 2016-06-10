@@ -24,6 +24,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [GET - Search ACLs](#search-acls)
   * /acls/:acl-id
     * [GET - Retrieve an ACL](#retrieve-acl)
+    * [PUT - Update an ACL](#update-acl)
   * /health
     * [GET - Get the health of the access control application.](#application-health)
 
@@ -367,32 +368,6 @@ Content-Type: application/json;charset=ISO-8859-1
 {"revision_id":1,"concept_id":"ACL1200000000-CMR"}
 ```
 
-### <a name="retrieve-acl"></a> Retrieve ACL
-
-A single ACL can be retrieved by sending a GET request to `%CMR-ENDPOINT%/acls/<concept-id>` where `concept-id` is the concept id of the ACL returned when it was created.
-
-```
-curl -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/acls/ACL1200000000-CMR?pretty=true
-
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-  "group_permissions" : [ {
-    "group_id" : "AG1234-FOO",
-    "permissions" : [ "read", "order" ]
-  }, {
-    "user_type" : "guest",
-    "permissions" : [ "read" ]
-  } ],
-  "catalog_item_identity" : {
-    "name" : "All Granules",
-    "provider_id" : "FOO",
-    "granule_applicable" : true
-  }
-}
-```
-
 ### <a name="search-acls"></a> Search ACLs
 
 ACLs can be searched for by sending a GET request to `%CMR-ENDPOINT%/acls`
@@ -461,6 +436,59 @@ Content-Length: 702
     "location" : "%CMR-ENDPOINT%/acls/ACL1200000006-CMR"
   } ]
 }
+```
+
+### <a name="retrieve-acl"></a> Retrieve ACL
+
+A single ACL can be retrieved by sending a GET request to `%CMR-ENDPOINT%/acls/<concept-id>` where `concept-id` is the concept id of the ACL returned when it was created.
+
+```
+curl -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/acls/ACL1200000000-CMR?pretty=true
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "group_permissions" : [ {
+    "group_id" : "AG1234-FOO",
+    "permissions" : [ "read", "order" ]
+  }, {
+    "user_type" : "guest",
+    "permissions" : [ "read" ]
+  } ],
+  "catalog_item_identity" : {
+    "name" : "All Granules",
+    "provider_id" : "FOO",
+    "granule_applicable" : true
+  }
+}
+```
+
+### <a name="update-acl"></a> Update ACL
+
+An ACL can be updated by sending a PUT request to `%CMR-ENDPOINT%/acls/<concept-id>` where `concept-id` is the concept id of the ACL returned when it was created.
+
+```
+curl -XPUT -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/acls/ACL1200000000-CMR -d \
+'{
+    "group_permissions": [{
+        "group_id": "AG1234-FOO",
+        "permissions": ["read", "order"]
+    }, {
+        "user_type": "guest",
+        "permissions": ["read"]
+    }],
+    "catalog_item_identity": {
+        "name": "All Granules",
+        "provider_id": "FOO",
+        "granule_applicable": true
+    }
+}'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+
+{"revision_id":2,"concept_id":"ACL1200000000-CMR"}
 ```
 
 ### <a name="application-health"></a> Application Health

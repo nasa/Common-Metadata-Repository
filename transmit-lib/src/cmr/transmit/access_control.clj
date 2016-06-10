@@ -98,9 +98,15 @@
   [ctx]
   (str (conn/root-url ctx) "/acls/"))
 
+(defn acl-concept-id-url
+  "Returns the URL of the ACL API root."
+  [ctx concept-id]
+  (str (conn/root-url ctx) "/acls/" concept-id))
+
 (h/defcreator create-acl :access-control acl-root-url)
+(h/defupdater update-acl :access-control acl-concept-id-url)
 (h/defsearcher search-for-acls :access-control acl-root-url)
-(h/defgetter get-acl :access-control (fn [ctx concept-id] (str (conn/root-url ctx) "/acls/" concept-id)))
+(h/defgetter get-acl :access-control acl-concept-id-url)
 
 ;;; Misc. Functions
 
