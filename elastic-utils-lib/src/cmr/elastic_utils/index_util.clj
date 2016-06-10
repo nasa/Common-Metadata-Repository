@@ -200,6 +200,4 @@
 (defn create-index-alias
   "Creates the alias for the collections index if it does not already exist."
   [conn index alias]
-  (let [aliases (esi/get-aliases conn index)]
-    (when-not (seq (:aliases aliases))
-     (esi/update-aliases conn [{:add {:index index :alias alias}}]))))
+  (esi/update-aliases conn [{:add {:index index :alias alias}}]))
