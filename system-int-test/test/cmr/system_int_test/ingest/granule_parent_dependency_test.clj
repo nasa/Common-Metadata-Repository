@@ -111,7 +111,7 @@
          ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."]
          gran-for-dif-coll
 
-         ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."]
+         []
          gran-for-dif10-coll
 
          ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."

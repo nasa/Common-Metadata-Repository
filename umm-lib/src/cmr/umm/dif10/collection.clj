@@ -22,6 +22,7 @@
             [cmr.umm.dif10.collection.personnel :as personnel]
             [cmr.umm.dif10.collection.product-specific-attribute :as psa]
             [cmr.umm.dif10.collection.metadata-association :as ma]
+            [cmr.umm.dif10.collection.two-d-coordinate-system :as two-d]
             [cmr.umm.dif.collection.extended-metadata :as em]
             [cmr.common.date-time-parser :as dtp])
   (:import cmr.umm.collection.UmmCollection))
@@ -64,6 +65,7 @@
      :temporal (t/xml-elem->Temporal xml-struct)
      :collection-progress (progress/parse xml-struct)
      :spatial-coverage (s/xml-elem->SpatialCoverage xml-struct)
+     :two-d-coordinate-systems (two-d/xml-elem->TwoDCoordinateSystems xml-struct)
      :projects (pj/xml-elem->Projects xml-struct)
      :quality (cx/string-at-path xml-struct [:Quality])
      :use-constraints (cx/string-at-path xml-struct [:Use_Constraints])
@@ -120,7 +122,7 @@
      (let [{{:keys [short-name version-id collection-data-type]} :product
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
             :keys [entry-title summary purpose temporal organizations science-keywords
-                   platforms product-specific-attributes projects related-urls spatial-coverage
+                   platforms product-specific-attributes projects related-urls
                    temporal-keywords personnel collection-associations quality use-constraints
                    publication-references temporal access-value]} collection]
        (x/emit-str
@@ -135,7 +137,7 @@
                     (platform/generate-platforms platforms)
                     (t/generate-temporal temporal)
                     (progress/generate collection)
-                    (s/generate-spatial-coverage spatial-coverage)
+                    (s/generate-spatial-coverage collection)
                     (pj/generate-projects projects)
                     (x/element :Quality {} quality)
                     (x/element :Use_Constraints {} use-constraints)

@@ -9,7 +9,8 @@
             [cmr.spatial.polygon :as poly]
             [cmr.umm.spatial :as umm-s]
             [camel-snake-kebab.core :as csk]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [cmr.umm.dif10.collection.two-d-coordinate-system :as two-d]))
 
 (defmulti parse-geometry
   "Parses a geometry element based on the tag of the element."
@@ -162,26 +163,31 @@
                    (x/element :Start_Circular_Latitude {} start-circular-latitude))))))
 
 (defn generate-spatial-coverage
-  "Generates the Spatial element from spatial coverage"
-  [spatial-coverage]
-  (if spatial-coverage
-    (let [{:keys [granule-spatial-representation
-                  spatial-representation
-                  geometries
-                  orbit-parameters]} spatial-coverage
-          gsr (csk/->SCREAMING_SNAKE_CASE_STRING granule-spatial-representation)
-          sr (some-> spatial-representation csk/->SCREAMING_SNAKE_CASE_STRING)]
-      (if sr
-        (x/element :Spatial_Coverage {}
-                   (x/element :Granule_Spatial_Representation {} gsr)
-                   (x/element :Geometry {}
-                              (x/element :Coordinate_System {} sr)
-                              (for [geometry geometries]
-                                (shape-to-xml geometry)))
-                   (generate-orbit-parameters orbit-parameters))
-        (x/element :Spatial_Coverage {}
-                   (x/element :Granule_Spatial_Representation {} gsr)
-                   (generate-orbit-parameters orbit-parameters))))
-    ;; Added since Spatial_Coverage is a required field in DIF10. CMRIN-79
-    (x/element :Spatial_Coverage {}
-               (x/element :Granule_Spatial_Representation {} "CARTESIAN"))))
+  "Generates the DIF10 Spatial_Coverage element from UMM spatial coverage and two d coordinate systems"
+  [coll]
+  (let [{:keys [spatial-coverage two-d-coordinate-systems]} coll]
+    (if spatial-coverage
+      (let [{:keys [granule-spatial-representation
+                    spatial-representation
+                    geometries
+                    orbit-parameters]} spatial-coverage
+            gsr (csk/->SCREAMING_SNAKE_CASE_STRING granule-spatial-representation)
+            sr (some-> spatial-representation csk/->SCREAMING_SNAKE_CASE_STRING)]
+        (if sr
+          (x/element :Spatial_Coverage {}
+                     (x/element :Granule_Spatial_Representation {} gsr)
+                     (x/element :Geometry {}
+                                (x/element :Coordinate_System {} sr)
+                                (for [geometry geometries]
+                                  (shape-to-xml geometry)))
+                     (generate-orbit-parameters orbit-parameters)
+                     (two-d/generate-two-ds two-d-coordinate-systems))
+          (x/element :Spatial_Coverage {}
+                     (x/element :Granule_Spatial_Representation {} gsr)
+                     (generate-orbit-parameters orbit-parameters)
+                     (two-d/generate-two-ds two-d-coordinate-systems))))
+      ;; Added since Spatial_Coverage is a required field in DIF10. CMRIN-79
+      (x/element :Spatial_Coverage {}
+                 (x/element :Granule_Spatial_Representation {} "CARTESIAN")
+                 (two-d/generate-two-ds two-d-coordinate-systems)))))
+
