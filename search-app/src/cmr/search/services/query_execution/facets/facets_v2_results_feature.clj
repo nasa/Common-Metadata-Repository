@@ -13,11 +13,11 @@
             [cmr.transmit.connection :as conn]))
 
 (def UNLIMITED_TERMS_SIZE
-  "The maximum number of results to return from any terms query"
+  "The maximum number of allowed results to return from any terms query."
   10000)
 
 (def DEFAULT_TERMS_SIZE
-  "The maximum number of results to return from any terms query"
+  "The default limit for the number of results to return from any terms query for v2 facets."
   50)
 
 (defn- terms-facet
@@ -92,7 +92,7 @@
   [base-url query-params field-name some-term-applied?]
   (fn [[term count]]
     (let [links (if some-term-applied?
-                    (lh/create-links base-url query-params field-name term)
+                    (lh/create-link base-url query-params field-name term)
                     (lh/create-apply-link base-url query-params field-name term))]
      (merge sorted-facet-map
             {:title term
@@ -111,8 +111,7 @@
     (some? (seq relevant-query-params))))
 
 (defn- generate-hierarchical-filter-node
-  "Generates a filter node for a hierarchical field. Takes a title, count, link-type, links and
-  sub-facets."
+  "Generates a filter node for a hierarchical field. Takes a title, count, links and sub-facets."
   [title count links sub-facets]
   (merge sorted-facet-map
          {:has_children false
@@ -167,9 +166,10 @@
           ;; apply link. Otherwise we need to determine if an apply or a remove link should be
           ;; generated.
           generate-links-fn (if applied?
-                              (partial lh/create-hierarchical-links base-url query-params param-name)
-                              (partial lh/create-hierarchical-apply-link base-url query-params
-                                       param-name))
+                              (partial lh/create-link-for-hierarchical-field base-url query-params
+                                       param-name)
+                              (partial lh/create-apply-link-for-hierarchical-field base-url
+                                       query-params param-name))
           recursive-parse-fn (partial parse-hierarchical-bucket-v2 parent-field
                                       (rest field-hierarchy) base-url query-params)
           children (generate-hierarchical-children recursive-parse-fn generate-links-fn field

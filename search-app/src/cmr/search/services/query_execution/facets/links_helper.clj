@@ -1,6 +1,10 @@
 (ns cmr.search.services.query-execution.facets.links-helper
-  "Functions to create the links that are included within v2 facets. Commonly used parameters in
-  the functions include:
+  "Functions to create the links that are included within v2 facets. Facets (v2) includes links
+  within each value to conduct the same search with either a value added to the query or with the
+  value removed. This namespace contains functions to create the links that include or exclude a
+  particular parameter.
+
+  Commonly used parameters in the functions include:
 
   base-url - root URL for the link being created.
   query-params - the query parameters from the current search as a map with a key for each
@@ -61,16 +65,16 @@
   [query-params field-name]
   (let [field-name-snake-case (csk/->snake_case_string field-name)]
     (reduce (fn [values-for-field field]
-                (let [values (get query-params field)]
-                  (if (coll? values)
-                    (conj values values-for-field)
-                    (if values
-                      (cons values values-for-field)
+                (let [value-or-values (get query-params field)]
+                  (if (coll? value-or-values)
+                    (conj value-or-values values-for-field)
+                    (if value-or-values
+                      (cons value-or-values values-for-field)
                       values-for-field))))
             []
             [field-name-snake-case (str field-name-snake-case "[]")])))
 
-(defn create-links
+(defn create-link
   "Creates either a remove or an apply link based on whether this particular value is already
   being filtered on within the provided query-params. Returns a tuple of the type of link created
   and the link itself. Looks for matches case insensitively."
@@ -78,7 +82,7 @@
   (let [field-name-snake-case (csk/->snake_case_string field-name)
         values-for-field (get-values-for-field query-params field-name)
         value-exists (some #{(str/lower-case value)}
-                          (map #(when % (str/lower-case %)) values-for-field))]
+                          (keep #(when % (str/lower-case %)) values-for-field))]
     (if value-exists
       (create-remove-link base-url query-params field-name value)
       (create-apply-link base-url query-params field-name value))))
@@ -97,7 +101,7 @@
       (apply max indexes-int)
       -1)))
 
-(defn create-hierarchical-apply-link
+(defn create-apply-link-for-hierarchical-field
   "Create a link that will modify the current search to also filter by the given hierarchical
   field-name and value.
   Field-name must be of the form <string>[<int>][<string>] such as science_keywords[0][topic]."
@@ -114,12 +118,10 @@
   [query-params value]
   (let [value (str/lower-case value)]
     (flatten
-      (keep (fn [[k values]]
-              (when (coll? values)
-                (keep (fn [single-value]
-                        (when (= (str/lower-case single-value) value)
-                          k))
-                      values)))
+      (keep (fn [[k value-or-values]]
+              (when (coll? value-or-values)
+                (when (some #{value} (map str/lower-case value-or-values))
+                  k)))
             query-params))))
 
 (defn- get-keys-to-remove
@@ -127,9 +129,9 @@
   matches case insensitively."
   [query-params value]
   (let [value (str/lower-case value)]
-    (keep (fn [[k v]]
-            (when-not (coll? v)
-              (when (= (str/lower-case v) value)
+    (keep (fn [[k value-or-values]]
+            (when-not (coll? value-or-values)
+              (when (= (str/lower-case value-or-values) value)
                 k)))
           query-params)))
 
@@ -137,8 +139,10 @@
   "Returns a subset of query parameters whose keys match the provided field-name and ignoring the
   index.
 
-  For example query parameters of foo[0][alpha]=bar, foo[0][beta]=cat, and foo[1][alpha]=dog
-  would return foo[0][alpha]=bar and foo[1][alpha]=dog, but not foo[0][beta]=cat.
+  As an example, consider passing in a field-name of foo[0][alpha] and query parameters
+  of foo[0][alpha]=fish, foo[0][beta]=cat, and foo[1][alpha]=dog. The returned query params would be
+  foo[0][alpha]=fish and foo[1][alpha]=dog, but not foo[0][beta]=cat. Note that the same query
+  params would also be returned for any field-name of foo[<n>][alpha] where n is an integer.
   Field-name must be of the form <string>[<int>][<string>]."
   [query-params field-name]
   (let [[base-field sub-field] (str/split field-name #"\[0\]")
@@ -147,33 +151,46 @@
     (when (seq matching-keys)
       (select-keys query-params matching-keys))))
 
-(defn create-hierarchical-remove-link
+(defn- remove-value-from-query-params-for-hierachical-field
+  "Removes the value from anywhere it matches in the provided potential-query-param-matches.
+  Each key in the potential-query-param-matches may contain a single value or a collection of
+  values. If the key contains a single value which matches the passed in value the query parameter
+  is removed completely. Otherwise if the value matches one of the values in a collection of values
+  only the matching value is removed for that query parameter. All value comparisons are performed
+  case insensitively."
+  [query-params potential-query-param-matches value]
+  (let [updated-query-params (apply dissoc query-params
+                                    (get-keys-to-remove potential-query-param-matches value))]
+    (reduce (fn [updated-params k]
+                (update updated-params k
+                 (fn [existing-values]
+                   (remove (fn [existing-value]
+                             (= value (str/lower-case existing-value)))
+                           existing-values))))
+            updated-query-params
+            (get-keys-to-update potential-query-param-matches value))))
+
+(defn create-remove-link-for-hierarchical-field
   "Create a link that will modify the current search to no longer filter on the given hierarchical
   field-name and value. Looks for matches case insensitively.
   Field-name must be of the form <string>[<int>][<string>]."
   [base-url query-params field-name value]
   (let [value (str/lower-case value)
-        potential-query-params (get-potential-matching-query-params query-params field-name)
-        updated-query-params (reduce (fn [updated-params k]
-                                       (update updated-params k
-                                         (fn [existing-values]
-                                           (remove (fn [existing-value]
-                                                     (= value (str/lower-case existing-value)))
-                                                   existing-values))))
-                                     query-params
-                                     (get-keys-to-update potential-query-params value))
-        updated-query-params (apply dissoc updated-query-params
-                                    (get-keys-to-remove potential-query-params value))]
+        potential-query-param-matches (get-potential-matching-query-params query-params field-name)
+        updated-query-params (remove-value-from-query-params-for-hierachical-field
+                               query-params potential-query-param-matches value)]
     {:remove (generate-query-string base-url updated-query-params)}))
 
-(defn create-hierarchical-links
+(defn create-link-for-hierarchical-field
   "Creates either a remove or an apply link based on whether this particular value is already
-  selected within a query. Returns a tuple of the type of link created and the link itself.
-  Field-name must be of the form <string>[<int>][<string>]."
+  selected within a query.
+
+  Returns a map with the key being the type of link created and value is the link itself.
+  The Field-name must be a hierarchical field which has the form <string>[<int>][<string>]."
   [base-url query-params field-name value]
   (let [potential-query-params (get-potential-matching-query-params query-params field-name)
         value-exists (or (seq (get-keys-to-remove potential-query-params value))
                          (seq (get-keys-to-update potential-query-params value)))]
     (if value-exists
-      (create-hierarchical-remove-link base-url query-params field-name value)
-      (create-hierarchical-apply-link base-url query-params field-name value))))
+      (create-remove-link-for-hierarchical-field base-url query-params field-name value)
+      (create-apply-link-for-hierarchical-field base-url query-params field-name value))))
