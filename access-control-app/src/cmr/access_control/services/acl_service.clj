@@ -101,7 +101,8 @@
             legacy-guid (:legacy-guid acl)]
         (if (:deleted concept)
           ;; The acl exists but was previously deleted.
-          (save-updated-acl-concept context concept acl)
+          (errors/throw-service-error
+            :not-found (format "ACL with concept id [%s] has been deleted" concept-id))
 
           ;; The acl exists and was not deleted.
           (if (= concept-id existing-concept-id)
@@ -115,7 +116,8 @@
                                 native-id existing-concept-id)))))
 
       ;; The acl doesn't exist
-      (errors/throw-service-error :not-found (format "ACL with concept id [%s] does not exist" concept-id)))))
+      (errors/throw-service-error
+        :not-found (format "ACL with concept id [%s] does not exist" concept-id)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search functions

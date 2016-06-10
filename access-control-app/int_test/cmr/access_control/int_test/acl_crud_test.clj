@@ -7,6 +7,7 @@
             [cmr.access-control.test.util :as u]
             [cmr.transmit.access-control :as ac]
             [cheshire.core :as json]
+            [cmr.common.util :as util :refer [are2]]
             [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each
@@ -42,49 +43,52 @@
 
 (deftest create-acl-errors-test
   (let [token (e/login (u/conn-context) "admin")]
-    (are [re acl]
-         (thrown-with-msg? Exception re (ac/create-acl (u/conn-context) acl {:token token}))
+    (are2 [re acl]
+          (thrown-with-msg? Exception re (ac/create-acl (u/conn-context) acl {:token token}))
 
-         ;; Acceptance criteria: I receive an error if creating an ACL missing required fields.
-         ;; Note: this tests a few fields, and is not exhaustive. The JSON schema handles this check.
-         #"object has missing required properties"
-         (dissoc system-acl :group_permissions)
+          ;; Acceptance criteria: I receive an error if creating an ACL missing required fields.
+          ;; Note: this tests a few fields, and is not exhaustive. The JSON schema handles this check.
+          "Nil field value"
+          #"object has missing required properties"
+          (dissoc system-acl :group_permissions)
 
-         #"group_permissions.* object has missing required properties"
-         (assoc system-acl :group_permissions [{}])
+          "Empty field value"
+          #"group_permissions.* object has missing required properties"
+          (assoc system-acl :group_permissions [{}])
 
-         #"system_identity object has missing required properties"
-         (update-in system-acl [:system_identity] dissoc :target)
+          "Missing target"
+          #"system_identity object has missing required properties"
+          (update-in system-acl [:system_identity] dissoc :target)
 
-         ;; Acceptance criteria: I receive an error if creating an ACL with a non-existent system identity,
-         ;; provider identity, or single instance identity target.
-         #"instance value .* not found in enum"
-         (update-in system-acl [:system_identity] assoc :target "WHATEVER")
+          "Acceptance criteria: I receive an error if creating an ACL with a non-existent system identity, provider identity, or single instance identity target."
+          #"instance value .* not found in enum"
+          (update-in system-acl [:system_identity] assoc :target "WHATEVER")
 
-         #"instance value .* not found in enum"
-         (update-in provider-acl [:provider_identity] assoc :target "WHATEVER"))
+          "Value not found in enum"
+          #"instance value .* not found in enum"
+          (update-in provider-acl [:provider_identity] assoc :target "WHATEVER"))
 
 
-    ;; Acceptance criteria: I receive an error if creating an ACL with invalid JSON
-    (is
-      (re-find #"Invalid JSON:"
-               (:body
-                 (client/post (ac/acl-root-url (transmit-config/context->app-connection (u/conn-context) :access-control))
-                              {:body "{\"bad-json:"
-                               :headers {"Content-Type" "application/json"
-                                         "ECHO-Token" token}
-                               :throw-exceptions false}))))
+    (testing "Acceptance criteria: I receive an error if creating an ACL with invalid JSON"
+      (is
+        (re-find #"Invalid JSON:"
+                 (:body
+                   (client/post (ac/acl-root-url (transmit-config/context->app-connection (u/conn-context) :access-control))
+                                {:body "{\"bad-json:"
+                                 :headers {"Content-Type" "application/json"
+                                           "ECHO-Token" token}
+                                 :throw-exceptions false})))))
 
-    ;; Acceptance criteria: I receive an error if creating an ACL with unsupported content type
-    (is
-      (re-find #"The mime types specified in the content-type header \[application/xml\] are not supported."
-               (:body
-                 (client/post
-                   (ac/acl-root-url (transmit-config/context->app-connection (u/conn-context) :access-control))
-                   {:body (json/generate-string system-acl)
-                    :headers {"Content-Type" "application/xml"
-                              "ECHO-Token" token}
-                    :throw-exceptions false}))))))
+    (testing "Acceptance criteria: I receive an error if creating an ACL with unsupported content type"
+      (is
+        (re-find #"The mime types specified in the content-type header \[application/xml\] are not supported."
+                 (:body
+                   (client/post
+                     (ac/acl-root-url (transmit-config/context->app-connection (u/conn-context) :access-control))
+                     {:body (json/generate-string system-acl)
+                      :headers {"Content-Type" "application/xml"
+                                "ECHO-Token" token}
+                      :throw-exceptions false})))))))
 
 (deftest create-duplicate-acl-test
   (let [token (e/login (u/conn-context) "admin")]
@@ -130,60 +134,62 @@
 (deftest update-acl-errors-test
   (let [token (e/login (u/conn-context) "admin")
         {concept-id :concept_id} (ac/create-acl (u/conn-context) system-acl {:token token})]
-    (are [re acl]
-         (thrown-with-msg? Exception re (ac/update-acl (u/conn-context) concept-id acl {:token token}))
+    (are2 [re acl]
+          (thrown-with-msg? Exception re (ac/update-acl (u/conn-context) concept-id acl {:token token}))
 
-         ;; Acceptance criteria: I receive an error if creating an ACL missing required fields.
-         ;; Note: this tests a few fields, and is not exhaustive. The JSON schema handles this check.
-         #"object has missing required properties"
-         (dissoc system-acl :group_permissions)
+          ;; Acceptance criteria: I receive an error if creating an ACL missing required fields.
+          ;; Note: this tests a few fields, and is not exhaustive. The JSON schema handles this check.
+          "Nil field value"
+          #"object has missing required properties"
+          (dissoc system-acl :group_permissions)
 
-         #"group_permissions.* object has missing required properties"
-         (assoc system-acl :group_permissions [{}])
+          "Empty field value"
+          #"group_permissions.* object has missing required properties"
+          (assoc system-acl :group_permissions [{}])
 
-         #"system_identity object has missing required properties"
-         (update-in system-acl [:system_identity] dissoc :target)
+          "Missing target"
+          #"system_identity object has missing required properties"
+          (update-in system-acl [:system_identity] dissoc :target)
 
-         ;; Acceptance criteria: I receive an error if updating an ACL with an invalid combination of fields.
-         ;; (Only one of system, provider, single instance, or catalog item identities)
-         #"instance failed to match exactly one schema"
-         (assoc system-acl :provider_identity {:provider_id "PROV1"
-                                               :target "INGEST_MANAGEMENT_ACL"})
+          "Acceptance criteria: I receive an error if updating an ACL with an invalid combination of fields. (Only one of system, provider, single instance, or catalog item identities)"
+          #"instance failed to match exactly one schema"
+          (assoc system-acl :provider_identity {:provider_id "PROV1"
+                                                :target "INGEST_MANAGEMENT_ACL"})
 
-         ;; Acceptance criteria: I receive an error if updating an ACL with a non-existent system identity,
-         ;; provider identity, or single instance identity target.
-         #"instance value .* not found in enum"
-         (update-in system-acl [:system_identity] assoc :target "WHATEVER")
+          "Acceptance criteria: I receive an error if updating an ACL with a non-existent system identity, provider identity, or single instance identity target."
+          #"instance value .* not found in enum"
+          (update-in system-acl [:system_identity] assoc :target "WHATEVER")
 
-         #"instance value .* not found in enum"
-         (update-in provider-acl [:provider_identity] assoc :target "WHATEVER"))
+          "Value not found in enum"
+          #"instance value .* not found in enum"
+          (update-in provider-acl [:provider_identity] assoc :target "WHATEVER"))
 
 
-    ;; Acceptance criteria: I receive an error if updating an ACL with invalid JSON
-    (is
-      (re-find #"Invalid JSON:"
-               (:body
-                 (client/put
-                   (ac/acl-concept-id-url
-                     (transmit-config/context->app-connection (u/conn-context) :access-control)
-                     concept-id)
-                   {:body "{\"bad-json:"
-                    :headers {"Content-Type" "application/json"
-                              "ECHO-Token" token}
-                    :throw-exceptions false}))))
+    (testing "Acceptance criteria: I receive an error if updating an ACL with invalid JSON"
+      (is
+        (re-find #"Invalid JSON:"
+                 (:body
+                   (client/put
+                     (ac/acl-concept-id-url
+                       (transmit-config/context->app-connection (u/conn-context) :access-control)
+                       concept-id)
+                     {:body "{\"bad-json:"
+                      :headers {"Content-Type" "application/json"
+                                "ECHO-Token" token}
+                      :throw-exceptions false})))))
 
-    ;; Acceptance criteria: I receive an error if updating an ACL with unsupported content type
-    (is
-      (re-find #"The mime types specified in the content-type header \[application/xml\] are not supported."
-               (:body
-                 (client/put
-                   (ac/acl-concept-id-url
-                     (transmit-config/context->app-connection (u/conn-context) :access-control)
-                     concept-id)
-                   {:body (json/generate-string system-acl)
-                    :headers {"Content-Type" "application/xml"
-                              "ECHO-Token" token}
-                    :throw-exceptions false}))))))
+    (testing "Acceptance criteria: I receive an error if updating an ACL with unsupported content type"
+      (is
+        (re-find #"The mime types specified in the content-type header \[application/xml\] are not supported."
+                 (:body
+                   (client/put
+                     (ac/acl-concept-id-url
+                       (transmit-config/context->app-connection (u/conn-context) :access-control)
+                       concept-id)
+                     {:body (json/generate-string system-acl)
+                      :headers {"Content-Type" "application/xml"
+                                "ECHO-Token" token}
+                      :throw-exceptions false})))))))
 
 (deftest update-acl-conflict-test
   (let [token (e/login (u/conn-context) "admin")
@@ -201,4 +207,3 @@
             #"ACL legacy guid cannot be updated, was \[null\] and now \[XYZ-EFG-HIJK-LMNOP\]"
             (ac/update-acl (u/conn-context) provider-concept-id
                            (assoc provider-acl :legacy_guid "XYZ-EFG-HIJK-LMNOP") {:token token}))))))
-
