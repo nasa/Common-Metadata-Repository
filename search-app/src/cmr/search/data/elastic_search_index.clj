@@ -8,6 +8,7 @@
             [cmr.common.lifecycle :as lifecycle]
             [cmr.common.jobs :refer [defjob]]
             [cmr.common.cache :as cache]
+            [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.transmit.index-set :as index-set]
             [cmr.common-app.services.search.query-model :as qm]
             [cmr.common-app.services.search.query-to-elastic :as q2e]
