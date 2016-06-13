@@ -117,12 +117,11 @@
   passed in value. Looks for matches case insensitively."
   [query-params value]
   (let [value (str/lower-case value)]
-    (flatten
-      (keep (fn [[k value-or-values]]
-              (when (coll? value-or-values)
-                (when (some #{value} (map str/lower-case value-or-values))
-                  k)))
-            query-params))))
+    (keep (fn [[k value-or-values]]
+            (when (coll? value-or-values)
+              (when (some #{value} (map str/lower-case value-or-values))
+                k)))
+          query-params)))
 
 (defn- get-keys-to-remove
   "Returns a sequence of keys that have a single value which matches the passed in value. Looks for
