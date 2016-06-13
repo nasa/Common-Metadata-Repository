@@ -15,13 +15,17 @@
             [cmr.search.data.query-to-elastic]
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
             [cmr.search.services.query-walkers.provider-id-extractor :as pex]
-            [cmr.indexer.data.index-set :as idx-set]
             [cmr.common.services.errors :as e]
             [cmr.common.concepts :as concepts]
             [cmr.common-app.services.search.elastic-search-index :as common-esi]))
 
 ;; id of the index-set that CMR is using, hard code for now
 (def index-set-id 1)
+
+(defconfig collections-index-alias
+  "The alias to use for the collections index."
+  {:default "collection_search_alias" :type String})
+
 
 (defn- fetch-concept-type-index-names
   "Fetch index names for each concept type from index-set app"
@@ -133,7 +137,7 @@
   [context _ query]
   {:index-name (if (:all-revisions? query)
                  "1_all_collection_revisions"
-                 (idx-set/collections-index-alias))
+                 (collections-index-alias))
    :type-name "collection"})
 
 (defmethod common-esi/concept-type->index-info :tag
