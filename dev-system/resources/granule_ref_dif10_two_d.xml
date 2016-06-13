@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Granule>
+  <GranuleUR>SC:MIANCAGP.001:55376</GranuleUR>
+  <InsertTime>2000-03-24T09:58:55.360Z</InsertTime>
+  <LastUpdate>2016-03-07T14:15:30.835Z</LastUpdate>
+  <Collection>
+    <DataSetId>MISR Ancillary Geographic Product V001</DataSetId>
+  </Collection>
+  <DataGranule>
+    <SizeMBDataGranule>106.118584</SizeMBDataGranule>
+    <ProducerGranuleId>MISR_AM1_AGP_P001_F01_24.hdf</ProducerGranuleId>
+    <DayNightFlag>UNSPECIFIED</DayNightFlag>
+    <ProductionDateTime>1999-11-07T07:42:44Z</ProductionDateTime>
+    <LocalVersionId>MISR_EXEC_VERSION: V2.1.1 MISR_EXEC_NAME:GC_AGPGEN_agp_gener</LocalVersionId>
+  </DataGranule>
+  <PGEVersionClass>
+    <PGEVersion>V2.1.1</PGEVersion>
+  </PGEVersionClass>
+  <Temporal>
+    <RangeDateTime>
+      <BeginningDateTime>1999-11-07T07:41:00.000000Z</BeginningDateTime>
+      <EndingDateTime>2005-06-30T00:00:00.000000Z</EndingDateTime>
+    </RangeDateTime>
+  </Temporal>
+  <AdditionalAttributes>
+    <AdditionalAttribute>
+      <Name>SP_AM_MISR_StartBlock</Name>
+      <Values>
+        <Value>1</Value>
+      </Values>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>SP_AM_MISR_EndBlock</Name>
+      <Values>
+        <Value>180</Value>
+      </Values>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>SP_AM_PATH_NO</Name>
+      <Values>
+        <Value>001</Value>
+      </Values>
+    </AdditionalAttribute>
+  </AdditionalAttributes>
+  <TwoDCoordinateSystem>
+    <StartCoordinate1>1</StartCoordinate1>
+    <StartCoordinate2>1</StartCoordinate2>
+    <EndCoordinate2>180</EndCoordinate2>
+    <TwoDCoordinateSystemName>MISR</TwoDCoordinateSystemName>
+  </TwoDCoordinateSystem>
+  <OnlineAccessURLs>
+    <OnlineAccessURL>
+      <URL>ftp://l5eil01.larc.nasa.gov//level0/MISR/MIANCAGP.001/1999.11.07/MISR_AM1_AGP_P001_F01_24.hdf</URL>
+      <MimeType>application/x-hdfeos</MimeType>
+    </OnlineAccessURL>
+  </OnlineAccessURLs>
+  <OnlineResources>
+    <OnlineResource>
+      <URL>ftp://l5eil01.larc.nasa.gov//level0/MISR/MIANCAGP.001/1999.11.07/MISR_AM1_AGP_P001_F01_24.hdf.xml</URL>
+      <Type>METADATA</Type>
+      <MimeType>text/xml</MimeType>
+    </OnlineResource>
+  </OnlineResources>
+  <Orderable>true</Orderable>
+  <Visible>true</Visible>
+</Granule>
