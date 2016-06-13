@@ -146,14 +146,11 @@
   ;; Boolean parameter validations
   (testing "valid boolean parameters do not return an error"
     (is (= []
-           (pv/boolean-value-validation :collection {:include-facets "false"
-                                                     :hierarchical-facets "TRUE"
+           (pv/boolean-value-validation :collection {:hierarchical-facets "TRUE"
                                                      :downloadable "uNSet"}))))
   (testing "boolean parameters with an invalid value return an error"
-    (is (= ["Parameter include_facets must take value of true, false, or unset, but was [TRUE-ISH]"
-            "Parameter hierarchical_facets must take value of true, false, or unset, but was [not-right]"]
-           (pv/boolean-value-validation :collection {:include-facets "TRUE-ISH"
-                                                     :hierarchical-facets "not-right"})))))
+    (is (= ["Parameter hierarchical_facets must take value of true, false, or unset, but was [not-right]"]
+           (pv/boolean-value-validation :collection {:hierarchical-facets "not-right"})))))
 
 (deftest temporal-format-validation :collection-start-date-test
   (testing "valid-start-date"
@@ -282,8 +279,8 @@
 
 (deftest exclude-validation-test
   (testing "concept-id is a valid key to exclude"
-    (is (= [] (pv/exclude-validation :granule {:exclude {:concept-id "G1-PROV1"}})))
-    (is (= [] (pv/exclude-validation :granule {:exclude {:concept-id "G1-CPROV1"}}))))
+    (is (= nil (pv/exclude-validation :granule {:exclude {:concept-id "G1-PROV1"}})))
+    (is (= nil (pv/exclude-validation :granule {:exclude {:concept-id "G1-CPROV1"}}))))
   (testing "after parameter replacement, anything other than concept-id is not a valid key to exclude"
     (is (= ["Parameter(s) [echo-collection-id] can not be used with exclude."]
            (pv/exclude-validation :granule {:exclude {:echo-collection-id "G1-PROV1"}})))

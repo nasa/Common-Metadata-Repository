@@ -1,4 +1,4 @@
-(ns cmr.search.services.query-execution.facets-results-feature
+(ns cmr.search.services.query-execution.facets.facets-results-feature
   "This enables returning facets with collection search results"
   (:require [cmr.common-app.services.search.query-execution :as query-execution]
             [cmr.common-app.services.kms-fetcher :as kms-fetcher]
@@ -17,7 +17,7 @@
   [field]
   {:terms {:field field :size UNLIMITED_TERMS_SIZE}})
 
-(def ^:private collection-count-aggregation
+(def collection-count-aggregation
   "Used to build an aggregation to get a count of unique concepts included in the current nested
   aggregation."
   {:reverse_nested {}
@@ -88,7 +88,7 @@
   [context query feature]
   (assoc query :aggregations hierarchical-facet-aggregations))
 
-(defn- buckets->value-count-pairs
+(defn buckets->value-count-pairs
   "Processes an elasticsearch aggregation response of buckets to a sequence of value and count
   tuples"
   [bucket-map]

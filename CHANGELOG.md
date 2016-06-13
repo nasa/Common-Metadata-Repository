@@ -59,3 +59,8 @@ Items to include in each issue
   * Whitespace is trimmed from entry titles during indexing.
   * Deployment Impacts:
     * Requires reindexing of collections
+
+## 1.53
+
+* CMR-2186, CMR-2187, CMR-2188, CMR-2189
+  * Added Version 2 facet response. No impacts to configuration or deployments.

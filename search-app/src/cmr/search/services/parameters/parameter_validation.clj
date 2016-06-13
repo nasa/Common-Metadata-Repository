@@ -194,14 +194,13 @@
 (defn- day-valid?
   "Validates if the given day in temporal is an integer between 1 and 366 inclusive"
   [day tag]
-  (if-not (s/blank? day)
+  (when-not (s/blank? day)
     (try
       (let [num (Integer/parseInt day)]
         (when (or (< num 1) (> num 366))
           [(format "%s [%s] must be an integer between 1 and 366" tag day)]))
       (catch NumberFormatException e
-        [(format "%s [%s] must be an integer between 1 and 366" tag day)]))
-    []))
+        [(format "%s [%s] must be an integer between 1 and 366" tag day)]))))
 
 (defn- temporal-input-format-valid?
   "Validates the temporal input format and makes sure it was passed in as a valid string not a map"
@@ -212,7 +211,7 @@
   "Validates that temporal datetime parameter conforms to the :date-time-no-ms format,
   start-day and end-day are integer between 1 and 366"
   [concept-type params]
-  (if-let [temporal (:temporal params)]
+  (when-let [temporal (:temporal params)]
     (let [temporal (if (sequential? temporal)
                      temporal
                      [temporal])]
@@ -232,18 +231,16 @@
                 (day-valid? start-day "temporal_start_day")
                 (day-valid? end-day "temporal_end_day")))))
          temporal)
-        ["The valid format for temporal parameters are temporal[]=startdate,stopdate and temporal[]=startdate,stopdate,startday,endday"]))
-    []))
+        ["The valid format for temporal parameters are temporal[]=startdate,stopdate and temporal[]=startdate,stopdate,startday,endday"]))))
 
 (defn updated-since-validation
   "Validates updated-since parameter conforms to formats in data-time-parser NS"
   [concept-type params]
-  (if-let [param-value (:updated-since params)]
+  (when-let [param-value (:updated-since params)]
     (if (and (sequential? (:updated-since params)) (> (count (:updated-since params)) 1))
       ["Search not allowed with multiple updated_since values"]
       (let [updated-since-val (if (sequential? param-value) (first param-value) param-value)]
-        (cpv/validate-date-time "updated_since" updated-since-val)))
-    []))
+        (cpv/validate-date-time "updated_since" updated-since-val)))))
 
 (defn tag-data-validation
   "Validates tag-data parameter must be a map"
@@ -259,7 +256,7 @@
 (defn revision-date-validation
   "Validates that revision date parameter contains valid date time strings."
   [concept-type params]
-  (if-let [revision-date (:revision-date params)]
+  (when-let [revision-date (:revision-date params)]
     (let [revision-date (if (sequential? revision-date)
                           revision-date
                           [revision-date])]
@@ -272,20 +269,18 @@
               (concat
                 (cpv/validate-date-time "revision-date start" start-date)
                 (cpv/validate-date-time "revision-date end" end-date)))))
-        revision-date))
-    []))
+        revision-date))))
 
 (defn attribute-validation
   [concept-type params]
-  (if-let [attributes (:attribute params)]
+  (when-let [attributes (:attribute params)]
     (if (sequential? attributes)
       (mapcat #(-> % attrib/parse-value :errors) attributes)
-      [(attrib-msg/attributes-must-be-sequence-msg)])
-    []))
+      [(attrib-msg/attributes-must-be-sequence-msg)])))
 
 (defn science-keywords-validation
   [concept-type params]
-  (if-let [science-keywords (:science-keywords params)]
+  (when-let [science-keywords (:science-keywords params)]
     (if (map? science-keywords)
       (let [values (vals science-keywords)]
         (if (some #(not (map? %)) values)
@@ -298,8 +293,7 @@
                 errors))
             []
             (mapcat keys values))))
-      [(msg/science-keyword-invalid-format-msg)])
-    []))
+      [(msg/science-keyword-invalid-format-msg)])))
 
 ;; This method is for processing legacy numeric ranges in the form of
 ;; param_nam[value], param_name[minValue], and param_name[maxValue].
@@ -317,8 +311,7 @@
         (Double. min-value))
       (when max-value
         (Double. max-value))
-      (if (or value min-value max-value)
-        []
+      (when-not (or value min-value max-value)
         (if error-message-fn
           [(apply error-message-fn args)]
           [(d-msg/nil-min-max-msg)]))
@@ -329,70 +322,71 @@
 (defn cloud-cover-validation
   "Validates cloud cover range values are numeric"
   [concept-type params]
-  (if-let [cloud-cover (:cloud-cover params)]
+  (when-let [cloud-cover (:cloud-cover params)]
     (if (string? cloud-cover)
       (cpv/validate-numeric-range-param cloud-cover nil)
-      (validate-legacy-numeric-range-param cloud-cover nil))
-    []))
+      (validate-legacy-numeric-range-param cloud-cover nil))))
 
 (defn orbit-number-validation
   "Validates that the orbital number is either a single number or a range in the format
   start,stop, or in the catlog-rest style orbit_number[value], orbit_number[minValue],
   orbit_number[maxValue]."
   [concept-type params]
-  (if-let [orbit-number-param (:orbit-number params)]
+  (when-let [orbit-number-param (:orbit-number params)]
     (if (string? orbit-number-param)
       (cpv/validate-numeric-range-param orbit-number-param on-msg/invalid-orbit-number-msg)
-      (validate-legacy-numeric-range-param orbit-number-param on-msg/invalid-orbit-number-msg))
-    []))
+      (validate-legacy-numeric-range-param orbit-number-param on-msg/invalid-orbit-number-msg))))
 
 (defn equator-crossing-longitude-validation
   "Validates that the equator-crossing-longitude parameter is a single number or
   a valid range string."
   [concept-type params]
-  (if-let [equator-crossing-longitude (:equator-crossing-longitude params)]
+  (when-let [equator-crossing-longitude (:equator-crossing-longitude params)]
     (if (string? equator-crossing-longitude)
       (cpv/validate-numeric-range-param equator-crossing-longitude nil)
       (validate-legacy-numeric-range-param equator-crossing-longitude
-                                           on-msg/non-numeric-equator-crossing-longitude-parameter))
-    []))
+                                           on-msg/non-numeric-equator-crossing-longitude-parameter))))
 
 (defn equator-crossing-date-validation
   "Validates that the equator_crossing_date parameter is a valid date range string."
   [concept-type params]
-  (if-let [equator-crossing-date (:equator-crossing-date params)]
-    (parser/date-time-range-string-validation equator-crossing-date)
-    []))
+  (when-let [equator-crossing-date (:equator-crossing-date params)]
+    (parser/date-time-range-string-validation equator-crossing-date)))
 
 (defn exclude-validation
   "Validates that the key(s) supplied in 'exclude' param value are in exclude-params set"
   [concept-type params]
-  (if-let [exclude-kv (:exclude params)]
+  (when-let [exclude-kv (:exclude params)]
     (let [invalid-exclude-params (set/difference (set (keys exclude-kv))
                                                  (exclude-params concept-type))]
       (if (empty? invalid-exclude-params)
         (let [exclude-values (flatten (vals exclude-kv))]
           (if (every? string? exclude-values)
-            (if (some #(.startsWith % "C") exclude-values)
-              [(str "Exclude collection is not supported, " exclude-kv)]
-              [])
+            (when (some #(.startsWith % "C") exclude-values)
+              [(str "Exclude collection is not supported, " exclude-kv)])
             ["Invalid format for exclude parameter, must be in the format of exclude[name][]=value"]))
-        [(msg/invalid-exclude-param-msg invalid-exclude-params)]))
-    []))
+        [(msg/invalid-exclude-param-msg invalid-exclude-params)]))))
 
 (defn boolean-value-validation
   "Validates that all of the boolean parameters have values of true, false or unset."
   [concept-type params]
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts
-                                         :include-has-granules :include-facets :has-granules
-                                         :hierarchical-facets :include-highlights :all-revisions])]
+                                         :include-has-granules :has-granules :hierarchical-facets
+                                         :include-highlights :all-revisions])]
     (mapcat
       (fn [[param value]]
-        (if (contains? #{"true" "false" "unset"} (when value (s/lower-case value)))
-          []
+        (when-not (contains? #{"true" "false" "unset"} (when value (s/lower-case value)))
           [(format "Parameter %s must take value of true, false, or unset, but was [%s]"
                    (csk/->snake_case_string param) value)]))
       bool-params)))
+
+(defn- include-facets-validation
+  "Validates that the include_facets parameter has a value of true, false or v2."
+  [concept-type params]
+  (when-let [include-facets (:include-facets params)]
+    (when-not (contains? #{"true" "false" "v2"} (s/lower-case include-facets))
+      [(format "Parameter include_facets must take value of true, false, or v2, but was [%s]"
+               include-facets)])))
 
 (defn- spatial-validation
   "Validate a geometry of the given type in the params"
@@ -450,10 +444,9 @@
   "Validates that the include-highlights parameter is set to true if any of the highlights
   options params are set."
   [concept-type params]
-  (if (and (get-in params [:options :highlights])
-           (not= "true" (:include-highlights params)))
-    ["Highlights options are not allowed unless the include-highlights is true."]
-    []))
+  (when (and (get-in params [:options :highlights])
+             (not= "true" (:include-highlights params)))
+    ["Highlights options are not allowed unless the include-highlights is true."]))
 
 (defn highlights-numeric-options-validation
   "Validates that the highlights option (if present) is an integer greater than zero."
@@ -533,7 +526,8 @@
                   tag-data-validation
                   no-highlight-options-without-highlights-validation
                   highlights-numeric-options-validation
-                  include-tags-parameter-validation])
+                  include-tags-parameter-validation
+                  include-facets-validation])
    :granule (concat
               cpv/common-validations
               [temporal-format-validation

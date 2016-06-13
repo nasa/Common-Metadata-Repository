@@ -5,7 +5,7 @@
             [cmr.common-app.services.search :as qs]
             [cmr.search.services.query-execution :as qe]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
-            [cmr.search.services.query-execution.facets-results-feature :as frf]
+            [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
             [cmr.search.services.query-execution.tags-results-feature :as trf]
             [cmr.common-app.services.search.results-model :as results]
             [cmr.search.services.transformer :as t]

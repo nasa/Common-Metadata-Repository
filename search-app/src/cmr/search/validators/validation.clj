@@ -37,10 +37,18 @@
              (not= :json result-format))
     ["Highlights are only supported in the JSON format."]))
 
+(defn validate-facets-v2-format
+  "Validates that when request facet-v2 the result format is JSON."
+  [{:keys [result-features result-format]}]
+  (when (and (some #{:facets-v2} result-features)
+             (not= :json result-format))
+    ["V2 facets are only supported in the JSON format."]))
+
 (defmethod cqv/query-validations :collection
   [_]
   [validate-result-format-for-all-revisions
-   validate-highlights-format])
+   validate-highlights-format
+   validate-facets-v2-format])
 
 (extend-protocol cqv/Validator
   cmr.search.models.query.SpatialCondition

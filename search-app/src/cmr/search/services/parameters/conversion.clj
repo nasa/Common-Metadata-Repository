@@ -269,6 +269,8 @@
                                   (if (= "true" (:hierarchical-facets params))
                                     [:hierarchical-facets]
                                     [:facets]))
+                                (when (= (:include-facets params) "v2")
+                                    [:facets-v2])
                                 (when (= (:include-highlights params) "true")
                                   [:highlights])
                                 (when-not (str/blank? (:include-tags params))
