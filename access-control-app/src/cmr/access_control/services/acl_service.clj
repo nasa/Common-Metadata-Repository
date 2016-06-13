@@ -93,7 +93,7 @@
   ;; This fetch acl call also validates if the ACL with the concept id does not exist or is deleted
   (fetch-acl-concept context concept-id)
   (let [native-id (acl-native-id acl)]
-    (if-let [existing-concept-id (mdb/get-concept-id context :acl acl-provider-id (acl-native-id acl))]
+    (when-let [existing-concept-id (mdb/get-concept-id context :acl acl-provider-id (acl-native-id acl))]
 
       ;; The acl exists. Check if its latest revision is a tombstone
       (let [concept (mdb/get-latest-concept context existing-concept-id)
@@ -113,11 +113,7 @@
               (mdb/save-concept context (dissoc (acl->new-concept context acl) :revision-id)))
             (errors/throw-service-error
               :conflict (format "ACL with native id [%s] already exists with concept id [%s]"
-                                native-id existing-concept-id)))))
-
-      ;; The acl doesn't exist
-      (errors/throw-service-error
-        :not-found (format "ACL with concept id [%s] does not exist" concept-id)))))
+                                native-id existing-concept-id))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search functions
