@@ -367,19 +367,16 @@
   ;; e.g. unindexing access groups in access-control-app.
   (info (format "Deleting provider-id %s" provider-id))
   (let [{:keys [index-names]} (idx-set/get-concept-type-index-names context)
-        concept-mapping-types (idx-set/get-concept-mapping-types context)]
-    ;; delete the collections
-    (es/delete-by-query
-      context
-      (get-in index-names [:collection :collections])
-      (concept-mapping-types :collection)
-      {:term {(query-field->elastic-field :provider-id :collection) provider-id}})
-    ;; delete all revisions of collections
-    (es/delete-by-query
-      context
-      (get-in index-names [:collection :all-collection-revisions])
-      (concept-mapping-types :collection)
-      {:term {(query-field->elastic-field :provider-id :collection) provider-id}})
+        concept-mapping-types (idx-set/get-concept-mapping-types context)
+        ccmt (concept-mapping-types :collection)]
+    ;; delete collections
+    (doseq [index (vals (:collection index-names))]
+      (es/delete-by-query
+        context
+        index
+        ccmt
+        {:term {(query-field->elastic-field :provider-id :collection) provider-id}}))
+
     ;; delete the granules
     (doseq [index-name (idx-set/get-granule-index-names-for-provider context provider-id)]
       (es/delete-by-query

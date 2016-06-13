@@ -196,3 +196,8 @@
   "Delete document that match the given query"
   [elastic-store index-name type-name query]
   (doc/delete-by-query (:conn elastic-store) index-name type-name query))
+
+(defn create-index-alias
+  "Creates the alias for the index."
+  [conn index alias]
+  (esi/update-aliases conn [{:add {:index index :alias alias}}]))

@@ -8,6 +8,7 @@
             [cmr.common.lifecycle :as lifecycle]
             [cmr.common.jobs :refer [defjob]]
             [cmr.common.cache :as cache]
+            [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.transmit.index-set :as index-set]
             [cmr.common-app.services.search.query-model :as qm]
             [cmr.common-app.services.search.query-to-elastic :as q2e]
@@ -21,6 +22,11 @@
 
 ;; id of the index-set that CMR is using, hard code for now
 (def index-set-id 1)
+
+(defconfig collections-index-alias
+  "The alias to use for the collections index."
+  {:default "collection_search_alias" :type String})
+
 
 (defn- fetch-concept-type-index-names
   "Fetch index names for each concept type from index-set app"
@@ -132,7 +138,7 @@
   [context _ query]
   {:index-name (if (:all-revisions? query)
                  "1_all_collection_revisions"
-                 "1_collections")
+                 (collections-index-alias))
    :type-name "collection"})
 
 (defmethod common-esi/concept-type->index-info :tag

@@ -9,6 +9,7 @@
             [cmr.common.concepts :as cs]
             [cmr.common.mime-types :as mt]
             [cmr.elastic-utils.connect :as es]
+            [cmr.elastic-utils.index-util :as esi]
             [cmr.transmit.index-set :as index-set]
             [cmr.indexer.data.index-set :as idx-set]
             [cmr.umm.core :as umm]
@@ -21,6 +22,11 @@
 (def MAX_BULK_OPERATIONS_PER_REQUEST
   "The maximum number of operations to batch in a single request"
   100)
+
+(defn context->conn
+  "Returns the elastisch connection in the context"
+  [context]
+  (get-in context [:system :db :conn]))
 
 (defn get-elastic-version
   "Get the proper elastic document version for the concept based on type."
@@ -67,7 +73,12 @@
       (nil? existing-index-set)
       (do
         (info "Index set does not exist so creating it.")
-        (idx-set/create context expected-index-set))
+        (idx-set/create context expected-index-set)
+        (info "Creating collection index alias.")
+        (esi/create-index-alias (context->conn context)
+                                (idx-set/collections-index)
+                                (idx-set/collections-index-alias)))
+
 
       ;; Compare them to see if they're the same
       (requires-update? existing-index-set expected-index-set)
@@ -94,7 +105,11 @@
       (errors/throw-service-error :bad-request "It appears the existing index set and the new index set are the same."))
 
     (info "Updating the index set to " (pr-str expected-index-set))
-    (idx-set/update context expected-index-set)))
+    (idx-set/update context expected-index-set)
+    (info "Creating colleciton index alias.")
+    (esi/create-index-alias (context->conn context)
+                            idx-set/collections-index
+                            idx-set/collections-index-alias)))
 
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
@@ -152,11 +167,6 @@
   "Returns concept type for the given concept"
   [concept]
   (cs/concept-id->type (:concept-id concept)))
-
-(defn context->conn
-  "Returns the elastisch connection in the context"
-  [context]
-  (get-in context [:system :db :conn]))
 
 (defn- context->es-config
   "Returns the elastic config in the context"
