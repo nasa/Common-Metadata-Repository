@@ -23,6 +23,11 @@
   "The maximum number of operations to batch in a single request"
   100)
 
+(defn context->conn
+  "Returns the elastisch connection in the context"
+  [context]
+  (get-in context [:system :db :conn]))
+
 (defn get-elastic-version
   "Get the proper elastic document version for the concept based on type."
   [concept]
@@ -70,7 +75,9 @@
         (info "Index set does not exist so creating it.")
         (idx-set/create context expected-index-set)
         (info "Creating collection index alias.")
-        (esi/create-index-alias (get-in context [:system :db :conn]) (idx-set/collections-index) (idx-set/collections-index-alias)))
+        (esi/create-index-alias (context->conn context)
+                                (idx-set/collections-index)
+                                (idx-set/collections-index-alias)))
 
 
       ;; Compare them to see if they're the same
@@ -100,7 +107,9 @@
     (info "Updating the index set to " (pr-str expected-index-set))
     (idx-set/update context expected-index-set)
     (info "Creating colleciton index alias.")
-    (esi/create-index-alias (get-in context [:system :db :conn]) idx-set/collections-index idx-set/collections-index-alias)))
+    (esi/create-index-alias (context->conn context)
+                            idx-set/collections-index
+                            idx-set/collections-index-alias)))
 
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
@@ -158,11 +167,6 @@
   "Returns concept type for the given concept"
   [concept]
   (cs/concept-id->type (:concept-id concept)))
-
-(defn context->conn
-  "Returns the elastisch connection in the context"
-  [context]
-  (get-in context [:system :db :conn]))
 
 (defn- context->es-config
   "Returns the elastic config in the context"

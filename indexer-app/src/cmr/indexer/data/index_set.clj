@@ -42,7 +42,7 @@
   {:default "collection_search_alias" :type String})
 
 (defconfig collections-index
-  "The index to use for collections"
+  "The index to use for the latest collection revisions."
   {:default "1_collections_v2" :type String})
 
 (def collection-setting-v1 {:index

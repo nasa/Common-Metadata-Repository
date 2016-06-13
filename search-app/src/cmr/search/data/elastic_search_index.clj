@@ -15,6 +15,7 @@
             [cmr.search.data.query-to-elastic]
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
             [cmr.search.services.query-walkers.provider-id-extractor :as pex]
+            [cmr.indexer.data.index-set :as idx-set]
             [cmr.common.services.errors :as e]
             [cmr.common.concepts :as concepts]
             [cmr.common-app.services.search.elastic-search-index :as common-esi]))
@@ -132,7 +133,7 @@
   [context _ query]
   {:index-name (if (:all-revisions? query)
                  "1_all_collection_revisions"
-                 "collection_search_alias")
+                 (idx-set/collections-index-alias))
    :type-name "collection"})
 
 (defmethod common-esi/concept-type->index-info :tag
