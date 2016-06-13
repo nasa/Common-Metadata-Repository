@@ -17,7 +17,7 @@
 
 (def acl-provider-id
   "The provider ID for all ACLs. Since ACLs are not owned by individual
-   providers, they fall under the CMR system provider ID."
+  providers, they fall under the CMR system provider ID."
   "CMR")
 
 (defn acl-native-id
@@ -87,18 +87,46 @@
       ;; The acl doesn't exist
       (mdb/save-concept context (acl->new-concept context acl)))))
 
+(defn update-acl
+  "Update the ACL with the given concept-id in Metadata DB. Returns map with concept and revision id of updated acl."
+  [context concept-id acl]
+  ;; This fetch acl call also validates if the ACL with the concept id does not exist or is deleted
+  (fetch-acl-concept context concept-id)
+  (let [native-id (acl-native-id acl)]
+    (when-let [existing-concept-id (mdb/get-concept-id context :acl acl-provider-id (acl-native-id acl))]
+
+      ;; The acl exists. Check if its latest revision is a tombstone
+      (let [concept (mdb/get-latest-concept context existing-concept-id)
+            existing-legacy-guid (:legacy-guid concept)
+            legacy-guid (:legacy-guid acl)]
+        (if (:deleted concept)
+          ;; The acl exists but was previously deleted.
+          (errors/throw-service-error
+            :not-found (format "ACL with concept id [%s] has been deleted" concept-id))
+
+          ;; The acl exists and was not deleted.
+          (if (= concept-id existing-concept-id)
+            (if (not= existing-legacy-guid legacy-guid)
+              (errors/throw-service-error
+                :conflict (format "ACL legacy guid cannot be updated, was [%s] and now [%s]"
+                                  existing-legacy-guid legacy-guid))
+              (mdb/save-concept context (dissoc (acl->new-concept context acl) :revision-id)))
+            (errors/throw-service-error
+              :conflict (format "ACL with native id [%s] already exists with concept id [%s]"
+                                native-id existing-concept-id))))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search functions
 
 (defmethod cpv/params-config :acl
   [_]
   (cpv/merge-params-config
-   cpv/basic-params-config
-   {:single-value #{}
-    :multiple-value #{}
-    :always-case-sensitive #{}
-    :disallow-pattern #{}
-    :allow-or #{}}))
+    cpv/basic-params-config
+    {:single-value #{}
+     :multiple-value #{}
+     :always-case-sensitive #{}
+     :disallow-pattern #{}
+     :allow-or #{}}))
 
 (defmethod cpv/valid-parameter-options :acl
   [_]
@@ -108,12 +136,12 @@
   "Validates the parameters for an ACL search. Returns the parameters or throws an error if invalid."
   [context params]
   (let [[safe-params type-errors] (cpv/apply-type-validations
-                                   params
-                                   [(partial cpv/validate-map [:options])])]
+                                    params
+                                    [(partial cpv/validate-map [:options])])]
     (cpv/validate-parameters
-     :acl safe-params
-     cpv/common-validations
-     type-errors))
+      :acl safe-params
+      cpv/common-validations
+      type-errors))
   params)
 
 (defmethod common-qm/default-sort-keys :acl
@@ -127,12 +155,12 @@
 (defn search-for-acls
   [context params]
   (let [[query-creation-time query] (u/time-execution
-                                     (->> params
-                                          cp/sanitize-params
-                                          (validate-acl-search-params :acl)
-                                          (cp/parse-parameter-query :acl)))
+                                      (->> params
+                                           cp/sanitize-params
+                                           (validate-acl-search-params :acl)
+                                           (cp/parse-parameter-query :acl)))
         [find-concepts-time results] (u/time-execution
-                                      (cs/find-concepts context :acl query))
+                                       (cs/find-concepts context :acl query))
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d acls in %d ms in format %s with params %s."
                   (:hits results) total-took (:result-format query) (pr-str params)))
