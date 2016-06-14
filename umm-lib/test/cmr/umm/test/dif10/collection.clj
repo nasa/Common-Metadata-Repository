@@ -115,7 +115,7 @@
   [coll]
   (-> coll
       (dissoc :spatial-keywords :associated-difs :metadata-language
-              :temporal-keywords :two-d-coordinate-systems)
+              :temporal-keywords)
       (assoc-in  [:product :processing-level-id] nil)
       (assoc-in [:data-provider-timestamps :revision-date-time] nil)
       (assoc-in [:product :version-description] nil)
@@ -300,6 +300,31 @@
           <Easternmost_Longitude>180</Easternmost_Longitude>
         </Bounding_Rectangle>
       </Geometry>
+      <Spatial_Info>
+        <Spatial_Coverage_Type>Horizontal</Spatial_Coverage_Type>
+        <TwoD_Coordinate_System>
+          <TwoD_Coordinate_System_Name>MISR</TwoD_Coordinate_System_Name>
+          <Coordinate1>
+            <Minimum_Value>1</Minimum_Value>
+            <Maximum_Value>233</Maximum_Value>
+          </Coordinate1>
+          <Coordinate2>
+            <Minimum_Value>1</Minimum_Value>
+            <Maximum_Value>180</Maximum_Value>
+          </Coordinate2>
+        </TwoD_Coordinate_System>
+        <TwoD_Coordinate_System>
+          <TwoD_Coordinate_System_Name>name2</TwoD_Coordinate_System_Name>
+          <Coordinate1>
+            <Minimum_Value>10</Minimum_Value>
+            <Maximum_Value>12</Maximum_Value>
+          </Coordinate1>
+          <Coordinate2>
+            <Minimum_Value>30</Minimum_Value>
+            <Maximum_Value>40</Maximum_Value>
+          </Coordinate2>
+        </TwoD_Coordinate_System>
+      </Spatial_Info>
     </Spatial_Coverage>
     <Project>
       <Short_Name>short name</Short_Name>
@@ -524,6 +549,19 @@
                        {:granule-spatial-representation :geodetic
                         :spatial-representation :cartesian,
                         :geometries [(m/mbr -180.0 90.0 180.0 -90.0)]})
+    :two-d-coordinate-systems
+     [(umm-c/map->TwoDCoordinateSystem
+        {:name "MISR"
+         :coordinate-1 (umm-c/map->Coordinate {:min-value 1.0
+                                               :max-value 233.0})
+         :coordinate-2 (umm-c/map->Coordinate {:min-value 1.0
+                                               :max-value 180.0})})
+      (umm-c/map->TwoDCoordinateSystem
+        {:name "name2"
+         :coordinate-1 (umm-c/map->Coordinate {:min-value 10.0
+                                               :max-value 12.0})
+         :coordinate-2 (umm-c/map->Coordinate {:min-value 30.0
+                                               :max-value 40.0})})]
     :personnel [(umm-c/map->Personnel
                  {:first-name "first name"
                   :last-name "last name"
