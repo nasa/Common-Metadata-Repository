@@ -123,24 +123,45 @@
   (cpv/merge-params-config
     cpv/basic-params-config
     {:single-value #{}
-     :multiple-value #{}
+     :multiple-value #{:permitted-group}
      :always-case-sensitive #{}
      :disallow-pattern #{}
      :allow-or #{}}))
 
 (defmethod cpv/valid-parameter-options :acl
   [_]
-  {})
+  {:permitted-group cpv/string-param-options})
+
+(defn- valid-permitted-group?
+  "Returns true if the given permitted group is valid, i.e. guest, registered or conforms to
+  access group id format."
+  [group]
+  (or (.equalsIgnoreCase "guest" group)
+      (.equalsIgnoreCase "registered" group)
+      (some? (re-find #"[Aa][Gg]\d+-.+" group))))
+
+(defn- permitted-group-validation
+  "Validates permitted group parameters."
+  [context params]
+  (let [permitted-groups (:permitted-group params)
+        permitted-groups (if (sequential? permitted-groups)
+                           permitted-groups
+                           (when permitted-groups
+                             (vector permitted-groups)))]
+    (when-let [invalid-groups (seq (remove valid-permitted-group? permitted-groups))]
+      [(format "Parameter permitted_group has invalid values [%s]" (str/join ", " invalid-groups))])))
 
 (defn validate-acl-search-params
   "Validates the parameters for an ACL search. Returns the parameters or throws an error if invalid."
   [context params]
   (let [[safe-params type-errors] (cpv/apply-type-validations
                                     params
-                                    [(partial cpv/validate-map [:options])])]
+                                    [(partial cpv/validate-map [:options])
+                                     (partial cpv/validate-map [:options :permitted-group])])]
     (cpv/validate-parameters
       :acl safe-params
-      cpv/common-validations
+      (concat cpv/common-validations
+              [permitted-group-validation])
       type-errors))
   params)
 
@@ -150,7 +171,7 @@
 
 (defmethod cp/param-mappings :acl
   [_]
-  {})
+  {:permitted-group :string})
 
 (defn search-for-acls
   [context params]

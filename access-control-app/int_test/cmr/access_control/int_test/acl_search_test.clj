@@ -8,9 +8,9 @@
            [cmr.access-control.data.access-control-index :as access-control-index]))
 
 (use-fixtures :each
-              (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"}
-                                      ["user1" "user2" "user3" "user4" "user5"])
-              (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
+  (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"}
+                          ["user1" "user2" "user3" "user4" "user5"])
+  (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 (use-fixtures :once (fixtures/int-test-fixtures))
 
 
@@ -105,9 +105,10 @@
                         vec)
          start (* (dec page-num) page-size)
          end (+ start page-size)
+         end (if (> end hits) hits end)
          items (subvec all-items start end)]
-    {:hits hits
-     :items items})))
+     {:hits hits
+      :items items})))
 
 (deftest acl-search-test
   (let [token (e/login (u/conn-context) "user1")
@@ -157,4 +158,72 @@
       (testing "Page Number"
         (is (= (acls->search-response (count all-acls) all-acls 4 2)
                (dissoc (ac/search-for-acls (u/conn-context) {:page_size 4 :page_num 2}) :took)))))))
+
+(deftest acl-search-permitted-group-test
+  (let [token (e/login (u/conn-context) "user1")
+        acl1 (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
+        acl2 (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE")
+                                      :group_permissions
+                                      [{:user_type "registered" :permissions ["create"]}]))
+        acl3 (ingest-acl token (assoc (system-acl "ARCHIVE_RECORD")
+                                      :group_permissions
+                                      [{:group_id "AG12345-PROV" :permissions ["create"]}]))
+
+        acl4 (ingest-acl token (provider-acl "AUDIT_REPORT"))
+        acl5 (ingest-acl token (assoc (provider-acl "OPTION_DEFINITION")
+                                      :group_permissions
+                                      [{:user_type "registered" :permissions ["create"]}]))
+        acl6 (ingest-acl token (assoc (provider-acl "OPTION_ASSIGNMENT")
+                                      :group_permissions
+                                      [{:group_id "AG12345-PROV" :permissions ["create"]}]))
+
+        acl7 (ingest-acl token (catalog-item-acl "All Collections"))
+        acl8 (ingest-acl token (assoc (catalog-item-acl "All Granules")
+                                      :group_permissions
+                                      [{:user_type "registered" :permissions ["create"]}
+                                       {:group_id "AG10000-PROV" :permissions ["create"]}]))
+
+        guest-acls [acl1 acl4 acl7]
+        registered-acls [acl2 acl5 acl8]
+        AG12345-acls [acl3 acl6]
+        AG10000-acls [acl8]
+        all-acls (concat guest-acls registered-acls AG12345-acls)]
+    (u/wait-until-indexed)
+
+    (testing "Search ACLs by permitted group"
+      (are [permitted-groups acls]
+           (let [response (ac/search-for-acls (u/conn-context) {:permitted-group permitted-groups})]
+             (= (acls->search-response (count acls) acls)
+                (dissoc response :took)))
+
+           ["guest"] guest-acls
+           ["registered"] registered-acls
+           ["AG12345-PROV"] AG12345-acls
+           ["AG10000-PROV"] AG10000-acls
+           ;; permitted-group search is case insensitive by default
+           ["REGISTERED" "AG10000-PROV"] registered-acls
+           ["GUEST" "AG10000-PROV"] (concat guest-acls AG10000-acls)
+           ["AG12345-PROV" "AG10000-PROV"] (concat AG12345-acls AG10000-acls)
+           ["guest" "registered" "AG12345-PROV" "AG10000-PROV"] all-acls))
+
+    (testing "Search ACLs by permitted group with options"
+      (are [permitted-groups options acls]
+           (let [response (ac/search-for-acls (u/conn-context)
+                                              (merge {:permitted-group permitted-groups} options))]
+             (= (acls->search-response (count acls) acls)
+                (dissoc response :took)))
+
+           ["GUEST"] {"options[permitted_group][ignore_case]" true} guest-acls
+           ["GUEST"] {"options[permitted_group][ignore_case]" false} []))
+
+    (testing "Search ACLs by permitted group with invalid values"
+      (are [permitted-groups invalid-msg]
+           (= {:status 400
+               :body {:errors [(format "Parameter permitted_group has invalid values [%s]"
+                                       invalid-msg)]}
+               :content-type :json}
+              (ac/search-for-acls (u/conn-context) {:permitted-group permitted-groups} {:raw? true}))
+
+           ["gust"] "gust"
+           ["GUST" "registered" "AG10000-PROV" "G10000-PROV"] "GUST, G10000-PROV"))))
 
