@@ -146,10 +146,10 @@
   (let [permitted-groups (:permitted-group params)
         permitted-groups (if (sequential? permitted-groups)
                            permitted-groups
-                           (when permitted-groups
-                             (vector permitted-groups)))]
+                           (when permitted-groups [permitted-groups]))]
     (when-let [invalid-groups (seq (remove valid-permitted-group? permitted-groups))]
-      [(format "Parameter permitted_group has invalid values [%s]" (str/join ", " invalid-groups))])))
+      [(format "Parameter permitted_group has invalid values [%s]. Only 'guest', 'registered' or a group concept id can be specified."
+               (str/join ", " invalid-groups))])))
 
 (defn validate-acl-search-params
   "Validates the parameters for an ACL search. Returns the parameters or throws an error if invalid."

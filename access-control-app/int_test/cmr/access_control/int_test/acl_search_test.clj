@@ -219,7 +219,7 @@
     (testing "Search ACLs by permitted group with invalid values"
       (are [permitted-groups invalid-msg]
            (= {:status 400
-               :body {:errors [(format "Parameter permitted_group has invalid values [%s]"
+               :body {:errors [(format "Parameter permitted_group has invalid values [%s]. Only 'guest', 'registered' or a group concept id can be specified."
                                        invalid-msg)]}
                :content-type :json}
               (ac/search-for-acls (u/conn-context) {:permitted-group permitted-groups} {:raw? true}))
