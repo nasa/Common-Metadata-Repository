@@ -13,8 +13,11 @@
   ;; vector with no element name string causes an error, but a sequence of vectors works properly.
   ;; Update this if we think of a better way.
   (seq [["ns3:Sid"
-          ["ns3:GroupSid"
-            ["ns3:GroupGuid" group-guid]]]
+          (if (or (= group-guid "GUEST") (= group-guid "REGISTERED"))
+            ["ns3:UserAuthorizationTypeSid"
+              ["ns3:UserAuthorizationType" group-guid]]
+            ["ns3:GroupSid"
+              ["ns3:GroupGuid" group-guid]])]
         ["ns3:Permissions" (soap/item-list permissions)]]))
 
 (defn generate-system-access-control-list
