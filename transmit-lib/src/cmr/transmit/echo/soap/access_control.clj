@@ -13,7 +13,7 @@
   ;; vector with no element name string causes an error, but a sequence of vectors works properly.
   ;; Update this if we think of a better way.
   (seq [["ns3:Sid"
-          (if (or (= group-guid "GUEST") (= group-guid "REGISTERED"))
+          (if (#{"GUEST", "REGISTERED"} group-guid)
             ["ns3:UserAuthorizationTypeSid"
               ["ns3:UserAuthorizationType" group-guid]]
             ["ns3:GroupSid"
