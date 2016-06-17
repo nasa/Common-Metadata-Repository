@@ -64,3 +64,7 @@ Items to include in each issue
 
 * CMR-2186, CMR-2187, CMR-2188, CMR-2189
   * Added Version 2 facet response. No impacts to configuration or deployments.
+* CMR-3009
+  * Added alias for searching the latest collections index.
+  * Automated creation of the index.
+  * The alias was manually added as part of the deployment of sprint 52.

@@ -82,8 +82,8 @@
         {:keys [concept-id revision-id]} concept-map
         elastic-store (esi/context->search-index context)]
     (m/save-elastic-doc
-     elastic-store group-index-name group-type-name concept-id elastic-doc revision-id
-     {:ignore-conflict? true})))
+      elastic-store group-index-name group-type-name concept-id elastic-doc revision-id
+      {:ignore-conflict? true})))
 
 (defmethod delete-concept :access-group
   [context concept-map]
@@ -133,6 +133,9 @@
   {:concept-id (m/stored m/string-field-mapping)
    :revision-id (m/stored m/int-field-mapping)
 
+   :permitted-group (m/stored m/string-field-mapping)
+   :permitted-group.lowercase m/string-field-mapping
+
    ;; The name of the ACL for returning in the references response.
    ;; This will be the catalog item identity name or a string containing
    ;; "<identity type> - <target>". For example "System - PROVIDER"
@@ -147,7 +150,7 @@
 
 (defn acl->display-name
   "Returns the display name to index with the ACL. This will be the catalog item identity name or a
-   string containing \"<identity type> - <target>\". For example \"System - PROVIDER\""
+  string containing \"<identity type> - <target>\". For example \"System - PROVIDER\""
   [acl]
   (let [{:keys [system-identity provider-identity single-instance-identity catalog-item-identity]} acl]
     (cond
@@ -163,7 +166,7 @@
                                        (:target provider-identity))
       catalog-item-identity    (:name catalog-item-identity)
       :else                    (errors/internal-error!
-                                (str "ACL was missing identity " (pr-str acl))))))
+                                 (str "ACL was missing identity " (pr-str acl))))))
 
 (defn acl->identity-type
   "Returns the identity type to index with the ACL."
@@ -174,15 +177,24 @@
     (:provider-identity acl)        "Provider"
     (:catalog-item-identity acl)    "Catalog Item"
     :else                    (errors/internal-error!
-                              (str "ACL was missing identity " (pr-str acl)))))
+                               (str "ACL was missing identity " (pr-str acl)))))
+
+(defn acl->permitted-groups
+  "Returns the permitted groups of the ACL, which is a list of group ids or user types referenced
+  in the group permissions of the ACL."
+  [acl]
+  (map #(or (:user-type %) (:group-id %)) (:group-permissions acl)))
 
 (defn- acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."
   [concept-map]
-  (let [acl (edn/read-string (:metadata concept-map))]
+  (let [acl (edn/read-string (:metadata concept-map))
+        permitted-groups (acl->permitted-groups acl)]
     (assoc (select-keys concept-map [:concept-id :revision-id])
            :display-name (acl->display-name acl)
-           :identity-type (acl->identity-type acl))))
+           :identity-type (acl->identity-type acl)
+           :permitted-group permitted-groups
+           :permitted-group.lowercase (map str/lower-case permitted-groups))))
 
 (defmethod index-concept :acl
   [context concept-map]
@@ -190,8 +202,8 @@
         {:keys [concept-id revision-id]} concept-map
         elastic-store (esi/context->search-index context)]
     (m/save-elastic-doc
-     elastic-store acl-index-name acl-type-name concept-id elastic-doc revision-id
-     {:ignore-conflict? true})))
+      elastic-store acl-index-name acl-type-name concept-id elastic-doc revision-id
+      {:ignore-conflict? true})))
 
 (defmethod delete-concept :acl
   [context concept-map]

@@ -384,9 +384,8 @@ The following parameters are supported when searching for ACLs.
 
 ##### ACL Matching Parameters
 
-**Coming Soon**
-
-This section will be expanded in the future as ACLs can be searched by additional fields.
+*permitted_group
+  * options: ignore_case
 
 ##### ACL Search Response
 
@@ -404,7 +403,7 @@ The response is always returned in JSON and includes the following parts.
 ##### ACL Search Example
 
 ```
-curl -i %CMR-ENDPOINT%/acls?pretty=true
+curl -i "%CMR-ENDPOINT%/acls?permitted_group\[\]=guest&permitted_group\[\]=registered&pretty=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
