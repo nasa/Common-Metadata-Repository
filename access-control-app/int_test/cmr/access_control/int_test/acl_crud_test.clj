@@ -191,19 +191,21 @@
                                 "ECHO-Token" token}
                       :throw-exceptions false})))))))
 
-(deftest update-acl-conflict-test
+(deftest update-acl-invalid-data-test
   (let [token (e/login (u/conn-context) "admin")
         {system-concept-id :concept_id} (ac/create-acl (u/conn-context) system-acl {:token token})
         {provider-concept-id :concept_id} (ac/create-acl (u/conn-context) provider-acl {:token token})]
-    (testing "updating an ACL to use a name that is already in use"
+    (testing "updating an ACL to a different native id is invalid"
       (is (thrown-with-msg?
             Exception
-            #"ACL with native id \[system:tag_group\] already exists with concept id \[ACL1200000000-CMR\]"
-            (ac/update-acl (u/conn-context) provider-concept-id system-acl {:token token}))))
+            #"ACL native id cannot be updated, was \[system:tag_group\] and now \[system:archive_record\]"
+            (ac/update-acl
+              (u/conn-context) system-concept-id
+              (assoc system-acl :system_identity {:target "ARCHIVE_RECORD"}){:token token}))))
 
     (testing "updating an ACL to change its legacy guid"
       (is (thrown-with-msg?
             Exception
-            #"ACL legacy guid cannot be updated, was \[null\] and now \[XYZ-EFG-HIJK-LMNOP\]"
+            #"ACL legacy guid cannot be updated, was \[ABCD-EFG-HIJK-LMNOP\] and now \[XYZ-EFG-HIJK-LMNOP\]"
             (ac/update-acl (u/conn-context) provider-concept-id
                            (assoc provider-acl :legacy_guid "XYZ-EFG-HIJK-LMNOP") {:token token}))))))

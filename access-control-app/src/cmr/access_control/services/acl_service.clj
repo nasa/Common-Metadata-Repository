@@ -91,29 +91,20 @@
   "Update the ACL with the given concept-id in Metadata DB. Returns map with concept and revision id of updated acl."
   [context concept-id acl]
   ;; This fetch acl call also validates if the ACL with the concept id does not exist or is deleted
-  (fetch-acl-concept context concept-id)
-  (let [native-id (acl-native-id acl)]
-    (when-let [existing-concept-id (mdb/get-concept-id context :acl acl-provider-id (acl-native-id acl))]
-
-      ;; The acl exists. Check if its latest revision is a tombstone
-      (let [concept (mdb/get-latest-concept context existing-concept-id)
-            existing-legacy-guid (:legacy-guid concept)
+  (let [existing-concept (fetch-acl-concept context concept-id)
+        existing-native-id (:native-id existing-concept)
+        native-id (acl-native-id acl)]
+    (if (= existing-native-id native-id)
+      (let [existing-legacy-guid (:legacy-guid (edn/read-string (:metadata existing-concept)))
             legacy-guid (:legacy-guid acl)]
-        (if (:deleted concept)
-          ;; The acl exists but was previously deleted.
+        (if (= existing-legacy-guid legacy-guid)
+          (mdb/save-concept context (dissoc (acl->new-concept context acl) :revision-id))
           (errors/throw-service-error
-            :not-found (format "ACL with concept id [%s] has been deleted" concept-id))
-
-          ;; The acl exists and was not deleted.
-          (if (= concept-id existing-concept-id)
-            (if (not= existing-legacy-guid legacy-guid)
-              (errors/throw-service-error
-                :conflict (format "ACL legacy guid cannot be updated, was [%s] and now [%s]"
-                                  existing-legacy-guid legacy-guid))
-              (mdb/save-concept context (dissoc (acl->new-concept context acl) :revision-id)))
-            (errors/throw-service-error
-              :conflict (format "ACL with native id [%s] already exists with concept id [%s]"
-                                native-id existing-concept-id))))))))
+            :invalid-data (format "ACL legacy guid cannot be updated, was [%s] and now [%s]"
+                                  existing-legacy-guid legacy-guid))))
+      (errors/throw-service-error
+        :invalid-data (format "ACL native id cannot be updated, was [%s] and now [%s]"
+                              existing-native-id native-id)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search functions
