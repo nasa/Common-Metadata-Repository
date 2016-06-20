@@ -59,20 +59,21 @@
   (let [updated-query-params (remove-value-from-query-params query-params field-name value)]
     {:remove (generate-query-string base-url updated-query-params)}))
 
-(defn- get-values-for-field
+(defn get-values-for-field
   "Returns a list of all of the values for the provided field-name. Includes values for keys of
    both field-name and field-name[]."
   [query-params field-name]
   (let [field-name-snake-case (csk/->snake_case_string field-name)]
-    (reduce (fn [values-for-field field]
-                (let [value-or-values (get query-params field)]
-                  (if (coll? value-or-values)
-                    (conj value-or-values values-for-field)
-                    (if value-or-values
-                      (cons value-or-values values-for-field)
-                      values-for-field))))
-            []
-            [field-name-snake-case (str field-name-snake-case "[]")])))
+    (remove empty?
+            (reduce (fn [values-for-field field]
+                      (let [value-or-values (get query-params field)]
+                        (if (coll? value-or-values)
+                          (conj value-or-values values-for-field)
+                          (if (seq value-or-values)
+                            (cons value-or-values values-for-field)
+                            values-for-field))))
+                    []
+                    [field-name-snake-case (str field-name-snake-case "[]")]))))
 
 (defn create-link
   "Creates either a remove or an apply link based on whether this particular value is already
@@ -134,7 +135,7 @@
                 k)))
           query-params)))
 
-(defn- get-potential-matching-query-params
+(defn get-potential-matching-query-params
   "Returns a subset of query parameters whose keys match the provided field-name and ignoring the
   index.
 

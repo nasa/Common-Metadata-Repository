@@ -87,6 +87,30 @@
           (is (applied? response :instrument))
           (is (applied? response :processing-level-id)))))))
 
+;; TODO add remove links for science keyword hierarchical fields
+(deftest remove-facets-without-collections
+  (fu/make-coll 1 "PROV1" (fu/platforms "ASTER" 1))
+  (fu/make-coll 1 "PROV1" (fu/platforms "MODIS" 1))
+  (testing "Removing facets without any matching collections for all facet fields"
+    (let [search-params {:science-keywords {:0 {:category "Cat1"
+                                                :topic "Topic1"
+                                                :term "Term1"
+                                                :variable-level-1 "Level1-1"
+                                                :variable-level-2 "Level1-2"
+                                                :variable-level-3 "Level1-3"}}
+                         :project ["proj1"]
+                         :platform ["ASTER-p0"]
+                         :instrument ["ATM"]
+                         :processing-level-id ["PL1"]
+                         :data-center "DOI/USGS/CMG/WHSC"
+                         :keyword "MODIS"}
+          response (search-and-return-v2-facets search-params)]
+      (is (= fr/expected-facets-with-no-matching-collections response))))
+  (testing "Facets with multiple facets applied, some with matching collections, some without"
+    (is (= fr/expected-facets-modis-and-aster
+           (search-and-return-v2-facets {:platform ["moDIS-p0", "ASTER-p0"]
+                                         :keyword "MODIS"})))))
+
 (deftest empty-hierarchical-facets-test
   (let [expected-empty-facets {:title "Browse Collections"
                                :type "group"

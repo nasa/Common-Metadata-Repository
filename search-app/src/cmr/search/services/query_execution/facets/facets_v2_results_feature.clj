@@ -203,13 +203,25 @@
                                 :applied applied?)))))
           hierarchical-fields)))
 
+(defn- add-terms-with-zero-matching-collections
+  "Takes a sequence of tuples and a sequence of search terms. The tuples are of the form search term
+  and number of matching collections. For any search term provided that is not in the tuple of value
+  counts and new tuple is added with the search term and a count of 0."
+  [value-counts search-terms]
+  (let [all-facet-values (map #(str/lower-case (first %)) value-counts)
+        missing-terms (remove #(some (set [(str/lower-case %)]) all-facet-values) search-terms)]
+    (reduce #(conj %1 [%2 0]) value-counts missing-terms)))
+
 (defn- create-flat-v2-facets
   "Parses the elastic aggregations and generates the v2 facets for all flat fields."
   [elastic-aggregations base-url query-params]
   (let [flat-fields [:platform :instrument :data-center :project :processing-level-id]]
     (remove nil?
       (for [field-name flat-fields
-            :let [value-counts (frf/buckets->value-count-pairs (field-name elastic-aggregations))
+            :let [search-terms-from-query (lh/get-values-for-field query-params field-name)
+                  value-counts (add-terms-with-zero-matching-collections
+                                (frf/buckets->value-count-pairs (field-name elastic-aggregations))
+                                search-terms-from-query)
                   snake-case-field (csk/->snake_case_string field-name)
                   applied? (some? (or (get query-params snake-case-field
                                             (get query-params (str snake-case-field "[]")))))
@@ -231,11 +243,60 @@
                                               {:relative-root-url :context})]
     (format "%s/collections.json" (conn/root-url public-search-config))))
 
+;;;; TODO Remove prototyping code
+(defn- generate-hierarchical-filter-node-removal-link
+  "TODO: FIX
+  Returns a function to generate a child node with the provided base-url, query-params, and
+  field-name. Returned function takes two arguments (a term and a count of collections containing
+  that term)."
+  [base-url query-params field-name term]
+  (let [link (lh/create-remove-link-for-hierarchical-field base-url query-params field-name term)]
+    (merge sorted-facet-map
+           {:title term
+            :type :filter
+            :applied true
+            :links link
+            :count 0
+            ;; TODO add depth
+            :has_children false})))
+
+(comment
+  (generate-hierarchical-removal-links "http://foo" {"science_keywords[0][category]" "cat"
+                                                     "science_keywords[1][variable_level_1]" "VL1"
+                                                     "science_keywords[0][fake]" "dog"})
+  (field-applied? {"science_keywords[1][category]" "cat"} "science_keywords" "category")
+  (->> (lh/get-potential-matching-query-params {"science_keywords[1][category]" "cat"
+                                                "science_keywords[0][category]" ["dog" "fish"]}
+                                               "science_keywords[0][category]")
+       vals
+       flatten))
+
+(defn- generate-hierarchical-removal-links
+  "TODO: Same as generate-removal-links, but for hierarchical fields"
+  [base-url query-params]
+  (let [hierarchical-fields [:science-keywords]]
+    (remove nil?
+            (flatten
+                  (for [parent-field hierarchical-fields
+                        :let [sub-fields (parent-field kms-fetcher/nested-fields-mappings)
+                              snake-parent-field (csk/->snake_case_string parent-field)]]
+                    (for [sub-field sub-fields
+                          :let [snake-sub-field (csk/->snake_case_string sub-field)
+                                full-field (str snake-parent-field "[0][" snake-sub-field "]")]]
+                      (let [values (->> (lh/get-potential-matching-query-params query-params full-field)
+                                        vals
+                                        flatten)]
+                        (for [value values]
+                          (generate-hierarchical-filter-node-removal-link base-url query-params
+                                                                          full-field value)))))))))
+
+;;;;;;
 (defn create-v2-facets
   "Create the facets v2 response. Parses an elastic aggregations result and returns the facets."
   [context aggs]
   (let [base-url (collection-search-root-url context)
         query-params (parse-params (:query-string context) "UTF-8")
+        ; facets (generate-removal-links base-url query-params)
         facets (concat (create-hierarchical-v2-facets aggs base-url query-params)
                        (create-flat-v2-facets aggs base-url query-params))]
     (if (seq facets)
