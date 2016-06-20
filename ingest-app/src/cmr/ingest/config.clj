@@ -37,3 +37,7 @@
 (defconfig ingest-nrepl-port
   "Port to listen for nREPL connections."
   {:default nil :parser cfg/maybe-long})
+
+(defconfig return-umm-validation-errors
+  "Flag for whether or not UMM-JSON validation errors should be returned for collections."
+  {:default false :type Boolean})

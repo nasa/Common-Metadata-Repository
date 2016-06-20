@@ -7,10 +7,12 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.umm.spatial :as umm-s]
             [cmr.common.util :refer [are2]]
+            [cmr.common-app.test.side-api :as side]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.line-string :as l]
             [cmr.spatial.mbr :as m]
+            [cmr.ingest.config :as icfg]
             [cmr.ingest.services.messages :as msg]
             [cmr.common.mime-types :as mime-types]
             [cmr.system-int-test.utils.index-util :as index]
@@ -331,11 +333,25 @@
           :variable-level-2 "MAXiMUM/MiNiMUM TEMPERATURE"
           :variable-level-3 "24 HOUR MAXiMUM TEMPERATURE"})))
 
-
 ;; This tests that UMM type validations are applied during collection ingest.
 ;; Thorough tests of UMM validations should go in cmr.umm.test.validation.core and related
 ;; namespaces.
 (deftest collection-umm-validation-test
+  (testing "UMM-C JSON-Schema validation"
+    ;; enable return of schema validation errors from API
+    (side/eval-form `(icfg/set-return-umm-validation-errors! true))
+    ;; create collection valid against echo10 but invalid against schema
+    (let [response (d/ingest "PROV1" (dc/collection {:product-specific-attributes
+                                                      [(dc/psa {:name "bool1" :data-type :boolean :value true})
+                                                       (dc/psa {:name "bool2" :data-type :boolean :value true})]})
+                                {:allow-failure? true})]
+      (is (= {:status 422
+              :errors ["object has missing required properties ([\"Organizations\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
+             (select-keys response [:status :errors]))))
+    ;; disable return of schema validation errors from API
+    (side/eval-form `(icfg/set-return-umm-validation-errors! false))
+    (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
+                                                 (dc/psa {:name "bool2" :data-type :boolean :value true})]}))
   (testing "Product specific attribute validation"
     (assert-invalid
       {:product-specific-attributes

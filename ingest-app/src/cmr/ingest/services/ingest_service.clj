@@ -21,6 +21,9 @@
             [cmr.common.cache :as cache]
             [cmr.common.services.errors :as errors]
             [cmr.umm.collection.entry-id :as eid]
+            [cmr.umm-spec.core :as spec]
+            [cmr.umm-spec.umm-json :as umm-json]
+            [cmr.umm-spec.json-schema :as json-schema]
             [cmr.umm-spec.versioning :as ver]))
 
 (def ingest-validation-enabled?
@@ -46,6 +49,21 @@
   [context collection-concept validate-keywords?]
   (v/validate-concept-request collection-concept)
   (v/validate-concept-metadata collection-concept)
+  ;; TODO validate collection UMMM-C here
+  ;; 1. Parse collection into UMM-C record
+  ;; 2. Convert to UMM-JSON and validate against UMM-C JSON schema
+  ;; 2a. Return errors if present (or actually just print them but continue on anyway to normal ingest)
+  ;; 3. Validate against UMM-C validation rules written in Clojure (TODO started this sprint in other issues)
+  (let [{:keys [format metadata]} collection-concept
+        collection (spec/parse-metadata context :collection format metadata)
+        umm-json (umm-json/umm->json collection)
+        err-messages (json-schema/validate-umm-json umm-json :collection)]
+    (if (seq err-messages)
+      (if (config/return-umm-validation-errors)
+        (errors/throw-service-errors :invalid-data err-messages)
+        (warn "UMM-C JSON-Schema Validation Errors: " (pr-str err-messages)))
+      ;; Add validation of UMM-C here.
+      (do)))
 
   (let [collection (umm-legacy/parse-concept context collection-concept)]
     (when (ingest-validation-enabled?)
