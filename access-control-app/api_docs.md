@@ -465,7 +465,7 @@ Content-Type: application/json
 
 ### <a name="update-acl"></a> Update ACL
 
-An ACL can be updated by sending a PUT request to `%CMR-ENDPOINT%/acls/<concept-id>` where `concept-id` is the concept id of the ACL returned when it was created. The fields uniquely identifies an ACL cannot be updated, e.g. the `target` field of a system identity ACL. Also `legacy-guid` field cannot be modified during update.
+An ACL can be updated by sending a PUT request to `%CMR-ENDPOINT%/acls/<concept-id>` where `concept-id` is the concept id of the ACL returned when it was created. `legacy-guid` field cannot be modified during update. The fields that uniquely identify an ACL cannot be updated, e.g. the `target` field of a system identity ACL. This limitation will eventually be removed as documented in CMR-3163.
 
 ```
 curl -XPUT -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/acls/ACL1200000000-CMR -d \

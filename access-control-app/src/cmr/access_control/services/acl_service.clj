@@ -102,6 +102,8 @@
           (errors/throw-service-error
             :invalid-data (format "ACL legacy guid cannot be updated, was [%s] and now [%s]"
                                   existing-legacy-guid legacy-guid))))
+      ;; We want to allow ACL update to change the unique identifiers that made up the native id
+      ;; of an ACL in the future as documented in CMR-3163
       (errors/throw-service-error
         :invalid-data (format "ACL native id cannot be updated, was [%s] and now [%s]"
                               existing-native-id native-id)))))
