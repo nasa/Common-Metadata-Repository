@@ -8,18 +8,12 @@
   [field-path value]
   (println value)
   (let [{:keys [BeginningDateTime EndingDateTime]} value]
-    (println BeginningDateTime)
-    (println EndingDateTime)
     (when (and BeginningDateTime EndingDateTime (t/after? BeginningDateTime EndingDateTime))
-      (println (str "Begin: " BeginningDateTime " End: " EndingDateTime))
       {field-path [(format "BeginningDateTime [%s] must be no later than EndingDateTime [%s]"
                            (str BeginningDateTime) (str EndingDateTime))]})))
 
-
-(defn- temporal-extent-validation
-  "Validates list of temporal extent"
-  [field-path value]
-  (v/validate (v/every range-date-time-validation) (:RangeDateTimes value)))
+(def temporal-extent-validation
+  {:RangeDateTimes (v/every range-date-time-validation)})
 
 (def collection-validations
   "Defines validations for collections"
