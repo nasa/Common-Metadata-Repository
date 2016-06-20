@@ -97,7 +97,6 @@
   ([context concept-batches]
    (bulk-index context concept-batches nil))
   ([context concept-batches options]
-   (proto/save 3 concept-batches)
    (reduce (fn [num-indexed batch]
              (let [batch (prepare-batch context batch options)]
                (es/bulk-index-documents context batch options)
