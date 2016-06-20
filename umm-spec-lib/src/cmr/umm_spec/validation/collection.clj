@@ -6,7 +6,6 @@
 (defn- range-date-time-validation
   "Defines range-date-time validation"
   [field-path value]
-  (println value)
   (let [{:keys [BeginningDateTime EndingDateTime]} value]
     (when (and BeginningDateTime EndingDateTime (t/after? BeginningDateTime EndingDateTime))
       {field-path [(format "BeginningDateTime [%s] must be no later than EndingDateTime [%s]"
