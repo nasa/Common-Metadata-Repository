@@ -6,6 +6,7 @@
   (require [cmr.common.jobs :refer [def-stateful-job]]
            [cmr.common.util :as util]
            [cmr.common.log :refer [debug info error]]
+           [cmr.transmit.metadata-db :as meta-db]
            [cmr.common.services.errors :as errors]
            ;; cache dependencies
            [cmr.common.cache :as c]
@@ -171,8 +172,6 @@
                            (if (> (compare end1 end2) 0) end1 end2))})
     (or gt1 gt2)))
 
-;; TODO after this comes back we should look at the cache value differences and trigger a reindex of
-;; specific collections that changed.
 (defn- merge-coll-gran-aggregates
   "Merges the two collection granule aggregates returning an expanded time ranges."
   [cg1 cg2]
@@ -186,6 +185,13 @@
     (debug "Running a full refresh of the collection aggregation cache.")
     (c/set-value cache coll-gran-aggregate-cache-key
                  (coll-gran-aggregates->cachable-value (fetch-coll-gran-aggregates context)))))
+
+(defn- collections-with-updated-times
+  "Compares the existing aggregate map and an updated map and returns the collection concept ids which
+   have different ranges."
+  [existing-aggregate-map updated-map]
+  (filter #(not= (existing-aggregate-map %) (updated-map %))
+          (keys updated-map)))
 
 (defn- partial-cache-refresh
   "Partially refreshes the collection granule aggregate cache. It looks for granules that have been
@@ -202,7 +208,13 @@
                                                    recently-updated-granule-map)]
         (debug "Running a partial refresh of the collection aggregation cache.")
         (c/set-value cache coll-gran-aggregate-cache-key
-                     (coll-gran-aggregates->cachable-value merged-map)))
+                     (coll-gran-aggregates->cachable-value merged-map))
+        ;; Reindex the collections that were modified
+        (->> (collections-with-updated-times existing-aggregate-map merged-map)
+             (meta-db/get-latest-concepts context)
+             ;; wrap it in a vector to make a batch to bulk index
+             vector
+             (index-service/bulk-index context)))
 
       ;; There's no existing value so a full refresh is required.
       (full-cache-refresh context))))

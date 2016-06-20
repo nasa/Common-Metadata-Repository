@@ -97,6 +97,7 @@
   ([context concept-batches]
    (bulk-index context concept-batches nil))
   ([context concept-batches options]
+   (proto/save 3 concept-batches)
    (reduce (fn [num-indexed batch]
              (let [batch (prepare-batch context batch options)]
                (es/bulk-index-documents context batch options)
@@ -110,7 +111,7 @@
   collection concept type if all-revisions-index? is true."
   [concept-type all-revisions-index?]
   (if (or (not all-revisions-index?)
-          (and all-revisions-index? (contains?  #{:collection :tag-association} concept-type)))
+          (and all-revisions-index? (contains? #{:collection :tag-association} concept-type)))
     true
     false))
 

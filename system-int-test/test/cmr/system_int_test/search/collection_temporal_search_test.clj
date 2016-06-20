@@ -128,9 +128,15 @@
         c1-g2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "c1-g2"
                                                    :beginning-date-time "2005-01-01T00:00:00Z"
                                                    :ending-date-time "2006-01-01T00:00:00Z"}))
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"
+                                                :beginning-date-time "1998-01-01T00:00:00Z"
+                                                :ending-date-time "2010-01-01T00:00:00Z"}))
+        c2-g1 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "c2-g1"
+                                                   :beginning-date-time "1998-01-01T00:00:00Z"
+                                                   :ending-date-time "1998-01-02T00:00:00Z"}))
         temporal-all-search {"temporal[]" "2000-01-01T00:00:00Z,2010-01-01T00:00:00Z"
                              "options[temporal][limit_to_granules]" true}
-        temporal-before-search {"temporal[]" "1999-01-01T00:00:00Z,2004-01-01T00:00:00Z"
+        temporal-before-search {"temporal[]" "1998-01-01T00:00:00Z,2004-01-01T00:00:00Z"
                                 "options[temporal][limit_to_granules]" true}
         temporal-after-search {"temporal[]" "2007-01-01T00:00:00Z"
                                "options[temporal][limit_to_granules]" true}]
@@ -144,12 +150,19 @@
     (index/wait-until-indexed)
 
     (is (d/refs-match? [coll1] (search/find-refs :collection temporal-all-search)))
-    (is (d/refs-match? [] (search/find-refs :collection temporal-before-search)))
+    (is (d/refs-match? [coll2] (search/find-refs :collection temporal-before-search)))
     (is (d/refs-match? [] (search/find-refs :collection temporal-after-search)))
 
-    ;; Advance time 2 hours
-    (tk/advance-time! (* 3600 2))
-    (let [c1-g1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "c1-g1"
+
+    (let [;; This granule is ingested before partial indexing is run and it's in a timer period that
+          ;; won't be found. We should make sure that coll2 isn't found now which indicates we're only
+          ;; finding granules updated in about the last hour and reindexing only those collections
+          c2-g2 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "c2-g2"
+                                                     :beginning-date-time "2007-01-01T00:00:00Z"
+                                                     :ending-date-time "2008-01-01T00:00:00Z"}))
+          ;; Advance time 2 hours
+          _ (tk/advance-time! (* 3600 2))
+          c1-g1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "c1-g1"
                                                      :beginning-date-time "2003-01-01T00:00:00Z"
                                                      :ending-date-time "2004-01-01T00:00:00Z"}))
           c1-g3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "c1-g3"
@@ -163,21 +176,16 @@
       (index/wait-until-indexed)
 
       (is (d/refs-match? [coll1] (search/find-refs :collection temporal-all-search)))
-      (is (d/refs-match? [] (search/find-refs :collection temporal-before-search)))
+      (is (d/refs-match? [coll2] (search/find-refs :collection temporal-before-search)))
       (is (d/refs-match? [] (search/find-refs :collection temporal-after-search)))
 
-
-      ;; TODO partial indexing should trigger the reindexing of the collections we found.
+      ;; Partial indexing triggers a reindex of the collections that have changed.
       (index/partial-refresh-collection-granule-aggregate-cache)
-      (index/wait-until-indexed)
-
-      ;; TODO remove this step
-      (ingest/reindex-all-collections)
       (index/wait-until-indexed)
 
       ;; Now we should find the collection from the two new granules
       (is (d/refs-match? [coll1] (search/find-refs :collection temporal-all-search)))
-      (is (d/refs-match? [coll1] (search/find-refs :collection temporal-before-search)))
+      (is (d/refs-match? [coll1 coll2] (search/find-refs :collection temporal-before-search)))
       (is (d/refs-match? [coll1] (search/find-refs :collection temporal-after-search))))))
 
 (deftest search-by-temporal
