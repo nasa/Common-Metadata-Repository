@@ -16,7 +16,7 @@
 (use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1"
                                                            "provguid2" "PROV2"
                                                            "provguid3" "CMR_T_PROV"})
-                                    tk/freeze-resume-time-fixture]))
+                                    (dev-system/freeze-resume-time-fixture)]))
 
 
 ;; This tests searching with the limit-to-granules options. That finds collections by the temporal
@@ -161,7 +161,7 @@
                                                      :beginning-date-time "2007-01-01T00:00:00Z"
                                                      :ending-date-time "2008-01-01T00:00:00Z"}))
           ;; Advance time 2 hours
-          _ (tk/advance-time! (* 3600 2))
+          _ (dev-system/advance-time! (* 3600 2))
           c1-g1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "c1-g1"
                                                      :beginning-date-time "2003-01-01T00:00:00Z"
                                                      :ending-date-time "2004-01-01T00:00:00Z"}))

@@ -201,20 +201,28 @@
   [context granules-updated-in-last-n]
   (let [cache (c/context->cache context coll-gran-aggregate-cache-key)]
     (if-let [existing-value (c/get-value cache coll-gran-aggregate-cache-key)]
-      (let [existing-aggregate-map (cached-value->coll-gran-aggregates existing-value)
-            recently-updated-granule-map (fetch-coll-gran-aggregates-updated-in-last-n
-                                          context granules-updated-in-last-n)
-            merged-map (merge-coll-gran-aggregates existing-aggregate-map
-                                                   recently-updated-granule-map)]
-        (debug "Running a partial refresh of the collection aggregation cache.")
-        (c/set-value cache coll-gran-aggregate-cache-key
-                     (coll-gran-aggregates->cachable-value merged-map))
-        ;; Reindex the collections that were modified
-        (->> (collections-with-updated-times existing-aggregate-map merged-map)
-             (meta-db/get-latest-concepts context)
-             ;; wrap it in a vector to make a batch to bulk index
-             vector
-             (index-service/bulk-index context)))
+
+      (do
+       (debug "Running a partial refresh of the collection aggregation cache.")
+       (let [existing-aggregate-map (cached-value->coll-gran-aggregates existing-value)
+             recently-updated-granule-map (fetch-coll-gran-aggregates-updated-in-last-n
+                                           context granules-updated-in-last-n)
+             merged-map (merge-coll-gran-aggregates existing-aggregate-map
+                                                    recently-updated-granule-map)
+             updated-collections (collections-with-updated-times existing-aggregate-map merged-map)]
+         (c/set-value cache coll-gran-aggregate-cache-key
+                      (coll-gran-aggregates->cachable-value merged-map))
+
+         (when (seq updated-collections)
+          (info "Reindexing collections found with updated temporal values since last ingest:"
+                (pr-str updated-collections))
+
+          ;; Reindex the collections that were modified
+          (->> updated-collections
+               (meta-db/get-latest-concepts context)
+               ;; wrap it in a vector to make a batch to bulk index
+               vector
+               (index-service/bulk-index context)))))
 
       ;; There's no existing value so a full refresh is required.
       (full-cache-refresh context))))

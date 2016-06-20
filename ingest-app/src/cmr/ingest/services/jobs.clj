@@ -138,8 +138,8 @@
   (ingest-events/publish-provider-event
     context
     (ingest-events/trigger-collection-granule-aggregation-cache-refresh
-     ;; include a 60 second buffer
-     (+ 60 (partial-refresh-collection-granule-aggregation-cache-interval)))))
+     ;; include a 5 minute buffer
+     (+ 300 (partial-refresh-collection-granule-aggregation-cache-interval)))))
 
 ;; Refreshes collections updated in past interval time period.
 (def-stateful-job TriggerPartialRefreshCollectionGranuleAggregationCacheJob
