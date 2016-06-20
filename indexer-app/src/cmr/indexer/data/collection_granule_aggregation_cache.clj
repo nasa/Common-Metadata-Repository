@@ -5,17 +5,22 @@
    The data will be somewhat stale but should be adequate for the searching needs here."
   (require [cmr.common.jobs :refer [def-stateful-job]]
            [cmr.common.util :as util]
+           [cmr.common.log :refer [debug info error]]
            [cmr.common.services.errors :as errors]
            ;; cache dependencies
            [cmr.common.cache :as c]
            [cmr.common.cache.fallback-cache :as fallback-cache]
            [cmr.common-app.cache.cubby-cache :as cubby-cache]
            [cmr.common-app.cache.consistent-cache :as consistent-cache]
+           [cmr.common-app.services.search.datetime-helper :as datetime-helper]
            [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+           [cmr.indexer.services.index-service :as index-service]
+
            ;; elasticsearch dependencies
            [cmr.indexer.data.elasticsearch :as es]
            [clojurewerkz.elastisch.rest.document :as esd]
            [clojurewerkz.elastisch.query :as esq]
+           [cmr.common.time-keeper :as tk]
            [clj-time.core :as t]
            [clj-time.format :as f]
            [clj-time.coerce :as tc]))
@@ -98,6 +103,23 @@
                    :aggs collection-aggregations})
       parse-aggregations))
 
+(defn- fetch-coll-gran-aggregates-updated-in-last-n
+  "Searches across all the granule indexes to aggregate by collection for granules that were updated
+   in the last N seconds. Returns a map of collection concept id to collection information. The
+   collection will only be in the map if it has granules."
+  [context granules-updated-in-last-n]
+  (let [revision-date (t/minus (tk/now) (t/seconds granules-updated-in-last-n))
+        revision-date-str (datetime-helper/utc-time->elastic-time revision-date)]
+   (-> (esd/search (es/context->conn context)
+                   "1_*" ;; Searching all indexes
+                   ["granule"] ;; With the granule type.
+                   {:query {:filtered {:query (esq/match-all)
+                                       :filter {:range {:revision-date-doc-values
+                                                        {:gte revision-date-str}}}}}
+                    :size 0
+                    :aggs collection-aggregations})
+       parse-aggregations)))
+
 (def ^:private date-time-format
   "The format Joda Time is written to when stored in the cache."
   (f/formatters :date-time))
@@ -136,12 +158,62 @@
          (update :granule-end-date cached-value->joda-time)))
    cached-value))
 
-(defn refresh-cache
-  "Refreshes the collection granule aggregates in the cache."
+(defn- merge-granule-times
+  "Merges the granule time maps returning a composite of times. Will only ever expand the ranges."
+  [gt1 gt2]
+
+  (if (and gt1 gt2)
+    (let [{start1 :granule-start-date end1 :granule-end-date} gt1
+          {start2 :granule-start-date end2 :granule-end-date} gt2]
+      {:granule-start-date (if (< (compare start1 start2) 0) start1 start2)
+       :granule-end-date (when (and end1 end2) ;; If either is nil return nil
+                           ;; else return max time
+                           (if (> (compare end1 end2) 0) end1 end2))})
+    (or gt1 gt2)))
+
+;; TODO after this comes back we should look at the cache value differences and trigger a reindex of
+;; specific collections that changed.
+(defn- merge-coll-gran-aggregates
+  "Merges the two collection granule aggregates returning an expanded time ranges."
+  [cg1 cg2]
+  (into {} (for [coll (distinct (concat (keys cg1) (keys cg2)))]
+             [coll (merge-granule-times (get cg1 coll) (get cg2 coll))])))
+
+(defn- full-cache-refresh
+  "Fully refreshes the collection granule aggregate cache."
   [context]
   (let [cache (c/context->cache context coll-gran-aggregate-cache-key)]
+    (debug "Running a full refresh of the collection aggregation cache.")
     (c/set-value cache coll-gran-aggregate-cache-key
                  (coll-gran-aggregates->cachable-value (fetch-coll-gran-aggregates context)))))
+
+(defn- partial-cache-refresh
+  "Partially refreshes the collection granule aggregate cache. It looks for granules that have been
+   updated or added to elasticsearch in the last N seconds. It will expand the existing time ranges
+   in the collection granule aggregate cache. It does not handle collapsing time ranges due to
+   granules being deleted or being updated to reduce their time range."
+  [context granules-updated-in-last-n]
+  (let [cache (c/context->cache context coll-gran-aggregate-cache-key)]
+    (if-let [existing-value (c/get-value cache coll-gran-aggregate-cache-key)]
+      (let [existing-aggregate-map (cached-value->coll-gran-aggregates existing-value)
+            recently-updated-granule-map (fetch-coll-gran-aggregates-updated-in-last-n
+                                          context granules-updated-in-last-n)
+            merged-map (merge-coll-gran-aggregates existing-aggregate-map
+                                                   recently-updated-granule-map)]
+        (debug "Running a partial refresh of the collection aggregation cache.")
+        (c/set-value cache coll-gran-aggregate-cache-key
+                     (coll-gran-aggregates->cachable-value merged-map)))
+
+      ;; There's no existing value so a full refresh is required.
+      (full-cache-refresh context))))
+
+(defn refresh-cache
+  "Refreshes the collection granule aggregates in the cache."
+  [context granules-updated-in-last-n]
+  (let [cache (c/context->cache context coll-gran-aggregate-cache-key)]
+    (if granules-updated-in-last-n
+      (partial-cache-refresh context granules-updated-in-last-n)
+      (full-cache-refresh context))))
 
 (defn get-coll-gran-aggregates
   "Returns the map of granule aggregate information for the collection. Will return nil if the
@@ -155,16 +227,4 @@
         cga-map (cached-value->coll-gran-aggregates cached-value)]
     (get cga-map concept-id)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Job for refreshing the cache. Only one node needs to refresh the cache because we're using the
-;; fallback cache with cubby cache. The value stored in cubby will be available to all the nodes.
 
-(def-stateful-job RefreshCollectionGranuleAggregateCacheJob
-  [_ system]
-  (refresh-cache {:system system}))
-
-(def refresh-collection-granule-aggregate-cache-job
-  "The singleton job that refreshes the cache."
-  {:job-type RefreshCollectionGranuleAggregateCacheJob
-   ;; Refresh once every hour
-   :interval 3600})

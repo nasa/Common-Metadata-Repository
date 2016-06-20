@@ -12,6 +12,14 @@
         exchange-name (config/provider-exchange-name)]
     (queue/publish-message queue-broker exchange-name msg)))
 
+(defn trigger-collection-granule-aggregation-cache-refresh
+  "Sends a message to trigger a refresh of the collection granule aggregation cache.
+   granules-updated-in-last-n indicates a number of seconds back to find granules that were updated.
+   If nil then it will find all granules."
+  [granules-updated-in-last-n]
+  {:action :refresh-collection-granule-aggregation-cache
+   :granules-updated-in-last-n granules-updated-in-last-n})
+
 (defn provider-collections-require-reindexing-event
   "Indicates that all the collections within a provider require reindexing. The force-version? attribute
    indicates if during the reindexing we should force elasticsearch to take the version in the database

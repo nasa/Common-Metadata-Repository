@@ -3,6 +3,7 @@
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.indexer.config :as config]
             [cmr.indexer.services.index-service :as indexer]
+            [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
             [cmr.message-queue.services.queue :as queue]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]))
@@ -26,6 +27,10 @@
   (indexer/reindex-provider-collections
    context [provider-id]
    {:all-revisions-index? nil :refresh-acls? false :force-version? force-version?}))
+
+(defmethod handle-ingest-event :refresh-collection-granule-aggregation-cache
+  [context _ {:keys [granules-updated-in-last-n]}]
+  (cgac/refresh-cache context granules-updated-in-last-n))
 
 (defmethod handle-ingest-event :concept-update
   [context all-revisions-index? {:keys [concept-id revision-id]}]

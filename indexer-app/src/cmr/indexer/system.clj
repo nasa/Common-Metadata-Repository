@@ -12,6 +12,7 @@
             [cmr.common.cache :as cache]
             [cmr.common.cache.in-memory-cache :as mem-cache]
             [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+            [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
             [cmr.acl.acl-fetcher :as af]
             [cmr.common.jobs :as jobs]
             [cmr.indexer.api.routes :as routes]
@@ -23,7 +24,6 @@
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.common-app.cache.consistent-cache :as consistent-cache]
             [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
             [cmr.indexer.services.event-handler :as event-handler]
             [cmr.indexer.data.index-set :as index-set]
             [cmr.common-app.system :as common-sys]))
@@ -56,8 +56,7 @@
              :scheduler (jobs/create-scheduler
                           `system-holder
                           [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
-                           (kf/refresh-kms-cache-job "indexer-kms-cache-refresh")
-                           cgac/refresh-collection-granule-aggregate-cache-job])
+                           (kf/refresh-kms-cache-job "indexer-kms-cache-refresh")])
              :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
 
     (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby :kms])))
