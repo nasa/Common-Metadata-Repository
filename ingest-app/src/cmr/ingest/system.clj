@@ -53,7 +53,7 @@
               :db (oracle/create-db (config/db-spec connection-pool-name))
               :scheduler (jobs/create-clustered-scheduler
                            `system-holder :db
-                           (conj ingest-jobs/jobs (af/refresh-acl-cache-job "ingest-acl-cache-refresh")))
+                           (conj (ingest-jobs/jobs) (af/refresh-acl-cache-job "ingest-acl-cache-refresh")))
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                        pc/providers-cache-key (pc/create-providers-cache)
                        af/acl-cache-key (af/create-acl-cache

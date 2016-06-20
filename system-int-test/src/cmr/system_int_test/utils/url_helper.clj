@@ -1,5 +1,5 @@
-(ns ^{:doc "helper to provide the urls to various service endpoints"}
-  cmr.system-int-test.utils.url-helper
+(ns cmr.system-int-test.utils.url-helper
+  "helper to provide the urls to various service endpoints"
   (:require [clojure.string :as str]
             [cmr.common.config :as config]
             [cmr.transmit.config :as transmit-config]
@@ -364,9 +364,15 @@
   []
   (format "http://localhost:%s/update-indexes" (transmit-config/indexer-port)))
 
-(defn refresh-collection-granule-aggregate-cache-url
+(defn full-refresh-collection-granule-aggregate-cache-url
   []
-  (format "http://localhost:%s/jobs/refresh-collection-granule-aggregate-cache" (transmit-config/indexer-port)))
+  (format "http://localhost:%s/jobs/trigger-full-collection-granule-aggregate-cache-refresh"
+          (transmit-config/ingest-port)))
+
+(defn partial-refresh-collection-granule-aggregate-cache-url
+  []
+  (format "http://localhost:%s/jobs/trigger-partial-collection-granule-aggregate-cache-refresh"
+          (transmit-config/ingest-port)))
 
 (defn indexer-read-caches-url
   "URL to read the indexer caches."

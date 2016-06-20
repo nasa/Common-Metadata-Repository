@@ -52,6 +52,16 @@
           (POST "/cleanup-expired-collections" {:keys [headers params request-context]}
             (acl/verify-ingest-management-permission request-context :update)
             (jobs/cleanup-expired-collections request-context)
+            {:status 200})
+          (POST "/trigger-full-collection-granule-aggregate-cache-refresh"
+            {:keys [headers params request-context]}
+            (acl/verify-ingest-management-permission request-context :update)
+            (jobs/trigger-full-refresh-collection-granule-aggregation-cache request-context)
+            {:status 200})
+          (POST "/trigger-partial-collection-granule-aggregate-cache-refresh"
+            {:keys [headers params request-context]}
+            (acl/verify-ingest-management-permission request-context :update)
+            (jobs/trigger-partial-refresh-collection-granule-aggregation-cache request-context)
             {:status 200})))
 
       ;; add routes for accessing caches

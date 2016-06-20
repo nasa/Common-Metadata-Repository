@@ -6,6 +6,7 @@
             [cmr.acl.acl-fetcher :as acl-fetcher]
             [cmr.ingest.data.provider-acl-hash :as pah]
             [cmr.ingest.data.ingest-events :as ingest-events]
+            [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.common.log :refer (debug info warn error)]))
 
 (def REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL
@@ -111,12 +112,63 @@
   (let [context {:system system}]
     (cleanup-expired-collections context)))
 
-(def jobs
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Jobs for refreshing the collection granule aggregation cache in the indexer. This is a singleton job
+;; and the indexer does not have a database so it's triggered from Ingest and sent via message.
+;; Only one node needs to refresh the cache because we're using the  fallback cache with cubby cache.
+;; The value stored in cubby will be available to all the nodes.
+
+(defconfig partial-refresh-collection-granule-aggregation-cache-interval
+  "Number of seconds between partial refreshes of the collection granule aggregation cache."
+  {:default 3600
+   :type Long})
+
+(defn trigger-full-refresh-collection-granule-aggregation-cache
+  "Triggers a refresh of the collection granule aggregation cache in the Indexer."
+  [context]
+  (ingest-events/publish-provider-event
+    context
+    (ingest-events/trigger-collection-granule-aggregation-cache-refresh nil)))
+
+(defn trigger-partial-refresh-collection-granule-aggregation-cache
+  "Triggers a partial refresh of the collection granule aggregation cache in the Indexer."
+  [context]
+  (ingest-events/publish-provider-event
+    context
+    (ingest-events/trigger-collection-granule-aggregation-cache-refresh
+     ;; include a 5 minute buffer
+     (+ 300 (partial-refresh-collection-granule-aggregation-cache-interval)))))
+
+;; Refreshes collections updated in past interval time period.
+(def-stateful-job TriggerPartialRefreshCollectionGranuleAggregationCacheJob
+  [_ system]
+  (trigger-partial-refresh-collection-granule-aggregation-cache
+   {:system system}))
+
+;; Fully refreshes the cache
+(def-stateful-job TriggerFullRefreshCollectionGranuleAggregationCacheJob
+  [_ system]
+  (trigger-full-refresh-collection-granule-aggregation-cache
+   {:system system}))
+
+(defn jobs
   "A list of jobs for ingest"
+  []
   [{:job-type ReindexCollectionPermittedGroups
     :interval REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL}
+
+   {:job-type CleanupExpiredCollections
+    :interval CLEANUP_EXPIRED_COLLECTIONS_INTERVAL}
+
+   {:job-type TriggerPartialRefreshCollectionGranuleAggregationCacheJob
+    :interval (partial-refresh-collection-granule-aggregation-cache-interval)}
+
+   {:job-type TriggerFullRefreshCollectionGranuleAggregationCacheJob
+    ;; Everyday at 1 am so it's before the reindex all collections job
+    :daily-at-hour-and-minute [1 0]}
+
    {:job-type ReindexAllCollections
     ;; Run everyday at 2 am. Chosen because it is offset from the bootstrap database synchronize job by 2 hours.
-    :daily-at-hour-and-minute [2 0]}
-   {:job-type CleanupExpiredCollections
-    :interval CLEANUP_EXPIRED_COLLECTIONS_INTERVAL}])
+    :daily-at-hour-and-minute [2 0]}])
