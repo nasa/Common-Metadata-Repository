@@ -49,11 +49,6 @@
   [context collection-concept validate-keywords?]
   (v/validate-concept-request collection-concept)
   (v/validate-concept-metadata collection-concept)
-  ;; TODO validate collection UMMM-C here
-  ;; 1. Parse collection into UMM-C record
-  ;; 2. Convert to UMM-JSON and validate against UMM-C JSON schema
-  ;; 2a. Return errors if present (or actually just print them but continue on anyway to normal ingest)
-  ;; 3. Validate against UMM-C validation rules written in Clojure (TODO started this sprint in other issues)
   (let [{:keys [format metadata]} collection-concept
         collection (spec/parse-metadata context :collection format metadata)
         umm-json (umm-json/umm->json collection)
