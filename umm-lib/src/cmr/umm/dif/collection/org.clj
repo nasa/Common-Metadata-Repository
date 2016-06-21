@@ -20,5 +20,5 @@
                           (x/element :Short_Name {} (:org-name org)))
                ;; stubbed personnel
                (x/element :Personnel {}
-                          (x/element :Role {} "DummyRole")
-                          (x/element :Last_Name {} "DummyLastName")))))
+                          (x/element :Role {} "Not provided")
+                          (x/element :Last_Name {} "Not provided")))))

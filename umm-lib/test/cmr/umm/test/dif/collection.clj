@@ -51,7 +51,7 @@
   "Returns the expected platform for the given platform"
   [platform]
   (-> platform
-      (assoc :type "Not Specified" :characteristics nil)
+      (assoc :type "Not provided" :characteristics nil)
       (update-in [:instruments] instruments->expected)))
 
 (defn- platforms->expected-parsed
@@ -65,7 +65,7 @@
               (umm-c/map->Platform
                 {:short-name dif/value-not-provided
                  :long-name dif/value-not-provided
-                 :type "Not Specified"
+                 :type "Not provided"
                  :instruments instruments}))
         platforms))))
 
@@ -77,7 +77,7 @@
 (defn- collection-associations->expected-collection-associations
   "Returns the expected parsed collection-associations for the given collection-associations."
   [collection-associations]
-  (seq (map #(assoc % :version-id "dummy") collection-associations)))
+  (seq (map #(assoc % :version-id "Not provided") collection-associations)))
 
 (defn- filter-contacts
   "Remove contacts from a Personnel record that are not emails."
@@ -523,18 +523,18 @@
      :platforms [(umm-c/map->Platform
                    {:short-name "Not provided"
                     :long-name "Not provided"
-                    :type "Not Specified"
+                    :type "Not provided"
                     :instruments [(umm-c/map->Instrument
                                     {:short-name "VEGETATION-1"
                                      :long-name "VEGETATION INSTRUMENT 1 (SPOT 4)"})]})
                  (umm-c/map->Platform
                    {:short-name "SPOT-1"
                     :long-name "Systeme Probatoire Pour l'Observation de la Terre-1"
-                    :type "Not Specified"})
+                    :type "Not provided"})
                  (umm-c/map->Platform
                    {:short-name "SPOT-4"
                     :long-name "Systeme Probatoire Pour l'Observation de la Terre-4"
-                    :type "Not Specified"})]
+                    :type "Not provided"})]
      :temporal expected-temporal
      :collection-progress :in-work
      :science-keywords
@@ -620,10 +620,10 @@
         :geometries [(m/mbr -180 -60.5033 180 -90)]})
      :collection-associations [(umm-c/map->CollectionAssociation
                                  {:short-name "CNDP-ESP_IPY_POL2006-11139-C02-01CGL_ESASSI"
-                                  :version-id "dummy"})
+                                  :version-id "Not provided"})
                                (umm-c/map->CollectionAssociation
                                  {:short-name "CNDP-ESP_2"
-                                  :version-id "dummy"})]
+                                  :version-id "Not provided"})]
      :projects
      [(umm-c/map->Project
         {:short-name "ESI"

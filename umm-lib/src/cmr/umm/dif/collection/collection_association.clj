@@ -8,7 +8,7 @@
   [collection-element]
   (let [cas (cx/strings-at-path collection-element [:Parent_DIF])]
     (seq (map #(c/map->CollectionAssociation {:short-name %
-                                              :version-id "dummy"}) cas))))
+                                              :version-id "Not provided"}) cas))))
 
 (defn generate-collection-associations
   [cas]

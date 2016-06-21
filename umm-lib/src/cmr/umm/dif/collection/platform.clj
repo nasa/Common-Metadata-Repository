@@ -21,7 +21,7 @@
        :long-name long-name
        ;; DIF does not have platform type in its xml, but it is a required field in ECHO10.
        ;; We make a dummy type here to facilitate cross format conversion
-       :type "Not Specified"})))
+       :type "Not provided"})))
 
 (defn xml-elem->Platforms
   [collection-element]
@@ -36,7 +36,7 @@
       (if instruments
         (conj platforms (c/map->Platform {:short-name dif/value-not-provided
                                           :long-name dif/value-not-provided
-                                          :type "Not Specified"
+                                          :type "Not provided"
                                           :instruments instruments}))
         platforms))))
 
@@ -56,4 +56,3 @@
 (defn generate-platforms
   [platforms]
   (generate-element :Source_Name platforms))
-
