@@ -342,9 +342,9 @@
     (side/eval-form `(icfg/set-return-umm-validation-errors! true))
     ;; create collection valid against echo10 but invalid against schema
     (let [response (d/ingest "PROV1" (dc/collection {:product-specific-attributes
-                                                      [(dc/psa {:name "bool1" :data-type :boolean :value true})
-                                                       (dc/psa {:name "bool2" :data-type :boolean :value true})]})
-                                {:allow-failure? true})]
+                                                     [(dc/psa {:name "bool1" :data-type :boolean :value true})
+                                                      (dc/psa {:name "bool2" :data-type :boolean :value true})]})
+                             {:allow-failure? true})]
       (is (= {:status 422
               :errors ["object has missing required properties ([\"Organizations\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
              (select-keys response [:status :errors]))))
