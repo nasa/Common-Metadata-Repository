@@ -8,6 +8,7 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.search.services.query-execution.facets.facets-v2-results-feature :as frf2]
+            [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
             [cmr.common.mime-types :as mt]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
@@ -46,7 +47,7 @@
   "Returns whether the provided facet field is marked as applied in the facet response."
   [facet-response field]
   (let [child-facets (:children facet-response)
-        field-title (frf2/fields->human-readable-label field)
+        field-title (v2h/fields->human-readable-label field)
         group-facet (first (filter #(= (:title %) field-title) child-facets))]
     (:applied group-facet)))
 
