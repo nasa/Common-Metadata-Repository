@@ -310,7 +310,17 @@ Looks for collections that have a delete date in the past and removes them.
     curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/cleanup-expired-collections
 
 
+### Refresh Collection Granule Aggregate Cache
 
+The collection granule aggregate cache is used to cache information about all the granules within a collection that are indexed with that collection. That's currently limited to the granule temporal minimum and maximum. The cache is refreshed by a periodic job. The cache is located in the indexer but refresh scheduling is handled by Ingest so that singleton jobs can be used.
+
+There are two kinds of cache refreshes that can be triggered. The full cache refresh will refresh the entire cache. Collections must be manually reindexed after the cache has been refreshed to get the latest data indexed.
+
+    curl -i -XPOST http://localhost:3002/jobs/trigger-full-collection-granule-aggregate-cache-refresh?token=XXXX
+
+The partial cache refresh will look for granules ingested over the last trigger period (configurable) and expand the collection granule aggregate temporal times to cover any new data that was ingested. The collections that had changes will automatically be queued for reindexing after this runs.
+
+    curl -i -XPOST http://localhost:3002/jobs/trigger-partial-collection-granule-aggregate-cache-refresh?token=XXXX
 
 
 

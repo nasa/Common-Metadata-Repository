@@ -4,15 +4,20 @@
             [clj-time.core :as t]
             [clj-time.format :as f]
             [cmr.common.util :refer [are2]]
+            [cmr.common.time-keeper :as tk]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.dev-system-util :as dev-system]
+            [cmr.system-int-test.system :as s]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "CMR_T_PROV"}))
+(use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1"
+                                                           "provguid2" "PROV2"
+                                                           "provguid3" "CMR_T_PROV"})
+                                    (dev-system/freeze-resume-time-fixture)]))
 
 
 ;; This tests searching with the limit-to-granules options. That finds collections by the temporal
@@ -71,7 +76,7 @@
     (index/wait-until-indexed)
 
     ;; Refresh the aggregate cache so that it includes all the granules that were added.
-    (index/refresh-collection-granule-aggregate-cache)
+    (index/full-refresh-collection-granule-aggregate-cache)
     ;; Reindex all the collections to get the latest information.
     (ingest/reindex-all-collections)
     (index/wait-until-indexed)
@@ -117,6 +122,73 @@
       [coll4 coll5 coll6] {"temporal[]" (str dt-1-day-ago ",")
                            "options[temporal][limit_to_granules]" true})))
 
+(deftest search-by-temporal-limit-to-granules-updates-are-handled-by-partial-refresh
+  (s/only-with-in-memory-database
+   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
+                                                 :beginning-date-time "2000-01-01T00:00:00Z"
+                                                 :ending-date-time "2010-01-01T00:00:00Z"}))
+         c1-g2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "c1-g2"
+                                                    :beginning-date-time "2005-01-01T00:00:00Z"
+                                                    :ending-date-time "2006-01-01T00:00:00Z"}))
+         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"
+                                                 :beginning-date-time "1998-01-01T00:00:00Z"
+                                                 :ending-date-time "2010-01-01T00:00:00Z"}))
+         c2-g1 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "c2-g1"
+                                                    :beginning-date-time "1998-01-01T00:00:00Z"
+                                                    :ending-date-time "1998-01-02T00:00:00Z"}))
+         temporal-all-search {"temporal[]" "2000-01-01T00:00:00Z,2010-01-01T00:00:00Z"
+                              "options[temporal][limit_to_granules]" true}
+         temporal-before-search {"temporal[]" "1998-01-01T00:00:00Z,2004-01-01T00:00:00Z"
+                                 "options[temporal][limit_to_granules]" true}
+         temporal-after-search {"temporal[]" "2007-01-01T00:00:00Z"
+                                "options[temporal][limit_to_granules]" true}]
+     (index/wait-until-indexed)
+     ;; Refresh the aggregate cache so that it includes all the granules that were added.
+     (index/full-refresh-collection-granule-aggregate-cache)
+     (index/wait-until-indexed)
+
+     ;; Reindex all the collections to get the latest information.
+     (ingest/reindex-all-collections)
+     (index/wait-until-indexed)
+
+     (is (d/refs-match? [coll1] (search/find-refs :collection temporal-all-search)))
+     (is (d/refs-match? [coll2] (search/find-refs :collection temporal-before-search)))
+     (is (d/refs-match? [] (search/find-refs :collection temporal-after-search)))
+
+
+     (let [;; This granule is ingested before partial indexing is run and it's in a timer period that
+           ;; won't be found. We should make sure that coll2 isn't found now which indicates we're only
+           ;; finding granules updated in about the last hour and reindexing only those collections
+           c2-g2 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "c2-g2"
+                                                      :beginning-date-time "2007-01-01T00:00:00Z"
+                                                      :ending-date-time "2008-01-01T00:00:00Z"}))
+           ;; Advance time 2 hours
+           _ (dev-system/advance-time! (* 3600 2))
+           c1-g1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "c1-g1"
+                                                      :beginning-date-time "2003-01-01T00:00:00Z"
+                                                      :ending-date-time "2004-01-01T00:00:00Z"}))
+           c1-g3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "c1-g3"
+                                                      :beginning-date-time "2007-01-01T00:00:00Z"
+                                                      :ending-date-time "2008-01-01T00:00:00Z"}))]
+       (index/wait-until-indexed)
+
+       ;; Reindexing all collections will not get the latest information because the collection
+       ;; granule aggregate information is still cached.
+       (ingest/reindex-all-collections)
+       (index/wait-until-indexed)
+
+       (is (d/refs-match? [coll1] (search/find-refs :collection temporal-all-search)))
+       (is (d/refs-match? [coll2] (search/find-refs :collection temporal-before-search)))
+       (is (d/refs-match? [] (search/find-refs :collection temporal-after-search)))
+
+       ;; Partial indexing triggers a reindex of the collections that have changed.
+       (index/partial-refresh-collection-granule-aggregate-cache)
+       (index/wait-until-indexed)
+
+       ;; Now we should find the collection from the two new granules
+       (is (d/refs-match? [coll1] (search/find-refs :collection temporal-all-search)))
+       (is (d/refs-match? [coll1 coll2] (search/find-refs :collection temporal-before-search)))
+       (is (d/refs-match? [coll1] (search/find-refs :collection temporal-after-search)))))))
 
 (deftest search-by-temporal
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
@@ -271,7 +343,7 @@
       (is (re-find #"temporal start datetime is invalid: \[2010-13-12T12:00:00\] is not a valid datetime" (first errors)))))
   (testing "periodic temporal search that produces empty search ranges."
     (let [{:keys [status errors]} (search/find-refs :collection
-                            {"temporal[]" "2016-05-10T08:18:16Z,2016-05-10T08:34:31Z,131,131"})]
+                                   {"temporal[]" "2016-05-10T08:18:16Z,2016-05-10T08:34:31Z,131,131"})]
       (is (= 400 status))
       (is (re-find #"Periodic temporal search produced no searchable ranges and is invalid." (first errors)))))
   (testing "search by invalid temporal start-date after end-date."
