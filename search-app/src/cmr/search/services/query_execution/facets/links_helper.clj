@@ -107,9 +107,9 @@
   field-name and value.
   Field-name must be of the form <string>[<int>][<string>] such as science_keywords[0][topic]."
   [base-url query-params field-name value]
-  (let [[base-field sub-field] (str/split field-name #"\[\d+\]")
+  (let [[base-field subfield] (str/split field-name #"\[\d+\]")
         max-index (get-max-index-for-field-name query-params base-field)
-        updated-field-name (format "%s[%d]%s" base-field (inc max-index) sub-field)
+        updated-field-name (format "%s[%d]%s" base-field (inc max-index) subfield)
         updated-query-params (assoc query-params updated-field-name value)]
     {:apply (generate-query-string base-url updated-query-params)}))
 
@@ -145,8 +145,8 @@
   params would also be returned for any field-name of foo[<n>][alpha] where n is an integer.
   Field-name must be of the form <string>[<int>][<string>]."
   [query-params field-name]
-  (let [[base-field sub-field] (str/split field-name #"\[0\]")
-        field-regex (re-pattern (format "%s.*%s" base-field (subs sub-field 1 (count sub-field))))
+  (let [[base-field subfield] (str/split field-name #"\[0\]")
+        field-regex (re-pattern (format "%s.*%s" base-field (subs subfield 1 (count subfield))))
         matching-keys (keep #(re-matches field-regex %) (keys query-params))]
     (when (seq matching-keys)
       (select-keys query-params matching-keys))))
@@ -181,6 +181,7 @@
                                query-params potential-query-param-matches value)]
     {:remove (generate-query-string base-url updated-query-params)}))
 
+;; TODO Take a field and subfield instead of a query-parameter field name
 (defn create-link-for-hierarchical-field
   "Creates either a remove or an apply link based on whether this particular value is already
   selected within a query.

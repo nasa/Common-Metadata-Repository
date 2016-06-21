@@ -105,9 +105,9 @@
 (defn- field-applied?
   "Returns whether any value is set in the passed in query-params for the provided hierarchical
   field."
-  [query-params parent-field sub-field]
-  (let [sub-field-reg-ex (re-pattern (str parent-field ".*" sub-field ".*"))
-        relevant-query-params (filter (fn [[k v]] (re-matches sub-field-reg-ex k)) query-params)]
+  [query-params parent-field subfield]
+  (let [subfield-reg-ex (re-pattern (str parent-field ".*" subfield ".*"))
+        relevant-query-params (filter (fn [[k v]] (re-matches subfield-reg-ex k)) query-params)]
     (some? (seq relevant-query-params))))
 
 (defn- generate-hierarchical-filter-node
@@ -177,13 +177,65 @@
       (when (seq children)
         (generate-group-node (csk/->snake_case_string field) true children)))))
 
+(defn- get-search-terms
+  "TODO"
+  [base-field subfield query-params]
+  (let [base-field (csk/->snake_case_string base-field)
+        subfield (csk/->snake_case_string subfield)
+        field-regex (re-pattern (format "%s.*%s\\]" base-field (subs subfield 0 (count subfield))))
+        matching-keys (keep #(re-matches field-regex %) (keys query-params))]
+    (flatten (vals (select-keys query-params matching-keys)))))
+
+(defn- get-terms-at-depth
+  "TODO"
+  [facet depth terms]
+  (if (<= depth 0)
+      (concat terms (keep :title (:children facet)))
+      (when (:children facet)
+        (apply concat terms (for [child-facet (:children facet)]
+                              (get-terms-at-depth child-facet (dec depth) terms))))))
+
+(defn- get-terms-for-subfield
+  "TODO"
+  [hierarchical-facet subfield field-hierarchy]
+  (let [facet-depth (.indexOf field-hierarchy subfield)]
+    (get-terms-at-depth hierarchical-facet facet-depth [])))
+
+(defn- get-missing-subfield-term-tuples
+  "TODO"
+  [field field-hierarchy hierarchical-facet query-params]
+  (remove nil?
+    (apply concat
+           (keep (fn [subfield]
+                   (when-let [search-terms (seq (get-search-terms field subfield query-params))]
+                     (let [terms-in-facets (map str/lower-case
+                                                (get-terms-for-subfield hierarchical-facet subfield
+                                                                        field-hierarchy))]
+                       (for [term search-terms]
+                         (when-not (some #{(str/lower-case term)} terms-in-facets)
+                           [subfield term])))))
+                 field-hierarchy))))
+
 (defn hierarchical-bucket-map->facets-v2
   "Takes a map of elastic aggregation results for a nested field. Returns a hierarchical facet for
   that field."
   [field bucket-map base-url query-params]
-  (parse-hierarchical-bucket-v2 field (field kms-fetcher/nested-fields-mappings) base-url
-                                query-params bucket-map))
-
+  (let [field-hierarchy (field kms-fetcher/nested-fields-mappings)
+        hierarchical-facet (parse-hierarchical-bucket-v2 field field-hierarchy base-url
+                                                         query-params bucket-map)
+        subfield-term-tuples (get-missing-subfield-term-tuples field field-hierarchy
+                                                               hierarchical-facet query-params)
+        snake-case-field (csk/->snake_case_string field)
+        facets-with-zero-matches (for [[subfield search-term] subfield-term-tuples
+                                       :let [param-name (format "%s[0][%s]"
+                                                                snake-case-field
+                                                                (csk/->snake_case_string subfield))
+                                             link (lh/create-link-for-hierarchical-field
+                                                   base-url query-params param-name search-term)]]
+                                   (generate-hierarchical-filter-node search-term 0 link nil))]
+    (if (seq facets-with-zero-matches)
+        (update-in hierarchical-facet [:children] #(concat % facets-with-zero-matches))
+        hierarchical-facet)))
 
 (defn- create-hierarchical-v2-facets
   "Parses the elastic aggregations and generates the v2 facets for all hierarchical fields."
@@ -206,7 +258,7 @@
 (defn- add-terms-with-zero-matching-collections
   "Takes a sequence of tuples and a sequence of search terms. The tuples are of the form search term
   and number of matching collections. For any search term provided that is not in the tuple of value
-  counts and new tuple is added with the search term and a count of 0."
+  counts, a new tuple is added with the search term and a count of 0."
   [value-counts search-terms]
   (let [all-facet-values (map #(str/lower-case (first %)) value-counts)
         missing-terms (remove #(some (set [(str/lower-case %)]) all-facet-values) search-terms)]
@@ -243,54 +295,6 @@
                                               {:relative-root-url :context})]
     (format "%s/collections.json" (conn/root-url public-search-config))))
 
-;;;; TODO Remove prototyping code
-(defn- generate-hierarchical-filter-node-removal-link
-  "TODO: FIX
-  Returns a function to generate a child node with the provided base-url, query-params, and
-  field-name. Returned function takes two arguments (a term and a count of collections containing
-  that term)."
-  [base-url query-params field-name term]
-  (let [link (lh/create-remove-link-for-hierarchical-field base-url query-params field-name term)]
-    (merge sorted-facet-map
-           {:title term
-            :type :filter
-            :applied true
-            :links link
-            :count 0
-            ;; TODO add depth
-            :has_children false})))
-
-(comment
-  (generate-hierarchical-removal-links "http://foo" {"science_keywords[0][category]" "cat"
-                                                     "science_keywords[1][variable_level_1]" "VL1"
-                                                     "science_keywords[0][fake]" "dog"})
-  (field-applied? {"science_keywords[1][category]" "cat"} "science_keywords" "category")
-  (->> (lh/get-potential-matching-query-params {"science_keywords[1][category]" "cat"
-                                                "science_keywords[0][category]" ["dog" "fish"]}
-                                               "science_keywords[0][category]")
-       vals
-       flatten))
-
-(defn- generate-hierarchical-removal-links
-  "TODO: Same as generate-removal-links, but for hierarchical fields"
-  [base-url query-params]
-  (let [hierarchical-fields [:science-keywords]]
-    (remove nil?
-            (flatten
-                  (for [parent-field hierarchical-fields
-                        :let [sub-fields (parent-field kms-fetcher/nested-fields-mappings)
-                              snake-parent-field (csk/->snake_case_string parent-field)]]
-                    (for [sub-field sub-fields
-                          :let [snake-sub-field (csk/->snake_case_string sub-field)
-                                full-field (str snake-parent-field "[0][" snake-sub-field "]")]]
-                      (let [values (->> (lh/get-potential-matching-query-params query-params full-field)
-                                        vals
-                                        flatten)]
-                        (for [value values]
-                          (generate-hierarchical-filter-node-removal-link base-url query-params
-                                                                          full-field value)))))))))
-
-;;;;;;
 (defn create-v2-facets
   "Create the facets v2 response. Parses an elastic aggregations result and returns the facets."
   [context aggs]

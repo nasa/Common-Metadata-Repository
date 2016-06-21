@@ -87,7 +87,6 @@
           (is (applied? response :instrument))
           (is (applied? response :processing-level-id)))))))
 
-;; TODO add remove links for science keyword hierarchical fields
 (deftest remove-facets-without-collections
   (fu/make-coll 1 "PROV1" (fu/platforms "ASTER" 1))
   (fu/make-coll 1 "PROV1" (fu/platforms "MODIS" 1))
