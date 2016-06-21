@@ -181,7 +181,6 @@
                                query-params potential-query-param-matches value)]
     {:remove (generate-query-string base-url updated-query-params)}))
 
-;; TODO Take a field and subfield instead of a query-parameter field name
 (defn create-link-for-hierarchical-field
   "Creates either a remove or an apply link based on whether this particular value is already
   selected within a query.
