@@ -72,5 +72,5 @@ Items to include in each issue
 ## 1.54
 
 * CMR-3162 - Removed collection-setting-v1 index from index set.
-* Deployment Impacts
-  * Requires update of indexes (no need to reindex collections).
+  * Deployment Impacts
+    * Requires update of indexes (no need to reindex collections).
