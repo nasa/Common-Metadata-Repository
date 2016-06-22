@@ -9,9 +9,7 @@
    {:name "cmr-base-index-set",
     :id 1,
     :create-reason "indexer app requires this index set",
-    :collection {:indexes [{:name "collections",
-                            :settings i/collection-setting-v1}
-                           {:name "collections-v2",
+    :collection {:indexes [{:name "collections-v2",
                             :settings i/collection-setting-v2}
                            {:name "all-collection-revisions",
                             :settings i/collection-setting-v1},]
