@@ -59,20 +59,21 @@
   (let [updated-query-params (remove-value-from-query-params query-params field-name value)]
     {:remove (generate-query-string base-url updated-query-params)}))
 
-(defn- get-values-for-field
+(defn get-values-for-field
   "Returns a list of all of the values for the provided field-name. Includes values for keys of
    both field-name and field-name[]."
   [query-params field-name]
   (let [field-name-snake-case (csk/->snake_case_string field-name)]
-    (reduce (fn [values-for-field field]
-                (let [value-or-values (get query-params field)]
-                  (if (coll? value-or-values)
-                    (conj value-or-values values-for-field)
-                    (if value-or-values
-                      (cons value-or-values values-for-field)
-                      values-for-field))))
-            []
-            [field-name-snake-case (str field-name-snake-case "[]")])))
+    (remove empty?
+            (reduce (fn [values-for-field field]
+                      (let [value-or-values (get query-params field)]
+                        (if (coll? value-or-values)
+                          (conj value-or-values values-for-field)
+                          (if (seq value-or-values)
+                            (cons value-or-values values-for-field)
+                            values-for-field))))
+                    []
+                    [field-name-snake-case (str field-name-snake-case "[]")]))))
 
 (defn create-link
   "Creates either a remove or an apply link based on whether this particular value is already
@@ -106,9 +107,9 @@
   field-name and value.
   Field-name must be of the form <string>[<int>][<string>] such as science_keywords[0][topic]."
   [base-url query-params field-name value]
-  (let [[base-field sub-field] (str/split field-name #"\[\d+\]")
+  (let [[base-field subfield] (str/split field-name #"\[\d+\]")
         max-index (get-max-index-for-field-name query-params base-field)
-        updated-field-name (format "%s[%d]%s" base-field (inc max-index) sub-field)
+        updated-field-name (format "%s[%d]%s" base-field (inc max-index) subfield)
         updated-query-params (assoc query-params updated-field-name value)]
     {:apply (generate-query-string base-url updated-query-params)}))
 
@@ -134,7 +135,7 @@
                 k)))
           query-params)))
 
-(defn- get-potential-matching-query-params
+(defn get-potential-matching-query-params
   "Returns a subset of query parameters whose keys match the provided field-name and ignoring the
   index.
 
@@ -144,8 +145,8 @@
   params would also be returned for any field-name of foo[<n>][alpha] where n is an integer.
   Field-name must be of the form <string>[<int>][<string>]."
   [query-params field-name]
-  (let [[base-field sub-field] (str/split field-name #"\[0\]")
-        field-regex (re-pattern (format "%s.*%s" base-field (subs sub-field 1 (count sub-field))))
+  (let [[base-field subfield] (str/split field-name #"\[0\]")
+        field-regex (re-pattern (format "%s.*%s" base-field (subs subfield 1 (count subfield))))
         matching-keys (keep #(re-matches field-regex %) (keys query-params))]
     (when (seq matching-keys)
       (select-keys query-params matching-keys))))

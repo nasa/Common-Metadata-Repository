@@ -27,10 +27,6 @@
             [cmr.common.date-time-parser :as dtp])
   (:import cmr.umm.collection.UmmCollection))
 
-(def not-provided
-  "place holder string value for not provided string field"
-  "Not provided")
-
 (defn- xml-elem->Product
   "Returns a UMM Product from a parsed Collection Content XML structure"
   [collection-content]
@@ -107,7 +103,7 @@
 
 (def product-levels
   "The set of values that DIF 10 defines for Processing levels as enumerations in its schema"
-  #{not-provided "0" "1" "1A" "1B" "1T" "2" "2G" "2P" "3" "4" "NA"})
+  #{c/not-provided "0" "1" "1A" "1B" "1T" "2" "2G" "2P" "3" "4" "NA"})
 
 (defn- dif10-product-level-id
   "Returns the given product-level-id in DIF10 format."

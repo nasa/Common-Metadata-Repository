@@ -6,6 +6,7 @@
   nil or a map of field paths to a list of errors. Maps and lists will automatically be converted
   into record-validation or seq-of-validations."
   (:require [clojure.string :as str]
+            [camel-snake-kebab.core :as csk]
             [cmr.common.services.errors :as errors]))
 
 (comment
@@ -97,7 +98,7 @@
   "Converts a keyword to a humanized field name"
   [field]
   (when field
-    (->> (str/split (name field) #"-")
+    (->> (str/split (csk/->kebab-case (name field)) #"-")
          (map str/capitalize)
          (str/join " "))))
 
@@ -213,4 +214,3 @@
                   (not= existing-value new-value))
          {(conj field-path field)
           [(field-cannot-be-changed-msg existing-value new-value)]})))))
-

@@ -2,6 +2,10 @@
   "Defines the UMM Collection record. See the UMM Overview document for more information on the breakdown."
   (:require [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
+(def not-provided
+ "place holder string value for not provided string field"
+ "Not provided")
+
 (defrecord Product
   [
    short-name

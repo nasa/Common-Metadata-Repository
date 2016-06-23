@@ -1,8 +1,9 @@
-(ns cmr.umm-spec.additional-attribute
+ (ns cmr.umm-spec.additional-attribute
   "Defines helper functions for parsing additional attributes."
   (:require [cmr.common.xml.parse :refer :all]
             [cmr.common.xml.simple-xpath :refer [select text]]
             [cmr.common.services.errors :as errors]
+            [camel-snake-kebab.core :as csk]
             [clojure.string :as str]
             [clj-time.format :as f]))
 
@@ -11,6 +12,12 @@
   [data-type]
   (when data-type
     (str/upper-case data-type)))
+
+(defn gen-data-type
+  "Generates the string data type for errors from the keyword data type."
+  [data-type]
+  (when data-type
+    (csk/->SCREAMING_SNAKE_CASE_STRING (name data-type))))
 
 (defmulti parse-value
   "Parses a value based on the data type given"
@@ -86,3 +93,22 @@
     (parse-value data-type value)
     (catch Exception _ nil)))
 
+(defmulti gen-value
+  "Converts the given value to a string for error messages."
+  (fn [data-type value]
+    data-type))
+
+(defmethod gen-value :default
+  [data-type value]
+  (when-not (nil? value)
+    (str value)))
+
+(defmethod gen-value :time
+  [data-type value]
+  (when value
+    (f/unparse (f/formatters :hour-minute-second-ms) value)))
+
+(defmethod gen-value :date
+  [data-type value]
+  (when value
+    (f/unparse (f/formatters :date) value)))

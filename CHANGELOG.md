@@ -68,3 +68,9 @@ Items to include in each issue
   * Added alias for searching the latest collections index.
   * Automated creation of the index.
   * The alias was manually added as part of the deployment of sprint 52.
+
+## 1.54
+
+* CMR-3162 - Removed collection-setting-v1 index from index set.
+  * Deployment Impacts
+    * Requires update of indexes (no need to reindex collections).

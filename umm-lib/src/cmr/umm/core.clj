@@ -105,10 +105,3 @@
     :dif10 (dif10/umm->dif10-xml umm)
     :iso19115 (iso-mends/umm->iso-mends-xml umm)
     :iso-smap (iso-smap/umm->iso-smap-xml umm)))
-
-
-
-
-
-
-
