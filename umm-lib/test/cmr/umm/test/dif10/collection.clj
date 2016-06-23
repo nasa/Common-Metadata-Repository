@@ -39,7 +39,7 @@
 (defn- related-urls->expected-parsed
   [related-urls]
   (if (empty? related-urls)
-    [(umm-c/map->RelatedURL {:url "Not provided"})]
+    [(umm-c/map->RelatedURL {:url umm-c/not-provided})]
     related-urls))
 
 (defn- spatial-coverage->expected-parsed
@@ -61,28 +61,28 @@
 (defn- science-keywords->expected-parsed
   [science-keywords]
   (if (empty? science-keywords)
-    [(umm-c/map->ScienceKeyword {:category "Not provided"
-                                 :topic    "Not provided"
-                                 :term     "Not provided"})]
+    [(umm-c/map->ScienceKeyword {:category umm-c/not-provided
+                                 :topic    umm-c/not-provided
+                                 :term     umm-c/not-provided})]
     science-keywords))
 
 
 (defn- instrument->expected-parsed
   [instruments]
   (if (empty? instruments)
-    [(umm-c/map->Instrument {:short-name "Not provided"})]
+    [(umm-c/map->Instrument {:short-name umm-c/not-provided})]
     instruments))
 
 (defn- platforms->expected-parsed
   [platforms]
   (if (empty? platforms)
     [(umm-c/map->Platform
-       {:type "Not provided"
-        :short-name "Not provided"
-        :instruments [(umm-c/map->Instrument {:short-name "Not provided"})]})]
+       {:type umm-c/not-provided
+        :short-name umm-c/not-provided
+        :instruments [(umm-c/map->Instrument {:short-name umm-c/not-provided})]})]
     (for [platform platforms]
       (-> platform
-          (update-in [:type] (fn [type] (get platform/platform-types type "Not provided")))
+          (update-in [:type] (fn [type] (get platform/platform-types type umm-c/not-provided)))
           (update-in [:instruments] instrument->expected-parsed)))))
 
 (defn- umm-contacts->expected-contacts
@@ -103,7 +103,7 @@
 (defn- projects->expected-parsed
   [projects]
   (if (empty? projects)
-    [(umm-c/map->Project {:short-name "Not provided"})]
+    [(umm-c/map->Project {:short-name umm-c/not-provided})]
     projects))
 
 (defn- remove-field-from-records
@@ -155,7 +155,7 @@
 
 (defn- remove-not-provided
   [values sub-key]
-  (seq (remove #(= (sub-key %) "Not provided") values)))
+  (seq (remove #(= (sub-key %) umm-c/not-provided) values)))
 
 (defn remove-dif10-place-holder-fields
   "Remove dummy fields from a UMM record which would come in when a generated UMM is converted to

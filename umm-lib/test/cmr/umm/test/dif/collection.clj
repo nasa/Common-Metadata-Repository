@@ -51,7 +51,7 @@
   "Returns the expected platform for the given platform"
   [platform]
   (-> platform
-      (assoc :type "Not Specified" :characteristics nil)
+      (assoc :type umm-c/not-provided :characteristics nil)
       (update-in [:instruments] instruments->expected)))
 
 (defn- platforms->expected-parsed
@@ -63,9 +63,9 @@
       (if-let [instruments (seq (mapcat :instruments platforms))]
         (conj (map #(assoc % :instruments nil) platforms)
               (umm-c/map->Platform
-                {:short-name dif/value-not-provided
-                 :long-name dif/value-not-provided
-                 :type "Not Specified"
+                {:short-name umm-c/not-provided
+                 :long-name umm-c/not-provided
+                 :type umm-c/not-provided
                  :instruments instruments}))
         platforms))))
 
@@ -77,7 +77,7 @@
 (defn- collection-associations->expected-collection-associations
   "Returns the expected parsed collection-associations for the given collection-associations."
   [collection-associations]
-  (seq (map #(assoc % :version-id "dummy") collection-associations)))
+  (seq (map #(assoc % :version-id umm-c/not-provided) collection-associations)))
 
 (defn- filter-contacts
   "Remove contacts from a Personnel record that are not emails."
@@ -89,9 +89,9 @@
   "Returns expected parsed science keywords if science keywords is empty"
   [science-keywords]
   (if (empty? science-keywords)
-    [(umm-c/map->ScienceKeyword {:category "Not provided"
-                                 :topic    "Not provided"
-                                 :term     "Not provided"})]
+    [(umm-c/map->ScienceKeyword {:category umm-c/not-provided
+                                 :topic    umm-c/not-provided
+                                 :term     umm-c/not-provided})]
     science-keywords))
 
 (defn- umm->expected-parsed-dif
@@ -521,20 +521,20 @@
                                  :other-reference-details "blah"})]
      :spatial-keywords ["GLOBAL"]
      :platforms [(umm-c/map->Platform
-                   {:short-name "Not provided"
-                    :long-name "Not provided"
-                    :type "Not Specified"
+                   {:short-name umm-c/not-provided
+                    :long-name umm-c/not-provided
+                    :type umm-c/not-provided
                     :instruments [(umm-c/map->Instrument
                                     {:short-name "VEGETATION-1"
                                      :long-name "VEGETATION INSTRUMENT 1 (SPOT 4)"})]})
                  (umm-c/map->Platform
                    {:short-name "SPOT-1"
                     :long-name "Systeme Probatoire Pour l'Observation de la Terre-1"
-                    :type "Not Specified"})
+                    :type umm-c/not-provided})
                  (umm-c/map->Platform
                    {:short-name "SPOT-4"
                     :long-name "Systeme Probatoire Pour l'Observation de la Terre-4"
-                    :type "Not Specified"})]
+                    :type umm-c/not-provided})]
      :temporal expected-temporal
      :collection-progress :in-work
      :science-keywords
@@ -620,10 +620,10 @@
         :geometries [(m/mbr -180 -60.5033 180 -90)]})
      :collection-associations [(umm-c/map->CollectionAssociation
                                  {:short-name "CNDP-ESP_IPY_POL2006-11139-C02-01CGL_ESASSI"
-                                  :version-id "dummy"})
+                                  :version-id umm-c/not-provided})
                                (umm-c/map->CollectionAssociation
                                  {:short-name "CNDP-ESP_2"
-                                  :version-id "dummy"})]
+                                  :version-id umm-c/not-provided})]
      :projects
      [(umm-c/map->Project
         {:short-name "ESI"
@@ -677,5 +677,5 @@
 
 (deftest parse-nil-version-test
   ;; UMM-C is now making the version field a required field. It is optional in DIF-9 so we provide
-  ;; a default of "Not provided" when it is missing from the DIF-9 metadata.
-  (is (= "Not provided" (get-in (c/parse-collection valid-collection-xml) [:product :version-id]))))
+  ;; a default of Not provided when it is missing from the DIF-9 metadata.
+  (is (= umm-c/not-provided (get-in (c/parse-collection valid-collection-xml) [:product :version-id]))))

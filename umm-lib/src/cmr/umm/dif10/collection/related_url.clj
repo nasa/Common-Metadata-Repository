@@ -57,4 +57,4 @@
                    (x/element :Mime_Type {} mime-type))))
     ;; Added since Related_URL is a required field in DIF10. CMRIN-79
     (x/element :Related_URL {}
-               (x/element :URL {} dif/value-not-provided))))
+               (x/element :URL {} c/not-provided))))

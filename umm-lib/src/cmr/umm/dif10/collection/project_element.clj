@@ -28,4 +28,4 @@
                    (x/element :Long_Name {} long-name))))
     ;; Added since Project is a required field in DIF10. CMRIN-78
     (x/element :Project {}
-               (x/element :Short_Name {} dif/value-not-provided))))
+               (x/element :Short_Name {} c/not-provided))))

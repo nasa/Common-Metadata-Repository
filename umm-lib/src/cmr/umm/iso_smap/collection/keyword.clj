@@ -49,7 +49,7 @@
   (let [category (first (parse-keyword-str keyword-str))]
     (cond
       (science-keyword-categories category) :science
-      (re-matches #".* Instruments$" category) :instrument
+      (re-matches #".*Instruments$" category) :instrument
       (platform-categories category) :platform
       :else :other)))
 
@@ -127,14 +127,14 @@
   (let [{:keys [short-name long-name]} platform
         ;; There is a disconnect between UMM platform type and the SMAP ISO platform keyword category
         ;; We will just hardcode it to be "Aircraft" for now.
-        platform-str (format "Aircraft > DUMMY > %s > %s" short-name (str long-name))]
+        platform-str (format "Aircraft > %s > %s > %s" c/not-provided short-name (str long-name))]
     (h/iso-string-element :gmd:keyword platform-str)))
 
 (defmethod generate-keyword Instrument
   [instrument]
   (let [{:keys [short-name long-name]} instrument
-        instrument-str (format "Dummy Instruments > DUMMY > DUMMY > DUMMY > %s > %s"
-                               short-name (str long-name))]
+        instrument-str (format "Instruments > %s > %s > %s > %s > %s"
+                               c/not-provided  c/not-provided c/not-provided short-name (str long-name))]
     (h/iso-string-element :gmd:keyword instrument-str)))
 
 (defn- generate-descriptive-keywords
@@ -157,10 +157,9 @@
                             (x/element :gmd:title {}
                                        (x/element :gco:CharacterString {}
                                                   "NASA/GCMD Earth Science Keywords"))
-                            (x/element :gmd:date {:gco:nilReason "unknown"}))))))
+                            (x/element :gmd:date {:gco:nilReason c/not-provided}))))))
 
 (defn generate-keywords
   [keywords]
   (when (seq keywords)
     (generate-descriptive-keywords keywords)))
-

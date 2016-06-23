@@ -9,7 +9,7 @@
 
 (def platform-types
   "The set of values that DIF 10 defines for platform types as enumerations in its schema"
-  #{"Not provided"
+  #{c/not-provided
     "Aircraft"
     "Balloons/Rockets"
     "Earth Observation Satellites"
@@ -43,13 +43,13 @@
   (if (seq platforms)
     (for [{:keys [short-name long-name type instruments characteristics]} platforms]
       (x/element :Platform {}
-                 (x/element :Type {} (or (platform-types type) dif/value-not-provided))
+                 (x/element :Type {} (or (platform-types type) c/not-provided))
                  (x/element :Short_Name {} short-name)
                  (x/element :Long_Name {} long-name)
                  (char/generate-characteristics characteristics)
                  (inst/generate-instruments instruments)))
     ;; Added since Platforms is a required field in DIF10. CMRIN-77 & CMRIN-79
     (x/element :Platform {}
-               (x/element :Type {} dif/value-not-provided)
-               (x/element :Short_Name {} dif/value-not-provided)
+               (x/element :Type {} c/not-provided)
+               (x/element :Short_Name {} c/not-provided)
                (inst/generate-instruments []))))

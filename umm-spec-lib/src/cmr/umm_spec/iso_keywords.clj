@@ -50,7 +50,7 @@
   (let [category (first (parse-keyword-str iso-keyword))]
     (cond
       (science-keyword-categories category)    :science
-      (re-matches #".* Instruments$" category) :instrument
+      (re-matches #".*Instruments$" category) :instrument
       (platform-categories category)           :platform
       :else                                    :other)))
 
@@ -109,7 +109,7 @@
 
 (defmethod smap-keyword-str cmr.umm_spec.models.common.PlatformType
   [platform]
-  (format "Aircraft > DUMMY > %s > %s"
+  (format "Aircraft > Not provided > %s > %s"
           (:ShortName platform)
           ;; Because LongName is optional, we want an empty string instead of "null"
           ;; here to prevent problems when parsing.
@@ -117,7 +117,7 @@
 
 (defmethod smap-keyword-str cmr.umm_spec.models.common.InstrumentType
   [instrument]
-  (format "Dummy Instruments > DUMMY > DUMMY > DUMMY > %s > %s"
+  (format "Instruments > Not provided > Not provided  > Not provided  > %s > %s"
           (:ShortName instrument)
           (str (:LongName instrument))))
 
