@@ -533,11 +533,7 @@
                :id index-set-id
                :create-reason "indexer app requires this index set"
                :collection {:indexes
-                            [;; This index will be removed once searches have been switched over to
-                             ;; use the new collections-v2 index with modified shard configuration.
-                             {:name "collections"
-                              :settings collection-setting-v1}
-                             ;; This index contains the latest revision of each collection and
+                            [;; This index contains the latest revision of each collection and
                              ;; is used for normal searches.
                              {:name "collections-v2"
                               :settings collection-setting-v2}

@@ -273,7 +273,7 @@
   ;; See below for snippets of the data structures used for building hierarchical facets
   ;; 1) The elastic aggregations query for hierarchical facets
 
-  ;; GET 1_collections/collection/_search
+  ;; GET 1_collections_v2/collection/_search
   ; {
   ; "query": {
   ;   "match_all": {}

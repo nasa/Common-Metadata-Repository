@@ -47,7 +47,7 @@
    {:granule {:small_collections \"1_small_collections\"},
     :tag {:tags \"1_tags\"},
     :collection {:all-collection-revisions \"1_all_collection_revisions\",
-                 :collections \"1_collections\"}}"
+                 :collections \"1_collections_v2\"}}"
   :index-names)
 
 (def index-names-cache-key
@@ -109,7 +109,7 @@
         excluded-collections-str (if (seq rebalancing-indexes)
                                    (str "," (s/join "," (map #(str "-" %) rebalancing-indexes)))
                                    "")]
-    (format "%d_c*,%d_small_collections,-%d_collections%s"
+    (format "%d_c*,%d_small_collections,-%d_collections*%s"
             index-set-id index-set-id index-set-id excluded-collections-str)))
 
 (defn- get-granule-indexes

@@ -530,6 +530,157 @@
         "http://localhost:3003/collections.json?page_size=0&include_facets=v2&processing_level_id%5B%5D=PL1"},
        :has_children false}]}]})
 
+(def expected-facets-with-no-matching-collections
+  "Facet response when searching against faceted fields which have 0 matching collections"
+  {:title "Browse Collections",
+   :type "group",
+   :has_children true,
+   :children
+   [{:title "Keywords",
+     :applied true,
+     :children
+     [{:title "Cat1",
+       :type "filter",
+       :applied true,
+       :count 0,
+       :links
+       {:remove
+        "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&keyword=MODIS&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=ASTER-p0"},
+       :has_children false}
+      {:title "Topic1",
+       :type "filter",
+       :applied true,
+       :count 0,
+       :links
+       {:remove
+        "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&keyword=MODIS&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&include_facets=v2&platform=ASTER-p0",}
+       :has_children false}
+      {:title "Term1",
+       :type "filter",
+       :applied true,
+       :count 0,
+       :links
+       {:remove
+        "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&keyword=MODIS&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=ASTER-p0"},
+       :has_children false}
+      {:title "Level1-1",
+       :type "filter",
+       :applied true,
+       :count 0,
+       :links
+       {:remove
+        "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&keyword=MODIS&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=ASTER-p0"},
+       :has_children false}
+      {:title "Level1-2",
+       :type "filter",
+       :applied true,
+       :count 0,
+       :links
+       {:remove
+        "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&keyword=MODIS&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=ASTER-p0"},
+       :has_children false}
+      {:title "Level1-3",
+       :type "filter",
+       :applied true,
+       :count 0,
+       :links
+       {:remove
+        "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&keyword=MODIS&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=ASTER-p0"},
+       :has_children false}]}
+    {:title "Platforms",
+     :type "group",
+     :applied true,
+     :has_children true,
+     :children
+     [{:title "ASTER-p0",
+       :type "filter",
+       :applied true,
+       :count 0,
+       :links
+       {:remove
+        "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&keyword=MODIS&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2"},
+       :has_children false}]}
+    {:title "Instruments",
+     :type "group",
+     :applied true,
+     :has_children true,
+     :children
+     [{:title "ATM",
+       :type "filter",
+       :applied true,
+       :count 0,
+       :links
+       {:remove
+        "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&keyword=MODIS&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=ASTER-p0"},
+       :has_children false}]}
+    {:title "Organizations",
+     :type "group",
+     :applied true,
+     :has_children true,
+     :children
+     [{:title "DOI/USGS/CMG/WHSC",
+       :type "filter",
+       :applied true,
+       :count 0,
+       :links
+       {:remove
+        "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&keyword=MODIS&processing_level_id=PL1&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=ASTER-p0"},
+       :has_children false}]}
+    {:title "Projects",
+     :type "group",
+     :applied true,
+     :has_children true,
+     :children
+     [{:title "proj1",
+       :type "filter",
+       :applied true,
+       :count 0,
+       :links
+       {:remove
+        "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&keyword=MODIS&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=ASTER-p0"},
+       :has_children false}]}
+    {:title "Processing levels",
+     :type "group",
+     :applied true,
+     :has_children true,
+     :children
+     [{:title "PL1",
+       :type "filter",
+       :applied true,
+       :count 0,
+       :links
+       {:remove
+        "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&keyword=MODIS&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=ASTER-p0"},
+       :has_children false}]}]})
+
+(def expected-facets-modis-and-aster
+  "Expected facet response when searching for MODIS keyword and MODIS or ASTER platform."
+  {:title "Browse Collections",
+   :type "group",
+   :has_children true,
+   :children
+   [{:title "Platforms",
+     :type "group",
+     :applied true,
+     :has_children true,
+     :children
+     [{:title "ASTER-p0",
+       :type "filter",
+       :applied true,
+       :count 0,
+       :links
+       {:remove
+        "http://localhost:3003/collections.json?platform=moDIS-p0&keyword=MODIS&page_size=0&include_facets=v2"},
+       :has_children false}
+      {:title "MODIS-p0",
+       :type "filter",
+       :applied true,
+       :count 1,
+       :links
+       {:remove
+        "http://localhost:3003/collections.json?platform=ASTER-p0&keyword=MODIS&page_size=0&include_facets=v2"},
+       :has_children false}]}]})
+
 (def expected-all-hierarchical-facets
   "Expected value for the all-hierarchical-fields-test. This is using the version 1 hierarchical
   facets."
