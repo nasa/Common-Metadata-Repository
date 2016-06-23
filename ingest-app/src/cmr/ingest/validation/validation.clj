@@ -97,6 +97,7 @@
 (defn validate-collection-umm
   [context collection validate-keywords?]
   ;; Log any errors from the keyword validation if we are not returning them to the client.
+  ;; Move the keyword validations to validate-collection-umm-spec when this function is removed
   (when-not validate-keywords?
     (when-let [errors (seq (v/validate (keyword-validations context) collection))]
       (warn (format "Collection with entry title [%s] had the following keyword validation errors: %s"
@@ -110,11 +111,7 @@
 (defn validate-collection-umm-spec
   "Validate UMM-C record"
   [context collection validate-keywords?]
-  ;; Log any errors from the keyword validation if we are not returning them to the client.
-  (when-not validate-keywords?
-    (when-let [errors (seq (v/validate (keyword-validations context) collection))]
-      (warn (format "Collection with entry title [%s] had the following keyword validation errors: %s"
-                    (:EntryTitle collection) (pr-str errors)))))
+  ;; To Do: Add keyword validations from validate-collection-umm here when validate-collection-umm is removed
 
   ;; Validate the collection and return errors, if any
   (umm-spec-validation/validate-collection collection

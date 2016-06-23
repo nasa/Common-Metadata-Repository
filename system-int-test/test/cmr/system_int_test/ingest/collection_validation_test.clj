@@ -339,7 +339,7 @@
 (deftest collection-umm-validation-test
   (testing "UMM-C JSON-Schema validation"
     ;; enable return of schema validation errors from API
-    (side/eval-form `(icfg/set-return-umm-validation-errors! true))
+    (side/eval-form `(icfg/set-return-umm-json-validation-errors! true))
     ;; create collection valid against echo10 but invalid against schema
     (let [response (d/ingest "PROV1" (dc/collection {:product-specific-attributes
                                                      [(dc/psa {:name "bool1" :data-type :boolean :value true})
@@ -349,7 +349,7 @@
               :errors ["object has missing required properties ([\"Organizations\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
              (select-keys response [:status :errors]))))
     ;; disable return of schema validation errors from API
-    (side/eval-form `(icfg/set-return-umm-validation-errors! false))
+    (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
     (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
                                                  (dc/psa {:name "bool2" :data-type :boolean :value true})]}))
   (testing "Product specific attribute validation"
