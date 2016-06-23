@@ -123,8 +123,8 @@
        [:Short_Name "datacenter_short_name"]
        [:Long_Name "data center long name"]]
       [:Personnel
-       [:Role "DummyRole"]
-       [:Last_Name "dummy last name"]]]
+       [:Role "Not Provided"]
+       [:Last_Name "Not provided"]]]
      (for [distribution (:Distributions c)]
        [:Distribution
         [:Distribution_Media (:DistributionMedia distribution)]
