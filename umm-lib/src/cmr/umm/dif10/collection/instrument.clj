@@ -44,4 +44,4 @@
                  (sensor/generate-sensors sensors)))
     ;; Added since Instrument is a required field in DIF10. CMRIN-77
     (x/element :Instrument {}
-               (x/element :Short_Name {} dif/value-not-provided))))
+               (x/element :Short_Name {} c/not-provided))))

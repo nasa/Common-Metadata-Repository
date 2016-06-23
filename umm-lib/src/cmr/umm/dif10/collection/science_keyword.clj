@@ -39,6 +39,6 @@
                  (gu/optional-elem :Detailed_Variable detailed-variable)))
     ;; Added since Science Keywords is a required field in DIF10. CMRIN-79
     (x/element :Science_Keywords {}
-               (x/element :Category {} dif/value-not-provided)
-               (x/element :Topic {} dif/value-not-provided)
-               (x/element :Term {} dif/value-not-provided))))
+               (x/element :Category {} c/not-provided)
+               (x/element :Topic {} c/not-provided)
+               (x/element :Term {} c/not-provided))))
