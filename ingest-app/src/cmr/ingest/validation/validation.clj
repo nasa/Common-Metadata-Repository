@@ -7,6 +7,7 @@
             [cmr.umm.core :as umm]
             [cmr.umm.validation.core :as umm-validation]
             [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm-spec.validation.core :as umm-spec-validation]
             [cmr.ingest.validation.business-rule-validation :as bv]
             [cmr.common.validations.core :as v]
             [cmr.common-app.services.kms-fetcher :as kms-fetcher]
@@ -106,6 +107,20 @@
                                    (when validate-keywords?
                                      [(keyword-validations context)]))))
 
+(defn validate-collection-umm-spec
+  "Validate UMM-C record"
+  [context collection validate-keywords?]
+  ;; Log any errors from the keyword validation if we are not returning them to the client.
+  (when-not validate-keywords?
+    (when-let [errors (seq (v/validate (keyword-validations context) collection))]
+      (warn (format "Collection with entry title [%s] had the following keyword validation errors: %s"
+                    (:EntryTitle collection) (pr-str errors)))))
+
+  ;; Validate the collection and return errors, if any
+  (umm-spec-validation/validate-collection collection
+      (when validate-keywords?
+         [(keyword-validations context)])))
+
 (defn validate-granule-umm
   [context collection granule]
   (if-errors-throw :invalid-data (umm-validation/validate-granule collection granule)))
@@ -115,5 +130,3 @@
   [context concept]
   (if-errors-throw :invalid-data (mapcat #(% context concept)
                                          (bv/business-rule-validations (:concept-type concept)))))
-
-

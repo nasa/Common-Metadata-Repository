@@ -406,6 +406,28 @@
         [(m/mbr -180 45 180 46)]
         ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
 
+(deftest collection-umm-spec-validation-test
+  (testing "UMM-C Spec validation record valid"
+    ;; enable return of umm spec validation errors from API
+    (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
+
+    (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
+                                                 (dc/psa {:name "bool2" :data-type :boolean :value true})]})
+    ;; disable return of umm spec validation errors from API
+    (side/eval-form `(icfg/set-return-umm-spec-validation-errors! false)))
+  (testing "UMM-C Spec validation record invalid"
+    ;; enable return of umm spec validation errors from API
+    (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
+    (assert-invalid
+      {:product-specific-attributes
+       [(dc/psa {:name "bool" :data-type :boolean :value true})
+        (dc/psa {:name "bool" :data-type :boolean :value true})]}
+      ["AdditionalAttributes"]
+      ["Additional Attributes must be unique. This contains duplicates named [bool]."])
+    ;; disable return of umm spec validation errors from API
+    (side/eval-form `(icfg/set-return-umm-spec-validation-errors! false))))
+
+
 (deftest duplicate-entry-title-test
   (testing "same entry-title and native-id across providers is valid"
     (assert-valid

@@ -15,7 +15,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.messages :as cmsg]
             [cmr.common.util :as util :refer [defn-timed]]
-            [cmr.common.config :as cfg]
+            [cmr.common.config :as cfg :refer [defconfig]]
             [clojure.string :as string]
             [cmr.message-queue.services.queue :as queue]
             [cmr.common.cache :as cache]
@@ -29,6 +29,11 @@
 (def ingest-validation-enabled?
   "A configuration feature switch that turns on CMR ingest validation."
   (cfg/config-value-fn :ingest-validation-enabled "true" #(= % "true")))
+
+(defconfig ingest-validation-umm-spec-enabled?
+  "A configuration feature switch that turns on CMR ingest validation for UMM Spec."
+  {:default true
+   :type Boolean})
 
 (defn add-extra-fields-for-collection
   "Returns collection concept with fields necessary for ingest into metadata db
@@ -55,9 +60,13 @@
     (if-let [err-messages (seq (json-schema/validate-umm-json umm-json :collection))]
       (if (config/return-umm-validation-errors)
         (errors/throw-service-errors :invalid-data err-messages)
-        (warn "UMM-C JSON-Schema Validation Errors: " (pr-str err-messages)))
-      ;; Add validation of UMM-C here.
-      (do)))
+        (warn "UMM-C JSON-Schema Validation Errors: " (pr-str err-messages))))
+
+    (when (ingest-validation-umm-spec-enabled?)
+      (when-let [err-messages (seq (v/validate-collection-umm-spec context collection validate-keywords?))]
+        (if (config/return-umm-spec-validation-errors)
+          (errors/throw-service-errors :invalid-data err-messages)
+          (warn "UMM-C UMM Spec Validation Errors: " (pr-str err-messages))))))
 
   (let [collection (umm-legacy/parse-concept context collection-concept)]
     (when (ingest-validation-enabled?)
