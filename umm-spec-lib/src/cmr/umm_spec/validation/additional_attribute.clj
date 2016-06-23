@@ -2,6 +2,7 @@
   "Defines validations for UMM collection product specific attribute."
   (:require [clj-time.core :as t]
             [cmr.common.validations.core :as v]
+            [cmr.umm-spec.validation.utils :as vu]
             [cmr.common.util :as util]
             [cmr.umm-spec.models.common :as common]
             [cmr.umm-spec.additional-attribute :as aa]))
@@ -54,7 +55,8 @@
     (when (seq errors)
       {field-path errors})))
 
-(def aa-validations
-  "Defines the additional attribute validations for collections"
-  [values-match-data-type-validation
-   parameter-range-validation])
+(def additional-attribute-validation
+  "Defines the list of validation functions for validating additional attributes"
+  [(vu/unique-by-name-validator :Name)
+   (v/every [values-match-data-type-validation
+             parameter-range-validation])])
