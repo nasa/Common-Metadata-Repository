@@ -53,11 +53,12 @@
 (defn handle-raw-write-response
   "Handles a raw response to an update request. Any non successful request is considered an error."
   [{:keys [status body] :as resp}]
-  (if (<= 200 status 299)
-    body
-    (errors/internal-error!
-      (format "Received unexpected status code %s with response %s"
-              status (pr-str resp)))))
+  (cond
+    (<= 200 status 299) body
+    (= 409 status) (errors/throw-service-errors :conflict (:errors body))
+    :else (errors/internal-error!
+            (format "Received unexpected status code %s with response %s"
+                    status (pr-str resp)))))
 
 (defn default-response-handler
   "The default response handler."

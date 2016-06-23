@@ -10,10 +10,16 @@
   (some-> (c/db-result->concept-map :access-group db provider-id result)
           (assoc :concept-type :acl)))
 
+(defn- acl-insert-args
+  [concept]
+  (let [[cols vals] (g/group-concept->insert-args concept)]
+    [(concat cols ["acl_identity"])
+     (concat cols [(:acl-identity (:extra-fields concept))])]))
+
 (defmethod c/concept->insert-args [:acl false]
   [concept _]
-  (g/group-concept->insert-args concept))
+  (acl-insert-args concept))
 
 (defmethod c/concept->insert-args [:acl true]
   [concept _]
-  (g/group-concept->insert-args concept))
+  (acl-insert-args concept))

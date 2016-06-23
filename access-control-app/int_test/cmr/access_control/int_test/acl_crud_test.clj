@@ -94,15 +94,15 @@
   (let [token (e/login (u/conn-context) "admin")]
     (testing "system ACL"
       (is (= 1 (:revision_id (ac/create-acl (u/conn-context) system-acl {:token token}))))
-      (is (thrown-with-msg? Exception #"ACL already exists"
+      (is (thrown-with-msg? Exception #"concepts with the same acl identity were found"
                             (ac/create-acl (u/conn-context) system-acl {:token token}))))
     (testing "provider ACL"
       (is (= 1 (:revision_id (ac/create-acl (u/conn-context) provider-acl {:token token}))))
-      (is (thrown-with-msg? Exception #"ACL already exists"
+      (is (thrown-with-msg? Exception #"concepts with the same acl identity were found"
                             (ac/create-acl (u/conn-context) provider-acl {:token token}))))
     (testing "catalog item ACL"
       (is (= 1 (:revision_id (ac/create-acl (u/conn-context) catalog-item-acl {:token token}))))
-      (is (thrown-with-msg? Exception #"ACL already exists"
+      (is (thrown-with-msg? Exception #"concepts with the same acl identity were found"
                             (ac/create-acl (u/conn-context) catalog-item-acl {:token token}))))))
 
 (deftest get-acl-test
@@ -119,17 +119,16 @@
 
 (deftest update-acl-test
   (let [token (e/login (u/conn-context) "admin")
+        ;; Create the ACL with one set of attributes
         {concept-id :concept_id} (ac/create-acl (u/conn-context) system-acl {:token token})
-        updated-system-acl {:group_permissions [{:group_id "admins"
-                                                 :permissions ["create"]}]
-                            :system_identity {:target "TAG_GROUP"}}
-        resp (ac/update-acl (u/conn-context) concept-id updated-system-acl {:token token})]
+        ;; Now update it to be completely different
+        resp (ac/update-acl (u/conn-context) concept-id catalog-item-acl {:token token})]
     ;; Acceptance criteria: A concept id and revision id of the updated ACL should be returned.
     (is (= concept-id (:concept_id resp)))
     (is (= 2 (:revision_id resp)))
     ;; Acceptance criteria: An updated ACL can be retrieved after it is updated.
     ;; Acceptance criteria: An updated ACL can be found via the search API with any changes.
-    (is (= updated-system-acl (ac/get-acl (u/conn-context) concept-id {:token token})))))
+    (is (= catalog-item-acl (ac/get-acl (u/conn-context) concept-id {:token token})))))
 
 (deftest update-acl-errors-test
   (let [token (e/login (u/conn-context) "admin")
@@ -193,16 +192,7 @@
 
 (deftest update-acl-invalid-data-test
   (let [token (e/login (u/conn-context) "admin")
-        {system-concept-id :concept_id} (ac/create-acl (u/conn-context) system-acl {:token token})
         {provider-concept-id :concept_id} (ac/create-acl (u/conn-context) provider-acl {:token token})]
-    (testing "updating an ACL to a different native id is invalid"
-      (is (thrown-with-msg?
-            Exception
-            #"ACL native id cannot be updated, was \[system:tag_group\] and now \[system:archive_record\]"
-            (ac/update-acl
-              (u/conn-context) system-concept-id
-              (assoc system-acl :system_identity {:target "ARCHIVE_RECORD"}){:token token}))))
-
     (testing "updating an ACL to change its legacy guid"
       (is (thrown-with-msg?
             Exception
