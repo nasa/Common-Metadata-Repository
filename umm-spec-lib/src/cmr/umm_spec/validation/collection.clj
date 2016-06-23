@@ -2,8 +2,8 @@
   "Defines validations for UMM collections."
   (:require [clj-time.core :as t]
             [cmr.common.validations.core :as v]
-            [cmr.umm-spec.validation.utils :as vu]
-            [cmr.umm-spec.validation.platform :as p]))
+            [cmr.umm-spec.validation.platform :as p]
+            [cmr.umm-spec.validation.additional-attribute :as aa]))
 
 (defn- range-date-time-validation
   "Defines range-date-time validation"
@@ -19,4 +19,5 @@
 (def collection-validations
   "Defines validations for collections"
   {:TemporalExtents (v/every temporal-extent-validation)
-   :Platforms p/platforms-validation})
+   :Platforms p/platforms-validation
+   :AdditionalAttributes aa/additional-attribute-validation})
