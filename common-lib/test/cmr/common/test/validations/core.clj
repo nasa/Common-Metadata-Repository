@@ -37,7 +37,8 @@
          (= expected (#'v/humanize-field v))
          nil nil
          :foo "Foo"
-         :foo-bar "Foo Bar"))
+         :foo-bar "Foo Bar"
+         :AdditionalAttributes "Additional Attributes"))
   (testing "create-error-messages"
     (testing "multiple item field path"
       (is (= ["Foo Bar was wrong"
@@ -171,6 +172,3 @@
     (testing "after ending"
       (is (= {[:a] ["%s must be within [j] and [p] but was [q]."]}
              (v/validate validation {:a "q"}))))))
-
-
-

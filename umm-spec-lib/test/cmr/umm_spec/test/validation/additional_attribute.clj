@@ -49,6 +49,7 @@
            (h/assert-valid (coll-with-additional-attributes [{:Name "foo" :DataType data-type :Value value}]))
            :string "string value"
            :float "1.0"
+           :float "1"
            :int "1"
            :boolean "true"
            :date "1986-10-14"
@@ -102,6 +103,8 @@
            :date "bar" :ParameterRangeBegin ["Parameter Range Begin [bar] is not a valid value for type [DATE]."]
            :time "bar" :ParameterRangeBegin ["Parameter Range Begin [bar] is not a valid value for type [TIME]."]
            :datetime "bar" :ParameterRangeBegin ["Parameter Range Begin [bar] is not a valid value for type [DATETIME]."]
+           :date "2002-01-01T00:00:00.000Z" :ParameterRangeBegin ["Parameter Range Begin [2002-01-01T00:00:00.000Z] is not a valid value for type [DATE]."]
+           :time "2002-01-01T00:00:00.000Z" :ParameterRangeBegin ["Parameter Range Begin [2002-01-01T00:00:00.000Z] is not a valid value for type [TIME]."]
 
            :boolean "true" :ParameterRangeEnd ["Parameter Range End is not allowed for type [BOOLEAN]"]
            :float "bar" :ParameterRangeEnd ["Parameter Range End [bar] is not a valid value for type [FLOAT]."]
@@ -109,13 +112,17 @@
            :date "bar" :ParameterRangeEnd ["Parameter Range End [bar] is not a valid value for type [DATE]."]
            :time "bar" :ParameterRangeEnd ["Parameter Range End [bar] is not a valid value for type [TIME]."]
            :datetime "bar" :ParameterRangeEnd ["Parameter Range End [bar] is not a valid value for type [DATETIME]."]
+           :date "2002-01-01T00:00:00.000Z" :ParameterRangeEnd ["Parameter Range End [2002-01-01T00:00:00.000Z] is not a valid value for type [DATE]."]
+           :time "2002-01-01T00:00:00.000Z" :ParameterRangeEnd ["Parameter Range End [2002-01-01T00:00:00.000Z] is not a valid value for type [TIME]."]
 
            :boolean "bar" :Value ["Value [bar] is not a valid value for type [BOOLEAN]."]
            :float "bar" :Value ["Value [bar] is not a valid value for type [FLOAT]."]
            :int "bar" :Value ["Value [bar] is not a valid value for type [INT]."]
            :date "bar" :Value ["Value [bar] is not a valid value for type [DATE]."]
            :time "bar" :Value ["Value [bar] is not a valid value for type [TIME]."]
-           :datetime "bar" :Value ["Value [bar] is not a valid value for type [DATETIME]."]))
+           :datetime "bar" :Value ["Value [bar] is not a valid value for type [DATETIME]."]
+           :date "2002-01-01T00:00:00.000Z" :Value ["Value [2002-01-01T00:00:00.000Z] is not a valid value for type [DATE]."]
+           :time "2002-01-01T00:00:00.000Z" :Value ["Value [2002-01-01T00:00:00.000Z] is not a valid value for type [TIME]."]))
 
     (testing "multiple invalid values"
       (h/assert-multiple-invalid
