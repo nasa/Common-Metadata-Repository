@@ -1,0 +1,27 @@
+[
+  {"type": "trim_whitespace", "field": "platform", "priority": -100},
+  {"type": "trim_whitespace", "field": "instrument", "priority": -100},
+  {"type": "trim_whitespace", "field": "science_keyword", "priority": -100},
+  {"type": "trim_whitespace", "field": "project", "priority": -100},
+  {"type": "trim_whitespace", "field": "processing_level", "priority": -100},
+  {"type": "trim_whitespace", "field": "organization", "priority": -100},
+
+  {"type": "capitalize", "field": "science_keyword", "priority": -10},
+
+ {
+    "type": "alias",
+    "field": "science_keyword",
+    "source_value": "Bioosphere",
+    "replacement_value": "Biosphere",
+    "priority": 0
+  },
+ {
+    "type": "alias",
+    "field": "platform",
+    "source_value": "AM-1",
+    "replacement_value": "Terra",
+    "priority": 0
+ },
+
+ {"type": "ignore", "field": "platform", "source_value": "Aircraft", "priority": 0}
+]
