@@ -10,6 +10,49 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
+(defn assert-too-many-wildcards
+  [response]
+  (is (.contains ^String (first (:errors response))
+                  "conditions which used a leading wildcard")))
+
+(defn assert-not-too-many-wildcards
+  [response]
+  (is (= 0 (:hits response))))
+
+;; Validates that query validation prevents too many leading wildcard patterns from being searched.
+(deftest number-of-leading-wildcard-patterns-validation
+  (testing "Too many patterns single field"
+    ;; readable-granule-name searches two fields so there are twice as many patterns in the query
+    (assert-too-many-wildcards
+     (search/find-refs :granule {:readable-granule-name ["*1" "*2" "*3"]
+                                 "options[readable-granule-name][pattern]" "true"}))
+    (assert-too-many-wildcards
+     (search/find-refs :granule {:producer-granule-id ["*1" "*2" "*3" "*4" "*5" "*6"]
+                                 "options[producer-granule-id][pattern]" "true"}))
+    (assert-too-many-wildcards
+     (search/find-refs :granule {:producer-granule-id ["?1" "?2" "?3" "?4" "?5" "?6"]
+                                 "options[producer-granule-id][pattern]" "true"})))
+  (testing "Too many patterns multiple fields"
+    (assert-too-many-wildcards
+     (search/find-refs :granule {:readable-granule-name ["*1"]
+                                 "options[readable-granule-name][pattern]" "true"
+                                 :producer-granule-id ["*3" "*4" "*5" "*6"]
+                                 "options[producer-granule-id][pattern]" "true"})))
+  (testing "Nonleading wildcards are ok"
+    (assert-not-too-many-wildcards
+     (search/find-refs :granule {:producer-granule-id ["f*1" "f*2" "f*3" "f*4" "f*5" "f*6"]
+                                 "options[producer-granule-id][pattern]" "true"})))
+  (testing "Non-patterns are ok"
+    (assert-not-too-many-wildcards
+     (search/find-refs :granule {:producer-granule-id ["*1" "*2" "*3" "*4" "*5" "*6"]})))
+  (testing "Less than max wildcards are ok"
+    (assert-not-too-many-wildcards
+     (search/find-refs :granule {:producer-granule-id ["*1" "*2" "*3" "*4" "*5"]
+                                 "options[producer-granule-id][pattern]" "true"}))
+    (assert-not-too-many-wildcards
+     (search/find-refs :granule {:readable-granule-name ["*1" "*2"]
+                                 "options[readable-granule-name][pattern]" "true"}))))
+
 (deftest search-by-producer-granule-id
   (let [coll1 (d/ingest "PROV1" (dc/collection {}))
         coll2 (d/ingest "PROV1" (dc/collection {}))
