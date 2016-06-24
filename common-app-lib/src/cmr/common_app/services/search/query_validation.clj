@@ -16,7 +16,8 @@
 (defn validate-concept-type-result-format
   "Validate requested search result format for concept type."
   [concept-type result-format]
-  (let [mime-type (mt/format->mime-type result-format)]
+  (let [result-format (qm/base-result-format result-format)
+        mime-type (mt/format->mime-type result-format)]
     (when-not (get (supported-result-formats concept-type) result-format)
       [(format "The mime type [%s] is not supported for %ss." mime-type (name concept-type))])))
 

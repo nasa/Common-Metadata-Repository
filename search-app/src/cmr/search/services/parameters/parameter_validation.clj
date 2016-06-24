@@ -3,6 +3,7 @@
   (:require [clojure.set :as set]
             [clojure.string :as s]
             [cmr.common-app.services.search.parameter-validation :as cpv]
+            [cmr.common-app.services.search.query-model :as cqm]
             [cmr.common.services.errors :as errors]
             [cmr.common.services.messages :as c-msg]
             [cmr.common.parameter-parser :as parser]
@@ -472,7 +473,7 @@
     (when (and (not (#{:json :atom :echo10 :dif :dif10 :iso19115 :native} (:result-format params)))
                (not (s/blank? (:include-tags params))))
       [(format "Parameter [include_tags] is not supported for %s format search."
-               (name (:result-format params)))])))
+               (name (cqm/base-result-format (:result-format params))))])))
 
 (def valid-timeline-intervals
   "A list of the valid values for timeline intervals."

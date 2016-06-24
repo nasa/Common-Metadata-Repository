@@ -169,74 +169,115 @@
         (is (search/mime-type-matches-response? response mt/umm-json))
         (is (= (:entry-title umm-coll) (:EntryTitle parsed-collection)))))))
 
+(defn- expected-umm-json
+  "Returns the expected umm json for the given umm json, target mime type and source schema version"
+  [metadata mime-type source-version]
+  (umm-spec/generate-metadata
+    test-context
+    (umm-spec/parse-metadata test-context :collection {:format :umm-json :version source-version} metadata)
+    mime-type ver/current-version))
+
 (deftest umm-json-version-retrieval-test
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1" ["The entry title V5"]))
   (let [user1-token (e/login (s/context) "user1")
         coll        expected-conversion/example-collection-record
-        mime-type   (str "application/vnd.nasa.cmr.umm+json;version=1.0")
+        mime-type   "application/vnd.nasa.cmr.umm+json;version=1.0"
         json        (umm-spec/generate-metadata test-context coll mime-type)
         result      (d/ingest-concept-with-metadata {:provider-id  "PROV1"
                                                      :concept-type :collection
                                                      :format       mime-type
                                                      :metadata     json})
         concept-id  (:concept-id result)
-        retrieve    (fn [revision-id]
+        retrieve    (fn [revision-id accept-header]
                       (search/retrieve-concept concept-id
                                                revision-id
                                                {:query-params {:token user1-token}
-                                                :accept       "application/vnd.nasa.cmr.umm+json"}))]
+                                                :accept accept-header}))]
     (index/wait-until-indexed)
 
-    (testing "without revision id"
-      (let [response     (retrieve nil)
-            content-type (get-in response [:headers "Content-Type"])]
-        (is (= 200 (:status response)))
-        (is (= json (:body response)))
-        (is (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type)))
-        (is (= "1.0" (mt/version-of content-type)))))
+    (are2 [revision-id accept-header expected-version]
+          (let [response     (retrieve revision-id accept-header)
+                content-type (get-in response [:headers "Content-Type"])]
+            (and (= 200 (:status response))
+                 (= (expected-umm-json json accept-header "1.0") (:body response))
+                 (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type))
+                 (= expected-version (mt/version-of content-type))))
 
-    (testing "with a revision id"
-      (let [response     (retrieve 1)
-            content-type (get-in response [:headers "Content-Type"])]
-        (is (= 200 (:status response)))
-        (is (= json (:body response)))
-        (is (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type)))
-        (is (= "1.0" (mt/version-of content-type)))))))
+          "without revision id, default accept header"
+          nil "application/vnd.nasa.cmr.umm+json" ver/current-version
+
+          "without revision id, accept header 1.0"
+          nil "application/vnd.nasa.cmr.umm+json;version=1.0" "1.0"
+
+          "without revision id, accept header 1.2"
+          nil "application/vnd.nasa.cmr.umm+json;version=1.2" "1.2"
+
+          "without revision id, accept header latest version"
+          nil (str "application/vnd.nasa.cmr.umm+json;version=" ver/current-version) ver/current-version
+
+          "with revision id, default accept header"
+          1 "application/vnd.nasa.cmr.umm+json" ver/current-version
+
+          "with revision id, accept header 1.0"
+          1 "application/vnd.nasa.cmr.umm+json;version=1.0" "1.0"
+
+          "with revision id, accept header 1.2"
+          1 "application/vnd.nasa.cmr.umm+json;version=1.2" "1.2"
+
+          "with revision id, accept header latest version"
+          1 (str "application/vnd.nasa.cmr.umm+json;version=" ver/current-version) ver/current-version)))
 
 
 (deftest umm-json-version-retrieval-test-with-no-version
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1" ["The entry title V5"]))
   (let [user1-token (e/login (s/context) "user1")
         coll        expected-conversion/example-collection-record
-        mime-type   (str "application/vnd.nasa.cmr.umm+json")
+        mime-type   "application/vnd.nasa.cmr.umm+json"
         json        (umm-spec/generate-metadata test-context coll mime-type)
         result      (d/ingest-concept-with-metadata {:provider-id  "PROV1"
                                                      :concept-type :collection
                                                      :format       mime-type
                                                      :metadata     json})
         concept-id  (:concept-id result)
-        retrieve    (fn [revision-id]
+        retrieve    (fn [revision-id accept-header]
                       (search/retrieve-concept concept-id
                                                revision-id
                                                {:query-params {:token user1-token}
-                                                :accept       "application/vnd.nasa.cmr.umm+json"}))]
+                                                :accept accept-header}))]
     (index/wait-until-indexed)
 
-    (testing "without revision id"
-      (let [response     (retrieve nil)
-            content-type (get-in response [:headers "Content-Type"])]
-        (is (= 200 (:status response)))
-        (is (= json (:body response)))
-        (is (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type)))
-        (is (= ver/current-version (mt/version-of content-type)))))
+    (are2 [revision-id accept-header expected-version]
+          (let [response     (retrieve revision-id accept-header)
+                content-type (get-in response [:headers "Content-Type"])]
+            (and (= 200 (:status response))
+                 (= (expected-umm-json json accept-header nil) (:body response))
+                 (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type))
+                 (= expected-version (mt/version-of content-type))))
 
-    (testing "with a revision id"
-      (let [response     (retrieve 1)
-            content-type (get-in response [:headers "Content-Type"])]
-        (is (= 200 (:status response)))
-        (is (= json (:body response)))
-        (is (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type)))
-        (is (= ver/current-version (mt/version-of content-type)))))))
+          "without revision id, default accept header"
+          nil "application/vnd.nasa.cmr.umm+json" ver/current-version
+
+          "without revision id, accept header 1.0"
+          nil "application/vnd.nasa.cmr.umm+json;version=1.0" "1.0"
+
+          "without revision id, accept header 1.2"
+          nil "application/vnd.nasa.cmr.umm+json;version=1.2" "1.2"
+
+          "without revision id, accept header latest version"
+          nil (str "application/vnd.nasa.cmr.umm+json;version=" ver/current-version) ver/current-version
+
+          "with revision id, default accept header"
+          1 "application/vnd.nasa.cmr.umm+json" ver/current-version
+
+          "with revision id, accept header 1.0"
+          1 "application/vnd.nasa.cmr.umm+json;version=1.0" "1.0"
+
+          "with revision id, accept header 1.2"
+          1 "application/vnd.nasa.cmr.umm+json;version=1.2" "1.2"
+
+          "with revision id, accept header latest version"
+          1 (str "application/vnd.nasa.cmr.umm+json;version=" ver/current-version) ver/current-version)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

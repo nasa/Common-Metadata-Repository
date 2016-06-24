@@ -120,6 +120,16 @@
     (assoc params :tag-data tag-data)
     params))
 
+(defn printable-result-format
+  "Returns the given result format in a printable format"
+  [result-format]
+  (if (map? result-format)
+    (let [{:keys [format version]} result-format]
+      (if version
+        (str format " " version)
+        format))
+    result-format))
+
 (defn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
@@ -150,8 +160,8 @@
                                                                     query))
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms in format %s with params %s."
-                  (:hits results) (name concept-type) total-took (:result-format query)
-                  (pr-str params)))
+                  (:hits results) (name concept-type) total-took
+                  (printable-result-format (:result-format query)) (pr-str params)))
     (assoc results :took total-took)))
 
 (defn find-concepts-by-json-query
@@ -169,8 +179,8 @@
                                                                     query))
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms in format %s with JSON Query %s and query params %s."
-                  (:hits results) (name concept-type) total-took (:result-format query)
-                  json-query (pr-str params)))
+                  (:hits results) (name concept-type) total-took
+                  (printable-result-format (:result-format query)) json-query (pr-str params)))
     (assoc results :took total-took)))
 
 (defn find-concepts-by-aql
@@ -188,8 +198,8 @@
                                                                     query))
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms in format %s with aql: %s."
-                  (:hits results) (name concept-type) total-took (:result-format query)
-                  aql))
+                  (:hits results) (name concept-type) total-took
+                  (printable-result-format (:result-format query)) aql))
     (assoc results :took total-took)))
 
 (defn- throw-id-not-found

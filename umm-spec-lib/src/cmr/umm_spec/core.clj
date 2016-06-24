@@ -4,7 +4,7 @@
             [clojure.java.io :as io]
             [cmr.common.xml :as cx]
 
-    ;; XML -> UMM
+            ;; XML -> UMM
             [cmr.common.xml.simple-xpath :as xpath]
             [cmr.umm-spec.xml-to-umm-mappings.echo10 :as echo10-to-umm]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso19115-2-to-umm]
@@ -13,7 +13,7 @@
             [cmr.umm-spec.xml-to-umm-mappings.dif10 :as dif10-to-umm]
             [cmr.umm-spec.xml-to-umm-mappings.serf :as serf-to-umm]
 
-    ;; UMM -> XML
+            ;; UMM -> XML
             [cmr.umm-spec.umm-to-xml-mappings.echo10 :as umm-to-echo10]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as umm-to-iso19115-2]
             [cmr.umm-spec.umm-to-xml-mappings.iso-smap :as umm-to-iso-smap]
@@ -21,7 +21,7 @@
             [cmr.umm-spec.umm-to-xml-mappings.dif10 :as umm-to-dif10]
             [cmr.umm-spec.umm-to-xml-mappings.serf :as umm-to-serf]
 
-    ;; UMM and JSON
+            ;; UMM and JSON
             [cmr.umm-spec.umm-json :as umm-json]
             [cmr.umm-spec.versioning :as ver]
             [cmr.common.mime-types :as mt])
@@ -39,9 +39,14 @@
   [media-type]
   ;; the media type passed into these functions may be a keyword like :echo10 or a string with
   ;; parameters like umm+json;version=1.1, or just :umm-json
-  (if (= :umm-json media-type)
-    ver/current-version
-    (or (mt/version-of media-type) ver/current-version)))
+  ;; or it could be a map like {:format :umm-json :verion "1.2"}
+  (if (map? media-type)
+    (if-let [version (:version media-type)]
+      version
+      ver/current-version)
+    (if (= :umm-json media-type)
+      ver/current-version
+      (or (mt/version-of media-type) ver/current-version))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validate Metadata
@@ -81,17 +86,20 @@
     [:service :serf]        (serf-to-umm/serf-xml-to-umm-s (xpath/context metadata))))
 
 (defn generate-metadata
-  [context umm fmt]
-  (let [concept-type (concept-type umm)]
-    (condp = [concept-type (mt/format-key fmt)]
-      [:collection :umm-json] (umm-json/umm->json (ver/migrate-umm context
-                                                                   concept-type
-                                                                   ver/current-version
-                                                                   (umm-json-version fmt)
-                                                                   umm))
-      [:collection :echo10]   (umm-to-echo10/umm-c-to-echo10-xml umm)
-      [:collection :dif]      (umm-to-dif9/umm-c-to-dif9-xml umm)
-      [:collection :dif10]    (umm-to-dif10/umm-c-to-dif10-xml umm)
-      [:collection :iso19115] (umm-to-iso19115-2/umm-c-to-iso19115-2-xml umm)
-      [:collection :iso-smap] (umm-to-iso-smap/umm-c-to-iso-smap-xml umm)
-      [:service :serf]        (umm-to-serf/umm-s-to-serf-xml umm))))
+  ([context umm fmt]
+   (generate-metadata context umm fmt nil))
+  ([context umm fmt source-version]
+   (let [concept-type (concept-type umm)
+         source-version (or source-version ver/current-version)]
+     (condp = [concept-type (mt/format-key fmt)]
+       [:collection :umm-json] (umm-json/umm->json (ver/migrate-umm context
+                                                                    concept-type
+                                                                    source-version
+                                                                    (umm-json-version fmt)
+                                                                    umm))
+       [:collection :echo10]   (umm-to-echo10/umm-c-to-echo10-xml umm)
+       [:collection :dif]      (umm-to-dif9/umm-c-to-dif9-xml umm)
+       [:collection :dif10]    (umm-to-dif10/umm-c-to-dif10-xml umm)
+       [:collection :iso19115] (umm-to-iso19115-2/umm-c-to-iso19115-2-xml umm)
+       [:collection :iso-smap] (umm-to-iso-smap/umm-c-to-iso-smap-xml umm)
+       [:service :serf]        (umm-to-serf/umm-s-to-serf-xml umm)))))

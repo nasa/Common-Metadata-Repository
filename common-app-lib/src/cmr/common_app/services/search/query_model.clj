@@ -268,6 +268,23 @@
                               (if (some? v) v default-v))
                             (concept-type->default-query-attribs concept-type) attribs))))
 
+(defprotocol BaseResultFormat
+  "Define the function to return the base result format from a query or result format"
+  (base-result-format [x]))
+
+(extend-protocol BaseResultFormat
+  cmr.common_app.services.search.query_model.Query
+  (base-result-format
+    [query]
+    (base-result-format (:result-format query)))
+
+  java.lang.Object
+  (base-result-format
+    [result-format]
+    (if (map? result-format)
+      (:format result-format)
+      result-format)))
+
 (defn numeric-value-condition
   "Creates a NumericValueCondition"
   [field value]
@@ -377,24 +394,24 @@
 
 ;; Enable pretty printing of records
 (record-pretty-printer/enable-record-pretty-printing
- Query
- ConditionGroup
- NestedCondition
- TextCondition
- StringCondition
- StringsCondition
- NegatedCondition
- BooleanCondition
- ScriptCondition
- ExistCondition
- MissingCondition
- DateValueCondition
- DateRangeCondition
- NumericValueCondition
- NumericRangeCondition
- NumericRangeIntersectionCondition
- StringRangeCondition
- MatchAllCondition
- MatchNoneCondition
- RelatedItemQueryCondition)
+  Query
+  ConditionGroup
+  NestedCondition
+  TextCondition
+  StringCondition
+  StringsCondition
+  NegatedCondition
+  BooleanCondition
+  ScriptCondition
+  ExistCondition
+  MissingCondition
+  DateValueCondition
+  DateRangeCondition
+  NumericValueCondition
+  NumericRangeCondition
+  NumericRangeIntersectionCondition
+  StringRangeCondition
+  MatchAllCondition
+  MatchNoneCondition
+  RelatedItemQueryCondition)
 
