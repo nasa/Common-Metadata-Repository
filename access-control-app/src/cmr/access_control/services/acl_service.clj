@@ -21,7 +21,7 @@
   "CMR")
 
 (defn acl-identity
-  "Returns a native ID to uniquely identify a given ACL."
+  "Returns a string value representing the ACL's identity field."
   [acl]
   (str/lower-case
     (let [{:keys [system-identity provider-identity single-instance-identity catalog-item-identity]} acl]

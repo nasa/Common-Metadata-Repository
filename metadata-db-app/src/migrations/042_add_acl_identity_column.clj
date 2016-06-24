@@ -4,7 +4,7 @@
 (defn up
   []
   (h/sql
-    "ALTER TABLE cmr_acls ADD acl_identiy VARCHAR(1030) DEFAULT '' NOT NULL"))
+    "ALTER TABLE cmr_acls ADD acl_identity VARCHAR(1030) DEFAULT '' NOT NULL"))
 
 (defn down
   []
