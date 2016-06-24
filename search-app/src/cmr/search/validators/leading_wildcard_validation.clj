@@ -1,7 +1,8 @@
 (ns cmr.search.validators.leading-wildcard-validation
+  "Implements a validation that checks that there are not too many leading wildcard patterns in a
+   query which cause high CPU usage."
   (require [cmr.common.config :refer [defconfig]]
-           [cmr.search.services.query-walkers.condition-extractor :as extractor]
-           [clojure.string :as str])
+           [cmr.search.services.query-walkers.condition-extractor :as extractor])
   (import cmr.common_app.services.search.query_model.StringCondition))
 
 (defconfig max-number-of-leading-wildcard-patterns
@@ -22,6 +23,7 @@
        (contains? wildcards (first (:value condition)))))
 
 (defn- too-many-leading-wildcard-pattern-message
+  "Returns an error message to explain that there are too many wildcard patterns in the query."
   [num-conditions]
   (format
    (str "The query contained [%d] conditions which used a leading wildcard. This is more than the "

@@ -25,33 +25,36 @@
     ;; readable-granule-name searches two fields so there are twice as many patterns in the query
     (assert-too-many-wildcards
      (search/find-refs :granule {:readable-granule-name ["*1" "*2" "*3"]
-                                 "options[readable-granule-name][pattern]" "true"}))
+                                 "options[readable-granule-name][pattern]" true}))
     (assert-too-many-wildcards
      (search/find-refs :granule {:producer-granule-id ["*1" "*2" "*3" "*4" "*5" "*6"]
-                                 "options[producer-granule-id][pattern]" "true"}))
+                                 "options[producer-granule-id][pattern]" true}))
     (assert-too-many-wildcards
      (search/find-refs :granule {:producer-granule-id ["?1" "?2" "?3" "?4" "?5" "?6"]
-                                 "options[producer-granule-id][pattern]" "true"})))
+                                 "options[producer-granule-id][pattern]" true})))
   (testing "Too many patterns multiple fields"
     (assert-too-many-wildcards
      (search/find-refs :granule {:readable-granule-name ["*1"]
-                                 "options[readable-granule-name][pattern]" "true"
+                                 "options[readable-granule-name][pattern]" true
                                  :producer-granule-id ["*3" "*4" "*5" "*6"]
-                                 "options[producer-granule-id][pattern]" "true"})))
+                                 "options[producer-granule-id][pattern]" true})))
   (testing "Nonleading wildcards are ok"
     (assert-not-too-many-wildcards
      (search/find-refs :granule {:producer-granule-id ["f*1" "f*2" "f*3" "f*4" "f*5" "f*6"]
-                                 "options[producer-granule-id][pattern]" "true"})))
+                                 "options[producer-granule-id][pattern]" true})))
   (testing "Non-patterns are ok"
     (assert-not-too-many-wildcards
-     (search/find-refs :granule {:producer-granule-id ["*1" "*2" "*3" "*4" "*5" "*6"]})))
+     (search/find-refs :granule {:producer-granule-id ["*1" "*2" "*3" "*4" "*5" "*6"]}))
+    (assert-not-too-many-wildcards
+     (search/find-refs :granule {:producer-granule-id ["*1" "*2" "*3" "*4" "*5" "*6"]
+                                 "options[producer-granule-id][pattern]" false})))
   (testing "Less than max wildcards are ok"
     (assert-not-too-many-wildcards
      (search/find-refs :granule {:producer-granule-id ["*1" "*2" "*3" "*4" "*5"]
-                                 "options[producer-granule-id][pattern]" "true"}))
+                                 "options[producer-granule-id][pattern]" true}))
     (assert-not-too-many-wildcards
      (search/find-refs :granule {:readable-granule-name ["*1" "*2"]
-                                 "options[readable-granule-name][pattern]" "true"}))))
+                                 "options[readable-granule-name][pattern]" true}))))
 
 (deftest search-by-producer-granule-id
   (let [coll1 (d/ingest "PROV1" (dc/collection {}))
@@ -82,12 +85,12 @@
     (testing "search by readable granule name using wildcard *."
       (let [references (search/find-refs :granule
                                          {:readable-granule-name "Gran*"
-                                          "options[readable-granule-name][pattern]" "true"})]
+                                          "options[readable-granule-name][pattern]" true})]
         (is (d/refs-match? [gran1 gran2 gran4 gran5] references))))
     (testing "search by readable granule name using wildcard ?."
       (let [references (search/find-refs :granule
                                          {:readable-granule-name "Granule?"
-                                          "options[readable-granule-name][pattern]" "true"})]
+                                          "options[readable-granule-name][pattern]" true})]
         (is (d/refs-match? [gran1 gran2 gran5] references))))
     (testing "search by readable granule name default is ignore case true."
       (let [references (search/find-refs :granule {:readable-granule-name "granule1"})]
@@ -100,7 +103,7 @@
     (testing "search by readable granule name ignore case true."
       (let [references (search/find-refs :granule
                                          {:readable-granule-name "granule1"
-                                          "options[readable-granule-name][ignore-case]" "true"})]
+                                          "options[readable-granule-name][ignore-case]" true})]
         (is (d/refs-match? [gran1] references))))
     (testing "search by readable granule name default options."
       (let [references (search/find-refs :granule
@@ -109,6 +112,6 @@
     (testing "search by readable granule name options :and."
       (let [references (search/find-refs :granule
                                          {:readable-granule-name ["Granule2", "SuperSpecial"]
-                                          "options[readable-granule-name][and]" "true"})]
+                                          "options[readable-granule-name][and]" true})]
         (is (d/refs-match? [gran5] references))))))
 
