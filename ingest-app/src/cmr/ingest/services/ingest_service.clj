@@ -15,7 +15,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.messages :as cmsg]
             [cmr.common.util :as util :refer [defn-timed]]
-            [cmr.common.config :as cfg]
+            [cmr.common.config :as cfg :refer [defconfig]]
             [clojure.string :as string]
             [cmr.message-queue.services.queue :as queue]
             [cmr.common.cache :as cache]
@@ -25,10 +25,6 @@
             [cmr.umm-spec.umm-json :as umm-json]
             [cmr.umm-spec.json-schema :as json-schema]
             [cmr.umm-spec.versioning :as ver]))
-
-(def ingest-validation-enabled?
-  "A configuration feature switch that turns on CMR ingest validation."
-  (cfg/config-value-fn :ingest-validation-enabled "true" #(= % "true")))
 
 (defn add-extra-fields-for-collection
   "Returns collection concept with fields necessary for ingest into metadata db
@@ -53,14 +49,17 @@
         collection (spec/parse-metadata context :collection format metadata)
         umm-json (umm-json/umm->json collection)]
     (if-let [err-messages (seq (json-schema/validate-umm-json umm-json :collection))]
-      (if (config/return-umm-validation-errors)
+      (if (config/return-umm-json-validation-errors)
         (errors/throw-service-errors :invalid-data err-messages)
-        (warn "UMM-C JSON-Schema Validation Errors: " (pr-str err-messages)))
-      ;; Add validation of UMM-C here.
-      (do)))
+        (warn "UMM-C JSON-Schema Validation Errors: " (pr-str err-messages))))
+
+    (when-let [err-messages (seq (v/validate-collection-umm-spec context collection validate-keywords?))]
+      (if (config/return-umm-spec-validation-errors)
+        (errors/throw-service-errors :invalid-data err-messages)
+        (warn "UMM-C UMM Spec Validation Errors: " (pr-str err-messages)))))
 
   (let [collection (umm-legacy/parse-concept context collection-concept)]
-    (when (ingest-validation-enabled?)
+    (when (config/ingest-validation-enabled?)
       (v/validate-collection-umm context collection validate-keywords?))
     collection))
 
@@ -134,7 +133,7 @@
           parent-collection] (fetch-parent-collection-concept-fn
                                context concept granule)]
      ;; UMM Validation
-     (when (ingest-validation-enabled?)
+     (when (config/ingest-validation-enabled?)
        (v/validate-granule-umm context parent-collection granule))
 
      ;; Add extra fields for the granule
