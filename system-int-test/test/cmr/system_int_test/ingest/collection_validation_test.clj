@@ -336,6 +336,8 @@
 ;; This tests that UMM type validations are applied during collection ingest.
 ;; Thorough tests of UMM validations should go in cmr.umm.test.validation.core and related
 ;; namespaces.
+;; Currently in the process of moving validation too UMM Spec Lib. Some validation tests
+;; are in cmr.umm-spec.test.validation
 (deftest collection-umm-validation-test
   (testing "UMM-C JSON-Schema validation"
     ;; enable return of schema validation errors from API
@@ -352,13 +354,13 @@
     (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
     (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
                                                  (dc/psa {:name "bool2" :data-type :boolean :value true})]}))
-  (testing "Product specific attribute validation"
+  (testing "Additional Attribute validation"
     (assert-invalid
       {:product-specific-attributes
        [(dc/psa {:name "bool" :data-type :boolean :value true})
         (dc/psa {:name "bool" :data-type :boolean :value true})]}
-      ["ProductSpecificAttributes"]
-      ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]))
+      ["AdditionalAttributes"]
+      ["Additional Attributes must be unique. This contains duplicates named [bool]."]))
   (testing "Nested Path Validation"
     (assert-invalid
       {:platforms [(dc/platform {:instruments [(dc/instrument {:short-name "I1"})
@@ -405,28 +407,6 @@
         :geodetic
         [(m/mbr -180 45 180 46)]
         ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
-
-(deftest collection-umm-spec-validation-test
-  (testing "UMM-C Spec validation record valid"
-    ;; enable return of umm spec validation errors from API
-    (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
-
-    (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
-                                                 (dc/psa {:name "bool2" :data-type :boolean :value true})]})
-    ;; disable return of umm spec validation errors from API
-    (side/eval-form `(icfg/set-return-umm-spec-validation-errors! false)))
-  (testing "UMM-C Spec validation record invalid"
-    ;; enable return of umm spec validation errors from API
-    (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
-    (assert-invalid
-      {:product-specific-attributes
-       [(dc/psa {:name "bool" :data-type :boolean :value true})
-        (dc/psa {:name "bool" :data-type :boolean :value true})]}
-      ["AdditionalAttributes"]
-      ["Additional Attributes must be unique. This contains duplicates named [bool]."])
-    ;; disable return of umm spec validation errors from API
-    (side/eval-form `(icfg/set-return-umm-spec-validation-errors! false))))
-
 
 (deftest duplicate-entry-title-test
   (testing "same entry-title and native-id across providers is valid"
