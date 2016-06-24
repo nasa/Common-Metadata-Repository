@@ -21,6 +21,9 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
+(comment
+ ((ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}) (constantly nil)))
+
 (defn- iso-metadata-concept
   "Makes a bad ISO Metadata Request"
   [metadata]
