@@ -2,6 +2,7 @@
   "Defines validations for UMM collections."
   (:require [clj-time.core :as t]
             [cmr.common.validations.core :as v]
+            [cmr.umm.validation.utils :as vu]
             [cmr.umm-spec.validation.platform :as p]
             [cmr.umm-spec.validation.additional-attribute :as aa]))
 
@@ -20,4 +21,5 @@
   "Defines validations for collections"
   {:TemporalExtents (v/every temporal-extent-validation)
    :Platforms p/platforms-validation
-   :AdditionalAttributes aa/additional-attribute-validation})
+   :AdditionalAttributes aa/additional-attribute-validation
+   :Projects (vu/unique-by-name-validator :ShortName)})

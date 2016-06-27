@@ -73,3 +73,18 @@
            {:path [:TemporalExtents 1 :RangeDateTimes 0],
             :errors
             ["BeginningDateTime [2000-12-30T19:00:02.000Z] must be no later than EndingDateTime [2000-12-30T19:00:01.000Z]"]}])))))
+
+(deftest collection-projects-validation
+  (let [c1 (c/map->ProjectType {:ShortName "C1"})
+        c2 (c/map->ProjectType {:ShortName "C2"})
+        c3 (c/map->ProjectType {:ShortName "C3"})]
+    (testing "valid projects"
+      (h/assert-valid (coll/map->UMM-C {:Projects [c1 c2]})))
+
+    (testing "invalid projects"
+      (testing "duplicate names"
+        (let [coll (coll/map->UMM-C {:Projects [c1 c1 c2 c2 c3]})]
+          (h/assert-invalid
+            coll
+            [:Projects]
+            ["Projects must be unique. This contains duplicates named [C1, C2]."]))))))
