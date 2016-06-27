@@ -116,7 +116,8 @@
 
   {:collection [(unique-field-constraint :entry-title)
                 (unique-field-constraint :entry-id)]
-   :granule (when (enforce-granule-ur-constraint) [granule-ur-unique-constraint])})
+   :granule (when (enforce-granule-ur-constraint) [granule-ur-unique-constraint])
+   :acl [(unique-field-constraint :acl-identity)]})
 
 (defn perform-post-commit-constraint-checks
   "Perform the post commit constraint checks aggregating any constraint violations. Returns nil if

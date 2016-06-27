@@ -43,7 +43,8 @@
    :tag (into common-columns [:user_id])
    :tag-association (into common-columns [:associated_concept_id :associated_revision_id :tag_key :user_id])
    :access-group (into common-columns [:provider_id :user_id])
-   :service (into common-columns [:provider_id :entry_title :entry_id :delete_time :user_id])})
+   :service (into common-columns [:provider_id :entry_title :entry_id :delete_time :user_id])
+   :acl (into common-columns [:provider_id :user_id :acl_identity])})
 
 (defn columns-for-find-concept
   "Returns the table columns that should be included in a find-concept sql query"
