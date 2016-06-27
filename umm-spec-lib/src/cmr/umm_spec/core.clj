@@ -36,10 +36,9 @@
     UMM-S :service))
 
 (defn umm-json-version
+  "Returns the UMM JSON version of the given media type. The media type may be a keyword like :echo10
+  or a string like umm+json;version=1.1, or a map like {:format :umm-json :verion \"1.2\"}"
   [media-type]
-  ;; the media type passed into these functions may be a keyword like :echo10 or a string with
-  ;; parameters like umm+json;version=1.1, or just :umm-json
-  ;; or it could be a map like {:format :umm-json :verion "1.2"}
   (if (map? media-type)
     (if-let [version (:version media-type)]
       version

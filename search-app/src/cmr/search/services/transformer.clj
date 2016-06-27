@@ -17,6 +17,7 @@
             [cmr.common.xml.xslt :as xslt]
             [cmr.common.util :as u]
             [cmr.common-app.services.search.query-model :as qm]
+            [cmr.search.services.result-format-helper :as rfh]
             [cmr.umm.iso-smap.granule :as smap-g]
             [cmr.collection-renderer.services.collection-renderer :as collection-renderer]))
 
@@ -55,15 +56,6 @@
                      context :collection (:format concept) (:metadata concept))]
     (collection-renderer/render-collection context collection)))
 
-(defn search-result-format->mime-type
-  "Returns the mime-type of the given search result format"
-  [result-format]
-  (if (map? result-format)
-    (let [{:keys [format version]} result-format
-          version (or version ver/current-version)]
-      (mt/with-version (mt/format->mime-type format) version))
-    (mt/format->mime-type result-format)))
-
 (defn- transform-metadata
   "Transforms the metadata of the concept to the given format"
   [context concept target-format]
@@ -77,16 +69,13 @@
 
         (mt/umm-json? concept-format)
         (if (and (= :umm-json (qm/base-result-format target-format))
-                 (= concept-format (search-result-format->mime-type target-format)))
+                 (= concept-format (rfh/search-result-format->mime-type target-format)))
           ;; the metadata is already in the target format, just returns the original metadata
           (:metadata concept)
           (umm-spec/generate-metadata
             context
             (umm-spec/parse-metadata context :collection concept-format (:metadata concept))
-            target-format
-            ;; umm-spec/parse-metadata always returns umm json in the latest schema version
-            ;; so we use the latest umm json schema version here regardless of what the original version the concept is in
-            ver/current-version))
+            target-format))
 
 
         (= :umm-json (qm/base-result-format target-format))
@@ -112,7 +101,7 @@
                     (let [metadata (transform-metadata context concept target-format)]
                       (assoc (select-keys concept [:concept-id :revision-id])
                              :metadata metadata
-                             :format (search-result-format->mime-type target-format))))]
+                             :format (rfh/search-result-format->mime-type target-format))))]
     (if collection-concept-id
       (assoc value-map :collection-concept-id collection-concept-id)
       value-map)))

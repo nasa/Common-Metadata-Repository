@@ -13,6 +13,7 @@
   - Convert query results into requested format"
   (:require [cmr.search.data.elastic-search-index :as idx]
             [cmr.common-app.services.search.query-model :as qm]
+            [cmr.search.services.result-format-helper :as rfh]
             [cmr.common.mime-types :as mt]
             [cmr.common-app.services.search :as common-search]
             [cmr.common-app.services.search.params :as common-params]
@@ -120,16 +121,6 @@
     (assoc params :tag-data tag-data)
     params))
 
-(defn printable-result-format
-  "Returns the given result format in a printable format"
-  [result-format]
-  (if (map? result-format)
-    (let [{:keys [format version]} result-format]
-      (if version
-        (str format " " version)
-        format))
-    result-format))
-
 (defn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
@@ -161,7 +152,7 @@
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms in format %s with params %s."
                   (:hits results) (name concept-type) total-took
-                  (printable-result-format (:result-format query)) (pr-str params)))
+                  (rfh/printable-result-format (:result-format query)) (pr-str params)))
     (assoc results :took total-took)))
 
 (defn find-concepts-by-json-query
@@ -180,7 +171,7 @@
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms in format %s with JSON Query %s and query params %s."
                   (:hits results) (name concept-type) total-took
-                  (printable-result-format (:result-format query)) json-query (pr-str params)))
+                  (rfh/printable-result-format (:result-format query)) json-query (pr-str params)))
     (assoc results :took total-took)))
 
 (defn find-concepts-by-aql
@@ -199,7 +190,7 @@
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms in format %s with aql: %s."
                   (:hits results) (name concept-type) total-took
-                  (printable-result-format (:result-format query)) aql))
+                  (rfh/printable-result-format (:result-format query)) aql))
     (assoc results :took total-took)))
 
 (defn- throw-id-not-found
@@ -233,7 +224,8 @@
     (let [concept (first (t/get-latest-formatted-concepts context [concept-id] result-format))]
       (when-not concept
         (throw-id-not-found concept-id))
-      {:results (:metadata concept) :result-format (:format concept)})))
+      {:results (:metadata concept)
+       :result-format (rfh/mime-type->search-result-format (:format concept))})))
 
 (defn find-concept-by-id-and-revision
   "Executes a search to metadata-db and returns the concept with the given concept-id and
@@ -244,7 +236,8 @@
   (let [concept (t/get-formatted-concept context concept-id revision-id result-format)]
     (when-not concept
       (throw-concept-revision-not-found concept-id revision-id))
-    {:results (:metadata concept) :result-format (:format concept)}))
+    {:results (:metadata concept)
+     :result-format (rfh/mime-type->search-result-format (:format concept))}))
 
 (defn get-granule-timeline
   "Finds granules and returns the results as a list of intervals of granule counts per collection."

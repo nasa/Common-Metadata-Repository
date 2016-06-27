@@ -31,6 +31,7 @@
             [cmr.search.api.keyword :as keyword-api]
             [cmr.common-app.api.routes :as cr]
             [cmr.common-app.api-docs :as api-docs]
+            [cmr.search.services.result-format-helper :as rfh]
             [cmr.collection-renderer.api.routes :as collection-renderer-routes]
 
             ;; Required here to make sure the multimethod function implementation is available
@@ -170,18 +171,10 @@
       (dissoc :token)
       (assoc :result-format (get-search-results-format path-w-extension headers default-mime-type))))
 
-(defn- search-result-format->response-mime-type
-  "Returns the response mime type for the given search result format"
-  [result-format]
-  (if (map? result-format)
-    (let [{:keys [format version]} result-format]
-      (mt/with-version (mt/format->mime-type format) version))
-    result-format))
-
 (defn- search-response
   "Returns the response map for finding concepts"
   [response]
-  (cr/search-response (update response :result-format search-result-format->response-mime-type)))
+  (cr/search-response (update response :result-format rfh/search-result-format->mime-type)))
 
 (defn- find-concepts-by-json-query
   "Invokes query service to parse the JSON query, find results and return the response."
@@ -190,7 +183,7 @@
         params (process-params params path-w-extension headers mt/xml)
         _ (info (format "Searching for %ss from client %s in format %s with JSON %s and query parameters %s."
                         (name concept-type) (:client-id context)
-                        (query-svc/printable-result-format (:result-format params)) json-query params))
+                        (rfh/printable-result-format (:result-format params)) json-query params))
         results (query-svc/find-concepts-by-json-query context concept-type params json-query)]
     (search-response results)))
 
@@ -203,7 +196,7 @@
         result-format (:result-format params)
         _ (info (format "Searching for %ss from client %s in format %s with params %s."
                         (name concept-type) (:client-id context)
-                        (query-svc/printable-result-format result-format) (pr-str params)))
+                        (rfh/printable-result-format result-format) (pr-str params)))
         search-params (lp/process-legacy-psa params)
         results (query-svc/find-concepts-by-parameters context concept-type search-params)]
     (search-response results)))
@@ -243,7 +236,7 @@
   [context path-w-extension params headers aql]
   (let [params (process-params params path-w-extension headers mt/xml)
         _ (info (format "Searching for concepts from client %s in format %s with AQL: %s and query parameters %s."
-                        (:client-id context) (query-svc/printable-result-format (:result-format params)) aql params))
+                        (:client-id context) (rfh/printable-result-format (:result-format params)) aql params))
         results (query-svc/find-concepts-by-aql context params aql)]
     (search-response results)))
 
@@ -285,7 +278,7 @@
   [context path-w-extension params headers]
   (let [params (process-params params path-w-extension headers mt/json)
         _ (info (format "Searching for provider holdings from client %s in format %s with params %s."
-                        (:client-id context) (query-svc/printable-result-format (:result-format params))
+                        (:client-id context) (rfh/printable-result-format (:result-format params))
                         (pr-str params)))
         [provider-holdings provider-holdings-formatted]
         (query-svc/get-provider-holdings context params)

@@ -258,6 +258,27 @@
    :offset default-offset
    :result-format :json})
 
+(defprotocol BaseResultFormat
+  "Define the function to return the base result format (i.e. the keyword that describe a result
+  format, not the version of the result format) from a query or result format"
+  (base-result-format [x]))
+
+(extend-protocol BaseResultFormat
+  cmr.common_app.services.search.query_model.Query
+  (base-result-format
+    [query]
+    (base-result-format (:result-format query)))
+
+  clojure.lang.IPersistentMap
+  (base-result-format
+    [result-format]
+    (:format result-format))
+
+  java.lang.Object
+  (base-result-format
+    [result-format]
+    result-format))
+
 (defn query
   "Constructs a query with the given attributes and root condition. If root condition is not
   provided it matches everything. If page-size, offset, or result-format are not specified
@@ -267,23 +288,6 @@
     (map->Query (merge-with (fn [default-v v]
                               (if (some? v) v default-v))
                             (concept-type->default-query-attribs concept-type) attribs))))
-
-(defprotocol BaseResultFormat
-  "Define the function to return the base result format from a query or result format"
-  (base-result-format [x]))
-
-(extend-protocol BaseResultFormat
-  cmr.common_app.services.search.query_model.Query
-  (base-result-format
-    [query]
-    (base-result-format (:result-format query)))
-
-  java.lang.Object
-  (base-result-format
-    [result-format]
-    (if (map? result-format)
-      (:format result-format)
-      result-format)))
 
 (defn numeric-value-condition
   "Creates a NumericValueCondition"
