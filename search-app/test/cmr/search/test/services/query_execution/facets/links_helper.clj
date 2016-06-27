@@ -2,7 +2,10 @@
   "Unit tests for facets links helper namespace."
   (:require [clojure.test :refer :all]
             [cmr.search.services.query-execution.facets.links-helper :as lh]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [camel-snake-kebab.core :as csk]
+            [clojure.set :as set]
+            [clojure.string :as str]))
 
 (def base-url
   "Base URL for each request."
@@ -68,32 +71,32 @@
       (let [query-params {"foo" "bar"}
             term "BAR"]
         (is (= {:remove "http://localhost:3003/collections.json"}
-               (lh/create-link base-url query-params param-name term))))))
+               (lh/create-link base-url query-params param-name term)))))))
 
-  (deftest apply-hierarchical-link-test
-    (let [param-name "science_keywords[0][topic]"
-          term "BIOMASS"]
-      (util/are2 [query-params expected-result]
-                 (is (= expected-result (lh/create-link-for-hierarchical-field
-                                         base-url query-params param-name term)))
+(deftest apply-hierarchical-link-test
+  (let [param-name "science_keywords[0][topic]"
+        term "BIOMASS"]
+    (util/are2 [query-params expected-result]
+               (is (= expected-result (lh/create-link-for-hierarchical-field
+                                       base-url query-params param-name term)))
 
-                 "Apply link to empty params"
-                 {"foo" "bar"}
-                 {:apply (str "http://localhost:3003/collections.json?foo=bar&"
-                              "science_keywords%5B0%5D%5Btopic%5D=BIOMASS")}
+               "Apply link to empty params"
+               {"foo" "bar"}
+               {:apply (str "http://localhost:3003/collections.json?foo=bar&"
+                            "science_keywords%5B0%5D%5Btopic%5D=BIOMASS")}
 
-                 "Apply link causes index to be increased by one"
-                 {"foo" "bar"
-                  "science_keywords[0][category]" "EARTH SCIENCE"
-                  "science_keywords[0][topic]" "AGRICULTURE"
-                  "science_keywords[1][topic]" "ATMOSPHERE"
-                  "science_keywords[1][variable_level_3]" "VAR3"}
-                 {:apply (str "http://localhost:3003/collections.json?foo=bar&"
-                               "science_keywords%5B0%5D%5Bcategory%5D=EARTH+SCIENCE&"
-                               "science_keywords%5B0%5D%5Btopic%5D=AGRICULTURE&"
-                               "science_keywords%5B1%5D%5Btopic%5D=ATMOSPHERE&"
-                               "science_keywords%5B1%5D%5Bvariable_level_3%5D=VAR3&"
-                               "science_keywords%5B2%5D%5Btopic%5D=BIOMASS")}))))
+               "Apply link causes index to be increased by one"
+               {"foo" "bar"
+                "science_keywords[0][category]" "EARTH SCIENCE"
+                "science_keywords[0][topic]" "AGRICULTURE"
+                "science_keywords[1][topic]" "ATMOSPHERE"
+                "science_keywords[1][variable_level_3]" "VAR3"}
+               {:apply (str "http://localhost:3003/collections.json?foo=bar&"
+                             "science_keywords%5B0%5D%5Bcategory%5D=EARTH+SCIENCE&"
+                             "science_keywords%5B0%5D%5Btopic%5D=AGRICULTURE&"
+                             "science_keywords%5B1%5D%5Btopic%5D=ATMOSPHERE&"
+                             "science_keywords%5B1%5D%5Bvariable_level_3%5D=VAR3&"
+                             "science_keywords%5B2%5D%5Btopic%5D=BIOMASS")})))
 
 (deftest remove-hierarchical-link-test
   (let [param-name "science_keywords[0][topic]"
@@ -151,3 +154,56 @@
         expected-result {:remove "http://localhost:3003/collections.json?umlaut=%C3%9C"}
         result (lh/create-link base-url query-params param-name term)]
     (is (= expected-result result))))
+
+(deftest options-test
+  (doseq [field [:platform :instrument :data-center :project :processing-level-id]]
+    (util/are2 [values and-option search-term link]
+               (let [snake-case-field (csk/->snake_case_string field)
+                     and-option-map (when-not (nil? and-option)
+                                      {(str "options[" snake-case-field "][and]") and-option})
+                     query-params (merge {(str snake-case-field "[]") values} and-option-map)
+                     expected-url (str/replace (first (vals link)) #"platform" snake-case-field)]
+                 (is (= {(first (keys link)) expected-url}
+                        (lh/create-link base-url query-params field search-term))))
+
+      "Multiple search terms are AND'ed by default for apply links"
+      ["p1" "p2"]
+      nil
+      "p4"
+      {:apply (str "http://localhost:3003/collections.json?platform%5B%5D=p4&"
+                   "platform%5B%5D=p1&platform%5B%5D=p2&"
+                   "options%5Bplatform%5D%5Band%5D=true")}
+
+      "Multiple search terms are AND'ed by default for remove links"
+      ["p1" "p2" "p3"]
+      nil
+      "p3"
+      {:remove (str "http://localhost:3003/collections.json?platform%5B%5D=p1&"
+                    "platform%5B%5D=p2&options%5Bplatform%5D%5Band%5D=true")}
+
+      "When explicitly requesting OR, apply links specify OR"
+      ["p1" "p2"]
+      false
+      "p4"
+      {:apply (str "http://localhost:3003/collections.json?platform%5B%5D=p4&"
+                   "platform%5B%5D=p1&platform%5B%5D=p2&"
+                   "options%5Bplatform%5D%5Band%5D=false")}
+
+      "When explicitly requesting OR, remove links specify OR"
+      ["p1" "p2" "p3"]
+      false
+      "p3"
+      {:remove (str "http://localhost:3003/collections.json?platform%5B%5D=p1&"
+                    "platform%5B%5D=p2&options%5Bplatform%5D%5Band%5D=false")}
+
+     "AND=true option is not included in remove links when only a single term is left"
+     ["p1" "p2"]
+     true
+     "p2"
+     {:remove "http://localhost:3003/collections.json?platform%5B%5D=p1"}
+
+     "AND=false option is not included in remove links when only a single term is left"
+     ["p1" "p2"]
+     false
+     "p2"
+     {:remove "http://localhost:3003/collections.json?platform%5B%5D=p1"})))

@@ -91,7 +91,8 @@
 (deftest remove-facets-without-collections
   (fu/make-coll 1 "PROV1" (fu/platforms "ASTER" 1))
   (fu/make-coll 1 "PROV1" (fu/platforms "MODIS" 1))
-  (testing "Removing facets without any matching collections for all facet fields"
+  (testing (str "When searching against faceted fields which do not match any matching collections,"
+                "a link should be provided so that the user can remove the term from their search.")
     (let [search-params {:science-keywords {:0 {:category "Cat1"
                                                 :topic "Topic1"
                                                 :term "Term1"
@@ -107,7 +108,7 @@
           response (search-and-return-v2-facets search-params)]
       (is (= fr/expected-facets-with-no-matching-collections response))))
   (testing "Facets with multiple facets applied, some with matching collections, some without"
-    (is (= fr/expected-facets-modis-and-aster
+    (is (= fr/expected-facets-modis-and-aster-no-results-found
            (search-and-return-v2-facets {:platform ["moDIS-p0", "ASTER-p0"]
                                          :keyword "MODIS"})))))
 
