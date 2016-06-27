@@ -23,11 +23,13 @@
   full updated query parameters."
   [query-params field]
   (let [param-snake-case (csk/->snake_case_string field)
-        value-or-values (remove nil?
-                                (flatten
-                                 (concat [(get query-params (str param-snake-case "[]"))]
-                                         [(get query-params param-snake-case)])))
-        include-and-option-for-param? (< 1 (count value-or-values))
+        values (remove nil?
+                      (flatten
+                        ;; Query parameters can contain either a sequence of values or a single
+                        ;; value. Wrap them in vectors and then flatten to handle both cases.
+                        (concat [(get query-params (str param-snake-case "[]"))]
+                                [(get query-params param-snake-case)])))
+        include-and-option-for-param? (< 1 (count values))
         and-option (str "options[" param-snake-case "][and]")]
     (if include-and-option-for-param?
       (if (contains? query-params and-option)
@@ -39,8 +41,8 @@
   "Creates a query string from a root URL and a map of query params"
   [base-url query-params]
   (if (seq query-params)
-    (let [flat-fields [:platform :instrument :data-center :project :processing-level-id]
-          query-params (reduce set-and-options-for-param query-params flat-fields)]
+    (let [fields [:platform :instrument :data-center :project :processing-level-id]
+          query-params (reduce set-and-options-for-param query-params fields)]
       (format "%s?%s" base-url (codec/form-encode query-params)))
     base-url))
 

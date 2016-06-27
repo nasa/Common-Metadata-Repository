@@ -162,7 +162,7 @@
                      and-option-map (when-not (nil? and-option)
                                       {(str "options[" snake-case-field "][and]") and-option})
                      query-params (merge {(str snake-case-field "[]") values} and-option-map)
-                     expected-url (str/replace (first (vals link)) #"platform" snake-case-field)]
+                     expected-url (str/replace (first (vals link)) #"placeholder" snake-case-field)]
                  (is (= {(first (keys link)) expected-url}
                         (lh/create-link base-url query-params field search-term))))
 
@@ -170,40 +170,40 @@
       ["p1" "p2"]
       nil
       "p4"
-      {:apply (str "http://localhost:3003/collections.json?platform%5B%5D=p4&"
-                   "platform%5B%5D=p1&platform%5B%5D=p2&"
-                   "options%5Bplatform%5D%5Band%5D=true")}
+      {:apply (str "http://localhost:3003/collections.json?placeholder%5B%5D=p4&"
+                   "placeholder%5B%5D=p1&placeholder%5B%5D=p2&"
+                   "options%5Bplaceholder%5D%5Band%5D=true")}
 
       "Multiple search terms are AND'ed by default for remove links"
       ["p1" "p2" "p3"]
       nil
       "p3"
-      {:remove (str "http://localhost:3003/collections.json?platform%5B%5D=p1&"
-                    "platform%5B%5D=p2&options%5Bplatform%5D%5Band%5D=true")}
+      {:remove (str "http://localhost:3003/collections.json?placeholder%5B%5D=p1&"
+                    "placeholder%5B%5D=p2&options%5Bplaceholder%5D%5Band%5D=true")}
 
       "When explicitly requesting OR, apply links specify OR"
       ["p1" "p2"]
       false
       "p4"
-      {:apply (str "http://localhost:3003/collections.json?platform%5B%5D=p4&"
-                   "platform%5B%5D=p1&platform%5B%5D=p2&"
-                   "options%5Bplatform%5D%5Band%5D=false")}
+      {:apply (str "http://localhost:3003/collections.json?placeholder%5B%5D=p4&"
+                   "placeholder%5B%5D=p1&placeholder%5B%5D=p2&"
+                   "options%5Bplaceholder%5D%5Band%5D=false")}
 
       "When explicitly requesting OR, remove links specify OR"
       ["p1" "p2" "p3"]
       false
       "p3"
-      {:remove (str "http://localhost:3003/collections.json?platform%5B%5D=p1&"
-                    "platform%5B%5D=p2&options%5Bplatform%5D%5Band%5D=false")}
+      {:remove (str "http://localhost:3003/collections.json?placeholder%5B%5D=p1&"
+                    "placeholder%5B%5D=p2&options%5Bplaceholder%5D%5Band%5D=false")}
 
      "AND=true option is not included in remove links when only a single term is left"
      ["p1" "p2"]
      true
      "p2"
-     {:remove "http://localhost:3003/collections.json?platform%5B%5D=p1"}
+     {:remove "http://localhost:3003/collections.json?placeholder%5B%5D=p1"}
 
      "AND=false option is not included in remove links when only a single term is left"
      ["p1" "p2"]
      false
      "p2"
-     {:remove "http://localhost:3003/collections.json?platform%5B%5D=p1"})))
+     {:remove "http://localhost:3003/collections.json?placeholder%5B%5D=p1"})))
