@@ -3,6 +3,8 @@
   (:require [clj-time.core :as t]
             [cmr.common.validations.core :as v]
             [cmr.umm-spec.validation.collection :as vc]
+            [cmr.umm-spec.validation.granule :as vg]
+            [cmr.umm-spec.validation.parent-weaver :as pw]
             [cmr.common.services.errors :as e]
             [clojure.string :as str]))
 
@@ -41,3 +43,10 @@
    (validation-errors->path-errors
      (v/validate (cons vc/collection-validations additional-validations)
                  collection))))
+
+(defn validate-granule
+  "Validates the umm record returning a list of error maps containing a path through the
+  UMM model and a list of errors at that path. Returns an empty sequence if it is valid."
+  [collection granule]
+  (validation-errors->path-errors
+    (v/validate vg/granule-validations (pw/set-parent granule collection))))
