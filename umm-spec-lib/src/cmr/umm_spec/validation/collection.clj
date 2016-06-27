@@ -3,6 +3,7 @@
   (:require [clj-time.core :as t]
             [cmr.common.validations.core :as v]
             [cmr.umm.validation.utils :as vu]
+            [cmr.umm.related-url-helper :as ruh]
             [cmr.umm-spec.validation.platform :as p]
             [cmr.umm-spec.validation.additional-attribute :as aa]))
 
@@ -17,9 +18,16 @@
 (def temporal-extent-validation
   {:RangeDateTimes (v/every range-date-time-validation)})
 
+(def science-keyword-validations
+  "Defines the science keyword validations for collections"
+  {:Category v/required
+   :Topic v/required
+   :Term v/required})
+
 (def collection-validations
   "Defines validations for collections"
   {:TemporalExtents (v/every temporal-extent-validation)
    :Platforms p/platforms-validation
    :AdditionalAttributes aa/additional-attribute-validation
-   :Projects (vu/unique-by-name-validator :ShortName)})
+   :Projects (vu/unique-by-name-validator :ShortName)
+   :ScienceKeywords (v/every science-keyword-validations)})
