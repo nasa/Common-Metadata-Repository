@@ -37,7 +37,7 @@
 
 (defn umm-json-version
   "Returns the UMM JSON version of the given media type. The media type may be a keyword like :echo10
-  or a string like umm+json;version=1.1, or a map like {:format :umm-json :verion \"1.2\"}"
+  or a string like umm+json;version=1.1, or a map like {:format :umm-json :version \"1.2\"}"
   [media-type]
   (if (map? media-type)
     (if-let [version (:version media-type)]
@@ -85,6 +85,12 @@
     [:service :serf]        (serf-to-umm/serf-xml-to-umm-s (xpath/context metadata))))
 
 (defn generate-metadata
+  "Returns the generated metadata for the given metadata format and umm record.
+  umm is the umm record that is parsed from the given source umm json schema version
+  fmt is the target format of the generated metadata, it would either be in mime type format
+  (application/umm+json;version=1.1) or a map ({:format :umm-json, :version=\"1.1\"}
+  source-version if provided is the umm json schema version that the given umm record is in,
+  defaults to the latest umm json schema version."
   ([context umm fmt]
    (generate-metadata context umm fmt nil))
   ([context umm fmt source-version]

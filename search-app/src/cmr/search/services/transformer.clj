@@ -59,28 +59,31 @@
 (defn- transform-metadata
   "Transforms the metadata of the concept to the given format"
   [context concept target-format]
-  (let [concept-format (:format concept)]
-    (if-let [xsl (types->xsl [(mt/mime-type->format concept-format) target-format])]
+  (let [concept-mime-type (:format concept)]
+    (if-let [xsl (types->xsl [(mt/mime-type->format concept-mime-type) target-format])]
       ; xsl is defined for the transformation, so use xslt
       (xslt/transform (:metadata concept) (get-template context xsl))
       (cond
         (= :html target-format)
         (generate-html-response context concept)
 
-        (mt/umm-json? concept-format)
+        (mt/umm-json? concept-mime-type)
         (if (and (= :umm-json (qm/base-result-format target-format))
-                 (= concept-format (rfh/search-result-format->mime-type target-format)))
-          ;; the metadata is already in the target format, just returns the original metadata
+                 (= (or (mt/version-of concept-mime-type) ver/current-version)
+                    (or (:version target-format) ver/current-version)))
+          ;; The metadata is in the same version of UMM JSON as requested by the user.
           (:metadata concept)
+          ;; The user has requested a different format for the metadata.
+          ;; Use UMM Spec to parse it and generate metadata in the desired format.
           (umm-spec/generate-metadata
             context
-            (umm-spec/parse-metadata context :collection concept-format (:metadata concept))
+            (umm-spec/parse-metadata context :collection concept-mime-type (:metadata concept))
             target-format))
 
 
         (= :umm-json (qm/base-result-format target-format))
         (umm-json/umm->json
-          (umm-spec/parse-metadata context :collection concept-format (:metadata concept)))
+          (umm-spec/parse-metadata context :collection concept-mime-type (:metadata concept)))
 
         :else
         (-> concept

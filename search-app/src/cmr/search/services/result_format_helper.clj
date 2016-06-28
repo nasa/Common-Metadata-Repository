@@ -1,5 +1,6 @@
 (ns cmr.search.services.result-format-helper
-  "Defines helper functions to support result format"
+  "Defines helper functions to support result format. Result format is either a keyword or a map in
+  the format of {:format umm-json :version \"1.3\"}. Currently, only umm json has version support."
   (:require [cmr.common.mime-types :as mt]
             [cmr.umm-spec.versioning :as ver]))
 
@@ -14,11 +15,10 @@
     result-format))
 
 (defn search-result-format->mime-type
-  "Returns the mime-type of the given search result format, which is either a keyword or a map in
-  the format of {:format umm-json :version \"1.3\"}. Currently, only umm json has version support."
+  "Returns the mime-type of the given search result format"
   [result-format]
   {:pre [(or (keyword? result-format)
-              (and (map? result-format) (keyword? (:format result-format))))]}
+             (and (map? result-format) (keyword? (:format result-format))))]}
   (if (map? result-format)
     (let [{:keys [format version]} result-format
           version (or version ver/current-version)]

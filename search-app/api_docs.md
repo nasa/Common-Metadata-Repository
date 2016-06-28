@@ -236,7 +236,7 @@ Here is a list of supported extensions and their corresponding MimeTypes:
   * `native`    "application/metadata+xml" (Returns search results in their individual native formats)
   * `umm-json`   "application/umm+json" (only supported for collections)
 
-`umm-json` extension can only be used to retrieve UMM JSON search result based on the latest UMM JSON schema. User can use the Accept header to specify the exact MimeType to return the UMM JSON search result in any supported UMM JSON schema version. e.g. "application/umm+json;version=1.2", with return the search result in UMM JSON based on UMM JSON schema version 1.2.
+`umm-json` extension can only be used to retrieve UMM JSON search result based on the latest UMM JSON schema. User can use the Accept header to specify the exact MimeType to return the UMM JSON search result in any supported UMM JSON schema version. e.g. "application/umm+json;version=1.2" will return the search result in UMM JSON based on UMM JSON schema version 1.2.
 
 ### <a name="supported-result-formats"></a> Supported Result Formats
 

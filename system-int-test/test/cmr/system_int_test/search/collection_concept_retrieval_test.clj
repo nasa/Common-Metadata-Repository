@@ -188,6 +188,7 @@
                                                      :format       mime-type
                                                      :metadata     json})
         concept-id  (:concept-id result)
+        ;; Defines function to retrieve a specific revision of the collection in the format of the accept header
         retrieve    (fn [revision-id accept-header]
                       (search/retrieve-concept concept-id
                                                revision-id
@@ -199,6 +200,7 @@
           (let [response     (retrieve revision-id accept-header)
                 content-type (get-in response [:headers "Content-Type"])]
             (and (= 200 (:status response))
+                 ;; retrieved result matches the expected umm json which is in version 1.0
                  (= (expected-umm-json json accept-header "1.0") (:body response))
                  (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type))
                  (= expected-version (mt/version-of content-type))))

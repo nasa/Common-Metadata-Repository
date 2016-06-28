@@ -259,7 +259,7 @@
    :result-format :json})
 
 (defprotocol BaseResultFormat
-  "Define the function to return the base result format (i.e. the keyword that describe a result
+  "Define the function to return the base result format (i.e. the keyword that describes a result
   format, not the version of the result format) from a query or result format"
   (base-result-format [x]))
 
