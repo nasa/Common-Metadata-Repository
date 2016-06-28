@@ -43,15 +43,19 @@
    [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
     "Echo Additional Attributes"]])
 
-(def keyword-separator
-  "Separator used to separator keyword into keyword fields"
+(def keyword-separator-split
+  "Separator used to separate keyword into keyword fields"
+  #"\s?>\s?")
+
+(def keyword-separator-join
+  "Separator used to join keyword fields into a keyword string"
   #" > ")
 
 (defn generate-title
   "Returns an ISO title string from the ShortName and LongName fields of the given record."
   [record]
   (let [{short-name :ShortName long-name :LongName} record]
-    (if (seq long-name) (str short-name keyword-separator long-name) short-name)))
+    (if (seq long-name) (str short-name keyword-separator-join long-name) short-name)))
 
 (def extent-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent")
