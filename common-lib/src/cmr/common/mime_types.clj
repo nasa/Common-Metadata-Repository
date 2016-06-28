@@ -125,11 +125,12 @@
         (get base-mime-type-to-format default-mime-type))))
 
 (defn format-key
-  "Returns CMR format keyword from given value. Value may be a keyword or a MIME type string."
+  "Returns CMR format keyword from given value. Value may be a keyword, a MIME type string or a map."
   [x]
   (cond
     (string? x) (mime-type->format x nil)
     (keyword? x) (get all-formats x)
+    (map? x) (:format x)
     :else nil))
 
 ;; Content-Type utilities
@@ -162,7 +163,7 @@
   (when header-value
     (map base-mime-type-of (str/split header-value #"\s*,\s*"))))
 
-(defn- get-header
+(defn get-header
   "Gets a value from a header map in a case-insensitive way."
   [m k]
   (get (util/map-keys str/lower-case m) (str/lower-case k)))

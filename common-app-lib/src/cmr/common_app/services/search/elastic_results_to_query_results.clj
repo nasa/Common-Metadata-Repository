@@ -1,17 +1,18 @@
 (ns cmr.common-app.services.search.elastic-results-to-query-results
   "Contains functions to convert elasticsearch results to query results."
   (:require [clojure.string :as s]
+            [cmr.common-app.services.search.query-model :as common-qm]
             [cmr.common-app.services.search.results-model :as results]))
 
 (defmulti elastic-result->query-result-item
   "Converts the Elasticsearch result into the result expected from execute-query for the given format."
   (fn [context query elastic-result]
-    [(:concept-type query) (:result-format query)]))
+    [(:concept-type query) (common-qm/base-result-format query)]))
 
 (defmulti elastic-results->query-results
   "Converts elastic search results to query results"
   (fn [context query elastic-results]
-    [(:concept-type query) (:result-format query)]))
+    [(:concept-type query) (common-qm/base-result-format query)]))
 
 (defn default-elastic-results->query-results
   "Default function for converting elastic-results to query-results"
