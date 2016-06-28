@@ -49,4 +49,5 @@
   UMM model and a list of errors at that path. Returns an empty sequence if it is valid."
   [collection granule]
   (validation-errors->path-errors
-    (v/validate vg/granule-validations (pw/set-parent granule collection))))
+    (v/validate vg/granule-validations
+                (pw/set-parent granule collection))))

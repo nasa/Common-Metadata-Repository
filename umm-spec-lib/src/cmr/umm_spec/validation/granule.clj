@@ -124,7 +124,7 @@
   "Validate projects in granule must reference those in the parent collection"
   [_ granule]
   (let [project-ref-names (set (:project-refs granule))
-        parent-project-names (->> granule :parent :projects (map :short-name) set)
+        parent-project-names (->> granule :parent :Projects (map :ShortName) set)
         missing-project-refs (seq (set/difference project-ref-names parent-project-names))]
     (when missing-project-refs
       {[:project-refs]
@@ -197,7 +197,7 @@
   "Validate operation modes in granule instrument ref must reference those in the parent collection"
   [field-path instrument-ref]
   (let [operation-modes (set (:operation-modes instrument-ref))
-        parent-operation-modes (-> instrument-ref :parent :operation-modes set)
+        parent-operation-modes (-> instrument-ref :parent :OperationalModes set)
         missing-operation-modes (seq (set/difference operation-modes parent-operation-modes))]
     (when missing-operation-modes
       {field-path

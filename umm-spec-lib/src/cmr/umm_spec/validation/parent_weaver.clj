@@ -13,17 +13,15 @@
 (defprotocol ParentWeaver
   (set-parent [obj parent] "Sets the parent attribute on this object with the given parent"))
 
-;; TODO update to allow passing in parent name field
-
 (defn- set-parents-by-name
   "Takes a list of child objects and a list of parent objects for the same field.  A parent
   object is matched to a child object by the field passed in as the name-field.  If a match is
   found for the child object in the parent object then the :parent field is set to that match."
   ([objs parent-objs]
-   (set-parents-by-name objs parent-objs :name))
-  ([objs parent-objs name-field]
+   (set-parents-by-name objs parent-objs :name :Name))
+  ([objs parent-objs name-field parent-name-field]
    ;; We'll assume there's only a single parent object with a given name
-   (let [parent-obj-by-name (u/map-values first (group-by name-field parent-objs))]
+   (let [parent-obj-by-name (u/map-values first (group-by parent-name-field parent-objs))]
      (for [child objs
            :let [parent (parent-obj-by-name (name-field child))]]
        (set-parent child parent)))))
@@ -32,9 +30,11 @@
   "This function does the same thing as set-parents-by-name, but for the case where the parent has
   multiple objects but there is only one child object(in granule) i.e. child object is not a list of
   values but a single value with a reference to its parent"
-  [obj parent-objs name-field]
-  (let [parent-obj-by-name (u/map-values first (group-by name-field parent-objs))]
-    (set-parent obj (parent-obj-by-name (name-field obj)))))
+  ([obj parent-objs]
+   (set-parent-by-name obj parent-objs :name :Name))
+  ([obj parent-objs name-field parent-name-field]
+   (let [parent-obj-by-name (u/map-values first (group-by parent-name-field parent-objs))]
+     (set-parent obj (parent-obj-by-name (name-field obj))))))
 
 (extend-protocol
   ParentWeaver
@@ -48,11 +48,11 @@
         (update-in [:collection-ref] set-parent coll)
         (update-in [:spatial-coverage] set-parent (:SpatialExtent coll))
         (update-in [:temporal] set-parent (:TemporalExtents coll))
-        (update-in [:platform-refs] set-parents-by-name (:platforms coll) :short-name)
+        (update-in [:platform-refs] set-parents-by-name (:platforms coll) :short-name :ShortName)
         (update-in [:two-d-coordinate-system] set-parent-by-name
-                   (:two-d-coordinate-systems coll) :name)
+                   (:two-d-coordinate-systems coll))
         (update-in [:product-specific-attributes]
-                   set-parents-by-name (:product-specific-attributes coll) :name)))
+                   set-parents-by-name (:product-specific-attributes coll))))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   clojure.lang.IPersistentMap
@@ -66,22 +66,22 @@
     [platform-ref platform]
     (-> platform-ref
         (assoc :parent platform)
-        (update-in [:instrument-refs] set-parents-by-name (:instruments platform) :short-name)))
+        (update-in [:instrument-refs] set-parents-by-name (:Instruments platform) :short-name :ShortName)))
 
   InstrumentRef
   (set-parent
     [instrument-ref instrument]
     (-> instrument-ref
         (assoc :parent instrument)
-        (update-in [:sensor-refs] set-parents-by-name (:sensors instrument) :short-name)
-        (update-in [:characteristic-refs] set-parents-by-name (:characteristics instrument) :name)))
+        (update-in [:sensor-refs] set-parents-by-name (:Sensors instrument) :short-name :ShortName)
+        (update-in [:characteristic-refs] set-parents-by-name (:Characteristics instrument))))
 
   SensorRef
   (set-parent
     [sensor-ref sensor]
     (-> sensor-ref
         (assoc :parent sensor)
-        (update-in [:characteristic-refs] set-parents-by-name (:characteristics sensor) :name)))
+        (update-in [:characteristic-refs] set-parents-by-name (:Characteristics sensor))))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; The protocol is extended to nil so we can attempt to set the parent on items which do not have
