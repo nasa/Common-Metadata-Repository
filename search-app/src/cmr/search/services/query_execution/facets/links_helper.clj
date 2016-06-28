@@ -24,7 +24,7 @@
   [query-params field]
   (let [param-snake-case (csk/->snake_case_string field)
         values (remove nil?
-                      (flatten
+                       (flatten
                         ;; Query parameters can contain either a sequence of values or a single
                         ;; value. Wrap them in vectors and then flatten to handle both cases.
                         (concat [(get query-params (str param-snake-case "[]"))]

@@ -43,9 +43,10 @@
   counts, a new tuple is added with the search term and a count of 0."
   [value-counts search-terms]
   (let [all-facet-values (map #(str/lower-case (first %)) value-counts)
-        ;; Look for each of the search terms in the returned facet values when compared in a case
-        ;; insensitive manner. The missing-terms will contain any of the search terms which do not
-        ;; appear in the facet values and in the same case that was provided.
+        ;; Look for each of the search terms in the returned facet values compared in a case
+        ;; insensitive manner. Although the comparison is case insensitive the missing-terms will
+        ;; contain any of the search terms that do not appear in the facet values in their
+        ;; original case.
         missing-terms (remove #(some (set [(str/lower-case %)]) all-facet-values) search-terms)]
     (reduce #(conj %1 [%2 0]) value-counts missing-terms)))
 
