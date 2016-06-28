@@ -8,6 +8,31 @@
   (is (= expected
          (humanizer/umm-collection->umm-collection+humanizers source humanizers))))
 
+(deftest to-human
+  (testing "trim_whitespace"
+    (are [a b] (= b (humanizer/to-human {:type "trim_whitespace"} a))
+      "TEST/value" "TEST/value"
+      "TEST  value" "TEST  value"
+      "TEST value  " "TEST value"
+      "   \t\r\nTEST value   \t\r\n" "TEST value"))
+
+  (testing "capitalize"
+    (are [a b] (= b (humanizer/to-human {:type "capitalize"} a))
+      "TEST" "Test"
+      "TestTest" "Testtest"
+      "Test Test" "Test Test"
+      "TEST-TEST" "Test-Test"
+      "TEST/TEST" "Test/Test"
+      "/TEST/TEST/" "/Test/Test/"))
+
+  (testing "alias"
+    (are [a b] (= b (humanizer/to-human {:type "alias" :replacement_value b} a))
+      "A" "B"))
+
+  (testing "ignore"
+    (are [a b] (= b (humanizer/to-human {:type "ignore"} a))
+      "A" nil)))
+
 (deftest humanize-collection
   (testing "humanize platform"
     (testing "trim_whitespace"
