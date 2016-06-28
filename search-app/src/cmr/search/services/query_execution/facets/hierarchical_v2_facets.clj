@@ -1,5 +1,8 @@
 (ns cmr.search.services.query-execution.facets.hierarchical-v2-facets
-  "Functions for generating v2 facet responses for hierarchical fields."
+  "Functions for generating v2 facet responses for hierarchical fields. Hierarchical fields are any
+  fields which contain some subfields such as science keywords which have subfields of Category,
+  Topic, Term, and Variable Levels 1, 2, and 3. On the query parameter API hierarchical fields are
+  specified with field[index][subfield] such as science_keyword[0][category]."
   (:require [cmr.common-app.services.kms-fetcher :as kms-fetcher]
             [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
             [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]

@@ -370,7 +370,7 @@
        :count 2,
        :links
        {:apply
-        "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&platform%5B%5D=DMSP+5B%2FF3&include_facets=v2&platform=DIADEM-1D"},
+        "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&options%5Bplatform%5D%5Band%5D=true&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&platform%5B%5D=DMSP+5B%2FF3&include_facets=v2&platform=DIADEM-1D"},
        :has_children false}]}
     {:title "Instruments",
      :type "group",
@@ -391,7 +391,7 @@
        :count 2,
        :links
        {:apply
-        "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=DIADEM-1D&instrument%5B%5D=LVIS"},
+        "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&options%5Binstrument%5D%5Band%5D=true&include_facets=v2&platform=DIADEM-1D&instrument%5B%5D=LVIS"},
        :has_children false}]}
     {:title "Organizations",
      :type "group",
@@ -417,7 +417,7 @@
        :count 2,
        :links
        {:apply
-        "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&project%5B%5D=PROJ2&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=DIADEM-1D"},
+        "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&options%5Bproject%5D%5Band%5D=true&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&project%5B%5D=PROJ2&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=DIADEM-1D"},
        :has_children false}
       {:title "proj1",
        :type "filter",
@@ -531,7 +531,9 @@
        :has_children false}]}]})
 
 (def expected-facets-with-no-matching-collections
-  "Facet response when searching against faceted fields which have 0 matching collections"
+  "Facet response when searching against faceted fields which have 0 matching collections. Each of
+  the search terms will be included in the facet response along with a remove link so that the user
+  can remove that search term from their query."
   {:title "Browse Collections",
    :type "group",
    :has_children true,
@@ -653,8 +655,10 @@
         "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&keyword=MODIS&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=ASTER-p0"},
        :has_children false}]}]})
 
-(def expected-facets-modis-and-aster
-  "Expected facet response when searching for MODIS keyword and MODIS or ASTER platform."
+(def expected-facets-modis-and-aster-no-results-found
+  "Expected facet response when searching for MODIS keyword and MODIS or ASTER platform and no
+  collections are found. If no collections are matched the values searched in the query should be
+  present as remove links."
   {:title "Browse Collections",
    :type "group",
    :has_children true,
