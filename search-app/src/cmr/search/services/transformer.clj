@@ -3,6 +3,7 @@
   (:require [cmr.metadata-db.services.concept-service :as metadata-db]
             [cmr.umm.core :as ummc]
             [cmr.umm.start-end-date :as sed]
+            [cmr.umm-spec.versioning :as ver]
             [cmr.umm-spec.core :as umm-spec]
             [cmr.umm-spec.umm-json :as umm-json]
             [cmr.common.cache :as cache]
@@ -15,6 +16,8 @@
             [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
             [cmr.common.xml.xslt :as xslt]
             [cmr.common.util :as u]
+            [cmr.common-app.services.search.query-model :as qm]
+            [cmr.search.services.result-format-helper :as rfh]
             [cmr.umm.iso-smap.granule :as smap-g]
             [cmr.collection-renderer.services.collection-renderer :as collection-renderer]))
 
@@ -42,36 +45,45 @@
   "Returns a XSLT template from the filename, using the context cache."
   [context f]
   (cache/get-value
-   (cache/context->cache context xsl-transformer-cache-name)
-   f
-   #(xslt/read-template f)))
+    (cache/context->cache context xsl-transformer-cache-name)
+    f
+    #(xslt/read-template f)))
 
 (defn- generate-html-response
   "Returns an HTML representation of the collection concept."
   [context concept]
   (let [collection (umm-spec/parse-metadata
-                    context :collection (:format concept) (:metadata concept))]
+                     context :collection (:format concept) (:metadata concept))]
     (collection-renderer/render-collection context collection)))
 
 (defn- transform-metadata
   "Transforms the metadata of the concept to the given format"
   [context concept target-format]
-  (let [concept-format (:format concept)]
-    (if-let [xsl (types->xsl [(mt/mime-type->format concept-format) target-format])]
+  (let [concept-mime-type (:format concept)]
+    (if-let [xsl (types->xsl [(mt/mime-type->format concept-mime-type) target-format])]
       ; xsl is defined for the transformation, so use xslt
       (xslt/transform (:metadata concept) (get-template context xsl))
       (cond
         (= :html target-format)
         (generate-html-response context concept)
 
-        (mt/umm-json? concept-format)
-        (umm-spec/generate-metadata context
-          (umm-spec/parse-metadata context :collection concept-format (:metadata concept))
-          target-format)
+        (mt/umm-json? concept-mime-type)
+        (if (and (= :umm-json (qm/base-result-format target-format))
+                 (= (or (mt/version-of concept-mime-type) ver/current-version)
+                    (or (:version target-format) ver/current-version)))
+          ;; The metadata is in the same version of UMM JSON as requested by the user.
+          (:metadata concept)
+          ;; The user has requested a different format for the metadata.
+          ;; Use UMM Spec to parse it and generate metadata in the desired format.
+          (umm-spec/generate-metadata
+            context
+            (umm-spec/parse-metadata context :collection concept-mime-type (:metadata concept))
+            target-format))
 
-        (= :umm-json target-format)
+
+        (= :umm-json (qm/base-result-format target-format))
         (umm-json/umm->json
-         (umm-spec/parse-metadata context :collection concept-format (:metadata concept)))
+          (umm-spec/parse-metadata context :collection concept-mime-type (:metadata concept)))
 
         :else
         (-> concept
@@ -92,7 +104,7 @@
                     (let [metadata (transform-metadata context concept target-format)]
                       (assoc (select-keys concept [:concept-id :revision-id])
                              :metadata metadata
-                             :format (mt/format->mime-type target-format))))]
+                             :format (rfh/search-result-format->mime-type target-format))))]
     (if collection-concept-id
       (assoc value-map :collection-concept-id collection-concept-id)
       value-map)))

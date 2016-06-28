@@ -76,3 +76,14 @@
                        :variable-level-2 "Level1-2"
                        :variable-level-3 "Level1-3"
                        :detailed-variable (str "Detail-" n)}))
+
+(defn prune-facet-response
+  "Recursively limit the facet response to only the keys provided to make it easier to test
+  different parts of the response in different tests."
+  [facet-response keys]
+  (if (:children facet-response)
+    (assoc (select-keys facet-response keys)
+           :children
+           (for [child-facet (:children facet-response)]
+             (prune-facet-response child-facet keys)))
+    (select-keys facet-response keys)))

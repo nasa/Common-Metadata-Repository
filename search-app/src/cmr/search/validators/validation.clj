@@ -2,6 +2,7 @@
   "Defines protocols and functions to validate conditions"
   (:require [cmr.search.models.query :as qm]
             [cmr.common-app.services.search.query-validation :as cqv]
+            [cmr.common-app.services.search.query-model :as cqm]
             [cmr.spatial.validation :as spatial-validation]
             [cmr.search.validators.leading-wildcard-validation :as lwv]
             [clojure.set]
@@ -25,7 +26,8 @@
   "Validate requested search result format for all-revisions?."
   [{:keys [all-revisions? result-format]}]
   (when all-revisions?
-    (let [mime-type (mt/format->mime-type result-format)]
+    (let [result-format (cqm/base-result-format result-format)
+          mime-type (mt/format->mime-type result-format)]
       (when-not (contains? all-revisions-supported-result-formats result-format)
         [(format "The mime type [%s] is not supported when all_revisions = true." mime-type)]))))
 

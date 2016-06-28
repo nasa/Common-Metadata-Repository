@@ -9,7 +9,8 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.search.services.query-execution.facets.facets-v2-results-feature :as frf2]
             [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
-            [cmr.common.mime-types :as mt]))
+            [cmr.common.mime-types :as mt]
+            [cmr.common.util :refer [are3]]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -88,10 +89,66 @@
           (is (applied? response :instrument))
           (is (applied? response :processing-level-id)))))))
 
+(def science-keywords-all-applied
+  "Facet response with just the title, applied, and children fields. Used to verify that when
+  searching for the deepest nested field (a value of Level1-3 for variable-level-3) all of the
+  fields above variable-level-3 have applied set to true."
+  {:title "Browse Collections",
+   :children
+   [{:title "Keywords", :applied true,
+     :children
+     [{:title "CAT1", :applied true,
+       :children
+       [{:title "TOPIC1", :applied true,
+         :children
+         [{:title "TERM1", :applied true,
+           :children
+           [{:title "LEVEL1-1", :applied true,
+             :children
+             [{:title "LEVEL1-2", :applied true,
+               :children
+               [{:title "LEVEL1-3", :applied true}]}]}]}]}]}]}]})
+
+(def partial-science-keywords-applied
+  "Facet response with just the title, applied, and children fields. Used to verify that when
+  searching for a nested field (a value of TERM1 for term) all of the fields above term have
+  applied set to true and any fields below have applied set to false."
+  {:title "Browse Collections",
+   :children
+   [{:title "Keywords", :applied true,
+     :children
+     [{:title "CAT1", :applied true,
+       :children
+       [{:title "TOPIC1", :applied true,
+         :children
+         [{:title "TERM1", :applied true,
+           :children
+           [{:title "LEVEL1-1", :applied false,
+             :children
+             [{:title "LEVEL1-2", :applied false,
+               :children
+               [{:title "LEVEL1-3", :applied false}]}]}]}]}]}]}]})
+
+(deftest hierarchical-applied-test
+  (fu/make-coll 1 "PROV1" (fu/science-keywords sk1))
+  (testing "Children science keywords applied causes parent fields to be marked as applied"
+    (are3 [search-params expected-response]
+      (is (= expected-response (fu/prune-facet-response (search-and-return-v2-facets search-params)
+                                                        [:title :applied])))
+
+      "Lowest level field causes all fields above to be applied."
+      {:science-keywords {:0 {:variable-level-3 "Level1-3"}}}
+      science-keywords-all-applied
+
+      "Middle level field causes all fields above to be applied, but not fields below."
+      {:science-keywords {:0 {:term "Term1"}}}
+      partial-science-keywords-applied)))
+
 (deftest remove-facets-without-collections
   (fu/make-coll 1 "PROV1" (fu/platforms "ASTER" 1))
   (fu/make-coll 1 "PROV1" (fu/platforms "MODIS" 1))
-  (testing "Removing facets without any matching collections for all facet fields"
+  (testing (str "When searching against faceted fields which do not match any matching collections,"
+                "a link should be provided so that the user can remove the term from their search.")
     (let [search-params {:science-keywords {:0 {:category "Cat1"
                                                 :topic "Topic1"
                                                 :term "Term1"
@@ -107,7 +164,7 @@
           response (search-and-return-v2-facets search-params)]
       (is (= fr/expected-facets-with-no-matching-collections response))))
   (testing "Facets with multiple facets applied, some with matching collections, some without"
-    (is (= fr/expected-facets-modis-and-aster
+    (is (= fr/expected-facets-modis-and-aster-no-results-found
            (search-and-return-v2-facets {:platform ["moDIS-p0", "ASTER-p0"]
                                          :keyword "MODIS"})))))
 
