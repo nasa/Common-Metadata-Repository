@@ -14,7 +14,9 @@
             [camel-snake-kebab.core :as csk]))
 
 
-(def valid-coord-systems #{:geodetic :cartesian})
+(def valid-coord-systems
+  "Coordinate systems that our valid for umm-spec geometries."
+  #{:geodetic :cartesian})
 
 (defn- ->coordinate-system
   "Returns a normalized coordinate system keyword from a string."
@@ -37,14 +39,15 @@
            (map boundary->ring (get-in [:ExclusiveZone :Boundaries] gpolygon)))))
 
 (defn polygon-validation
+  "Validates a polygon for umm-spec spatial geometry."
   [field-path gpolygon]
   (let [coord-sys (:coord-system gpolygon)]
     (when-let [errors (seq (sv/validate (gpolygon->polygon coord-sys gpolygon)))]
       {field-path  (map #(str "Spatial validation error: " %) errors)})))
 
 (defn- set-spatial-representation
-  "Attach the coordinate system to each geeometry (if any) in the spatial extent.
-  Geoemtry here means polygons or lines."
+  "Attach the coordinate system to each geometry (if any) in the spatial extent.
+  Geometry here means polygons or lines."
   [spatial-extent path coord-sys]
   (if (get-in spatial-extent path)
     (update-in spatial-extent path (fn [geometry] (map #(assoc % :coord-system coord-sys) geometry)))
@@ -66,6 +69,7 @@
     (point/point Longitude Latitude)))
 
 (defn point-validation
+  "Validates point for umm-spec spatial geometry."
   [field-path point]
   (when-let [errors (seq (sv/validate (umm-spec-point->point point)))]
     {field-path  (map #(str "Spatial validation error: " %) errors)}))
@@ -77,6 +81,7 @@
    (ls/line-string coord-sys points)))
 
 (defn line-validation
+  "Validates line for umm-spec spatial geometry."
   [field-path line]
   (let [coord-sys (:coord-system line)]
     (when-let [errors (seq (sv/validate (umm-spec-line->line coord-sys line)))]
@@ -89,11 +94,13 @@
     (mbr/mbr WestBoundingCoordinate NorthBoundingCoordinate EastBoundingCoordinate SouthBoundingCoordinate)))
 
 (defn bounding-rectangle-validation
+  "Validates bounding rectangle for umm-spec spatial geometry."
   [field-path br]
   (when-let [errors (seq (sv/validate (umm-spec-br->mbr br)))]
     {field-path (map #(str "Spatial validation error: " %) errors)}))
 
 (def spatial-extent-validation
+  "Validation for the SpatialExtent of a umm-spec collection."
   (v/pre-validation set-geometries-spatial-representation
     {:HorizontalSpatialDomain
      {:Geometry
