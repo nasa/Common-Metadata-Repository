@@ -453,6 +453,22 @@
                                (apply f x args))
                              xs)))))
 
+(defn update-in-all
+  "For nested maps, this is identical to clojure.core/update-in. If it encounters
+   a sequential structure at one of the keys, though, it applies the update to each
+   value in the sequence. If it encounters nil at a parent key, it does nothing."
+  [m [k & ks] f & args]
+  (let [v (get m k)]
+    (if (nil? v)
+      m
+      (if (sequential? v)
+        (if ks
+          (assoc m k (mapv #(apply update-in-all %1 ks f args) v))
+          (assoc m k (mapv #(apply f %1 args) v)))
+        (if ks
+          (assoc m k (apply update-in-all v ks f args))
+          (assoc m k (apply f v args)))))))
+
 (defn- key->delay-name
   "Returns the key that the delay is stored in for a lazy value"
   [k]
