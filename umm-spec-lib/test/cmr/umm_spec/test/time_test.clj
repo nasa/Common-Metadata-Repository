@@ -10,31 +10,31 @@
    {:TemporalRangeType "temp range"
     :PrecisionOfSeconds 3
     :EndsAtPresentFlag false
-    :RangeDateTime (mapv umm-cmn/map->RangeDateTimeType
-                         [{:BeginningDateTime (t/date-time 2000)
-                           :EndingDateTime (t/date-time 2001)}
-                          {:BeginningDateTime (t/date-time 2002)
-                           :EndingDateTime (t/date-time 2003)}])
-    :SingleDateTime [(t/date-time 2003) (t/date-time 2004)]
-    :PeriodicDateTime (mapv umm-cmn/map->PeriodicDateTimeType
-                            [{:Name "period1"
-                              :StartDate (t/date-time 2000)
-                              :EndDate (t/date-time 2001)
-                              :DurationUnit "YEAR"
-                              :DurationValue 4
-                              :PeriodCycleDurationUnit "DAY"
-                              :PeriodCycleDurationValue 3}
-                             {:Name "period2"
-                              :StartDate (t/date-time 2000)
-                              :EndDate (t/date-time 2001)
-                              :DurationUnit "YEAR"
-                              :DurationValue 4
-                              :PeriodCycleDurationUnit "DAY"
-                              :PeriodCycleDurationValue 3}])}))
+    :RangeDateTimes (mapv umm-cmn/map->RangeDateTimeType
+                          [{:BeginningDateTime (t/date-time 2000)}
+                           {:BeginningDateTime (t/date-time 2002)
+                            :EndingDateTime (t/date-time 2003)}])
+    :SingleDateTimes [(t/date-time 2003) (t/date-time 2004)]
+    :PeriodicDateTimes (mapv umm-cmn/map->PeriodicDateTimeType
+                             [{:Name "period1"
+                               :StartDate (t/date-time 2000)
+                               :EndDate (t/date-time 2001)
+                               :DurationUnit "YEAR"
+                               :DurationValue 4
+                               :PeriodCycleDurationUnit "DAY"
+                               :PeriodCycleDurationValue 3}
+                              {:Name "period2"
+                               :StartDate (t/date-time 2000)
+                               :EndDate (t/date-time 2001)
+                               :DurationUnit "YEAR"
+                               :DurationValue 4
+                               :PeriodCycleDurationUnit "DAY"
+                               :PeriodCycleDurationValue 3}])}))
 
 (deftest test-temporal-all-dates
   (is (= (temporal-all-dates temporal)
          #{(t/date-time 2000)
+           nil
            (t/date-time 2001)
            (t/date-time 2002)
            (t/date-time 2003)
@@ -42,12 +42,34 @@
 
 (def example-record
   (umm-c/map->UMM-C
-   {:TemporalExtent [temporal]}))
+   {:TemporalExtents [temporal]}))
 
 (deftest test-collection-start-date
-  (is (= (collection-start-date example-record)
-         (t/date-time 2000))))
+  (testing "Multiple values"
+   (is (= (t/date-time 2000)
+          (collection-start-date example-record))))
+
+  (testing "Single value"
+    (is (= (t/date-time 2004)
+           (collection-start-date {:TemporalExtents [{:SingleDateTimes [(t/date-time 2004)]}]}))))
+
+  (testing "No dates"
+    (is (nil? (collection-start-date {})))))
 
 (deftest test-collection-end-date
-  (is (= (collection-end-date example-record)
-         (t/date-time 2004))))
+  (testing "Nil ending-date"
+    (is (= :present ; first range date does not have an end date
+           (collection-end-date example-record))))
+  (testing "Ends at present flag"
+    (is (= :present ; The collection ends at present flag is set.
+           (collection-end-date {:TemporalExtents [{:RangeDateTimes [{:BeginningDateTime (t/date-time 2000)
+                                                                      :EndingDateTime (t/date-time 2001)}]
+                                                    :EndsAtPresentFlag true}]}))))
+
+  (testing "Single value"
+    (is (= (t/date-time 2006)
+           (collection-end-date {:TemporalExtents [{:SingleDateTimes [(t/date-time 2006)]}]}))))
+  (testing "No dates"
+    (is (nil? (collection-end-date {})))))
+
+

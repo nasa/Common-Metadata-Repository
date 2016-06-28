@@ -47,7 +47,7 @@
         (assoc :parent coll)
         (update-in [:collection-ref] set-parent coll)
         (update-in [:spatial-coverage] set-parent (:SpatialExtent coll))
-        (update-in [:temporal] set-parent (:temporal coll))
+        (update-in [:temporal] set-parent (:TemporalExtents coll))
         (update-in [:platform-refs] set-parents-by-name (:platforms coll) :short-name)
         (update-in [:two-d-coordinate-system] set-parent-by-name
                    (:two-d-coordinate-systems coll) :name)

@@ -7,6 +7,7 @@
             [cmr.common.util :as util]
             [cmr.umm.spatial :as umm-s]
             [cmr.umm.start-end-date :as sed]
+            [cmr.umm-spec.time :as umm-spec-time]
             [cmr.spatial.validation :as sv]
             [cmr.umm.validation.utils :as vu]
             [cmr.umm.validation.validation-helper :as h]
@@ -183,11 +184,11 @@
 (defn temporal-validation
   "Checks the granule's temporal extent against the parent collection's."
   [_ temporal]
-  (if-let [coll-temporal (:parent temporal)]
+  (if-let [coll-temporals (seq (:parent temporal))]
     (when-let [msg (temporal-error-message (sed/start-date :granule temporal)
                                            (sed/end-date :granule temporal)
-                                           (sed/start-date :collection coll-temporal)
-                                           (sed/end-date :collection coll-temporal))]
+                                           (umm-spec-time/collection-start-date {:TemporalExtents coll-temporals})
+                                           (umm-spec-time/collection-end-date {:TemporalExtents coll-temporals}))]
       {[:temporal] [msg]})
     (when (some? temporal)
       {[:temporal] ["Granule whose parent collection does not have temporal information cannot have temporal."]})))

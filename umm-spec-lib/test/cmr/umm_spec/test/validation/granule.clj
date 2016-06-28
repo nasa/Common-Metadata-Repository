@@ -85,138 +85,135 @@
           (gran-with-geometries [valid-point invalid-point invalid-mbr])
           expected-errors)))))
 
+(deftest granule-spatial-representation
+  (let [collection-with-orbit (make-collection {:SpatialExtent
+                                                {:GranuleSpatialRepresentation :orbit
+                                                 :OrbitParameters {:InclinationAngle 98.2
+                                                                   :Period 100.0
+                                                                   :SwathWidth 2600.0
+                                                                   :StartCircularLatitude 50.0
+                                                                   :NumberOfOrbits 2.0}}})
+        collection-with-no-spatial (make-collection {})
+        granule-with-geometry (gran-with-geometries [(m/mbr 0 0 0 0)])
+        granule-with-orbit (make-granule {:spatial-coverage
+                                          (g/map->SpatialCoverage
+                                           {:orbit (g/map->Orbit {:ascending-crossing 76.123
+                                                                  :start-lat 50.0
+                                                                  :start-direction :asc
+                                                                  :end-lat 50.0
+                                                                  :end-direction :desc})})})
+        granule-with-no-spatial (make-granule {})]
+    (testing "granule spatial does not match with granule spatial representation"
+      (are [collection granule expected-errors]
+        (= (set (map e/map->PathErrors expected-errors))
+           (set (v/validate-granule collection granule)))
 
-; (deftest granule-spatial-representation
-;   (let [collection-with-geodetic (make-collection {:spatial-coverage
-;                                                    {:granule-spatial-representation :geodetic}})
-;         collection-with-cartesian (make-collection {:spatial-coverage
-;                                                     {:granule-spatial-representation :cartesian}})
-;         collection-with-orbit (make-collection {:spatial-coverage
-;                                                 {:granule-spatial-representation :orbit
-;                                                  :orbit-parameters {:inclination-angle 98.2
-;                                                                     :period 100.0
-;                                                                     :swath-width 2600.0
-;                                                                     :start-circular-latitude 50.0
-;                                                                     :number-of-orbits 2.0}}})
-;         collection-with-no-spatial (make-collection {})
-;         granule-with-geometry (gran-with-geometries [(m/mbr 0 0 0 0)])
-;         granule-with-orbit (make-granule {:spatial-coverage
-;                                           (g/map->SpatialCoverage
-;                                             {:orbit (g/map->Orbit {:ascending-crossing 76.123
-;                                                                    :start-lat 50.0
-;                                                                    :start-direction :asc
-;                                                                    :end-lat 50.0
-;                                                                    :end-direction :desc})})})
-;         granule-with-no-spatial (make-granule {})]
-;     (testing "granule spatial does not match with granule spatial representation"
-;       (are [collection granule expected-errors]
-;            (= (set (map e/map->PathErrors expected-errors))
-;               (set (v/validate-granule collection granule)))
-;
-;            collection-with-geodetic granule-with-no-spatial
-;            [{:path [:spatial-coverage :geometries]
-;              :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is GEODETIC"]}]
-;
-;            collection-with-orbit granule-with-no-spatial
-;            [{:path [:spatial-coverage :orbit]
-;              :errors ["[Orbit] must be provided when the parent collection's GranuleSpatialRepresentation is ORBIT"]}]
-;
-;            collection-with-cartesian granule-with-no-spatial
-;            [{:path [:spatial-coverage :geometries]
-;              :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is CARTESIAN"]}]
-;
-;            collection-with-orbit granule-with-geometry
-;            [{:path [:spatial-coverage :geometries]
-;              :errors ["[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is ORBIT"]}
-;             {:path [:spatial-coverage :orbit]
-;              :errors ["[Orbit] must be provided when the parent collection's GranuleSpatialRepresentation is ORBIT"]}]
-;
-;            collection-with-no-spatial granule-with-geometry
-;            [{:path [:spatial-coverage :geometries]
-;              :errors ["[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]}]
-;
-;            collection-with-geodetic granule-with-orbit
-;            [{:path [:spatial-coverage :orbit]
-;              :errors ["[Orbit] cannot be set when the parent collection's GranuleSpatialRepresentation is GEODETIC"]}
-;             {:path [:spatial-coverage :geometries]
-;              :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is GEODETIC"]}]
-;
-;            collection-with-cartesian granule-with-orbit
-;            [{:path [:spatial-coverage :orbit]
-;              :errors ["[Orbit] cannot be set when the parent collection's GranuleSpatialRepresentation is CARTESIAN"]}
-;             {:path [:spatial-coverage :geometries]
-;              :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is CARTESIAN"]}]
-;
-;            collection-with-no-spatial granule-with-orbit
-;            [{:path [:spatial-coverage :orbit]
-;              :errors ["[Orbit] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]}]))
-;
-;     (testing "granule spatial matches with granule spatial representation"
-;       (are [collection granule]
-;            (is (empty? (v/validate-granule collection granule)))
-;
-;            collection-with-geodetic granule-with-geometry
-;
-;            collection-with-cartesian granule-with-geometry
-;
-;            collection-with-orbit granule-with-orbit
-;
-;            collection-with-no-spatial granule-with-no-spatial))))
-;
-; (defn granule-with-temporal
-;   [a b]
-;   (make-granule {:temporal (g/map->GranuleTemporal {:range-date-time (helpers/range-date-time a b)})}))
-;
-; (deftest granule-temporal-coverage
-;   (let [make-coll (fn [coll-start coll-end ends-at-present-flag]
-;                     (helpers/coll-with-range-date-times
-;                       [(helpers/range-date-time coll-start coll-end)] ends-at-present-flag))
-;         assert-valid #(assert-valid-gran %1 %2)
-;         assert-invalid #(assert-invalid-gran %1 %2 [:temporal] [%3])
-;         coll (make-coll "2015-01-01T00:00:00Z" "2015-01-02T00:00:00Z" nil)
-;         coll-ends-at-present (make-coll "2015-01-01T00:00:00Z" "2015-01-02T00:00:00Z" true)
-;         coll-no-end-date (make-coll "2015-01-01T00:00:00Z" nil false)
-;         coll-no-temporal (make-collection {})]
-;
-;     (testing "Granule with no temporal coverage values is valid"
-;       (assert-valid coll (make-granule {})))
-;
-;     (testing "Granule with range equal to collection range is valid"
-;       (assert-valid coll (granule-with-temporal "2015-01-01T00:00:00Z" "2015-01-02T00:00:00Z")))
-;
-;     (testing "Granule with range inside of collection range is valid"
-;       (assert-valid coll (granule-with-temporal "2015-01-01T01:00:00Z" "2015-01-01T02:00:00Z")))
-;
-;     (testing "Granule with no end date and collection with ends at present flag equal to true is valid"
-;       (assert-valid coll-ends-at-present (granule-with-temporal "2015-01-01T01:00:00Z" nil)))
-;
-;     (testing "Granule with no end date and collection with no end date is valid"
-;       (assert-valid coll-no-end-date (granule-with-temporal "2015-01-01T01:00:00Z" nil)))
-;
-;     (testing "Granule with no end date and collection with an end date and without ends at present flag is invalid"
-;       (assert-invalid coll (granule-with-temporal "2015-01-01T01:00:00Z" nil)
-;                     "There is no granule end date whereas collection has an end date of [2015-01-02T00:00:00.000Z]"))
-;
-;     (assert-invalid coll (granule-with-temporal "2015-01-01T02:00:00Z" "2015-01-01T01:00:00Z")
-;                     "Granule start date [2015-01-01T02:00:00.000Z] is later than granule end date [2015-01-01T01:00:00.000Z].")
-;
-;     (assert-invalid coll (granule-with-temporal "2014-01-01T00:00:00Z" "2015-01-02T01:00:00Z")
-;                     "Granule start date [2014-01-01T00:00:00.000Z] is earlier than collection start date [2015-01-01T00:00:00.000Z].")
-;
-;     (assert-invalid coll (granule-with-temporal "2014-01-01T00:00:00Z" nil)
-;                     "Granule start date [2014-01-01T00:00:00.000Z] is earlier than collection start date [2015-01-01T00:00:00.000Z].")
-;
-;     (assert-invalid coll (granule-with-temporal "2015-01-01T00:00:00Z" "2015-01-02T01:00:00Z")
-;                     "Granule end date [2015-01-02T01:00:00.000Z] is later than collection end date [2015-01-02T00:00:00.000Z].")
-;
-;     (assert-invalid coll (granule-with-temporal "2015-01-03T00:00:00Z" "2015-01-04T00:00:00Z")
-;                     "Granule start date [2015-01-03T00:00:00.000Z] is later than collection end date [2015-01-02T00:00:00.000Z].")
-;
-;     (assert-invalid coll (granule-with-temporal "2016-01-01T00:00:00Z" nil)
-;                     "Granule start date [2016-01-01T00:00:00.000Z] is later than collection end date [2015-01-02T00:00:00.000Z].")
-;     (assert-invalid coll-no-temporal (granule-with-temporal "2016-01-01T00:00:00Z" nil)
-;                     "Granule whose parent collection does not have temporal information cannot have temporal.")))
-;
+        collection-with-geodetic granule-with-no-spatial
+        [{:path [:spatial-coverage :geometries]
+          :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is GEODETIC"]}]
+
+        collection-with-orbit granule-with-no-spatial
+        [{:path [:spatial-coverage :orbit]
+          :errors ["[Orbit] must be provided when the parent collection's GranuleSpatialRepresentation is ORBIT"]}]
+
+        collection-with-cartesian granule-with-no-spatial
+        [{:path [:spatial-coverage :geometries]
+          :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is CARTESIAN"]}]
+
+        collection-with-orbit granule-with-geometry
+        [{:path [:spatial-coverage :geometries]
+          :errors ["[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is ORBIT"]}
+         {:path [:spatial-coverage :orbit]
+          :errors ["[Orbit] must be provided when the parent collection's GranuleSpatialRepresentation is ORBIT"]}]
+
+        collection-with-no-spatial granule-with-geometry
+        [{:path [:spatial-coverage :geometries]
+          :errors ["[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]}]
+
+        collection-with-geodetic granule-with-orbit
+        [{:path [:spatial-coverage :orbit]
+          :errors ["[Orbit] cannot be set when the parent collection's GranuleSpatialRepresentation is GEODETIC"]}
+         {:path [:spatial-coverage :geometries]
+          :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is GEODETIC"]}]
+
+        collection-with-cartesian granule-with-orbit
+        [{:path [:spatial-coverage :orbit]
+          :errors ["[Orbit] cannot be set when the parent collection's GranuleSpatialRepresentation is CARTESIAN"]}
+         {:path [:spatial-coverage :geometries]
+          :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is CARTESIAN"]}]
+
+        collection-with-no-spatial granule-with-orbit
+        [{:path [:spatial-coverage :orbit]
+          :errors ["[Orbit] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]}]))
+
+    (testing "granule spatial matches with granule spatial representation"
+      (are [collection granule]
+        (is (empty? (v/validate-granule collection granule)))
+
+        collection-with-geodetic granule-with-geometry
+
+        collection-with-cartesian granule-with-geometry
+
+        collection-with-orbit granule-with-orbit
+
+        collection-with-no-spatial granule-with-no-spatial))))
+
+(defn granule-with-temporal
+  [a b]
+  (make-granule {:temporal (g/map->GranuleTemporal {:range-date-time (helpers/range-date-time a b)})}))
+
+(deftest granule-temporal-coverage
+  (let [make-coll (fn [coll-start coll-end ends-at-present-flag]
+                    (helpers/coll-with-range-date-times
+                     [(helpers/range-date-time coll-start coll-end)] ends-at-present-flag))
+        assert-valid #(assert-valid-gran %1 %2)
+        assert-invalid #(assert-invalid-gran %1 %2 [:temporal] [%3])
+        coll (make-coll "2015-01-01T00:00:00Z" "2015-01-02T00:00:00Z" nil)
+        coll-ends-at-present (make-coll "2015-01-01T00:00:00Z" "2015-01-02T00:00:00Z" true)
+        coll-no-end-date (make-coll "2015-01-01T00:00:00Z" nil false)
+        coll-no-temporal (make-collection {})]
+
+    (proto/save 1)
+
+    (testing "Granule with no temporal coverage values is valid"
+      (assert-valid coll (make-granule {})))
+
+    (testing "Granule with range equal to collection range is valid"
+      (assert-valid coll (granule-with-temporal "2015-01-01T00:00:00Z" "2015-01-02T00:00:00Z")))
+
+    (testing "Granule with range inside of collection range is valid"
+      (assert-valid coll (granule-with-temporal "2015-01-01T01:00:00Z" "2015-01-01T02:00:00Z")))
+
+    (testing "Granule with no end date and collection with ends at present flag equal to true is valid"
+      (assert-valid coll-ends-at-present (granule-with-temporal "2015-01-01T01:00:00Z" nil)))
+
+    (testing "Granule with no end date and collection with no end date is valid"
+      (assert-valid coll-no-end-date (granule-with-temporal "2015-01-01T01:00:00Z" nil)))
+
+    (testing "Granule with no end date and collection with an end date and without ends at present flag is invalid"
+      (assert-invalid coll (granule-with-temporal "2015-01-01T01:00:00Z" nil)
+                      "There is no granule end date whereas collection has an end date of [2015-01-02T00:00:00.000Z]"))
+
+    (assert-invalid coll (granule-with-temporal "2015-01-01T02:00:00Z" "2015-01-01T01:00:00Z")
+                    "Granule start date [2015-01-01T02:00:00.000Z] is later than granule end date [2015-01-01T01:00:00.000Z].")
+
+    (assert-invalid coll (granule-with-temporal "2014-01-01T00:00:00Z" "2015-01-02T01:00:00Z")
+                    "Granule start date [2014-01-01T00:00:00.000Z] is earlier than collection start date [2015-01-01T00:00:00.000Z].")
+
+    (assert-invalid coll (granule-with-temporal "2014-01-01T00:00:00Z" nil)
+                    "Granule start date [2014-01-01T00:00:00.000Z] is earlier than collection start date [2015-01-01T00:00:00.000Z].")
+
+    (assert-invalid coll (granule-with-temporal "2015-01-01T00:00:00Z" "2015-01-02T01:00:00Z")
+                    "Granule end date [2015-01-02T01:00:00.000Z] is later than collection end date [2015-01-02T00:00:00.000Z].")
+
+    (assert-invalid coll (granule-with-temporal "2015-01-03T00:00:00Z" "2015-01-04T00:00:00Z")
+                    "Granule start date [2015-01-03T00:00:00.000Z] is later than collection end date [2015-01-02T00:00:00.000Z].")
+
+    (assert-invalid coll (granule-with-temporal "2016-01-01T00:00:00Z" nil)
+                    "Granule start date [2016-01-01T00:00:00.000Z] is later than collection end date [2015-01-02T00:00:00.000Z].")
+    (assert-invalid coll-no-temporal (granule-with-temporal "2016-01-01T00:00:00Z" nil)
+                    "Granule whose parent collection does not have temporal information cannot have temporal.")))
+
 ; (deftest granule-project-refs
 ;   (let [c1 (c/map->Project {:short-name "C1"})
 ;         c2 (c/map->Project {:short-name "C2"})
