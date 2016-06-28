@@ -14,7 +14,7 @@
             [cmr.system-int-test.data2.kml :as dk]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.umm.echo10.collection :as c]
-            [cmr.common.util :refer [are2] :as util]
+            [cmr.common.util :refer [are3] :as util]
             [cmr.transmit.config :as transmit-config]
             [cmr.common.mime-types :as mt]
             [cheshire.core :as json]
@@ -170,116 +170,57 @@
         (is (= (:entry-title umm-coll) (:EntryTitle parsed-collection)))))))
 
 (defn- expected-umm-json
-  "Returns the expected umm json for the given umm json, target mime type and source schema version"
-  [metadata mime-type source-version]
+  "Returns the expected umm json in the expected-version for the given metadata whose umm
+  json version is source-version."
+  [metadata expected-version source-version]
   (umm-spec/generate-metadata
     test-context
-    (umm-spec/parse-metadata test-context :collection {:format :umm-json :version source-version} metadata)
-    mime-type ver/current-version))
+    (umm-spec/parse-metadata
+      test-context :collection {:format :umm-json :version source-version} metadata)
+    (format "%s;version=%s" mt/umm-json expected-version)))
 
 (deftest umm-json-version-retrieval-test
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1" ["The entry title V5"]))
   (let [user1-token (e/login (s/context) "user1")
-        coll        expected-conversion/example-collection-record
-        mime-type   "application/vnd.nasa.cmr.umm+json;version=1.0"
-        json        (umm-spec/generate-metadata test-context coll mime-type)
-        result      (d/ingest-concept-with-metadata {:provider-id  "PROV1"
-                                                     :concept-type :collection
-                                                     :format       mime-type
-                                                     :metadata     json})
-        concept-id  (:concept-id result)
-        ;; Defines function to retrieve a specific revision of the collection in the format of the accept header
-        retrieve    (fn [revision-id accept-header]
-                      (search/retrieve-concept concept-id
-                                               revision-id
-                                               {:query-params {:token user1-token}
-                                                :accept accept-header}))]
+        coll expected-conversion/example-collection-record
+        original-umm-version "1.0"
+        original-mime-type (format "%s;version=%s" mt/umm-json original-umm-version)
+        json (umm-spec/generate-metadata test-context coll original-mime-type)
+        ;; ingest the collection with umm json metadata in version 1.0
+        {:keys [concept-id]} (d/ingest-concept-with-metadata {:provider-id  "PROV1"
+                                                              :concept-type :collection
+                                                              :format original-mime-type
+                                                              :metadata json})]
     (index/wait-until-indexed)
 
-    (are2 [revision-id accept-header expected-version]
-          (let [response     (retrieve revision-id accept-header)
-                content-type (get-in response [:headers "Content-Type"])]
-            (and (= 200 (:status response))
-                 ;; retrieved result matches the expected umm json which is in version 1.0
-                 (= (expected-umm-json json accept-header "1.0") (:body response))
-                 (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type))
-                 (= expected-version (mt/version-of content-type))))
+    (are3 [requested-version expected-version]
+          (let [accept-header (if requested-version
+                                (format "%s;version=%s" mt/umm-json requested-version)
+                                mt/umm-json)
+                ;; retrieve the collection by concept id and the given umm json version in accept header
+                response (search/retrieve-concept concept-id nil
+                                                  {:query-params {:token user1-token}
+                                                   :accept accept-header})
+                response-concept-type (get-in response [:headers "Content-Type"])]
 
-          "without revision id, default accept header"
-          nil "application/vnd.nasa.cmr.umm+json" ver/current-version
+            (is (= 200 (:status response)))
+            ;; retrieved result matches the expected umm json which is converted from the original
+            ;; umm json version to the expected version
+            (is (= (expected-umm-json json expected-version original-umm-version) (:body response)))
+            (is (= mt/umm-json (mt/base-mime-type-of response-concept-type)))
+            (is (= expected-version (mt/version-of response-concept-type))))
 
-          "without revision id, accept header 1.0"
-          nil "application/vnd.nasa.cmr.umm+json;version=1.0" "1.0"
+          "default version"
+          nil ver/current-version
 
-          "without revision id, accept header 1.2"
-          nil "application/vnd.nasa.cmr.umm+json;version=1.2" "1.2"
+          "original umm version, 1.0"
+          original-umm-version original-umm-version
 
-          "without revision id, accept header latest version"
-          nil (str "application/vnd.nasa.cmr.umm+json;version=" ver/current-version) ver/current-version
+          "an intermediate version, 1.2"
+          "1.2" "1.2"
 
-          "with revision id, default accept header"
-          1 "application/vnd.nasa.cmr.umm+json" ver/current-version
-
-          "with revision id, accept header 1.0"
-          1 "application/vnd.nasa.cmr.umm+json;version=1.0" "1.0"
-
-          "with revision id, accept header 1.2"
-          1 "application/vnd.nasa.cmr.umm+json;version=1.2" "1.2"
-
-          "with revision id, accept header latest version"
-          1 (str "application/vnd.nasa.cmr.umm+json;version=" ver/current-version) ver/current-version)))
-
-
-(deftest umm-json-version-retrieval-test-with-no-version
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1" ["The entry title V5"]))
-  (let [user1-token (e/login (s/context) "user1")
-        coll        expected-conversion/example-collection-record
-        mime-type   "application/vnd.nasa.cmr.umm+json"
-        json        (umm-spec/generate-metadata test-context coll mime-type)
-        result      (d/ingest-concept-with-metadata {:provider-id  "PROV1"
-                                                     :concept-type :collection
-                                                     :format       mime-type
-                                                     :metadata     json})
-        concept-id  (:concept-id result)
-        retrieve    (fn [revision-id accept-header]
-                      (search/retrieve-concept concept-id
-                                               revision-id
-                                               {:query-params {:token user1-token}
-                                                :accept accept-header}))]
-    (index/wait-until-indexed)
-
-    (are2 [revision-id accept-header expected-version]
-          (let [response     (retrieve revision-id accept-header)
-                content-type (get-in response [:headers "Content-Type"])]
-            (and (= 200 (:status response))
-                 (= (expected-umm-json json accept-header nil) (:body response))
-                 (= "application/vnd.nasa.cmr.umm+json" (mt/base-mime-type-of content-type))
-                 (= expected-version (mt/version-of content-type))))
-
-          "without revision id, default accept header"
-          nil "application/vnd.nasa.cmr.umm+json" ver/current-version
-
-          "without revision id, accept header 1.0"
-          nil "application/vnd.nasa.cmr.umm+json;version=1.0" "1.0"
-
-          "without revision id, accept header 1.2"
-          nil "application/vnd.nasa.cmr.umm+json;version=1.2" "1.2"
-
-          "without revision id, accept header latest version"
-          nil (str "application/vnd.nasa.cmr.umm+json;version=" ver/current-version) ver/current-version
-
-          "with revision id, default accept header"
-          1 "application/vnd.nasa.cmr.umm+json" ver/current-version
-
-          "with revision id, accept header 1.0"
-          1 "application/vnd.nasa.cmr.umm+json;version=1.0" "1.0"
-
-          "with revision id, accept header 1.2"
-          1 "application/vnd.nasa.cmr.umm+json;version=1.2" "1.2"
-
-          "with revision id, accept header latest version"
-          1 (str "application/vnd.nasa.cmr.umm+json;version=" ver/current-version) ver/current-version)))
-
+          "specific latest version"
+          ver/current-version ver/current-version)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -378,28 +319,28 @@
       (testing "native format direct retrieval"
         ;; Native format can be specified using application/xml, application/metadata+xml,
         ;; .native extension, or not specifying any format.
-        (util/are2 [concept format-key extension accept]
-                   (let [options (-> {:accept nil}
-                                     (merge (when extension {:url-extension extension}))
-                                     (merge (when accept {:accept accept})))
-                         response (search/retrieve-concept (:concept-id concept) nil options)]
-                     (is (= (umm/umm->xml concept format-key) (:body response))))
-                   "ECHO10 no extension" c1-echo :echo10 nil nil
-                   "DIF no extension" c3-dif :dif nil nil
-                   "ISO MENDS no extension" c5-iso :iso19115 nil nil
-                   "SMAP ISO no extension" c7-smap :iso-smap nil nil
-                   "ECHO10 .native extension" c1-echo :echo10 "native" nil
-                   "DIF .native extension" c3-dif :dif "native" nil
-                   "ISO MENDS .native extension" c5-iso :iso19115 "native" nil
-                   "SMAP ISO .native extension" c7-smap :iso-smap "native" nil
-                   "ECHO10 accept application/xml" c1-echo :echo10 nil "application/xml"
-                   "DIF accept application/xml" c3-dif :dif nil "application/xml"
-                   "ISO MENDS accept application/xml" c5-iso :iso19115 nil "application/xml"
-                   "SMAP ISO accept application/xml" c7-smap :iso-smap nil "application/xml"
-                   "ECHO10 accept application/metadata+xml" c1-echo :echo10 nil "application/metadata+xml"
-                   "DIF accept application/metadata+xml" c3-dif :dif nil "application/metadata+xml"
-                   "ISO MENDS accept application/metadata+xml" c5-iso :iso19115 nil "application/metadata+xml"
-                   "SMAP ISO accept application/metadata+xml" c7-smap :iso-smap nil "application/metadata+xml"))
+        (are3 [concept format-key extension accept]
+              (let [options (-> {:accept nil}
+                                (merge (when extension {:url-extension extension}))
+                                (merge (when accept {:accept accept})))
+                    response (search/retrieve-concept (:concept-id concept) nil options)]
+                (is (= (umm/umm->xml concept format-key) (:body response))))
+              "ECHO10 no extension" c1-echo :echo10 nil nil
+              "DIF no extension" c3-dif :dif nil nil
+              "ISO MENDS no extension" c5-iso :iso19115 nil nil
+              "SMAP ISO no extension" c7-smap :iso-smap nil nil
+              "ECHO10 .native extension" c1-echo :echo10 "native" nil
+              "DIF .native extension" c3-dif :dif "native" nil
+              "ISO MENDS .native extension" c5-iso :iso19115 "native" nil
+              "SMAP ISO .native extension" c7-smap :iso-smap "native" nil
+              "ECHO10 accept application/xml" c1-echo :echo10 nil "application/xml"
+              "DIF accept application/xml" c3-dif :dif nil "application/xml"
+              "ISO MENDS accept application/xml" c5-iso :iso19115 nil "application/xml"
+              "SMAP ISO accept application/xml" c7-smap :iso-smap nil "application/xml"
+              "ECHO10 accept application/metadata+xml" c1-echo :echo10 nil "application/metadata+xml"
+              "DIF accept application/metadata+xml" c3-dif :dif nil "application/metadata+xml"
+              "ISO MENDS accept application/metadata+xml" c5-iso :iso19115 nil "application/metadata+xml"
+              "SMAP ISO accept application/metadata+xml" c7-smap :iso-smap nil "application/metadata+xml"))
 
       (testing "unsupported formats"
         (are [mime-type xml?]
@@ -453,7 +394,7 @@
 
     (testing "retrieve metadata from search by concept-id/revision-id"
       (testing "collections and granules"
-        (are2 [item format-key accept concept-id revision-id]
+        (are3 [item format-key accept concept-id revision-id]
               (let [response (search/retrieve-concept
                                concept-id
                                revision-id
