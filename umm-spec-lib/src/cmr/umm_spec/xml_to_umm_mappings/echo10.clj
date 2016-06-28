@@ -6,6 +6,7 @@
             [cmr.umm-spec.date-util :as date]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
+            [cmr.umm-spec.additional-attribute :as aa]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.util :as u]
             [cmr.umm-spec.location-keywords :as lk]))
@@ -113,12 +114,13 @@
    :ProcessingLevel {:Id (value-of doc "/Collection/ProcessingLevelId")
                      :ProcessingLevelDescription (value-of doc "/Collection/ProcessingLevelDescription")}
    :AdditionalAttributes (for [aa (select doc "/Collection/AdditionalAttributes/AdditionalAttribute")]
-                           {:Name (value-of aa "Name")
-                            :DataType (value-of aa "DataType")
-                            :Description (without-default-value-of aa "Description")
-                            :ParameterRangeBegin (value-of aa "ParameterRangeBegin")
-                            :ParameterRangeEnd (value-of aa "ParameterRangeEnd")
-                            :Value (value-of aa "Value")})
+                           (aa/add-parsed-value
+                            {:Name (value-of aa "Name")
+                             :DataType (value-of aa "DataType")
+                             :Description (without-default-value-of aa "Description")
+                             :ParameterRangeBegin (value-of aa "ParameterRangeBegin")
+                             :ParameterRangeEnd (value-of aa "ParameterRangeEnd")
+                             :Value (value-of aa "Value")}))
    :MetadataAssociations (parse-metadata-associations doc)
    :Projects (for [proj (select doc "/Collection/Campaigns/Campaign")]
                {:ShortName (value-of proj "ShortName")
@@ -128,13 +130,13 @@
    :TilingIdentificationSystems (parse-tiling doc)
    :RelatedUrls (ru/parse-related-urls doc)
    :ScienceKeywords (for [sk (select doc "/Collection/ScienceKeywords/ScienceKeyword")]
-                         {:Category (value-of sk "CategoryKeyword")
-                          :Topic (value-of sk "TopicKeyword")
-                          :Term (value-of sk "TermKeyword")
-                          :VariableLevel1 (value-of sk "VariableLevel1Keyword/Value")
-                          :VariableLevel2 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/Value")
-                          :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
-                          :DetailedVariable (value-of sk "DetailedVariableKeyword")})})
+                      {:Category (value-of sk "CategoryKeyword")
+                       :Topic (value-of sk "TopicKeyword")
+                       :Term (value-of sk "TermKeyword")
+                       :VariableLevel1 (value-of sk "VariableLevel1Keyword/Value")
+                       :VariableLevel2 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/Value")
+                       :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
+                       :DetailedVariable (value-of sk "DetailedVariableKeyword")})})
 
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document."

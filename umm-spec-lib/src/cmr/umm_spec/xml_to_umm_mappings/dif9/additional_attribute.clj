@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute
   "Defines mappings from DIF 9 Additional Attribute elements into UMM records"
   (:require [cmr.umm-spec.additional-attribute :as aa]
+            [cmr.umm-spec.models.common :as cmn]
             [cmr.umm-spec.xml-to-umm-mappings.dif9.extended-metadata :as em]
             [cmr.common.util :as util]))
 
@@ -19,7 +20,11 @@
                     (or (first (filter #(some? (aa/safe-parse-value % value))
                                        all-data-types))
                         "STRING"))]
-    (util/remove-nil-keys (assoc attr :DataType data-type))))
+    (-> attr
+        (assoc :DataType data-type)
+        util/remove-nil-keys
+        cmn/map->AdditionalAttributeType
+        aa/add-parsed-value)))
 
 (defn xml-elem->AdditionalAttributes
   [doc]

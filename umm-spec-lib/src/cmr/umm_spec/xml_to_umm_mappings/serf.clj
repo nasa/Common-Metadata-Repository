@@ -5,6 +5,7 @@
             [camel-snake-kebab.core :as csk]
             [clojure.string :as string]
             [cmr.common.xml.parse :refer :all]
+            [cmr.umm-spec.additional-attribute :as aa]
             [cmr.umm-spec.util :refer [without-default-value-of not-provided]]
             [cmr.umm-spec.date-util :as date]))
 
@@ -191,26 +192,27 @@
 (defn- parse-additional-attributes
   "Parse a SERF document for Extended Metadata Elements and returns a UMM-S Additional Attrib elem"
   [doc]
-  (concat (for [aa (select doc "/SERF/Extended_Metadata/Metadata")]
-            {:Group (value-of aa "Group")
-             :Name (value-of aa "Name")
-             :DataType (value-of aa "Type")
-             :Description (without-default-value-of aa "Description")
-             :UpdateDate (date/not-default (value-of aa "Update_Date"))
-             :Value (value-of aa "Value")})
-          [{:Name "Metadata_Name"
-            :Description "Root SERF Metadata_Name Object"
-            :Value (value-of doc "/SERF/Metadata_Name")}
-           {:Name "Metadata_Version"
-            :Description "Root SERF Metadata_Version Object"
-            :Value (value-of doc "/SERF/Metadata_Version")}]
-           (for [idn-node (select doc "/SERF/IDN_Node")]
-             {:Name "IDN_Node"
-              :Description "Root SERF IDN_Node Object"
-              :Value (clojure.string/join
-                       [(value-of idn-node "Short_Name")
-                        "|"
-                        (value-of idn-node "Long_Name")])})))
+  (map aa/add-parsed-value
+       (concat (for [aa (select doc "/SERF/Extended_Metadata/Metadata")]
+                 {:Group (value-of aa "Group")
+                  :Name (value-of aa "Name")
+                  :DataType (value-of aa "Type")
+                  :Description (without-default-value-of aa "Description")
+                  :UpdateDate (date/not-default (value-of aa "Update_Date"))
+                  :Value (value-of aa "Value")})
+               [{:Name "Metadata_Name"
+                 :Description "Root SERF Metadata_Name Object"
+                 :Value (value-of doc "/SERF/Metadata_Name")}
+                {:Name "Metadata_Version"
+                 :Description "Root SERF Metadata_Version Object"
+                 :Value (value-of doc "/SERF/Metadata_Version")}]
+               (for [idn-node (select doc "/SERF/IDN_Node")]
+                 {:Name "IDN_Node"
+                  :Description "Root SERF IDN_Node Object"
+                  :Value (clojure.string/join
+                          [(value-of idn-node "Short_Name")
+                           "|"
+                           (value-of idn-node "Long_Name")])}))))
 
 (defn- parse-service-keywords
   "Parses a SERF document for Service Keyword elements and returns a UMM-S Service Keyword element"

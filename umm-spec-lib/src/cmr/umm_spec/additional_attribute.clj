@@ -93,6 +93,13 @@
     (parse-value data-type value)
     (catch Exception _ nil)))
 
+(defn add-parsed-value
+  "Adds a parsed-value keyword to the additional attribut based on the data type and value in the map."
+  [m]
+  (if-let [v (safe-parse-value (:DataType m) (:Value m))]
+    (assoc m ::parsed-value v)
+    m))
+
 (defmulti gen-value
   "Converts the given value to a string for error messages."
   (fn [data-type value]

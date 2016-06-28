@@ -14,6 +14,7 @@
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as cmn]
             [cmr.spatial.mbr :as m]
+            [cmr.umm-spec.additional-attribute :as aa]
             ;; Required for loading service models for testing
             [cmr.umm-spec.models.service]
             [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
@@ -367,13 +368,22 @@
     (seq? x)    (seq (keep prune-empty-maps x))
     :else x))
 
-(defmulti ^:private umm->expected-convert
-  "Returns UMM collection that would be expected when converting the source UMM-C record into the
+
+
+(defmulti ^:private umm->expected-convert-format-specific
+  "Performs the format specific conversions expected when converting the source UMM-C record into the
   destination XML format and parsing it back to a UMM-C record."
   (fn [umm-coll metadata-format]
     metadata-format))
 
-(defmethod umm->expected-convert :default
+(defn- umm->expected-convert
+  "Returns UMM collection that would be expected when converting the source UMM-C record into the
+  destination XML format and parsing it back to a UMM-C record."
+  [umm-coll metadata-format]
+  (let [converted (umm->expected-convert-format-specific umm-coll metadata-format)]
+    (update converted :AdditionalAttributes #(seq (map aa/add-parsed-value %)))))
+
+(defmethod umm->expected-convert-format-specific :default
   [umm-coll _]
   umm-coll)
 
@@ -501,7 +511,7 @@
     ;;If the keyword exists in the hierarchy
     (seq (map #(umm-c/map->LocationKeywordType %) translated-values))))
 
-(defmethod umm->expected-convert :echo10
+(defmethod umm->expected-convert-format-specific :echo10
   [umm-coll _]
   (-> umm-coll
       (assoc :Personnel nil) ;; Implement this as part of CMR-1841
@@ -614,7 +624,7 @@
       spatial
       (assoc spatial :SpatialCoverageType nil :HorizontalSpatialDomain nil))))
 
-(defmethod umm->expected-convert :dif
+(defmethod umm->expected-convert-format-specific :dif
   [umm-coll _]
   (-> umm-coll
       ;; DIF 9 only supports entry-id in metadata associations
@@ -689,7 +699,7 @@
       (update-in-each [:HorizontalSpatialDomain :Geometry :GPolygons] fix-echo10-dif10-polygon)
       prune-empty-maps))
 
-(defmethod umm->expected-convert :dif10
+(defmethod umm->expected-convert-format-specific :dif10
   [umm-coll _]
   (-> umm-coll
       (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
@@ -912,7 +922,7 @@
     ma
     metadata-association))
 
-(defmethod umm->expected-convert :serf
+(defmethod umm->expected-convert-format-specific :serf
   [umm-service _]
   (-> umm-service
       (update-in [:Responsibilities] make-sure-organization-exists)
@@ -1110,7 +1120,7 @@
     (assoc-in umm bounding-rectangles-path (mapv normalize-bounding-rectangle brs))
     umm))
 
-(defmethod umm->expected-convert :iso19115
+(defmethod umm->expected-convert-format-specific :iso19115
   [umm-coll _]
   (-> umm-coll
       fix-bounding-rectangles
@@ -1169,10 +1179,10 @@
     data-dates
     [(cmn/map->DateType {:Type "CREATE" :Date du/parsed-default-date})]))
 
-(defmethod umm->expected-convert :iso-smap
+(defmethod umm->expected-convert-format-specific :iso-smap
   [umm-coll _]
   (let [original-brs (get-in umm-coll bounding-rectangles-path)
-        umm-coll (umm->expected-convert umm-coll :iso19115)
+        umm-coll (umm->expected-convert-format-specific umm-coll :iso19115)
         umm-coll (if (seq original-brs)
                    (assoc-in umm-coll bounding-rectangles-path original-brs)
                    umm-coll)]
