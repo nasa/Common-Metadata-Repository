@@ -14,7 +14,7 @@
   (extract-condition-impl
     [c condition-path extract-tester]
     "Extract conditions from the query object. Returns a sequence of conditions that pass the
-    extract-tester function. condition-path containins the parent conditions to the condition being
+    extract-tester function. condition-path containing the parent conditions to the condition being
     tested. extract-tester should take two arguments: the condition-path and the condition."))
 
 (defn extract-conditions
