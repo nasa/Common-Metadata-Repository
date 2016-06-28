@@ -51,7 +51,7 @@
              :has_children false}))))
 
 (defn- any-facet-applied?
-  "Returns true if any of the facets have an applied value of true"
+  "Returns true if any of the facets have an applied value of true, false otherwise."
   [facets]
   (some? (seq (filter :applied facets))))
 

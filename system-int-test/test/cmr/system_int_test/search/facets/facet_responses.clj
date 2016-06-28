@@ -685,60 +685,6 @@
         "http://localhost:3003/collections.json?platform=ASTER-p0&keyword=MODIS&page_size=0&include_facets=v2"},
        :has_children false}]}]})
 
-(def science-keywords-all-applied
-  "Facet response with just the title, applied, and children fields. Used to verify that when
-  searching for the deepest nested field (a value of Level1-3 for variable-level-3) all of the
-  fields above variable-level-3 have applied set to true."
-  {:title "Browse Collections",
-   :children
-   [{:title "Keywords",
-     :applied true,
-     :children
-     [{:title "CAT1",
-       :applied true,
-       :children
-       [{:title "TOPIC1",
-         :applied true,
-         :children
-         [{:title "TERM1",
-           :applied true,
-           :children
-           [{:title "LEVEL1-1",
-             :applied true,
-             :children
-             [{:title "LEVEL1-2",
-               :applied true,
-               :children
-               [{:title "LEVEL1-3",
-                 :applied true}]}]}]}]}]}]}]})
-
-(def partial-science-keywords-applied
-  "Facet response with just the title, applied, and children fields. Used to verify that when
-  searching for a nested field (a value of TERM1 for term) all of the fields above term have
-  applied set to true and any fields below have applied set to false."
-  {:title "Browse Collections",
-   :children
-   [{:title "Keywords",
-     :applied true,
-     :children
-     [{:title "CAT1",
-       :applied true,
-       :children
-       [{:title "TOPIC1",
-         :applied true,
-         :children
-         [{:title "TERM1",
-           :applied true,
-           :children
-           [{:title "LEVEL1-1",
-             :applied false,
-             :children
-             [{:title "LEVEL1-2",
-               :applied false,
-               :children
-               [{:title "LEVEL1-3",
-                 :applied false}]}]}]}]}]}]}]})
-
 (def expected-all-hierarchical-facets
   "Expected value for the all-hierarchical-fields-test. This is using the version 1 hierarchical
   facets."

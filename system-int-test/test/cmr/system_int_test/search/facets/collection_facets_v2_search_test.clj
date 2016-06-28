@@ -89,6 +89,46 @@
           (is (applied? response :instrument))
           (is (applied? response :processing-level-id)))))))
 
+(def science-keywords-all-applied
+  "Facet response with just the title, applied, and children fields. Used to verify that when
+  searching for the deepest nested field (a value of Level1-3 for variable-level-3) all of the
+  fields above variable-level-3 have applied set to true."
+  {:title "Browse Collections",
+   :children
+   [{:title "Keywords", :applied true,
+     :children
+     [{:title "CAT1", :applied true,
+       :children
+       [{:title "TOPIC1", :applied true,
+         :children
+         [{:title "TERM1", :applied true,
+           :children
+           [{:title "LEVEL1-1", :applied true,
+             :children
+             [{:title "LEVEL1-2", :applied true,
+               :children
+               [{:title "LEVEL1-3", :applied true}]}]}]}]}]}]}]})
+
+(def partial-science-keywords-applied
+  "Facet response with just the title, applied, and children fields. Used to verify that when
+  searching for a nested field (a value of TERM1 for term) all of the fields above term have
+  applied set to true and any fields below have applied set to false."
+  {:title "Browse Collections",
+   :children
+   [{:title "Keywords", :applied true,
+     :children
+     [{:title "CAT1", :applied true,
+       :children
+       [{:title "TOPIC1", :applied true,
+         :children
+         [{:title "TERM1", :applied true,
+           :children
+           [{:title "LEVEL1-1", :applied false,
+             :children
+             [{:title "LEVEL1-2", :applied false,
+               :children
+               [{:title "LEVEL1-3", :applied false}]}]}]}]}]}]}]})
+
 (deftest hierarchical-applied-test
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1))
   (testing "Children science keywords applied causes parent fields to be marked as applied"
@@ -98,11 +138,11 @@
 
       "Lowest level field causes all fields above to be applied."
       {:science-keywords {:0 {:variable-level-3 "Level1-3"}}}
-      fr/science-keywords-all-applied
+      science-keywords-all-applied
 
       "Middle level field causes all fields above to be applied, but not fields below."
       {:science-keywords {:0 {:term "Term1"}}}
-      fr/partial-science-keywords-applied)))
+      partial-science-keywords-applied)))
 
 (deftest remove-facets-without-collections
   (fu/make-coll 1 "PROV1" (fu/platforms "ASTER" 1))
