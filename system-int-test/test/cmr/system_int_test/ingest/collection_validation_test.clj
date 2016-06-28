@@ -21,9 +21,6 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
-(comment
- ((ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}) (constantly nil)))
-
 (defn- iso-metadata-concept
   "Makes a bad ISO Metadata Request"
   [metadata]
@@ -113,14 +110,14 @@
   (assert-valid coll-attributes {:validate-keywords true}))
 
 (defn assert-invalid-spatial
-  ([coord-sys shapes errors]
-   (assert-invalid-spatial coord-sys shapes errors nil))
-  ([coord-sys shapes errors options]
+  ([coord-sys shapes field-path errors]
+   (assert-invalid-spatial coord-sys shapes field-path errors nil))
+  ([coord-sys shapes field-path errors options]
    (let [shapes (map (partial umm-s/set-coordinate-system coord-sys) shapes)]
      (assert-invalid {:spatial-coverage (dc/spatial {:gsr coord-sys
                                                      :sr coord-sys
                                                      :geometries shapes})}
-                     ["SpatialCoverage" "Geometries" 0]
+                     field-path
                      errors
                      options))))
 
@@ -376,6 +373,7 @@
       (assert-invalid-spatial
         :geodetic
         [(polygon 180 90, -180 90, -180 -90, 180 -90, 180 90)]
+        ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "GPolygons" 0]
         ["Spatial validation error: The shape contained duplicate points. Points 1 [lon=180 lat=90] and 2 [lon=-180 lat=90] were considered equivalent or very close."
          "Spatial validation error: The shape contained duplicate points. Points 3 [lon=-180 lat=-90] and 4 [lon=180 lat=-90] were considered equivalent or very close."
          "Spatial validation error: The shape contained consecutive antipodal points. Points 2 [lon=-180 lat=90] and 3 [lon=-180 lat=-90] are antipodal."
@@ -397,6 +395,7 @@
       (assert-invalid-spatial
         :geodetic
         [(l/ords->line-string :geodetic [0,0,1,1,2,2,1,1])]
+        ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "Lines" 0]
         ["Spatial validation error: The shape contained duplicate points. Points 2 [lon=1 lat=1] and 4 [lon=1 lat=1] were considered equivalent or very close."]))
 
     (testing "cartesian line"
@@ -409,6 +408,7 @@
       (assert-invalid-spatial
         :geodetic
         [(m/mbr -180 45 180 46)]
+        ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "BoundingRectangles" 0]
         ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
 
 (deftest duplicate-entry-title-test

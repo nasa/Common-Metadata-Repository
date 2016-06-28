@@ -5,6 +5,7 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.validation :as sv]
+            [cmr.umm-spec.validation.spatial :as s]
             [cmr.umm-spec.validation.platform :as p]
             [cmr.umm-spec.validation.additional-attribute :as aa]))
 
@@ -48,4 +49,4 @@
   {:TemporalExtents (v/every temporal-extent-validation)
    :Platforms p/platforms-validation
    :AdditionalAttributes aa/additional-attribute-validation
-   :SpatialExtent spatial-extent-validation})
+   :SpatialExtent s/spatial-extent-validation})

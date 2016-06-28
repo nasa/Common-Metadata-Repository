@@ -40,35 +40,6 @@
                                   :version-id version-id
                                   :delete-time (when delete-time (str delete-time))})))
 
-(comment
- (require '[cmr.spatial.polygon :as poly])
- (require '[cmr.spatial.ring-relations :as rr])
-
- (def the-polygon (-> the-collection :SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons first))
- (def coord-sys (-> the-collection :SpatialExtent :HorizontalSpatialDomain :Geometry :CoordinateSystem))
- (def coord-sys (camel-snake-kebab.core/->kebab-case-keyword coord-sys))
-
-
- (defn boundary->ring
-   [coord-sys boundary]
-   (rr/ords->ring coord-sys (mapcat #(vector (:Longitude %) (:Latitude %))(:Points boundary))))
-
- (def spatial-polygon
-  (poly/polygon
-   coord-sys
-   (concat [(boundary->ring coord-sys (:Boundary the-polygon))]
-           ;; holes would go here
-           nil)))
-
- (cmr.spatial.validation/validate spatial-polygon))
-
-
-
-
-
-
-
-
 (defn- validate-and-parse-collection-concept
   "Validates a collection concept and parses it. Returns the UMM record."
   [context collection-concept validate-keywords?]
@@ -77,9 +48,6 @@
   (let [{:keys [format metadata]} collection-concept
         collection (spec/parse-metadata context :collection format metadata)
         umm-json (umm-json/umm->json collection)]
-
-    (def the-collection collection)
-
     (if-let [err-messages (seq (json-schema/validate-umm-json umm-json :collection))]
       (if (config/return-umm-json-validation-errors)
         (errors/throw-service-errors :invalid-data err-messages)
