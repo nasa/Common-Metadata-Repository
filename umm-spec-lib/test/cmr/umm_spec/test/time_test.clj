@@ -12,6 +12,7 @@
     :EndsAtPresentFlag false
     :RangeDateTimes (mapv umm-cmn/map->RangeDateTimeType
                           [{:BeginningDateTime (t/date-time 2000)}
+                            ;; no ending date so this range ends at the present
                            {:BeginningDateTime (t/date-time 2002)
                             :EndingDateTime (t/date-time 2003)}])
     :SingleDateTimes [(t/date-time 2003) (t/date-time 2004)]
@@ -34,7 +35,7 @@
 (deftest test-temporal-all-dates
   (is (= (temporal-all-dates temporal)
          #{(t/date-time 2000)
-           nil
+           :present ; no ending date for the first range
            (t/date-time 2001)
            (t/date-time 2002)
            (t/date-time 2003)

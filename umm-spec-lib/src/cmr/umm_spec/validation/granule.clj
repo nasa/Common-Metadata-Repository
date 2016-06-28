@@ -159,22 +159,22 @@
   ;; Anything other than this should result in an error:
   ;; timeline: ---coll-start---gran-start---gran-end---coll-end--->
   ;; with no granule end date: ---coll-start---gran-start---coll-end--->
-  ;; NOTE: nil values for coll-end or gran-end are considered to be infinitely
+  ;; NOTE: nil values for gran-end or :present for coll-end are considered to be infinitely
   ;; far in the future
   (cond
     (t/before? gran-start coll-start)
     (format "Granule start date [%s] is earlier than collection start date [%s]."
             gran-start coll-start)
 
-    (and coll-end (t/after? gran-start coll-end))
+    (and (not= coll-end :present) (t/after? gran-start coll-end))
     (format "Granule start date [%s] is later than collection end date [%s]."
             gran-start coll-end)
 
-    (and coll-end gran-end (t/after? gran-end coll-end))
+    (and (not= coll-end :present) gran-end (t/after? gran-end coll-end))
     (format "Granule end date [%s] is later than collection end date [%s]."
             gran-end coll-end)
 
-    (and coll-end (nil? gran-end))
+    (and (not= coll-end :present) (nil? gran-end))
     (format "There is no granule end date whereas collection has an end date of [%s]" coll-end)
 
     (and gran-end (t/after? gran-start gran-end))
