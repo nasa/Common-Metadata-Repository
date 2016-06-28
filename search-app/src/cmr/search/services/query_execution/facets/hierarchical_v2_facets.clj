@@ -10,6 +10,34 @@
             [camel-snake-kebab.core :as csk]
             [clojure.string :as str]))
 
+(defn- get-max-subfield-index
+  "Return the maximum subfield index from the hierarchical-field-mappings for any of the supplied
+  subfields. Return index as 1 based instead of 0 based. A value of 0 indicates that there are no
+  subfields which are present in the hierarchical-field-mappings."
+  [subfields hierarchical-field-mappings]
+  (if-let [indices (seq
+                    (keep (fn [subfield]
+                            (.indexOf hierarchical-field-mappings
+                                      (csk/->kebab-case-keyword subfield)))
+                          subfields))]
+    (inc (apply max indices))
+    0))
+
+(defn get-depth-for-hierarchical-field
+  "Returns what depth should be used when requesting aggregations for facets for a hierarchical
+  field based on the query-params. Default to a minimum depth of 3 levels (e.g. Category, Topic,
+  and Term for science keywords). Otherwise use a depth of two levels below the lowest level
+  subfield present in the query parameters. Note that this is strictly to improve the performance
+  of the aggregations query in Elasticsearch. We further prune the results to limit based on what
+  terms have been applied as part of building the facet response from the elasticsearch results."
+  [query-params parent-field]
+  (let [parent-field-snake-case (csk/->snake_case_string parent-field)
+        field-regex (re-pattern (format "%s\\[\\d+\\]\\[(.*)\\]" parent-field-snake-case))
+        matching-subfields (keep #(second (re-matches field-regex %)) (keys query-params))]
+    (max 3
+         (+ 2 (get-max-subfield-index matching-subfields
+                                      (parent-field kms-fetcher/nested-fields-mappings))))))
+
 (defn- hierarchical-aggregation-builder
   "Build an aggregations query for the given hierarchical field."
   [field field-hierarchy size]
@@ -22,10 +50,15 @@
 (defn nested-facet
   "Returns the nested aggregation query for the given hierarchical field. Size specifies the number
   of results to return."
-  [field size]
-  {:nested {:path field}
-   :aggs (hierarchical-aggregation-builder
-          field (remove #{:url} (field kms-fetcher/nested-fields-mappings)) size)})
+  ([field size]
+   (nested-facet field size -1))
+  ([field size depth]
+   (let [subfields (if (< -1 depth)
+                       (take depth (field kms-fetcher/nested-fields-mappings))
+                       (field kms-fetcher/nested-fields-mappings))]
+     {:nested {:path field}
+      :aggs (hierarchical-aggregation-builder
+             field (remove #{:url} subfields) size)})))
 
 (defn- field-applied?
   "Returns whether any value is set in the passed in query-params for the provided hierarchical
@@ -133,13 +166,33 @@
                        [subfield term])))))
              field-hierarchy))))
 
+(defn- prune-hierarchical-facet
+  "Limits a hierarchical facet to a single level below the lowest applied facet. If
+  one-additional-level? is set to true it will not prune at the current level, but at one filter
+  node below the current level. This is used for example to always return Category and Topic for
+  science keywords."
+  [hierarchical-facet one-additional-level?]
+  (if (:children hierarchical-facet)
+    (let [updated-facet (dissoc hierarchical-facet :children)]
+      (if (or one-additional-level? (:applied hierarchical-facet))
+        ;; The initial facet can have a pseudo-group node that gets replaced by later processing.
+        ;; In this case we want to return two additional levels instead of just one.
+        (let [one-additional-level? (= :group (:type hierarchical-facet))]
+          (assoc updated-facet :children
+            (for [child-facet (:children hierarchical-facet)]
+              (prune-hierarchical-facet child-facet one-additional-level?))))
+        updated-facet))
+    hierarchical-facet))
+
 (defn- hierarchical-bucket-map->facets-v2
   "Takes a map of elastic aggregation results for a nested field. Returns a hierarchical facet for
   that field."
   [field bucket-map base-url query-params]
   (let [field-hierarchy (field kms-fetcher/nested-fields-mappings)
-        hierarchical-facet (parse-hierarchical-bucket-v2 field field-hierarchy base-url
-                                                         query-params bucket-map)
+        hierarchical-facet (prune-hierarchical-facet
+                            (parse-hierarchical-bucket-v2 field field-hierarchy base-url
+                                                          query-params bucket-map)
+                            true)
         subfield-term-tuples (get-missing-subfield-term-tuples field field-hierarchy
                                                                hierarchical-facet query-params)
         snake-case-field (csk/->snake_case_string field)
