@@ -180,7 +180,7 @@ The behavior of search with respect to each parameter can be modified using the 
 where parameter is the URL parameter whose behavior is to be affected, value is either `true` or `false`, and `option_key` is one of the following:
 
  * `ignore_case` - if set to true, the search will be case insensitive and if set to false, the search will be case sensitive. Defaults to true.
- * `pattern` - if set to true, the search will treat the value provided for the parameter as a pattern with wild-cards, in which '*' matches zero or more characters and '?' matches any single character. For example, `platform[]=AB?D*&options[platform][pattern]=true` would match 'ABAD123', 'ABCD12', 'ABeD', etc. Defaults to false.
+ * `pattern` - if set to true, the search will treat the value provided for the parameter as a pattern with wild-cards, in which '\*' matches zero or more characters and '?' matches any single character. For example, `platform[]=AB?D*&options[platform][pattern]=true` would match 'ABAD123', 'ABCD12', 'ABeD', etc. Defaults to false. **NOTE:** Patterns with leading wildcards, like "\*ODIS", are computationally expensive. The CMR limits the maximum number of patterns with a leading wildcard per query to 5.
  * `and` - if set to true and if multiple values are listed for the param, the concepts must have ALL of these values in order to match. The default is `false` which means concepts with ANY of the values match. This option only applies to fields which may be multivalued; these are documented here.
  * `or` - this option only applies to granule attributes or science-keywords searches. If set to true, attribute searches will find granules that match any of the attributes. The default is false.
 

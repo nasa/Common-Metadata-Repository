@@ -20,8 +20,8 @@
   providers, they fall under the CMR system provider ID."
   "CMR")
 
-(defn acl-native-id
-  "Returns a native ID to uniquely identify a given ACL."
+(defn acl-identity
+  "Returns a string value representing the ACL's identity field."
   [acl]
   (str/lower-case
     (let [{:keys [system-identity provider-identity single-instance-identity catalog-item-identity]} acl]
@@ -53,60 +53,38 @@
       concept)
     (errors/throw-service-error :not-found (msg/acl-does-not-exist concept-id))))
 
-(defn save-updated-acl-concept
-  [context concept acl]
-  (errors/throw-service-error :bad-request "Sorry, you can't update this ACL yet"))
-
-(defn acl->new-concept
-  "Returns a concept map appropriate for saving the given ACL record in Metadata DB."
+(defn- acl->base-concept
+  "Returns a basic concept map for the given request context and ACL map."
   [context acl]
   {:concept-type :acl
-   :revision-id 1
    :metadata (pr-str acl)
    :format mt/edn
    :provider-id acl-provider-id
-   :native-id (acl-native-id acl)
-   :user-id (tokens/get-user-id context (:token context))})
+   :user-id (tokens/get-user-id context (:token context))
+   ;; ACL-specific fields
+   :extra-fields {:acl-identity (acl-identity acl)}})
 
 (defn create-acl
   "Save a new ACL to Metadata DB. Returns map with concept and revision id of created acl."
   [context acl]
-  ;; Check if the acl already exists - lower case the name to prevent duplicates.(CMR-2466)
-  (let [native-id (acl-native-id acl)]
-    (if-let [concept-id (mdb/get-concept-id context :acl acl-provider-id (acl-native-id acl))]
-
-      ;; The acl exists. Check if its latest revision is a tombstone
-      (let [concept (mdb/get-latest-concept context concept-id)]
-        (if (:deleted concept)
-          ;; The acl exists but was previously deleted.
-          (save-updated-acl-concept context concept acl)
-
-          ;; The acl exists and was not deleted. Reject this.
-          (errors/throw-service-error :conflict "ACL already exists")))
-
-      ;; The acl doesn't exist
-      (mdb/save-concept context (acl->new-concept context acl)))))
+  (mdb/save-concept context (merge (acl->base-concept context acl)
+                                   {:revision-id 1
+                                    :native-id (str (java.util.UUID/randomUUID))})))
 
 (defn update-acl
   "Update the ACL with the given concept-id in Metadata DB. Returns map with concept and revision id of updated acl."
   [context concept-id acl]
   ;; This fetch acl call also validates if the ACL with the concept id does not exist or is deleted
   (let [existing-concept (fetch-acl-concept context concept-id)
-        existing-native-id (:native-id existing-concept)
-        native-id (acl-native-id acl)]
-    (if (= existing-native-id native-id)
-      (let [existing-legacy-guid (:legacy-guid (edn/read-string (:metadata existing-concept)))
-            legacy-guid (:legacy-guid acl)]
-        (if (= existing-legacy-guid legacy-guid)
-          (mdb/save-concept context (dissoc (acl->new-concept context acl) :revision-id))
-          (errors/throw-service-error
-            :invalid-data (format "ACL legacy guid cannot be updated, was [%s] and now [%s]"
-                                  existing-legacy-guid legacy-guid))))
-      ;; We want to allow ACL update to change the unique identifiers that made up the native id
-      ;; of an ACL in the future as documented in CMR-3163
+        existing-legacy-guid (:legacy-guid (edn/read-string (:metadata existing-concept)))
+        legacy-guid (:legacy-guid acl)]
+    (when-not (= existing-legacy-guid legacy-guid)
       (errors/throw-service-error
-        :invalid-data (format "ACL native id cannot be updated, was [%s] and now [%s]"
-                              existing-native-id native-id)))))
+        :invalid-data (format "ACL legacy guid cannot be updated, was [%s] and now [%s]"
+                              existing-legacy-guid legacy-guid)))
+    (mdb/save-concept context (merge (acl->base-concept context acl)
+                                     {:concept-id concept-id
+                                      :native-id (:native-id existing-concept)}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search functions

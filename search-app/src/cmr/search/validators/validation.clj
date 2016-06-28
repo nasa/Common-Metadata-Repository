@@ -4,9 +4,9 @@
             [cmr.common-app.services.search.query-validation :as cqv]
             [cmr.common-app.services.search.query-model :as cqm]
             [cmr.spatial.validation :as spatial-validation]
+            [cmr.search.validators.leading-wildcard-validation :as lwv]
             [clojure.set]
             [cmr.common.mime-types :as mt]
-
             ;; Must be required to be available.
             [cmr.spatial.ring-validations]))
 
@@ -51,6 +51,10 @@
   [validate-result-format-for-all-revisions
    validate-highlights-format
    validate-facets-v2-format])
+
+(defmethod cqv/query-validations :granule
+  [_]
+  [lwv/limit-number-of-leading-wildcard-patterns])
 
 (extend-protocol cqv/Validator
   cmr.search.models.query.SpatialCondition
