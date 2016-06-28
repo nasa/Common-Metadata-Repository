@@ -9,7 +9,8 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.search.services.query-execution.facets.facets-v2-results-feature :as frf2]
             [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
-            [cmr.common.mime-types :as mt]))
+            [cmr.common.mime-types :as mt]
+            [cmr.common.util :refer [are3]]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -87,6 +88,21 @@
           (is (applied? response :science-keywords))
           (is (applied? response :instrument))
           (is (applied? response :processing-level-id)))))))
+
+(deftest hierarchical-applied-test
+  (fu/make-coll 1 "PROV1" (fu/science-keywords sk1))
+  (testing "Children science keywords applied causes parent fields to be marked as applied"
+    (are3 [search-params expected-response]
+      (is (= expected-response (fu/prune-facet-response (search-and-return-v2-facets search-params)
+                                                        [:title :applied])))
+
+      "Lowest level field causes all fields above to be applied."
+      {:science-keywords {:0 {:variable-level-3 "Level1-3"}}}
+      fr/science-keywords-all-applied
+
+      "Middle level field causes all fields above to be applied, but not fields below."
+      {:science-keywords {:0 {:term "Term1"}}}
+      fr/partial-science-keywords-applied)))
 
 (deftest remove-facets-without-collections
   (fu/make-coll 1 "PROV1" (fu/platforms "ASTER" 1))
