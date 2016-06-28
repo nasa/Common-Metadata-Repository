@@ -17,23 +17,25 @@
            java.sql.Blob))
 
 (defmacro are2
-  "Based on the are macro from clojure.test. Checks multiple assertions with a template expression.
-  Wraps each tested expression in a testing block to identify what's being tested.
-  See clojure.template/do-template for an explanation of templates.
+  "DEPRECATED. Use are3 instead.
 
-  Example: (are2 [x y] (= x y)
-                \"The most basic case with 1\"
-                2 (+ 1 1)
-                \"A more complicated test\"
-                4 (* 2 2))
-  Expands to:
-           (do
-              (testing \"The most basic case with 1\"
-                (is (= 2 (+ 1 1))))
-              (testing \"A more complicated test\"
-                (is (= 4 (* 2 2)))))
+   Based on the are macro from clojure.test. Checks multiple assertions with a template expression.
+   Wraps each tested expression in a testing block to identify what's being tested.
+   See clojure.template/do-template for an explanation of templates.
 
-  Note: This breaks some reporting features, such as line numbers."
+   Example: (are2 [x y] (= x y)
+                 \"The most basic case with 1\"
+                 2 (+ 1 1)
+                 \"A more complicated test\"
+                 4 (* 2 2))
+   Expands to:
+            (do
+               (testing \"The most basic case with 1\"
+                 (is (= 2 (+ 1 1))))
+               (testing \"A more complicated test\"
+                 (is (= 4 (* 2 2)))))
+
+   Note: This breaks some reporting features, such as line numbers."
   [argv expr & args]
   (if (or
         ;; (are2 [] true) is meaningless but ok
@@ -47,6 +49,45 @@
       `(template/do-template ~argv (test/testing ~testing-var (test/is ~expr)) ~@args))
     (throw (IllegalArgumentException.
              "The number of args doesn't match are2's argv or testing doc string may be missing."))))
+
+(defmacro are3
+  "Similar to the are2 macro with the exception that it expects that your assertion expressions will
+   be explicitly wrapped in is calls. This gives better error messages in the case of failures than
+   if ANDing them together.
+
+  Example: (are3 [x y]
+             (do
+               (is (= x y))
+               (is (= y x)))
+             \"The most basic case with 1\"
+             2 (+ 1 1)
+             \"A more complicated test\"
+             4 (* 2 2))
+  Expands to:
+           (do
+             (testing \"The most basic case with 1\"
+               (do
+                 (is (= 2 (+ 1 1)))
+                 (is (= (+ 1 1) 2))))
+             (testing \"A more complicated test\"
+               (do
+                 (is (= 4 (* 2 2)))
+                 (is (= (* 2 2) 4)))))
+
+  Note: This breaks some reporting features, such as line numbers."
+  [argv expr & args]
+  (if (or
+        ;; (are3 [] true) is meaningless but ok
+        (and (empty? argv) (empty? args))
+        ;; Catch wrong number of args
+        (and (pos? (count argv))
+             (pos? (count args))
+             (zero? (mod (count args) (inc (count argv))))))
+    (let [testing-var (gensym "testing-msg")
+          argv (vec (cons testing-var argv))]
+      `(template/do-template ~argv (test/testing ~testing-var ~expr) ~@args))
+    (throw (IllegalArgumentException.
+             "The number of args doesn't match are3's argv or testing doc string may be missing."))))
 
 (defn trunc
   "Returns the given string truncated to n characters."
