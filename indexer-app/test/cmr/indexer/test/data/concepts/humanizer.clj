@@ -11,10 +11,12 @@
 (deftest to-human
   (testing "trim_whitespace"
     (are [a b] (= b (humanizer/to-human {:type "trim_whitespace"} a))
-      "TEST/value" "TEST/value"
-      "TEST  value" "TEST  value"
-      "TEST value  " "TEST value"
-      "   \t\r\nTEST value   \t\r\n" "TEST value"))
+      "Test" "Test"
+      "Test/test" "Test/test"
+      "Test\ntest" "Test test"
+      "Test  test" "Test test"
+      "Test test  " "Test test"
+      "   \t\r\nTest  \t\r\ntest   \t\r\n" "Test test"))
 
   (testing "capitalize"
     (are [a b] (= b (humanizer/to-human {:type "capitalize"} a))

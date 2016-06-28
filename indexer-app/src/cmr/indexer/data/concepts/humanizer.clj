@@ -46,7 +46,7 @@
 
 (defmethod to-human "trim_whitespace"
   [humanizer value]
-  (str/trim value))
+  (str/trim (str/replace value #"\s+" " ")))
 
 (defmethod to-human "capitalize"
   [humanizer value]
