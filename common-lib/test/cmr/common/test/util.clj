@@ -532,3 +532,37 @@
              (keys (into m {:z nil :y nil :x nil
                             :a nil :d nil :c nil :f nil})))))))
 
+(deftest update-in-all
+  (util/are3
+   [args result]
+   (let [[obj path value] args]
+     (is (= result
+            (util/update-in-all obj path (fn[_] value)))))
+
+   "nil values in the path"
+   [{:a nil :b :d} [:a :b] 0]
+   {:a nil :b :d}
+
+   "sequential values in the path"
+   [{:a [{:b 1 :c 2} {:b 3 :c 4}] :d 5} [:a :b] 0]
+   {:a [{:b 0 :c 2} {:b 0 :c 4}] :d 5}
+
+   "hash values in the path"
+   [{:a 1 :b 2} [:a] 0]
+   {:a 0 :b 2}
+
+   "nested hash values in the path"
+   [{:a {:b {:c 1 :d 2} :e 3} :f 4} [:a :b :c] 0]
+   {:a {:b {:c 0 :d 2} :e 3} :f 4}
+
+   "nested sequential values in the path"
+   [{:a [{:b [{:c 1 :d 2}]}
+         {}
+         {:b [{:c 3 :d 4} {:c 5}]}
+         {:b [{:d 6} {:d 7}]}]}
+    [:a :b :c]
+    0]
+   {:a [{:b [{:c 0 :d 2}]}
+        {}
+        {:b [{:c 0 :d 4} {:c 0}]}
+        {:b [{:d 6} {:d 7}]}]}))

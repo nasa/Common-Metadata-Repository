@@ -3,7 +3,7 @@
   (:require [clj-time.core :as t]
             [cmr.common.validations.core :as v]
             [cmr.umm.validation.utils :as vu]
-            [cmr.umm.related-url-helper :as ruh]
+            [cmr.umm-spec.validation.spatial :as s]
             [cmr.umm-spec.validation.platform :as p]
             [cmr.umm-spec.validation.additional-attribute :as aa]))
 
@@ -30,4 +30,5 @@
    :Platforms p/platforms-validation
    :AdditionalAttributes aa/additional-attribute-validation
    :Projects (vu/unique-by-name-validator :ShortName)
-   :ScienceKeywords (v/every science-keyword-validations)})
+   :ScienceKeywords (v/every science-keyword-validations)
+   :SpatialExtent s/spatial-extent-validation})
