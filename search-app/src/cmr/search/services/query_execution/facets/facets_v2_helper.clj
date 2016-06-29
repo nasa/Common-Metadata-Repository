@@ -50,6 +50,11 @@
              :count count
              :has_children false}))))
 
+(defn- any-facet-applied?
+  "Returns true if any of the facets have an applied value of true, false otherwise."
+  [facets]
+  (some? (seq (filter :applied facets))))
+
 (defn generate-hierarchical-filter-node
   "Generates a filter node for a hierarchical field. Takes a title, count, links and sub-facets."
   [title count links sub-facets]
@@ -58,7 +63,8 @@
           :applied false}
          sub-facets
          {:title title
-          :applied (= :remove (first (keys links)))
+          :applied (or (= :remove (first (keys links)))
+                       (any-facet-applied? (:children sub-facets)))
           :links links
           :count count
           :type :filter}))

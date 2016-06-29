@@ -5,6 +5,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.common-app.services.search.query-validation :as qv]
             [cmr.common-app.services.search.query-execution :as qe]
+            [cmr.common-app.services.search.query-model :as qm]
             ;; Must be required to be available
             [cmr.common-app.services.search.validators.numeric-range]
             [cmr.common-app.services.search.validators.date-range]))
@@ -21,13 +22,13 @@
 (defmulti search-results->response
   "Converts query search results into a string response."
   (fn [context query results]
-    [(:concept-type query) (:result-format query)]))
+    [(:concept-type query) (qm/base-result-format query)]))
 
 (defmulti single-result->response
   "Returns a string representation of a single concept in the format
   specified in the query."
   (fn [context query results]
-    [(:concept-type query) (:result-format query)]))
+    [(:concept-type query) (qm/base-result-format query)]))
 
 (defn find-concepts
   "Executes a search for concepts using the given query."
