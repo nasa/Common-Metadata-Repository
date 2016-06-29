@@ -30,10 +30,11 @@
   "Returns collection concept with fields necessary for ingest into metadata db
   under :extra-fields."
   [context concept collection]
-  (let [{{:keys [short-name version-id]} :product
-         {:keys [delete-time]} :data-provider-timestamps
-         entry-title :entry-title} collection
-         entry-id (eid/entry-id short-name version-id)]
+  (let [{short-name :ShortName
+         version-id :Version
+         entry-title :EntryTitle} collection
+        entry-id (eid/entry-id short-name version-id)
+        delete-time (first (map :Date (filter #(= "DELETE" (:Type %)) (:DataDates collection))))]
     (assoc concept :extra-fields {:entry-title entry-title
                                   :entry-id entry-id
                                   :short-name short-name
@@ -46,21 +47,27 @@
   (v/validate-concept-request collection-concept)
   (v/validate-concept-metadata collection-concept)
   (let [{:keys [format metadata]} collection-concept
-        collection (spec/parse-metadata context :collection format metadata)
-        umm-json (umm-json/umm->json collection)]
-    (if-let [err-messages (seq (json-schema/validate-umm-json umm-json :collection))]
+        collection (spec/parse-metadata context :collection format metadata)]
+
+    ;; Validate against the UMM JSON Schema
+    (if-let [err-messages (seq (json-schema/validate-umm-json
+                                (umm-json/umm->json collection)
+                                :collection))]
       (if (config/return-umm-json-validation-errors)
         (errors/throw-service-errors :invalid-data err-messages)
         (warn "UMM-C JSON-Schema Validation Errors: " (pr-str err-messages))))
 
+    ;; Validate against the UMM Spec validation rules
     (when-let [err-messages (seq (v/validate-collection-umm-spec context collection validate-keywords?))]
       (if (config/return-umm-spec-validation-errors)
         (errors/throw-service-errors :invalid-data err-messages)
-        (warn "UMM-C UMM Spec Validation Errors: " (pr-str err-messages)))))
+        (warn "UMM-C UMM Spec Validation Errors: " (pr-str err-messages))))
 
-  (let [collection (umm-legacy/parse-concept context collection-concept)]
-    (when (config/ingest-validation-enabled?)
-      (v/validate-collection-umm context collection validate-keywords?))
+    ;; Using the legacy UMM validation rules (for now)
+    (v/validate-collection-umm context
+                               (umm-legacy/parse-concept context collection-concept)
+                               validate-keywords?)
+    ;; The UMM Spec collection is returned
     collection))
 
 (defn-timed validate-and-prepare-collection
@@ -70,10 +77,13 @@
   (let [concept (update-in concept [:format] ver/fix-concept-format)
         collection (validate-and-parse-collection-concept context concept validate-keywords?)
         ;; Add extra fields for the collection
-        coll-concept (add-extra-fields-for-collection context concept collection)]
+        coll-concept (add-extra-fields-for-collection context concept collection)
+        ;; We're still using the UMM Lib collection when validating Ingest business rules for now.
+        ;; Fix as part of CMR-2881
+        umm-lib-collection (umm-legacy/parse-concept context concept)]
     (v/validate-business-rules
       context
-      (assoc coll-concept :umm-concept collection))
+      (assoc coll-concept :umm-concept umm-lib-collection))
     coll-concept))
 
 (defn- validate-granule-collection-ref
@@ -100,8 +110,8 @@
     (when-not coll-concept
       (cmsg/data-error :invalid-data
                        msg/parent-collection-does-not-exist provider-id granule-ur collection-ref))
-
-    [coll-concept (umm-legacy/parse-concept context coll-concept)]))
+    [coll-concept (spec/parse-metadata
+                   context :collection (:format coll-concept) (:metadata coll-concept))]))
 
 (defn- add-extra-fields-for-granule
   "Adds the extra fields for a granule concept."
@@ -133,8 +143,7 @@
           parent-collection] (fetch-parent-collection-concept-fn
                                context concept granule)]
      ;; UMM Validation
-     (when (config/ingest-validation-enabled?)
-       (v/validate-granule-umm context parent-collection granule))
+     (v/validate-granule-umm context parent-collection granule)
 
      ;; Add extra fields for the granule
      (let [gran-concept (add-extra-fields-for-granule

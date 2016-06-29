@@ -120,7 +120,7 @@
 
 (defn validate-granule-umm
   [context collection granule]
-  (if-errors-throw :invalid-data (umm-validation/validate-granule collection granule)))
+  (if-errors-throw :invalid-data (umm-spec-validation/validate-granule collection granule)))
 
 (defn validate-business-rules
   "Validates the concept against CMR ingest rules."

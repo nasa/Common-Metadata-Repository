@@ -22,7 +22,7 @@
 ;; but the shortname or dataset id did not) will reference the correct collection.
 ;; See CMR-1104
 (deftest granule-referencing-collection-with-changing-concept-id-test
-  (let [common-fields {:entry-title "coll1" :short-name "short1" :version-id "V1" :entry-id "short1_V1" }
+  (let [common-fields {:entry-title "coll1" :short-name "short1" :version-id "V1" :entry-id "short1_V1"}
         orig-coll (dc/collection-concept (assoc common-fields :native-id "native1"))
         _ (ingest/ingest-concept orig-coll)
 
@@ -150,7 +150,7 @@
             _ (ingest/ingest-concept granule)
             response (ingest/delete-concept granule {:accept-format :json :raw? true})]
         (index/wait-until-indexed)
-         (is (= {:concept-id "G1-PROV1" :revision-id 2}
+        (is (= {:concept-id "G1-PROV1" :revision-id 2}
              (ingest/parse-ingest-body :json response)))))
     (testing "xml response"
       (let [granule (d/item->concept (dg/granule collection {:concept-id "G2-PROV1"}))

@@ -133,13 +133,13 @@
   "Translates two umm-versions using the ingest translation endpoint. Returns the response."
   ([concept-type input-version metadata output-version options]
    (let [format-base "application/vnd.nasa.cmr.umm+json;version="]
-   (client/post (url/translate-metadata-url concept-type)
-                {:connection-manager (s/conn-mgr)
-                 :throw-exceptions false
-                 :body metadata
-                 :query-params (:query-params options)
-                 :headers {"Content-Type" (str format-base input-version)
-                           "Accept" (str format-base output-version)}})))
+    (client/post (url/translate-metadata-url concept-type)
+                 {:connection-manager (s/conn-mgr)
+                  :throw-exceptions false
+                  :body metadata
+                  :query-params (:query-params options)
+                  :headers {"Content-Type" (str format-base input-version)
+                            "Accept" (str format-base output-version)}})))
   ([concept-type input-format metadata output-format]
    (translate-between-umm-versions concept-type input-format metadata output-format nil)))
 

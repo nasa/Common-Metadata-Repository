@@ -7,6 +7,7 @@
             [cmr.system-int-test.utils.search-util :as search]
             [clojure.string :as str]
             [cmr.common.mime-types :as mt]
+            [cmr.common.util :as u :refer [are3]]
             [cmr.spatial.mbr :as m]
             [cmr.umm.granule :as umm-g]
             [cmr.umm.spatial :as umm-s]
@@ -51,11 +52,11 @@
                   :coordinate-2 {:min-value 300
                                  :max-value 400}}
         g-two-d-cs (dg/two-d-coordinate-system
-                     {:name "BRAVO"
-                      :start-coordinate-1 110
-                      :end-coordinate-1 130
-                      :start-coordinate-2 300
-                      :end-coordinate-2 328})
+                    {:name "BRAVO"
+                     :start-coordinate-1 110
+                     :end-coordinate-1 130
+                     :start-coordinate-2 300
+                     :end-coordinate-2 328})
         coll-data {:entry-title "short_name1_version"
                    :short-name "short_name1"
                    :version-id "version"
@@ -100,29 +101,36 @@
         gran-for-dif10-coll (dg/granule dif10-coll gran-data)
         gran-for-iso19115-coll (dg/granule iso19115-coll gran-data)
         gran-for-iso-smap-coll (dg/granule iso-smap-coll gran-data)]
-    (are [exp-errors gran]
-         (= exp-errors
-            (flatten (map (fn [error] (:errors error))
-                          (:errors (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true})))))
 
-         []
-         gran-for-echo10-coll
+    (are3 [exp-errors gran]
+      (is (= exp-errors
+             (flatten (map (fn [error] (:errors error))
+                           (:errors (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true}))))))
 
-         ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."]
-         gran-for-dif-coll
+      "ECHO10 collection"
+      []
+      gran-for-echo10-coll
 
-         []
-         gran-for-dif10-coll
+      "DIF collection"
+      ["The following list of Tiling Identification System Names did not exist in the referenced parent collection: [BRAVO]."]
+      gran-for-dif-coll
 
-         ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."
-          "The following list of Product Specific Attributes did not exist in the referenced parent collection: [a-float]."
-          "[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]
-         gran-for-iso19115-coll
+      "DIF10 collection"
+      []
+      gran-for-dif10-coll
 
-         ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."
-          "The following list of Product Specific Attributes did not exist in the referenced parent collection: [a-float]."
-          "[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]
-         gran-for-iso-smap-coll)))
+
+      "ISO19115 collection"
+      ["The following list of Tiling Identification System Names did not exist in the referenced parent collection: [BRAVO]."
+        "The following list of Additional Attributes did not exist in the referenced parent collection: [a-float]."
+        "[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]
+      gran-for-iso19115-coll
+
+      "ISO-SMAP collection"
+      ["The following list of Tiling Identification System Names did not exist in the referenced parent collection: [BRAVO]."
+        "The following list of Additional Attributes did not exist in the referenced parent collection: [a-float]."
+        "[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]
+      gran-for-iso-smap-coll)))
 
 ;; This tests for limitations when changing the format for a collection with granules.
 ;; CMR-2326 - Based on the test above, we would expect to see the same errors seen when saving

@@ -45,7 +45,3 @@
 (defconfig return-umm-spec-validation-errors
   "Flag for whether or not UMM Spec validation errors should be returned for collections."
   {:default true :type Boolean})
-
-(def ingest-validation-enabled?
-  "A configuration feature switch that turns on CMR ingest validation."
-  (cfg/config-value-fn :ingest-validation-enabled "true" #(= % "true")))
