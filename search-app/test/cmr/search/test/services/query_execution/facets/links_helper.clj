@@ -78,7 +78,7 @@
         term "BIOMASS"]
     (are3 [query-params expected-result]
        (is (= expected-result (lh/create-link-for-hierarchical-field
-                               base-url query-params param-name term)))
+                               base-url query-params param-name term nil)))
 
        "Apply link to empty params"
        {"foo" "bar"}
@@ -107,7 +107,7 @@
     (are3 [query-params term expected-result]
        (is (= expected-result
               (lh/create-link-for-hierarchical-field
-                base-url (or query-params default-query-params) param-name term)))
+                base-url (or query-params default-query-params) param-name term nil)))
 
        "Same index as term being matched"
        nil
@@ -143,7 +143,23 @@
           term "Earth Science"
           param-name "science_keywords[0][category]"
           expected-result {:remove "http://localhost:3003/collections.json"}
-          result (lh/create-link-for-hierarchical-field base-url query-params param-name term)]
+          result (lh/create-link-for-hierarchical-field base-url query-params param-name term nil)]
+      (is (= expected-result result))))
+  (testing "Remove hierarchical links removes applied params at lower levels in the hierarchy"
+    (let [query-params {"science_keywords[0][category]" "CAT"
+                        "science_keywords[0][topic]" "TOPIC"
+                        "science_keywords[0][term]" "TERM"
+                        "science_keywords[0][variable_level_1]" "VL1"
+                        "science_keywords[0][variable_level_2]" "VL2"
+                        "science_keywords[0][variable_level_3]" "VL3"}
+          term "TOPIC"
+          param-name "science_keywords[0][topic]"
+          expected-result {:remove (str "http://localhost:3003/collections.json?"
+                                        "science_keywords%5B0%5D%5Bcategory%5D=CAT")}
+          other-params [[:term "TERM"] [:variable-level-1 "VL1"] [:variable-level-2 "VL2"]
+                        [:variable-level-3 "VL3"]]
+          result (lh/create-link-for-hierarchical-field base-url query-params param-name term
+                                                        other-params)]
       (is (= expected-result result)))))
 
 (deftest non-ascii-character-test
