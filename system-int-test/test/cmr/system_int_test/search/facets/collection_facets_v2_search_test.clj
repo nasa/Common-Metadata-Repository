@@ -112,7 +112,10 @@
 (def partial-science-keywords-applied
   "Facet response with just the title, applied, and children fields. Used to verify that when
   searching for a nested field (a value of TERM1 for term) all of the fields above term have
-  applied set to true and any fields below have applied set to false."
+  applied set to true and any fields below have applied set to false. Also only one level below
+  the last applied term is returned. In the case of searching for a term, only variable-level-1
+  should be returned. Both variable-level-2 and variable-level-3 should be omitted from the
+  response."
   {:title "Browse Collections",
    :children
    [{:title "Keywords", :applied true,
@@ -123,11 +126,7 @@
          :children
          [{:title "TERM1", :applied true,
            :children
-           [{:title "LEVEL1-1", :applied false,
-             :children
-             [{:title "LEVEL1-2", :applied false,
-               :children
-               [{:title "LEVEL1-3", :applied false}]}]}]}]}]}]}]})
+           [{:title "LEVEL1-1", :applied false}]}]}]}]}]})
 
 (deftest hierarchical-applied-test
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1))
@@ -167,6 +166,38 @@
     (is (= fr/expected-facets-modis-and-aster-no-results-found
            (search-and-return-v2-facets {:platform ["moDIS-p0", "ASTER-p0"]
                                          :keyword "MODIS"})))))
+
+(defn- get-lowest-hierarchical-depth
+  "Returns the lowest hierachical depth within the facet response for any hierarchical fields."
+  ([facet]
+   (get-lowest-hierarchical-depth facet -1))
+  ([facet current-depth]
+   (apply max
+          current-depth
+          (map #(get-lowest-hierarchical-depth % (inc current-depth))
+              (:children facet)))))
+
+(deftest appropriate-hierarchical-depth
+  (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2))
+  (testing "Default to 2 levels without any search parameters"
+    (is (= 2 (get-lowest-hierarchical-depth (search-and-return-v2-facets {})))))
+  (are [sk-param expected-depth]
+    (= expected-depth (get-lowest-hierarchical-depth (search-and-return-v2-facets
+                                                      {:science-keywords {:0 sk-param}})))
+
+    {:category "Cat1"} 2
+    {:topic "Topic1"} 3
+    {:topic "Topic1" :category "Cat1"} 3
+    {:term "Term1"} 4
+    {:term "Term1" :category "Cat1"} 4
+    {:term "Term1" :category "Cat1" :topic "Topic1"} 4
+    {:variable-level-1 "Level1-1"} 5
+    {:variable-level-1 "Level1-1" :term "Term1" :category "Cat1" :topic "Topic1"} 5
+    {:variable-level-2 "Level1-2" :term "Term1" :category "Cat1" :topic "Topic1"
+     :variable-level-1 "Level1-1"} 6
+    {:variable-level-3 "Level1-3"} 6
+    {:variable-level-3 "Level1-3" :variable-level-2 "Level1-2" :term "Term1" :category "Cat1"
+     :topic "Topic1" :variable-level-1 "Level1-1"} 6))
 
 (deftest empty-hierarchical-facets-test
   (let [expected-empty-facets {:title "Browse Collections"
