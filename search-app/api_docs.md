@@ -236,6 +236,8 @@ Here is a list of supported extensions and their corresponding MimeTypes:
   * `native`    "application/metadata+xml" (Returns search results in their individual native formats)
   * `umm-json`   "application/umm+json" (only supported for collections)
 
+`umm-json` extension can only be used to retrieve UMM JSON search result based on the latest UMM JSON schema. User can use the Accept header to specify the exact MimeType to return the UMM JSON search result in any supported UMM JSON schema version. e.g. "application/umm+json;version=1.2" will return the search result in UMM JSON based on UMM JSON schema version 1.2.
+
 ### <a name="supported-result-formats"></a> Supported Result Formats
 
 #### <a name="html"></a> HTML
@@ -1940,7 +1942,7 @@ Filter nodes are group nodes that supply a single query condition indicated by a
 ```
 var filterNode = { // Inherits groupNode fields
   "count": 1234,                                                          // Count of results matching the filter
-  "links": {                                                              
+  "links": {
     "apply": "%CMR-ENDPOINT%/collections?instrument[]=MODIS", // A URL containing the filter node applied to the current query. Returned only if the node is not applied.
     "remove": "%CMR-ENDPOINT%/collections"                    // A URL containing the filter node removed from the current query. Returned only if the node is applied.
   },
@@ -2035,7 +2037,7 @@ The following example is a sample response for a query using the query parameter
       }
     ]
   }
-};   
+};
 ```
 
 #### <a name="facets-in-xml-responses"></a> Facets in XML Responses

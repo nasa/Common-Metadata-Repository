@@ -58,6 +58,23 @@
                   2 (+ 1 1)
                   4 (* 2 2)))))))
 
+(deftest are3-test
+  (testing "Normal use"
+    (util/are3
+      [x y] (is (= x y))
+      "The most basic case with 1"
+      2 (+ 1 1)
+      "A more complicated test"
+      4 (* 2 2)))
+  (testing "without comments"
+    (is (thrown-with-msg?
+          IllegalArgumentException
+          #"The number of args doesn't match are3's argv or testing doc string may be missing"
+          (eval '(cmr.common.util/are3
+                  [x y] (is (= x y))
+                  2 (+ 1 1)
+                  4 (* 2 2)))))))
+
 (defn-timed test-timed-multi-arity
   "The doc string"
   ([f]

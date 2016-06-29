@@ -254,7 +254,8 @@
    (acl-concept provider-id uniq-num {}))
   ([provider-id uniq-num attributes]
    (let [attributes (merge {:user-id (str "user" uniq-num)
-                            :format "application/edn"}
+                            :format "application/edn"
+                            :extra-fields {:acl-identity (str "test-identity:" provider-id ":" uniq-num)}}
                            attributes)]
      (concept provider-id :acl uniq-num attributes))))
 

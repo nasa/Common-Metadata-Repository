@@ -27,7 +27,7 @@
   "Returns the fields that should be selected out of elastic search given a concept type and result
   format"
   (fn [concept-type query]
-    [concept-type (:result-format query)]))
+    [concept-type (qm/base-result-format query)]))
 
 (defn context->search-index
   "Returns the search index given a context. This assumes that the search index is always located in a
