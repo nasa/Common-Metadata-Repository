@@ -23,7 +23,7 @@
   messages."
   [collection granule field-path expected-errors]
   (is (= [(e/map->PathErrors {:path field-path
-                              :errors expected-errors})]
+                              :errors (vec expected-errors)})]
          (v/validate-granule collection granule))))
 
 (defn assert-multiple-invalid-gran
@@ -82,7 +82,7 @@
   (let [collection-with-geodetic (make-collection {:spatial-coverage
                                                    {:granule-spatial-representation :geodetic}})
         collection-with-cartesian (make-collection {:spatial-coverage
-                                                   {:granule-spatial-representation :cartesian}})
+                                                    {:granule-spatial-representation :cartesian}})
         collection-with-orbit (make-collection {:spatial-coverage
                                                 {:granule-spatial-representation :orbit
                                                  :orbit-parameters {:inclination-angle 98.2

@@ -111,8 +111,8 @@
 (defn two-d-coordinates-range-validation
   "Validate that the 2D coordinates in the granule fall within the bounds defined in the collection"
   [field-path two-d-coordinate-system]
-  (let [{{min-1 :min-value max-1 :max-value} :coordinate-1
-         {min-2 :min-value max-2 :max-value} :coordinate-2} (:parent two-d-coordinate-system)
+  (let [{{min-1 :MinimumValue max-1 :MaximumValue} :Coordinate1
+         {min-2 :MinimumValue max-2 :MaximumValue} :Coordinate2} (:parent two-d-coordinate-system)
         check-range  (validate-coordinate-within-range field-path two-d-coordinate-system)]
     (merge
       (check-range :start-coordinate-1  min-1 max-1)
@@ -237,7 +237,7 @@
     :platform-refs [(vu/unique-by-name-validator :short-name)
                     (vu/has-parent-validator :short-name "Platform short name")
                     (v/every platform-ref-validations)]
-    :two-d-coordinate-system [(vu/has-parent-validator :name "2D Coordinate System name")
+    :two-d-coordinate-system [(vu/has-parent-validator :name "Tiling Identification System Name")
                               two-d-coordinates-range-validation]
     :product-specific-attributes [(vu/has-parent-validator :name "Additional Attribute")
                                   (v/every aav/aa-ref-validations)]

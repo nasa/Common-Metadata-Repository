@@ -273,7 +273,7 @@
         p3 (cmn/map->PlatformType {:ShortName "p3"
                                    :Instruments [i1]})
         p4 (cmn/map->PlatformType {:ShortName "P3"})
-        collection (make-collection {:platforms [p1 p2 p3 p4]})
+        collection (make-collection {:Platforms [p1 p2 p3 p4]})
 
         ;; Granule fields
         sg1 (g/map->SensorRef {:short-name "S1"
@@ -525,7 +525,7 @@
                                                  :values ["alpha" "alpha1"]})
         pg4 (g/map->ProductSpecificAttributeRef {:name "AA4"
                                                  :values ["1.0"]})
-        collection (make-collection {:product-specific-attributes [p1 p2 p3 p4 p5 p6 p7 p8]})]
+        collection (make-collection {:AdditionalAttributes [p1 p2 p3 p4 p5 p6 p7 p8]})]
 
     (testing "Valid granule additional attributes names referencing parent collection"
       (assert-valid-gran collection (make-granule {}))
@@ -613,87 +613,87 @@
         "date" ["2015-04-01Z"] ["Value [2015-04-01Z] cannot be greater than Parameter Range End [2015-03-31Z]."]
         "time" ["21:00:00Z"] ["Value [21:00:00Z] cannot be greater than Parameter Range End [20:00:00Z]."]))))
 
-; (deftest granule-online-access-urls-validation
-;   (let [url "http://example.com/url2"
-;         r1 (c/map->RelatedURL {:type "GET DATA"
-;                                :url "http://example.com/url1"})
-;         r2 (c/map->RelatedURL {:type "GET DATA"
-;                                :url url})
-;         r3 (c/map->RelatedURL {:type "GET RELATED VISUALIZATION"
-;                                :url url})
-;         collection (make-collection {})]
-;     (testing "valid online access urls"
-;       (assert-valid-gran collection (make-granule {:related-urls [r1 r2 r3]})))
-;
-;     (testing "invalid online access urls with duplicate names"
-;       (assert-invalid-gran
-;         collection
-;         (make-granule {:related-urls [r1 r2 r2]})
-;         [:related-urls]
-;         [(format "Related Urls must be unique. This contains duplicates named [%s]." url)]))))
-;
-; (deftest granule-two-d-coordinate-system-validation
-;   (let [collection (make-collection {:two-d-coordinate-systems
-;                                      [{:name "name"
-;                                        :coordinate-1 {:min-value 0
-;                                                       :max-value 35}
-;                                        :coordinate-2 {:min-value 0
-;                                                       :max-value 17}}]})
-;         collection-with-missing-bounds (make-collection {:two-d-coordinate-systems
-;                                                          [{:name "name"
-;                                                            :coordinate-1 {:min-value 0}
-;                                                            :coordinate-2 {:max-value 17}}]})]
-;     (testing "granules with valid 2D coordinate system"
-;       (u/are2 [collection start1 end1 start2 end2]
-;               (empty? (v/validate-granule
-;                         collection
-;                         (make-granule {:two-d-coordinate-system
-;                                        (g/map->TwoDCoordinateSystem
-;                                          {:name "name"
-;                                           :start-coordinate-1 start1
-;                                           :end-coordinate-1 end1
-;                                           :start-coordinate-2 start2
-;                                           :end-coordinate-2 end2})})))
-;               "valid granule with all coordinates present"
-;               collection 3 26 8 15
-;
-;               "valid granule with some granule coordinates missing"
-;               collection 3 nil nil 15
-;
-;               "valid granule with some coordinate bounds missing in the collection"
-;               collection-with-missing-bounds 3 26 8 15))
-;     (testing "granules with invalid 2D coordinate system"
-;       (u/are2 [collection coord-system-name start1 end1 start2 end2 expected-errors]
-;               (= (set (map e/map->PathErrors expected-errors))
-;                  (set (v/validate-granule
-;                         collection
-;                         (make-granule {:two-d-coordinate-system
-;                                        (g/map->TwoDCoordinateSystem
-;                                          {:name coord-system-name
-;                                           :start-coordinate-1 start1
-;                                           :end-coordinate-1 end1
-;                                           :start-coordinate-2 start2
-;                                           :end-coordinate-2 end2})}))))
-;
-;               "Invalid granule with non-existent coordinate system name"
-;               collection "unsupported_name" nil nil nil nil
-;               [{:path [:two-d-coordinate-system]
-;                 :errors ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [unsupported_name]."]}]
-;
-;               "All granule coordinates out of range"
-;               collection "name" -1 38 19 25
-;               [{:path [:two-d-coordinate-system :start-coordinate-1]
-;                 :errors ["The field [Start Coordinate 1] falls outside the bounds [0 35] defined in the collection"]}
-;                {:path [:two-d-coordinate-system :end-coordinate-1]
-;                 :errors ["The field [End Coordinate 1] falls outside the bounds [0 35] defined in the collection"]}
-;                {:path [:two-d-coordinate-system :start-coordinate-2]
-;                 :errors ["The field [Start Coordinate 2] falls outside the bounds [0 17] defined in the collection"]}
-;                {:path [:two-d-coordinate-system :end-coordinate-2]
-;                 :errors ["The field [End Coordinate 2] falls outside the bounds [0 17] defined in the collection"]}]
-;
-;               "Some granule coordinates out of range with collection missing some bounds"
-;               collection-with-missing-bounds "name" -1 nil 8 19
-;               [{:path [:two-d-coordinate-system :end-coordinate-2]
-;                 :errors ["The field [End Coordinate 2] falls outside the bounds [-∞ 17] defined in the collection"]}
-;                {:path [:two-d-coordinate-system :start-coordinate-1]
-;                 :errors ["The field [Start Coordinate 1] falls outside the bounds [0 ∞] defined in the collection"]}]))))
+(deftest granule-online-access-urls-validation
+  (let [url "http://example.com/url2"
+        r1 {:type "GET DATA"
+            :url "http://example.com/url1"}
+        r2 {:type "GET DATA"
+            :url url}
+        r3 {:type "GET RELATED VISUALIZATION"
+            :url url}
+        collection (make-collection {})]
+    (testing "valid online access urls"
+      (assert-valid-gran collection (make-granule {:related-urls [r1 r2 r3]})))
+
+    (testing "invalid online access urls with duplicate names"
+      (assert-invalid-gran
+       collection
+       (make-granule {:related-urls [r1 r2 r2]})
+       [:related-urls]
+       [(format "Related Urls must be unique. This contains duplicates named [%s]." url)]))))
+
+(deftest granule-two-d-coordinate-system-validation
+  (let [collection (make-collection {:TilingIdentificationSystems
+                                      [{:TilingIdentificationSystemName "name"
+                                         :Coordinate1 {:MinimumValue 0
+                                                       :MaximumValue 35}
+                                         :Coordinate2 {:MinimumValue 0
+                                                       :MaximumValue 17}}]})
+        collection-with-missing-bounds (make-collection {:TilingIdentificationSystems
+                                                          [{:TilingIdentificationSystemName "name"
+                                                             :Coordinate1 {:MinimumValue 0}
+                                                             :Coordinate2 {:MaximumValue 17}}]})]
+    (testing "granules with valid 2D coordinate system"
+      (are3 [collection start1 end1 start2 end2]
+        (is (empty? (v/validate-granule
+                     collection
+                     (make-granule {:two-d-coordinate-system
+                                    (g/map->TwoDCoordinateSystem
+                                     {:name "name"
+                                      :start-coordinate-1 start1
+                                      :end-coordinate-1 end1
+                                      :start-coordinate-2 start2
+                                      :end-coordinate-2 end2})}))))
+        "valid granule with all coordinates present"
+        collection 3 26 8 15
+
+        "valid granule with some granule coordinates missing"
+        collection 3 nil nil 15
+
+        "valid granule with some coordinate bounds missing in the collection"
+        collection-with-missing-bounds 3 26 8 15))
+    (testing "granules with invalid 2D coordinate system"
+      (are3 [collection coord-system-name start1 end1 start2 end2 expected-errors]
+        (is (= (set (map e/map->PathErrors expected-errors))
+               (set (v/validate-granule
+                     collection
+                     (make-granule {:two-d-coordinate-system
+                                    (g/map->TwoDCoordinateSystem
+                                     {:name coord-system-name
+                                      :start-coordinate-1 start1
+                                      :end-coordinate-1 end1
+                                      :start-coordinate-2 start2
+                                      :end-coordinate-2 end2})})))))
+
+        "Invalid granule with non-existent coordinate system name"
+        collection "unsupported_name" nil nil nil nil
+        [{:path [:two-d-coordinate-system]
+          :errors ["The following list of Tiling Identification System Names did not exist in the referenced parent collection: [unsupported_name]."]}]
+
+        "All granule coordinates out of range"
+        collection "name" -1 38 19 25
+        [{:path [:two-d-coordinate-system :start-coordinate-1]
+          :errors ["The field [Start Coordinate 1] falls outside the bounds [0 35] defined in the collection"]}
+         {:path [:two-d-coordinate-system :end-coordinate-1]
+          :errors ["The field [End Coordinate 1] falls outside the bounds [0 35] defined in the collection"]}
+         {:path [:two-d-coordinate-system :start-coordinate-2]
+          :errors ["The field [Start Coordinate 2] falls outside the bounds [0 17] defined in the collection"]}
+         {:path [:two-d-coordinate-system :end-coordinate-2]
+          :errors ["The field [End Coordinate 2] falls outside the bounds [0 17] defined in the collection"]}]
+
+        "Some granule coordinates out of range with collection missing some bounds"
+        collection-with-missing-bounds "name" -1 nil 8 19
+        [{:path [:two-d-coordinate-system :end-coordinate-2]
+          :errors ["The field [End Coordinate 2] falls outside the bounds [-∞ 17] defined in the collection"]}
+         {:path [:two-d-coordinate-system :start-coordinate-1]
+          :errors ["The field [Start Coordinate 1] falls outside the bounds [0 ∞] defined in the collection"]}]))))

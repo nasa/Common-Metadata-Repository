@@ -31,7 +31,7 @@
   (for [[field-path errors] validation-errors]
     (e/map->PathErrors
       {:path field-path
-       :errors (map (partial v/create-error-message
+       :errors (mapv (partial v/create-error-message
                              (map humanize-field-for-error-msg field-path)) errors)})))
 
 (defn validate-collection
