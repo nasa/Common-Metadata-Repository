@@ -24,6 +24,7 @@
             [cmr.indexer.data.concepts.organization :as org]
             [cmr.indexer.data.concepts.tag :as tag]
             [cmr.indexer.data.concepts.location-keyword :as lk]
+            [cmr.indexer.data.concepts.humanizer :as humanizer]
             [cmr.acl.core :as acl]
             [cmr.common.concepts :as concepts]
             [cmr.umm.collection :as umm-c]
@@ -83,6 +84,17 @@
                ;; Use the collection start and end date if there are no granule start and end dates.
                {:granule-start-date coll-start
                 :granule-end-date coll-end}))))
+
+
+(defn- collection-humanizers-elastic
+  "Given a collection, returns humanized elastic search fields
+   TODO: This is just a placeholder right now to show where UMM humanizer transforms
+         from transform.clj will be called."
+  [collection]
+  ;(let [humanized (humanizer/umm-collection->umm-collection+humanizers collection)]
+  ;  ; TODO
+  ;  )
+  )
 
 (defn- get-coll-permitted-group-ids
   "Returns the groups ids (group guids, 'guest', 'registered') that have permission to read
@@ -257,7 +269,8 @@
            (collection-temporal-elastic context concept-id collection)
            (get-in collection [:spatial-coverage :orbit-parameters])
            (spatial->elastic collection)
-           (sk/science-keywords->facet-fields collection))))
+           (sk/science-keywords->facet-fields collection)
+           (collection-humanizers-elastic collection))))
 
 
 (defn- get-elastic-doc-for-tombstone-collection
