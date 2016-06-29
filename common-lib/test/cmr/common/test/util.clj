@@ -533,13 +533,11 @@
                             :a nil :d nil :c nil :f nil})))))))
 
 (deftest update-in-all
-  (util/are2
+  (util/are3
    [args result]
-   (let [[obj path value] args
-         result (is (= result
-                       (util/update-in-all obj path (fn[_] value))))]
-     result
-     )
+   (let [[obj path value] args]
+     (is (= result
+            (util/update-in-all obj path (fn[_] value)))))
 
    "nil values in the path"
    [{:a nil :b :d} [:a :b] 0]
