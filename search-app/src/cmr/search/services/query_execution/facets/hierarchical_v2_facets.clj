@@ -23,20 +23,34 @@
     (inc (apply max indices))
     0))
 
+(def min-hierarchical-depth
+  "Minimum depth to request for hierarchical aggregations queries from elastic. Default to a minimum
+  depth of 3 levels (e.g. Category, Topic, and Term for science keywords)."
+  3)
+
+(def num-levels-below-subfield
+  "Number of levels below the lowest level subfield to request for hierarchical aggregations queries
+  from elastic."
+  2)
+
 (defn get-depth-for-hierarchical-field
   "Returns what depth should be used when requesting aggregations for facets for a hierarchical
-  field based on the query-params. Default to a minimum depth of 3 levels (e.g. Category, Topic,
-  and Term for science keywords). Otherwise use a depth of two levels below the lowest level
-  subfield present in the query parameters. Note that this is strictly to improve the performance
-  of the aggregations query in Elasticsearch. We further prune the results to limit based on what
-  terms have been applied as part of building the facet response from the elasticsearch results."
+  field based on the query-params. Default to a minimum depth of 'min-hierarchical-depth'.
+  Otherwise return the smaller of 'num-levels-below-subfield' below the lowest level subfield
+  present in the query parameters or the full depth of the field. Note that this is strictly to
+  improve the performance of the aggregations query in Elasticsearch. We further prune the results
+  to limit based on what terms have been applied as part of building the facet response from the
+  elasticsearch results."
   [query-params parent-field]
   (let [parent-field-snake-case (csk/->snake_case_string parent-field)
         field-regex (re-pattern (format "%s\\[\\d+\\]\\[(.*)\\]" parent-field-snake-case))
-        matching-subfields (keep #(second (re-matches field-regex %)) (keys query-params))]
-    (max 3
-         (+ 2 (get-max-subfield-index matching-subfields
-                                      (parent-field kms-fetcher/nested-fields-mappings))))))
+        matching-subfields (keep #(second (re-matches field-regex %)) (keys query-params))
+        all-subfields (remove #{:url} (parent-field kms-fetcher/nested-fields-mappings))]
+    (max min-hierarchical-depth
+         (min (count all-subfields)
+              (+ num-levels-below-subfield
+                 (get-max-subfield-index matching-subfields all-subfields))))))
+
 
 (defn- hierarchical-aggregation-builder
   "Build an aggregations query for the given hierarchical field."
@@ -51,9 +65,9 @@
   "Returns the nested aggregation query for the given hierarchical field. Size specifies the number
   of results to return."
   ([field size]
-   (nested-facet field size -1))
+   (nested-facet field size nil))
   ([field size depth]
-   (let [subfields (if (< -1 depth)
+   (let [subfields (if depth
                        (take depth (field kms-fetcher/nested-fields-mappings))
                        (field kms-fetcher/nested-fields-mappings))]
      {:nested {:path field}
@@ -173,15 +187,15 @@
   science keywords."
   [hierarchical-facet one-additional-level?]
   (if (:children hierarchical-facet)
-    (let [updated-facet (dissoc hierarchical-facet :children)]
-      (if (or one-additional-level? (:applied hierarchical-facet))
-        ;; The initial facet can have a pseudo-group node that gets replaced by later processing.
-        ;; In this case we want to return two additional levels instead of just one.
-        (let [one-additional-level? (= :group (:type hierarchical-facet))]
-          (assoc updated-facet :children
-            (for [child-facet (:children hierarchical-facet)]
-              (prune-hierarchical-facet child-facet one-additional-level?))))
-        updated-facet))
+    (if (or one-additional-level? (:applied hierarchical-facet))
+      ;; The initial facet can have a pseudo-group node that gets replaced by later processing.
+      ;; In this case we want to return two additional levels instead of just one.
+      (let [additional-level? (= :group (:type hierarchical-facet))]
+        (update hierarchical-facet :children (fn [original-children]
+                                               (mapv #(prune-hierarchical-facet % additional-level?)
+                                                     original-children))))
+      ;; Else prune the children
+      (dissoc hierarchical-facet :children))
     hierarchical-facet))
 
 (defn- hierarchical-bucket-map->facets-v2
@@ -206,7 +220,7 @@
     (if (seq facets-with-zero-matches)
         ;; Add in links to remove any hierarchical fields that have been applied to the query-params
         ;; but do not have any matching collections.
-        (update-in hierarchical-facet [:children] #(concat % facets-with-zero-matches))
+        (update hierarchical-facet :children #(concat % facets-with-zero-matches))
         hierarchical-facet)))
 
 (defn create-hierarchical-v2-facets

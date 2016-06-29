@@ -173,10 +173,9 @@
    (get-lowest-hierarchical-depth facet -1))
   ([facet current-depth]
    (apply max
-    (if (:children facet)
-        (for [child-facet (:children facet)]
-           (get-lowest-hierarchical-depth child-facet (inc current-depth)))
-        [current-depth]))))
+          current-depth
+          (map #(get-lowest-hierarchical-depth % (inc current-depth))
+              (:children facet)))))
 
 (deftest appropriate-hierarchical-depth
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2))
