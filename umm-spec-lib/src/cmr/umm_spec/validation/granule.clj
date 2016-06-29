@@ -228,10 +228,9 @@
   "Defines validations for granules"
   [{:collection-ref [collection-ref-required-fields-validation
                      (matches-collection-identifier-validation :entry-title [:EntryTitle])
-                     ;; TODO this will require something new since UMM-C doesn't have entry id anymore
                      (matches-collection-identifier-validation :entry-id [:entry-id])
-                     (matches-collection-identifier-validation :short-name [:product :short-name])
-                     (matches-collection-identifier-validation :version-id [:product :version-id])]
+                     (matches-collection-identifier-validation :short-name [:ShortName])
+                     (matches-collection-identifier-validation :version-id [:Version])]
     :spatial-coverage spatial-coverage-validations
     :temporal temporal-validation
     :platform-refs [(vu/unique-by-name-validator :short-name)

@@ -165,7 +165,7 @@
   and an :errors tag. Otherwise, just return the list of error messages."
   [elem]
   (if-let [path (parse-error-path (cx/string-at-path elem [:path]))]
-    {:errors (cx/strings-at-path elem [:errors :error]) :path path}
+    {:errors (vec (cx/strings-at-path elem [:errors :error])) :path path}
     (first (:content elem))))
 
 (defn- parse-xml-error-response-elem
