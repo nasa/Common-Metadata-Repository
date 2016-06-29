@@ -15,6 +15,12 @@
       {field-path [(format "BeginningDateTime [%s] must be no later than EndingDateTime [%s]"
                            (str BeginningDateTime) (str EndingDateTime))]})))
 
+(defn- metadata-association-name
+  "Returns the unique name of metadata association for reporting purpose"
+  [ma]
+  (format "(EntryId [%s] & Version [%s])" (:EntryId ma) (:Version ma)))
+
+
 (def temporal-extent-validation
   {:RangeDateTimes (v/every range-date-time-validation)})
 
@@ -31,4 +37,5 @@
    :AdditionalAttributes aa/additional-attribute-validation
    :Projects (vu/unique-by-name-validator :ShortName)
    :ScienceKeywords (v/every science-keyword-validations)
-   :SpatialExtent s/spatial-extent-validation})
+   :SpatialExtent s/spatial-extent-validation
+   :MetadataAssociations (vu/unique-by-name-validator metadata-association-name)})

@@ -88,3 +88,29 @@
             coll
             [:Projects]
             ["Projects must be unique. This contains duplicates named [C1, C2]."]))))))
+
+(deftest metadata-associations-validation
+  (testing "valid metadata associations"
+    (h/assert-valid (coll/map->UMM-C
+                     {:MetadataAssociations
+                       [(c/map->MetadataAssociationType {:EntryId "S1"
+                                                         :Version "V1"})
+                        (c/map->MetadataAssociationType {:EntryId "S2"
+                                                         :Version "V1"})
+                        (c/map->MetadataAssociationType {:EntryId "S1"
+                                                         :Version "V2"})]})))
+
+  (testing "invalid metadata associations"
+    (testing "duplicate names"
+      (let [coll (coll/map->UMM-C
+                  {:MetadataAssociations
+                    [(c/map->MetadataAssociationType {:EntryId "S1"
+                                                      :Version "V1"})
+                     (c/map->MetadataAssociationType {:EntryId "S2"
+                                                      :Version "V1"})
+                     (c/map->MetadataAssociationType {:EntryId "S1"
+                                                      :Version "V1"})]})]
+        (h/assert-invalid
+          coll
+          [:MetadataAssociations]
+          ["Metadata Associations must be unique. This contains duplicates named [(EntryId [S1] & Version [V1])]."])))))
