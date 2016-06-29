@@ -475,8 +475,7 @@
 
 (defn make-add-attrib
   [attributes]
-  (aa/add-parsed-value
-   (cmn/map->AdditionalAttributeType attributes)))
+  (cmn/map->AdditionalAttributeType attributes))
 
 (deftest granule-product-specific-attributes
   (let [p1 (make-add-attrib {:Name "string"
@@ -525,7 +524,7 @@
                                                  :values ["alpha" "alpha1"]})
         pg4 (g/map->ProductSpecificAttributeRef {:name "AA4"
                                                  :values ["1.0"]})
-        collection (make-collection {:AdditionalAttributes [p1 p2 p3 p4 p5 p6 p7 p8]})]
+        collection (aa/add-parsed-values (make-collection {:AdditionalAttributes [p1 p2 p3 p4 p5 p6 p7 p8]}))]
 
     (testing "Valid granule additional attributes names referencing parent collection"
       (assert-valid-gran collection (make-granule {}))

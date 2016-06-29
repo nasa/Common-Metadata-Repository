@@ -76,7 +76,7 @@
      </DIF>")
 
 (def expected-parsed-additional-attributes1
-  (map (comp umm-aa/add-parsed-value cmn/map->AdditionalAttributeType)
+  (map cmn/map->AdditionalAttributeType
        [{:Group "gov.nasa.gsfc.gcmd"
          :Name "metadata.uuid"
          :DataType "STRING"
@@ -154,7 +154,7 @@
     </DIF>")
 
 (def expected-parsed-additional-attributes2
-  (map (comp umm-aa/add-parsed-value cmn/map->AdditionalAttributeType)
+  (map cmn/map->AdditionalAttributeType
        [{:Name "String add attrib"
          :Description "something string"
          :DataType "STRING"

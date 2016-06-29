@@ -1,7 +1,6 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute
   (:require [cmr.common.xml.simple-xpath :refer [select]]
             [cmr.common.xml.parse :refer :all]
-            [cmr.umm-spec.additional-attribute :as aa]
             [cmr.umm-spec.models.common :as cmn]
             [cmr.common.util :as util]
             [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as d9-aa]))
@@ -16,8 +15,7 @@
                  :Value (value-of aa-elem "Value")}]
     (-> attribs
         util/remove-nil-keys
-        cmn/map->AdditionalAttributeType
-        aa/add-parsed-value)))
+        cmn/map->AdditionalAttributeType)))
 
 (defn xml-elem->AdditionalAttributes
   "Extracts Additional_Attributes and Extended_Metadata from DIF10 XML and includes both
@@ -25,6 +23,6 @@
   [doc]
   (let [additional-attributes (mapv xml-elem->AdditionalAttribute
                                     (select doc "/DIF/Additional_Attributes"))
-        extended-metadata (mapv aa/add-parsed-value (d9-aa/xml-elem->AdditionalAttributes doc))]
+        extended-metadata (d9-aa/xml-elem->AdditionalAttributes doc)]
     (seq (into additional-attributes extended-metadata))))
 

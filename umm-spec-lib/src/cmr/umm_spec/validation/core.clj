@@ -5,6 +5,7 @@
             [cmr.umm-spec.validation.collection :as vc]
             [cmr.umm-spec.validation.granule :as vg]
             [cmr.umm-spec.validation.parent-weaver :as pw]
+            [cmr.umm-spec.additional-attribute :as aa]
             [cmr.common.services.errors :as e]
             [clojure.string :as str]))
 
@@ -48,6 +49,7 @@
   "Validates the umm record returning a list of error maps containing a path through the
   UMM model and a list of errors at that path. Returns an empty sequence if it is valid."
   [collection granule]
-  (validation-errors->path-errors
-    (v/validate vg/granule-validations
-                (pw/set-parent granule collection))))
+  (let [granule-with-parent (pw/set-parent granule (aa/add-parsed-values collection))]
+    (validation-errors->path-errors
+     (v/validate vg/granule-validations granule-with-parent))))
+

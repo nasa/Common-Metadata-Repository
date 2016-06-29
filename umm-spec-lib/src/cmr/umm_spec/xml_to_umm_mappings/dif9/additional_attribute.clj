@@ -23,8 +23,7 @@
     (-> attr
         (assoc :DataType data-type)
         util/remove-nil-keys
-        cmn/map->AdditionalAttributeType
-        aa/add-parsed-value)))
+        cmn/map->AdditionalAttributeType)))
 
 (defn xml-elem->AdditionalAttributes
   [doc]

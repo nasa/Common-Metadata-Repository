@@ -18,6 +18,9 @@
   (cond
     (map? x) (into {}
                    (for [[k v] x
+                         ;; Skip over namespaced keywords. We add extra metadata into a collection
+                         ;; for things like humanizers and parsed additional attribute values.
+                         :when (not (namespace k))
                          :when (some? v)]
                      [(to-jsonable k) (to-jsonable v)]))
     (sequential? x) (mapv to-jsonable x)

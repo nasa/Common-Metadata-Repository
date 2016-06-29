@@ -101,13 +101,18 @@
     (assoc aa dest-field v)
     aa))
 
-(defn add-parsed-value
-  "Adds a parsed-value keyword to the additional attribut based on the data type and value in the map."
+(defn- attribute-with-parsed-value
+  "Adds a parsed-value keyword to the additional attribute based on the data type and value in the map."
   [aa]
   (-> aa
       (add-parsed-value-for :Value ::parsed-value)
       (add-parsed-value-for :ParameterRangeBegin ::parsed-parameter-range-begin)
       (add-parsed-value-for :ParameterRangeEnd ::parsed-parameter-range-end)))
+
+(defn add-parsed-values
+  "Adds additional attribute parsed values to the additional attributes of the UMM record."
+  [umm-c]
+  (update umm-c :AdditionalAttributes #(mapv attribute-with-parsed-value %)))
 
 (defmulti gen-value
   "Converts the given value to a string for error messages."
