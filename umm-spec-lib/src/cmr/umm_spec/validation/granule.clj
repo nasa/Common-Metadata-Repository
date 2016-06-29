@@ -14,7 +14,7 @@
             [cmr.common.services.errors :as errors]
             [camel-snake-kebab.core :as csk]
             [cmr.umm.collection.entry-id :as eid]
-            [cmr.umm.validation.product-specific-attribute :as psa]))
+            [cmr.umm-spec.validation.additional-attribute :as aav]))
 
 (defn- spatial-extent->granule-spatial-representation
   "Returns the granule spatial representation given a parent collection spatial extent"
@@ -239,8 +239,8 @@
                     (v/every platform-ref-validations)]
     :two-d-coordinate-system [(vu/has-parent-validator :name "2D Coordinate System name")
                               two-d-coordinates-range-validation]
-    :product-specific-attributes [(vu/has-parent-validator :name "Product Specific Attribute")
-                                  (v/every psa/psa-ref-validations)]
+    :product-specific-attributes [(vu/has-parent-validator :name "Additional Attribute")
+                                  (v/every aav/aa-ref-validations)]
     :project-refs (vu/unique-by-name-validator identity)
     :related-urls h/online-access-urls-validation}
    projects-reference-collection

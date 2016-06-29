@@ -10,8 +10,9 @@
             [cmr.spatial.point :as p]
             [cmr.common.date-time-parser :as dtp]
             [cmr.common.services.errors :as e]
-            [cmr.common.util :as u]
-            [cmr.umm.collection.product-specific-attribute :as psa]))
+            [cmr.common.util :as u :refer [are3]]
+            [cmr.umm.collection.product-specific-attribute :as psa]
+            [cmr.umm-spec.additional-attribute :as aa]))
 
 (defn assert-valid-gran
   "Asserts that the given granule is valid."
@@ -472,139 +473,145 @@
        ["Platform References must be unique. This contains duplicates named [p1]."
         "The following list of Platform short names did not exist in the referenced parent collection: [p4, p5]."]))))
 
-; (deftest granule-product-specific-attributes
-;   (let [p1 (cmn/map->AdditionalAttributeType {:Name "string"
-;                                               :Description "something string"
-;                                               :DataType :string
-;                                               :parsed-parameter-range-begin "alpha"
-;                                               :parsed-parameter-range-end "bravo"
-;                                               :parsed-value "alpha1"})
-;         p2 (cmn/map->AdditionalAttributeType {:Name "float"
-;                                               :Description "something float"
-;                                               :DataType :float
-;                                               :parsed-parameter-range-begin 0.1
-;                                               :parsed-parameter-range-end 100.43})
-;         p3 (cmn/map->AdditionalAttributeType {:Name "int"
-;                                               :DataType :int
-;                                               :parsed-parameter-range-begin 2
-;                                               :parsed-parameter-range-end 100})
-;         p4 (cmn/map->AdditionalAttributeType
-;              {:Name "datetime"
-;               :DataType :datetime
-;               :parsed-parameter-range-begin (psa/parse-value :datetime "2015-03-01T02:00:00Z")
-;               :parsed-parameter-range-end (psa/parse-value :datetime "2015-03-31T02:00:00Z")})
-;         p5 (cmn/map->AdditionalAttributeType
-;              {:Name "date"
-;               :DataType :date
-;               :parsed-parameter-range-begin (psa/parse-value :date "2015-03-01Z")
-;               :parsed-parameter-range-end (psa/parse-value :date "2015-03-31Z")})
-;         p6 (cmn/map->AdditionalAttributeType
-;              {:Name "time"
-;               :DataType :time
-;               :parsed-parameter-range-begin (psa/parse-value :time "02:00:00Z")
-;               :parsed-parameter-range-end (psa/parse-value :time "20:00:00Z")})
-;         p7 (cmn/map->AdditionalAttributeType {:Name "boolean"
-;                                               :DataType :boolean
-;                                               :parsed-value true})
-;         p8 (cmn/map->AdditionalAttributeType {:Name "datetime string"
-;                                               :DataType :datetime-string
-;                                               :parsed-parameter-range-begin "alpha"
-;                                               :parsed-parameter-range-end "bravo"
-;                                               :parsed-value "alpha1"})
-;         pg1 (g/map->ProductSpecificAttributeRef {:name "string"
-;                                                  :values ["alpha" "alpha1"]})
-;         pg2 (g/map->ProductSpecificAttributeRef {:name "float"
-;                                                  :values ["12.3" "15.0"]})
-;         pg3 (g/map->ProductSpecificAttributeRef {:name "AA3"
-;                                                  :values ["alpha" "alpha1"]})
-;         pg4 (g/map->ProductSpecificAttributeRef {:name "AA4"
-;                                                  :values ["1.0"]})
-;         collection (make-collection {:product-specific-attributes [p1 p2 p3 p4 p5 p6 p7 p8]})]
-;     (testing "Valid granule additional attributes names referencing parent collection"
-;       (assert-valid-gran collection (make-granule {}))
-;       (assert-valid-gran collection (make-granule {:product-specific-attributes [pg1]}))
-;       (assert-valid-gran collection (make-granule {:product-specific-attributes [pg1 pg2]})))
-;     (testing "Invalid granule additional attributes names referencing parent collection"
-;       (assert-invalid-gran
-;        collection
-;        (make-granule {:product-specific-attributes [pg3]})
-;        [:product-specific-attributes]
-;        ["The following list of Product Specific Attributes did not exist in the referenced parent collection: [AA3]."])
-;       (assert-invalid-gran
-;        collection
-;        (make-granule {:product-specific-attributes [pg1 pg2 pg3 pg4]})
-;        [:product-specific-attributes]
-;        ["The following list of Product Specific Attributes did not exist in the referenced parent collection: [AA3, AA4]."]))
-;
-;     (testing "Valid granule additional attribute values"
-;       (are [aa-name values]
-;         (let [pg5 (g/map->ProductSpecificAttributeRef {:name aa-name :values values})]
-;           (assert-valid-gran collection (make-granule {:product-specific-attributes [pg2 pg5]})))
-;         "string" ["anything" "zzz" "0_2"]
-;         "datetime string" ["anything" "zzz" "0_2"]
-;         "boolean" ["true" "false" "1" "0"]
-;         "int" ["2" "100" "15"]
-;         "float" ["0.3" "100"]
-;         "datetime" ["2015-03-11T02:00:00Z" "2015-03-11T02:00:00" "2015-03-31T02:00:00.000Z"]
-;         "date" ["2015-03-11Z" "2015-03-01"]
-;         "time" ["02:00:00Z" "02:09:00" "02:09:00.123"]))
-;     (testing "Invalid granule additional attributes when values are empty"
-;       (are [aa-name]
-;         (let [pg5 (g/map->ProductSpecificAttributeRef {:name aa-name})
-;               errors [(format "Product Specific Attributes [%s] values must not be empty." aa-name)]]
-;           (assert-invalid-gran
-;            collection
-;            (make-granule {:product-specific-attributes [pg2 pg5]})
-;            [:product-specific-attributes 1]
-;            errors))
-;         "string"
-;         "int"
-;         "float"
-;         "boolean"
-;         "datetime"
-;         "date"
-;         "time"
-;         "datetime string"))
-;     (testing "Invalid granule additional attribute values for parent collection data type"
-;       (are [aa-name values errors]
-;         (let [pg5 (g/map->ProductSpecificAttributeRef {:name aa-name :values values})]
-;           (assert-invalid-gran
-;            collection
-;            (make-granule {:product-specific-attributes [pg2 pg5]})
-;            [:product-specific-attributes 1]
-;            errors))
-;         "int" ["12.3" "3"] ["Value [12.3] is not a valid value for type [INT]."]
-;         "float" ["12.3" "1" "BAD"] ["Value [BAD] is not a valid value for type [FLOAT]."]
-;         "boolean" ["false" "10"] ["Value [10] is not a valid value for type [BOOLEAN]."]
-;         "datetime" ["2015-03-31T02:00:00Z" "BAD"] ["Value [BAD] is not a valid value for type [DATETIME]."]
-;         "date" ["2015-03-31Z" "BAD"] ["Value [BAD] is not a valid value for type [DATE]."]
-;         "time" ["02:00:00Z" "BAD"] ["Value [BAD] is not a valid value for type [TIME]."]))
-;     (testing "Invalid granule additional attribute values less than parent collection parameter range begin"
-;       (are [aa-name values errors]
-;         (let [pg5 (g/map->ProductSpecificAttributeRef {:name aa-name :values values})]
-;           (assert-invalid-gran
-;            collection
-;            (make-granule {:product-specific-attributes [pg2 pg5]})
-;            [:product-specific-attributes 1]
-;            errors))
-;         "int" ["12" "1"] ["Value [1] cannot be less than Parameter Range Begin [2]."]
-;         "float" ["0.03"] ["Value [0.03] cannot be less than Parameter Range Begin [0.1]."]
-;         "datetime" ["2015-01-31T02:00:00Z"] ["Value [2015-01-31T02:00:00.000Z] cannot be less than Parameter Range Begin [2015-03-01T02:00:00.000Z]."]
-;         "date" ["2015-01-31Z"] ["Value [2015-01-31] cannot be less than Parameter Range Begin [2015-03-01]."]
-;         "time" ["01:00:00Z"] ["Value [01:00:00.000] cannot be less than Parameter Range Begin [02:00:00.000]."]))
-;     (testing "Invalid granule additional attribute values greater than parent collection parameter range end"
-;       (are [aa-name values errors]
-;         (let [pg5 (g/map->ProductSpecificAttributeRef {:name aa-name :values values})]
-;           (assert-invalid-gran
-;            collection
-;            (make-granule {:product-specific-attributes [pg2 pg5]})
-;            [:product-specific-attributes 1]
-;            errors))
-;         "int" ["12" "111"] ["Value [111] cannot be greater than Parameter Range End [100]."]
-;         "float" ["101.0"] ["Value [101.0] cannot be greater than Parameter Range End [100.43]."]
-;         "datetime" ["2015-04-01T02:00:00Z"] ["Value [2015-04-01T02:00:00.000Z] cannot be greater than Parameter Range End [2015-03-31T02:00:00.000Z]."]
-;         "date" ["2015-04-01Z"] ["Value [2015-04-01] cannot be greater than Parameter Range End [2015-03-31]."]
-;         "time" ["21:00:00Z"] ["Value [21:00:00.000] cannot be greater than Parameter Range End [20:00:00.000]."]))))
+(defn make-add-attrib
+  [attributes]
+  (aa/add-parsed-value
+   (cmn/map->AdditionalAttributeType attributes)))
+
+(deftest granule-product-specific-attributes
+  (let [p1 (make-add-attrib {:Name "string"
+                             :Description "something string"
+                             :DataType "STRING"
+                             :ParameterRangeBegin "alpha"
+                             :ParameterRangeEnd "bravo"
+                             :Value "alpha1"})
+        p2 (make-add-attrib {:Name "float"
+                             :Description "something float"
+                             :DataType "FLOAT"
+                             :ParameterRangeBegin "0.1"
+                             :ParameterRangeEnd "100.43"})
+        p3 (make-add-attrib {:Name "int"
+                             :DataType "INT"
+                             :ParameterRangeBegin "2"
+                             :ParameterRangeEnd "100"})
+        p4 (make-add-attrib
+            {:Name "datetime"
+             :DataType "DATETIME"
+             :ParameterRangeBegin "2015-03-01T02:00:00Z"
+             :ParameterRangeEnd "2015-03-31T02:00:00Z"})
+        p5 (make-add-attrib
+            {:Name "date"
+             :DataType "DATE"
+             :ParameterRangeBegin "2015-03-01Z"
+             :ParameterRangeEnd "2015-03-31Z"})
+        p6 (make-add-attrib
+            {:Name "time"
+             :DataType "TIME"
+             :ParameterRangeBegin "02:00:00Z"
+             :ParameterRangeEnd "20:00:00Z"})
+        p7 (make-add-attrib {:Name "boolean"
+                             :DataType "BOOLEAN"
+                             :Value "true"})
+        p8 (make-add-attrib {:Name "datetime string"
+                             :DataType "DATETIME_STRING"
+                             :ParameterRangeBegin "alpha"
+                             :ParameterRangeEnd "bravo"
+                             :Value "alpha1"})
+        pg1 (g/map->ProductSpecificAttributeRef {:name "string"
+                                                 :values ["alpha" "alpha1"]})
+        pg2 (g/map->ProductSpecificAttributeRef {:name "float"
+                                                 :values ["12.3" "15.0"]})
+        pg3 (g/map->ProductSpecificAttributeRef {:name "AA3"
+                                                 :values ["alpha" "alpha1"]})
+        pg4 (g/map->ProductSpecificAttributeRef {:name "AA4"
+                                                 :values ["1.0"]})
+        collection (make-collection {:product-specific-attributes [p1 p2 p3 p4 p5 p6 p7 p8]})]
+
+    (testing "Valid granule additional attributes names referencing parent collection"
+      (assert-valid-gran collection (make-granule {}))
+      (assert-valid-gran collection (make-granule {:product-specific-attributes [pg1]}))
+      (assert-valid-gran collection (make-granule {:product-specific-attributes [pg1 pg2]})))
+    (testing "Invalid granule additional attributes names referencing parent collection"
+      (assert-invalid-gran
+       collection
+       (make-granule {:product-specific-attributes [pg3]})
+       [:product-specific-attributes]
+       ["The following list of Additional Attributes did not exist in the referenced parent collection: [AA3]."])
+      (assert-invalid-gran
+       collection
+       (make-granule {:product-specific-attributes [pg1 pg2 pg3 pg4]})
+       [:product-specific-attributes]
+       ["The following list of Additional Attributes did not exist in the referenced parent collection: [AA3, AA4]."]))
+
+    (testing "Valid granule additional attribute values"
+      (are [aa-name values]
+        (let [pg5 (g/map->ProductSpecificAttributeRef {:name aa-name :values values})]
+          (assert-valid-gran collection (make-granule {:product-specific-attributes [pg2 pg5]})))
+        "string" ["anything" "zzz" "0_2"]
+        "datetime string" ["anything" "zzz" "0_2"]
+        "boolean" ["true" "false" "1" "0"]
+        "int" ["2" "100" "15"]
+        "float" ["0.3" "100"]
+        "datetime" ["2015-03-11T02:00:00Z" "2015-03-11T02:00:00" "2015-03-31T02:00:00.000Z"]
+        "date" ["2015-03-11Z" "2015-03-01"]
+        "time" ["02:00:00Z" "02:09:00" "02:09:00.123"]))
+    (testing "Invalid granule additional attributes when values are empty"
+      (are [aa-name]
+        (let [pg5 (g/map->ProductSpecificAttributeRef {:name aa-name})
+              errors [(format "Product Specific Attributes [%s] values must not be empty." aa-name)]]
+          (assert-invalid-gran
+           collection
+           (make-granule {:product-specific-attributes [pg2 pg5]})
+           [:product-specific-attributes 1]
+           errors))
+        "string"
+        "int"
+        "float"
+        "boolean"
+        "datetime"
+        "date"
+        "time"
+        "datetime string"))
+    (testing "Invalid granule additional attribute values for parent collection data type"
+      (are [aa-name values errors]
+        (let [pg5 (g/map->ProductSpecificAttributeRef {:name aa-name :values values})]
+          (assert-invalid-gran
+           collection
+           (make-granule {:product-specific-attributes [pg2 pg5]})
+           [:product-specific-attributes 1]
+           errors))
+        "int" ["12.3" "3"] ["Value [12.3] is not a valid value for type [INT]."]
+        "float" ["12.3" "1" "BAD"] ["Value [BAD] is not a valid value for type [FLOAT]."]
+        "boolean" ["false" "10"] ["Value [10] is not a valid value for type [BOOLEAN]."]
+        "datetime" ["2015-03-31T02:00:00Z" "BAD"] ["Value [BAD] is not a valid value for type [DATETIME]."]
+        "date" ["2015-03-31Z" "BAD"] ["Value [BAD] is not a valid value for type [DATE]."]
+        "time" ["02:00:00Z" "BAD"] ["Value [BAD] is not a valid value for type [TIME]."]))
+    (testing "Invalid granule additional attribute values less than parent collection parameter range begin"
+      (are [aa-name values errors]
+        (let [pg5 (g/map->ProductSpecificAttributeRef {:name aa-name :values values})]
+          (assert-invalid-gran
+           collection
+           (make-granule {:product-specific-attributes [pg2 pg5]})
+           [:product-specific-attributes 1]
+           errors))
+        "int" ["12" "1"] ["Value [1] cannot be less than Parameter Range Begin [2]."]
+        "float" ["0.03"] ["Value [0.03] cannot be less than Parameter Range Begin [0.1]."]
+        "datetime" ["2015-01-31T02:00:00Z"] ["Value [2015-01-31T02:00:00Z] cannot be less than Parameter Range Begin [2015-03-01T02:00:00Z]."]
+        "date" ["2015-01-31Z"] ["Value [2015-01-31Z] cannot be less than Parameter Range Begin [2015-03-01Z]."]
+        "time" ["01:00:00Z"] ["Value [01:00:00Z] cannot be less than Parameter Range Begin [02:00:00Z]."]))
+    (testing "Invalid granule additional attribute values greater than parent collection parameter range end"
+      (are [aa-name values errors]
+        (let [pg5 (g/map->ProductSpecificAttributeRef {:name aa-name :values values})]
+          (assert-invalid-gran
+           collection
+           (make-granule {:product-specific-attributes [pg2 pg5]})
+           [:product-specific-attributes 1]
+           errors))
+        "int" ["12" "111"] ["Value [111] cannot be greater than Parameter Range End [100]."]
+        "float" ["101.0"] ["Value [101.0] cannot be greater than Parameter Range End [100.43]."]
+        "datetime" ["2015-04-01T02:00:00Z"] ["Value [2015-04-01T02:00:00Z] cannot be greater than Parameter Range End [2015-03-31T02:00:00Z]."]
+        "date" ["2015-04-01Z"] ["Value [2015-04-01Z] cannot be greater than Parameter Range End [2015-03-31Z]."]
+        "time" ["21:00:00Z"] ["Value [21:00:00Z] cannot be greater than Parameter Range End [20:00:00Z]."]))))
 
 ; (deftest granule-online-access-urls-validation
 ;   (let [url "http://example.com/url2"

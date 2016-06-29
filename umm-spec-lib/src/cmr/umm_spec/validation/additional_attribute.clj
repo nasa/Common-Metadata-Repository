@@ -9,11 +9,11 @@
 
 (def no-range-data-types
   "Set of data-types of additional attribute that do not support parameter range"
-  #{:string :boolean})
+  #{"STRING" "BOOLEAN"})
 
 (def validate-range-data-types
   "Set of data-types of additional attribute that require parameter range validations"
-  #{:int :float :datetime :date :time})
+  #{"INT" "FLOAT" "DATETIME" "DATE" "TIME"})
 
 (defn- field-value-validation
   "Validates the given additional attribute field value matches the data type"
@@ -48,10 +48,39 @@
            (mapcat #(apply value-fn %))
            (remove nil?)))))
 
+(defn- range-values-validation
+  "Validates range values"
+  [attrib]
+  (let [parsed-value (::aa/parsed-value attrib)
+        parsed-parameter-range-begin (::aa/parsed-parameter-range-begin attrib)
+        parsed-parameter-range-end (::aa/parsed-parameter-range-end attrib)
+        data-type (:DataType attrib)]
+    (when (validate-range-data-types data-type)
+      (cond
+        (and parsed-parameter-range-begin parsed-parameter-range-end
+             (util/greater-than? parsed-parameter-range-begin parsed-parameter-range-end))
+        [(format "Parameter Range Begin [%s] cannot be greater than Parameter Range End [%s]."
+                 (:ParameterRangeBegin attrib)
+                 (:ParameterRangeEnd attrib))]
+
+        (and parsed-value parsed-parameter-range-begin
+             (util/less-than? parsed-value parsed-parameter-range-begin))
+        [(format "Value [%s] cannot be less than Parameter Range Begin [%s]."
+                 (:Value attrib)
+                 (:ParameterRangeBegin attrib))]
+
+        (and parsed-value parsed-parameter-range-end
+             (util/greater-than? parsed-value parsed-parameter-range-end))
+        [(format "Value [%s] cannot be greater than Parameter Range End [%s]."
+                 (:Value attrib)
+                 (:ParameterRangeEnd attrib))]))))
+
 (defn- parameter-range-validation
   "Validates additional attribute parameter range related rules"
   [field-path aa]
-  (let [errors (range-type-validation aa)]
+  (let [errors (concat (range-type-validation aa)
+                       ;; TODO add tests for this for collections
+                       (range-values-validation aa))]
     (when (seq errors)
       {field-path errors})))
 
@@ -60,3 +89,41 @@
   [(vu/unique-by-name-validator :Name)
    (v/every [values-match-data-type-validation
              parameter-range-validation])])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Granules
+
+(defn- value-refs-match-data-type-validation
+  "Validates granule additional attribute ref values match the parent data type"
+  [field-path aa]
+  (let [data-type (get-in aa [:parent :DataType])
+        errors (->> (:values aa)
+                    (mapcat #(field-value-validation data-type :value %))
+                    (remove nil?))]
+    (when (seq errors)
+      {field-path errors})))
+
+(defn- value-refs-parameter-range-validation
+  "Validates granule satisfy parent collection's additional attribute parameter range rules"
+  [field-path aa]
+  (let [{:keys [name values parent]} aa
+        data-type (:DataType parent)
+        errors (if (seq values)
+                 (when parent
+                   ;; This reuses the parent collection validation for the granules.
+                   (for [v values
+                         :let [parsed-value (aa/safe-parse-value data-type v)
+                               new-aa (assoc parent
+                                             :Value v
+                                             ::aa/parsed-value parsed-value)]
+                         error (range-values-validation new-aa)
+                         :when error]
+                     error))
+                 [(format "%%s [%s] values must not be empty." name)])]
+    (when (seq errors)
+      {field-path errors})))
+
+(def aa-ref-validations
+  "Defines the additional attribute reference validations for granules"
+  [value-refs-match-data-type-validation
+   value-refs-parameter-range-validation])
