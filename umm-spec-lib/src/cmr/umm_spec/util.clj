@@ -4,12 +4,31 @@
             [cheshire.core :as json]
             [cheshire.factory :as factory]
             [cmr.common.util :as util]
+            [cmr.umm-spec.models.common :as cmn]
+            [clj-time.format :as f]
             [cmr.common.xml.parse :as p]
             [cmr.common.xml.simple-xpath :refer [select]]))
 
 (def not-provided
   "place holder string value for not provided string field"
   "Not provided")
+
+(def not-provided-organization
+  "Place holder to use when an organization is not provided."
+  (cmn/map->ResponsibilityType
+   {:Role "RESOURCEPROVIDER"
+    :Party (cmn/map->PartyType {:OrganizationName
+                                (cmn/map->OrganizationNameType
+                                 {:ShortName not-provided})})}))
+(def not-provided-related-url
+  "Place holder to use when a related url is not provided."
+  (cmn/map->RelatedUrlType
+   {:URLs ["Not%20provided"]}))
+
+(def not-provided-data-date
+  "Place holder to use when a data date is not provided."
+  (cmn/map->DateType {:Date (f/parse "2000-01-01T00:00:00Z")
+                      :Type "REVIEW"}))
 
 (def default-granule-spatial-representation
   "Default value for GranuleSpatialRepresentation"

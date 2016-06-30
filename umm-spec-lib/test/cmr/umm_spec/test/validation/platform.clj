@@ -16,12 +16,12 @@
         c2 (c/map->CharacteristicType {:Name "C2"})]
     (testing "valid platforms"
       (h/assert-valid (coll/map->UMM-C
-                      {:Platforms [(c/map->PlatformType {:ShortName "P1"
-                                                         :Instruments [i1 i2]
-                                                         :Characteristics [c1 c2]})
-                                   (c/map->PlatformType {:ShortName "P2"
-                                                         :Instruments [i1 i2]
-                                                         :Characteristics [c1 c2]})]})))
+                       {:Platforms [(c/map->PlatformType {:ShortName "P1"
+                                                          :Instruments [i1 i2]
+                                                          :Characteristics [c1 c2]})
+                                    (c/map->PlatformType {:ShortName "P2"
+                                                          :Instruments [i1 i2]
+                                                          :Characteristics [c1 c2]})]})))
 
     (testing "invalid platforms"
       (testing "duplicate platform short names"

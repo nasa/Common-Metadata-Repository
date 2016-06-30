@@ -71,8 +71,8 @@
 (defn- parse-service-organization-urls
   "Parse a Service Organization URL element into a RelatedURL map"
   [service-provider role]
-    (when (= role "RESOURCEPROVIDER")
-      [{:URLs (values-at service-provider "Service_Organization_URL")}]))
+  (when (= role "RESOURCEPROVIDER")
+    [{:URLs (values-at service-provider "Service_Organization_URL")}]))
 
 (defn- parse-party
   "Constructs a UMM Party element from a SERF Personnel element and a SERF Service_Provider element"
@@ -204,13 +204,13 @@
            {:Name "Metadata_Version"
             :Description "Root SERF Metadata_Version Object"
             :Value (value-of doc "/SERF/Metadata_Version")}]
-           (for [idn-node (select doc "/SERF/IDN_Node")]
-             {:Name "IDN_Node"
-              :Description "Root SERF IDN_Node Object"
-              :Value (clojure.string/join
-                       [(value-of idn-node "Short_Name")
-                        "|"
-                        (value-of idn-node "Long_Name")])})))
+          (for [idn-node (select doc "/SERF/IDN_Node")]
+            {:Name "IDN_Node"
+             :Description "Root SERF IDN_Node Object"
+             :Value (clojure.string/join
+                     [(value-of idn-node "Short_Name")
+                      "|"
+                      (value-of idn-node "Long_Name")])})))
 
 (defn- parse-service-keywords
   "Parses a SERF document for Service Keyword elements and returns a UMM-S Service Keyword element"

@@ -8,6 +8,7 @@
             [clojure.string :as str]
             [cmr.common.mime-types :as mt]
             [cmr.umm.granule :as umm-g]
+            [cmr.common.util :as u :refer [are3]]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
@@ -22,7 +23,7 @@
 ;; but the shortname or dataset id did not) will reference the correct collection.
 ;; See CMR-1104
 (deftest granule-referencing-collection-with-changing-concept-id-test
-  (let [common-fields {:entry-title "coll1" :short-name "short1" :version-id "V1" :entry-id "short1_V1" }
+  (let [common-fields {:entry-title "coll1" :short-name "short1" :version-id "V1" :entry-id "short1_V1"}
         orig-coll (dc/collection-concept (assoc common-fields :native-id "native1"))
         _ (ingest/ingest-concept orig-coll)
 
@@ -150,7 +151,7 @@
             _ (ingest/ingest-concept granule)
             response (ingest/delete-concept granule {:accept-format :json :raw? true})]
         (index/wait-until-indexed)
-         (is (= {:concept-id "G1-PROV1" :revision-id 2}
+        (is (= {:concept-id "G1-PROV1" :revision-id 2}
              (ingest/parse-ingest-body :json response)))))
     (testing "xml response"
       (let [granule (d/item->concept (dg/granule collection {:concept-id "G2-PROV1"}))
@@ -294,44 +295,55 @@
                                                      :short-name "S1"
                                                      :version-id "V1"}))]
     (testing "Valid SMAP ISO granule with collection-ref attributes"
-      (are [attrs]
-           (let [granule (-> (dg/granule collection {:granule-ur "Gran1"})
-                             (assoc :collection-ref (umm-g/map->CollectionRef attrs))
-                             (d/item->concept :iso-smap))
-                 {:keys [status]} (ingest/ingest-concept granule)]
-             (index/wait-until-indexed)
-             (= 200 status))
+      (are3 [attrs]
+        (let [granule (-> (dg/granule collection {:granule-ur "Gran1"})
+                          (assoc :collection-ref (umm-g/map->CollectionRef attrs))
+                          (d/item->concept :iso-smap))
+              {:keys [status] :as response} (ingest/ingest-concept granule)]
+          (index/wait-until-indexed)
+          (is (= 200 status) (pr-str response)))
 
-           {:entry-title "correct"}
-           {:short-name "S1" :version-id "V1"}
-           {:entry-title "correct" :short-name "S1"}
-           {:entry-title "correct" :version-id "V1"}
-           {:entry-title "correct" :short-name "S1" :version-id "V1"}))
+        "EntryTitle"
+        {:entry-title "correct"}
+        "ShortName Version"
+        {:short-name "S1" :version-id "V1"}
+        "EntryTitle ShortName"
+        {:entry-title "correct" :short-name "S1"}
+        "EntryTitle Version"
+        {:entry-title "correct" :version-id "V1"}
+        "EntryTitle ShortName Version"
+        {:entry-title "correct" :short-name "S1" :version-id "V1"}))
 
     (testing "Invalid SMAP ISO granule with collection-ref attributes"
-      (are [attrs expected-errors]
-           (let [collection-ref (umm-g/map->CollectionRef attrs)
-                 granule (-> (dg/granule collection {:granule-ur "Gran1"})
-                             (assoc :collection-ref collection-ref)
-                             (d/item->concept :iso-smap))
-                 {:keys [status errors]} (ingest/ingest-concept granule)]
-             (= [422 expected-errors] [status errors]))
+      (are3 [attrs expected-errors]
+        (let [collection-ref (umm-g/map->CollectionRef attrs)
+              granule (-> (dg/granule collection {:granule-ur "Gran1"})
+                          (assoc :collection-ref collection-ref)
+                          (d/item->concept :iso-smap))
+              {:keys [status errors]} (ingest/ingest-concept granule)]
+          (is (= [422 expected-errors] [status errors])))
 
-           {}
-           ["Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."]
+        "Missing everything"
+        {}
+        ["Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."]
 
-           {:entry-title "wrong"}
-           ["Collection with Entry Title [wrong] referenced in granule [Gran1] provider [PROV1] does not exist."]
+        "Wrong Entry Title"
+        {:entry-title "wrong"}
+        ["Collection with Entry Title [wrong] referenced in granule [Gran1] provider [PROV1] does not exist."]
 
-           {:short-name "S2"}
-           ["Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."]
+        "Only ShortName"
+        {:short-name "S2"}
+        ["Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."]
 
-           {:version-id "V2"}
-           ["Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."]
+        "Only Version"
+        {:version-id "V2"}
+        ["Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."]
 
-           {:short-name "S2" :version-id "V1"}
-           ["Collection with Short Name [S2], Version Id [V1] referenced in granule [Gran1] provider [PROV1] does not exist."]
+        "Wrong ShortName Version"
+        {:short-name "S2" :version-id "V1"}
+        ["Collection with Short Name [S2], Version Id [V1] referenced in granule [Gran1] provider [PROV1] does not exist."]
 
-           {:entry-title "correct" :short-name "S2" :version-id "V1"}
-           ["Collection with Entry Title [correct], Short Name [S2], Version Id [V1] referenced in granule [Gran1] provider [PROV1] does not exist."]))))
+        "Wrong EntryTitle ShortName Version"
+        {:entry-title "correct" :short-name "S2" :version-id "V1"}
+        ["Collection with Entry Title [correct], Short Name [S2], Version Id [V1] referenced in granule [Gran1] provider [PROV1] does not exist."]))))
 

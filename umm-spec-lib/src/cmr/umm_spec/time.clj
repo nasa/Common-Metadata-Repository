@@ -4,26 +4,39 @@
   (:require [clj-time.core :as t]))
 
 (defn temporal-all-dates
-  "Returns the set of all dates contained in the given TemporalExtent record."
+  "Returns the set of all dates contained in the given TemporalExtent record. :present is used to
+   indicate the temporal range goes to the present date."
   [temporal]
-  (let [ranges  (:RangeDateTime temporal)
-        singles (:SingleDateTime temporal)
-        periods (:PeriodicDateTime temporal)]
+  (let [ranges  (:RangeDateTimes temporal)
+        singles (:SingleDateTimes temporal)
+        periods (:PeriodicDateTimes temporal)]
     (set
      (concat singles
+             (when (:EndsAtPresentFlag temporal)
+               [:present])
              (map :BeginningDateTime ranges)
-             (map :EndingDateTime ranges)
+             ;; ending date time is optional. If it's not included it ends at present.
+             (map #(or (get % :EndingDateTime) :present) ranges)
              (map :StartDate periods)
+             ;; end date is required for periodic
              (map :EndDate periods)))))
 
 (defn collection-start-date
-  "Returns the earliest date found in the temporal extent of a UMM
-  collection."
+  "Returns the earliest date found in the temporal extent of a UMM collection. Nil indicates the
+   collection has no temporal extents."
   [umm-coll]
-  (t/earliest (mapcat temporal-all-dates (:TemporalExtent umm-coll))))
+  (when-let [dates (seq (remove #(= :present %) (mapcat temporal-all-dates (:TemporalExtents umm-coll))))]
+    (t/earliest dates)))
 
 (defn collection-end-date
-  "Returns the latest date found in the temporal extent of a UMM
-  collection."
+  "Returns the latest date found in the temporal extent of a UMM collection. The keyword :present
+   indicates the collection does not have an end date and continues to the present. Nil indicates the
+   collection has no temporal extents."
   [umm-coll]
-  (t/latest (mapcat temporal-all-dates (:TemporalExtent umm-coll))))
+  (let [date-set (reduce into #{} (map temporal-all-dates (:TemporalExtents umm-coll)))]
+    (when (seq date-set)
+      (if (contains? date-set :present)
+        :present
+        (t/latest date-set)))))
+
+

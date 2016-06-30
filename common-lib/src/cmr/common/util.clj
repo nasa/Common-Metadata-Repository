@@ -216,8 +216,7 @@
 (defn remove-nil-keys
   "Removes keys mapping to nil values in a map."
   [m]
-  (remove-map-keys (partial nil?) m))
-
+  (remove-map-keys #(nil? %) m))
 
 (defn map-keys [f m]
   "Maps f over the keys in map m and updates all keys with the result of f.
@@ -509,6 +508,17 @@
         (if ks
           (assoc m k (apply update-in-all v ks f args))
           (assoc m k (apply f v args)))))))
+
+(defn get-in-all
+  "Similar to clojure.core/get-in, but iterates over sequence values found along
+  the key path and returns an array of all matching values."
+  [m [k & ks]]
+  (let [v (get m k)]
+    (cond
+      (nil? v) []                                    ;; Return empty results if the path can't be followed
+      (nil? ks) [v]                                  ;; Return just the value if we're at the end of the path
+      (sequential? v) (mapcat #(get-in-all %1 ks) v) ;; Iterate and recurse through sequences
+      :else (get-in-all v ks))))                     ;; Recurse on ordinary keys (assumed to be maps)
 
 (defn- key->delay-name
   "Returns the key that the delay is stored in for a lazy value"

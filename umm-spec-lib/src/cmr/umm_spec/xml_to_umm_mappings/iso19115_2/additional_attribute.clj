@@ -19,7 +19,7 @@
   (when-let [aas (select doc content-info-base-xpath)]
     (for [aa aas]
       {:Group (char-string-value
-                aa (str content-info-attribute-xpath "/eos:identifier/gmd:MD_Identifier/gmd:code"))
+               aa (str content-info-attribute-xpath "/eos:identifier/gmd:MD_Identifier/gmd:code"))
        :Name (char-string-value aa (str content-info-attribute-xpath "/eos:name"))
        :DataType (value-of aa (str content-info-attribute-xpath
                                    "/eos:dataType/eos:EOS_AdditionalAttributeDataTypeCode"))
@@ -37,3 +37,4 @@
                                                           "/eos:parameterValueAccuracy"))
        :ValueAccuracyExplanation (char-string-value aa (str content-info-attribute-xpath
                                                             "/eos:valueAccuracyExplanation"))})))
+

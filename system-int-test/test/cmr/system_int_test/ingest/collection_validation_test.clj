@@ -338,53 +338,56 @@
 ;; namespaces.
 ;; Currently in the process of moving validation too UMM Spec Lib. Some validation tests
 ;; are in cmr.umm-spec.test.validation
-(deftest collection-umm-validation-test
+(deftest collection-umm-spec-validation-test
   (testing "UMM-C JSON-Schema validation"
     ;; enable return of schema validation errors from API
     (side/eval-form `(icfg/set-return-umm-json-validation-errors! true))
     ;; create collection valid against echo10 but invalid against schema
     (let [response (d/ingest "PROV1" (dc/collection {:product-specific-attributes
-                                                     [(dc/psa {:name "bool1" :data-type :boolean :value true})
-                                                      (dc/psa {:name "bool2" :data-type :boolean :value true})]})
+                                                      [(dc/psa {:name "bool1" :data-type :boolean :value true})
+                                                       (dc/psa {:name "bool2" :data-type :boolean :value true})]})
                              {:allow-failure? true})]
       (is (= {:status 422
-              :errors ["object has missing required properties ([\"Organizations\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
+              :errors ["object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
              (select-keys response [:status :errors]))))
     ;; disable return of schema validation errors from API
     (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
     (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
                                                  (dc/psa {:name "bool2" :data-type :boolean :value true})]}))
+
+  (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
+
   (testing "Additional Attribute validation"
     (assert-invalid
-      {:product-specific-attributes
+     {:product-specific-attributes
        [(dc/psa {:name "bool" :data-type :boolean :value true})
         (dc/psa {:name "bool" :data-type :boolean :value true})]}
-      ["AdditionalAttributes"]
-      ["Additional Attributes must be unique. This contains duplicates named [bool]."]))
+     ["AdditionalAttributes"]
+     ["Additional Attributes must be unique. This contains duplicates named [bool]."]))
   (testing "Nested Path Validation"
     (assert-invalid
-      {:platforms [(dc/platform {:instruments [(dc/instrument {:short-name "I1"})
-                                               (dc/instrument {:short-name "I1"})]})]}
-      ["Platforms" 0 "Instruments"]
-      ["Instruments must be unique. This contains duplicates named [I1]."]))
+     {:platforms [(dc/platform {:instruments [(dc/instrument {:short-name "I1"})
+                                              (dc/instrument {:short-name "I1"})]})]}
+     ["Platforms" 0 "Instruments"]
+     ["Instruments must be unique. This contains duplicates named [I1]."]))
   (testing "Spatial validation"
     (testing "geodetic polygon"
       ;; Invalid points are caught in the schema validation
       (assert-invalid-spatial
-        :geodetic
-        [(polygon 180 90, -180 90, -180 -90, 180 -90, 180 90)]
-        ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "GPolygons" 0]
-        ["Spatial validation error: The shape contained duplicate points. Points 1 [lon=180 lat=90] and 2 [lon=-180 lat=90] were considered equivalent or very close."
-         "Spatial validation error: The shape contained duplicate points. Points 3 [lon=-180 lat=-90] and 4 [lon=180 lat=-90] were considered equivalent or very close."
-         "Spatial validation error: The shape contained consecutive antipodal points. Points 2 [lon=-180 lat=90] and 3 [lon=-180 lat=-90] are antipodal."
-         "Spatial validation error: The shape contained consecutive antipodal points. Points 4 [lon=180 lat=-90] and 5 [lon=180 lat=90] are antipodal."]))
+       :geodetic
+       [(polygon 180 90, -180 90, -180 -90, 180 -90, 180 90)]
+       ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "GPolygons" 0]
+       ["Spatial validation error: The shape contained duplicate points. Points 1 [lon=180 lat=90] and 2 [lon=-180 lat=90] were considered equivalent or very close."
+        "Spatial validation error: The shape contained duplicate points. Points 3 [lon=-180 lat=-90] and 4 [lon=180 lat=-90] were considered equivalent or very close."
+        "Spatial validation error: The shape contained consecutive antipodal points. Points 2 [lon=-180 lat=90] and 3 [lon=-180 lat=-90] are antipodal."
+        "Spatial validation error: The shape contained consecutive antipodal points. Points 4 [lon=180 lat=-90] and 5 [lon=180 lat=90] are antipodal."]))
     (testing "geodetic polygon with holes"
       ;; Hole validation is not supported yet. See CMR-1173.
       ;; Holes are ignored during validation for now.
       (assert-valid-spatial
-        :geodetic
-        [(poly/polygon [(umm-s/ords->ring 1 1, -1 1, -1 -1, 1 -1, 1 1)
-                        (umm-s/ords->ring 0,0, 0.00004,0, 0.00006,0.00005, 0.00002,0.00005, 0,0)])]))
+       :geodetic
+       [(poly/polygon [(umm-s/ords->ring 1 1, -1 1, -1 -1, 1 -1, 1 1)
+                       (umm-s/ords->ring 0,0, 0.00004,0, 0.00006,0.00005, 0.00002,0.00005, 0,0)])]))
     (testing "cartesian polygon"
       ;; The same shape from geodetic is valid as a cartesian.
       ;; Cartesian validation is not supported yet. See CMR-1172
@@ -393,23 +396,24 @@
 
     (testing "geodetic line"
       (assert-invalid-spatial
-        :geodetic
-        [(l/ords->line-string :geodetic [0,0,1,1,2,2,1,1])]
-        ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "Lines" 0]
-        ["Spatial validation error: The shape contained duplicate points. Points 2 [lon=1 lat=1] and 4 [lon=1 lat=1] were considered equivalent or very close."]))
+       :geodetic
+       [(l/ords->line-string :geodetic [0,0,1,1,2,2,1,1])]
+       ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "Lines" 0]
+       ["Spatial validation error: The shape contained duplicate points. Points 2 [lon=1 lat=1] and 4 [lon=1 lat=1] were considered equivalent or very close."]))
 
     (testing "cartesian line"
       ;; Cartesian line validation isn't supported yet. See CMR-1172
       (assert-valid-spatial
-        :cartesian
-        [(l/ords->line-string :cartesian [180 0, -180 0])]))
+       :cartesian
+       [(l/ords->line-string :cartesian [180 0, -180 0])]))
 
     (testing "bounding box"
       (assert-invalid-spatial
-        :geodetic
-        [(m/mbr -180 45 180 46)]
-        ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "BoundingRectangles" 0]
-        ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
+       :geodetic
+       [(m/mbr -180 45 180 46)]
+       ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "BoundingRectangles" 0]
+       ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"])))
+  (side/eval-form `(icfg/set-return-umm-spec-validation-errors! false)))
 
 (deftest duplicate-entry-title-test
   (testing "same entry-title and native-id across providers is valid"

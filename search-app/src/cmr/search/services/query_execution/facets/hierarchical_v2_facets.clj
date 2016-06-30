@@ -51,7 +51,6 @@
               (+ num-levels-below-subfield
                  (get-max-subfield-index matching-subfields all-subfields))))))
 
-
 (defn- hierarchical-aggregation-builder
   "Build an aggregations query for the given hierarchical field."
   [field field-hierarchy size]
@@ -82,6 +81,22 @@
         relevant-query-params (filter (fn [[k v]] (re-matches subfield-reg-ex k)) query-params)]
     (some? (seq relevant-query-params))))
 
+(defn- find-applied-children
+  "Returns a sequence of tuples for any child facet that is applied in the current search query.
+  Searches the children facets recursively. The tuples are of the form [subfield value].
+
+  facet - hierarchical v2 facet
+  field-hierarchy - the part of the hierarchy that applies at the current depth of the facet
+  include-root? - True if the top level term should be included."
+  [facet field-hierarchy include-root?]
+  (when (:applied facet)
+    (let [applied-children (remove nil?
+                                   (mapcat #(find-applied-children % (rest field-hierarchy) true)
+                                           (:children facet)))]
+      (if include-root?
+        (conj applied-children [(first field-hierarchy) (:title facet)])
+        applied-children))))
+
 (defn- generate-hierarchical-children
   "Generate children nodes for a hierarchical facet v2 response.
   recursive-parse-fn - function to call to recursively generate any children filter nodes.
@@ -90,13 +105,14 @@
   field - the hierarchical subfield to generate the filter nodes for in the v2 response.
   elastic-aggregations - the portion of the elastic aggregations response to parse to generate
                          the part of the facets v2 response related to the passed in field."
-  [recursive-parse-fn generate-links-fn field elastic-aggregations]
+  [recursive-parse-fn generate-links-fn field field-hierarchy elastic-aggregations]
   ;; Each value for this field has its own bucket in the elastic aggregations response
   (for [bucket (get-in elastic-aggregations [field :buckets])
         :let [value (:key bucket)
               count (get-in bucket [:coll-count :doc_count] (:doc_count bucket))
-              links (generate-links-fn value)
-              sub-facets (recursive-parse-fn bucket)]]
+              sub-facets (recursive-parse-fn bucket)
+              children-values-to-remove (find-applied-children sub-facets field-hierarchy false)
+              links (generate-links-fn value children-values-to-remove)]]
     (v2h/generate-hierarchical-filter-node value count links sub-facets)))
 
 (defn- parse-hierarchical-bucket-v2
@@ -132,7 +148,7 @@
           recursive-parse-fn (partial parse-hierarchical-bucket-v2 parent-field
                                       (rest field-hierarchy) base-url query-params)
           children (generate-hierarchical-children recursive-parse-fn generate-links-fn field
-                                                   elastic-aggregations)]
+                                                   field-hierarchy elastic-aggregations)]
       (when (seq children)
         (v2h/generate-group-node (csk/->snake_case_string field) true children)))))
 
@@ -198,6 +214,18 @@
       (dissoc hierarchical-facet :children))
     hierarchical-facet))
 
+(defn- create-facets-with-zero-matches
+  "Helper function to create v2 facets for terms which are included in the search query, but have
+  zero matching collections. This allows the user to easily remove an applied facet."
+  [base-url query-params field subfield-term-tuples]
+  (for [[subfield search-term] subfield-term-tuples
+         :let [param-name (format "%s[0][%s]"
+                                  (csk/->snake_case_string field)
+                                  (csk/->snake_case_string subfield))
+               link (lh/create-link-for-hierarchical-field
+                     base-url query-params param-name search-term nil)]]
+     (v2h/generate-hierarchical-filter-node search-term 0 link nil)))
+
 (defn- hierarchical-bucket-map->facets-v2
   "Takes a map of elastic aggregation results for a nested field. Returns a hierarchical facet for
   that field."
@@ -209,14 +237,8 @@
                             true)
         subfield-term-tuples (get-missing-subfield-term-tuples field field-hierarchy
                                                                hierarchical-facet query-params)
-        snake-case-field (csk/->snake_case_string field)
-        facets-with-zero-matches (for [[subfield search-term] subfield-term-tuples
-                                       :let [param-name (format "%s[0][%s]"
-                                                                snake-case-field
-                                                                (csk/->snake_case_string subfield))
-                                             link (lh/create-link-for-hierarchical-field
-                                                   base-url query-params param-name search-term)]]
-                                   (v2h/generate-hierarchical-filter-node search-term 0 link nil))]
+        facets-with-zero-matches (create-facets-with-zero-matches base-url query-params field
+                                                                  subfield-term-tuples)]
     (if (seq facets-with-zero-matches)
         ;; Add in links to remove any hierarchical fields that have been applied to the query-params
         ;; but do not have any matching collections.

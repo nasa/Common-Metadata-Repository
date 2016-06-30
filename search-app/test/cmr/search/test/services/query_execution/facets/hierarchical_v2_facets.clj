@@ -29,3 +29,49 @@
     {"variable_level_3" "vl3"} 6
     {"not_a_real_param" "foo"
      "topic" "topic"} 4))
+
+(def find-applied-children
+  "Var to call private function in hierarchical facets namespace."
+  #'hv2/find-applied-children)
+
+(deftest find-applied-children-test
+  (let [field-hierarchy [:first :second :third :fourth :fifth]]
+    (are3 [facets expected]
+      (is (= expected (find-applied-children facets field-hierarchy false)))
+
+      "Empty facets returns nil"
+      {} nil
+
+      "No children returns empty list when include-root is false"
+      {:applied true :title "A"} []
+
+      "Applied false are not included"
+      {:applied true :title "A" :children
+       [{:applied false :title "B" :children
+         [{:applied false :title "C"}
+          {:applied false :title "D" :children
+           [{:applied false :title "E"}]}]}]}
+      []
+
+      "Multiple children at same level with all applied are included"
+      {:applied true :title "A" :children
+       [{:applied true :title "B" :children
+         [{:applied true :title "C"}
+          {:applied true :title "D" :children
+           [{:applied true :title "E"}]}]}]}
+      [[:second "B"] [:third "C"] [:third "D"] [:fourth "E"]]
+
+      "Multiple children at same level with only one applied"
+      {:applied true :title "A" :children
+       [{:applied true :title "B" :children
+         [{:applied false :title "C"}
+          {:applied true :title "D" :children
+           [{:applied true :title "E"}]}]}]}
+      [[:second "B"] [:third "D"] [:fourth "E"]])
+
+    (testing "Root is included when include-root is true and applied"
+      (is (= [[:first "A"]]
+             (find-applied-children {:applied true :title "A"} field-hierarchy true))))
+    (testing "Root is not included when include-root is true but applied is false"
+      (is (= nil
+             (find-applied-children {:applied false :title "A"} field-hierarchy true))))))

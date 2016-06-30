@@ -15,5 +15,8 @@
 (defn umm->entry-id
   "Returns an entry-id for the given umm record."
   [umm]
-  (let [{:keys [short-name version-id]} (:product umm)]
-    (entry-id short-name version-id)))
+  (if-let [{:keys [short-name version-id]} (:product umm)]
+    (entry-id short-name version-id)
+    ;; This is a UMM Spec collection record. This is here for legacy reasons to support granules
+    ;; ingesting in ECHO10 and referencing a collection through EntryId
+    (entry-id (:ShortName umm) (:Version umm))))

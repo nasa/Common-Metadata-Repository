@@ -301,7 +301,7 @@
                           :gmd:citation {}
                           (x/element
                             :gmd:CI_Citation {}
-                            (h/iso-string-element :gmd:title (format "%s > %s" short-name long-name))
+                            (h/iso-string-element :gmd:title dataset-id)
                             (when revision-date-time (iso-date-element "revision" revision-date-time))
                             (iso-date-element "creation" insert-time)
                             (h/iso-string-element :gmd:edition version-id)

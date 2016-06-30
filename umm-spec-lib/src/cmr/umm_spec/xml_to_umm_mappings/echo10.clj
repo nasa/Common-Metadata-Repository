@@ -128,13 +128,16 @@
    :TilingIdentificationSystems (parse-tiling doc)
    :RelatedUrls (ru/parse-related-urls doc)
    :ScienceKeywords (for [sk (select doc "/Collection/ScienceKeywords/ScienceKeyword")]
-                         {:Category (value-of sk "CategoryKeyword")
-                          :Topic (value-of sk "TopicKeyword")
-                          :Term (value-of sk "TermKeyword")
-                          :VariableLevel1 (value-of sk "VariableLevel1Keyword/Value")
-                          :VariableLevel2 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/Value")
-                          :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
-                          :DetailedVariable (value-of sk "DetailedVariableKeyword")})})
+                      {:Category (value-of sk "CategoryKeyword")
+                       :Topic (value-of sk "TopicKeyword")
+                       :Term (value-of sk "TermKeyword")
+                       :VariableLevel1 (value-of sk "VariableLevel1Keyword/Value")
+                       :VariableLevel2 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/Value")
+                       :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
+                       :DetailedVariable (value-of sk "DetailedVariableKeyword")})
+     ;; Organizations is not implemented but is required in UMM-C
+     ;; Implement with CMR-3158
+     :Organizations [u/not-provided-organization]})
 
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document."
