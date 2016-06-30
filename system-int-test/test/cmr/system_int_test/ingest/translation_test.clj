@@ -10,15 +10,12 @@
             [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
 (def valid-formats
-  [
-   :umm-json
-   :iso19115])
-   ;; the following formats will be re-enabled once ISO support is complete
-   ;; :iso-smap
-   ;; :dif
-   ;; :dif10
-   ;; :echo10
-
+  [:umm-json
+   :iso19115
+   :iso-smap
+   :dif
+   :dif10
+   :echo10])
 
 (def test-context (lkt/setup-context-for-test lkt/sample-keyword-map))
 
@@ -55,10 +52,12 @@
       (let [input-str (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
             expected (expected-conversion/convert expected-conversion/example-collection-record input-format output-format)
             {:keys [status headers body]} (ingest/translate-metadata :collection input-format input-str output-format)
-            content-type (first (mt/extract-mime-types (:content-type headers)))]
-        (is (= 200 status))
+            _ (is (= 200 status) body)
+            content-type (first (mt/extract-mime-types (:content-type headers)))
+            parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
+        (is (= 200 status) body)
         (is (= (mt/format->mime-type output-format) content-type))
-        (is (= expected (umm-spec/parse-metadata test-context :collection output-format body))))))
+        (is (= expected parsed-umm-json)))))
 
   (testing "Failure cases"
     (testing "unsupported input format"

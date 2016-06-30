@@ -4,7 +4,7 @@
             [cmr.common.xml.simple-xpath :refer [select]]
             [cmr.common.xml.parse :refer :all]
             [cmr.umm-spec.iso-keywords :as kws]
-            [cmr.umm-spec.util :refer [without-default-value-of]]
+            [cmr.umm-spec.util :as u :refer [without-default-value-of]]
             [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]
             [cmr.umm-spec.iso19115-2-util :refer [umm-date-type-codes char-string-value]]))
@@ -84,4 +84,10 @@
                            :EndsAtPresentFlag (some? (seq (select temporal "gml:TimePeriod/gml:endPosition[@indeterminatePosition='now']")))})
        :ScienceKeywords (parse-science-keywords data-id-el)
        :SpatialExtent (spatial/parse-spatial data-id-el)
-       :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)})))
+       :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)
+       ;; Required by UMM-C
+       :RelatedUrls [u/not-provided-related-url]
+       ;; Required by UMM-C
+       :ProcessingLevel {:Id u/not-provided}
+       ;; Organizations is not implemented but is required in UMM-C
+       :Organizations [u/not-provided-organization]})))

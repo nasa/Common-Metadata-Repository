@@ -19,7 +19,9 @@
                     (or (first (filter #(some? (aa/safe-parse-value % value))
                                        all-data-types))
                         "STRING"))]
-    (util/remove-nil-keys (assoc attr :DataType data-type))))
+    (-> attr
+        (assoc :DataType data-type)
+        util/remove-nil-keys)))
 
 (defn xml-elem->AdditionalAttributes
   [doc]

@@ -15,20 +15,94 @@
 
   {"type": "capitalize", "field": "science_keyword", "priority": -10},
 
- {
+  {
     "type": "alias",
     "field": "science_keyword",
     "source_value": "Bioosphere",
     "replacement_value": "Biosphere",
     "priority": 0
   },
- {
+  {
     "type": "alias",
     "field": "platform",
     "source_value": "AM-1",
     "replacement_value": "Terra",
     "priority": 0
- },
+  },
+  {
+    "type": "ignore",
+    "field": "instrument",
+    "source_value": "NOT APPLICABLE",
+    "priority": 0
+  },
+  {
+    "type": "ignore",
+    "field": "instrument",
+    "source_value": "Not provided",
+    "priority": 0
+  },
+  {
+    "type": "alias",
+    "field": "instrument",
+    "source_value": "GPS",
+    "replacement_value": "GPS RECEIVERS",
+    "priority": 0
+  },
+  {
+    "type": "alias",
+    "field": "instrument",
+    "source_value": "GPS RECEIVERS",
+    "replacement_value": "GPS Receivers",
+    "priority": 0
+  },
+  {
+    "type": "alias",
+    "field": "project",
+    "source_value": "USGS_SOFIA",
+    "replacement_value": "USGS SOFIA",
+    "priority": 0
+  },
+  {
+    "type": "alias",
+    "field": "processing_level",
+    "source_value": "L1T",
+    "replacement_value": "1T",
+    "priority": 0
+  },
+  {
+    "type": "alias",
+    "field": "processing_level",
+    "source_value": "Level 1",
+    "replacement_value": "1",
+    "priority": 0
+  },
+  {
+    "type": "alias",
+    "field": "processing_level",
+    "source_value": "Level 2",
+    "replacement_value": "2",
+    "priority": 0
+  },
+  {
+    "type": "alias",
+    "field": "processing_level",
+    "source_value": "Level 3",
+    "replacement_value": "3",
+    "priority": 0
+  },
+  {
+    "type": "ignore",
+    "field": "processing_level",
+    "source_value": "NA",
+    "priority": 0
+  },
+  {
+    "type": "alias",
+    "field": "organization",
+    "source_value": "NASA/NSIDC_DAAC",
+    "replacement_value": "NSIDC",
+    "priority": 0
+  },
 
- {"type": "ignore", "field": "platform", "source_value": "Aircraft", "priority": 0}
+  {"type": "ignore", "field": "platform", "source_value": "Aircraft", "priority": 0}
 ]
