@@ -523,7 +523,7 @@
                   cloud-cover-validation
                   attribute-validation
                   science-keywords-validation
-                  ;; TODO CMR-3119 Humanized science keywords
+                  ;; CMR-3119 Humanized science keywords
                   exclude-validation
                   boolean-value-validation
                   polygon-validation

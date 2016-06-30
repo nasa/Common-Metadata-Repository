@@ -98,9 +98,8 @@
                        (string? value) (str/lower-case value)
                        (sequential? value) (map str/lower-case (remove nil? value))
                        :else value)]
-    (hash-map
-     field value
-     field-lower value-lower)))
+    {field value
+     field-lower value-lower}))
 
 (defn- collection-humanizers-elastic
   "Given a collection, returns humanized elastic search fields"
@@ -110,7 +109,7 @@
     (merge
      (extract-fields [:platforms :cmr.humanized/short-name] :platform-sn)
      (extract-fields [:platforms :instruments :cmr.humanized/short-name] :instrument-sn)
-     ;; TODO CMR-3119 Humanized science keywords
+     ;; CMR-3119 Humanized science keywords
      (extract-fields [:projects :cmr.humanized/short-name] :project-sn)
      (extract-fields [:product :cmr.humanized/processing-level-id] :processing-level-id)
      (extract-fields [:organizations :cmr.humanized/org-name] :organization))))

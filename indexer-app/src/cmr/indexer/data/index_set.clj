@@ -298,7 +298,7 @@
           ;; Mappings for nested fields used for searching and
           ;; hierarchical facets
           :science-keywords science-keywords-field-mapping
-          ;; TODO CMR-3119 Humanized science keywords
+          ;; CMR-3119 Humanized science keywords
           :platforms platform-hierarchical-mapping
           :instruments instrument-hierarchical-mapping
           :archive-centers data-center-hierarchical-mapping

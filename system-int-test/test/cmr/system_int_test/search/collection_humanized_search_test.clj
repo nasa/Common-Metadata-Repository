@@ -12,7 +12,6 @@
 ;; Note: These specs rely on data in the indexer's humanizers.json config
 ;;       file. Once humanizers can be set by the ingest service, these
 ;;       should be updated to ingest the humanizers they use.
-;; TODO: Update to use ingested humanizers
 
 (deftest search-by-platform-humanized
   (let [coll1 (d/ingest "PROV1" (dc/collection {:platforms [(dc/platform {:short-name "TERRA"})]}))
