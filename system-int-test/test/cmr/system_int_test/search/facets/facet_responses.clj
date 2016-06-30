@@ -34,43 +34,7 @@
          :links
          {:apply
           "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords%5B0%5D%5Btopic%5D=TOPIC1"},
-         :has_children true,
-         :children
-         [{:title "TERM1",
-           :type "filter",
-           :applied false,
-           :count 2,
-           :links
-           {:apply
-            "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords%5B0%5D%5Bterm%5D=TERM1"},
-           :has_children true,
-           :children
-           [{:title "LEVEL1-1",
-             :type "filter",
-             :applied false,
-             :count 2,
-             :links
-             {:apply
-              "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords%5B0%5D%5Bvariable_level_1%5D=LEVEL1-1"},
-             :has_children true,
-             :children
-             [{:title "LEVEL1-2",
-               :type "filter",
-               :applied false,
-               :count 2,
-               :links
-               {:apply
-                "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords%5B0%5D%5Bvariable_level_2%5D=LEVEL1-2"},
-               :has_children true,
-               :children
-               [{:title "LEVEL1-3",
-                 :type "filter",
-                 :applied false,
-                 :count 2,
-                 :links
-                 {:apply
-                  "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords%5B0%5D%5Bvariable_level_3%5D=LEVEL1-3"},
-                 :has_children false}]}]}]}]}]}
+         :has_children true}]}
       {:title "HURRICANE",
        :type "filter",
        :applied false,
@@ -87,51 +51,7 @@
          :links
          {:apply
           "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords%5B0%5D%5Btopic%5D=POPULAR"},
-         :has_children true,
-         :children
-         [{:title "EXTREME",
-           :type "filter",
-           :applied false,
-           :count 1,
-           :links
-           {:apply
-            "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords%5B0%5D%5Bterm%5D=EXTREME"},
-           :has_children true,
-           :children
-           [{:title "LEVEL2-1",
-             :type "filter",
-             :applied false,
-             :count 1,
-             :links
-             {:apply
-              "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords%5B0%5D%5Bvariable_level_1%5D=LEVEL2-1"},
-             :has_children true,
-             :children
-             [{:title "LEVEL2-2",
-               :type "filter",
-               :applied false,
-               :count 1,
-               :links
-               {:apply
-                "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords%5B0%5D%5Bvariable_level_2%5D=LEVEL2-2"},
-               :has_children true,
-               :children
-               [{:title "LEVEL2-3",
-                 :type "filter",
-                 :applied false,
-                 :count 1,
-                 :links
-                 {:apply
-                  "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords%5B0%5D%5Bvariable_level_3%5D=LEVEL2-3"},
-                 :has_children false}]}]}]}
-          {:title "UNIVERSAL",
-           :type "filter",
-           :applied false,
-           :count 1,
-           :links
-           {:apply
-            "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords%5B0%5D%5Bterm%5D=UNIVERSAL"},
-           :has_children false}]}]}]}
+         :has_children true}]}]}
     {:title "Platforms",
      :type "group",
      :applied false,
@@ -243,7 +163,7 @@
        :count 2,
        :links
        {:remove
-        "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=DIADEM-1D"},
+        "http://localhost:3003/collections.json?project=proj1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&instrument=ATM&page_size=0&include_facets=v2&platform=DIADEM-1D"},
        :has_children true,
        :children
        [{:title "TOPIC1",
@@ -252,7 +172,7 @@
          :count 2,
          :links
          {:remove
-          "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&include_facets=v2&platform=DIADEM-1D"},
+          "http://localhost:3003/collections.json?project=proj1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&include_facets=v2&platform=DIADEM-1D"},
          :has_children true,
          :children
          [{:title "TERM1",
@@ -261,7 +181,7 @@
            :count 2,
            :links
            {:remove
-            "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=DIADEM-1D"},
+            "http://localhost:3003/collections.json?project=proj1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=DIADEM-1D"},
            :has_children true,
            :children
            [{:title "LEVEL1-1",
@@ -270,7 +190,7 @@
              :count 2,
              :links
              {:remove
-              "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=DIADEM-1D"},
+              "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&project=proj1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=DIADEM-1D"},
              :has_children true,
              :children
              [{:title "LEVEL1-2"
@@ -279,7 +199,7 @@
                :count 2,
                :links
                {:remove
-                "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=DIADEM-1D"},
+                "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=DIADEM-1D"},
                :has_children true,
                :children
                [{:title "LEVEL1-3",
@@ -306,51 +226,7 @@
          :links
          {:apply
           "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B1%5D%5Btopic%5D=POPULAR&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=DIADEM-1D"},
-         :has_children true,
-         :children
-         [{:title "EXTREME",
-           :type "filter",
-           :applied false
-           :count 1,
-           :links
-           {:apply
-            "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords%5B1%5D%5Bterm%5D=EXTREME&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=DIADEM-1D"},
-           :has_children true,
-           :children
-           [{:title "LEVEL2-1",
-             :type "filter",
-             :applied false,
-             :count 1,
-             :links
-             {:apply
-              "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&science_keywords%5B1%5D%5Bvariable_level_1%5D=LEVEL2-1&include_facets=v2&platform=DIADEM-1D"},
-             :has_children true,
-             :children
-             [{:title "LEVEL2-2",
-               :type "filter",
-               :applied false,
-               :count 1,
-               :links
-               {:apply
-                "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords%5B1%5D%5Bvariable_level_2%5D=LEVEL2-2&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=DIADEM-1D"},
-               :has_children true,
-               :children
-               [{:title "LEVEL2-3",
-                 :type "filter",
-                 :applied false,
-                 :count 1,
-                 :links
-                 {:apply
-                  "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords%5B1%5D%5Bvariable_level_3%5D=LEVEL2-3&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=DIADEM-1D"},
-                 :has_children false}]}]}]}
-          {:title "UNIVERSAL",
-           :type "filter",
-           :applied false,
-           :count 1,
-           :links
-           {:apply
-            "http://localhost:3003/collections.json?science_keywords%5B0%5D%5Bterm%5D=Term1&science_keywords%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords%5B1%5D%5Bterm%5D=UNIVERSAL&project=proj1&science_keywords%5B0%5D%5Bvariable_level_1%5D=Level1-1&processing_level_id=PL1&data_center=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords%5B0%5D%5Bvariable_level_2%5D=Level1-2&instrument=ATM&science_keywords%5B0%5D%5Bcategory%5D=Cat1&page_size=0&science_keywords%5B0%5D%5Btopic%5D=Topic1&include_facets=v2&platform=DIADEM-1D"},
-           :has_children false}]}]}]}
+         :has_children true}]}]}
     {:title "Platforms",
      :type "group",
      :applied true,
@@ -471,51 +347,7 @@
          :links
          {:apply
           "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords%5B0%5D%5Btopic%5D=POPULAR"},
-         :has_children true
-         :children
-         [{:title "EXTREME",
-           :type "filter",
-           :applied false,
-           :count 1,
-           :links
-           {:apply
-            "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords%5B0%5D%5Bterm%5D=EXTREME"},
-           :has_children true,
-           :children
-           [{:title "LEVEL2-1",
-             :type "filter",
-             :applied false,
-             :count 1,
-             :links
-             {:apply
-              "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords%5B0%5D%5Bvariable_level_1%5D=LEVEL2-1"},
-             :has_children true,
-             :children
-             [{:title "LEVEL2-2",
-               :type "filter",
-               :applied false,
-               :count 1,
-               :links
-               {:apply
-                "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords%5B0%5D%5Bvariable_level_2%5D=LEVEL2-2"},
-               :has_children true,
-               :children
-               [{:title "LEVEL2-3",
-                 :type "filter",
-                 :applied false,
-                 :count 1,
-                 :links
-                 {:apply
-                  "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords%5B0%5D%5Bvariable_level_3%5D=LEVEL2-3"},
-                 :has_children false}]}]}]}
-          {:title "UNIVERSAL",
-           :type "filter",
-           :applied false,
-           :count 1,
-           :links
-           {:apply
-            "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords%5B0%5D%5Bterm%5D=UNIVERSAL"},
-           :has_children false}]}]}]}
+         :has_children true}]}]}
     {:title "Processing levels",
      :type "group",
      :applied false,

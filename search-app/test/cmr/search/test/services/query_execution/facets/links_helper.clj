@@ -78,7 +78,7 @@
         term "BIOMASS"]
     (are3 [query-params expected-result]
        (is (= expected-result (lh/create-link-for-hierarchical-field
-                               base-url query-params param-name term)))
+                               base-url query-params param-name term nil)))
 
        "Apply link to empty params"
        {"foo" "bar"}
@@ -107,7 +107,7 @@
     (are3 [query-params term expected-result]
        (is (= expected-result
               (lh/create-link-for-hierarchical-field
-                base-url (or query-params default-query-params) param-name term)))
+                base-url (or query-params default-query-params) param-name term nil)))
 
        "Same index as term being matched"
        nil
@@ -143,7 +143,23 @@
           term "Earth Science"
           param-name "science_keywords[0][category]"
           expected-result {:remove "http://localhost:3003/collections.json"}
-          result (lh/create-link-for-hierarchical-field base-url query-params param-name term)]
+          result (lh/create-link-for-hierarchical-field base-url query-params param-name term nil)]
+      (is (= expected-result result))))
+  (testing "Remove hierarchical links removes applied params at lower levels in the hierarchy"
+    (let [query-params {"science_keywords[0][category]" "CAT"
+                        "science_keywords[0][topic]" "TOPIC"
+                        "science_keywords[0][term]" "TERM"
+                        "science_keywords[0][variable_level_1]" "VL1"
+                        "science_keywords[0][variable_level_2]" "VL2"
+                        "science_keywords[0][variable_level_3]" "VL3"}
+          term "TOPIC"
+          param-name "science_keywords[0][topic]"
+          expected-result {:remove (str "http://localhost:3003/collections.json?"
+                                        "science_keywords%5B0%5D%5Bcategory%5D=CAT")}
+          other-params [[:term "TERM"] [:variable-level-1 "VL1"] [:variable-level-2 "VL2"]
+                        [:variable-level-3 "VL3"]]
+          result (lh/create-link-for-hierarchical-field base-url query-params param-name term
+                                                        other-params)]
       (is (= expected-result result)))))
 
 (deftest non-ascii-character-test
@@ -208,3 +224,48 @@
        false
        "p2"
        {:remove "http://localhost:3003/collections.json?placeholder%5B%5D=p1"}))))
+
+(def get-max-index-for-field-name
+  "Var to call private function in links helper namespace."
+  #'lh/get-max-index-for-field-name)
+
+(deftest get-max-index-for-field-name-test
+  (are3 [query-params expected-index]
+    (is (= expected-index (get-max-index-for-field-name query-params "foo")))
+
+    "Nil params returns -1"
+    nil -1
+
+    "Empty params returns -1"
+    {} -1
+
+    "Param not in query-params returns -1"
+    {"a" true
+     "b[1][c]" "abc"} -1
+
+    "Single matching param"
+    {"foo[0][a]" true} 0
+
+    "Double digit index"
+    {"foo[14][a]" true} 14
+
+    "Large index"
+    {"foo[1234567890][a]" true} 1234567890
+
+    "Multiple matching finds largest"
+    {"foo[0][a]" false
+     "foo[5][a]" 1
+     "foo[12][b]" "str"
+     "foo[99][a]" true
+     "foo[151][c]" "c"
+     "foo[140][a]" 15}
+    151
+
+    "Similar query params finds correct largest term index"
+    {"foo[0][a]" false
+     "bar[550][foo]" 1
+     "foo[12][b]" "str"
+     "afoo[99][a]" true
+     "food[151][c]" "c"
+     "foofoo[140][a]" 15}
+    12))

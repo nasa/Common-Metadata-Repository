@@ -24,13 +24,14 @@
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
   from a collection search. Size specifies the number of results to return. Only a subset of the
   facets are returned in the v2 facets, specifically those that help enable dataset discovery."
-  [size]
-  {:science-keywords (hv2/nested-facet :science-keywords size)
-   :platform (v2h/terms-facet :platform-sn size)
-   :instrument (v2h/terms-facet :instrument-sn size)
-   :data-center (v2h/terms-facet :data-center size)
-   :project (v2h/terms-facet :project-sn2 size)
-   :processing-level-id (v2h/terms-facet :processing-level-id size)})
+  [size query-params]
+  (let [sk-depth (hv2/get-depth-for-hierarchical-field query-params :science-keywords)]
+    {:science-keywords (hv2/nested-facet :science-keywords size sk-depth)
+     :platform (v2h/terms-facet :platform-sn size)
+     :instrument (v2h/terms-facet :instrument-sn size)
+     :data-center (v2h/terms-facet :data-center size)
+     :project (v2h/terms-facet :project-sn2 size)
+     :processing-level-id (v2h/terms-facet :processing-level-id size)}))
 
 (def v2-facets-root
   "Root element for the facet response"
@@ -94,10 +95,11 @@
       (assoc v2-facets-root :has_children false))))
 
 (defmethod query-execution/pre-process-query-result-feature :facets-v2
-  [_ query _]
-  ;; With CMR-1101 we will support a parameter to specify the number of terms to return. For now
-  ;; always use the DEFAULT_TERMS_SIZE
-  (assoc query :aggregations (facets-v2-aggregations DEFAULT_TERMS_SIZE)))
+  [{:keys [query-string]} query _]
+  (let [query-params (parse-params query-string "UTF-8")]
+    ;; With CMR-1101 we will support a parameter to specify the number of terms to return. For now
+    ;; always use the DEFAULT_TERMS_SIZE
+    (assoc query :aggregations (facets-v2-aggregations DEFAULT_TERMS_SIZE query-params))))
 
 (defmethod query-execution/post-process-query-result-feature :facets-v2
   [context _ {:keys [aggregations]} query-results _]
