@@ -45,11 +45,13 @@
 
 (def keyword-separator-split
   "Separator used to separate keyword into keyword fields"
+  ;; Note: This is going to be changed to "\s*>\s*"" per CMR-3181
+  ;; but requires changes to unit tests
   #"\s?>\s?")
 
 (def keyword-separator-join
   "Separator used to join keyword fields into a keyword string"
-  #" > ")
+  " > ")
 
 (defn generate-title
   "Returns an ISO title string from the ShortName and LongName fields of the given record."

@@ -74,8 +74,6 @@
 (defn parse-metadata
   "Parses metadata of the specific concept type and format into UMM records"
   [context concept-type fmt metadata]
-  (def ctx context)
-  (proto/save 4 metadata)
   (condp = [concept-type (mt/format-key fmt)]
     [:collection :umm-json] (umm-json/json->umm context :collection metadata (umm-json-version fmt))
     [:collection :echo10]   (echo10-to-umm/echo10-xml-to-umm-c context (xpath/context metadata))
