@@ -25,7 +25,7 @@
   [field-path value]
   (let [{:keys [MinimumValue MaximumValue]} value]
     (when (and MinimumValue MaximumValue (> MinimumValue MaximumValue))
-      {field-path [(format "%%s minimum [%s] must be less than the maximum [%s]."
+      {field-path [(format "%%s minimum [%s] must be less than or equal to the maximum [%s]."
                            (str MinimumValue) (str MaximumValue))]})))
 
 (def tiling-identification-system-coordinate-validations

@@ -124,7 +124,7 @@
           (h/assert-invalid
             coll
             [:TilingIdentificationSystems 0 :Coordinate1]
-            ["Coordinate 1 minimum [10.0] must be less than the maximum [6.0]."])))
+            ["Coordinate 1 minimum [10.0] must be less than or equal to the maximum [6.0]."])))
       (testing "multiple validation errors"
         (let [coll (coll/map->UMM-C {:TilingIdentificationSystems [t1 t1 t3 t4]})]
           (h/assert-multiple-invalid
@@ -134,7 +134,7 @@
               ["Tiling Identification Systems must be unique. This contains duplicates named [T1]."]}
              {:path [:TilingIdentificationSystems 2 :Coordinate1],
               :errors
-              ["Coordinate 1 minimum [10.0] must be less than the maximum [6.0]."]}
+              ["Coordinate 1 minimum [10.0] must be less than or equal to the maximum [6.0]."]}
              {:path [:TilingIdentificationSystems 3 :Coordinate2],
               :errors
-              ["Coordinate 2 minimum [50.0] must be less than the maximum [26.0]."]}]))))))
+              ["Coordinate 2 minimum [50.0] must be less than or equal to the maximum [26.0]."]}]))))))
