@@ -133,13 +133,13 @@
   "Translates two umm-versions using the ingest translation endpoint. Returns the response."
   ([concept-type input-version metadata output-version options]
    (let [format-base "application/vnd.nasa.cmr.umm+json;version="]
-   (client/post (url/translate-metadata-url concept-type)
-                {:connection-manager (s/conn-mgr)
-                 :throw-exceptions false
-                 :body metadata
-                 :query-params (:query-params options)
-                 :headers {"Content-Type" (str format-base input-version)
-                           "Accept" (str format-base output-version)}})))
+    (client/post (url/translate-metadata-url concept-type)
+                 {:connection-manager (s/conn-mgr)
+                  :throw-exceptions false
+                  :body metadata
+                  :query-params (:query-params options)
+                  :headers {"Content-Type" (str format-base input-version)
+                            "Accept" (str format-base output-version)}})))
   ([concept-type input-format metadata output-format]
    (translate-between-umm-versions concept-type input-format metadata output-format nil)))
 
@@ -165,7 +165,7 @@
   and an :errors tag. Otherwise, just return the list of error messages."
   [elem]
   (if-let [path (parse-error-path (cx/string-at-path elem [:path]))]
-    {:errors (cx/strings-at-path elem [:errors :error]) :path path}
+    {:errors (vec (cx/strings-at-path elem [:errors :error])) :path path}
     (first (:content elem))))
 
 (defn- parse-xml-error-response-elem
@@ -388,7 +388,7 @@
    :grant-all-ingest? true})
 
 (defn reset-fixture
-  "Creates the given providers in ECHO and the CMR then clears out all data at the end.
+  "Resets all the CMR systems then creates the given providers in ECHO and the CMR.
   providers can be passed in two ways: 1) a map of provider-guids to provider-ids
   {'provider-guid1' 'PROV1' 'provider-guid2' 'PROV2'}, or
   2) a list of provider attributes maps:

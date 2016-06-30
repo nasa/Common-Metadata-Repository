@@ -522,9 +522,9 @@
 
   (testing "ingesting UMM JSON with parsing errors"
     (let [json (umm-spec/generate-metadata test-context (assoc exc/example-collection-record
-                                             :DataDates
-                                             [{:Date "invalid date"
-                                               :Type "CREATE"}])
+                                                         :DataDates
+                                                         [{:Date "invalid date"
+                                                           :Type "CREATE"}])
                                            :umm-json)
           concept-map {:provider-id "PROV1"
                        :native-id "umm_json_coll_2"

@@ -23,10 +23,9 @@
   [parent-ref-field human-readable-field-name]
   (fn [field-path values]
     (let [values (if (or (sequential? values) (nil? values)) values [values])
-          missing-parent-list
-          (->> values
-               (remove :parent)
-               (map parent-ref-field))]
+          missing-parent-list (->> values
+                                   (remove :parent)
+                                   (map parent-ref-field))]
       (when (seq missing-parent-list)
         {field-path
          [(format "The following list of %ss did not exist in the referenced parent collection: [%s]."

@@ -216,8 +216,7 @@
 (defn remove-nil-keys
   "Removes keys mapping to nil values in a map."
   [m]
-  (remove-map-keys (partial nil?) m))
-
+  (remove-map-keys #(nil? %) m))
 
 (defn map-keys [f m]
   "Maps f over the keys in map m and updates all keys with the result of f.

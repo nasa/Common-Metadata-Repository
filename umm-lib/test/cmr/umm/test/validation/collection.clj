@@ -20,7 +20,7 @@
   messages."
   [collection field-path expected-errors]
   (is (= [(e/map->PathErrors {:path field-path
-                              :errors expected-errors})]
+                              :errors (vec expected-errors)})]
          (v/validate-collection collection))))
 
 (defn assert-multiple-invalid

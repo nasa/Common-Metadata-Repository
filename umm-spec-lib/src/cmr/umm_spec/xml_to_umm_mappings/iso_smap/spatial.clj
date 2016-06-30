@@ -27,7 +27,7 @@
   "Returns UMM SpatialExtentType map from SMAP ISO data identifier XML document."
   [data-id-el]
   (when-let [bounding-rectangles (parse-bounding-rectangles data-id-el)]
-    {:SpatialCoverageType "GEODETIC"
+    {:SpatialCoverageType "HORIZONTAL"
      :GranuleSpatialRepresentation "GEODETIC"
      :HorizontalSpatialDomain {:Geometry {:CoordinateSystem "GEODETIC"
                                           :BoundingRectangles bounding-rectangles}}}))
