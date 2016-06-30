@@ -34,38 +34,19 @@
   [archive-center]
   (k/generate-keywords "dataCenter" archive-center))
 
-(def data-quality-scope
-  (x/element :gmd:scope {}
-             (x/element :gmd:DQ_Scope {}
-                        (x/element :gmd:level {} h/scope-code-element))))
-
 (defn generate-processing-center
   "Return processing center ignoring other type of organization like archive center"
   [orgs]
   (let [processing-center (get-organization-name :processing-center orgs)]
     (x/element
-      :gmd:dataQualityInfo {}
+      :gmd:processor {}
       (x/element
-        :gmd:DQ_DataQuality {}
-        data-quality-scope
+        :gmd:CI_ResponsibleParty {}
+        (h/iso-string-element :gmd:organisationName processing-center)
         (x/element
-          :gmd:lineage {}
+          :gmd:role {}
           (x/element
-            :gmd:LI_Lineage {}
-            (x/element
-              :gmd:processStep {}
-              (x/element
-                :gmi:LE_ProcessStep {}
-                (x/element :gmd:description {:gco:nilReason "unknown"})
-                (x/element
-                  :gmd:processor {}
-                  (x/element
-                    :gmd:CI_ResponsibleParty {}
-                    (h/iso-string-element :gmd:organisationName processing-center)
-                    (x/element
-                      :gmd:role {}
-                      (x/element
-                        :gmd:CI_RoleCode (h/role-code-attributes "processor") "processor"))))))))))))
+            :gmd:CI_RoleCode (h/role-code-attributes "processor") "processor"))))))
 
 
 
