@@ -6,7 +6,6 @@
             [cmr.umm-spec.date-util :as date]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
-            [cmr.umm-spec.additional-attribute :as aa]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.util :as u]
             [cmr.umm-spec.location-keywords :as lk]))

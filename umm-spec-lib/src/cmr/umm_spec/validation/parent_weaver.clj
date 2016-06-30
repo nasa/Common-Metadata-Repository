@@ -45,14 +45,14 @@
     [granule coll]
     (-> granule
         (assoc :parent coll)
-        (update-in [:collection-ref] set-parent coll)
-        (update-in [:spatial-coverage] set-parent (:SpatialExtent coll))
-        (update-in [:temporal] set-parent (:TemporalExtents coll))
-        (update-in [:platform-refs] set-parents-by-name (:Platforms coll) :short-name :ShortName)
-        (update-in [:two-d-coordinate-system] set-parent-by-name
-                   (:TilingIdentificationSystems coll) :name :TilingIdentificationSystemName)
-        (update-in [:product-specific-attributes]
-                   set-parents-by-name (:AdditionalAttributes coll))))
+        (update :collection-ref set-parent coll)
+        (update :spatial-coverage set-parent (:SpatialExtent coll))
+        (update :temporal set-parent (:TemporalExtents coll))
+        (update :platform-refs set-parents-by-name (:Platforms coll) :short-name :ShortName)
+        (update :two-d-coordinate-system set-parent-by-name
+                (:TilingIdentificationSystems coll) :name :TilingIdentificationSystemName)
+        (update :product-specific-attributes
+                set-parents-by-name (:AdditionalAttributes coll))))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   clojure.lang.IPersistentMap

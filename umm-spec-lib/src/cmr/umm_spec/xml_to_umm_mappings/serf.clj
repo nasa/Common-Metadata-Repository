@@ -5,7 +5,6 @@
             [camel-snake-kebab.core :as csk]
             [clojure.string :as string]
             [cmr.common.xml.parse :refer :all]
-            [cmr.umm-spec.additional-attribute :as aa]
             [cmr.umm-spec.util :refer [without-default-value-of not-provided]]
             [cmr.umm-spec.date-util :as date]))
 
