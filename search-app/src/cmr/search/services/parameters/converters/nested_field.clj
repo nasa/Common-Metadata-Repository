@@ -1,6 +1,7 @@
 (ns cmr.search.services.parameters.converters.nested-field
   "Contains functions for converting query parameters to conditions for nested fields."
-  (:require [cmr.common-app.services.search.query-model :as qm]
+  (:require [clojure.string :as str]
+            [cmr.common-app.services.search.query-model :as qm]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.common-app.services.search.params :as p]
             [cmr.transmit.kms :as kms]))
@@ -9,8 +10,9 @@
   [parent-field]
   "Returns all of the subfields for the provided nested field. All nested field queries also support
   'any'."
-  (conj (kms/keyword-scheme->field-names (kms/translate-keyword-scheme-to-gcmd parent-field))
-        :any))
+  (let [non-namespaced-parent (keyword (subs (str/replace parent-field #"\..*$" "") 1))]
+    (conj (kms/keyword-scheme->field-names (kms/translate-keyword-scheme-to-gcmd non-namespaced-parent))
+          :any)))
 
 (defn- nested-field->elastic-keyword
   "Returns the elastic keyword for the given nested field and subfield.
@@ -44,4 +46,3 @@
                (nested-field+value->string-condition parent-field subfield-name subfield-value
                                                      case-sensitive? pattern?)))
            (dissoc query-map :pattern :ignore-case)))))
-

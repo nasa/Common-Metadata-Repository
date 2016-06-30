@@ -107,9 +107,10 @@
   (let [humanized (humanizer/umm-collection->umm-collection+humanizers collection)
         extract-fields (partial extract-humanized-elastic-fields humanized)]
     (merge
+     {:science-keywords.humanized (map sk/humanized-science-keyword->elastic-doc
+                                   (:science-keywords humanized))}
      (extract-fields [:platforms :cmr.humanized/short-name] :platform-sn)
      (extract-fields [:platforms :instruments :cmr.humanized/short-name] :instrument-sn)
-     ;; CMR-3119 Humanized science keywords
      (extract-fields [:projects :cmr.humanized/short-name] :project-sn)
      (extract-fields [:product :cmr.humanized/processing-level-id] :processing-level-id)
      (extract-fields [:organizations :cmr.humanized/org-name] :organization))))

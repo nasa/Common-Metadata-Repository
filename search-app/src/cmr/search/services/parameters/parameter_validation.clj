@@ -40,7 +40,7 @@
                       :sensor :organization-h}
      :always-case-sensitive #{:echo-collection-id}
      :disallow-pattern #{:echo-collection-id}
-     :allow-or #{:attribute :science-keywords}}))
+     :allow-or #{:attribute :science-keywords :science-keywords-h}}))
 
 (defmethod cpv/params-config :granule
   [_]
@@ -98,6 +98,7 @@
    :two-d-coordinate-system cpv/string-param-options
    :keyword cpv/pattern-option
    :science-keywords cpv/string-plus-or-options
+   :science-keywords-h cpv/string-plus-or-options
    :spatial-keyword cpv/string-plus-and-options
    :dif-entry-id cpv/string-plus-and-options
    :provider cpv/string-param-options
@@ -284,9 +285,9 @@
       (mapcat #(-> % attrib/parse-value :errors) attributes)
       [(attrib-msg/attributes-must-be-sequence-msg)])))
 
-(defn science-keywords-validation
-  [concept-type params]
-  (when-let [science-keywords (:science-keywords params)]
+(defn science-keywords-validation-for-field
+  [field concept-type params]
+  (when-let [science-keywords (get params field)]
     (if (map? science-keywords)
       (let [values (vals science-keywords)]
         (if (some #(not (map? %)) values)
@@ -300,6 +301,12 @@
             []
             (mapcat keys values))))
       [(msg/science-keyword-invalid-format-msg)])))
+
+(def science-keywords-validation
+  (partial science-keywords-validation-for-field :science-keywords))
+
+(def science-keywords-h-validation
+  (partial science-keywords-validation-for-field :science-keywords-h))
 
 ;; This method is for processing legacy numeric ranges in the form of
 ;; param_nam[value], param_name[minValue], and param_name[maxValue].
@@ -523,7 +530,7 @@
                   cloud-cover-validation
                   attribute-validation
                   science-keywords-validation
-                  ;; CMR-3119 Humanized science keywords
+                  science-keywords-h-validation
                   exclude-validation
                   boolean-value-validation
                   polygon-validation
@@ -585,7 +592,9 @@
    (partial cpv/validate-map [:options :attribute])
    (partial cpv/validate-map [:exclude])
    (partial cpv/validate-map [:science-keywords])
-   (partial cpv/validate-all-map-values cpv/validate-map [:science-keywords])])
+   (partial cpv/validate-all-map-values cpv/validate-map [:science-keywords])
+   (partial cpv/validate-map [:science-keywords-h])
+   (partial cpv/validate-all-map-values cpv/validate-map [:science-keywords-h])])
 
 (defn validate-parameter-data-types
   "Validates data types of parameters.  Unlike other validations, this returns a tuple of
