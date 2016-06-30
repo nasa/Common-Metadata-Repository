@@ -39,7 +39,7 @@
 (defn parse-keyword-str
   "Returns a seq of individual components of an ISO-19115-2 or SMAP keyword string."
   [iso-keyword]
-  (for [s (str/split iso-keyword iso/keyword-separator)]
+  (for [s (str/split iso-keyword iso/keyword-separator-split)]
     (if (empty? s)
       nil
       s)))
@@ -93,7 +93,7 @@
   (for [sk (descriptive-keywords md-data-id-el "theme")
         :let [[category topic term variable-level-1 variable-level-2 variable-level-3
                detailed-variable] (map #(if (= nil-science-keyword-field %) nil %)
-                                       (str/split sk iso/keyword-separator))]]
+                                       (str/split sk iso/keyword-separator-split))]]
     {:Category category
      :Topic topic
      :Term term
@@ -133,7 +133,7 @@
          detailed-variable :DetailedVariable} science-keyword]
     (->> [category topic term variable-level-1 variable-level-2 variable-level-3 detailed-variable]
          (map #(or % nil-science-keyword-field))
-         (str/join iso/keyword-separator))))
+         (str/join iso/keyword-separator-join))))
 
 (defn- generate-descriptive-keywords
   "Returns the content generator instructions for the given descriptive keywords."

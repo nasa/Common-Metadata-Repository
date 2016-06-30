@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.umm-to-xml-mappings.echo10.related-url
+(ns cmr.umm-spec.related-url
   (:require [cmr.common.xml.gen :refer :all]
             [clojure.string :as str]))
 

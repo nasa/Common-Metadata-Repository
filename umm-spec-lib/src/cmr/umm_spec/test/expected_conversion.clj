@@ -16,9 +16,9 @@
             [cmr.spatial.mbr :as m]
             ;; Required for loading service models for testing
             [cmr.umm-spec.models.service]
+            [cmr.umm-spec.related-url :as ru-gen]
             [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as echo10-spatial-gen]
-            [cmr.umm-spec.umm-to-xml-mappings.echo10.related-url :as echo10-ru-gen]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as echo10-spatial-parse]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
@@ -468,7 +468,7 @@
              (update-in [:FileSize] (fn [file-size]
                                       (when (and file-size
                                                  (= rel "GET RELATED VISUALIZATION"))
-                                        (when-let [byte-size (echo10-ru-gen/convert-to-bytes
+                                        (when-let [byte-size (ru-gen/convert-to-bytes
                                                                (:Size file-size) (:Unit file-size))]
                                           (assoc file-size :Size (float (int byte-size)) :Unit "Bytes")))))
              (update-in [:Relation] (fn [[rel]]

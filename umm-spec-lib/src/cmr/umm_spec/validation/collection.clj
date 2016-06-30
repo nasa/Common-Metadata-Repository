@@ -2,6 +2,7 @@
   "Defines validations for UMM collections."
   (:require [clj-time.core :as t]
             [cmr.common.validations.core :as v]
+            [cmr.umm.validation.utils :as vu]
             [cmr.umm-spec.validation.spatial :as s]
             [cmr.umm-spec.validation.platform :as p]
             [cmr.umm-spec.validation.additional-attribute :as aa]))
@@ -14,12 +15,27 @@
       {field-path [(format "BeginningDateTime [%s] must be no later than EndingDateTime [%s]"
                            (str BeginningDateTime) (str EndingDateTime))]})))
 
+(defn- metadata-association-name
+  "Returns the unique name of metadata association for reporting purpose"
+  [ma]
+  (format "(EntryId [%s] & Version [%s])" (:EntryId ma) (:Version ma)))
+
+
 (def temporal-extent-validation
   {:RangeDateTimes (v/every range-date-time-validation)})
+
+(def science-keyword-validations
+  "Defines the science keyword validations for collections"
+  {:Category v/required
+   :Topic v/required
+   :Term v/required})
 
 (def collection-validations
   "Defines validations for collections"
   {:TemporalExtents (v/every temporal-extent-validation)
    :Platforms p/platforms-validation
    :AdditionalAttributes aa/additional-attribute-validation
-   :SpatialExtent s/spatial-extent-validation})
+   :Projects (vu/unique-by-name-validator :ShortName)
+   :ScienceKeywords (v/every science-keyword-validations)
+   :SpatialExtent s/spatial-extent-validation
+   :MetadataAssociations (vu/unique-by-name-validator metadata-association-name)})
