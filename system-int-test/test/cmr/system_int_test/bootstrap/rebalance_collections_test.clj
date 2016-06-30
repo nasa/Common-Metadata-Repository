@@ -167,10 +167,14 @@
        ;; 5 minutes.
        ;; This check is here as a demonstration of the problem and not an assertion of what we want to happen.
        ;; Fix during CMR-2668
-       (verify-provider-holdings
-         (inc-provider-holdings-for-coll
-          expected-provider-holdings coll1 -6)
-         "After finalize before clear cache")
+
+       ;; Later: This check was originally here as a demonstration of the failure but sometimes it actually
+       ;; "passes". I think there's a race condition where search will use the correct index.
+       ; (verify-provider-holdings
+         ; (inc-provider-holdings-for-coll
+          ; expected-provider-holdings coll1 -6)
+         ; "After finalize before clear cache")
+
        ;; After the cache is cleared the right amount of data is found
        (search/clear-caches)
        (verify-provider-holdings
