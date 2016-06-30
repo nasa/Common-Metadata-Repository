@@ -43,10 +43,51 @@
            :errors
            ["BeginningDateTime [2000-12-30T19:00:02.000Z] must be no later than EndingDateTime [2000-12-30T19:00:01.000Z]"]}])
         (h/assert-multiple-invalid
-         (h/coll-with-range-date-times [[r1] [r2]])
+         (coll-with-range-date-times [[r1] [r2]])
          [{:path [:TemporalExtents 0 :RangeDateTimes 0],
            :errors
            ["BeginningDateTime [1999-12-30T19:00:02.000Z] must be no later than EndingDateTime [1999-12-30T19:00:01.000Z]"]}
           {:path [:TemporalExtents 1 :RangeDateTimes 0],
            :errors
            ["BeginningDateTime [2000-12-30T19:00:02.000Z] must be no later than EndingDateTime [2000-12-30T19:00:01.000Z]"]}])))))
+
+(deftest collection-projects-validation
+  (let [c1 (c/map->ProjectType {:ShortName "C1"})
+        c2 (c/map->ProjectType {:ShortName "C2"})
+        c3 (c/map->ProjectType {:ShortName "C3"})]
+    (testing "valid projects"
+      (h/assert-valid (coll/map->UMM-C {:Projects [c1 c2]})))
+
+    (testing "invalid projects"
+      (testing "duplicate names"
+        (let [coll (coll/map->UMM-C {:Projects [c1 c1 c2 c2 c3]})]
+          (h/assert-invalid
+            coll
+            [:Projects]
+            ["Projects must be unique. This contains duplicates named [C1, C2]."]))))))
+
+(deftest metadata-associations-validation
+  (testing "valid metadata associations"
+    (h/assert-valid (coll/map->UMM-C
+                     {:MetadataAssociations
+                       [(c/map->MetadataAssociationType {:EntryId "S1"
+                                                         :Version "V1"})
+                        (c/map->MetadataAssociationType {:EntryId "S2"
+                                                         :Version "V1"})
+                        (c/map->MetadataAssociationType {:EntryId "S1"
+                                                         :Version "V2"})]})))
+
+  (testing "invalid metadata associations"
+    (testing "duplicate names"
+      (let [coll (coll/map->UMM-C
+                  {:MetadataAssociations
+                    [(c/map->MetadataAssociationType {:EntryId "S1"
+                                                      :Version "V1"})
+                     (c/map->MetadataAssociationType {:EntryId "S2"
+                                                      :Version "V1"})
+                     (c/map->MetadataAssociationType {:EntryId "S1"
+                                                      :Version "V1"})]})]
+        (h/assert-invalid
+          coll
+          [:MetadataAssociations]
+          ["Metadata Associations must be unique. This contains duplicates named [(EntryId [S1] & Version [V1])]."])))))
