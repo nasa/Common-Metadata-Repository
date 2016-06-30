@@ -470,7 +470,7 @@
                                                  (= rel "GET RELATED VISUALIZATION"))
                                         (when-let [byte-size (echo10-ru-gen/convert-to-bytes
                                                                (:Size file-size) (:Unit file-size))]
-                                          (assoc file-size :Size (float (int byte-size)) :Unit "Bytes")))))
+                                          (assoc file-size :Size (/ (int byte-size) 1024) :Unit "KB")))))
              (update-in [:Relation] (fn [[rel]]
                                       (when (relation-set rel)
                                         [rel])))))))
@@ -504,8 +504,6 @@
 (defmethod umm->expected-convert :echo10
   [umm-coll _]
   (-> umm-coll
-      (assoc :Personnel nil) ;; Implement this as part of CMR-1841
-      (assoc :Organizations nil) ;; Implement this as part of CMR-1841
       (update-in [:TemporalExtents] (comp seq (partial take 1)))
       (update-in [:DataDates] fixup-echo10-data-dates)
       (assoc :DataLanguage nil)
@@ -515,7 +513,7 @@
       (assoc :AncillaryKeywords nil)
       (assoc :ISOTopicCategories nil)
       (assoc :Personnel nil)
-      (assoc :Organizations nil)
+      (assoc :Organizations [su/not-provided-organization])
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
       (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons]
@@ -622,9 +620,9 @@
       ;; DIF 9 does not support tiling identification system
       (assoc :TilingIdentificationSystems nil)
       (assoc :Personnel nil) ;; Implement this as part of CMR-1841
-      (assoc :Organizations nil) ;; Implement this as part of CMR-1841
+      (assoc :Organizations [su/not-provided-organization])
       ;; DIF 9 does not support DataDates
-      (assoc :DataDates nil)
+      (assoc :DataDates [su/not-provided-data-date])
       ;; DIF 9 sets the UMM Version to 'Not provided' if it is not present in the DIF 9 XML
       (assoc :Version (or (:Version umm-coll) su/not-provided))
       (update-in [:TemporalExtents] dif9-temporal)
@@ -695,7 +693,7 @@
       (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
       (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
       (assoc :Personnel nil) ;; Implement this as part of CMR-1841
-      (assoc :Organizations nil) ;; Implement this as part of CMR-1841
+      (assoc :Organizations [su/not-provided-organization])
       (update-in [:SpatialExtent] expected-dif10-spatial-extent)
       (update-in [:DataDates] fixup-dif10-data-dates)
       (update-in [:Distributions] su/remove-empty-records)
@@ -1154,7 +1152,7 @@
   [spatial-extent]
   (when (get-in spatial-extent [:HorizontalSpatialDomain :Geometry :BoundingRectangles])
     (-> spatial-extent
-        (assoc :SpatialCoverageType "GEODETIC" :GranuleSpatialRepresentation "GEODETIC")
+        (assoc :SpatialCoverageType "HORIZONTAL" :GranuleSpatialRepresentation "GEODETIC")
         (assoc :VerticalSpatialDomains nil :OrbitParameters nil)
         (assoc-in [:HorizontalSpatialDomain :ZoneIdentifier] nil)
         (update-in [:HorizontalSpatialDomain :Geometry]
@@ -1186,19 +1184,19 @@
         ;; Fields not supported by ISO-SMAP
         (assoc :MetadataAssociations nil) ;; Not supported for ISO SMAP
         (assoc :Personnel nil) ;; Implement this as part of CMR-1841
-        (assoc :Organizations nil) ;; Implement this as part of CMR-1841
+        (assoc :Organizations [su/not-provided-organization])
         (assoc :UseConstraints nil)
         (assoc :AccessConstraints nil)
         (assoc :SpatialKeywords nil)
         (assoc :TemporalKeywords nil)
         (assoc :CollectionDataType nil)
         (assoc :AdditionalAttributes nil)
-        (assoc :ProcessingLevel nil)
+        (assoc :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id su/not-provided}))
         (assoc :Distributions nil)
         (assoc :Projects nil)
         (assoc :PublicationReferences nil)
         (assoc :AncillaryKeywords nil)
-        (assoc :RelatedUrls nil)
+        (assoc :RelatedUrls [su/not-provided-related-url])
         (assoc :ISOTopicCategories nil)
         ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
         ;; Platform Characteristics are also not supported.
