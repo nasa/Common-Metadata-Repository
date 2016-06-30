@@ -43,7 +43,7 @@
            :errors
            ["BeginningDateTime [2000-12-30T19:00:02.000Z] must be no later than EndingDateTime [2000-12-30T19:00:01.000Z]"]}])
         (h/assert-multiple-invalid
-         (coll-with-range-date-times [[r1] [r2]])
+         (h/coll-with-range-date-times [[r1] [r2]])
          [{:path [:TemporalExtents 0 :RangeDateTimes 0],
            :errors
            ["BeginningDateTime [1999-12-30T19:00:02.000Z] must be no later than EndingDateTime [1999-12-30T19:00:01.000Z]"]}

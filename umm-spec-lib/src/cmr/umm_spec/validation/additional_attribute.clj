@@ -79,7 +79,6 @@
   "Validates additional attribute parameter range related rules"
   [field-path aa]
   (let [errors (concat (range-type-validation aa)
-                       ;; TODO add tests for this for collections
                        (range-values-validation aa))]
     (when (seq errors)
       {field-path errors})))
