@@ -112,7 +112,7 @@
       gran-for-echo10-coll
 
       "DIF collection"
-      ["The following list of Tiling Identification System Names did not exist in the referenced parent collection: [BRAVO]."]
+      ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."]
       gran-for-dif-coll
 
       "DIF10 collection"
@@ -121,14 +121,14 @@
 
 
       "ISO19115 collection"
-      ["The following list of Tiling Identification System Names did not exist in the referenced parent collection: [BRAVO]."
-        "The following list of Additional Attributes did not exist in the referenced parent collection: [a-float]."
+      ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."
+        "The following list of Product Specific Attributes did not exist in the referenced parent collection: [a-float]."
         "[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]
       gran-for-iso19115-coll
 
       "ISO-SMAP collection"
-      ["The following list of Tiling Identification System Names did not exist in the referenced parent collection: [BRAVO]."
-        "The following list of Additional Attributes did not exist in the referenced parent collection: [a-float]."
+      ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."
+        "The following list of Product Specific Attributes did not exist in the referenced parent collection: [a-float]."
         "[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]
       gran-for-iso-smap-coll)))
 

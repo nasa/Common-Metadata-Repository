@@ -22,8 +22,6 @@
             [cmr.common.services.errors :as errors]
             [cmr.umm.collection.entry-id :as eid]
             [cmr.umm-spec.core :as spec]
-            [cmr.umm-spec.umm-json :as umm-json]
-            [cmr.umm-spec.json-schema :as json-schema]
             [cmr.umm-spec.versioning :as ver]))
 
 (defn add-extra-fields-for-collection
@@ -49,19 +47,8 @@
   (let [{:keys [format metadata]} collection-concept
         collection (spec/parse-metadata context :collection format metadata)]
 
-    ;; Validate against the UMM JSON Schema
-    (if-let [err-messages (seq (json-schema/validate-umm-json
-                                (umm-json/umm->json collection)
-                                :collection))]
-      (if (config/return-umm-json-validation-errors)
-        (errors/throw-service-errors :invalid-data err-messages)
-        (warn "UMM-C JSON-Schema Validation Errors: " (pr-str err-messages))))
-
     ;; Validate against the UMM Spec validation rules
-    (when-let [err-messages (seq (v/validate-collection-umm-spec context collection validate-keywords?))]
-      (if (config/return-umm-spec-validation-errors)
-        (errors/throw-service-errors :invalid-data err-messages)
-        (warn "UMM-C UMM Spec Validation Errors: " (pr-str err-messages))))
+    (v/validate-collection-umm-spec context collection validate-keywords?)
 
     ;; Using the legacy UMM validation rules (for now)
     (v/validate-collection-umm context
@@ -96,9 +83,9 @@
         "Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."))))
 
 (defn- get-granule-parent-collection-and-concept
-  "Returns the parent collection concept and parsed UMM record for a granule as a tuple. Finds the
-  parent collection using the provider id and collection ref. This will correctly
-  handle situations where there might be multiple concept ids that used a short name and
+  "Returns the parent collection concept, parsed UMM spec record, and the parse UMM lib record for a
+  granule as a tuple. Finds the parent collection using the provider id and collection ref. This will
+  correctly handle situations where there might be multiple concept ids that used a short name and
   version id or entry title but were previously deleted."
   [context concept granule]
   (validate-granule-collection-ref (:collection-ref granule))
@@ -110,8 +97,10 @@
     (when-not coll-concept
       (cmsg/data-error :invalid-data
                        msg/parent-collection-does-not-exist provider-id granule-ur collection-ref))
-    [coll-concept (spec/parse-metadata
-                   context :collection (:format coll-concept) (:metadata coll-concept))]))
+    [coll-concept
+     (spec/parse-metadata
+      context :collection (:format coll-concept) (:metadata coll-concept))
+     (umm-legacy/parse-concept context coll-concept)]))
 
 (defn- add-extra-fields-for-granule
   "Adds the extra fields for a granule concept."
@@ -133,21 +122,23 @@
   This can be used to provide the collection through an alternative means like the API."
   ([context concept]
    (validate-granule
-     context concept get-granule-parent-collection-and-concept))
+    context concept get-granule-parent-collection-and-concept))
   ([context concept fetch-parent-collection-concept-fn]
    (v/validate-concept-request concept)
    (v/validate-concept-metadata concept)
 
    (let [granule (umm-legacy/parse-concept context concept)
          [parent-collection-concept
-          parent-collection] (fetch-parent-collection-concept-fn
+          umm-spec-collection
+          umm-lib-collection] (fetch-parent-collection-concept-fn
                                context concept granule)]
      ;; UMM Validation
-     (v/validate-granule-umm context parent-collection granule)
+     (v/validate-granule-umm-spec context umm-spec-collection granule)
+     (v/validate-granule-umm context umm-lib-collection granule)
 
      ;; Add extra fields for the granule
      (let [gran-concept (add-extra-fields-for-granule
-                          context concept granule parent-collection-concept)]
+                         context concept granule parent-collection-concept)]
        (v/validate-business-rules context gran-concept)
        [parent-collection-concept gran-concept]))))
 
@@ -160,7 +151,10 @@
                      (fn [type errors ex]
                        (errors/throw-service-errors
                          type (map msg/invalid-parent-collection-for-validation errors)) ex))]
-    (validate-granule context concept (constantly [parent-collection-concept collection]))))
+    (validate-granule context concept
+                      (constantly [parent-collection-concept
+                                   collection
+                                   (umm-legacy/parse-concept context parent-collection-concept)]))))
 
 (defn-timed save-granule
   "Store a concept in mdb and indexer and return concept-id and revision-id."

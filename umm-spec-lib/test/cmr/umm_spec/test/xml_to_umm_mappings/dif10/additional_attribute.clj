@@ -76,50 +76,49 @@
      </DIF>")
 
 (def expected-parsed-additional-attributes1
-  (map cmn/map->AdditionalAttributeType
-       [{:Group "gov.nasa.gsfc.gcmd"
-         :Name "metadata.uuid"
-         :DataType "STRING"
-         :Value "743933e5-1404-4502-915f-83cde56af440"}
-        {:Group "gov.nasa.gsfc.gcmd"
-         :Name "metadata.extraction_date"
-         :DataType "STRING"
-         :Value "2013-09-30 09:45:15"}
-        {:Group "custom.group"
-         :Name "String attribute"
-         :Description "something string"
-         :DataType "STRING"
-         :Value "alpha"}
-        {:Group "custom.group"
-         :Name "Float attribute"
-         :Description "something float"
-         :DataType "FLOAT"
-         :Value "12.3"}
-        {:Group "custom.group"
-         :Name "Int attribute"
-         :Description "something int"
-         :DataType "INT"
-         :Value "42"}
-        {:Group "custom.group"
-         :Name "Date attribute"
-         :Description "something date"
-         :DataType "DATE"
-         :Value "2015-09-14"}
-        {:Group "custom.group"
-         :Name "Datetime attribute"
-         :Description "something datetime"
-         :DataType "DATETIME"
-         :Value "2015-09-14T13:01:00Z"}
-        {:Group "custom.group"
-         :Name "Time attribute"
-         :Description "something time"
-         :DataType "TIME"
-         :Value "13:01:00Z"}
-        {:Group "custom.group"
-         :Name "Bool attribute"
-         :Description "something bool"
-         :DataType "BOOLEAN"
-         :Value "false"}]))
+  [{:Group "gov.nasa.gsfc.gcmd"
+    :Name "metadata.uuid"
+    :DataType "STRING"
+    :Value "743933e5-1404-4502-915f-83cde56af440"}
+   {:Group "gov.nasa.gsfc.gcmd"
+    :Name "metadata.extraction_date"
+    :DataType "STRING"
+    :Value "2013-09-30 09:45:15"}
+   {:Group "custom.group"
+    :Name "String attribute"
+    :Description "something string"
+    :DataType "STRING"
+    :Value "alpha"}
+   {:Group "custom.group"
+    :Name "Float attribute"
+    :Description "something float"
+    :DataType "FLOAT"
+    :Value "12.3"}
+   {:Group "custom.group"
+    :Name "Int attribute"
+    :Description "something int"
+    :DataType "INT"
+    :Value "42"}
+   {:Group "custom.group"
+    :Name "Date attribute"
+    :Description "something date"
+    :DataType "DATE"
+    :Value "2015-09-14"}
+   {:Group "custom.group"
+    :Name "Datetime attribute"
+    :Description "something datetime"
+    :DataType "DATETIME"
+    :Value "2015-09-14T13:01:00Z"}
+   {:Group "custom.group"
+    :Name "Time attribute"
+    :Description "something time"
+    :DataType "TIME"
+    :Value "13:01:00Z"}
+   {:Group "custom.group"
+    :Name "Bool attribute"
+    :Description "something bool"
+    :DataType "BOOLEAN"
+    :Value "false"}])
 
 (def example-dif2
   "<DIF>
@@ -154,23 +153,22 @@
     </DIF>")
 
 (def expected-parsed-additional-attributes2
-  (map cmn/map->AdditionalAttributeType
-       [{:Name "String add attrib"
-         :Description "something string"
-         :DataType "STRING"
-         :ParameterRangeBegin "alpha"
-         :ParameterRangeEnd "bravo"
-         :Value "alpha1"}
-        {:Name "Float add attrib"
-         :Description "something float"
-         :DataType "FLOAT"
-         :ParameterRangeBegin "0.1"
-         :ParameterRangeEnd "100.43"
-         :Value "12.3"}
-        {:Group "gov.nasa.gsfc.gcmd"
-         :Name "metadata.uuid"
-         :DataType "STRING"
-         :Value "743933e5-1404-4502-915f-83cde56af440"}]))
+  [{:Name "String add attrib"
+    :Description "something string"
+    :DataType "STRING"
+    :ParameterRangeBegin "alpha"
+    :ParameterRangeEnd "bravo"
+    :Value "alpha1"}
+   {:Name "Float add attrib"
+    :Description "something float"
+    :DataType "FLOAT"
+    :ParameterRangeBegin "0.1"
+    :ParameterRangeEnd "100.43"
+    :Value "12.3"}
+   {:Group "gov.nasa.gsfc.gcmd"
+    :Name "metadata.uuid"
+    :DataType "STRING"
+    :Value "743933e5-1404-4502-915f-83cde56af440"}])
 
 (deftest dif10-metadata-additional-attributes-test
   (testing "parse additional attributes from Extended_Metadata"
