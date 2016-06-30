@@ -122,7 +122,6 @@
 
       "ISO19115 collection"
       ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."
-        "The following list of Product Specific Attributes did not exist in the referenced parent collection: [a-float]."
         "[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]
       gran-for-iso19115-coll
 
@@ -187,17 +186,16 @@
     (are [exp-errors metadata-format]
          (= exp-errors
             (flatten (:errors (d/ingest "PROV1" coll {:format metadata-format
-                                                           :allow-failure? true}))))
+                                                      :allow-failure? true}))))
          []
          :dif
 
          []
          :dif10
 
-         ["Collection additional attribute [a-float] is referenced by existing granules, cannot be removed. Found 1 granules."
-           "Collection changing from GEODETIC granule spatial representation to NO_SPATIAL is not allowed when the collection has granules. Found 1 granules."]
+         ["Collection changing from GEODETIC granule spatial representation to NO_SPATIAL is not allowed when the collection has granules. Found 1 granules."]
          :iso19115
 
          ["Collection additional attribute [a-float] is referenced by existing granules, cannot be removed. Found 1 granules."
-           "Collection changing from GEODETIC granule spatial representation to NO_SPATIAL is not allowed when the collection has granules. Found 1 granules."]
+          "Collection changing from GEODETIC granule spatial representation to NO_SPATIAL is not allowed when the collection has granules. Found 1 granules."]
          :iso-smap)))

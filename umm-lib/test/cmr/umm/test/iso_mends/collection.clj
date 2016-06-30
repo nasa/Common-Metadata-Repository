@@ -116,8 +116,6 @@
         (assoc :organizations organizations)
         ;; ISO does not support sensor technique or platform characteristics
         (update-in [:platforms] platforms->expected-parsed)
-        ;; ISO AdditionalAttributes mapping is incomplete right now
-        (dissoc :product-specific-attributes)
         ;; ISO does not support size in RelatedURLs
         (update-in [:related-urls] related-urls->expected-parsed)
         ;; ISO does not fully support two-d-coordinate-systems
@@ -270,6 +268,17 @@
          :long-name "RADARSAT-LONG-2"
          :type "Spacecraft-2"
          :instruments nil})]
+     :product-specific-attributes
+     [(umm-c/map->ProductSpecificAttribute
+        {:name "SIPSMetGenVersion"
+         :description "The version of the SIPSMetGen software used to produce the metadata file for this granule"
+         :data-type :string
+         :parameter-range-begin "alpha"
+         :parameter-range-end "bravo"
+         :value "alpha1"
+         :parsed-parameter-range-begin "alpha"
+         :parsed-parameter-range-end "bravo"
+         :parsed-value "alpha1"})]
      :collection-associations [(umm-c/map->CollectionAssociation
                                  {:short-name "COLLOTHER-237"
                                   :version-id "1"})
