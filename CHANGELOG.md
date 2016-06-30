@@ -74,3 +74,7 @@ Items to include in each issue
 * CMR-3162 - Removed collection-setting-v1 index from index set.
   * Deployment Impacts
     * Requires update of indexes (no need to reindex collections).
+* CMR-3006, CMR-3128, CMR-3129, CMR-3130, CMR-3131, CMR-3132 - Humanized fields
+  * Deployment Impacts
+    * Requires update of indexes
+    * Requires reindexing of collections

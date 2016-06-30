@@ -566,3 +566,40 @@
         {}
         {:b [{:c 0 :d 4} {:c 0}]}
         {:b [{:d 6} {:d 7}]}]}))
+
+(deftest get-in-all
+  (util/are3
+   [args result]
+   (is (= result (apply util/get-in-all args)))
+
+   "nil values in the path"
+   [{:a nil :b :c} [:a :b]]
+   []
+
+   "sequential values in the path"
+   [{:a [{:b 1 :c 2} {:b 3 :c 4}] :d 5} [:a :b]]
+   [1 3]
+
+   "hash values in the path"
+   [{:a 1 :b 2} [:a]]
+   [1]
+
+   "nested hash values in the path"
+   [{:a {:b {:c 1 :d 2} :e 3} :f 4} [:a :b :c]]
+   [1]
+
+   "nested sequential values in the path"
+   [{:a [{:b [{:c 1 :d 2}]}
+         {}
+         {:b [{:c 3 :d 4} {:c 5}]}
+         {:b [{:d 6} {:d 7}]}]}
+    [:a :b :c]]
+   [1 3 5]
+
+   "sequential values at the end of the path"
+   [{:a [{:b [{:c [1 2 3] :d 2}]}
+         {}
+         {:b [{:c [4 5] :d 4} {:c [6]}]}
+         {:b [{:d 6} {:d 7}]}]}
+   [:a :b :c]]
+   [[1 2 3] [4 5] [6]]))
