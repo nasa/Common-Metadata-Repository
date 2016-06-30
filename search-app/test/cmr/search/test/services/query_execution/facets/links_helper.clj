@@ -224,3 +224,48 @@
        false
        "p2"
        {:remove "http://localhost:3003/collections.json?placeholder%5B%5D=p1"}))))
+
+(def get-max-index-for-field-name
+  "Var to call private function in links helper namespace."
+  #'lh/get-max-index-for-field-name)
+
+(deftest get-max-index-for-field-name-test
+  (are3 [query-params expected-index]
+    (is (= expected-index (get-max-index-for-field-name query-params "foo")))
+
+    "Nil params returns -1"
+    nil -1
+
+    "Empty params returns -1"
+    {} -1
+
+    "Param not in query-params returns -1"
+    {"a" true
+     "b[1][c]" "abc"} -1
+
+    "Single matching param"
+    {"foo[0][a]" true} 0
+
+    "Double digit index"
+    {"foo[14][a]" true} 14
+
+    "Large index"
+    {"foo[1234567890][a]" true} 1234567890
+
+    "Multiple matching finds largest"
+    {"foo[0][a]" false
+     "foo[5][a]" 1
+     "foo[12][b]" "str"
+     "foo[99][a]" true
+     "foo[151][c]" "c"
+     "foo[140][a]" 15}
+    151
+
+    "Similar query params finds correct largest term index"
+    {"foo[0][a]" false
+     "bar[550][foo]" 1
+     "foo[12][b]" "str"
+     "afoo[99][a]" true
+     "food[151][c]" "c"
+     "foofoo[140][a]" 15}
+    12))

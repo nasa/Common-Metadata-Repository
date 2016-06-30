@@ -42,7 +42,7 @@
       "Empty facets returns nil"
       {} nil
 
-      "No children returns empty list"
+      "No children returns empty list when include-root is false"
       {:applied true :title "A"} []
 
       "Applied false are not included"
@@ -68,6 +68,10 @@
           {:applied true :title "D" :children
            [{:applied true :title "E"}]}]}]}
       [[:second "B"] [:third "D"] [:fourth "E"]])
-    (testing "Can include the top level term"
+
+    (testing "Root is included when include-root is true and applied"
       (is (= [[:first "A"]]
-             (find-applied-children {:applied true :title "A"} field-hierarchy true))))))
+             (find-applied-children {:applied true :title "A"} field-hierarchy true))))
+    (testing "Root is not included when include-root is true but applied is false"
+      (is (= nil
+             (find-applied-children {:applied false :title "A"} field-hierarchy true))))))

@@ -118,9 +118,9 @@
   For example if the query parameters included fields foo[0][alpha]=bar and foo[6][beta]=zeta the
   max index of field foo would be 6. If the field is not found then -1 is returned."
   [query-params base-field]
-  (let [field-regex (re-pattern (format "%s.*" base-field))
+  (let [field-regex (re-pattern (format "%s\\[\\d+\\]\\[.*\\]" base-field))
         matches (keep #(re-matches field-regex %) (keys query-params))
-        indexes (keep #(second (re-matches #".*\[(\d)\].*" %)) matches)
+        indexes (keep #(second (re-matches #".*\[(\d+)\].*" %)) matches)
         indexes-int (map #(Integer/parseInt %) indexes)]
     (if (seq indexes-int)
       (apply max indexes-int)
@@ -207,25 +207,31 @@
 (defn create-remove-link-for-hierarchical-field
   "Create a link that will modify the current search to no longer filter on the given hierarchical
   field-name and value. Looks for matches case insensitively.
-  Field-name must be of the form <string>[<int>][<string>]."
-  [base-url query-params field-name value other-params]
+  Field-name must be of the form <string>[<int>][<string>].
+
+  applied-children-tuples - Tuples of [subfield term] for any applied children terms that should
+                            also be removed in the remove link being generated."
+  [base-url query-params field-name value applied-children-tuples]
   (let [[base-field subfield] (str/split field-name #"\[0\]")
         updated-params (reduce (partial process-removal-for-field-value-tuple base-field)
                                query-params
-                               (conj other-params [subfield value]))]
+                               (conj applied-children-tuples [subfield value]))]
     {:remove (generate-query-string base-url updated-params)}))
 
 (defn create-link-for-hierarchical-field
   "Creates either a remove or an apply link based on whether this particular value is already
   selected within a query. Returns a map with the key being the type of link created and value is
   the link itself. The Field-name must be a hierarchical field which has the form
-  <string>[<int>][<string>]."
-  [base-url query-params field-name value other-params]
+  <string>[<int>][<string>].
+
+  applied-children-tuples - Tuples of [subfield term] for any applied children terms that should
+                            also be removed if a remove link is being generated."
+  [base-url query-params field-name value applied-children-tuples]
   (let [potential-query-params (get-potential-matching-query-params query-params field-name)
         value-exists (or (seq (get-keys-to-remove potential-query-params value))
                         (seq (get-keys-to-update potential-query-params value)))]
     (if value-exists
       (create-remove-link-for-hierarchical-field base-url query-params field-name value
-                                                other-params)
+                                                applied-children-tuples)
       (create-apply-link-for-hierarchical-field base-url query-params field-name value
-                                                other-params))))
+                                                applied-children-tuples))))
