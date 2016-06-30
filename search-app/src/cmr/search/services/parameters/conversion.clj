@@ -25,19 +25,25 @@
    :updated-since :updated-since
    :revision-date :revision-date
    :processing-level-id :string
+   :processing-level-id-h :string
    :collection-data-type :collection-data-type
    :temporal :temporal
    :concept-id :string
    :platform :string
+   :platform-h :string
    :instrument :string
+   :instrument-h :string
    :sensor :string
    :project :string
+   :project-h :string
    :data-center :string
    :archive-center :string
+   :organization-h :string
    :spatial-keyword :string
    :two-d-coordinate-system-name :string
    :two-d-coordinate-system :two-d-coordinate-system
    :science-keywords :science-keywords
+   ;; TODO CMR-3119 Humanized science keywords
    :dif-entry-id :dif-entry-id
    :downloadable :boolean
    :browsable :boolean

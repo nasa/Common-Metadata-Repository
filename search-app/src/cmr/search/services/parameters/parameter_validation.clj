@@ -34,9 +34,10 @@
     {:single-value #{:keyword :echo-compatible :include-granule-counts :include-has-granules
                      :include-facets :hierarchical-facets :include-highlights :include-tags
                      :all-revisions}
-     :multiple-value #{:short-name :instrument :two-d-coordinate-system-name :dif-entry-id
-                       :collection-data-type :project :entry-id :version :provider :entry-title
-                       :platform :processing-level-id :sensor}
+     :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
+                       :dif-entry-id :collection-data-type :project :project-h :entry-id :version :provider
+                       :entry-title :platform :platform-h :processing-level-id :processing-level-id-h
+                      :sensor :organization-h}
      :always-case-sensitive #{:echo-collection-id}
      :disallow-pattern #{:echo-collection-id}
      :allow-or #{:attribute :science-keywords}}))
@@ -85,10 +86,13 @@
    :entry-id cpv/string-plus-and-options
    :version cpv/string-param-options
    :project cpv/string-plus-and-options
+   :project-h cpv/string-plus-and-options
    :campaign cpv/string-plus-and-options
    :platform cpv/string-plus-and-options
+   :platform-h cpv/string-plus-and-options
    :sensor cpv/string-plus-and-options
    :instrument cpv/string-plus-and-options
+   :instrument-h cpv/string-plus-and-options
    :collection-data-type cpv/string-param-options
    :grid cpv/string-param-options
    :two-d-coordinate-system cpv/string-param-options
@@ -101,6 +105,7 @@
    :temporal (conj exclude-plus-and-or-option :limit-to-granules)
    :revision-date cpv/and-option
    :highlights highlights-option
+   :organization-h cpv/string-plus-and-options
 
    ;; Tag parameters for use querying other concepts.
    :tag-key cpv/pattern-option
@@ -518,6 +523,7 @@
                   cloud-cover-validation
                   attribute-validation
                   science-keywords-validation
+                  ;; TODO CMR-3119 Humanized science keywords
                   exclude-validation
                   boolean-value-validation
                   polygon-validation
