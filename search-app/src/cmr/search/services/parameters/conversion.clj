@@ -45,7 +45,7 @@
    :two-d-coordinate-system-name :string
    :two-d-coordinate-system :two-d-coordinate-system
    :science-keywords :science-keywords
-   ;; CMR-3119 Humanized science keywords
+   :science-keywords-h :science-keywords
    :dif-entry-id :dif-entry-id
    :downloadable :boolean
    :browsable :boolean

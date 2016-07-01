@@ -226,16 +226,16 @@
 
 (deftest validate-science-keywords-is-a-map
   (is (= []
-         (pv/science-keywords-validation :collection {:science-keywords {:0 {:category "Cat1"}}})))
+         (pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords {:0 {:category "Cat1"}}})))
   (are [value] (= [(msg/science-keyword-invalid-format-msg)]
-                  (pv/science-keywords-validation :collection {:science-keywords value}))
+                  (pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords value}))
        "foo"
        ["foo"]
        {:or "true"}))
 
 (deftest validate-science-keywords-search-terms
   (are [term] (= []
-                 (pv/science-keywords-validation :collection {:science-keywords {:0 {term "value"}}}))
+                 (pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords {:0 {term "value"}}}))
        :category
        :topic
        :term
@@ -244,10 +244,10 @@
        :variable-level-3
        :detailed-variable)
   (is (= ["parameter [categories] is not a valid science keyword search term."]
-         (pv/science-keywords-validation :collection {:science-keywords {:0 {:categories "Cat1"}}})))
+         (pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords {:0 {:categories "Cat1"}}})))
   (is (= ["parameter [categories] is not a valid science keyword search term."
           "parameter [topics] is not a valid science keyword search term."]
-         (pv/science-keywords-validation :collection {:science-keywords {:0 {:categories "Cat1"
+         (pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords {:0 {:categories "Cat1"
                                                                              :topics "Topic1"}}}))))
 
 (deftest validate-parameters-test
