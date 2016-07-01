@@ -108,8 +108,8 @@
     (idx-set/update context expected-index-set)
     (info "Creating colleciton index alias.")
     (esi/create-index-alias (context->conn context)
-                            idx-set/collections-index
-                            idx-set/collections-index-alias)))
+                            (idx-set/collections-index)
+                            (idx-set/collections-index-alias))))
 
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
