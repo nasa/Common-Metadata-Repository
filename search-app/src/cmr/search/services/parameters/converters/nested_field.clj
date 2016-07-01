@@ -10,8 +10,9 @@
   [parent-field]
   "Returns all of the subfields for the provided nested field. All nested field queries also support
   'any'."
-  (let [non-namespaced-parent (keyword (subs (str/replace parent-field #"\..*$" "") 1))]
-    (conj (kms/keyword-scheme->field-names (kms/translate-keyword-scheme-to-gcmd non-namespaced-parent))
+  ;; Remove any modifiers from parent field, e.g. :science-keyword.humanized -> :science-keyword
+  (let [base-parent-field (keyword (str/replace (name parent-field) #"\..*$" ""))]
+    (conj (kms/keyword-scheme->field-names (kms/translate-keyword-scheme-to-gcmd base-parent-field))
           :any)))
 
 (defn- nested-field->elastic-keyword

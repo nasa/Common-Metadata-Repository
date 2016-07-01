@@ -11,7 +11,7 @@
   (let [case-sensitive? (p/case-sensitive-field? concept-type param options)
         pattern? (p/pattern-field? concept-type param options)
         group-operation (p/group-operation param options :and)
-        target-field (keyword (subs (str/replace param #"-h$" ".humanized") 1))]
+        target-field (keyword (str/replace (name param) #"-h$" ".humanized"))]
 
     (if (map? (first (vals value)))
       ;; If multiple science keywords are passed in like the following

@@ -69,7 +69,7 @@
      ns-stripped-fields
      ;; Create "*.lowercase" versions of the fields
      (->> ns-stripped-fields
-          (util/map-keys #(keyword (subs (str % ".lowercase") 1)))
+          (util/map-keys #(keyword (str (name %) ".lowercase")))
           (util/map-values #(when % (str/lower-case %)))))))
 
 (defn science-keyword->facet-fields

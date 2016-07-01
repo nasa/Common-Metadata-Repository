@@ -302,12 +302,6 @@
             (mapcat keys values))))
       [(msg/science-keyword-invalid-format-msg)])))
 
-(def science-keywords-validation
-  (partial science-keywords-validation-for-field :science-keywords))
-
-(def science-keywords-h-validation
-  (partial science-keywords-validation-for-field :science-keywords-h))
-
 ;; This method is for processing legacy numeric ranges in the form of
 ;; param_nam[value], param_name[minValue], and param_name[maxValue].
 ;; It simply validates that the provided values are numbers and that
@@ -529,8 +523,8 @@
                   equator-crossing-date-validation
                   cloud-cover-validation
                   attribute-validation
-                  science-keywords-validation
-                  science-keywords-h-validation
+                  (partial science-keywords-validation-for-field :science-keywords)
+                  (partial science-keywords-validation-for-field :science-keywords-h)
                   exclude-validation
                   boolean-value-validation
                   polygon-validation
@@ -552,7 +546,7 @@
                equator-crossing-date-validation
                cloud-cover-validation
                attribute-validation
-               science-keywords-validation
+               (partial science-keywords-validation-for-field :science-keywords)
                exclude-validation
                boolean-value-validation
                polygon-validation

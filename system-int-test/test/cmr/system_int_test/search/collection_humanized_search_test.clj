@@ -96,4 +96,8 @@
       (is (d/refs-match? [coll2 coll4]
                          (search/find-refs
                           :collection
-                          {:science-keywords-h {:0 {:topic "biosphere"}}}))))))
+                          {:science-keywords-h {:0 {:topic "biosphere"}}})))
+      (is (d/refs-match? [coll1 coll2 coll3 coll4]
+                         (search/find-refs
+                          :collection
+                          {:science-keywords-h {:0 {:any "biosphere"}}}))))))
