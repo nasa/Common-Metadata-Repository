@@ -10,6 +10,12 @@
             [camel-snake-kebab.core :as csk]
             [clojure.string :as str]))
 
+(defn- nested-fields-mappings
+  "Returns nested field mappings for the given field, ignoring humanizer suffixes"
+  [field]
+  (let [stripped-field (str/replace (str/replace (name field) #"-h$" "") #"\.humanized$" "")]
+    (kms-fetcher/nested-fields-mappings (keyword stripped-field))))
+
 (defn- get-max-subfield-index
   "Return the maximum subfield index from the hierarchical-field-mappings for any of the supplied
   subfields. Return index as 1 based instead of 0 based. A value of 0 indicates that there are no
@@ -45,7 +51,7 @@
   (let [parent-field-snake-case (csk/->snake_case_string parent-field)
         field-regex (re-pattern (format "%s\\[\\d+\\]\\[(.*)\\]" parent-field-snake-case))
         matching-subfields (keep #(second (re-matches field-regex %)) (keys query-params))
-        all-subfields (remove #{:url} (parent-field kms-fetcher/nested-fields-mappings))]
+        all-subfields (remove #{:url} (nested-fields-mappings parent-field))]
     (max min-hierarchical-depth
          (min (count all-subfields)
               (+ num-levels-below-subfield
@@ -67,8 +73,8 @@
    (nested-facet field size nil))
   ([field size depth]
    (let [subfields (if depth
-                       (take depth (field kms-fetcher/nested-fields-mappings))
-                       (field kms-fetcher/nested-fields-mappings))]
+                       (take depth (nested-fields-mappings field))
+                       (nested-fields-mappings field))]
      {:nested {:path field}
       :aggs (hierarchical-aggregation-builder
              field (remove #{:url} subfields) size)})))
@@ -230,7 +236,7 @@
   "Takes a map of elastic aggregation results for a nested field. Returns a hierarchical facet for
   that field."
   [field bucket-map base-url query-params]
-  (let [field-hierarchy (field kms-fetcher/nested-fields-mappings)
+  (let [field-hierarchy (nested-fields-mappings field)
         hierarchical-facet (prune-hierarchical-facet
                             (parse-hierarchical-bucket-v2 field field-hierarchy base-url
                                                           query-params bucket-map)
@@ -248,7 +254,7 @@
 (defn create-hierarchical-v2-facets
   "Parses the elastic aggregations and generates the v2 facets for all hierarchical fields."
   [elastic-aggregations base-url query-params]
-  (let [hierarchical-fields [:science-keywords]]
+  (let [hierarchical-fields [:science-keywords-h]]
     (keep (fn [field]
               (when-let [sub-facets (hierarchical-bucket-map->facets-v2
                                       field (field elastic-aggregations)

@@ -25,13 +25,13 @@
   from a collection search. Size specifies the number of results to return. Only a subset of the
   facets are returned in the v2 facets, specifically those that help enable dataset discovery."
   [size query-params]
-  (let [sk-depth (hv2/get-depth-for-hierarchical-field query-params :science-keywords)]
-    {:science-keywords (hv2/nested-facet :science-keywords size sk-depth)
-     :platform (v2h/terms-facet :platform-sn size)
-     :instrument (v2h/terms-facet :instrument-sn size)
-     :data-center (v2h/terms-facet :data-center size)
-     :project (v2h/terms-facet :project-sn2 size)
-     :processing-level-id (v2h/terms-facet :processing-level-id size)}))
+  (let [sk-depth (hv2/get-depth-for-hierarchical-field query-params :science-keywords-h)]
+    {:science-keywords-h (hv2/nested-facet :science-keywords.humanized size sk-depth)
+     :platform-h (v2h/terms-facet :platform-sn.humanized size)
+     :instrument-h (v2h/terms-facet :instrument-sn.humanized size)
+     :organization-h (v2h/terms-facet :organization.humanized size)
+     :project-h (v2h/terms-facet :project.humanized size)
+     :processing-level-id-h (v2h/terms-facet :processing-level-id.humanized size)}))
 
 (def v2-facets-root
   "Root element for the facet response"
@@ -54,7 +54,7 @@
 (defn- create-flat-v2-facets
   "Parses the elastic aggregations and generates the v2 facets for all flat fields."
   [elastic-aggregations base-url query-params]
-  (let [flat-fields [:platform :instrument :data-center :project :processing-level-id]]
+  (let [flat-fields [:platform-h :instrument-h :organization-h :project-h :processing-level-id-h]]
     (remove nil?
       (for [field-name flat-fields
             :let [search-terms-from-query (lh/get-values-for-field query-params field-name)
@@ -90,6 +90,7 @@
         query-params (parse-params (:query-string context) "UTF-8")
         facets (concat (hv2/create-hierarchical-v2-facets aggs base-url query-params)
                        (create-flat-v2-facets aggs base-url query-params))]
+    (cmr.common.log/warn aggs)
     (if (seq facets)
       (assoc v2-facets-root :has_children true :children facets)
       (assoc v2-facets-root :has_children false))))

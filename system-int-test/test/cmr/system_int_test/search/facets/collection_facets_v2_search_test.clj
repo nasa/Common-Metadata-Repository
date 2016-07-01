@@ -67,27 +67,27 @@
                 {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})
   (is (= fr/expected-v2-facets-apply-links (search-and-return-v2-facets)))
   (testing "All fields applied for all facets"
-    (let [search-params {:science-keywords {:0 {:category "Cat1"
+    (let [search-params {:science-keywords-h {:0 {:category "Cat1"
                                                 :topic "Topic1"
                                                 :term "Term1"
                                                 :variable-level-1 "Level1-1"
                                                 :variable-level-2 "Level1-2"
                                                 :variable-level-3 "Level1-3"}}
-                         :project ["proj1"]
-                         :platform ["DIADEM-1D"]
-                         :instrument ["ATM"]
-                         :processing-level-id ["PL1"]
-                         :data-center "DOI/USGS/CMG/WHSC"}]
+                         :project-h ["proj1"]
+                         :platform-h ["DIADEM-1D"]
+                         :instrument-h ["ATM"]
+                         :processing-level-id-h ["PL1"]
+                         :organization-h "DOI/USGS/CMG/WHSC"}]
       (is (= fr/expected-v2-facets-remove-links (search-and-return-v2-facets search-params)))
       (testing "Some group fields not applied"
         (let [response (search-and-return-v2-facets
-                        (dissoc search-params :platform :project :data-center))]
-          (is (not (applied? response :platform)))
-          (is (not (applied? response :project)))
-          (is (not (applied? response :data-center)))
-          (is (applied? response :science-keywords))
-          (is (applied? response :instrument))
-          (is (applied? response :processing-level-id)))))))
+                        (dissoc search-params :platform-h :project-h :organization-h))]
+          (is (not (applied? response :platform-h)))
+          (is (not (applied? response :project-h)))
+          (is (not (applied? response :organization-h)))
+          (is (applied? response :science-keywords-h))
+          (is (applied? response :instrument-h))
+          (is (applied? response :processing-level-id-h)))))))
 
 (def science-keywords-all-applied
   "Facet response with just the title, applied, and children fields. Used to verify that when
