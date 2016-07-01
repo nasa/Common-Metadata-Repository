@@ -121,7 +121,7 @@
                               :collection))]
     (if (config/return-umm-json-validation-errors)
       (errors/throw-service-errors :invalid-data err-messages)
-      (warn "UMM-C JSON-Schema Validation Errors: " (pr-str err-messages))))
+      (warn "UMM-C JSON-Schema Validation Errors: " (pr-str (vec err-messages)))))
 
   (when-let [err-messages (seq (umm-spec-validation/validate-collection
                                 collection
@@ -129,7 +129,7 @@
                                   [(keyword-validations context)])))]
     (if (config/return-umm-spec-validation-errors)
       (errors/throw-service-errors :invalid-data err-messages)
-      (warn "UMM-C UMM Spec Validation Errors: " (pr-str err-messages)))))
+      (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages))))))
 
 (defn validate-granule-umm-spec
   "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record"
@@ -138,7 +138,7 @@
     (if (config/return-umm-spec-validation-errors)
       (if-errors-throw :invalid-data errors)
       (warn (format "Granule with Granule UR [%s] had the following UMM Spec validation errors: %s"
-                    (:granule-ur granule) (pr-str errors))))))
+                    (:granule-ur granule) (pr-str (vec errors)))))))
 
 (defn validate-granule-umm
   [context collection granule]
