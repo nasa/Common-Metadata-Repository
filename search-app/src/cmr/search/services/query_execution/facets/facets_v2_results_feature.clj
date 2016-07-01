@@ -90,7 +90,6 @@
         query-params (parse-params (:query-string context) "UTF-8")
         facets (concat (hv2/create-hierarchical-v2-facets aggs base-url query-params)
                        (create-flat-v2-facets aggs base-url query-params))]
-    (cmr.common.log/warn aggs)
     (if (seq facets)
       (assoc v2-facets-root :has_children true :children facets)
       (assoc v2-facets-root :has_children false))))
