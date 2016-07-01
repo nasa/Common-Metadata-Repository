@@ -9,9 +9,9 @@
     (is (= 3 (hv2/get-depth-for-hierarchical-field {} :foo))))
   (are [sk-params expected-depth]
     (let [query-params (into {} (map (fn [[k v]]
-                                       [(format "science_keywords[0][%s]" k) v]))
+                                       [(format "science_keywords_h[0][%s]" k) v]))
                                 sk-params)]
-      (= expected-depth (hv2/get-depth-for-hierarchical-field query-params :science-keywords)))
+      (= expected-depth (hv2/get-depth-for-hierarchical-field query-params :science-keywords-h)))
 
     {} 3
     {"category" "cat"} 3

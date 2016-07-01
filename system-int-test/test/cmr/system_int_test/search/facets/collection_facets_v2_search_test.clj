@@ -97,17 +97,17 @@
    :children
    [{:title "Keywords", :applied true,
      :children
-     [{:title "CAT1", :applied true,
+     [{:title "Cat1", :applied true,
        :children
-       [{:title "TOPIC1", :applied true,
+       [{:title "Topic1", :applied true,
          :children
-         [{:title "TERM1", :applied true,
+         [{:title "Term1", :applied true,
            :children
-           [{:title "LEVEL1-1", :applied true,
+           [{:title "Level1-1", :applied true,
              :children
-             [{:title "LEVEL1-2", :applied true,
+             [{:title "Level1-2", :applied true,
                :children
-               [{:title "LEVEL1-3", :applied true}]}]}]}]}]}]}]})
+               [{:title "Level1-3", :applied true}]}]}]}]}]}]}]})
 
 (def partial-science-keywords-applied
   "Facet response with just the title, applied, and children fields. Used to verify that when
@@ -120,13 +120,13 @@
    :children
    [{:title "Keywords", :applied true,
      :children
-     [{:title "CAT1", :applied true,
+     [{:title "Cat1", :applied true,
        :children
-       [{:title "TOPIC1", :applied true,
+       [{:title "Topic1", :applied true,
          :children
-         [{:title "TERM1", :applied true,
+         [{:title "Term1", :applied true,
            :children
-           [{:title "LEVEL1-1", :applied false}]}]}]}]}]})
+           [{:title "Level1-1", :applied false}]}]}]}]}]})
 
 (deftest hierarchical-applied-test
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1))
@@ -136,11 +136,11 @@
                                                         [:title :applied])))
 
       "Lowest level field causes all fields above to be applied."
-      {:science-keywords {:0 {:variable-level-3 "Level1-3"}}}
+      {:science-keywords-h {:0 {:variable-level-3 "Level1-3"}}}
       science-keywords-all-applied
 
       "Middle level field causes all fields above to be applied, but not fields below."
-      {:science-keywords {:0 {:term "Term1"}}}
+      {:science-keywords-h {:0 {:term "Term1"}}}
       partial-science-keywords-applied)))
 
 (deftest remove-facets-without-collections
@@ -148,23 +148,23 @@
   (fu/make-coll 1 "PROV1" (fu/platforms "MODIS" 1))
   (testing (str "When searching against faceted fields which do not match any matching collections,"
                 "a link should be provided so that the user can remove the term from their search.")
-    (let [search-params {:science-keywords {:0 {:category "Cat1"
-                                                :topic "Topic1"
-                                                :term "Term1"
-                                                :variable-level-1 "Level1-1"
-                                                :variable-level-2 "Level1-2"
-                                                :variable-level-3 "Level1-3"}}
-                         :project ["proj1"]
-                         :platform ["ASTER-p0"]
-                         :instrument ["ATM"]
-                         :processing-level-id ["PL1"]
-                         :data-center "DOI/USGS/CMG/WHSC"
+    (let [search-params {:science-keywords-h {:0 {:category "Cat1"
+                                                  :topic "Topic1"
+                                                  :term "Term1"
+                                                  :variable-level-1 "Level1-1"
+                                                  :variable-level-2 "Level1-2"
+                                                  :variable-level-3 "Level1-3"}}
+                         :project-h ["proj1"]
+                         :platform-h ["ASTER-p0"]
+                         :instrument-h ["ATM"]
+                         :processing-level-id-h ["PL1"]
+                         :organization-h "DOI/USGS/CMG/WHSC"
                          :keyword "MODIS"}
           response (search-and-return-v2-facets search-params)]
       (is (= fr/expected-facets-with-no-matching-collections response))))
   (testing "Facets with multiple facets applied, some with matching collections, some without"
     (is (= fr/expected-facets-modis-and-aster-no-results-found
-           (search-and-return-v2-facets {:platform ["moDIS-p0", "ASTER-p0"]
+           (search-and-return-v2-facets {:platform-h ["moDIS-p0", "ASTER-p0"]
                                          :keyword "MODIS"})))))
 
 (defn- get-lowest-hierarchical-depth
@@ -183,7 +183,7 @@
     (is (= 2 (get-lowest-hierarchical-depth (search-and-return-v2-facets {})))))
   (are [sk-param expected-depth]
     (= expected-depth (get-lowest-hierarchical-depth (search-and-return-v2-facets
-                                                      {:science-keywords {:0 sk-param}})))
+                                                      {:science-keywords-h {:0 sk-param}})))
 
     {:category "Cat1"} 2
     {:topic "Topic1"} 3

@@ -30,7 +30,7 @@
      :platform-h (v2h/terms-facet :platform-sn.humanized size)
      :instrument-h (v2h/terms-facet :instrument-sn.humanized size)
      :organization-h (v2h/terms-facet :organization.humanized size)
-     :project-h (v2h/terms-facet :project.humanized size)
+     :project-h (v2h/terms-facet :project-sn.humanized size)
      :processing-level-id-h (v2h/terms-facet :processing-level-id.humanized size)}))
 
 (def v2-facets-root
