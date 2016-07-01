@@ -47,7 +47,7 @@
                           :instrument :instrument-sn
                           :instrument-h :instrument-sn.humanized
                           :sensor :sensor-sn
-                          :organization-h :organization.humanized
+                          :data-center-h :organization.humanized
                           :processing-level-id-h :processing-level-id.humanized
                           :revision-date :revision-date2}]
     (if (use-doc-values-fields)
@@ -98,7 +98,7 @@
    :instrument-sn :instrument
    :instrument-sn.humanized :instrument-h
    :sensor-sn :sensor
-   :organization.humanized :organization-h
+   :organization.humanized :data-center-h
    :processing-level-id.humanized :processing-level-id-h
    :revision-date2 :revision-date})
 
@@ -126,7 +126,7 @@
    :platform-h "platform-sn.lowercase.humanized"
    :instrument-h "instrument-sn.lowercase.humanized"
    :project-h "project-sn.lowercase.humanized"
-   :organization-h "organization.lowercase.humanized"
+   :data-center-h "organization.lowercase.humanized"
    :processing-level-id-h "processing-level-id.lowercase.humanized"
    :sensor "sensor-sn.lowercase"})
 

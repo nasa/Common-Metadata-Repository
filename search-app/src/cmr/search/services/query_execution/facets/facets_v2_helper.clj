@@ -11,12 +11,12 @@
 
 (def fields->human-readable-label
   "Map of facet fields to their human readable label."
-  {:data-center "Organizations"
-   :project "Projects"
-   :platform "Platforms"
-   :instrument "Instruments"
-   :processing-level-id "Processing levels"
-   :science-keywords "Keywords"})
+  {:data-center-h "Organizations"
+   :project-h "Projects"
+   :platform-h "Platforms"
+   :instrument-h "Instruments"
+   :processing-level-id-h "Processing levels"
+   :science-keywords-h "Keywords"})
 
 (defn terms-facet
   "Construct a terms query to be applied for the given field. Size specifies the number of results

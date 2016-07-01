@@ -40,7 +40,7 @@
    :project-h :string
    :data-center :string
    :archive-center :string
-   :organization-h :string ;; Searches UMM orgs of any type (:archive-center, :data-center, ...)
+   :data-center-h :string ;; Searches UMM orgs of any type (:archive-center, :data-center, ...)
    :spatial-keyword :string
    :two-d-coordinate-system-name :string
    :two-d-coordinate-system :two-d-coordinate-system
