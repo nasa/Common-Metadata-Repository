@@ -77,14 +77,14 @@
                          :platform-h ["DIADEM-1D"]
                          :instrument-h ["ATM"]
                          :processing-level-id-h ["PL1"]
-                         :organization-h "DOI/USGS/CMG/WHSC"}]
+                         :data-center-h "DOI/USGS/CMG/WHSC"}]
       (is (= fr/expected-v2-facets-remove-links (search-and-return-v2-facets search-params)))
       (testing "Some group fields not applied"
         (let [response (search-and-return-v2-facets
-                        (dissoc search-params :platform-h :project-h :organization-h))]
+                        (dissoc search-params :platform-h :project-h :data-center-h))]
           (is (not (applied? response :platform-h)))
           (is (not (applied? response :project-h)))
-          (is (not (applied? response :organization-h)))
+          (is (not (applied? response :data-center-h)))
           (is (applied? response :science-keywords-h))
           (is (applied? response :instrument-h))
           (is (applied? response :processing-level-id-h)))))))
@@ -147,7 +147,7 @@
   (fu/make-coll 1 "PROV1" (fu/platforms "ASTER" 1))
   (fu/make-coll 1 "PROV1" (fu/platforms "MODIS" 1))
   (testing (str "When searching against faceted fields which do not match any matching collections,"
-                "a link should be provided so that the user can remove the term from their search.")
+                " a link should be provided so that the user can remove the term from their search.")
     (let [search-params {:science-keywords-h {:0 {:category "Cat1"
                                                   :topic "Topic1"
                                                   :term "Term1"
@@ -158,7 +158,7 @@
                          :platform-h ["ASTER-p0"]
                          :instrument-h ["ATM"]
                          :processing-level-id-h ["PL1"]
-                         :organization-h "DOI/USGS/CMG/WHSC"
+                         :data-center-h "DOI/USGS/CMG/WHSC"
                          :keyword "MODIS"}
           response (search-and-return-v2-facets search-params)]
       (is (= fr/expected-facets-with-no-matching-collections response))))

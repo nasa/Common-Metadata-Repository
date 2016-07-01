@@ -48,14 +48,14 @@
       (is (d/refs-match? [coll1 coll2]
                          (search/find-refs :collection {:project-h "USGS SOFIA"}))))))
 
-(deftest search-by-organization-humanized
+(deftest search-by-data-center-humanized
   (let [coll1 (d/ingest "PROV1" (dc/collection {:organizations [(dc/org :archive-center "NSIDC")]}))
         coll2 (d/ingest "PROV1" (dc/collection {:organizations [(dc/org :archive-center "NASA/NSIDC_DAAC")]}))
         coll3 (d/ingest "PROV1" (dc/collection {:organizations [(dc/org :archive-center "ASF")]}))]
     (index/wait-until-indexed)
     (testing "search collections by humanized organization"
       (is (d/refs-match? [coll1 coll2]
-                         (search/find-refs :collection {:organization-h "NSIDC"}))))))
+                         (search/find-refs :collection {:data-center-h "NSIDC"}))))))
 
 (deftest search-by-processing-level-id-humanized
   (let [coll1 (d/ingest "PROV1" (dc/collection {:processing-level-id "1T"}))

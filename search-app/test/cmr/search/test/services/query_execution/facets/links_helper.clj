@@ -172,7 +172,7 @@
     (is (= expected-result result))))
 
 (deftest and-options-test
-  (doseq [field [:platform-h :instrument-h :organization-h :project-h :processing-level-id-h]]
+  (doseq [field [:platform-h :instrument-h :data-center-h :project-h :processing-level-id-h]]
     (testing (str "Testing AND options of " field)
       (are3 [values and-option search-term link]
         (let [snake-case-field (csk/->snake_case_string field)

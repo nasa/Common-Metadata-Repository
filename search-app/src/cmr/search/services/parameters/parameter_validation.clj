@@ -37,7 +37,7 @@
      :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
                        :dif-entry-id :collection-data-type :project :project-h :entry-id :version :provider
                        :entry-title :platform :platform-h :processing-level-id :processing-level-id-h
-                      :sensor :organization-h}
+                       :sensor :data-center-h}
      :always-case-sensitive #{:echo-collection-id}
      :disallow-pattern #{:echo-collection-id}
      :allow-or #{:attribute :science-keywords :science-keywords-h}}))
@@ -79,6 +79,7 @@
   [_]
   {:native-id cpv/pattern-option
    :data-center cpv/string-plus-and-options
+   :data-center-h cpv/string-plus-and-options
    :archive-center cpv/string-param-options
    :dataset-id cpv/pattern-option
    :entry-title cpv/string-plus-and-options
@@ -106,7 +107,6 @@
    :temporal (conj exclude-plus-and-or-option :limit-to-granules)
    :revision-date cpv/and-option
    :highlights highlights-option
-   :organization-h cpv/string-plus-and-options
 
    ;; Tag parameters for use querying other concepts.
    :tag-key cpv/pattern-option

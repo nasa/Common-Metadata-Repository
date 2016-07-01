@@ -41,7 +41,7 @@
   "Creates a query string from a root URL and a map of query params"
   [base-url query-params]
   (if (seq query-params)
-    (let [fields [:platform-h :instrument-h :organization-h :project-h :processing-level-id-h]
+    (let [fields [:platform-h :instrument-h :data-center-h :project-h :processing-level-id-h]
           query-params (reduce set-and-options-for-param query-params fields)]
       (format "%s?%s" base-url (codec/form-encode query-params)))
     base-url))

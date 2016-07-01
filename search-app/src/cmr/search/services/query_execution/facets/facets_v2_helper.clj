@@ -11,7 +11,7 @@
 
 (def fields->human-readable-label
   "Map of facet fields to their human readable label."
-  {:organization-h "Organizations"
+  {:data-center-h "Organizations"
    :project-h "Projects"
    :platform-h "Platforms"
    :instrument-h "Instruments"

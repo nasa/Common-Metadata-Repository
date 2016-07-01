@@ -105,7 +105,7 @@
        :count 2,
        :links
        {:apply
-        "http://localhost:3003/collections.json?page_size=0&include_facets=v2&organization_h%5B%5D=DOI%2FUSGS%2FCMG%2FWHSC"},
+        "http://localhost:3003/collections.json?page_size=0&include_facets=v2&data_center_h%5B%5D=DOI%2FUSGS%2FCMG%2FWHSC"},
        :has_children false}]}
     {:title "Projects",
      :type "group",
@@ -163,7 +163,7 @@
        :count 2,
        :links
        {:remove
-        "http://localhost:3003/collections.json?project_h=proj1&instrument_h=ATM&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&platform_h=DIADEM-1D&include_facets=v2&processing_level_id_h=PL1"},
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&project_h=proj1&instrument_h=ATM&page_size=0&platform_h=DIADEM-1D&include_facets=v2&processing_level_id_h=PL1"},
        :has_children true,
        :children
        [{:title "Topic1",
@@ -172,7 +172,7 @@
          :count 2,
          :links
          {:remove
-          "http://localhost:3003/collections.json?project_h=proj1&instrument_h=ATM&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1"},
+          "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&project_h=proj1&instrument_h=ATM&page_size=0&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1"},
          :has_children true,
          :children
          [{:title "Term1",
@@ -181,7 +181,7 @@
            :count 2,
            :links
            {:remove
-            "http://localhost:3003/collections.json?project_h=proj1&instrument_h=ATM&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+            "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&project_h=proj1&instrument_h=ATM&page_size=0&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
            :has_children true,
            :children
            [{:title "Level1-1",
@@ -190,7 +190,7 @@
              :count 2,
              :links
              {:remove
-              "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+              "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&page_size=0&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
              :has_children true,
              :children
              [{:title "Level1-2",
@@ -199,7 +199,7 @@
                :count 2,
                :links
                {:remove
-                "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+                "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&page_size=0&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
                :has_children true,
                :children
                [{:title "Level1-3",
@@ -208,7 +208,7 @@
                  :count 2,
                  :links
                  {:remove
-                  "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+                  "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
                  :has_children false}]}]}]}]}]}
       {:title "Hurricane",
        :type "filter",
@@ -216,7 +216,7 @@
        :count 2,
        :links
        {:apply
-        "http://localhost:3003/collections.json?science_keywords_h%5B1%5D%5Bcategory%5D=Hurricane&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+        "http://localhost:3003/collections.json?science_keywords_h%5B1%5D%5Bcategory%5D=Hurricane&data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
        :has_children true,
        :children
        [{:title "Popular",
@@ -225,7 +225,7 @@
          :count 2,
          :links
          {:apply
-          "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&science_keywords_h%5B1%5D%5Btopic%5D=Popular&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+          "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&science_keywords_h%5B1%5D%5Btopic%5D=Popular&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
          :has_children true}]}]}
     {:title "Platforms",
      :type "group",
@@ -238,7 +238,7 @@
        :count 2,
        :links
        {:apply
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&platform_h%5B%5D=DMSP+5B%2FF3&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1&options%5Bplatform_h%5D%5Band%5D=true"},
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&platform_h%5B%5D=DMSP+5B%2FF3&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1&options%5Bplatform_h%5D%5Band%5D=true"},
        :has_children false}
       {:title "diadem-1D",
        :type "filter",
@@ -246,7 +246,7 @@
        :count 2,
        :links
        {:remove
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
        :has_children false}]}
     {:title "Instruments",
      :type "group",
@@ -259,7 +259,7 @@
        :count 2,
        :links
        {:remove
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
        :has_children false}
       {:title "lVIs",
        :type "filter",
@@ -267,7 +267,7 @@
        :count 2,
        :links
        {:apply
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&options%5Binstrument_h%5D%5Band%5D=true&instrument_h%5B%5D=lVIs&instrument_h=ATM&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&options%5Binstrument_h%5D%5Band%5D=true&instrument_h%5B%5D=lVIs&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
        :has_children false}]}
     {:title "Organizations",
      :type "group",
@@ -293,7 +293,7 @@
        :count 2,
        :links
        {:apply
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&project_h%5B%5D=PROJ2&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&options%5Bproject_h%5D%5Band%5D=true&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&project_h%5B%5D=PROJ2&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&options%5Bproject_h%5D%5Band%5D=true&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
        :has_children false}
       {:title "proj1",
        :type "filter",
@@ -301,7 +301,7 @@
        :count 2,
        :links
        {:remove
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&instrument_h=ATM&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
        :has_children false}]}
     {:title "Processing levels",
      :type "group",
@@ -314,7 +314,7 @@
        :count 2,
        :links
        {:remove
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
        :has_children false}]}]})
 
 (def partial-v2-facets
@@ -379,7 +379,7 @@
        :count 0,
        :links
        {:remove
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
        :has_children false}
       {:title "Topic1",
        :type "filter",
@@ -387,7 +387,7 @@
        :count 0,
        :links
        {:remove
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1"},
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1"},
        :has_children false}
       {:title "Term1",
        :type "filter",
@@ -395,7 +395,7 @@
        :count 0,
        :links
        {:remove
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&project_h=proj1&instrument_h=ATM&keyword=MODIS&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
        :has_children false}
       {:title "Level1-1",
        :type "filter",
@@ -403,7 +403,7 @@
        :count 0,
        :links
        {:remove
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
        :has_children false}
       {:title "Level1-2",
        :type "filter",
@@ -411,7 +411,7 @@
        :count 0,
        :links
        {:remove
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1",}
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1",}
        :has_children false}
       {:title "Level1-3",
        :type "filter",
@@ -419,7 +419,7 @@
        :count 0,
        :links
        {:remove
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
        :has_children false}]}
     {:title "Platforms",
      :type "group",
@@ -432,7 +432,7 @@
        :count 0,
        :links
        {:remove
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
        :has_children false}]}
     {:title "Instruments",
      :type "group",
@@ -445,7 +445,7 @@
        :count 0,
        :links
        {:remove
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&keyword=MODIS&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
        :has_children false}]}
     {:title "Organizations",
      :type "group",
@@ -453,7 +453,7 @@
      :has_children true,
      :children
      [{:title "DOI/USGS/CMG/WHSC",
-       :type "filter",
+       :type "filter"
        :applied true,
        :count 0,
        :links
@@ -471,7 +471,7 @@
        :count 0,
        :links
        {:remove
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&instrument_h=ATM&keyword=MODIS&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
        :has_children false}]}
     {:title "Processing levels",
      :type "group",
@@ -484,7 +484,7 @@
        :count 0,
        :links
        {:remove
-        "http://localhost:3003/collections.json?science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&organization_h=DOI%2FUSGS%2FCMG%2FWHSC&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&keyword=MODIS&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=ASTER-p0&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
        :has_children false}]}]})
 
 (def expected-facets-modis-and-aster-no-results-found

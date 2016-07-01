@@ -29,7 +29,7 @@
     {:science-keywords-h (hv2/nested-facet :science-keywords.humanized size sk-depth)
      :platform-h (v2h/terms-facet :platform-sn.humanized size)
      :instrument-h (v2h/terms-facet :instrument-sn.humanized size)
-     :organization-h (v2h/terms-facet :organization.humanized size)
+     :data-center-h (v2h/terms-facet :organization.humanized size)
      :project-h (v2h/terms-facet :project-sn.humanized size)
      :processing-level-id-h (v2h/terms-facet :processing-level-id.humanized size)}))
 
@@ -54,7 +54,7 @@
 (defn- create-flat-v2-facets
   "Parses the elastic aggregations and generates the v2 facets for all flat fields."
   [elastic-aggregations base-url query-params]
-  (let [flat-fields [:platform-h :instrument-h :organization-h :project-h :processing-level-id-h]]
+  (let [flat-fields [:platform-h :instrument-h :data-center-h :project-h :processing-level-id-h]]
     (remove nil?
       (for [field-name flat-fields
             :let [search-terms-from-query (lh/get-values-for-field query-params field-name)
