@@ -6,6 +6,7 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.search-util :as search]
             [clojure.string :as str]
+            [clojure.java.io :as io]
             [cmr.common.mime-types :as mt]
             [cmr.common.util :as u :refer [are3]]
             [cmr.spatial.mbr :as m]
@@ -52,11 +53,11 @@
                   :coordinate-2 {:min-value 300
                                  :max-value 400}}
         g-two-d-cs (dg/two-d-coordinate-system
-                    {:name "BRAVO"
-                     :start-coordinate-1 110
-                     :end-coordinate-1 130
-                     :start-coordinate-2 300
-                     :end-coordinate-2 328})
+                     {:name "BRAVO"
+                      :start-coordinate-1 110
+                      :end-coordinate-1 130
+                      :start-coordinate-2 300
+                      :end-coordinate-2 328})
         coll-data {:entry-title "short_name1_version"
                    :short-name "short_name1"
                    :version-id "version"
@@ -103,33 +104,32 @@
         gran-for-iso-smap-coll (dg/granule iso-smap-coll gran-data)]
 
     (are3 [exp-errors gran]
-      (is (= exp-errors
-             (flatten (map (fn [error] (:errors error))
-                           (:errors (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true}))))))
+          (is (= exp-errors
+                 (flatten (map (fn [error] (:errors error))
+                               (:errors (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true}))))))
 
-      "ECHO10 collection"
-      []
-      gran-for-echo10-coll
+          "ECHO10 collection"
+          []
+          gran-for-echo10-coll
 
-      "DIF collection"
-      ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."]
-      gran-for-dif-coll
+          "DIF collection"
+          ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."]
+          gran-for-dif-coll
 
-      "DIF10 collection"
-      []
-      gran-for-dif10-coll
+          "DIF10 collection"
+          []
+          gran-for-dif10-coll
 
 
-      "ISO19115 collection"
-      ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."
-        "[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]
-      gran-for-iso19115-coll
+          "ISO19115 collection"
+          ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."]
+          gran-for-iso19115-coll
 
-      "ISO-SMAP collection"
-      ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."
-        "The following list of Product Specific Attributes did not exist in the referenced parent collection: [a-float]."
-        "[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]
-      gran-for-iso-smap-coll)))
+          "ISO-SMAP collection"
+          ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."
+           "The following list of Product Specific Attributes did not exist in the referenced parent collection: [a-float]."
+           "[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]
+          gran-for-iso-smap-coll)))
 
 ;; This tests for limitations when changing the format for a collection with granules.
 ;; CMR-2326 - Based on the test above, we would expect to see the same errors seen when saving
@@ -193,9 +193,20 @@
          []
          :dif10
 
-         ["Collection changing from GEODETIC granule spatial representation to NO_SPATIAL is not allowed when the collection has granules. Found 1 granules."]
+         []
          :iso19115
 
          ["Collection additional attribute [a-float] is referenced by existing granules, cannot be removed. Found 1 granules."
           "Collection changing from GEODETIC granule spatial representation to NO_SPATIAL is not allowed when the collection has granules. Found 1 granules."]
          :iso-smap)))
+
+(deftest nsidc-iso-collection-echo10-granule
+  (testing "granule reference collection via additional attributes and granule spatial representation
+           works correctly when the parent collection is in ISO19115 format"
+           (let [coll-metadata (slurp (io/resource "iso-samples/nsidc-cmr-3177-iso-collection.xml"))
+                 _ (ingest/ingest-concept
+                     (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
+                 gran-metadata (slurp (io/resource "iso-samples/nsidc-cmr-3177-granule.xml"))
+                 {:keys [status]} (ingest/ingest-concept
+                                    (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata))]
+             (is (= 200 status)))))

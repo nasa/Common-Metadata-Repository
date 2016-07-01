@@ -58,7 +58,8 @@
   "Returns a UMM SpatialCoverage from a parsed Collection XML structure"
   [xml-struct]
   (if-let [spatial-elem (cx/element-at-path xml-struct [:Spatial])]
-    (let [gsr (csk/->kebab-case-keyword (cx/string-at-path spatial-elem [:GranuleSpatialRepresentation]))
+    (let [gsr (some-> (cx/string-at-path spatial-elem [:GranuleSpatialRepresentation])
+                      csk/->kebab-case-keyword)
           orbit-params (cx/element-at-path spatial-elem [:OrbitParameters])]
       (if-let [geom-elem (cx/element-at-path spatial-elem [:HorizontalSpatialDomain :Geometry])]
         (c/map->SpatialCoverage
@@ -92,7 +93,7 @@
                   spatial-representation
                   geometries
                   orbit-parameters]} spatial-coverage
-          gsr (csk/->SCREAMING_SNAKE_CASE_STRING granule-spatial-representation)
+          gsr (some-> granule-spatial-representation csk/->SCREAMING_SNAKE_CASE_STRING)
           sr (some-> spatial-representation csk/->SCREAMING_SNAKE_CASE_STRING)]
       (if sr
         (x/element :Spatial {}
