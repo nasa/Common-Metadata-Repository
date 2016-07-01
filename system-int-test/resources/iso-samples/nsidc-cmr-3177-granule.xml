@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- This file is a sample NSIDC granule that tests granule reference collection additional attributes and granule spatail representation validation as in CMR-3177 and CMR-3179. -->
+<Granule>
+  <GranuleUR>SC:NSIDC-0547.001:8142312</GranuleUR>
+  <InsertTime>2016-04-25T17:23:38.197Z</InsertTime>
+  <LastUpdate>2016-05-20T19:51:34.738Z</LastUpdate>
+  <Collection>
+    <ShortName>NSIDC-0547</ShortName>
+    <VersionId>001</VersionId>
+  </Collection>
+  <RestrictionFlag>255</RestrictionFlag>
+  <DataGranule>
+    <SizeMBDataGranule>2.05424</SizeMBDataGranule>
+    <ReprocessingActual>reprocessed once</ReprocessingActual>
+    <ProducerGranuleId>AMSR_E_L3_5DaySnow_V09_20030101.hdf</ProducerGranuleId>
+    <DayNightFlag>UNSPECIFIED</DayNightFlag>
+    <ProductionDateTime>2009-05-19T14:36:24Z</ProductionDateTime>
+  </DataGranule>
+  <PGEVersionClass>
+    <PGEVersion>09</PGEVersion>
+  </PGEVersionClass>
+  <Temporal>
+    <RangeDateTime>
+      <BeginningDateTime>2003-12-01T00:02:13.720000Z</BeginningDateTime>
+      <EndingDateTime>2004-01-05T23:31:43.760000Z</EndingDateTime>
+    </RangeDateTime>
+  </Temporal>
+  <Spatial>
+    <HorizontalSpatialDomain>
+      <Geometry>
+        <BoundingRectangle>
+          <WestBoundingCoordinate>-109.0</WestBoundingCoordinate>
+          <NorthBoundingCoordinate>85.0</NorthBoundingCoordinate>
+          <EastBoundingCoordinate>11.0</EastBoundingCoordinate>
+          <SouthBoundingCoordinate>57.0</SouthBoundingCoordinate>
+        </BoundingRectangle>
+      </Geometry>
+    </HorizontalSpatialDomain>
+  </Spatial>
+  <Platforms>
+    <Platform>
+      <ShortName>AQUA</ShortName>
+      <Instruments>
+        <Instrument>
+          <ShortName>MODIS</ShortName>
+          <Sensors>
+            <Sensor>
+              <ShortName>MODIS</ShortName>
+            </Sensor>
+          </Sensors>
+        </Instrument>
+      </Instruments>
+    </Platform>
+  </Platforms>
+  <AdditionalAttributes>
+    <AdditionalAttribute>
+      <Name>SIPSMetGenVersion</Name>
+      <Values>
+        <Value>2.0.1</Value>
+      </Values>
+    </AdditionalAttribute>
+  </AdditionalAttributes>
+  <Orderable>true</Orderable>
+  <Visible>false</Visible>
+</Granule>
