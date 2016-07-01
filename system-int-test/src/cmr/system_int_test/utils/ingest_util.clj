@@ -210,9 +210,9 @@
 
 (defn concept
   "Returns the concept map for ingest"
-  [concetp-type provider-id native-id format-key metadata]
+  [concept-type provider-id native-id format-key metadata]
   (let [mime-type (mt/format->mime-type format-key)]
-    {:concept-type concetp-type
+    {:concept-type concept-type
      :provider-id provider-id
      :native-id native-id
      :metadata metadata
