@@ -2,8 +2,7 @@
   "Contains helper functions for working with the echo mock"
   (:require [cmr.mock-echo.client.mock-echo-client :as echo-client]
             [cmr.transmit.echo.tokens :as tokens]
-            [cmr.transmit.config :as config]
-            [clj-http.client :as client]
+            [cmr.transmit.access-control :as ac]
             [cmr.common.util :as util]))
 
 (defn reset
@@ -148,6 +147,16 @@
            :user-type :guest}
           {:permissions [:update :delete]
            :user-type :registered}]
+         :provider-object-identity
+         {:target ingest-management-acl
+          :provider-guid provider-guid}))
+
+(defn grant-groups-ingest
+  "Creates an ACL in mock echo granting the specified groups access to ingest for the given provider."
+  [context provider-guid group-guids]
+  (grant context
+         (vec (for [guid group-guids]
+                (group-ace guid [:update-delete])))
          :provider-object-identity
          {:target ingest-management-acl
           :provider-guid provider-guid}))

@@ -22,7 +22,8 @@
     ;; Must be required to be available at runtime
             [cmr.access-control.data.group-json-results-handler]
             [cmr.access-control.data.acl-json-results-handler]
-            [cmr.acl.core :as acl]))
+            [cmr.acl.core :as acl]
+            [cheshire.core :as json]))
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
@@ -262,8 +263,9 @@
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d access-groups in %d ms in format %s with params %s."
                   (:hits results) total-took (:result-format query) (pr-str params)))
-    (assoc results :took total-took)))
-
+    (-> results
+        (assoc :took total-took)
+        (update :results #(json/parse-string % keyword)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Member functions

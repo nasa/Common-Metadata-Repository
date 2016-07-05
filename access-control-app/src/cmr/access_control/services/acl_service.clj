@@ -11,9 +11,14 @@
             [cmr.common-app.services.search.params :as cp]
             [cmr.common-app.services.search.parameter-validation :as cpv]
             [cmr.common-app.services.search.query-model :as common-qm]
-            [cheshire.core :as json]
             [clojure.edn :as edn]
-            [cmr.common.concepts :as concepts]))
+            [cmr.common.concepts :as concepts]
+            [cmr.access-control.services.group-service :as groups]
+            [cmr.transmit.metadata-db :as mdb1]
+            [cmr.umm-spec.legacy :as umm-legacy]
+            [cmr.acl.core :as acl]
+            [cmr.umm.acl-matchers :as acl-matchers]
+            [cmr.common.util :as util]))
 
 (def acl-provider-id
   "The provider ID for all ACLs. Since ACLs are not owned by individual
@@ -165,3 +170,61 @@
   "Returns the parsed metadata of the latest revision of the ACL concept by id."
   [context concept-id]
   (edn/read-string (:metadata (fetch-acl-concept context concept-id))))
+
+(defn echo-style-acl
+  [acl]
+  (-> acl
+      (clojure.set/rename-keys {:system-identity :system-object-identity
+                                :provider-identity :provider-object-identity
+                                :group-permissions :aces})
+      (util/update-in-each [:aces] update-in [:user-type] keyword)
+      (util/update-in-each [:aces] clojure.set/rename-keys {:group-id :group-guid})))
+
+;; catalog item identities are only ever relevant to read and order
+;; provider identities are releveant to update and delete
+
+(defn- acls-granting-permissions
+  "Returns the set of permission keywords (:read, :update, :order, or :delete) granted on concept
+   to the seq of group guids by seq of acls."
+  [concept group-ids acls]
+  (let [sids (concat [:guest :registered] group-ids)
+        grants-permission? (fn [acl permission]
+                             (acl/acl-matches-sids-and-permission? sids permission acl))
+        matches-collection? (fn [acl]
+                              (acl-matchers/coll-applicable-acl? (:provider-id concept) concept acl))
+        ;; soon...
+        matches-granule? (constantly false)
+        matches-concept? (fn [acl]
+                           (condp = (:concept-type concept)
+                             :collection (matches-collection? acl)
+                             :granule (matches-granule? acl)))
+        matches-provider? (fn [acl]
+                            (when-let [acl-provider-id (-> acl :provider-object-identity :provider-id)]
+                              (= acl-provider-id (:provider-id concept))))]
+    (set
+      (concat
+        (for [permission [:update :delete]
+              :when (boolean
+                      (some #(and (grants-permission? % (name permission))
+                                  (matches-provider? %))
+                            acls))]
+          permission)
+        (for [permission [:read :order]
+              :when (boolean
+                      (some #(and (grants-permission? % (name permission))
+                                  (matches-concept? %))
+                            acls))]
+          permission)))))
+
+(defn get-granted-permissions
+  [context username concept-ids]
+  (let [concepts (map (partial mdb/get-latest-concept context) concept-ids)
+        groups (-> (groups/search-for-groups context {:member username}) :results :items)
+        group-ids (set (map :concept_id groups))
+        ;; fetch and parse all ACLs lazily
+        acls (for [batch (mdb1/find-in-batches context :acl 1000 {:latest true})
+                   acl-concept batch]
+               (echo-style-acl (edn/read-string (:metadata acl-concept))))]
+    (into {}
+          (for [concept concepts]
+            [(:concept-id concept) (acls-granting-permissions concept group-ids acls)]))))

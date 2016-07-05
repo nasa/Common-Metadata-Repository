@@ -22,7 +22,8 @@
             [cmr.access-control.data.acl-schema :as acl-schema]
             [cmr.access-control.services.acl-service :as acl-service]
             [cmr.access-control.services.group-service :as group-service]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [clojure.string :as str]))
 
 ;;; Utility Functions
 
@@ -204,6 +205,13 @@
   (-> (acl-service/search-for-acls context params)
       cr/search-response))
 
+(defn get-permissions
+  [request-context headers params]
+  (let [{:keys [user_id concept_ids]} params]
+    {:status 200
+     :body (json/generate-string
+             (acl-service/get-granted-permissions request-context user_id (str/split concept_ids #",")))}))
+
 ;;; Various Admin Route Functions
 
 (defn reset
@@ -306,7 +314,13 @@
 
           ;; Retrieve an ACL
           (GET "/" {:keys [request-context headers params]}
-            (get-acl request-context headers concept-id)))))
+            (get-acl request-context headers concept-id))))
+
+      (context "/permissions" []
+        (OPTIONS "/" [] cr/options-response)
+
+        (GET "/" {:keys [request-context headers params]}
+          (get-permissions request-context headers params))))
 
     (route/not-found "Not Found")))
 
