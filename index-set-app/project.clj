@@ -17,7 +17,7 @@
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [pjstadig/humane-test-output "0.7.0"]
                         [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
-                        [proto-repl "0.1.2"]
+                        [proto-repl "0.2.0"]
                         [clj-http "2.0.0"]]
          :source-paths ["src" "dev" "test" "int_test"]
          :injections [(require 'pjstadig.humane-test-output)
