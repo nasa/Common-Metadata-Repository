@@ -5,9 +5,12 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.log :as log :refer (warn)]
             [cmr.umm.core :as umm]
+            [cmr.ingest.config :as config]
             [cmr.umm.validation.core :as umm-validation]
             [cmr.umm-spec.core :as umm-spec]
             [cmr.umm-spec.validation.core :as umm-spec-validation]
+            [cmr.umm-spec.umm-json :as umm-json]
+            [cmr.umm-spec.json-schema :as json-schema]
             [cmr.ingest.validation.business-rule-validation :as bv]
             [cmr.common.validations.core :as v]
             [cmr.common-app.services.kms-fetcher :as kms-fetcher]
@@ -111,12 +114,31 @@
 (defn validate-collection-umm-spec
   "Validate UMM-C record"
   [context collection validate-keywords?]
-  ;; To Do: Add keyword validations from validate-collection-umm here when validate-collection-umm is removed
+  ;; Add keyword validations from validate-collection-umm here when validate-collection-umm is removed
 
-  ;; Validate the collection and return errors, if any
-  (umm-spec-validation/validate-collection collection
-      (when validate-keywords?
-         [(keyword-validations context)])))
+  (if-let [err-messages (seq (json-schema/validate-umm-json
+                              (umm-json/umm->json collection)
+                              :collection))]
+    (if (config/return-umm-json-validation-errors)
+      (errors/throw-service-errors :invalid-data err-messages)
+      (warn "UMM-C JSON-Schema Validation Errors: " (pr-str (vec err-messages)))))
+
+  (when-let [err-messages (seq (umm-spec-validation/validate-collection
+                                collection
+                                (when validate-keywords?
+                                  [(keyword-validations context)])))]
+    (if (config/return-umm-spec-validation-errors)
+      (errors/throw-service-errors :invalid-data err-messages)
+      (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages))))))
+
+(defn validate-granule-umm-spec
+  "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record"
+  [context collection granule]
+  (when-let [errors (seq (umm-spec-validation/validate-granule collection granule))]
+    (if (config/return-umm-spec-validation-errors)
+      (if-errors-throw :invalid-data errors)
+      (warn (format "Granule with Granule UR [%s] had the following UMM Spec validation errors: %s"
+                    (:granule-ur granule) (pr-str (vec errors)))))))
 
 (defn validate-granule-umm
   [context collection granule]

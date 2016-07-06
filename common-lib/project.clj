@@ -65,7 +65,7 @@
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [criterium "0.4.3"]
-                        [proto-repl "0.1.2"]
+                        [proto-repl "0.2.0"]
                         [clj-http "2.0.0"]]
          :source-paths ["src" "dev" "test"]}}
   :aliases {;; Alias to test2junit for consistency with lein-test-out

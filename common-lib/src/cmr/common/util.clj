@@ -17,23 +17,25 @@
            java.sql.Blob))
 
 (defmacro are2
-  "Based on the are macro from clojure.test. Checks multiple assertions with a template expression.
-  Wraps each tested expression in a testing block to identify what's being tested.
-  See clojure.template/do-template for an explanation of templates.
+  "DEPRECATED. Use are3 instead.
 
-  Example: (are2 [x y] (= x y)
-                \"The most basic case with 1\"
-                2 (+ 1 1)
-                \"A more complicated test\"
-                4 (* 2 2))
-  Expands to:
-           (do
-              (testing \"The most basic case with 1\"
-                (is (= 2 (+ 1 1))))
-              (testing \"A more complicated test\"
-                (is (= 4 (* 2 2)))))
+   Based on the are macro from clojure.test. Checks multiple assertions with a template expression.
+   Wraps each tested expression in a testing block to identify what's being tested.
+   See clojure.template/do-template for an explanation of templates.
 
-  Note: This breaks some reporting features, such as line numbers."
+   Example: (are2 [x y] (= x y)
+                 \"The most basic case with 1\"
+                 2 (+ 1 1)
+                 \"A more complicated test\"
+                 4 (* 2 2))
+   Expands to:
+            (do
+               (testing \"The most basic case with 1\"
+                 (is (= 2 (+ 1 1))))
+               (testing \"A more complicated test\"
+                 (is (= 4 (* 2 2)))))
+
+   Note: This breaks some reporting features, such as line numbers."
   [argv expr & args]
   (if (or
         ;; (are2 [] true) is meaningless but ok
@@ -47,6 +49,45 @@
       `(template/do-template ~argv (test/testing ~testing-var (test/is ~expr)) ~@args))
     (throw (IllegalArgumentException.
              "The number of args doesn't match are2's argv or testing doc string may be missing."))))
+
+(defmacro are3
+  "Similar to the are2 macro with the exception that it expects that your assertion expressions will
+   be explicitly wrapped in is calls. This gives better error messages in the case of failures than
+   if ANDing them together.
+
+  Example: (are3 [x y]
+             (do
+               (is (= x y))
+               (is (= y x)))
+             \"The most basic case with 1\"
+             2 (+ 1 1)
+             \"A more complicated test\"
+             4 (* 2 2))
+  Expands to:
+           (do
+             (testing \"The most basic case with 1\"
+               (do
+                 (is (= 2 (+ 1 1)))
+                 (is (= (+ 1 1) 2))))
+             (testing \"A more complicated test\"
+               (do
+                 (is (= 4 (* 2 2)))
+                 (is (= (* 2 2) 4)))))
+
+  Note: This breaks some reporting features, such as line numbers."
+  [argv expr & args]
+  (if (or
+        ;; (are3 [] true) is meaningless but ok
+        (and (empty? argv) (empty? args))
+        ;; Catch wrong number of args
+        (and (pos? (count argv))
+             (pos? (count args))
+             (zero? (mod (count args) (inc (count argv))))))
+    (let [testing-var (gensym "testing-msg")
+          argv (vec (cons testing-var argv))]
+      `(template/do-template ~argv (test/testing ~testing-var ~expr) ~@args))
+    (throw (IllegalArgumentException.
+             "The number of args doesn't match are3's argv or testing doc string may be missing."))))
 
 (defn trunc
   "Returns the given string truncated to n characters."
@@ -175,8 +216,7 @@
 (defn remove-nil-keys
   "Removes keys mapping to nil values in a map."
   [m]
-  (remove-map-keys (partial nil?) m))
-
+  (remove-map-keys #(nil? %) m))
 
 (defn map-keys [f m]
   "Maps f over the keys in map m and updates all keys with the result of f.
@@ -452,6 +492,33 @@
                         (map (fn [x]
                                (apply f x args))
                              xs)))))
+
+(defn update-in-all
+  "For nested maps, this is identical to clojure.core/update-in. If it encounters
+   a sequential structure at one of the keys, though, it applies the update to each
+   value in the sequence. If it encounters nil at a parent key, it does nothing."
+  [m [k & ks] f & args]
+  (let [v (get m k)]
+    (if (nil? v)
+      m
+      (if (sequential? v)
+        (if ks
+          (assoc m k (mapv #(apply update-in-all %1 ks f args) v))
+          (assoc m k (mapv #(apply f %1 args) v)))
+        (if ks
+          (assoc m k (apply update-in-all v ks f args))
+          (assoc m k (apply f v args)))))))
+
+(defn get-in-all
+  "Similar to clojure.core/get-in, but iterates over sequence values found along
+  the key path and returns an array of all matching values."
+  [m [k & ks]]
+  (let [v (get m k)]
+    (cond
+      (nil? v) []                                    ;; Return empty results if the path can't be followed
+      (nil? ks) [v]                                  ;; Return just the value if we're at the end of the path
+      (sequential? v) (mapcat #(get-in-all %1 ks) v) ;; Iterate and recurse through sequences
+      :else (get-in-all v ks))))                     ;; Recurse on ordinary keys (assumed to be maps)
 
 (defn- key->delay-name
   "Returns the key that the delay is stored in for a lazy value"

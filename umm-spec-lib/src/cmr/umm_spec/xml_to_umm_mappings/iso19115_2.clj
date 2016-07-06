@@ -96,7 +96,7 @@
           description (char-string-value proj "gmi:description")
           ;; ISO description is built as "short-name > long-name", so here we extract the long-name out
           long-name (when-not (= short-name description)
-                      (str/replace description (str short-name keyword-separator) ""))]
+                      (str/replace description (str short-name keyword-separator-join) ""))]
       {:ShortName short-name
        :LongName long-name})))
 

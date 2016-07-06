@@ -5,6 +5,7 @@
             [camel-snake-kebab.core :as csk]
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.json-schema :as js]
+            [cmr.umm-spec.models.common :as cmn]
             [cmr.umm.dif.date-util :refer [parse-dif-end-date]]
             [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
             [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as aa]))
@@ -91,6 +92,9 @@
      :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
      :Purpose (value-of doc "/DIF/Summary/Purpose")
      :DataLanguage (value-of doc "/DIF/Data_Set_Language")
+     ;; Data Dates is required
+     ;; Implement as part of CMR-2867
+     :DataDates [su/not-provided-data-date]
      :ISOTopicCategories (values-at doc "DIF/ISO_Topic_Category")
      :TemporalKeywords (values-at doc "/DIF/Data_Resolution/Temporal_Resolution")
      :Projects (for [proj (select doc "/DIF/Project")]
@@ -174,7 +178,10 @@
                      :Relation [(value-of related-url "URL_Content_Type/Type")
                                 (value-of related-url "URL_Content_Type/Subtype")]})
      :MetadataAssociations (for [parent-dif (values-at doc "/DIF/Parent_DIF")]
-                             {:EntryId parent-dif})}))
+                             {:EntryId parent-dif})
+     ;; Organizations is not implemented but is required in UMM-C
+     ;; Implement with CMR-3157
+     :Organizations [su/not-provided-organization]}))
 
 (defn dif9-xml-to-umm-c
   "Returns UMM-C collection record from DIF9 collection XML document."

@@ -18,6 +18,7 @@
             [cmr.umm.iso-mends.collection.project-element :as proj]
             [cmr.umm.iso-mends.collection.associated-difs :as dif]
             [cmr.umm.iso-mends.collection.collection-association :as ca]
+            [cmr.umm.iso-mends.collection.product-specific-attribute :as psa]
             [cmr.umm.iso-mends.collection.helper :as h]
             [cmr.umm.iso-mends.spatial :as sp])
   (:import cmr.umm.collection.UmmCollection))
@@ -90,8 +91,7 @@
        :temporal (t/xml-elem->Temporal id-elem)
        :science-keywords (k/xml-elem->ScienceKeywords id-elem)
        :platforms (platform/xml-elem->Platforms xml-struct)
-       ;; AdditionalAttributes is not fully supported as documented in CMR-692
-       ; :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
+       :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
        :collection-associations (ca/xml-elem->CollectionAssociations id-elem)
        :projects (proj/xml-elem->Projects xml-struct)
        ;; TwoDCoordinateSystems is not fully supported as documented in CMR-693
@@ -145,6 +145,11 @@
 (def iso-hierarchy-level-element
   "Defines the iso-hierarchy-level-element"
   (x/element :gmd:hierarchyLevel {} h/scope-code-element))
+
+(def data-quality-scope
+  (x/element :gmd:scope {}
+             (x/element :gmd:DQ_Scope {}
+                        (x/element :gmd:level {} h/scope-code-element))))
 
 (defn- iso-date-type-element
   "Returns the iso date type element for the given type"
@@ -234,6 +239,27 @@
                                      (generate-distributor-contact archive-center personnel)
                                      (generate-distributor-transfer-options related-urls))))))
 
+(defn- generate-data-quality-info
+  "Generate the ISO data quality info part of the ISO xml with the given organizations and
+  product specific attributes"
+  [organizations product-specific-attributes]
+  (x/element
+    :gmd:dataQualityInfo {}
+    (x/element
+      :gmd:DQ_DataQuality {}
+      data-quality-scope
+      (x/element
+        :gmd:lineage {}
+        (x/element
+          :gmd:LI_Lineage {}
+          (x/element
+            :gmd:processStep {}
+            (x/element
+              :gmi:LE_ProcessStep {}
+              (x/element :gmd:description {:gco:nilReason "unknown"})
+              (org/generate-processing-center organizations)
+              (psa/generate-product-specific-attributes product-specific-attributes))))))))
+
 (extend-protocol cmr.umm.iso-mends.core/UmmToIsoMendsXml
   UmmCollection
   (umm->iso-mends-xml
@@ -244,8 +270,9 @@
             {:keys [insert-time update-time revision-date-time]} :data-provider-timestamps
             :keys [organizations spatial-keywords temporal-keywords temporal science-keywords
                    platforms product-specific-attributes collection-associations projects
-                   two-d-coordinate-systems related-urls spatial-coverage summary purpose associated-difs
-                   personnel metadata-language use-constraints]} collection
+                   two-d-coordinate-systems related-urls spatial-coverage summary purpose
+                   associated-difs personnel metadata-language use-constraints
+                   product-specific-attributes]} collection
            archive-center (org/get-organization-name :archive-center organizations)
            platforms (platform/platforms-with-id platforms)]
        (x/emit-str
@@ -274,7 +301,7 @@
                           :gmd:citation {}
                           (x/element
                             :gmd:CI_Citation {}
-                            (h/iso-string-element :gmd:title (format "%s > %s" short-name long-name))
+                            (h/iso-string-element :gmd:title dataset-id)
                             (when revision-date-time (iso-date-element "revision" revision-date-time))
                             (iso-date-element "creation" insert-time)
                             (h/iso-string-element :gmd:edition version-id)
@@ -297,13 +324,16 @@
                         (iso-resource-constraints-element restriction-flag use-constraints)
                         (ca/generate-collection-associations collection-associations)
                         (h/iso-string-element :gmd:language "eng")
-                        (x/element :gmd:extent {}
-                                   (x/element :gmd:EX_Extent {:id "boundingExtent"}
-                                              (sp/spatial-coverage->extent-xml spatial-coverage)
-                                              (t/generate-temporal temporal)))
+                        (x/element
+                          :gmd:extent {}
+                          (x/element
+                            :gmd:EX_Extent {:id "boundingExtent"}
+                            (sp/spatial-coverage->extent-description-xml spatial-coverage)
+                            (sp/spatial-coverage->extent-xml spatial-coverage)
+                            (t/generate-temporal temporal)))
                         (iso-processing-level-id-element processing-level-id)))
                     (generate-distribution-info archive-center related-urls personnel)
-                    (org/generate-processing-center organizations)
+                    (generate-data-quality-info organizations product-specific-attributes)
                     (x/element :gmi:acquisitionInformation {}
                                (x/element :gmi:MI_AcquisitionInformation {}
                                           (platform/generate-instruments platforms)

@@ -24,6 +24,7 @@
             [cmr.indexer.data.concepts.organization :as org]
             [cmr.indexer.data.concepts.tag :as tag]
             [cmr.indexer.data.concepts.location-keyword :as lk]
+            [cmr.indexer.data.concepts.humanizer :as humanizer]
             [cmr.acl.core :as acl]
             [cmr.common.concepts :as concepts]
             [cmr.umm.collection :as umm-c]
@@ -83,6 +84,36 @@
                ;; Use the collection start and end date if there are no granule start and end dates.
                {:granule-start-date coll-start
                 :granule-end-date coll-end}))))
+
+(defn- extract-humanized-elastic-fields
+  "Descends into the humanized collection extracting values at the given humanized
+  field path and returns a map of humanized and lowercase humanized elastic fields
+  for that path"
+  [humanized-collection path base-es-field]
+  (let [prefix (subs (str base-es-field) 1)
+        field (keyword (str prefix ".humanized"))
+        field-lower (keyword (str prefix ".lowercase.humanized"))
+        value (util/get-in-all humanized-collection path)
+        value-lower (cond
+                       (string? value) (str/lower-case value)
+                       (sequential? value) (map str/lower-case (remove nil? value))
+                       :else value)]
+    {field value
+     field-lower value-lower}))
+
+(defn- collection-humanizers-elastic
+  "Given a collection, returns humanized elastic search fields"
+  [collection]
+  (let [humanized (humanizer/umm-collection->umm-collection+humanizers collection)
+        extract-fields (partial extract-humanized-elastic-fields humanized)]
+    (merge
+     {:science-keywords.humanized (map sk/humanized-science-keyword->elastic-doc
+                                   (:science-keywords humanized))}
+     (extract-fields [:platforms :cmr.humanized/short-name] :platform-sn)
+     (extract-fields [:platforms :instruments :cmr.humanized/short-name] :instrument-sn)
+     (extract-fields [:projects :cmr.humanized/short-name] :project-sn)
+     (extract-fields [:product :cmr.humanized/processing-level-id] :processing-level-id)
+     (extract-fields [:organizations :cmr.humanized/org-name] :organization))))
 
 (defn- get-coll-permitted-group-ids
   "Returns the groups ids (group guids, 'guest', 'registered') that have permission to read
@@ -257,8 +288,8 @@
            (collection-temporal-elastic context concept-id collection)
            (get-in collection [:spatial-coverage :orbit-parameters])
            (spatial->elastic collection)
-           (sk/science-keywords->facet-fields collection))))
-
+           (sk/science-keywords->facet-fields collection)
+           (collection-humanizers-elastic collection))))
 
 (defn- get-elastic-doc-for-tombstone-collection
   "Get the subset of elastic field values that apply to a tombstone index operation."

@@ -23,12 +23,12 @@
 
 (defn- spatial-coverage->expected-parsed
   "Returns the expected parsed ISO MENDS SpatialCoverage from a UMM collection."
-  [{:keys [geometries spatial-representation]}]
-  (when geometries
+  [{:keys [geometries spatial-representation granule-spatial-representation]}]
+  (when (or granule-spatial-representation (seq geometries))
     (umm-c/map->SpatialCoverage
-     {:spatial-representation spatial-representation
-      :granule-spatial-representation spatial-representation
-      :geometries (map #(umm-s/set-coordinate-system spatial-representation %) geometries)})))
+      {:spatial-representation spatial-representation
+       :granule-spatial-representation granule-spatial-representation
+       :geometries (seq (map #(umm-s/set-coordinate-system spatial-representation %) geometries))})))
 
 (defn- related-urls->expected-parsed
   "Returns the expected parsed related-urls for the given related-urls."
@@ -116,8 +116,6 @@
         (assoc :organizations organizations)
         ;; ISO does not support sensor technique or platform characteristics
         (update-in [:platforms] platforms->expected-parsed)
-        ;; ISO AdditionalAttributes mapping is incomplete right now
-        (dissoc :product-specific-attributes)
         ;; ISO does not support size in RelatedURLs
         (update-in [:related-urls] related-urls->expected-parsed)
         ;; ISO does not fully support two-d-coordinate-systems
@@ -153,18 +151,7 @@
     (let [xml (iso/umm->iso-mends-xml collection)
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-iso collection)]
-      (= parsed expected-parsed))))
-
-(comment
-
-  (let [xml (iso/umm->iso-mends-xml user/failing-value)
-        parsed (c/parse-collection xml)
-        expected-parsed (umm->expected-parsed-iso user/failing-value)]
-    (is (= parsed expected-parsed)))
-
-
-  )
-
+      (= expected-parsed parsed))))
 
 (defspec generate-and-parse-collection-between-formats-test 100
   (for-all [collection coll-gen/collections]
@@ -184,9 +171,9 @@
   ;; This test is currently failing pending an update to the XSLT file
   ;; to generate closed polygons per the GML spec
 
-(def echo-to-iso-xslt
-  (xslt/read-template
-   (io/resource "schema/iso_mends/resources/transforms/ECHOToISO.xsl")))
+  (def echo-to-iso-xslt
+    (xslt/read-template
+      (io/resource "schema/iso_mends/resources/transforms/ECHOToISO.xsl")))
 
   (defspec umm-to-echo-to-iso-mends-via-xslt-to-umm-test 100
     (for-all [collection coll-gen/collections]
@@ -207,16 +194,16 @@
 
 (def expected-temporal
   (umm-c/map->Temporal
-                      {:range-date-times
-                       [(umm-c/map->RangeDateTime
-                          {:beginning-date-time (p/parse-datetime "1996-02-24T22:20:41-05:00")
-                           :ending-date-time (p/parse-datetime "1997-03-24T22:20:41-05:00")})
-                        (umm-c/map->RangeDateTime
-                          {:beginning-date-time (p/parse-datetime "1998-02-24T22:20:41-05:00")
-                           :ending-date-time (p/parse-datetime "1999-03-24T22:20:41-05:00")})]
-                       :single-date-times
-                       [(p/parse-datetime "2010-01-05T05:30:30.550-05:00")]
-                       :periodic-date-times []}))
+    {:range-date-times
+     [(umm-c/map->RangeDateTime
+        {:beginning-date-time (p/parse-datetime "1996-02-24T22:20:41-05:00")
+         :ending-date-time (p/parse-datetime "1997-03-24T22:20:41-05:00")})
+      (umm-c/map->RangeDateTime
+        {:beginning-date-time (p/parse-datetime "1998-02-24T22:20:41-05:00")
+         :ending-date-time (p/parse-datetime "1999-03-24T22:20:41-05:00")})]
+     :single-date-times
+     [(p/parse-datetime "2010-01-05T05:30:30.550-05:00")]
+     :periodic-date-times []}))
 
 (def expected-collection
   (umm-c/map->UmmCollection
@@ -238,7 +225,7 @@
      :spatial-keywords ["Word-2" "Word-1" "Word-0"]
      :temporal-keywords ["Word-5" "Word-3" "Word-4"]
      :temporal expected-temporal
-     :spatial-coverage nil
+     :spatial-coverage (umm-c/map->SpatialCoverage {:granule-spatial-representation :cartesian})
      :science-keywords
      [(umm-c/map->ScienceKeyword
         {:category "EARTH SCIENCE"
@@ -270,6 +257,17 @@
          :long-name "RADARSAT-LONG-2"
          :type "Spacecraft-2"
          :instruments nil})]
+     :product-specific-attributes
+     [(umm-c/map->ProductSpecificAttribute
+        {:name "SIPSMetGenVersion"
+         :description "The version of the SIPSMetGen software used to produce the metadata file for this granule"
+         :data-type :string
+         :parameter-range-begin "alpha"
+         :parameter-range-end "bravo"
+         :value "alpha1"
+         :parsed-parameter-range-begin "alpha"
+         :parsed-parameter-range-end "bravo"
+         :parsed-value "alpha1"})]
      :collection-associations [(umm-c/map->CollectionAssociation
                                  {:short-name "COLLOTHER-237"
                                   :version-id "1"})

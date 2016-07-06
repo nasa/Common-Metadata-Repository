@@ -3,6 +3,7 @@
   (:require [clojure.set :as set]
             [clojure.string :as s]
             [cmr.common-app.services.search.parameter-validation :as cpv]
+            [cmr.common-app.services.search.query-model :as cqm]
             [cmr.common.services.errors :as errors]
             [cmr.common.services.messages :as c-msg]
             [cmr.common.parameter-parser :as parser]
@@ -33,12 +34,13 @@
     {:single-value #{:keyword :echo-compatible :include-granule-counts :include-has-granules
                      :include-facets :hierarchical-facets :include-highlights :include-tags
                      :all-revisions}
-     :multiple-value #{:short-name :instrument :two-d-coordinate-system-name :dif-entry-id
-                       :collection-data-type :project :entry-id :version :provider :entry-title
-                       :platform :processing-level-id :sensor}
+     :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
+                       :dif-entry-id :collection-data-type :project :project-h :entry-id :version :provider
+                       :entry-title :platform :platform-h :processing-level-id :processing-level-id-h
+                       :sensor :data-center-h}
      :always-case-sensitive #{:echo-collection-id}
      :disallow-pattern #{:echo-collection-id}
-     :allow-or #{:attribute :science-keywords}}))
+     :allow-or #{:attribute :science-keywords :science-keywords-h}}))
 
 (defmethod cpv/params-config :granule
   [_]
@@ -77,6 +79,7 @@
   [_]
   {:native-id cpv/pattern-option
    :data-center cpv/string-plus-and-options
+   :data-center-h cpv/string-plus-and-options
    :archive-center cpv/string-param-options
    :dataset-id cpv/pattern-option
    :entry-title cpv/string-plus-and-options
@@ -84,15 +87,19 @@
    :entry-id cpv/string-plus-and-options
    :version cpv/string-param-options
    :project cpv/string-plus-and-options
+   :project-h cpv/string-plus-and-options
    :campaign cpv/string-plus-and-options
    :platform cpv/string-plus-and-options
+   :platform-h cpv/string-plus-and-options
    :sensor cpv/string-plus-and-options
    :instrument cpv/string-plus-and-options
+   :instrument-h cpv/string-plus-and-options
    :collection-data-type cpv/string-param-options
    :grid cpv/string-param-options
    :two-d-coordinate-system cpv/string-param-options
    :keyword cpv/pattern-option
    :science-keywords cpv/string-plus-or-options
+   :science-keywords-h cpv/string-plus-or-options
    :spatial-keyword cpv/string-plus-and-options
    :dif-entry-id cpv/string-plus-and-options
    :provider cpv/string-param-options
@@ -278,9 +285,9 @@
       (mapcat #(-> % attrib/parse-value :errors) attributes)
       [(attrib-msg/attributes-must-be-sequence-msg)])))
 
-(defn science-keywords-validation
-  [concept-type params]
-  (when-let [science-keywords (:science-keywords params)]
+(defn science-keywords-validation-for-field
+  [field concept-type params]
+  (when-let [science-keywords (get params field)]
     (if (map? science-keywords)
       (let [values (vals science-keywords)]
         (if (some #(not (map? %)) values)
@@ -472,7 +479,7 @@
     (when (and (not (#{:json :atom :echo10 :dif :dif10 :iso19115 :native} (:result-format params)))
                (not (s/blank? (:include-tags params))))
       [(format "Parameter [include_tags] is not supported for %s format search."
-               (name (:result-format params)))])))
+               (name (cqm/base-result-format (:result-format params))))])))
 
 (def valid-timeline-intervals
   "A list of the valid values for timeline intervals."
@@ -516,7 +523,8 @@
                   equator-crossing-date-validation
                   cloud-cover-validation
                   attribute-validation
-                  science-keywords-validation
+                  (partial science-keywords-validation-for-field :science-keywords)
+                  (partial science-keywords-validation-for-field :science-keywords-h)
                   exclude-validation
                   boolean-value-validation
                   polygon-validation
@@ -538,7 +546,7 @@
                equator-crossing-date-validation
                cloud-cover-validation
                attribute-validation
-               science-keywords-validation
+               (partial science-keywords-validation-for-field :science-keywords)
                exclude-validation
                boolean-value-validation
                polygon-validation
@@ -578,7 +586,9 @@
    (partial cpv/validate-map [:options :attribute])
    (partial cpv/validate-map [:exclude])
    (partial cpv/validate-map [:science-keywords])
-   (partial cpv/validate-all-map-values cpv/validate-map [:science-keywords])])
+   (partial cpv/validate-all-map-values cpv/validate-map [:science-keywords])
+   (partial cpv/validate-map [:science-keywords-h])
+   (partial cpv/validate-all-map-values cpv/validate-map [:science-keywords-h])])
 
 (defn validate-parameter-data-types
   "Validates data types of parameters.  Unlike other validations, this returns a tuple of

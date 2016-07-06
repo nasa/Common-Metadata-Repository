@@ -162,7 +162,10 @@
                        :VariableLevel1 (value-of sk "Variable_Level_1")
                        :VariableLevel2 (value-of sk "Variable_Level_2")
                        :VariableLevel3 (value-of sk "Variable_Level_3")
-                       :DetailedVariable (value-of sk "Detailed_Variable")})})
+                       :DetailedVariable (value-of sk "Detailed_Variable")})
+   ;; Organizations is not implemented but is required in UMM-C
+   ;; Implement with CMR-3157
+   :Organizations [u/not-provided-organization]})
 
 (defn dif10-xml-to-umm-c
   "Returns UMM-C collection record from DIF10 collection XML document."

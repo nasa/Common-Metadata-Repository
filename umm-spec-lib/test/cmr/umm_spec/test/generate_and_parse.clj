@@ -62,8 +62,9 @@
 (deftest roundtrip-example-collection-record
   (doseq [metadata-format tested-collection-formats]
     (testing (str metadata-format)
-      (is (= (expected-conversion/convert expected-conversion/example-collection-record metadata-format)
-             (xml-round-trip :collection metadata-format expected-conversion/example-collection-record))))))
+      (let [expected (expected-conversion/convert expected-conversion/example-collection-record metadata-format)
+            actual (xml-round-trip :collection metadata-format expected-conversion/example-collection-record)]
+        (is (= expected actual))))))
 
 (deftest roundtrip-example-service-record
   (is (= (expected-conversion/convert expected-conversion/example-service-record :serf)

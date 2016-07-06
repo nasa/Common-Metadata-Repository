@@ -934,7 +934,7 @@
          <gmd:extent>
             <gmd:EX_Extent id="boundingExtent">
                <gmd:description>
-                  <gco:CharacterString>Temporal Range Type=Long Range, Time Type=Universal Time</gco:CharacterString>
+                  <gco:CharacterString>SpatialCoverageType=Horizontal, SpatialGranuleSpatialRepresentation=CARTESIAN, Temporal Range Type=Long Range, Time Type=Universal Time</gco:CharacterString>
                </gmd:description>
                <gmd:geographicElement>
                   <gmd:EX_GeographicDescription>
@@ -1159,6 +1159,47 @@
                            </gmd:role>
                         </gmd:CI_ResponsibleParty>
                      </gmd:processor>
+                     <gmi:processingInformation>
+                        <eos:EOS_Processing>
+                          <gmi:identifier/>
+                          <eos:otherPropertyType>
+                              <gco:RecordType xlink:href="http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])">Echo Additional Attributes</gco:RecordType>
+                          </eos:otherPropertyType>
+                          <eos:otherProperty>
+                              <gco:Record>
+                                  <eos:AdditionalAttributes>
+                                      <eos:AdditionalAttribute>
+                                        <eos:reference>
+                                        <eos:EOS_AdditionalAttributeDescription>
+                                        <eos:type>
+                                        <eos:EOS_AdditionalAttributeTypeCode codeList="http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                        </eos:type>
+                                        <eos:name>
+                                        <gco:CharacterString>SIPSMetGenVersion</gco:CharacterString>
+                                        </eos:name>
+                                        <eos:description>
+                                        <gco:CharacterString>The version of the SIPSMetGen software used to produce the metadata file for this granule</gco:CharacterString>
+                                        </eos:description>
+                                        <eos:dataType>
+                                        <eos:EOS_AdditionalAttributeDataTypeCode codeList="http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="STRING">STRING</eos:EOS_AdditionalAttributeDataTypeCode>
+                                        </eos:dataType>
+                                        <eos:parameterRangeBegin>
+                                        <gco:CharacterString>alpha</gco:CharacterString>
+                                        </eos:parameterRangeBegin>
+                                        <eos:parameterRangeEnd>
+                                        <gco:CharacterString>bravo</gco:CharacterString>
+                                        </eos:parameterRangeEnd>
+                                        </eos:EOS_AdditionalAttributeDescription>
+                                        </eos:reference>
+                                         <eos:value>
+                                        <gco:CharacterString>alpha1</gco:CharacterString>
+                                        </eos:value>
+                                      </eos:AdditionalAttribute>
+                                  </eos:AdditionalAttributes>
+                              </gco:Record>
+                          </eos:otherProperty>
+                      </eos:EOS_Processing>
+                    </gmi:processingInformation>
                   </gmi:LE_ProcessStep>
                </gmd:processStep>
             </gmd:LI_Lineage>

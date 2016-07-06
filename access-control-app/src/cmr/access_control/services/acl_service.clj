@@ -160,7 +160,7 @@
                                        (cs/find-concepts context :acl query))
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d acls in %d ms in format %s with params %s."
-                  (:hits results) total-took (:result-format query) (pr-str params)))
+                  (:hits results) total-took (common-qm/base-result-format query) (pr-str params)))
     (assoc results :took total-took)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

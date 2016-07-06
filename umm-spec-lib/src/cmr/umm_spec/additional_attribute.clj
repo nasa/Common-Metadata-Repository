@@ -93,6 +93,27 @@
     (parse-value data-type value)
     (catch Exception _ nil)))
 
+(defn- add-parsed-value-for
+  "Parses the value at the source field (if parseable) and associates it with the additional attribute
+   using the given destination field."
+  [aa source-field dest-field]
+  (if-let [v (safe-parse-value (:DataType aa) (get aa source-field))]
+    (assoc aa dest-field v)
+    aa))
+
+(defn- attribute-with-parsed-value
+  "Adds a parsed-value keyword to the additional attribute based on the data type and value in the map."
+  [aa]
+  (-> aa
+      (add-parsed-value-for :Value ::parsed-value)
+      (add-parsed-value-for :ParameterRangeBegin ::parsed-parameter-range-begin)
+      (add-parsed-value-for :ParameterRangeEnd ::parsed-parameter-range-end)))
+
+(defn add-parsed-values
+  "Adds additional attribute parsed values to the additional attributes of the UMM record."
+  [umm-c]
+  (update umm-c :AdditionalAttributes #(mapv attribute-with-parsed-value %)))
+
 (defmulti gen-value
   "Converts the given value to a string for error messages."
   (fn [data-type value]

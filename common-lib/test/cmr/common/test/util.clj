@@ -58,6 +58,23 @@
                   2 (+ 1 1)
                   4 (* 2 2)))))))
 
+(deftest are3-test
+  (testing "Normal use"
+    (util/are3
+      [x y] (is (= x y))
+      "The most basic case with 1"
+      2 (+ 1 1)
+      "A more complicated test"
+      4 (* 2 2)))
+  (testing "without comments"
+    (is (thrown-with-msg?
+          IllegalArgumentException
+          #"The number of args doesn't match are3's argv or testing doc string may be missing"
+          (eval '(cmr.common.util/are3
+                  [x y] (is (= x y))
+                  2 (+ 1 1)
+                  4 (* 2 2)))))))
+
 (defn-timed test-timed-multi-arity
   "The doc string"
   ([f]
@@ -515,3 +532,74 @@
              (keys (into m {:z nil :y nil :x nil
                             :a nil :d nil :c nil :f nil})))))))
 
+(deftest update-in-all
+  (util/are3
+   [args result]
+   (let [[obj path value] args]
+     (is (= result
+            (util/update-in-all obj path (fn[_] value)))))
+
+   "nil values in the path"
+   [{:a nil :b :d} [:a :b] 0]
+   {:a nil :b :d}
+
+   "sequential values in the path"
+   [{:a [{:b 1 :c 2} {:b 3 :c 4}] :d 5} [:a :b] 0]
+   {:a [{:b 0 :c 2} {:b 0 :c 4}] :d 5}
+
+   "hash values in the path"
+   [{:a 1 :b 2} [:a] 0]
+   {:a 0 :b 2}
+
+   "nested hash values in the path"
+   [{:a {:b {:c 1 :d 2} :e 3} :f 4} [:a :b :c] 0]
+   {:a {:b {:c 0 :d 2} :e 3} :f 4}
+
+   "nested sequential values in the path"
+   [{:a [{:b [{:c 1 :d 2}]}
+         {}
+         {:b [{:c 3 :d 4} {:c 5}]}
+         {:b [{:d 6} {:d 7}]}]}
+    [:a :b :c]
+    0]
+   {:a [{:b [{:c 0 :d 2}]}
+        {}
+        {:b [{:c 0 :d 4} {:c 0}]}
+        {:b [{:d 6} {:d 7}]}]}))
+
+(deftest get-in-all
+  (util/are3
+   [args result]
+   (is (= result (apply util/get-in-all args)))
+
+   "nil values in the path"
+   [{:a nil :b :c} [:a :b]]
+   []
+
+   "sequential values in the path"
+   [{:a [{:b 1 :c 2} {:b 3 :c 4}] :d 5} [:a :b]]
+   [1 3]
+
+   "hash values in the path"
+   [{:a 1 :b 2} [:a]]
+   [1]
+
+   "nested hash values in the path"
+   [{:a {:b {:c 1 :d 2} :e 3} :f 4} [:a :b :c]]
+   [1]
+
+   "nested sequential values in the path"
+   [{:a [{:b [{:c 1 :d 2}]}
+         {}
+         {:b [{:c 3 :d 4} {:c 5}]}
+         {:b [{:d 6} {:d 7}]}]}
+    [:a :b :c]]
+   [1 3 5]
+
+   "sequential values at the end of the path"
+   [{:a [{:b [{:c [1 2 3] :d 2}]}
+         {}
+         {:b [{:c [4 5] :d 4} {:c [6]}]}
+         {:b [{:d 6} {:d 7}]}]}
+   [:a :b :c]]
+   [[1 2 3] [4 5] [6]]))

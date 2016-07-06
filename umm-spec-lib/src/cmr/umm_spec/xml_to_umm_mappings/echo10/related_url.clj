@@ -82,7 +82,7 @@
   (for [resource (select doc "/Collection/AssociatedBrowseImageUrls/ProviderBrowseUrl")
         :let [file-size (value-of resource "FileSize")]]
     {:URLs [(value-of resource "URL")]
-     :FileSize (when file-size {:Size file-size :Unit "Bytes"})
+     :FileSize (when file-size {:Size (/ (Long. file-size) 1024) :Unit "KB"})
      :Description (value-of resource "Description")
      :MimeType (value-of resource "MimeType")
      :Relation ["GET RELATED VISUALIZATION"]}))

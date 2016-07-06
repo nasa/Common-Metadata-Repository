@@ -24,13 +24,14 @@
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
   from a collection search. Size specifies the number of results to return. Only a subset of the
   facets are returned in the v2 facets, specifically those that help enable dataset discovery."
-  [size]
-  {:science-keywords (hv2/nested-facet :science-keywords size)
-   :platform (v2h/terms-facet :platform-sn size)
-   :instrument (v2h/terms-facet :instrument-sn size)
-   :data-center (v2h/terms-facet :data-center size)
-   :project (v2h/terms-facet :project-sn2 size)
-   :processing-level-id (v2h/terms-facet :processing-level-id size)})
+  [size query-params]
+  (let [sk-depth (hv2/get-depth-for-hierarchical-field query-params :science-keywords-h)]
+    {:science-keywords-h (hv2/nested-facet :science-keywords.humanized size sk-depth)
+     :platform-h (v2h/terms-facet :platform-sn.humanized size)
+     :instrument-h (v2h/terms-facet :instrument-sn.humanized size)
+     :data-center-h (v2h/terms-facet :organization.humanized size)
+     :project-h (v2h/terms-facet :project-sn.humanized size)
+     :processing-level-id-h (v2h/terms-facet :processing-level-id.humanized size)}))
 
 (def v2-facets-root
   "Root element for the facet response"
@@ -43,13 +44,17 @@
   counts, a new tuple is added with the search term and a count of 0."
   [value-counts search-terms]
   (let [all-facet-values (map #(str/lower-case (first %)) value-counts)
+        ;; Look for each of the search terms in the returned facet values compared in a case
+        ;; insensitive manner. Although the comparison is case insensitive the missing-terms will
+        ;; contain any of the search terms that do not appear in the facet values in their
+        ;; original case.
         missing-terms (remove #(some (set [(str/lower-case %)]) all-facet-values) search-terms)]
     (reduce #(conj %1 [%2 0]) value-counts missing-terms)))
 
 (defn- create-flat-v2-facets
   "Parses the elastic aggregations and generates the v2 facets for all flat fields."
   [elastic-aggregations base-url query-params]
-  (let [flat-fields [:platform :instrument :data-center :project :processing-level-id]]
+  (let [flat-fields [:platform-h :instrument-h :data-center-h :project-h :processing-level-id-h]]
     (remove nil?
       (for [field-name flat-fields
             :let [search-terms-from-query (lh/get-values-for-field query-params field-name)
@@ -90,10 +95,11 @@
       (assoc v2-facets-root :has_children false))))
 
 (defmethod query-execution/pre-process-query-result-feature :facets-v2
-  [_ query _]
-  ;; With CMR-1101 we will support a parameter to specify the number of terms to return. For now
-  ;; always use the DEFAULT_TERMS_SIZE
-  (assoc query :aggregations (facets-v2-aggregations DEFAULT_TERMS_SIZE)))
+  [{:keys [query-string]} query _]
+  (let [query-params (parse-params query-string "UTF-8")]
+    ;; With CMR-1101 we will support a parameter to specify the number of terms to return. For now
+    ;; always use the DEFAULT_TERMS_SIZE
+    (assoc query :aggregations (facets-v2-aggregations DEFAULT_TERMS_SIZE query-params))))
 
 (defmethod query-execution/post-process-query-result-feature :facets-v2
   [context _ {:keys [aggregations]} query-results _]
