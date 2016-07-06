@@ -22,8 +22,8 @@
             [cmr.search.services.acls.collections-cache :as coll-cache]
             [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
             [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.search.services.transformer :as transformer]
-            [cmr.common-app.system :as common-sys]))
+            [cmr.common-app.system :as common-sys]
+            [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
@@ -87,7 +87,7 @@
                       ah/token-sid-cache-name (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_CACHE_TIME})
                       :has-granules-map (hgrf/create-has-granules-map-cache)
                       coll-cache/cache-key (coll-cache/create-cache)
-                      transformer/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
+                      metadata-transformer/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
                       ;; Note that search does not have a job to refresh the KMS cache. The indexer
                       ;; already refreshes the cache. Since we use a consistent cache, the search

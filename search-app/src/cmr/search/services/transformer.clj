@@ -1,94 +1,26 @@
 (ns cmr.search.services.transformer
   "Provides functions for retrieving concepts in a desired format."
   (:require [cmr.metadata-db.services.concept-service :as metadata-db]
-            [cmr.umm.core :as ummc]
-            [cmr.umm.start-end-date :as sed]
-            [cmr.umm-spec.versioning :as ver]
-            [cmr.umm-spec.core :as umm-spec]
-            [cmr.umm-spec.umm-json :as umm-json]
-            [cmr.common.cache :as cache]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
-            [clojure.java.io :as io]
             [cmr.search.services.acl-service :as acl-service]
             [cmr.search.services.acls.acl-helper :as acl-helper]
             [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
-            [cmr.common.xml.xslt :as xslt]
             [cmr.common.util :as u]
-            [cmr.common-app.services.search.query-model :as qm]
             [cmr.search.services.result-format-helper :as rfh]
-            [cmr.umm.iso-smap.granule :as smap-g]
-            [cmr.collection-renderer.services.collection-renderer :as collection-renderer]))
+            [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]))
 
 
 (def transformer-supported-format?
   "The set of formats supported by the transformer."
   #{:echo10 :dif :dif10 :iso19115 :iso-smap})
 
-(def types->xsl
-  "Defines the [metadata-format target-format] to xsl mapping"
-  {[:echo10 :iso19115] (io/resource "xslt/echo10_to_iso19115.xsl")})
-
-(def xsl-transformer-cache-name
-  "This is the name of the cache to use for XSLT transformer templates. Templates are thread
-  safe but transformer instances are not.
-  http://www.onjava.com/pub/a/onjava/excerpt/java_xslt_ch5/?page=9"
-  :xsl-transformer-templates)
-
 (defn context->metadata-db-context
   "Converts the context into one that can be used to invoke the metadata-db services."
   [context]
   (assoc context :system (get-in context [:system :embedded-systems :metadata-db])))
 
-(defn- get-template
-  "Returns a XSLT template from the filename, using the context cache."
-  [context f]
-  (cache/get-value
-    (cache/context->cache context xsl-transformer-cache-name)
-    f
-    #(xslt/read-template f)))
-
-(defn- generate-html-response
-  "Returns an HTML representation of the collection concept."
-  [context concept]
-  (let [collection (umm-spec/parse-metadata
-                     context :collection (:format concept) (:metadata concept))]
-    (collection-renderer/render-collection context collection)))
-
-(defn- transform-metadata
-  "Transforms the metadata of the concept to the given format"
-  [context concept target-format]
-  (let [concept-mime-type (:format concept)]
-    (if-let [xsl (types->xsl [(mt/mime-type->format concept-mime-type) target-format])]
-      ; xsl is defined for the transformation, so use xslt
-      (xslt/transform (:metadata concept) (get-template context xsl))
-      (cond
-        (= :html target-format)
-        (generate-html-response context concept)
-
-        (mt/umm-json? concept-mime-type)
-        (if (and (= :umm-json (qm/base-result-format target-format))
-                 (= (or (mt/version-of concept-mime-type) ver/current-version)
-                    (or (:version target-format) ver/current-version)))
-          ;; The metadata is in the same version of UMM JSON as requested by the user.
-          (:metadata concept)
-          ;; The user has requested a different format for the metadata.
-          ;; Use UMM Spec to parse it and generate metadata in the desired format.
-          (umm-spec/generate-metadata
-            context
-            (umm-spec/parse-metadata context :collection concept-mime-type (:metadata concept))
-            target-format))
-
-
-        (= :umm-json (qm/base-result-format target-format))
-        (umm-json/umm->json
-          (umm-spec/parse-metadata context :collection concept-mime-type (:metadata concept)))
-
-        :else
-        (-> concept
-            ummc/parse-concept
-            (ummc/umm->xml target-format))))))
 
 (defn- concept->value-map
   "Convert a concept into a map containing metadata in a desired format as well as
@@ -101,7 +33,7 @@
         value-map (if (or (contains? #{:xml :native} target-format) ;; xml is also a native format
                           (= target-format concept-format))
                     (select-keys concept [:metadata :concept-id :revision-id :format])
-                    (let [metadata (transform-metadata context concept target-format)]
+                    (let [metadata (metadata-transformer/transform context concept target-format)]
                       (assoc (select-keys concept [:concept-id :revision-id])
                              :metadata metadata
                              :format (rfh/search-result-format->mime-type target-format))))]
