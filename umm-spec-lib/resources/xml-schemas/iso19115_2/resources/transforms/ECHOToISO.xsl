@@ -165,7 +165,7 @@
       </xd:p>
       <xd:p>
         <xd:b>Version 1.17 (Mar 13, 2014)</xd:b>
-        <xd:p>Reverted namespace changes (keeping eos:EOS_Platform/gmi:instrument) and added 
+        <xd:p>Reverted namespace changes (keeping eos:EOS_Platform/gmi:instrument) and added
           OperationsMode to needAcquisitionExtensions (it is an AdditionalAttribute)</xd:p>
       </xd:p>
       <xd:p>
@@ -230,10 +230,14 @@
         <xd:p>Added distribution.url additionalAttribute to test data</xd:p>
         <xd:p>Added transform for distribution.url</xd:p>
       </xd:p>
+       <xd:p>
+        <xd:b>Version 1.32 (Dec. 9, 2015)</xd:b>
+        <xd:p>Changed short name generation to be consistent with CMR</xd:p>
+      </xd:p>
     </xd:desc>
   </xd:doc>
   <xsl:variable name="translationName" select="'ECHOToISO.xsl'"/>
-  <xsl:variable name="translationVersion" select="'1.31 (Nov. 3, 2014)'"/>
+  <xsl:variable name="translationVersion" select="'1.32 (Dec. 9, 2015)'"/>
   <xsl:output method="xml" indent="yes"/>
   <xsl:strip-space elements="*"/>
   <xsl:param name="recordType"/>
@@ -598,6 +602,7 @@
                       <!-- Collection Record -->
                       <gmd:code>
                         <xsl:call-template name="writeCharacterString">
+                          <!-- This was changed for CMR-2270 to make the XSL generate short name in a way consistent with the CMR. -->
                           <xsl:with-param name="stringToWrite" select="/*/ShortName"/>
                         </xsl:call-template>
                       </gmd:code>
@@ -1737,20 +1742,26 @@
               </gmd:MD_Keywords>
             </gmd:descriptiveKeywords>
           </xsl:if>
+          <xsl:if test="/*/RestrictionComment | /*/RestrictionFlag">
           <gmd:resourceConstraints>
             <gmd:MD_LegalConstraints>
+              <xsl:if test="/*/RestrictionComment">
               <gmd:useLimitation>
                 <xsl:call-template name="writeCharacterString">
                   <xsl:with-param name="stringToWrite" select="concat('Restriction Comment: ',/*/RestrictionComment)"/>
                 </xsl:call-template>
               </gmd:useLimitation>
+              </xsl:if>
+              <xsl:if test="/*/RestrictionFlag">
               <gmd:otherConstraints>
                 <xsl:call-template name="writeCharacterString">
-                  <xsl:with-param name="stringToWrite" select="concat('Restriction Flag:',/*/RestrictionFlag)"/>
+                  <xsl:with-param name="stringToWrite" select="concat('Restriction Flag: ',/*/RestrictionFlag)"/>
                 </xsl:call-template>
               </gmd:otherConstraints>
+              </xsl:if>
             </gmd:MD_LegalConstraints>
           </gmd:resourceConstraints>
+          </xsl:if>
           <!-- Associated collections are treated differently in collection and granule records -->
           <!-- Collection Associations are used in collection records -->
           <!-- Collections associated with type = "Input" are listed as sources. Others described here -->
@@ -2072,13 +2083,13 @@
       <gmd:distributionInfo>
         <gmd:MD_Distribution>
           <!-- There is a known problem with multiple distributorContacts. The standard allows only one which means that, even when you have different roles at a single distributor,
-            you need an entire distributor section for each contact. 
+            you need an entire distributor section for each contact.
             This is fixed in 19115-1  -->
-          <xsl:variable name="distributorContactCount" select="count(/*/Contacts/Contact[contains(Role,'Archive') 
-            or contains(Role,'DATA CENTER CONTACT')  
-            or contains(Role,'Distributor') 
-            or contains(Role,'User Services') 
-            or contains(Role,'GHRC USER SERVICES') 
+          <xsl:variable name="distributorContactCount" select="count(/*/Contacts/Contact[contains(Role,'Archive')
+            or contains(Role,'DATA CENTER CONTACT')
+            or contains(Role,'Distributor')
+            or contains(Role,'User Services')
+            or contains(Role,'GHRC USER SERVICES')
             or contains(Role,'ORNL DAAC User Services')])"/>
           <gmd:distributor>
             <gmd:MD_Distributor>
@@ -3318,8 +3329,8 @@
     <gmd:description>
       <xsl:choose>
         <!-- The extent description is a catch-all for a variety of textual spatial elements -->
-        <xsl:when test="/*/Spatial/SpatialCoverageType | /*/SpatialInfo/SpatialCoverageType 
-          | /*/Spatial/GranuleSpatialRepresentation | /*/Temporal/TemporalRangeType 
+        <xsl:when test="/*/Spatial/SpatialCoverageType | /*/SpatialInfo/SpatialCoverageType
+          | /*/Spatial/GranuleSpatialRepresentation | /*/Temporal/TemporalRangeType
           | /*/Temporal/TimeType | /*/Spatial/VerticalSpatialDomains/VerticalSpatialDomain">
           <xsl:variable name="extentDescription" as="xs:string+">
             <xsl:for-each select="/*/Spatial/SpatialCoverageType">
@@ -3939,7 +3950,7 @@
             <xsl:when test="$instrumentCharacteristicCount +
                             $instrumentInformationCount +
                             $sensorCharacteristicCount +
-                            $sensorInformationCount + 
+                            $sensorInformationCount +
                             count(OperationModes/OperationMode) +
                             count(Sensors/Sensor)">
               <xsl:value-of select="'eos:EOS_Instrument'"/>
