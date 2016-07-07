@@ -169,8 +169,8 @@
 (defn- generate-user-constraints
   "Returns the constraints appropriate for the given metadata."
   [c]
-  (let [description (-> c :AccessConstraints :Description)
-        value (-> c :AccessConstraints :Value)
+  (let [description (get-in c [:AccessConstraints :Description])
+        value (get-in c [:AccessConstraints :Value])
         use-constraints (:UseConstraints c)]
     [:gmd:resourceConstraints
      (when (or description value use-constraints)
