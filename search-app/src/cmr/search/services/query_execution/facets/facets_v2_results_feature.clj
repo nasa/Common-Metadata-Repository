@@ -6,8 +6,6 @@
             [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]
             [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
             [cmr.search.services.query-execution.facets.links-helper :as lh]
-            [cmr.common-app.services.search.query-model :as cqm]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
             [camel-snake-kebab.core :as csk]
             [ring.util.codec :as codec]
             [clojure.string :as str]
