@@ -12,6 +12,7 @@
             [cmr.common-app.services.search.parameter-validation :as cpv]
             [cmr.common-app.services.search.query-model :as common-qm]
             [clojure.edn :as edn]
+            [clojure.set :as set]
             [cmr.common.concepts :as concepts]
             [cmr.access-control.services.group-service :as groups]
             [cmr.transmit.metadata-db :as mdb1]
@@ -172,13 +173,14 @@
   (edn/read-string (:metadata (fetch-acl-concept context concept-id))))
 
 (defn echo-style-acl
+  "Returns acl with the older ECHO-style keywords for consumption in utility functions from other parts of the CMR."
   [acl]
   (-> acl
-      (clojure.set/rename-keys {:system-identity :system-object-identity
+      (set/rename-keys {:system-identity :system-object-identity
                                 :provider-identity :provider-object-identity
                                 :group-permissions :aces})
       (util/update-in-each [:aces] update-in [:user-type] keyword)
-      (util/update-in-each [:aces] clojure.set/rename-keys {:group-id :group-guid})))
+      (util/update-in-each [:aces] set/rename-keys {:group-id :group-guid})))
 
 ;; catalog item identities are only ever relevant to read and order
 ;; provider identities are releveant to update and delete

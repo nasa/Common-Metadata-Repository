@@ -13,6 +13,7 @@
             [cmr.common.api.errors :as api-errors]
             [cmr.common.services.errors :as errors]
             [cmr.common.api.context :as context]
+            [cmr.common.validations.core :as validation]
             [cmr.common.validations.json-schema :as js]
             [cmr.common.mime-types :as mt]
             [cmr.acl.core :as acl]
@@ -99,6 +100,19 @@
   "Validates the group mebers JSON string against the schema. Throws a service error if it is invalid."
   [json-str]
   (validate-json group-members-schema json-str))
+
+;; Misc route validations
+
+(defn- validate-get-permission-params
+  "Throws service errors if any invalid params or values are found."
+  [params]
+  (let [allowed-params [:user_id :concept_ids]]
+    (apply validate-params params allowed-params)
+    (when-let [errors (seq
+                        (for [k allowed-params
+                              :when (str/blank? (get params k))]
+                          (format "Parameter [%s] is required." (name k))))]
+      (errors/throw-service-errors :bad-request errors))))
 
 ;;; Group Route Functions
 
@@ -206,7 +220,8 @@
       cr/search-response))
 
 (defn get-permissions
-  [request-context headers params]
+  [request-context params]
+  (validate-get-permission-params params)
   (let [{:keys [user_id concept_ids]} params]
     {:status 200
      :body (json/generate-string
@@ -319,8 +334,8 @@
       (context "/permissions" []
         (OPTIONS "/" [] cr/options-response)
 
-        (GET "/" {:keys [request-context headers params]}
-          (get-permissions request-context headers params))))
+        (GET "/" {:keys [request-context params]}
+          (get-permissions request-context params))))
 
     (route/not-found "Not Found")))
 

@@ -1,4 +1,5 @@
 (ns cmr.access-control.int-test.permission-check-test
+  "Tests the access control permission check routes."
   (require [clojure.test :refer :all]
            [cheshire.core :as json]
            [cmr.transmit.access-control :as ac]
@@ -18,27 +19,21 @@
                 (f))
               (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 
-(def provider-acl
-  {:legacy_guid "ABCD-EFG-HIJK-LMNOP"
-   :group_permissions [{:group_id "groupwithuser1"
-                        :permissions ["read"]}]
-   :provider_identity {:name "Group with user 1 provider read access"
-                       :provider_id "PROV1"
-                       :target "INGEST_MANAGEMENT_ACL"}})
+(deftest invalid-params-test
+  (are [params errors]
+    (= {:status 400 :body {:errors errors} :content-type :json}
+       (ac/get-permissions (u/conn-context) params {:raw? true}))
+    {} ["Parameter [user_id] is required." "Parameter [concept_ids] is required."]
+    {:user_id "" :concept_ids ""} ["Parameter [user_id] is required." "Parameter [concept_ids] is required."]
+    {:user_id "foobar"} ["Parameter [concept_ids] is required."]
+    {:not_a_valid_param "foo"} ["Parameter [not_a_valid_param] was not recognized."]))
 
-(def catalog-item-acl
-  {:group_permissions [{:user_type "guest"
-                        :permissions ["read"]}]
-   :catalog_item_identity {:name "coll1 guest read ACL"
-                           :provider_id "PROV1"
-                           :collection_identifier {:entry_titles ["coll1"]}}})
-
-(deftest permission-check-test
-  (e/grant-system-group-permissions-to-group (u/conn-context) "group-create-group" :create)
-  (e/grant-groups-ingest (u/conn-context) "prov2guid" ["group-create-group"])
+(deftest concept-permission-check-test
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
+        ;; then create a group that contains our user, so we can find collections that grant access to this user
         group (u/make-group {:name "groupwithuser1" :members ["user1"]})
-        created-group (u/create-group token group)
+        created-group-concept-id (:concept_id (u/create-group token group))
+        ;; create some collections
         coll1-umm (assoc example-collection-record :EntryTitle "coll1 entry title")
         coll1-metadata (umm-spec/generate-metadata (u/conn-context) coll1-umm :echo10)
         coll1 (ingest/ingest-concept (u/conn-context)
@@ -49,30 +44,121 @@
                                       :native-id "coll1"
                                       :revision-id 1}
                                      {"Echo-Token" token})
-        coll2-umm (assoc example-collection-record :EntryTitle "coll2 entry title")
-        coll2-metadata (umm-spec/generate-metadata (u/conn-context) coll2-umm :echo10)
-        coll2 (ingest/ingest-concept (u/conn-context)
+        ;; local helpers to make the body of the test cleaner
+        create-acl #(ac/create-acl (u/conn-context) % {:token token})
+        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
+        get-permissions #(json/parse-string
+                          (ac/get-permissions
+                            (u/conn-context)
+                            {:concept_ids (:concept-id coll1) :user_id %1}))]
+
+    (testing "no permissions granted"
+      (is (= {"C1200000001-PROV1" []}
+             (get-permissions "user1"))))
+
+    (testing "concept level permissions"
+      (let [acl {:group_permissions [{:permissions [:read :order]
+                                      :user_type :guest}]
+                 :catalog_item_identity {:name "coll1 read and order"
+                                         :collection_applicable true
+                                         :provider_id "PROV1"}}
+            acl-concept-id (:concept_id (create-acl acl))]
+        (u/wait-until-indexed)
+
+        (testing "for guest users"
+          (is (= {"C1200000001-PROV1" ["read" "order"]}
+                 (get-permissions "user1"))))
+
+        (testing "for registered users"
+          (update-acl acl-concept-id
+                      {:group_permissions [{:permissions [:read :order]
+                                            :user_type :registered}]
+                       :catalog_item_identity {:name "coll1 read and order"
+                                               :collection_applicable true
+                                               :provider_id "PROV1"}})
+          (is (= {"C1200000001-PROV1" ["read" "order"]}
+                 (get-permissions "user1"))))
+
+        (testing "acls granting access to specific groups"
+
+          (update-acl acl-concept-id
+                      {:group_permissions [{:permissions [:read :order]
+                                            :group_id created-group-concept-id}]
+                       :catalog_item_identity {:name "coll1 read and order"
+                                               :collection_applicable true
+                                               :provider_id "PROV1"}})
+
+          (testing "as a user in the group"
+            (is (= {"C1200000001-PROV1" ["read" "order"]}
+                   (get-permissions "user1"))))
+
+          (testing "as a user not in the group"
+            (is (= {"C1200000001-PROV1" []}
+                   (get-permissions "notauser")))))))))
+
+(deftest provider-permission-check-test
+  (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
+        ;; then create a group that contains our user, so we can find collections that grant access to this user
+        group (u/make-group {:name "groupwithuser1" :members ["user1"]})
+        created-group-concept-id (:concept_id (u/create-group token group))
+        ;; create some collections
+        coll1-umm (assoc example-collection-record :EntryTitle "coll1 entry title")
+        coll1-metadata (umm-spec/generate-metadata (u/conn-context) coll1-umm :echo10)
+        coll1 (ingest/ingest-concept (u/conn-context)
                                      {:format "application/echo10+xml"
-                                      :metadata coll2-metadata
+                                      :metadata coll1-metadata
                                       :concept-type :collection
-                                      :provider-id "PROV2"
-                                      :native-id "coll2"
+                                      :provider-id "PROV1"
+                                      :native-id "coll1"
                                       :revision-id 1}
                                      {"Echo-Token" token})
-        acl-1 {:group_permissions [{:permissions [:read :order]
-                                    :user_type :registered}]
-               :catalog_item_identity {:name "coll1 guest read"
-                                       :collection_applicable true
-                                       :provider_id "PROV1"}}
-        acl-2 {:group_permissions [{:permissions [:update :delete]
-                                    :group_id (:concept_id created-group)}]
-               :provider_identity {:name "PROV1 group update, delete"
-                                   :provider_id "PROV1"
-                                   :target "INGEST_MANAGEMENT_ACL"}}]
-    (ac/create-acl (u/conn-context) acl-1 {:token token})
-    (ac/create-acl (u/conn-context) acl-2 {:token token})
-    (u/wait-until-indexed)
-    (is (= {"C1200000001-PROV1" ["read" "update" "delete" "order"]}
-           (json/parse-string
-             (ac/get-permissions (u/conn-context) {:concept_ids (:concept-id coll1)
-                                                   :user_id "user1"}))))))
+        ;; local helpers to make the body of the test cleaner
+        create-acl #(ac/create-acl (u/conn-context) % {:token token})
+        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
+        get-permissions #(json/parse-string
+                          (ac/get-permissions
+                            (u/conn-context)
+                            {:concept_ids (:concept-id coll1) :user_id %1}))]
+
+    (testing "no permissions granted"
+      (is (= {"C1200000001-PROV1" []}
+             (get-permissions "user1"))))
+
+    (testing "provider level permissions"
+      (let [acl {:group_permissions [{:permissions [:update :delete]
+                                      :user_type :guest}]
+                 :provider_identity {:provider_id "PROV1"
+                                     :target "INGEST_MANAGEMENT_ACL"}}
+            acl-concept-id (:concept_id (create-acl acl))]
+        (u/wait-until-indexed)
+
+        (testing "for guest users"
+          (is (= {"C1200000001-PROV1" ["update" "delete"]}
+                 (get-permissions "user1"))))
+
+        (testing "for registered users"
+
+          (update-acl acl-concept-id
+                      {:group_permissions [{:permissions [:update :delete]
+                                            :user_type :registered}]
+                       :provider_identity {:provider_id "PROV1"
+                                           :target "INGEST_MANAGEMENT_ACL"}})
+
+          (is (= {"C1200000001-PROV1" ["update" "delete"]}
+                 (get-permissions "user1"))))
+
+        (testing "for specific groups"
+
+          (update-acl acl-concept-id
+                      {:group_permissions [{:permissions [:update :delete]
+                                            :group_id created-group-concept-id}]
+                       :provider_identity {:provider_id "PROV1"
+                                           :target "INGEST_MANAGEMENT_ACL"}})
+
+          (testing "for a user in the group"
+            (is (= {"C1200000001-PROV1" ["update" "delete"]}
+                   (get-permissions "user1"))))
+
+          (testing "for a user not in the group"
+            (is (= {"C1200000001-PROV1" []}
+                   (get-permissions "user2")))))))))

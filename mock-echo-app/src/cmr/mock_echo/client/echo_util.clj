@@ -156,7 +156,7 @@
   [context provider-guid group-guids]
   (grant context
          (vec (for [guid group-guids]
-                (group-ace guid [:update-delete])))
+                (group-ace guid [:update :delete])))
          :provider-object-identity
          {:target ingest-management-acl
           :provider-guid provider-guid}))
