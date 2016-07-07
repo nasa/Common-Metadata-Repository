@@ -1,5 +1,5 @@
 (ns cmr.search.test.xslt
-  "Tests to verify that the xsl for ECHO10 to ISO19115"
+  "Tests to verify the xsl for ECHO10 to ISO19115"
   (:require [clojure.test :refer :all]
             [clojure.data.xml :as x]
             [clojure.java.io :as io]
