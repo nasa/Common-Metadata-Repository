@@ -234,7 +234,7 @@
 
 (defn- remove-non-earth-science-keywords
   "V2 facets only include science keyword facets which have a category of Earth Science. Removes
-  any facets which have any other category if the field is :science-keywords."
+  any science keywords facets that have any other category."
   [hierarchical-facet field]
   (if (= :science-keywords-h field)
     (let [updated-facet (update hierarchical-facet :children
