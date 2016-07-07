@@ -14,7 +14,7 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(def sk1 (dc/science-keyword {:category "Cat1"
+(def sk1 (dc/science-keyword {:category "Earth science"
                               :topic "Topic1"
                               :term "Term1"
                               :variable-level-1 "Level1-1"
@@ -22,7 +22,7 @@
                               :variable-level-3 "Level1-3"
                               :detailed-variable "Detail1"}))
 
-(def sk2 (dc/science-keyword {:category "Hurricane"
+(def sk2 (dc/science-keyword {:category "EARTH SCIENCE"
                               :topic "Popular"
                               :term "Extreme"
                               :variable-level-1 "Level2-1"
@@ -30,7 +30,7 @@
                               :variable-level-3 "Level2-3"
                               :detailed-variable "UNIVERSAL"}))
 
-(def sk3 (dc/science-keyword {:category "Hurricane"
+(def sk3 (dc/science-keyword {:category "EARTH SCIENCE"
                               :topic "Popular"
                               :term "UNIVERSAL"}))
 
@@ -67,12 +67,12 @@
                 {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})
   (is (= fr/expected-v2-facets-apply-links (search-and-return-v2-facets)))
   (testing "All fields applied for all facets"
-    (let [search-params {:science-keywords-h {:0 {:category "Cat1"
-                                                :topic "Topic1"
-                                                :term "Term1"
-                                                :variable-level-1 "Level1-1"
-                                                :variable-level-2 "Level1-2"
-                                                :variable-level-3 "Level1-3"}}
+    (let [search-params {:science-keywords-h {:0 {:category "Earth Science"
+                                                  :topic "Topic1"
+                                                  :term "Term1"
+                                                  :variable-level-1 "Level1-1"
+                                                  :variable-level-2 "Level1-2"
+                                                  :variable-level-3 "Level1-3"}}
                          :project-h ["proj1"]
                          :platform-h ["DIADEM-1D"]
                          :instrument-h ["ATM"]
@@ -97,7 +97,7 @@
    :children
    [{:title "Keywords", :applied true,
      :children
-     [{:title "Cat1", :applied true,
+     [{:title "Earth Science", :applied true,
        :children
        [{:title "Topic1", :applied true,
          :children
@@ -120,7 +120,7 @@
    :children
    [{:title "Keywords", :applied true,
      :children
-     [{:title "Cat1", :applied true,
+     [{:title "Earth Science", :applied true,
        :children
        [{:title "Topic1", :applied true,
          :children
@@ -144,11 +144,11 @@
       partial-science-keywords-applied)))
 
 (deftest remove-facets-without-collections
-  (fu/make-coll 1 "PROV1" (fu/platforms "ASTER" 1))
-  (fu/make-coll 1 "PROV1" (fu/platforms "MODIS" 1))
+  (fu/make-coll 1 "PROV1" (fu/science-keywords sk1) (fu/platforms "ASTER" 1))
+  (fu/make-coll 1 "PROV1" (fu/science-keywords sk1) (fu/platforms "MODIS" 1))
   (testing (str "When searching against faceted fields which do not match any matching collections,"
                 " a link should be provided so that the user can remove the term from their search.")
-    (let [search-params {:science-keywords-h {:0 {:category "Cat1"
+    (let [search-params {:science-keywords-h {:0 {:category "Earth Science"
                                                   :topic "Topic1"
                                                   :term "Term1"
                                                   :variable-level-1 "Level1-1"
@@ -185,31 +185,51 @@
     (= expected-depth (get-lowest-hierarchical-depth (search-and-return-v2-facets
                                                       {:science-keywords-h {:0 sk-param}})))
 
-    {:category "Cat1"} 2
+    {:category "Earth Science"} 2
     {:topic "Topic1"} 3
-    {:topic "Topic1" :category "Cat1"} 3
+    {:topic "Topic1" :category "Earth Science"} 3
     {:term "Term1"} 4
-    {:term "Term1" :category "Cat1"} 4
-    {:term "Term1" :category "Cat1" :topic "Topic1"} 4
+    {:term "Term1" :category "Earth Science"} 4
+    {:term "Term1" :category "Earth Science" :topic "Topic1"} 4
     {:variable-level-1 "Level1-1"} 5
-    {:variable-level-1 "Level1-1" :term "Term1" :category "Cat1" :topic "Topic1"} 5
-    {:variable-level-2 "Level1-2" :term "Term1" :category "Cat1" :topic "Topic1"
+    {:variable-level-1 "Level1-1" :term "Term1" :category "Earth Science" :topic "Topic1"} 5
+    {:variable-level-2 "Level1-2" :term "Term1" :category "Earth Science" :topic "Topic1"
      :variable-level-1 "Level1-1"} 6
     {:variable-level-3 "Level1-3"} 6
-    {:variable-level-3 "Level1-3" :variable-level-2 "Level1-2" :term "Term1" :category "Cat1"
-     :topic "Topic1" :variable-level-1 "Level1-1"} 6))
+    {:variable-level-3 "Level1-3" :variable-level-2 "Level1-2" :term "Term1"
+     :category "Earth Science" :topic "Topic1" :variable-level-1 "Level1-1"} 6))
 
-(deftest empty-hierarchical-facets-test
-  (let [expected-empty-facets {:title "Browse Collections"
-                               :type "group"
-                               :has_children false}]
-    (is (= expected-empty-facets (search-and-return-v2-facets)))))
+(def empty-v2-facets
+  "The facets returned when there are no matching facets for the search."
+  {:title "Browse Collections"
+   :type "group"
+   :has_children false})
+
+(deftest empty-v2-facets-test
+  (is (= empty-v2-facets (search-and-return-v2-facets))))
 
 (deftest some-facets-missing-test
   (fu/make-coll 1 "PROV1"
                 (fu/science-keywords sk3 sk2)
                 (fu/processing-level-id "PL1"))
   (is (= fr/partial-v2-facets (search-and-return-v2-facets))))
+
+(deftest only-earth-science-category-test
+  (let [non-earth-science-keyword (dc/science-keyword {:category "Cat1"
+                                                       :topic "Topic1"
+                                                       :term "Term1"})]
+    (fu/make-coll 1 "PROV1" (fu/science-keywords non-earth-science-keyword))
+    (testing "No facets included because there are no collections under the Earth Science category"
+      (is (= empty-v2-facets (search-and-return-v2-facets))))
+    (testing "Non Earth Science category facets are not included in v2 facets"
+      (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 non-earth-science-keyword))
+      (let [expected-facets {:title "Browse Collections",
+                             :children
+                             [{:title "Keywords",
+                               :children
+                               [{:title "Earth Science",
+                                 :children [{:title "Topic1"}]}]}]}]
+        (is (= expected-facets (fu/prune-facet-response (search-and-return-v2-facets) [:title])))))))
 
 (deftest invalid-facets-v2-response-formats
   (testing "invalid xml response formats"

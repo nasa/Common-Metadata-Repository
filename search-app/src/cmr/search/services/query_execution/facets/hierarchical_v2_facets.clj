@@ -232,15 +232,25 @@
                      base-url query-params param-name search-term nil)]]
      (v2h/generate-hierarchical-filter-node search-term 0 link nil)))
 
+(defn- remove-non-earth-science-keywords
+  "V2 facets only include science keyword facets which have a category of Earth Science. Removes
+  any facets which have any other category if the field is :science-keywords."
+  [hierarchical-facet field]
+  (if (and (= :science-keywords-h field) (:children hierarchical-facet))
+      (update hierarchical-facet :children
+              (fn [children]
+                (filter #(= "Earth Science" (:title %)) children)))
+      hierarchical-facet))
+
 (defn- hierarchical-bucket-map->facets-v2
   "Takes a map of elastic aggregation results for a nested field. Returns a hierarchical facet for
   that field."
   [field bucket-map base-url query-params]
   (let [field-hierarchy (nested-fields-mappings field)
-        hierarchical-facet (prune-hierarchical-facet
-                            (parse-hierarchical-bucket-v2 field field-hierarchy base-url
-                                                          query-params bucket-map)
-                            true)
+        hierarchical-facet (-> (parse-hierarchical-bucket-v2 field field-hierarchy base-url
+                                                             query-params bucket-map)
+                               (prune-hierarchical-facet true)
+                               (remove-non-earth-science-keywords field))
         subfield-term-tuples (get-missing-subfield-term-tuples field field-hierarchy
                                                                hierarchical-facet query-params)
         facets-with-zero-matches (create-facets-with-zero-matches base-url query-params field

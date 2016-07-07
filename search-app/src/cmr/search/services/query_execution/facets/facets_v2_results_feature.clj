@@ -6,6 +6,8 @@
             [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]
             [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
             [cmr.search.services.query-execution.facets.links-helper :as lh]
+            [cmr.common-app.services.search.query-model :as cqm]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
             [camel-snake-kebab.core :as csk]
             [ring.util.codec :as codec]
             [clojure.string :as str]
@@ -94,12 +96,20 @@
       (assoc v2-facets-root :has_children true :children facets)
       (assoc v2-facets-root :has_children false))))
 
+(def earth-science-keyword-condition
+  "Query condition to limit results to those that have an EARTH SCIENCE category"
+  (cqm/nested-condition
+   :science-keywords
+   (cqm/string-condition :science-keywords.category "EARTH SCIENCE" false false)))
+
 (defmethod query-execution/pre-process-query-result-feature :facets-v2
   [{:keys [query-string]} query _]
   (let [query-params (parse-params query-string "UTF-8")]
     ;; With CMR-1101 we will support a parameter to specify the number of terms to return. For now
     ;; always use the DEFAULT_TERMS_SIZE
-    (assoc query :aggregations (facets-v2-aggregations DEFAULT_TERMS_SIZE query-params))))
+    (-> query
+        (assoc :aggregations (facets-v2-aggregations DEFAULT_TERMS_SIZE query-params))
+        (update-in [:condition] #(gc/and-conds [% earth-science-keyword-condition])))))
 
 (defmethod query-execution/post-process-query-result-feature :facets-v2
   [context _ {:keys [aggregations]} query-results _]
