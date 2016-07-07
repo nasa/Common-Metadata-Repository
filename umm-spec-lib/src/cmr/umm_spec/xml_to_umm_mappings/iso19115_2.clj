@@ -143,7 +143,7 @@
      :AccessConstraints {:Description
                          (regex-value doc (str constraints-xpath
                                                "/gmd:useLimitation/gco:CharacterString")
-                                      #"Restriction Comment:(.+)")
+                                      #"Restriction Comment: (.+)")
 
                          :Value
                          (regex-value doc (str constraints-xpath
