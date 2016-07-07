@@ -1742,20 +1742,26 @@
               </gmd:MD_Keywords>
             </gmd:descriptiveKeywords>
           </xsl:if>
+          <xsl:if test="/*/RestrictionComment | /*/RestrictionFlag">
           <gmd:resourceConstraints>
             <gmd:MD_LegalConstraints>
+              <xsl:if test="/*/RestrictionComment">
               <gmd:useLimitation>
                 <xsl:call-template name="writeCharacterString">
                   <xsl:with-param name="stringToWrite" select="concat('Restriction Comment: ',/*/RestrictionComment)"/>
                 </xsl:call-template>
               </gmd:useLimitation>
+              </xsl:if>
+              <xsl:if test="/*/RestrictionFlag">
               <gmd:otherConstraints>
                 <xsl:call-template name="writeCharacterString">
-                  <xsl:with-param name="stringToWrite" select="concat('Restriction Flag:',/*/RestrictionFlag)"/>
+                  <xsl:with-param name="stringToWrite" select="concat('Restriction Flag: ',/*/RestrictionFlag)"/>
                 </xsl:call-template>
               </gmd:otherConstraints>
+              </xsl:if>
             </gmd:MD_LegalConstraints>
           </gmd:resourceConstraints>
+          </xsl:if>
           <!-- Associated collections are treated differently in collection and granule records -->
           <!-- Collection Associations are used in collection records -->
           <!-- Collections associated with type = "Input" are listed as sources. Others described here -->

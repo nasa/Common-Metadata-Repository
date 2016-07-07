@@ -166,6 +166,24 @@
                         :when (some? v)]
                     (str k "=" (str/replace v #"[,=]" ""))))))
 
+(defn- generate-user-constraints
+  "Returns the constraints appropriate for the given metadata."
+  [c]
+  (let [description (-> c :AccessConstraints :Description)
+        value (-> c :AccessConstraints :Value)
+        use-constraints (:UseConstraints c)]
+    [:gmd:resourceConstraints
+     (when (or description value use-constraints)
+       [:gmd:MD_LegalConstraints
+        (when use-constraints
+          [:gmd:useLimitation (char-string (:UseConstraints c))])
+        (when description
+          [:gmd:useLimitation
+            [:gco:CharacterString (str "Restriction Comment: " description)]])
+        (when value
+          [:gmd:otherConstraints
+            [:gco:CharacterString (str "Restriction Flag:" value)]])])]))
+
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
@@ -228,13 +246,7 @@
          (kws/generate-iso19115-descriptive-keywords nil (:AncillaryKeywords c))
          (platform/generate-platform-keywords platforms)
          (platform/generate-instrument-keywords platforms)
-         [:gmd:resourceConstraints
-          [:gmd:MD_LegalConstraints
-           [:gmd:useLimitation (char-string (:UseConstraints c))]
-           [:gmd:useLimitation
-            [:gco:CharacterString (str "Restriction Comment:" (-> c :AccessConstraints :Description))]]
-           [:gmd:otherConstraints
-            [:gco:CharacterString (str "Restriction Flag:" (-> c :AccessConstraints :Value))]]]]
+         (generate-user-constraints c)
          (ma/generate-non-source-metadata-associations c)
          (generate-publication-references (:PublicationReferences c))
          [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
