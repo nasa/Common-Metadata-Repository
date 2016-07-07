@@ -2,10 +2,8 @@
 # plugin on local data. Visit http://localhost:9210/_plugin/marvel/sense/index.html after running this.
 # Note that this disables running marvel statistics gathering so that only the sense part of marvel works.
 # Run this inside the dev-system folder
-mkdir plugins
-cd plugins
-mkdir marvel
-cd marvel
+mkdir -p plugins/marvel
+cd plugins/marvel
 curl -O https://download.elasticsearch.org/elasticsearch/marvel/marvel-1.3.0.tar.gz
 tar -zxvf marvel-1.3.0.tar.gz
 
