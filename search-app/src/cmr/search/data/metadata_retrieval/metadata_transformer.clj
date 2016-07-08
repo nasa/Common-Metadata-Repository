@@ -47,9 +47,13 @@
                      context :collection (:format concept) (:metadata concept))]
     (collection-renderer/render-collection context collection)))
 
+;; TODO consider memoizing this function but with concept-mime-type as first arg
 (defn transform-strategy
   "TODO"
   [concept target-format]
+  ;;throw exception if target format is native. That should be handled elsewhere.
+  {:pre [(not= :native target-format)]}
+
   (let [concept-mime-type (:format concept)]
     (cond
       ;; No conversion is required

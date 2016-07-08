@@ -40,6 +40,24 @@
                        {"provguid1" "PROV1" "provguid2" "PROV2" "usgsguid" "USGS_EROS"})
   (constantly nil)))
 
+(deftest simple-search-test
+  (let [c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
+                                                  :version-id "V1"
+                                                  ;; Whitespace here but not stripped out for expected
+                                                  ;; results. It will be present in metadata.
+                                                  :entry-title "   ET1   "})
+                          {:format :echo10})]
+    (index/wait-until-indexed)
+    (let [params {:concept-id (:concept-id c1-echo)}
+          options {:accept nil
+                   :url-extension "native"}
+          format-key :dif
+          response (search/find-metadata :collection format-key params options)]
+      (d/assert-metadata-results-match format-key [c1-echo] response))))
+
+
+
+
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
   (let [

@@ -34,9 +34,13 @@
 (defn- direct-transformer-query?
   "Returns true if the query should be executed directly against the transformer and bypass elastic."
   [{:keys [result-format result-features all-revisions? sort-keys concept-type] :as query}]
-  (and (specific-items-query? query)
+  (and ;;Collections won't be direct transformer queries since their metadata is cached. We'll use
+       ;; elastic + the metadata cache for them
+       (= :granule concept-type)
+       (specific-items-query? query)
        (t/transformer-supported-format? result-format)
        (not all-revisions?)
+
        ;; Facets and tags require elastic search
        (not-any? #(contains? #{:facets :tags} %) result-features)
        ;; Sorting hasn't been specified or is set to the default value

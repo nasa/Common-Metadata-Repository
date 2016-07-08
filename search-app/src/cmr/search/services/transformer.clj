@@ -9,7 +9,8 @@
             [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
             [cmr.common.util :as u]
             [cmr.search.services.result-format-helper :as rfh]
-            [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]))
+            [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
+            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]))
 
 
 (def transformer-supported-format?
@@ -44,16 +45,18 @@
 (defn get-formatted-concept-revisions
   "Get concepts with given concept-id, revision-id pairs in a given format. Does not apply acls to
   the concepts found."
-  [context concepts-tuples target-format allow-missing?]
-  (info "Transforming" (count concepts-tuples) "concept(s) to" target-format)
-  (let [mdb-context (context->metadata-db-context context)
-        [t1 concepts] (u/time-execution
-                        (doall (metadata-db/get-concepts mdb-context concepts-tuples allow-missing?)))
-        [t2 values] (u/time-execution
-                      (doall (pmap #(concept->value-map context % target-format) concepts)))]
-    (debug "get-concept-revisions time:" t1
-           "concept->value-map time:" t2)
-    values))
+  [context concept-type concepts-tuples target-format allow-missing?]
+  (metadata-cache/get-formatted-concept-revisions
+   context concept-type concepts-tuples target-format allow-missing?))
+  ; (info "Transforming" (count concepts-tuples) "concept(s) to" target-format)
+  ; (let [mdb-context (context->metadata-db-context context)
+  ;       [t1 concepts] (u/time-execution
+  ;                       (doall (metadata-db/get-concepts mdb-context concepts-tuples allow-missing?)))
+  ;       [t2 values] (u/time-execution
+  ;                     (doall (pmap #(concept->value-map context % target-format) concepts)))]
+  ;   (debug "get-concept-revisions time:" t1
+  ;          "concept->value-map time:" t2)
+  ;   values))
 
 (defn get-latest-formatted-concepts
   "Get latest version of concepts with given concept-ids in a given format. Applies ACLs to the concepts

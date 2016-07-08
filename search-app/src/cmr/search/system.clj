@@ -23,7 +23,8 @@
             [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
             [cmr.common-app.services.kms-fetcher :as kf]
             [cmr.common-app.system :as common-sys]
-            [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]))
+            [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
+            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
@@ -92,7 +93,8 @@
                       ;; Note that search does not have a job to refresh the KMS cache. The indexer
                       ;; already refreshes the cache. Since we use a consistent cache, the search
                       ;; application will also pick up the updated KMS keywords.
-                      kf/kms-cache-key (kf/create-kms-cache)}
+                      kf/kms-cache-key (kf/create-kms-cache)
+                      metadata-cache/cache-key (metadata-cache/create-cache)}
              :public-conf search-public-conf
              collection-renderer/system-key (collection-renderer/create-collection-renderer)
              :scheduler (jobs/create-scheduler

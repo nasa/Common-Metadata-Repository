@@ -71,7 +71,8 @@
         result-items (mapv #(elastic-result->query-result-item concept-type %) elastic-matches)
         tuples (mapv #(vector (:concept-id %) (:revision-id %)) result-items)
         [req-time tresults] (u/time-execution
-                              (t/get-formatted-concept-revisions context tuples result-format false))
+                              (t/get-formatted-concept-revisions
+                               context concept-type tuples result-format false))
         items (map #(select-keys % qe/metadata-result-item-fields) tresults)
         ;; add tags to result items if necessary
         items (if (contains? (set result-features) :tags)
