@@ -358,15 +358,15 @@
 				    <Collection>
 				        <DataSetId>ASTER Level 1 precision terrain corrected registered at-sensor radiance V003</DataSetId>
 				    </Collection>
-              		<OnlineResources>
-                      <OnlineResource>
-                        <URL>http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5/GLDAS_NOAH10_3H.2.0:GLDAS_NOAH10_3H.A19480101.0300.020.jpg</URL>
-                        <Description>Some image</Description>
-                        <Type>Browse</Type>
-              		    <MimeType>image/jpeg</MimeType>
-                      </OnlineResource>
-            		</OnlineResources>
-				    <Orderable>true</Orderable>
+        		<OnlineResources>
+                <OnlineResource>
+                  <URL>http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5/GLDAS_NOAH10_3H.2.0:GLDAS_NOAH10_3H.A19480101.0300.020.jpg</URL>
+                  <Description>Some image</Description>
+                  <Type>Browse</Type>
+        		    <MimeType>image/jpeg</MimeType>
+                </OnlineResource>
+      		</OnlineResources>
+				  <Orderable>true</Orderable>
 				</Granule>")
 
 (def echo10-granule-browse-uppercase (str/replace echo10-granule-browse "Browse" "BROWSE"))
