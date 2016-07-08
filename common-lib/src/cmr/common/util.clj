@@ -644,7 +644,12 @@
       (vec result))))
 
 (defn compare-vectors
-  "Compares two vectors of potentially unequal size"
+  "Compares two vectors of potentially unequal size. The default comparator
+   for vectors considers length first, regardless of contents. compare-vectors
+   compares in a manner similar to strings, where contents are considered first.
+
+   > (compare [1 2 3] [2 1]) => 1
+   > (compare-vectors [1 2 3] [2 1]) => -1"
   [v0 v1]
   (let [len (min (count v0) (count v1))
         cmp (compare (subvec v0 0 len) (subvec v1 0 len))]
