@@ -3,6 +3,7 @@
   (:require [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [camel-snake-kebab.core :as csk]
+            [clojure.string :as str]
             [clojure.set :as set]
             [clojure.java.io :as io]
             [clojure.walk :as w]
@@ -627,3 +628,38 @@
   [coll]
   (when (seq coll)
     (vec coll)))
+
+(defn- decompose-natural-string
+  "Given a string, returns a vector containing the alternating sequences of
+  digit and non-digit subsequences. Digits are returned as integers and the
+  vector is guaranteed to start with a (potentially empty) string."
+  [s]
+  (let [lower-s (str/lower-case s)
+        result (map #(if (re-matches #"\d+" %)
+                       (Integer/parseInt % 10)
+                       %)
+                    (re-seq #"(?:\d+|[^\d]+)" lower-s))]
+    (if (number? (first result))
+      (into [""] result)
+      (vec result))))
+
+(defn compare-vectors
+  "Compares two vectors of potentially unequal size. The default comparator
+   for vectors considers length first, regardless of contents. compare-vectors
+   compares in a manner similar to strings, where contents are considered first.
+
+   > (compare [1 2 3] [2 1]) => 1
+   > (compare-vectors [1 2 3] [2 1]) => -1"
+  [v0 v1]
+  (let [len (min (count v0) (count v1))
+        cmp (compare (subvec v0 0 len) (subvec v1 0 len))]
+    (if (or (= cmp 0) (= (count v0) (count v1)))
+      (compare v0 v1)
+      cmp)))
+
+(defn compare-natural-strings
+  "A comparator function for two strings that does not consider case and
+  interprets numbers within the strings, so that ab1c < ab2c < AB10C"
+  [s0 s1]
+  (compare-vectors (decompose-natural-string s0)
+                   (decompose-natural-string s1)))

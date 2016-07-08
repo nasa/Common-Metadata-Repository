@@ -27,20 +27,20 @@
    :updated-since :updated-since
    :revision-date :revision-date
    :processing-level-id :string
-   :processing-level-id-h :string
+   :processing-level-id-h :humanizer
    :collection-data-type :collection-data-type
    :temporal :temporal
    :concept-id :string
    :platform :string
-   :platform-h :string
+   :platform-h :humanizer
    :instrument :string
-   :instrument-h :string
+   :instrument-h :humanizer
    :sensor :string
    :project :string
-   :project-h :string
+   :project-h :humanizer
    :data-center :string
    :archive-center :string
-   :data-center-h :string ;; Searches UMM orgs of any type (:archive-center, :data-center, ...)
+   :data-center-h :humanizer ;; Searches UMM orgs of any type (:archive-center, :data-center, ...)
    :spatial-keyword :string
    :two-d-coordinate-system-name :string
    :two-d-coordinate-system :two-d-coordinate-system

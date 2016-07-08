@@ -8,7 +8,6 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.search.services.query-execution.facets.facets-v2-results-feature :as frf2]
-            [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
             [cmr.common.mime-types :as mt]
             [cmr.common.util :refer [are3]]))
 
@@ -44,14 +43,6 @@
      (get-in (search/find-concepts-json :collection query-params)
              [:results :facets]))))
 
-(defn- applied?
-  "Returns whether the provided facet field is marked as applied in the facet response."
-  [facet-response field]
-  (let [child-facets (:children facet-response)
-        field-title (v2h/fields->human-readable-label field)
-        group-facet (first (filter #(= (:title %) field-title) child-facets))]
-    (:applied group-facet)))
-
 (deftest all-facets-v2-test
   (fu/make-coll 1 "PROV1"
                 (fu/science-keywords sk1 sk2)
@@ -82,12 +73,12 @@
       (testing "Some group fields not applied"
         (let [response (search-and-return-v2-facets
                         (dissoc search-params :platform-h :project-h :data-center-h))]
-          (is (not (applied? response :platform-h)))
-          (is (not (applied? response :project-h)))
-          (is (not (applied? response :data-center-h)))
-          (is (applied? response :science-keywords-h))
-          (is (applied? response :instrument-h))
-          (is (applied? response :processing-level-id-h)))))))
+          (is (not (fu/applied? response :platform-h)))
+          (is (not (fu/applied? response :project-h)))
+          (is (not (fu/applied? response :data-center-h)))
+          (is (fu/applied? response :science-keywords-h))
+          (is (fu/applied? response :instrument-h))
+          (is (fu/applied? response :processing-level-id-h)))))))
 
 (def science-keywords-all-applied
   "Facet response with just the title, applied, and children fields. Used to verify that when
@@ -106,6 +97,27 @@
            [{:title "Level1-2", :applied true,
              :children
              [{:title "Level1-3", :applied true}]}]}]}]}]}]})
+
+(deftest facet-v2-sorting
+  ;; 55 platforms all with the same count (2) and default priority
+  (fu/make-coll 1 "PROV1" (fu/platforms "default" 55))
+  (fu/make-coll 2 "PROV1" (fu/platforms "default" 55))
+  ;; 1 platform with a count of 1 but high priority, so it should appear
+  (fu/make-coll 3 "PROV1" {:platforms [(dc/platform {:short-name "Terra"})]})
+  ;; 55 platforms with a count of 1, none of which should appear
+  (fu/make-coll 4 "PROV1" (fu/platforms "low" 55))
+
+  (let [response (search-and-return-v2-facets)]
+    (testing "high priority items appear regardless of count"
+      (is (fu/facet-included? response :platform-h "Terra")))
+
+    (testing "same-priority items appear based on highest count"
+      (is (not-any? #(= "low" (subs % 0 3)) (fu/facet-values response :platform-h))))
+
+    (testing "items are sorted alphabetically"
+      (let [index (partial fu/facet-index response :platform-h)]
+        (is (< (index "default-p2") (index "default-p10")))
+        (is (< (index "default-p0") (index "Terra")))))))
 
 (def partial-science-keywords-applied
   "Facet response with just the title, applied, and children fields. Used to verify that when

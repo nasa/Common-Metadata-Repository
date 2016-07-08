@@ -88,7 +88,7 @@
         coll4 (d/ingest "PROV1" (dc/collection {:science-keywords [sk4]}))
         coll5 (d/ingest "PROV1" (dc/collection {:science-keywords [sk5]}))]
     (index/wait-until-indexed)
-    (testing "search collections by humanized processing-level-id"
+    (testing "search collections by humanized science keyword"
       (is (d/refs-match? [coll1 coll3]
                          (search/find-refs
                           :collection
