@@ -123,11 +123,6 @@
    :two-d-coordinate-system-name "two-d-coord-name.lowercase"
    :platform "platform-sn.lowercase"
    :instrument "instrument-sn.lowercase"
-   :platform-h "platform-sn.lowercase.humanized"
-   :instrument-h "instrument-sn.lowercase.humanized"
-   :project-h "project-sn.lowercase.humanized"
-   :data-center-h "organization.lowercase.humanized"
-   :processing-level-id-h "processing-level-id.lowercase.humanized"
    :sensor "sensor-sn.lowercase"})
 
 (defn- doc-values-lowercase-field-name

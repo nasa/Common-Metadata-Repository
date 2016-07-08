@@ -198,4 +198,3 @@
                             params)]
         (qm/query (assoc query-attribs
                          :condition (gc/and-conds conditions)))))))
-

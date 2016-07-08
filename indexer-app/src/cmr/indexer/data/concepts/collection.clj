@@ -85,6 +85,11 @@
                {:granule-start-date coll-start
                 :granule-end-date coll-end}))))
 
+(defn- add-humanized-lowercase
+  "Adds a :value.lowercase field to a humanized object"
+  [obj]
+  (assoc obj :value.lowercase (str/lower-case (:value obj))))
+
 (defn- extract-humanized-elastic-fields
   "Descends into the humanized collection extracting values at the given humanized
   field path and returns a map of humanized and lowercase humanized elastic fields
@@ -92,14 +97,11 @@
   [humanized-collection path base-es-field]
   (let [prefix (subs (str base-es-field) 1)
         field (keyword (str prefix ".humanized"))
-        field-lower (keyword (str prefix ".lowercase.humanized"))
-        value (util/get-in-all humanized-collection path)
-        value-lower (cond
-                       (string? value) (str/lower-case value)
-                       (sequential? value) (map str/lower-case (remove nil? value))
-                       :else value)]
-    {field value
-     field-lower value-lower}))
+        value-with-priorities (util/get-in-all humanized-collection path)
+        value-with-lowercases (if (sequential? value-with-priorities)
+                                (map add-humanized-lowercase (distinct (filter :value value-with-priorities)))
+                                (add-humanized-lowercase value-with-priorities))]
+    {field value-with-lowercases}))
 
 (defn- collection-humanizers-elastic
   "Given a collection, returns humanized elastic search fields"

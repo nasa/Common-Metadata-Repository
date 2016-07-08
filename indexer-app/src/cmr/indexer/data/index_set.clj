@@ -177,6 +177,12 @@
    :equator-crossing-longitude m/double-field-mapping
    :equator-crossing-date-time m/date-field-mapping})
 
+(defnestedmapping prioritized-humanizer-mapping
+  "Defines a string value and priority for use in boosting facets."
+  {:value m/string-field-mapping
+   :value.lowercase m/string-field-mapping
+   :priority m/int-field-mapping})
+
 (def spatial-coverage-fields
   "Defines the sets of fields shared by collections and granules for indexing spatial data."
   {;; Minimum Bounding Rectangle Fields
@@ -254,8 +260,7 @@
           :access-value                   (m/stored m/float-field-mapping)
           :processing-level-id            (m/stored m/string-field-mapping)
           :processing-level-id.lowercase  m/string-field-mapping
-          :processing-level-id.humanized  m/string-field-mapping
-          :processing-level-id.lowercase.humanized m/string-field-mapping
+          :processing-level-id.humanized  prioritized-humanizer-mapping
           :collection-data-type           (m/stored m/string-field-mapping)
           :collection-data-type.lowercase m/string-field-mapping
 
@@ -272,18 +277,15 @@
 
           :platform-sn                    m/string-field-mapping
           :platform-sn.lowercase          m/string-field-mapping
-          :platform-sn.humanized          m/string-field-mapping
-          :platform-sn.lowercase.humanized m/string-field-mapping
+          :platform-sn.humanized          prioritized-humanizer-mapping
           :instrument-sn                  m/string-field-mapping
           :instrument-sn.lowercase        m/string-field-mapping
-          :instrument-sn.humanized        m/string-field-mapping
-          :instrument-sn.lowercase.humanized m/string-field-mapping
+          :instrument-sn.humanized        prioritized-humanizer-mapping
           :sensor-sn                      m/string-field-mapping
           :sensor-sn.lowercase            m/string-field-mapping
           :project-sn2                    (m/stored m/string-field-mapping)
           :project-sn2.lowercase          m/string-field-mapping
-          :project-sn.humanized           m/string-field-mapping
-          :project-sn.lowercase.humanized m/string-field-mapping
+          :project-sn.humanized           prioritized-humanizer-mapping
           :archive-center                 (m/stored m/string-field-mapping)
           :archive-center.lowercase       m/string-field-mapping
           :data-center                    (m/stored m/string-field-mapping)
@@ -360,8 +362,7 @@
           :start-circular-latitude (m/stored m/double-field-mapping)
 
           ;; additional humanized facet fields
-          :organization.humanized m/string-field-mapping
-          :organization.lowercase.humanized m/string-field-mapping
+          :organization.humanized prioritized-humanizer-mapping
 
           ;; associated tags
           :tags tag-associations-mapping

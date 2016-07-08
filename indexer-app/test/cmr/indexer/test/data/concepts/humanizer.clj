@@ -10,7 +10,7 @@
 
 (deftest to-human
   (testing "trim_whitespace"
-    (are [a b] (= b (humanizer/to-human {:type "trim_whitespace"} a))
+    (are [a b] (= {:value b} (humanizer/to-human {:type "trim_whitespace"} {:value a}))
       "Test" "Test"
       "Test/test" "Test/test"
       "Test\ntest" "Test test"
@@ -19,7 +19,7 @@
       "   \t\r\nTest  \t\r\ntest   \t\r\n" "Test test"))
 
   (testing "capitalize"
-    (are [a b] (= b (humanizer/to-human {:type "capitalize"} a))
+    (are [a b] (= {:value b} (humanizer/to-human {:type "capitalize"} {:value a}))
       "TEST" "Test"
       "TestTest" "Testtest"
       "Test Test" "Test Test"
@@ -28,12 +28,16 @@
       "/TEST/TEST/" "/Test/Test/"))
 
   (testing "alias"
-    (are [a b] (= b (humanizer/to-human {:type "alias" :replacement_value b} a))
+    (are [a b] (= {:value b} (humanizer/to-human {:type "alias" :replacement_value b} {:value a}))
       "A" "B"))
 
   (testing "ignore"
-    (are [a b] (= b (humanizer/to-human {:type "ignore"} a))
-      "A" nil)))
+    (are [a b] (= b (humanizer/to-human {:type "ignore"} {:value a}))
+      "A" nil))
+
+  (testing "priority"
+    (are [a b] (= {:priority b} (humanizer/to-human {:type "priority" :priority a} {:priority 0}))
+      10 10)))
 
 (deftest humanize-collection
   (testing "humanize missing values"
@@ -66,21 +70,21 @@
                                 {:org-name "org-B"}]}
 
                {:product {:processing-level-id "level-A"
-                          :cmr.humanized/processing-level-id "level-A"}
+                          :cmr.humanized/processing-level-id {:value "level-A" :priority 0}}
                 :platforms [{:short-name "plat-A"
-                             :cmr.humanized/short-name "plat-A"
+                             :cmr.humanized/short-name {:value "plat-A" :priority 0}
                              :instruments [{:short-name "inst-A"
-                                            :cmr.humanized/short-name "inst-A"}
+                                            :cmr.humanized/short-name {:value "inst-A" :priority 0}}
                                            {:short-name "inst-B"
-                                            :cmr.humanized/short-name "inst-B"}
+                                            :cmr.humanized/short-name {:value "inst-B" :priority 0}}
                                            {:short-name "inst-C"
-                                            :cmr.humanized/short-name "inst-C"}]}
+                                            :cmr.humanized/short-name {:value "inst-C" :priority 0}}]}
                             {:short-name "plat-B"
-                             :cmr.humanized/short-name "plat-B"}]
+                             :cmr.humanized/short-name {:value "plat-B" :priority 0}}]
                 :projects [{:short-name "proj-A"
-                            :cmr.humanized/short-name "proj-A"}
+                            :cmr.humanized/short-name {:value "proj-A" :priority 0}}
                            {:short-name "proj-B"
-                            :cmr.humanized/short-name "proj-B"}]
+                            :cmr.humanized/short-name {:value "proj-B" :priority 0}}]
                 :science-keywords [{:category "sk-A"
                                     :cmr.humanized/category "sk-A"
                                     :topic "sk-B"
@@ -96,9 +100,9 @@
                                     :detailed-variable "sk-G"
                                     :cmr.humanized/detailed-variable "sk-G"}]
                 :organizations [{:org-name "org-A"
-                                 :cmr.humanized/org-name "org-A"},
+                                 :cmr.humanized/org-name {:value "org-A" :priority 0}},
                                 {:org-name "org-B"
-                                 :cmr.humanized/org-name "org-B"}]}))
+                                 :cmr.humanized/org-name {:value "org-B" :priority 0}}]}))
 
   (testing "humanize with changes"
     (humanizes [{:type "alias" :field "platform" :replacement_value "plat-human"}
@@ -127,21 +131,21 @@
                                 {:org-name "org-B"}]}
 
                {:product {:processing-level-id "level-A"
-                          :cmr.humanized/processing-level-id "level-human"}
+                          :cmr.humanized/processing-level-id {:value "level-human" :priority 0}}
                 :platforms [{:short-name "plat-A"
-                             :cmr.humanized/short-name "plat-human"
+                             :cmr.humanized/short-name {:value "plat-human" :priority 0}
                              :instruments [{:short-name "inst-A"
-                                            :cmr.humanized/short-name "inst-human"}
+                                            :cmr.humanized/short-name {:value "inst-human" :priority 0}}
                                            {:short-name "inst-B"
-                                            :cmr.humanized/short-name "inst-human"}
+                                            :cmr.humanized/short-name {:value "inst-human" :priority 0}}
                                            {:short-name "inst-C"
-                                            :cmr.humanized/short-name "inst-human"}]}
+                                            :cmr.humanized/short-name {:value "inst-human" :priority 0}}]}
                             {:short-name "plat-B"
-                             :cmr.humanized/short-name "plat-human"}]
+                             :cmr.humanized/short-name {:value "plat-human" :priority 0}}]
                 :projects [{:short-name "proj-A"
-                            :cmr.humanized/short-name "proj-human"}
+                            :cmr.humanized/short-name {:value "proj-human" :priority 0}}
                            {:short-name "proj-B"
-                            :cmr.humanized/short-name "proj-human"}]
+                            :cmr.humanized/short-name {:value "proj-human" :priority 0}}]
                 :science-keywords [{:category "sk-A"
                                     :cmr.humanized/category "sk-human"
                                     :topic "sk-B"
@@ -157,9 +161,9 @@
                                     :detailed-variable "sk-G"
                                     :cmr.humanized/detailed-variable "sk-human"}]
                 :organizations [{:org-name "org-A"
-                                 :cmr.humanized/org-name "org-human"},
+                                 :cmr.humanized/org-name {:value "org-human" :priority 0}},
                                 {:org-name "org-B"
-                                 :cmr.humanized/org-name "org-human"}]}))
+                                 :cmr.humanized/org-name {:value "org-human" :priority 0}}]}))
 
   (testing "humanize with source value selection"
     (humanizes [{:type "alias" :field "platform" :source_value "plat-X" :replacement_value "plat-Y"}
@@ -188,21 +192,21 @@
                                 {:org-name "org-X"}]}
 
                {:product {:processing-level-id "level-X"
-                          :cmr.humanized/processing-level-id "level-Y"}
+                          :cmr.humanized/processing-level-id {:value "level-Y" :priority 0}}
                 :platforms [{:short-name "plat-A"
-                             :cmr.humanized/short-name "plat-A"
+                             :cmr.humanized/short-name {:value "plat-A" :priority 0}
                              :instruments [{:short-name "inst-A"
-                                            :cmr.humanized/short-name "inst-A"}
+                                            :cmr.humanized/short-name {:value "inst-A" :priority 0}}
                                            {:short-name "inst-X"
-                                            :cmr.humanized/short-name "inst-Y"}
+                                            :cmr.humanized/short-name {:value "inst-Y" :priority 0}}
                                            {:short-name "inst-C"
-                                            :cmr.humanized/short-name "inst-C"}]}
+                                            :cmr.humanized/short-name {:value "inst-C" :priority 0}}]}
                             {:short-name "plat-X"
-                             :cmr.humanized/short-name "plat-Y"}]
+                             :cmr.humanized/short-name {:value "plat-Y" :priority 0}}]
                 :projects [{:short-name "proj-X"
-                            :cmr.humanized/short-name "proj-Y"}
+                            :cmr.humanized/short-name {:value "proj-Y" :priority 0}}
                            {:short-name "proj-B"
-                            :cmr.humanized/short-name "proj-B"}]
+                            :cmr.humanized/short-name {:value "proj-B" :priority 0}}]
                 :science-keywords [{:category "sk-X"
                                     :cmr.humanized/category "sk-Y"
                                     :topic "sk-B"
@@ -218,28 +222,28 @@
                                     :detailed-variable "sk-X"
                                     :cmr.humanized/detailed-variable "sk-Y"}]
                 :organizations [{:org-name "org-X"
-                                 :cmr.humanized/org-name "org-Y"}
+                                 :cmr.humanized/org-name {:value "org-Y" :priority 0}}
                                 {:org-name "org-X"
-                                 :cmr.humanized/org-name "org-Y"}]}))
+                                 :cmr.humanized/org-name {:value "org-Y" :priority 0}}]}))
 
   (testing "humanize from json definitions"
     ;; Small sanity check to ensure humanizers are pulled from the resource json by default.
     ;; Assumes that trimming whitespace is done in the humanizer
     (is (=
-         {:organizations [{:org-name " TEST\t" :cmr.humanized/org-name "TEST"}]}
+         {:organizations [{:org-name " TEST\t" :cmr.humanized/org-name {:value "TEST" :priority 0}}]}
          (humanizer/umm-collection->umm-collection+humanizers {:organizations [{:org-name " TEST\t"}]}))))
 
-  (testing "humanize with priority order"
-    (humanizes [{:type "alias" :field "organization" :source_value "A" :replacement_value "X" :priority 0}
-                {:type "alias" :field "organization" :source_value "X" :replacement_value "Y" :priority 1}]
+  (testing "humanize with sort order"
+    (humanizes [{:type "alias" :field "organization" :source_value "A" :replacement_value "X" :order 0}
+                {:type "alias" :field "organization" :source_value "X" :replacement_value "Y" :order 1}]
 
                {:organizations [{:org-name "A"}]}
 
-               {:organizations [{:org-name "A" :cmr.humanized/org-name "Y"}]})
+               {:organizations [{:org-name "A" :cmr.humanized/org-name {:value "Y" :priority 0}}]})
 
-    (humanizes [{:type "alias" :field "organization" :source_value "A" :replacement_value "X" :priority 1}
-                {:type "alias" :field "organization" :source_value "X" :replacement_value "Y" :priority 0}]
+    (humanizes [{:type "alias" :field "organization" :source_value "A" :replacement_value "X" :order 1}
+                {:type "alias" :field "organization" :source_value "X" :replacement_value "Y" :order 0}]
 
                {:organizations [{:org-name "A"}]}
 
-               {:organizations [{:org-name "A" :cmr.humanized/org-name "X"}]})))
+               {:organizations [{:org-name "A" :cmr.humanized/org-name {:value "X" :priority 0}}]})))

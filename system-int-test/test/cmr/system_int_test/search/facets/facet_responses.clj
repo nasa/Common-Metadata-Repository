@@ -57,21 +57,21 @@
      :applied false,
      :has_children true,
      :children
-     [{:title "DMSP 5B/F3",
-       :type "filter",
-       :applied false,
-       :count 2,
-       :links
-       {:apply
-        "http://localhost:3003/collections.json?page_size=0&include_facets=v2&platform_h%5B%5D=DMSP+5B%2FF3"},
-       :has_children false}
-      {:title "diadem-1D",
+     [{:title "diadem-1D",
        :type "filter",
        :applied false,
        :count 2,
        :links
        {:apply
         "http://localhost:3003/collections.json?page_size=0&include_facets=v2&platform_h%5B%5D=diadem-1D"},
+       :has_children false}
+       {:title "DMSP 5B/F3",
+       :type "filter",
+       :applied false,
+       :count 2,
+       :links
+       {:apply
+        "http://localhost:3003/collections.json?page_size=0&include_facets=v2&platform_h%5B%5D=DMSP+5B%2FF3"},
        :has_children false}]}
     {:title "Instruments",
      :type "group",
@@ -112,21 +112,21 @@
      :applied false,
      :has_children true,
      :children
-     [{:title "PROJ2",
-       :type "filter",
-       :applied false,
-       :count 2,
-       :links
-       {:apply
-        "http://localhost:3003/collections.json?page_size=0&include_facets=v2&project_h%5B%5D=PROJ2"},
-       :has_children false}
-      {:title "proj1",
+     [{:title "proj1",
        :type "filter",
        :applied false,
        :count 2,
        :links
        {:apply
         "http://localhost:3003/collections.json?page_size=0&include_facets=v2&project_h%5B%5D=proj1"},
+       :has_children false}
+       {:title "PROJ2",
+       :type "filter",
+       :applied false,
+       :count 2,
+       :links
+       {:apply
+        "http://localhost:3003/collections.json?page_size=0&include_facets=v2&project_h%5B%5D=PROJ2"},
        :has_children false}]}
     {:title "Processing levels",
      :type "group",
@@ -232,21 +232,21 @@
      :applied true,
      :has_children true,
      :children
-     [{:title "DMSP 5B/F3",
-       :type "filter",
-       :applied false,
-       :count 2,
-       :links
-       {:apply
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&platform_h%5B%5D=DMSP+5B%2FF3&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1&options%5Bplatform_h%5D%5Band%5D=true"},
-       :has_children false}
-      {:title "diadem-1D",
+     [{:title "diadem-1D",
        :type "filter",
        :applied true,
        :count 2,
        :links
        {:remove
         "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+       :has_children false}
+      {:title "DMSP 5B/F3",
+       :type "filter",
+       :applied false,
+       :count 2,
+       :links
+       {:apply
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&platform_h%5B%5D=DMSP+5B%2FF3&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1&options%5Bplatform_h%5D%5Band%5D=true"},
        :has_children false}]}
     {:title "Instruments",
      :type "group",
@@ -287,21 +287,21 @@
      :applied true,
      :has_children true,
      :children
-     [{:title "PROJ2",
-       :type "filter",
-       :applied false,
-       :count 2,
-       :links
-       {:apply
-        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&project_h%5B%5D=PROJ2&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&options%5Bproject_h%5D%5Band%5D=true&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
-       :has_children false}
-      {:title "proj1",
+     [{:title "proj1",
        :type "filter",
        :applied true,
        :count 2,
        :links
        {:remove
         "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&instrument_h=ATM&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
+       :has_children false}
+      {:title "PROJ2",
+       :type "filter",
+       :applied false,
+       :count 2,
+       :links
+       {:apply
+        "http://localhost:3003/collections.json?data_center_h=DOI%2FUSGS%2FCMG%2FWHSC&science_keywords_h%5B0%5D%5Bvariable_level_3%5D=Level1-3&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B0%5D%5Bterm%5D=Term1&project_h=proj1&instrument_h=ATM&project_h%5B%5D=PROJ2&page_size=0&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Level1-2&platform_h=DIADEM-1D&options%5Bproject_h%5D%5Band%5D=true&include_facets=v2&science_keywords_h%5B0%5D%5Bcategory%5D=Cat1&processing_level_id_h=PL1&science_keywords_h%5B0%5D%5Btopic%5D=Topic1"},
        :has_children false}]}
     {:title "Processing levels",
      :type "group",
