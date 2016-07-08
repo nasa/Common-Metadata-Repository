@@ -237,6 +237,10 @@
                      base-url query-params param-name search-term nil)]]
      (v2h/generate-hierarchical-filter-node search-term 0 link nil)))
 
+(def earth-science-category-string
+  "Constant for the string used for the Earth Science category within humanized science keywords."
+  "Earth Science")
+
 (defn- remove-non-earth-science-keywords
   "V2 facets only include science keyword facets which have a category of Earth Science. Removes
   any science keywords facets that have any other category."
@@ -244,7 +248,7 @@
   (if (= :science-keywords-h field)
     (let [updated-facet (update hierarchical-facet :children
                                 (fn [children]
-                                  (filter #(= "Earth Science" (:title %)) children)))]
+                                  (filter #(= earth-science-category-string (:title %)) children)))]
       (when-let [earth-science-facets (first (:children updated-facet))]
         ;; Do not return the Earth Science category facet itself, just return the topics below
         (assoc updated-facet :children (:children earth-science-facets))))
