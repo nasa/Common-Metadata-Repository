@@ -189,18 +189,23 @@
   the query-params which are not present in the hierarchical facet response. Returns a sequence of
   tuples with any missing terms. Each tuple contains a subfield and a search term."
   [field field-hierarchy hierarchical-facet query-params]
-  (remove nil?
-    (apply concat
-       (keep (fn [subfield]
-               (when-let [search-terms (seq (get-search-terms-for-hierarchical-field
-                                             field subfield query-params))]
-                 (let [terms-in-facets (map str/lower-case
-                                            (get-terms-for-subfield hierarchical-facet subfield
-                                                                    field-hierarchy))]
-                   (for [term search-terms]
-                     (when-not (some #{(str/lower-case term)} terms-in-facets)
-                       [subfield term])))))
-             field-hierarchy))))
+  (let [field-hierarchy (if (= :science-keywords-h field)
+                          ;; Special case for science keywords to ignore the first field (category)
+                          ;; since we do not actually return categories in the v2 facet response
+                          (rest field-hierarchy)
+                          field-hierarchy)]
+    (remove nil?
+      (apply concat
+         (keep (fn [subfield]
+                 (when-let [search-terms (seq (get-search-terms-for-hierarchical-field
+                                               field subfield query-params))]
+                   (let [terms-in-facets (map str/lower-case
+                                              (get-terms-for-subfield hierarchical-facet subfield
+                                                                      field-hierarchy))]
+                     (for [term search-terms]
+                       (when-not (some #{(str/lower-case term)} terms-in-facets)
+                         [subfield term])))))
+               field-hierarchy)))))
 
 (defn- prune-hierarchical-facet
   "Limits a hierarchical facet to a single level below the lowest applied facet. If
@@ -240,8 +245,9 @@
     (let [updated-facet (update hierarchical-facet :children
                                 (fn [children]
                                   (filter #(= "Earth Science" (:title %)) children)))]
-      (when (seq (:children updated-facet))
-        updated-facet))
+      (when-let [earth-science-facets (first (:children updated-facet))]
+        ;; Do not return the Earth Science category facet itself, just return the topics below
+        (assoc updated-facet :children (:children earth-science-facets))))
     hierarchical-facet))
 
 (defn- hierarchical-bucket-map->facets-v2
