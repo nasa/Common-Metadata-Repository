@@ -24,6 +24,7 @@
             ;; UMM and JSON
             [cmr.umm-spec.umm-json :as umm-json]
             [cmr.umm-spec.versioning :as ver]
+            [cmr.umm-spec.version-migration :as vm]
             [cmr.common.mime-types :as mt])
   (:import (cmr.umm_spec.models.collection UMM-C)
            (cmr.umm_spec.models.service UMM-S)))
@@ -97,7 +98,7 @@
    (let [concept-type (concept-type umm)
          source-version (or source-version ver/current-version)]
      (condp = [concept-type (mt/format-key fmt)]
-       [:collection :umm-json] (umm-json/umm->json (ver/migrate-umm context
+       [:collection :umm-json] (umm-json/umm->json (vm/migrate-umm context
                                                                     concept-type
                                                                     source-version
                                                                     (umm-json-version fmt)

@@ -135,9 +135,9 @@
                        :VariableLevel2 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/Value")
                        :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
                        :DetailedVariable (value-of sk "DetailedVariableKeyword")})
-     ;; Organizations is not implemented but is required in UMM-C
+     ;; DataCenters is not implemented but is required in UMM-C
      ;; Implement with CMR-3158
-     :Organizations [u/not-provided-organization]})
+     :DataCenters [u/not-provided-data-center]})
 
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document."

@@ -3,6 +3,7 @@
   (:require [cmr.umm-spec.json-schema :as js]
             [cmr.common.xml.simple-xpath :refer [select]]
             [cmr.common.xml.parse :refer :all]
+            [cmr.umm-spec.util :as u]
             [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.util :as u :refer [without-default-value-of]]
             [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
@@ -89,5 +90,5 @@
        :RelatedUrls [u/not-provided-related-url]
        ;; Required by UMM-C
        :ProcessingLevel {:Id u/not-provided}
-       ;; Organizations is not implemented but is required in UMM-C
-       :Organizations [u/not-provided-organization]})))
+       ;; DataCenters is not implemented but is required in UMM-C
+       :DataCenters [u/not-provided-data-center]})))

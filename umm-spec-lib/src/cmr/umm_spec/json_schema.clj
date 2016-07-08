@@ -3,9 +3,10 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [cmr.common.log :as log]
+            [cheshire.core :as json]
+            [cheshire.factory :as factory]
             [cmr.common.date-time-parser :as dtp]
             [cmr.common.validations.json-schema :as js-validations]
-            [cmr.umm-spec.util :as spec-util]
             [cmr.common.util :as util]
             [cmr.umm-spec.versioning :as ver]))
 
@@ -18,6 +19,13 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Code for loading schema files.
+
+(defn load-json-resource
+  "Loads a json resource from the classpath. The JSON file may contain comments which are ignored"
+  [json-resource]
+  (binding [factory/*json-factory* (factory/make-json-factory
+                                     {:allow-comments true})]
+    (json/decode (slurp json-resource) true)))
 
 (defn reference-processor-selector
   "Used to determine how to process a type definition when resolving references."
@@ -46,6 +54,19 @@
   (into {} (for [[n type-def] definition-map]
              [n (resolve-ref schema-name type-def)])))
 
+(defn- resolve-one-of
+  "Resolves oneOf definitions in object type."
+  [schema-name object]
+  (if (:oneOf object)
+      (update-in object [:oneOf]
+                 (fn [one-ofs]
+                   (map (fn [o]
+                          (if (:properties o)
+                            (update-in o [:properties] (partial resolve-ref-deflist schema-name))
+                            o))
+                        one-ofs)))
+      object))
+
 (defmethod resolve-ref :$ref
   [schema-name type-def]
   (let [[ref-schema-name _ type-name] (str/split (:$ref type-def) #"/")]
@@ -60,15 +81,10 @@
   (let [updated (if (:properties type-def)
                   (update-in type-def [:properties] (partial resolve-ref-deflist schema-name))
                   type-def)]
-    (if (:oneOf updated)
-      (update-in updated [:oneOf]
-                 (fn [one-ofs]
-                   (map (fn [o]
-                          (if (:properties o)
-                            (update-in o [:properties] (partial resolve-ref-deflist schema-name))
-                            o))
-                        one-ofs)))
-      updated)))
+    (->> updated
+         (resolve-one-of schema-name)
+         ;; other resolvers can go here, e.g. for allOf
+         )))
 
 (defmethod resolve-ref "array"
   [schema-name type-def]
@@ -125,7 +141,7 @@
   in the definitions map. May be nil if no root type is defined.
   * :ref-schemas - A map of schema name to schemas that are referenced within this schema."
   [umm-version schema-name]
-  (let [parsed (spec-util/load-json-resource (umm-schema-resource umm-version schema-name))
+  (let [parsed (load-json-resource (umm-schema-resource umm-version schema-name))
         definitions (resolve-ref-deflist schema-name (get parsed :definitions))
         root-def (when (:title parsed)
                    (resolve-ref schema-name (dissoc parsed :definitions :$schema :title)))
