@@ -96,7 +96,7 @@
   for that path"
   [humanized-collection path base-es-field]
   (let [prefix (subs (str base-es-field) 1)
-        field (keyword (str prefix ".humanized"))
+        field (keyword (str prefix ".humanized2"))
         value-with-priorities (util/get-in-all humanized-collection path)
         value-with-lowercases (if (sequential? value-with-priorities)
                                 (map add-humanized-lowercase (distinct (filter :value value-with-priorities)))

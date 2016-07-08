@@ -84,3 +84,4 @@ Items to include in each issue
 * CMR-3003 - Sorting humanized facets by priority
   * Deployment Impacts
     * Requires update of indexes
+    * Requires reindexing of collections

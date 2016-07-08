@@ -28,11 +28,11 @@
   [size query-params]
   (let [sk-depth (hv2/get-depth-for-hierarchical-field query-params :science-keywords-h)]
     {:science-keywords-h (hv2/nested-facet :science-keywords.humanized size sk-depth)
-     :platform-h (v2h/prioritized-facet :platform-sn.humanized size)
-     :instrument-h (v2h/prioritized-facet :instrument-sn.humanized size)
-     :data-center-h (v2h/prioritized-facet :organization.humanized size)
-     :project-h (v2h/prioritized-facet :project-sn.humanized size)
-     :processing-level-id-h (v2h/prioritized-facet :processing-level-id.humanized size)}))
+     :platform-h (v2h/prioritized-facet :platform-sn.humanized2 size)
+     :instrument-h (v2h/prioritized-facet :instrument-sn.humanized2 size)
+     :data-center-h (v2h/prioritized-facet :organization.humanized2 size)
+     :project-h (v2h/prioritized-facet :project-sn.humanized2 size)
+     :processing-level-id-h (v2h/prioritized-facet :processing-level-id.humanized2 size)}))
 
 (def v2-facets-root
   "Root element for the facet response"
