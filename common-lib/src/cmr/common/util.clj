@@ -419,6 +419,11 @@
   [^Blob blob]
   (-> blob .getBinaryStream GZIPInputStream. slurp))
 
+(defn gzip-bytes->string
+  "Convert a byte array of gzipped data into a string."
+  [^bytes bytes]
+  (-> bytes ByteArrayInputStream. GZIPInputStream. slurp))
+
 (defn string->gzip-bytes
   "Convert a string to an array of compressed bytes"
   [input]

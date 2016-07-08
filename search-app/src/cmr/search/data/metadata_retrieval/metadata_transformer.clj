@@ -6,9 +6,10 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.mime-types :as mt]
             [cmr.common-app.services.search.query-model :as qm]
+            [cmr.search.services.result-format-helper :as rfh]
 
             ;; UMM library
-            [cmr.umm.core :as ummc]
+            [cmr.umm.core :as umm-lib-core]
 
             ;; UMM Spec
             [cmr.umm-spec.versioning :as ver]
@@ -18,6 +19,8 @@
 
             ;; render collections as html
             [cmr.collection-renderer.services.collection-renderer :as collection-renderer]))
+
+;; TODO unit test this namespace
 
 (def types->xsl
   "Defines the [metadata-format target-format] to xsl mapping"
@@ -44,44 +47,96 @@
                      context :collection (:format concept) (:metadata concept))]
     (collection-renderer/render-collection context collection)))
 
+(defn transform-strategy
+  "TODO"
+  [concept target-format]
+  (let [concept-mime-type (:format concept)]
+    (cond
+      ;; No conversion is required
+      (= (rfh/mime-type->search-result-format concept-mime-type) target-format)
+      :current-format
+
+      ;; Use XSLT
+      (types->xsl [(mt/mime-type->format concept-mime-type) target-format])
+      :xslt
+
+      (= :html target-format)
+      :html
+
+      ;; UMM JSON is the desired response or it's coming from UMM JSON
+      (or (mt/umm-json? concept-mime-type)
+          (= :umm-json (qm/base-result-format target-format)))
+      :umm-spec
+
+      ;; Going from XML metadata to some otner XML metadata.
+      ;; Use UMM lib (for now for collections)
+      :else
+      :umm-lib)))
+
+;; TODO move this to separately named functions and use a cond to call the appropriate function
+;; Getting rid of multimethod will help performance
+
+(defmulti transform-with-strategy
+  "TODO"
+  (fn [context concept strategy target-formats]
+    strategy))
+
+(defmethod transform-with-strategy :default
+  [_ concept strategy target-formats]
+  (errors/internal-error!
+   (format "Unexpected transform strategy [%s] from concept of type [%s] to [%s]"
+           strategy (:format concept) (pr-str target-formats))))
+
+(defmethod transform-with-strategy :current-format
+  [context concept _ _]
+  {(rfh/mime-type->search-result-format (:format concept)) (:metadata concept)})
+
+(defmethod transform-with-strategy :xslt
+  [context concept _ target-formats]
+  (let [{concept-mime-type :format, metadata :metadata} concept]
+    (reduce (fn [translated-map target-format]
+              (let [xsl (types->xsl [(mt/mime-type->format concept-mime-type) target-format])]
+                (assoc translated-map target-format
+                       (xslt/transform metadata (get-template context xsl)))))
+            {}
+            target-formats)))
+
+(defmethod transform-with-strategy :html
+  [context concept _ _]
+  {:html (generate-html-response context concept)})
+
+(defmethod transform-with-strategy :umm-spec
+  [context concept _ target-formats]
+  (let [{concept-mime-type :format, metadata :metadata} concept
+        ummc (umm-spec/parse-metadata context :collection concept-mime-type metadata)]
+    (reduce (fn [translated-map target-format]
+              (assoc translated-map target-format
+                     (umm-spec/generate-metadata context ummc target-format)))
+            {}
+            target-formats)))
+
+(defmethod transform-with-strategy :umm-lib
+  [context concept _ target-formats]
+  (let [{concept-mime-type :format, metadata :metadata} concept
+        umm (umm-lib-core/parse-concept concept)]
+    (reduce (fn [translated-map target-format]
+              (assoc translated-map target-format
+                     (umm-lib-core/umm->xml umm target-format)))
+            {}
+            target-formats)))
+
+(defn transform-to-multiple-formats
+  "TODO"
+  [context concept target-formats]
+  (->> target-formats
+       (group-by #(transform-strategy concept %))
+       (map #(transform-with-strategy context concept (key %) (val %)))
+       (reduce into {})))
+
 (defn transform
   "TODO"
   [context concept target-format]
-  (let [{concept-mime-type :format
-         metadata :metadata} concept]
-   (if-let [xsl (types->xsl [(mt/mime-type->format concept-mime-type) target-format])]
-
-     ; xsl is defined for the transformation, so use xslt
-     (xslt/transform metadata (get-template context xsl))
-
-     ;; No XSLT is defined. Use UMM libraries to convert
-     (cond
-       ;; HTML is desired response
-       (= :html target-format)
-       (generate-html-response context concept)
-
-       ;; UMM JSON is the desired response
-       (mt/umm-json? concept-mime-type)
-       (if (and (= :umm-json (qm/base-result-format target-format))
-                (= (or (mt/version-of concept-mime-type) ver/current-version)
-                   (or (:version target-format) ver/current-version)))
-         ;; The metadata is in the same version of UMM JSON as requested by the user.
-         metadata
-         ;; The user has requested a different format for the metadata.
-         ;; Use UMM Spec to parse it and generate metadata in the desired format.
-         (umm-spec/generate-metadata
-          context
-          (umm-spec/parse-metadata context :collection concept-mime-type metadata)
-          target-format))
-
-       ;; Going from UMM-JSON to some other format (Use UMM Spec)
-       (= :umm-json (qm/base-result-format target-format))
-       (umm-json/umm->json
-        (umm-spec/parse-metadata context :collection concept-mime-type metadata))
-
-       ;; Going from XML metadata to some otner XML metadata.
-       ;; Use UMM lib (for now)
-       :else
-       (-> concept
-           ummc/parse-concept
-           (ummc/umm->xml target-format))))))
+  (let [strategy (transform-strategy concept target-format)
+        target-format-result-map (transform-with-strategy
+                                  context concept strategy [target-format])]
+    (get target-format-result-map target-format)))

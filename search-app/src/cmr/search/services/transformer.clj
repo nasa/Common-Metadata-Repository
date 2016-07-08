@@ -23,8 +23,8 @@
 
 
 (defn- concept->value-map
-  "Convert a concept into a map containing metadata in a desired format as well as
-  concept-id, revision-id, and possibly collection-concept-id"
+  "Convert a concept into a map containing :metadata in a desired format, :format, :concept-id,
+   :revision-id, and :collection-concept-id if granules."
   [context concept target-format]
   (let [collection-concept-id (get-in concept [:extra-fields :parent-collection-id])
         concept-format (mt/mime-type->format (:format concept))
