@@ -2,6 +2,7 @@
   "TODO"
   (:require [clojure.java.io :as io]
             [cmr.common.xml.xslt :as xslt]
+            [cmr.common.util :as u]
             [cmr.common.cache :as cache]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.mime-types :as mt]
@@ -19,6 +20,10 @@
 
             ;; render collections as html
             [cmr.collection-renderer.services.collection-renderer :as collection-renderer]))
+
+(def transformer-supported-format?
+  "The set of formats supported by the transformer."
+  #{:echo10 :dif :dif10 :iso19115 :iso-smap})
 
 ;; TODO unit test this namespace
 
@@ -138,9 +143,22 @@
        (reduce into {})))
 
 (defn transform
-  "TODO"
+  "Transforms a concept to the target format given returning metadata."
   [context concept target-format]
-  (let [strategy (transform-strategy concept target-format)
-        target-format-result-map (transform-with-strategy
-                                  context concept strategy [target-format])]
-    (get target-format-result-map target-format)))
+  (if (= target-format :native)
+    (:metadata concept)
+    (let [strategy (transform-strategy concept target-format)
+          target-format-result-map (transform-with-strategy
+                                    context concept strategy [target-format])]
+      (get target-format-result-map target-format))))
+
+(defn transform-concepts
+  "Transforms concepts to the given format returning an updated concept."
+  [context concepts target-format]
+  (if (= :native target-format)
+    concepts
+    (u/fast-map (fn [concept]
+                  (assoc concept
+                         :format (rfh/search-result-format->mime-type target-format)
+                         :metadata (transform context concept target-format)))
+                concepts)))

@@ -3,7 +3,7 @@
   (:require [clojure.string :as s]
             [cmr.common.util :as util]
             [cmr.common.services.errors :as errors]
-            [cmr.search.services.transformer :as transformer]
+            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
             [cmr.metadata-db.services.provider-service :as metadata-db]))
 
 (def short-name-no-match-provider
@@ -66,7 +66,7 @@
   (let [provider-short-names (:provider-short-name params)
         options (get-in params [:options :provider-short-name])]
     (validate-provider-short-name provider-short-names options)
-    (let [mdb-context (transformer/context->metadata-db-context context)
+    (let [mdb-context (metadata-cache/context->metadata-db-context context)
           providers (metadata-db/get-providers mdb-context)
           case-sensitive? (= "false" (:ignore-case options))
           provider-ids (provider-short-names->provider-ids

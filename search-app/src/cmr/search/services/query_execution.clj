@@ -1,5 +1,6 @@
 (ns cmr.search.services.query-execution
-  (:require [cmr.search.services.transformer :as t]
+  (:require [cmr.search.data.metadata-retrieval.metadata-transformer :as mt]
+            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.search.services.query-walkers.collection-query-resolver :as r]
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as ce]
@@ -18,11 +19,6 @@
   "The set of formats that are supported for the :specific-elastic-items query execution strategy"
   #{:json :atom :csv :opendata})
 
-;; TODO get rid of this
-; (def metadata-result-item-fields
-;   "Fields of a metadata search result item"
-;   [:concept-id :revision-id :collection-concept-id :format :metadata])
-
 (defn- specific-items-query?
   "Returns true if the query is only for specific items."
   [{:keys [condition offset page-size] :as query}]
@@ -39,7 +35,7 @@
        ;; elastic + the metadata cache for them
        (= :granule concept-type)
        (specific-items-query? query)
-       (t/transformer-supported-format? result-format)
+       (mt/transformer-supported-format? result-format)
        (not all-revisions?)
 
        ;; Facets and tags require elastic search
@@ -92,9 +88,8 @@
   [context query]
   (let [{:keys [result-format skip-acls?]} query
         concept-ids (query->concept-ids query)
-        items (t/get-latest-formatted-concepts context concept-ids result-format skip-acls?)
-        ;; TODO get rid of this if not needed
-        ; items (map #(select-keys % metadata-result-item-fields) tresults)
+        items (metadata-cache/get-latest-formatted-concepts
+               context concept-ids result-format skip-acls?)
         results (results/map->Results {:hits (count items) :items items :result-format result-format})]
     (common-qe/post-process-query-result-features context query nil results)))
 

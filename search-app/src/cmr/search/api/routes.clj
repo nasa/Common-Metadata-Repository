@@ -255,12 +255,16 @@
                 (name concept-type))))
 
     (if revision-id
+      ;; TODO it's possible this is resolved now or could easily be resolved.
+      ;; Would need to add tests thought.
       ;; We don't support Atom or JSON (yet) for lookups that include revision-id due to
       ;; limitations of the current transformer implementation. This will be fixed with CMR-1935.
       (let [supported-mime-types (disj concept-type-supported-mime-types mt/atom mt/json)
             result-format (get-search-results-format path-w-extension headers
                                                      supported-mime-types
-                                                     mt/xml)]
+                                                     mt/native)
+            ;; XML means native in this case
+            result-format (if (= result-format :xml) :native result-format)]
         (info (format "Search for concept with cmr-concept-id [%s] and revision-id [%s]"
                       concept-id
                       revision-id))
@@ -269,7 +273,9 @@
                            request-context result-format concept-id revision-id)))
       (let [result-format (get-search-results-format path-w-extension headers
                                                      concept-type-supported-mime-types
-                                                     mt/xml)]
+                                                     mt/native)
+            ;; XML means native in this case
+            result-format (if (= result-format :xml) :native result-format)]
         (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
         (search-response (query-svc/find-concept-by-id request-context result-format concept-id))))))
 

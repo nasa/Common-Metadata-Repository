@@ -8,7 +8,7 @@
             [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
             [cmr.search.services.query-execution.tags-results-feature :as trf]
             [cmr.common-app.services.search.results-model :as results]
-            [cmr.search.services.transformer :as t]
+            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [clojure.string :as str]
@@ -71,10 +71,8 @@
         result-items (mapv #(elastic-result->query-result-item concept-type %) elastic-matches)
         tuples (mapv #(vector (:concept-id %) (:revision-id %)) result-items)
         [req-time items] (u/time-execution
-                          (t/get-formatted-concept-revisions
-                           context concept-type tuples result-format false))
-        ;; TODO get rid of this line if necessary
-        ; items (map #(select-keys % qe/metadata-result-item-fields) tresults)
+                          (metadata-cache/get-formatted-concept-revisions
+                           context concept-type tuples result-format))
         ;; add tags to result items if necessary
         items (if (contains? (set result-features) :tags)
                 (let [concept-tags-map (into {}
