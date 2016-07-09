@@ -78,7 +78,9 @@
      :concept-type :collection
      ;; TODO consider moving this whole function and just calling this in the place
      :metadata (get-metadata-in-format target-format revision-format-map)
-     :format (rfh/search-result-format->mime-type target-format)}))
+     :format (if (= :native target-format)
+               (rfh/search-result-format->mime-type (:native-format revision-format-map))
+               (rfh/search-result-format->mime-type target-format))}))
 
 ;; TODO make sure to test passing in :native here
 (defn concept->revision-format-map

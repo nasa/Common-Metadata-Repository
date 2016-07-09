@@ -34,7 +34,18 @@
     (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
     (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"})))
 
-
+(deftest simple-search-test
+  (let [c1-echo (d/ingest "PROV1" (dc/collection) {:format :echo10})
+        g1-echo (d/ingest "PROV1" (dg/granule c1-echo {:granule-ur "g1"
+                                                       :producer-gran-id "p1"})
+                          {:format :echo10})]
+    (index/wait-until-indexed)
+    (let [params {:concept-id (:concept-id g1-echo)}
+          options {:accept nil
+                   :url-extension "native"}
+          format-key :echo10
+          response (search/find-metadata :granule format-key params options)]
+      (d/assert-metadata-results-match format-key [g1-echo] response))))
 
 (deftest search-granules-in-xml-metadata
   (let [c1-echo (d/ingest "PROV1" (dc/collection) {:format :echo10})

@@ -22,41 +22,30 @@
   [context]
   (assoc context :system (get-in context [:system :embedded-systems :metadata-db])))
 
-
 (defn- concept->value-map
-  "Convert a concept into a map containing :metadata in a desired format, :format, :concept-id,
-   :revision-id, and :collection-concept-id if granules."
+  "Convert a concept into a map containing :metadata in a desired format"
   [context concept target-format]
-  (let [collection-concept-id (get-in concept [:extra-fields :parent-collection-id])
-        concept-format (mt/mime-type->format (:format concept))
-        _ (when-not concept-format
-            (errors/internal-error! "Did not recognize concept format" (pr-str (:format concept))))
-        value-map (if (or (contains? #{:xml :native} target-format) ;; xml is also a native format
-                          (= target-format concept-format))
-                    (select-keys concept [:metadata :concept-id :revision-id :format])
-                    (let [metadata (metadata-transformer/transform context concept target-format)]
-                      (assoc (select-keys concept [:concept-id :revision-id])
-                             :metadata metadata
-                             :format (rfh/search-result-format->mime-type target-format))))]
-    (if collection-concept-id
-      (assoc value-map :collection-concept-id collection-concept-id)
-      value-map)))
+  (let [concept-format (mt/mime-type->format (:format concept))]
+
+    (when-not concept-format
+      (errors/internal-error! "Did not recognize concept format" (pr-str (:format concept))))
+
+    ;; TODO reconsider that XML means native
+    (if (or (contains? #{:xml :native} target-format) ;; xml is also a native format
+            (= target-format concept-format))
+      concept
+      (let [metadata (metadata-transformer/transform context concept target-format)]
+        (assoc concept
+               :metadata metadata
+               :format (rfh/search-result-format->mime-type target-format))))))
 
 (defn get-formatted-concept-revisions
   "Get concepts with given concept-id, revision-id pairs in a given format. Does not apply acls to
   the concepts found."
   [context concept-type concepts-tuples target-format allow-missing?]
+  ;; TODO should we still have this here? Or should we just be calling this directly?
   (metadata-cache/get-formatted-concept-revisions
    context concept-type concepts-tuples target-format allow-missing?))
-  ; (info "Transforming" (count concepts-tuples) "concept(s) to" target-format)
-  ; (let [mdb-context (context->metadata-db-context context)
-  ;       [t1 concepts] (u/time-execution
-  ;                       (doall (metadata-db/get-concepts mdb-context concepts-tuples allow-missing?)))
-  ;       [t2 values] (u/time-execution
-  ;                     (doall (pmap #(concept->value-map context % target-format) concepts)))]
-  ;   (debug "get-concept-revisions time:" t1
-  ;          "concept->value-map time:" t2)
-  ;   values))
 
 (defn get-latest-formatted-concepts
   "Get latest version of concepts with given concept-ids in a given format. Applies ACLs to the concepts
@@ -68,14 +57,14 @@
 
    (let [mdb-context (context->metadata-db-context context)
          [t1 concepts] (u/time-execution
-                         (doall (metadata-db/get-latest-concepts mdb-context concept-ids true)))
+                        (doall (metadata-db/get-latest-concepts mdb-context concept-ids true)))
          ;; Filtering deleted concepts
          [t2 concepts] (u/time-execution (doall (filter #(not (:deleted %)) concepts)))]
 
      (if skip-acls?
        ;; Convert concepts to results without acl enforcment
        (let [[t3 values] (u/time-execution
-                           (doall (pmap #(concept->value-map context % target-format) concepts)))]
+                          (doall (pmap #(concept->value-map context % target-format) concepts)))]
          (debug "get-latest-concepts time:" t1
                 "tombstone-filter time:" t2
                 "concept->value-map time:" t3)
@@ -85,7 +74,7 @@
        (let [[t3 concepts] (u/time-execution (acl-rhh/add-acl-enforcement-fields concepts))
              [t4 concepts] (u/time-execution (acl-service/filter-concepts context concepts))
              [t5 values] (u/time-execution
-                           (doall (pmap #(concept->value-map context % target-format) concepts)))]
+                          (doall (pmap #(concept->value-map context % target-format) concepts)))]
          (debug "get-latest-concepts time:" t1
                 "tombstone-filter time:" t2
                 "add-acl-enforcement-fields time:" t3

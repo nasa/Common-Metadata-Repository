@@ -34,6 +34,7 @@
     {:format :umm-json
      :version "1.3"}})
 
+;; TODO comment this
 (defrecord MetadataCache
   [cache-atom]
   c/CmrCache
@@ -205,7 +206,6 @@
                                             :metadata (metadata-transformer/transform
                                                        context concept target-format)))
                                    concepts)))]
-
     (debug "fetch of " (count concept-tuples) " concepts:"
            "get-concepts:" t1 "metadata-transformer/transform" t2)
     concepts))
@@ -272,10 +272,11 @@
                                                     (:newer-revision-requested results)
                                                     (:target-format-not-cached results)))
                            (fetch (:older-revision-requested results)))]
-      (order-concepts concept-tuples concepts)
-      ;; Granule query. We don't cache those so just fetch from metadata db
-      ;; TODO update callers to get collection concept id from in the concept
-      (fetch-metadata context concept-tuples target-format allow-missing?))))
+      (order-concepts concept-tuples concepts))
+
+    ;; Granule query. We don't cache those so just fetch from metadata db
+    ;; TODO update callers to get collection concept id from in the concept
+    (fetch-metadata context concept-tuples target-format allow-missing?)))
 
 
 ;; # Lookup logic

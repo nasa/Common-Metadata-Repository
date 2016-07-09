@@ -51,12 +51,9 @@
     (let [params {:concept-id (:concept-id c1-echo)}
           options {:accept nil
                    :url-extension "native"}
-          format-key :dif
+          format-key :echo10
           response (search/find-metadata :collection format-key params options)]
       (d/assert-metadata-results-match format-key [c1-echo] response))))
-
-
-
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
