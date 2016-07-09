@@ -204,12 +204,14 @@
 (defn assert-metadata-results-match
   "Returns true if the metadata results match the expected items"
   [format-key items search-result]
-  (metadata-results-match? format-key items search-result {:assert? true :echo-compatible? false}))
+  ;; TODO temporarily wrapped in is just to be doubly sure that assertions works
+  (is (metadata-results-match? format-key items search-result {:assert? true :echo-compatible? false})))
 
 (defn assert-echo-compatible-metadata-results-match
   "Returns true if the metadata results match the expected items"
   [format-key items search-result]
-  (metadata-results-match? format-key items search-result {:assert? true :echo-compatible? true}))
+  ;; TODO temporarily wrapped in is just to be doubly sure that assertions works
+  (is (metadata-results-match? format-key items search-result {:assert? true :echo-compatible? true})))
 
 (defn echo-compatible-refs-match?
   "Returns true if the echo compatible references match the expected items"
