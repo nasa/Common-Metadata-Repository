@@ -894,7 +894,7 @@
               </gmd:MD_BrowseGraphic>
             </gmd:graphicOverview>
           </xsl:for-each>
-          <xsl:for-each select="//OnlineResources/OnlineResource[Type='Browse' or Type='Thumbnail'] ">
+          <xsl:for-each select="//OnlineResources/OnlineResource[lower-case(Type)='browse' or lower-case(Type)='thumbnail'] ">
             <gmd:graphicOverview>
               <gmd:MD_BrowseGraphic>
                 <gmd:fileName>
