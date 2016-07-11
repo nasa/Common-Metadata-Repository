@@ -100,12 +100,19 @@
         "ECHO10" :echo10
         "DIF" :dif
         "DIF10" :dif10
-        "ISO" :iso19115))))
+        "ISO" :iso19115))
         ;;This will be implemented in a future sprint.
         ; "UMM JSON" :umm-json))))
 
-
-    ;; TODO ingest updated XML and search to get latest again
+    (testing "Ingesting newer metadata (not cached) is successfully retrieved"
+      (let [c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"
+                                                      :description "updated"})
+                              {:format :echo10})]
+        (index/wait-until-indexed)
+        (let [params {:concept-id (:concept-id c1-echo)}
+              options {:url-extension "native"}
+              response (search/find-metadata :collection :echo10 params options)]
+          (d/assert-metadata-results-match :echo10 [c1-echo] response))))))
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test

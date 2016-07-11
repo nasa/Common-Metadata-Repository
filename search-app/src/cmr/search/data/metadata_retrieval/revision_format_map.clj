@@ -6,10 +6,10 @@
            [cmr.search.services.result-format-helper :as rfh]
            [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]))
 
+;; TODO unit test this whole namespace
 
 (def non-metadata-fields
-  #{:concept-id :revision-id :native-format :compressed?})
-
+  #{:concept-id :revision-id :native-format :compressed? :size})
 
 (def key-sorted-revision-format-map
   (u/key-sorted-map [:concept-id :revision-id :native-format :echo10 :dif :dif10 :iso19115]))
@@ -24,23 +24,30 @@
                        [k (f (val entry))])))
                  rfm)))
 
-
-;; TODO unit test these
+(defn with-size
+  "Adds a size field to the revision format map by calculating the sizes of the individual cached
+   metadata."
+  [rfm]
+  (let [metadata-fields (filterv (complement non-metadata-fields) (keys rfm))
+        size (reduce + (map (comp count rfm) metadata-fields))]
+    (assoc rfm :size size)))
 
 (defn gzip-revision-format-map
   "TODO"
   [revision-format-map]
   (if (:compressed? revision-format-map)
     revision-format-map
-    (assoc (map-metadata-values u/string->gzip-bytes revision-format-map)
-           :compressed? true)))
+    (-> (map-metadata-values u/string->gzip-bytes revision-format-map)
+        (assoc :compressed? true)
+        with-size)))
 
 (defn ungzip-revision-format-map
   "TODO"
   [revision-format-map]
   (if (:compressed? revision-format-map)
-    (assoc (map-metadata-values u/gzip-bytes->string revision-format-map)
-           :compressed? false)
+    (-> (map-metadata-values u/gzip-bytes->string revision-format-map)
+        (assoc :compressed? false)
+        (dissoc :size))
     revision-format-map))
 
 (defn prettify

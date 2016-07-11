@@ -99,39 +99,43 @@
   [context]
   (assoc context :system (get-in context [:system :embedded-systems :metadata-db])))
 
-
 (defn prettify-cache
   "TODO"
   [cache]
   (let [cache-map @(:cache-atom cache)]
     (u/map-values rfm/prettify cache-map)))
 
+(defn- cache-size
+  "Returns the combined size of all the metadata in the cache."
+  [metadata-cache]
+  (reduce + (map :size (vals @(:cache-atom metadata-cache)))))
+
 (comment
  (refresh-cache {:system (get-in user/system [:apps :search])})
  (prettify-cache (get-in user/system [:apps :search :caches cache-key])))
 
-;; TODO add a job for this
+(defn- concept-tuples->cache-map
+  "Takes a set of concept tuples fetches the concepts from metadata db, converts them to revision
+   format maps, and stores them into a cache map"
+  [context concept-tuples]
+  (let [mdb-context (context->metadata-db-context context)
+        concepts (doall (metadata-db/get-concepts mdb-context concept-tuples true))
+        rfms (u/fast-map #(rfm/gzip-revision-format-map
+                           (rfm/concept->revision-format-map context % cached-formats))
+                         concepts)]
+    (reduce #(assoc %1 (:concept-id %2) %2) {} rfms)))
+
 (defn refresh-cache
-  "TODO"
+  "Refreshes the collection metadata cache"
   [context]
   (info "Refreshing metadata cache")
   (let [concepts-tuples (fetch-collections-from-elastic context)
-        mdb-context (context->metadata-db-context context)
-        ;; TODO we probably want to get the concepts here in batches lazily
-        [t1 concepts] (u/time-execution
-                       (doall (metadata-db/get-concepts mdb-context concepts-tuples true)))
-        ;; TODO consider using reducers here for better performance. Measure it.
-        ;; Note this runs in a background process so it may not be advisable to tie up all cores for this.
-        [t2 revision-format-maps] (u/time-execution
-                                   (u/fast-map #(rfm/gzip-revision-format-map
-                                                 (rfm/concept->revision-format-map context % cached-formats))
-                                             concepts))
-        new-cache-value (reduce #(assoc %1 (:concept-id %2) %2) {} revision-format-maps)]
-    ;; TODO log the size of the cache at the end. Write a function to print the size of the cache.
-    (debug "Metadata cache refresh times: get-concepts time:" t1
-           "concept->revision-format-map time:" t2)
-    (reset! (:cache-atom (c/context->cache context cache-key)) new-cache-value)
-    (info "Metadata cache refresh complete")
+        new-cache-value (reduce #(merge %1 (concept-tuples->cache-map context %2))
+                                {}
+                                (partition-all 1000 concepts-tuples))
+        cache (c/context->cache context cache-key)]
+    (reset! (:cache-atom cache) new-cache-value)
+    (info "Metadata cache refresh complete. Cache Size:" (cache-size cache))
     nil))
 
 (defjob RefreshCollectionsMetadataCache
@@ -172,11 +176,11 @@
 (defn- update-cache
   "Updates the cache so that it will contain the updated revision format maps."
   [context revision-format-maps]
-  ;; TODO keep track of the size of the revision format maps
-  ;; TODO print out the size of the cache after update.
   (let [cache (:cache-atom (c/context->cache context cache-key))
         compressed-maps (u/fast-map rfm/gzip-revision-format-map revision-format-maps)]
-    (swap! cache #(reduce merge-revision-format-map % compressed-maps))))
+    (swap! cache #(reduce merge-revision-format-map % compressed-maps))
+    (info "Cache updated with revision format maps. Cache Size:"
+          (cache-size (c/context->cache context cache-key)))))
 
 (defn- transform-and-cache
   "TODO"
