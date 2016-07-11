@@ -60,7 +60,7 @@
      :Abstract "A very abstract collection"
      :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]
      :DataCenters [u/not-provided-data-center]
-     :ContactGroups [(umm-cmn/map->ContactGroupType {:Roles ["INVESTIGATOR"]
+     :ContactGroups [(umm-cmn/map->ContactGroupType {:Roles ["Investigator"]
                                                      :Type "GROUP"
                                                      :GroupName "ABC"})]}))
 
