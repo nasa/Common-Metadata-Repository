@@ -5,6 +5,7 @@
    ACLS are not applied by any fetching function"
   (require [cmr.common.util :as u]
            [cmr.common.cache :as c]
+           [cmr.common.services.errors :as errors]
            [cmr.common.log :as log :refer (debug info warn error)]
            [cmr.search.services.result-format-helper :as rfh]
            [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
@@ -307,6 +308,34 @@
                 "acl-filter-concepts time:" t4
                 "transform-concepts time:" t5)
          concepts)))))
+
+(defn get-formatted-concept
+  "Get a specific revision of a concept with the given concept-id in a given format.
+  Applies ACLs to the concept found."
+  [context concept-id revision-id target-format]
+  (info "Getting revision" revision-id "of concept" concept-id "in" target-format "format")
+  (let [mdb-context (context->metadata-db-context context)
+        [t1 concept] (u/time-execution
+                       (metadata-db/get-concept mdb-context concept-id revision-id))
+        ;; Throw a service error for deleted concepts
+        _ (when (:deleted concept)
+            (errors/throw-service-errors
+              :bad-request
+              [(format
+                 "The revision [%d] of concept [%s] represents a deleted concept and does not contain metadata."
+                 revision-id
+                 concept-id)]))
+        [t2 concept] (u/time-execution (acl-rhh/add-acl-enforcement-fields-to-concept concept))
+        [t3 [concept]] (u/time-execution (acl-service/filter-concepts context [concept]))
+        ;; format concept
+        [t4 [concept]] (u/time-execution
+                        (when concept
+                         (metadata-transformer/transform-concepts context [concept] target-format)))]
+    (debug "get-concept time:" t1
+           "add-acl-enforcement-fields time:" t2
+           "acl-filter-concepts time:" t3
+           "metadata-transformer/transform-concepts time:" t4)
+    concept))
 
 
 ;; TODO throw this away
