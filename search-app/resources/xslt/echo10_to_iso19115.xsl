@@ -234,10 +234,16 @@
         <xd:b>Version 1.32 (Dec. 9, 2015)</xd:b>
         <xd:p>Changed short name generation to be consistent with CMR</xd:p>
       </xd:p>
+      <xd:p>
+       <xd:b>Version 1.33 (July 11, 2016)</xd:b>
+       <xd:p>Changed test for Browse types of OnlineAccessURLs to be case insensitive.</xd:p>
+       <xd:p>Removed Restriction Flag and Restriction Comment mappings to avoid generating extraneous Resource Access Constraint entries.</xd:p>
+       <xd:p>Removed gmd:maintenanceNote hard-coded text.</xd:p>
+     </xd:p>
     </xd:desc>
   </xd:doc>
   <xsl:variable name="translationName" select="'ECHOToISO.xsl'"/>
-  <xsl:variable name="translationVersion" select="'1.32 (Dec. 9, 2015)'"/>
+  <xsl:variable name="translationVersion" select="'1.33 (July 11, 2016)'"/>
   <xsl:output method="xml" indent="yes"/>
   <xsl:strip-space elements="*"/>
   <xsl:param name="recordType"/>
@@ -2673,11 +2679,6 @@
               <xsl:with-param name="codeListValue" select="'irregular'"/>
             </xsl:call-template>
           </gmd:maintenanceAndUpdateFrequency>
-          <gmd:maintenanceNote>
-            <gco:CharacterString>
-              <xsl:value-of select="concat('Translated from ECHO using ',$translationName,' Version: ',$translationVersion)"/>
-            </gco:CharacterString>
-          </gmd:maintenanceNote>
         </gmd:MD_MaintenanceInformation>
       </gmd:metadataMaintenance>
       <gmi:acquisitionInformation>

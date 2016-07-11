@@ -857,4 +857,10 @@
      echo10-granule-browse-lowercase iso-granule-browse browse-path
 
      "Granule with Online Resource URL type BrOwSe"
-     echo10-granule-browse-mixed-case iso-granule-browse browse-path))))
+     echo10-granule-browse-mixed-case iso-granule-browse browse-path))
+
+  (testing "Hard coded maintenance note is no longer embedded."
+   (let [xsl (xslt/read-template (io/resource "xslt/echo10_to_iso19115.xsl"))
+         iso-parsed (x/parse-str (xslt/transform echo10-granule-browse xsl))]
+    (is (= nil (xml/element-at-path iso-parsed
+                [:metadataMaintenance :MD_MaintenanceInformation :maintenanceNote])))))))
