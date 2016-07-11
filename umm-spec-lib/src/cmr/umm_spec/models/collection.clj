@@ -48,9 +48,6 @@
    ;; The language used in the metadata record.
    MetadataLanguage
 
-   ;; Information about the personnel responsible for this collection and its metadata.
-   Personnel
-
    ;; Formerly called Internal Directory Name (IDN) Node (IDN_Node). This element has been used
    ;; historically by the GCMD internally to identify association, responsibility and/or ownership
    ;; of the dataset, service or supplemental information. Note: This field only occurs in the DIF.
@@ -77,8 +74,8 @@
    ;; date that the collection data first entered the data archive system.
    DataDates
 
-   ;; Information about the organization(s) responsible for this collection and its metadata.
-   Organizations
+   ;; Information about the personnel responsible for this collection and its metadata.
+   ContactPersons
 
    ;; Allows the author to constrain access to the collection. This includes any special
    ;; restrictions, legal prerequisites, limitations and/or warnings on obtaining collection data.
@@ -90,8 +87,8 @@
 
    SpatialExtent
 
-   ;; Historical data including how data was processed.
-   MetadataLineages
+   ;; Information about the personnel groups responsible for this collection and its metadata.
+   ContactGroups
 
    ;; The data’s distinctive attributes of the collection (i.e. attributes used to describe the
    ;; unique characteristics of the collection which extend beyond those defined).
@@ -180,6 +177,9 @@
    ;; Temporal Extent includes a specification of the Temporal Range Type of the collection, which
    ;; is one of Range Date Time, Single Date Time, or Periodic Date Time
    TemporalExtents
+
+   ;; Information about the data centers responsible for this collection and its metadata.
+   DataCenters
 
    ;; This element is used to identify other services, collections, visualizations, granules, and
    ;; other metadata types and resources that are associated with or dependent on the data described

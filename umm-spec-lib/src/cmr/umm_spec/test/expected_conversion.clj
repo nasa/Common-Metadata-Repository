@@ -92,10 +92,10 @@
                                        :NumberOfOrbits 2.0
                                        :StartCircularLatitude 50.0}}
      :TilingIdentificationSystems [{:TilingIdentificationSystemName "Tiling System Name"
-                                     :Coordinate1 {:MinimumValue 1.0
-                                                   :MaximumValue 10.0}
-                                     :Coordinate2 {:MinimumValue 1.0
-                                                   :MaximumValue 10.0}}]
+                                    :Coordinate1 {:MinimumValue 1.0
+                                                  :MaximumValue 10.0}
+                                    :Coordinate2 {:MinimumValue 1.0
+                                                  :MaximumValue 10.0}}]
      :AccessConstraints {:Description "Restriction Comment: Access constraints"
                          :Value "0"}
      :UseConstraints "Restriction Flag: Use constraints"
@@ -178,24 +178,7 @@
                              :ValueAccuracyExplanation "explaination for value accuracy"}
                             {:Name "aa-name"
                              :DataType "INT"}]
-     :Organizations [{:Role "ORIGINATOR"
-                      :Party {:ServiceHours "24/7"
-                              :OrganizationName {:ShortName "org 1"
-                                                 :LongName "longname"}
-                              :Addresses [{:StreetAddresses ["23 abc st"]
-                                           :City "city"}]}}
-                     {:Role "POINTOFCONTACT"
-                      :Party {:Person {:LastName "person 1"}
-                              :RelatedUrls [{:Description "Organization related url description"
-                                             :Relation ["Some type" "sub type"]
-                                             :URLs ["www.foo.com"]}]}}
-                     {:Role "DISTRIBUTOR"
-                      :Party {:OrganizationName {:ShortName "org 2"}
-                              :Contacts [{:Type "email" :Value "abc@foo.com"}]}}
-                     {:Role "PROCESSOR"
-                      :Party {:OrganizationName {:ShortName "org 3"}}}]
-     :Personnel [{:Role "POINTOFCONTACT"
-                  :Party {:Person {:LastName "person 2"}}}]}))
+     :DataCenters [su/not-provided-data-center]}))
 
 
 
@@ -208,55 +191,7 @@
                                :Type "UPDATE"}]
               :ServiceLanguage "English"
               :AccessConstraints {:Description "Access Constraint"}
-              :Responsibilities [{:Party {:Person {:FirstName "FIRSTNAME"
-                                                   :LastName "LASTNAME"}
-                                          :Contacts [{:Type "email"
-                                                      :Value "FIRSTNAME.LASTNAME@nasa.gov"}
-                                                     {:Type "phone"
-                                                      :Value "301-555-5555"}
-                                                     {:Type "phone"
-                                                      :Value "301-777-5555"}
-                                                     {:Type "fax"
-                                                      :Value "301-555-5678"}]
-                                          :Addresses [{:StreetAddresses ["NASA/GSFC Code 610.2"]
-                                                       :City "Greenbelt"
-                                                       :StateProvince "Maryland"
-                                                       :PostalCode "20771"
-                                                       :Country "USA"}]}
-                                  :Role "POINTOFCONTACT"}
-                                 {:Party {:Person {:FirstName "FIRSTNAME"
-                                                   :LastName "LASTNAME"}
-                                          :Contacts [{:Type "email"
-                                                      :Value "FIRSTNAME.LASTNAME@nasa.gov"}
-                                                     {:Type "phone",
-                                                      :Value "301-555-5555"}
-                                                     {:Type "phone"
-                                                      :Value "301-777-5555"}
-                                                     {:Type "fax",
-                                                      :Value "301-555-5678"}]
-                                          :Addresses [{:StreetAddresses ["NASA/GSFC Code 610.2"]
-                                                       :City "Greenbelt"
-                                                       :StateProvince "Maryland"
-                                                       :PostalCode "20771"
-                                                       :Country "USA"}]}
-                                  :Role "AUTHOR"}
-                                 {:Party {:OrganizationName {:ShortName "NASA/GSFC/SED/ESD/GCDC/GESDISC"
-                                                             :LongName "Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA"}
-                                          :Person {:FirstName "FIRSTNAME"
-                                                   :LastName "LASTNAME"}
-                                          :Contacts [{:Type "email"
-                                                      :Value "FIRSTNAME.LASTNAME@nasa.gov"}
-                                                     {:Type "phone"
-                                                      :Value "301-555-5555"}
-                                                     {:Type "fax"
-                                                      :Value "301-555-5555"}]
-                                          :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
-                                                       :City "Greenbelt"
-                                                       :StateProvince "MD"
-                                                       :PostalCode "20771"
-                                                       :Country "U.S.A."}]
-                                          :RelatedUrls [{:URLs ["http://disc.gsfc.nasa.gov/"]}]}
-                                  :Role "RESOURCEPROVIDER"}]
+              :DataCenters [su/not-provided-data-center]
               :ISOTopicCategories ["CLIMATOLOGY/METEOROLOGY/ATMOSPHERE"
                                    "ENVIRONMENT"
                                    "IMAGERY/BASE MAPS/EARTH COVER"]
@@ -497,7 +432,7 @@
   ;;Convert the Location Keyword to a leaf.
   (let [leaf-values (lk/location-keywords->spatial-keywords location-keywords)
         translated-values (lk/translate-spatial-keywords
-                           (lkt/setup-context-for-test lkt/sample-keyword-map) leaf-values)]
+                            (lkt/setup-context-for-test lkt/sample-keyword-map) leaf-values)]
     ;;If the keyword exists in the hierarchy
     (seq (map #(umm-c/map->LocationKeywordType %) translated-values))))
 
@@ -512,8 +447,9 @@
       (assoc :PublicationReferences nil)
       (assoc :AncillaryKeywords nil)
       (assoc :ISOTopicCategories nil)
-      (assoc :Personnel nil)
-      (assoc :Organizations [su/not-provided-organization])
+      (assoc :DataCenters [su/not-provided-data-center])
+      (assoc :ContactGroups nil)
+      (assoc :ContactPersons nil)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
       (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons]
@@ -619,8 +555,9 @@
       (update-in-each [:MetadataAssociations] assoc :Type nil :Description nil :Version nil)
       ;; DIF 9 does not support tiling identification system
       (assoc :TilingIdentificationSystems nil)
-      (assoc :Personnel nil) ;; Implement this as part of CMR-1841
-      (assoc :Organizations [su/not-provided-organization])
+      (assoc :DataCenters [su/not-provided-data-center])
+      (assoc :ContactGroups nil)
+      (assoc :ContactPersons nil)
       ;; DIF 9 does not support DataDates
       (assoc :DataDates [su/not-provided-data-date])
       ;; DIF 9 sets the UMM Version to 'Not provided' if it is not present in the DIF 9 XML
@@ -692,8 +629,9 @@
   (-> umm-coll
       (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
       (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
-      (assoc :Personnel nil) ;; Implement this as part of CMR-1841
-      (assoc :Organizations [su/not-provided-organization])
+      (assoc :DataCenters [su/not-provided-data-center])
+      (assoc :ContactGroups nil)
+      (assoc :ContactPersons nil)
       (update-in [:SpatialExtent] expected-dif10-spatial-extent)
       (update-in [:DataDates] fixup-dif10-data-dates)
       (update-in [:Distributions] su/remove-empty-records)
@@ -751,100 +689,6 @@
         (-> attribute
             default-serf-additional-attributes
             fix-serf-aa-update-date-format)))))
-
-(defn- expected-serf-contacts
-  [contacts]
-  (seq (filter #(#{"email" "phone" "fax"} (:Type %)) contacts)))
-
-(defn- make-sure-organization-exists
-  "Make sure a UMM-S Responsibilities element contains exactly one role that can correlate
-  to a SERF 'SERVICE PROVIDER CONTACT' role"
-  [resps]
-  (if (some #(= serf-organization-role (:Role %)) resps)
-    (concat (remove #(= serf-organization-role (:Role %)) resps)
-            (take 1 (filter #(= serf-organization-role (:Role %)) resps)))
-    (conj resps
-          (cmn/map->ResponsibilityType
-            {:Role serf-organization-role
-             :Party (cmn/map->PartyType
-                      {:OrganizationName
-                       (cmn/map->OrganizationNameType
-                         {:ShortName su/not-provided})
-                       :Person (cmn/map->PersonType
-                                 {:LastName su/not-provided})})}))))
-
-(defn- expected-person
-  [person]
-  (when-let [{:keys [FirstName MiddleName LastName]} person]
-    (-> person
-        (assoc :Uuid nil :FirstName nil :MiddleName nil)
-        (assoc :LastName (str/join
-                           " " (remove nil? [FirstName MiddleName LastName]))))))
-
-(defn- serf-expected-person
-  [person]
-  (-> person
-      (assoc
-        :Uuid nil
-        :FirstName (:FirstName person)
-        :MiddleName (:MiddleName person)
-        :LastName (or (:LastName person) su/not-provided))
-      cmn/map->PersonType))
-
-(defn- remove-organization-role-and-related-urls
-  "Removes an organization-role and related-urls if present from a UMM-S Responsibility"
-  [resp]
-  (-> resp
-      (update-in [:Party :Person] serf-expected-person)
-      (assoc-in [:Party :OrganizationName] nil)
-      (assoc-in [:Party :RelatedUrls] nil)))
-
-(defn- fix-organization-name-in-party
-  "Modifies generated UMM-S Responsibility to conform to SERF rules"
-  [resp]
-  (let [{:keys [Role Party]} resp]
-    ;; SERF only recognizes OrganizationName under a RESOURCEPROVIDER role.
-    (if (= serf-organization-role Role)
-      (-> resp
-          (update-in [:Party :Person] (fn [p] (or p (cmn/map->PersonType {:LastName su/not-provided}))))
-          (update-in [:Party :OrganizationName] (fn [o] (or o
-                                                            (cmn/map->OrganizationNameType
-                                                              {:ShortName su/not-provided
-                                                               :Uuid nil}))))
-          (assoc-in [:Party :OrganizationName :Uuid] nil)
-          (assoc-in [:Party :Person :Uuid] nil))
-      (let [resp (remove-organization-role-and-related-urls resp)]
-        (if (seq (:Person (:Party resp)))
-          resp
-          (assoc-in resp [:Party] (cmn/map->PersonType {:LastName su/not-provided})))))))
-
-(defn- serf-expected-addresses
-  "Modify UMM-S Addresses to conform to SERF rules"
-  [addresses]
-  (when-let [address (first addresses)]
-    (-> address
-        (assoc :StreetAddresses (seq (take 1 (:StreetAddresses address))))
-        list)))
-
-(defn- remove-party-elements-not-in-serf
-  "Removes elements in a party element that are not in SERF"
-  [party]
-  (-> party
-      (assoc :ContactInstructions nil :ServiceHours nil)
-      (update-in [:Addresses] serf-expected-addresses)))
-
-(defn- expected-related-urls-for-serf-party
-  [related-urls]
-  (when-let [related-url (first related-urls)]
-    [(cmn/map->RelatedUrlType {:URLs (take 1 (:URLs related-url))})]))
-
-(defn- expected-serf-responsibility
-  [resp]
-  (-> resp
-      (update-in [:Party :RelatedUrls] expected-related-urls-for-serf-party)
-      fix-organization-name-in-party
-      (update-in [:Party :Contacts] expected-serf-contacts)
-      (update-in [:Party] remove-party-elements-not-in-serf)))
 
 (defn- filter-unused-serf-datetypes
   [dates]
@@ -913,8 +757,6 @@
 (defmethod umm->expected-convert :serf
   [umm-service _]
   (-> umm-service
-      (update-in [:Responsibilities] make-sure-organization-exists)
-      (update-in-each [:Responsibilities] expected-serf-responsibility)
       (update-in [:AdditionalAttributes] convert-serf-additional-attributes)
       (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
       (update-in [:MetadataDates] expected-metadata-dates-for-serf)
@@ -927,7 +769,8 @@
       (update-in [:MetadataAssociations] fix-metadata-associations)
       (update-in-each [:PublicationReferences] fix-serf-doi)
       (update-in-each [:PublicationReferences] update-in [:RelatedUrl] fix-publication-reference-url)
-      (assoc :Platforms nil)))
+      (assoc :Platforms nil)
+      (dissoc :DataCenters)))
 
 ;; ISO 19115-2
 
@@ -1032,45 +875,6 @@
       (update-in-each [:VerticalSpatialDomains] fix-iso-vertical-spatial-domain-values)
       prune-empty-maps))
 
-(defn- expected-contacts
-  "Returns the contacts with type phone or email"
-  [contacts]
-  (seq (filter #(.contains #{"phone" "email"} (:Type %)) contacts)))
-
-(defn- update-with-expected-party
-  "Update the given organization or personnel with expected person in the party"
-  [party]
-  (-> party
-      (update-in [:Party :Person] expected-person)
-      (update-in [:Party :Contacts] expected-contacts)
-      (update-in [:Party :OrganizationName] (fn [org-name]
-                                              (when org-name
-                                                (assoc org-name :LongName nil :Uuid nil))))
-      (update-in [:Party :Addresses] (fn [x]
-                                       (when-let [address (first x)]
-                                         [address])))
-      (update-in [:Party :RelatedUrls] (fn [x]
-                                         (when-let [related-url (first x)]
-                                           (-> related-url
-                                               (assoc :Title nil
-                                                      :FileSize nil :Relation nil
-                                                      :MimeType nil)
-                                               (update-in [:URLs] (fn [urls] [(first urls)]))
-                                               vector))))))
-
-(defn- expected-responsibility
-  [responsibility]
-  (-> responsibility
-      (update-in-each [:Party :RelatedUrls] assoc :Relation nil)
-      update-with-expected-party))
-
-(defn- expected-responsibilities
-  [responsibilities allowed-roles]
-  (let [resp-by-role (group-by :Role responsibilities)
-        resp-by-role (update-in resp-by-role ["DISTRIBUTOR"] #(take 1 %))]
-    (seq (map expected-responsibility
-              (mapcat resp-by-role allowed-roles)))))
-
 (defn- group-metadata-assocations
   [mas]
   (let [{input-types true other-types false} (group-by (fn [ma] (= "INPUT" (:Type ma))) mas)]
@@ -1090,11 +894,11 @@
                                                EastBoundingCoordinate
                                                SouthBoundingCoordinate)]
     (cmn/map->BoundingRectangleType
-     {:CenterPoint CenterPoint
-      :WestBoundingCoordinate west
-      :NorthBoundingCoordinate north
-      :EastBoundingCoordinate east
-      :SouthBoundingCoordinate south})))
+      {:CenterPoint CenterPoint
+       :WestBoundingCoordinate west
+       :NorthBoundingCoordinate north
+       :EastBoundingCoordinate east
+       :SouthBoundingCoordinate south})))
 
 (def bounding-rectangles-path
   "The path in UMM to bounding rectangles."
@@ -1102,7 +906,7 @@
 
 (defn fix-bounding-rectangles
   "Bounding rectangles in UMM JSON during conversion will be passed to the MBR namespace which does
-   some normalization on them. The result is still the same area but the values will not be identical."
+  some normalization on them. The result is still the same area but the values will not be identical."
   [umm]
   (if-let [brs (seq (get-in umm bounding-rectangles-path))]
     (assoc-in umm bounding-rectangles-path (mapv normalize-bounding-rectangle brs))
@@ -1128,15 +932,14 @@
       (update-in [:PublicationReferences] iso-19115-2-publication-reference)
       (update-in [:RelatedUrls] expected-iso-19115-2-related-urls)
       (update-in-each [:AdditionalAttributes] assoc :UpdateDate nil)
-      (update-in [:Personnel]
-                 expected-responsibilities ["POINTOFCONTACT"])
-      (update-in [:Organizations]
-                 expected-responsibilities ["POINTOFCONTACT" "ORIGINATOR" "DISTRIBUTOR" "PROCESSOR"])
       (update-in [:MetadataAssociations] group-metadata-assocations)
       (update-in [:ISOTopicCategories] update-iso-topic-categories)
       (update-in [:LocationKeywords] fix-location-keyword-conversion)
       (assoc :SpatialKeywords nil)
-      (assoc :PaleoTemporalCoverages nil)))
+      (assoc :PaleoTemporalCoverages nil)
+      (assoc :DataCenters [su/not-provided-data-center])
+      (assoc :ContactGroups nil)
+      (assoc :ContactPersons nil)))
 
 ;; ISO-SMAP
 (defn- normalize-smap-instruments
@@ -1183,8 +986,9 @@
         (update-in-each [:TemporalExtents] assoc :TemporalRangeType nil)
         ;; Fields not supported by ISO-SMAP
         (assoc :MetadataAssociations nil) ;; Not supported for ISO SMAP
-        (assoc :Personnel nil) ;; Implement this as part of CMR-1841
-        (assoc :Organizations [su/not-provided-organization])
+        (assoc :DataCenters [su/not-provided-data-center])
+        (assoc :ContactGroups nil)
+        (assoc :ContactPersons nil)
         (assoc :UseConstraints nil)
         (assoc :AccessConstraints nil)
         (assoc :SpatialKeywords nil)
@@ -1213,7 +1017,7 @@
         (update-in [:ScienceKeywords]
                    (fn [sks]
                      (seq
-                      (filter #(.contains kws/science-keyword-categories (:Category %)) sks))))
+                       (filter #(.contains kws/science-keyword-categories (:Category %)) sks))))
         (update-in [:Platforms] normalize-smap-instruments)
         (assoc :LocationKeywords nil)
         (assoc :PaleoTemporalCoverages nil))))
@@ -1223,7 +1027,7 @@
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates :MetadataLanguage
-    :DirectoryNames :MetadataLineages :SpatialInformation})
+    :DirectoryNames :SpatialInformation})
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"

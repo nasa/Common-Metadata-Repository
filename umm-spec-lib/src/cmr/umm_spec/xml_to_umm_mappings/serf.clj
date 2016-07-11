@@ -61,55 +61,6 @@
    "TECHNICAL CONTACT" "POINTOFCONTACT"
    "SERF AUTHOR" "AUTHOR"})
 
-(defn- parse-contacts
-  "Constructs a UMM Contacts element from a SERF Personnel element"
-  [person]
-  (for [type ["email" "phone" "fax"]
-        value (values-at person (string/capitalize type))]
-    {:Type type :Value value}))
-
-(defn- parse-service-organization-urls
-  "Parse a Service Organization URL element into a RelatedURL map"
-  [service-provider role]
-  (when (= role "RESOURCEPROVIDER")
-    [{:URLs (values-at service-provider "Service_Organization_URL")}]))
-
-(defn- parse-party
-  "Constructs a UMM Party element from a SERF Personnel element and a SERF Service_Provider element"
-  [person organization service-provider role]
-  {:OrganizationName
-   (when (= role "RESOURCEPROVIDER") {:ShortName (value-of organization "Short_Name")
-                                      :LongName (value-of organization "Long_Name")})
-   :Person (let [first-name (value-of person "First_Name")
-                 middle-name (value-of person "Middle_Name")
-                 last-name (value-of person "Last_Name")]
-             (when (or first-name middle-name last-name)
-               {:FirstName first-name
-                :MiddleName middle-name
-                :LastName last-name}))
-   :Contacts (parse-contacts person)
-   :Addresses [{:StreetAddresses (values-at person "Contact_Address/Address")
-                :City (value-of person "Contact_Address/City")
-                :StateProvince (value-of person "Contact_Address/Province_or_State")
-                :PostalCode (value-of person "Contact_Address/Postal_Code")
-                :Country (value-of person "Contact_Address/Country")}]
-   :RelatedUrls (parse-service-organization-urls service-provider role)})
-
-(defn- parse-personnel
-  "Parse the personnel object of the SERF XML"
-  [doc]
-  (let [root-personnel (select doc "/SERF/Personnel")
-        service-provider-personnel (select doc "/SERF/Service_Provider/Personnel")
-        [organization] (select doc "/SERF/Service_Provider/Service_Organization")
-        [service-provider] (select doc "/SERF/Service_Provider")
-        personnel (concat root-personnel service-provider-personnel)]
-    (for [person personnel
-          role (values-at person "Role")]
-      (let [translated-role (get serf-roles->umm-roles role role)]
-        ;; CMR-2298 Fix Responsibilities to have multiple roles. Then adjust accordingly below.
-        {:Role translated-role
-         :Party (parse-party person organization service-provider translated-role)}))))
-
 (defn- parse-service-citations
   "Parse SERF Service Citations into UMM-S"
   [doc]
@@ -241,7 +192,6 @@
    :Abstract (value-of doc "/SERF/Summary/Abstract")
    :Purpose (value-of doc "/SERF/Summary/Purpose")
    :ServiceLanguage (value-of doc "/SERF/Service_Language")
-   :Responsibilities (parse-personnel doc)
    :RelatedUrls (parse-related-urls doc)
    :ServiceCitation (parse-service-citations doc)
    :Quality (value-of doc "/SERF/Quality")

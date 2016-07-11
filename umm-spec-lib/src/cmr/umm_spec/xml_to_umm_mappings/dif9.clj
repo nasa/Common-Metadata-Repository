@@ -179,9 +179,9 @@
                                 (value-of related-url "URL_Content_Type/Subtype")]})
      :MetadataAssociations (for [parent-dif (values-at doc "/DIF/Parent_DIF")]
                              {:EntryId parent-dif})
-     ;; Organizations is not implemented but is required in UMM-C
+     ;; DataCenters is not implemented but is required in UMM-C
      ;; Implement with CMR-3157
-     :Organizations [su/not-provided-organization]}))
+     :DataCenters [su/not-provided-data-center]}))
 
 (defn dif9-xml-to-umm-c
   "Returns UMM-C collection record from DIF9 collection XML document."

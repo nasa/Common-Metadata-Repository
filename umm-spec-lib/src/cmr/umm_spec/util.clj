@@ -1,8 +1,6 @@
 (ns cmr.umm-spec.util
   "This contains utilities for the UMM Spec code."
   (:require [clojure.string :as str]
-            [cheshire.core :as json]
-            [cheshire.factory :as factory]
             [cmr.common.util :as util]
             [cmr.umm-spec.models.common :as cmn]
             [clj-time.format :as f]
@@ -13,17 +11,16 @@
   "place holder string value for not provided string field"
   "Not provided")
 
-(def not-provided-organization
-  "Place holder to use when an organization is not provided."
-  (cmn/map->ResponsibilityType
-   {:Role "RESOURCEPROVIDER"
-    :Party (cmn/map->PartyType {:OrganizationName
-                                (cmn/map->OrganizationNameType
-                                 {:ShortName not-provided})})}))
+(def not-provided-data-center
+  "Place holder to use when a data center is not provided."
+  (cmn/map->DataCenterType
+    {:Roles ["ARCHIVER"]
+     :ShortName not-provided}))
+
 (def not-provided-related-url
   "Place holder to use when a related url is not provided."
   (cmn/map->RelatedUrlType
-   {:URLs ["Not%20provided"]}))
+    {:URLs ["Not%20provided"]}))
 
 (def not-provided-data-date
   "Place holder to use when a data date is not provided."
@@ -33,13 +30,6 @@
 (def default-granule-spatial-representation
   "Default value for GranuleSpatialRepresentation"
   "CARTESIAN")
-
-(defn load-json-resource
-  "Loads a json resource from the classpath. The JSON file may contain comments which are ignored"
-  [json-resource]
-  (binding [factory/*json-factory* (factory/make-json-factory
-                                     {:allow-comments true})]
-    (json/decode (slurp json-resource) true)))
 
 (defn convert-empty-record-to-nil
   "Converts empty record to nil."
