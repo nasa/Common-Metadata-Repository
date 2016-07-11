@@ -25,7 +25,7 @@
             [cmr.umm.spatial :as umm-s]
             [clojure.data.xml :as x]
             [cmr.system-int-test.utils.fast-xml :as fx]
-            [cmr.common.util :as util :refer [are2]]
+            [cmr.common.util :as util :refer [are2 are3]]
             [cmr.common.xml :as cx]
             [cmr.system-int-test.data2.kml :as dk]
             [cmr.system-int-test.data2.opendata :as od]
@@ -55,10 +55,61 @@
           response (search/find-metadata :collection format-key params options)]
       (d/assert-metadata-results-match format-key [c1-echo] response))))
 
+;; This tests that searching for and retrieving metadata after refreshing the search cache works.
+;; Other metadata tests all run before refreshing the cache so they cover that case.
+(deftest collection-metadata-cache-test
+  (let [c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"})
+                          {:format :echo10})
+        c2-echo (d/ingest "PROV2" (dc/collection {:entry-title "c2-echo"})
+                          {:format :echo10})
+        c3-dif (d/ingest "PROV1" (dc/collection-dif {:entry-title "c3-dif"
+                                                     :long-name "c3-dif"})
+                         {:format :dif})
+        c5-iso (d/ingest "PROV1" (dc/collection {:entry-title "c5-iso"})
+                         {:format :iso19115})
+        c7-smap (d/ingest "PROV1" (dc/collection-smap {:entry-title "c7-smap"})
+                          {:format :iso-smap})
+        c8-dif10 (d/ingest "PROV1" (dc/collection-dif10 {:entry-title "c8-dif10"
+                                                         :long-name "c8-dif10"})
+                           {:format :dif10})
+        c10-umm-json (d/ingest "PROV1"
+                               exp-conv/example-collection-record
+                               {:format :umm-json
+                                :accept-format :json})
+        all-colls [c1-echo c2-echo c3-dif c5-iso c7-smap c8-dif10 c10-umm-json]]
+    (index/wait-until-indexed)
+    (search/refresh-collection-metadata-cache)
+    (testing "Retrieving results in native format"
+      (are3 [concepts format-key]
+        (let [params {:concept-id (map :concept-id concepts)}
+              options {:url-extension "native"}
+              response (search/find-metadata :collection format-key params options)]
+          (d/assert-metadata-results-match format-key concepts response))
+        "ECHO10" [c1-echo c2-echo] :echo10
+        "DIF" [c3-dif] :dif
+        "DIF10" [c8-dif10] :dif10
+        "ISO MENDS" [c5-iso] :iso19115
+        "SMAP ISO" [c7-smap] :iso-smap
+        "UMM JSON" [c10-umm-json] :umm-json))
+
+    (testing "Retrieving all in specified format"
+      (are3 [format-key]
+        (d/assert-metadata-results-match
+         format-key all-colls
+         (search/find-metadata :collection format-key {}))
+        "ECHO10" :echo10
+        "DIF" :dif
+        "DIF10" :dif10
+        "ISO" :iso19115))))
+        ;;This will be implemented in a future sprint.
+        ; "UMM JSON" :umm-json))))
+
+
+    ;; TODO ingest updated XML and search to get latest again
+
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
-  (let [
-        c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
+  (let [c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
                                                   :version-id "V1"
                                                   ;; Whitespace here but not stripped out for expected
                                                   ;; results. It will be present in metadata.

@@ -124,7 +124,9 @@
 
 (defmethod item->metadata-result false
   [_ format-key item]
-  (let [{:keys [concept-id revision-id collection-concept-id]} item]
+  (let [{:keys [concept-id revision-id collection-concept-id]} item
+        ;; Remove test core added fields so they don't end up in the expected UMM JSON
+        item (dissoc item :concept-id :revision-id :collection-concept-id :provider-id :status :format-key)]
     (util/remove-nil-keys
       {:concept-id concept-id
        :revision-id revision-id
@@ -134,7 +136,9 @@
 
 (defmethod item->metadata-result true
   [_ format-key item]
-  (let [{:keys [concept-id revision-id collection-concept-id]} item]
+  (let [{:keys [concept-id revision-id collection-concept-id]} item
+        ;; Remove test core added fields so they don't end up in the expected UMM JSON
+        item (dissoc item :concept-id :revision-id :collection-concept-id :provider-id :status :format-key)]
     (if collection-concept-id
       (util/remove-nil-keys
         {:echo_granule_id concept-id
@@ -204,14 +208,12 @@
 (defn assert-metadata-results-match
   "Returns true if the metadata results match the expected items"
   [format-key items search-result]
-  ;; TODO temporarily wrapped in is just to be doubly sure that assertions works
-  (is (metadata-results-match? format-key items search-result {:assert? true :echo-compatible? false})))
+  (metadata-results-match? format-key items search-result {:assert? true :echo-compatible? false}))
 
 (defn assert-echo-compatible-metadata-results-match
   "Returns true if the metadata results match the expected items"
   [format-key items search-result]
-  ;; TODO temporarily wrapped in is just to be doubly sure that assertions works
-  (is (metadata-results-match? format-key items search-result {:assert? true :echo-compatible? true})))
+  (metadata-results-match? format-key items search-result {:assert? true :echo-compatible? true}))
 
 (defn echo-compatible-refs-match?
   "Returns true if the echo compatible references match the expected items"

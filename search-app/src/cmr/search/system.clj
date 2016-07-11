@@ -102,6 +102,7 @@
                           [(af/refresh-acl-cache-job "search-acl-cache-refresh")
                            idx/refresh-index-names-cache-job
                            hgrf/refresh-has-granules-map-job
+                           metadata-cache/refresh-collections-metadata-cache-job
                            coll-cache/refresh-collections-cache-for-granule-acls-job])}]
     (transmit-config/system-with-connections sys [:index-set :echo-rest :metadata-db :kms :cubby])))
 

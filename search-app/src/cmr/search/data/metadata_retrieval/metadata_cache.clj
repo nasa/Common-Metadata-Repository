@@ -5,6 +5,7 @@
    ACLS are not applied by any fetching function"
   (require [cmr.common.util :as u]
            [cmr.common.cache :as c]
+           [cmr.common.jobs :refer [defjob]]
            [cmr.common.services.errors :as errors]
            [cmr.common.log :as log :refer (debug info warn error)]
            [cmr.search.services.result-format-helper :as rfh]
@@ -105,7 +106,6 @@
   (let [cache-map @(:cache-atom cache)]
     (u/map-values rfm/prettify cache-map)))
 
-
 (comment
  (refresh-cache {:system (get-in user/system [:apps :search])})
  (prettify-cache (get-in user/system [:apps :search :caches cache-key])))
@@ -138,10 +138,10 @@
   [ctx system]
   (refresh-cache {:system system}))
 
-(def refresh-collections-metadata-cache
+(def refresh-collections-metadata-cache-job
   {:job-type RefreshCollectionsMetadataCache
-   ;; TODO set to once a day
-   :interval (* 15 60)})
+   ;; Run once a day at 3:20 am. Chosen so it will be after reindexing all collections.
+   :daily-at-hour-and-minute [3 20]})
 
 ;; TODO unit test this
 (defn- merge-revision-format-map

@@ -16,6 +16,7 @@
             [cmr.common.concepts :as concepts]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
+            [cmr.common-app.api.routes :as common-routes]
             [cmr.common.cache :as cache]
             [cmr.common.services.errors :as svc-errors]
             [cmr.common.util :as util]
@@ -23,6 +24,7 @@
             [cmr.common.xml :as cx]
             [cmr.search.services.query-service :as query-svc]
             [cmr.common.api.context :as context]
+            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.services.health-service :as hs]
@@ -370,6 +372,14 @@
 
       ;; Add routes for retrieving GCMD keywords
       keyword-api/keyword-api-routes
+
+      ;; add routes for managing jobs
+      (common-routes/job-api-routes
+        (routes
+          (POST "/refresh-collection-metadata-cache" {:keys [headers params request-context]}
+            (acl/verify-ingest-management-permission request-context :update)
+            (metadata-cache/refresh-cache request-context)
+            {:status 200})))
 
       ;; add routes for accessing caches
       cr/cache-api-routes

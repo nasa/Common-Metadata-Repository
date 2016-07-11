@@ -1,5 +1,5 @@
-(ns ^{:doc "provides search related utilities."}
-  cmr.system-int-test.utils.search-util
+(ns cmr.system-int-test.utils.search-util
+  "provides search related utilities."
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [clj-time.core :as t]
@@ -30,6 +30,16 @@
             [cmr.system-int-test.data2.aql :as aql]
             [cmr.system-int-test.data2.aql-additional-attribute]
             [cmr.system-int-test.data2.facets :as f]))
+
+(defn refresh-collection-metadata-cache
+  "Triggers a full refresh of the collection granule aggregate cache in the indexer."
+  []
+  (let [response (client/post
+                  (url/refresh-collection-metadata-cache-url)
+                  {:connection-manager (s/conn-mgr)
+                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                   :throw-exceptions false})]
+    (is (= 200 (:status response)) (:body response))))
 
 (defn csv-response->granule-urs
   "Parses the csv response and returns the first column which is the granule ur."
@@ -352,7 +362,10 @@
                               ;; So we simply set the format to the input format-key.
                               metadata-format (if (:echo-compatible params)
                                                 format-key
-                                                (mime-types/mime-type->format format))]
+                                                (mime-types/mime-type->format format))
+                              metadata (if (= mime-types/umm-json (mime-types/base-mime-type-of format))
+                                         metadata
+                                         (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" metadata))]
                           (util/remove-nil-keys
                             {:concept-id concept-id
                              :revision-id (when revision-id (Long. ^String revision-id))
@@ -362,7 +375,7 @@
                              :echo_granule_id echo_granule_id
                              :granule-count (when granule-count (Long. ^String granule-count))
                              :has-granules (when has-granules (= has-granules "true"))
-                             :metadata (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" metadata)})))
+                             :metadata metadata})))
                       (cx/elements-at-path parsed [:result])
                       metadatas)
            facets (f/parse-facets-xml (cx/element-at-path parsed [:facets]))]
