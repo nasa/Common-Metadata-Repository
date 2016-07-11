@@ -167,12 +167,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Member functions
 
-(defn get-acl
+(defn- get-acl
   "Returns the parsed metadata of the latest revision of the ACL concept by id."
   [context concept-id]
   (edn/read-string (:metadata (fetch-acl-concept context concept-id))))
 
-(defn echo-style-acl
+(defn- echo-style-acl
   "Returns acl with the older ECHO-style keywords for consumption in utility functions from other parts of the CMR."
   [acl]
   (-> acl
@@ -182,47 +182,55 @@
       (util/update-in-each [:aces] update-in [:user-type] keyword)
       (util/update-in-each [:aces] set/rename-keys {:group-id :group-guid})))
 
-;; catalog item identities are only ever relevant to read and order
-;; provider identities are releveant to update and delete
+(def all-permissions
+  "The set of all permissions checked and returned by the functions below."
+  #{:read :order :update :delete})
 
-(defn- acls-granting-permissions
+(def provider-level-permissions
+  "The set of permissions that are checked at the provider level."
+  #{:update :delete})
+
+(defn- grants-permission?
+  "Returns true if permission string is granted on concept to any sids by given acl."
+  [permission concept sids acl]
+  (and (acl/acl-matches-sids-and-permission? sids permission acl)
+       (if (contains? provider-level-permissions permission)
+         (when-let [acl-provider-id (-> acl :provider-object-identity :provider-id)]
+           (= acl-provider-id (:provider-id concept)))
+         ;; else check that the concept matches
+         (condp = (:concept-type concept)
+           :collection (acl-matchers/coll-applicable-acl? (:provider-id concept) concept acl)
+           ;; CMR-2900 to be implemented in a future pull request
+           :granule false))))
+
+(defn- concept-permissions-granted-by-acls
   "Returns the set of permission keywords (:read, :update, :order, or :delete) granted on concept
    to the seq of group guids by seq of acls."
   [concept sids acls]
-  (let [grants-permission? (fn [acl permission]
-                             (acl/acl-matches-sids-and-permission? sids permission acl))
-        matches-collection? (fn [acl]
-                              (acl-matchers/coll-applicable-acl? (:provider-id concept) concept acl))
-        ;; soon...
-        matches-granule? (constantly false)
-        matches-concept? (fn [acl]
-                           (condp = (:concept-type concept)
-                             :collection (matches-collection? acl)
-                             :granule (matches-granule? acl)))
-        matches-provider? (fn [acl]
-                            (when-let [acl-provider-id (-> acl :provider-object-identity :provider-id)]
-                              (= acl-provider-id (:provider-id concept))))]
-    (set
-      (concat
-        (for [permission [:update :delete]
-              :when (boolean
-                      (some #(and (grants-permission? % (name permission))
-                                  (matches-provider? %))
-                            acls))]
-          permission)
-        (for [permission [:read :order]
-              :when (boolean
-                      (some #(and (grants-permission? % (name permission))
-                                  (matches-concept? %))
-                            acls))]
-          permission)))))
+  ;; reduce the seq of acls into a set of granted permissions
+  (reduce (fn [granted-permissions acl]
+            (if (= all-permissions granted-permissions)
+              ;; terminate the reduce early, because all permissions have already been granted
+              (reduced granted-permissions)
+              ;; determine which permissions are granted by this specific acl
+              (reduce (fn [acl-permissions permission]
+                        (if (grants-permission? (name permission) concept sids acl)
+                          (conj acl-permissions permission)
+                          acl-permissions))
+                      ;; start with the set of permissions granted so far
+                      granted-permissions
+                      ;; and only reduce over permissions that have not yet been granted
+                      (set/difference all-permissions granted-permissions))))
+          #{}
+          acls))
 
-(defn get-sids
+(defn- get-sids
+  "Returns a seq of sids for the given username string or user type keyword
+   for use in checking permissions against acls."
   [context username-or-type]
   (cond
-    (= :guest username-or-type) [:guest]
-    (= :registered username-or-type) [:guest :registered]
-    (string? username-or-type) (concat [:guest :registered]
+    (contains? #{:guest :registered} username-or-type) [username-or-type]
+    (string? username-or-type) (concat [:registered]
                                        (->> (groups/search-for-groups context {:member username-or-type})
                                             :results
                                             :items
@@ -241,4 +249,4 @@
     (debug "sids =" (pr-str sids))
     (into {}
           (for [concept concepts]
-            [(:concept-id concept) (acls-granting-permissions concept sids acls)]))))
+            [(:concept-id concept) (concept-permissions-granted-by-acls concept sids acls)]))))

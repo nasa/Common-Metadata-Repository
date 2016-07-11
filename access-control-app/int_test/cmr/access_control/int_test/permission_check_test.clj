@@ -31,6 +31,17 @@
     {:not_a_valid_param "foo"} ["Parameter [not_a_valid_param] was not recognized."]
     {:user_id "foo" :concept_id ["XXXXX"]} ["Concept-id [XXXXX] is not valid."]))
 
+(defn get-permissions
+  "Helper to get permissions with the current context and the specified username string or user type keyword and concept ids."
+  [user & concept-ids]
+  (json/parse-string
+    (ac/get-permissions
+      (u/conn-context)
+      (merge {:concept_id concept-ids}
+             (if (keyword? user)
+               {:user_type (name user)}
+               {:user_id user})))))
+
 (def granule-metadata
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 				<Granule>
@@ -81,14 +92,6 @@
         ;; local helpers to make the body of the test cleaner
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
-        get-permissions (fn [user & concept-ids]
-                          (json/parse-string
-                            (ac/get-permissions
-                              (u/conn-context)
-                              (merge {:concept_id concept-ids}
-                                     (if (keyword? user)
-                                       {:user_type (name user)}
-                                       {:user_id user})))))
         get-collection-permissions #(get-permissions %1 (:concept-id coll1))
         get-granule-permissions #(get-permissions %1 (:concept-id gran1))]
 
@@ -101,20 +104,19 @@
              (get-collection-permissions "user1"))))
 
     (testing "collection level permissions"
-      (let [acl {:group_permissions [{:permissions [:read :order]
-                                      :user_type :guest}]
-                 :catalog_item_identity {:name "coll1 read and order"
-                                         :collection_applicable true
-                                         :provider_id "PROV1"}}
-            acl-concept-id (create-acl acl)]
+      (let [acl-concept-id (create-acl {:group_permissions [{:permissions [:read :order]
+                                                             :user_type :guest}]
+                                        :catalog_item_identity {:name "coll1 read and order"
+                                                                :collection_applicable true
+                                                                :provider_id "PROV1"}})]
         (u/wait-until-indexed)
 
         (testing "for guest users"
           (is (= {"C1200000001-PROV1" ["read" "order"]}
                  (get-collection-permissions :guest)))
-          (is (= {"C1200000001-PROV1" ["read" "order"]}
+          (is (= {"C1200000001-PROV1" []}
                  (get-collection-permissions :registered)))
-          (is (= {"C1200000001-PROV1" ["read" "order"]}
+          (is (= {"C1200000001-PROV1" []}
                  (get-collection-permissions "user1"))))
 
         (testing "for registered users"
@@ -215,6 +217,8 @@
 
         (testing "for guest users"
           (is (= {"C1200000001-PROV1" ["update" "delete"]}
+                 (get-permissions :guest)))
+          (is (= {"C1200000001-PROV1" []}
                  (get-permissions "user1"))))
 
         (testing "for registered users"
