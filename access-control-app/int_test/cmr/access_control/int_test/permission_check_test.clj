@@ -24,9 +24,10 @@
   (are [params errors]
     (= {:status 400 :body {:errors errors} :content-type :json}
        (ac/get-permissions (u/conn-context) params {:raw? true}))
-    {} ["Parameter [concept_id] is required." "Parameter [user_id] is required."]
-    {:user_id "" :concept_id []} ["Parameter [concept_id] is required." "Parameter [user_id] is required."]
+    {} ["Parameter [concept_id] is required." "One of parameters [user_type] or [user_id] are required."]
+    {:user_id "" :concept_id []} ["Parameter [concept_id] is required." "One of parameters [user_type] or [user_id] are required."]
     {:user_id "foobar"} ["Parameter [concept_id] is required."]
+    {:concept_id "C1200000-PROV1" :user_type "guest" :user_id "foo"} ["One of parameters [user_type] or [user_id] are required."]
     {:not_a_valid_param "foo"} ["Parameter [not_a_valid_param] was not recognized."]
     {:user_id "foo" :concept_id ["XXXXX"]} ["Concept-id [XXXXX] is not valid."]))
 
@@ -84,11 +85,18 @@
                           (json/parse-string
                             (ac/get-permissions
                               (u/conn-context)
-                              {:concept_id concept-ids :user_id user})))
+                              (merge {:concept_id concept-ids}
+                                     (if (keyword? user)
+                                       {:user_type (name user)}
+                                       {:user_id user})))))
         get-collection-permissions #(get-permissions %1 (:concept-id coll1))
         get-granule-permissions #(get-permissions %1 (:concept-id gran1))]
 
     (testing "no permissions granted"
+      (is (= {"C1200000001-PROV1" []}
+             (get-collection-permissions :guest)))
+      (is (= {"C1200000001-PROV1" []}
+             (get-collection-permissions :registered)))
       (is (= {"C1200000001-PROV1" []}
              (get-collection-permissions "user1"))))
 
@@ -103,6 +111,10 @@
 
         (testing "for guest users"
           (is (= {"C1200000001-PROV1" ["read" "order"]}
+                 (get-collection-permissions :guest)))
+          (is (= {"C1200000001-PROV1" ["read" "order"]}
+                 (get-collection-permissions :registered)))
+          (is (= {"C1200000001-PROV1" ["read" "order"]}
                  (get-collection-permissions "user1"))))
 
         (testing "for registered users"
@@ -112,6 +124,10 @@
                        :catalog_item_identity {:name "coll1 read and order"
                                                :collection_applicable true
                                                :provider_id "PROV1"}})
+          (is (= {"C1200000001-PROV1" []}
+                 (get-collection-permissions :guest)))
+          (is (= {"C1200000001-PROV1" ["read" "order"]}
+                 (get-collection-permissions :registered)))
           (is (= {"C1200000001-PROV1" ["read" "order"]}
                  (get-collection-permissions "user1"))))
 
@@ -123,6 +139,14 @@
                        :catalog_item_identity {:name "coll1 read and order"
                                                :collection_applicable true
                                                :provider_id "PROV1"}})
+
+          (testing "as a guest"
+            (is (= {"C1200000001-PROV1" []}
+                   (get-collection-permissions :guest))))
+
+          (testing "as a registered user"
+            (is (= {"C1200000001-PROV1" []}
+                   (get-collection-permissions :registered))))
 
           (testing "as a user in the group"
             (is (= {"C1200000001-PROV1" ["read" "order"]}

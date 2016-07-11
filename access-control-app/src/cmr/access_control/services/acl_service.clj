@@ -188,9 +188,8 @@
 (defn- acls-granting-permissions
   "Returns the set of permission keywords (:read, :update, :order, or :delete) granted on concept
    to the seq of group guids by seq of acls."
-  [concept group-ids acls]
-  (let [sids (concat [:guest :registered] group-ids)
-        grants-permission? (fn [acl permission]
+  [concept sids acls]
+  (let [grants-permission? (fn [acl permission]
                              (acl/acl-matches-sids-and-permission? sids permission acl))
         matches-collection? (fn [acl]
                               (acl-matchers/coll-applicable-acl? (:provider-id concept) concept acl))
@@ -218,18 +217,28 @@
                             acls))]
           permission)))))
 
+(defn get-sids
+  [context username-or-type]
+  (cond
+    (= :guest username-or-type) [:guest]
+    (= :registered username-or-type) [:guest :registered]
+    (string? username-or-type) (concat [:guest :registered]
+                                       (->> (groups/search-for-groups context {:member username-or-type})
+                                            :results
+                                            :items
+                                            (map :concept_id)))))
+
 (defn get-granted-permissions
   "Returns a map of concept ids to seqs of permissions granted on that concept for the given username."
-  [context username concept-ids]
-  (info "Getting granted permissions for" username "on concepts" concept-ids)
+  [context username-or-type concept-ids]
+  ;; (info "Getting granted permissions for" (pr-str username-or-type) "on concepts" concept-ids)
   (let [concepts (map (partial mdb/get-latest-concept context) concept-ids)
-        groups (-> (groups/search-for-groups context {:member username}) :results :items)
-        group-ids (set (map :concept_id groups))
+        sids (get-sids context username-or-type)
         ;; fetch and parse all ACLs lazily
         acls (for [batch (mdb1/find-in-batches context :acl 1000 {:latest true})
                    acl-concept batch]
                (echo-style-acl (edn/read-string (:metadata acl-concept))))]
-    (debug "groups found:" (pr-str groups))
+    (debug "sids =" (pr-str sids))
     (into {}
           (for [concept concepts]
-            [(:concept-id concept) (acls-granting-permissions concept group-ids acls)]))))
+            [(:concept-id concept) (acls-granting-permissions concept sids acls)]))))

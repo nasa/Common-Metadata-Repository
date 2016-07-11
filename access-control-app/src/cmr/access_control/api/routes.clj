@@ -108,15 +108,15 @@
 (defn- validate-get-permission-params
   "Throws service errors if any invalid params or values are found."
   [params]
-  (validate-params params :concept_id :user_id)
-  (let [{:keys [concept_id user_id]} params
+  (validate-params params :concept_id :user_id :user_type)
+  (let [{:keys [concept_id user_id user_type]} params
         errors []
         errors (if (empty? concept_id)
                  (conj errors "Parameter [concept_id] is required.")
                  errors)
         errors (reduce #(concat %1 (cc/concept-id-validation %2)) errors concept_id)
-        errors (if (str/blank? user_id)
-                 (conj errors "Parameter [user_id] is required.")
+        errors (if-not (= 1 (count (remove str/blank? [user_id user_type])))
+                 (conj errors "One of parameters [user_type] or [user_id] are required.")
                  errors)]
     (when (seq errors)
       (errors/throw-service-errors :bad-request errors))))
@@ -230,10 +230,14 @@
   [request-context params]
   (let [params (update-in params [:concept_id] u/seqify)]
     (validate-get-permission-params params)
-    (let [{:keys [user_id concept_id]} params]
+    (let [{:keys [user_id user_type concept_id]} params
+          username-or-type (if user_type
+                             (keyword user_type)
+                             user_id)]
+      (info "============!!!!!!!!!!" (pr-str username-or-type))
       {:status 200
        :body (json/generate-string
-               (acl-service/get-granted-permissions request-context user_id concept_id))})))
+               (acl-service/get-granted-permissions request-context username-or-type concept_id))})))
 
 ;;; Various Admin Route Functions
 
