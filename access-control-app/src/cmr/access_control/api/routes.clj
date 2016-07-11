@@ -234,7 +234,6 @@
           username-or-type (if user_type
                              (keyword user_type)
                              user_id)]
-      (info "============!!!!!!!!!!" (pr-str username-or-type))
       {:status 200
        :body (json/generate-string
                (acl-service/get-granted-permissions request-context username-or-type concept_id))})))

@@ -96,12 +96,12 @@
         get-granule-permissions #(get-permissions %1 (:concept-id gran1))]
 
     (testing "no permissions granted"
-      (is (= {"C1200000001-PROV1" []}
-             (get-collection-permissions :guest)))
-      (is (= {"C1200000001-PROV1" []}
-             (get-collection-permissions :registered)))
-      (is (= {"C1200000001-PROV1" []}
-             (get-collection-permissions "user1"))))
+      (are [user permissions]
+        (= {"C1200000001-PROV1" permissions}
+           (get-collection-permissions user))
+        :guest []
+        :registered []
+        "user1" []))
 
     (testing "collection level permissions"
       (let [acl-concept-id (create-acl {:group_permissions [{:permissions [:read :order]
@@ -112,12 +112,12 @@
         (u/wait-until-indexed)
 
         (testing "for guest users"
-          (is (= {"C1200000001-PROV1" ["read" "order"]}
-                 (get-collection-permissions :guest)))
-          (is (= {"C1200000001-PROV1" []}
-                 (get-collection-permissions :registered)))
-          (is (= {"C1200000001-PROV1" []}
-                 (get-collection-permissions "user1"))))
+          (are [user permissions]
+            (= {"C1200000001-PROV1" permissions}
+               (get-collection-permissions user))
+            :guest ["read" "order"]
+            :registered []
+            "user1" []))
 
         (testing "for registered users"
           (update-acl acl-concept-id
@@ -126,12 +126,12 @@
                        :catalog_item_identity {:name "coll1 read and order"
                                                :collection_applicable true
                                                :provider_id "PROV1"}})
-          (is (= {"C1200000001-PROV1" []}
-                 (get-collection-permissions :guest)))
-          (is (= {"C1200000001-PROV1" ["read" "order"]}
-                 (get-collection-permissions :registered)))
-          (is (= {"C1200000001-PROV1" ["read" "order"]}
-                 (get-collection-permissions "user1"))))
+          (are [user permissions]
+            (= {"C1200000001-PROV1" permissions}
+               (get-collection-permissions user))
+            :guest []
+            :registered ["read" "order"]
+            "user1" ["read" "order"]))
 
         (testing "acls granting access to specific groups"
 
@@ -142,37 +142,31 @@
                                                :collection_applicable true
                                                :provider_id "PROV1"}})
 
-          (testing "as a guest"
-            (is (= {"C1200000001-PROV1" []}
-                   (get-collection-permissions :guest))))
-
-          (testing "as a registered user"
-            (is (= {"C1200000001-PROV1" []}
-                   (get-collection-permissions :registered))))
-
-          (testing "as a user in the group"
-            (is (= {"C1200000001-PROV1" ["read" "order"]}
-                   (get-collection-permissions "user1"))))
-
-          (testing "as a user not in the group"
-            (is (= {"C1200000001-PROV1" []}
-                   (get-collection-permissions "user2"))))
-
-          (testing "as a user not in the group"
-            (is (= {"C1200000001-PROV1" []}
-                   (get-collection-permissions "notauser"))))
+          (are [user permissions]
+            (= {"C1200000001-PROV1" permissions}
+               (get-collection-permissions user))
+            :guest []
+            :registered []
+            "user1" ["read" "order"]
+            "user2" [])
 
           (testing "with a complex ACL distributing permissions across multiple groups"
             (let [user2-group1 (create-group {:name "group1withuser2" :members ["user2"]})
-                  user2-group2 (create-group {:name "group2withuser2" :members ["user2"]})]
+                  user2-group2 (create-group {:name "group2withuser1and2" :members ["user1" "user2"]})]
               (u/wait-until-indexed)
-              (create-acl {:group_permissions [{:permissions [:read] :group_id user2-group1}
+              (create-acl {:group_permissions [{:permissions [:read] :group_id user1-group}
+                                               {:permissions [:read] :group_id user2-group1}
                                                {:permissions [:order] :group_id user2-group2}]
                            :catalog_item_identity {:name "PROV1 complex ACL"
                                                    :collection_applicable true
                                                    :provider_id "PROV1"}})
-              (is (= {"C1200000001-PROV1" ["read" "order"]}
-                     (get-collection-permissions "user2"))))))))
+              (are [user permissions]
+                (= {"C1200000001-PROV1" permissions}
+                   (get-collection-permissions user))
+                :guest []
+                :registered []
+                "user1" ["read" "order"]
+                "user2" ["read" "order"]))))))
 
     (testing "granule level permissions"
       (testing "no permissions granted"
@@ -198,14 +192,15 @@
         ;; local helpers to make the body of the test cleaner
         create-acl #(ac/create-acl (u/conn-context) % {:token token})
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
-        get-permissions #(json/parse-string
-                          (ac/get-permissions
-                            (u/conn-context)
-                            {:concept_id (:concept-id coll1) :user_id %1}))]
+        get-coll1-permissions #(get-permissions % (:concept-id coll1))]
 
     (testing "no permissions granted"
-      (is (= {"C1200000001-PROV1" []}
-             (get-permissions "user1"))))
+      (are [user permissions]
+        (= {"C1200000001-PROV1" permissions}
+           (get-coll1-permissions user))
+        :guest []
+        :registered []
+        "user1" []))
 
     (testing "provider level permissions"
       (let [acl {:group_permissions [{:permissions [:update :delete]
@@ -215,35 +210,38 @@
             acl-concept-id (:concept_id (create-acl acl))]
         (u/wait-until-indexed)
 
-        (testing "for guest users"
-          (is (= {"C1200000001-PROV1" ["update" "delete"]}
-                 (get-permissions :guest)))
-          (is (= {"C1200000001-PROV1" []}
-                 (get-permissions "user1"))))
+        (are [user permissions]
+          (= {"C1200000001-PROV1" permissions}
+             (get-coll1-permissions user))
+          :guest ["update" "delete"]
+          :registered []
+          "user1" [])
 
-        (testing "for registered users"
-
+        (testing "granted to registered users"
           (update-acl acl-concept-id
                       {:group_permissions [{:permissions [:update :delete]
                                             :user_type :registered}]
                        :provider_identity {:provider_id "PROV1"
                                            :target "INGEST_MANAGEMENT_ACL"}})
 
-          (is (= {"C1200000001-PROV1" ["update" "delete"]}
-                 (get-permissions "user1"))))
+          (are [user permissions]
+            (= {"C1200000001-PROV1" permissions}
+               (get-coll1-permissions user))
+            :guest []
+            :registered ["update" "delete"]
+            "user1" ["update" "delete"]))
 
-        (testing "for specific groups"
-
+        (testing "granted to specific groups"
           (update-acl acl-concept-id
                       {:group_permissions [{:permissions [:update :delete]
                                             :group_id created-group-concept-id}]
                        :provider_identity {:provider_id "PROV1"
                                            :target "INGEST_MANAGEMENT_ACL"}})
 
-          (testing "for a user in the group"
-            (is (= {"C1200000001-PROV1" ["update" "delete"]}
-                   (get-permissions "user1"))))
-
-          (testing "for a user not in the group"
-            (is (= {"C1200000001-PROV1" []}
-                   (get-permissions "user2")))))))))
+          (are [user permissions]
+            (= {"C1200000001-PROV1" permissions}
+               (get-coll1-permissions user))
+            :guest []
+            :registered []
+            "user1" ["update" "delete"]
+            "user2" []))))))

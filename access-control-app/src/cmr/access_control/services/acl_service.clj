@@ -6,6 +6,7 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
             [cmr.transmit.echo.tokens :as tokens]
+            [cmr.transmit.metadata-db :as mdb1]
             [cmr.transmit.metadata-db2 :as mdb]
             [cmr.common-app.services.search :as cs]
             [cmr.common-app.services.search.params :as cp]
@@ -167,7 +168,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Member functions
 
-(defn- get-acl
+(defn get-acl
   "Returns the parsed metadata of the latest revision of the ACL concept by id."
   [context concept-id]
   (edn/read-string (:metadata (fetch-acl-concept context concept-id))))
@@ -191,16 +192,16 @@
   #{:update :delete})
 
 (defn- grants-permission?
-  "Returns true if permission string is granted on concept to any sids by given acl."
+  "Returns true if permission keyword is granted on concept to any sids by given acl."
   [permission concept sids acl]
-  (and (acl/acl-matches-sids-and-permission? sids permission acl)
+  (and (acl/acl-matches-sids-and-permission? sids (name permission) acl)
        (if (contains? provider-level-permissions permission)
          (when-let [acl-provider-id (-> acl :provider-object-identity :provider-id)]
            (= acl-provider-id (:provider-id concept)))
          ;; else check that the concept matches
          (condp = (:concept-type concept)
            :collection (acl-matchers/coll-applicable-acl? (:provider-id concept) concept acl)
-           ;; CMR-2900 to be implemented in a future pull request
+           ;; part of CMR-2900 to be implemented in a future pull request
            :granule false))))
 
 (defn- concept-permissions-granted-by-acls
@@ -214,7 +215,7 @@
               (reduced granted-permissions)
               ;; determine which permissions are granted by this specific acl
               (reduce (fn [acl-permissions permission]
-                        (if (grants-permission? (name permission) concept sids acl)
+                        (if (grants-permission? permission concept sids acl)
                           (conj acl-permissions permission)
                           acl-permissions))
                       ;; start with the set of permissions granted so far
@@ -239,14 +240,12 @@
 (defn get-granted-permissions
   "Returns a map of concept ids to seqs of permissions granted on that concept for the given username."
   [context username-or-type concept-ids]
-  ;; (info "Getting granted permissions for" (pr-str username-or-type) "on concepts" concept-ids)
-  (let [concepts (map (partial mdb/get-latest-concept context) concept-ids)
+  (let [concepts (mdb1/get-latest-concepts context concept-ids)
         sids (get-sids context username-or-type)
         ;; fetch and parse all ACLs lazily
         acls (for [batch (mdb1/find-in-batches context :acl 1000 {:latest true})
                    acl-concept batch]
                (echo-style-acl (edn/read-string (:metadata acl-concept))))]
-    (debug "sids =" (pr-str sids))
     (into {}
           (for [concept concepts]
             [(:concept-id concept) (concept-permissions-granted-by-acls concept sids acls)]))))
