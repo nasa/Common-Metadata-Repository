@@ -8,6 +8,7 @@
             [ring.middleware.keyword-params :as keyword-params]
             [ring.middleware.json :as ring-json]
             [cheshire.core :as json]
+            [cmr.common.concepts :as cc]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.cache :as cache]
             [cmr.common.api.errors :as api-errors]
@@ -24,7 +25,8 @@
             [cmr.access-control.services.acl-service :as acl-service]
             [cmr.access-control.services.group-service :as group-service]
             [cmr.common.util :as util]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [cmr.common.util :as u]))
 
 ;;; Utility Functions
 
@@ -106,12 +108,17 @@
 (defn- validate-get-permission-params
   "Throws service errors if any invalid params or values are found."
   [params]
-  (let [allowed-params [:user_id :concept_ids]]
-    (apply validate-params params allowed-params)
-    (when-let [errors (seq
-                        (for [k allowed-params
-                              :when (str/blank? (get params k))]
-                          (format "Parameter [%s] is required." (name k))))]
+  (validate-params params :concept_id :user_id)
+  (let [{:keys [concept_id user_id]} params
+        errors []
+        errors (if (empty? concept_id)
+                 (conj errors "Parameter [concept_id] is required.")
+                 errors)
+        errors (reduce #(concat %1 (cc/concept-id-validation %2)) errors concept_id)
+        errors (if (str/blank? user_id)
+                 (conj errors "Parameter [user_id] is required.")
+                 errors)]
+    (when (seq errors)
       (errors/throw-service-errors :bad-request errors))))
 
 ;;; Group Route Functions
@@ -221,11 +228,12 @@
 
 (defn get-permissions
   [request-context params]
-  (validate-get-permission-params params)
-  (let [{:keys [user_id concept_ids]} params]
-    {:status 200
-     :body (json/generate-string
-             (acl-service/get-granted-permissions request-context user_id (str/split concept_ids #",")))}))
+  (let [params (update-in params [:concept_id] u/seqify)]
+    (validate-get-permission-params params)
+    (let [{:keys [user_id concept_id]} params]
+      {:status 200
+       :body (json/generate-string
+               (acl-service/get-granted-permissions request-context user_id concept_id))})))
 
 ;;; Various Admin Route Functions
 

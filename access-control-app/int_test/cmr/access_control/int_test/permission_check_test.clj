@@ -9,7 +9,8 @@
            [cmr.access-control.int-test.fixtures :as fixtures]
            [cmr.access-control.test.util :as u]
            [cmr.umm-spec.core :as umm-spec]
-           [cmr.umm-spec.test.expected-conversion :refer [example-collection-record]]))
+           [cmr.umm-spec.test.expected-conversion :refer [example-collection-record]]
+           [clojure.string :as str]))
 
 (use-fixtures :each
               (fixtures/int-test-fixtures)
@@ -23,18 +24,42 @@
   (are [params errors]
     (= {:status 400 :body {:errors errors} :content-type :json}
        (ac/get-permissions (u/conn-context) params {:raw? true}))
-    {} ["Parameter [user_id] is required." "Parameter [concept_ids] is required."]
-    {:user_id "" :concept_ids ""} ["Parameter [user_id] is required." "Parameter [concept_ids] is required."]
-    {:user_id "foobar"} ["Parameter [concept_ids] is required."]
-    {:not_a_valid_param "foo"} ["Parameter [not_a_valid_param] was not recognized."]))
+    {} ["Parameter [concept_id] is required." "Parameter [user_id] is required."]
+    {:user_id "" :concept_id []} ["Parameter [concept_id] is required." "Parameter [user_id] is required."]
+    {:user_id "foobar"} ["Parameter [concept_id] is required."]
+    {:not_a_valid_param "foo"} ["Parameter [not_a_valid_param] was not recognized."]
+    {:user_id "foo" :concept_id ["XXXXX"]} ["Concept-id [XXXXX] is not valid."]))
+
+(def granule-metadata
+  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+				<Granule>
+				    <GranuleUR>GLDAS_NOAH10_3H.2.0:GLDAS_NOAH10_3H.A19480101.0300.020.nc4</GranuleUR>
+				    <InsertTime>2012-01-11T10:00:00.000Z</InsertTime>
+				    <LastUpdate>2012-01-19T18:00:00.000Z</LastUpdate>
+				    <Collection>
+				        <DataSetId>coll1 entry title</DataSetId>
+				    </Collection>
+              		<OnlineResources>
+                      <OnlineResource>
+                        <URL>http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5/GLDAS_NOAH10_3H.2.0:GLDAS_NOAH10_3H.A19480101.0300.020.nc4</URL>
+                        <Description>OpenDAP URL</Description>
+                        <Type>GET DATA : OPENDAP DATA (DODS)</Type>
+              		    <MimeType>application/x-netcdf</MimeType>
+                      </OnlineResource>
+            		</OnlineResources>
+				    <Orderable>true</Orderable>
+				</Granule>")
 
 (deftest concept-permission-check-test
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
+        ;; helper for easily creating a group, returns concept id
+        create-group #(:concept_id (u/create-group token (u/make-group %)))
         ;; then create a group that contains our user, so we can find collections that grant access to this user
-        group (u/make-group {:name "groupwithuser1" :members ["user1"]})
-        created-group-concept-id (:concept_id (u/create-group token group))
+        user1-group (create-group {:name "groupwithuser1" :members ["user1"]})
         ;; create some collections
-        coll1-umm (assoc example-collection-record :EntryTitle "coll1 entry title")
+        coll1-umm (-> example-collection-record
+                      (assoc :EntryTitle "coll1 entry title")
+                      (assoc-in [:SpatialExtent :GranuleSpatialRepresentation] "NO_SPATIAL"))
         coll1-metadata (umm-spec/generate-metadata (u/conn-context) coll1-umm :echo10)
         coll1 (ingest/ingest-concept (u/conn-context)
                                      {:format "application/echo10+xml"
@@ -44,30 +69,41 @@
                                       :native-id "coll1"
                                       :revision-id 1}
                                      {"Echo-Token" token})
+        gran1 (ingest/ingest-concept (u/conn-context)
+                                     {:format "application/echo10+xml"
+                                      :metadata granule-metadata
+                                      :concept-type :granule
+                                      :provider-id "PROV1"
+                                      :native-id "gran1"
+                                      :revision-id 1}
+                                     {"Echo-Token" token})
         ;; local helpers to make the body of the test cleaner
-        create-acl #(ac/create-acl (u/conn-context) % {:token token})
+        create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
-        get-permissions #(json/parse-string
-                          (ac/get-permissions
-                            (u/conn-context)
-                            {:concept_ids (:concept-id coll1) :user_id %1}))]
+        get-permissions (fn [user & concept-ids]
+                          (json/parse-string
+                            (ac/get-permissions
+                              (u/conn-context)
+                              {:concept_id concept-ids :user_id user})))
+        get-collection-permissions #(get-permissions %1 (:concept-id coll1))
+        get-granule-permissions #(get-permissions %1 (:concept-id gran1))]
 
     (testing "no permissions granted"
       (is (= {"C1200000001-PROV1" []}
-             (get-permissions "user1"))))
+             (get-collection-permissions "user1"))))
 
-    (testing "concept level permissions"
+    (testing "collection level permissions"
       (let [acl {:group_permissions [{:permissions [:read :order]
                                       :user_type :guest}]
                  :catalog_item_identity {:name "coll1 read and order"
                                          :collection_applicable true
                                          :provider_id "PROV1"}}
-            acl-concept-id (:concept_id (create-acl acl))]
+            acl-concept-id (create-acl acl)]
         (u/wait-until-indexed)
 
         (testing "for guest users"
           (is (= {"C1200000001-PROV1" ["read" "order"]}
-                 (get-permissions "user1"))))
+                 (get-collection-permissions "user1"))))
 
         (testing "for registered users"
           (update-acl acl-concept-id
@@ -77,24 +113,45 @@
                                                :collection_applicable true
                                                :provider_id "PROV1"}})
           (is (= {"C1200000001-PROV1" ["read" "order"]}
-                 (get-permissions "user1"))))
+                 (get-collection-permissions "user1"))))
 
         (testing "acls granting access to specific groups"
 
           (update-acl acl-concept-id
                       {:group_permissions [{:permissions [:read :order]
-                                            :group_id created-group-concept-id}]
+                                            :group_id user1-group}]
                        :catalog_item_identity {:name "coll1 read and order"
                                                :collection_applicable true
                                                :provider_id "PROV1"}})
 
           (testing "as a user in the group"
             (is (= {"C1200000001-PROV1" ["read" "order"]}
-                   (get-permissions "user1"))))
+                   (get-collection-permissions "user1"))))
 
           (testing "as a user not in the group"
             (is (= {"C1200000001-PROV1" []}
-                   (get-permissions "notauser")))))))))
+                   (get-collection-permissions "user2"))))
+
+          (testing "as a user not in the group"
+            (is (= {"C1200000001-PROV1" []}
+                   (get-collection-permissions "notauser"))))
+
+          (testing "with a complex ACL distributing permissions across multiple groups"
+            (let [user2-group1 (create-group {:name "group1withuser2" :members ["user2"]})
+                  user2-group2 (create-group {:name "group2withuser2" :members ["user2"]})]
+              (u/wait-until-indexed)
+              (create-acl {:group_permissions [{:permissions [:read] :group_id user2-group1}
+                                               {:permissions [:order] :group_id user2-group2}]
+                           :catalog_item_identity {:name "PROV1 complex ACL"
+                                                   :collection_applicable true
+                                                   :provider_id "PROV1"}})
+              (is (= {"C1200000001-PROV1" ["read" "order"]}
+                     (get-collection-permissions "user2"))))))))
+
+    (testing "granule level permissions"
+      (testing "no permissions granted"
+        (is (= {"G1200000002-PROV1" []}
+               (get-granule-permissions "user1")))))))
 
 (deftest provider-permission-check-test
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
@@ -118,7 +175,7 @@
         get-permissions #(json/parse-string
                           (ac/get-permissions
                             (u/conn-context)
-                            {:concept_ids (:concept-id coll1) :user_id %1}))]
+                            {:concept_id (:concept-id coll1) :user_id %1}))]
 
     (testing "no permissions granted"
       (is (= {"C1200000001-PROV1" []}

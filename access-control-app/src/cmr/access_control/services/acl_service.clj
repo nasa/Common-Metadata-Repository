@@ -1,7 +1,7 @@
 (ns cmr.access-control.services.acl-service
   (:require [clojure.string :as str]
             [cmr.access-control.services.acl-service-messages :as msg]
-            [cmr.common.log :refer [info]]
+            [cmr.common.log :refer [info debug]]
             [cmr.common.util :as u]
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
@@ -219,7 +219,9 @@
           permission)))))
 
 (defn get-granted-permissions
+  "Returns a map of concept ids to seqs of permissions granted on that concept for the given username."
   [context username concept-ids]
+  (info "Getting granted permissions for" username "on concepts" concept-ids)
   (let [concepts (map (partial mdb/get-latest-concept context) concept-ids)
         groups (-> (groups/search-for-groups context {:member username}) :results :items)
         group-ids (set (map :concept_id groups))
@@ -227,6 +229,7 @@
         acls (for [batch (mdb1/find-in-batches context :acl 1000 {:latest true})
                    acl-concept batch]
                (echo-style-acl (edn/read-string (:metadata acl-concept))))]
+    (debug "groups found:" (pr-str groups))
     (into {}
           (for [concept concepts]
             [(:concept-id concept) (acls-granting-permissions concept group-ids acls)]))))
