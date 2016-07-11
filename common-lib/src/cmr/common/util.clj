@@ -218,9 +218,10 @@
   [m]
   (remove-map-keys #(nil? %) m))
 
-(defn map-keys [f m]
+(defn map-keys
   "Maps f over the keys in map m and updates all keys with the result of f.
   This is a recommended function from the Camel Snake Kebab library."
+  [f m]
   (when m
     (letfn [(handle-value [v]
                           (cond

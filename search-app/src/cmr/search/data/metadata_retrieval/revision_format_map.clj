@@ -6,8 +6,10 @@
            [cmr.search.services.result-format-helper :as rfh]
            [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]))
 
+
 (def non-metadata-fields
   #{:concept-id :revision-id :native-format :compressed?})
+
 
 (def key-sorted-revision-format-map
   (u/key-sorted-map [:concept-id :revision-id :native-format :echo10 :dif :dif10 :iso19115]))
@@ -48,8 +50,14 @@
                    (-> xml
                        (str/replace "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" "")
                        (subs 0 30)
-                       (str "...")))]
-    (into key-sorted-revision-format-map (map-metadata-values trim-xml uncompressed-map))))
+                       (str "...")))
+        trimmed (map-metadata-values trim-xml uncompressed-map)
+        keys-as-keywords (into {} (mapv (fn [[k v]]
+                                          (if (map? k)
+                                            [(keyword (str (name (:format k)) "_" (name (:version k)))) v]
+                                            [k v]))
+                                        trimmed))]
+    (into key-sorted-revision-format-map keys-as-keywords)))
 
 
 (defn get-metadata-in-format
@@ -64,6 +72,7 @@
       (u/gzip-bytes->string metadata)
       metadata)))
 
+
 ;; TODO make this work with a revision format map that's zipped or not zipped.
 ;; Add compressed flag in the two gzip functions below.
 (defn revision-format-map->concept
@@ -76,7 +85,6 @@
     {:concept-id concept-id
      :revision-id revision-id
      :concept-type :collection
-     ;; TODO consider moving this whole function and just calling this in the place
      :metadata (get-metadata-in-format target-format revision-format-map)
      :format (if (= :native target-format)
                (rfh/search-result-format->mime-type (:native-format revision-format-map))
@@ -98,3 +106,11 @@
                      context concept target-formats)]
     (merge base-map formats-map)))
 
+(defn add-additional-format
+  "Adds an additional stored format to the revision format map."
+  [context target-format revision-format-map]
+  (let [concept (revision-format-map->concept :native revision-format-map)
+        transformed (metadata-transformer/transform context concept target-format)]
+    (if (:compressed? revision-format-map)
+     (assoc revision-format-map target-format (u/string->gzip-bytes transformed))
+     (assoc revision-format-map target-format transformed))))

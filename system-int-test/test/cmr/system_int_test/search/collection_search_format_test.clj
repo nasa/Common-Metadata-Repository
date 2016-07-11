@@ -50,8 +50,8 @@
     (index/wait-until-indexed)
     (let [params {:concept-id (:concept-id c1-echo)}
           options {:accept nil
-                   :url-extension "native"}
-          format-key :echo10
+                   :url-extension "dif"}
+          format-key :dif
           response (search/find-metadata :collection format-key params options)]
       (d/assert-metadata-results-match format-key [c1-echo] response))))
 

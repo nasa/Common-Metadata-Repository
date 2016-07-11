@@ -107,6 +107,7 @@
 
 
 (comment
+ (refresh-cache {:system (get-in user/system [:apps :search])})
  (prettify-cache (get-in user/system [:apps :search :caches cache-key])))
 
 ;; TODO add a job for this
@@ -116,20 +117,31 @@
   (info "Refreshing metadata cache")
   (let [concepts-tuples (fetch-collections-from-elastic context)
         mdb-context (context->metadata-db-context context)
+        ;; TODO we probably want to get the concepts here in batches lazily
         [t1 concepts] (u/time-execution
                        (doall (metadata-db/get-concepts mdb-context concepts-tuples true)))
         ;; TODO consider using reducers here for better performance. Measure it.
         ;; Note this runs in a background process so it may not be advisable to tie up all cores for this.
         [t2 revision-format-maps] (u/time-execution
                                    (u/fast-map #(rfm/gzip-revision-format-map
-                                                 (rfm/concept->revision-format-map context %))
+                                                 (rfm/concept->revision-format-map context % cached-formats))
                                              concepts))
         new-cache-value (reduce #(assoc %1 (:concept-id %2) %2) {} revision-format-maps)]
+    ;; TODO log the size of the cache at the end. Write a function to print the size of the cache.
     (debug "Metadata cache refresh times: get-concepts time:" t1
            "concept->revision-format-map time:" t2)
     (reset! (:cache-atom (c/context->cache context cache-key)) new-cache-value)
     (info "Metadata cache refresh complete")
     nil))
+
+(defjob RefreshCollectionsMetadataCache
+  [ctx system]
+  (refresh-cache {:system system}))
+
+(def refresh-collections-metadata-cache
+  {:job-type RefreshCollectionsMetadataCache
+   ;; TODO set to once a day
+   :interval (* 15 60)})
 
 ;; TODO unit test this
 (defn- merge-revision-format-map
@@ -160,10 +172,28 @@
 (defn- update-cache
   "Updates the cache so that it will contain the updated revision format maps."
   [context revision-format-maps]
-  (let [cache (:cache-atom (c/context->cache context cache-key))]
-    (swap! cache #(reduce merge-revision-format-map % revision-format-maps))))
+  ;; TODO keep track of the size of the revision format maps
+  ;; TODO print out the size of the cache after update.
+  (let [cache (:cache-atom (c/context->cache context cache-key))
+        compressed-maps (u/fast-map rfm/gzip-revision-format-map revision-format-maps)]
+    (swap! cache #(reduce merge-revision-format-map % compressed-maps))))
 
-(defn fetch-and-cache-metadata
+(defn- transform-and-cache
+  "TODO"
+  [context revision-format-maps target-format]
+  (let [[t1 updated-revision-format-maps] (u/time-execution
+                                           (u/fast-map #(rfm/add-additional-format context target-format %)
+                                                       revision-format-maps))
+        [t2 concepts] (u/time-execution
+                       (u/fast-map #(rfm/revision-format-map->concept target-format %)
+                                   updated-revision-format-maps))
+        ;; Cache the revision format maps.
+        [t3 _] (u/time-execution (update-cache context revision-format-maps))]
+    (debug "transform-and-cache of " (count revision-format-maps) " concepts:"
+           "add-additional-format:" t1 "revision-format-map->concept:" t2 "update-cache:" t3)
+    concepts))
+
+(defn- fetch-and-cache-metadata
   "TODO
    use this if we want to provide easy caching"
   [context concept-tuples target-format]
@@ -179,13 +209,20 @@
                                    (u/fast-map #(rfm/concept->revision-format-map context % target-format-set)
                                                concepts))
 
+        ;; Convert revision format maps to concepts with the specific format. We must return these
+        ;; concepts because they contain the correct metadata.
+        [t3 concepts] (u/time-execution
+                       (u/fast-map #(rfm/revision-format-map->concept target-format %)
+                                   revision-format-maps))
+
         ;; Cache the revision format maps. Note time captured includes compression
-        [t3 _] (u/time-execution
-                (update-cache context (u/fast-map rfm/gzip-revision-format-map revision-format-maps)))]
+        [t4 _] (u/time-execution (update-cache context revision-format-maps))]
 
     (debug "fetch-and-cache of " (count concept-tuples) " concepts:"
-           "get-concepts:" t1 "concept->revision-format-map:" t2 "update-cache:" t3)
-    (mapv #(rfm/revision-format-map->concept target-format %) revision-format-maps)))
+           "get-concepts:" t1 "concept->revision-format-map:" t2
+           "revision-format-map->concept:" t3 "update-cache:" t4)
+    concepts))
+
 
 (defn- fetch-metadata
   "TODO"
@@ -202,8 +239,8 @@
 
 ;; TODO unit test this
 (defn- get-cached-metadata-in-format
-  "Returns a sequence of concept revision id tuples mapped to either the cached metadata in the
-   requested format or a keyword representing why the cached metadata wasn't found."
+  "Returns a a map of concepts found in the cache or other sets of items not found and mapped
+   from a key that indicates why they weren't found in the cache."
   [context concept-tuples target-format]
   (let [cache (deref (:cache-atom (c/context->cache context cache-key)))]
     (reduce (fn [grouped-map tuple]
@@ -215,9 +252,9 @@
                     ;; revision matches
                     (= revision-id (:revision-id revision-format-map))
                     (if-let [metadata (get revision-format-map target-format)]
-                      (update grouped-map :metadata conj
+                      (update grouped-map :concepts conj
                               (rfm/revision-format-map->concept target-format revision-format-map))
-                      (update grouped-map :target-format-not-cached conj tuple))
+                      (update grouped-map :target-format-not-cached conj revision-format-map))
 
                     ;; Asking for a newer revision
                     (> revision-id (:revision-id revision-format-map))
@@ -229,8 +266,11 @@
 
                   ;; Concept not cached
                   (update grouped-map :concept-not-cached conj tuple))))
-            {:metadata []
+            {;; contains transformed concepts
+             :concepts []
+             ;; Contains revision format maps waiting to be transformed
              :target-format-not-cached []
+             ;; These will all contains concept tuples
              :concept-not-cached []
              :older-revision-requested []
              :newer-revision-requested []}
@@ -256,10 +296,10 @@
           ;; TODO might be able to get rid of these if the tuples go at the end position.
           fetch #(fetch-metadata context % target-format)
           fetch-and-cache #(fetch-and-cache-metadata context % target-format)
-          concepts (concat (:metadata results)
+          concepts (concat (:concepts results)
+                           (transform-and-cache context (:target-format-not-cached results) target-format)
                            (fetch-and-cache (concat (:concept-not-cached results)
-                                                    (:newer-revision-requested results)
-                                                    (:target-format-not-cached results)))
+                                                    (:newer-revision-requested results)))
                            (fetch (:older-revision-requested results)))]
       (order-concepts concept-tuples concepts))
 
