@@ -21,7 +21,7 @@
 ;; Code for loading schema files.
 
 (defn load-json-resource
-  "Loads a json resource from the classpath. The JSON file may contain comments which are ignored"
+  "Loads a json resource from the resource url. The JSON file may contain comments which are ignored"
   [json-resource]
   (binding [factory/*json-factory* (factory/make-json-factory
                                      {:allow-comments true})]

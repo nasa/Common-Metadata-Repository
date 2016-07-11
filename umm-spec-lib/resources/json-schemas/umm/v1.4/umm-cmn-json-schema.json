@@ -1332,7 +1332,7 @@
     "DataContactRoleEnum": {
       "description": "Defines the possible values of a data contact role.",
       "type": "string",
-      "enum": ["DATA CENTER CONTACT", "TECHNICAL CONTACT", "SCIENCE CONTACT", "INVESTIGATOR", "METADATA AUTHOR", "USER SERVICES", "SCIENCE SOFTWARE DEVELOPMENT"]
+      "enum": ["Data Center Contact", "Technical Contact", "Science Contact", "Investigator", "Metadata Author", "User Services", "Science Software Development"]
     },
     "DataContactTypeEnum": {
       "description": "Defines the possible types of a data contact.",
