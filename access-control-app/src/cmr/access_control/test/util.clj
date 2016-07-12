@@ -20,7 +20,7 @@
   (when-not @conn-context-atom
     (reset! conn-context-atom {:system (config/system-with-connections
                                          {}
-                                         [:access-control :echo-rest :metadata-db :urs])}))
+                                         [:ingest :access-control :echo-rest :metadata-db :urs])}))
   @conn-context-atom)
 
 (defn refresh-elastic-index

@@ -25,6 +25,8 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * /acls/:acl-id
     * [GET - Retrieve an ACL](#retrieve-acl)
     * [PUT - Update an ACL](#update-acl)
+  * /permissions
+    * [GET - Check User Permissions](#get-permissions)
   * /health
     * [GET - Get the health of the access control application.](#application-health)
 
@@ -489,6 +491,31 @@ Content-Type: application/json;charset=ISO-8859-1
 
 {"revision_id":2,"concept_id":"ACL1200000000-CMR"}
 ```
+
+### <a name="get-permissions"></a> Checking User Permissions
+
+You can check the permissions granted to a specific user or user type on specific concepts by making a GET request tion `%CMR-ENDPOINT%/permissions`.
+
+The response is a JSON object mapping concept ids to arrays of permissions granted to the specified user for the respective concept.
+
+Example request:
+
+```
+curl -g -i -H "Echo-Token: XXXX" "%CMR-ENDPOINT%/permissions?user_type=guest&concept_id[]=C1200000000-PROV1&concept_id[]=C1200000001-PROV1"
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+
+{"C1200000000-PROV1": ["read"], "C1200000001-PROV1": []}
+```
+
+#### Parameters
+
+`concept_id`, and one of either `user_id` or `user_type` are required.
+
+* `concept_id` - Required. Must be a valid concept id, or else use `concept_id[]=...&concept_id[]=...` to specify multiple concepts.
+* `user_id` - The user whose permissions will be computed. Required when `user_type` is not specified.
+* `user_type` - Either "guest" or "registered". Required when `user_id` is not specified.
 
 ### <a name="application-health"></a> Application Health
 
