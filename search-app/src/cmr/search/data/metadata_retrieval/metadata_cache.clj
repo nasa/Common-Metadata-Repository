@@ -1,8 +1,13 @@
 (ns cmr.search.data.metadata-retrieval.metadata-cache
-  "TODO
+  "Defines a cache for catalog item metadata. It currently only stores collections.
 
-   TODO include this in individual doc functions
-   ACLS are not applied by any fetching function"
+  The metadata cache contains data like the following:
+
+  concept-id -> revision-format-map
+                 * concept-id
+                 * revision-id
+                 * native-format - A key or map of format and version identifying the native format
+                 * various format keys each mapped to a gzip bytes of compressed metadata."
   (require [cmr.common.util :as u]
            [cmr.common.cache :as c]
            [cmr.common.jobs :refer [defjob]]
@@ -18,7 +23,6 @@
            [cmr.metadata-db.services.concept-service :as metadata-db]
            [cmr.umm-spec.core :as umm-spec]))
 
-;; TODO add ability to get sizes in bytes of this cache
 ;; TODO test by downloading all the metadata as native from ops and then see how much memory caching
 ;; all of it actually takes
 
@@ -31,6 +35,9 @@
    could make this a config (though need to make it a set)
    cached umm-json is the latest version"
   #{:echo10
+    :iso19115
+    :dif
+    :dif10
     ;; TODO should we add other formats here?
     ;; Note that when upgrading umm version we should also cache the previous version of UMM.
     {:format :umm-json
@@ -183,7 +190,8 @@
           (cache-size (c/context->cache context cache-key)))))
 
 (defn- transform-and-cache
-  "TODO"
+  "Takes existing revision format maps missing the target format, generates the format XML, and returns
+   concepts with the requested format. Updates the cache with the generated XML."
   [context revision-format-maps target-format]
   (let [[t1 updated-revision-format-maps] (u/time-execution
                                            (u/fast-map #(rfm/add-additional-format context target-format %)
@@ -198,8 +206,8 @@
     concepts))
 
 (defn- fetch-and-cache-metadata
-  "TODO
-   use this if we want to provide easy caching"
+  "Fetches metadata from Metadata DB for the given concept tuples and converts them into the format
+   requested. The original native format and the requested format are both stored in the cache."
   [context concept-tuples target-format]
   (let [mdb-context (context->metadata-db-context context)
 
@@ -229,7 +237,8 @@
 
 
 (defn- fetch-metadata
-  "TODO"
+  "Fetches metadata from Metadata DB for the given concept tuples and converts them into the format
+   requested."
   [context concept-tuples target-format]
   (let [mdb-context (context->metadata-db-context context)
         ;; Get Concepts from Metadata db
@@ -310,6 +319,8 @@
     ;; Granule query. We don't cache those so just fetch from metadata db
     (fetch-metadata context concept-tuples target-format)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Do the things below here make sense in this namespace?
 
 ;; TODO note that this isn't doing any caching and is really just a glorified faster search implementation.
 ;; It might make more sense for it to be implemented somewhere else. Or maybe the cache namespace here
@@ -381,57 +392,3 @@
            "metadata-transformer/transform-concepts time:" t4)
     concept))
 
-
-;; TODO throw this away
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; # Lookup logic
-;; This should be unit testable without having to do any mocking. It should also be easy to tweak later.
-;; Things skipping cache:
-;; - granules
-;; If in cache use that.
-;; If cache miss
-;; - specific revision is in cache but not format:
-;;   - parse the native metadata and convert to that.
-;;   - cache the requested format
-;; - specific collection is in cache but newer revision:
-;;   - Fetch revision from metadata db
-;;   - convert to requested format.
-;;   - cache requested format and native format. (others will be built as needed. The new revision
-;;      will also be handled during a cache refresh.
-;;   - Store the updated revision and remove the older revision.
-;; - specific collection is in cache but older revision:
-;;   - fetch revision from metadata db.
-;;   - Convert to requested format
-;;   - Do not cache this data (We don't want to cache every revision of collections because that
-;;     could be a lot of metadata and I haven't checked sizing for this.
-
-
-
-;; I think we can ignore all this. Get latest formatted conepts shouldn't be called for collections
-;; We'll leave it in the transformer still working for collections but it won't be called that way.
-; (defn get-latest-formatted-concepts
-;   "Get latest version of concepts with given concept-ids in a given format."
-;   [context concept-ids target-format skip-acls?]
-;   (if (= :collection concept-type)
-;     (let [condition (q/string-conditions :concept-id concept-ids)
-;           concept-rev-tuples (fetch-collections-from-elastic
-;                               context condition skip-acls?)])))
-    ;; TODO granules
-;
-; ;; lookup logic here should be similar to above with exceptions:
-; ;; - We will not know if there's a newer revision than what we have cached.
-
-
-;; Current problem - how do we implement get-latest-formatted-concepts? Several options
-;; granules direct fetch like in transformer
-;; collections
-;; - Get it from elasticsearch <-----
-;; this seems like it's wrong to do here but
-;; - Assume latest is in cache
-;; -
-;; -
-
-
-;; ACLS are another monkey wrench
-;; We could enforce acls during the search in elastic for collections.
-;; For granules we implement basically exactly as it is right now.
