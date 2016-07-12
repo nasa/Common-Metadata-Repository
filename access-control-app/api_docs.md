@@ -496,10 +496,12 @@ Content-Type: application/json;charset=ISO-8859-1
 
 You can check the permissions granted to a specific user or user type on specific concepts by making a GET request tion `%CMR-ENDPOINT%/permissions`.
 
+The response is a JSON object mapping concept ids to arrays of permissions granted to the specified user for the respective concept.
+
 Example request:
 
 ```
-curl -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/permissions?user_type=guest&concept_id[]=C1200000000-PROV1&concept_id[]=C1200000001-PROV1
+curl -g -i -H "Echo-Token: XXXX" "%CMR-ENDPOINT%/permissions?user_type=guest&concept_id[]=C1200000000-PROV1&concept_id[]=C1200000001-PROV1"
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
