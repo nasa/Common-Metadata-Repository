@@ -173,6 +173,8 @@
         (is (= {"G1200000002-PROV1" []}
                (get-granule-permissions "user1")))))))
 
+;; TODO CMR-2900 add tests for access value and temporal ACL conditions
+
 (deftest provider-permission-check-test
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
         ;; then create a group that contains our user, so we can find collections that grant access to this user
