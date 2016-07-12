@@ -17,3 +17,4 @@ nohup.out
 *.kml
 test2junit
 build.xml
+/plugins

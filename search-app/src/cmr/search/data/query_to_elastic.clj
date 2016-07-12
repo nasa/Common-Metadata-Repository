@@ -39,16 +39,16 @@
                           :version :version-id
                           :project :project-sn2
                           :project-sn :project-sn2
-                          :project-h :project-sn.humanized
+                          :project-h :project-sn.humanized2
                           :updated-since :revision-date2
                           :two-d-coordinate-system-name :two-d-coord-name
                           :platform :platform-sn
-                          :platform-h :platform-sn.humanized
+                          :platform-h :platform-sn.humanized2
                           :instrument :instrument-sn
-                          :instrument-h :instrument-sn.humanized
+                          :instrument-h :instrument-sn.humanized2
                           :sensor :sensor-sn
-                          :data-center-h :organization.humanized
-                          :processing-level-id-h :processing-level-id.humanized
+                          :data-center-h :organization.humanized2
+                          :processing-level-id-h :processing-level-id.humanized2
                           :revision-date :revision-date2}]
     (if (use-doc-values-fields)
       (merge default-mappings spatial-doc-values-field-mappings)
@@ -91,15 +91,15 @@
 (defmethod q2e/elastic-field->query-field-mappings :collection
   [_]
   {:project-sn2 :project-sn
-   :project-sn.humanized :project-h
+   :project-sn.humanized2 :project-h
    :two-d-coord-name :two-d-coordinate-system-name
    :platform-sn :platform
-   :platform-sn.humanized :platform-h
+   :platform-sn.humanized2 :platform-h
    :instrument-sn :instrument
-   :instrument-sn.humanized :instrument-h
+   :instrument-sn.humanized2 :instrument-h
    :sensor-sn :sensor
-   :organization.humanized :data-center-h
-   :processing-level-id.humanized :processing-level-id-h
+   :organization.humanized2 :data-center-h
+   :processing-level-id.humanized2 :processing-level-id-h
    :revision-date2 :revision-date})
 
 (defmethod q2e/elastic-field->query-field-mappings :granule
@@ -123,11 +123,6 @@
    :two-d-coordinate-system-name "two-d-coord-name.lowercase"
    :platform "platform-sn.lowercase"
    :instrument "instrument-sn.lowercase"
-   :platform-h "platform-sn.lowercase.humanized"
-   :instrument-h "instrument-sn.lowercase.humanized"
-   :project-h "project-sn.lowercase.humanized"
-   :data-center-h "organization.lowercase.humanized"
-   :processing-level-id-h "processing-level-id.lowercase.humanized"
    :sensor "sensor-sn.lowercase"})
 
 (defn- doc-values-lowercase-field-name

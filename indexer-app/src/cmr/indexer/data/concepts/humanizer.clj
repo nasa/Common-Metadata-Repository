@@ -19,6 +19,10 @@
   [obj path f & args]
   (apply util/update-in-all obj (pop path) f (peek path) args))
 
+(def non-prioritized-fields
+  "A list of fields which cannot be prioritized"
+  ["science_keyword"])
+
 (def humanizer-field->umm-path
   "Map of humanizer JSON field names to lists of paths into parsed UMM collections
   corresponding to those fields."
@@ -46,21 +50,29 @@
 
 (defmethod to-human "trim_whitespace"
   [humanizer value]
-  (str/trim (str/replace value #"\s+" " ")))
+  (assoc value
+         :value (str/trim (str/replace (:value value) #"\s+" " "))))
 
 (defmethod to-human "capitalize"
   [humanizer value]
-  (->> (str/split value #"\b")
-       (map str/capitalize)
-       str/join))
+  (assoc value
+         :value (->> (str/split (:value value) #"\b")
+                     (map str/capitalize)
+                     str/join)))
 
 (defmethod to-human "alias"
   [humanizer value]
-  (:replacement_value humanizer))
+  (assoc value
+         :value (:replacement_value humanizer)))
 
 (defmethod to-human "ignore"
   [humanizer value]
   nil)
+
+(defmethod to-human "priority"
+  [humanizer value]
+  (assoc value
+         :priority (:priority humanizer)))
 
 (defn humanizer-key
   "Prefixes a key with the humanizer namespace"
@@ -71,7 +83,7 @@
   "Tests whether the given humanizer config applies to parent[key]"
   [parent key humanizer]
   (let [match-value (:source_value humanizer)
-        value (get parent (humanizer-key key))]
+        value (get-in parent [(humanizer-key key) :value])]
     (and (some? value)
          (or (nil? match-value)
              (= match-value value)))))
@@ -95,7 +107,7 @@
   "(Helper for add-humanizer-fields) Given a parent object and a key
   copies of parent[key] to a key with the humanizer namespace"
   [parent key]
-  (assoc parent (humanizer-key key) (get parent key)))
+  (assoc parent (humanizer-key key) {:value (get parent key) :priority 0}))
 
 (defn- add-humanizer-fields
   "Duplicates all fields of the collection which could be humanized into keys
@@ -105,10 +117,24 @@
   (let [field-paths (apply concat (vals humanizer-field->umm-path))]
     (reduce #(transform-in-all %1 %2 add-humanizer-field) collection field-paths)))
 
+(defn- simplify-humanizer-field
+  "Assocs the :value inside of the given key to the parent at key"
+  [parent key]
+  (let [humanized-key (humanizer-key key)]
+    (assoc parent humanized-key (:value (get parent humanized-key)))))
+
+(defn- simplify-humanizer-fields
+  "Removes priority fields where appropriate, using the bare string value for non-prioritized fields."
+  [collection]
+  (let [non-prioritized-paths (select-keys humanizer-field->umm-path non-prioritized-fields)
+        field-paths (apply concat (vals non-prioritized-paths))]
+    (reduce #(transform-in-all %1 %2 simplify-humanizer-field) collection field-paths)))
+
 (defn umm-collection->umm-collection+humanizers
   "Applies humanizers to a parsed UMM collection"
   ([collection]
    (umm-collection->umm-collection+humanizers collection humanizer-cache))
 
   ([collection humanizers]
-   (reduce apply-humanizer (add-humanizer-fields collection) (sort-by :priority humanizers))))
+   (simplify-humanizer-fields
+    (reduce apply-humanizer (add-humanizer-fields collection) (sort-by :order humanizers)))))

@@ -5,7 +5,6 @@
             [cmr.umm-spec.iso19115-2-util :as iso]
             [cmr.umm-spec.url :as url]
             [cmr.common.util :as util]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.organizations-personnel :as org-per]
             [cmr.umm-spec.util :as su :refer [char-string]]))
 
 
@@ -71,11 +70,7 @@
   [c]
   (let [distributions (:Distributions c)
         related-urls (online-resource-urls (:RelatedUrls c))
-        responsibility (first (org-per/responsibility-by-role (:Organizations c) "DISTRIBUTOR"))
-        contact-element [:gmd:distributorContact (when-not responsibility
-                                                   {:gco:nilReason "missing"})
-                         (when responsibility
-                           (org-per/generate-responsible-party responsibility))]]
+        contact-element [:gmd:distributorContact {:gco:nilReason "missing"}]]
     (when (or distributions related-urls)
       [:gmd:distributionInfo
        [:gmd:MD_Distribution

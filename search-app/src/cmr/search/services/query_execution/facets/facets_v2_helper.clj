@@ -24,6 +24,26 @@
   [field size]
   {:terms {:field field :size size}})
 
+(defn- prioritized-facet-key
+  "Produces a keyword for prioritized facets that is :<field>.<key>"
+  [field key]
+  (keyword (str (name field) "." (name key))))
+
+(defn prioritized-facet
+  "Construct a facet query for use with fields that have a priority value"
+  [field size]
+  ;; Facets on the :value field of the nested {:value :priority} map used by
+  ;; humanized facets, yielding the top <size> results sorted first by
+  ;; priority, then by count.
+  ;; Two facets with the same value can have different priorities based
+  ;; on the order of humanizer application, we have to average the priorities
+  ;; within each value bucket and cannot just use min or max.
+  {:nested {:path field}
+   :aggs {:values {:terms {:field (prioritized-facet-key field :value)
+                           :size size
+                           :order [{:priority :desc} {:_count :desc}]}
+                   :aggs {:priority {:avg {:field (prioritized-facet-key field :priority)}}}}}})
+
 (defn generate-group-node
   "Returns a group node for the provided title, applied?, and children."
   [title applied? children]

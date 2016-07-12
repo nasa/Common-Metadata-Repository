@@ -5,11 +5,6 @@
 
 (defrecord UMM-S
   [
-   ;; Defines a responsibility by role which is either an organization such as a data center, or
-   ;; institution responsible for distributing, archiving, or processing the data, etc., or a person
-   ;; such as an Investigator, a Technical Contact, Metadata Author, etc.
-   Responsibilities
-
    ;; This includes any metadata related dates.
    MetadataDates
 

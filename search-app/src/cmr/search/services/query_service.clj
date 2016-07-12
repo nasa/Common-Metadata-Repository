@@ -30,6 +30,7 @@
             [cmr.search.services.parameters.converters.spatial]
             [cmr.search.services.parameters.converters.science-keyword]
             [cmr.search.services.parameters.converters.two-d-coordinate-system]
+            [cmr.search.services.parameters.converters.humanizer]
 
             ;; json converters
             [cmr.search.services.json-parameters.conversion :as jp]

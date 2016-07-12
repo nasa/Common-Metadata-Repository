@@ -603,3 +603,55 @@
          {:b [{:d 6} {:d 7}]}]}
    [:a :b :c]]
    [[1 2 3] [4 5] [6]]))
+
+(deftest compare-natural-strings
+  (testing "natural string sort"
+    (is (=
+         [""
+          "1abc2"
+          "2abc2"
+          "10abc2"
+          "ab10"
+          "abc"
+          "abc1"
+          "abc1abc 0"
+          "abc01abc 1"
+          "abc1abc 2"
+          "Abc1abc 3"
+          "Abc1abc 10"
+          "abc2"
+          "abc10"
+          "abc10a"]
+         (sort util/compare-natural-strings
+               [""
+                "abc"
+                "abc1"
+                "abc2"
+                "ab10"
+                "abc10a"
+                "abc10"
+                "1abc2"
+                "2abc2"
+                "10abc2"
+                "abc1abc 2"
+                "abc01abc 1"
+                "Abc1abc 10"
+                "Abc1abc 3"
+                "abc1abc 0"])))))
+
+(deftest compare-vectors
+  (testing "vector sort"
+    (is (=
+         [[]
+          [1 2]
+          [1 2 2]
+          [1 2 2 4]
+          [1 2 3]
+          [2 1]]
+         (sort util/compare-vectors
+               [[1 2 3]
+                [1 2 2]
+                [1 2 2 4]
+                []
+                [1 2]
+                [2 1]])))))

@@ -3,7 +3,6 @@
   (:require [cmr.umm-spec.json-schema :as js]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [cmr.umm-spec.util :as spec-util]
             [cmr.umm-spec.models.collection]
             [cmr.umm-spec.models.common]
             [cmr.umm-spec.models.service]))
@@ -110,7 +109,8 @@
   for it. Returns nil otherwise."
   [type-name type-def]
   (when (= "object" (:type type-def))
-    (let [merged-properties (apply merge (:properties type-def) (map :properties (:oneOf type-def)))]
+    (let [merged-properties (apply merge (:properties type-def)
+                                   (map :properties (:oneOf type-def)))]
       {:record-name (name type-name)
        :description (:description type-def)
        :fields (for [[property-name prop-def] merged-properties]
@@ -149,7 +149,7 @@
 (defn generate-clojure-records-file
   "Generates a file containing clojure records for the types defined in the UMM JSON schema."
   [{:keys [the-ns schema-resource] :as ns-def}]
-  (let [schema (spec-util/load-json-resource schema-resource)
+  (let [schema (js/load-json-resource schema-resource)
         file-name (str "src/"
                        (-> the-ns
                            name
@@ -174,7 +174,7 @@
   (generate-clojure-records-file {:the-ns 'cmr.umm-spec.models.collection
                                   :description "Defines UMM-C clojure records."
                                   :schema-resource (js/concept-schema-resource :collection)})
- 
+
   (generate-clojure-records-file {:the-ns 'cmr.umm-spec.models.service
                                   :description "Defines UMM-S clojure records."
                                   :schema-resource (js/concept-schema-resource :service)}))
