@@ -305,9 +305,7 @@
       <xsl:comment>
         <xsl:value-of select="concat('Other Properties',', all:',$additionalAttributeCount,', coi:',$contentInformationCount,',ii:',$instrumentInformationCount,',si:',$sensorInformationCount,',pli:',$platformInformationCount,',pri:',$processingInformationCount,',qi:',$qualityInformationCount,',gi:',$geographicIdentifierCount,',ci:',$citation.identifierCount,',dk:',$descriptiveKeywordCount,',pcc:',$platformCharacteristicCount,',icc:',$instrumentCharacteristicCount,',scc:',$sensorCharacteristicCount)"/>
       </xsl:comment>
-      <xsl:comment>
-        Translated from ECHO using ECHOToISO.xsl Version: 1.33
-      </xsl:comment>
+      <xsl:comment>Translated from ECHO using ECHOToISO.xsl Version: 1.33</xsl:comment>
       <gmd:fileIdentifier>
         <gco:CharacterString>gov.nasa.echo:<xsl:value-of select="/*/DataSetId | /*/GranuleUR"/></gco:CharacterString>
       </gmd:fileIdentifier>
