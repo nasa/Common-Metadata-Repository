@@ -29,7 +29,7 @@
       1)))
 
 (defn validate
-  "TODO"
+  "Validates that a query does not contain more than the configured maximum number of conditions"
   [query]
   (let [num-conditions (count-conditions query)]
     (debug "Query contained" num-conditions "conditions")
