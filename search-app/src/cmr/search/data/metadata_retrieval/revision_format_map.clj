@@ -1,20 +1,20 @@
 (ns cmr.search.data.metadata-retrieval.revision-format-map
-  "TODO"
+  "Defines a set of helper functions for the metadata cache for dealing with revision format maps.
+  Revision format maps contain metadata from a concept in multiple formats. See the metadata cache
+  namespace for the exact list of fields."
   (require [cmr.common.util :as u]
            [clojure.string :as str]
            [cmr.common.log :as log :refer (debug info warn error)]
            [cmr.search.services.result-format-helper :as rfh]
            [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]))
 
-;; TODO unit test this whole namespace
-
-(def non-metadata-fields
+(def ^:private non-metadata-fields
   #{:concept-id :revision-id :native-format :compressed? :size})
 
-(def key-sorted-revision-format-map
+(def ^:private key-sorted-revision-format-map
   (u/key-sorted-map [:concept-id :revision-id :native-format :echo10 :dif :dif10 :iso19115]))
 
-(defn map-metadata-values
+(defn- map-metadata-values
   "Applies a function over the metadata fields of the revision format map"
   [f rfm]
   (into {} (mapv (fn [entry]
@@ -24,7 +24,7 @@
                        [k (f (val entry))])))
                  rfm)))
 
-(defn with-size
+(defn- with-size
   "Adds a size field to the revision format map by calculating the sizes of the individual cached
    metadata."
   [rfm]
@@ -32,27 +32,28 @@
         size (reduce + (map (comp count rfm) metadata-fields))]
     (assoc rfm :size size)))
 
-(defn gzip-revision-format-map
-  "TODO"
+(defn compress
+  "Compresses the metadata in a revision format map if it is not yet compressed."
   [revision-format-map]
   (if (:compressed? revision-format-map)
     revision-format-map
-    (-> (map-metadata-values u/string->gzip-bytes revision-format-map)
+    (-> (map-metadata-values u/string->lz4-bytes revision-format-map)
         (assoc :compressed? true)
         with-size)))
 
-(defn ungzip-revision-format-map
-  "TODO"
+(defn decompress
+  "Decompresses a compressed revisions format map. Safe to run on non-compressed maps."
   [revision-format-map]
   (if (:compressed? revision-format-map)
-    (-> (map-metadata-values u/gzip-bytes->string revision-format-map)
+    (-> (map-metadata-values u/lz4-bytes->string revision-format-map)
         (assoc :compressed? false)
         (dissoc :size))
     revision-format-map))
 
 (defn prettify
+  "Returns a version of the revision format map decompressed with trimmed XML to help in debugging."
   [revision-format-map]
-  (let [uncompressed-map (dissoc (ungzip-revision-format-map revision-format-map) :compressed?)
+  (let [uncompressed-map (dissoc (decompress revision-format-map) :compressed?)
         trim-xml (fn [xml]
                    (-> xml
                        (str/replace "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" "")
@@ -66,19 +67,17 @@
                                         trimmed))]
     (into key-sorted-revision-format-map keys-as-keywords)))
 
-
-(defn get-metadata-in-format
+(defn- get-metadata-in-format
   "Gets cached metadata in the specified format from the revision format map. Assumes the format is
-   present." ;; TODO consider making it work even if not present
+   present."
   [target-format revision-format-map]
   (let [target-format (if (= target-format :native)
                         (:native-format revision-format-map)
                         target-format)
         metadata (get revision-format-map target-format)]
     (if (:compressed? revision-format-map)
-      (u/gzip-bytes->string metadata)
+      (u/lz4-bytes->string metadata)
       metadata)))
-
 
 ;; TODO make this work with a revision format map that's zipped or not zipped.
 ;; Add compressed flag in the two gzip functions below.
@@ -96,6 +95,12 @@
      :format (if (= :native target-format)
                (rfh/search-result-format->mime-type (:native-format revision-format-map))
                (rfh/search-result-format->mime-type target-format))}))
+
+(defn revision-format-maps->concepts
+  "TODO"
+  [target-format revision-format-maps]
+  (u/fast-map #(revision-format-map->concept target-format %)
+              revision-format-maps))
 
 ;; TODO make sure to test passing in :native here
 (defn concept->revision-format-map
@@ -119,5 +124,5 @@
   (let [concept (revision-format-map->concept :native revision-format-map)
         transformed (metadata-transformer/transform context concept target-format)]
     (if (:compressed? revision-format-map)
-     (assoc revision-format-map target-format (u/string->gzip-bytes transformed))
+     (assoc revision-format-map target-format (u/string->lz4-bytes transformed))
      (assoc revision-format-map target-format transformed))))

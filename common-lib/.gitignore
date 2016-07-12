@@ -10,3 +10,4 @@ pom.xml.asc
 testreports.xml
 test2junit
 build.xml
+scratch*.clj

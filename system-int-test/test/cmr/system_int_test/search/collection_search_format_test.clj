@@ -55,6 +55,9 @@
           response (search/find-metadata :collection format-key params options)]
       (d/assert-metadata-results-match format-key [c1-echo] response))))
 
+;; TODO add a method for getting the cached concept ids revision id and formats from the cache.
+;; Verify the state of the cache throughout this test. Add more tests of individual behaviors of the cache.
+
 ;; This tests that searching for and retrieving metadata after refreshing the search cache works.
 ;; Other metadata tests all run before refreshing the cache so they cover that case.
 (deftest collection-metadata-cache-test
