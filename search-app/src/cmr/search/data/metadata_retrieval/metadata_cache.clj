@@ -10,6 +10,7 @@
                  * various format keys each mapped to a gzip bytes of compressed metadata."
   (require [cmr.common.util :as u]
            [cmr.common.cache :as c]
+           [cmr.common.config :refer [defconfig]]
            [cmr.common.jobs :refer [defjob]]
            [cmr.common.services.errors :as errors]
            [cmr.common.log :as log :refer (debug info warn error)]
@@ -124,48 +125,26 @@
     (info "Metadata cache refresh complete. Cache Size:" (cache-size cache))
     nil))
 
+(defconfig refresh-collection-metadata-cache-interval
+  "The number of seconds between refreshes of the collection metadata cache"
+  {:default (* 3600 8)
+   :type Long})
+
 (defjob RefreshCollectionsMetadataCache
   [ctx system]
   (refresh-cache {:system system}))
 
-;; TODO this job should also run on startup after a certain period of time.
-(def refresh-collections-metadata-cache-job
+(defn refresh-collections-metadata-cache-job
+  []
   {:job-type RefreshCollectionsMetadataCache
-   ;; Run once a day at 3:20 am. Chosen so it will be after reindexing all collections.
-   :daily-at-hour-and-minute [3 20]})
-
-;; TODO unit test this
-(defn- merge-revision-format-map
-  "Merges in the updated revision-format-map into the existing cache map.  The passed in revision
-   format map can contain an unknown collection, a newer revision, or formats not yet cached. The
-   data will be merged in the right way."
-  [cache-map revision-format-map]
-  (let [{:keys [concept-id revision-id]} revision-format-map]
-    (if-let [curr-rev-format-map (cache-map concept-id)]
-      ;; We've cached this concept
-      (cond
-        ;; We've got a newer revision
-        (> revision-id (:revision-id curr-rev-format-map))
-        (assoc cache-map concept-id revision-format-map)
-
-        ;; We somehow retrieved older data than was cached. Keep newer data
-        (< revision-id (:revision-id curr-rev-format-map))
-        cache-map
-
-        ;; Same revision
-        :else
-        ;; Merge in the newer data which may have additional cached formats.
-        (assoc cache-map concept-id (merge curr-rev-format-map revision-format-map)))
-
-      ;; We haven't cached this concept yet.
-      (assoc cache-map concept-id revision-format-map))))
+   :interval (refresh-collection-metadata-cache-interval)})
 
 (defn- update-cache
   "Updates the cache so that it will contain the updated revision format maps."
   [context revision-format-maps]
   (let [cache (:cache-atom (c/context->cache context cache-key))
         compressed-maps (u/fast-map rfm/compress revision-format-maps)]
-    (swap! cache #(reduce merge-revision-format-map % compressed-maps))
+    (swap! cache #(reduce rfm/merge-into-cache-map % compressed-maps))
     (info "Cache updated with revision format maps. Cache Size:"
           (cache-size (c/context->cache context cache-key)))))
 
@@ -216,7 +195,6 @@
              "get-concepts:" t1 "concept->revision-format-map:" t2
              "revision-format-map->concept:" t3 "update-cache:" t4)
       concepts)))
-
 
 (defn- fetch-metadata
   "Fetches metadata from Metadata DB for the given concept tuples and converts them into the format
@@ -271,32 +249,43 @@
              :newer-revision-requested []}
             concept-tuples)))
 
-(defn concept-revision-id
-  "Returns the concept revision id tuple for a concept"
-  [concept]
-  [(:concept-id concept) (:revision-id concept)])
-
 (defn- order-concepts
   "Puts concepts in order by concept tuples"
   [concept-tuples-order concepts]
-  (let [by-concept-rev-id (group-by concept-revision-id concepts)]
+  (let [by-concept-rev-id (group-by #(vector (:concept-id %) (:revision-id %)) concepts)]
     (mapv #(first (get by-concept-rev-id %)) concept-tuples-order)))
 
 (defn get-formatted-concept-revisions
-  "Returns value maps with concept id, revision id, metadata and format."
+  "Returns value maps with concept id, revision id, metadata and format.
+   TODO better documentation"
   [context concept-type concept-tuples target-format]
   (if (= :collection concept-type)
-    (let [results (get-cached-metadata-in-format context concept-tuples target-format)
+    (let [[t1 results] (u/time-execution
+                        (get-cached-metadata-in-format context concept-tuples target-format))
           ;; Helper functions
           ;; TODO might be able to get rid of these if the tuples go at the end position.
           fetch #(fetch-metadata context % target-format)
           fetch-and-cache #(fetch-and-cache-metadata context % target-format)
-          concepts (concat (rfm/revision-format-maps->concepts target-format (:revision-format-maps results))
-                           (transform-and-cache context (:target-format-not-cached results) target-format)
-                           (fetch-and-cache (concat (:concept-not-cached results)
-                                                    (:newer-revision-requested results)))
-                           (fetch (:older-revision-requested results)))]
-      (order-concepts concept-tuples concepts))
+          [t2 concepts1] (u/time-execution
+                          (rfm/revision-format-maps->concepts target-format (:revision-format-maps results)))
+          [t3 concepts2] (u/time-execution
+                          (transform-and-cache context (:target-format-not-cached results) target-format))
+          [t4 concepts3] (u/time-execution
+                          (fetch-and-cache (concat (:concept-not-cached results)
+                                                   (:newer-revision-requested results))))
+          [t5 concepts4] (u/time-execution
+                          (fetch (:older-revision-requested results)))
+          concepts (concat concepts1 concepts2 concepts3 concepts4)
+          [t6 ordered-concepts] (u/time-execution
+                                 (order-concepts concept-tuples concepts))]
+      (debug "get-formatted-concept-revisions of " (count concept-tuples) " concepts:"
+             "get-cached-metadata-in-format" t1
+             "revision-format-maps->concepts:" t2
+             "transform-and-cache:" t3
+             "fetch-and-cache:" t4
+             "fetch:" t5
+             "order-concepts:" t6)
+      ordered-concepts)
 
     ;; Granule query. We don't cache those so just fetch from metadata db
     (fetch-metadata context concept-tuples target-format)))

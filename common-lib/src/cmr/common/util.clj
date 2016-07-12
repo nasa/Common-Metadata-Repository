@@ -324,8 +324,6 @@
   "Eager version of pmap"
   [f values]
   (doall (pmap f values)))
-  ;; TODO temporary for better stack traces
-  ; (mapv f values))
 
 (defmacro while-let
   "A macro that's similar to when let. It will continually evaluate the bindings and execute the body

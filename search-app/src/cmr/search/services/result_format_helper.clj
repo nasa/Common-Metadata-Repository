@@ -14,7 +14,6 @@
         format))
     result-format))
 
-;; TODO consider memoizing this function.
 (defn search-result-format->mime-type
   "Returns the mime-type of the given search result format"
   [result-format]

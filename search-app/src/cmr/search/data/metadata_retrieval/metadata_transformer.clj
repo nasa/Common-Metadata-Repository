@@ -52,7 +52,6 @@
                      context :collection (:format concept) (:metadata concept))]
     (collection-renderer/render-collection context collection)))
 
-;; TODO consider memoizing this function but with concept-mime-type as first arg
 (defn transform-strategy
   "TODO"
   [concept target-format]

@@ -79,10 +79,8 @@
       (u/lz4-bytes->string metadata)
       metadata)))
 
-;; TODO make this work with a revision format map that's zipped or not zipped.
-;; Add compressed flag in the two gzip functions below.
 (defn revision-format-map->concept
-  "Converts a revision format map into a concept map using the target format. Assumes target format
+  "Converts a revision format map into a concept map with the target format. Assumes target format
    is present in revision format map."
   [target-format revision-format-map]
   {:pre [(or (get revision-format-map target-format)
@@ -97,12 +95,11 @@
                (rfh/search-result-format->mime-type target-format))}))
 
 (defn revision-format-maps->concepts
-  "TODO"
+  "Converts a set of revision format maps to concepts with the target format."
   [target-format revision-format-maps]
   (u/fast-map #(revision-format-map->concept target-format %)
               revision-format-maps))
 
-;; TODO make sure to test passing in :native here
 (defn concept->revision-format-map
   "Converts a concept into a revision format map. See namespace documentation for details."
   [context concept target-format-set]
@@ -126,3 +123,28 @@
     (if (:compressed? revision-format-map)
      (assoc revision-format-map target-format (u/string->lz4-bytes transformed))
      (assoc revision-format-map target-format transformed))))
+
+(defn merge-into-cache-map
+  "Merges in the updated revision-format-map into the existing cache map. cache-map should be a map of
+  concept ids to revision format maps. The passed in revision format map can contain an unknown
+  collection, a newer revision, or formats not yet cached. The data will be merged in the right way."
+  [cache-map revision-format-map]
+  (let [{:keys [concept-id revision-id]} revision-format-map]
+    (if-let [curr-rev-format-map (cache-map concept-id)]
+      ;; We've cached this concept
+      (cond
+        ;; We've got a newer revision
+        (> revision-id (:revision-id curr-rev-format-map))
+        (assoc cache-map concept-id revision-format-map)
+
+        ;; We somehow retrieved older data than was cached. Keep newer data
+        (< revision-id (:revision-id curr-rev-format-map))
+        cache-map
+
+        ;; Same revision
+        :else
+        ;; Merge in the newer data which may have additional cached formats.
+        (assoc cache-map concept-id (merge curr-rev-format-map revision-format-map)))
+
+      ;; We haven't cached this concept yet.
+      (assoc cache-map concept-id revision-format-map))))
