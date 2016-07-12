@@ -1,7 +1,8 @@
 (ns cmr.common-app.services.search.query-validation
   "Defines protocols and functions to validate query conditions"
   (:require [cmr.common-app.services.search.query-model :as qm]
-            [cmr.common.mime-types :as mt]))
+            [cmr.common.mime-types :as mt]
+            [cmr.common-app.services.search.validators.max-number-of-conditions :as max-conditions]))
 
 (defmulti supported-result-formats
   "Supported search result formats by concept."
@@ -44,7 +45,8 @@
     [{:keys [concept-type result-format condition ] :as query}]
     (let [concept-specific-validations (query-validations concept-type)
           errors (concat (validate-concept-type-result-format concept-type result-format)
-                         (mapcat #(% query) concept-specific-validations))]
+                         (mapcat #(% query) concept-specific-validations)
+                         (max-conditions/validate query))]
       (if (seq errors) errors (validate condition))))
 
   cmr.common_app.services.search.query_model.ConditionGroup

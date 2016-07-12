@@ -1,5 +1,5 @@
-(ns ^{:doc "provides search related utilities."}
-  cmr.system-int-test.utils.search-util
+(ns cmr.system-int-test.utils.search-util
+  "provides search related utilities."
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [clj-time.core :as t]
@@ -154,11 +154,18 @@
          [url accept] (if url-extension
                         [(str (url/search-url concept-type) "." url-extension)]
                         [(url/search-url concept-type) (or (:accept options) format)])
-         response (client/get url {:accept accept
-                                   :headers headers
-                                   :query-params params
-                                   :throw-exceptions throw-exceptions?
-                                   :connection-manager (s/conn-mgr)})]
+         request-map {:url url
+                      :method (get options :method :get)
+                      :accept accept
+                      :headers headers
+                      :throw-exceptions throw-exceptions?
+                      :connection-manager (s/conn-mgr)}
+         request-map (if (= :post (:method request-map))
+                       (assoc request-map
+                              :form-params params
+                              :content-type :x-www-form-urlencoded)
+                       (assoc request-map :query-params params))
+         response (client/request request-map)]
      (when throw-exceptions?
        (is (= 200 (:status response))))
      response)))
