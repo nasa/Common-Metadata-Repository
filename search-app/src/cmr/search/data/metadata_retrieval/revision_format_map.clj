@@ -4,6 +4,7 @@
   namespace for the exact list of fields."
   (require [cmr.common.util :as u]
            [clojure.string :as str]
+           [clojure.set :as set]
            [cmr.common.log :as log :refer (debug info warn error)]
            [cmr.search.services.result-format-helper :as rfh]
            [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]))
@@ -23,6 +24,11 @@
                        entry
                        [k (f (val entry))])))
                  rfm)))
+
+(defn cached-formats
+  "Takes a revision format map and returns a set of the formats that are cached."
+  [rfm]
+  (set/difference (set (keys rfm)) non-metadata-fields))
 
 (defn- with-size
   "Adds a size field to the revision format map by calculating the sizes of the individual cached

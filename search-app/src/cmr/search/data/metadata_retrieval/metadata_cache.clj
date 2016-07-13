@@ -112,6 +112,16 @@
                          concepts)]
     (reduce #(assoc %1 (:concept-id %2) %2) {} rfms)))
 
+(defn cache-state
+  "A helper function for debugging that returns a map of concept id to a map containing
+   :revision-id and :cached-formats"
+  [context]
+  (let [cache-map @(:cache-atom (c/context->cache context cache-key))]
+    (u/map-values (fn [rfm]
+                    {:revision-id (:revision-id rfm)
+                     :cached-formats (rfm/cached-formats rfm)})
+                  cache-map)))
+
 (defn refresh-cache
   "Refreshes the collection metadata cache"
   [context]
@@ -160,7 +170,7 @@
                         (u/fast-map #(rfm/revision-format-map->concept target-format %)
                                     updated-revision-format-maps))
          ;; Cache the revision format maps.
-         [t3 _] (u/time-execution (update-cache context revision-format-maps))]
+         [t3 _] (u/time-execution (update-cache context updated-revision-format-maps))]
      (debug "transform-and-cache of " (count revision-format-maps) " concepts:"
             "add-additional-format:" t1 "revision-format-map->concept:" t2 "update-cache:" t3)
      concepts)))
