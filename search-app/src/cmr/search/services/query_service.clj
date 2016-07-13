@@ -233,7 +233,6 @@
   "Executes a search to metadata-db and returns the concept with the given concept-id and
   revision-id."
   [context result-format concept-id revision-id]
-  ;; TODO this comment might not be correct anymore. We could use the same function above
   ;; We don't store revision id in the search index, so we can't use shortcuts for json/atom
   ;; like we do in find-concept-by-id.
   (let [concept (metadata-cache/get-formatted-concept context concept-id revision-id result-format)]

@@ -257,8 +257,6 @@
                 (name concept-type))))
 
     (if revision-id
-      ;; TODO it's possible this is resolved now or could easily be resolved.
-      ;; Would need to add tests thought.
       ;; We don't support Atom or JSON (yet) for lookups that include revision-id due to
       ;; limitations of the current transformer implementation. This will be fixed with CMR-1935.
       (let [supported-mime-types (disj concept-type-supported-mime-types mt/atom mt/json)

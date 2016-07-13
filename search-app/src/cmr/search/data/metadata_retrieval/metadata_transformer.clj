@@ -1,5 +1,5 @@
 (ns cmr.search.data.metadata-retrieval.metadata-transformer
-  "TODO"
+  "Contains functions for converting concept metadata into other formats."
   (:require [clojure.java.io :as io]
             [cmr.common.xml.xslt :as xslt]
             [cmr.common.util :as u]
@@ -25,8 +25,6 @@
 (def transformer-supported-format?
   "The set of formats supported by the transformer."
   #{:echo10 :dif :dif10 :iso19115 :iso-smap})
-
-;; TODO unit test this namespace
 
 (def types->xsl
   "Defines the [metadata-format target-format] to xsl mapping"
@@ -54,7 +52,8 @@
     (collection-renderer/render-collection context collection)))
 
 (defn transform-strategy
-  "TODO"
+  "Determines which transformation strategy should be used to convert the given concept to the target
+   format"
   [concept target-format]
   ;;throw exception if target format is native. That should be handled elsewhere.
   {:pre [(not= :native target-format)]}
@@ -82,11 +81,8 @@
       :else
       :umm-lib)))
 
-;; TODO move this to separately named functions and use a cond to call the appropriate function
-;; Getting rid of multimethod will help performance
-
 (defmulti transform-with-strategy
-  "TODO"
+  "Transforms the concept into the set of target formats specified using the given strategy"
   (fn [context concept strategy target-formats]
     strategy))
 
@@ -137,7 +133,7 @@
             target-formats)))
 
 (defn transform-to-multiple-formats
-  "TODO"
+  "Transforms the concept into multiple different formats. Returns a map of target format to metadata."
   [context concept target-formats]
   (->> target-formats
        (group-by #(transform-strategy concept %))

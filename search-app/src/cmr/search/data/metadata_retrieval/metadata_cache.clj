@@ -256,26 +256,31 @@
     (mapv #(first (get by-concept-rev-id %)) concept-tuples-order)))
 
 (defn get-formatted-concept-revisions
-  "Returns value maps with concept id, revision id, metadata and format.
-   TODO better documentation"
+  "Returns concepts in the specific format requested. Uses cached metadata for collections."
   [context concept-type concept-tuples target-format]
   (if (= :collection concept-type)
-    (let [[t1 results] (u/time-execution
-                        (get-cached-metadata-in-format context concept-tuples target-format))
-          ;; Helper functions
-          ;; TODO might be able to get rid of these if the tuples go at the end position.
+    (let [;; Helper functions
           fetch #(fetch-metadata context % target-format)
           fetch-and-cache #(fetch-and-cache-metadata context % target-format)
+          ;; Figure out which things are in the cache and which items are missing from the cache.
+          [t1 results] (u/time-execution
+                        (get-cached-metadata-in-format context concept-tuples target-format))
+          ;; Convert items that were in the cache to concepts
           [t2 concepts1] (u/time-execution
                           (rfm/revision-format-maps->concepts target-format (:revision-format-maps results)))
+          ;; Convert items that were in the cache but the format wasn't in the cache to concepts
+          ;; and also cache the generated metadata
           [t3 concepts2] (u/time-execution
                           (transform-and-cache context (:target-format-not-cached results) target-format))
+          ;; Fetch items that were missing from the cache and cache them.
           [t4 concepts3] (u/time-execution
                           (fetch-and-cache (concat (:concept-not-cached results)
                                                    (:newer-revision-requested results))))
+          ;; Fetch the older revisions that were requested but don't cache those.
           [t5 concepts4] (u/time-execution
                           (fetch (:older-revision-requested results)))
           concepts (concat concepts1 concepts2 concepts3 concepts4)
+          ;; Put everything in the order requested.
           [t6 ordered-concepts] (u/time-execution
                                  (order-concepts concept-tuples concepts))]
       (debug "get-formatted-concept-revisions of" (count concept-tuples) "concepts total:"
@@ -291,15 +296,10 @@
     ;; Granule query. We don't cache those so just fetch from metadata db
     (fetch-metadata context concept-tuples target-format)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Do the things below here make sense in this namespace?
-
-;; TODO note that this isn't doing any caching and is really just a glorified faster search implementation.
-;; It might make more sense for it to be implemented somewhere else. Or maybe the cache namespace here
-;; should be split up. Note that we're probably going to have to implement acls with the get-formatted-concept-revisions
 (defn get-latest-formatted-concepts
   "Get latest version of concepts with given concept-ids in a given format. Applies ACLs to the concepts
-  found. If any of the concept ids are not found or were deleted then we just don't return them."
+  found. If any of the concept ids are not found or were deleted then we just don't return them.
+  Does not use the cache because this is currently only used when finding granules by concept id."
   ([context concept-ids target-format]
    (get-latest-formatted-concepts context concept-ids target-format false))
   ([context concept-ids target-format skip-acls?]
@@ -338,7 +338,7 @@
 
 (defn get-formatted-concept
   "Get a specific revision of a concept with the given concept-id in a given format.
-  Applies ACLs to the concept found."
+  Applies ACLs to the concept found. Does not use the cache."
   [context concept-id revision-id target-format]
   (info "Getting revision" revision-id "of concept" concept-id "in" target-format "format")
   (let [mdb-context (context->metadata-db-context context)
