@@ -411,7 +411,7 @@ The response is always returned in JSON and includes the following parts.
 
 ##### ACL Search Examples
 
-##### By permitted_group
+###### By permitted_group
 
 ```
 curl -i "%CMR-ENDPOINT%/acls?permitted_group\[\]=guest&permitted_group\[\]=registered&pretty=true"
@@ -448,7 +448,7 @@ Content-Length: 702
 }
 ```
 
-##### By identity_type
+###### By identity_type
 
 ```
 curl -i "%CMR-ENDPOINT%/acls?identity_type\[\]=provider&identity_type\[\]=catalog_item&pretty=true"
