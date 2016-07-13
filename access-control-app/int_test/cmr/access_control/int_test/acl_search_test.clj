@@ -234,17 +234,20 @@
         acl-single-instance (ingest-acl token (single-instance-acl "AG1234-CMR"))
         acl-catalog-item (ingest-acl token (catalog-item-acl "All Collections"))
         all-acls [acl-system acl-provider acl-single-instance acl-catalog-item]]
+    (u/wait-until-indexed)
 
     (testing "Search with invalid identity type returns error"
-      (let [response (ac/search-for-acls (u/conn-context) {:identity-type "foo"})]
-        (is (= {:status 400
-                :body {:errors [(str "Parameter identity-type has invalid values [foo]. "
-                                     "Only 'provider', 'system', 'single_instance', or 'catalog_item' can be specified.")]}}))))
+      (is (= {:status 400
+              :body {:errors [(str "Parameter identity_type has invalid values [foo]. "
+                                   "Only 'provider', 'system', 'single_instance', or 'catalog_item' can be specified.")]}
+              :content-type :json}
+             (ac/search-for-acls (u/conn-context) {:identity-type "foo"} {:raw? true}))))
 
     (testing "Search with valid identity types"
       (are3 [identity-types expected-acls]
         (let [response (ac/search-for-acls (u/conn-context) {:identity-type identity-types})]
-          (is (= (acls->search-response (count expected-acls) expected-acls))))
+          (is (= (acls->search-response (count expected-acls) expected-acls)
+                 (dissoc response :took))))
 
         "Identity type 'provider'"
         ["provider"] [acl-provider]
@@ -259,4 +262,7 @@
         ["catalog_item"] [acl-catalog-item]
 
         "Mixed identity types"
-        ["provider" "system" "single_instance" "catalog_item"] all-acls))))
+        ["provider" "system" "single_instance" "catalog_item"] all-acls
+
+        "Identity type searches are always case-insensitive"
+        ["PrOvIdEr"] [acl-provider]))))

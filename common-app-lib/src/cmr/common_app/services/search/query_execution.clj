@@ -90,5 +90,3 @@
                              (idx/execute-query context))
         query-results (rc/elastic-results->query-results context pre-processed-query elastic-results)]
     (post-process-query-result-features context query elastic-results query-results)))
-
-
