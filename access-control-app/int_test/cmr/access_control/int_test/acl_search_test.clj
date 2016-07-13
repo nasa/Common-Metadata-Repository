@@ -2,7 +2,7 @@
   (require [clojure.test :refer :all]
            [cmr.transmit.access-control :as ac]
            [cmr.mock-echo.client.echo-util :as e]
-           [cmr.common.util :as util :refer [are2]]
+           [cmr.common.util :as util :refer [are3]]
            [cmr.access-control.int-test.fixtures :as fixtures]
            [cmr.access-control.test.util :as u]
            [cmr.access-control.data.access-control-index :as access-control-index]))
@@ -227,3 +227,45 @@
            ["gust"] "gust"
            ["GUST" "registered" "AG10000-PROV" "G10000-PROV"] "GUST, G10000-PROV"))))
 
+(deftest acl-search-by-identity-type-test
+  (let [token (e/login (u/conn-context) "user1")
+        acl-system (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
+        acl-provider (ingest-acl token (provider-acl "AUDIT_REPORT"))
+        acl-single-instance (ingest-acl token (single-instance-acl "AG1234-CMR"))
+        acl-catalog-item (ingest-acl token (catalog-item-acl "All Collections"))
+        all-acls [acl-system acl-provider acl-single-instance acl-catalog-item]]
+    (u/wait-until-indexed)
+
+    (testing "Search with invalid identity type returns error"
+      (is (= {:status 400
+              :body {:errors [(str "Parameter identity_type has invalid values [foo]. "
+                                   "Only 'provider', 'system', 'single_instance', or 'catalog_item' can be specified.")]}
+              :content-type :json}
+             (ac/search-for-acls (u/conn-context) {:identity-type "foo"} {:raw? true}))))
+
+    (testing "Search with valid identity types"
+      (are3 [identity-types expected-acls]
+        (let [response (ac/search-for-acls (u/conn-context) {:identity-type identity-types})]
+          (is (= (acls->search-response (count expected-acls) expected-acls)
+                 (dissoc response :took))))
+
+        "Identity type 'provider'"
+        ["provider"] [acl-provider]
+
+        "Identity type 'system'"
+        ["system"] [acl-system]
+
+        "Identity type 'single_instance'"
+        ["single_instance"] [acl-single-instance]
+
+        "Identity type 'catalog_item'"
+        ["catalog_item"] [acl-catalog-item]
+
+        "Multiple identity types"
+        ["provider" "single_instance"] [acl-provider acl-single-instance]
+
+        "All identity types"
+        ["provider" "system" "single_instance" "catalog_item"] all-acls
+
+        "Identity type searches are always case-insensitive"
+        ["PrOvIdEr"] [acl-provider]))))
