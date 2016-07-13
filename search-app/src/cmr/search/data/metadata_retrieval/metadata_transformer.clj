@@ -3,6 +3,7 @@
   (:require [clojure.java.io :as io]
             [cmr.common.xml.xslt :as xslt]
             [cmr.common.util :as u]
+            [cmr.common.xml :as cx]
             [cmr.common.cache :as cache]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.mime-types :as mt]
@@ -97,7 +98,8 @@
 
 (defmethod transform-with-strategy :current-format
   [context concept _ _]
-  {(rfh/mime-type->search-result-format (:format concept)) (:metadata concept)})
+  {(rfh/mime-type->search-result-format (:format concept))
+   (cx/remove-xml-processing-instructions (:metadata concept))})
 
 (defmethod transform-with-strategy :xslt
   [context concept _ target-formats]
@@ -105,7 +107,8 @@
     (reduce (fn [translated-map target-format]
               (let [xsl (types->xsl [(mt/mime-type->format concept-mime-type) target-format])]
                 (assoc translated-map target-format
-                       (xslt/transform metadata (get-template context xsl)))))
+                       (cx/remove-xml-processing-instructions
+                        (xslt/transform metadata (get-template context xsl))))))
             {}
             target-formats)))
 

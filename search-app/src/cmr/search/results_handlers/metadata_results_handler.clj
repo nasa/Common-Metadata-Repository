@@ -100,13 +100,13 @@
   [tags]
   (when (seq tags)
     [(cx/remove-xml-processing-instructions
-       (x/emit-str
-         (x/element :tags {}
-                    (for [[tag-key {:keys [data]}] tags]
-                      (x/element :tag {}
-                                 (x/element :tagKey {} tag-key)
-                                 (when data
-                                   (x/element :data {} (json/generate-string data))))))))]))
+      (x/emit-str
+       (x/element :tags {}
+                  (for [[tag-key {:keys [data]}] tags]
+                    (x/element :tag {}
+                               (x/element :tagKey {} tag-key)
+                               (when data
+                                 (x/element :data {} (json/generate-string data))))))))]))
 
 (defmulti metadata-item->result-string
   "Converts a search result + metadata into a string containing a single result for the metadata format."
@@ -128,7 +128,7 @@
      "\" format=\""
      format
      "\">"
-     (cx/remove-xml-processing-instructions metadata)
+     metadata
      "</result>"]))
 
 (defmethod metadata-item->result-string [:collection false]
@@ -149,7 +149,7 @@
                       (str " " (name k) "=\"" v "\""))]
     (concat ["<result"]
             attrib-strs
-            [">" (cx/remove-xml-processing-instructions metadata)]
+            [">" metadata]
             (tags->result-string tags)
             ["</result>"])))
 
@@ -164,14 +164,14 @@
      "\" echo_dataset_id=\""
      collection-concept-id
      "\">"
-     (cx/remove-xml-processing-instructions metadata)
+     metadata
      "</result>"]))
 
 (defmethod metadata-item->result-string [:collection true]
   [concept-type echo-compatible? results metadata-item]
   (let [{:keys [concept-id metadata tags]} metadata-item]
     (concat ["<result echo_dataset_id=\"" concept-id "\">"
-             (cx/remove-xml-processing-instructions metadata)]
+             metadata]
             (tags->result-string tags)
             ["</result>"])))
 

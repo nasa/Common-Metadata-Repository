@@ -1,6 +1,7 @@
 (ns cmr.umm.core
   "Functions to transform concepts between formats."
   (:require [cmr.common.mime-types :as mt]
+            [cmr.common.xml :as cx]
             [cmr.umm.echo10.core :as echo10]
             [cmr.umm.echo10.collection :as echo10-c]
             [cmr.umm.echo10.granule :as echo10-g]
@@ -99,9 +100,10 @@
 (defn umm->xml
   "Convert a umm record into xml of a given format."
   [umm metadata-format]
-  (condp = metadata-format
-    :echo10 (echo10/umm->echo10-xml umm)
-    :dif (dif/umm->dif-xml umm)
-    :dif10 (dif10/umm->dif10-xml umm)
-    :iso19115 (iso-mends/umm->iso-mends-xml umm)
-    :iso-smap (iso-smap/umm->iso-smap-xml umm)))
+  (cx/remove-xml-processing-instructions
+   (condp = metadata-format
+     :echo10 (echo10/umm->echo10-xml umm)
+     :dif (dif/umm->dif-xml umm)
+     :dif10 (dif10/umm->dif10-xml umm)
+     :iso19115 (iso-mends/umm->iso-mends-xml umm)
+     :iso-smap (iso-smap/umm->iso-smap-xml umm))))

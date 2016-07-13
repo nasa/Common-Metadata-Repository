@@ -278,7 +278,8 @@
           concepts (concat concepts1 concepts2 concepts3 concepts4)
           [t6 ordered-concepts] (u/time-execution
                                  (order-concepts concept-tuples concepts))]
-      (debug "get-formatted-concept-revisions of " (count concept-tuples) " concepts:"
+      (debug "get-formatted-concept-revisions of" (count concept-tuples) "concepts total:"
+             (+ t1 t2 t3 t4 t5 t6)
              "get-cached-metadata-in-format" t1
              "revision-format-maps->concepts:" t2
              "transform-and-cache:" t3

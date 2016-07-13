@@ -29,7 +29,7 @@
    metadata."
   [rfm]
   (let [metadata-fields (filterv (complement non-metadata-fields) (keys rfm))
-        size (reduce + (map (comp count rfm) metadata-fields))]
+        size (reduce + (map (comp count :compressed rfm) metadata-fields))]
     (assoc rfm :size size)))
 
 (defn compress

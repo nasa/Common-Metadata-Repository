@@ -362,10 +362,7 @@
                               ;; So we simply set the format to the input format-key.
                               metadata-format (if (:echo-compatible params)
                                                 format-key
-                                                (mime-types/mime-type->format format))
-                              metadata (if (= mime-types/umm-json (mime-types/base-mime-type-of format))
-                                         metadata
-                                         (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" metadata))]
+                                                (mime-types/mime-type->format format))]
                           (util/remove-nil-keys
                             {:concept-id concept-id
                              :revision-id (when revision-id (Long. ^String revision-id))
