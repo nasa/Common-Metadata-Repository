@@ -129,10 +129,17 @@
       [(format "Parameter permitted_group has invalid values [%s]. Only 'guest', 'registered' or a group concept id can be specified."
                (str/join ", " invalid-groups))])))
 
+(def acl-identity-type->search-value
+ "Maps identity type query paremter values to the actual values used in the index."
+ {"system" "System"
+  "single_instance" "Group"
+  "provider" "Provider"
+  "catalog_item" "Catalog Item"})
+
 (defn- valid-identity-type?
   "Returns true if the given identity-type is valid, i.e., one of 'system', 'single_instance', 'provider', or 'catalog_item'."
   [identity-type]
-  (contains? #{"system" "provider" "single_instance" "catalog_item"} (str/lower-case identity-type)))
+  (contains? (set (keys acl-identity-type->search-value)) (str/lower-case identity-type)))
 
 (defn- identity-type-validation
   "Validates identity-type parameters."
@@ -170,13 +177,6 @@
   [_]
   {:permitted-group :string
    :identity-type :acl-identity-type})
-
-(def acl-identity-type->search-value
-  "Maps identity type query paremter values to the actual values used in the index."
-  {"system" "System"
-   "single_instance" "Group"
-   "provider" "Provider"
-   "catalog_item" "Catalog Item"})
 
 (defmethod cp/parameter->condition :acl-identity-type
  [concept-type param value options]
