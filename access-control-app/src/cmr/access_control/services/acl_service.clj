@@ -124,10 +124,7 @@
 (defn- permitted-group-validation
   "Validates permitted group parameters."
   [context params]
-  (let [permitted-groups (:permitted-group params)
-        permitted-groups (if (sequential? permitted-groups)
-                           permitted-groups
-                           (when permitted-groups [permitted-groups]))]
+  (let [permitted-groups (u/seqify (:permitted-group params))]
     (when-let [invalid-groups (seq (remove valid-permitted-group? permitted-groups))]
       [(format "Parameter permitted_group has invalid values [%s]. Only 'guest', 'registered' or a group concept id can be specified."
                (str/join ", " invalid-groups))])))
@@ -140,10 +137,7 @@
 (defn- identity-type-validation
   "Validates identity-type parameters."
   [context params]
-  (let [identity-types (:identity-type params)
-        identity-types (if (sequential? identity-types)
-                         identity-types
-                         (when identity-types [identity-types]))]
+  (let [identity-types (u/seqify (:identity-type params))]
     (when-let [invalid-types (seq (remove valid-identity-type? identity-types))]
       [(format (str "Parameter identity_type has invalid values [%s]. "
                     "Only 'provider', 'system', 'single_instance', or 'catalog_item' can be specified.")
