@@ -261,7 +261,10 @@
         "Identity type 'catalog_item'"
         ["catalog_item"] [acl-catalog-item]
 
-        "Mixed identity types"
+        "Multiple identity types"
+        ["provider" "single_instance"] [acl-provider acl-single-instance]
+
+        "All identity types"
         ["provider" "system" "single_instance" "catalog_item"] all-acls
 
         "Identity type searches are always case-insensitive"
