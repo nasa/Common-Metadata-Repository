@@ -211,7 +211,6 @@
              "get-concepts:" t1 "metadata-transformer/transform-concepts" t2)
       concepts)))
 
-;; TODO unit test this
 (defn- get-cached-metadata-in-format
   "Returns a a map of concepts found in the cache or other sets of items not found and mapped
    from a key that indicates why they weren't found in the cache."
