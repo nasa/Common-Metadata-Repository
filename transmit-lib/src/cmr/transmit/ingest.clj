@@ -16,6 +16,7 @@
 
 (defn- concept-ingest-url
   [provider-id concept-type native-id conn]
+  {:pre [provider-id concept-type native-id conn]}
   (format "%s/providers/%s/%s/%s"
           (conn/root-url conn)
           (codec/url-encode provider-id)
