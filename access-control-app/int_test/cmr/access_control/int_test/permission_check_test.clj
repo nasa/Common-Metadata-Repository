@@ -81,6 +81,18 @@
                                       :native-id "coll1"
                                       :revision-id 1}
                                      {"Echo-Token" token})
+        coll2-umm (-> example-collection-record
+                      (assoc :EntryTitle "coll2 entry title"
+                             :ShortName "coll2"))
+        coll2-metadata (umm-spec/generate-metadata (u/conn-context) coll2-umm :echo10)
+        coll2 (ingest/ingest-concept (u/conn-context)
+                                     {:format "application/echo10+xml"
+                                      :metadata coll2-metadata
+                                      :concept-type :collection
+                                      :provider-id "PROV1"
+                                      :native-id "coll2"
+                                      :revision-id 1}
+                                     {"Echo-Token" token})
         gran1 (ingest/ingest-concept (u/conn-context)
                                      {:format "application/echo10+xml"
                                       :metadata granule-metadata
@@ -166,11 +178,26 @@
                 :guest []
                 :registered []
                 "user1" ["read" "order"]
-                "user2" ["read" "order"]))))))
+                "user2" ["read" "order"]))))
+
+        (testing "acls granting access to collection by collection identifier"
+          (testing "by entry title"
+            (create-acl
+              {:group_permissions [{:permissions [:read]
+                                    :user_type :guest}]
+               :catalog_item_identity {:name "coll2 guest read"
+                                       :collection_applicable true
+                                       :collection_identifier {:entry_titles ["coll2 entry title"]}
+                                       :provider_id "PROV1"}})
+            (are [user permissions]
+              (= {"C1200000002-PROV1" permissions}
+                 (get-permissions user "C1200000002-PROV1"))
+              :guest ["read"]
+              :registered [])))))
 
     (testing "granule level permissions"
       (testing "no permissions granted"
-        (is (= {"G1200000002-PROV1" []}
+        (is (= {"G1200000003-PROV1" []}
                (get-granule-permissions "user1")))))))
 
 ;; TODO CMR-2900 add tests for access value and temporal ACL conditions

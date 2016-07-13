@@ -633,7 +633,7 @@
   "When x is non-nil, returns x if it is sequential, or else returns a sequential collection containing only x."
   [x]
   (when (some? x)
-    (if (coll? x)
+    (if (sequential? x)
       x
       [x])))
 

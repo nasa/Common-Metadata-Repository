@@ -494,7 +494,7 @@ Content-Type: application/json;charset=ISO-8859-1
 
 ### <a name="get-permissions"></a> Checking User Permissions
 
-You can check the permissions granted to a specific user or user type on specific concepts by making a GET request tion `%CMR-ENDPOINT%/permissions`.
+You can check the permissions granted to a specific user or user type on specific concepts by making a GET request to `%CMR-ENDPOINT%/permissions`.
 
 The response is a JSON object mapping concept ids to arrays of permissions granted to the specified user for the respective concept.
 
