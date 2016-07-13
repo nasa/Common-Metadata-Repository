@@ -200,6 +200,90 @@
         (is (= {"G1200000003-PROV1" []}
                (get-granule-permissions "user1")))))))
 
+(deftest collection-identifier-access-value-test
+  (let [token (e/login (u/conn-context) "user1" [])
+        ;; one collection with a low access value
+        coll1-umm (-> example-collection-record
+                      (assoc :EntryTitle "coll1 entry title")
+                      (update-in [:AccessConstraints] assoc :Value "1"))
+        coll1 (ingest/ingest-concept (u/conn-context)
+                                     {:format "application/echo10+xml"
+                                      :metadata (umm-spec/generate-metadata (u/conn-context) coll1-umm :echo10)
+                                      :concept-type :collection
+                                      :provider-id "PROV1"
+                                      :native-id "coll1"
+                                      :revision-id 1}
+                                     {"Echo-Token" token})
+        ;; one with an intermediate access value
+        coll2-umm (-> example-collection-record
+                      (assoc :EntryTitle "coll2 entry title"
+                             :ShortName "coll2")
+                      (update-in [:AccessConstraints] assoc :Value "4"))
+        coll2 (ingest/ingest-concept (u/conn-context)
+                                     {:format "application/echo10+xml"
+                                      :metadata (umm-spec/generate-metadata (u/conn-context) coll2-umm :echo10)
+                                      :concept-type :collection
+                                      :provider-id "PROV1"
+                                      :native-id "coll2"
+                                      :revision-id 1}
+                                     {"Echo-Token" token})
+        ;; one with a higher access value
+        coll3-umm (-> example-collection-record
+                      (assoc :EntryTitle "coll3 entry title"
+                             :ShortName "coll3")
+                      (update-in [:AccessConstraints] assoc :Value "9"))
+        coll3 (ingest/ingest-concept (u/conn-context)
+                                     {:format "application/echo10+xml"
+                                      :metadata (umm-spec/generate-metadata (u/conn-context) coll3-umm :echo10)
+                                      :concept-type :collection
+                                      :provider-id "PROV1"
+                                      :native-id "coll3"
+                                      :revision-id 1}
+                                     {"Echo-Token" token})
+        create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
+        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
+        get-coll-permissions #(get-permissions :guest "C1200000000-PROV1" "C1200000001-PROV1" "C1200000002-PROV1")]
+    (u/wait-until-indexed)
+    (is (= {"C1200000000-PROV1" []
+            "C1200000001-PROV1" []
+            "C1200000002-PROV1" []}
+           (get-coll-permissions)))
+    (let [acl-id (create-acl
+                   {:group_permissions [{:permissions [:read]
+                                         :user_type :guest}]
+                    :catalog_item_identity {:name "coll2 guest read"
+                                            :collection_applicable true
+                                            :collection_identifier {:access_value {:min_value 1 :max_value 10}}
+                                            :provider_id "PROV1"}})]
+      (is (= {"C1200000000-PROV1" ["read"]
+              "C1200000001-PROV1" ["read"]
+              "C1200000002-PROV1" ["read"]}
+             (get-coll-permissions)))
+
+      (update-acl acl-id {:group_permissions [{:permissions [:read]
+                                               :user_type :guest}]
+                          :catalog_item_identity {:name "coll2 guest read"
+                                                  :collection_applicable true
+                                                  :collection_identifier {:access_value {:min_value 4 :max_value 10}}
+                                                  :provider_id "PROV1"}})
+
+      (is (= {"C1200000000-PROV1" []
+              "C1200000001-PROV1" ["read"]
+              "C1200000002-PROV1" ["read"]}
+             (get-coll-permissions)))
+
+      (update-acl acl-id {:group_permissions [{:permissions [:read]
+                                               :user_type :guest}]
+                          :catalog_item_identity {:name "coll2 guest read"
+                                                  :collection_applicable true
+                                                  :collection_identifier {:access_value {:min_value 4 :max_value 5}}
+                                                  :provider_id "PROV1"}})
+
+      (is (= {"C1200000000-PROV1" []
+              "C1200000001-PROV1" ["read"]
+              "C1200000002-PROV1" []}
+             (get-coll-permissions))))))
+
 ;; TODO CMR-2900 add tests for access value and temporal ACL conditions
 
 (deftest provider-permission-check-test

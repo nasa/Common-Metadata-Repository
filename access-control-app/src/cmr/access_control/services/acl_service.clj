@@ -243,10 +243,8 @@
 (defn get-granted-permissions
   "Returns a map of concept ids to seqs of permissions granted on that concept for the given username."
   [context username-or-type concept-ids]
-  (let [concepts (for [concept (mdb1/get-latest-concepts context concept-ids)]
-                   ;; ACL-checking functions expect some of the fields in :extra-fields
-                   ;; to be at the top level of the concept map
-                   (merge concept (:extra-fields concept)))
+  (let [concepts (acl-matchers/add-acl-enforcement-fields
+                   (mdb1/get-latest-concepts context concept-ids))
         sids (get-sids context username-or-type)
         ;; fetch and parse all ACLs lazily
         acls (for [batch (mdb1/find-in-batches context :acl 1000 {:latest true})
