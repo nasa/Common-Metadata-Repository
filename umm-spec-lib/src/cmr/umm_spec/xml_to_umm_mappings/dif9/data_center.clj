@@ -11,12 +11,14 @@
   do not map to Data Center Contact which is our default."
   (set/map-invert center/umm-contact-role->dif9-data-center-contact-role))
 
-(defn parse-originating-center
-  "Returns the UMM data center from parsing the DIF9 Originating_Center in the given xml document."
+(defn parse-originating-centers
+  "Returns the UMM data centers from parsing the DIF9 Originating_Center in the given xml document.
+  There can only be one originating center, but we retun it in a vector anyways for better handling
+  in the caller."
   [doc]
   (when-let [originating-center (value-of doc "/DIF/Originating_Center")]
-    {:Roles ["ORIGINATOR"]
-     :ShortName originating-center}))
+    [{:Roles ["ORIGINATOR"]
+      :ShortName originating-center}]))
 
 (defn parse-data-centers
   "Returns UMM-C data centers from DIF 9 XML document."

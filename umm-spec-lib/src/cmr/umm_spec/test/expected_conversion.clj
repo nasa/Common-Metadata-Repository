@@ -612,7 +612,7 @@
   (->> (concat (filter #(= "Email" (:Type %)) contact-mechanisms)
                (filter #(= "Fax" (:Type %)) contact-mechanisms)
                (filter #(contact/umm-contact-phone-types (:Type %)) contact-mechanisms))
-       (map #(update-in % [:Type] (fn [t] (get #{"Email" "Fax"} t "Telephone"))))
+       (map #(update % :Type (fn [t] (get #{"Email" "Fax"} t "Telephone"))))
        seq))
 
 (defn- expected-dif-addresses
@@ -629,8 +629,8 @@
   (let [contact-info (some-> contact-info
                              first
                              (dissoc :RelatedUrls nil :ServiceHours nil :ContactInstruction nil)
-                             (update-in [:ContactMechanisms] expected-dif-contact-mechanisms)
-                             (update-in [:Addresses] expected-dif-addresses))]
+                             (update :ContactMechanisms expected-dif-contact-mechanisms)
+                             (update :Addresses expected-dif-addresses))]
     (when (seq (util/remove-nil-keys contact-info))
       [(cmn/map->ContactInformationType contact-info)])))
 
@@ -678,28 +678,28 @@
     (-> contact
         (assoc :Uuid nil)
         (assoc :NonDataCenterAffiliation nil)
-        (update-in [:Roles] #(expected-dif-roles % role-expected-mapping))
-        (update-in [:ContactInformation] expected-dif-contact-information))))
+        (update :Roles #(expected-dif-roles % role-expected-mapping))
+        (update :ContactInformation expected-dif-contact-information))))
 
 (defn- expected-dif-contact-persons
   "Returns the expected DIF parsed contact persons for the given UMM collection.
   Both ContactGroups and ContactPersons are converted into ContactPersons with the un-supported
   DIF fields dropped."
   [c]
-  (let [contacts (map #(contact->expected % role->expected)
+  (let [contacts (mapv #(contact->expected % role->expected)
                       (concat (:ContactGroups c) (:ContactPersons c)))]
     (when (seq contacts)
-      (vec contacts))))
+      contacts)))
 
 (defn- expected-dif-data-center-contact-persons
   "Returns the expected DIF data center contact persons for the given UMM data center.
   Both ContactGroups and ContactPersons are converted into ContactPersons with the DIF not supported
   fields dropped."
   [c]
-  (let [contacts (map #(contact->expected % data-center-role->expected)
+  (let [contacts (mapv #(contact->expected % data-center-role->expected)
                       (concat (:ContactGroups c) (:ContactPersons c)))]
     (if (seq contacts)
-      (vec contacts)
+      contacts
       [(cmn/map->ContactPersonType {:Roles ["Data Center Contact"]
                                     :LastName su/not-provided})])))
 
@@ -726,7 +726,7 @@
                                  expected-contact-info (expected-dif-data-center-contact-info
                                                          (:ContactInformation center))]]
                        (-> center
-                           (update-in [:Roles] (constantly ["ARCHIVER" "DISTRIBUTOR"]))
+                           (assoc :Roles ["ARCHIVER" "DISTRIBUTOR"])
                            (assoc :ContactPersons expected-persons)
                            (assoc :ContactGroups nil)
                            (assoc :ContactInformation expected-contact-info)))

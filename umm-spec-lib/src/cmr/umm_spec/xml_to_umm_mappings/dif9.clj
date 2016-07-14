@@ -182,7 +182,7 @@
      :MetadataAssociations (for [parent-dif (values-at doc "/DIF/Parent_DIF")]
                              {:EntryId parent-dif})
      :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel"))
-     :DataCenters (concat [(center/parse-originating-center doc)]
+     :DataCenters (concat (center/parse-originating-centers doc)
                           (center/parse-data-centers doc))}))
 
 (defn dif9-xml-to-umm-c
