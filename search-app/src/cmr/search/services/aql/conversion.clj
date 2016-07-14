@@ -117,7 +117,7 @@
         options (-> (u/remove-nil-keys {:ignore-case ignore-case :pattern pattern?})
                     (update-map-values str))
         options {key options}]
-    (common-params/parameter->condition :granule key value options)))
+    (common-params/parameter->condition nil :granule key value options)))
 
 (defn validate-aql-pattern
   "Validates the aql pattern string, throws service error if the string contains backslash

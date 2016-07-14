@@ -32,7 +32,7 @@
 
 ;; Converts orbit-number parameter into a query condition
 (defmethod p/parameter->condition :orbit-number
-  [concept-type param values options]
+  [_context concept-type param values options]
   (if (string? values)
     (orbit-number-param-str->condition values)
     (orbit-number-param-map->condition values)))

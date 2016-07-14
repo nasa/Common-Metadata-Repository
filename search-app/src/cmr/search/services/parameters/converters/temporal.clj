@@ -15,13 +15,13 @@
 
 ;; Converts temporal parameter and values into query condition, returns the converted condition
 (defmethod p/parameter->condition :temporal
-  [concept-type param value options]
+  [context concept-type param value options]
   (if (sequential? value)
     (if (= "true" (get-in options [:temporal :and]))
       (gc/and-conds
-        (map #(p/parameter->condition concept-type param % options) value))
+        (map #(p/parameter->condition context concept-type param % options) value))
       (gc/or-conds
-        (map #(p/parameter->condition concept-type param % options) value)))
+        (map #(p/parameter->condition context concept-type param % options) value)))
     (if (re-find #"/" value)
       (let [[iso-range start-day end-day] (map s/trim (s/split value #","))
             date-time-range (when-not (s/blank? iso-range)
@@ -39,4 +39,3 @@
                                     :end-day (string->int-value end-day)
                                     :exclusive? (= "true" (get-in options [:temporal :exclude-boundary]))
                                     :limit-to-granules (= "true" (get-in options [:temporal :limit-to-granules]))})))))
-

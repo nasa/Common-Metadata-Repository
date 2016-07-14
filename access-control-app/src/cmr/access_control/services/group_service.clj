@@ -129,7 +129,7 @@
   [context existing-group updated-group]
   (v/validate! (update-group-validations context) (assoc updated-group :existing existing-group)))
 
-(defn- validate-members-exist
+(defn validate-members-exist
   "Validates that the given usernames exist. Throws an exception if they do not."
   [context usernames]
   (when-let [non-existent-users (seq (remove #(urs/user-exists? context %) (distinct usernames)))]
@@ -240,15 +240,15 @@
    :legacy-guid :string})
 
 (defmethod cp/parameter->condition :access-group-provider
-  [concept-type param value options]
+  [context concept-type param value options]
 
   (if (sequential? value)
     (gc/group-conds (cp/group-operation param options)
-                    (map #(cp/parameter->condition concept-type param % options) value))
+                    (map #(cp/parameter->condition context concept-type param % options) value))
     ;; CMR indicates we should search for system groups
     (if (= (str/upper-case value) SYSTEM_PROVIDER_ID)
       (common-qm/negated-condition (common-qm/exist-condition :provider))
-      (cp/string-parameter->condition concept-type param value options))))
+      (cp/string-parameter->condition context concept-type param value options))))
 
 
 (defn search-for-groups
@@ -257,7 +257,7 @@
                                      (->> params
                                           cp/sanitize-params
                                           (validate-group-search-params :access-group)
-                                          (cp/parse-parameter-query :access-group)))
+                                          (cp/parse-parameter-query context :access-group)))
         [find-concepts-time results] (u/time-execution
                                       (cs/find-concepts context :access-group query))
         total-took (+ query-creation-time find-concepts-time)]

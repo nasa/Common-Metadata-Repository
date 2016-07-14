@@ -9,7 +9,7 @@
 
 ;; Converts equator-crossing-date parameter into a query condition
 (defmethod p/parameter->condition :equator-crossing-date
-  [concept-type param values options]
+  [_context concept-type param values options]
   (try
     (let [ec-map (parser/parse-datetime-range values)]
       (qm/map->EquatorCrossingDateCondition ec-map))

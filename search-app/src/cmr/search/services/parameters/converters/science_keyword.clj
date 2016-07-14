@@ -7,7 +7,7 @@
 
 ;; Converts science keywords parameter and values into conditions
 (defmethod p/parameter->condition :science-keywords
-  [concept-type param value options]
+  [context concept-type param value options]
   (let [case-sensitive? (p/case-sensitive-field? concept-type param options)
         pattern? (p/pattern-field? concept-type param options)
         group-operation (p/group-operation param options :and)
@@ -19,6 +19,6 @@
       ;; then this recurses back into this same function to handle each separately
       (gc/group-conds
         group-operation
-        (map #(p/parameter->condition concept-type param % options) (vals value)))
+        (map #(p/parameter->condition context concept-type param % options) (vals value)))
       ;; Creates the science keyword condition for a group of science keyword fields and values.
       (nf/parse-nested-condition target-field value case-sensitive? pattern?))))

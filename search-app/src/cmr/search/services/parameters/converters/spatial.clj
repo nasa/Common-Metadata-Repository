@@ -23,17 +23,17 @@
   (gc/and-conds (map (partial url-value->spatial-condition type) (flatten [value]))))
 
 (defmethod p/parameter->condition :polygon
-  [concept-type param value options]
+  [_context concept-type param value options]
   (url-value->spatial-conditions :polygon value))
 
 (defmethod p/parameter->condition :bounding-box
-  [concept-type param value options]
+  [_context concept-type param value options]
   (url-value->spatial-conditions :bounding-box value))
 
 (defmethod p/parameter->condition :point
-  [concept-type param value options]
+  [_context concept-type param value options]
   (url-value->spatial-conditions :point value))
 
 (defmethod p/parameter->condition :line
-  [concept-type param value options]
+  [_context concept-type param value options]
   (url-value->spatial-conditions :line value))
