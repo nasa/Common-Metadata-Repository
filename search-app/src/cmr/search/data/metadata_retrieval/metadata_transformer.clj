@@ -22,9 +22,14 @@
             ;; render collections as html
             [cmr.collection-renderer.services.collection-renderer :as collection-renderer]))
 
-(def transformer-supported-format?
+(def transformer-supported-base-formats
   "The set of formats supported by the transformer."
-  #{:echo10 :dif :dif10 :iso19115 :iso-smap})
+  #{:echo10 :dif :dif10 :iso19115 :umm-json})
+
+(defn transformer-supported-format?
+  "Returns true if the transformer supports transforming to this format"
+  [result-format]
+  (contains? transformer-supported-base-formats (qm/base-result-format result-format)))
 
 (def types->xsl
   "Defines the [metadata-format target-format] to xsl mapping"

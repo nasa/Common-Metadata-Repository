@@ -101,6 +101,16 @@
  (refresh-cache {:system (get-in user/system [:apps :search])})
  (prettify-cache (get-in user/system [:apps :search :caches cache-key])))
 
+(defn cache-state
+  "A helper function for debugging that returns a map of concept id to a map containing
+   :revision-id and :cached-formats"
+  [context]
+  (let [cache-map @(:cache-atom (c/context->cache context cache-key))]
+    (u/map-values (fn [rfm]
+                    {:revision-id (:revision-id rfm)
+                     :cached-formats (rfm/cached-formats rfm)})
+                  cache-map)))
+
 (defn- concept-tuples->cache-map
   "Takes a set of concept tuples fetches the concepts from metadata db, converts them to revision
    format maps, and stores them into a cache map"
@@ -111,16 +121,6 @@
                            (rfm/concept->revision-format-map context % cached-formats))
                          concepts)]
     (reduce #(assoc %1 (:concept-id %2) %2) {} rfms)))
-
-(defn cache-state
-  "A helper function for debugging that returns a map of concept id to a map containing
-   :revision-id and :cached-formats"
-  [context]
-  (let [cache-map @(:cache-atom (c/context->cache context cache-key))]
-    (u/map-values (fn [rfm]
-                    {:revision-id (:revision-id rfm)
-                     :cached-formats (rfm/cached-formats rfm)})
-                  cache-map)))
 
 (defn refresh-cache
   "Refreshes the collection metadata cache"
