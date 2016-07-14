@@ -24,7 +24,7 @@
 
 (def transformer-supported-base-formats
   "The set of formats supported by the transformer."
-  #{:echo10 :dif :dif10 :iso19115 :umm-json})
+  #{:echo10 :dif :dif10 :iso19115 :umm-json :iso-smap})
 
 (defn transformer-supported-format?
   "Returns true if the transformer supports transforming to this format"
