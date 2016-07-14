@@ -94,15 +94,25 @@
                             {:status 200
                              :body (slurp (io/resource welcome-page-location))}))
     (context "/site" []
-      ;; Static HTML resources and swagger.json, typically API documentation which needs endpoint URLs replaced
-      (GET ["/:page", :page #"(swagger.json)|(.*\.html$)"] {headers :headers, {page :page} :params}
+      ;; Return swagger.json if the application provides one
+      (GET "/swagger.json" {:keys [headers]}
+        (if-let [resource (site-resource "swagger.json")]
+          {:status 200
+           :body (-> resource
+                     slurp
+                     (str/replace "%CMR-PROTOCOL%" public-protocol)
+                     (str/replace "%CMR-HOST%" (headers "host"))
+                     (str/replace "%CMR-BASE-PATH%" (str "/" relative-root-url)))
+           :headers (:headers cr/options-response)}
+          (route/not-found (site-resource "404.html"))))
+      ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
+      (GET ["/:page", :page #".*\.html$"] {headers :headers, {page :page} :params}
         (when-let [resource (site-resource page)]
           (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)]
             {:status 200
              :body (-> resource
                        slurp
-                       (str/replace "%CMR-ENDPOINT%" cmr-root))
-             :headers (:headers cr/options-response)})))
+                       (str/replace "%CMR-ENDPOINT%" cmr-root))})))
       ;; Other static resources (Javascript, CSS)
       (route/resources "/" {:root resource-root})
       (route/not-found (site-resource "404.html")))))
