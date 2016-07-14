@@ -12,6 +12,8 @@
             [cmr.common-app.services.search.params :as cp]
             [cmr.common-app.services.search.parameter-validation :as cpv]
             [cmr.common-app.services.search.query-model :as common-qm]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
+            [cheshire.core :as json]
             [clojure.edn :as edn]
             [clojure.set :as set]
             [cmr.common.concepts :as concepts]
@@ -102,14 +104,15 @@
   (cpv/merge-params-config
     cpv/basic-params-config
     {:single-value #{}
-     :multiple-value #{:permitted-group}
+     :multiple-value #{:permitted-group :identity-type}
      :always-case-sensitive #{}
-     :disallow-pattern #{}
+     :disallow-pattern #{:identity-type}
      :allow-or #{}}))
 
 (defmethod cpv/valid-parameter-options :acl
   [_]
-  {:permitted-group cpv/string-param-options})
+  {:permitted-group cpv/string-param-options
+   :identity-type cpv/string-param-options})
 
 (defn- valid-permitted-group?
   "Returns true if the given permitted group is valid, i.e. guest, registered or conforms to
@@ -122,13 +125,31 @@
 (defn- permitted-group-validation
   "Validates permitted group parameters."
   [context params]
-  (let [permitted-groups (:permitted-group params)
-        permitted-groups (if (sequential? permitted-groups)
-                           permitted-groups
-                           (when permitted-groups [permitted-groups]))]
+  (let [permitted-groups (u/seqify (:permitted-group params))]
     (when-let [invalid-groups (seq (remove valid-permitted-group? permitted-groups))]
       [(format "Parameter permitted_group has invalid values [%s]. Only 'guest', 'registered' or a group concept id can be specified."
                (str/join ", " invalid-groups))])))
+
+(def acl-identity-type->search-value
+ "Maps identity type query paremter values to the actual values used in the index."
+ {"system" "System"
+  "single_instance" "Group"
+  "provider" "Provider"
+  "catalog_item" "Catalog Item"})
+
+(defn- valid-identity-type?
+  "Returns true if the given identity-type is valid, i.e., one of 'system', 'single_instance', 'provider', or 'catalog_item'."
+  [identity-type]
+  (contains? (set (keys acl-identity-type->search-value)) (str/lower-case identity-type)))
+
+(defn- identity-type-validation
+  "Validates identity-type parameters."
+  [context params]
+  (let [identity-types (u/seqify (:identity-type params))]
+    (when-let [invalid-types (seq (remove valid-identity-type? identity-types))]
+      [(format (str "Parameter identity_type has invalid values [%s]. "
+                    "Only 'provider', 'system', 'single_instance', or 'catalog_item' can be specified.")
+               (str/join ", " invalid-types))])))
 
 (defn validate-acl-search-params
   "Validates the parameters for an ACL search. Returns the parameters or throws an error if invalid."
@@ -136,13 +157,18 @@
   (let [[safe-params type-errors] (cpv/apply-type-validations
                                     params
                                     [(partial cpv/validate-map [:options])
-                                     (partial cpv/validate-map [:options :permitted-group])])]
+                                     (partial cpv/validate-map [:options :permitted-group])
+                                     (partial cpv/validate-map [:options :identity-type])])]
     (cpv/validate-parameters
       :acl safe-params
       (concat cpv/common-validations
-              [permitted-group-validation])
+              [permitted-group-validation identity-type-validation])
       type-errors))
   params)
+
+(defmethod cp/always-case-sensitive-fields :acl
+  [_]
+  #{:concept-id :identity-type})
 
 (defmethod common-qm/default-sort-keys :acl
   [_]
@@ -150,7 +176,16 @@
 
 (defmethod cp/param-mappings :acl
   [_]
-  {:permitted-group :string})
+  {:permitted-group :string
+   :identity-type :acl-identity-type})
+
+(defmethod cp/parameter->condition :acl-identity-type
+ [concept-type param value options]
+ (if (sequential? value)
+   (gc/group-conds (cp/group-operation param options)
+                   (map #(cp/parameter->condition concept-type param % options) value))
+   (let [value (get acl-identity-type->search-value (str/lower-case value))]
+     (cp/string-parameter->condition concept-type param value options))))
 
 (defn search-for-acls
   [context params]

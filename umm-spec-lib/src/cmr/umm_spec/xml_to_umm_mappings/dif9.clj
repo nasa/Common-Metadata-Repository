@@ -8,7 +8,9 @@
             [cmr.umm-spec.models.common :as cmn]
             [cmr.umm.dif.date-util :refer [parse-dif-end-date]]
             [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
-            [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as aa]))
+            [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as aa]
+            [cmr.umm-spec.xml-to-umm-mappings.dif9.data-contact :as contact]
+            [cmr.umm-spec.xml-to-umm-mappings.dif9.data-center :as center]))
 
 (def dif-iso-topic-category->umm-iso-topic-category
   "DIF ISOTopicCategory to UMM ISOTopicCategory mapping. Some of the DIF ISOTopicCategory are made
@@ -179,9 +181,9 @@
                                 (value-of related-url "URL_Content_Type/Subtype")]})
      :MetadataAssociations (for [parent-dif (values-at doc "/DIF/Parent_DIF")]
                              {:EntryId parent-dif})
-     ;; DataCenters is not implemented but is required in UMM-C
-     ;; Implement with CMR-3157
-     :DataCenters [su/not-provided-data-center]}))
+     :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel"))
+     :DataCenters (concat (center/parse-originating-centers doc)
+                          (center/parse-data-centers doc))}))
 
 (defn dif9-xml-to-umm-c
   "Returns UMM-C collection record from DIF9 collection XML document."

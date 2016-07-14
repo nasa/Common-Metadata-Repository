@@ -497,6 +497,10 @@
          nil "acd" "z" true
          nil "abc" "zyx" true)))
 
+(defspec lz4-compression 100
+  (for-all [s gen/string]
+    (= s (-> s util/string->lz4-bytes util/lz4-bytes->string))))
+
 (defspec gzip-base64-encode 100
   (for-all [s gen/string]
     (= s (-> s util/string->gzip-base64 util/gzip-base64->string))))
@@ -601,7 +605,7 @@
          {}
          {:b [{:c [4 5] :d 4} {:c [6]}]}
          {:b [{:d 6} {:d 7}]}]}
-   [:a :b :c]]
+    [:a :b :c]]
    [[1 2 3] [4 5] [6]]))
 
 (deftest compare-natural-strings

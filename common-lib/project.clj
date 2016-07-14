@@ -24,6 +24,9 @@
                  [clj-time "0.11.0"]
                  [cheshire "5.5.0"]
 
+                 ;; Fast compression library
+                 [net.jpountz.lz4/lz4 "1.3.0"]
+
                  ;; Needed for GzipHandler
                  ;; Matches the version of Jetty used by ring-jetty-adapter
                  [org.eclipse.jetty/jetty-servlets "9.2.10.v20150310"]

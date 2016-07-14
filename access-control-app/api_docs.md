@@ -388,6 +388,13 @@ The following parameters are supported when searching for ACLs.
 
 *permitted_group
   * options: ignore_case
+*identity_type
+  * options: none (always case-insensitive)
+  * The type must be one or more of the following
+    * system
+    * provider
+    * single_instance
+    * catalog_item
 
 ##### ACL Search Response
 
@@ -402,7 +409,9 @@ The response is always returned in JSON and includes the following parts.
   * identity_type - String of "provider", "system", "single_instance", or "catalog_item"
   * location - A URL to retrieve the ACL
 
-##### ACL Search Example
+##### ACL Search Examples
+
+###### By permitted_group
 
 ```
 curl -i "%CMR-ENDPOINT%/acls?permitted_group\[\]=guest&permitted_group\[\]=registered&pretty=true"
@@ -435,6 +444,37 @@ Content-Length: 702
     "identity_type" : "Group",
     "name" : "Group - AG1234-CMR",
     "location" : "%CMR-ENDPOINT%/acls/ACL1200000006-CMR"
+  } ]
+}
+```
+
+###### By identity_type
+
+```
+curl -i "%CMR-ENDPOINT%/acls?identity_type\[\]=provider&identity_type\[\]=catalog_item&pretty=true"
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+CMR-Hits: 2
+CMR-Took: 5
+CMR-Request-Id: 5689303f-574d-4edf-b2f1-5219dc0ae6c5
+Content-Length: 702
+
+{
+  "hits" : 2,
+  "took" : 4,
+  "items" : [ {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000003-CMR",
+    "identity_type" : "Catalog Item",
+    "name" : "All Collections",
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000003-CMR"
+  }, {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000001-CMR",
+    "identity_type" : "Provider",
+    "name" : "Provider - PROV1 - AUDIT_REPORT",
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000001-CMR"
   } ]
 }
 ```

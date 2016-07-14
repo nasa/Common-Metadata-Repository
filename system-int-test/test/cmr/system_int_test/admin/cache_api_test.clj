@@ -68,8 +68,7 @@
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))]
     (testing "list caches"
       (are [url caches]
-        (let [response (list-caches-for-app url admin-read-token)]
-          (is (= (set caches) (set response))))
+        (is (= (set caches) (set (list-caches-for-app url admin-read-token))))
 
         (url/indexer-read-caches-url) ["acls" "indexer-index-set-cache" "token-imp" "kms"
                                        "collection-granule-aggregation-cache"]
@@ -84,6 +83,7 @@
                                       "token-imp"
                                       "token-sid"
                                       "xsl-transformer-templates"
+                                      "metadata-cache"
                                       "kms"])
       (s/only-with-real-database
        (testing "list caches for bootstrap"

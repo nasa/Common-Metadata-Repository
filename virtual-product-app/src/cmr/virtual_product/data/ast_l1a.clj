@@ -29,7 +29,7 @@
     "SceneCloudCoverage" "Solar_Azimuth_Angle" "Solar_Elevation_Angle" "UpperLeftQuadCloudCoverage"
     "UpperRightQuadCloudCoverage" "source_granule_ur"})
 
- (def additional-attributes-14DMO-14OTH
+(def additional-attributes-14DMO-14OTH
   "The set of additional attributes for AST14DMO, AST14OTH."
   #{"ASTERGains" "ASTERGRANULEID" "ASTERMapOrientationAngle" "ASTERProcessingCenter"
     "ASTERReceivingCenter" "ASTERSceneOrientationAngle" "ASTERSWIRPointingAngle"
@@ -39,6 +39,20 @@
     "LowerRightQuadCloudCoverage" "RadiometricDBVersion" "SceneCloudCoverage" "Solar_Azimuth_Angle"
     "Solar_Elevation_Angle" "UpperLeftQuadCloudCoverage" "UpperRightQuadCloudCoverage"
     "source_granule_ur"})
+
+(def additional-attributes-L1B
+  "The set of additional attributes for AST_L1B."
+  #{"ASTERGains" "ASTERMapOrientationAngle" "ASTERMapProjection" "ASTERProcessingCenter"
+    "ASTERReceivingCenter" "ASTERSWIRPointingAngle" "ASTERTIRPointingAngle"
+    "ASTERVNIRPointingAngle" "Band10_Available" "Band11_Available" "Band12_Available"
+    "Band13_Available" "Band14_Available" "Band1_Available" "Band2_Available"
+    "Band3B_Available" "Band3N_Available" "Band4_Available" "Band5_Available"
+    "Band6_Available" "Band7_Available" "Band8_Available" "Band9_Available" "DAR_ID"
+    "GenerationDateandTime" "GeometricDBVersion" "LowerLeftQuadCloudCoverage"
+    "LowerRightQuadCloudCoverage" "RadiometricDBVersion" "SWIR_ObservationMode"
+    "SceneCloudCoverage" "Solar_Azimuth_Angle" "Solar_Elevation_Angle" "TIR_ObservationMode"
+    "UpperLeftQuadCloudCoverage" "UpperRightQuadCloudCoverage" "VNIR1_ObservationMode"
+    "VNIR2_ObservationMode" "source_granule_ur"})
 
 (def short-name->additional-attributes
   "Defines virtual collection short-name to additional-attributes mapping."
@@ -51,6 +65,7 @@
    "AST_09XT" additional-attributes-07-07XT-09-09XT
    "AST14DEM" additional-attributes-14DEM
    "AST14DMO" additional-attributes-14DMO-14OTH
-   "AST14OTH" additional-attributes-14DMO-14OTH})
+   "AST14OTH" additional-attributes-14DMO-14OTH
+   "AST_L1B" additional-attributes-L1B})
 
 

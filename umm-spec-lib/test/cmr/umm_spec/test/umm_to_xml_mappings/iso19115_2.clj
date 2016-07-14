@@ -1,5 +1,5 @@
 (ns cmr.umm-spec.test.umm-to-xml-mappings.iso19115-2
-  "Tests to verify that ISO19115-2 is generaated correctly."
+  "Tests to verify that ISO19115-2 is generated correctly."
   (:require [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
             [cmr.umm-spec.models.collection :as coll]
             [clojure.test :refer :all]
