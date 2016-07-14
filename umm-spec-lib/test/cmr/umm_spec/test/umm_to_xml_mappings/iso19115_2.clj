@@ -1,13 +1,16 @@
 (ns cmr.umm-spec.test.umm-to-xml-mappings.iso19115-2
   "Tests to verify that ISO19115-2 is generated correctly."
   (:require [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
+            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as parser]
+            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
             [cmr.umm-spec.models.collection :as coll]
             [clojure.test :refer :all]
             [clojure.data.xml :as x]
             [clojure.java.io :as io]
             [cmr.common.util :refer [are3]]
             [cmr.common.xml :as xml]
-            [cmr.common.xml.xslt :as xslt]))
+            [cmr.common.xml.xslt :as xslt]
+            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
 (def iso-no-use-constraints "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <gmi:MI_Metadata xmlns:gmi=\"http://www.isotc211.org/2005/gmi\" xmlns:eos=\"http://earthdata.nasa.gov/schema/eos\" xmlns:gco=\"http://www.isotc211.org/2005/gco\" xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gml=\"http://www.opengis.net/gml/3.2\" xmlns:gmx=\"http://www.isotc211.org/2005/gmx\" xmlns:gsr=\"http://www.isotc211.org/2005/gsr\" xmlns:gss=\"http://www.isotc211.org/2005/gss\" xmlns:gts=\"http://www.isotc211.org/2005/gts\" xmlns:srv=\"http://www.isotc211.org/2005/srv\" xmlns:swe=\"http://schemas.opengis.net/sweCommon/2.0/\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
@@ -299,6 +302,59 @@
                  <gmd:processStep>
                     <gmi:LE_ProcessStep>
                        <gmd:description gco:nilReason=\"unknown\" />
+                       <gmi:processingInformation>
+                        <eos:EOS_Processing>
+                          <gmi:identifier/>
+                          <eos:otherPropertyType>
+                            <gco:RecordType xlink:href=\"http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])\">Echo Additional Attributes</gco:RecordType>
+                          </eos:otherPropertyType>
+                          <eos:otherProperty>
+                            <gco:Record>
+                              <eos:AdditionalAttributes>
+                                <eos:AdditionalAttribute>
+                                  <eos:reference>
+                                    <eos:EOS_AdditionalAttributeDescription>
+                                      <eos:type>
+                                        <eos:EOS_AdditionalAttributeTypeCode codeList=\"http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeTypeCode\" codeListValue=\"processingInformation\">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                      </eos:type>
+                                      <eos:name>
+                                        <gco:CharacterString>SIPSMetGenVersion</gco:CharacterString>
+                                      </eos:name>
+                                      <eos:description>
+                                        <gco:CharacterString>The version of the SIPSMetGen software used to produce the metadata file for this granule</gco:CharacterString>
+                                      </eos:description>
+                                      <eos:dataType>
+                                        <eos:EOS_AdditionalAttributeDataTypeCode codeList=\"http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode\" codeListValue=\"STRING\">STRING</eos:EOS_AdditionalAttributeDataTypeCode>
+                                      </eos:dataType>
+                                      <eos:measurementResolution>
+                                        <gco:CharacterString>Measurement resolution</gco:CharacterString>
+                                      </eos:measurementResolution>
+                                      <eos:parameterRangeBegin>
+                                        <gco:CharacterString>Parameter begin</gco:CharacterString>
+                                      </eos:parameterRangeBegin>
+                                      <eos:parameterRangeEnd>
+                                        <gco:CharacterString>Parameter End</gco:CharacterString>
+                                      </eos:parameterRangeEnd>
+                                      <eos:parameterUnitsOfMeasure>
+                                        <gco:CharacterString>Units of Measure</gco:CharacterString>
+                                      </eos:parameterUnitsOfMeasure>
+                                      <eos:parameterValueAccuracy>
+                                        <gco:CharacterString>Parameter Value Accuracy</gco:CharacterString>
+                                      </eos:parameterValueAccuracy>
+                                      <eos:valueAccuracyExplanation>
+                                        <gco:CharacterString>Value Accuracy Explanation</gco:CharacterString>
+                                      </eos:valueAccuracyExplanation>
+                                    </eos:EOS_AdditionalAttributeDescription>
+                                  </eos:reference>
+                                  <eos:value>
+                                    <gco:CharacterString>A Value</gco:CharacterString>
+                                  </eos:value>
+                                </eos:AdditionalAttribute>
+                              </eos:AdditionalAttributes>
+                            </gco:Record>
+                          </eos:otherProperty>
+                        </eos:EOS_Processing>
+                      </gmi:processingInformation>
                     </gmi:LE_ProcessStep>
                  </gmd:processStep>
               </gmd:LI_Lineage>
@@ -337,3 +393,16 @@
 
     "With use constraints"
     {:AccessConstraints {:Description "Dummy Comment" :Value 0}} iso-with-use-constraints)))
+
+(deftest data-quality-info-additional-attributes
+  (testing "additional attributes that should go to dataQualityInfo section are written out correctly"
+    (let [parsed (#'parser/parse-iso19115-xml (lkt/setup-context-for-test lkt/sample-keyword-map)
+                                              iso-with-use-constraints)
+          ;; all the parsed additional attributes are from dataQualityInfo and we use it as the expected value
+          expected-additional-attributes (:AdditionalAttributes parsed)
+          generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
+          ;; parse out the dataQualtiyInfo additional attributes
+          parsed-additional-attributes (#'aa/parse-data-quality-info-additional-attributes generated-iso)]
+      (is (not (empty? parsed-additional-attributes)))
+      (is (= expected-additional-attributes parsed-additional-attributes)))))
+
