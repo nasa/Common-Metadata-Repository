@@ -211,7 +211,6 @@
                                        "registered"
                                        sid)))
                     (concat ["guest"]))]
-    (println "GROUPS: " groups)
     (cp/string-parameter->condition concept-type :permitted-group groups options)))
 
 (defn search-for-acls

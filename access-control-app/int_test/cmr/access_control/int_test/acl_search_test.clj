@@ -276,58 +276,59 @@
         group2 (u/ingest-group token {:name "group2"} ["USER1" "user2"])
         group3 (u/ingest-group token {:name "group3"} nil)
         acl-guest (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
-        acl-registered (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE"))
-                                      :group_permissions
-                                      [{:user_type "registered" :permissions ["create"]}])
+        acl-registered-1 (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE")
+                                                  :group_permissions
+                                                  [{:user_type "registered" :permissions ["create"]}]))
         acl-group1 (ingest-acl token (assoc (system-acl "ARCHIVE_RECORD")
-                                      :group_permissions
-                                      [{:group_id (:concept_id group1) :permissions ["create"]}]))
+                                            :group_permissions
+                                            [{:group_id (:concept_id group1) :permissions ["create"]}]))
 
-        acl5 (ingest-acl token (assoc (provider-acl "OPTION_DEFINITION")
-                                      :group_permissions
-                                      [{:user_type "registered" :permissions ["create"]}]))
-        acl6 (ingest-acl token (assoc (provider-acl "OPTION_ASSIGNMENT")
-                                      :group_permissions
-                                      [{:group_id (:concept_id group2) :permissions ["create"]}]))
+        acl-registered-2 (ingest-acl token (assoc (provider-acl "OPTION_DEFINITION")
+                                                  :group_permissions
+                                                  [{:user_type "registered" :permissions ["create"]}]))
+        acl-group2 (ingest-acl token (assoc (provider-acl "OPTION_ASSIGNMENT")
+                                            :group_permissions
+                                            [{:group_id (:concept_id group2) :permissions ["create"]}]))
+        ;; No user should match this acl since group3 has no members
+        acl-group3 (ingest-acl token (assoc (catalog-item-acl "All Granules")
+                                            :group_permissions
+                                            [{:group_id (:concept_id group3) :permissions ["create"]}]))
 
-        acl7 (ingest-acl token (assoc (catalog-item-acl "All Granules")
-                                      :group_permissions
-                                      [{:group_id (:concept_id group3) :permissions ["create"]}]))
-
-        guest-acls [acl1 acl4 acl7]
-        registered-acls [acl2 acl5 acl8]
-        all-acls [acl1 acl2 acl3 acl4 acl5 acl6 acl7]]
+        registered-acls [acl-registered-1 acl-registered-2]
+        guest-acls [acl-guest]]
 
     (u/wait-until-indexed)
 
-    (testing "Search with non-existent user type returns error"
-      (is (= {:status 400
-              :body {:errors [(str "The following users do not exist [foo]")]}
-              :content-type :json}
-             (ac/search-for-acls (u/conn-context) {:permitted-user "foo"} {:raw? true}))))
+    (testing "Search with non-existent user returns error"
+      (are3 [user]
+        (is (= {:status 400
+                :body {:errors [(format "The following users do not exist [%s]" user)]}
+                :content-type :json}
+               (ac/search-for-acls (u/conn-context) {:permitted-user user} {:raw? true})))
+
+        "Invalid user"
+        "foo"
+
+        "'guest' is not a registered user"
+        "guest"
+
+        "'registered' is not a registered user either"
+        "registered"))
+
     (testing "Search with valid users"
       (are3 [users expected-acls]
         (let [response (ac/search-for-acls (u/conn-context) {:permitted-user users})]
           (is (= (acls->search-response (count expected-acls) expected-acls)
                 (dissoc response :took))))
 
-        "User1 is not in group3"
-        ["user1"] all-acls))))
+        "user3 is not in a group, but gets acls for registered or guest"
+        ["user3"] (concat registered-acls guest-acls)
 
-        ; "Identity type 'system'"
-        ; ["system"] [acl-system]
-        ;
-        ; "Identity type 'single_instance'"
-        ; ["single_instance"] [acl-single-instance]
-        ;
-        ; "Identity type 'catalog_item'"
-        ; ["catalog_item"] [acl-catalog-item]
-        ;
-        ;  "Multiple identity types"
-        ;  ["provider" "single_instance"] [acl-provider acl-single-instance]
-        ;
-        ;  "All identity types"
-        ;  ["provider" "system" "single_instance" "catalog_item"] all-acls
-        ;
-        ;  "Identity type searches are always case-insensitive"
-        ;  ["PrOvIdEr"] [acl-provider]))))
+        "user1 gets acls for guest, registered, group1, and group2"
+        ["user1"] [acl-guest acl-registered-1 acl-registered-2 acl-group1 acl-group2]
+
+        "user2 gets acls for guest, registred, and group2"
+        ["user2"] [acl-guest acl-registered-1 acl-registered-2 acl-group2]
+
+        "User names are case-insensitive"
+        ["USER1"] [acl-guest acl-registered-1 acl-registered-2 acl-group1 acl-group2]))))
