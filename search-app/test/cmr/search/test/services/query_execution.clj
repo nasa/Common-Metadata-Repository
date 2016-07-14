@@ -88,8 +88,7 @@
       {:concept-id "C1-PROV1" :result-format :echo10} :elasticsearch
       {:concept-id "C1-PROV1" :result-format :dif} :elasticsearch
       {:concept-id "C1-PROV1" :result-format :dif10} :elasticsearch
-      {:concept-id "C1-PROV1" :result-format :iso19115} :elasticsearch
-      {:concept-id "C1-PROV1" :result-format :iso-smap} :elasticsearch))
+      {:concept-id "C1-PROV1" :result-format :iso19115} :elasticsearch))
 
   (testing "Granule Specific"
     (are [params expected-strategy]
@@ -101,7 +100,6 @@
       {:concept-id "G1-PROV1" :result-format :dif} :direct-transformer
       {:concept-id "G1-PROV1" :result-format :dif10} :direct-transformer
       {:concept-id "G1-PROV1" :result-format :iso19115} :direct-transformer
-      {:concept-id "G1-PROV1" :result-format :iso-smap} :direct-transformer
 
       ;; Multiple are supported
       {:concept-id ["G1-PROV1" "G2-PROV1"] :result-format :echo10} :direct-transformer
