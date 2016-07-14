@@ -57,7 +57,8 @@
             [ring.util.response :as r]
             [ring.util.request :as request]
             [clojure.java.io :as io]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [cmr.common-app.api.routes :as cr])
   (:import [org.pegdown
             PegDownProcessor
             Extensions]))
@@ -93,14 +94,15 @@
                             {:status 200
                              :body (slurp (io/resource welcome-page-location))}))
     (context "/site" []
-      ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
-      (GET ["/:page", :page #".*\.html$"] {headers :headers, {page :page} :params}
+      ;; Static HTML resources and swagger.json, typically API documentation which needs endpoint URLs replaced
+      (GET ["/:page", :page #"(swagger.json)|(.*\.html$)"] {headers :headers, {page :page} :params}
         (when-let [resource (site-resource page)]
           (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)]
             {:status 200
              :body (-> resource
                        slurp
-                       (str/replace "%CMR-ENDPOINT%" cmr-root))})))
+                       (str/replace "%CMR-ENDPOINT%" cmr-root))
+             :headers (:headers cr/options-response)})))
       ;; Other static resources (Javascript, CSS)
       (route/resources "/" {:root resource-root})
       (route/not-found (site-resource "404.html")))))
@@ -158,8 +160,3 @@
                            footer)))
 
   (println "Done"))
-
-
-
-
-
