@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+  <Entry_ID>
+    <Short_Name>AST_L1B</Short_Name>
+    <Version>003</Version>
+  </Entry_ID>
+  <Entry_Title>ASTER L1B Registered Radiance at the Sensor V003</Entry_Title>
+  <Personnel>
+    <Role>TECHNICAL CONTACT</Role>
+    <Contact_Person>
+      <Last_Name/>
+      <Email>lpdaac@usgs.gov</Email>
+    </Contact_Person>
+  </Personnel>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>SPECTRAL/ENGINEERING</Topic>
+    <Term>INFRARED WAVELENGTHS</Term>
+    <Variable_Level_1>REFLECTED INFRARED</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>SPECTRAL/ENGINEERING</Topic>
+    <Term>INFRARED WAVELENGTHS</Term>
+    <Variable_Level_1>THERMAL INFRARED</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>SPECTRAL/ENGINEERING</Topic>
+    <Term>VISIBLE WAVELENGTHS</Term>
+    <Variable_Level_1>VISIBLE IMAGERY</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>SPECTRAL/ENGINEERING</Topic>
+    <Term>VISIBLE WAVELENGTHS</Term>
+    <Variable_Level_1>VISIBLE RADIANCE</Variable_Level_1>
+  </Science_Keywords>
+  <Platform>
+    <Type>Not provided</Type>
+    <Short_Name>AM-1</Short_Name>
+    <Long_Name>Earth Observing System, TERRA (AM-1)</Long_Name>
+    <Instrument>
+      <Short_Name>ASTER</Short_Name>
+      <Long_Name>Advanced Spaceborne Thermal Emission and Reflection Radiometer</Long_Name>
+      <Technique>Imaging Spectrometers/Radiometers</Technique>
+      <Sensor>
+        <Short_Name>SWIR</Short_Name>
+        <Long_Name>Shortwave Infrared</Long_Name>
+        <Technique>Imaging Radiometers</Technique>
+      </Sensor>
+      <Sensor>
+        <Short_Name>TIR</Short_Name>
+        <Long_Name>Thermal Infrared</Long_Name>
+        <Technique>Imaging Radiometers</Technique>
+      </Sensor>
+      <Sensor>
+        <Short_Name>VNIR</Short_Name>
+        <Long_Name>Visible Near Infrared</Long_Name>
+        <Technique>Imaging Radiometers</Technique>
+      </Sensor>
+    </Instrument>
+  </Platform>
+  <Temporal_Coverage>
+    <Time_Type>UTC</Time_Type>
+    <Date_Type>Gregorian</Date_Type>
+    <Temporal_Range_Type>Continuous Range</Temporal_Range_Type>
+    <Precision_Of_Seconds>7</Precision_Of_Seconds>
+    <Ends_At_Present_Flag>true</Ends_At_Present_Flag>
+    <Range_DateTime>
+      <Beginning_Date_Time>1999-12-18T00:00:00.000Z</Beginning_Date_Time>
+    </Range_DateTime>
+  </Temporal_Coverage>
+  <Spatial_Coverage>
+    <Granule_Spatial_Representation>GEODETIC</Granule_Spatial_Representation>
+    <Geometry>
+      <Coordinate_System>CARTESIAN</Coordinate_System>
+      <Bounding_Rectangle>
+        <Southernmost_Latitude>-90</Southernmost_Latitude>
+        <Northernmost_Latitude>90</Northernmost_Latitude>
+        <Westernmost_Longitude>-180</Westernmost_Longitude>
+        <Easternmost_Longitude>180</Easternmost_Longitude>
+      </Bounding_Rectangle>
+    </Geometry>
+  </Spatial_Coverage>
+  <Project>
+    <Short_Name>Not provided</Short_Name>
+  </Project>
+  <Quality/>
+  <Use_Constraints/>
+  <Organization>
+    <Organization_Type>PROCESSOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>LPDAAC</Short_Name>
+    </Organization_Name>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Person>
+        <Last_Name>Not provided</Last_Name>
+      </Contact_Person>
+    </Personnel>
+  </Organization>
+  <Organization>
+    <Organization_Type>ARCHIVER</Organization_Type>
+    <Organization_Name>
+      <Short_Name>LPDAAC</Short_Name>
+    </Organization_Name>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Person>
+        <Last_Name>Not provided</Last_Name>
+      </Contact_Person>
+    </Personnel>
+  </Organization>
+  <Summary>
+    <Abstract>The ASTER Level-1B Registered Radiance at the Sensor product contains radiometrically calibrated and geometrically co-registered data for the acquired channels of the three different telescopes of Level-1A data. The Level-1B data set is produced by applying the radiometric calibration and geometric correction coefficients to the Level-1A. Both intra-telescope and inter-telescope registration correction for all the Bands are accomplished relative to the reference Band for each sub-system (Bands 2, 6, and 11). The Level-1B radiance data set offers the same number of Bands at the same resolution as the Level-1A, and provides the input for generating a number of derived Level-2 geophysical products.
+
+Users are advised that ASTER SWIR data acquired from late April 2008 to the present exhibit anomalous saturation of values and anomalous striping. This effect is also present for some prior acquisition periods. Please refer to the ASTER SWIR User Advisory Document at https://lpdaac.usgs.gov/sites/default/files/public/aster/docs/ASTER_SWIR_User_Advisory_July%2018_08.pdf for more details.
+
+V003 data set release date: 2002-05-03
+
+Data Set Characteristics:
+Area: ~60 km x 60 km
+Image Dimensions:
+  VNIR: 4200 rows x 4980 columns
+  VNIR (3B): 4600 rows x 4980 columns
+  SWIR: 2100 rows x 2490 columns
+  TIR: 700 rows x 830 columns
+File Size:
+  VNIR (1,2,3N): ~60 MB
+  VNIR (3B): ~22 MB
+  SWIR (4-9): ~30 MB
+  TIR  (10-14): ~6 MB
+  Total: 118 Megabytes
+Spatial Resolution:
+  VNIR: 15m
+  SWIR: 30m
+  TIR: 90m
+Units: w/m2/sr/µm
+Projection: Universal Transverse Mercator (UTM)
+Data Format: HDF-EOS, GeoTIFF
+Vgroup Data Fields: 15</Abstract>
+    <Purpose/>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW RELATED INFORMATION</Type>
+    </URL_Content_Type>
+    <URL>http://dx.doi.org/10.5067/ASTER/AST_L1B.003</URL>
+    <Description>Data set landing page at the LP DAAC</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL>http://reverb.echo.nasa.gov/reverb/#utf8=%E2%9C%93&amp;spatial_map=satellite&amp;spatial_type=rectangle&amp;keywords=AST_L1B3</URL>
+    <Description>Interface to search, discover, and access EOS data products, and invoke available data services.</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL>https://lpdaac.usgs.gov/data_access/data_pool</URL>
+    <Description>LP DAAC Data Pool provides direct access to all currently available products and the ability to download them via HTTP.</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL>http://earthexplorer.usgs.gov/</URL>
+    <Description>USGS EarthExplorer (EE) provides users the ability to query, search and order archived ASTER and MODIS products available from the LP DAAC.  Registered users of EE have access to additional features than guest users.</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL>http://glovis.usgs.gov</URL>
+    <Description>The USGS Global Visualization Viewer (GloVis) is an online search and order tool driven by browse images.  Users may select any geographical area of interest (for any given product) and view all available browse images for that area before deciding to order those products.</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL>https://lpdaac.usgs.gov</URL>
+    <Description>The Land Processes Distributed Active Archive Center (LP DAAC) is one of several discipline-specific data centers within the NASA Earth Observing System Data and Information System (EOSDIS).  The LP DAAC Web page provides information about available data products, services, documentation, order interfaces, and tools.</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL>http://asterweb.jpl.nasa.gov/</URL>
+    <Description>The ASTER home page is maintained through NASA's Jet Propulsion Laboratory and documents various aspects of the ASTER mission.</Description>
+  </Related_URL>
+  <Metadata_Association>
+    <Entry_ID>
+      <Short_Name>AST_L1A</Short_Name>
+      <Version>3</Version>
+    </Entry_ID>
+    <Type>Input</Type>
+  </Metadata_Association>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 10.2</Metadata_Version>
+  <Metadata_Dates>
+    <Metadata_Creation>2002-03-14T12:51:00.340Z</Metadata_Creation>
+    <Metadata_Last_Revision>2015-09-30T10:40:25.415Z</Metadata_Last_Revision>
+    <Data_Creation>1970-01-01T00:00:00</Data_Creation>
+    <Data_Last_Revision>1970-01-01T00:00:00</Data_Last_Revision>
+  </Metadata_Dates>
+  <Additional_Attributes>
+    <Name>ASTERMapProjection</Name>
+    <DataType>STRING</DataType>
+    <Description>The map projection of the granule</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>DAR_ID</Name>
+    <DataType>INT</DataType>
+    <Description>ID of the Data Acquisition Request</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>GenerationDateandTime</Name>
+    <DataType>DATETIME_STRING</DataType>
+    <Description>Date and Time granule produced</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>LowerLeftQuadCloudCoverage</Name>
+    <DataType>INT</DataType>
+    <Description>The percentage of cloud coverage for the lower left quadrant</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>LowerRightQuadCloudCoverage</Name>
+    <DataType>INT</DataType>
+    <Description>The percentage of cloud coverage for the lower right quadrant</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SceneCloudCoverage</Name>
+    <DataType>INT</DataType>
+    <Description>Percentage of cloud coverage for the whole scene</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>Solar_Azimuth_Angle</Name>
+    <DataType>FLOAT</DataType>
+    <Description>Angle of the sun clockwise from true North</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>Solar_Elevation_Angle</Name>
+    <DataType>FLOAT</DataType>
+    <Description>Angle of the sun above the horizon</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SWIR_ObservationMode</Name>
+    <DataType>STRING</DataType>
+    <Description>Indicates whether the SWIR sensor group is ON or OFF</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>TIR_ObservationMode</Name>
+    <DataType>STRING</DataType>
+    <Description>Indicates whether the TIR sensor group is ON or OFF</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>UpperLeftQuadCloudCoverage</Name>
+    <DataType>INT</DataType>
+    <Description>The percentage of cloud coverage for the upper left quadrant</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>UpperRightQuadCloudCoverage</Name>
+    <DataType>INT</DataType>
+    <Description>The percentage of cloud coverage for the upper right quadrant</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>VNIR1_ObservationMode</Name>
+    <DataType>STRING</DataType>
+    <Description>Indicates whether the VNIR1 sensor group is ON or OFF</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>VNIR2_ObservationMode</Name>
+    <DataType>STRING</DataType>
+    <Description>Indicates whether the VNIR2 sensor group is ON or OFF</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>Band1_Available</Name>
+    <DataType>STRING</DataType>
+    <Description>Identifies the status of Band 1 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>Band2_Available</Name>
+    <DataType>STRING</DataType>
+    <Description>Identifies the status of Band 2 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>Band3B_Available</Name>
+    <DataType>STRING</DataType>
+    <Description>Identifies the status of Band 3B - [Yes, band is acquired] or [No, band was not acquired]</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>Band3N_Available</Name>
+    <DataType>STRING</DataType>
+    <Description>Identifies the status of Band 3N - [Yes, band is acquired] or [No, band was not acquired]</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>Band4_Available</Name>
+    <DataType>STRING</DataType>
+    <Description>Identifies the status of Band 4 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>Band5_Available</Name>
+    <DataType>STRING</DataType>
+    <Description>Identifies the status of Band 5 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>Band6_Available</Name>
+    <DataType>STRING</DataType>
+    <Description>Identifies the status of Band 6 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>Band7_Available</Name>
+    <DataType>STRING</DataType>
+    <Description>Identifies the status of Band 7 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>Band8_Available</Name>
+    <DataType>STRING</DataType>
+    <Description>Identifies the status of Band 8 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>Band9_Available</Name>
+    <DataType>STRING</DataType>
+    <Description>Identifies the status of Band 9 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>Band10_Available</Name>
+    <DataType>STRING</DataType>
+    <Description>Identifies the status of Band 10 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>Band11_Available</Name>
+    <DataType>STRING</DataType>
+    <Description>Identifies the status of Band 11 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>Band12_Available</Name>
+    <DataType>STRING</DataType>
+    <Description>Identifies the status of Band 12 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>Band13_Available</Name>
+    <DataType>STRING</DataType>
+    <Description>Identifies the status of Band 13 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>Band14_Available</Name>
+    <DataType>STRING</DataType>
+    <Description>Identifies the status of Band 14 - [Yes, band is acquired] or [No, band was not acquired]</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>RadiometricDBVersion</Name>
+    <DataType>STRING</DataType>
+    <Description>The version number of the Radiometric Database used in Level 1 processing.</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>GeometricDBVersion</Name>
+    <DataType>STRING</DataType>
+    <Description>The version number of the Geometric Database used in Level 1 processing.</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>ASTERGains</Name>
+    <DataType>STRING</DataType>
+    <Description>Identifies the Gain setting for the Bands: HGH, NOR, LO1, LO2, LOW, OFF</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>ASTERProcessingCenter</Name>
+    <DataType>STRING</DataType>
+    <Description>Name of the center where these ASTER data were processed</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>ASTERVNIRPointingAngle</Name>
+    <DataType>FLOAT</DataType>
+    <Description>Specifies the pointing angle of the ASTER Visible Near Infrared (VNIR) sensor</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>ASTERSWIRPointingAngle</Name>
+    <DataType>FLOAT</DataType>
+    <Description>Specifies the pointing angle of the ASTER Shortwave Infrared (SWIR) sensor</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>ASTERTIRPointingAngle</Name>
+    <DataType>FLOAT</DataType>
+    <Description>Specifies the pointing angle of the ASTER Thermal Infrared (TIR) sensor</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>ASTERMapOrientationAngle</Name>
+    <DataType>FLOAT</DataType>
+    <Description>Denotes the angle between the path oriented image and the map oriented image for this ASTER scene.</Description>
+    <ParameterRangeBegin>-180.0</ParameterRangeBegin>
+    <ParameterRangeEnd>180.0</ParameterRangeEnd>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>ASTERReceivingCenter</Name>
+    <DataType>STRING</DataType>
+    <Description>Name of the center where these ASTER data were received</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>source_granule_ur</Name>
+    <DataType>STRING</DataType>
+    <Description>Granule-ur of the source granule</Description>
+  </Additional_Attributes>
+  <Product_Level_Id>1B</Product_Level_Id>
+</DIF>

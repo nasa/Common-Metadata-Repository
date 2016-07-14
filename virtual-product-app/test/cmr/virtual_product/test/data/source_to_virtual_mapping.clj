@@ -115,6 +115,9 @@
          "LPDAAC_ECS" ast-l1a "AST14DMO" "003"
          {:granule-ur "SC:AST_L1A.003:2006227720"} {:granule-ur "SC:AST14DMO.003:2006227720"}
 
+         "LPDAAC_ECS" ast-l1a "AST_L1B" "003"
+         {:granule-ur "SC:AST_L1A.003:2006227720"} {:granule-ur "SC:AST_L1B.003:2006227720"}
+
 
          ;; OMUVBD
          "GES_DISC" omuvbd "OMUVBd_ErythemalUV" "003"
