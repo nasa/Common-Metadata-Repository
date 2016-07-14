@@ -9,7 +9,7 @@
   "consumes": [],
   "basePath": "/",
   "paths": {
-    "/collections{extension}": {
+    "/collections": {
       "options": {
         "x-no-doc": false,
         "tags": [
@@ -20,7 +20,7 @@
             "in": "path",
             "name": "extension",
             "description": "",
-            "required": true,
+            "required": false,
             "type": "string"
           }
         ],
@@ -40,7 +40,7 @@
             "in": "path",
             "name": "extension",
             "description": "",
-            "required": true,
+            "required": false,
             "type": "string",
             "pattern": "(?:\\..+)?"
           },
@@ -286,7 +286,7 @@
           },
           {
             "in": "query",
-            "name": "bouding_box",
+            "name": "bounding_box",
             "description": "Bounding boxes define an area on the earth aligned with longitude and latitude. The Bounding box parameters must be 4 comma-separated numbers: lower left longitude, lower left latitude, upper right longitude, upper right latitude.",
             "required": false,
             "type": "string"
