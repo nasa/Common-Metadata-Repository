@@ -80,7 +80,7 @@
           },
           {
             "in": "query",
-            "name": "concept_id",
+            "name": "concept_id[]",
             "description": "<p>A CMR concept id is in the format <code>&lt;concept-type-prefix&gt; &lt;unique-number&gt; &quot;-&quot;
                             &lt;provider-id&gt;</code></p>\n
                             <ul>\n
@@ -98,7 +98,7 @@
           },
           {
             "in": "query",
-            "name": "entry_id",
+            "name": "entry_id[]",
             "description": "",
             "required": false,
             "type": "array",
@@ -109,7 +109,7 @@
           },
           {
             "in": "query",
-            "name": "entry_title",
+            "name": "entry_title[]",
             "description": "",
             "required": false,
             "type": "array",
@@ -120,7 +120,7 @@
           },
           {
             "in": "query",
-            "name": "short_name",
+            "name": "short_name[]",
             "description": "This parameter supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
             "required": false,
             "type": "array",
@@ -131,7 +131,7 @@
           },
           {
             "in": "query",
-            "name": "version",
+            "name": "version[]",
             "description": "This parameter supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
             "required": false,
             "type": "array",
@@ -142,7 +142,7 @@
           },
           {
             "in": "query",
-            "name": "provider",
+            "name": "provider[]",
             "description": "This parameter supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
             "required": false,
             "type": "array",
@@ -153,7 +153,7 @@
           },
           {
             "in": "query",
-            "name": "provider_short_name",
+            "name": "provider_short_name[]",
             "description": "This searches for collections whose provider matches the given provider short names. This supports <code>ignore_case</code> option, but not the <code>pattern</code> option.",
             "required": false,
             "type": "array",
@@ -164,7 +164,7 @@
           },
           {
             "in": "query",
-            "name": "science_keywords",
+            "name": "science_keywords[0][category]",
             "description": "This supports option <em>or</em>.",
             "required": false,
             "type": "array",
@@ -175,7 +175,73 @@
           },
           {
             "in": "query",
-            "name": "spatial_keyword",
+            "name": "science_keywords[0][topic]",
+            "description": "This supports option <em>or</em>.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "science_keywords[0][term]",
+            "description": "This supports option <em>or</em>.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "science_keywords[0][variable_level_1]",
+            "description": "This supports option <em>or</em>.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "science_keywords[0][variable_level_2]",
+            "description": "This supports option <em>or</em>.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "science_keywords[0][variable_level_3]",
+            "description": "This supports option <em>or</em>.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "science_keywords[0][detailed_variable]",
+            "description": "This supports option <em>or</em>.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "spatial_keyword[]",
             "description": "This supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
             "required": false,
             "type": "array",
@@ -186,7 +252,7 @@
           },
           {
             "in": "query",
-            "name": "platform",
+            "name": "platform[]",
             "description": "This supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
             "required": false,
             "type": "array",
@@ -197,7 +263,7 @@
           },
           {
             "in": "query",
-            "name": "instrument",
+            "name": "instrument[]",
             "description": "This supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
             "required": false,
             "type": "array",
@@ -208,7 +274,7 @@
           },
           {
             "in": "query",
-            "name": "sensor",
+            "name": "sensor[]",
             "description": "This supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
             "required": false,
             "type": "array",
@@ -219,7 +285,7 @@
           },
           {
             "in": "query",
-            "name": "data_center",
+            "name": "data_center[]",
             "description": "This supports <code>pattern</code>, <code>and</code>, and <code>ignore_case</code>.",
             "required": false,
             "type": "array",
@@ -230,7 +296,7 @@
           },
           {
             "in": "query",
-            "name": "archive_center",
+            "name": "archive_center[]",
             "description": "This supports <code>pattern</code> and <code>ignore_case</code>.",
             "required": false,
             "type": "array",
@@ -241,7 +307,7 @@
           },
           {
             "in": "query",
-            "name": "project",
+            "name": "project[]",
             "description": "<p>Note: An alias for the parameter 'project' is 'campaign'. As such 'campaign' can be used in place of 'project'.</p>\n                         <p>This supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.</p>",
             "required": false,
             "type": "array",
@@ -252,7 +318,7 @@
           },
           {
             "in": "query",
-            "name": "processing_level_id",
+            "name": "processing_level_id[]",
             "description": "This supports <code>pattern</code> and <code>ignore_case</code>.",
             "required": false,
             "type": "array",
@@ -263,7 +329,7 @@
           },
           {
             "in": "query",
-            "name": "attribute",
+            "name": "attribute[]",
             "description": "<p>Multiple attributes can be provided. The default is for collections to match all the attribute parameters.
                             This can be changed by specifying <code>or</code> option with <code>options[attribute][or]=true</code>.</p>\n                        <p>For additional attribute range search, the default is inclusive on the range boundaries. This can be changed by specifying <code>exclude_boundary</code> option with <code>options[attribute][exclude_boundary]=true</code>.</p>",
             "required": false,
@@ -275,7 +341,7 @@
           },
           {
             "in": "query",
-            "name": "temporal",
+            "name": "temporal[]",
             "description": "<p>The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.</p>\n
                             <p>The first two values of the parameter together define the temporal bounds.</p>\n
                             <p>For temporal range search, the default is inclusive on the range boundaries.\n
@@ -309,14 +375,15 @@
               "type": "string",
               "format": "date-time"
             },
-            "collectionFormat": "multi"
+            "collectionFormat": "csv"
           },
           {
             "in": "query",
             "name": "bounding_box",
             "description": "Bounding boxes define an area on the earth aligned with longitude and latitude. The Bounding box parameters must be 4 comma-separated numbers: lower left longitude, lower left latitude, upper right longitude, upper right latitude.",
             "required": false,
-            "type": "string"
+            "type": "string",
+            "pattern": "-?\\d+,-?\\d+,-?\\d+,-?\\d+"
           },
           {
             "in": "query",
@@ -393,7 +460,7 @@
           },
           {
             "in": "query",
-            "name": "collection_data_type",
+            "name": "collection_data_type[]",
             "description": "Supports ignore_case and the following aliases for \"NEAR_REAL_TIME\": \"near_real_time\", \"nrt\", \"NRT\", \"near real time\", \"near-real time\", \"near-real-time\", \"near real-time\".",
             "required": false,
             "type": "array",
@@ -404,7 +471,7 @@
           },
           {
             "in": "query",
-            "name": "tag_key",
+            "name": "tag_key[]",
             "description": "<p>Collections can be found by searching for associated tags. The following tag parameters are supported.</p>\n
                             <ul>\n
                             <li>tag_key</li>\n
@@ -424,6 +491,13 @@
           },
           {
             "in": "query",
+            "name": "include_tags",
+            "description": "When true include tag information in the response for each of the matching collections.",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "in": "query",
             "name": "all_revisions",
             "description": "In addition to retrieving the latest revision for a collection parameter search,
                             it is possible to return all revisions, including tombstone (deletion marker) revisons,
@@ -436,7 +510,36 @@
           },
           {
             "in": "query",
-            "name": "sort_key",
+            "name": "include_granule_counts",
+            "description": "When true include the number of matching granules for each matching collection.",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "in": "query",
+            "name": "include_facets",
+            "description": "When true include facet information in the legacy facet response format. When set to v2 include facet information in the updated version 2 facets format.",
+            "required": false,
+            "type": "string",
+            "enum": ["true", "false", "v2"]
+          },
+          {
+            "in": "query",
+            "name": "hierarchical_facets",
+            "description": "When include_facets is true and hierarchical_facets is true, return the legacy facet response with hierarchical fields for science keywords, platforms, instruments, data centers, and locations.",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "in": "query",
+            "name": "include_highlights",
+            "description": "When true highlight any of the terms provided in the keyword search that match within the collection summary. Only supported for the JSON response format.",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "in": "query",
+            "name": "sort_key[]",
             "description": "<p>Collection results are sorted by ascending entry title by default when a search does not result in a score.
                             If a keyword search is performed then the search results will be sorted by relevance (score descending).
                             One or more sort keys can be specified using the <code>sort_key[]</code> parameter.
