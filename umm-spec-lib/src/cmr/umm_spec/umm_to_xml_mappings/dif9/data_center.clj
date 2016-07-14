@@ -30,7 +30,12 @@
        [:Data_Center_Name (if-let [uuid (:Uuid center)] {:uuid uuid} {})
         [:Short_Name (:ShortName center)]
         [:Long_Name (:LongName center)]]
-       [:Data_Center_URL (first (:URLs (first (:RelatedUrls (first (:ContactInformation center))))))]
+       [:Data_Center_URL (-> (:ContactInformation center)
+                             first
+                             :RelatedUrls
+                             first
+                             :URLs
+                             first)]
        ;; Personnel within Data_Center
        (if (or (seq (:ContactGroups center)) (seq (:ContactPersons center)))
          (contact/generate-personnel center umm-contact-role->dif9-data-center-contact-role)

@@ -612,7 +612,7 @@
   (->> (concat (filter #(= "Email" (:Type %)) contact-mechanisms)
                (filter #(= "Fax" (:Type %)) contact-mechanisms)
                (filter #(contact/umm-contact-phone-types (:Type %)) contact-mechanisms))
-       (map #(update-in % [:Type] (fn [t] (if (#{"Email" "Fax"} t) t "Telephone"))))
+       (map #(update-in % [:Type] (fn [t] (get #{"Email" "Fax"} t "Telephone"))))
        seq))
 
 (defn- expected-dif-addresses
