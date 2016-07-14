@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "title": "CMR Search API",
-    "version": "1.55.0",
+    "version": "1.0.0",
     "description": "CMR Search API"
   },
   "produces": [],
@@ -11,7 +11,7 @@
   "host": "%CMR-HOST%",
   "basePath": "%CMR-BASE-PATH%",
   "paths": {
-    "/collections": {
+    "/collections{extension}": {
       "options": {
         "x-no-doc": false,
         "tags": [
@@ -44,324 +44,8 @@
             "description": "",
             "required": false,
             "type": "string",
-            "pattern": "(?:\\..+)?"
-          },
-          {
-            "in": "query",
-            "name": "version",
-            "description": "This parameter supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "data_center",
-            "description": "This supports <code>pattern</code>, <code>and</code>, and <code>ignore_case</code>.",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "platform",
-            "description": "This supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "revision_date",
-            "description": "<p>This supports option <code>and</code>.</p>\n
-                            <p>Find collections which have revision date within the ranges of datetimes.
-                               The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.</p>",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "echo_collection_id",
-            "description": "Find a collection matching a echo collection id. Note more than one echo collection id may be supplied.",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "short_name",
-            "description": "This parameter supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "provider",
-            "description": "This parameter supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "dif_entry_id",
-            "description": "This searches for matches on either entry id or associated difs",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "point",
-            "description": "Search using a point involves using a pair of values representing the point coordinates as parameters.
-                            The first value is the longitude and second value is the latitude.",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "in": "query",
-            "name": "polygon",
-            "description": "Polygon points are provided in counter-clockwise order.
-                            The last point should match the first point to close the polygon.
-                            The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on.",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "in": "query",
-            "name": "online_only",
-            "description": "",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "in": "query",
-            "name": "two_d_coordinate_system_name[]",
-            "description": "This supports pattern. two_d_coordinate_system[name] param is an alias of two_d_coordinate_system_name,
-                            but it does not support pattern.",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "tag_key",
-            "description": "<p>Collections can be found by searching for associated tags. The following tag parameters are supported.</p>\n
-                            <ul>\n
-                            <li>tag_key</li>\n
-                            <li>options: pattern</li>\n
-                            <li>tag_originator_id</li>\n
-                            <li>options: pattern</li>\n
-                            <li>tag_data</li>\n
-                            <li>options: pattern</li>\n
-                            </ul>\n
-                            <p><code>exclude</code> parameter can be used with tag_key to exclude any collections that are associated with the specified tag key from the search result.</p>",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "dataset_id",
-            "description": "Alias for entry title",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "all_revisions",
-            "description": "In addition to retrieving the latest revision for a collection parameter search,
-                            it is possible to return all revisions, including tombstone (deletion marker) revisons,
-                            by passing in <code>all_revisions=true</code> with the URL parameters.
-                            The reference and UMM JSON response formats are supported for all revision searches.
-                            References to tombstone revisions do not include the <code>location</code> tag and include an additional tag,
-                            <code>deleted</code>, which always has content of \"true\".",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "in": "query",
-            "name": "pattern",
-            "description": "",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "in": "query",
-            "name": "temporal",
-            "description": "<p>The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.</p>\n
-                            <p>The first two values of the parameter together define the temporal bounds.</p>\n
-                            <p>For temporal range search, the default is inclusive on the range boundaries.\n
-                            This can be changed by specifying <code>exclude_boundary</code> option with <code>options[temporal][exclude_boundary]=true</code>.
-                            This option has no impact on periodic temporal searches.</p>\n
-                            <p>The collection's temporal range or the temporal range of the granules in the collection can be searched.\n                           <code>options[temporal][limit_to_granules]=true</code> will indicate that the temporal search should find collections based on the minimum and maximum values of each collection's granules' temporal range.\n                           If a collection does not have any granules it will search the collection's temporal range.</p>",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "science_keywords",
-            "description": "This supports option <em>or</em>.",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "archive_center",
-            "description": "This supports <code>pattern</code> and <code>ignore_case</code>.",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "concept_id",
-            "description": "<p>A CMR concept id is in the format <code>&lt;concept-type-prefix&gt; &lt;unique-number&gt; &quot;-&quot;
-                            &lt;provider-id&gt;</code></p>\n
-                            <ul>\n
-                            <li><code>concept-type-prefix</code> is a single capital letter prefix indicating the concept type. \"C\" is used for collections</li>\n
-                            <li><code>unique-number</code> is a single number assigned by the CMR during ingest.</li>\n
-                            <li><code>provider-id</code> is the short name for the provider. i.e. \"LPDAAC_ECS\"</li>\n
-                            </ul>\n
-                            <p>Example: <code>C123456-LPDAAC_ECS</code></p>",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "browsable",
-            "description": "",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "in": "query",
-            "name": "bounding_box",
-            "description": "Bounding boxes define an area on the earth aligned with longitude and latitude. The Bounding box parameters must be 4 comma-separated numbers: lower left longitude, lower left latitude, upper right longitude, upper right latitude.",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "in": "query",
-            "name": "updated_since",
-            "description": "Find collections which have revision date starting at or after 'updated_since' param value",
-            "required": false,
-            "type": "string",
-            "format": "date-time"
-          },
-          {
-            "in": "query",
-            "name": "sort_key",
-            "description": "<p>Collection results are sorted by ascending entry title by default when a search does not result in a score.
-                            If a keyword search is performed then the search results will be sorted by relevance (score descending).
-                            One or more sort keys can be specified using the <code>sort_key[]</code> parameter.
-                            The order used impacts searching. Fields can be prepended with a <code>-</code> to sort in descending order.
-                            Ascending order is the default but <code>+</code> can be used to explicitly request ascending.</p>\n                        <h5>Valid Collection Sort Keys</h5>\n                        <ul>\n                          <li><code>entry_title</code></li>\n                          <li><code>dataset_id</code> - alias for entry_title</li>\n                          <li><code>short_name</code></li>\n                          <li><code>entry_id</code></li>\n                          <li><code>start_date</code></li>\n                          <li><code>end_date</code></li>\n                          <li><code>platform</code></li>\n                          <li><code>instrument</code></li>\n                          <li><code>sensor</code></li>\n                          <li><code>provider</code></li>\n                          <li><code>revision_date</code></li>\n                          <li><code>score</code> - document relevance score, defaults to descending. See <a href=\"#document-scoring\">Document Scoring</a>.</li>\n                          <li><code>has_granules</code> - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.</li>",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "downloadable",
-            "description": "",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "in": "query",
-            "name": "processing_level_id",
-            "description": "This supports <code>pattern</code> and <code>ignore_case</code>.",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "ignore_case",
-            "description": "",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "in": "query",
-            "name": "provider_short_name",
-            "description": "This searches for collections whose provider matches the given provider short names. This supports <code>ignore_case</code> option, but not the <code>pattern</code> option.",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "project",
-            "description": "<p>Note: An alias for the parameter 'project' is 'campaign'. As such 'campaign' can be used in place of 'project'.</p>\n                         <p>This supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.</p>",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
+            "enum": [".xml", ".json", ".atom", ".native", ".umm-json", ".echo10", ".dif10", ".dif",
+                     ".iso", ".iso19115", ".opendata", ".kml", ".csv"]
           },
           {
             "in": "query",
@@ -396,76 +80,15 @@
           },
           {
             "in": "query",
-            "name": "browse_only",
-            "description": "",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "in": "query",
-            "name": "collection_data_type",
-            "description": "Supports ignore_case and the following aliases for \"NEAR_REAL_TIME\": \"near_real_time\", \"nrt\", \"NRT\", \"near real time\", \"near-real time\", \"near-real-time\", \"near real-time\".",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "attribute",
-            "description": "<p>Multiple attributes can be provided. The default is for collections to match all the attribute parameters.
-                            This can be changed by specifying <code>or</code> option with <code>options[attribute][or]=true</code>.</p>\n                        <p>For additional attribute range search, the default is inclusive on the range boundaries. This can be changed by specifying <code>exclude_boundary</code> option with <code>options[attribute][exclude_boundary]=true</code>.</p>",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "has_granules",
-            "description": "When <code>has_granules</code> is set to \"true\" or \"false\",
-                            results will be restricted to collections with or without granules, respectively.",
-            "required": false,
-            "type": "boolean"
-          },
-          {
-            "in": "query",
-            "name": "line",
-            "description": "Lines are provided as a list of comma separated values representing coordinates of points along the line.
-                            The coordinates are listed in the format lon1, lat1, lon2, lat2, lon3, lat3, and so on.",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "in": "query",
-            "name": "spatial_keyword",
-            "description": "This supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "sensor",
-            "description": "This supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "in": "query",
-            "name": "instrument",
-            "description": "This supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
+            "name": "concept_id",
+            "description": "<p>A CMR concept id is in the format <code>&lt;concept-type-prefix&gt; &lt;unique-number&gt; &quot;-&quot;
+                            &lt;provider-id&gt;</code></p>\n
+                            <ul>\n
+                            <li><code>concept-type-prefix</code> is a single capital letter prefix indicating the concept type. \"C\" is used for collections</li>\n
+                            <li><code>unique-number</code> is a single number assigned by the CMR during ingest.</li>\n
+                            <li><code>provider-id</code> is the short name for the provider. i.e. \"LPDAAC_ECS\"</li>\n
+                            </ul>\n
+                            <p>Example: <code>C123456-LPDAAC_ECS</code></p>",
             "required": false,
             "type": "array",
             "items": {
@@ -488,6 +111,337 @@
             "in": "query",
             "name": "entry_title",
             "description": "",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "short_name",
+            "description": "This parameter supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "description": "This parameter supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "provider",
+            "description": "This parameter supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "provider_short_name",
+            "description": "This searches for collections whose provider matches the given provider short names. This supports <code>ignore_case</code> option, but not the <code>pattern</code> option.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "science_keywords",
+            "description": "This supports option <em>or</em>.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "spatial_keyword",
+            "description": "This supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "platform",
+            "description": "This supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "instrument",
+            "description": "This supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "sensor",
+            "description": "This supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "data_center",
+            "description": "This supports <code>pattern</code>, <code>and</code>, and <code>ignore_case</code>.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "archive_center",
+            "description": "This supports <code>pattern</code> and <code>ignore_case</code>.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "project",
+            "description": "<p>Note: An alias for the parameter 'project' is 'campaign'. As such 'campaign' can be used in place of 'project'.</p>\n                         <p>This supports <code>pattern</code>, <code>ignore_case</code> and option <code>and</code>.</p>",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "processing_level_id",
+            "description": "This supports <code>pattern</code> and <code>ignore_case</code>.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "attribute",
+            "description": "<p>Multiple attributes can be provided. The default is for collections to match all the attribute parameters.
+                            This can be changed by specifying <code>or</code> option with <code>options[attribute][or]=true</code>.</p>\n                        <p>For additional attribute range search, the default is inclusive on the range boundaries. This can be changed by specifying <code>exclude_boundary</code> option with <code>options[attribute][exclude_boundary]=true</code>.</p>",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "temporal",
+            "description": "<p>The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.</p>\n
+                            <p>The first two values of the parameter together define the temporal bounds.</p>\n
+                            <p>For temporal range search, the default is inclusive on the range boundaries.\n
+                            This can be changed by specifying <code>exclude_boundary</code> option with <code>options[temporal][exclude_boundary]=true</code>.
+                            This option has no impact on periodic temporal searches.</p>\n
+                            <p>The collection's temporal range or the temporal range of the granules in the collection can be searched.\n                           <code>options[temporal][limit_to_granules]=true</code> will indicate that the temporal search should find collections based on the minimum and maximum values of each collection's granules' temporal range.\n                           If a collection does not have any granules it will search the collection's temporal range.</p>",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "updated_since",
+            "description": "Find collections which have revision date starting at or after 'updated_since' param value",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "in": "query",
+            "name": "revision_date",
+            "description": "<p>This supports option <code>and</code>.</p>\n
+                            <p>Find collections which have revision date within the ranges of datetimes.
+                               The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.</p>",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "bounding_box",
+            "description": "Bounding boxes define an area on the earth aligned with longitude and latitude. The Bounding box parameters must be 4 comma-separated numbers: lower left longitude, lower left latitude, upper right longitude, upper right latitude.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "polygon",
+            "description": "Polygon points are provided in counter-clockwise order.
+                            The last point should match the first point to close the polygon.
+                            The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "point",
+            "description": "Search using a point involves using a pair of values representing the point coordinates as parameters.
+                            The first value is the longitude and second value is the latitude.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "line",
+            "description": "Lines are provided as a list of comma separated values representing coordinates of points along the line.
+                            The coordinates are listed in the format lon1, lat1, lon2, lat2, lon3, lat3, and so on.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "two_d_coordinate_system_name[]",
+            "description": "This supports pattern. two_d_coordinate_system[name] param is an alias of two_d_coordinate_system_name,
+                            but it does not support pattern.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "browsable",
+            "description": "",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "in": "query",
+            "name": "browse_only",
+            "description": "",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "in": "query",
+            "name": "downloadable",
+            "description": "",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "in": "query",
+            "name": "online_only",
+            "description": "",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "in": "query",
+            "name": "has_granules",
+            "description": "When <code>has_granules</code> is set to \"true\" or \"false\",
+                            results will be restricted to collections with or without granules, respectively.",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "in": "query",
+            "name": "collection_data_type",
+            "description": "Supports ignore_case and the following aliases for \"NEAR_REAL_TIME\": \"near_real_time\", \"nrt\", \"NRT\", \"near real time\", \"near-real time\", \"near-real-time\", \"near real-time\".",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "tag_key",
+            "description": "<p>Collections can be found by searching for associated tags. The following tag parameters are supported.</p>\n
+                            <ul>\n
+                            <li>tag_key</li>\n
+                            <li>options: pattern</li>\n
+                            <li>tag_originator_id</li>\n
+                            <li>options: pattern</li>\n
+                            <li>tag_data</li>\n
+                            <li>options: pattern</li>\n
+                            </ul>\n
+                            <p><code>exclude</code> parameter can be used with tag_key to exclude any collections that are associated with the specified tag key from the search result.</p>",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "all_revisions",
+            "description": "In addition to retrieving the latest revision for a collection parameter search,
+                            it is possible to return all revisions, including tombstone (deletion marker) revisons,
+                            by passing in <code>all_revisions=true</code> with the URL parameters.
+                            The reference and UMM JSON response formats are supported for all revision searches.
+                            References to tombstone revisions do not include the <code>location</code> tag and include an additional tag,
+                            <code>deleted</code>, which always has content of \"true\".",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "in": "query",
+            "name": "sort_key",
+            "description": "<p>Collection results are sorted by ascending entry title by default when a search does not result in a score.
+                            If a keyword search is performed then the search results will be sorted by relevance (score descending).
+                            One or more sort keys can be specified using the <code>sort_key[]</code> parameter.
+                            The order used impacts searching. Fields can be prepended with a <code>-</code> to sort in descending order.
+                            Ascending order is the default but <code>+</code> can be used to explicitly request ascending.</p>\n                        <h5>Valid Collection Sort Keys</h5>\n                        <ul>\n                          <li><code>entry_title</code></li>\n                          <li><code>dataset_id</code> - alias for entry_title</li>\n                          <li><code>short_name</code></li>\n                          <li><code>entry_id</code></li>\n                          <li><code>start_date</code></li>\n                          <li><code>end_date</code></li>\n                          <li><code>platform</code></li>\n                          <li><code>instrument</code></li>\n                          <li><code>sensor</code></li>\n                          <li><code>provider</code></li>\n                          <li><code>revision_date</code></li>\n                          <li><code>score</code> - document relevance score, defaults to descending. See <a href=\"#document-scoring\">Document Scoring</a>.</li>\n                          <li><code>has_granules</code> - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.</li>",
             "required": false,
             "type": "array",
             "items": {
