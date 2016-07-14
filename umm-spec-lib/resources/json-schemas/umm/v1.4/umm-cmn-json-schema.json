@@ -45,11 +45,11 @@
         },
         "ShortName": {
           "description": "This is the short name of the data center.",
-          "type": "string"
+           "$ref": "#/definitions/ShortNameType"
         },
         "LongName": {
           "description": "This is the long name of the data center.",
-          "type": "string"
+           "$ref": "#/definitions/LongNameType"
         },
         "Uuid": {
           "description": "Uuid of the data center.",
@@ -91,10 +91,6 @@
           },
           "minItems": 1
         },
-        "Type": {
-          "description": "This is the type of the contact.",
-          "$ref": "#/definitions/DataContactTypeEnum"
-        },
         "Uuid": {
           "description": "Uuid of the data contact.",
           "$ref": "#/definitions/UuidType"
@@ -119,7 +115,7 @@
           "maxLength": 255
         }
       },
-      "required": ["Roles", "Type", "GroupName"]
+      "required": ["Roles", "GroupName"]
     },
     "ContactPersonType": {
       "type": "object",
@@ -131,10 +127,6 @@
             "$ref": "#/definitions/DataContactRoleEnum"
           },
           "minItems": 1
-        },
-        "Type": {
-          "description": "This is the type of the contact.",
-          "$ref": "#/definitions/DataContactTypeEnum"
         },
         "Uuid": {
           "description": "Uuid of the data contact.",
@@ -172,7 +164,7 @@
           "maxLength": 255
         }
       },
-      "required": ["Roles", "Type", "LastName"]
+      "required": ["Roles", "LastName"]
     },
     "ContactInformationType": {
       "type": "object",
@@ -1333,11 +1325,6 @@
       "description": "Defines the possible values of a data contact role.",
       "type": "string",
       "enum": ["Data Center Contact", "Technical Contact", "Science Contact", "Investigator", "Metadata Author", "User Services", "Science Software Development"]
-    },
-    "DataContactTypeEnum": {
-      "description": "Defines the possible types of a data contact.",
-      "type": "string",
-      "enum": ["PERSON", "GROUP"]
     },
     "ContactMechanismTypeEnum": {
       "description": "Defines the possible contact mechanism types.",

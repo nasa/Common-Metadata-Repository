@@ -61,7 +61,6 @@
      :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]
      :DataCenters [u/not-provided-data-center]
      :ContactGroups [(umm-cmn/map->ContactGroupType {:Roles ["Investigator"]
-                                                     :Type "GROUP"
                                                      :GroupName "ABC"})]}))
 
 ;; This only tests a minimum example record for now. We need to test with larger more complicated
