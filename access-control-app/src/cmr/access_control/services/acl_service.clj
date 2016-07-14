@@ -20,7 +20,8 @@
             [cmr.umm-spec.legacy :as umm-legacy]
             [cmr.acl.core :as acl]
             [cmr.umm.acl-matchers :as acl-matchers]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [cmr.common.date-time-parser :as dtp]))
 
 (def acl-provider-id
   "The provider ID for all ACLs. Since ACLs are not owned by individual
@@ -178,10 +179,18 @@
   [acl]
   (-> acl
       (set/rename-keys {:system-identity :system-object-identity
-                                :provider-identity :provider-object-identity
-                                :group-permissions :aces})
+                        :provider-identity :provider-object-identity
+                        :group-permissions :aces})
       (util/update-in-each [:aces] update-in [:user-type] keyword)
-      (util/update-in-each [:aces] set/rename-keys {:group-id :group-guid})))
+      (util/update-in-each [:aces] set/rename-keys {:group-id :group-guid})
+      (update-in [:catalog-item-identity :collection-identifier :temporal]
+                 (fn [t]
+                   (when t
+                     (-> t
+                         (assoc :temporal-field :acquisition)
+                         (update-in [:mask] keyword)
+                         (update-in [:start-date] dtp/try-parse-datetime)
+                         (update-in [:end-date] dtp/try-parse-datetime)))))))
 
 (def all-permissions
   "The set of all permissions checked and returned by the functions below."
@@ -208,16 +217,13 @@
   "Returns the set of permission keywords (:read, :update, :order, or :delete) granted on concept
    to the seq of group guids by seq of acls."
   [concept sids acls]
-  (debug "concept =" (pr-str (dissoc concept :metadata)))
   ;; reduce the seq of acls into a set of granted permissions
   (reduce (fn [granted-permissions acl]
-            (debug "checking acl =" (pr-str acl))
             (if (= all-permissions granted-permissions)
               ;; terminate the reduce early, because all permissions have already been granted
               (reduced granted-permissions)
               ;; determine which permissions are granted by this specific acl
               (reduce (fn [acl-permissions permission]
-                        (debug "grants permission" permission (pr-str (grants-permission? permission concept sids acl)))
                         (if (grants-permission? permission concept sids acl)
                           (conj acl-permissions permission)
                           acl-permissions))

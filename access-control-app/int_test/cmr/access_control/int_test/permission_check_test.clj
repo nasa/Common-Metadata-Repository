@@ -10,7 +10,8 @@
            [cmr.access-control.test.util :as u]
            [cmr.umm-spec.core :as umm-spec]
            [cmr.umm-spec.test.expected-conversion :refer [example-collection-record]]
-           [clojure.string :as str]))
+           [clojure.string :as str]
+           [clj-time.core :as t]))
 
 (use-fixtures :each
               (fixtures/int-test-fixtures)
@@ -62,6 +63,27 @@
 				    <Orderable>true</Orderable>
 				</Granule>")
 
+(defn- ingest-collection
+  "Test helper. Returns concept id of ingested concept with given options."
+  [token options]
+  (let [{:keys [native-id entry-title short-name access-value provider-id temporal-range]} options
+        base-umm (-> example-collection-record
+                     (assoc-in [:SpatialExtent :GranuleSpatialRepresentation] "NO_SPATIAL"))
+        umm (cond-> base-umm
+              entry-title (assoc :EntryTitle entry-title)
+              short-name (assoc :ShortName short-name)
+              access-value (assoc-in [:AccessConstraints :Value] access-value)
+              temporal-range (assoc-in [:TemporalExtents 0 :RangeDateTimes] [temporal-range]))]
+    (:concept-id
+      (ingest/ingest-concept (u/conn-context)
+                             {:format "application/echo10+xml"
+                              :metadata (umm-spec/generate-metadata (u/conn-context) umm :echo10)
+                              :concept-type :collection
+                              :provider-id provider-id
+                              :native-id native-id
+                              :revision-id 1}
+                             {"Echo-Token" token}))))
+
 (deftest concept-permission-check-test
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
         ;; helper for easily creating a group, returns concept id
@@ -69,30 +91,12 @@
         ;; then create a group that contains our user, so we can find collections that grant access to this user
         user1-group (create-group {:name "groupwithuser1" :members ["user1"]})
         ;; create some collections
-        coll1-umm (-> example-collection-record
-                      (assoc :EntryTitle "coll1 entry title")
-                      (assoc-in [:SpatialExtent :GranuleSpatialRepresentation] "NO_SPATIAL"))
-        coll1-metadata (umm-spec/generate-metadata (u/conn-context) coll1-umm :echo10)
-        coll1 (ingest/ingest-concept (u/conn-context)
-                                     {:format "application/echo10+xml"
-                                      :metadata coll1-metadata
-                                      :concept-type :collection
-                                      :provider-id "PROV1"
-                                      :native-id "coll1"
-                                      :revision-id 1}
-                                     {"Echo-Token" token})
-        coll2-umm (-> example-collection-record
-                      (assoc :EntryTitle "coll2 entry title"
-                             :ShortName "coll2"))
-        coll2-metadata (umm-spec/generate-metadata (u/conn-context) coll2-umm :echo10)
-        coll2 (ingest/ingest-concept (u/conn-context)
-                                     {:format "application/echo10+xml"
-                                      :metadata coll2-metadata
-                                      :concept-type :collection
-                                      :provider-id "PROV1"
-                                      :native-id "coll2"
-                                      :revision-id 1}
-                                     {"Echo-Token" token})
+        ingest-prov1-collection #(ingest-collection token {:provider-id "PROV1"
+                                                           :entry-title (str % " entry title")
+                                                           :native-id %
+                                                           :short-name %})
+        coll1 (ingest-prov1-collection "coll1")
+        coll2 (ingest-prov1-collection "coll2")
         gran1 (ingest/ingest-concept (u/conn-context)
                                      {:format "application/echo10+xml"
                                       :metadata granule-metadata
@@ -104,7 +108,7 @@
         ;; local helpers to make the body of the test cleaner
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
-        get-collection-permissions #(get-permissions %1 (:concept-id coll1))
+        get-collection-permissions #(get-permissions %1 coll1)
         get-granule-permissions #(get-permissions %1 (:concept-id gran1))]
 
     (testing "no permissions granted"
@@ -202,47 +206,21 @@
 
 (deftest collection-identifier-access-value-test
   (let [token (e/login (u/conn-context) "user1" [])
+        ingest-access-value-collection (fn [short-name access-value]
+                                         (ingest-collection token {:entry-title (str short-name " entry title")
+                                                                   :short-name short-name
+                                                                   :native-id short-name
+                                                                   :provider-id "PROV1"
+                                                                   :access-value access-value}))
         ;; one collection with a low access value
-        coll1-umm (-> example-collection-record
-                      (assoc :EntryTitle "coll1 entry title")
-                      (update-in [:AccessConstraints] assoc :Value "1"))
-        coll1 (ingest/ingest-concept (u/conn-context)
-                                     {:format "application/echo10+xml"
-                                      :metadata (umm-spec/generate-metadata (u/conn-context) coll1-umm :echo10)
-                                      :concept-type :collection
-                                      :provider-id "PROV1"
-                                      :native-id "coll1"
-                                      :revision-id 1}
-                                     {"Echo-Token" token})
+        coll1 (ingest-access-value-collection "coll1" 1)
         ;; one with an intermediate access value
-        coll2-umm (-> example-collection-record
-                      (assoc :EntryTitle "coll2 entry title"
-                             :ShortName "coll2")
-                      (update-in [:AccessConstraints] assoc :Value "4"))
-        coll2 (ingest/ingest-concept (u/conn-context)
-                                     {:format "application/echo10+xml"
-                                      :metadata (umm-spec/generate-metadata (u/conn-context) coll2-umm :echo10)
-                                      :concept-type :collection
-                                      :provider-id "PROV1"
-                                      :native-id "coll2"
-                                      :revision-id 1}
-                                     {"Echo-Token" token})
+        coll2 (ingest-access-value-collection "coll2" 4)
         ;; one with a higher access value
-        coll3-umm (-> example-collection-record
-                      (assoc :EntryTitle "coll3 entry title"
-                             :ShortName "coll3")
-                      (update-in [:AccessConstraints] assoc :Value "9"))
-        coll3 (ingest/ingest-concept (u/conn-context)
-                                     {:format "application/echo10+xml"
-                                      :metadata (umm-spec/generate-metadata (u/conn-context) coll3-umm :echo10)
-                                      :concept-type :collection
-                                      :provider-id "PROV1"
-                                      :native-id "coll3"
-                                      :revision-id 1}
-                                     {"Echo-Token" token})
+        coll3 (ingest-access-value-collection "coll3" 9)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
-        get-coll-permissions #(get-permissions :guest "C1200000000-PROV1" "C1200000001-PROV1" "C1200000002-PROV1")]
+        get-coll-permissions #(get-permissions :guest coll1 coll2 coll3)]
     (u/wait-until-indexed)
     (is (= {"C1200000000-PROV1" []
             "C1200000001-PROV1" []
@@ -284,7 +262,63 @@
               "C1200000002-PROV1" []}
              (get-coll-permissions))))))
 
-;; TODO CMR-2900 add tests for access value and temporal ACL conditions
+(deftest collection-identifier-temporal-test
+  (let [token (e/login (u/conn-context) "user1" [])
+        ingest-temporal-collection (fn [short-name start-year end-year]
+                                     (ingest-collection token {:entry-title (str short-name " entry title")
+                                                               :short-name short-name
+                                                               :native-id short-name
+                                                               :provider-id "PROV1"
+                                                               :temporal-range {:BeginningDateTime (t/date-time start-year)
+                                                                                :EndingDateTime (t/date-time end-year)}}))
+        coll1 (ingest-temporal-collection "coll1" 2001 2002)
+        coll2 (ingest-temporal-collection "coll2" 2003 2004)
+        coll3 (ingest-temporal-collection "coll3" 2006 2007)
+        create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
+        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
+        get-coll-permissions #(get-permissions :guest coll1 coll2 coll3)]
+    (u/wait-until-indexed)
+    (is (= {"C1200000000-PROV1" []
+            "C1200000001-PROV1" []
+            "C1200000002-PROV1" []}
+           (get-coll-permissions)))
+
+    (let [acl-id (create-acl
+                   {:group_permissions [{:permissions [:read]
+                                         :user_type :guest}]
+                    :catalog_item_identity {:name "coll2 guest read"
+                                            :collection_applicable true
+                                            :collection_identifier {:temporal {:start_date "1999-01-01T00:00:00Z"
+                                                                               :end_date "2016-01-01T00:00:00Z"
+                                                                               :mask "intersect"}}
+                                            :provider_id "PROV1"}})]
+
+      (testing "temporal identifier intersecting all collections"
+        (is (= {"C1200000000-PROV1" ["read"]
+                "C1200000001-PROV1" ["read"]
+                "C1200000002-PROV1" ["read"]}
+               (get-coll-permissions))))
+
+      (testing "temporal identifier disjoint from some collections"
+        (update-acl acl-id {:group_permissions [{:permissions [:read]
+                                                 :user_type :guest}]
+                            :catalog_item_identity {:name "coll2 guest read"
+                                                    :collection_applicable true
+                                                    :collection_identifier {:temporal {:start_date "2003-01-01T00:00:00Z"
+                                                                                       :end_date "2004-01-01T00:00:00Z"
+                                                                                       :mask "disjoint"}}
+                                                    :provider_id "PROV1"}})
+        (is (= {"C1200000000-PROV1" ["read"]
+                "C1200000001-PROV1" []
+                "C1200000002-PROV1" ["read"]}
+               (get-coll-permissions)))))))
+
+;; The following TODOs fall under CMR-3210
+;; TODO granule provider permissions (read/order) for guest, registered, and groups
+;; TODO granule specific permissions (update/delete) for guest, registered, and groups
+;; TODO granule permissions based on access value
+;; TODO granule permissions based on temporal
+;; TODO granule permissions applied for collection applicable false??? <-- ask Jason
 
 (deftest provider-permission-check-test
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
