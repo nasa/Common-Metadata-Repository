@@ -28,8 +28,8 @@
        (or (= page-size :unlimited)
            (>= page-size (count (:values condition))))))
 
-(defn- direct-transformer-query?
-  "Returns true if the query should be executed directly against the transformer and bypass elastic."
+(defn- direct-db-query?
+  "Returns true if the query should be executed directly against the database and bypass elastic."
   [{:keys [result-format result-features all-revisions? sort-keys concept-type] :as query}]
   (and ;;Collections won't be direct transformer queries since their metadata is cached. We'll use
        ;; elastic + the metadata cache for them
@@ -58,7 +58,7 @@
   "Determines the execution strategy to use for the given query."
   [query]
   (cond
-    (direct-transformer-query? query) :direct-transformer
+    (direct-db-query? query) :direct-db
     (specific-items-from-elastic-query? query) :specific-elastic-items
     :else :elasticsearch))
 
@@ -84,7 +84,7 @@
   [query]
   (get-in query [:condition :values]))
 
-(defmethod common-qe/execute-query :direct-transformer
+(defmethod common-qe/execute-query :direct-db
   [context query]
   (let [{:keys [result-format skip-acls?]} query
         concept-ids (query->concept-ids query)

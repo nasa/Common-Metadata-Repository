@@ -7,7 +7,7 @@
                  * concept-id
                  * revision-id
                  * native-format - A key or map of format and version identifying the native format
-                 * various format keys each mapped to a gzip bytes of compressed metadata."
+                 * various format keys each mapped to compressed metadata."
   (require [cmr.common.util :as u]
            [cmr.common.cache :as c]
            [cmr.common.config :refer [defconfig]]
@@ -234,7 +234,7 @@
                   (cond
                     ;; revision matches
                     (= revision-id (:revision-id revision-format-map))
-                    (if-let [metadata (get revision-format-map target-format)]
+                    (if (contains? revision-format-map target-format)
                       (update grouped-map :revision-format-maps conj revision-format-map)
                       (update grouped-map :target-format-not-cached conj revision-format-map))
 

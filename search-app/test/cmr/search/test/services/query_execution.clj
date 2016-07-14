@@ -96,20 +96,20 @@
       (is (= expected-strategy (params->query-execution-strategy :granule params)))
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;; Direct transfomer queries
-      {:concept-id "G1-PROV1" :result-format :echo10} :direct-transformer
-      {:concept-id "G1-PROV1" :result-format :dif} :direct-transformer
-      {:concept-id "G1-PROV1" :result-format :dif10} :direct-transformer
-      {:concept-id "G1-PROV1" :result-format :iso19115} :direct-transformer
-      {:concept-id "G1-PROV1" :result-format :iso-smap} :direct-transformer
+      ;; Direct db queries
+      {:concept-id "G1-PROV1" :result-format :echo10} :direct-db
+      {:concept-id "G1-PROV1" :result-format :dif} :direct-db
+      {:concept-id "G1-PROV1" :result-format :dif10} :direct-db
+      {:concept-id "G1-PROV1" :result-format :iso19115} :direct-db
+      {:concept-id "G1-PROV1" :result-format :iso-smap} :direct-db
 
       ;; Multiple are supported
-      {:concept-id ["G1-PROV1" "G2-PROV1"] :result-format :echo10} :direct-transformer
+      {:concept-id ["G1-PROV1" "G2-PROV1"] :result-format :echo10} :direct-db
 
       ;; A page size less than the number of items forces elastic strategy
       {:concept-id ["G1-PROV1" "G2-PROV1"]
        :page-size 2
        :result-format :echo10}
-      :direct-transformer)))
+      :direct-db)))
 
 

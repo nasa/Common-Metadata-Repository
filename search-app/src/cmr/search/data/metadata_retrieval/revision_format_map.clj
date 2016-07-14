@@ -48,7 +48,7 @@
         with-size)))
 
 (defn decompress
-  "Decompresses a compressed revisions format map. Safe to run on non-compressed maps."
+  "Decompresses a compressed revision format map. Safe to run on non-compressed maps."
   [revision-format-map]
   (if (:compressed? revision-format-map)
     (-> (map-metadata-values u/lz4-bytes->string revision-format-map)
@@ -133,7 +133,7 @@
 (defn merge-into-cache-map
   "Merges in the updated revision-format-map into the existing cache map. cache-map should be a map of
   concept ids to revision format maps. The passed in revision format map can contain an unknown
-  collection, a newer revision, or formats not yet cached. The data will be merged in the right way."
+  item, a newer revision, or formats not yet cached. The data will be merged in the right way."
   [cache-map revision-format-map]
   (let [{:keys [concept-id revision-id]} revision-format-map]
     (if-let [curr-rev-format-map (cache-map concept-id)]
