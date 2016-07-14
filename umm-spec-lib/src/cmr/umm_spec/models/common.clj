@@ -151,9 +151,6 @@
    ;; This is the roles of the data contact.
    Roles
 
-   ;; This is the type of the contact.
-   Type
-
    ;; Uuid of the data contact.
    Uuid
 
@@ -578,9 +575,6 @@
   [
    ;; This is the roles of the data contact.
    Roles
-
-   ;; This is the type of the contact.
-   Type
 
    ;; Uuid of the data contact.
    Uuid

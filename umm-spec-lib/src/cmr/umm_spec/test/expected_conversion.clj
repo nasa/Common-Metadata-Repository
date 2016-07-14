@@ -23,7 +23,8 @@
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
             [cmr.umm-spec.location-keywords :as lk]
-            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
+            [cmr.umm-spec.test.location-keywords-helper :as lkt]
+            [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]))
 
 (def serf-organization-role
   "UMM-S Role that corresponds to SERVICE PROVIDER CONTACT role in SERF"
@@ -178,9 +179,66 @@
                              :ValueAccuracyExplanation "explaination for value accuracy"}
                             {:Name "aa-name"
                              :DataType "INT"}]
-     :DataCenters [su/not-provided-data-center]}))
-
-
+     :ContactGroups [{:Roles ["Investigator"]
+                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
+                      :ContactInformation [{:RelatedUrls [{:Description "Contact group related url description"
+                                                           :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                           :URLs ["www.contact.group.foo.com"]
+                                                           :Title "contact group related url title"
+                                                           :MimeType "application/html"}]
+                                            :ServiceHours "Weekdays 9AM - 5PM"
+                                            :ContactInstruction "sample contact group instruction"
+                                            :ContactMechanisms [{:Type "Fax" :Value "301-851-1234"}]
+                                            :Addresses [{:StreetAddresses ["5700 Rivertech Ct"]
+                                                         :City "Riverdale"
+                                                         :StateProvince "MD"
+                                                         :PostalCode "20774"
+                                                         :Country "U.S.A."}]}]
+                      :GroupName "NSIDC_IceBridge"}]
+     :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
+                       :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+                       :ContactInformation [{:RelatedUrls [{:Description "Contact related url description"
+                                                            :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                            :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                            :Title "contact related url title"
+                                                            :MimeType "application/html"}]
+                                             :ServiceHours "Weekdays 9AM - 5PM"
+                                             :ContactInstruction "sample contact instruction"
+                                             :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                                 {:Type "Email" :Value "cmr@nasa.gov"}]
+                                             :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                          :City "Greenbelt"
+                                                          :StateProvince "MD"
+                                                          :PostalCode "20771"
+                                                          :Country "U.S.A."}]}]
+                       :FirstName "John"
+                       :MiddleName "D"
+                       :LastName "Smith"}]
+     :DataCenters [{:Roles ["ORIGINATOR"]
+                    :ShortName "LPDAAC"}
+                   {:Roles ["ARCHIVER" "DISTRIBUTOR"]
+                    :ShortName "TNRIS"
+                    :LongName "Texas Natural Resources Information System"
+                    :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
+                    :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
+                                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+                                      :ContactInformation [{:RelatedUrls [{:Description "Contact related url description"
+                                                                           :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                           :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                                           :Title "contact related url title"
+                                                                           :MimeType "application/html"}]
+                                                            :ServiceHours "Weekdays 9AM - 5PM"
+                                                            :ContactInstruction "sample contact instruction"
+                                                            :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                                                {:Type "Email" :Value "cmr@nasa.gov"}]
+                                                            :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                                         :City "Greenbelt"
+                                                                         :StateProvince "MD"
+                                                                         :PostalCode "20771"
+                                                                         :Country "U.S.A."}]}]
+                                      :FirstName "John"
+                                      :MiddleName "D"
+                                      :LastName "Smith"}]}]}))
 
 (def example-service-record
   "An example record with fields supported by most formats."
@@ -548,35 +606,171 @@
       spatial
       (assoc spatial :SpatialCoverageType nil :HorizontalSpatialDomain nil))))
 
+(defn- expected-dif-contact-mechanisms
+  "Returns the expected DIF contact mechanisms"
+  [contact-mechanisms]
+  (->> (concat (filter #(= "Email" (:Type %)) contact-mechanisms)
+               (filter #(= "Fax" (:Type %)) contact-mechanisms)
+               (filter #(contact/umm-contact-phone-types (:Type %)) contact-mechanisms))
+       (map #(update-in % [:Type] (fn [t] (if (#{"Email" "Fax"} t) t "Telephone"))))
+       seq))
+
+(defn- expected-dif-addresses
+  "Returns the expected DIF addresses"
+  [addresses]
+  (when (seq addresses)
+    [(update-in (first addresses) [:StreetAddresses] (fn [sas]
+                                                       (when (seq sas)
+                                                         (subvec sas 0 1))))]))
+
+(defn- expected-dif-contact-information
+  "Retruns the expected contact information for the given contact information."
+  [contact-info]
+  (let [contact-info (some-> contact-info
+                             first
+                             (dissoc :RelatedUrls nil :ServiceHours nil :ContactInstruction nil)
+                             (update-in [:ContactMechanisms] expected-dif-contact-mechanisms)
+                             (update-in [:Addresses] expected-dif-addresses))]
+    (when (seq (util/remove-nil-keys contact-info))
+      [(cmn/map->ContactInformationType contact-info)])))
+
+(def ^:private role->expected
+  "Defines mapping of original UMM data contact Role to the expected. DIF9 data contact Role
+  mapping to the UMM contact Role is different depending on where the data contact is.
+  This is for general data contact on the collection level."
+  {"Data Center Contact" "Data Center Contact"
+   "Technical Contact" "Technical Contact"
+   "Science Contact" "Data Center Contact"
+   "Investigator" "Investigator"
+   "Metadata Author" "Metadata Author"
+   "User Services" "Data Center Contact"
+   "Science Software Development" "Data Center Contact"})
+
+(def ^:private data-center-role->expected
+  "Defines mapping of original UMM data center data contact Role to the expected.
+  DIF9 data contact Role mapping to the UMM contact Role is different depending on where the data
+  contact is. This is for data contact on the data center level."
+  {"Data Center Contact" "Data Center Contact"
+   "Technical Contact" "Data Center Contact"
+   "Science Contact" "Data Center Contact"
+   "Investigator" "Investigator"
+   "Metadata Author" "Data Center Contact"
+   "User Services" "Data Center Contact"
+   "Science Software Development" "Data Center Contact"})
+
+(defn- expected-dif-roles
+  "Returns the expected UMM roles for the given roles when roundtripped back from a DIF record"
+  [roles role-expected-mapping]
+  (vec (distinct (map role-expected-mapping roles))))
+
+(defn- contact->expected
+  "Retruns the expected contact person for the given contact which could be either a contact group
+  or contact person"
+  [contact role-expected-mapping]
+  (let [contact (if (:GroupName contact)
+                  (let [{:keys [Roles ContactInformation Addresses GroupName]} contact]
+                    (cmn/map->ContactPersonType {:Roles Roles
+                                                 :ContactInformation ContactInformation
+                                                 :FirstName nil
+                                                 :MiddleName nil
+                                                 :LastName GroupName}))
+                  contact)]
+    (-> contact
+        (assoc :Uuid nil)
+        (assoc :NonDataCenterAffiliation nil)
+        (update-in [:Roles] #(expected-dif-roles % role-expected-mapping))
+        (update-in [:ContactInformation] expected-dif-contact-information))))
+
+(defn- expected-dif-contact-persons
+  "Returns the expected DIF parsed contact persons for the given UMM collection.
+  Both ContactGroups and ContactPersons are converted into ContactPersons with the un-supported
+  DIF fields dropped."
+  [c]
+  (let [contacts (map #(contact->expected % role->expected)
+                      (concat (:ContactGroups c) (:ContactPersons c)))]
+    (when (seq contacts)
+      (vec contacts))))
+
+(defn- expected-dif-data-center-contact-persons
+  "Returns the expected DIF data center contact persons for the given UMM data center.
+  Both ContactGroups and ContactPersons are converted into ContactPersons with the DIF not supported
+  fields dropped."
+  [c]
+  (let [contacts (map #(contact->expected % data-center-role->expected)
+                      (concat (:ContactGroups c) (:ContactPersons c)))]
+    (if (seq contacts)
+      (vec contacts)
+      [(cmn/map->ContactPersonType {:Roles ["Data Center Contact"]
+                                    :LastName su/not-provided})])))
+
+(defn- expected-dif-data-center-contact-info
+  "Returns the expected DIF9 data center contact information."
+  [contact-info]
+  (when-let [related-url (first (:URLs (first (:RelatedUrls (first contact-info)))))]
+    [(cmn/map->ContactInformationType
+       {:RelatedUrls [(cmn/map->RelatedUrlType
+                        {:URLs [related-url]})]})]))
+
+(defn- expected-dif-data-centers
+  "Returns the expected DIF parsed data centers for the given UMM collection."
+  [centers]
+  (let [originating-center (first (filter #(.contains (:Roles %) "ORIGINATOR") centers))
+        originating-centers (when originating-center
+                              [(cmn/map->DataCenterType
+                                 {:Roles ["ORIGINATOR"]
+                                  :ShortName (:ShortName originating-center)})])
+        data-centers (for [center centers
+                           :when (or (.contains (:Roles center) "ARCHIVER")
+                                     (.contains (:Roles center) "DISTRIBUTOR"))
+                           :let [expected-persons (expected-dif-data-center-contact-persons center)
+                                 expected-contact-info (expected-dif-data-center-contact-info
+                                                         (:ContactInformation center))]]
+                       (-> center
+                           (update-in [:Roles] (constantly ["ARCHIVER" "DISTRIBUTOR"]))
+                           (assoc :ContactPersons expected-persons)
+                           (assoc :ContactGroups nil)
+                           (assoc :ContactInformation expected-contact-info)))
+        data-centers (if (seq data-centers)
+                       data-centers
+                       ;; create a dummy data center as it is required in DIF9
+                       [(cmn/map->DataCenterType
+                          {:Roles ["ARCHIVER" "DISTRIBUTOR"]
+                           :ShortName su/not-provided
+                           :ContactPersons [(cmn/map->ContactPersonType
+                                              {:Roles ["Data Center Contact"]
+                                               :LastName su/not-provided})]})])]
+    (seq (concat originating-centers data-centers))))
+
 (defmethod umm->expected-convert :dif
   [umm-coll _]
-  (-> umm-coll
-      ;; DIF 9 only supports entry-id in metadata associations
-      (update-in-each [:MetadataAssociations] assoc :Type nil :Description nil :Version nil)
-      ;; DIF 9 does not support tiling identification system
-      (assoc :TilingIdentificationSystems nil)
-      (assoc :DataCenters [su/not-provided-data-center])
-      (assoc :ContactGroups nil)
-      (assoc :ContactPersons nil)
-      ;; DIF 9 does not support DataDates
-      (assoc :DataDates [su/not-provided-data-date])
-      ;; DIF 9 sets the UMM Version to 'Not provided' if it is not present in the DIF 9 XML
-      (assoc :Version (or (:Version umm-coll) su/not-provided))
-      (update-in [:TemporalExtents] dif9-temporal)
-      (update-in [:SpatialExtent] expected-dif-spatial-extent)
-      (update-in [:Distributions] su/remove-empty-records)
-      ;; DIF 9 does not support Platform Type or Characteristics. The mapping for Instruments is
-      ;; unable to be implemented as specified.
-      (update-in [:Platforms] expected-dif-platforms)
-      (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
-      (update-in-each [:AdditionalAttributes] assoc :ParameterRangeBegin nil :ParameterRangeEnd nil
-                      :MeasurementResolution nil :ParameterUnitsOfMeasure nil
-                      :ParameterValueAccuracy nil :ValueAccuracyExplanation nil)
-      (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
-      (update-in-each [:PublicationReferences] dif-publication-reference)
-      (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
-      ;;CMR-2716 SpatialKeywords are being replaced by LocationKeywords.
-      (assoc :SpatialKeywords nil)))
+  (let [expected-contact-persons (expected-dif-contact-persons umm-coll)]
+    (-> umm-coll
+        ;; DIF 9 only supports entry-id in metadata associations
+        (update-in-each [:MetadataAssociations] assoc :Type nil :Description nil :Version nil)
+        ;; DIF 9 does not support tiling identification system
+        (assoc :TilingIdentificationSystems nil)
+        (update-in [:DataCenters] expected-dif-data-centers)
+        (assoc :ContactGroups nil)
+        (assoc :ContactPersons expected-contact-persons)
+        ;; DIF 9 does not support DataDates
+        (assoc :DataDates [su/not-provided-data-date])
+        ;; DIF 9 sets the UMM Version to 'Not provided' if it is not present in the DIF 9 XML
+        (assoc :Version (or (:Version umm-coll) su/not-provided))
+        (update-in [:TemporalExtents] dif9-temporal)
+        (update-in [:SpatialExtent] expected-dif-spatial-extent)
+        (update-in [:Distributions] su/remove-empty-records)
+        ;; DIF 9 does not support Platform Type or Characteristics. The mapping for Instruments is
+        ;; unable to be implemented as specified.
+        (update-in [:Platforms] expected-dif-platforms)
+        (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
+        (update-in-each [:AdditionalAttributes] assoc :ParameterRangeBegin nil :ParameterRangeEnd nil
+                        :MeasurementResolution nil :ParameterUnitsOfMeasure nil
+                        :ParameterValueAccuracy nil :ValueAccuracyExplanation nil)
+        (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
+        (update-in-each [:PublicationReferences] dif-publication-reference)
+        (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
+        ;;CMR-2716 SpatialKeywords are being replaced by LocationKeywords.
+        (assoc :SpatialKeywords nil))))
 
 ;; DIF 10
 (defn dif10-platform
