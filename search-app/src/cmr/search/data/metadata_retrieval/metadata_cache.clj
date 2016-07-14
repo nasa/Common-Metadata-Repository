@@ -19,6 +19,7 @@
            [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
            [cmr.search.services.acl-service :as acl-service]
            [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
+           [cmr.umm-spec.versioning :as umm-version]
            [cmr.common-app.services.search.query-model :as q]
            [cmr.common-app.services.search.query-execution :as qe]
            [cmr.metadata-db.services.concept-service :as metadata-db]
@@ -36,7 +37,7 @@
     :dif10
     ;; Note that when upgrading umm version we should also cache the previous version of UMM.
     {:format :umm-json
-     :version "1.3"}})
+     :version umm-version/current-version}})
 
 ;; Defines the record that represents the cache and implements the cache protocol. This is a very
 ;; simple implementation that just wraps an atom with the map of cached concept ids to revision
