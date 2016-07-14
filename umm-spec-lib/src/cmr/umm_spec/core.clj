@@ -87,10 +87,10 @@
 
 (defn generate-metadata
   "Returns the generated metadata for the given metadata format and umm record.
-  umm is the umm record that is parsed from the given source umm json schema version
-  fmt is the target format of the generated metadata, it would either be in mime type format
-  (application/umm+json;version=1.1) or a map ({:format :umm-json, :version=\"1.1\"}
-  source-version if provided is the umm json schema version that the given umm record is in,
+  * umm is the umm record that is parsed from the given source umm json schema version
+  * fmt is the target format of the generated metadata, it would either be in mime type format
+  (application/umm+json;version=1.1), a keyword (:echo10), or a map ({:format :umm-json, :version=\"1.1\"})
+  * source-version if provided is the umm json schema version that the given umm record is in,
   defaults to the latest umm json schema version."
   ([context umm fmt]
    (generate-metadata context umm fmt nil))

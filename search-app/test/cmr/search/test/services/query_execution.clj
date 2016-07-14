@@ -15,7 +15,7 @@
 ;; Integration test that specific set of input parameters will result in query with the specified
 ;; execution strategy
 (deftest parameters-to-query-execution-strategy
-  (testing "Colletion and Granule Common"
+  (testing "Collection and Granule Common"
     (doseq [concept-type [:granule :collection]]
       (testing (str "Parameters for " concept-type)
         (are [params expected-strategy]
@@ -53,28 +53,11 @@
           ;; XML References use elastic strategy
           {:concept-id "G1-PROV1" :result-format :xml} :elasticsearch
 
-          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-          ;; Direct transfomer queries
-          {:concept-id "G1-PROV1" :result-format :echo10} :direct-transformer
-          {:concept-id "G1-PROV1" :result-format :dif} :direct-transformer
-          {:concept-id "G1-PROV1" :result-format :dif10} :direct-transformer
-          {:concept-id "G1-PROV1" :result-format :iso19115} :direct-transformer
-          {:concept-id "G1-PROV1" :result-format :iso-smap} :direct-transformer
-
           ;; Sorting uses the elastic strategy
           {:concept-id ["G1-PROV1" "G2-PROV1"]
            :result-format :echo10
            :sort-key ["concept-id"]}
           :elasticsearch
-
-          ;; Multiple are supported
-          {:concept-id ["G1-PROV1" "G2-PROV1"] :result-format :echo10} :direct-transformer
-
-          ;; A page size less than the number of items forces elastic strategy
-          {:concept-id ["G1-PROV1" "G2-PROV1"]
-           :page-size 2
-           :result-format :echo10}
-          :direct-transformer
 
           {:concept-id ["G1-PROV1" "G2-PROV1"]
            :page-size 1
@@ -98,7 +81,35 @@
 
       ;; All revisions uses elastic strategy
       {:concept-id "C1-PROV1" :result-format :opendata :all-revisions "true"} :elasticsearch
-      {:concept-id "C1-PROV1" :result-format :echo10 :all-revisions "true"} :elasticsearch)))
+      {:concept-id "C1-PROV1" :result-format :echo10 :all-revisions "true"} :elasticsearch
 
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; Metadata  queries
+      {:concept-id "C1-PROV1" :result-format :echo10} :elasticsearch
+      {:concept-id "C1-PROV1" :result-format :dif} :elasticsearch
+      {:concept-id "C1-PROV1" :result-format :dif10} :elasticsearch
+      {:concept-id "C1-PROV1" :result-format :iso19115} :elasticsearch
+      {:concept-id "C1-PROV1" :result-format :iso-smap} :elasticsearch))
+
+  (testing "Granule Specific"
+    (are [params expected-strategy]
+      (is (= expected-strategy (params->query-execution-strategy :granule params)))
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; Direct db queries
+      {:concept-id "G1-PROV1" :result-format :echo10} :direct-db
+      {:concept-id "G1-PROV1" :result-format :dif} :direct-db
+      {:concept-id "G1-PROV1" :result-format :dif10} :direct-db
+      {:concept-id "G1-PROV1" :result-format :iso19115} :direct-db
+      {:concept-id "G1-PROV1" :result-format :iso-smap} :direct-db
+
+      ;; Multiple are supported
+      {:concept-id ["G1-PROV1" "G2-PROV1"] :result-format :echo10} :direct-db
+
+      ;; A page size less than the number of items forces elastic strategy
+      {:concept-id ["G1-PROV1" "G2-PROV1"]
+       :page-size 2
+       :result-format :echo10}
+      :direct-db)))
 
 
