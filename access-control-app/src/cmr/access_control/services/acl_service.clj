@@ -225,7 +225,12 @@
                          (assoc :temporal-field :acquisition)
                          (update-in [:mask] keyword)
                          (update-in [:start-date] dtp/try-parse-datetime)
-                         (update-in [:end-date] dtp/try-parse-datetime)))))))
+                         (update-in [:end-date] dtp/try-parse-datetime)))))
+      (update-in [:catalog-item-identity :collection-identifier :access-value]
+                 (fn [av]
+                   (when av
+                     (set/rename-keys av {:include-undefined-value :include-undefined}))))
+      util/remove-nil-keys))
 
 (def all-permissions
   "The set of all permissions checked and returned by the functions below."

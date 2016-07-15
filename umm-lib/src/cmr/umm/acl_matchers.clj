@@ -100,7 +100,6 @@
              (coll-matches-collection-identifier? coll collection-identifier)))))
 
 ;; Functions for preparing concepts to be passed to functions above... copied here from search
-;; TODO: see if these could be removed to avoid calling them manually
 
 (defmulti add-acl-enforcement-fields-to-concept
   "Adds the fields necessary to enforce ACLs to the concept. Temporal and access value are relatively

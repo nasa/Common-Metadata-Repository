@@ -66,13 +66,14 @@
 (defn- ingest-collection
   "Test helper. Returns concept id of ingested concept with given options."
   [token options]
-  (let [{:keys [native-id entry-title short-name access-value provider-id temporal-range]} options
+  (let [{:keys [native-id entry-title short-name access-value provider-id temporal-range no-temporal]} options
         base-umm (-> example-collection-record
                      (assoc-in [:SpatialExtent :GranuleSpatialRepresentation] "NO_SPATIAL"))
         umm (cond-> base-umm
               entry-title (assoc :EntryTitle entry-title)
               short-name (assoc :ShortName short-name)
-              access-value (assoc-in [:AccessConstraints :Value] access-value)
+              (contains? options :access-value) (assoc-in [:AccessConstraints :Value] access-value)
+              no-temporal (assoc :TemporalExtents nil)
               temporal-range (assoc-in [:TemporalExtents 0 :RangeDateTimes] [temporal-range]))]
     (:concept-id
       (ingest/ingest-concept (u/conn-context)
@@ -84,7 +85,7 @@
                               :revision-id 1}
                              {"Echo-Token" token}))))
 
-(deftest concept-permission-check-test
+(deftest collection-simple-catalog-item-identity-permission-check-test
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
         ;; helper for easily creating a group, returns concept id
         create-group #(:concept_id (u/create-group token (u/make-group %)))
@@ -204,7 +205,7 @@
         (is (= {"G1200000003-PROV1" []}
                (get-granule-permissions "user1")))))))
 
-(deftest collection-identifier-access-value-test
+(deftest collection-catalog-item-identifier-access-value-test
   (let [token (e/login (u/conn-context) "user1" [])
         ingest-access-value-collection (fn [short-name access-value]
                                          (ingest-collection token {:entry-title (str short-name " entry title")
@@ -218,14 +219,20 @@
         coll2 (ingest-access-value-collection "coll2" 4)
         ;; one with a higher access value
         coll3 (ingest-access-value-collection "coll3" 9)
+        ;; and one with no access value
+        coll4 (ingest-access-value-collection "coll4" nil)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
-        get-coll-permissions #(get-permissions :guest coll1 coll2 coll3)]
+        get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)]
     (u/wait-until-indexed)
-    (is (= {"C1200000000-PROV1" []
-            "C1200000001-PROV1" []
-            "C1200000002-PROV1" []}
-           (get-coll-permissions)))
+
+    (testing "no permissions granted"
+      (is (= {"C1200000000-PROV1" []
+              "C1200000001-PROV1" []
+              "C1200000002-PROV1" []
+              "C1200000003-PROV1" []}
+             (get-coll-permissions))))
+
     (let [acl-id (create-acl
                    {:group_permissions [{:permissions [:read]
                                          :user_type :guest}]
@@ -233,36 +240,60 @@
                                             :collection_applicable true
                                             :collection_identifier {:access_value {:min_value 1 :max_value 10}}
                                             :provider_id "PROV1"}})]
-      (is (= {"C1200000000-PROV1" ["read"]
-              "C1200000001-PROV1" ["read"]
-              "C1200000002-PROV1" ["read"]}
-             (get-coll-permissions)))
 
-      (update-acl acl-id {:group_permissions [{:permissions [:read]
-                                               :user_type :guest}]
-                          :catalog_item_identity {:name "coll2 guest read"
-                                                  :collection_applicable true
-                                                  :collection_identifier {:access_value {:min_value 4 :max_value 10}}
-                                                  :provider_id "PROV1"}})
+      (testing "ACL matching all access values"
+        (is (= {"C1200000000-PROV1" ["read"]
+                "C1200000001-PROV1" ["read"]
+                "C1200000002-PROV1" ["read"]
+                "C1200000003-PROV1" []}
+               (get-coll-permissions))))
 
-      (is (= {"C1200000000-PROV1" []
-              "C1200000001-PROV1" ["read"]
-              "C1200000002-PROV1" ["read"]}
-             (get-coll-permissions)))
+      (testing "ACL matching only high access values"
+        (update-acl acl-id {:group_permissions [{:permissions [:read]
+                                                 :user_type :guest}]
+                            :catalog_item_identity {:name "coll2 guest read"
+                                                    :collection_applicable true
+                                                    :collection_identifier {:access_value {:min_value 4 :max_value 10}}
+                                                    :provider_id "PROV1"}})
 
-      (update-acl acl-id {:group_permissions [{:permissions [:read]
-                                               :user_type :guest}]
-                          :catalog_item_identity {:name "coll2 guest read"
-                                                  :collection_applicable true
-                                                  :collection_identifier {:access_value {:min_value 4 :max_value 5}}
-                                                  :provider_id "PROV1"}})
+        (is (= {"C1200000000-PROV1" []
+                "C1200000001-PROV1" ["read"]
+                "C1200000002-PROV1" ["read"]
+                "C1200000003-PROV1" []}
+               (get-coll-permissions))))
 
-      (is (= {"C1200000000-PROV1" []
-              "C1200000001-PROV1" ["read"]
-              "C1200000002-PROV1" []}
-             (get-coll-permissions))))))
+      (testing "ACL matching only one access value"
+        (update-acl acl-id {:group_permissions [{:permissions [:read]
+                                                 :user_type :guest}]
+                            :catalog_item_identity {:name "coll2 guest read"
+                                                    :collection_applicable true
+                                                    :collection_identifier {:access_value {:min_value 4 :max_value 5}}
+                                                    :provider_id "PROV1"}})
 
-(deftest collection-identifier-temporal-test
+        (is (= {"C1200000000-PROV1" []
+                "C1200000001-PROV1" ["read"]
+                "C1200000002-PROV1" []
+                "C1200000003-PROV1" []}
+               (get-coll-permissions))))
+
+      (testing "ACL matching only collections with undefined access values"
+        (update-acl acl-id {:group_permissions [{:permissions [:read]
+                                                 :user_type :guest}]
+                            :catalog_item_identity {:name "coll2 guest read"
+                                                    :collection_applicable true
+                                                    :collection_identifier {:access_value {:min_value 1
+                                                                                           :max_value 10
+                                                                                           :include_undefined_value true}}
+                                                    :provider_id "PROV1"}})
+
+        (is (= {"C1200000000-PROV1" ["read"]
+                "C1200000001-PROV1" ["read"]
+                "C1200000002-PROV1" ["read"]
+                "C1200000003-PROV1" ["read"]}
+               (get-coll-permissions)))))))
+
+(deftest collection-catalog-item-identifier-temporal-test
+  ;; tests ACLs that grant access based on a collection's temporal range
   (let [token (e/login (u/conn-context) "user1" [])
         ingest-temporal-collection (fn [short-name start-year end-year]
                                      (ingest-collection token {:entry-title (str short-name " entry title")
@@ -272,15 +303,23 @@
                                                                :temporal-range {:BeginningDateTime (t/date-time start-year)
                                                                                 :EndingDateTime (t/date-time end-year)}}))
         coll1 (ingest-temporal-collection "coll1" 2001 2002)
-        coll2 (ingest-temporal-collection "coll2" 2003 2004)
-        coll3 (ingest-temporal-collection "coll3" 2006 2007)
+        coll2 (ingest-temporal-collection "coll2" 2004 2005)
+        coll3 (ingest-temporal-collection "coll3" 2007 2009)
+        ;; coll4 will have no temporal extent, and should not be granted any permissions by our ACLs in this test
+        coll4 (ingest-collection token {:entry-id "coll4"
+                                        :native-id "coll4"
+                                        :short-name "coll4"
+                                        :entry-title "non-temporal coll4"
+                                        :provider-id "PROV1"
+                                        :no-temporal true})
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
-        get-coll-permissions #(get-permissions :guest coll1 coll2 coll3)]
+        get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)]
     (u/wait-until-indexed)
     (is (= {"C1200000000-PROV1" []
             "C1200000001-PROV1" []
-            "C1200000002-PROV1" []}
+            "C1200000002-PROV1" []
+            "C1200000003-PROV1" []}
            (get-coll-permissions)))
 
     (let [acl-id (create-acl
@@ -288,39 +327,56 @@
                                          :user_type :guest}]
                     :catalog_item_identity {:name "coll2 guest read"
                                             :collection_applicable true
-                                            :collection_identifier {:temporal {:start_date "1999-01-01T00:00:00Z"
-                                                                               :end_date "2016-01-01T00:00:00Z"
+                                            :collection_identifier {:temporal {:start_date "2000-01-01T00:00:00Z"
+                                                                               :end_date "2010-01-01T00:00:00Z"
                                                                                :mask "intersect"}}
                                             :provider_id "PROV1"}})]
 
-      (testing "temporal identifier intersecting all collections"
+      (testing "\"intersect\" mask"
         (is (= {"C1200000000-PROV1" ["read"]
                 "C1200000001-PROV1" ["read"]
-                "C1200000002-PROV1" ["read"]}
+                "C1200000002-PROV1" ["read"]
+                "C1200000003-PROV1" []}
                (get-coll-permissions))))
 
-      (testing "temporal identifier disjoint from some collections"
+      (testing "\"disjoint\" mask"
         (update-acl acl-id {:group_permissions [{:permissions [:read]
                                                  :user_type :guest}]
                             :catalog_item_identity {:name "coll2 guest read"
                                                     :collection_applicable true
                                                     :collection_identifier {:temporal {:start_date "2003-01-01T00:00:00Z"
-                                                                                       :end_date "2004-01-01T00:00:00Z"
+                                                                                       :end_date "2006-01-01T00:00:00Z"
                                                                                        :mask "disjoint"}}
                                                     :provider_id "PROV1"}})
         (is (= {"C1200000000-PROV1" ["read"]
                 "C1200000001-PROV1" []
-                "C1200000002-PROV1" ["read"]}
+                "C1200000002-PROV1" ["read"]
+                "C1200000003-PROV1" []}
+               (get-coll-permissions))))
+
+      (testing "\"contains\" mask"
+        (update-acl acl-id {:group_permissions [{:permissions [:read]
+                                                 :user_type :guest}]
+                            :catalog_item_identity {:name "coll2 guest read"
+                                                    :collection_applicable true
+                                                    :collection_identifier {:temporal {:start_date "2003-01-01T00:00:00Z"
+                                                                                       :end_date "2006-01-01T00:00:00Z"
+                                                                                       :mask "contains"}}
+                                                    :provider_id "PROV1"}})
+        (is (= {"C1200000000-PROV1" []
+                "C1200000001-PROV1" ["read"]
+                "C1200000002-PROV1" []
+                "C1200000003-PROV1" []}
                (get-coll-permissions)))))))
 
-;; The following TODOs fall under CMR-3210
-;; TODO granule provider permissions (read/order) for guest, registered, and groups
-;; TODO granule specific permissions (update/delete) for guest, registered, and groups
-;; TODO granule permissions based on access value
-;; TODO granule permissions based on temporal
-;; TODO granule permissions applied for collection applicable false??? <-- ask Jason
+;; For CMR-3210:
+;; * granule provider permissions (read/order) for guest, registered, and groups
+;; * granule specific permissions (update/delete) for guest, registered, and groups
+;; * granule permissions based on access value
+;; * granule permissions based on temporal
+;; * granule permissions applied for collection applicable false??? <-- ask Jason
 
-(deftest provider-permission-check-test
+(deftest collection-provider-level-permission-check-test
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
         ;; then create a group that contains our user, so we can find collections that grant access to this user
         group (u/make-group {:name "groupwithuser1" :members ["user1"]})
