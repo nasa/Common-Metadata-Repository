@@ -16,6 +16,7 @@
             [clj-http.client :as client]
             [cmr.umm.core :as umm]
             [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm-spec.versioning :as umm-version]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
@@ -126,7 +127,7 @@
 
         (testing "All collections and formats cached after cache is refreshed"
           (search/refresh-collection-metadata-cache)
-          (let [all-formats [:dif :dif10 :echo10 :iso19115 {:format :umm-json :version "1.3"}]]
+          (let [all-formats [:dif :dif10 :echo10 :iso19115 {:format :umm-json :version umm-version/current-version}]]
             (assert-cache-state {c1-r2-echo all-formats
                                  c2-echo all-formats
                                  c3-dif all-formats
