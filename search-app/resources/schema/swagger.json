@@ -290,8 +290,10 @@
           {
             "in": "query",
             "name": "attribute[]",
-            "description": "<p>Matches collections by additional attribute. Additional attribute search allows providing 1, 3, or 4 comma separated values. Searching with just a single value will search by additional attribute name. When searching with 3 values, the first value is the type of the additional attribute, the second value is the name of the additional attribute, and the third value is the exact value to match. When searching using 4 values the first value is the type of the additional attribute, the second value is the name of the additional attribute, the third and fourth values represent a range of values to search against. The third value is the minimum, and the fourth value is the maximum of the range.<p>Multiple attributes can be provided. The default is for collections to match all the attribute parameters.
-                            This can be changed by specifying <code>or</code> option with <code>options[attribute][or]=true</code>.</p>\n                        <p>For additional attribute range search, the default is inclusive on the range boundaries. This can be changed by specifying <code>exclude_boundary</code> option with <code>options[attribute][exclude_boundary]=true</code>.</p>",
+            "description": "<p>Matches collections by additional attribute. An additional attribute name is accepted or a comma separated list of <code>type,name,min_value,max_value</code>.</p>
+            <p>Example: <code>int,HORIZONTALTILENUMBER,1,12</code></p>
+            <p>Type is the type of the additional attribute. It will find collections with additional attributes of that type and name with a value between min_value and max_value</p>
+            <p>The default is for collections to match all the attribute parameters. This can be changed by specifying <code>or</code> option with <code>options[attribute][or]=true</code>.</p><p>For additional attribute range search, the default is inclusive on the range boundaries. This can be changed by specifying <code>exclude_boundary</code> option with <code>options[attribute][exclude_boundary]=true</code>.</p>",
             "required": false,
             "type": "array",
             "items": {
