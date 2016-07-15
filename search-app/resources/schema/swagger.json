@@ -11,28 +11,10 @@
   "host": "%CMR-HOST%",
   "basePath": "%CMR-BASE-PATH%",
   "paths": {
-    "/collections{extension}": {
-      "options": {
-        "x-no-doc": false,
-        "tags": [
-          "Collections"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "extension",
-            "description": "",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
+    "/collections{response_format}": {
       "get": {
+        "description" : "TO DO - Chris fill in - description under GET, summary is on same line as GET",
+        "summary" : "TO DO - Chris",
         "x-no-doc": false,
         "tags": [
           "Collections"
@@ -40,41 +22,19 @@
         "parameters": [
           {
             "in": "path",
-            "name": "extension",
-            "description": "",
+            "name": "response_format",
+            "description": "Select an extension to specify the format for search results. The default is xml. An accept header MIME type can also
+                            be used to specify the response format. The default is 'application/xml'.",
             "required": false,
             "type": "string",
+            "default": ".xml",
             "enum": [".xml", ".json", ".atom", ".native", ".umm-json", ".echo10", ".dif10", ".dif",
                      ".iso", ".iso19115", ".opendata", ".kml", ".csv"]
           },
           {
             "in": "query",
             "name": "keyword",
-            "description": "<p>Matches collections against a free text keyword search. Keyword searches are case insensitive and support wild cards ? and *.</p>\n
-                            <p>The following fields are searched against for keyword search:</p>\n
-                            <p>Concept ID</p>\n
-                            <ul>
-                            <li>Provider ID</li>\n
-                            <li>Entry title</li>\n
-                            <li>Data type</li>\n
-                            <li>Short name</li>\n
-                            <li>Long name</li>\n
-                            <li>Summary</li>\n
-                            <li>Version ID</li>\n
-                            <li>Version description</li>\n
-                            <li>Processing level ID</li>\n
-                            <li>Science keywords</li>\n
-                            <li>Archive centers</li>\n
-                           <li>Additional attribute names, data types, values, and descriptions</li>\n
-                           <li>Spatial keywords</li>\n
-                           <li>Temporal keywords</li>\n
-                           <li>Associated DIFs</li>\n
-                           <li>Project short and long names</li>\n
-                           <li>Platform short and long names</li>\n
-                           <li>Instrument short names, long names, and techniques</li>\n
-                           <li>Sensor short names, long names, and techniques</li>\n
-                           <li>Characteristic names and descriptions</li>\n
-                           <li>TwoD coordinate system names</li></ul>",
+            "description": "<p>Matches collections against a free text keyword search. Keyword searches are case insensitive and support wild cards ? and *.</p>",
             "required": false,
             "type": "string"
           },
@@ -551,36 +511,6 @@
           "application/dif10+xml",
           "application/atom+xml",
           "text/csv"
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "post": {
-        "x-no-doc": false,
-        "tags": [
-          "Collections"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "extension",
-            "description": "",
-            "required": true,
-            "type": "string",
-            "pattern": "(?:\\..+)?"
-          },
-          {
-            "in": "body",
-            "name": "Body181707",
-            "description": "",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/Body181707"
-            }
-          }
         ],
         "responses": {
           "default": {
