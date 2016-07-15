@@ -186,7 +186,8 @@
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
-  (let [platforms (platform/platforms-with-id (:Platforms c))]
+  (let [platforms (platform/platforms-with-id (:Platforms c))
+        additional-attributes (:AdditionalAttributes c)]
     (xml
       [:gmi:MI_Metadata
        iso19115-2-xml-namespaces
@@ -269,7 +270,7 @@
           [:gmd:MD_Identifier
            [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
            [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
-       (aa/generate-additional-attributes (:AdditionalAttributes c))
+       (aa/generate-content-info-additional-attributes additional-attributes)
        [:gmd:contentInfo
         [:gmd:MD_ImageDescription
          [:gmd:attributeDescription ""]
@@ -307,9 +308,7 @@
              [:gmd:result {:gco:nilReason "missing"}]]])
          [:gmd:lineage
           [:gmd:LI_Lineage
-           [:gmd:processStep
-            [:gmd:LI_ProcessStep
-             [:gmd:description {:gco:nilReason "unknown"}]]]
+           (aa/generate-data-quality-info-additional-attributes additional-attributes)
            (ma/generate-source-metadata-associations c)]]]]
        [:gmi:acquisitionInformation
         [:gmi:MI_AcquisitionInformation

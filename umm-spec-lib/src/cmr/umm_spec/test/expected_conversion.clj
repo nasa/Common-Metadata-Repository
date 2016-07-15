@@ -619,9 +619,7 @@
   "Returns the expected DIF addresses"
   [addresses]
   (when (seq addresses)
-    [(update-in (first addresses) [:StreetAddresses] (fn [sas]
-                                                       (when (seq sas)
-                                                         (subvec sas 0 1))))]))
+    [(first addresses)]))
 
 (defn- expected-dif-contact-information
   "Retruns the expected contact information for the given contact information."

@@ -7,6 +7,7 @@
             [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
             [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
             [cmr.search.services.query-execution.facets.links-helper :as lh]
+            [cmr.common.util :as util]
             [camel-snake-kebab.core :as csk]
             [clojure.string :as str]))
 
@@ -117,6 +118,10 @@
         :let [value (:key bucket)
               count (get-in bucket [:coll-count :doc_count] (:doc_count bucket))
               sub-facets (recursive-parse-fn bucket)
+              ;; Sort alphabetically
+              sub-facets (when (seq (:children sub-facets))
+                           (update sub-facets :children
+                                   #(sort-by :title util/compare-natural-strings %)))
               children-values-to-remove (find-applied-children sub-facets field-hierarchy false)
               links (generate-links-fn value children-values-to-remove)]]
     (v2h/generate-hierarchical-filter-node value count links sub-facets)))

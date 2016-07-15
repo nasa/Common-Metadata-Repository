@@ -267,6 +267,7 @@
   <additionalAttribute name="ImageQualityVcid1" type="qualityInformation"/>
   <additionalAttribute name="ImageQualityVcid2" type="qualityInformation"/>
   <additionalAttribute name="QualityBand8" type="qualityInformation"/>
+  <additionalAttribute name="SIPSMetGenVersion" type="qualityInformation"/>
   <additionalAttribute name="FileFormat" type="resourceFormat"/>
   <additionalAttribute name="identifier_product_doi" type="citation.identifier"/>
   <additionalAttribute name="identifier_product_doi_authority" type="citation.identifier"/>

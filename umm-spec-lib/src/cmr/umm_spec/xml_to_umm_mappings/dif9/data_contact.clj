@@ -24,13 +24,13 @@
 (defn- parse-address
   "Returns UMM-C contact address from DIF9 Personnel element."
   [personnel]
-  (let [address (value-of personnel "Contact_Address/Address")
+  (let [addresses (seq (values-at personnel "Contact_Address/Address"))
         city (value-of personnel "Contact_Address/City")
         province-or-state (value-of personnel "Contact_Address/Province_or_State")
         postal-code (value-of personnel "Contact_Address/Postal_Code")
         country (value-of personnel "Contact_Address/Country")]
-    (when (or address city province-or-state postal-code country)
-      [{:StreetAddresses [address]
+    (when (or addresses city province-or-state postal-code country)
+      [{:StreetAddresses addresses
         :City city
         :StateProvince province-or-state
         :PostalCode postal-code
