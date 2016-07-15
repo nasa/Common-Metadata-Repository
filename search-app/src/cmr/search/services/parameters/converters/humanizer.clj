@@ -9,7 +9,7 @@
 
 ;; Converts humanizer parameter and values into conditions
 (defmethod p/parameter->condition :humanizer
-  [concept-type param value options]
+  [_context concept-type param value options]
   (let [case-sensitive? (p/case-sensitive-field? concept-type param options)
         pattern? (p/pattern-field? concept-type param options)
         group-operation (p/group-operation param options :or)

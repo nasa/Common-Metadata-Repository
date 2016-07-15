@@ -6,10 +6,10 @@
             [cmr.common-app.services.search.query-execution :as qe]))
 
 
-(defn params->query-execution-strategy
+(defn- params->query-execution-strategy
   "Converts parameters to a query and then returns the query execution strategy used on that."
   [concept-type params]
-  (-> (pc/parse-parameter-query concept-type params)
+  (-> (pc/parse-parameter-query nil concept-type params)
       (#'qe/query->execution-strategy)))
 
 ;; Integration test that specific set of input parameters will result in query with the specified
@@ -111,5 +111,3 @@
        :page-size 2
        :result-format :echo10}
       :direct-db)))
-
-

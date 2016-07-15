@@ -105,7 +105,7 @@
   #{:concept-id :collection-concept-id})
 
 (defmethod common-params/parameter->condition :keyword
-  [_ _ value _]
+  [_ _ _ value _]
   (cqm/text-condition :keyword (str/lower-case value)))
 
 (defmulti tag-param->condition
@@ -129,7 +129,7 @@
     (gc/and-conds conditions)))
 
 (defmethod common-params/parameter->condition :tag-query
-  [concept-type param value options]
+  [_context concept-type param value options]
   (let [;; tag-key defaults to pattern true
         pattern? (if (= :tag-key param)
                    (not= "false" (get-in options [param :pattern]))
@@ -139,7 +139,7 @@
 ;; Special case handler for concept-id. Concept id can refer to a granule or collection.
 ;; If it's a granule query with a collection concept id then we convert the parameter to :collection-concept-id
 (defmethod common-params/parameter->condition :granule-concept-id
-  [concept-type param value options]
+  [context concept-type param value options]
   (let [values (if (sequential? value) value [value])
         {granule-concept-ids :granule
          collection-concept-ids :collection} (group-by (comp :concept-type cc/parse-concept-id) values)
@@ -157,8 +157,8 @@
 ;; This will find granules which either have explicitly specified a value
 ;; or have not specified any value for the field and inherit it from their parent collection.
 (defmethod common-params/parameter->condition :inheritance
-  [concept-type param value options]
-  (let [field-condition (common-params/parameter->condition :collection param value options)]
+  [context concept-type param value options]
+  (let [field-condition (common-params/parameter->condition context :collection param value options)]
     (gc/or-conds
       [field-condition
        (gc/and-conds
@@ -166,7 +166,7 @@
           (cqm/map->MissingCondition {:field param})])])))
 
 (defmethod common-params/parameter->condition :updated-since
-  [concept-type param value options]
+  [_context concept-type param value options]
   (cqm/map->DateRangeCondition
     {:field param
      :start-date (parser/parse-datetime
@@ -174,13 +174,13 @@
      :end-date nil}))
 
 (defmethod common-params/parameter->condition :revision-date
-  [concept-type param value options]
+  [context concept-type param value options]
   (if (sequential? value)
     (if (= "true" (get-in options [:revision-date :and]))
       (gc/and-conds
-        (map #(common-params/parameter->condition concept-type param % options) value))
+        (map #(common-params/parameter->condition context concept-type param % options) value))
       (gc/or-conds
-        (map #(common-params/parameter->condition concept-type param % options) value)))
+        (map #(common-params/parameter->condition context concept-type param % options) value)))
     (let [[start-date end-date] (map str/trim (str/split value #","))]
       (cqm/map->DateRangeCondition
         {:field param
@@ -188,13 +188,13 @@
          :end-date (when-not (str/blank? end-date) (parser/parse-datetime end-date))}))))
 
 (defmethod common-params/parameter->condition :readable-granule-name
-  [concept-type param value options]
+  [context concept-type param value options]
   (if (sequential? value)
     (if (= "true" (get-in options [param :and]))
       (gc/and-conds
-        (map #(common-params/parameter->condition concept-type param % options) value))
+        (map #(common-params/parameter->condition context concept-type param % options) value))
       (gc/or-conds
-        (map #(common-params/parameter->condition concept-type param % options) value)))
+        (map #(common-params/parameter->condition context concept-type param % options) value)))
     (let [case-sensitive (common-params/case-sensitive-field? concept-type :readable-granule-name options)
           pattern (common-params/pattern-field? concept-type :readable-granule-name options)]
       (gc/or-conds
@@ -202,7 +202,7 @@
          (cqm/string-condition :producer-granule-id value case-sensitive pattern)]))))
 
 (defmethod common-params/parameter->condition :has-granules
-  [_ _ value _]
+  [_ _ _ value _]
   (if (= "unset" value)
     cqm/match-all
     (qm/->HasGranulesCondition (= "true" value))))
@@ -222,13 +222,13 @@
     (re-find pattern "SCIENCE_QUALITY")))
 
 (defmethod common-params/parameter->condition :collection-data-type
-  [concept-type param value options]
+  [context concept-type param value options]
   (if (sequential? value)
     (if (= "true" (get-in options [param :and]))
       (gc/and-conds
-        (map #(common-params/parameter->condition concept-type param % options) value))
+        (map #(common-params/parameter->condition context concept-type param % options) value))
       (gc/or-conds
-        (map #(common-params/parameter->condition concept-type param % options) value)))
+        (map #(common-params/parameter->condition context concept-type param % options) value)))
     (let [case-sensitive (common-params/case-sensitive-field? concept-type :collection-data-type options)
           pattern (common-params/pattern-field? concept-type :collection-data-type options)]
       (if (or (= "SCIENCE_QUALITY" value)
@@ -245,9 +245,9 @@
 
 ;; dif-entry-id matches on entry-id or associated-difs
 (defmethod common-params/parameter->condition :dif-entry-id
-  [concept-type param value options]
+  [context concept-type param value options]
   (gc/or-conds
-    [(common-params/parameter->condition concept-type :entry-id value (set/rename-keys options {:dif-entry-id :entry-id}))
+    [(common-params/parameter->condition context concept-type :entry-id value (set/rename-keys options {:dif-entry-id :entry-id}))
      (common-params/string-parameter->condition concept-type  :associated-difs value
                                                 (set/rename-keys options {:dif-entry-id :associated-difs}))]))
 
@@ -314,9 +314,10 @@
 
 (defn timeline-parameters->query
   "Converts parameters from a granule timeline request into a query."
-  [params]
+  [context params]
   (let [{:keys [interval start-date end-date]} params
         query (common-params/parse-parameter-query
+                context
                 :granule
                 (dissoc params :interval :start-date :end-date))]
     ;; Add timeline request fields to the query so that they can be used later

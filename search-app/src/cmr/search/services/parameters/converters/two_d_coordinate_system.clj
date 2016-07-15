@@ -82,7 +82,7 @@
 
 ;; Converts two-d-coordinate-system parameter into a query condition
 (defmethod p/parameter->condition :two-d-coordinate-system
-  [concept-type param values options]
+  [_context concept-type param values options]
   (if (string? values)
     (two-d-param-str->condition concept-type values)
     (gc/or-conds (map (partial two-d-param-str->condition concept-type) values))))

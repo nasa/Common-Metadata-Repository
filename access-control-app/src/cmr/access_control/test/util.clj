@@ -127,6 +127,18 @@
          (assoc group :revision_id revision_id))
        group))))
 
+(defn ingest-group
+ "Ingests the group and returns a group such that it can be matched with a search result."
+ [token attributes members]
+ (let [group (make-group attributes)
+       {:keys [concept_id status revision_id] :as resp} (create-group-with-members token group members)]
+   (when-not (= status 200)
+     (throw (Exception. (format "Unexpected status [%s] when creating group %s" status (pr-str resp)))))
+   (assoc group
+          :member_count (count members)
+          :concept_id concept_id
+          :revision_id revision_id)))
+
 (defn assert-group-saved
   "Checks that a group was persisted correctly in metadata db. The user-id indicates which user
   updated this revision."

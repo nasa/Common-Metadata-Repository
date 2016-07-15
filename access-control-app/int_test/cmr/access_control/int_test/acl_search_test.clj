@@ -269,3 +269,66 @@
 
         "Identity type searches are always case-insensitive"
         ["PrOvIdEr"] [acl-provider]))))
+
+(deftest acl-search-by-permitted-user-test
+  (let [token (e/login (u/conn-context) "user1")
+        group1 (u/ingest-group token {:name "group1"} ["user1"])
+        group2 (u/ingest-group token {:name "group2"} ["USER1" "user2"])
+        group3 (u/ingest-group token {:name "group3"} nil)
+        ;; No user should match this since all users are registered
+        acl-guest (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
+        acl-registered-1 (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE")
+                                                  :group_permissions
+                                                  [{:user_type "registered" :permissions ["create"]}]))
+        acl-group1 (ingest-acl token (assoc (system-acl "ARCHIVE_RECORD")
+                                            :group_permissions
+                                            [{:group_id (:concept_id group1) :permissions ["create"]}]))
+
+        acl-registered-2 (ingest-acl token (assoc (provider-acl "OPTION_DEFINITION")
+                                                  :group_permissions
+                                                  [{:user_type "registered" :permissions ["create"]}]))
+        acl-group2 (ingest-acl token (assoc (provider-acl "OPTION_ASSIGNMENT")
+                                            :group_permissions
+                                            [{:group_id (:concept_id group2) :permissions ["create"]}]))
+        ;; No user should match this acl since group3 has no members
+        acl-group3 (ingest-acl token (assoc (catalog-item-acl "All Granules")
+                                            :group_permissions
+                                            [{:group_id (:concept_id group3) :permissions ["create"]}]))
+
+        registered-acls [acl-registered-1 acl-registered-2]]
+
+    (u/wait-until-indexed)
+
+    (testing "Search with non-existent user returns error"
+      (are3 [user]
+        (is (= {:status 400
+                :body {:errors [(format "The following users do not exist [%s]" user)]}
+                :content-type :json}
+               (ac/search-for-acls (u/conn-context) {:permitted-user user} {:raw? true})))
+
+        "Invalid user"
+        "foo"
+
+        "'guest' is not a registered user"
+        "guest"
+
+        "'registered' is not a registered user either"
+        "registered"))
+
+    (testing "Search with valid users"
+      (are3 [users expected-acls]
+        (let [response (ac/search-for-acls (u/conn-context) {:permitted-user users})]
+          (is (= (acls->search-response (count expected-acls) expected-acls)
+                (dissoc response :took))))
+
+        "user3 is not in a group, but gets acls for registered but not guest"
+        ["user3"] (concat registered-acls)
+
+        "user1 gets acls for registered, group1, and group2"
+        ["user1"] [acl-registered-1 acl-registered-2 acl-group1 acl-group2]
+
+        "user2 gets acls for guest, registred, and group2"
+        ["user2"] [acl-registered-1 acl-registered-2 acl-group2]
+
+        "User names are case-insensitive"
+        ["USER1"] [acl-registered-1 acl-registered-2 acl-group1 acl-group2]))))

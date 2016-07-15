@@ -63,6 +63,18 @@
       concept)
     (errors/throw-service-error :not-found (msg/acl-does-not-exist concept-id))))
 
+(defn- get-sids
+  "Returns a seq of sids for the given username string or user type keyword
+   for use in checking permissions against acls."
+  [context username-or-type]
+  (cond
+    (contains? #{:guest :registered} username-or-type) [username-or-type]
+    (string? username-or-type) (concat [:registered]
+                                       (->> (groups/search-for-groups context {:member username-or-type})
+                                            :results
+                                            :items
+                                            (map :concept_id)))))
+
 (defn- acl->base-concept
   "Returns a basic concept map for the given request context and ACL map."
   [context acl]
@@ -106,13 +118,14 @@
     {:single-value #{}
      :multiple-value #{:permitted-group :identity-type}
      :always-case-sensitive #{}
-     :disallow-pattern #{:identity-type}
+     :disallow-pattern #{:identity-type :permitted-user}
      :allow-or #{}}))
 
 (defmethod cpv/valid-parameter-options :acl
   [_]
   {:permitted-group cpv/string-param-options
-   :identity-type cpv/string-param-options})
+   :identity-type cpv/string-param-options
+   :permitted-user #{}})
 
 (defn- valid-permitted-group?
   "Returns true if the given permitted group is valid, i.e. guest, registered or conforms to
@@ -158,7 +171,8 @@
                                     params
                                     [(partial cpv/validate-map [:options])
                                      (partial cpv/validate-map [:options :permitted-group])
-                                     (partial cpv/validate-map [:options :identity-type])])]
+                                     (partial cpv/validate-map [:options :identity-type])
+                                     (partial cpv/validate-map [:options :permitted-user])])]
     (cpv/validate-parameters
       :acl safe-params
       (concat cpv/common-validations
@@ -177,15 +191,25 @@
 (defmethod cp/param-mappings :acl
   [_]
   {:permitted-group :string
-   :identity-type :acl-identity-type})
+   :identity-type :acl-identity-type
+   :permitted-user :acl-permitted-user})
 
 (defmethod cp/parameter->condition :acl-identity-type
- [concept-type param value options]
+ [context concept-type param value options]
  (if (sequential? value)
    (gc/group-conds (cp/group-operation param options)
-                   (map #(cp/parameter->condition concept-type param % options) value))
+                   (map #(cp/parameter->condition context concept-type param % options) value))
    (let [value (get acl-identity-type->search-value (str/lower-case value))]
      (cp/string-parameter->condition concept-type param value options))))
+
+(defmethod cp/parameter->condition :acl-permitted-user
+  [context concept-type param value options]
+  ;; reject non-existent users
+  (groups/validate-members-exist context [value])
+
+  (let [groups (->> (get-sids context value)
+                    (map name))]
+    (cp/string-parameter->condition concept-type :permitted-group groups options)))
 
 (defn search-for-acls
   [context params]
@@ -193,7 +217,7 @@
                                       (->> params
                                            cp/sanitize-params
                                            (validate-acl-search-params :acl)
-                                           (cp/parse-parameter-query :acl)))
+                                           (cp/parse-parameter-query context :acl)))
         [find-concepts-time results] (u/time-execution
                                        (cs/find-concepts context :acl query))
         total-took (+ query-creation-time find-concepts-time)]
@@ -273,18 +297,6 @@
                       (set/difference all-permissions granted-permissions))))
           #{}
           acls))
-
-(defn- get-sids
-  "Returns a seq of sids for the given username string or user type keyword
-   for use in checking permissions against acls."
-  [context username-or-type]
-  (cond
-    (contains? #{:guest :registered} username-or-type) [username-or-type]
-    (string? username-or-type) (concat [:registered]
-                                       (->> (groups/search-for-groups context {:member username-or-type})
-                                            :results
-                                            :items
-                                            (map :concept_id)))))
 
 (defn get-granted-permissions
   "Returns a map of concept ids to seqs of permissions granted on that concept for the given username."

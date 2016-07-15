@@ -162,7 +162,7 @@
 
 ;; Converts parameter and values into collection query condition
 (defmethod p/parameter->condition :attribute
-  [concept-type param values options]
+  [_context concept-type param values options]
   (let [exclusive? (= "true" (get-in options [:attribute :exclude-boundary]))
         conditions (map #(parse-value % exclusive?) values)
         failed-conditions (seq (filter :errors conditions))
@@ -182,4 +182,3 @@
       ;; unless :exclude-collection option is set to true.
       (gc/or-conds [attrib-condition (qm/->CollectionQueryCondition attrib-condition)])
       attrib-condition)))
-
