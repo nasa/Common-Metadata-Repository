@@ -2,7 +2,8 @@
   "Helper vars and functions for testing collection facet responses."
   (:require [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.collection :as dc]
-            [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]))
+            [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
+            [cmr.common.util :as util]))
 
 (defn make-coll
   "Helper for creating and ingesting an ECHO10 collection"
@@ -116,3 +117,10 @@
   "Returns whether the provided facet value is included in the list"
   [facet-response field value]
   (some #(= value %) (facet-values facet-response field)))
+
+(defn in-alphabetical-order?
+  "Returns true if the values in the collection are sorted in alphabetical order."
+  [coll]
+  ;; Note that compare-natural-strings is thoroughly unit tested so we can use it to verify
+  ;; alphabetical order
+  (= coll (sort-by first util/compare-natural-strings coll)))
