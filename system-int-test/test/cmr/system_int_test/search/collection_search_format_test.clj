@@ -16,6 +16,7 @@
             [clj-http.client :as client]
             [cmr.umm.core :as umm]
             [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm-spec.versioning :as umm-version]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
@@ -25,8 +26,9 @@
             [cmr.umm.spatial :as umm-s]
             [clojure.data.xml :as x]
             [cmr.system-int-test.utils.fast-xml :as fx]
-            [cmr.common.util :as util :refer [are2]]
+            [cmr.common.util :as util :refer [are2 are3]]
             [cmr.common.xml :as cx]
+            [cmr.common.mime-types :as mt]
             [cmr.system-int-test.data2.kml :as dk]
             [cmr.system-int-test.data2.opendata :as od]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
@@ -40,10 +42,128 @@
                        {"provguid1" "PROV1" "provguid2" "PROV2" "usgsguid" "USGS_EROS"})
   (constantly nil)))
 
+(deftest simple-search-test
+  (let [c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
+                                                  :version-id "V1"
+                                                  ;; Whitespace here but not stripped out for expected
+                                                  ;; results. It will be present in metadata.
+                                                  :entry-title "   ET1   "})
+                          {:format :echo10})]
+    (index/wait-until-indexed)
+    (let [params {:concept-id (:concept-id c1-echo)}
+          options {:accept nil
+                   :url-extension "dif"}
+          format-key :dif
+          response (search/find-metadata :collection format-key params options)]
+      (d/assert-metadata-results-match format-key [c1-echo] response))))
+
+(defn assert-cache-state
+  "Checks that the state of the cache is what we expected"
+  [collections-to-formats]
+  (let [expected (into {} (for [[coll format-keys] collections-to-formats]
+                            [(:concept-id coll)
+                             {:revision-id (:revision-id coll)
+                              :cached-formats (set format-keys)}]))]
+   (is (= expected (search/collection-metadata-cache-state)))))
+
+
+(defn assert-found-by-format
+  [collections format-key accept-header]
+  (let [params {:concept-id (map :concept-id collections)}
+        options {:accept accept-header}
+        response (search/find-metadata :collection format-key params options)]
+    (d/assert-metadata-results-match format-key collections response)))
+
+;; This tests that searching for and retrieving metadata after refreshing the search cache works.
+;; Other metadata tests all run before refreshing the cache so they cover that case.
+(deftest collection-metadata-cache-test
+  (let [c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"})
+                          {:format :echo10})
+        c2-echo (d/ingest "PROV2" (dc/collection {:entry-title "c2-echo"})
+                          {:format :echo10})
+        c3-dif (d/ingest "PROV1" (dc/collection-dif {:entry-title "c3-dif"
+                                                     :long-name "c3-dif"})
+                         {:format :dif})
+        c5-iso (d/ingest "PROV1" (dc/collection {:entry-title "c5-iso"})
+                         {:format :iso19115})
+        c7-smap (d/ingest "PROV1" (dc/collection-smap {:entry-title "c7-smap"})
+                          {:format :iso-smap})
+        c8-dif10 (d/ingest "PROV1" (dc/collection-dif10 {:entry-title "c8-dif10"
+                                                         :long-name "c8-dif10"})
+                           {:format :dif10})
+        c10-umm-json (d/ingest "PROV1"
+                               exp-conv/example-collection-record
+                               {:format :umm-json
+                                :accept-format :json})]
+    (index/wait-until-indexed)
+
+    (testing "Initial cache state is empty"
+      (assert-cache-state {}))
+
+    (testing "Fetching item not in cache will cache it"
+      (assert-found-by-format [c1-echo c3-dif] :echo10 mt/echo10)
+      (assert-cache-state {c1-echo [:echo10]
+                           ;; native format is cached as well
+                           c3-dif [:dif :echo10]}))
+
+    (testing "Fetching format that's not cached will cache it."
+      (assert-found-by-format [c1-echo c3-dif] :dif10 mt/dif10)
+      (assert-cache-state {c1-echo [:echo10 :dif10]
+                           ;; native format is cached as well
+                           c3-dif [:dif :echo10 :dif10]}))
+
+    (testing "Ingesting newer metadata (not cached) is successfully retrieved"
+      (let [c1-r2-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"
+                                                         :description "updated"})
+                                 {:format :echo10})
+            all-colls [c1-r2-echo c2-echo c3-dif c5-iso c7-smap c8-dif10 c10-umm-json]]
+        (index/wait-until-indexed)
+        (assert-found-by-format [c1-r2-echo c3-dif] :echo10 mt/echo10)
+
+        (testing "Fetching newer revision caches the newest revision"
+          ;;dif10 no longer cached because it was with previous revision
+          (assert-cache-state {c1-r2-echo [:echo10]
+                               c3-dif [:dif :echo10 :dif10]}))
+
+        (testing "All collections and formats cached after cache is refreshed"
+          (search/refresh-collection-metadata-cache)
+          (let [all-formats [:dif :dif10 :echo10 :iso19115 {:format :umm-json :version umm-version/current-version}]]
+            (assert-cache-state {c1-r2-echo all-formats
+                                 c2-echo all-formats
+                                 c3-dif all-formats
+                                 c5-iso all-formats
+                                 c7-smap (conj all-formats :iso-smap)
+                                 c8-dif10 all-formats
+                                 c10-umm-json all-formats})))
+        (testing "Retrieving all formats after refreshing cache"
+          (testing "Retrieving results in native format"
+            (are3 [concepts format-key]
+              (let [params {:concept-id (map :concept-id concepts)}
+                    options {:url-extension "native"}
+                    response (search/find-metadata :collection format-key params options)]
+                (d/assert-metadata-results-match format-key concepts response))
+              "ECHO10" [c1-r2-echo c2-echo] :echo10
+              "DIF" [c3-dif] :dif
+              "DIF10" [c8-dif10] :dif10
+              "ISO MENDS" [c5-iso] :iso19115
+              "SMAP ISO" [c7-smap] :iso-smap
+              "UMM JSON" [c10-umm-json] :umm-json))
+
+          (testing "Retrieving all in specified format"
+            (are3 [format-key]
+              (d/assert-metadata-results-match
+               format-key all-colls
+               (search/find-metadata :collection format-key {}))
+              "ECHO10" :echo10
+              "DIF" :dif
+              "DIF10" :dif10
+              "ISO" :iso19115)))))))
+
+
+
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
-  (let [
-        c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
+  (let [c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
                                                   :version-id "V1"
                                                   ;; Whitespace here but not stripped out for expected
                                                   ;; results. It will be present in metadata.

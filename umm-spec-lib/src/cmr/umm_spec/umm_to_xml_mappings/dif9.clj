@@ -4,7 +4,9 @@
             [cmr.common.xml.gen :refer :all]
             [clojure.set :as set]
             [camel-snake-kebab.core :as csk]
-            [cmr.umm-spec.xml-to-umm-mappings.dif9 :as xtu]))
+            [cmr.umm-spec.xml-to-umm-mappings.dif9 :as xtu]
+            [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]
+            [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]))
 
 (def dif9-xml-namespaces
   {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
@@ -47,6 +49,7 @@
      [:Entry_Title (:EntryTitle c)]
      [:Data_Set_Citation
       [:Version (:Version c)]]
+     (contact/generate-personnel c)
      (if-let [sks (:ScienceKeywords c)]
        (for [sk sks]
          [:Parameters
@@ -118,13 +121,8 @@
      [:Access_Constraints (-> c :AccessConstraints :Description)]
      [:Use_Constraints (:UseConstraints c)]
      [:Data_Set_Language (:DataLanguage c)]
-     [:Data_Center
-      [:Data_Center_Name
-       [:Short_Name "datacenter_short_name"]
-       [:Long_Name "data center long name"]]
-      [:Personnel
-       [:Role u/not-provided]
-       [:Last_Name u/not-provided]]]
+     (center/generate-originating-center c)
+     (center/generate-data-centers c)
      (for [distribution (:Distributions c)]
        [:Distribution
         [:Distribution_Media (:DistributionMedia distribution)]

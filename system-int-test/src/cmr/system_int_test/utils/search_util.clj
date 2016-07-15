@@ -6,6 +6,7 @@
             [clj-time.coerce :as tc]
             [clojure.string :as str]
             [cheshire.core :as json]
+            [cmr.system-int-test.utils.dev-system-util :as dev-util]
             [cmr.common.concepts :as cs]
             [cmr.common.mime-types :as mime-types]
             [cmr.system-int-test.utils.url-helper :as url]
@@ -30,6 +31,23 @@
             [cmr.system-int-test.data2.aql :as aql]
             [cmr.system-int-test.data2.aql-additional-attribute]
             [cmr.system-int-test.data2.facets :as f]))
+
+(defn refresh-collection-metadata-cache
+  "Triggers a full refresh of the collection granule aggregate cache in the indexer."
+  []
+  (let [response (client/post
+                  (url/refresh-collection-metadata-cache-url)
+                  {:connection-manager (s/conn-mgr)
+                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                   :throw-exceptions false})]
+    (is (= 200 (:status response)) (:body response))))
+
+(defn collection-metadata-cache-state
+  "Fetches the state of the collection metadata cache"
+  []
+  (dev-util/eval-in-dev-sys
+   `(cmr.search.data.metadata-retrieval.metadata-cache/cache-state
+     {:system (deref cmr.search.system/system-holder)})))
 
 (defn csv-response->granule-urs
   "Parses the csv response and returns the first column which is the granule ur."
@@ -369,7 +387,7 @@
                              :echo_granule_id echo_granule_id
                              :granule-count (when granule-count (Long. ^String granule-count))
                              :has-granules (when has-granules (= has-granules "true"))
-                             :metadata (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" metadata)})))
+                             :metadata metadata})))
                       (cx/elements-at-path parsed [:result])
                       metadatas)
            facets (f/parse-facets-xml (cx/element-at-path parsed [:facets]))]

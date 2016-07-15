@@ -8,7 +8,7 @@
             [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
             [cmr.search.services.query-execution.tags-results-feature :as trf]
             [cmr.common-app.services.search.results-model :as results]
-            [cmr.search.services.transformer :as t]
+            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [clojure.string :as str]
@@ -70,9 +70,9 @@
         elastic-matches (get-in elastic-results [:hits :hits])
         result-items (mapv #(elastic-result->query-result-item concept-type %) elastic-matches)
         tuples (mapv #(vector (:concept-id %) (:revision-id %)) result-items)
-        [req-time tresults] (u/time-execution
-                              (t/get-formatted-concept-revisions context tuples result-format false))
-        items (map #(select-keys % qe/metadata-result-item-fields) tresults)
+        [req-time items] (u/time-execution
+                          (metadata-cache/get-formatted-concept-revisions
+                           context concept-type tuples result-format))
         ;; add tags to result items if necessary
         items (if (contains? (set result-features) :tags)
                 (let [concept-tags-map (into {}
@@ -100,13 +100,13 @@
   [tags]
   (when (seq tags)
     [(cx/remove-xml-processing-instructions
-       (x/emit-str
-         (x/element :tags {}
-                    (for [[tag-key {:keys [data]}] tags]
-                      (x/element :tag {}
-                                 (x/element :tagKey {} tag-key)
-                                 (when data
-                                   (x/element :data {} (json/generate-string data))))))))]))
+      (x/emit-str
+       (x/element :tags {}
+                  (for [[tag-key {:keys [data]}] tags]
+                    (x/element :tag {}
+                               (x/element :tagKey {} tag-key)
+                               (when data
+                                 (x/element :data {} (json/generate-string data))))))))]))
 
 (defmulti metadata-item->result-string
   "Converts a search result + metadata into a string containing a single result for the metadata format."
@@ -117,7 +117,8 @@
 
 (defmethod metadata-item->result-string [:granule false]
   [concept-type echo-compatible? results metadata-item]
-  (let [{:keys [concept-id collection-concept-id revision-id format metadata]} metadata-item]
+  (let [{:keys [concept-id revision-id format metadata]} metadata-item
+        collection-concept-id (get-in metadata-item [:extra-fields :parent-collection-id])]
     ["<result concept-id=\""
      concept-id
      "\" collection-concept-id=\""
@@ -127,7 +128,7 @@
      "\" format=\""
      format
      "\">"
-     (cx/remove-xml-processing-instructions metadata)
+     metadata
      "</result>"]))
 
 (defmethod metadata-item->result-string [:collection false]
@@ -148,7 +149,7 @@
                       (str " " (name k) "=\"" v "\""))]
     (concat ["<result"]
             attrib-strs
-            [">" (cx/remove-xml-processing-instructions metadata)]
+            [">" metadata]
             (tags->result-string tags)
             ["</result>"])))
 
@@ -156,20 +157,21 @@
 
 (defmethod metadata-item->result-string [:granule true]
   [concept-type echo-compatible? results metadata-item]
-  (let [{:keys [concept-id collection-concept-id metadata]} metadata-item]
+  (let [{:keys [concept-id metadata]} metadata-item
+        collection-concept-id (get-in metadata-item [:extra-fields :parent-collection-id])]
     ["<result echo_granule_id=\""
      concept-id
      "\" echo_dataset_id=\""
      collection-concept-id
      "\">"
-     (cx/remove-xml-processing-instructions metadata)
+     metadata
      "</result>"]))
 
 (defmethod metadata-item->result-string [:collection true]
   [concept-type echo-compatible? results metadata-item]
   (let [{:keys [concept-id metadata tags]} metadata-item]
     (concat ["<result echo_dataset_id=\"" concept-id "\">"
-             (cx/remove-xml-processing-instructions metadata)]
+             metadata]
             (tags->result-string tags)
             ["</result>"])))
 

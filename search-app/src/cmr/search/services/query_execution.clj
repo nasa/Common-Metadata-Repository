@@ -1,5 +1,6 @@
 (ns cmr.search.services.query-execution
-  (:require [cmr.search.services.transformer :as t]
+  (:require [cmr.search.data.metadata-retrieval.metadata-transformer :as mt]
+            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.search.services.query-walkers.collection-query-resolver :as r]
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as ce]
@@ -18,10 +19,6 @@
   "The set of formats that are supported for the :specific-elastic-items query execution strategy"
   #{:json :atom :csv :opendata})
 
-(def metadata-result-item-fields
-  "Fields of a metadata search result item"
-  [:concept-id :revision-id :collection-concept-id :format :metadata])
-
 (defn- specific-items-query?
   "Returns true if the query is only for specific items."
   [{:keys [condition offset page-size] :as query}]
@@ -31,12 +28,16 @@
        (or (= page-size :unlimited)
            (>= page-size (count (:values condition))))))
 
-(defn- direct-transformer-query?
-  "Returns true if the query should be executed directly against the transformer and bypass elastic."
+(defn- direct-db-query?
+  "Returns true if the query should be executed directly against the database and bypass elastic."
   [{:keys [result-format result-features all-revisions? sort-keys concept-type] :as query}]
-  (and (specific-items-query? query)
-       (t/transformer-supported-format? result-format)
+  (and ;;Collections won't be direct transformer queries since their metadata is cached. We'll use
+       ;; elastic + the metadata cache for them
+       (= :granule concept-type)
+       (specific-items-query? query)
+       (mt/transformer-supported-format? result-format)
        (not all-revisions?)
+
        ;; Facets and tags require elastic search
        (not-any? #(contains? #{:facets :tags} %) result-features)
        ;; Sorting hasn't been specified or is set to the default value
@@ -57,7 +58,7 @@
   "Determines the execution strategy to use for the given query."
   [query]
   (cond
-    (direct-transformer-query? query) :direct-transformer
+    (direct-db-query? query) :direct-db
     (specific-items-from-elastic-query? query) :specific-elastic-items
     :else :elasticsearch))
 
@@ -83,12 +84,12 @@
   [query]
   (get-in query [:condition :values]))
 
-(defmethod common-qe/execute-query :direct-transformer
+(defmethod common-qe/execute-query :direct-db
   [context query]
   (let [{:keys [result-format skip-acls?]} query
         concept-ids (query->concept-ids query)
-        tresults (t/get-latest-formatted-concepts context concept-ids result-format skip-acls?)
-        items (map #(select-keys % metadata-result-item-fields) tresults)
+        items (metadata-cache/get-latest-formatted-concepts
+               context concept-ids result-format skip-acls?)
         results (results/map->Results {:hits (count items) :items items :result-format result-format})]
     (common-qe/post-process-query-result-features context query nil results)))
 

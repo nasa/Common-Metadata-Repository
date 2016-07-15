@@ -15,7 +15,13 @@
            java.util.zip.GZIPOutputStream
            java.io.ByteArrayOutputStream
            java.io.ByteArrayInputStream
-           java.sql.Blob))
+           java.sql.Blob
+           java.util.Arrays
+           [net.jpountz.lz4
+            LZ4Compressor
+            LZ4SafeDecompressor
+            LZ4FastDecompressor
+            LZ4Factory]))
 
 (defmacro are2
   "DEPRECATED. Use are3 instead.
@@ -219,9 +225,10 @@
   [m]
   (remove-map-keys #(nil? %) m))
 
-(defn map-keys [f m]
+(defn map-keys
   "Maps f over the keys in map m and updates all keys with the result of f.
   This is a recommended function from the Camel Snake Kebab library."
+  [f m]
   (when m
     (letfn [(handle-value [v]
                           (cond
@@ -313,6 +320,11 @@
                              (throw t)))))
         futures (map-n-all build-future n items)]
     (mapv deref futures)))
+
+(defn fast-map
+  "Eager version of pmap"
+  [f values]
+  (doall (pmap f values)))
 
 (defmacro while-let
   "A macro that's similar to when let. It will continually evaluate the bindings and execute the body
@@ -415,10 +427,47 @@
               (io/delete-file file))]
       (delete-recursive (io/file fname)))))
 
+(defn string->lz4-bytes
+  "Compresses the string using LZ4 compression. Returns a map containing the compressed byte array
+   and the length of the original string in bytes. The decompression length is used during decompression.
+   LZ4 compression is faster than GZIP compression but uses more space."
+  [^String s]
+  (let [data (.getBytes s "UTF-8")
+        decompressed-length (count data)
+        ^LZ4Factory factory (LZ4Factory/fastestInstance)
+        ^LZ4Compressor compressor (.highCompressor factory)
+        max-compressed-length (.maxCompressedLength compressor decompressed-length)
+        compressed (byte-array max-compressed-length)
+        compressed-length (.compress compressor
+                                     ;; Data to compress and size
+                                     data 0 decompressed-length
+                                     ;; Target byte array and size
+                                     compressed 0 max-compressed-length)]
+    {:decompressed-length decompressed-length
+     :compressed (Arrays/copyOf compressed compressed-length)}))
+
+(defn lz4-bytes->string
+  "Takes a map as returned by string->lz4-bytes and decompresses it back to the original string."
+  [lz4-info]
+  (let [{:keys [^long decompressed-length
+                ^bytes compressed]} lz4-info
+        ^LZ4Factory factory (LZ4Factory/fastestInstance)
+        ^LZ4FastDecompressor decompressor (.fastDecompressor factory)
+        restored (byte-array decompressed-length)]
+    (.decompress decompressor
+                 compressed 0
+                 restored 0 decompressed-length)
+    (String. restored 0 decompressed-length)))
+
 (defn gzip-blob->string
   "Convert a gzipped BLOB to a string"
   [^Blob blob]
   (-> blob .getBinaryStream GZIPInputStream. slurp))
+
+(defn gzip-bytes->string
+  "Convert a byte array of gzipped data into a string."
+  [^bytes bytes]
+  (-> bytes ByteArrayInputStream. GZIPInputStream. slurp))
 
 (defn string->gzip-bytes
   "Convert a string to an array of compressed bytes"
