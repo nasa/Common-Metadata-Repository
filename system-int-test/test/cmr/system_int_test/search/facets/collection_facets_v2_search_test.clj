@@ -143,7 +143,6 @@
           (is (< (index "default-p0") (index "Terra"))))))
 
     (testing "Science keywords are sorted alphabetically"
-      ; (println "Response is" response)
       (let [response (search-and-return-v2-facets
                       {:science-keywords-h {:0 {:topic "Popular"}}})
             science-keywords (-> (:children response) first :children)]
