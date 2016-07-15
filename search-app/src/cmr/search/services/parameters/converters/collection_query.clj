@@ -6,5 +6,5 @@
 
 ;; Converts parameter and values into collection query condition
 (defmethod p/parameter->condition :collection-query
-  [concept-type param value options]
-  (qm/->CollectionQueryCondition (p/parameter->condition :collection param value options)))
+  [context concept-type param value options]
+  (qm/->CollectionQueryCondition (p/parameter->condition context :collection param value options)))

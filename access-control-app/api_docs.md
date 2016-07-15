@@ -386,15 +386,18 @@ The following parameters are supported when searching for ACLs.
 
 ##### ACL Matching Parameters
 
-*permitted_group
+* permitted_group
   * options: ignore_case
-*identity_type
+* identity_type
   * options: none (always case-insensitive)
   * The type must be one or more of the following
     * system
     * provider
     * single_instance
     * catalog_item
+* permitted-user
+  * options: none (always case-insensitive)
+  * user is a URS user name corresponding to a member of a group that has access to an ACL.
 
 ##### ACL Search Response
 
@@ -452,6 +455,37 @@ Content-Length: 702
 
 ```
 curl -i "%CMR-ENDPOINT%/acls?identity_type\[\]=provider&identity_type\[\]=catalog_item&pretty=true"
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+CMR-Hits: 2
+CMR-Took: 5
+CMR-Request-Id: 5689303f-574d-4edf-b2f1-5219dc0ae6c5
+Content-Length: 702
+
+{
+  "hits" : 2,
+  "took" : 4,
+  "items" : [ {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000003-CMR",
+    "identity_type" : "Catalog Item",
+    "name" : "All Collections",
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000003-CMR"
+  }, {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000001-CMR",
+    "identity_type" : "Provider",
+    "name" : "Provider - PROV1 - AUDIT_REPORT",
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000001-CMR"
+  } ]
+}
+```
+
+###### By permitted_user
+
+```
+curl -i "%CMR-ENDPOINT%/acls?permitted_user=user1&pretty=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8

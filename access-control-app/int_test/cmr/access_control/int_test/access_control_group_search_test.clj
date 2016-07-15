@@ -12,18 +12,6 @@
               (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 (use-fixtures :once (fixtures/int-test-fixtures))
 
-(defn ingest-group
-  "Ingests the group and returns a group such that it can be matched with a search result."
-  [token attributes members]
-  (let [group (u/make-group attributes)
-        {:keys [concept_id status revision_id] :as resp} (u/create-group-with-members token group members)]
-    (when-not (= status 200)
-      (throw (Exception. (format "Unexpected status [%s] when creating group %s" status (pr-str resp)))))
-    (assoc group
-           :member_count (count members)
-           :concept_id concept_id
-           :revision_id revision_id)))
-
 (defn sort-groups
   "Sorts the groups by provider and then by name within a provider. System groups come last."
   [groups]
@@ -57,13 +45,13 @@
 
 (deftest group-search-test
   (let [token (e/login (u/conn-context) "user1")
-        cmr-group1 (ingest-group token {:name "group1"} ["user1"])
-        cmr-group2 (ingest-group token {:name "group2"} ["USER1" "user2"])
-        cmr-group3 (ingest-group token {:name "group3"} nil)
-        prov1-group1 (ingest-group token {:name "group1" :provider_id "PROV1"} ["user1"])
-        prov1-group2 (ingest-group token {:name "group2" :provider_id "PROV1"} ["user1" "user3"])
-        prov2-group1 (ingest-group token {:name "group1" :provider_id "PROV2"} ["user2"])
-        prov2-group2 (ingest-group token {:name "group2" :provider_id "PROV2"} ["user2" "user3"])
+        cmr-group1 (u/ingest-group token {:name "group1"} ["user1"])
+        cmr-group2 (u/ingest-group token {:name "group2"} ["USER1" "user2"])
+        cmr-group3 (u/ingest-group token {:name "group3"} nil)
+        prov1-group1 (u/ingest-group token {:name "group1" :provider_id "PROV1"} ["user1"])
+        prov1-group2 (u/ingest-group token {:name "group2" :provider_id "PROV1"} ["user1" "user3"])
+        prov2-group1 (u/ingest-group token {:name "group1" :provider_id "PROV2"} ["user2"])
+        prov2-group2 (u/ingest-group token {:name "group2" :provider_id "PROV2"} ["user2" "user3"])
         cmr-groups [cmr-group1 cmr-group2 cmr-group3]
         prov1-groups [prov1-group1 prov1-group2]
         prov2-groups [prov2-group1 prov2-group2]

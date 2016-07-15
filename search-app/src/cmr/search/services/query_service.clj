@@ -146,7 +146,7 @@
 
                                            (psn/replace-provider-short-names context)
                                            (pv/validate-parameters concept-type)
-                                           (common-params/parse-parameter-query concept-type)))
+                                           (common-params/parse-parameter-query context concept-type)))
         [find-concepts-time results] (u/time-execution
                                        (common-search/find-concepts context
                                                                     concept-type
@@ -213,7 +213,8 @@
   [context result-format concept-id]
   (if (contains? #{:atom :json} result-format)
     ;; do a query and use single-result->response
-    (let [query (common-params/parse-parameter-query (cc/concept-id->type concept-id)
+    (let [query (common-params/parse-parameter-query context
+                                                     (cc/concept-id->type concept-id)
                                                      {:page-size 1
                                                       :concept-id concept-id
                                                       :result-format result-format})
@@ -252,7 +253,7 @@
                    (lp/process-legacy-multi-params-conditions :granule)
                    (lp/replace-science-keywords-or-option :granule)
                    pv/validate-timeline-parameters
-                   p/timeline-parameters->query)
+                   (p/timeline-parameters->query context))
         results (qe/execute-query context query)]
     (common-search/search-results->response context query results)))
 
