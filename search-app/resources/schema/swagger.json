@@ -513,8 +513,33 @@
           "text/csv"
         ],
         "responses": {
+          "200": {
+            "description": "This will contain the collections that are found. The data produced is specific to the response format selected.",
+            "headers": {
+              "CMR-Took": {
+                "description": "The time the query took in milliseconds to execute within the CMR.",
+                "type": "integer"
+              },
+              "CMR-Hits": {
+                "description": "The number of matches of the query.",
+                "type": "integer"
+              }
+            }
+          },
+          "400": {
+            "description": "The query contained an invalid parameter. The response body contains details.",
+          },
+          "500": {
+            "description": "An internal server error occured. You should contact CMR operations for these errors.",
+          },
           "default": {
-            "description": ""
+            "description": "",
+            "headers": {
+              "CMR-Request-Id": {
+                "description": "A unique identifier given to the request in the CMR.",
+                "type": "string"
+              }
+            }
           }
         }
       }
