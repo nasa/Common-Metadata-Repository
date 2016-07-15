@@ -6,7 +6,8 @@
             [clj-time.core :as t]
             [cmr.umm.start-end-date :as sed]
             [cmr.common.time-keeper :as tk]
-            [cmr.common.util :as u]))
+            [cmr.common.util :as u]
+            [cmr.umm.core :as ummc]))
 
 (def ^:private supported-collection-identifier-keys
   #{:entry-titles :access-value :temporal})
@@ -97,3 +98,34 @@
          (= coll-prov-id provider-id)
          (or (nil? collection-identifier)
              (coll-matches-collection-identifier? coll collection-identifier)))))
+
+;; Functions for preparing concepts to be passed to functions above.
+
+(defmulti add-acl-enforcement-fields-to-concept
+  "Adds the fields necessary to enforce ACLs to the concept. Temporal and access value are relatively
+  expensive to extract so they are lazily associated. The values won't be evaluated until needed."
+  (fn [concept]
+    (:concept-type concept)))
+
+(defmethod add-acl-enforcement-fields-to-concept :default
+  [concept]
+  concept)
+
+(defmethod add-acl-enforcement-fields-to-concept :collection
+  [concept]
+  (-> concept
+      (u/lazy-assoc :access-value (ummc/parse-concept-access-value concept))
+      (u/lazy-assoc :temporal (ummc/parse-concept-temporal concept))
+      (assoc :entry-title (get-in concept [:extra-fields :entry-title]))))
+
+(defmethod add-acl-enforcement-fields-to-concept :granule
+  [concept]
+  (-> concept
+      (u/lazy-assoc :access-value (ummc/parse-concept-access-value concept))
+      (u/lazy-assoc :temporal (ummc/parse-concept-temporal concept))
+      (assoc :collection-concept-id (get-in concept [:extra-fields :parent-collection-id]))))
+
+(defn add-acl-enforcement-fields
+  "Adds the fields necessary to enforce ACLs to the concepts."
+  [concepts]
+  (mapv add-acl-enforcement-fields-to-concept concepts))

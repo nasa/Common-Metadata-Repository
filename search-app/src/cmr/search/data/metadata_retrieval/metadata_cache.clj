@@ -18,7 +18,7 @@
            [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
            [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
            [cmr.search.services.acl-service :as acl-service]
-           [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
+           [cmr.umm.acl-matchers :as acl-match]
            [cmr.umm-spec.versioning :as umm-version]
            [cmr.common-app.services.search.query-model :as q]
            [cmr.common-app.services.search.query-execution :as qe]
@@ -334,7 +334,7 @@
          concepts)
 
        ;; Convert concepts to results with acl enforcment
-       (let [[t3 concepts] (u/time-execution (acl-rhh/add-acl-enforcement-fields concepts))
+       (let [[t3 concepts] (u/time-execution (acl-match/add-acl-enforcement-fields concepts))
              [t4 concepts] (u/time-execution (acl-service/filter-concepts context concepts))
              [t5 concepts] (u/time-execution
                             (metadata-transformer/transform-concepts
@@ -362,7 +362,7 @@
                  "The revision [%d] of concept [%s] represents a deleted concept and does not contain metadata."
                  revision-id
                  concept-id)]))
-        [t2 concept] (u/time-execution (acl-rhh/add-acl-enforcement-fields-to-concept concept))
+        [t2 concept] (u/time-execution (acl-match/add-acl-enforcement-fields-to-concept concept))
         [t3 [concept]] (u/time-execution (acl-service/filter-concepts context [concept]))
         ;; format concept
         [t4 [concept]] (u/time-execution

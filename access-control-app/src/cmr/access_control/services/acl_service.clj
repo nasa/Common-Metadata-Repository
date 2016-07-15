@@ -22,7 +22,8 @@
             [cmr.umm-spec.legacy :as umm-legacy]
             [cmr.acl.core :as acl]
             [cmr.umm.acl-matchers :as acl-matchers]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [cmr.common.date-time-parser :as dtp]))
 
 (def acl-provider-id
   "The provider ID for all ACLs. Since ACLs are not owned by individual
@@ -237,10 +238,23 @@
   [acl]
   (-> acl
       (set/rename-keys {:system-identity :system-object-identity
-                                :provider-identity :provider-object-identity
-                                :group-permissions :aces})
+                        :provider-identity :provider-object-identity
+                        :group-permissions :aces})
       (util/update-in-each [:aces] update-in [:user-type] keyword)
-      (util/update-in-each [:aces] set/rename-keys {:group-id :group-guid})))
+      (util/update-in-each [:aces] set/rename-keys {:group-id :group-guid})
+      (update-in [:catalog-item-identity :collection-identifier :temporal]
+                 (fn [t]
+                   (when t
+                     (-> t
+                         (assoc :temporal-field :acquisition)
+                         (update-in [:mask] keyword)
+                         (update-in [:start-date] dtp/try-parse-datetime)
+                         (update-in [:end-date] dtp/try-parse-datetime)))))
+      (update-in [:catalog-item-identity :collection-identifier :access-value]
+                 (fn [av]
+                   (when av
+                     (set/rename-keys av {:include-undefined-value :include-undefined}))))
+      util/remove-nil-keys))
 
 (def all-permissions
   "The set of all permissions checked and returned by the functions below."
@@ -287,7 +301,8 @@
 (defn get-granted-permissions
   "Returns a map of concept ids to seqs of permissions granted on that concept for the given username."
   [context username-or-type concept-ids]
-  (let [concepts (mdb1/get-latest-concepts context concept-ids)
+  (let [concepts (acl-matchers/add-acl-enforcement-fields
+                   (mdb1/get-latest-concepts context concept-ids))
         sids (get-sids context username-or-type)
         ;; fetch and parse all ACLs lazily
         acls (for [batch (mdb1/find-in-batches context :acl 1000 {:latest true})
