@@ -47,7 +47,7 @@
        {:apply
         "http://localhost:3003/collections.json?page_size=0&include_facets=v2&platform_h%5B%5D=diadem-1D"},
        :has_children false}
-       {:title "DMSP 5B/F3",
+      {:title "DMSP 5B/F3",
        :type "filter",
        :applied false,
        :count 2,
@@ -102,7 +102,7 @@
        {:apply
         "http://localhost:3003/collections.json?page_size=0&include_facets=v2&project_h%5B%5D=proj1"},
        :has_children false}
-       {:title "PROJ2",
+      {:title "PROJ2",
        :type "filter",
        :applied false,
        :count 2,

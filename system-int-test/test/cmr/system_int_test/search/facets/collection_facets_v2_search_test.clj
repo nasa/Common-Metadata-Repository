@@ -33,6 +33,18 @@
                               :topic "Popular"
                               :term "UNIVERSAL"}))
 
+(def sk4 (dc/science-keyword {:category "EARTH SCIENCE"
+                              :topic "Popular"
+                              :term "Alpha"}))
+
+(def sk5 (dc/science-keyword {:category "EARTH SCIENCE"
+                              :topic "Popular"
+                              :term "Beta"}))
+
+(def sk6 (dc/science-keyword {:category "EARTH SCIENCE"
+                              :topic "Popular"
+                              :term "Omega"}))
+
 (defn- search-and-return-v2-facets
   "Returns the facets returned by a search requesting v2 facets."
   ([]
@@ -98,26 +110,44 @@
              :children
              [{:title "Level1-3", :applied true}]}]}]}]}]}]})
 
+(defn- verify-nested-facets-ordered-alphabetically
+  "Recursively verify that all of the values at each level in a collection of nested facets are in
+  alphabetical order."
+  [facets]
+  (is (fu/in-alphabetical-order? (map :title facets)))
+  (mapv #(when (:children %) (verify-nested-facets-ordered-alphabetically (:children %))) facets))
+
 (deftest facet-v2-sorting
   ;; 55 platforms all with the same count (2) and default priority
-  (fu/make-coll 1 "PROV1" (fu/platforms "default" 55))
-  (fu/make-coll 2 "PROV1" (fu/platforms "default" 55))
+  (fu/make-coll 1 "PROV1" (fu/platforms "default" 55)
+                          (fu/science-keywords sk1 sk2 sk3 sk4 sk5 sk6))
+  (fu/make-coll 2 "PROV1" (fu/platforms "default" 55) (fu/science-keywords sk1 sk2))
+
   ;; 1 platform with a count of 1 but high priority, so it should appear
-  (fu/make-coll 3 "PROV1" {:platforms [(dc/platform {:short-name "Terra"})]})
+  (fu/make-coll 3 "PROV1" {:platforms [(dc/platform {:short-name "Terra"})]}
+                (fu/science-keywords sk2 sk5))
   ;; 55 platforms with a count of 1, none of which should appear
-  (fu/make-coll 4 "PROV1" (fu/platforms "low" 55))
+  (fu/make-coll 4 "PROV1" (fu/platforms "low" 55) (fu/science-keywords sk2 sk5))
 
-  (let [response (search-and-return-v2-facets)]
-    (testing "high priority items appear regardless of count"
-      (is (fu/facet-included? response :platform-h "Terra")))
+  (testing "Platform sorting behavior"
+    (let [response (search-and-return-v2-facets)]
+      (testing "high priority items appear regardless of count"
+        (is (fu/facet-included? response :platform-h "Terra")))
 
-    (testing "same-priority items appear based on highest count"
-      (is (not-any? #(= "low" (subs % 0 3)) (fu/facet-values response :platform-h))))
+      (testing "same-priority items appear based on highest count"
+        (is (not-any? #(= "low" (subs % 0 3)) (fu/facet-values response :platform-h))))
 
-    (testing "items are sorted alphabetically"
-      (let [index (partial fu/facet-index response :platform-h)]
-        (is (< (index "default-p2") (index "default-p10")))
-        (is (< (index "default-p0") (index "Terra")))))))
+      (testing "items are sorted alphabetically"
+        (let [index (partial fu/facet-index response :platform-h)]
+          (is (< (index "default-p2") (index "default-p10")))
+          (is (< (index "default-p0") (index "Terra"))))))
+
+    (testing "Science keywords are sorted alphabetically"
+      (let [response (search-and-return-v2-facets
+                      {:science-keywords-h {:0 {:topic "Popular"}}})
+            science-keywords (-> (:children response) first :children)]
+        (verify-nested-facets-ordered-alphabetically science-keywords)))))
+
 
 (def partial-science-keywords-applied
   "Facet response with just the title, applied, and children fields. Used to verify that when
