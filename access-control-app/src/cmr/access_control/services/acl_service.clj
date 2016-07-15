@@ -207,10 +207,7 @@
   (groups/validate-members-exist context [value])
 
   (let [groups (->> (get-sids context value)
-                    (map (fn [sid] (if (= :registered sid)
-                                       "registered"
-                                       sid)))
-                    (concat ["guest"]))]
+                    (map name))]
     (cp/string-parameter->condition concept-type :permitted-group groups options)))
 
 (defn search-for-acls

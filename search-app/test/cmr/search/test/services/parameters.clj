@@ -79,8 +79,8 @@
   (testing "option map aliases are corrected"
     (is (= (q/query {:concept-type :collection
                      :condition (q/string-condition :entry-title "foo" false false)})
-           (p/parse-parameter-query nil :collection {:entry-title ["foo"]}
-                                                 :options {:entry-title {:ignore-case "true"}}))))
+           (p/parse-parameter-query nil :collection {:entry-title ["foo"]
+                                                     :options {:entry-title {:ignore-case "true"}}}))))
   (testing "with one condition"
     (is (= (q/query {:concept-type :collection
                      :condition (q/string-condition :entry-title "foo")})

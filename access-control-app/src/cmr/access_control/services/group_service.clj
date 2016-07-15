@@ -248,7 +248,7 @@
     ;; CMR indicates we should search for system groups
     (if (= (str/upper-case value) SYSTEM_PROVIDER_ID)
       (common-qm/negated-condition (common-qm/exist-condition :provider))
-      (cp/string-parameter->condition context concept-type param value options))))
+      (cp/string-parameter->condition concept-type param value options))))
 
 
 (defn search-for-groups

@@ -275,6 +275,7 @@
         group1 (u/ingest-group token {:name "group1"} ["user1"])
         group2 (u/ingest-group token {:name "group2"} ["USER1" "user2"])
         group3 (u/ingest-group token {:name "group3"} nil)
+        ;; No user should match this since all users are registered
         acl-guest (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
         acl-registered-1 (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE")
                                                   :group_permissions
@@ -294,8 +295,7 @@
                                             :group_permissions
                                             [{:group_id (:concept_id group3) :permissions ["create"]}]))
 
-        registered-acls [acl-registered-1 acl-registered-2]
-        guest-acls [acl-guest]]
+        registered-acls [acl-registered-1 acl-registered-2]]
 
     (u/wait-until-indexed)
 
@@ -321,14 +321,14 @@
           (is (= (acls->search-response (count expected-acls) expected-acls)
                 (dissoc response :took))))
 
-        "user3 is not in a group, but gets acls for registered or guest"
-        ["user3"] (concat registered-acls guest-acls)
+        "user3 is not in a group, but gets acls for registered but not guest"
+        ["user3"] (concat registered-acls)
 
-        "user1 gets acls for guest, registered, group1, and group2"
-        ["user1"] [acl-guest acl-registered-1 acl-registered-2 acl-group1 acl-group2]
+        "user1 gets acls for registered, group1, and group2"
+        ["user1"] [acl-registered-1 acl-registered-2 acl-group1 acl-group2]
 
         "user2 gets acls for guest, registred, and group2"
-        ["user2"] [acl-guest acl-registered-1 acl-registered-2 acl-group2]
+        ["user2"] [acl-registered-1 acl-registered-2 acl-group2]
 
         "User names are case-insensitive"
-        ["USER1"] [acl-guest acl-registered-1 acl-registered-2 acl-group1 acl-group2]))))
+        ["USER1"] [acl-registered-1 acl-registered-2 acl-group1 acl-group2]))))

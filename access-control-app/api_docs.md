@@ -386,16 +386,16 @@ The following parameters are supported when searching for ACLs.
 
 ##### ACL Matching Parameters
 
-*permitted_group
+* permitted_group
   * options: ignore_case
-*identity_type
+* identity_type
   * options: none (always case-insensitive)
   * The type must be one or more of the following
     * system
     * provider
     * single_instance
     * catalog_item
-*permitted-user
+* permitted-user
   * options: none (always case-insensitive)
   * user is a URS user name corresponding to a member of a group that has access to an ACL.
 

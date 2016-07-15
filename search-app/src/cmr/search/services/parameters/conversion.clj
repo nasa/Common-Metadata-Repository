@@ -145,10 +145,10 @@
          collection-concept-ids :collection} (group-by (comp :concept-type cc/parse-concept-id) values)
         collection-cond (when (seq collection-concept-ids)
                           (common-params/string-parameter->condition
-                            context concept-type :collection-concept-id collection-concept-ids {}))
+                            concept-type :collection-concept-id collection-concept-ids {}))
         granule-cond (when (seq granule-concept-ids)
                        (common-params/string-parameter->condition
-                         context concept-type :concept-id granule-concept-ids options))]
+                         concept-type :concept-id granule-concept-ids options))]
     (if (and collection-cond granule-cond)
       (gc/and-conds [collection-cond granule-cond])
       (or collection-cond granule-cond))))
