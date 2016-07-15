@@ -86,6 +86,7 @@
                              {"Echo-Token" token}))))
 
 (deftest collection-simple-catalog-item-identity-permission-check-test
+  ;; tests ACLs which grant access to collections based on provider id and/or entry title
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
         ;; helper for easily creating a group, returns concept id
         create-group #(:concept_id (u/create-group token (u/make-group %)))
@@ -98,6 +99,7 @@
                                                            :short-name %})
         coll1 (ingest-prov1-collection "coll1")
         coll2 (ingest-prov1-collection "coll2")
+        coll3 (ingest-prov1-collection "coll3")
         gran1 (ingest/ingest-concept (u/conn-context)
                                      {:format "application/echo10+xml"
                                       :metadata granule-metadata
@@ -194,18 +196,26 @@
                                        :collection_applicable true
                                        :collection_identifier {:entry_titles ["coll2 entry title"]}
                                        :provider_id "PROV1"}})
-            (are [user permissions]
-              (= {"C1200000002-PROV1" permissions}
-                 (get-permissions user "C1200000002-PROV1"))
-              :guest ["read"]
-              :registered [])))))
+            (testing "for collection in ACL's entry titles"
+              (are [user permissions]
+                (= {"C1200000002-PROV1" permissions}
+                   (get-permissions user "C1200000002-PROV1"))
+                :guest ["read"]
+                :registered []))
+            (testing "for collection not in ACL's entry titles"
+              (are [user permissions]
+                (= {"C1200000003-PROV1" permissions}
+                   (get-permissions user "C1200000003-PROV1"))
+                :guest []
+                :registered []))))))
 
     (testing "granule level permissions"
       (testing "no permissions granted"
-        (is (= {"G1200000003-PROV1" []}
+        (is (= {"G1200000004-PROV1" []}
                (get-granule-permissions "user1")))))))
 
 (deftest collection-catalog-item-identifier-access-value-test
+  ;; tests ACLs which grant access to collections based on their access value
   (let [token (e/login (u/conn-context) "user1" [])
         ingest-access-value-collection (fn [short-name access-value]
                                          (ingest-collection token {:entry-title (str short-name " entry title")
@@ -377,6 +387,7 @@
 ;; * granule permissions applied for collection applicable false??? <-- ask Jason
 
 (deftest collection-provider-level-permission-check-test
+  ;; Tests ACLs which grant the provider-level update/delete permissions to collections
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
         ;; then create a group that contains our user, so we can find collections that grant access to this user
         group (u/make-group {:name "groupwithuser1" :members ["user1"]})
