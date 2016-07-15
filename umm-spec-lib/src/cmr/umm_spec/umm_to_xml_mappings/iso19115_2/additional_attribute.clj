@@ -89,7 +89,7 @@
 
 (defn generate-data-quality-info-additional-attributes
   "Returns the content generator instructions for generating ISO19115 additional attributes.
-  It doesnot generate the whole dataQualityInfo stack, it starts at gmd:processStep."
+  It does not generate the whole dataQualityInfo stack, it starts at gmd:processStep."
   [additional-attributes]
   (if-let [aas (data-quality-info-additional-attributes additional-attributes)]
     [:gmd:processStep
