@@ -516,6 +516,41 @@
               "type": "string"
             },
             "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "description": "Number of results per page - default is 10, max is 2000.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "page_num",
+            "description": "The page number to return.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "As an alternative to page_num, a 0-based offset of individual results may be specified.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "pretty",
+            "description": "Return formatted results if set to true.",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "in": "query",
+            "name": "token",
+            "description": "Specifies a user/guest token from ECHO to use to authenticate yourself. This can also be specified as the header Echo-Token.",
+            "required": false,
+            "type": "string"
           }
         ],
         "produces": [
