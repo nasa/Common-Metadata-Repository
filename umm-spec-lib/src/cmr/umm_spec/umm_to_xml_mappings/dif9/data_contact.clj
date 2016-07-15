@@ -39,7 +39,8 @@
   (when-let [address (first (:Addresses contact-info))]
     (let [{:keys [StreetAddresses City StateProvince Country PostalCode]} address]
       [:Contact_Address
-       [:Address (first StreetAddresses)]
+       (for [street-address StreetAddresses]
+         [:Address street-address])
        [:City City]
        [:Province_or_State StateProvince]
        [:Postal_Code PostalCode]
