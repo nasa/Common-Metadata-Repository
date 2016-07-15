@@ -55,14 +55,18 @@
                        (use 'cmr.common-app.api-docs)
                        (use 'clojure.java.io)
                        (let [json-target (file "resources/public/site/JSONQueryLanguage.json")
-                             aql-target (file "resources/public/site/IIMSAQLQueryLanguage.xsd")]
+                             aql-target (file "resources/public/site/IIMSAQLQueryLanguage.xsd")
+                             swagger-target (file "resources/public/site/swagger.json")]
                          (println "Copying JSON Query Language Schema to" (str json-target))
                          (make-parents json-target)
                          (copy (file "resources/schema/JSONQueryLanguage.json")
                                json-target)
                          (println "Copying AQL Schema to" (str aql-target))
                          (copy (file "resources/schema/IIMSAQLQueryLanguage.xsd")
-                               aql-target))
+                               aql-target)
+                         (println "Copying swagger.json file to " (str swagger-target))
+                         (copy (file "resources/schema/swagger.json")
+                               swagger-target))
                        (generate
                          "CMR Search"
                          "api_docs.md"

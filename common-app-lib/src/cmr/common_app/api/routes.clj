@@ -219,4 +219,3 @@
       (-> (f request)
           (assoc-in [:headers RESPONSE_REQUEST_ID_HEADER] request-id))
       ((ring-json/wrap-json-response f) request))))
-
