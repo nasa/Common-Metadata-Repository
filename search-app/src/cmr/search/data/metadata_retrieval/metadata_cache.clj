@@ -11,6 +11,7 @@
   (require [cmr.common.util :as u]
            [cmr.common.cache :as c]
            [cmr.common.xml :as cx]
+           [clojure.set :as set]
            [cmr.common.config :refer [defconfig]]
            [cmr.common.jobs :refer [defjob]]
            [cmr.common.services.errors :as errors]
@@ -30,8 +31,13 @@
   "Identifies the key used when the cache is stored in the system."
   :metadata-cache)
 
-(def cached-formats
-  "This is a set of formats that are cached."
+(defconfig non-cached-collection-metadata-formats
+  "Defines a set of collection metadata formats that will not be cached in memory"
+  {:default #{}
+   :type :edn})
+
+(def all-formats
+  "All the possible collection metadata formats that could be cached."
   #{:echo10
     :iso19115
     :dif
@@ -39,6 +45,11 @@
     ;; Note that when upgrading umm version we should also cache the previous version of UMM.
     {:format :umm-json
      :version umm-version/current-version}})
+
+(defn cached-formats
+  "This is a set of formats that are cached."
+  []
+  (set/difference all-formats (non-cached-collection-metadata-formats)))
 
 ;; Defines the record that represents the cache and implements the cache protocol. This is a very
 ;; simple implementation that just wraps an atom with the map of cached concept ids to revision
@@ -128,7 +139,7 @@
         concepts (doall (metadata-db/get-concepts mdb-context concept-tuples true))
         concepts (concepts-without-xml-processing-inst concepts)
         rfms (u/fast-map #(rfm/compress
-                           (rfm/concept->revision-format-map context % cached-formats))
+                           (rfm/concept->revision-format-map context % (cached-formats)))
                          concepts)]
     (reduce #(assoc %1 (:concept-id %2) %2) {} rfms)))
 
