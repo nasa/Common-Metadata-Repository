@@ -10,6 +10,7 @@
                  * various format keys each mapped to compressed metadata."
   (require [cmr.common.util :as u]
            [cmr.common.cache :as c]
+           [cmr.common.xml :as cx]
            [cmr.common.config :refer [defconfig]]
            [cmr.common.jobs :refer [defjob]]
            [cmr.common.services.errors :as errors]
@@ -112,12 +113,20 @@
                      :cached-formats (rfm/cached-formats rfm)})
                   cache-map)))
 
+(defn- concepts-without-xml-processing-inst
+  "Removes XML processing instructions from a list of concepts."
+  [concepts]
+  (u/fast-map
+   #(update % :metadata cx/remove-xml-processing-instructions)
+   concepts))
+
 (defn- concept-tuples->cache-map
   "Takes a set of concept tuples fetches the concepts from metadata db, converts them to revision
    format maps, and stores them into a cache map"
   [context concept-tuples]
   (let [mdb-context (context->metadata-db-context context)
         concepts (doall (metadata-db/get-concepts mdb-context concept-tuples true))
+        concepts (concepts-without-xml-processing-inst concepts)
         rfms (u/fast-map #(rfm/compress
                            (rfm/concept->revision-format-map context % cached-formats))
                          concepts)]
@@ -187,24 +196,28 @@
           [t1 concepts] (u/time-execution
                          (doall (metadata-db/get-concepts mdb-context concept-tuples false)))
 
+          [t2 concepts] (u/time-execution
+                         (concepts-without-xml-processing-inst concepts))
+
           ;; Convert concepts to revision format maps with the target format.
           target-format-set #{target-format}
-          [t2 revision-format-maps] (u/time-execution
+          [t3 revision-format-maps] (u/time-execution
                                      (u/fast-map #(rfm/concept->revision-format-map context % target-format-set)
                                                  concepts))
 
           ;; Convert revision format maps to concepts with the specific format. We must return these
           ;; concepts because they contain the correct metadata.
-          [t3 concepts] (u/time-execution
+          [t4 concepts] (u/time-execution
                          (u/fast-map #(rfm/revision-format-map->concept target-format %)
                                      revision-format-maps))
 
           ;; Cache the revision format maps. Note time captured includes compression
-          [t4 _] (u/time-execution (update-cache context revision-format-maps))]
+          [t5 _] (u/time-execution (update-cache context revision-format-maps))]
 
       (debug "fetch-and-cache of " (count concept-tuples) " concepts:"
-             "get-concepts:" t1 "concept->revision-format-map:" t2
-             "revision-format-map->concept:" t3 "update-cache:" t4)
+             "get-concepts:" t1 "remove-xml-processing-instructions:" t2
+             "concept->revision-format-map:" t3
+             "revision-format-map->concept:" t4 "update-cache:" t5)
       concepts)))
 
 (defn- fetch-metadata
@@ -217,9 +230,12 @@
           [t1 concepts] (u/time-execution
                          (doall (metadata-db/get-concepts mdb-context concept-tuples false)))
           [t2 concepts] (u/time-execution
-                         (metadata-transformer/transform-concepts context concepts target-format))]
+                         (metadata-transformer/transform-concepts context concepts target-format))
+          [t3 concepts] (u/time-execution
+                         (concepts-without-xml-processing-inst concepts))]
       (debug "fetch of " (count concept-tuples) " concepts:"
-             "get-concepts:" t1 "metadata-transformer/transform-concepts" t2)
+             "get-concepts:" t1 "metadata-transformer/transform-concepts:" t2
+             "remove-xml-processing-instructions:" t3)
       concepts)))
 
 (defn- get-cached-metadata-in-format
@@ -309,7 +325,8 @@
 (defn get-latest-formatted-concepts
   "Get latest version of concepts with given concept-ids in a given format. Applies ACLs to the concepts
   found. If any of the concept ids are not found or were deleted then we just don't return them.
-  Does not use the cache because this is currently only used when finding granules by concept id."
+  Does not use the cache because this is currently only used when finding many granules by concept id
+  or when finding a single concept."
   ([context concept-ids target-format]
    (get-latest-formatted-concepts context concept-ids target-format false))
   ([context concept-ids target-format skip-acls?]
@@ -322,7 +339,6 @@
                         (doall (metadata-db/get-latest-concepts mdb-context concept-ids true)))
          ;; Filtering deleted concepts
          [t2 concepts] (u/time-execution (doall (filter #(not (:deleted %)) concepts)))]
-
      (if skip-acls?
        ;; Convert concepts to results without acl enforcment
        (let [[t3 concepts] (u/time-execution
@@ -330,7 +346,7 @@
                              context concepts target-format))]
          (debug "get-latest-concepts time:" t1
                 "tombstone-filter time:" t2
-                "transform-concepts time:" t3)
+                "metadata-transformer/transform-concepts time:" t3)
          concepts)
 
        ;; Convert concepts to results with acl enforcment
