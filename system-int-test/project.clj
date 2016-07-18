@@ -26,7 +26,12 @@
                  [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
 
                  ; include ring-core to support encoding of params
-                 [ring/ring-core "1.4.0" :exclusions [clj-time]]]
+                 [ring/ring-core "1.4.0" :exclusions [clj-time]]
+
+                 ;; Needed for ring-swagger dependency in search for as long as we provide the
+                 ;; swagger-ui as part of search (until the developer portal is available)
+                 [prismatic/schema "1.1.2"]]
+
   :plugins [[test2junit "1.2.1"]]
 
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"]
