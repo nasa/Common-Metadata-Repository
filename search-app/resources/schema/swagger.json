@@ -13,27 +13,27 @@
   "paths": {
     "/collections{response_format}": {
       "get": {
-        "description" : "<p>The collection search route supports both GET and POST with URL encoded form data. All parameters are searched in a case insensitive manner.</p>
-                         <h4> Paging Details </h4>
-                         <p>The CMR contains many more results than can be returned in a single response so the number of results that can be returned is limited. The parameters `page_num`, `offset`, and `page_size` along with the sort specified by `sort_key` control which items will be returned. The query parameter `page_size`, defaulting to 10, controls the amount of items that will be returned in a response. One of `page_num` or `offset` can be provided to index into the search results.
+        "description": "<p>The collection search route supports both GET and POST with URL encoded form data. All parameters are searched in a case insensitive manner.</p>
+                        <h4> Paging Details </h4>
+                        <p>The CMR contains many more results than can be returned in a single response so the number of results that can be returned is limited. The parameters `page_num`, `offset`, and `page_size` along with the sort specified by `sort_key` control which items will be returned. The query parameter `page_size`, defaulting to 10, controls the amount of items that will be returned in a response. One of `page_num` or `offset` can be provided to index into the search results.
 
-                         `page_num`, defaulting to 1, chooses a \"page\" of items to return. If a search matched 50 items the parameters <code>page=3&page_size=5</code> would return the 11th item through the 15th item.
+                        `page_num`, defaulting to 1, chooses a \"page\" of items to return. If a search matched 50 items the parameters <code>page=3&page_size=5</code> would return the 11th item through the 15th item.
 
-                         `offset` is a 0 based index into the result set of a query. If a search matched 50 items the parameters <code>offset=3&page_size=5</code> would return 4th result through the 8th result.
+                        `offset` is a 0 based index into the result set of a query. If a search matched 50 items the parameters <code>offset=3&page_size=5</code> would return 4th result through the 8th result.
 
-                         You can not page past the 1 millionth item. Please contact the CMR Team through the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum) if you need to retrieve items in excess of 1 million from the CMR.</p>
-                         <h4> Parameter Options </h4>
-                         <p>The behavior of search with respect to each parameter can be modified using the `options` parameter. The `options` parameter takes the following form:
+                        You can not page past the 1 millionth item. Please contact the CMR Team through the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum) if you need to retrieve items in excess of 1 million from the CMR.</p>
+                        <h4> Parameter Options </h4>
+                        <p>The behavior of search with respect to each parameter can be modified using the `options` parameter. The `options` parameter takes the following form:
 
-                           `options[parameter][option_key]=value`
+                        `options[parameter][option_key]=value`
 
-                         where parameter is the URL parameter whose behavior is to be affected, value is either `true` or `false`, and `option_key` is one of the following:</p>
+                        where parameter is the URL parameter whose behavior is to be affected, value is either `true` or `false`, and `option_key` is one of the following:</p>
 
-                          <ul><li>`ignore_case` - if set to true, the search will be case insensitive and if set to false, the search will be case sensitive. Defaults to true.</li>
-                          <li> `pattern` - if set to true, the search will treat the value provided for the parameter as a pattern with wild-cards, in which '*****' matches zero or more characters and '?' matches any single character. For example, <code>platform[]=AB?D*****&options[platform][pattern]=true</code> would match 'ABAD123', 'ABCD12', 'ABeD', etc. Defaults to false. NOTE: Patterns with leading wildcards, like \"*****ODIS\", are computationally expensive. The CMR limits the maximum number of patterns with a leading wildcard per query to 5.</li>
-                          <li> `and` - if set to true and if multiple values are listed for the param, the concepts must have ALL of these values in order to match. The default is `false` which means concepts with ANY of the values match. This option only applies to fields which may be multivalued; these are documented here.</li>
-                          <li> `or` - this option only applies to granule attributes or science-keywords searches. If set to true, attribute searches will find granules that match any of the attributes. The default is false.</li></ul>",
-        "summary" : "Search for collections",
+                        <ul><li>`ignore_case` - if set to true, the search will be case insensitive and if set to false, the search will be case sensitive. Defaults to true.</li>
+                        <li> `pattern` - if set to true, the search will treat the value provided for the parameter as a pattern with wild-cards, in which '*****' matches zero or more characters and '?' matches any single character. For example, <code>platform[]=AB?D*****&options[platform][pattern]=true</code> would match 'ABAD123', 'ABCD12', 'ABeD', etc. Defaults to false. NOTE: Patterns with leading wildcards, like \"*****ODIS\", are computationally expensive. The CMR limits the maximum number of patterns with a leading wildcard per query to 5.</li>
+                        <li> `and` - if set to true and if multiple values are listed for the param, the concepts must have ALL of these values in order to match. The default is `false` which means concepts with ANY of the values match. This option only applies to fields which may be multivalued; these are documented here.</li>
+                        <li> `or` - this option only applies to granule attributes or science-keywords searches. If set to true, attribute searches will find granules that match any of the attributes. The default is false.</li></ul>",
+        "summary": "Search for collections",
         "x-no-doc": false,
         "tags": [
           "Collections"
