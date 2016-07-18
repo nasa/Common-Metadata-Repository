@@ -184,17 +184,19 @@
    concepts with the requested format. Updates the cache with the generated XML."
   [context revision-format-maps target-format]
   (when (seq revision-format-maps)
-   (let [[t1 updated-revision-format-maps] (u/time-execution
-                                            (u/fast-map #(rfm/add-additional-format context target-format %)
-                                                        revision-format-maps))
-         [t2 concepts] (u/time-execution
-                        (u/fast-map #(rfm/revision-format-map->concept target-format %)
-                                    updated-revision-format-maps))
-         ;; Cache the revision format maps.
-         [t3 _] (u/time-execution (update-cache context updated-revision-format-maps))]
-     (debug "transform-and-cache of " (count revision-format-maps) " concepts:"
-            "add-additional-format:" t1 "revision-format-map->concept:" t2 "update-cache:" t3)
-     concepts)))
+    (let [[t1 updated-revision-format-maps] (u/time-execution
+                                             (u/fast-map #(rfm/add-additional-format context target-format %)
+                                                         revision-format-maps))
+          [t2 concepts] (u/time-execution
+                         (u/fast-map #(rfm/revision-format-map->concept target-format %)
+                                     updated-revision-format-maps))
+          ;; Cache the revision format maps.
+          [t3 _] (u/time-execution
+                  (when (contains? (cached-formats) target-format)
+                    (update-cache context updated-revision-format-maps)))]
+      (debug "transform-and-cache of " (count revision-format-maps) " concepts:"
+             "add-additional-format:" t1 "revision-format-map->concept:" t2 "update-cache:" t3)
+      concepts)))
 
 (defn- fetch-and-cache-metadata
   "Fetches metadata from Metadata DB for the given concept tuples and converts them into the format
@@ -223,7 +225,9 @@
                                      revision-format-maps))
 
           ;; Cache the revision format maps. Note time captured includes compression
-          [t5 _] (u/time-execution (update-cache context revision-format-maps))]
+          [t5 _] (u/time-execution
+                  (when (contains? (cached-formats) target-format)
+                    (update-cache context revision-format-maps)))]
 
       (debug "fetch-and-cache of " (count concept-tuples) " concepts:"
              "get-concepts:" t1 "remove-xml-processing-instructions:" t2
@@ -330,7 +334,7 @@
              "order-concepts:" t6)
       ordered-concepts)
 
-    ;; Granule query. We don't cache those so just fetch from metadata db
+    ;; Granule queries won't use the cache
     (fetch-metadata context concept-tuples target-format)))
 
 (defn get-latest-formatted-concepts
