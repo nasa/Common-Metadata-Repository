@@ -111,11 +111,16 @@
     (testing "Initial cache state is empty"
       (assert-cache-state {}))
 
+    ;; Add dif to the set of non-cached formats. None of the requests should result in cached dif data
+    (dev-sys-util/eval-in-dev-sys
+     `(cmr.search.data.metadata-retrieval.metadata-cache/set-non-cached-collection-metadata-formats!
+       #{:dif}))
+
     (testing "Fetching item not in cache will cache it"
       (assert-found-by-format [c1-echo c11-echo c3-dif] :echo10 mt/echo10)
       (assert-cache-state {c1-echo [:echo10]
                            c11-echo [:echo10]
-                           ;; native format is cached as well
+                           ;; native format is cached as well (even if in non-cached-collection-metadata-formats)
                            c3-dif [:dif :echo10]}))
 
     (testing "Fetching format that's not cached will cache it."
@@ -124,6 +129,12 @@
                            ;; collection not requested is not updated.
                            c11-echo [:echo10]
                            ;; native format is cached as well
+                           c3-dif [:dif :echo10 :dif10]}))
+
+    (testing "Fetching format that's not configured for caching will not be cached"
+      (assert-found-by-format [c1-echo c3-dif c5-iso] :dif mt/dif)
+      (assert-cache-state {c1-echo [:echo10 :dif10]
+                           c11-echo [:echo10]
                            c3-dif [:dif :echo10 :dif10]}))
 
     (testing "Ingesting newer metadata (not cached) is successfully retrieved"
@@ -142,10 +153,11 @@
 
         (testing "All collections and formats cached after cache is refreshed"
           (search/refresh-collection-metadata-cache)
-          (let [all-formats [:dif :dif10 :echo10 :iso19115 {:format :umm-json :version umm-version/current-version}]]
+          ;; All formats excludes dif since we configured it above to not be cached
+          (let [all-formats [:dif10 :echo10 :iso19115 {:format :umm-json :version umm-version/current-version}]]
             (assert-cache-state {c1-r2-echo all-formats
                                  c2-echo all-formats
-                                 c3-dif all-formats
+                                 c3-dif (conj all-formats :dif)
                                  c5-iso all-formats
                                  c7-smap (conj all-formats :iso-smap)
                                  c8-dif10 all-formats
