@@ -94,21 +94,35 @@
         c10-umm-json (d/ingest "PROV1"
                                exp-conv/example-collection-record
                                {:format :umm-json
-                                :accept-format :json})]
+                                :accept-format :json})
+        ;; An item ingested with and XML preprocessing line to ensure this is tested
+        item (assoc (dc/collection {:entry-title "c11-echo"})
+                    :provider-id "PROV1")
+        concept (-> (d/item->concept item :echo10)
+                    (update :metadata #(str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" %)))
+        response (ingest/ingest-concept concept)
+        _ (is (= 200 (:status response)))
+        c11-echo (assoc item
+                        :concept-id (:concept-id response)
+                        :revision-id (:revision-id response)
+                        :format-key :echo10)]
     (index/wait-until-indexed)
 
     (testing "Initial cache state is empty"
       (assert-cache-state {}))
 
     (testing "Fetching item not in cache will cache it"
-      (assert-found-by-format [c1-echo c3-dif] :echo10 mt/echo10)
+      (assert-found-by-format [c1-echo c11-echo c3-dif] :echo10 mt/echo10)
       (assert-cache-state {c1-echo [:echo10]
+                           c11-echo [:echo10]
                            ;; native format is cached as well
                            c3-dif [:dif :echo10]}))
 
     (testing "Fetching format that's not cached will cache it."
       (assert-found-by-format [c1-echo c3-dif] :dif10 mt/dif10)
       (assert-cache-state {c1-echo [:echo10 :dif10]
+                           ;; collection not requested is not updated.
+                           c11-echo [:echo10]
                            ;; native format is cached as well
                            c3-dif [:dif :echo10 :dif10]}))
 
@@ -116,13 +130,14 @@
       (let [c1-r2-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"
                                                          :description "updated"})
                                  {:format :echo10})
-            all-colls [c1-r2-echo c2-echo c3-dif c5-iso c7-smap c8-dif10 c10-umm-json]]
+            all-colls [c1-r2-echo c2-echo c3-dif c5-iso c7-smap c8-dif10 c10-umm-json c11-echo]]
         (index/wait-until-indexed)
         (assert-found-by-format [c1-r2-echo c3-dif] :echo10 mt/echo10)
 
         (testing "Fetching newer revision caches the newest revision"
           ;;dif10 no longer cached because it was with previous revision
           (assert-cache-state {c1-r2-echo [:echo10]
+                               c11-echo [:echo10]
                                c3-dif [:dif :echo10 :dif10]}))
 
         (testing "All collections and formats cached after cache is refreshed"
@@ -134,7 +149,8 @@
                                  c5-iso all-formats
                                  c7-smap (conj all-formats :iso-smap)
                                  c8-dif10 all-formats
-                                 c10-umm-json all-formats})))
+                                 c10-umm-json all-formats
+                                 c11-echo all-formats})))
         (testing "Retrieving all formats after refreshing cache"
           (testing "Retrieving results in native format"
             (are3 [concepts format-key]
@@ -142,7 +158,7 @@
                     options {:url-extension "native"}
                     response (search/find-metadata :collection format-key params options)]
                 (d/assert-metadata-results-match format-key concepts response))
-              "ECHO10" [c1-r2-echo c2-echo] :echo10
+              "ECHO10" [c1-r2-echo c2-echo c11-echo] :echo10
               "DIF" [c3-dif] :dif
               "DIF10" [c8-dif10] :dif10
               "ISO MENDS" [c5-iso] :iso19115
@@ -158,8 +174,6 @@
               "DIF" :dif
               "DIF10" :dif10
               "ISO" :iso19115)))))))
-
-
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
