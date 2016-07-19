@@ -307,92 +307,94 @@
      :body results}))
 
 (defn- build-routes [system]
-  (routes
-    (context (get-in system [:public-conf :relative-root-url]) []
+  (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
+    (routes
+      (context relative-root-url []
 
-      ;; Add routes for tagging
-      tags-api/tag-api-routes
+        ;; Add routes for tagging
+        tags-api/tag-api-routes
 
-      ;; Add routes for API documentation
-      (api-docs/docs-routes
-       (get-in system [:public-conf :protocol])
-       (get-in system [:public-conf :relative-root-url])
-       "public/index.html")
+        ;; Add routes for API documentation
+        (api-docs/docs-routes
+         (get-in system [:public-conf :protocol])
+         relative-root-url
+         "public/index.html")
 
-      ;; This is a temporary inclusion of the swagger UI until the dev portal is done.
-      (ring-swagger-ui/swagger-ui "/swagger_ui" :swagger-docs "/site/swagger.json")
+        ;; This is a temporary inclusion of the swagger UI until the dev portal is done.
+        (ring-swagger-ui/swagger-ui
+         "/swagger_ui" :swagger-docs (str relative-root-url "/site/swagger.json"))
 
-      ;; Routes for collection html resources
-      (collection-renderer-routes/resource-routes system)
+        ;; Routes for collection html resources
+        (collection-renderer-routes/resource-routes system)
 
-      ;; Retrieve by cmr concept id or concept id and revision id
-      ;; Matches URL paths of the form /concepts/:concept-id[/:revision-id][.:format],
-      ;; e.g., http://localhost:3003/concepts/C120000000-PROV1,
-      ;;       http://localhost:3003/concepts/C120000000-PROV1/2
-      ;;       http://localohst:3003/concepts/C120000000-PROV1/2.xml
-      (context ["/concepts/:path-w-extension" :path-w-extension #"[A-Z][A-Z]?[0-9]+-[0-9A-Z_]+.*"] [path-w-extension]
-        ;; OPTIONS method is needed to support CORS when custom headers are used in requests to the endpoint.
-        ;; In this case, the Echo-Token header is used in the GET request.
-        (OPTIONS "/" req cr/options-response)
-        (GET "/" {params :params headers :headers context :request-context}
-          (find-concept-by-cmr-concept-id context path-w-extension params headers)))
+        ;; Retrieve by cmr concept id or concept id and revision id
+        ;; Matches URL paths of the form /concepts/:concept-id[/:revision-id][.:format],
+        ;; e.g., http://localhost:3003/concepts/C120000000-PROV1,
+        ;;       http://localhost:3003/concepts/C120000000-PROV1/2
+        ;;       http://localohst:3003/concepts/C120000000-PROV1/2.xml
+        (context ["/concepts/:path-w-extension" :path-w-extension #"[A-Z][A-Z]?[0-9]+-[0-9A-Z_]+.*"] [path-w-extension]
+          ;; OPTIONS method is needed to support CORS when custom headers are used in requests to
+          ;; the endpoint. In this case, the Echo-Token header is used in the GET request.
+          (OPTIONS "/" req cr/options-response)
+          (GET "/" {params :params headers :headers context :request-context}
+            (find-concept-by-cmr-concept-id context path-w-extension params headers)))
 
-      ;; Find concepts
-      (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections))(?:\..+)?"] [path-w-extension]
-        (OPTIONS "/" req cr/options-response)
-        (GET "/" {params :params headers :headers context :request-context query-string :query-string}
-          (find-concepts context path-w-extension params headers query-string))
-        ;; Find concepts - form encoded or JSON
-        (POST "/" {params :params headers :headers context :request-context body :body-copy}
-          (find-concepts context path-w-extension params headers body)))
+        ;; Find concepts
+        (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections))(?:\..+)?"] [path-w-extension]
+          (OPTIONS "/" req cr/options-response)
+          (GET "/" {params :params headers :headers context :request-context query-string :query-string}
+            (find-concepts context path-w-extension params headers query-string))
+          ;; Find concepts - form encoded or JSON
+          (POST "/" {params :params headers :headers context :request-context body :body-copy}
+            (find-concepts context path-w-extension params headers body)))
 
-      ;; Granule timeline
-      (context ["/granules/:path-w-extension" :path-w-extension #"(?:timeline)(?:\..+)?"] [path-w-extension]
-        (OPTIONS "/" req cr/options-response)
-        (GET "/" {params :params headers :headers context :request-context query-string :query-string}
-          (get-granules-timeline context path-w-extension params headers query-string))
-        (POST "/" {params :params headers :headers context :request-context body :body-copy}
-          (get-granules-timeline context path-w-extension params headers body)))
+        ;; Granule timeline
+        (context ["/granules/:path-w-extension" :path-w-extension #"(?:timeline)(?:\..+)?"] [path-w-extension]
+          (OPTIONS "/" req cr/options-response)
+          (GET "/" {params :params headers :headers context :request-context query-string :query-string}
+            (get-granules-timeline context path-w-extension params headers query-string))
+          (POST "/" {params :params headers :headers context :request-context body :body-copy}
+            (get-granules-timeline context path-w-extension params headers body)))
 
-      ;; AQL search - xml
-      (context ["/concepts/:path-w-extension" :path-w-extension #"(?:search)(?:\..+)?"] [path-w-extension]
-        (OPTIONS "/" req cr/options-response)
-        (POST "/" {params :params headers :headers context :request-context body :body-copy}
-          (find-concepts-by-aql context path-w-extension params headers body)))
+        ;; AQL search - xml
+        (context ["/concepts/:path-w-extension" :path-w-extension #"(?:search)(?:\..+)?"] [path-w-extension]
+          (OPTIONS "/" req cr/options-response)
+          (POST "/" {params :params headers :headers context :request-context body :body-copy}
+            (find-concepts-by-aql context path-w-extension params headers body)))
 
-      ;; Provider holdings
-      (context ["/:path-w-extension" :path-w-extension #"(?:provider_holdings)(?:\..+)?"] [path-w-extension]
-        (OPTIONS "/" req cr/options-response)
-        (GET "/" {params :params headers :headers context :request-context}
-          (get-provider-holdings context path-w-extension params headers)))
+        ;; Provider holdings
+        (context ["/:path-w-extension" :path-w-extension #"(?:provider_holdings)(?:\..+)?"] [path-w-extension]
+          (OPTIONS "/" req cr/options-response)
+          (GET "/" {params :params headers :headers context :request-context}
+            (get-provider-holdings context path-w-extension params headers)))
 
-      ;; Resets the application back to it's initial state.
-      (POST "/reset" {:keys [request-context params headers]}
-        (acl/verify-ingest-management-permission request-context)
-        (cache/reset-caches request-context)
-        {:status 204})
+        ;; Resets the application back to it's initial state.
+        (POST "/reset" {:keys [request-context params headers]}
+          (acl/verify-ingest-management-permission request-context)
+          (cache/reset-caches request-context)
+          {:status 204})
 
-      ;; Add routes for retrieving GCMD keywords
-      keyword-api/keyword-api-routes
+        ;; Add routes for retrieving GCMD keywords
+        keyword-api/keyword-api-routes
 
-      ;; add routes for managing jobs
-      (common-routes/job-api-routes
-        (routes
-          (POST "/refresh-collection-metadata-cache" {:keys [headers params request-context]}
-            (acl/verify-ingest-management-permission request-context :update)
-            (metadata-cache/refresh-cache request-context)
-            {:status 200})))
+        ;; add routes for managing jobs
+        (common-routes/job-api-routes
+          (routes
+            (POST "/refresh-collection-metadata-cache" {:keys [headers params request-context]}
+              (acl/verify-ingest-management-permission request-context :update)
+              (metadata-cache/refresh-cache request-context)
+              {:status 200})))
 
-      ;; add routes for accessing caches
-      cr/cache-api-routes
+        ;; add routes for accessing caches
+        cr/cache-api-routes
 
-      ;; add routes for checking health of the application
-      (cr/health-api-routes hs/health)
+        ;; add routes for checking health of the application
+        (cr/health-api-routes hs/health)
 
-      (GET "/tiles" {params :params context :request-context}
-        (find-tiles context params)))
+        (GET "/tiles" {params :params context :request-context}
+          (find-tiles context params)))
 
-    (route/not-found "Not Found")))
+      (route/not-found "Not Found"))))
 
 (defn copy-of-body-handler
   "Copies the body into a new attribute called :body-copy so that after a post of form content type

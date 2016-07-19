@@ -13,26 +13,7 @@
   "paths": {
     "/collections{response_format}": {
       "get": {
-        "description": "<p>The collection search route supports both GET and POST with URL encoded form data. All parameters are searched in a case insensitive manner.</p>
-                        <h4> Paging Details </h4>
-                        <p>The CMR contains many more results than can be returned in a single response so the number of results that can be returned is limited. The parameters `page_num`, `offset`, and `page_size` along with the sort specified by `sort_key` control which items will be returned. The query parameter `page_size`, defaulting to 10, controls the amount of items that will be returned in a response. One of `page_num` or `offset` can be provided to index into the search results.
-
-                        `page_num`, defaulting to 1, chooses a \"page\" of items to return. If a search matched 50 items the parameters <code>page=3&page_size=5</code> would return the 11th item through the 15th item.
-
-                        `offset` is a 0 based index into the result set of a query. If a search matched 50 items the parameters <code>offset=3&page_size=5</code> would return 4th result through the 8th result.
-
-                        You can not page past the 1 millionth item. Please contact the CMR Team through the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum) if you need to retrieve items in excess of 1 million from the CMR.</p>
-                        <h4> Parameter Options </h4>
-                        <p>The behavior of search with respect to each parameter can be modified using the `options` parameter. The `options` parameter takes the following form:
-
-                        `options[parameter][option_key]=value`
-
-                        where parameter is the URL parameter whose behavior is to be affected, value is either `true` or `false`, and `option_key` is one of the following:</p>
-
-                        <ul><li>`ignore_case` - if set to true, the search will be case insensitive and if set to false, the search will be case sensitive. Defaults to true.</li>
-                        <li> `pattern` - if set to true, the search will treat the value provided for the parameter as a pattern with wild-cards, in which '*****' matches zero or more characters and '?' matches any single character. For example, <code>platform[]=AB?D*****&options[platform][pattern]=true</code> would match 'ABAD123', 'ABCD12', 'ABeD', etc. Defaults to false. NOTE: Patterns with leading wildcards, like \"*****ODIS\", are computationally expensive. The CMR limits the maximum number of patterns with a leading wildcard per query to 5.</li>
-                        <li> `and` - if set to true and if multiple values are listed for the param, the concepts must have ALL of these values in order to match. The default is `false` which means concepts with ANY of the values match. This option only applies to fields which may be multivalued; these are documented here.</li>
-                        <li> `or` - this option only applies to granule attributes or science-keywords searches. If set to true, attribute searches will find granules that match any of the attributes. The default is false.</li></ul>",
+        "description": "<p>The collection search route supports both GET and POST with URL encoded form data. All parameters are searched in a case insensitive manner.</p><h4> Paging Details </h4>\n<p>The CMR contains many more results than can be returned in a single response so the number of results that can be returned is limited. The parameters `page_num`, `offset`, and `page_size` along with the sort specified by `sort_key` control which items will be returned. The query parameter `page_size`, defaulting to 10, controls the amount of items that will be returned in a response. One of `page_num` or `offset` can be provided to index into the search results.\n`page_num`, defaulting to 1, chooses a \"page\" of items to return. If a search matched 50 items the parameters <code>page=3&page_size=5</code> would return the 11th item through the 15th item.\n`offset` is a 0 based index into the result set of a query. If a search matched 50 items the parameters <code>offset=3&page_size=5</code> would return 4th result through the 8th result.\nYou can not page past the 1 millionth item. Please contact the CMR Team through the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum) if you need to retrieve items in excess of 1 million from the CMR.</p>\n<h4> Parameter Options </h4>\n<p>The behavior of search with respect to each parameter can be modified using the `options` parameter. The `options` parameter takes the following form:\n`options[parameter][option_key]=value` where parameter is the URL parameter whose behavior is to be affected, value is either `true` or `false`, and `option_key` is one of the following:</p> <ul><li>`ignore_case` - if set to true, the search will be case insensitive and if set to false, the search will be case sensitive. Defaults to true.</li><li> `pattern` - if set to true, the search will treat the value provided for the parameter as a pattern with wild-cards, in which '*****' matches zero or more characters and '?' matches any single character. For example, <code>platform[]=AB?D*****&options[platform][pattern]=true</code> would match 'ABAD123', 'ABCD12', 'ABeD', etc. Defaults to false. NOTE: Patterns with leading wildcards, like \"*****ODIS\", are computationally expensive. The CMR limits the maximum number of patterns with a leading wildcard per query to 5.</li><li> `and` - if set to true and if multiple values are listed for the param, the concepts must have ALL of these values in order to match. The default is `false` which means concepts with ANY of the values match. This option only applies to fields which may be multivalued; these are documented here.</li><li> `or` - this option only applies to granule attributes or science-keywords searches. If set to true, attribute searches will find granules that match any of the attributes. The default is false.</li></ul>",
         "summary": "Search for collections",
         "x-no-doc": false,
         "tags": [
@@ -42,8 +23,7 @@
           {
             "in": "path",
             "name": "response_format",
-            "description": "Select an extension to specify the format for search results. The default is xml. An accept header MIME type can also
-                            be used to specify the response format. The default is 'application/xml'.",
+            "description": "Select an extension to specify the format for search results. The default is xml. An accept header MIME type can also be used to specify the response format. The default is 'application/xml'.",
             "required": false,
             "type": "string",
             "default": ".xml",
@@ -60,14 +40,7 @@
           {
             "in": "query",
             "name": "concept_id[]",
-            "description": "<p>A CMR concept id is in the format <code>&lt;concept-type-prefix&gt; &lt;unique-number&gt; &quot;-&quot;
-                            &lt;provider-id&gt;</code></p>\n
-                            <ul>\n
-                            <li><code>concept-type-prefix</code> is a single capital letter prefix indicating the concept type. \"C\" is used for collections</li>\n
-                            <li><code>unique-number</code> is a single number assigned by the CMR during ingest.</li>\n
-                            <li><code>provider-id</code> is the short name for the provider. i.e. \"LPDAAC_ECS\"</li>\n
-                            </ul>\n
-                            <p>Example: <code>C123456-LPDAAC_ECS</code></p>",
+            "description": "<p>A CMR concept id is in the format <code>&lt;concept-type-prefix&gt; &lt;unique-number&gt; &quot;-&quot;&lt;provider-id&gt;</code></p>\n<ul>\n<li><code>concept-type-prefix</code> is a single capital letter prefix indicating the concept type. \"C\" is used for collections</li>\n<li><code>unique-number</code> is a single number assigned by the CMR during ingest.</li>\n<li><code>provider-id</code> is the short name for the provider. i.e. \"LPDAAC_ECS\"</li>\n</ul>\n<p>Example: <code>C123456-LPDAAC_ECS</code></p>",
             "required": false,
             "type": "array",
             "items": {
@@ -309,10 +282,7 @@
           {
             "in": "query",
             "name": "attribute[]",
-            "description": "<p>Matches collections by additional attribute. An additional attribute name is accepted or a comma separated list of <code>type,name,min_value,max_value</code>.</p>
-            <p>Example: <code>int,HORIZONTALTILENUMBER,1,12</code></p>
-            <p>Type is the type of the additional attribute. It will find collections with additional attributes of that type and name with a value between min_value and max_value</p>
-            <p>The default is for collections to match all the attribute parameters. This can be changed by specifying <code>or</code> option with <code>options[attribute][or]=true</code>.</p><p>For additional attribute range search, the default is inclusive on the range boundaries. This can be changed by specifying <code>exclude_boundary</code> option with <code>options[attribute][exclude_boundary]=true</code>.</p>",
+            "description": "<p>Matches collections by additional attribute. An additional attribute name is accepted or a comma separated list of <code>type,name,min_value,max_value</code>.</p>\n<p>Example: <code>int,HORIZONTALTILENUMBER,1,12</code></p>\n<p>Type is the type of the additional attribute. It will find collections with additional attributes of that type and name with a value between min_value and max_value.</p>\n<p>The default is for collections to match all the attribute parameters. This can be changed by specifying <code>or</code> option with <code>options[attribute][or]=true</code>.</p><p>For additional attribute range search, the default is inclusive on the range boundaries. This can be changed by specifying <code>exclude_boundary</code> option with <code>options[attribute][exclude_boundary]=true</code>.</p>",
             "required": false,
             "type": "array",
             "items": {
@@ -323,12 +293,7 @@
           {
             "in": "query",
             "name": "temporal[]",
-            "description": "<p>The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.</p>\n
-                            <p>The first two values of the parameter together define the temporal bounds.</p>\n
-                            <p>For temporal range search, the default is inclusive on the range boundaries.\n
-                            This can be changed by specifying <code>exclude_boundary</code> option with <code>options[temporal][exclude_boundary]=true</code>.
-                            This option has no impact on periodic temporal searches.</p>\n
-                            <p>The collection's temporal range or the temporal range of the granules in the collection can be searched.\n                           <code>options[temporal][limit_to_granules]=true</code> will indicate that the temporal search should find collections based on the minimum and maximum values of each collection's granules' temporal range.\n                           If a collection does not have any granules it will search the collection's temporal range.</p>",
+            "description": "<p>The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.</p>\n<p>The first two values of the parameter together define the temporal bounds.</p>\n<p>For temporal range search, the default is inclusive on the range boundaries.\nThis can be changed by specifying <code>exclude_boundary</code> option with <code>options[temporal][exclude_boundary]=true</code>.This option has no impact on periodic temporal searches.</p>\n<p>The collection's temporal range or the temporal range of the granules in the collection can be searched.\n                           <code>options[temporal][limit_to_granules]=true</code> will indicate that the temporal search should find collections based on the minimum and maximum values of each collection's granules' temporal range.\nIf a collection does not have any granules it will search the collection's temporal range.</p>",
             "required": false,
             "type": "array",
             "items": {
@@ -347,8 +312,7 @@
           {
             "in": "query",
             "name": "revision_date",
-            "description": "<p>Find collections based on either a single revision datetime, or a comma separated revision datetime range. If a single revision date is provided any collections with a revision date greater than or equal to the provided datetime are matched. If two dates are provided, it matches collections which have a revision date within the ranges of datetimes.
-                               The datetimes have to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.</p>",
+            "description": "<p>Find collections based on either a single revision datetime, or a comma separated revision datetime range. If a single revision date is provided any collections with a revision date greater than or equal to the provided datetime are matched. If two dates are provided, it matches collections which have a revision date within the ranges of datetimes. The datetimes have to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.</p>",
             "required": false,
             "type": "array",
             "items": {
@@ -368,25 +332,21 @@
           {
             "in": "query",
             "name": "polygon",
-            "description": "Matches collections with a spatial area intersecting the provided polygon. Polygon points are provided in counter-clockwise order.
-                            The last point should match the first point to close the polygon.
-                            The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on.",
+            "description": "Matches collections with a spatial area intersecting the provided polygon. Polygon points are provided in counter-clockwise order.\nThe last point should match the first point to close the polygon.\nThe values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on.",
             "required": false,
             "type": "string"
           },
           {
             "in": "query",
             "name": "point",
-            "description": "Matches collections with a spatial area intersecting the given point. Search using a point involves using a pair of values representing the point coordinates as parameters.
-                            The first value is the longitude and second value is the latitude.",
+            "description": "Matches collections with a spatial area intersecting the given point. Search using a point involves using a pair of values representing the point coordinates as parameters. The first value is the longitude and second value is the latitude.",
             "required": false,
             "type": "string"
           },
           {
             "in": "query",
             "name": "line",
-            "description": "Matches collections with a spatial area intersecting the given line. Lines are provided as a list of comma separated values representing coordinates of points along the line.
-                            The coordinates are listed in the format lon1, lat1, lon2, lat2, lon3, lat3, and so on.",
+            "description": "Matches collections with a spatial area intersecting the given line. Lines are provided as a list of comma separated values representing coordinates of points along the line.\nThe coordinates are listed in the format lon1, lat1, lon2, lat2, lon3, lat3, and so on.",
             "required": false,
             "type": "string"
           },
@@ -418,8 +378,7 @@
           {
             "in": "query",
             "name": "has_granules",
-            "description": "When <code>has_granules</code> is set to \"true\" or \"false\",
-                            results will be restricted to collections with or without granules, respectively.",
+            "description": "When <code>has_granules</code> is set to \"true\" or \"false\", results will be restricted to collections with or without granules, respectively.",
             "required": false,
             "type": "boolean"
           },
@@ -437,16 +396,7 @@
           {
             "in": "query",
             "name": "tag_key[]",
-            "description": "<p>Collections can be found by searching for associated tags. The following tag parameters are supported.</p>\n
-                            <ul>\n
-                            <li>tag_key</li>\n
-                            <li>options: pattern</li>\n
-                            <li>tag_originator_id</li>\n
-                            <li>options: pattern</li>\n
-                            <li>tag_data</li>\n
-                            <li>options: pattern</li>\n
-                            </ul>\n
-                            <p><code>exclude</code> parameter can be used with tag_key to exclude any collections that are associated with the specified tag key from the search result.</p>",
+            "description": "<p>Collections can be found by searching for associated tags. The following tag parameters are supported.</p>\n<ul>\n<li>tag_key</li>\n<li>options: pattern</li>\n<li>tag_originator_id</li>\n<li>options: pattern</li>\n<li>tag_data</li>\n<li>options: pattern</li>\n</ul>\n<p><code>exclude</code> parameter can be used with tag_key to exclude any collections that are associated with the specified tag key from the search result.</p>",
             "required": false,
             "type": "array",
             "items": {
@@ -464,12 +414,7 @@
           {
             "in": "query",
             "name": "all_revisions",
-            "description": "In addition to retrieving the latest revision for a collection parameter search,
-                            it is possible to return all revisions, including tombstone (deletion marker) revisons,
-                            by passing in <code>all_revisions=true</code> with the URL parameters.
-                            The reference and UMM JSON response formats are supported for all revision searches.
-                            References to tombstone revisions do not include the <code>location</code> tag and include an additional tag,
-                            <code>deleted</code>, which always has content of \"true\".",
+            "description": "In addition to retrieving the latest revision for a collection parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisons, by passing in <code>all_revisions=true</code> with the URL parameters. The reference and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the <code>location</code> tag and include an additional tag, <code>deleted</code>, which always has content of \"true\".",
             "required": false,
             "type": "boolean"
           },
@@ -505,11 +450,7 @@
           {
             "in": "query",
             "name": "sort_key[]",
-            "description": "<p>Collection results are sorted by ascending entry title by default when a search does not result in a score.
-                            If a keyword search is performed then the search results will be sorted by relevance (score descending).
-                            One or more sort keys can be specified using the <code>sort_key[]</code> parameter.
-                            The order used impacts searching. Fields can be prepended with a <code>-</code> to sort in descending order.
-                            Ascending order is the default but <code>+</code> can be used to explicitly request ascending.</p>\n                        <h5>Valid Collection Sort Keys</h5>\n                        <ul>\n                          <li><code>entry_title</code></li>\n                          <li><code>dataset_id</code> - alias for entry_title</li>\n                          <li><code>short_name</code></li>\n                          <li><code>entry_id</code></li>\n                          <li><code>start_date</code></li>\n                          <li><code>end_date</code></li>\n                          <li><code>platform</code></li>\n                          <li><code>instrument</code></li>\n                          <li><code>sensor</code></li>\n                          <li><code>provider</code></li>\n                          <li><code>revision_date</code></li>\n                          <li><code>score</code> - document relevance score, defaults to descending.</li>\n                          <li><code>has_granules</code> - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.</li>",
+            "description": "<p>Collection results are sorted by ascending entry title by default when a search does not result in a score. If a keyword search is performed then the search results will be sorted by relevance (score descending). One or more sort keys can be specified using the <code>sort_key[]</code> parameter. The order used impacts searching. Fields can be prepended with a <code>-</code> to sort in descending order. Ascending order is the default but <code>+</code> can be used to explicitly request ascending.</p>\n<h5>Valid Collection Sort Keys</h5>\n<ul>\n<li><code>entry_title</code></li>\n <li><code>dataset_id</code> - alias for entry_title</li>\n<li><code>short_name</code></li>\n<li><code>entry_id</code></li>\n<li><code>start_date</code></li>\n<li><code>end_date</code></li>\n         <li><code>platform</code></li>\n<li><code>instrument</code></li>\n<li><code>sensor</code></li>\n<li><code>provider</code></li>\n<li><code>revision_date</code></li>\n<li><code>score</code> - document relevance score, defaults to descending.</li>\n<li><code>has_granules</code> - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.</li>",
             "required": false,
             "type": "array",
             "items": {
@@ -583,10 +524,10 @@
             }
           },
           "400": {
-            "description": "The query contained an invalid parameter. The response body contains details.",
+            "description": "The query contained an invalid parameter. The response body contains details."
           },
           "500": {
-            "description": "An internal server error occured. You should contact CMR operations for these errors.",
+            "description": "An internal server error occured. You should contact CMR operations for these errors."
           },
           "default": {
             "description": "",
