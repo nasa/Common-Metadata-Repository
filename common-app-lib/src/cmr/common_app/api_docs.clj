@@ -102,7 +102,7 @@
                      slurp
                      (str/replace "%CMR-PROTOCOL%" public-protocol)
                      (str/replace "%CMR-HOST%" (headers "host"))
-                     (str/replace "%CMR-BASE-PATH%" (str "/" relative-root-url)))
+                     (str/replace "%CMR-BASE-PATH%" relative-root-url))
            :headers (:headers cr/options-response)}
           (route/not-found (site-resource "404.html"))))
       ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced

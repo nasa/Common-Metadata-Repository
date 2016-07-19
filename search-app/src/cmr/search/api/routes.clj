@@ -10,6 +10,7 @@
             [ring.middleware.params :as params]
             [ring.middleware.nested-params :as nested-params]
             [ring.middleware.keyword-params :as keyword-params]
+            [ring.swagger.ui :as ring-swagger-ui]
             [cheshire.core :as json]
             [inflections.core :as inf]
 
@@ -319,18 +320,7 @@
        "public/index.html")
 
       ;; This is a temporary inclusion of the swagger UI until the dev portal is done.
-      (context "/swagger_ui" []
-        (GET ["/:page", :page #".*\.html$"] {headers :headers, {page :page} :params}
-          (when-let [resource (io/resource (str "public/swagger_ui/" page))]
-            (let [public-protocol (get-in system [:public-conf :protocol])
-                  relative-root-url (get-in system [:public-conf :relative-root-url])
-                  cmr-root (str public-protocol "://" (headers "host") relative-root-url)]
-              {:status 200
-               :body (-> resource
-                         slurp
-                         (str/replace "%CMR-ENDPOINT%" cmr-root))})))
-        ;; Other static resources (Javascript, CSS)
-        (route/resources "/" {:root "public/swagger_ui/"}))
+      (ring-swagger-ui/swagger-ui "/swagger_ui" :swagger-docs "/site/swagger.json")
 
       ;; Routes for collection html resources
       (collection-renderer-routes/resource-routes system)
