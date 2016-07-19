@@ -321,8 +321,10 @@
          "public/index.html")
 
         ;; This is a temporary inclusion of the swagger UI until the dev portal is done.
-        (ring-swagger-ui/swagger-ui
-         "/swagger_ui" :swagger-docs (str relative-root-url "/site/swagger.json"))
+        (ring-swagger-ui/swagger-ui "/swagger_ui"
+                                    :swagger-docs (str relative-root-url "/site/swagger.json")
+                                    :validator-url nil)
+
 
         ;; Routes for collection html resources
         (collection-renderer-routes/resource-routes system)
