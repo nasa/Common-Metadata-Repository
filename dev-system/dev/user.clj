@@ -2,7 +2,7 @@
   (:require [cmr.common.dev.capture-reveal]
             [clojure.main]
             [debugger.core]
-            [proto] ;; For Proto REPL lib capabilities
+            [proto-repl.saved-values] ;; For Proto REPL lib capabilities
             [clojure.pprint :refer (pprint pp)]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [cmr.dev-system.system :as system]

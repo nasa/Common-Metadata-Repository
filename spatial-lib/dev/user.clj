@@ -6,7 +6,7 @@
         [clojure.repl]
         ;; Needed to make debug-repl available
         [alex-and-georges.debug-repl]
-        proto
+        proto-repl.saved-values
         [cmr.common.dev.capture-reveal]))
 
 
