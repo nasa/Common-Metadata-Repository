@@ -139,11 +139,20 @@
 
 (defn transform-to-multiple-formats
   "Transforms the concept into multiple different formats. Returns a map of target format to metadata."
-  [context concept target-formats]
-  (->> target-formats
-       (group-by #(transform-strategy concept %))
-       (map #(transform-with-strategy context concept (key %) (val %)))
-       (reduce into {})))
+  ([context concept target-formats]
+   (transform-to-multiple-formats context concept target-formats false))
+  ([context concept target-formats ignore-exceptions?]
+   (->> target-formats
+        (group-by #(transform-strategy concept %))
+        (keep (fn [[k v]]
+                (if ignore-exceptions?
+                  (try
+                    (transform-with-strategy context concept k v)
+                    (catch Exception e
+                      ;; Namespace used to reference error here to allow redefing in tests
+                      (log/error e "Ignoring exception while trying to transform metadata:" (.getMessage e))))
+                  (transform-with-strategy context concept k v))))
+        (reduce into {}))))
 
 (defn transform
   "Transforms a concept to the target format given returning metadata."
