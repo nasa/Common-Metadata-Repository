@@ -7,7 +7,8 @@
             [clj-time.format :as f]
             [cmr.umm-spec.util :as u :refer [with-default]]
             [clojure.string :as str]
-            [cmr.umm-spec.umm-to-xml-mappings.dif10.data-center :as center]))
+            [cmr.umm-spec.umm-to-xml-mappings.dif10.data-center :as center]
+            [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]))
 
 (def platform-types
   "The set of values that DIF 10 defines for platform types as enumerations in its schema"
@@ -277,6 +278,7 @@
       [:Short_Name (:ShortName c)]
       [:Version (u/with-default (:Version c))]]
      [:Entry_Title (or (:EntryTitle c) u/not-provided)]
+     ;(contact/generate-personnel c)
 
      (if-let [sks (:ScienceKeywords c)]
        ;; From UMM keywords

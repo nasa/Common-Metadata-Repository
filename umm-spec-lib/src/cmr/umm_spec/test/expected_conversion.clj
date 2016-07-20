@@ -215,7 +215,26 @@
                        :MiddleName "D"
                        :LastName "Smith"}]
      :DataCenters [{:Roles ["ORIGINATOR"]
-                    :ShortName "LPDAAC"}
+                    :ShortName "LPDAAC"
+                    :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
+                                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+                                      :ContactInformation [{:RelatedUrls [{:Description "Contact related url description"
+                                                                           :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                           :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                                           :Title "contact related url title"
+                                                                           :MimeType "application/html"}]
+                                                            :ServiceHours "Weekdays 9AM - 5PM"
+                                                            :ContactInstruction "sample contact instruction"
+                                                            :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                                                {:Type "Email" :Value "cmr@nasa.gov"}]}]
+                                                            ; :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                            ;              :City "Greenbelt"
+                                                            ;              :StateProvince "MD"
+                                                            ;              :PostalCode "20771"
+                                                            ;              :Country "U.S.A."}]}]
+                                      :FirstName "John"
+                                      :MiddleName "D"
+                                      :LastName "Smith"}]}
                    {:Roles ["ARCHIVER" "DISTRIBUTOR"]
                     :ShortName "TNRIS"
                     :LongName "Texas Natural Resources Information System"
@@ -230,12 +249,12 @@
                                                             :ServiceHours "Weekdays 9AM - 5PM"
                                                             :ContactInstruction "sample contact instruction"
                                                             :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
-                                                                                {:Type "Email" :Value "cmr@nasa.gov"}]
-                                                            :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
-                                                                         :City "Greenbelt"
-                                                                         :StateProvince "MD"
-                                                                         :PostalCode "20771"
-                                                                         :Country "U.S.A."}]}]
+                                                                                {:Type "Email" :Value "cmr@nasa.gov"}]}]
+                                                            ; :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                            ;              :City "Greenbelt"
+                                                            ;              :StateProvince "MD"
+                                                            ;              :PostalCode "20771"
+                                                            ;              :Country "U.S.A."}]}]
                                       :FirstName "John"
                                       :MiddleName "D"
                                       :LastName "Smith"}]}]}))
@@ -816,13 +835,69 @@
       (update-in-each [:HorizontalSpatialDomain :Geometry :GPolygons] fix-echo10-dif10-polygon)
       prune-empty-maps))
 
+(defn- expected-dif10-contact-mechanisms
+  "Returns the expected DIF contact mechanisms"
+  [contact-mechanisms]
+  (->> (concat (filter #(= "Email" (:Type %)) contact-mechanisms)
+               (filter #(not= "Email" (:Type %)) contact-mechanisms))
+       seq))
+
+(defn- expected-dif10-contact-information
+  "Retruns the expected contact information for the given contact information."
+  [contact-info]
+  (let [contact-info (-> contact-info
+                         (first)
+                         (dissoc :ServiceHours)
+                         (dissoc :RelatedUrls)
+                         (dissoc :ContactInstruction)
+                         (update :ContactMechanisms expected-dif10-contact-mechanisms))]
+                             ;(update :Addresses expected-dif-addresses))]
+    (when (seq (util/remove-nil-keys contact-info))
+      [(cmn/map->ContactInformationType contact-info)])))
+
+(defn- contact->expected-dif10
+  [contact]
+  (-> contact
+      (assoc :NonDataCenterAffiliation nil)
+      (assoc :Uuid nil)
+      (assoc :Roles '("DATA CENTER CONTACT"))
+      (update :ContactInformation expected-dif10-contact-information)))
+
+(defn- expected-dif10-data-center-contact-persons
+  "Returns the expected DIF data center contact persons for the given UMM data center.
+  Both ContactGroups and ContactPersons are converted into ContactPersons with the DIF not supported
+  fields dropped."
+  [contacts]
+  (let [expected-contacts (mapv #(contact->expected-dif10 %) contacts)]
+    (if (seq expected-contacts)
+      expected-contacts
+      [(cmn/map->ContactPersonType {:Roles ["Data Center Contact"]
+                                    :LastName su/not-provided})])))
+
+(defn- expected-dif10-contact-persons
+  [contacts]
+  (let [expected-contacts (mapv #(contact->expected-dif10 %) contacts)]
+    (when (seq expected-contacts)
+      expected-contacts)))
+
+(defn data-center->expected-dif10
+  [data-center]
+  (-> data-center
+      (update :ContactPersons expected-dif10-data-center-contact-persons)
+      (assoc :ContactGroups nil)))
+
+(defn- expected-dif10-data-centers
+  [data-centers]
+  (seq (mapv #(data-center->expected-dif10 %) data-centers)))
+
 (defmethod umm->expected-convert :dif10
   [umm-coll _]
   (-> umm-coll
       (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
       (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
-      (assoc :DataCenters [su/not-provided-data-center])
+      (update-in [:DataCenters] expected-dif10-data-centers)
       (assoc :ContactGroups nil)
+      ;(assoc :ContactPersons expected-dif10-contact-persons)
       (assoc :ContactPersons nil)
       (update-in [:SpatialExtent] expected-dif10-spatial-extent)
       (update-in [:DataDates] fixup-dif10-data-dates)
