@@ -70,7 +70,7 @@
     (into {}
           (for [pair-str (str/split description-str #",")]
             (let [[k v] (str/split pair-str #"=")]
-              [k (or v "")])))))
+              [(str/trim k) (str/trim (or v ""))])))))
 
 (defn sanitize-value
   "Returns a key-value string value without \",\" or \"=\" characters."
