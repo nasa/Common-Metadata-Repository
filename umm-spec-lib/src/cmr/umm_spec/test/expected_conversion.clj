@@ -226,12 +226,12 @@
                                                             :ServiceHours "Weekdays 9AM - 5PM"
                                                             :ContactInstruction "sample contact instruction"
                                                             :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
-                                                                                {:Type "Email" :Value "cmr@nasa.gov"}]}]
-                                                            ; :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
-                                                            ;              :City "Greenbelt"
-                                                            ;              :StateProvince "MD"
-                                                            ;              :PostalCode "20771"
-                                                            ;              :Country "U.S.A."}]}]
+                                                                                {:Type "Email" :Value "cmr@nasa.gov"}]
+                                                            :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                                         :City "Greenbelt"
+                                                                         :StateProvince "MD"
+                                                                         :PostalCode "20771"
+                                                                         :Country "U.S.A."}]}]
                                       :FirstName "John"
                                       :MiddleName "D"
                                       :LastName "Smith"}]}
@@ -249,12 +249,12 @@
                                                             :ServiceHours "Weekdays 9AM - 5PM"
                                                             :ContactInstruction "sample contact instruction"
                                                             :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
-                                                                                {:Type "Email" :Value "cmr@nasa.gov"}]}]
-                                                            ; :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
-                                                            ;              :City "Greenbelt"
-                                                            ;              :StateProvince "MD"
-                                                            ;              :PostalCode "20771"
-                                                            ;              :Country "U.S.A."}]}]
+                                                                                {:Type "Email" :Value "cmr@nasa.gov"}]
+                                                            :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                                         :City "Greenbelt"
+                                                                         :StateProvince "MD"
+                                                                         :PostalCode "20771"
+                                                                         :Country "U.S.A."}]}]
                                       :FirstName "John"
                                       :MiddleName "D"
                                       :LastName "Smith"}]}]}))
@@ -850,8 +850,8 @@
                          (dissoc :ServiceHours)
                          (dissoc :RelatedUrls)
                          (dissoc :ContactInstruction)
-                         (update :ContactMechanisms expected-dif10-contact-mechanisms))]
-                             ;(update :Addresses expected-dif-addresses))]
+                         (update :ContactMechanisms expected-dif10-contact-mechanisms)
+                         (update :Addresses expected-dif-addresses))]
     (when (seq (util/remove-nil-keys contact-info))
       [(cmn/map->ContactInformationType contact-info)])))
 

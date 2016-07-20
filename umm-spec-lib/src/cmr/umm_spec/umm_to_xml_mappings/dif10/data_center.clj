@@ -18,8 +18,6 @@
                             (:DataCenters c)
                             [u/not-provided-data-center])]
     (for [center qualified-centers]
-      (do
-       (proto-repl.saved-values/save 22)
        [:Organization
         (for [role (:Roles center)]
          [:Organization_Type role])
@@ -39,4 +37,4 @@
          ; (for [role (personnel-roles center)]
          ;   [:Role role])
          [:Role "DATA CENTER CONTACT"]
-         (contact/generate-personnel center)]]))))
+         (contact/generate-personnel center)]])))

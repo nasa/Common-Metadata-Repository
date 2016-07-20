@@ -17,20 +17,20 @@
             [:Type (:Type phone-mechanism)]]))
 
 
-; (defn- contact-info->address
-;   "Returns the DIF9 contact address element for the given UMM contact information"
-;   [contact-info]
-;   ;; We only write out the first address within the contact information
-;   (when-let [address (first (:Addresses contact-info))]
-;     (let [{:keys [StreetAddresses City StateProvince Country PostalCode]} address]
-;       [:Contact_Address
-;        (for [street-address StreetAddresses]
-;          [:Address street-address])
-;        [:City City]
-;        [:Province_or_State StateProvince]
-;        [:Postal_Code PostalCode]
-;        [:Country Country]])))
-;
+(defn- contact-info->address
+  "Returns the DIF10 contact address element for the given UMM contact information"
+  [contact-info]
+  ;; We only write out the first address within the contact information
+  (when-let [address (first (:Addresses contact-info))]
+    (let [{:keys [StreetAddresses City StateProvince Country PostalCode]} address]
+      [:Address
+       (for [street-address StreetAddresses]
+         [:Street_Address street-address])
+       [:City City]
+       [:State_Province StateProvince]
+       [:Postal_Code PostalCode]
+       [:Country Country]])))
+
 (defn- contact->contact-person
   ; "Returns the DIF9 personnel element from the given umm contact group or contact person.
   ; UMM contact role to DIF9 Personnel role mappings differ depending on if the Personnel is
@@ -48,10 +48,11 @@
         [:First_Name (:FirstName contact)]
         [:Middle_Name (:MiddleName contact)]
         [:Last_Name (:LastName contact)]
-        ;[:uuid (:Uuid contact)
+        (contact-info->address contact-info)
         (contact-mechanisms->phones contact-mechanisms)
         (contact-mechanisms->emails contact-mechanisms)]))
-         ;[(contact-info->address contact-info)]))))
+        ;[:uuid (:Uuid contact)]
+
 
 (defn generate-personnel
   "Returns the DIF10 personnel elements from the given umm collection or DataCenter"

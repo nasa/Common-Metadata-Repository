@@ -14,20 +14,20 @@
          (for [phone (select contact-person "Phone")]
            {:Type (value-of phone "Type") :Value (value-of phone "Number")}))))
 
-; (defn- parse-address
-;   "Returns UMM-C contact address from DIF9 Personnel element."
-;   [personnel]
-;   (let [addresses (seq (values-at personnel "Contact_Address/Address"))
-;         city (value-of personnel "Contact_Address/City")
-;         province-or-state (value-of personnel "Contact_Address/Province_or_State")
-;         postal-code (value-of personnel "Contact_Address/Postal_Code")
-;         country (value-of personnel "Contact_Address/Country")]
-;     (when (or addresses city province-or-state postal-code country)
-;       [{:StreetAddresses addresses
-;         :City city
-;         :StateProvince province-or-state
-;         :PostalCode postal-code
-;         :Country country}])))
+(defn- parse-address
+  "Returns UMM-C contact address from DIF10 Personnel Contact Person or Contact Group element."
+  [contact]
+  (let [addresses (seq (values-at contact "Address/Street_Address"))
+        city (value-of contact "Address/City")
+        state (value-of contact "Address/State_Province")
+        postal-code (value-of contact "Address/Postal_Code")
+        country (value-of contact "Address/Country")]
+    (when (or addresses city state postal-code country)
+      [{:StreetAddresses addresses
+        :City city
+        :StateProvince state
+        :PostalCode postal-code
+        :Country country}])))
 
 (defn parse-contact-persons
   "Returns UMM-C contact persons map for the given DIF10 Personnel elements."
@@ -42,7 +42,7 @@
                      :MiddleName (value-of contact-person "Middle_Name")
                      :LastName (value-of contact-person "Last_Name")
                      :Uuid (value-of contact-person "uuid")
-                     :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms contact-person)}]})]
-                                       ; :Addresses (parse-address personnel)}]
+                     :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms contact-person)
+                                           :Addresses (parse-address contact-person)}]})]
           (pr-str val)
           val)))))
