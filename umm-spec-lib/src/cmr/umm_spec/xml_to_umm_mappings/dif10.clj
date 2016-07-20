@@ -165,8 +165,8 @@
                        :VariableLevel2 (value-of sk "Variable_Level_2")
                        :VariableLevel3 (value-of sk "Variable_Level_3")
                        :DetailedVariable (value-of sk "Detailed_Variable")})
-   :DataCenters (center/parse-data-centers doc)})
-   ;:ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel"))})
+   :DataCenters (center/parse-data-centers doc)
+   :ContactPersons (first (contact/parse-contact-persons (select doc "/DIF/Personnel")))})
 
 (defn dif10-xml-to-umm-c
   "Returns UMM-C collection record from DIF10 collection XML document."

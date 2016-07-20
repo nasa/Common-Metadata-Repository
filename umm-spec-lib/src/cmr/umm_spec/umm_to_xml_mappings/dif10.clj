@@ -278,7 +278,7 @@
       [:Short_Name (:ShortName c)]
       [:Version (u/with-default (:Version c))]]
      [:Entry_Title (or (:EntryTitle c) u/not-provided)]
-     ;(contact/generate-personnel c)
+     (contact/generate-collection-personnel c)
 
      (if-let [sks (:ScienceKeywords c)]
        ;; From UMM keywords

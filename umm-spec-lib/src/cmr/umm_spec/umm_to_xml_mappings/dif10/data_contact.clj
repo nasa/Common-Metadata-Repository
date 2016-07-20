@@ -63,9 +63,19 @@
   ;    (contact->personnel contact-group umm-role-dif9-role-mapping))))
   [c]
   (if (or (seq (:ContactPersons c)) (seq (:ContactGroups c)))
-    (do
+   (do
      (for [person (:ContactPersons c)]
-      (contact->contact-person person)))
-     ; TO DO: Groups
-    [:Contact_Person
-      [:Last_Name u/not-provided]]))
+       (contact->contact-person person)))
+       ; TO DO: Groups
+   [:Contact_Person
+    [:Last_Name u/not-provided]]))
+
+
+(defn generate-collection-personnel
+  "Returns the DIF10 personnel elements from the given umm collection or DataCenter"
+  [c]
+  [:Personnel
+    ; (for [role (personnel-roles center)]
+    ;   [:Role role])
+    [:Role "TECHNICAL CONTACT"]
+    (generate-personnel c)])

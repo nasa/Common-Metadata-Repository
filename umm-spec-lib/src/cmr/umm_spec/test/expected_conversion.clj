@@ -871,7 +871,7 @@
   (let [expected-contacts (mapv #(contact->expected-dif10 %) contacts)]
     (if (seq expected-contacts)
       expected-contacts
-      [(cmn/map->ContactPersonType {:Roles ["Data Center Contact"]
+      [(cmn/map->ContactPersonType {:Roles ["DATA CENTER CONTACT"]
                                     :LastName su/not-provided})])))
 
 (defn- expected-dif10-contact-persons
@@ -879,6 +879,22 @@
   (let [expected-contacts (mapv #(contact->expected-dif10 %) contacts)]
     (when (seq expected-contacts)
       expected-contacts)))
+
+;;; TEMP
+(defn- contact->expected-dif10-collection
+  [contact]
+  (-> contact
+      (assoc :NonDataCenterAffiliation nil)
+      (assoc :Uuid nil)
+      (assoc :Roles '("TECHNICAL CONTACT"))
+      (update :ContactInformation expected-dif10-contact-information)))
+
+(defn- expected-dif10-collection-contacts
+  [contacts]
+  (let [expected-contacts (mapv #(contact->expected-dif10-collection %) contacts)]
+    (when (seq expected-contacts)
+      expected-contacts)))
+;;;;;;;;;;
 
 (defn data-center->expected-dif10
   [data-center]
@@ -897,8 +913,7 @@
       (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
       (update-in [:DataCenters] expected-dif10-data-centers)
       (assoc :ContactGroups nil)
-      ;(assoc :ContactPersons expected-dif10-contact-persons)
-      (assoc :ContactPersons nil)
+      (update-in [:ContactPersons] expected-dif10-collection-contacts)
       (update-in [:SpatialExtent] expected-dif10-spatial-extent)
       (update-in [:DataDates] fixup-dif10-data-dates)
       (update-in [:Distributions] su/remove-empty-records)
