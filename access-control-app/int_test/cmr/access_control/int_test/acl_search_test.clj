@@ -55,6 +55,14 @@
                            :provider_id "PROV1"
                            :collection_applicable true}})
 
+(def sample-catalog-item-acl-with-provider
+  "A sample catalog item ACL."
+  {:group_permissions [{:user_type "guest" :permissions ["create"]}]
+   :catalog_item_identity {:name "REPLACEME"
+                           :provider_id "PROV1"
+                           :collection_applicable true}})
+
+
 (defn system-acl
   "Creates a system acl for testing with the given target."
   [target]
@@ -226,4 +234,27 @@
 
            ["gust"] "gust"
            ["GUST" "registered" "AG10000-PROV" "G10000-PROV"] "GUST, G10000-PROV"))))
+(deftest acl-search-provider-test
+  (let [token (e/login (u/conn-context) "user1")
+        acl1 (ingest-acl token (provider-acl "AUDIT_REPORT"))
+        acl2 (ingest-acl token (catalog-item-acl "All Granules"))
+        prov1-acls [acl2]]
+    (u/wait-until-indexed)
+    (testing "Search ACLs that grant permissions to objects owned by a single provider
+              or by any provider where multiple are specified"
+      (are [provider-ids acls]
+        (let [response (ac/search-for-acls (u/conn-context) {:provider-id provider-ids})]
+          (= (acls->search-response (count acls) acls)
+             (dissoc response :took)))
+        ["PROV1"] prov1-acls))))
 
+        ;;["NOT_PROV1"] prov1-acls))))
+(comment (testing "Search ACLs on provider where provider owns no objects")
+      (are [provider invalid-msg]
+           (= {:status 400
+               :body {:errors [(format "No ACLs found for provider [%s]."
+                                       invalid-msg)]}
+               :content-type :json}
+              (ac/search-for-acls (u/conn-context) {:provider-id provider} {:raw? true}))
+           ["NOT_A_PROVIDER"] prov1-acls))
+  ;;(testing "Search ACLs that grant permissions to objects owned by a multiple providers")

@@ -94,14 +94,29 @@
   (cpv/merge-params-config
     cpv/basic-params-config
     {:single-value #{}
-     :multiple-value #{:permitted-group}
+     :multiple-value #{:permitted-group :provider-id}
      :always-case-sensitive #{}
      :disallow-pattern #{}
      :allow-or #{}}))
 
 (defmethod cpv/valid-parameter-options :acl
   [_]
-  {:permitted-group cpv/string-param-options})
+  {:permitted-group cpv/string-param-options :provider-id cpv/string-param-options})
+
+(comment (defn- valid-provider-id?)
+  "Returns true of the given provider identity is valid"
+  [provider-id]
+  (or (.equalsIgnoreCase "PROV1" provider-id)))
+  ;test provider-id())
+
+(comment (defn- provider-id-validation)
+  "Validates provider parameters"
+  [context params]
+  (let [provider-ids (:provider-id params)
+        provider-ids (if (sequential? provider-ids) provider-ids (when provider-ids [provider-ids]))]
+    (when-let [invalid-provider-ids (seq (remove valid-provider-id? provider-ids))]
+      [(format "No ACLs found for provider [%s]."
+               (str/join ", " invalid-provider-ids))])))
 
 (defn- valid-permitted-group?
   "Returns true if the given permitted group is valid, i.e. guest, registered or conforms to
@@ -116,7 +131,7 @@
   [context params]
   (let [permitted-groups (:permitted-group params)
         permitted-groups (if (sequential? permitted-groups)
-                           permitted-groups
+                            permitted-groups
                            (when permitted-groups [permitted-groups]))]
     (when-let [invalid-groups (seq (remove valid-permitted-group? permitted-groups))]
       [(format "Parameter permitted_group has invalid values [%s]. Only 'guest', 'registered' or a group concept id can be specified."
@@ -129,10 +144,12 @@
                                     params
                                     [(partial cpv/validate-map [:options])
                                      (partial cpv/validate-map [:options :permitted-group])])]
+                                     ;;(partial cpv/validate-map [:options :provider-id])])]
     (cpv/validate-parameters
       :acl safe-params
       (concat cpv/common-validations
               [permitted-group-validation])
+              ;[provider-id-validation])
       type-errors))
   params)
 
@@ -142,7 +159,7 @@
 
 (defmethod cp/param-mappings :acl
   [_]
-  {:permitted-group :string})
+  {:permitted-group :string :provider-id :string})
 
 (defn search-for-acls
   [context params]
@@ -154,6 +171,8 @@
         [find-concepts-time results] (u/time-execution
                                        (cs/find-concepts context :acl query))
         total-took (+ query-creation-time find-concepts-time)]
+    (println (format "dbg: Found %d acls in %d ms in format %s with params %s."
+                  (:hits results) total-took (common-qm/base-result-format query) (pr-str params)))
     (info (format "Found %d acls in %d ms in format %s with params %s."
                   (:hits results) total-took (common-qm/base-result-format query) (pr-str params)))
     (assoc results :took total-took)))
