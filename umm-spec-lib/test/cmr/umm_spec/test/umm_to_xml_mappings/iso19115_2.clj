@@ -255,9 +255,27 @@
               <gmd:MD_CharacterSetCode codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode\" codeListValue=\"utf8\">utf8</gmd:MD_CharacterSetCode>
            </gmd:characterSet>
            <gmd:extent>
-              <gmd:EX_Extent id=\"boundingExtent\">
-                 <gmd:description gco:nilReason=\"unknown\" />
-              </gmd:EX_Extent>
+            <gmd:EX_Extent id=\"boundingExtent\">
+              <gmd:description>
+                <gco:CharacterString>SpatialCoverageType=Horizontal, SpatialGranuleSpatialRepresentation=CARTESIAN, Temporal Range Type=Continuous Range, Time Type=UTC</gco:CharacterString>
+              </gmd:description>
+              <gmd:geographicElement>
+                <gmd:EX_GeographicBoundingBox id=\"foo\">
+                  <gmd:westBoundLongitude>
+                    <gco:Decimal>-109.0</gco:Decimal>
+                  </gmd:westBoundLongitude>
+                  <gmd:eastBoundLongitude>
+                    <gco:Decimal>11.0</gco:Decimal>
+                  </gmd:eastBoundLongitude>
+                  <gmd:southBoundLatitude>
+                    <gco:Decimal>57.0</gco:Decimal>
+                  </gmd:southBoundLatitude>
+                  <gmd:northBoundLatitude>
+                    <gco:Decimal>85.0</gco:Decimal>
+                  </gmd:northBoundLatitude>
+                </gmd:EX_GeographicBoundingBox>
+              </gmd:geographicElement>
+            </gmd:EX_Extent>
            </gmd:extent>
            <gmd:supplementalInformation />
            <gmd:processingLevel>
@@ -409,3 +427,9 @@
       (is (not (empty? parsed-additional-attributes)))
       (is (= expected-additional-attributes parsed-additional-attributes)))))
 
+(deftest granule-spatial-representation
+  (testing "granule spatial representation is parsed correctly"
+    (let [parsed (#'parser/parse-iso19115-xml (lkt/setup-context-for-test lkt/sample-keyword-map)
+                                              iso-with-use-constraints)
+          gran-spatial-representation (get-in parsed [:SpatialExtent :GranuleSpatialRepresentation])]
+      (is (= "CARTESIAN" gran-spatial-representation)))))

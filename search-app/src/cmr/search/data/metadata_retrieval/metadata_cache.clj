@@ -139,7 +139,7 @@
         concepts (doall (metadata-db/get-concepts mdb-context concept-tuples true))
         concepts (concepts-without-xml-processing-inst concepts)
         rfms (u/fast-map #(rfm/compress
-                           (rfm/concept->revision-format-map context % (cached-formats)))
+                           (rfm/concept->revision-format-map context % (cached-formats) true))
                          concepts)]
     (reduce #(assoc %1 (:concept-id %2) %2) {} rfms)))
 
