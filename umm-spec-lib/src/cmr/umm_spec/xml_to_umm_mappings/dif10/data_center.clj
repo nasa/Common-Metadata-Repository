@@ -31,4 +31,5 @@
      ;; We probably want to refactor the following call into the common parse namespace later
      :Uuid (:uuid (:attrs (first (filter #(= :Organization_Name (:tag %)) (:content center)))))
      :ContactInformation (parse-contact-information center)
-     :ContactPersons (first (contact/parse-contact-persons (select center "Personnel")))}))
+     :ContactPersons (first (contact/parse-contact-persons (select center "Personnel")))
+     :ContactGroups (first (contact/parse-contact-groups (select center "Personnel")))}))

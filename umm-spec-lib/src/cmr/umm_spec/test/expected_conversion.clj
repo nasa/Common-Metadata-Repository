@@ -257,7 +257,26 @@
                                                                          :Country "U.S.A."}]}]
                                       :FirstName "John"
                                       :MiddleName "D"
-                                      :LastName "Smith"}]}]}))
+                                      :LastName "Smith"}]}
+                   {:Roles ["ARCHIVER" "DISTRIBUTOR"]
+                    :ShortName "NSIDC"
+                    :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
+                    :ContactGroups [{:Roles ["Investigator"]
+                                     :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
+                                     :ContactInformation [{:RelatedUrls [{:Description "Contact group related url description"
+                                                                          :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                          :URLs ["www.contact.group.foo.com"]
+                                                                          :Title "contact group related url title"
+                                                                          :MimeType "application/html"}]
+                                                           :ServiceHours "Weekdays 9AM - 5PM"
+                                                           :ContactInstruction "sample contact group instruction"
+                                                           :ContactMechanisms [{:Type "Fax" :Value "301-851-1234"}]
+                                                           :Addresses [{:StreetAddresses ["5700 Rivertech Ct"]
+                                                                        :City "Riverdale"
+                                                                        :StateProvince "MD"
+                                                                        :PostalCode "20774"
+                                                                        :Country "U.S.A."}]}]
+                                     :GroupName "NSIDC_IceBridge"}]}]}))
 
 (def example-service-record
   "An example record with fields supported by most formats."
@@ -874,6 +893,20 @@
       [(cmn/map->ContactPersonType {:Roles ["DATA CENTER CONTACT"]
                                     :LastName su/not-provided})])))
 
+(defn- group->expected-dif10
+ [group]
+ (-> group
+     (assoc :NonDataCenterAffiliation nil)
+     (assoc :Uuid nil)
+     (assoc :Roles '("DATA CENTER CONTACT"))
+     (update :ContactInformation expected-dif10-contact-information)))
+
+(defn- expected-dif10-data-center-contact-groups
+ [groups]
+ (let [expected-groups (mapv #(group->expected-dif10 %) groups)]
+   (when (seq expected-groups)
+     expected-groups)))
+
 (defn- expected-dif10-contact-persons
   [contacts]
   (let [expected-contacts (mapv #(contact->expected-dif10 %) contacts)]
@@ -898,9 +931,14 @@
 
 (defn data-center->expected-dif10
   [data-center]
-  (-> data-center
-      (update :ContactPersons expected-dif10-data-center-contact-persons)
-      (assoc :ContactGroups nil)))
+  (if (seq (:ContactGroups data-center))
+    (-> data-center
+        (assoc :ContactPersons nil)
+        (update :ContactGroups expected-dif10-data-center-contact-groups))
+    (-> data-center
+        (update :ContactPersons expected-dif10-data-center-contact-persons)
+        (assoc :ContactGroups nil))))
+
 
 (defn- expected-dif10-data-centers
   [data-centers]

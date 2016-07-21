@@ -29,20 +29,33 @@
         :PostalCode postal-code
         :Country country}])))
 
+(defn parse-contact-groups
+  [personnels]
+  (when personnels
+    (for [personnel personnels]
+      (let [roles (values-at personnel "Role")
+            contact-groups (select personnel "Contact_Group")]
+         (for [group contact-groups]
+           {:Roles roles
+            :GroupName (value-of group "Name")
+            ;:Uuid (:uuid (:attrs (first (filter #(= :Name (:tag %)) (:content group)))))
+            :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms group)
+                                  :Addresses (parse-address group)}]})))))
+
+
 (defn parse-contact-persons
   "Returns UMM-C contact persons map for the given DIF10 Personnel elements."
-  ([personnels]
-   (when personnels
-      (for [personnel personnels]
-        (let [roles (values-at personnel "Role")
-              contact-persons (select personnel "Contact_Person")
-              val (for [contact-person contact-persons]
-                    {:Roles roles
-                     :FirstName (value-of contact-person "First_Name")
-                     :MiddleName (value-of contact-person "Middle_Name")
-                     :LastName (value-of contact-person "Last_Name")
-                     :Uuid (value-of contact-person "uuid")
-                     :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms contact-person)
-                                           :Addresses (parse-address contact-person)}]})]
-          (pr-str val)
-          val)))))
+ [personnels]
+ (when personnels
+   (for [personnel personnels]
+     (let [roles (values-at personnel "Role")
+           contact-persons (select personnel "Contact_Person")
+           val (for [contact-person contact-persons]
+                 {:Roles roles
+                  :FirstName (value-of contact-person "First_Name")
+                  :MiddleName (value-of contact-person "Middle_Name")
+                  :LastName (value-of contact-person "Last_Name")
+                  :Uuid (value-of contact-person "uuid")
+                  :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms contact-person)
+                                        :Addresses (parse-address contact-person)}]})]
+        val))))

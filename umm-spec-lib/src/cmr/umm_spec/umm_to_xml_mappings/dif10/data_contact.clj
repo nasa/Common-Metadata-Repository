@@ -44,14 +44,26 @@
   ;; in real world use cases and just ignore the rest of the contact groups.
   (let [contact-info (first (:ContactInformation contact))
         contact-mechanisms (:ContactMechanisms contact-info)]
-       [:Contact_Person
-        [:First_Name (:FirstName contact)]
-        [:Middle_Name (:MiddleName contact)]
-        [:Last_Name (:LastName contact)]
-        (contact-info->address contact-info)
-        (contact-mechanisms->phones contact-mechanisms)
-        (contact-mechanisms->emails contact-mechanisms)]))
-        ;[:uuid (:Uuid contact)]
+   [:Contact_Person
+    [:First_Name (:FirstName contact)]
+    [:Middle_Name (:MiddleName contact)]
+    [:Last_Name (:LastName contact)]
+    (contact-info->address contact-info)
+    (contact-mechanisms->phones contact-mechanisms)
+    (contact-mechanisms->emails contact-mechanisms)]))
+    ;[:uuid (:Uuid contact)]
+
+(defn- contact->contact-group
+  [contact]
+  (let [contact-info (first (:ContactInformation contact))
+        contact-mechanisms (:ContactMechanisms contact-info)]
+    (proto-repl.saved-values/save 30)
+   [:Contact_Group
+    ;[:Name (if-let [uuid (:Uuid contact)] {:uuid uuid} {}) (:GroupName contact)]
+    [:Name (:GroupName contact)]
+    (contact-info->address contact-info)
+    (contact-mechanisms->phones contact-mechanisms)
+    (contact-mechanisms->emails contact-mechanisms)]))
 
 
 (defn generate-personnel
@@ -62,13 +74,16 @@
   ;  (for [contact-group (concat (:ContactGroups c) (:ContactPersons c))]
   ;    (contact->personnel contact-group umm-role-dif9-role-mapping))))
   [c]
-  (if (or (seq (:ContactPersons c)) (seq (:ContactGroups c)))
-   (do
-     (for [person (:ContactPersons c)]
-       (contact->contact-person person)))
-       ; TO DO: Groups
-   [:Contact_Person
-    [:Last_Name u/not-provided]]))
+  (cond
+    (seq (:ContactPersons c))
+    (for [person (:ContactPersons c)]
+      (contact->contact-person person))
+    (seq (:ContactGroups c))
+    (for [group (:ContactGroups c)]
+      (contact->contact-group group))
+    :else
+    [:Contact_Person
+     [:Last_Name u/not-provided]]))
 
 
 (defn generate-collection-personnel
