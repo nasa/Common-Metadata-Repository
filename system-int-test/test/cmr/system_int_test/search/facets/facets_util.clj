@@ -3,7 +3,8 @@
   (:require [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [clj-http.client :as client]))
 
 (defn make-coll
   "Helper for creating and ingesting an ECHO10 collection"
@@ -124,3 +125,72 @@
   ;; Note that compare-natural-strings is thoroughly unit tested so we can use it to verify
   ;; alphabetical order
   (= coll (sort-by first util/compare-natural-strings coll)))
+
+(defn get-lowest-hierarchical-depth
+  "Returns the lowest hierachical depth within the facet response for any hierarchical fields."
+  ([facet]
+   (get-lowest-hierarchical-depth facet -1))
+  ([facet current-depth]
+   (apply max
+          current-depth
+          (map #(get-lowest-hierarchical-depth % (inc current-depth)) (:children facet)))))
+
+(defn- find-first-apply-link
+  "Takes a facet response and recursively finds the first apply link starting at the top node."
+  [facet-response]
+  (if-let [apply-link (get-in facet-response [:links :apply])]
+    apply-link
+    (when-let [first-apply-link (some find-first-apply-link (:children facet-response))]
+      first-apply-link)))
+
+(defn traverse-hierarchical-links-in-order
+  "Takes a facet response and recursively clicks on the first apply link in the hierarchy until
+   every link has been applied."
+  [facet-response]
+  (if-let [apply-link (find-first-apply-link facet-response)]
+    (let [response (get-in (client/get apply-link {:as :json}) [:body :feed :facets])]
+      (traverse-hierarchical-links-in-order response))
+    ;; All links have been applied
+    facet-response))
+
+(defn get-science-keyword-indexes-in-link
+  "Returns a sequence of all of the science keyword indexes in link or nil if no science keywords
+  are in the link."
+  [link]
+  (let [index-regex #"science_keywords_h%5B(\d+)%5D"
+        matcher (re-matcher index-regex link)]
+    (loop [matches (re-find matcher)
+           all-indexes nil]
+      (if-not matches
+        all-indexes
+        (recur (re-find matcher) (conj all-indexes (second matches)))))))
+
+(defn get-all-links
+  "Returns all of the links in a facet response."
+  ([facet-response]
+   (get-all-links facet-response nil))
+  ([facet-response links]
+   (let [link (first (vals (:links facet-response)))
+         sublinks (mapcat #(get-all-links % links) (:children facet-response))]
+     (if link
+       (conj sublinks link)
+       sublinks))))
+
+(defn traverse-hierarchy
+  "Takes a collection of title strings and follows the apply links for each title in order.
+  Example: [\"Keywords\" \"Agriculture\" \"Agricultural Aquatic Sciences\" \"Aquaculture\"]"
+  [facet-response titles]
+  (loop [child-facet (first (filter #(= (first titles) (:title %)) (:children facet-response)))
+         remaining-titles titles]
+    (if (seq remaining-titles)
+      ;; Check to see if any links need to be applied
+      (if-let [link (get-in child-facet [:links :apply])]
+        ;; Need to apply the link and start again
+        (let [facet-response (get-in (client/get link {:as :json}) [:body :feed :facets])]
+          (traverse-hierarchy facet-response titles))
+        ;; Else check if the next title in the hierarchy has an apply link
+        (let [remaining-titles (rest remaining-titles)]
+          (recur (first (filter #(= (first remaining-titles) (:title %)) (:children child-facet)))
+                 remaining-titles)))
+      ;; We are done return the facet response
+      facet-response)))

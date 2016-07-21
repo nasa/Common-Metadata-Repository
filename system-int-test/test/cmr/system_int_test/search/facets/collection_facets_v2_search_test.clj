@@ -9,7 +9,6 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.search.services.query-execution.facets.facets-v2-results-feature :as frf2]
             [cmr.common.mime-types :as mt]
-            [clj-http.client :as client]
             [cmr.common.util :refer [are3]]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
@@ -206,23 +205,13 @@
            (search-and-return-v2-facets {:platform-h ["moDIS-p0", "ASTER-p0"]
                                          :keyword "MODIS"})))))
 
-(defn- get-lowest-hierarchical-depth
-  "Returns the lowest hierachical depth within the facet response for any hierarchical fields."
-  ([facet]
-   (get-lowest-hierarchical-depth facet -1))
-  ([facet current-depth]
-   (apply max
-          current-depth
-          (map #(get-lowest-hierarchical-depth % (inc current-depth))
-              (:children facet)))))
-
 (deftest appropriate-hierarchical-depth
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2))
   (testing "Default to one level without any search parameters"
-    (is (= 1 (get-lowest-hierarchical-depth (search-and-return-v2-facets {})))))
+    (is (= 1 (fu/get-lowest-hierarchical-depth (search-and-return-v2-facets {})))))
   (are [sk-param expected-depth]
-    (= expected-depth (get-lowest-hierarchical-depth (search-and-return-v2-facets
-                                                      {:science-keywords-h {:0 sk-param}})))
+    (= expected-depth (fu/get-lowest-hierarchical-depth
+                       (search-and-return-v2-facets {:science-keywords-h {:0 sk-param}})))
 
     {:category "Earth Science"} 1
     {:topic "Topic1"} 2
@@ -247,7 +236,7 @@
 (deftest empty-v2-facets-test
   (is (= empty-v2-facets (search-and-return-v2-facets))))
 
-(deftest some-facets-missing-test
+(deftest some-facets-missing-testx
   (fu/make-coll 1 "PROV1"
                 (fu/science-keywords sk3 sk2)
                 (fu/processing-level-id "PL1"))
@@ -283,90 +272,14 @@
                                       :variable-level-2 "Level2-2"
                                       :variable-level-3 "Level2-3"}))
 
-(defn- find-first-apply-link
-  "Takes a facet response and recursively finds the first apply link starting at the top node."
-  [facet-response]
-  (if-let [apply-link (get-in facet-response [:links :apply])]
-    apply-link
-    (when-let [first-apply-link (some find-first-apply-link (:children facet-response))]
-      first-apply-link)))
-
-(defn- traverse-hierarchical-links-in-order
-  "Takes a facet response and recursively clicks on the first apply link in the hierarchy until
-   every link has been applied."
-  [facet-response]
-  (if-let [apply-link (find-first-apply-link facet-response)]
-    (let [response (get-in (client/get apply-link {:as :json}) [:body :feed :facets])]
-      (traverse-hierarchical-links-in-order response))
-    ;; All links have been applied
-    facet-response))
-
-(comment
- (get-science-keyword-indexes-in-link "http://localhost:3003/collections.json?page_size=0&include_facets=v2&science_keywords_h%5B0%5D%5Btopic%5D=Topic1&science_keywords_h%5B1%5D%5Bterm%5D=Term1&science_keywords_h%5B2%5D%5Bvariable_level_1%5D=Level1-1&science_keywords_h%5B3%5D%5Bvariable_level_2%5D=Level1-2")
- (get-science-keyword-indexes-in-link "http://localhost:3003/collections.json?page_size=0&include_facets=v2"))
-
-(defn- get-science-keyword-indexes-in-link
-  "Returns a sequence of all of the science keyword indexes in link or nil if no science keywords
-  are in the link."
-  [link]
-  (let [index-regex #"science_keywords_h%5B(\d+)%5D"
-        matcher (re-matcher index-regex link)]
-    (loop [matches (re-find matcher)
-           all-indexes nil]
-      (if-not matches
-        all-indexes
-        (recur (re-find matcher) (conj all-indexes (second matches)))))))
-
-(defn- get-all-links
-  "Returns all of the links in a facet response."
-  ([facet-response]
-   (get-all-links facet-response nil))
-  ([facet-response links]
-   (let [link (first (vals (:links facet-response)))
-         sublinks (mapcat #(get-all-links % links) (:children facet-response))]
-     (if link
-       (conj sublinks link)
-       sublinks))))
-
-(defn- traverse-hierarchy
-  "Takes a collection of title strings and follows the apply links for each title in order.
-  Example: [\"Keywords\" \"Agriculture\" \"Agricultural Aquatic Sciences\" \"Aquaculture\"]"
-  [facet-response titles]
-  ; (println "Called with " facet-response "and titles" titles)
-  (let [child-facet (first (filter #(= (first titles) (:title %)) (:children facet-response)))]
-        ; _ (println "Child facet is" child-facet)]
-    (if-let [link (get-in child-facet [:links :apply])]
-      ;; Need to apply the link and try again
-      (let [facet-response (get-in (client/get link {:as :json}) [:body :feed :facets])]
-        (traverse-hierarchy facet-response titles))
-      ;; Ok good the node has been applied or it is a group node - move to the next title
-      (loop [remaining-titles (rest titles)
-             child-facet (first (filter #(= (first remaining-titles) (:title %))
-                                        (:children child-facet)))]
-        ; (println "CDD: I am in the loop with " child-facet "and titles" remaining-titles)
-        (if (seq remaining-titles)
-          ;; Check to see if any links need to be applied
-          (if-let [link (get-in child-facet [:links :apply])]
-            ;; Need to apply the link and try again
-            (let [facet-response (get-in (client/get link {:as :json}) [:body :feed :facets])]
-              (traverse-hierarchy facet-response titles))
-            ;; Else try to traverse the next title
-            (let [remaining-titles (rest remaining-titles)]
-                  ; _ (println "Comparing" (first remaining-titles) "to" ())]
-              (recur remaining-titles
-                     (first (filter #(= (first remaining-titles) (:title %))
-                                    (:children child-facet))))))
-          ;; We are done return the facet response
-          facet-response)))))
-
 (deftest link-traversal-test
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all))
   (testing (str "Traversing a single hierarchical keyword returns the same index for all subfields "
                 "in the remove links"))
     ; (is (= #{"0"} (->> (search-and-return-v2-facets)
-    ;                    traverse-hierarchical-links-in-order
-    ;                    get-all-links
-    ;                    (mapcat get-science-keyword-indexes-in-link)
+    ;                    fu/traverse-hierarchical-links-in-order
+    ;                    fu/get-all-links
+    ;                    (mapcat fu/get-science-keyword-indexes-in-link)
     ;                    set))))
   (testing (str "Selecting a field with the same name in another hierarchical field will result in "
                 "only the correct hierarchical field from being applied in the facets.")
@@ -386,7 +299,7 @@
                             :applied true,
                             :children [{:title "Level1-2", :applied false}]}]}]}]}]}
           actual (-> (search-and-return-v2-facets)
-                     (traverse-hierarchy ["Keywords" "Topic1" "Term1" "Level1-1"])
+                     (fu/traverse-hierarchy ["Keywords" "Topic1" "Term1" "Level1-1"])
                      (fu/prune-facet-response [:title :applied]))])))
       ; (is (= expected actual)))))
 
