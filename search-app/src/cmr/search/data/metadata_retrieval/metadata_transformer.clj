@@ -146,7 +146,7 @@
                (if ignore-exceptions?
                  (try
                    (transform-with-strategy context concept k v)
-                   (catch Exception e
+                   (catch Throwable e
                      ;; Namespace used to reference error here to allow redefing in tests
                      (log/error e "Ignoring exception while trying to transform metadata:" (.getMessage e))))
                  (transform-with-strategy context concept k v))))
