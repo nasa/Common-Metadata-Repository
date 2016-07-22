@@ -14,10 +14,10 @@
        instruction (value-of center "Instructions")
        related-url (value-of center "Organization_URL")]
    (if (or service-hours instruction related-url)
-     {:ServiceHours (value-of center "Hours_Of_Service")
-      :ContactInstruction (value-of center "Instructions")
-      :RelatedUrls (when-let [related-url (value-of center "Organization_URL")]
-                     [{:URLs [related-url]}])}
+     [{:ServiceHours service-hours
+       :ContactInstruction instruction
+       :RelatedUrls (when-let [related-url (value-of center "Organization_URL")]
+                      [{:URLs [related-url]}])}]
      nil)))
 
 (defn parse-data-centers

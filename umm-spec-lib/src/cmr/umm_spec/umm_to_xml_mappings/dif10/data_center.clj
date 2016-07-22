@@ -24,14 +24,14 @@
         [:Organization_Name (if-let [uuid (:Uuid center)] {:uuid uuid} {})
          [:Short_Name (:ShortName center)]
          [:Long_Name (:LongName center)]]
-        [:Hours_Of_Service (get-in [:ContactInformation :ServiceHours] center)]
-        [:Instructions (get-in [:ContactInformation :ContactInstruction] center)]
+        [:Hours_Of_Service (:ServiceHours (first (:ContactInformation center)))]
+        [:Instructions (:ContactInstruction (first (:ContactInformation center)))]
         [:Organization_URL (-> (:ContactInformation center)
-                              first
-                              :RelatedUrls
-                              first
-                              :URLs
-                              first)]
+                               first
+                               :RelatedUrls
+                               first
+                               :URLs
+                               first)]
         ; ;; Personnel within Data_Center
         [:Personnel
          ; (for [role (personnel-roles center)]

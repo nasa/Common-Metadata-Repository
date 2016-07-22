@@ -78,6 +78,42 @@
     (when (seq (util/remove-nil-keys contact-info))
       [(cmn/map->ContactInformationType contact-info)])))
 
+(defn- expected-dif10-contact-info-urls
+  [urls]
+  (when (seq urls)
+    [(first urls)]))
+
+(defn- expected-dif-10-contact-info-related-urls
+ [related-urls]
+ (let [related-url
+        (-> related-urls
+            (first)
+            (dissoc :Description)
+            (dissoc :MimeType)
+            (dissoc :Relation)
+            (dissoc :Title)
+            (dissoc :FileSize)
+            (update :URLs expected-dif10-contact-info-urls)
+            (cmn/map->RelatedUrlType))]
+    (when (some? related-url)
+       [related-url])))
+
+(defn- expected-dif10-data-center-contact-information
+ [contact-info]
+ (let [contact-info (first contact-info)]
+    (if (and (nil? (:ServiceHours contact-info))
+             (nil? (:ContactInstruction contact-info))
+             (nil? (:RelatedUrls contact-info)))
+     nil
+     (let [contact-info
+            (-> contact-info
+                (update :RelatedUrls expected-dif-10-contact-info-related-urls)
+                (dissoc :ContactMechanisms)
+                (dissoc :Addresses))]
+       (if (seq (util/remove-nil-keys contact-info))
+         [(cmn/map->ContactInformationType contact-info)]
+         contact-info)))))
+
 (defn- contact->expected-dif10
   [contact]
   (-> contact
@@ -135,13 +171,14 @@
 
 (defn- data-center->expected-dif10
   [data-center]
-  (if (seq (:ContactGroups data-center))
-    (-> data-center
-        (assoc :ContactPersons nil)
-        (update :ContactGroups expected-dif10-data-center-contact-groups))
-    (-> data-center
-        (update :ContactPersons expected-dif10-data-center-contact-persons)
-        (assoc :ContactGroups nil))))
+  (let [data-center (update data-center :ContactInformation expected-dif10-data-center-contact-information)]
+   (if (seq (:ContactGroups data-center))
+     (-> data-center
+         (assoc :ContactPersons nil)
+         (update :ContactGroups expected-dif10-data-center-contact-groups))
+     (-> data-center
+         (update :ContactPersons expected-dif10-data-center-contact-persons)
+         (assoc :ContactGroups nil)))))
 
 
 (defn- expected-dif10-data-centers

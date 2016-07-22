@@ -247,6 +247,20 @@
                    {:Roles ["ARCHIVER" "DISTRIBUTOR"]
                     :ShortName "NSIDC"
                     :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
+                    :ContactInformation [{:RelatedUrls [{:Description "Contact related url description"
+                                                         :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                         :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                         :Title "contact related url title"
+                                                         :MimeType "application/html"}]
+                                          :ServiceHours "Weekdays 9AM - 5PM"
+                                          :ContactInstruction "sample contact instruction"
+                                          :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                              {:Type "Email" :Value "cmr@nasa.gov"
+                                                               :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                                            :City "Greenbelt"
+                                                                            :StateProvince "MD"
+                                                                            :PostalCode "20771"
+                                                                            :Country "U.S.A."}]}]}]                
                     :ContactGroups [{:Roles ["Investigator"]
                                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
                                      :ContactInformation [{:RelatedUrls [{:Description "Contact group related url description"
