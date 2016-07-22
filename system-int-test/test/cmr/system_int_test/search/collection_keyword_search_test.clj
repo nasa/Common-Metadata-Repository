@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.collection-keyword-search-test
   "Integration test for CMR collection search by keyword terms"
   (:require [clojure.test :refer :all]
-            [cmr.common.util :as u :refer [are2]]
+            [cmr.common.util :refer [are3]]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -13,6 +13,7 @@
 
 (deftest search-by-keywords
   (let [short-name-boost (k2e/get-boost nil :short-name)
+        entry-id-boost (k2e/get-boost nil :entry-id)
         project-boost (k2e/get-boost nil :project)
         platform-boost (k2e/get-boost nil :platform)
         instrument-boost (k2e/get-boost nil :instrument)
@@ -158,7 +159,7 @@
         "coll1" [coll1]
 
         ;; entry id
-        "entryid4" [coll16]
+        "ABC!XYZ_V001" [coll2]
 
         ;; short name
         "XYZ" [coll2 coll13]
@@ -290,13 +291,16 @@
         "near?real?time" [coll22]))
 
     (testing "Default boosts on fields"
-      (are2 [params scores] (= (map #(/ % 2.0) scores)
-                               (map :score (:refs (search/find-refs :collection params))))
+      (are3 [params scores] (is (= (map #(/ % 2.0) scores)
+                                   (map :score (:refs (search/find-refs :collection params)))))
 
         "short-name"
         {:keyword "SNFoobar"} [short-name-boost]
         "long-name"
         {:keyword "LNFoobar"} [short-name-boost]
+
+        "entry-id"
+        {:keyword "ABC!XYZ_V001"} [entry-id-boost]
 
         "project short-name as keyword"
         {:keyword (:short-name (first pr1))} [project-boost]
@@ -381,52 +385,56 @@
 
         "provider-id"
         {:keyword "PROV1"} [provider-boost provider-boost provider-boost provider-boost]))
+
     (testing "Specified boosts on fields"
-      (are [params scores] (= (map #(/ % 2.0) scores)
-                              (map :score (:refs (search/find-refs :collection params))))
-        ;; short-name
+      (are3 [params scores] (is (= (map #(/ % 2.0) scores)
+                                   (map :score (:refs (search/find-refs :collection params)))))
+        "short-name"
         {:keyword "SNFoobar" :boosts {:short-name 2.0}} [2.0]
 
-        ;; project short-name
+        "entry-id"
+        {:keyword "ABC!XYZ_V001" :boosts {:entry-id 3.1}} [3.1]
+
+        "project short-name"
         {:keyword (:short-name (first pr1)) :boosts {:project 3.0}} [3.0]
 
-        ;; platform short-name
+        "platform short-name"
         {:keyword (:short-name p1) :boosts {:platform 4.0}} [4.0]
 
-        ;; instrument short-name
+        "instrument short-name"
         {:keyword (:short-name (first (:instruments p1))) :boosts {:instrument 5.0}} [5.0]
 
-        ;; sensor short-name
+        "sensor short-name"
         {:keyword (:short-name (first (:sensors (first (:instruments p1))))) :boosts {:sensor 6.0}} [6.0]
 
-        ;; temporal-keywords
+        "temporal-keywords"
         {:keyword "tk1" :boosts {:temporal-keyword 7.0}} [7.0]
 
-        ;; spatial-keyword
+        "spatial-keyword"
         {:keyword "in out" :boosts {:spatial-keyword 8.0}} [8.0]
 
-        ;; science-keywords
+        "science-keywords"
         {:keyword (:category sk1) :boosts {:science-keywords 9.0}} [9.0]
 
-        ;; version-id
+        "version-id"
         {:keyword "V001" :boosts {:version-id 10.0}} [10.0]
 
-        ;; provider-id
+        "provider-id"
         {:keyword "PROV1" :boosts {:provider 10.0}} [10.0 10.0 10.0 10.0]
 
-        ;; entry-title
+        "entry-title"
         {:keyword "coll5" :boosts {:entry-title 10.0}} [10.0]
 
-        ;; mixed boosts
+        "mixed boosts"
         {:keyword "Laser spoonA" :boosts {:short-name 10.0 :science-keywords 11.0}} [11.0 10.0]
 
-        ;; no defaults
+        "no defaults"
         {:keyword (:category sk1) :boosts {:include-defaults false}} [1.0]
 
-        ;; matches all fields, do not include defaults
+        "matches all fields, do not include defaults"
         {:keyword "boost" :boosts {:short-name 5.0 :include-defaults false}} [5.0]
 
-        ;; matches all fields, use defaults, but override short-name boost
+        "matches all fields, use defaults, but override short-name boost"
         {:keyword "boost" :boosts {:short-name 5.0 :include-defaults true}}
         [(* 5.0 entry-title-boost platform-boost science-keywords-boost)]))
 
