@@ -3,6 +3,22 @@
   (:require [cmr.common.xml.gen :refer :all]
             [cmr.umm-spec.util :as u]))
 
+(def umm-personnel-contact-role->dif10-role
+   {"Data Center Contact" "TECHNICAL CONTACT"
+    "Technical Contact" "TECHNICAL CONTACT"
+    "Investigator" "INVESTIGATOR"
+    "Metadata Author" "METADATA AUTHOR"})
+
+(def umm-personnel-default-contact-role
+  "TECHNICAL CONTACT")
+
+(defn collection-personnel-roles
+ [collection]
+ (distinct
+   (map
+    #(get umm-personnel-contact-role->dif10-role % umm-personnel-default-contact-role)
+    (map #(:Roles %) (concat (:ContactGroups collection) (:ContactPersons collection))))))
+
 (defn- contact-mechanisms->emails
   "Returns the DIF10 email elements from the given contact mechanisms"
   [contact-mechanisms]
@@ -68,11 +84,6 @@
 
 (defn generate-personnel
   "Returns the DIF10 personnel elements from the given umm collection or DataCenter"
-  ; ([c]
-  ;  (generate-personnel c umm-contact-role->dif9-role))
-  ; ([c umm-role-dif9-role-mapping]
-  ;  (for [contact-group (concat (:ContactGroups c) (:ContactPersons c))]
-  ;    (contact->personnel contact-group umm-role-dif9-role-mapping))))
   [c]
   (cond
     (seq (:ContactPersons c))
@@ -87,10 +98,10 @@
 
 
 (defn generate-collection-personnel
-  "Returns the DIF10 personnel elements from the given umm collection or DataCenter"
-  [c]
-  [:Personnel
-    ; (for [role (personnel-roles center)]
-    ;   [:Role role])
-    [:Role "TECHNICAL CONTACT"]
-    (generate-personnel c)])
+  "Returns the DIF10 personnel elements from the given umm collection"
+  [collection]
+  (when (or (some? (:ContactGroups collection)) (some? (:ContactPers collection)))
+    [:Personnel
+      (for [role (collection-personnel-roles collection)]
+       [:Role role])
+      (generate-personnel collection)]))
