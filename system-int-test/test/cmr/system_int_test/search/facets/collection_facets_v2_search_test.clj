@@ -272,6 +272,11 @@
                                       :variable-level-2 "Level2-2"
                                       :variable-level-3 "Level2-3"}))
 
+(def sk-diff-vl1 (dc/science-keyword {:category "Earth science"
+                                      :topic "Topic1"
+                                      :term "Term1"
+                                      :variable-level-1 "Another Level"}))
+
 (deftest link-traversal-test
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all))
   (testing (str "Traversing a single hierarchical keyword returns the same index for all subfields "
@@ -299,12 +304,48 @@
                             :applied true,
                             :children [{:title "Level1-2", :applied false}]}]}]}]}]}
           actual (-> (search-and-return-v2-facets)
-                     (fu/traverse-hierarchy ["Keywords" "Topic1" "Term1" "Level1-1"])
+                     (fu/traverse-links ["Keywords" "Topic1" "Term1" "Level1-1"])
+                     (fu/prune-facet-response [:title :applied]))]))
+      ; (is (= expected actual)))))
+  (testing (str "When there are multiple fields selected at the same level of the hierarchy they "
+                "each have different indexes with exactly one matching the parent index")
+    (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all sk-same-vl1 sk-diff-vl1))
+    (let [expected [0]
+          actual (->> (search-and-return-v2-facets)
+                      fu/traverse-hierarchical-links-in-order
+                      fu/get-all-links
+                      (map fu/get-science-keyword-indexes-in-link))]))
+      ; (is (= expected actual))))
+
+  (testing (str "Scenario: Traverse links so that there are multiple children with different "
+                "indexes such that the one with the different index from the parent is a term that "
+                "shows up in two different hierarchies. Stay with me... Then remove the other term "
+                "(the one with the same index as parent) and verify that only the correct "
+                "hierarchical term is applied.")
+    (let [expected {:title "Browse Collections",
+                    :children
+                    [{:title "Keywords"
+                      :applied true
+                      :children
+                      [{:title "Topic1"
+                        :applied true
+                        :children
+                        [{:title "Term1"
+                          :applied true
+                          :children
+                          [{:title "Another Level" :applied false}
+                           {:title "Level1-1"
+                            :applied true
+                            :children [{:title "Level1-2" :applied false}]}]}
+                         {:title "Term2" :applied false}]}]}]}
+
+          actual (-> (search-and-return-v2-facets)
+                     (fu/traverse-links ["Keywords" "Topic1" "Term1" "Another Level"])
+                     (fu/traverse-links ["Keywords" "Topic1" "Term1" "Level1-1"])
+                     ;; Click the remove link to remove "Another Level" leaving "Level1-1"
+                     (fu/click-link ["Keywords" "Topic1" "Term1" "Another Level"])
                      (fu/prune-facet-response [:title :applied]))])))
       ; (is (= expected actual)))))
-
-  ;; Traversing so that there are multiple children with different indexes and then removing the
-  ;; one with the same index might potentially cause a problem.
 
 ; (deftest science-keywords-connected-test
 ;   (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all sk-same-vl1))
@@ -318,9 +359,7 @@
 ;                               :term "Term1"
 ;                               :variable-level-1 "Level1-1"}}}
 ;     nil
-;
-;     (str "When there are multiple fields selected at the same level of the hierarchy they "
-;          "each have different indexes with exactly one matching the parent index")
+
 
 ;; NOTE: This can only be done by manually manipulating the URLS (not by following links)
 ;     (str "When a subfield exists in two different hierarchies, is selected, but no direct "

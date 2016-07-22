@@ -176,8 +176,9 @@
        (conj sublinks link)
        sublinks))))
 
-(defn traverse-hierarchy
-  "Takes a collection of title strings and follows the apply links for each title in order.
+(defn traverse-links
+  "Takes a collection of title strings and follows the apply links for each title in order. Returns
+  the final facet response after clicking the apply links.
   Example: [\"Keywords\" \"Agriculture\" \"Agricultural Aquatic Sciences\" \"Aquaculture\"]"
   [facet-response titles]
   (loop [child-facet (first (filter #(= (first titles) (:title %)) (:children facet-response)))
@@ -187,10 +188,22 @@
       (if-let [link (get-in child-facet [:links :apply])]
         ;; Need to apply the link and start again
         (let [facet-response (get-in (client/get link {:as :json}) [:body :feed :facets])]
-          (traverse-hierarchy facet-response titles))
+          (traverse-links facet-response titles))
         ;; Else check if the next title in the hierarchy has an apply link
         (let [remaining-titles (rest remaining-titles)]
           (recur (first (filter #(= (first remaining-titles) (:title %)) (:children child-facet)))
                  remaining-titles)))
       ;; We are done return the facet response
       facet-response)))
+
+(defn click-link
+  "Navigates through the hierarchical titles and clicks the link at the last level. Returns the
+  facet response returned by that link. Works for either an apply or remove link"
+  [facet-response titles]
+  (if-let [first-title (first titles)]
+    (let [child-facet (first (filter #(= first-title (:title %)) (:children facet-response)))]
+      (recur child-facet (rest titles)))
+    (let [link (-> (get facet-response :links)
+                   vals
+                   first)]
+      (get-in (client/get link {:as :json}) [:body :feed :facets]))))
