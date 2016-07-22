@@ -63,7 +63,11 @@
   "Returns the expected DIF contact mechanisms"
   [contact-mechanisms]
   (->> (concat (filter #(= "Email" (:Type %)) contact-mechanisms)
-               (filter #(not= "Email" (:Type %)) contact-mechanisms))
+               (filter
+                #(and (not= "Email" (:Type %))
+                      (not= "Twitter" (:Type %))
+                      (not= "Facebook" (:Type %)))
+                contact-mechanisms))
        seq))
 
 (defn- expected-dif10-contact-information

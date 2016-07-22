@@ -28,7 +28,11 @@
 (defn- contact-mechanisms->phones
   "Returns the DIF10 phone elements from the given contact mechanisms"
   [contact-mechanisms]
-  (for [phone-mechanism (filter #(not= "Email" (:Type %)) contact-mechanisms)]
+  (for [phone-mechanism (filter
+                         #(and (not= "Email" (:Type %))
+                               (not= "Twitter" (:Type %))
+                               (not= "Facebook" (:Type %)))
+                         contact-mechanisms)]
     [:Phone [:Number (:Value phone-mechanism)]
             [:Type (:Type phone-mechanism)]]))
 
