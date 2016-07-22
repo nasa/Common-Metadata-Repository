@@ -12,12 +12,15 @@
 (def umm-personnel-default-contact-role
   "TECHNICAL CONTACT")
 
+(def dif10-data-center-personnel-role
+  "DATA CENTER CONTACT")
+
 (defn collection-personnel-roles
- [collection]
+ [contact]
  (distinct
    (map
     #(get umm-personnel-contact-role->dif10-role % umm-personnel-default-contact-role)
-    (map #(:Roles %) (concat (:ContactGroups collection) (:ContactPersons collection))))))
+    (:Roles contact))))
 
 (defn- contact-mechanisms->emails
   "Returns the DIF10 email elements from the given contact mechanisms"
@@ -57,55 +60,63 @@
   ; under Data_Center or not. When it is under Data_Center, the role is mapped only to
   ; DATA CENTER CONTACT or INVESTIGATOR; otherwise (i.e. when the Personnel is under DIF),
   ; it can be mapped as defined in umm-contact-role->dif9-role."
-  [contact]
+  [contact roles]
   ;; DIF9 Personnel can only have one contact address, so we only take the first contact
   ;; information and write it out. Even though theoretically the first contact group could not
   ;; have contact address, but a later contact group could, we don't think it happens
   ;; in real world use cases and just ignore the rest of the contact groups.
   (let [contact-info (first (:ContactInformation contact))
         contact-mechanisms (:ContactMechanisms contact-info)]
-   [:Contact_Person
-    [:First_Name (:FirstName contact)]
-    [:Middle_Name (:MiddleName contact)]
-    [:Last_Name (:LastName contact)]
-    (contact-info->address contact-info)
-    (contact-mechanisms->phones contact-mechanisms)
-    (contact-mechanisms->emails contact-mechanisms)]))
+   [:Personnel
+     (for [role roles]
+      [:Role role])
+     [:Contact_Person
+      [:First_Name (:FirstName contact)]
+      [:Middle_Name (:MiddleName contact)]
+      [:Last_Name (:LastName contact)]
+      (contact-info->address contact-info)
+      (contact-mechanisms->phones contact-mechanisms)
+      (contact-mechanisms->emails contact-mechanisms)]]))
     ;[:uuid (:Uuid contact)]
 
 (defn- contact->contact-group
-  [contact]
+  [contact roles]
   (let [contact-info (first (:ContactInformation contact))
         contact-mechanisms (:ContactMechanisms contact-info)]
-    (proto-repl.saved-values/save 30)
-   [:Contact_Group
-    ;[:Name (if-let [uuid (:Uuid contact)] {:uuid uuid} {}) (:GroupName contact)]
-    [:Name (:GroupName contact)]
-    (contact-info->address contact-info)
-    (contact-mechanisms->phones contact-mechanisms)
-    (contact-mechanisms->emails contact-mechanisms)]))
-
-
-(defn generate-personnel
-  "Returns the DIF10 personnel elements from the given umm collection or DataCenter"
-  [c]
-  (cond
-    (seq (:ContactPersons c))
-    (for [person (:ContactPersons c)]
-      (contact->contact-person person))
-    (seq (:ContactGroups c))
-    (for [group (:ContactGroups c)]
-      (contact->contact-group group))
-    :else
-    [:Contact_Person
-     [:Last_Name u/not-provided]]))
+   [:Personnel
+    (for [role roles]
+      [:Role role])
+    [:Contact_Group
+     ;[:Name (if-let [uuid (:Uuid contact)] {:uuid uuid} {}) (:GroupName contact)]
+     [:Name (:GroupName contact)]
+     (contact-info->address contact-info)
+     (contact-mechanisms->phones contact-mechanisms)
+     (contact-mechanisms->emails contact-mechanisms)]]))
 
 
 (defn generate-collection-personnel
-  "Returns the DIF10 personnel elements from the given umm collection"
+  "Returns the DIF10 personnel elements from the given umm collection or DataCenter"
   [collection]
-  (when (or (some? (:ContactGroups collection)) (some? (:ContactPers collection)))
-    [:Personnel
-      (for [role (collection-personnel-roles collection)]
-       [:Role role])
-      (generate-personnel collection)]))
+  (if (seq (concat (:ContactGroups collection) (:ContactPersons collection)))
+   (concat
+     (for [person (:ContactPersons collection)]
+       (contact->contact-person person (collection-personnel-roles person)))
+     (for [group (:ContactGroups collection)]
+       (contact->contact-group group (collection-personnel-roles group))))
+   [:Personnel
+    [:Role umm-personnel-default-contact-role]
+    [:Contact_Person
+       [:Last_Name u/not-provided]]]))
+
+(defn generate-data-center-personnel
+  [center]
+  (if (seq (concat (:ContactGroups center) (:ContactPersons center)))
+   (concat
+    (for [person (:ContactPersons center)]
+     (contact->contact-person person [dif10-data-center-personnel-role]))
+    (for [group (:ContactGroups center)]
+     (contact->contact-group group [dif10-data-center-personnel-role])))
+   [:Personnel
+    [:Role dif10-data-center-personnel-role]
+    [:Contact_Person
+     [:Last_Name u/not-provided]]]))

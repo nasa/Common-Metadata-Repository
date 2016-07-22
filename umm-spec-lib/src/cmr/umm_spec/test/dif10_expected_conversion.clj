@@ -11,7 +11,6 @@
            [cmr.umm-spec.test.location-keywords-helper :as lkt]
            [cmr.umm-spec.models.collection :as umm-c]
            [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
-           [cmr.umm-spec.umm-to-xml-mappings.dif10.data-center :as center]
            [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]))
 
 (defn- dif10-platform
@@ -119,12 +118,20 @@
          [(cmn/map->ContactInformationType contact-info)]
          contact-info)))))
 
-(defn- contact->expected-dif10
-  [contact roles]
+(defn- contact->expected-dif10-collection
+  [contact]
   (-> contact
       (assoc :NonDataCenterAffiliation nil)
       (assoc :Uuid nil)
-      (assoc :Roles roles)
+      (assoc :Roles (contact/collection-personnel-roles contact))
+      (update :ContactInformation expected-dif10-contact-information)))
+
+(defn- contact->expected-dif10-data-center
+  [contact]
+  (-> contact
+      (assoc :NonDataCenterAffiliation nil)
+      (assoc :Uuid nil)
+      (assoc :Roles [contact/dif10-data-center-personnel-role])
       (update :ContactInformation expected-dif10-contact-information)))
 
 (defn- expected-dif10-data-center-contacts
@@ -132,29 +139,25 @@
   Both ContactGroups and ContactPersons are converted into ContactPersons with the DIF not supported
   fields dropped."
   [contacts]
-  (let [expected-contacts (mapv #(contact->expected-dif10 % [center/dif10-data-center-personnel-role]) contacts)]
-    (if (seq expected-contacts)
-      expected-contacts
-      [(cmn/map->ContactPersonType {:Roles [center/dif10-data-center-personnel-role]
-                                    :LastName su/not-provided})])))
+  (let [expected-contacts (mapv #(contact->expected-dif10-data-center %) contacts)]
+    (when (seq expected-contacts)
+      expected-contacts)))
 
 (defn- expected-dif10-contact-persons
-  [contacts roles]
-  (let [expected-contacts (mapv #(contact->expected-dif10 % roles) contacts)]
+  [contacts]
+  (let [expected-contacts (mapv #(contact->expected-dif10-collection %) contacts)]
     (when (seq expected-contacts)
       expected-contacts)))
 
 (defn- data-center->expected-dif10
   [data-center]
   (let [data-center (update data-center :ContactInformation expected-dif10-data-center-contact-information)]
-   (if (seq (:ContactPersons data-center))
-     (-> data-center
-         (update :ContactPersons expected-dif10-data-center-contacts)
-         (assoc :ContactGroups nil))
-     (-> data-center
-         (assoc :ContactPersons nil)
-         (update :ContactGroups expected-dif10-data-center-contacts)))))
-
+   (if (or (seq (:ContactGroups data-center)) (seq (:ContactPersons data-center)))
+    (-> data-center
+       (update :ContactPersons expected-dif10-data-center-contacts)
+       (update :ContactGroups expected-dif10-data-center-contacts))
+    (update data-center :ContactPersons [(cmn/map->ContactPersonType {:Roles [contact/dif10-data-center-personnel-role]
+                                                                      :LastName su/not-provided})]))))
 
 (defn- expected-dif10-data-centers
   [data-centers]
@@ -162,26 +165,25 @@
 
 (defn umm-expected-conversion-dif10
   [umm-coll]
-  (let [collection-personnel-roles (contact/collection-personnel-roles umm-coll)]
-    (-> umm-coll
-        (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
-        (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
-        (update-in [:DataCenters] expected-dif10-data-centers)
-        (assoc :ContactGroups nil)
-        (update-in [:ContactPersons] expected-dif10-contact-persons collection-personnel-roles)
-        (update-in [:SpatialExtent] expected-dif10-spatial-extent)
-        (update-in [:DataDates] conversion-util/fixup-dif10-data-dates)
-        (update-in [:Distributions] su/remove-empty-records)
-        (update-in-each [:Platforms] dif10-platform)
-        (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil
-                        :MeasurementResolution nil :ParameterUnitsOfMeasure nil
-                        :ParameterValueAccuracy nil :ValueAccuracyExplanation nil)
-        (update-in [:ProcessingLevel] dif10-processing-level)
-        (update-in-each [:Projects] dif10-project)
-        (update-in [:PublicationReferences] conversion-util/prune-empty-maps)
-        (update-in-each [:PublicationReferences] conversion-util/dif-publication-reference)
-        (update-in [:RelatedUrls] conversion-util/expected-related-urls-for-dif-serf)
-        ;; DIF 10 required element
-        (update-in [:Abstract] #(or % su/not-provided))
-        ;; CMR-2716 SpatialKeywords are replaced by LocationKeywords
-        (assoc :SpatialKeywords nil))))
+  (-> umm-coll
+   (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
+   (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
+   (update-in [:DataCenters] expected-dif10-data-centers)
+   (assoc :ContactGroups nil)
+   (update-in [:ContactPersons] expected-dif10-contact-persons)
+   (update-in [:SpatialExtent] expected-dif10-spatial-extent)
+   (update-in [:DataDates] conversion-util/fixup-dif10-data-dates)
+   (update-in [:Distributions] su/remove-empty-records)
+   (update-in-each [:Platforms] dif10-platform)
+   (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil
+                    :MeasurementResolution nil :ParameterUnitsOfMeasure nil
+                    :ParameterValueAccuracy nil :ValueAccuracyExplanation nil)
+   (update-in [:ProcessingLevel] dif10-processing-level)
+   (update-in-each [:Projects] dif10-project)
+   (update-in [:PublicationReferences] conversion-util/prune-empty-maps)
+   (update-in-each [:PublicationReferences] conversion-util/dif-publication-reference)
+   (update-in [:RelatedUrls] conversion-util/expected-related-urls-for-dif-serf)
+   ;; DIF 10 required element
+   (update-in [:Abstract] #(or % su/not-provided))
+   ;; CMR-2716 SpatialKeywords are replaced by LocationKeywords
+   (assoc :SpatialKeywords nil)))

@@ -31,6 +31,7 @@
 
 (defn parse-contact-groups
   [personnels]
+  (proto-repl.saved-values/save 40)
   (when personnels
     (for [personnel personnels]
       (let [roles (values-at personnel "Role")
@@ -46,6 +47,7 @@
 (defn parse-contact-persons
   "Returns UMM-C contact persons map for the given DIF10 Personnel elements."
  [personnels]
+ (proto-repl.saved-values/save 41)
  (when personnels
    (for [personnel personnels]
      (let [roles (values-at personnel "Role")

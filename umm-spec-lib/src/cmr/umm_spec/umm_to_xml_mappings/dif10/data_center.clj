@@ -3,9 +3,6 @@
   (:require [cmr.umm-spec.util :as u]
             [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]))
 
-(def dif10-data-center-personnel-role
-  "DATA CENTER CONTACT")
-
 (defn- personnel-roles
   "Get the personnel roles for the center. In UMM-C, the roles are stored on the
    Contact Persons and Contact Groups. In DIF10 they are on the Personnel field."
@@ -35,7 +32,5 @@
                                first
                                :URLs
                                first)]
-        ; ;; Personnel within Data_Center
-        [:Personnel
-         [:Role dif10-data-center-personnel-role]
-         (contact/generate-personnel center)]])))
+        ;; Personnel within Data_Center
+        (contact/generate-data-center-personnel center)])))
