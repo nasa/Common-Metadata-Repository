@@ -35,12 +35,16 @@
 
 (def eos-echo-attributes-info
   [:eos:otherPropertyType
-   [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
+   [:gco:RecordType
+    {:xlink:href
+     "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
     "Echo Additional Attributes"]])
 
 (def gmd-echo-attributes-info
   [:gmd:otherPropertyType
-   [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
+   [:gco:RecordType
+    {:xlink:href
+     "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
     "Echo Additional Attributes"]])
 
 (def keyword-separator-split
@@ -62,7 +66,7 @@
 (def extent-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent")
 
-(defn parse-key-val-str
+(defn- parse-key-val-str
   "Returns a map of string keys and values from a comma-separated list of equals-separated pairs."
   [description-str]
   (when (and (string? description-str)
