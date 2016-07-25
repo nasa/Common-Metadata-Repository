@@ -9,8 +9,7 @@
             [cmr.transmit.metadata-db2 :as mdb]
             [cheshire.core :as json]
             [cmr.common.util :as util :refer [are2]]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.access-control.int-test.permission-check-test :as perm-test]))
+            [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each
   (fixtures/int-test-fixtures)
@@ -212,11 +211,11 @@
                                                                  :collection_applicable true
                                                                  :provider_id "PROV1"}}
                                         {:token token}))
-        coll1 (perm-test/ingest-collection token {:entry-title "coll1"
-                                                  :native-id "coll1"
-                                                  :entry-id "coll1"
-                                                  :short-name "coll1"
-                                                  :provider-id "PROV1"})]
+        coll1 (u/ingest-collection token {:entry-title "coll1"
+                                          :native-id "coll1"
+                                          :entry-id "coll1"
+                                          :short-name "coll1"
+                                          :provider-id "PROV1"})]
     (testing "created ACL grants permissions (precursor to testing effectiveness of deletion)"
       (is (= {coll1 ["read"]}
              (json/parse-string
@@ -234,11 +233,19 @@
                      :concept-id "ACL1200000000-CMR"}
               :content-type :json}
              (ac/delete-acl (u/conn-context) acl-concept-id {:token token :raw? true}))))
+    (testing "404 is returned when trying to delete an ACL again"
+      (is (= {:status 404
+              :body {:errors ["ACL with concept id [ACL1200000000-CMR] was deleted."]}
+              :content-type :json}
+             (ac/delete-acl (u/conn-context) acl-concept-id {:token token :raw? true}))))
+    (testing "concept can no longer be retrieved through access control service"
+      (is (= nil
+             (ac/get-acl (u/conn-context) acl-concept-id))))
     (testing "tombstone can be retrieved from Metadata DB"
       (is (:deleted (mdb/get-latest-concept (u/conn-context) acl-concept-id))))
     (testing "permissions granted by the ACL are no longer in effect"
-      (is (= {"ACL1200000000-CMR" []}
+      (is (= {coll1 []}
              (json/parse-string
                (ac/get-permissions (u/conn-context)
-                                   {:concept_id acl-concept-id :user_type "guest"}
+                                   {:concept_id coll1 :user_type "guest"}
                                    {:token token})))))))

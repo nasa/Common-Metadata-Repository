@@ -8,7 +8,9 @@
             [cmr.common.mime-types :as mt]
             [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
             [cmr.common.util :as util]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm-spec.test.expected-conversion :refer [example-collection-record]]))
 
 (def conn-context-atom
   "An atom containing the cached connection context map."
@@ -138,6 +140,31 @@
           :member_count (count members)
           :concept_id concept_id
           :revision_id revision_id)))
+
+(defn ingest-collection
+  "Test helper. Returns concept id of ingested concept with given options."
+  [token options]
+  (let [{:keys [native-id entry-title short-name access-value provider-id temporal-range no-temporal]} options
+        base-umm (-> example-collection-record
+                     (assoc-in [:SpatialExtent :GranuleSpatialRepresentation] "NO_SPATIAL"))
+        umm (cond-> base-umm
+              entry-title (assoc :EntryTitle entry-title)
+              short-name (assoc :ShortName short-name)
+              (contains? options :access-value) (assoc-in [:AccessConstraints :Value] access-value)
+              no-temporal (assoc :TemporalExtents nil)
+              temporal-range (assoc-in [:TemporalExtents 0 :RangeDateTimes] [temporal-range]))]
+    (:concept-id
+      (mdb/save-concept (conn-context)
+                        {:format "application/echo10+xml"
+                         :metadata (umm-spec/generate-metadata (conn-context) umm :echo10)
+                         :concept-type :collection
+                         :provider-id provider-id
+                         :native-id native-id
+                         :revision-id 1
+                         :extra-fields {:short-name short-name
+                                        :entry-title entry-title
+                                        :entry-id short-name
+                                        :version-id "v1"}}))))
 
 (defn assert-group-saved
   "Checks that a group was persisted correctly in metadata db. The user-id indicates which user

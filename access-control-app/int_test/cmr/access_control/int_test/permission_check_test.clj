@@ -63,31 +63,6 @@
 				    <Orderable>true</Orderable>
 				</Granule>")
 
-(defn ingest-collection
-  "Test helper. Returns concept id of ingested concept with given options."
-  [token options]
-  (let [{:keys [native-id entry-title short-name access-value provider-id temporal-range no-temporal]} options
-        base-umm (-> example-collection-record
-                     (assoc-in [:SpatialExtent :GranuleSpatialRepresentation] "NO_SPATIAL"))
-        umm (cond-> base-umm
-              entry-title (assoc :EntryTitle entry-title)
-              short-name (assoc :ShortName short-name)
-              (contains? options :access-value) (assoc-in [:AccessConstraints :Value] access-value)
-              no-temporal (assoc :TemporalExtents nil)
-              temporal-range (assoc-in [:TemporalExtents 0 :RangeDateTimes] [temporal-range]))]
-    (:concept-id
-      (mdb/save-concept (u/conn-context)
-                        {:format "application/echo10+xml"
-                         :metadata (umm-spec/generate-metadata (u/conn-context) umm :echo10)
-                         :concept-type :collection
-                         :provider-id provider-id
-                         :native-id native-id
-                         :revision-id 1
-                         :extra-fields {:short-name short-name
-                                        :entry-title entry-title
-                                        :entry-id short-name
-                                        :version-id "v1"}}))))
-
 ;; Commented out. See CMR-3224
 
  (deftest collection-simple-catalog-item-identity-permission-check-test
@@ -98,7 +73,7 @@
          ;; then create a group that contains our user, so we can find collections that grant access to this user
          user1-group (create-group {:name "groupwithuser1" :members ["user1"]})
          ;; create some collections
-         ingest-prov1-collection #(ingest-collection token {:provider-id "PROV1"
+         ingest-prov1-collection #(u/ingest-collection token {:provider-id "PROV1"
                                                             :entry-title (str % " entry title")
                                                             :native-id %
                                                             :short-name %})
@@ -229,7 +204,7 @@
    ;; tests ACLs which grant access to collections based on their access value
    (let [token (e/login (u/conn-context) "user1" [])
          ingest-access-value-collection (fn [short-name access-value]
-                                          (ingest-collection token {:entry-title (str short-name " entry title")
+                                          (u/ingest-collection token {:entry-title (str short-name " entry title")
                                                                     :short-name short-name
                                                                     :native-id short-name
                                                                     :provider-id "PROV1"
@@ -317,7 +292,7 @@
    ;; tests ACLs that grant access based on a collection's temporal range
    (let [token (e/login (u/conn-context) "user1" [])
          ingest-temporal-collection (fn [short-name start-year end-year]
-                                      (ingest-collection token {:entry-title (str short-name " entry title")
+                                      (u/ingest-collection token {:entry-title (str short-name " entry title")
                                                                 :short-name short-name
                                                                 :native-id short-name
                                                                 :provider-id "PROV1"
@@ -327,7 +302,7 @@
          coll2 (ingest-temporal-collection "coll2" 2004 2005)
          coll3 (ingest-temporal-collection "coll3" 2007 2009)
          ;; coll4 will have no temporal extent, and should not be granted any permissions by our ACLs in this test
-         coll4 (ingest-collection token {:entry-id "coll4"
+         coll4 (u/ingest-collection token {:entry-id "coll4"
                                          :native-id "coll4"
                                          :short-name "coll4"
                                          :entry-title "non-temporal coll4"
@@ -406,7 +381,7 @@
          ;; create some collections
          coll1-umm (assoc example-collection-record :EntryTitle "coll1 entry title")
          coll1-metadata (umm-spec/generate-metadata (u/conn-context) coll1-umm :echo10)
-         coll1 (ingest-collection token {:provider-id "PROV1"
+         coll1 (u/ingest-collection token {:provider-id "PROV1"
                                          :entry-title "coll1"
                                          :native-id "coll1"
                                          :short-name "coll1"})
