@@ -54,8 +54,6 @@
     (is (= mt/kml (mt/path->mime-type "granules.kml")))
     (is (= mt/html (mt/path->mime-type "granules.html")))
     (is (= mt/opendata (mt/path->mime-type "granules.opendata"))))
-  (testing "Aliases"
-    (is (= mt/legacy-umm-json (mt/path->mime-type "granules.umm-json"))))
   (testing "No extension"
     (are [uri]
       (= nil (mt/path->mime-type uri))

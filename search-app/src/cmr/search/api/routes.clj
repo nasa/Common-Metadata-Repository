@@ -151,7 +151,6 @@
                              (mt/extract-header-mime-type valid-mime-types headers "accept" true)
                              (mt/extract-header-mime-type valid-mime-types headers "content-type" false))
                          default-mime-type)]
-     ;; TODO update this.
      (if (= :umm-json result-format)
        {:format result-format
         :version (mt/version-of (mt/get-header headers "accept"))}
@@ -159,11 +158,17 @@
 
 (defn- process-params
   "Processes the parameters by removing unecessary keys and adding other keys like result format."
-  [params path-w-extension headers default-mime-type]
-  (-> params
-      (dissoc :path-w-extension)
-      (dissoc :token)
-      (assoc :result-format (get-search-results-format path-w-extension headers default-mime-type))))
+  [params ^String path-w-extension headers default-mime-type]
+  (let [result-format (get-search-results-format path-w-extension headers default-mime-type)
+        ;; Continue to treat the search extension "umm-json" as the legacy umm json response for now
+        ;; to avoid breaking clients
+        result-format (if (.endsWith path-w-extension ".umm-json")
+                        :legacy-umm-json
+                        result-format)]
+    (-> params
+        (dissoc :path-w-extension)
+        (dissoc :token)
+        (assoc :result-format result-format))))
 
 (defn- search-response
   "Returns the response map for finding concepts"
@@ -211,7 +216,6 @@
        :headers {cr/CORS_ORIGIN_HEADER "*"}
        :body (str "Unsupported content type ["
                   (get headers (str/lower-case cr/CONTENT_TYPE_HEADER)) "]")})))
-
 
 (defn- get-granules-timeline
   "Retrieves a timeline of granules within each collection found."

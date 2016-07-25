@@ -201,9 +201,7 @@
 
 (def extension-aliases
   "TODO"
-  {:iso :iso19115
-   ;; Map UMM JSON to the legacy UMM JSON search format for now to avoid breaking clients.
-   :umm-json :legacy-umm-json})
+  {:iso :iso19115})
 
 (defn path->mime-type
   "Parses the search path with extension and returns the requested mime-type or nil if no extension

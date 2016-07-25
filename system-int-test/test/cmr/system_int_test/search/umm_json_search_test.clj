@@ -43,10 +43,12 @@
 (defn- assert-legacy-umm-jsons-match
   "Returns true if the UMM collection umm-jsons match the umm-jsons returned from the search."
   [collections search-result]
-  ;; We do not check the revision-date in umm-json as it is not available in UMM record.
-  ;; We also don't check hits and tooks in the UMMJSON.
-  (is (= (set (map collection->legacy-umm-json collections))
-         (set (map #(util/dissoc-in % [:meta :revision-date]) (get-in search-result [:results  :items]))))))
+  (if (and (some? (:status search-result)) (not= 200 (:status search-result)))
+    (is (= 200 (:status search-result)) (pr-str search-result))
+    ;; We do not check the revision-date in umm-json as it is not available in UMM record.
+    ;; We also don't check hits and tooks in the UMMJSON.
+    (is (= (set (map collection->legacy-umm-json collections))
+           (set (map #(util/dissoc-in % [:meta :revision-date]) (get-in search-result [:results  :items])))))))
 
 (deftest search-collection-umm-json
   (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"
