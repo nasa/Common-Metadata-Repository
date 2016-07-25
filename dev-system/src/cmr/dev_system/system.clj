@@ -39,6 +39,7 @@
 
             [cmr.message-queue.config :as rmq-conf]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
+            [cmr.message-queue.queue.sqs :as sqs]
             [cmr.message-queue.services.queue :as queue]
             [cmr.message-queue.queue.memory-queue :as mem-queue]
 
@@ -167,6 +168,14 @@
     type))
 
 (defmethod create-queue-broker :in-memory
+  [type]
+  (-> (indexer-config/rabbit-mq-config)
+      (rmq-conf/merge-configs (vp-config/rabbit-mq-config))
+      (rmq-conf/merge-configs (access-control-config/rabbit-mq-config))
+      sqs/create-queue-broker
+      wrapper/create-queue-broker-wrapper))
+
+(defmethod create-queue-broker :in-memoryX
   [type]
   (-> (indexer-config/rabbit-mq-config)
       (rmq-conf/merge-configs (vp-config/rabbit-mq-config))
