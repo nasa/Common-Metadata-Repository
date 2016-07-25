@@ -8,43 +8,44 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.mime-types :as mt]
             [cmr.common.util :as util]
-            [cmr.common.util :refer [are2]]
+            [cmr.common.util :refer [are3]]
             [cmr.umm.collection.entry-id :as eid]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
-(defn- collection->umm-json
-  "Returns the collection in umm-json format."
+(defn- collection->umm-json-meta
+  "Returns the meta section of umm-json format."
+  [collection]
+  (let [{:keys [entry-title user-id format-key
+                revision-id concept-id provider-id deleted]} collection]
+    (util/remove-nil-keys
+     {:concept-type "collection"
+      :concept-id concept-id
+      :revision-id revision-id
+      :native-id entry-title
+      :user-id user-id
+      :provider-id provider-id
+      :format (mt/format->mime-type format-key)
+      :deleted (boolean deleted)})))
+
+(defn- collection->legacy-umm-json
+  "Returns the response of a search in legacy UMM JSON format. The UMM JSON search response format was
+   originally created with a umm field which contained a few collection fields but was not UMM JSON."
   [collection]
   (let [{{:keys [short-name version-id]} :product
-         {:keys [delete-time]} :data-provider-timestamps
-         :keys [entry-title user-id format-key
-                revision-id concept-id provider-id deleted]} collection]
-    {:meta (util/remove-nil-keys
-             {:concept-type "collection"
-              :concept-id concept-id
-              :revision-id revision-id
-              :native-id entry-title
-              :user-id user-id
-              :provider-id provider-id
-              :format (mt/format->mime-type format-key)
-              :deleted (boolean deleted)})
+         :keys [entry-title]} collection]
+    {:meta (collection->umm-json-meta collection)
      :umm {:entry-id (eid/entry-id short-name version-id)
            :entry-title entry-title
            :short-name short-name
            :version-id version-id}}))
 
-(defn- collections->umm-jsons
-  "Returns the collections in a set of umm-jsons."
-  [collections]
-  (set (map collection->umm-json collections)))
-
-(defn- umm-jsons-match?
+(defn- assert-legacy-umm-jsons-match
   "Returns true if the UMM collection umm-jsons match the umm-jsons returned from the search."
   [collections search-result]
   ;; We do not check the revision-date in umm-json as it is not available in UMM record.
   ;; We also don't check hits and tooks in the UMMJSON.
-  (is (= (collections->umm-jsons collections)
+  (is (= (set (map collection->legacy-umm-json collections))
          (set (map #(util/dissoc-in % [:meta :revision-date]) (get-in search-result [:results  :items]))))))
 
 (deftest search-collection-umm-json
@@ -78,86 +79,107 @@
                                                 :short-name "s1"})
                         {:user-id "user3"})]
     (index/wait-until-indexed)
-    (testing "find collections in umm-json format"
-      (are2 [collections params]
-            (umm-jsons-match? collections (search/find-concepts-umm-json :collection params))
+    (testing "find collections in legacy UMM JSON format"
+      (are3 [url-extension collections params]
+        (assert-legacy-umm-jsons-match
+         collections (search/find-concepts-umm-json :collection params {:url-extension url-extension}))
 
-            ;; Should not get matching tombstone for second collection back
-            "provider-id all-revisions=false"
-            [coll1-3]
-            {:provider-id "PROV1" :all-revisions false}
+        ;; We don't want to break existing clients so we allow the .umm-json url extension to continue to work
+        ".umm-json url extension, all-revisions=false"
+        "umm-json"
+        [coll1-3 coll3]
+        {:all-revisions false}
 
-            "provider-id all-revisions unspecified"
-            [coll1-3]
-            {:provider-id "PROV1"}
+        ".legacy-umm-json url extension, all-revisions=false"
+        "legacy-umm-json"
+        [coll1-3 coll3]
+        {:all-revisions false}
 
-            "provider-id all-revisions=true"
-            [coll1-1 coll1-2-tombstone coll1-3 coll2-1 coll2-2 coll2-3-tombstone]
-            {:provider-id "PROV1" :all-revisions true}
-
-            "native-id all-revisions=false"
-            [coll1-3]
-            {:native-id "et1" :all-revisions false}
-
-            "native-id all-revisions unspecified"
-            [coll1-3]
-            {:native-id "et1"}
-
-            "native-id all-revisions=true"
-            [coll1-1 coll1-2-tombstone coll1-3]
-            {:native-id "et1" :all-revisions true}
-
-            "version all-revisions=false"
-            [coll1-3]
-            {:version "v2" :all-revisions false}
-
-            "version all-revisions unspecified"
-            [coll1-3]
-            {:version "v2"}
-
-            "version all-revisions=true"
-            [coll1-3 coll2-2 coll2-3-tombstone]
-            {:version "v2" :all-revisions true}
-
-            ;; verify that "finding latest", i.e., all-revisions=false, does not return old revisions
-            "version all-revisions=false - no match to latest"
-            []
-            {:version "v1" :all-revisions false}
-
-            "short-name all-revisions false"
-            [coll1-3 coll3]
-            {:short-name "s1" :all-revisions false}
-
-            ;; this test is across providers
-            "short-name all-revisions unspecified"
-            [coll1-3 coll3]
-            {:short-name "s1"}
-
-            "short-name all-revisions true"
-            [coll1-1 coll1-2-tombstone coll1-3 coll3]
-            {:short-name "s1" :all-revisions true}
-
-            "concept-id all-revisions false"
-            [coll1-3]
-            {:concept-id "C1200000000-PROV1" :all-revisions false}
-
-            "concept-id all-revisions unspecified"
-            [coll1-3]
-            {:concept-id "C1200000000-PROV1"}
-
-            "concept-id all-revisions true"
-            [coll1-1 coll1-2-tombstone coll1-3]
-            {:concept-id "C1200000000-PROV1" :all-revisions true}
-
-            "all-revisions true"
-            [coll1-1 coll1-2-tombstone coll1-3 coll2-1 coll2-2 coll2-3-tombstone coll3]
-            {:all-revisions true}))
-
-    (testing "find collections in umm-json extension"
-      (let [results (search/find-concepts-umm-json :collection {})
-            extension-results (search/find-concepts-umm-json :collection {} {:url-extension "umm-json"})]
-        (is (= (util/dissoc-in results [:results :took])
-               (util/dissoc-in extension-results [:results :took])))))))
+        ".legacy-umm-json url extension, all-revisions true"
+        "legacy-umm-json"
+        [coll1-1 coll1-2-tombstone coll1-3 coll2-1 coll2-2 coll2-3-tombstone coll3]
+        {:all-revisions true}))))
+    ;
+    ; (testing "find collections in umm-json format"
+    ;   (are3 [collections params]
+    ;         (assert-umm-jsons-match collections (search/find-concepts-umm-json :collection params))
+    ;
+    ;         ;; Should not get matching tombstone for second collection back
+    ;         "provider-id all-revisions=false"
+    ;         [coll1-3]
+    ;         {:provider-id "PROV1" :all-revisions false}
+    ;
+    ;         "provider-id all-revisions unspecified"
+    ;         [coll1-3]
+    ;         {:provider-id "PROV1"}
+    ;
+    ;         "provider-id all-revisions=true"
+    ;         [coll1-1 coll1-2-tombstone coll1-3 coll2-1 coll2-2 coll2-3-tombstone]
+    ;         {:provider-id "PROV1" :all-revisions true}
+    ;
+    ;         "native-id all-revisions=false"
+    ;         [coll1-3]
+    ;         {:native-id "et1" :all-revisions false}
+    ;
+    ;         "native-id all-revisions unspecified"
+    ;         [coll1-3]
+    ;         {:native-id "et1"}
+    ;
+    ;         "native-id all-revisions=true"
+    ;         [coll1-1 coll1-2-tombstone coll1-3]
+    ;         {:native-id "et1" :all-revisions true}
+    ;
+    ;         "version all-revisions=false"
+    ;         [coll1-3]
+    ;         {:version "v2" :all-revisions false}
+    ;
+    ;         "version all-revisions unspecified"
+    ;         [coll1-3]
+    ;         {:version "v2"}
+    ;
+    ;         "version all-revisions=true"
+    ;         [coll1-3 coll2-2 coll2-3-tombstone]
+    ;         {:version "v2" :all-revisions true}
+    ;
+    ;         ;; verify that "finding latest", i.e., all-revisions=false, does not return old revisions
+    ;         "version all-revisions=false - no match to latest"
+    ;         []
+    ;         {:version "v1" :all-revisions false}
+    ;
+    ;         "short-name all-revisions false"
+    ;         [coll1-3 coll3]
+    ;         {:short-name "s1" :all-revisions false}
+    ;
+    ;         ;; this test is across providers
+    ;         "short-name all-revisions unspecified"
+    ;         [coll1-3 coll3]
+    ;         {:short-name "s1"}
+    ;
+    ;         "short-name all-revisions true"
+    ;         [coll1-1 coll1-2-tombstone coll1-3 coll3]
+    ;         {:short-name "s1" :all-revisions true}
+    ;
+    ;         "concept-id all-revisions false"
+    ;         [coll1-3]
+    ;         {:concept-id "C1200000000-PROV1" :all-revisions false}
+    ;
+    ;         "concept-id all-revisions unspecified"
+    ;         [coll1-3]
+    ;         {:concept-id "C1200000000-PROV1"}
+    ;
+    ;         "concept-id all-revisions true"
+    ;         [coll1-1 coll1-2-tombstone coll1-3]
+    ;         {:concept-id "C1200000000-PROV1" :all-revisions true}
+    ;
+    ;         "all-revisions true"
+    ;         [coll1-1 coll1-2-tombstone coll1-3 coll2-1 coll2-2 coll2-3-tombstone coll3]
+    ;         {:all-revisions true}))
+    ;
+    ; (testing "find collections in umm-json extension"
+    ;   (let [results (search/find-concepts-umm-json :collection {})
+    ;         extension-results (search/find-concepts-umm-json :collection {} {:url-extension "umm-json"})]
+    ;     (is (= (util/dissoc-in results [:results :took])
+    ;            (util/dissoc-in extension-results [:results :took])}))))
 
 (deftest search-umm-json-error-cases
   (testing "granule umm-json search is not supported"

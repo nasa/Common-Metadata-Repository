@@ -35,7 +35,7 @@
 (def content-type-mime-type->response-format
   "A map of mime-types to supported response format"
   {mt/echo10 :xml
-   mt/iso :xml
+   mt/iso19115 :xml
    mt/iso-smap :xml
    mt/dif :xml
    mt/dif10 :xml

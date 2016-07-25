@@ -8,7 +8,10 @@
             [cmr.common.util :as util]
             [cmr.common.mime-types :as mt]))
 
-(defmethod elastic-search-index/concept-type+result-format->fields [:collection :umm-json]
+;; TODO extract out common things for meta
+;; TODO add regular umm-json.
+
+(defmethod elastic-search-index/concept-type+result-format->fields [:collection :legacy-umm-json]
   [concept-type query]
   ["concept-id"
    "native-id"
@@ -23,7 +26,7 @@
    "deleted"
    "metadata-format"])
 
-(defmethod elastic-results/elastic-result->query-result-item [:collection :umm-json]
+(defmethod elastic-results/elastic-result->query-result-item [:collection :legacy-umm-json]
   [context query elastic-result]
   (let [{[concept-id] :concept-id
          [native-id] :native-id
@@ -53,7 +56,7 @@
            :short-name short-name
            :version-id version-id}}))
 
-(defmethod qs/search-results->response [:collection :umm-json]
+(defmethod qs/search-results->response [:collection :legacy-umm-json]
   [context query results]
   (json/generate-string (select-keys results [:hits :took :items])))
 

@@ -208,7 +208,9 @@
 (defn assert-metadata-results-match
   "Returns true if the metadata results match the expected items"
   [format-key items search-result]
-  (metadata-results-match? format-key items search-result {:assert? true :echo-compatible? false}))
+  (if (and (some? (:status search-result)) (not= 200 (:status search-result)))
+    (is (= 200 (:status search-result)) (pr-str search-result))
+    (metadata-results-match? format-key items search-result {:assert? true :echo-compatible? false})))
 
 (defn assert-echo-compatible-metadata-results-match
   "Returns true if the metadata results match the expected items"

@@ -54,11 +54,17 @@
 ;; The following media types are recognized by the CMR for use in various places. The map below is used
 ;; to dynamically create vars containing the recognized base MIME type for each keyword on the left.
 
-(def ^:private core-formats->mime-types
+(def format->mime-type
   "A map of format keywords to MIME types. Each keyword will have a corresponding var def'ed in this
   namespace for other namespaces to reference."
   {:json             "application/json"
    :umm-json         "application/vnd.nasa.cmr.umm+json"
+   ;; Search results containing UMM JSON
+   :umm-json-results "application/vnd.nasa.cmr.umm_results+json"
+
+   ;; Search results containing the original alpha version of UMM JSON search results.
+   :legacy-umm-json "application/vnd.nasa.cmr.legacy_umm_results+json"
+
    :xml              "application/xml"
    :form-url-encoded "application/x-www-form-urlencoded"
    :echo10           "application/echo10+xml"
@@ -76,19 +82,27 @@
    :opendap          "application/x-netcdf"
    :serf             "application/serf+xml"})
 
-(def ^:private format-aliases
-  "A map of alternative format keyword aliases to format keywords."
-  {:iso :iso19115
-   :iso_smap :iso-smap
-   :umm_json :umm-json})
 
-(def format->mime-type
-  "A map of CMR data format keywords and aliases to base MIME types."
-  (merge core-formats->mime-types
-         ;; lookup aliases
-         (zipmap (keys format-aliases)
-                 (map core-formats->mime-types
-                      (vals format-aliases)))))
+;; TODO it seems like these aliases really should go with path-w-extension->mime-type in search routes
+;; They're really specific for mapping URL extensions. Also the underscore and dash thing should be
+;; handled there automatically as well without having to resort to many aliases.
+; (def ^:private format-aliases
+;   "A map of alternative format keyword aliases to format keywords."
+;   {:iso :iso19115
+;    :iso_smap :iso-smap
+;
+;    ;; Map UMM JSON to the legacy UMM JSON search format for now to avoid breaking clients.
+;    :umm-json :legacy-umm-json
+;    :umm_json :legacy-umm-json
+;    :legacy_umm_json :legacy-umm-json})
+
+; (def format->mime-type
+;   "A map of CMR data format keywords and aliases to base MIME types."
+;   (merge core-formats->mime-types
+;          ;; lookup aliases
+;          (zipmap (keys format-aliases)
+;                  (map core-formats->mime-types
+;                       (vals format-aliases)))))
 
 ;; Intern vars for each of the mime type formats, e.g. (def json "application/json")
 
@@ -99,17 +113,17 @@
   "Returns true if the given mime type is recognized as UMM JSON."
   [mt]
   (when mt
-    (= (:umm-json core-formats->mime-types) (base-mime-type-of mt))))
+    (= (:umm-json format->mime-type) (base-mime-type-of mt))))
 
 (def any "*/*")
 
 (def base-mime-type-to-format
   "A map of MIME type strings to CMR data format keywords."
-  (set/map-invert core-formats->mime-types))
+  (set/map-invert format->mime-type))
 
 (def all-supported-mime-types
   "A superset of all mime types supported by any CMR applications."
-  (vals core-formats->mime-types))
+  (vals format->mime-type))
 
 (def all-formats
   "A set of all format keywords supported by CMR."
@@ -118,7 +132,7 @@
 (defn mime-type->format
   "Returns a format keyword for the given MIME type and optional default MIME type."
   ([mime-type]
-   (mime-type->format mime-type (:json core-formats->mime-types)))
+   (mime-type->format mime-type (:json format->mime-type)))
   ([mime-type default-mime-type]
    (get base-mime-type-to-format (base-mime-type-of mime-type)
         (get base-mime-type-to-format default-mime-type))))

@@ -358,6 +358,22 @@
         :results (json/decode body true)}
        response))))
 
+;; TODO not sure this is needed
+; (defn find-concepts-legacy-umm-json
+;   "Returns the response of a search in legacy UMM JSON format. The UMM JSON search response format was
+;    originally created with a umm field which contained a few collection fields but was not UMM JSON.
+;    This requests "
+;   ([concept-type params]
+;    (find-concepts-umm-json concept-type params {}))
+;   ([concept-type params options]
+;    (let [response (get-search-failure-data
+;                     (find-concepts-in-format mime-types/umm-json concept-type params options))
+;          {:keys [status body]} response]
+;      (if (= status 200)
+;        {:status status
+;         :results (json/decode body true)}
+;        response))))
+
 (defn find-metadata
   "Returns the response of concept search in a specific metadata XML format."
   ([concept-type format-key params]
