@@ -40,6 +40,7 @@
 (def default-boosts
   "Field boosts to use if not provided."
   {:short-name 1.4
+   :entry-id 1.4
    :project 1.3
    :platform 1.3
    :instrument 1.2
@@ -131,6 +132,9 @@
      (keywords->name-filter :long-name.lowercase
                             :short-name.lowercase keywords
                             (get-boost-fn :short-name))
+     ;; entry-id
+     (keywords->boosted-exact-match-filter :entry-id.lowercase keywords (get-boost-fn :entry-id))
+
      ;; project (ECHO campaign)
      (keywords->name-filter :project-ln.lowercase :project-sn2.lowercase keywords
                             (get-boost-fn :project))
@@ -174,4 +178,3 @@
      ;; data-center
      (keywords->boosted-exact-match-filter :data-center.lowercase keywords
                                            (get-boost-fn :data-center))]))
-
