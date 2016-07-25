@@ -199,12 +199,26 @@
   "Returns the mime type passed in the Content-Type header"
   (header-mime-type-getter "content-type"))
 
+(def extension-aliases
+  "TODO"
+  {:iso :iso19115
+   ;; Map UMM JSON to the legacy UMM JSON search format for now to avoid breaking clients.
+   :umm-json :legacy-umm-json})
+
 (defn path->mime-type
   "Parses the search path with extension and returns the requested mime-type or nil if no extension
   was passed."
-  [search-path-w-extension]
-  (when-let [extension (second (re-matches #"[^.]+(?:\.(.+))$" search-path-w-extension))]
-    (format->mime-type (keyword extension))))
+  ([search-path-w-extension]
+   (path->mime-type search-path-w-extension nil))
+  ([search-path-w-extension valid-mime-types]
+   (when-let [extension (second (re-matches #"[^.]+(?:\.(.+))$" search-path-w-extension))]
+     ;; Convert extension into a keyword. We don't use camel snake kebab as it would convert "echo10" to "echo-10"
+     (let [extension-key (keyword (str/replace extension #"_" "-"))
+           mime-type (format->mime-type (get extension-aliases extension-key extension-key))]
+       (if (and (some? valid-mime-types) (not (contains? valid-mime-types mime-type)))
+         (svc-errors/throw-service-error
+          :bad-request (format "The URL extension [%s] is not supported." extension))
+         mime-type)))))
 
 (defn extract-header-mime-type
   "Extracts the given header value from the headers and returns the first valid preferred mime type.

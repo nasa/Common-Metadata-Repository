@@ -120,26 +120,6 @@
       second
       keyword))
 
-(def extension-aliases
-  "TODO"
-  {:iso :iso19115
-   ;; Map UMM JSON to the legacy UMM JSON search format for now to avoid breaking clients.
-   :umm-json :legacy-umm-json})
-
-(defn- path-w-extension->mime-type
-  "Parses the search path with extension and returns the requested mime-type or nil if no extension
-  was passed."
-  [search-path-w-extension valid-mime-types]
-  (when-let [extension (second (re-matches #"[^.]+(?:\.(.+))$" search-path-w-extension))]
-    (let [;; Convert extension into a keyword. We don't use camel snake kebab as it would convert "echo10" to "echo-10"
-          extension-key (keyword (str/replace extension #"_" "-"))
-          extension-key (get extension-aliases extension-key extension-key)]
-      (or (-> extension-key
-              mt/format->mime-type
-              valid-mime-types)
-          (svc-errors/throw-service-error
-           :bad-request (format "The URL extension [%s] is not supported." extension))))))
-
 (defn path-w-extension->concept-id
   "Parses the path-w-extension to remove the concept id from the beginning"
   [path-w-extension]
@@ -167,7 +147,7 @@
      path-w-extension headers search-result-supported-mime-types default-mime-type))
   ([path-w-extension headers valid-mime-types default-mime-type]
    (let [result-format (mt/mime-type->format
-                         (or (path-w-extension->mime-type path-w-extension valid-mime-types)
+                         (or (mt/path->mime-type path-w-extension valid-mime-types)
                              (mt/extract-header-mime-type valid-mime-types headers "accept" true)
                              (mt/extract-header-mime-type valid-mime-types headers "content-type" false))
                          default-mime-type)]
