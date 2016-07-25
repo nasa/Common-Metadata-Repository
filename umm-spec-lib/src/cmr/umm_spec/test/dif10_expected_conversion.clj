@@ -11,7 +11,18 @@
            [cmr.umm-spec.test.location-keywords-helper :as lkt]
            [cmr.umm-spec.models.collection :as umm-c]
            [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
-           [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]))
+           [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]))
+
+(def dif10-roles
+ {"Technical Contact" "Technical Contact"
+  "Investigator" "Investigator"
+  "Metadata Author" "Metadata Author"})
+
+(defn- filter-roles
+ [roles]
+ (distinct
+  (map
+   #(get dif10-roles % "Technical Contact") roles)))
 
 (defn- dif10-platform
   [platform]
@@ -89,18 +100,18 @@
 
 (defn- expected-dif-10-contact-info-related-urls
  [related-urls]
- (let [related-url
-        (-> related-urls
-            (first)
-            (dissoc :Description)
-            (dissoc :MimeType)
-            (dissoc :Relation)
-            (dissoc :Title)
-            (dissoc :FileSize)
-            (update :URLs expected-dif10-contact-info-urls)
-            (cmn/map->RelatedUrlType))]
-    (when (some? related-url)
-       [related-url])))
+ (let [related-url (first related-urls)]
+   (if related-url
+    [(-> related-urls
+         (first)
+         (dissoc :Description)
+         (dissoc :MimeType)
+         (dissoc :Relation)
+         (dissoc :Title)
+         (dissoc :FileSize)
+         (update :URLs expected-dif10-contact-info-urls)
+         (cmn/map->RelatedUrlType))]
+    nil)))
 
 (defn- expected-dif10-data-center-contact-information
  [contact-info]
@@ -123,7 +134,7 @@
   (-> contact
       (assoc :NonDataCenterAffiliation nil)
       (assoc :Uuid nil)
-      (assoc :Roles (contact/collection-personnel-roles contact))
+      (update :Roles filter-roles)
       (update :ContactInformation expected-dif10-contact-information)))
 
 (defn- contact->expected-dif10-data-center
@@ -156,8 +167,8 @@
     (-> data-center
        (update :ContactPersons expected-dif10-data-center-contacts)
        (update :ContactGroups expected-dif10-data-center-contacts))
-    (update data-center :ContactPersons [(cmn/map->ContactPersonType {:Roles [contact/dif10-data-center-personnel-role]
-                                                                      :LastName su/not-provided})]))))
+    (assoc data-center :ContactPersons [(cmn/map->ContactPersonType {:Roles [contact/dif10-data-center-personnel-role]
+                                                                     :LastName su/not-provided})]))))
 
 (defn- expected-dif10-data-centers
   [data-centers]

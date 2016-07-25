@@ -97,16 +97,11 @@
 (defn generate-collection-personnel
   "Returns the DIF10 personnel elements from the given umm collection or DataCenter"
   [collection]
-  (if (seq (concat (:ContactGroups collection) (:ContactPersons collection)))
-   (concat
-     (for [person (:ContactPersons collection)]
-       (contact->contact-person person (collection-personnel-roles person)))
-     (for [group (:ContactGroups collection)]
-       (contact->contact-group group (collection-personnel-roles group))))
-   [:Personnel
-    [:Role umm-personnel-default-contact-role]
-    [:Contact_Person
-       [:Last_Name u/not-provided]]]))
+  (concat
+   (for [person (:ContactPersons collection)]
+     (contact->contact-person person (collection-personnel-roles person)))
+   (for [group (:ContactGroups collection)]
+     (contact->contact-group group (collection-personnel-roles group)))))
 
 (defn generate-data-center-personnel
   [center]

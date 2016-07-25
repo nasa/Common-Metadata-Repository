@@ -3,7 +3,20 @@
   (:require [clojure.set :as set]
             [cmr.common.xml.parse :refer :all]
             [cmr.common.xml.simple-xpath :refer [select text]]))
-            ;[cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as dc]))
+
+(def dif10-role->umm-personnel-contact-role
+   {"TECHNICAL CONTACT" "Technical Contact"
+    "INVESTIGATOR" "Investigator"
+    "METADATA AUTHOR" "Metadata Author"
+    "DATA CENTER CONTACT" "Data Center Contact"})
+
+(def dif10-data-center-personnel-role
+  "Data Center Contact")
+
+(defn collection-personnel-roles
+ [roles]
+ (distinct
+   (map #(get dif10-role->umm-personnel-contact-role %) roles)))
 
 (defn- parse-contact-mechanisms
   "Returns UMM-C contact mechanisms from DIF10 Personnel/Contact_Person element."
@@ -33,16 +46,14 @@
   [personnels]
   (when personnels
     (for [personnel personnels]
-      (let [roles (values-at personnel "Role")
-            contact-group (select personnel "Contact_Group")
-            val (for [group contact-group]
-                  {:Roles roles
-                   :GroupName (value-of group "Name")
-                   ;:Uuid (:uuid (:attrs (first (filter #(= :Name (:tag %)) (:content group)))))
-                   :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms group)
-                                         :Addresses (parse-address group)}]})]
+      (let [roles (collection-personnel-roles (values-at personnel "Role"))
+            contact-group (first (select personnel "Contact_Group"))]
         (when contact-group
-         val)))))
+          {:Roles roles
+           :GroupName (value-of contact-group "Name")
+           ;:Uuid (:uuid (:attrs (first (filter #(= :Name (:tag %)) (:content group)))))
+           :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms contact-group)
+                                 :Addresses (parse-address contact-group)}]})))))
 
 
 (defn parse-contact-persons
@@ -50,15 +61,12 @@
  [personnels]
  (when personnels
    (for [personnel personnels]
-     (let [roles (values-at personnel "Role")
-           contact-persons (select personnel "Contact_Person")
-           val (for [contact-person contact-persons]
-                 {:Roles roles
-                  :FirstName (value-of contact-person "First_Name")
-                  :MiddleName (value-of contact-person "Middle_Name")
-                  :LastName (value-of contact-person "Last_Name")
-                  :Uuid (value-of contact-person "uuid")
-                  :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms contact-person)
-                                        :Addresses (parse-address contact-person)}]})]
-       (when contact-persons
-        val)))))
+     (let [roles (collection-personnel-roles (values-at personnel "Role"))
+           contact-person (first (select personnel "Contact_Person"))]
+      (when contact-person
+        {:Roles roles
+         :FirstName (value-of contact-person "First_Name")
+         :MiddleName (value-of contact-person "Middle_Name")
+         :LastName (value-of contact-person "Last_Name")
+         :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms contact-person)
+                               :Addresses (parse-address contact-person)}]})))))

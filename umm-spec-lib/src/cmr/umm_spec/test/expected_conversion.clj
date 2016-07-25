@@ -14,7 +14,9 @@
             [cmr.umm-spec.test.dif10-expected-conversion :as dif10]
             [cmr.umm-spec.test.serf-expected-conversion :as serf]
             [cmr.umm-spec.test.iso19115-expected-conversion :as iso19115]
-            [cmr.umm-spec.test.iso-smap-expected-conversion :as iso-smap]))
+            [cmr.umm-spec.test.iso-smap-expected-conversion :as iso-smap]
+            [cmr.umm-spec.models.common :as cmn]
+            [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]))
 
 (def example-collection-record
   "An example record with fields supported by most formats."
@@ -255,12 +257,12 @@
                                           :ServiceHours "Weekdays 9AM - 5PM"
                                           :ContactInstruction "sample contact instruction"
                                           :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
-                                                              {:Type "Email" :Value "cmr@nasa.gov"
-                                                               :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
-                                                                            :City "Greenbelt"
-                                                                            :StateProvince "MD"
-                                                                            :PostalCode "20771"
-                                                                            :Country "U.S.A."}]}]}]                
+                                                              {:Type "Email" :Value "cmr@nasa.gov"}]
+                                          :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                       :City "Greenbelt"
+                                                       :StateProvince "MD"
+                                                       :PostalCode "20771"
+                                                       :Country "U.S.A."}]}]
                     :ContactGroups [{:Roles ["Investigator"]
                                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
                                      :ContactInformation [{:RelatedUrls [{:Description "Contact group related url description"
