@@ -147,7 +147,6 @@
                  (try
                    (transform-with-strategy context concept k v)
                    (catch Throwable e
-                     ;; Namespace used to reference error here to allow redefing in tests
                      (log/error
                       e
                       (str "Ignoring exception while trying to transform metadata for concept "

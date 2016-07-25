@@ -82,28 +82,6 @@
    :opendap          "application/x-netcdf"
    :serf             "application/serf+xml"})
 
-
-;; TODO it seems like these aliases really should go with path-w-extension->mime-type in search routes
-;; They're really specific for mapping URL extensions. Also the underscore and dash thing should be
-;; handled there automatically as well without having to resort to many aliases.
-; (def ^:private format-aliases
-;   "A map of alternative format keyword aliases to format keywords."
-;   {:iso :iso19115
-;    :iso_smap :iso-smap
-;
-;    ;; Map UMM JSON to the legacy UMM JSON search format for now to avoid breaking clients.
-;    :umm-json :legacy-umm-json
-;    :umm_json :legacy-umm-json
-;    :legacy_umm_json :legacy-umm-json})
-
-; (def format->mime-type
-;   "A map of CMR data format keywords and aliases to base MIME types."
-;   (merge core-formats->mime-types
-;          ;; lookup aliases
-;          (zipmap (keys format-aliases)
-;                  (map core-formats->mime-types
-;                       (vals format-aliases)))))
-
 ;; Intern vars for each of the mime type formats, e.g. (def json "application/json")
 
 (doseq [[format-key mime-type] format->mime-type]
