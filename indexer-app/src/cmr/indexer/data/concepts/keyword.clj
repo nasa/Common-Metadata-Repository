@@ -31,9 +31,9 @@
   into a single string"
   (let [{{:keys [short-name long-name version-id version-description
                  processing-level-id collection-data-type]} :product
-         :keys [entry-id entry-title summary spatial-keywords temporal-keywords associated-difs
+         :keys [entry-title summary spatial-keywords temporal-keywords associated-difs
                 projects]} collection
-        {:keys [platform-long-names instrument-long-names]} other-fields
+        {:keys [platform-long-names instrument-long-names entry-id]} other-fields
         provider-id (:provider-id (concepts/parse-concept-id concept-id))
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                nrt-aliases
@@ -61,6 +61,7 @@
                                   entry-title
                                   collection-data-type
                                   short-name
+                                  entry-id
                                   long-name
                                   two-d-coord-names
                                   summary
@@ -86,5 +87,4 @@
                                   char-names
                                   char-descs))
         split-fields (set (mapcat prepare-keyword-field all-fields))]
-
     (str/join " " split-fields)))
