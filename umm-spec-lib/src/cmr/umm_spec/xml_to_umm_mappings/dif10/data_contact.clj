@@ -31,23 +31,23 @@
 
 (defn parse-contact-groups
   [personnels]
-  (proto-repl.saved-values/save 40)
   (when personnels
     (for [personnel personnels]
       (let [roles (values-at personnel "Role")
-            contact-groups (select personnel "Contact_Group")]
-         (for [group contact-groups]
-           {:Roles roles
-            :GroupName (value-of group "Name")
-            ;:Uuid (:uuid (:attrs (first (filter #(= :Name (:tag %)) (:content group)))))
-            :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms group)
-                                  :Addresses (parse-address group)}]})))))
+            contact-group (select personnel "Contact_Group")
+            val (for [group contact-group]
+                  {:Roles roles
+                   :GroupName (value-of group "Name")
+                   ;:Uuid (:uuid (:attrs (first (filter #(= :Name (:tag %)) (:content group)))))
+                   :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms group)
+                                         :Addresses (parse-address group)}]})]
+        (when contact-group
+         val)))))
 
 
 (defn parse-contact-persons
   "Returns UMM-C contact persons map for the given DIF10 Personnel elements."
  [personnels]
- (proto-repl.saved-values/save 41)
  (when personnels
    (for [personnel personnels]
      (let [roles (values-at personnel "Role")
@@ -60,4 +60,5 @@
                   :Uuid (value-of contact-person "uuid")
                   :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms contact-person)
                                         :Addresses (parse-address contact-person)}]})]
-        val))))
+       (when contact-persons
+        val)))))

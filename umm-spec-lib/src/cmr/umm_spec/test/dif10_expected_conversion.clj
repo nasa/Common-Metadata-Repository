@@ -143,7 +143,7 @@
     (when (seq expected-contacts)
       expected-contacts)))
 
-(defn- expected-dif10-contact-persons
+(defn- expected-dif10-contacts
   [contacts]
   (let [expected-contacts (mapv #(contact->expected-dif10-collection %) contacts)]
     (when (seq expected-contacts)
@@ -169,8 +169,8 @@
    (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
    (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
    (update-in [:DataCenters] expected-dif10-data-centers)
-   (assoc :ContactGroups nil)
-   (update-in [:ContactPersons] expected-dif10-contact-persons)
+   (update-in [:ContactGroups] expected-dif10-contacts)
+   (update-in [:ContactPersons] expected-dif10-contacts)
    (update-in [:SpatialExtent] expected-dif10-spatial-extent)
    (update-in [:DataDates] conversion-util/fixup-dif10-data-dates)
    (update-in [:Distributions] su/remove-empty-records)
