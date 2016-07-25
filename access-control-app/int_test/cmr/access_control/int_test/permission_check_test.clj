@@ -63,7 +63,7 @@
 				    <Orderable>true</Orderable>
 				</Granule>")
 
-(defn- ingest-collection
+(defn ingest-collection
   "Test helper. Returns concept id of ingested concept with given options."
   [token options]
   (let [{:keys [native-id entry-title short-name access-value provider-id temporal-range no-temporal]} options

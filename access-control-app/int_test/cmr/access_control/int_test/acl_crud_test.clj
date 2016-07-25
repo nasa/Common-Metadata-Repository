@@ -6,9 +6,11 @@
             [clj-http.client :as client]
             [cmr.access-control.test.util :as u]
             [cmr.transmit.access-control :as ac]
+            [cmr.transmit.metadata-db2 :as mdb]
             [cheshire.core :as json]
             [cmr.common.util :as util :refer [are2]]
-            [cmr.transmit.config :as transmit-config]))
+            [cmr.transmit.config :as transmit-config]
+            [cmr.access-control.int-test.permission-check-test :as perm-test]))
 
 (use-fixtures :each
   (fixtures/int-test-fixtures)
@@ -199,3 +201,44 @@
             #"ACL legacy guid cannot be updated, was \[ABCD-EFG-HIJK-LMNOP\] and now \[XYZ-EFG-HIJK-LMNOP\]"
             (ac/update-acl (u/conn-context) provider-concept-id
                            (assoc provider-acl :legacy_guid "XYZ-EFG-HIJK-LMNOP") {:token token}))))))
+
+(deftest delete-acl-test
+  (let [token (e/login (u/conn-context) "admin")
+        acl-concept-id (:concept_id
+                         (ac/create-acl (u/conn-context)
+                                        {:group_permissions [{:permissions [:read]
+                                                              :user_type :guest}]
+                                         :catalog_item_identity {:name "PROV1 guest read"
+                                                                 :collection_applicable true
+                                                                 :provider_id "PROV1"}}
+                                        {:token token}))
+        coll1 (perm-test/ingest-collection token {:entry-title "coll1"
+                                                  :native-id "coll1"
+                                                  :entry-id "coll1"
+                                                  :short-name "coll1"
+                                                  :provider-id "PROV1"})]
+    (testing "created ACL grants permissions (precursor to testing effectiveness of deletion)"
+      (is (= {coll1 ["read"]}
+             (json/parse-string
+               (ac/get-permissions (u/conn-context)
+                                   {:concept_id coll1 :user_type "guest"}
+                                   {:token token})))))
+    (testing "404 status is returned if ACL does not exist"
+      (is (= {:status 404
+              :body {:errors ["ACL could not be found with concept id [ACL1234-NOPE]"]}
+              :content-type :json}
+             (ac/delete-acl (u/conn-context) "ACL1234-NOPE" {:token token :raw? true}))))
+    (testing "200 status, concept id and revision id of tombstone is returned on successful deletion."
+      (is (= {:status 200
+              :body {:revision-id 2
+                     :concept-id "ACL1200000000-CMR"}
+              :content-type :json}
+             (ac/delete-acl (u/conn-context) acl-concept-id {:token token :raw? true}))))
+    (testing "tombstone can be retrieved from Metadata DB"
+      (is (:deleted (mdb/get-latest-concept (u/conn-context) acl-concept-id))))
+    (testing "permissions granted by the ACL are no longer in effect"
+      (is (= {"ACL1200000000-CMR" []}
+             (json/parse-string
+               (ac/get-permissions (u/conn-context)
+                                   {:concept_id acl-concept-id :user_type "guest"}
+                                   {:token token})))))))
