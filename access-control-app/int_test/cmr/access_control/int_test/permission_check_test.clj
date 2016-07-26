@@ -73,10 +73,10 @@
         ;; then create a group that contains our user, so we can find collections that grant access to this user
         user1-group (create-group {:name "groupwithuser1" :members ["user1"]})
         ;; create some collections
-        ingest-prov1-collection #(u/ingest-collection token {:provider-id "PROV1"
-                                                             :entry-title (str % " entry title")
-                                                             :native-id %
-                                                             :short-name %})
+        ingest-prov1-collection #(u/save-collection {:provider-id "PROV1"
+                                                     :entry-title (str % " entry title")
+                                                     :native-id %
+                                                     :short-name %})
         coll1 (ingest-prov1-collection "coll1")
         coll2 (ingest-prov1-collection "coll2")
         coll3 (ingest-prov1-collection "coll3")
@@ -204,11 +204,11 @@
   ;; tests ACLs which grant access to collections based on their access value
   (let [token (e/login (u/conn-context) "user1" [])
         ingest-access-value-collection (fn [short-name access-value]
-                                         (u/ingest-collection token {:entry-title (str short-name " entry title")
-                                                                     :short-name short-name
-                                                                     :native-id short-name
-                                                                     :provider-id "PROV1"
-                                                                     :access-value access-value}))
+                                         (u/save-collection {:entry-title (str short-name " entry title")
+                                                             :short-name short-name
+                                                             :native-id short-name
+                                                             :provider-id "PROV1"
+                                                             :access-value access-value}))
         ;; one collection with a low access value
         coll1 (ingest-access-value-collection "coll1" 1)
         ;; one with an intermediate access value
@@ -292,22 +292,22 @@
   ;; tests ACLs that grant access based on a collection's temporal range
   (let [token (e/login (u/conn-context) "user1" [])
         ingest-temporal-collection (fn [short-name start-year end-year]
-                                     (u/ingest-collection token {:entry-title (str short-name " entry title")
-                                                                 :short-name short-name
-                                                                 :native-id short-name
-                                                                 :provider-id "PROV1"
-                                                                 :temporal-range {:BeginningDateTime (t/date-time start-year)
-                                                                                  :EndingDateTime (t/date-time end-year)}}))
+                                     (u/save-collection {:entry-title (str short-name " entry title")
+                                                         :short-name short-name
+                                                         :native-id short-name
+                                                         :provider-id "PROV1"
+                                                         :temporal-range {:BeginningDateTime (t/date-time start-year)
+                                                                          :EndingDateTime (t/date-time end-year)}}))
         coll1 (ingest-temporal-collection "coll1" 2001 2002)
         coll2 (ingest-temporal-collection "coll2" 2004 2005)
         coll3 (ingest-temporal-collection "coll3" 2007 2009)
         ;; coll4 will have no temporal extent, and should not be granted any permissions by our ACLs in this test
-        coll4 (u/ingest-collection token {:entry-id "coll4"
-                                          :native-id "coll4"
-                                          :short-name "coll4"
-                                          :entry-title "non-temporal coll4"
-                                          :provider-id "PROV1"
-                                          :no-temporal true})
+        coll4 (u/save-collection {:entry-id "coll4"
+                                  :native-id "coll4"
+                                  :short-name "coll4"
+                                  :entry-title "non-temporal coll4"
+                                  :provider-id "PROV1"
+                                  :no-temporal true})
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
         get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)]
@@ -381,10 +381,10 @@
         ;; create some collections
         coll1-umm (assoc example-collection-record :EntryTitle "coll1 entry title")
         coll1-metadata (umm-spec/generate-metadata (u/conn-context) coll1-umm :echo10)
-        coll1 (u/ingest-collection token {:provider-id "PROV1"
-                                          :entry-title "coll1"
-                                          :native-id "coll1"
-                                          :short-name "coll1"})
+        coll1 (u/save-collection {:provider-id "PROV1"
+                                  :entry-title "coll1"
+                                  :native-id "coll1"
+                                  :short-name "coll1"})
         ;; local helpers to make the body of the test cleaner
         create-acl #(ac/create-acl (u/conn-context) % {:token token})
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})

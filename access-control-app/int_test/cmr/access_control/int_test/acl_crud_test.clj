@@ -12,9 +12,9 @@
             [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each
-  (fixtures/int-test-fixtures)
-  (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"})
-  (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
+              (fixtures/int-test-fixtures)
+              (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"})
+              (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 
 (def system-acl
   {:group_permissions [{:user_type "guest"
@@ -211,11 +211,11 @@
                                                                  :collection_applicable true
                                                                  :provider_id "PROV1"}}
                                         {:token token}))
-        coll1 (u/ingest-collection token {:entry-title "coll1"
-                                          :native-id "coll1"
-                                          :entry-id "coll1"
-                                          :short-name "coll1"
-                                          :provider-id "PROV1"})]
+        coll1 (u/save-collection token {:entry-title "coll1"
+                                        :native-id "coll1"
+                                        :entry-id "coll1"
+                                        :short-name "coll1"
+                                        :provider-id "PROV1"})]
     (testing "created ACL grants permissions (precursor to testing effectiveness of deletion)"
       (is (= {coll1 ["read"]}
              (json/parse-string

@@ -141,9 +141,9 @@
           :concept_id concept_id
           :revision_id revision_id)))
 
-(defn ingest-collection
-  "Test helper. Returns concept id of ingested concept with given options."
-  [token options]
+(defn save-collection
+  "Test helper. Saves collection to Metadata DB and returns its concept id."
+  [options]
   (let [{:keys [native-id entry-title short-name access-value provider-id temporal-range no-temporal]} options
         base-umm (-> example-collection-record
                      (assoc-in [:SpatialExtent :GranuleSpatialRepresentation] "NO_SPATIAL"))
