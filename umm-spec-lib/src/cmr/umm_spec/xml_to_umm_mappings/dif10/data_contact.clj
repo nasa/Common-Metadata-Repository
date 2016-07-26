@@ -46,30 +46,30 @@
 (defn parse-contact-groups
   "Returns UMM-C contact groups map for the given DIF10 Personnel elements."
   [personnels]
-  (when personnels
-    (for [personnel personnels]
-      (let [roles (collection-personnel-roles (values-at personnel "Role"))
-            contact-group (first (select personnel "Contact_Group"))]
-        (when contact-group
-          {:Roles roles
-           :GroupName (value-of contact-group "Name")
-           :Uuid (:uuid (:attrs (first (filter #(= :Contact_Group (:tag %)) (:content personnel)))))
-           :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms contact-group)
-                                 :Addresses (parse-address contact-group)}]})))))
+  (seq
+   (for [personnel personnels
+         :let [roles (collection-personnel-roles (values-at personnel "Role"))
+               contact-group (first (select personnel "Contact_Group"))]
+         :when contact-group]
+     {:Roles roles
+      :GroupName (value-of contact-group "Name")
+      :Uuid (:uuid (:attrs (first (filter #(= :Contact_Group (:tag %)) (:content personnel)))))
+      :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms contact-group)
+                            :Addresses (parse-address contact-group)}]})))
 
 
 (defn parse-contact-persons
   "Returns UMM-C contact persons map for the given DIF10 Personnel elements."
- [personnels]
- (when personnels
-   (for [personnel personnels]
-     (let [roles (collection-personnel-roles (values-at personnel "Role"))
-           contact-person (first (select personnel "Contact_Person"))]
-      (when contact-person
-        {:Roles roles
-         :FirstName (value-of contact-person "First_Name")
-         :MiddleName (value-of contact-person "Middle_Name")
-         :LastName (value-of contact-person "Last_Name")
-         :Uuid (:uuid (:attrs (first (filter #(= :Contact_Person (:tag %)) (:content personnel)))))
-         :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms contact-person)
-                               :Addresses (parse-address contact-person)}]})))))
+  [personnels]
+  (seq
+   (for [personnel personnels
+         :let [roles (collection-personnel-roles (values-at personnel "Role"))
+               contact-person (first (select personnel "Contact_Person"))]
+         :when contact-person]
+     {:Roles roles
+      :FirstName (value-of contact-person "First_Name")
+      :MiddleName (value-of contact-person "Middle_Name")
+      :LastName (value-of contact-person "Last_Name")
+      :Uuid (:uuid (:attrs (first (filter #(= :Contact_Person (:tag %)) (:content personnel)))))
+      :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms contact-person)
+                            :Addresses (parse-address contact-person)}]})))

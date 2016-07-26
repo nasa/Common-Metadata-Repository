@@ -2,6 +2,7 @@
  "ISO 19115 specific expected conversion functionality"
  (:require [clj-time.core :as t]
            [clj-time.format :as f]
+           [clojure.string :as str]
            [cmr.umm-spec.util :as su]
            [cmr.common.util :as util :refer [update-in-each]]
            [cmr.umm-spec.models.common :as cmn]
@@ -64,7 +65,7 @@
   (for [extent temporal-extents]
     (update-in extent [:TemporalRangeType] (fn [x]
                                              (when x
-                                               (iso-util/sanitize-value x))))))
+                                               (str/trim (iso-util/sanitize-value x)))))))
 
 (defn expected-iso-19115-2-temporal
   [temporal-extents]
@@ -112,7 +113,7 @@
                     ;; Vertical spatial domain values are encoded in a comma-separated string in ISO
                     ;; XML, so the values must be updated to match what we expect in the resulting
                     ;; XML document.
-                    (iso-util/sanitize-value x)))]
+                    (str/trim (iso-util/sanitize-value x))))]
     (-> vsd
         (update-in [:Type] fix-val)
         (update-in [:Value] fix-val))))

@@ -13,12 +13,11 @@
  (let [service-hours (value-of center "Hours_Of_Service")
        instruction (value-of center "Instructions")
        related-url (value-of center "Organization_URL")]
-   (if (or service-hours instruction related-url)
+   (when (or service-hours instruction related-url)
      [{:ServiceHours service-hours
        :ContactInstruction instruction
        :RelatedUrls (when-let [related-url (value-of center "Organization_URL")]
-                      [{:URLs [related-url]}])}]
-     nil)))
+                      [{:URLs [related-url]}])}])))
 
 (defn parse-data-centers
   "Returns UMM-C data centers from DIF 10 XML document."
@@ -29,5 +28,5 @@
      :LongName (value-of center "Organization_Name/Long_Name")
      :Uuid (:uuid (:attrs (first (filter #(= :Organization_Name (:tag %)) (:content center)))))
      :ContactInformation (parse-contact-information center)
-     :ContactPersons (filter some? (contact/parse-contact-persons (select center "Personnel")))
-     :ContactGroups (filter some? (contact/parse-contact-groups (select center "Personnel")))}))
+     :ContactPersons (contact/parse-contact-persons (select center "Personnel"))
+     :ContactGroups (contact/parse-contact-groups (select center "Personnel"))}))

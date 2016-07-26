@@ -38,8 +38,8 @@
   "Returns the DIF10 phone elements from the given contact mechanisms by filtering out all
    non-phone types."
   [contact-mechanisms]
-  (for [phone-mechanism (filter
-                         #(not (contains? dif10-non-phone-contact-mechanisms (:Type %)))
+  (for [phone-mechanism (remove
+                         #(contains? dif10-non-phone-contact-mechanisms (:Type %))
                          contact-mechanisms)]
     [:Phone [:Number (:Value phone-mechanism)]
             [:Type (:Type phone-mechanism)]]))
@@ -105,12 +105,12 @@
    If no contact persons or groups exist, a dummy contact person record is created."
   [center]
   (if (seq (concat (:ContactGroups center) (:ContactPersons center)))
-   (concat
-    (for [person (:ContactPersons center)]
-     (contact->contact-person person [dif10-data-center-personnel-role]))
-    (for [group (:ContactGroups center)]
-     (contact->contact-group group [dif10-data-center-personnel-role])))
-   [:Personnel
-    [:Role dif10-data-center-personnel-role]
-    [:Contact_Person
-     [:Last_Name u/not-provided]]]))
+    (concat
+     (for [person (:ContactPersons center)]
+       (contact->contact-person person [dif10-data-center-personnel-role]))
+     (for [group (:ContactGroups center)]
+       (contact->contact-group group [dif10-data-center-personnel-role])))
+    [:Personnel
+     [:Role dif10-data-center-personnel-role]
+     [:Contact_Person
+      [:Last_Name u/not-provided]]]))

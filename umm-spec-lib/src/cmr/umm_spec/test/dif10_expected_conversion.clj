@@ -187,24 +187,24 @@
 (defn umm-expected-conversion-dif10
   [umm-coll]
   (-> umm-coll
-   (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
-   (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
-   (update-in [:DataCenters] expected-dif10-data-centers)
-   (update-in [:ContactGroups] expected-dif10-contacts)
-   (update-in [:ContactPersons] expected-dif10-contacts)
-   (update-in [:SpatialExtent] expected-dif10-spatial-extent)
-   (update-in [:DataDates] conversion-util/fixup-dif10-data-dates)
-   (update-in [:Distributions] su/remove-empty-records)
-   (update-in-each [:Platforms] dif10-platform)
-   (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil
-                    :MeasurementResolution nil :ParameterUnitsOfMeasure nil
-                    :ParameterValueAccuracy nil :ValueAccuracyExplanation nil)
-   (update-in [:ProcessingLevel] dif10-processing-level)
-   (update-in-each [:Projects] dif10-project)
-   (update-in [:PublicationReferences] conversion-util/prune-empty-maps)
-   (update-in-each [:PublicationReferences] conversion-util/dif-publication-reference)
-   (update-in [:RelatedUrls] conversion-util/expected-related-urls-for-dif-serf)
-   ;; DIF 10 required element
-   (update-in [:Abstract] #(or % su/not-provided))
-   ;; CMR-2716 SpatialKeywords are replaced by LocationKeywords
-   (assoc :SpatialKeywords nil)))
+      (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
+      (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
+      (update-in [:DataCenters] expected-dif10-data-centers)
+      (update-in [:ContactGroups] expected-dif10-contacts)
+      (update-in [:ContactPersons] expected-dif10-contacts)
+      (update-in [:SpatialExtent] expected-dif10-spatial-extent)
+      (update-in [:DataDates] conversion-util/fixup-dif10-data-dates)
+      (update-in [:Distributions] su/remove-empty-records)
+      (update-in-each [:Platforms] dif10-platform)
+      (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil
+                      :MeasurementResolution nil :ParameterUnitsOfMeasure nil
+                      :ParameterValueAccuracy nil :ValueAccuracyExplanation nil)
+      (update-in [:ProcessingLevel] dif10-processing-level)
+      (update-in-each [:Projects] dif10-project)
+      (update-in [:PublicationReferences] conversion-util/prune-empty-maps)
+      (update-in-each [:PublicationReferences] conversion-util/dif-publication-reference)
+      (update-in [:RelatedUrls] conversion-util/expected-related-urls-for-dif-serf)
+      ;; DIF 10 required element
+      (update-in [:Abstract] #(or % su/not-provided))
+      ;; CMR-2716 SpatialKeywords are replaced by LocationKeywords
+      (assoc :SpatialKeywords nil)))

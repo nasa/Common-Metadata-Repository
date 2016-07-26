@@ -10,20 +10,20 @@
   (let [data-centers (if (seq (:DataCenters c))
                        (:DataCenters c)
                        [u/not-provided-data-center])]
-    (for [center data-centers]
-       [:Organization
-        (for [role (:Roles center)]
+    (for [center data-centers
+          :let [contact-information (first (:ContactInformation center))]]
+      [:Organization
+       (for [role (:Roles center)]
          [:Organization_Type role])
-        [:Organization_Name (if-let [uuid (:Uuid center)] {:uuid uuid} {})
-         [:Short_Name (:ShortName center)]
-         [:Long_Name (:LongName center)]]
-        [:Hours_Of_Service (:ServiceHours (first (:ContactInformation center)))]
-        [:Instructions (:ContactInstruction (first (:ContactInformation center)))]
-        [:Organization_URL (-> (:ContactInformation center)
-                               first
-                               :RelatedUrls
-                               first
-                               :URLs
-                               first)]
-        ;; Personnel within Data_Center
-        (contact/generate-data-center-personnel center)])))
+       [:Organization_Name (if-let [uuid (:Uuid center)] {:uuid uuid} {})
+        [:Short_Name (:ShortName center)]
+        [:Long_Name (:LongName center)]]
+       [:Hours_Of_Service (:ServiceHours contact-information)]
+       [:Instructions (:ContactInstruction contact-information)]
+       [:Organization_URL (-> contact-information
+                              :RelatedUrls
+                              first
+                              :URLs
+                              first)]
+       ;; Personnel within Data_Center
+       (contact/generate-data-center-personnel center)])))
