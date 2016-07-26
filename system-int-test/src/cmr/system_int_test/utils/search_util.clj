@@ -355,6 +355,7 @@
          {:keys [status body]} response]
      (if (= status 200)
        {:status status
+        :body body
         :results (json/decode body true)}
        response))))
 
