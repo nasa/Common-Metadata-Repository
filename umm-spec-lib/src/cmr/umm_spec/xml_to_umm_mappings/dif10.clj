@@ -10,6 +10,8 @@
             [cmr.umm-spec.xml-to-umm-mappings.dif10.paleo-temporal :as pt]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.related-url :as ru]
+            [cmr.umm-spec.xml-to-umm-mappings.dif10.data-center :as center]
+            [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]
             [cmr.umm-spec.util :as u :refer [without-default-value-of]]
             [cmr.umm-spec.date-util :as date]
             [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
@@ -163,9 +165,9 @@
                        :VariableLevel2 (value-of sk "Variable_Level_2")
                        :VariableLevel3 (value-of sk "Variable_Level_3")
                        :DetailedVariable (value-of sk "Detailed_Variable")})
-   ;; DataCenters is not implemented but is required in UMM-C
-   ;; Implement with CMR-3157
-   :DataCenters [u/not-provided-data-center]})
+   :DataCenters (center/parse-data-centers doc)
+   :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel"))
+   :ContactGroups (contact/parse-contact-groups (select doc "DIF/Personnel"))})
 
 (defn dif10-xml-to-umm-c
   "Returns UMM-C collection record from DIF10 collection XML document."
