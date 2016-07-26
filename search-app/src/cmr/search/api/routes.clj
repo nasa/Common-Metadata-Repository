@@ -17,7 +17,7 @@
             [cmr.common.concepts :as concepts]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
-            [cmr.common-app.api.routes :as common-routes]
+
             [cmr.common.cache :as cache]
             [cmr.common.services.errors :as svc-errors]
             [cmr.common.util :as util]
@@ -34,6 +34,7 @@
             [cmr.search.api.keyword :as keyword-api]
             [cmr.common-app.api.routes :as cr]
             [cmr.common-app.api-docs :as api-docs]
+            [cmr.common-app.services.search.query-model :as common-qm]
             [cmr.search.services.result-format-helper :as rfh]
             [cmr.collection-renderer.api.routes :as collection-renderer-routes]
 
@@ -67,6 +68,7 @@
     mt/xml
     mt/json
     mt/umm-json
+    mt/umm-json-results
     mt/legacy-umm-json
     mt/echo10
     mt/dif
@@ -151,7 +153,7 @@
                              (mt/extract-header-mime-type valid-mime-types headers "accept" true)
                              (mt/extract-header-mime-type valid-mime-types headers "content-type" false))
                          default-mime-type)]
-     (if (= :umm-json result-format)
+     (if (contains? #{:umm-json :umm-json-results} result-format)
        {:format result-format
         :version (mt/version-of (mt/get-header headers "accept"))}
        result-format))))
@@ -164,6 +166,11 @@
         ;; to avoid breaking clients
         result-format (if (.endsWith path-w-extension ".umm-json")
                         :legacy-umm-json
+                        result-format)
+        ;; For search results umm-json is an alias of umm-json-results since we can't actually return
+        ;; a set of search results that would match the UMM-C JSON schema
+        result-format (if (= :umm-json (:format result-format))
+                        (assoc result-format :format :umm-json-results)
                         result-format)]
     (-> params
         (dissoc :path-w-extension)
@@ -375,7 +382,7 @@
         keyword-api/keyword-api-routes
 
         ;; add routes for managing jobs
-        (common-routes/job-api-routes
+        (cr/job-api-routes
           (routes
             (POST "/refresh-collection-metadata-cache" {:keys [headers params request-context]}
               (acl/verify-ingest-management-permission request-context :update)

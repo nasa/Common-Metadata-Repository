@@ -47,11 +47,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; UMM JSON
 
-(defmethod elastic-search-index/concept-type+result-format->fields [:collection :umm-json]
+(defmethod elastic-search-index/concept-type+result-format->fields [:collection :umm-json-results]
   [concept-type query]
   meta-fields)
 
-(defmethod elastic-results/elastic-result->query-result-item [:collection :umm-json]
+(defmethod elastic-results/elastic-result->query-result-item [:collection :umm-json-results]
   [context query elastic-result]
   (let [{[entry-title] :entry-title
          [entry-id] :entry-id
@@ -69,7 +69,7 @@
   [(get-in elastic-result [:fields :concept-id 0])
    (elastic-results/get-revision-id-from-elastic-result :collection elastic-result)])
 
-(defmethod elastic-results/elastic-results->query-results [:collection :umm-json]
+(defmethod elastic-results/elastic-results->query-results [:collection :umm-json-results]
   [context query elastic-results]
   (let [{:keys [result-format]} query
         hits (get-in elastic-results [:hits :total])
@@ -77,7 +77,7 @@
         ;; Get concept metadata in specified UMM format and version
         tuples (mapv elastic-result->tuple elastic-matches)
         concepts (metadata-cache/get-formatted-concept-revisions
-                  context :collection tuples result-format)
+                  context :collection tuples (assoc result-format :format :umm-json))
         ;; Convert concepts into items with parsed umm.
         items (mapv (fn [elastic-result concept]
                       (if (:deleted concept)
@@ -90,7 +90,7 @@
 
 
 
-(defmethod qs/search-results->response [:collection :umm-json]
+(defmethod qs/search-results->response [:collection :umm-json-results]
   [context query results]
   (json/generate-string (select-keys results [:hits :took :items])))
 

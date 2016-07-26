@@ -12,7 +12,8 @@
 
 (defmethod cqv/supported-result-formats :collection
   [_]
-  #{:xml, :json, :umm-json, :legacy-umm-json :echo10, :dif, :dif10, :atom, :iso19115, :kml, :opendata, :native})
+  #{:xml, :json, :umm-json, :umm-json-results :legacy-umm-json :echo10, :dif, :dif10, :atom,
+    :iso19115, :kml, :opendata, :native})
 
 (defmethod cqv/supported-result-formats :granule
   [_]
@@ -20,7 +21,7 @@
 
 (def all-revisions-supported-result-formats
   "Supported search result format when all-revisions? is true."
-  #{:umm-json :legacy-umm-json :xml})
+  #{:umm-json :umm-json-results :legacy-umm-json :xml})
 
 (defn validate-result-format-for-all-revisions
   "Validate requested search result format for all-revisions?."

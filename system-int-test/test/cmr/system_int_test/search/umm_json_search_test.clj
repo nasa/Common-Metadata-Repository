@@ -149,88 +149,109 @@
         [coll1-1 coll1-2-tombstone coll1-3 coll2-1 coll2-2 coll2-3-tombstone coll3]
         {:all-revisions true}))
 
+    (testing "finding collections in different versions of UMM JSON"
+      (are3 [version accept-header url-extension]
+        (let [options (if accept-header
+                        {:accept accept-header}
+                        {:url-extension url-extension})
+              collections [coll1-1 coll1-2-tombstone coll1-3 coll2-1 coll2-2 coll2-3-tombstone coll3]
+              response (search/find-concepts-umm-json :collection {:all-revisions true} options)]
+          (assert-umm-jsons-match version collections response))
+        "Latest version is default with accept header of UMM JSON Search Results"
+        umm-version/current-version mt/umm-json-results nil
+        "Latest version is default with accept header of UMM JSON"
+        umm-version/current-version mt/umm-json nil
+        "Retrieve older version with accept header of UMM JSON Search Results"
+        "1.3" (str mt/umm-json-results ";version=1.3") nil
+        "Retrieve older version with accept header of UMM JSON"
+        "1.3" (str mt/umm-json ";version=1.3") nil))
+
+        ; "Retrieve specified version with URL extension"
+        ;  "1.3" nil "umm_json_v1_3"))
+
+
     (testing "find collections in umm-json format"
       (are3 [collections params]
-            (assert-umm-jsons-match
-             umm-version/current-version collections
-             (search/find-concepts-umm-json :collection params))
+        (assert-umm-jsons-match
+         umm-version/current-version collections
+         (search/find-concepts-umm-json :collection params))
 
-            ;; Should not get matching tombstone for second collection back
-            "provider-id all-revisions=false"
-            [coll1-3]
-            {:provider-id "PROV1" :all-revisions false}
+        ;; Should not get matching tombstone for second collection back
+        "provider-id all-revisions=false"
+        [coll1-3]
+        {:provider-id "PROV1" :all-revisions false}
 
-            "provider-id all-revisions unspecified"
-            [coll1-3]
-            {:provider-id "PROV1"}
+        "provider-id all-revisions unspecified"
+        [coll1-3]
+        {:provider-id "PROV1"}
 
-            "provider-id all-revisions=true"
-            [coll1-1 coll1-2-tombstone coll1-3 coll2-1 coll2-2 coll2-3-tombstone]
-            {:provider-id "PROV1" :all-revisions true}
+        "provider-id all-revisions=true"
+        [coll1-1 coll1-2-tombstone coll1-3 coll2-1 coll2-2 coll2-3-tombstone]
+        {:provider-id "PROV1" :all-revisions true}
 
-            "native-id all-revisions=false"
-            [coll1-3]
-            {:native-id "et1" :all-revisions false}
+        "native-id all-revisions=false"
+        [coll1-3]
+        {:native-id "et1" :all-revisions false}
 
-            "native-id all-revisions unspecified"
-            [coll1-3]
-            {:native-id "et1"}
+        "native-id all-revisions unspecified"
+        [coll1-3]
+        {:native-id "et1"}
 
-            "native-id all-revisions=true"
-            [coll1-1 coll1-2-tombstone coll1-3]
-            {:native-id "et1" :all-revisions true}
+        "native-id all-revisions=true"
+        [coll1-1 coll1-2-tombstone coll1-3]
+        {:native-id "et1" :all-revisions true}
 
-            "version all-revisions=false"
-            [coll1-3]
-            {:version "v2" :all-revisions false}
+        "version all-revisions=false"
+        [coll1-3]
+        {:version "v2" :all-revisions false}
 
-            "version all-revisions unspecified"
-            [coll1-3]
-            {:version "v2"}
+        "version all-revisions unspecified"
+        [coll1-3]
+        {:version "v2"}
 
-            "version all-revisions=true"
-            [coll1-3 coll2-2 coll2-3-tombstone]
-            {:version "v2" :all-revisions true}
+        "version all-revisions=true"
+        [coll1-3 coll2-2 coll2-3-tombstone]
+        {:version "v2" :all-revisions true}
 
-            ;; verify that "finding latest", i.e., all-revisions=false, does not return old revisions
-            "version all-revisions=false - no match to latest"
-            []
-            {:version "v1" :all-revisions false}
+        ;; verify that "finding latest", i.e., all-revisions=false, does not return old revisions
+        "version all-revisions=false - no match to latest"
+        []
+        {:version "v1" :all-revisions false}
 
-            "short-name all-revisions false"
-            [coll1-3 coll3]
-            {:short-name "s1" :all-revisions false}
+        "short-name all-revisions false"
+        [coll1-3 coll3]
+        {:short-name "s1" :all-revisions false}
 
-            ;; this test is across providers
-            "short-name all-revisions unspecified"
-            [coll1-3 coll3]
-            {:short-name "s1"}
+        ;; this test is across providers
+        "short-name all-revisions unspecified"
+        [coll1-3 coll3]
+        {:short-name "s1"}
 
-            "short-name all-revisions true"
-            [coll1-1 coll1-2-tombstone coll1-3 coll3]
-            {:short-name "s1" :all-revisions true}
+        "short-name all-revisions true"
+        [coll1-1 coll1-2-tombstone coll1-3 coll3]
+        {:short-name "s1" :all-revisions true}
 
-            "concept-id all-revisions false"
-            [coll1-3]
-            {:concept-id "C1200000000-PROV1" :all-revisions false}
+        "concept-id all-revisions false"
+        [coll1-3]
+        {:concept-id "C1200000000-PROV1" :all-revisions false}
 
-            "concept-id all-revisions unspecified"
-            [coll1-3]
-            {:concept-id "C1200000000-PROV1"}
+        "concept-id all-revisions unspecified"
+        [coll1-3]
+        {:concept-id "C1200000000-PROV1"}
 
-            "concept-id all-revisions true"
-            [coll1-1 coll1-2-tombstone coll1-3]
-            {:concept-id "C1200000000-PROV1" :all-revisions true}
+        "concept-id all-revisions true"
+        [coll1-1 coll1-2-tombstone coll1-3]
+        {:concept-id "C1200000000-PROV1" :all-revisions true}
 
-            "all-revisions true"
-            [coll1-1 coll1-2-tombstone coll1-3 coll2-1 coll2-2 coll2-3-tombstone coll3]
-            {:all-revisions true}))))
+        "all-revisions true"
+        [coll1-1 coll1-2-tombstone coll1-3 coll2-1 coll2-2 coll2-3-tombstone coll3]
+        {:all-revisions true}))))
 
 
 
 (deftest search-umm-json-error-cases
   (testing "granule umm-json search is not supported"
     (let [{:keys [status errors]} (search/find-concepts-umm-json :granule {})]
-      (is (= [400 ["The mime type [application/vnd.nasa.cmr.umm+json] is not supported for granules."]]
+      (is (= [400 ["The mime type [application/vnd.nasa.cmr.umm_results+json] is not supported for granules."]]
              [status errors])))))
 
