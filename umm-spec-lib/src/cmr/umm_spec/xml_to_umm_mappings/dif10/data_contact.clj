@@ -14,17 +14,18 @@
   "Data Center Contact")
 
 (defn collection-personnel-roles
+  "Maps the list of DIF 10 roles for personnel not associated with a data center to UMM personnel roles "
  [roles]
  (distinct
    (map #(get dif10-role->umm-personnel-contact-role %) roles)))
 
 (defn- parse-contact-mechanisms
-  "Returns UMM-C contact mechanisms from DIF10 Personnel/Contact_Person element."
-  [contact-person]
+  "Returns UMM-C contact mechanisms from DIF10 Personnel/Contact_Person or Personnel/Contact_Group element."
+  [contact]
   (seq (concat
-         (for [email (values-at contact-person "Email")]
+         (for [email (values-at contact "Email")]
            {:Type "Email" :Value email})
-         (for [phone (select contact-person "Phone")]
+         (for [phone (select contact "Phone")]
            {:Type (value-of phone "Type") :Value (value-of phone "Number")}))))
 
 (defn- parse-address
@@ -43,6 +44,7 @@
         :Country country}])))
 
 (defn parse-contact-groups
+  "Returns UMM-C contact groups map for the given DIF10 Personnel elements."
   [personnels]
   (when personnels
     (for [personnel personnels]
@@ -51,7 +53,7 @@
         (when contact-group
           {:Roles roles
            :GroupName (value-of contact-group "Name")
-           ;:Uuid (:uuid (:attrs (first (filter #(= :Name (:tag %)) (:content group)))))
+           :Uuid (:uuid (:attrs (first (filter #(= :Contact_Group (:tag %)) (:content personnel)))))
            :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms contact-group)
                                  :Addresses (parse-address contact-group)}]})))))
 
@@ -68,5 +70,6 @@
          :FirstName (value-of contact-person "First_Name")
          :MiddleName (value-of contact-person "Middle_Name")
          :LastName (value-of contact-person "Last_Name")
+         :Uuid (:uuid (:attrs (first (filter #(= :Contact_Person (:tag %)) (:content personnel)))))
          :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms contact-person)
                                :Addresses (parse-address contact-person)}]})))))

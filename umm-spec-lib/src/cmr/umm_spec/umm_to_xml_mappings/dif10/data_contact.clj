@@ -15,7 +15,13 @@
 (def dif10-data-center-personnel-role
   "DATA CENTER CONTACT")
 
+;; DIF10 has email and phone contact mechanisms. UMM Email goes to DIF10 email. Facebook and Twitter
+;; contact mechanisms are dropped. Everything else is considered phone in DIF10.
+(def dif10-non-phone-contact-mechanisms
+ #{"Email" "Twitter" "Facebook"})
+
 (defn collection-personnel-roles
+ "Maps the list of UMM personnel roles (personnel not associated with a data center) to DIF 10 roles"
  [contact]
  (distinct
    (map
@@ -29,19 +35,19 @@
     [:Email (:Value email-mechanism)]))
 
 (defn- contact-mechanisms->phones
-  "Returns the DIF10 phone elements from the given contact mechanisms"
+  "Returns the DIF10 phone elements from the given contact mechanisms by filtering out all
+   non-phone types."
   [contact-mechanisms]
   (for [phone-mechanism (filter
-                         #(and (not= "Email" (:Type %))
-                               (not= "Twitter" (:Type %))
-                               (not= "Facebook" (:Type %)))
+                         #(not (contains? dif10-non-phone-contact-mechanisms (:Type %)))
                          contact-mechanisms)]
     [:Phone [:Number (:Value phone-mechanism)]
             [:Type (:Type phone-mechanism)]]))
 
 
 (defn- contact-info->address
-  "Returns the DIF10 contact address element for the given UMM contact information"
+  "Returns the DIF10 contact address element for the given UMM contact information. For personnel
+   contact info, DIF10 only takes the first address."
   [contact-info]
   ;; We only write out the first address within the contact information
   (when-let [address (first (:Addresses contact-info))]
@@ -55,39 +61,30 @@
        [:Country Country]])))
 
 (defn- contact->contact-person
-  ; "Returns the DIF9 personnel element from the given umm contact group or contact person.
-  ; UMM contact role to DIF9 Personnel role mappings differ depending on if the Personnel is
-  ; under Data_Center or not. When it is under Data_Center, the role is mapped only to
-  ; DATA CENTER CONTACT or INVESTIGATOR; otherwise (i.e. when the Personnel is under DIF),
-  ; it can be mapped as defined in umm-contact-role->dif9-role."
+  "Returns the DIF10 contact person elements for a data center or collection contact person"
   [contact roles]
-  ;; DIF9 Personnel can only have one contact address, so we only take the first contact
-  ;; information and write it out. Even though theoretically the first contact group could not
-  ;; have contact address, but a later contact group could, we don't think it happens
-  ;; in real world use cases and just ignore the rest of the contact groups.
   (let [contact-info (first (:ContactInformation contact))
         contact-mechanisms (:ContactMechanisms contact-info)]
    [:Personnel
      (for [role roles]
       [:Role role])
-     [:Contact_Person
+     [:Contact_Person (if-let [uuid (:Uuid contact)] {:uuid uuid} {})
       [:First_Name (:FirstName contact)]
       [:Middle_Name (:MiddleName contact)]
       [:Last_Name (:LastName contact)]
       (contact-info->address contact-info)
       (contact-mechanisms->phones contact-mechanisms)
       (contact-mechanisms->emails contact-mechanisms)]]))
-    ;[:uuid (:Uuid contact)]
 
 (defn- contact->contact-group
+  "Returns the DIF10 contact group elements for a data center or collection contact group"
   [contact roles]
   (let [contact-info (first (:ContactInformation contact))
         contact-mechanisms (:ContactMechanisms contact-info)]
    [:Personnel
     (for [role roles]
       [:Role role])
-    [:Contact_Group
-     ;[:Name (if-let [uuid (:Uuid contact)] {:uuid uuid} {}) (:GroupName contact)]
+    [:Contact_Group (if-let [uuid (:Uuid contact)] {:uuid uuid} {})
      [:Name (:GroupName contact)]
      (contact-info->address contact-info)
      (contact-mechanisms->phones contact-mechanisms)
@@ -95,7 +92,7 @@
 
 
 (defn generate-collection-personnel
-  "Returns the DIF10 personnel elements from the given umm collection or DataCenter"
+  "Returns the DIF10 personnel elements from the given UMM collection"
   [collection]
   (concat
    (for [person (:ContactPersons collection)]
@@ -104,6 +101,8 @@
      (contact->contact-group group (collection-personnel-roles group)))))
 
 (defn generate-data-center-personnel
+  "Returns the Personnel (Contact Persons and Contact Groups) records for a data center.
+   If no contact persons or groups exist, a dummy contact person record is created."
   [center]
   (if (seq (concat (:ContactGroups center) (:ContactPersons center)))
    (concat

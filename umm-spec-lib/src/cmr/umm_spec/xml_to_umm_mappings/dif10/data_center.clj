@@ -27,7 +27,6 @@
     {:Roles (seq (values-at center "Organization_Type"))
      :ShortName (value-of center "Organization_Name/Short_Name")
      :LongName (value-of center "Organization_Name/Long_Name")
-     ;; We probably want to refactor the following call into the common parse namespace later
      :Uuid (:uuid (:attrs (first (filter #(= :Organization_Name (:tag %)) (:content center)))))
      :ContactInformation (parse-contact-information center)
      :ContactPersons (filter some? (contact/parse-contact-persons (select center "Personnel")))

@@ -19,6 +19,7 @@
   "Metadata Author" "Metadata Author"})
 
 (defn- filter-roles
+ "Filter roles that are not applicable to DIF 10. Default is Technical Contact"
  [roles]
  (distinct
   (map
@@ -94,61 +95,66 @@
       [(cmn/map->ContactInformationType contact-info)])))
 
 (defn- expected-dif10-contact-info-urls
+  "Returns a vector of the first URL in the list"
   [urls]
   (when (seq urls)
     [(first urls)]))
 
 (defn- expected-dif-10-contact-info-related-urls
- [related-urls]
- (let [related-url (first related-urls)]
-   (if related-url
-    [(-> related-urls
-         (first)
-         (dissoc :Description)
-         (dissoc :MimeType)
-         (dissoc :Relation)
-         (dissoc :Title)
-         (dissoc :FileSize)
-         (update :URLs expected-dif10-contact-info-urls)
-         (cmn/map->RelatedUrlType))]
-    nil)))
+  "Returns the expected DIF 10 RelatedURL for the ContactInformation
+   or nil if there are no related urls"
+  [related-urls]
+  (let [related-url (first related-urls)]
+    (if related-url
+     [(-> related-urls
+          (first)
+          (dissoc :Description)
+          (dissoc :MimeType)
+          (dissoc :Relation)
+          (dissoc :Title)
+          (dissoc :FileSize)
+          (update :URLs expected-dif10-contact-info-urls)
+          (cmn/map->RelatedUrlType))]
+     nil)))
 
 (defn- expected-dif10-data-center-contact-information
- [contact-info]
- (let [contact-info (first contact-info)]
-    (if (and (nil? (:ServiceHours contact-info))
-             (nil? (:ContactInstruction contact-info))
-             (nil? (:RelatedUrls contact-info)))
-     nil
-     (let [contact-info
-            (-> contact-info
-                (update :RelatedUrls expected-dif-10-contact-info-related-urls)
-                (dissoc :ContactMechanisms)
-                (dissoc :Addresses))]
-       (if (seq (util/remove-nil-keys contact-info))
-         [(cmn/map->ContactInformationType contact-info)]
-         contact-info)))))
+  "Returns the expected DIF10 ContactInformation for the data center.
+   If all fields are nil, return nil. Data Center contact infos do not have Contact Mechanisms
+   or Addresses"
+  [contact-info]
+  (let [contact-info (first contact-info)]
+     (if (and (nil? (:ServiceHours contact-info))
+              (nil? (:ContactInstruction contact-info))
+              (nil? (:RelatedUrls contact-info)))
+      nil
+      (let [contact-info
+             (-> contact-info
+                 (update :RelatedUrls expected-dif-10-contact-info-related-urls)
+                 (dissoc :ContactMechanisms)
+                 (dissoc :Addresses))]
+        (if (seq (util/remove-nil-keys contact-info))
+          [(cmn/map->ContactInformationType contact-info)]
+          contact-info)))))
 
 (defn- contact->expected-dif10-collection
+  "Return the expected contact person or contact group for the DIF 10 collection, not associated
+   with a data center"
   [contact]
   (-> contact
       (assoc :NonDataCenterAffiliation nil)
-      (assoc :Uuid nil)
       (update :Roles filter-roles)
       (update :ContactInformation expected-dif10-contact-information)))
 
 (defn- contact->expected-dif10-data-center
+  "Return the expected contact person or contact group for the DIF 10 data center"
   [contact]
   (-> contact
       (assoc :NonDataCenterAffiliation nil)
-      (assoc :Uuid nil)
       (assoc :Roles [contact/dif10-data-center-personnel-role])
       (update :ContactInformation expected-dif10-contact-information)))
 
 (defn- expected-dif10-data-center-contacts
-  "Returns the expected DIF data center contact persons for the given UMM data center.
-  Both ContactGroups and ContactPersons are converted into ContactPersons with the DIF not supported
-  fields dropped."
+  "Returns the expected DIF 10 data center contact persons or contact groups for the given UMM data center."
   [contacts]
   (let [expected-contacts (mapv #(contact->expected-dif10-data-center %) contacts)]
     (when (seq expected-contacts)
@@ -156,11 +162,14 @@
 
 (defn- expected-dif10-contacts
   [contacts]
+  "Returns the expected DIF 10 data center contact persons or contact groups for the given UMM collection."
   (let [expected-contacts (mapv #(contact->expected-dif10-collection %) contacts)]
     (when (seq expected-contacts)
       expected-contacts)))
 
 (defn- data-center->expected-dif10
+  "Returns the expected DIF 10 data center. DIF 10 requires a personnel record on the data center.
+   If there are no contact groups or contact persons, create a dummy contact person on the data center"
   [data-center]
   (let [data-center (update data-center :ContactInformation expected-dif10-data-center-contact-information)]
    (if (or (seq (:ContactGroups data-center)) (seq (:ContactPersons data-center)))
@@ -171,6 +180,7 @@
                                                                      :LastName su/not-provided})]))))
 
 (defn- expected-dif10-data-centers
+  "Returns the list of expected DIF 10 data centers"
   [data-centers]
   (seq (mapv #(data-center->expected-dif10 %) data-centers)))
 

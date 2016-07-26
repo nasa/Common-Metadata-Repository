@@ -3,21 +3,14 @@
   (:require [cmr.umm-spec.util :as u]
             [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]))
 
-(defn- personnel-roles
-  "Get the personnel roles for the center. In UMM-C, the roles are stored on the
-   Contact Persons and Contact Groups. In DIF10 they are on the Personnel field."
-  [center]
-  (if (seq (:ContactPersons center))
-    (:Roles (first (:ContactPersons center)))
-    (:Roles (first (:ContactGroups center)))))
 
 (defn generate-organizations
-  "Returns the DIF10 Organization elements from the given umm collection."
+  "Returns the DIF10 Organization elements (Data Centers) from the given UMM collection."
   [c]
-  (let [qualified-centers (if (seq (:DataCenters c))
-                            (:DataCenters c)
-                            [u/not-provided-data-center])]
-    (for [center qualified-centers]
+  (let [data-centers (if (seq (:DataCenters c))
+                       (:DataCenters c)
+                       [u/not-provided-data-center])]
+    (for [center data-centers]
        [:Organization
         (for [role (:Roles center)]
          [:Organization_Type role])
