@@ -175,7 +175,7 @@
               "DIF10" [c8-dif10] :dif10
               "ISO MENDS" [c5-iso] :iso19115
               "SMAP ISO" [c7-smap] :iso-smap
-              "UMM JSON" [c10-umm-json] :umm-json))
+              "UMM JSON" [c10-umm-json] {:format :umm-json :version umm-version/current-version}))
 
           (testing "Retrieving all in specified format"
             (are3 [format-key]

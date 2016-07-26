@@ -54,6 +54,15 @@
     (is (= mt/kml (mt/path->mime-type "granules.kml")))
     (is (= mt/html (mt/path->mime-type "granules.html")))
     (is (= mt/opendata (mt/path->mime-type "granules.opendata"))))
+  (testing "UMM JSON with version"
+    (is (= (str mt/umm-json ";version=1.3")
+           (mt/path->mime-type "granules.umm_json_v1_3")))
+    (is (= (str mt/umm-json ";version=99.88")
+           (mt/path->mime-type "granules.umm_json_v99_88")))
+    (testing "Should be considered valid as a mime type"
+      ;; No exception should be thrown.
+      (mt/path->mime-type "granules.umm_json_v99_88"
+                          #{mt/umm-json})))
   (testing "No extension"
     (are [uri]
       (= nil (mt/path->mime-type uri))

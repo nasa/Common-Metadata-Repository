@@ -112,14 +112,17 @@
   ([mime-type]
    (mime-type->format mime-type (:json format->mime-type)))
   ([mime-type default-mime-type]
-   (get base-mime-type-to-format (base-mime-type-of mime-type)
-        (get base-mime-type-to-format default-mime-type))))
+   (if-let [format-key (get base-mime-type-to-format (base-mime-type-of mime-type))]
+     (if-let [version (version-of mime-type)]
+       {:format format-key :version version}
+       format-key)
+     (get base-mime-type-to-format default-mime-type))))
 
 (defn format-key
   "Returns CMR format keyword from given value. Value may be a keyword, a MIME type string or a map."
   [x]
   (cond
-    (string? x) (mime-type->format x nil)
+    (string? x) (format-key (mime-type->format x nil))
     (keyword? x) (get all-formats x)
     (map? x) (:format x)
     :else nil))
@@ -178,8 +181,16 @@
   (header-mime-type-getter "content-type"))
 
 (def extension-aliases
-  "TODO"
+  "This defines aliases for URL extensions that are supported"
   {:iso :iso19115})
+
+(defn- parse-versioned-umm-json-path-extension
+  "Tries to parse the extension as if it is for version UMM JSON. If the extension is of the format
+   umm_json_vX_Y where X and Y are some major and minor version number then it will return a UMM
+   JSON mime type with the specified version."
+  [extension]
+  (when-let [[_ major minor] (re-matches #"umm_json_v(\d+)_(\d+)" extension)]
+    (format "%s;version=%s.%s" umm-json major minor)))
 
 (defn path->mime-type
   "Parses the search path with extension and returns the requested mime-type or nil if no extension
@@ -190,8 +201,10 @@
    (when-let [extension (second (re-matches #"[^.]+(?:\.(.+))$" search-path-w-extension))]
      ;; Convert extension into a keyword. We don't use camel snake kebab as it would convert "echo10" to "echo-10"
      (let [extension-key (keyword (str/replace extension #"_" "-"))
-           mime-type (format->mime-type (get extension-aliases extension-key extension-key))]
-       (if (and (some? valid-mime-types) (not (contains? valid-mime-types mime-type)))
+           ;; Parse the extension as version UMM JSON extension or look it up using format->mime-type
+           mime-type (or (parse-versioned-umm-json-path-extension extension)
+                         (format->mime-type (get extension-aliases extension-key extension-key)))]
+       (if (and (some? valid-mime-types) (not (contains? valid-mime-types (base-mime-type-of mime-type))))
          (svc-errors/throw-service-error
           :bad-request (format "The URL extension [%s] is not supported." extension))
          mime-type)))))

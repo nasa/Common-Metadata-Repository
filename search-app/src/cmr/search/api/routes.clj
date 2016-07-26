@@ -153,6 +153,7 @@
                              (mt/extract-header-mime-type valid-mime-types headers "accept" true)
                              (mt/extract-header-mime-type valid-mime-types headers "content-type" false))
                          default-mime-type)]
+     ;; TODO the following code may no longer be necessary. mime-type->format already handles getting the version.
      (if (contains? #{:umm-json :umm-json-results} result-format)
        {:format result-format
         :version (mt/version-of (mt/get-header headers "accept"))}

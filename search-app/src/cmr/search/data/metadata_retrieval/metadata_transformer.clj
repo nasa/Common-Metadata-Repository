@@ -66,7 +66,7 @@
   (let [concept-mime-type (:format concept)]
     (cond
       ;; No conversion is required
-      (= (rfh/mime-type->search-result-format concept-mime-type) target-format)
+      (= (mt/mime-type->format concept-mime-type) target-format)
       :current-format
 
       ;; Use XSLT
@@ -99,7 +99,7 @@
 
 (defmethod transform-with-strategy :current-format
   [context concept _ _]
-  {(rfh/mime-type->search-result-format (:format concept))
+  {(mt/mime-type->format (:format concept))
    (cx/remove-xml-processing-instructions (:metadata concept))})
 
 (defmethod transform-with-strategy :xslt
@@ -116,6 +116,7 @@
 (defmethod transform-with-strategy :html
   [context concept _ _]
   {:html (generate-html-response context concept)})
+
 
 (defmethod transform-with-strategy :umm-spec
   [context concept _ target-formats]

@@ -7,6 +7,7 @@
            [clojure.set :as set]
            [cmr.common.log :as log :refer (debug info warn error)]
            [cmr.search.services.result-format-helper :as rfh]
+           [cmr.common.mime-types :as mt]
            [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]))
 
 (def ^:private non-metadata-fields
@@ -113,7 +114,7 @@
   ([context concept target-format-set ignore-exceptions?]
    (when-not (:deleted concept)
      (let [{:keys [concept-id revision-id metadata] concept-mime-type :format} concept
-           native-format (rfh/mime-type->search-result-format concept-mime-type)
+           native-format (mt/mime-type->format concept-mime-type)
            base-map {:concept-id concept-id
                      :revision-id revision-id
                      :native-format native-format
