@@ -213,6 +213,11 @@
        util/map-keys->snake_case
        api-response))
 
+(defn delete-acl
+  "Returns a Ring response with the result of trying to delete the ACL with the given concept id."
+  [request-context concept-id]
+  (api-response (acl-service/delete-acl request-context concept-id)))
+
 (defn get-acl
   "Returns a Ring response with the metadata of the ACL identified by concept-id."
   [request-context headers concept-id]
@@ -337,6 +342,10 @@
           ;; Update an ACL
           (PUT "/" {:keys [request-context headers body]}
             (update-acl request-context concept-id headers (slurp body)))
+
+          ;; Delete an ACL
+          (DELETE "/" {:keys [request-context]}
+            (delete-acl request-context concept-id))
 
           ;; Retrieve an ACL
           (GET "/" {:keys [request-context headers params]}
