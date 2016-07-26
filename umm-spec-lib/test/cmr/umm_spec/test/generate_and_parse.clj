@@ -140,8 +140,8 @@
 
 (comment
 
-  (is (= (expected-conversion/convert failing-value :iso19115)
-         (xml-round-trip :collection failing-value :iso19115)))
+  (is (= (expected-conversion/convert user/failing-value :iso19115)
+         (xml-round-trip :collection :iso19115 user/failing-value)))
 
   ;; random XML gen
   (def metadata-format :echo10)

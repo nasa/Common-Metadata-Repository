@@ -108,6 +108,14 @@
                                      {:concept-id concept-id
                                       :native-id (:native-id existing-concept)}))))
 
+(defn delete-acl
+  "Saves a tombstone for the ACL with the given concept id."
+  [context concept-id]
+  (let [acl-concept (fetch-acl-concept context concept-id)]
+    (mdb/save-concept context {:concept-id (:concept-id acl-concept)
+                               :revision-id (inc (:revision-id acl-concept))
+                               :deleted true})))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search functions
 
