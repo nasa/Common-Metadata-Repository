@@ -8,6 +8,8 @@
             [cmr.common.util :as util :refer [update-in-each]]
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.json-schema :as js]
+            ;; Required for loading service models for testing
+            [cmr.umm-spec.models.service]
             [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
             [cmr.umm-spec.test.echo10-expected-conversion :as echo10]
             [cmr.umm-spec.test.dif9-expected-conversion :as dif9]
