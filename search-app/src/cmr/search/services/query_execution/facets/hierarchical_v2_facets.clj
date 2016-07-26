@@ -88,6 +88,26 @@
         relevant-query-params (filter (fn [[k v]] (re-matches subfield-reg-ex k)) query-params)]
     (some? (seq relevant-query-params))))
 
+(comment
+ (seq (get-indexes-in-params {"science_keywords[0][category]" "blah"
+                              "science_keywords[12][category]" "blahz"
+                              "science_keywords[4][ctegory]" "blah"}
+                             "science_keywords" "category" "blah")))
+
+(defn- get-indexes-in-params
+  "Returns a list of all of the indexes for the given hierarchical field within the query-params
+  that have the provided value.
+  Example: Params of {\"foo[2][bar]\" \"alpha\"} \"foo\" \"bar\" \"alpha\" returns #{\"2\"}."
+  [query-params parent-field subfield value]
+  (when (and parent-field subfield value)
+    (let [value-lowercase (str/lower-case value)
+          subfield-reg-ex (re-pattern (str parent-field "\\[(\\d+)\\]\\[" subfield "\\]"))
+          relevant-indexes (keep (fn [[k v]]
+                                   (when (= value-lowercase (str/lower-case v))
+                                     (second (re-matches subfield-reg-ex k))))
+                                 query-params)]
+      (set relevant-indexes))))
+
 (defn- find-applied-children
   "Returns a sequence of tuples for any child facet that is applied in the current search query.
   Searches the children facets recursively. The tuples are of the form [subfield value].
@@ -104,6 +124,45 @@
         (conj applied-children [(first field-hierarchy) (:title facet)])
         applied-children))))
 
+(comment
+ (has-siblings? "science_keywords" "category" "blah" "topic" "atm"
+                {"science_keywords[0][category]" "blah"
+                 "science_keywords[12][category]" "blahz"
+                 "science_keywords[4][ctegory]" "blah"
+                 "science_keywords" "category"})
+
+ (has-siblings? "science_keywords" "category" "blah" "topic" "atm"
+                {"science_keywords[0][category]" "blah"
+                 "science_keywords[1][category]" "blahz"
+                 "science_keywords[4][topic]" "joe"
+                 "science_keywords[5][topic]" "abc"
+                 "science_keywords[6][topic]" "ATM"
+                 "science_keywords[4][category]" "Blahz"
+                 "science_keywords[5][category]" "bLAH"
+                 "science_keywords[6][category]" "Blah"
+                 "science_keywords" "category"}))
+
+(defn- has-siblings?
+  "Returns true if the given hierarchical field and value have any applied sibling values in the
+  provided query params. Comparisons to the provided value are made case in a case insensitive
+  manner."
+  [query-params hierarchical-field parent-subfield parent-value subfield value]
+  (some?
+    (when (and parent-value value)
+      (let [parent-value-lowercase (str/lower-case parent-value)
+            value-lowercase (str/lower-case value)
+            query-params (util/map-values str/lower-case query-params)
+            subfield-regex (re-pattern (str hierarchical-field "\\[(\\d+)\\]\\[" subfield "\\]"))
+            same-level-indexes (for [[k v] query-params
+                                     :when (not= value-lowercase (str/lower-case v))]
+                                  (second (re-matches subfield-regex k)))]
+        ;; Filter the query-params to just those with the same index, parent-subfield, and
+        ;; parent-value when compared case insensitively
+        (seq (for [idx same-level-indexes
+                   :let [query-param (str hierarchical-field "[" idx "][" parent-subfield "]")]
+                   :when (= parent-value-lowercase (get query-params query-param))]
+               query-param))))))
+
 (defn- generate-hierarchical-children
   "Generate children nodes for a hierarchical facet v2 response.
   recursive-parse-fn - function to call to recursively generate any children filter nodes.
@@ -112,18 +171,20 @@
   field - the hierarchical subfield to generate the filter nodes for in the v2 response.
   elastic-aggregations - the portion of the elastic aggregations response to parse to generate
                          the part of the facets v2 response related to the passed in field."
-  [recursive-parse-fn generate-links-fn field field-hierarchy elastic-aggregations]
+  [recursive-parse-fn has-siblings-fn generate-links-fn field field-hierarchy elastic-aggregations]
   ;; Each value for this field has its own bucket in the elastic aggregations response
   (for [bucket (get-in elastic-aggregations [field :buckets])
         :let [value (:key bucket)
               count (get-in bucket [:coll-count :doc_count] (:doc_count bucket))
-              sub-facets (recursive-parse-fn bucket)
+              ;; TODO conj the value onto parent params
+              sub-facets (recursive-parse-fn value bucket)
               ;; Sort alphabetically
               sub-facets (when (seq (:children sub-facets))
                            (update sub-facets :children
                                    #(sort-by :title util/compare-natural-strings %)))
               children-values-to-remove (find-applied-children sub-facets field-hierarchy false)
-              links (generate-links-fn value children-values-to-remove)]]
+              has-siblings? (has-siblings-fn value)
+              links (generate-links-fn value has-siblings? children-values-to-remove)]]
     (v2h/generate-hierarchical-filter-node value count links sub-facets)))
 
 (defn- parse-hierarchical-bucket-v2
@@ -136,15 +197,22 @@
   base-url - The root URL to use for the links that are generated in the facet response.
   query-params - the query parameters from the current search as a map with a key for each
                  parameter name and the value as either a single value or a collection of values.
-  elastic-aggregations - the portion of the elastic-aggregations response to parse. As each field
-                         is parsed recursively the aggregations are reduced to just the portion
-                         relevant to that field."
-  [parent-field field-hierarchy base-url query-params elastic-aggregations]
+  elastic-aggs - the portion of the elastic-aggregations response to parse. As each field is parsed
+                 recursively the aggregations are reduced to just the portion relevant to that
+                 field."
+  [parent-field parent-subfield field-hierarchy base-url query-params ancestors-map parent-value
+   elastic-aggs]
   ;; Iterate through the next field in the hierarchy. Return nil if there are no more fields in
   ;; the hierarchy
   (when-let [field (first field-hierarchy)]
     (let [snake-parent-field (csk/->snake_case_string parent-field)
+          snake-parent-subfield (when parent-subfield (csk/->snake_case_string parent-subfield))
           snake-field (csk/->snake_case_string field)
+          ; parent-subfield-indexes (get-indexes-in-params query-params snake-parent-field
+          ;                                                snake-parent-subfield parent-value)
+          ancestors-map (if parent-value
+                          (assoc ancestors-map snake-parent-field parent-value)
+                          ancestors-map)
           applied? (field-applied? query-params snake-parent-field snake-field)
           ;; Index in the param name does not matter
           param-name (format "%s[0][%s]" snake-parent-field snake-field)
@@ -153,13 +221,16 @@
           ;; generated.
           generate-links-fn (if applied?
                               (partial lh/create-link-for-hierarchical-field base-url query-params
-                                       param-name)
+                                       param-name ancestors-map)
                               (partial lh/create-apply-link-for-hierarchical-field base-url
-                                       query-params param-name))
-          recursive-parse-fn (partial parse-hierarchical-bucket-v2 parent-field
-                                      (rest field-hierarchy) base-url query-params)
-          children (generate-hierarchical-children recursive-parse-fn generate-links-fn field
-                                                   field-hierarchy elastic-aggregations)]
+                                       query-params param-name ancestors-map))
+          recursive-parse-fn (partial parse-hierarchical-bucket-v2 parent-field field
+                                      (rest field-hierarchy) base-url query-params ancestors-map)
+          has-siblings-fn (partial has-siblings? query-params snake-parent-field
+                                   snake-parent-subfield parent-value snake-field)
+          children (generate-hierarchical-children recursive-parse-fn has-siblings-fn
+                                                   generate-links-fn field field-hierarchy
+                                                   elastic-aggs)]
       (when (seq children)
         (v2h/generate-group-node (csk/->snake_case_string field) true children)))))
 
@@ -239,7 +310,7 @@
                                   (csk/->snake_case_string field)
                                   (csk/->snake_case_string subfield))
                link (lh/create-link-for-hierarchical-field
-                     base-url query-params param-name search-term nil)]]
+                     base-url query-params param-name nil search-term false nil)]]
      (v2h/generate-hierarchical-filter-node search-term 0 link nil)))
 
 (def earth-science-category-string
@@ -264,8 +335,8 @@
   that field."
   [field bucket-map base-url query-params]
   (let [field-hierarchy (nested-fields-mappings field)
-        hierarchical-facet (-> (parse-hierarchical-bucket-v2 field field-hierarchy base-url
-                                                             query-params bucket-map)
+        hierarchical-facet (-> (parse-hierarchical-bucket-v2 field nil field-hierarchy base-url
+                                                             query-params nil nil bucket-map)
                                (prune-hierarchical-facet true)
                                (remove-non-earth-science-keywords field))
         subfield-term-tuples (get-missing-subfield-term-tuples field field-hierarchy

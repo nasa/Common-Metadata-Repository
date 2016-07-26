@@ -130,7 +130,7 @@
   "Create a link that will modify the current search to also filter by the given hierarchical
   field-name and value.
   Field-name must be of the form <string>[<int>][<string>] such as science_keywords[0][topic]."
-  [base-url query-params field-name value _]
+  [base-url query-params field-name ancestors-map value has-siblings? _]
   (let [[base-field subfield] (str/split field-name #"\[\d+\]")
         max-index (get-max-index-for-field-name query-params base-field)
         updated-field-name (format "%s[%d]%s" base-field (inc max-index) subfield)
@@ -211,7 +211,7 @@
 
   applied-children-tuples - Tuples of [subfield term] for any applied children terms that should
                             also be removed in the remove link being generated."
-  [base-url query-params field-name value applied-children-tuples]
+  [base-url query-params field-name ancestors-map value has-siblings? applied-children-tuples]
   (let [[base-field subfield] (str/split field-name #"\[0\]")
         updated-params (reduce (partial process-removal-for-field-value-tuple base-field)
                                query-params
@@ -226,12 +226,21 @@
 
   applied-children-tuples - Tuples of [subfield term] for any applied children terms that should
                             also be removed if a remove link is being generated."
-  [base-url query-params field-name value applied-children-tuples]
+  [base-url query-params field-name ancestors-map value has-siblings? applied-children-tuples]
+  ;; TODO - I'm thinking that I need to pass the parent index into the sub-facets function
+  ;; For apply links - if none of the siblings for this parent are applied apply the
+  ;; same index as the parent index. Else increment the max index by one and use that.
+  ;; For remove links - if there is exactly one other sibling - Nevermind this seems bad.
+  ;; TODO - new solution for apply links... if none of the siblings are applied use the
+  ;; same index as the parent, otherwise increment the max index by one and duplicate all
+  ;; the parent parameters with the new index and add this field with the new index.
   (let [potential-query-params (get-potential-matching-query-params query-params field-name)
         value-exists (or (seq (get-keys-to-remove potential-query-params value))
-                        (seq (get-keys-to-update potential-query-params value)))]
+                         (seq (get-keys-to-update potential-query-params value)))]
     (if value-exists
-      (create-remove-link-for-hierarchical-field base-url query-params field-name value
-                                                applied-children-tuples)
-      (create-apply-link-for-hierarchical-field base-url query-params field-name value
-                                                applied-children-tuples))))
+      (create-remove-link-for-hierarchical-field
+       base-url query-params field-name ancestors-map value has-siblings?
+       applied-children-tuples)
+      (create-apply-link-for-hierarchical-field
+       base-url query-params field-name ancestors-map value has-siblings?
+       applied-children-tuples))))

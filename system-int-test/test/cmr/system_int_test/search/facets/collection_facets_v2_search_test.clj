@@ -97,17 +97,17 @@
   fields above variable-level-3 have applied set to true."
   {:title "Browse Collections",
    :children
-   [{:title "Keywords", :applied true,
+   [{:title "Keywords" :applied true
      :children
-     [{:title "Topic1", :applied true,
+     [{:title "Topic1" :applied true
        :children
-       [{:title "Term1", :applied true,
+       [{:title "Term1" :applied true
          :children
-         [{:title "Level1-1", :applied true,
+         [{:title "Level1-1" :applied true
            :children
-           [{:title "Level1-2", :applied true,
+           [{:title "Level1-2" :applied true
              :children
-             [{:title "Level1-3", :applied true}]}]}]}]}]}]})
+             [{:title "Level1-3" :applied true}]}]}]}]}]}]})
 
 (defn- verify-nested-facets-ordered-alphabetically
   "Recursively verify that all of the values at each level in a collection of nested facets are in
@@ -155,13 +155,13 @@
   the last applied term is returned. In the case of searching for a term, only variable-level-1
   should be returned. Both variable-level-2 and variable-level-3 should be omitted from the
   response."
-  {:title "Browse Collections",
+  {:title "Browse Collections"
    :children
-   [{:title "Keywords", :applied true,
+   [{:title "Keywords" :applied true
      :children
-     [{:title "Topic1", :applied true,
+     [{:title "Topic1" :applied true
        :children
-       [{:title "Term1", :applied true,
+       [{:title "Term1" :applied true
          :children
          [{:title "Level1-1", :applied false}]}]}]}]})
 
@@ -289,19 +289,15 @@
   (testing (str "Selecting a field with the same name in another hierarchical field will result in "
                 "only the correct hierarchical field from being applied in the facets.")
     (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all sk-same-vl1))
-    (let [expected {:title "Browse Collections",
+    (let [expected {:title "Browse Collections"
                     :children
-                    [{:title "Keywords",
-                      :applied true,
+                    [{:title "Keywords" :applied true
                       :children
-                      [{:title "Topic1",
-                        :applied true,
+                      [{:title "Topic1" :applied true
                         :children
-                        [{:title "Term1",
-                          :applied true,
+                        [{:title "Term1" :applied true
                           :children
-                          [{:title "Level1-1",
-                            :applied true,
+                          [{:title "Level1-1" :applied true
                             :children [{:title "Level1-2", :applied false}]}]}]}]}]}
           actual (-> (search-and-return-v2-facets)
                      (fu/traverse-links ["Keywords" "Topic1" "Term1" "Level1-1"])
@@ -322,20 +318,16 @@
                 "shows up in two different hierarchies. Stay with me... Then remove the other term "
                 "(the one with the same index as parent) and verify that only the correct "
                 "hierarchical term is applied.")
-    (let [expected {:title "Browse Collections",
+    (let [expected {:title "Browse Collections"
                     :children
-                    [{:title "Keywords"
-                      :applied true
+                    [{:title "Keywords" :applied true
                       :children
-                      [{:title "Topic1"
-                        :applied true
+                      [{:title "Topic1" :applied true
                         :children
-                        [{:title "Term1"
-                          :applied true
+                        [{:title "Term1" :applied true
                           :children
                           [{:title "Another Level" :applied false}
-                           {:title "Level1-1"
-                            :applied true
+                           {:title "Level1-1" :applied true
                             :children [{:title "Level1-2" :applied false}]}]}
                          {:title "Term2" :applied false}]}]}]}
 
