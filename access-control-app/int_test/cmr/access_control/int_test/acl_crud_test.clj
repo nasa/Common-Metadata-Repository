@@ -211,11 +211,11 @@
                                                                  :collection_applicable true
                                                                  :provider_id "PROV1"}}
                                         {:token token}))
-        coll1 (u/save-collection token {:entry-title "coll1"
-                                        :native-id "coll1"
-                                        :entry-id "coll1"
-                                        :short-name "coll1"
-                                        :provider-id "PROV1"})]
+        coll1 (u/save-collection {:entry-title "coll1"
+                                  :native-id "coll1"
+                                  :entry-id "coll1"
+                                  :short-name "coll1"
+                                  :provider-id "PROV1"})]
     (testing "created ACL grants permissions (precursor to testing effectiveness of deletion)"
       (is (= {coll1 ["read"]}
              (json/parse-string
@@ -242,7 +242,13 @@
       (is (= nil
              (ac/get-acl (u/conn-context) acl-concept-id))))
     (testing "tombstone can be retrieved from Metadata DB"
-      (is (:deleted (mdb/get-latest-concept (u/conn-context) acl-concept-id))))
+      (is (= {:deleted true
+              :revision-id 2
+              :metadata ""
+              :concept-id acl-concept-id}
+             (select-keys
+               (mdb/get-latest-concept (u/conn-context) acl-concept-id)
+               [:deleted :revision-id :metadata :concept-id]))))
     (testing "permissions granted by the ACL are no longer in effect"
       (is (= {coll1 []}
              (json/parse-string
