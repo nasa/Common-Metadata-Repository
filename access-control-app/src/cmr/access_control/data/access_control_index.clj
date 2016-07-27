@@ -193,7 +193,6 @@
   (or (:provider-id (:catalog-item-identity acl))
       (:provider-id (:provider-identity acl))))
 
-
 (defn- acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."
   [concept-map]
