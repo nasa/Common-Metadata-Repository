@@ -55,14 +55,6 @@
                            :provider_id "PROV1"
                            :collection_applicable true}})
 
-(def sample-catalog-item-acl-with-provider
-  "A sample catalog item ACL."
-  {:group_permissions [{:user_type "guest" :permissions ["create"]}]
-   :catalog_item_identity {:name "REPLACEME"
-                           :provider_id "PROV1"
-                           :collection_applicable true}})
-
-
 (defn system-acl
   "Creates a system acl for testing with the given target."
   [target]

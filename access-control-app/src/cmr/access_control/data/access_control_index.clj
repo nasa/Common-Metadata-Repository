@@ -193,18 +193,20 @@
   (or (:provider-id (:catalog-item-identity acl))
       (:provider-id (:provider-identity acl))))
 
+
 (defn- acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."
   [concept-map]
   (let [acl (edn/read-string (:metadata concept-map))
-        permitted-groups (acl->permitted-groups acl)]
+        permitted-groups (acl->permitted-groups acl)
+        provider-id (acl->provider-id acl)]
     (assoc (select-keys concept-map [:concept-id :revision-id])
            :display-name (acl->display-name acl)
            :identity-type (acl->identity-type acl)
            :permitted-group permitted-groups
            :permitted-group.lowercase (map str/lower-case permitted-groups)
-           :provider-id (acl->provider-id acl)
-           :provider-id.lowercase (str/lower-case (acl->provider-id acl)))))
+           :provider-id provider-id
+           :provider-id.lowercase (when provider-id (str/lower-case provider-id)))))
 
 (defmethod index-concept :acl
   [context concept-map]
