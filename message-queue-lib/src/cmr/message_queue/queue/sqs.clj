@@ -17,18 +17,29 @@
            com.amazonaws.AmazonServiceException
            com.amazonaws.services.sqs.AmazonSQSClient
            com.amazonaws.services.sns.AmazonSNSClient
+           com.amazonaws.services.sqs.model.CreateQueueRequest
            com.amazonaws.services.sqs.model.GetQueueUrlResult
+           com.amazonaws.services.sqs.model.PurgeQueueRequest
            com.amazonaws.services.sqs.model.ReceiveMessageRequest
            com.amazonaws.services.sqs.model.SendMessageResult
+           com.amazonaws.services.sqs.model.SetQueueAttributesRequest
            com.amazonaws.ClientConfiguration
            com.amazonaws.Protocol
            com.amazonaws.auth.AWSCredentials
            com.amazonaws.auth.DefaultAWSCredentialsProviderChain
            com.amazonaws.regions.Region
            com.amazonaws.regions.Regions
+           java.util.ArrayList
+           java.util.HashMap
            java.io.IOException))
 
 ; (def topic-arn "arn:aws:sns:us-east-1:985962406024:cmr-indexer")
+
+(defn dead-letter-queue
+  "Returns the dead-letter-queue name for a given queue name. The
+  given queue name should already be normalized."
+  [queue]
+  (str queue "_dead_letter_queue"))
 
 (defn topic-arn->exchange-name
   "Pull an exchange name out of a topic ARN."
@@ -83,26 +94,60 @@
         (finally
           (info "Async go handler for queue" queue-name "completing."))))))
 
+(defn- create-queue
+ "Create a queue and its dead-letter-queue if they don't already exist and connect the two."
+ [sqs-client queue-name]
+ (let [q-name (normalize-queue-name queue-name)
+       dlq-name (dead-letter-queue q-name)
+       ;; Create thde dead-letter-queue first and get its url
+       dlq-url (.getQueueUrl (.createQueue sqs-client dlq-name))
+       ;; get the dead-letter-queue arn
+       dlq-attrs (->> (java.util.ArrayList. ["QueueArn"])
+                      (.getQueueAttributes sqs-client dlq-url)
+                      .getAttributes
+                      (into {}))
+       dlq-arn (get dlq-attrs "QueueArn")
+       create-queue-request (CreateQueueRequest. q-name)
+       ;; the policty that sets retries and what dead-letter-queue to use
+       redrive-policy (str "{\"maxReceiveCount\":\"5\", \"deadLetterTargetArn\": \"" dlq-arn "\"}")
+       ;; create the primary queue
+       queue-url (.getQueueUrl (.createQueue sqs-client q-name))
+       q-attrs (->> {"RedrivePolicy" redrive-policy}
+                    java.util.HashMap.)
+       set-queue-attrs-request (SetQueueAttributesRequest.)
+       _ (.setAttributes set-queue-attrs-request q-attrs)
+       _ (.setQueueUrl set-queue-attrs-request queue-url)]
+    (.setQueueAttributes sqs-client set-queue-attrs-request)))
+
 (defrecord SQSQueueBroker
  [
    ;; Connection to AWS SNS
    sns-client
 
    ;; Connection to AWS SQS
-   sqs-client]
+   sqs-client
+
+   ;; queues known to this broker
+   queues
+
+   ;; exchanges (topics) known to this broker
+   exchanges]
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  lifecycle/Lifecycle
 
   (start
     [this system]
-    (-> this
-        (assoc :sns-client (AmazonSNSClient.))
-        (assoc :sqs-client (AmazonSQSClient.))))
+    (let [sqs-client (AmazonSQSClient.)
+          sns-client (AmazonSNSClient.)
+          queues (:queues this)]
+      (doseq [queue-name queues]
+        (create-queue sqs-client queue-name))
+      (assoc this :sns-client sns-client :sqs-client sqs-client)))
 
   (stop
     [this system]
-    
+
     this)
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   queue/Queue
@@ -144,7 +189,20 @@
       (create-async-handler this queue-name handler)))
 
   (reset
-     [this])
+     [this]
+     (println "RESETTING QUEUE BROKER")
+     (let [sqs-client (:sqs-client this)]
+       (doseq [queue (:queues this)
+               :let [queue-name (normalize-queue-name queue)
+                     dlq-name (dead-letter-queue queue-name)
+                     queue-url (.getQueueUrl (.getQueueUrl sqs-client queue-name))
+                     dlq-url (.getQueueUrl (.getQueueUrl sqs-client dlq-name))
+                     q-purge-req (PurgeQueueRequest. queue-url)
+                     dlq-purge-req (PurgeQueueRequest. dlq-url)]]
+         (.purgeQueue sqs-client q-purge-req)
+         (.purgeQueue sqs-client dlq-purge-req))
+       ;; Must wait 60 secondons between calls to purge a queue, this is a temporary hack
+       (Thread/sleep 60000)))
 
   (health
      [this]
@@ -152,8 +210,8 @@
 
 (defn create-queue-broker
   "Creates a broker that uses SNS/SQS"
-  [{:keys [queues exchanges queues]}]
-  (->SQSQueueBroker nil nil))
+  [{:keys [queues exchanges]}]
+  (->SQSQueueBroker nil nil queues exchanges))
 
 (comment
   (cmr.system-int-test.utils.ingest-util/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
@@ -165,6 +223,8 @@
   (queue/get-queues-bound-to-exchange broker "cmr_ingest_exchange")
   (queue/subscribe broker "cmr-test-queue" (fn [msg] (println "Got Message: " msg)))
   (queue/publish-to-queue broker "cmr-test-queue" "{\"body\": \"ABC\"}")
+
+  (create-queue broker "index.queue.test")
 
   (def client (AmazonSQSClient.))
   (def queue-url (.getQueueUrl (.getQueueUrl client "cmr-index-queue")))

@@ -74,7 +74,8 @@
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  (system/set-dev-system-message-queue-type! :in-memory)
+  (system/set-dev-system-message-queue-type! :aws)
+  ; (system/set-dev-system-message-queue-type! :in-memory)
   ; (system/set-dev-system-message-queue-type! :external)
 
   (sit-sys/set-logging-level @settings/logging-level)

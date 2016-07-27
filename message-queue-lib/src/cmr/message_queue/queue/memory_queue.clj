@@ -98,7 +98,6 @@
 
   (publish-to-queue
     [this queue-name msg]
-    (println "PUBLISHING TO IN_MEMORY QUEUE")
     ;; Puts the message on the channel. It is encoded as json to simulate the Rabbit MQ behavior
     (if-let [chan (queues-to-channels queue-name)]
       (a/>!! chan (json/generate-string msg))
@@ -110,7 +109,6 @@
 
   (publish-to-exchange
     [this exchange-name msg]
-    (println "PUBLISHING TO IN_MEMORY EXCHANGE")
     (every? #(queue/publish-to-queue this % msg)
             (exchanges-to-queue-sets exchange-name)))
 

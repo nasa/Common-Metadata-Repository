@@ -63,7 +63,6 @@
   Returns true if the message was successfully enqueued and false otherwise."
   [queue-broker exchange-name msg]
   (when-not (try
-              ; (println "PUBLISHING")
               (publish-to-exchange queue-broker exchange-name msg)
               (catch Exception e
                 (error e)
