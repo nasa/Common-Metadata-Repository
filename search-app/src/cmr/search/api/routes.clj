@@ -30,6 +30,7 @@
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.services.health-service :as hs]
             [cmr.search.api.tags-api :as tags-api]
+            [cmr.umm-spec.versioning :as umm-version]
             [cmr.acl.core :as acl]
             [cmr.search.api.keyword :as keyword-api]
             [cmr.common-app.api.routes :as cr]
@@ -153,10 +154,10 @@
                              (mt/extract-header-mime-type valid-mime-types headers "accept" true)
                              (mt/extract-header-mime-type valid-mime-types headers "content-type" false))
                          default-mime-type)]
-     ;; TODO the following code may no longer be necessary. mime-type->format already handles getting the version.
      (if (contains? #{:umm-json :umm-json-results} result-format)
        {:format result-format
-        :version (mt/version-of (mt/get-header headers "accept"))}
+        :version (or (mt/version-of (mt/get-header headers "accept"))
+                     umm-version/current-version)}
        result-format))))
 
 (defn- process-params
@@ -181,7 +182,7 @@
 (defn- search-response
   "Returns the response map for finding concepts"
   [response]
-  (cr/search-response (update response :result-format rfh/search-result-format->mime-type)))
+  (cr/search-response (update response :result-format mt/format->mime-type)))
 
 (defn- find-concepts-by-json-query
   "Invokes query service to parse the JSON query, find results and return the response."

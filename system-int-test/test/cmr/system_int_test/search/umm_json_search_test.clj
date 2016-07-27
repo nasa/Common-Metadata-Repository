@@ -161,6 +161,7 @@
           (assert-umm-jsons-match version collections response))
         "Latest version is default with accept header of UMM JSON Search Results"
         umm-version/current-version mt/umm-json-results nil
+
         "Latest version is default with accept header of UMM JSON"
         umm-version/current-version mt/umm-json nil
 
@@ -169,6 +170,8 @@
         "Retrieve older version with accept header of UMM JSON"
         "1.3" (str mt/umm-json ";version=1.3") nil
 
+        "Retrieve specified version 1.4 with URL extension"
+        "1.4" nil "umm_json_v1_4"
         "Retrieve specified version 1.3 with URL extension"
         "1.3" nil "umm_json_v1_3"
         "Retrieve specified version 1.0 with URL extension"
@@ -256,7 +259,7 @@
     (index/wait-until-indexed)
     (testing "granule umm-json search is not supported"
       (is (= {:status 400
-              :errors ["The mime type [application/vnd.nasa.cmr.umm_results+json] is not supported for granules."]}
+              :errors ["The mime type [application/vnd.nasa.cmr.umm_results+json] with version [1.4] is not supported for granules."]}
              (select-keys (search/find-concepts-umm-json :granule {}) [:status :errors]))))
     (testing "Searching with invalid UMM JSON extension"
       (is (= {:status 400

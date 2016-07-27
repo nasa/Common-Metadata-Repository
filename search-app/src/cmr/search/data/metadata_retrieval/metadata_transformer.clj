@@ -8,7 +8,6 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.mime-types :as mt]
             [cmr.common-app.services.search.query-model :as qm]
-            [cmr.search.services.result-format-helper :as rfh]
 
             ;; UMM library
             [cmr.umm.core :as umm-lib-core]
@@ -141,6 +140,7 @@
 (defn transform-to-multiple-formats
   "Transforms the concept into multiple different formats. Returns a map of target format to metadata."
   [context concept target-formats ignore-exceptions?]
+  {:pre [(not (:deleted concept))]}
   (->> target-formats
        (group-by #(transform-strategy concept %))
        (keep (fn [[k v]]
@@ -159,6 +159,7 @@
 (defn transform
   "Transforms a concept to the target format given returning metadata."
   [context concept target-format]
+  {:pre [(not (:deleted concept))]}
   (if (= target-format :native)
     (:metadata concept)
     (let [strategy (transform-strategy concept target-format)
@@ -167,12 +168,16 @@
       (get target-format-result-map target-format))))
 
 (defn transform-concepts
-  "Transforms concepts to the given format returning an updated concept."
+  "Transforms concepts to the given format returning an updated concept. Handles deleted concepts."
   [context concepts target-format]
   (if (= :native target-format)
     concepts
     (u/fast-map (fn [concept]
-                  (assoc concept
-                         :format (rfh/search-result-format->mime-type target-format)
-                         :metadata (transform context concept target-format)))
+                  (if (:deleted concept)
+                    ;; A deleted concept needs no transformation.
+                    (assoc concept
+                           :format (mt/format->mime-type target-format))
+                    (assoc concept
+                           :format (mt/format->mime-type target-format)
+                           :metadata (transform context concept target-format))))
                 concepts)))

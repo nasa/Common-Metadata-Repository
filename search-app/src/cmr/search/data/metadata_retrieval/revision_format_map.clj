@@ -6,7 +6,6 @@
            [clojure.string :as str]
            [clojure.set :as set]
            [cmr.common.log :as log :refer (debug info warn error)]
-           [cmr.search.services.result-format-helper :as rfh]
            [cmr.common.mime-types :as mt]
            [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]))
 
@@ -98,8 +97,8 @@
      :concept-type :collection
      :metadata (get-metadata-in-format target-format revision-format-map)
      :format (if (= :native target-format)
-               (rfh/search-result-format->mime-type (:native-format revision-format-map))
-               (rfh/search-result-format->mime-type target-format))}))
+               (mt/format->mime-type (:native-format revision-format-map))
+               (mt/format->mime-type target-format))}))
 
 (defn revision-format-maps->concepts
   "Converts a set of revision format maps to concepts with the target format."
