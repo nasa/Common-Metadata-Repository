@@ -54,7 +54,6 @@
 (defn- collection->umm-json
   "Returns the response of a search in UMM JSON format."
   [version collection]
-  (proto-repl.saved-values/save 2)
   (if (:deleted collection)
     {:meta (collection->umm-json-meta collection)}
     (let [ingested-metadata (umm-legacy/generate-metadata
