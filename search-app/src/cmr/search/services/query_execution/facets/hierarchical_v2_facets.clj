@@ -98,15 +98,29 @@
   "Returns a list of all of the indexes for the given hierarchical field within the query-params
   that have the provided value.
   Example: Params of {\"foo[2][bar]\" \"alpha\"} \"foo\" \"bar\" \"alpha\" returns #{\"2\"}."
-  [query-params parent-field subfield value]
-  (when (and parent-field subfield value)
+  [query-params base-field subfield value]
+  (when (and base-field subfield value)
     (let [value-lowercase (str/lower-case value)
-          subfield-reg-ex (re-pattern (str parent-field "\\[(\\d+)\\]\\[" subfield "\\]"))
+          subfield-reg-ex (re-pattern (str base-field "\\[(\\d+)\\]\\[" subfield "\\]"))
           relevant-indexes (keep (fn [[k v]]
                                    (when (= value-lowercase (str/lower-case v))
                                      (second (re-matches subfield-reg-ex k))))
                                  query-params)]
-      (set relevant-indexes))))
+      (set (map #(Integer/parseInt %) relevant-indexes)))))
+
+(defn- get-index-for-field-and-value
+  "Returns the first index for the given hierarchical field within the query-params
+  that has the provided value.
+  Example: Params of {\"foo[2][bar]\" \"alpha\"} \"foo\" \"bar\" \"alpha\" returns #{\"2\"}."
+  [query-params base-field subfield value]
+  (when (and base-field subfield value)
+    (let [value-lowercase (str/lower-case value)
+          subfield-regex (re-pattern (str base-field "\\[(\\d+)\\]\\[" subfield "\\]"))]
+      (some-> (for [[k v] query-params
+                    :when (= value-lowercase (str/lower-case v))]
+                (second (re-matches subfield-regex k)))
+              first
+              Integer/parseInt))))
 
 (defn- find-applied-children
   "Returns a sequence of tuples for any child facet that is applied in the current search query.
@@ -146,20 +160,20 @@
   "Returns true if the given hierarchical field and value have any applied sibling values in the
   provided query params. Comparisons to the provided value are made case in a case insensitive
   manner."
-  [query-params hierarchical-field parent-subfield parent-value subfield value]
+  [query-params base-field parent-subfield parent-value subfield value]
   (some?
     (when (and parent-value value)
       (let [parent-value-lowercase (str/lower-case parent-value)
             value-lowercase (str/lower-case value)
             query-params (util/map-values str/lower-case query-params)
-            subfield-regex (re-pattern (str hierarchical-field "\\[(\\d+)\\]\\[" subfield "\\]"))
+            subfield-regex (re-pattern (str base-field "\\[(\\d+)\\]\\[" subfield "\\]"))
             same-level-indexes (for [[k v] query-params
                                      :when (not= value-lowercase (str/lower-case v))]
                                   (second (re-matches subfield-regex k)))]
         ;; Filter the query-params to just those with the same index, parent-subfield, and
         ;; parent-value when compared case insensitively
         (seq (for [idx same-level-indexes
-                   :let [query-param (str hierarchical-field "[" idx "][" parent-subfield "]")]
+                   :let [query-param (str base-field "[" idx "][" parent-subfield "]")]
                    :when (= parent-value-lowercase (get query-params query-param))]
                query-param))))))
 
@@ -208,22 +222,24 @@
     (let [snake-parent-field (csk/->snake_case_string parent-field)
           snake-parent-subfield (when parent-subfield (csk/->snake_case_string parent-subfield))
           snake-field (csk/->snake_case_string field)
-          ; parent-subfield-indexes (get-indexes-in-params query-params snake-parent-field
-          ;                                                snake-parent-subfield parent-value)
           ancestors-map (if parent-value
-                          (assoc ancestors-map snake-parent-field parent-value)
+                          (assoc ancestors-map snake-parent-subfield parent-value)
                           ancestors-map)
           applied? (field-applied? query-params snake-parent-field snake-field)
           ;; Index in the param name does not matter
           param-name (format "%s[0][%s]" snake-parent-field snake-field)
+          ; parent-index (get-index-for-field-and-value query-params snake-parent-field
+          ;                                             snake-parent-subfield parent-value)
+          parent-indexes (get-indexes-in-params query-params snake-parent-field
+                                                snake-parent-subfield parent-value)
           ;; If no value is applied in the search for the given field we can safely call create
           ;; apply link. Otherwise we need to determine if an apply or a remove link should be
           ;; generated.
           generate-links-fn (if applied?
                               (partial lh/create-link-for-hierarchical-field base-url query-params
-                                       param-name ancestors-map)
+                                       param-name ancestors-map parent-indexes)
                               (partial lh/create-apply-link-for-hierarchical-field base-url
-                                       query-params param-name ancestors-map))
+                                       query-params param-name ancestors-map parent-indexes))
           recursive-parse-fn (partial parse-hierarchical-bucket-v2 parent-field field
                                       (rest field-hierarchy) base-url query-params ancestors-map)
           has-siblings-fn (partial has-siblings? query-params snake-parent-field
@@ -310,7 +326,7 @@
                                   (csk/->snake_case_string field)
                                   (csk/->snake_case_string subfield))
                link (lh/create-link-for-hierarchical-field
-                     base-url query-params param-name nil search-term false nil)]]
+                     base-url query-params param-name nil nil search-term false nil)]]
      (v2h/generate-hierarchical-filter-node search-term 0 link nil)))
 
 (def earth-science-category-string

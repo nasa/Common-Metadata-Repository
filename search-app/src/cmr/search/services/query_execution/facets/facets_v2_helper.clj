@@ -73,7 +73,7 @@
 (defn- any-facet-applied?
   "Returns true if any of the facets have an applied value of true, false otherwise."
   [facets]
-  (some? (seq (filter :applied facets))))
+  (-> (filter :applied facets) seq some?))
 
 (defn generate-hierarchical-filter-node
   "Generates a filter node for a hierarchical field. Takes a title, count, links and sub-facets."
