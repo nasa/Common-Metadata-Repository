@@ -119,6 +119,26 @@
        _ (.setQueueUrl set-queue-attrs-request queue-url)]
     (.setQueueAttributes sqs-client set-queue-attrs-request)))
 
+(defn- create-exchange
+ "Creaete an SNS topic to be used as an exchange."
+ [sns-client exchange-name]
+ (.createTopic sns-client (normalize-queue-name exchange-name)))
+
+(defn- bind-queue-to-exchange
+ "Bind a queue to an SNS Topic representing and exchange."
+ [sns-client sqs-client exchange-name queue-name]
+ (let [ex-name (normalize-queue-name exchange-name)
+       q-name (normalize-queue-name queue-name)
+       topic (get-topic sns-client ex-name)
+       topic-arn (.getTopicArn topic)
+       q-url (.getQueueUrl (.getQueueUrl sqs-client q-name))
+       q-attrs (->> (java.util.ArrayList. ["QueueArn"])
+                    (.getQueueAttributes sqs-client q-url)
+                    .getAttributes
+                    (into {}))
+       q-arn (get q-attrs "QueueArn")]
+    (.subscribe sns-client topic-arn "sqs" q-arn)))
+
 (defrecord SQSQueueBroker
  [
    ;; Connection to AWS SNS
@@ -131,7 +151,10 @@
    queues
 
    ;; exchanges (topics) known to this broker
-   exchanges]
+   exchanges
+
+   ;; a map of queues to seqeunces of exchange names to which they should be bound
+   bindings]
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  lifecycle/Lifecycle
@@ -139,15 +162,18 @@
   (start
     [this system]
     (let [sqs-client (AmazonSQSClient.)
-          sns-client (AmazonSNSClient.)
-          queues (:queues this)]
+          sns-client (AmazonSNSClient.)]
       (doseq [queue-name queues]
         (create-queue sqs-client queue-name))
+      (doseq [exchange-name exchanges]
+        (create-exchange sns-client exchange-name))
+      (doseq [queue (keys bindings)
+              exchange (get bindings queue)]
+        (bind-queue-to-exchange sns-client sqs-client exchange queue))
       (assoc this :sns-client sns-client :sqs-client sqs-client)))
 
   (stop
     [this system]
-
     this)
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   queue/Queue
@@ -190,19 +216,19 @@
 
   (reset
      [this]
-     (println "RESETTING QUEUE BROKER")
-     (let [sqs-client (:sqs-client this)]
-       (doseq [queue (:queues this)
-               :let [queue-name (normalize-queue-name queue)
-                     dlq-name (dead-letter-queue queue-name)
-                     queue-url (.getQueueUrl (.getQueueUrl sqs-client queue-name))
-                     dlq-url (.getQueueUrl (.getQueueUrl sqs-client dlq-name))
-                     q-purge-req (PurgeQueueRequest. queue-url)
-                     dlq-purge-req (PurgeQueueRequest. dlq-url)]]
-         (.purgeQueue sqs-client q-purge-req)
-         (.purgeQueue sqs-client dlq-purge-req))
-       ;; Must wait 60 secondons between calls to purge a queue, this is a temporary hack
-       (Thread/sleep 60000)))
+     (println "RESETTING QUEUE BROKER"))
+    ;  (let [sqs-client (:sqs-client this)]
+    ;    (doseq [queue (:queues this)
+    ;            :let [queue-name (normalize-queue-name queue)
+    ;                  dlq-name (dead-letter-queue queue-name)
+    ;                  queue-url (.getQueueUrl (.getQueueUrl sqs-client queue-name))
+    ;                  dlq-url (.getQueueUrl (.getQueueUrl sqs-client dlq-name))
+    ;                  q-purge-req (PurgeQueueRequest. queue-url)
+    ;                  dlq-purge-req (PurgeQueueRequest. dlq-url)]]
+    ;      (.purgeQueue sqs-client q-purge-req)
+    ;      (.purgeQueue sqs-client dlq-purge-req))
+    ;    ;; Must wait 60 secondons between calls to purge a queue, this is a temporary hack
+    ;    (Thread/sleep 60000)))
 
   (health
      [this]
@@ -210,8 +236,8 @@
 
 (defn create-queue-broker
   "Creates a broker that uses SNS/SQS"
-  [{:keys [queues exchanges]}]
-  (->SQSQueueBroker nil nil queues exchanges))
+  [{:keys [queues exchanges queues-to-exchanges]}]
+  (->SQSQueueBroker nil nil queues exchanges queues-to-exchanges))
 
 (comment
   (cmr.system-int-test.utils.ingest-util/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})

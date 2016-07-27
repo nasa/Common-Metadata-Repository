@@ -7,7 +7,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.mime-types :as mt]
-            [cmr.common.util :refer [are2] :as util]
+            [cmr.common.util :refer [are2 are3] :as util]
             [cmr.umm-spec.core :as umm-spec]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]
             [cmr.umm-spec.test.location-keywords-helper :as lkt]))
@@ -49,7 +49,7 @@
                                                 :short-name "s1"}))]
     (index/wait-until-indexed)
     (testing "find-references-with-all-revisions parameter"
-      (are2 [collections params]
+      (are3 [collections params]
             (d/refs-match? collections (search/find-refs :collection params))
 
             ;; Should not get matching tombstone for second collection back
