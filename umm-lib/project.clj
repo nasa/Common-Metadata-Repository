@@ -29,7 +29,7 @@
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [pjstadig/humane-test-output "0.7.0"]
                         [criterium "0.4.3"]
-                        [proto-repl "0.3.0"]]
+                        [proto-repl "0.3.1"]]
 
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)

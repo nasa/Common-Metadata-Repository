@@ -7,28 +7,18 @@
             [clojure.string :as str]
             [cmr.common.util :as util :refer [update-in-each]]
             [cmr.umm-spec.util :as su]
-            [cmr.umm-spec.iso19115-2-util :as iso-util]
-            [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.date-util :as du]
-            [cmr.umm-spec.models.collection :as umm-c]
-            [cmr.umm-spec.models.common :as cmn]
-            [cmr.spatial.mbr :as m]
             ;; Required for loading service models for testing
             [cmr.umm-spec.models.service]
-            [cmr.umm-spec.related-url :as ru-gen]
-            [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
-            [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as echo10-spatial-gen]
-            [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as echo10-spatial-parse]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
-            [cmr.umm-spec.location-keywords :as lk]
-            [cmr.umm-spec.test.location-keywords-helper :as lkt]
-            [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]))
-
-(def serf-organization-role
-  "UMM-S Role that corresponds to SERVICE PROVIDER CONTACT role in SERF"
-  "RESOURCEPROVIDER")
+            [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
+            [cmr.umm-spec.test.echo10-expected-conversion :as echo10]
+            [cmr.umm-spec.test.dif9-expected-conversion :as dif9]
+            [cmr.umm-spec.test.dif10-expected-conversion :as dif10]
+            [cmr.umm-spec.test.serf-expected-conversion :as serf]
+            [cmr.umm-spec.test.iso19115-expected-conversion :as iso19115]
+            [cmr.umm-spec.test.iso-smap-expected-conversion :as iso-smap]
+            [cmr.umm-spec.models.common :as cmn]
+            [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]))
 
 (def example-collection-record
   "An example record with fields supported by most formats."
@@ -215,7 +205,26 @@
                        :MiddleName "D"
                        :LastName "Smith"}]
      :DataCenters [{:Roles ["ORIGINATOR"]
-                    :ShortName "LPDAAC"}
+                    :ShortName "LPDAAC"
+                    :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
+                                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+                                      :ContactInformation [{:RelatedUrls [{:Description "Contact related url description"
+                                                                           :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                           :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                                           :Title "contact related url title"
+                                                                           :MimeType "application/html"}]
+                                                            :ServiceHours "Weekdays 9AM - 5PM"
+                                                            :ContactInstruction "sample contact instruction"
+                                                            :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                                                {:Type "Email" :Value "cmr@nasa.gov"}]
+                                                            :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                                         :City "Greenbelt"
+                                                                         :StateProvince "MD"
+                                                                         :PostalCode "20771"
+                                                                         :Country "U.S.A."}]}]
+                                      :FirstName "John"
+                                      :MiddleName "D"
+                                      :LastName "Smith"}]}
                    {:Roles ["ARCHIVER" "DISTRIBUTOR"]
                     :ShortName "TNRIS"
                     :LongName "Texas Natural Resources Information System"
@@ -238,7 +247,40 @@
                                                                          :Country "U.S.A."}]}]
                                       :FirstName "John"
                                       :MiddleName "D"
-                                      :LastName "Smith"}]}]}))
+                                      :LastName "Smith"}]}
+                   {:Roles ["ARCHIVER" "DISTRIBUTOR"]
+                    :ShortName "NSIDC"
+                    :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
+                    :ContactInformation [{:RelatedUrls [{:Description "Contact related url description"
+                                                         :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                         :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                         :Title "contact related url title"
+                                                         :MimeType "application/html"}]
+                                          :ServiceHours "Weekdays 9AM - 5PM"
+                                          :ContactInstruction "sample contact instruction"
+                                          :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                              {:Type "Email" :Value "cmr@nasa.gov"}]
+                                          :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                       :City "Greenbelt"
+                                                       :StateProvince "MD"
+                                                       :PostalCode "20771"
+                                                       :Country "U.S.A."}]}]
+                    :ContactGroups [{:Roles ["Investigator"]
+                                     :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
+                                     :ContactInformation [{:RelatedUrls [{:Description "Contact group related url description"
+                                                                          :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                          :URLs ["www.contact.group.foo.com"]
+                                                                          :Title "contact group related url title"
+                                                                          :MimeType "application/html"}]
+                                                           :ServiceHours "Weekdays 9AM - 5PM"
+                                                           :ContactInstruction "sample contact group instruction"
+                                                           :ContactMechanisms [{:Type "Fax" :Value "301-851-1234"}]
+                                                           :Addresses [{:StreetAddresses ["5700 Rivertech Ct"]
+                                                                        :City "Riverdale"
+                                                                        :StateProvince "MD"
+                                                                        :PostalCode "20774"
+                                                                        :Country "U.S.A."}]}]
+                                     :GroupName "NSIDC_IceBridge"}]}]}))
 
 (def example-service-record
   "An example record with fields supported by most formats."
@@ -343,22 +385,6 @@
                           {:ShortName "OGC/WCS",
                            :LongName "Open Geospatial Consortium/Web Coverage Service"}]}))
 
-(defn- prune-empty-maps
-  "If x is a map, returns nil if all of the map's values are nil, otherwise returns the map with
-  prune-empty-maps applied to all values. If x is a collection, returns the result of keeping the
-  non-nil results of calling prune-empty-maps on each value in x."
-  [x]
-  (cond
-    (map? x) (let [pruned (reduce (fn [m [k v]]
-                                    (assoc m k (prune-empty-maps v)))
-                                  x
-                                  x)]
-               (when (seq (keep val pruned))
-                 pruned))
-    (vector? x) (when-let [pruned (prune-empty-maps (seq x))]
-                  (vec pruned))
-    (seq? x)    (seq (keep prune-empty-maps x))
-    :else x))
 
 (defmulti ^:private umm->expected-convert
   "Returns UMM collection that would be expected when converting the source UMM-C record into the
@@ -370,849 +396,34 @@
   [umm-coll _]
   umm-coll)
 
-;;; Utililty Functions
-
-(defn fixup-dif10-data-dates
-  "Returns DataDates seq as it would be parsed from ECHO and DIF 10 XML document."
-  [data-dates]
-  (when (seq data-dates)
-    (let [date-types (group-by :Type data-dates)]
-      (filter some?
-              (for [date-type ["CREATE" "UPDATE" "REVIEW" "DELETE"]]
-                (last (sort-by :Date (get date-types date-type))))))))
-
-(defn fixup-echo10-data-dates
-  [data-dates]
-  (seq
-    (remove #(= "REVIEW" (:Type %))
-            (fixup-dif10-data-dates data-dates))))
-
-(defn single-date->range
-  "Returns a RangeDateTimeType for a single date."
-  [date]
-  (cmn/map->RangeDateTimeType {:BeginningDateTime date
-                               :EndingDateTime    date}))
-
-(defn split-temporals
-  "Returns a seq of temporal extents with a new extent for each value under key
-  k (e.g. :RangeDateTimes) in each source temporal extent."
-  [k temporal-extents]
-  (reduce (fn [result extent]
-            (if-let [values (get extent k)]
-              (concat result (map #(assoc extent k [%])
-                                  values))
-              (concat result [extent])))
-          []
-          temporal-extents))
-
-(defn- date-time->date
-  "Returns the given datetime to a date."
-  [date-time]
-  (some->> date-time
-           (f/unparse (f/formatters :date))
-           (f/parse (f/formatters :date))))
-
-;;; Format-Specific Translation Functions
-
-(defn- echo10-expected-fees
-  "Returns the fees if it is a number string, i.e., can be converted to a decimal, otherwise nil."
-  [fees]
-  (when fees
-    (try
-      (format "%9.2f" (Double. fees))
-      (catch NumberFormatException e))))
-
-(defn- echo10-expected-distributions
-  "Returns the ECHO10 expected distributions for comparing with the distributions in the UMM-C
-  record. ECHO10 only has one Distribution, so here we just pick the first one."
-  [distributions]
-  (some-> distributions
-          first
-          (assoc :Sizes nil :DistributionMedia nil)
-          (update-in [:Fees] echo10-expected-fees)
-          su/convert-empty-record-to-nil
-          vector))
-
-;; ECHO 10
-
-(defn fix-echo10-dif10-polygon
-  "Because the generated points may not be in valid UMM order (closed and CCW), we need to do some
-  fudging here."
-  [gpolygon]
-  (let [fix-points (fn [points]
-                     (-> points
-                         su/closed-counter-clockwise->open-clockwise
-                         su/open-clockwise->closed-counter-clockwise))]
-    (-> gpolygon
-        (update-in [:Boundary :Points] fix-points)
-        (update-in-each [:ExclusiveZone :Boundaries] update-in [:Points] fix-points))))
-
-(def relation-set #{"GET DATA"
-                    "GET RELATED VISUALIZATION"
-                    "VIEW RELATED INFORMATION"})
-
-(defn- expected-echo10-related-urls
-  [related-urls]
-  (seq (for [related-url related-urls
-             :let [[rel] (:Relation related-url)]
-             url (:URLs related-url)]
-         (-> related-url
-             (assoc :Title nil :URLs [url])
-             (update-in [:FileSize] (fn [file-size]
-                                      (when (and file-size
-                                                 (= rel "GET RELATED VISUALIZATION"))
-                                        (when-let [byte-size (ru-gen/convert-to-bytes
-                                                               (:Size file-size) (:Unit file-size))]
-                                          (assoc file-size :Size (/ (int byte-size) 1024) :Unit "KB")))))
-             (update-in [:Relation] (fn [[rel]]
-                                      (when (relation-set rel)
-                                        [rel])))))))
-
-(defn- geometry-with-coordinate-system
-  "Returns the geometry with default CoordinateSystem added if it doesn't have a CoordinateSystem."
-  [geometry]
-  (when geometry
-    (update-in geometry [:CoordinateSystem] #(if % % "CARTESIAN"))))
-
-(defn- expected-echo10-spatial-extent
-  "Returns the expected ECHO10 SpatialExtent for comparison with the umm model."
-  [spatial-extent]
-  (let [spatial-extent (prune-empty-maps spatial-extent)]
-    (if (get-in spatial-extent [:HorizontalSpatialDomain :Geometry])
-      (update-in spatial-extent
-                 [:HorizontalSpatialDomain :Geometry]
-                 geometry-with-coordinate-system)
-      spatial-extent)))
-
-(defn fix-location-keyword-conversion
-  "Takes a non-kms keyword and converts it to the expected value"
-  [location-keywords]
-  ;;Convert the Location Keyword to a leaf.
-  (let [leaf-values (lk/location-keywords->spatial-keywords location-keywords)
-        translated-values (lk/translate-spatial-keywords
-                            (lkt/setup-context-for-test lkt/sample-keyword-map) leaf-values)]
-    ;;If the keyword exists in the hierarchy
-    (seq (map #(umm-c/map->LocationKeywordType %) translated-values))))
-
 (defmethod umm->expected-convert :echo10
   [umm-coll _]
-  (-> umm-coll
-      (update-in [:TemporalExtents] (comp seq (partial take 1)))
-      (update-in [:DataDates] fixup-echo10-data-dates)
-      (assoc :DataLanguage nil)
-      (assoc :Quality nil)
-      (assoc :UseConstraints nil)
-      (assoc :PublicationReferences nil)
-      (assoc :AncillaryKeywords nil)
-      (assoc :ISOTopicCategories nil)
-      (assoc :DataCenters [su/not-provided-data-center])
-      (assoc :ContactGroups nil)
-      (assoc :ContactPersons nil)
-      (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
-      (update-in [:Distributions] echo10-expected-distributions)
-      (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons]
-                      fix-echo10-dif10-polygon)
-      (update-in [:SpatialExtent] expected-echo10-spatial-extent)
-      (update-in-each [:AdditionalAttributes] assoc :Group nil :MeasurementResolution nil
-                      :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
-                      :ValueAccuracyExplanation nil :UpdateDate nil)
-      (update-in-each [:Projects] assoc :Campaigns nil)
-      (update-in [:RelatedUrls] expected-echo10-related-urls)
-      ;; We can't restore Detailed Location because it doesn't exist in the hierarchy.
-      (update-in [:LocationKeywords] fix-location-keyword-conversion)
-      ;; CMR 2716 Getting rid of SpatialKeywords but keeping them for legacy purposes.
-      (assoc :SpatialKeywords nil)
-      (assoc :PaleoTemporalCoverages nil)))
-
-;; DIF 9
-
-(defn dif9-temporal
-  "Returns the expected value of a parsed DIF 9 UMM record's :TemporalExtents. All dates under
-  SingleDateTimes are converted into ranges and concatenated with all ranges into a single
-  TemporalExtentType."
-  [temporal-extents]
-  (let [singles (mapcat :SingleDateTimes temporal-extents)
-        ranges (mapcat :RangeDateTimes temporal-extents)
-        all-ranges (concat ranges
-                           (map single-date->range singles))]
-    (when (seq all-ranges)
-      [(cmn/map->TemporalExtentType
-         {:RangeDateTimes all-ranges})])))
-
-(defn dif-publication-reference
-  "Returns the expected value of a parsed DIF 9 publication reference"
-  [pub-ref]
-  (-> pub-ref
-      (update-in [:DOI] (fn [doi] (when doi (assoc doi :Authority nil))))
-      (update-in [:RelatedUrl]
-                 (fn [related-url]
-                   (when related-url (assoc related-url
-                                            :URLs (seq (remove nil? [(first (:URLs related-url))]))
-                                            :Description nil
-                                            :Relation nil
-                                            :Title nil
-                                            :MimeType nil
-                                            :FileSize nil))))))
-
-(defn- expected-related-urls-for-dif-serf
-  "Expected Related URLs for DIF and SERF concepts"
-  [related-urls]
-  (seq (for [related-url related-urls]
-         (assoc related-url :Title nil :FileSize nil :MimeType nil))))
-
-(defn- expected-dif-instruments
-  "Returns the expected DIF instruments for the given instruments"
-  [instruments]
-  (seq (map #(assoc % :Characteristics nil :Technique nil :NumberOfSensors nil :Sensors nil
-                    :OperationalModes nil) instruments)))
-
-(defn- expected-dif-platform
-  "Returns the expected DIF platform for the given platform"
-  [platform]
-  (-> platform
-      (assoc :Type nil :Characteristics nil)
-      (update-in [:Instruments] expected-dif-instruments)))
-
-(defn- expected-dif-platforms
-  "Returns the expected DIF parsed platforms for the given platforms."
-  [platforms]
-  (let [platforms (seq (map expected-dif-platform platforms))]
-    (if (= 1 (count platforms))
-      platforms
-      (if-let [instruments (seq (mapcat :Instruments platforms))]
-        (conj (map #(assoc % :Instruments nil) platforms)
-              (cmn/map->PlatformType {:ShortName su/not-provided
-                                      :LongName su/not-provided
-                                      :Instruments instruments}))
-        platforms))))
-
-(defn- expected-dif-spatial-extent
-  "Returns the expected DIF parsed spatial extent for the given spatial extent."
-  [spatial]
-  (let [spatial (-> spatial
-                    (assoc :SpatialCoverageType "HORIZONTAL"
-                           :OrbitParameters nil
-                           :VerticalSpatialDomains nil)
-                    (update-in [:HorizontalSpatialDomain] assoc
-                               :ZoneIdentifier nil)
-                    (update-in [:HorizontalSpatialDomain :Geometry] assoc
-                               :CoordinateSystem "CARTESIAN"
-                               :Points nil
-                               :Lines nil
-                               :GPolygons nil)
-                    (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc
-                                    :CenterPoint nil))]
-    (if (seq (get-in spatial [:HorizontalSpatialDomain :Geometry :BoundingRectangles]))
-      spatial
-      (assoc spatial :SpatialCoverageType nil :HorizontalSpatialDomain nil))))
-
-(defn- expected-dif-contact-mechanisms
-  "Returns the expected DIF contact mechanisms"
-  [contact-mechanisms]
-  (->> (concat (filter #(= "Email" (:Type %)) contact-mechanisms)
-               (filter #(= "Fax" (:Type %)) contact-mechanisms)
-               (filter #(contact/umm-contact-phone-types (:Type %)) contact-mechanisms))
-       (map #(update % :Type (fn [t] (get #{"Email" "Fax"} t "Telephone"))))
-       seq))
-
-(defn- expected-dif-addresses
-  "Returns the expected DIF addresses"
-  [addresses]
-  (when (seq addresses)
-    [(first addresses)]))
-
-(defn- expected-dif-contact-information
-  "Retruns the expected contact information for the given contact information."
-  [contact-info]
-  (let [contact-info (some-> contact-info
-                             first
-                             (dissoc :RelatedUrls nil :ServiceHours nil :ContactInstruction nil)
-                             (update :ContactMechanisms expected-dif-contact-mechanisms)
-                             (update :Addresses expected-dif-addresses))]
-    (when (seq (util/remove-nil-keys contact-info))
-      [(cmn/map->ContactInformationType contact-info)])))
-
-(def ^:private role->expected
-  "Defines mapping of original UMM data contact Role to the expected. DIF9 data contact Role
-  mapping to the UMM contact Role is different depending on where the data contact is.
-  This is for general data contact on the collection level."
-  {"Data Center Contact" "Data Center Contact"
-   "Technical Contact" "Technical Contact"
-   "Science Contact" "Data Center Contact"
-   "Investigator" "Investigator"
-   "Metadata Author" "Metadata Author"
-   "User Services" "Data Center Contact"
-   "Science Software Development" "Data Center Contact"})
-
-(def ^:private data-center-role->expected
-  "Defines mapping of original UMM data center data contact Role to the expected.
-  DIF9 data contact Role mapping to the UMM contact Role is different depending on where the data
-  contact is. This is for data contact on the data center level."
-  {"Data Center Contact" "Data Center Contact"
-   "Technical Contact" "Data Center Contact"
-   "Science Contact" "Data Center Contact"
-   "Investigator" "Investigator"
-   "Metadata Author" "Data Center Contact"
-   "User Services" "Data Center Contact"
-   "Science Software Development" "Data Center Contact"})
-
-(defn- expected-dif-roles
-  "Returns the expected UMM roles for the given roles when roundtripped back from a DIF record"
-  [roles role-expected-mapping]
-  (vec (distinct (map role-expected-mapping roles))))
-
-(defn- contact->expected
-  "Retruns the expected contact person for the given contact which could be either a contact group
-  or contact person"
-  [contact role-expected-mapping]
-  (let [contact (if (:GroupName contact)
-                  (let [{:keys [Roles ContactInformation Addresses GroupName]} contact]
-                    (cmn/map->ContactPersonType {:Roles Roles
-                                                 :ContactInformation ContactInformation
-                                                 :FirstName nil
-                                                 :MiddleName nil
-                                                 :LastName GroupName}))
-                  contact)]
-    (-> contact
-        (assoc :Uuid nil)
-        (assoc :NonDataCenterAffiliation nil)
-        (update :Roles #(expected-dif-roles % role-expected-mapping))
-        (update :ContactInformation expected-dif-contact-information))))
-
-(defn- expected-dif-contact-persons
-  "Returns the expected DIF parsed contact persons for the given UMM collection.
-  Both ContactGroups and ContactPersons are converted into ContactPersons with the un-supported
-  DIF fields dropped."
-  [c]
-  (let [contacts (mapv #(contact->expected % role->expected)
-                      (concat (:ContactGroups c) (:ContactPersons c)))]
-    (when (seq contacts)
-      contacts)))
-
-(defn- expected-dif-data-center-contact-persons
-  "Returns the expected DIF data center contact persons for the given UMM data center.
-  Both ContactGroups and ContactPersons are converted into ContactPersons with the DIF not supported
-  fields dropped."
-  [c]
-  (let [contacts (mapv #(contact->expected % data-center-role->expected)
-                      (concat (:ContactGroups c) (:ContactPersons c)))]
-    (if (seq contacts)
-      contacts
-      [(cmn/map->ContactPersonType {:Roles ["Data Center Contact"]
-                                    :LastName su/not-provided})])))
-
-(defn- expected-dif-data-center-contact-info
-  "Returns the expected DIF9 data center contact information."
-  [contact-info]
-  (when-let [related-url (first (:URLs (first (:RelatedUrls (first contact-info)))))]
-    [(cmn/map->ContactInformationType
-       {:RelatedUrls [(cmn/map->RelatedUrlType
-                        {:URLs [related-url]})]})]))
-
-(defn- expected-dif-data-centers
-  "Returns the expected DIF parsed data centers for the given UMM collection."
-  [centers]
-  (let [originating-center (first (filter #(.contains (:Roles %) "ORIGINATOR") centers))
-        originating-centers (when originating-center
-                              [(cmn/map->DataCenterType
-                                 {:Roles ["ORIGINATOR"]
-                                  :ShortName (:ShortName originating-center)})])
-        data-centers (for [center centers
-                           :when (or (.contains (:Roles center) "ARCHIVER")
-                                     (.contains (:Roles center) "DISTRIBUTOR"))
-                           :let [expected-persons (expected-dif-data-center-contact-persons center)
-                                 expected-contact-info (expected-dif-data-center-contact-info
-                                                         (:ContactInformation center))]]
-                       (-> center
-                           (assoc :Roles ["ARCHIVER" "DISTRIBUTOR"])
-                           (assoc :ContactPersons expected-persons)
-                           (assoc :ContactGroups nil)
-                           (assoc :ContactInformation expected-contact-info)))
-        data-centers (if (seq data-centers)
-                       data-centers
-                       ;; create a dummy data center as it is required in DIF9
-                       [(cmn/map->DataCenterType
-                          {:Roles ["ARCHIVER" "DISTRIBUTOR"]
-                           :ShortName su/not-provided
-                           :ContactPersons [(cmn/map->ContactPersonType
-                                              {:Roles ["Data Center Contact"]
-                                               :LastName su/not-provided})]})])]
-    (seq (concat originating-centers data-centers))))
+  (echo10/umm-expected-conversion-echo10 umm-coll))
 
 (defmethod umm->expected-convert :dif
   [umm-coll _]
-  (let [expected-contact-persons (expected-dif-contact-persons umm-coll)]
-    (-> umm-coll
-        ;; DIF 9 only supports entry-id in metadata associations
-        (update-in-each [:MetadataAssociations] assoc :Type nil :Description nil :Version nil)
-        ;; DIF 9 does not support tiling identification system
-        (assoc :TilingIdentificationSystems nil)
-        (update-in [:DataCenters] expected-dif-data-centers)
-        (assoc :ContactGroups nil)
-        (assoc :ContactPersons expected-contact-persons)
-        ;; DIF 9 does not support DataDates
-        (assoc :DataDates [su/not-provided-data-date])
-        ;; DIF 9 sets the UMM Version to 'Not provided' if it is not present in the DIF 9 XML
-        (assoc :Version (or (:Version umm-coll) su/not-provided))
-        (update-in [:TemporalExtents] dif9-temporal)
-        (update-in [:SpatialExtent] expected-dif-spatial-extent)
-        (update-in [:Distributions] su/remove-empty-records)
-        ;; DIF 9 does not support Platform Type or Characteristics. The mapping for Instruments is
-        ;; unable to be implemented as specified.
-        (update-in [:Platforms] expected-dif-platforms)
-        (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
-        (update-in-each [:AdditionalAttributes] assoc :ParameterRangeBegin nil :ParameterRangeEnd nil
-                        :MeasurementResolution nil :ParameterUnitsOfMeasure nil
-                        :ParameterValueAccuracy nil :ValueAccuracyExplanation nil)
-        (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
-        (update-in-each [:PublicationReferences] dif-publication-reference)
-        (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
-        ;;CMR-2716 SpatialKeywords are being replaced by LocationKeywords.
-        (assoc :SpatialKeywords nil))))
-
-;; DIF 10
-(defn dif10-platform
-  [platform]
-  ;; Only a limited subset of platform types are supported by DIF 10.
-  (assoc platform :Type (get dif10/platform-types (:Type platform))))
-
-(defn- dif10-processing-level
-  [processing-level]
-  (-> processing-level
-      (assoc :ProcessingLevelDescription nil)
-      (assoc :Id (get dif10/product-levels (:Id processing-level)))
-      su/convert-empty-record-to-nil))
-
-(defn dif10-project
-  [proj]
-  (-> proj
-      ;; DIF 10 only has at most one campaign in Project Campaigns
-      (update-in [:Campaigns] #(when (first %) [(first %)]))
-      ;; DIF10 StartDate and EndDate are date rather than datetime
-      (update-in [:StartDate] date-time->date)
-      (update-in [:EndDate] date-time->date)))
-
-(defn- filter-dif10-metadata-associations
-  "Removes metadata associations with type \"LARGER CITATIONS WORKS\" since this type is not
-  allowed in DIF10."
-  [mas]
-  (seq (filter #(not= (:Type %) "LARGER CITATION WORKS")
-               mas)))
-
-(defn- fix-dif10-matadata-association-type
-  "Defaults metadata association type to \"SCIENCE ASSOCIATED\"."
-  [ma]
-  (update-in ma [:Type] #(or % "SCIENCE ASSOCIATED")))
-
-(defn- expected-dif10-related-urls
-  [related-urls]
-  (seq (for [related-url related-urls]
-         (assoc related-url :Title nil :FileSize nil :MimeType nil))))
-
-(defn- expected-dif10-spatial-extent
-  [spatial-extent]
-  (-> spatial-extent
-      (update-in [:HorizontalSpatialDomain :Geometry] geometry-with-coordinate-system)
-      (update-in-each [:HorizontalSpatialDomain :Geometry :GPolygons] fix-echo10-dif10-polygon)
-      prune-empty-maps))
+  (dif9/umm-expected-conversion-dif9 umm-coll))
 
 (defmethod umm->expected-convert :dif10
   [umm-coll _]
-  (-> umm-coll
-      (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
-      (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
-      (assoc :DataCenters [su/not-provided-data-center])
-      (assoc :ContactGroups nil)
-      (assoc :ContactPersons nil)
-      (update-in [:SpatialExtent] expected-dif10-spatial-extent)
-      (update-in [:DataDates] fixup-dif10-data-dates)
-      (update-in [:Distributions] su/remove-empty-records)
-      (update-in-each [:Platforms] dif10-platform)
-      (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil
-                      :MeasurementResolution nil :ParameterUnitsOfMeasure nil
-                      :ParameterValueAccuracy nil :ValueAccuracyExplanation nil)
-      (update-in [:ProcessingLevel] dif10-processing-level)
-      (update-in-each [:Projects] dif10-project)
-      (update-in [:PublicationReferences] prune-empty-maps)
-      (update-in-each [:PublicationReferences] dif-publication-reference)
-      (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
-      ;; DIF 10 required element
-      (update-in [:Abstract] #(or % su/not-provided))
-      ;; CMR-2716 SpatialKeywords are replaced by LocationKeywords
-      (assoc :SpatialKeywords nil)))
-
-(defn- default-serf-required-additional-attributes
-  "Populate a default not-provided value for additional attributes if none exist"
-  [aas attribute-name]
-  (if (seq (filter #(= attribute-name (:Name %)) aas))
-    aas
-    (conj aas (cmn/map->AdditionalAttributeType {:Name attribute-name
-                                                 :Description (format "Root SERF %s Object" attribute-name)
-                                                 :Value su/not-provided}))))
-
-(defn- default-serf-additional-attributes
-  "Modifies attributes in serf from expected-conversion"
-  [aa]
-  (-> aa
-      (select-keys [:Description :Name :Value :Group :UpdateDate :DataType :Value])
-      (assoc :Name (get aa :Name su/not-provided))
-      (cmn/map->AdditionalAttributeType)))
-
-(defn- fix-serf-aa-update-date-format
-  "Fixes SERF update-date format to conform to a specific rule"
-  [aa]
-  (if-let [u-date (:UpdateDate aa)]
-    (assoc aa :UpdateDate (t/date-time (t/year u-date) (t/month u-date) (t/day u-date)))
-    aa))
-
-(defn- fix-expected-serf-additional-attributes
-  "Check and see if Metadata_Name and Metadata_Version are in serf additional attributes.
-  If not, you need to inject them so that a comparison will work"
-  [aas]
-  (-> aas
-      (default-serf-required-additional-attributes "Metadata_Name")
-      (default-serf-required-additional-attributes "Metadata_Version")))
-
-(defn- convert-serf-additional-attributes
-  [additional-attributes]
-  (fix-expected-serf-additional-attributes
-    (vec
-      (for [attribute additional-attributes]
-        (-> attribute
-            default-serf-additional-attributes
-            fix-serf-aa-update-date-format)))))
-
-(defn- filter-unused-serf-datetypes
-  [dates]
-  (remove #(= "DELETE" (:Type %)) dates))
-
-(defn- filter-unique-serf-dates
-  [dates]
-  (let [dates-by-type (group-by :Type dates)]
-    (keep #(first (get dates-by-type %))
-          ["CREATE" "UPDATE" "REVIEW"])))
-
-
-(defn- expected-metadata-dates-for-serf
-  [dates]
-  (-> dates
-      filter-unused-serf-datetypes
-      filter-unique-serf-dates
-      seq))
-
-(defn- fix-publication-reference-url
-  [some-url]
-  (when some-url
-    (cmn/map->RelatedUrlType {:URLs (->> some-url :URLs (take 1))})))
-
-(defn- expected-serf-service-citation
-  [citation]
-  (assoc citation
-         :DOI nil
-         :ReleasePlace nil
-         :SeriesName nil
-         :DataPresentationForm nil
-         :IssueIdentification nil
-         :Editor nil
-         :ReleaseDate nil
-         :OtherCitationDetails nil
-         :RelatedUrl (fix-publication-reference-url (:RelatedUrl citation))))
-
-(defn remove-empty-objects
-  "Required to remove some extraneous mappings from ResourceCitation that are not used
-  in ServiceCitation for the comparison engine."
-  [objects]
-  (filter #(some val %) objects))
-
-(defn- fix-serf-doi
-  [pubref]
-  (if (:DOI pubref)
-    (assoc-in pubref [:DOI :Authority] nil)
-    pubref))
-
-(defn- fix-access-constraints
-  [access-constraint]
-  (if access-constraint
-    (assoc access-constraint :Value nil)
-    access-constraint))
-
-(defn fix-serf-project
-  [project]
-  (assoc project :EndDate nil :StartDate nil :Campaigns nil))
-
-(defn fix-metadata-associations
-  [metadata-association]
-  (if-let [ma (seq (take 1 metadata-association))]
-    ma
-    metadata-association))
+  (dif10/umm-expected-conversion-dif10 umm-coll))
 
 (defmethod umm->expected-convert :serf
   [umm-service _]
-  (-> umm-service
-      (update-in [:AdditionalAttributes] convert-serf-additional-attributes)
-      (update-in [:RelatedUrls] expected-related-urls-for-dif-serf)
-      (update-in [:MetadataDates] expected-metadata-dates-for-serf)
-      (update-in-each [:ServiceCitation] expected-serf-service-citation)
-      (update-in [:ServiceCitation] remove-empty-objects)
-      (update-in [:ServiceCitation] seq)
-      (update-in-each [:Projects] fix-serf-project)
-      (update-in [:AccessConstraints] fix-access-constraints)
-      (update-in-each [:MetadataAssociations] assoc :Description nil :Type nil :Version nil)
-      (update-in [:MetadataAssociations] fix-metadata-associations)
-      (update-in-each [:PublicationReferences] fix-serf-doi)
-      (update-in-each [:PublicationReferences] update-in [:RelatedUrl] fix-publication-reference-url)
-      (assoc :Platforms nil)
-      (dissoc :DataCenters)))
-
-;; ISO 19115-2
-
-(defn propagate-first
-  "Returns coll with the first element's value under k assoc'ed to each element in coll.
-
-  Example: (propagate-first :x [{:x 1} {:y 2}]) => [{:x 1} {:x 1 :y 2}]"
-  [k coll]
-  (let [v (get (first coll) k)]
-    (for [x coll]
-      (assoc x k v))))
-
-(defn sort-by-date-type-iso
-  "Returns temporal extent records to match the order in which they are generated in ISO XML."
-  [extents]
-  (let [ranges (filter :RangeDateTimes extents)
-        singles (filter :SingleDateTimes extents)]
-    (seq (concat ranges singles))))
-
-(defn- fixup-iso-ends-at-present
-  "Updates temporal extents to be true only when they have both :EndsAtPresentFlag = true AND values
-  in RangeDateTimes, otherwise nil."
-  [temporal-extents]
-  (for [extent temporal-extents]
-    (let [ends-at-present (:EndsAtPresentFlag extent)
-          rdts (seq (:RangeDateTimes extent))]
-      (-> extent
-          (update-in-each [:RangeDateTimes]
-                          update-in [:EndingDateTime] (fn [x]
-                                                        (when-not ends-at-present
-                                                          x)))
-          (assoc :EndsAtPresentFlag
-                 (when (and rdts ends-at-present)
-                   true))))))
-
-(defn- fixup-comma-encoded-values
-  [temporal-extents]
-  (for [extent temporal-extents]
-    (update-in extent [:TemporalRangeType] (fn [x]
-                                             (when x
-                                               (iso-util/sanitize-value x))))))
-
-(defn expected-iso-19115-2-temporal
-  [temporal-extents]
-  (->> temporal-extents
-       (propagate-first :PrecisionOfSeconds)
-       (propagate-first :TemporalRangeType)
-       fixup-comma-encoded-values
-       fixup-iso-ends-at-present
-       (split-temporals :RangeDateTimes)
-       (split-temporals :SingleDateTimes)
-       sort-by-date-type-iso))
-
-(defn iso-19115-2-publication-reference
-  "Returns the expected value of a parsed ISO-19115-2 publication references"
-  [pub-refs]
-  (seq (for [pub-ref pub-refs
-             :when (and (:Title pub-ref) (:PublicationDate pub-ref))]
-         (-> pub-ref
-             (assoc :ReportNumber nil :Volume nil :RelatedUrl nil :PublicationPlace nil)
-             (update-in [:DOI] (fn [doi] (when doi (assoc doi :Authority nil))))
-             (update-in [:PublicationDate] date-time->date)))))
-
-(defn- expected-iso-19115-2-distributions
-  "Returns the expected ISO19115-2 distributions for comparison."
-  [distributions]
-  (some->> distributions
-           su/remove-empty-records
-           vec))
-
-(defn- expected-iso-19115-2-related-urls
-  [related-urls]
-  (seq (for [related-url related-urls
-             url (:URLs related-url)]
-         (-> related-url
-             (assoc :Title nil :MimeType nil :FileSize nil :URLs [url])
-             (update-in [:Relation]
-                        (fn [[rel]]
-                          (when (relation-set rel)
-                            [rel])))))))
-
-(defn- fix-iso-vertical-spatial-domain-values
-  [vsd]
-  (let [fix-val (fn [x]
-                  (when x
-                    ;; Vertical spatial domain values are encoded in a comma-separated string in ISO
-                    ;; XML, so the values must be updated to match what we expect in the resulting
-                    ;; XML document.
-                    (iso-util/sanitize-value x)))]
-    (-> vsd
-        (update-in [:Type] fix-val)
-        (update-in [:Value] fix-val))))
-
-(defn update-iso-spatial
-  [spatial-extent]
-  (-> spatial-extent
-      (assoc-in [:HorizontalSpatialDomain :ZoneIdentifier] nil)
-      (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc :CenterPoint nil)
-      (update-in-each [:HorizontalSpatialDomain :Geometry :Lines] assoc :CenterPoint nil)
-      (update-in-each [:HorizontalSpatialDomain :Geometry :GPolygons] assoc :CenterPoint nil)
-      (update-in [:VerticalSpatialDomains] #(take 1 %))
-      (update-in-each [:VerticalSpatialDomains] fix-iso-vertical-spatial-domain-values)
-      prune-empty-maps))
-
-(defn- group-metadata-assocations
-  [mas]
-  (let [{input-types true other-types false} (group-by (fn [ma] (= "INPUT" (:Type ma))) mas)]
-    (seq (concat other-types input-types))))
-
-(defn- update-iso-topic-categories
-  "Update ISOTopicCategories values to a default value if it's not one of the specified values."
-  [categories]
-  (seq (map iso/iso-topic-value->sanitized-iso-topic-category categories)))
-
-(defn- normalize-bounding-rectangle
-  [{:keys [WestBoundingCoordinate NorthBoundingCoordinate
-           EastBoundingCoordinate SouthBoundingCoordinate
-           CenterPoint]}]
-  (let [{:keys [west north east south]} (m/mbr WestBoundingCoordinate
-                                               NorthBoundingCoordinate
-                                               EastBoundingCoordinate
-                                               SouthBoundingCoordinate)]
-    (cmn/map->BoundingRectangleType
-      {:CenterPoint CenterPoint
-       :WestBoundingCoordinate west
-       :NorthBoundingCoordinate north
-       :EastBoundingCoordinate east
-       :SouthBoundingCoordinate south})))
-
-(def bounding-rectangles-path
-  "The path in UMM to bounding rectangles."
-  [:SpatialExtent :HorizontalSpatialDomain :Geometry :BoundingRectangles])
-
-(defn fix-bounding-rectangles
-  "Bounding rectangles in UMM JSON during conversion will be passed to the MBR namespace which does
-  some normalization on them. The result is still the same area but the values will not be identical."
-  [umm]
-  (if-let [brs (seq (get-in umm bounding-rectangles-path))]
-    (assoc-in umm bounding-rectangles-path (mapv normalize-bounding-rectangle brs))
-    umm))
+  (serf/umm-expected-conversion-serf umm-service))
 
 (defmethod umm->expected-convert :iso19115
   [umm-coll _]
-  (-> umm-coll
-      fix-bounding-rectangles
-      (update-in [:SpatialExtent] update-iso-spatial)
-      ;; ISO only supports a single tiling identification system
-      (update-in [:TilingIdentificationSystems] #(seq (take 1 %)))
-      (update-in [:TemporalExtents] expected-iso-19115-2-temporal)
-      ;; The following platform instrument properties are not supported in ISO 19115-2
-      (update-in-each [:Platforms] update-in-each [:Instruments] assoc
-                      :NumberOfSensors nil
-                      :OperationalModes nil)
-      (assoc :CollectionDataType nil)
-      (update-in [:DataLanguage] #(or % "eng"))
-      (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
-      (update-in [:Distributions] expected-iso-19115-2-distributions)
-      (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
-      (update-in [:PublicationReferences] iso-19115-2-publication-reference)
-      (update-in [:RelatedUrls] expected-iso-19115-2-related-urls)
-      (update-in-each [:AdditionalAttributes] assoc :UpdateDate nil)
-      (update-in [:MetadataAssociations] group-metadata-assocations)
-      (update-in [:ISOTopicCategories] update-iso-topic-categories)
-      (update-in [:LocationKeywords] fix-location-keyword-conversion)
-      (assoc :SpatialKeywords nil)
-      (assoc :PaleoTemporalCoverages nil)
-      (assoc :DataCenters [su/not-provided-data-center])
-      (assoc :ContactGroups nil)
-      (assoc :ContactPersons nil)))
-
-;; ISO-SMAP
-(defn- normalize-smap-instruments
-  "Collects all instruments across given platforms and returns a seq of platforms with all
-  instruments under each one."
-  [platforms]
-  (let [all-instruments (seq (mapcat :Instruments platforms))]
-    (for [platform platforms]
-      (assoc platform :Instruments all-instruments))))
-
-(defn- expected-smap-iso-spatial-extent
-  "Returns the expected SMAP ISO spatial extent"
-  [spatial-extent]
-  (when (get-in spatial-extent [:HorizontalSpatialDomain :Geometry :BoundingRectangles])
-    (-> spatial-extent
-        (assoc :SpatialCoverageType "HORIZONTAL" :GranuleSpatialRepresentation "GEODETIC")
-        (assoc :VerticalSpatialDomains nil :OrbitParameters nil)
-        (assoc-in [:HorizontalSpatialDomain :ZoneIdentifier] nil)
-        (update-in [:HorizontalSpatialDomain :Geometry]
-                   assoc :CoordinateSystem "GEODETIC" :Points nil :GPolygons nil :Lines nil)
-        (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc :CenterPoint nil)
-        prune-empty-maps)))
-
-(defn- expected-smap-data-dates
-  "Returns the expected ISO SMAP DataDates."
-  [data-dates]
-  (if data-dates
-    data-dates
-    [(cmn/map->DateType {:Type "CREATE" :Date du/parsed-default-date})]))
+  (iso19115/umm-expected-conversion-iso19115 umm-coll))
 
 (defmethod umm->expected-convert :iso-smap
   [umm-coll _]
-  (let [original-brs (get-in umm-coll bounding-rectangles-path)
+  (let [original-brs (get-in umm-coll conversion-util/bounding-rectangles-path)
         umm-coll (umm->expected-convert umm-coll :iso19115)
         umm-coll (if (seq original-brs)
-                   (assoc-in umm-coll bounding-rectangles-path original-brs)
+                   (assoc-in umm-coll conversion-util/bounding-rectangles-path original-brs)
                    umm-coll)]
-    (-> umm-coll
-        (update-in [:SpatialExtent] expected-smap-iso-spatial-extent)
-        (update-in [:DataDates] expected-smap-data-dates)
-        ;; ISO SMAP does not support the PrecisionOfSeconds field.
-        (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
-        ;; Implement this as part of CMR-2057
-        (update-in-each [:TemporalExtents] assoc :TemporalRangeType nil)
-        ;; Fields not supported by ISO-SMAP
-        (assoc :MetadataAssociations nil) ;; Not supported for ISO SMAP
-        (assoc :DataCenters [su/not-provided-data-center])
-        (assoc :ContactGroups nil)
-        (assoc :ContactPersons nil)
-        (assoc :UseConstraints nil)
-        (assoc :AccessConstraints nil)
-        (assoc :SpatialKeywords nil)
-        (assoc :TemporalKeywords nil)
-        (assoc :CollectionDataType nil)
-        (assoc :AdditionalAttributes nil)
-        (assoc :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id su/not-provided}))
-        (assoc :Distributions nil)
-        (assoc :Projects nil)
-        (assoc :PublicationReferences nil)
-        (assoc :AncillaryKeywords nil)
-        (assoc :RelatedUrls [su/not-provided-related-url])
-        (assoc :ISOTopicCategories nil)
-        ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
-        ;; Platform Characteristics are also not supported.
-        (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
-        ;; The following instrument fields are not supported by SMAP.
-        (update-in-each [:Platforms] update-in-each [:Instruments] assoc
-                        :Characteristics nil
-                        :OperationalModes nil
-                        :NumberOfSensors nil
-                        :Sensors nil
-                        :Technique nil)
-        ;; ISO-SMAP checks on the Category of theme descriptive keywords to determine if it is
-        ;; science keyword.
-        (update-in [:ScienceKeywords]
-                   (fn [sks]
-                     (seq
-                       (filter #(.contains kws/science-keyword-categories (:Category %)) sks))))
-        (update-in [:Platforms] normalize-smap-instruments)
-        (assoc :LocationKeywords nil)
-        (assoc :PaleoTemporalCoverages nil))))
+   (iso-smap/umm-expected-conversion-iso-smap umm-coll original-brs)))
 
 ;;; Unimplemented Fields
 

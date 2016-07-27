@@ -148,7 +148,9 @@
                    (transform-with-strategy context concept k v)
                    (catch Throwable e
                      ;; Namespace used to reference error here to allow redefing in tests
-                     (log/error e "Ignoring exception while trying to transform metadata:" (.getMessage e))))
+                     (log/error e "Ignoring exception while trying to transform metadata for concept"
+                                (:concept-id concept) "with revision" (:revision-id concept) "error:"
+                                (.getMessage e))))
                  (transform-with-strategy context concept k v))))
        (reduce into {})))
 

@@ -1219,6 +1219,7 @@ The following fields are indexed for keyword search:
 
     * Concept ID
     * Provider ID
+    * Entry ID
     * Entry title
     * Data type
     * Short name
@@ -1883,13 +1884,14 @@ Any terms found in the those parameters are used to score results across other f
 The filters are case insensitive, support wild-cards * and ?, and are given below:
 
 1. All terms are contained in the long-name field OR one of the terms exactly matches the short-name field - weight 1.4
-2. All terms are contained in the Project/long-name field OR one of the terms exactly matches the Project/short-name field - weight 1.3
-3. All terms are contained in the Platform/long-name field OR one of the terms exactly matches the Platform/short-name field - weight 1.3
-4. All terms are contained in the Platform/Instrument/long-name field OR one of the terms exactly matches the Platform/Instrument/short-name field - weight 1.2
-5. All terms are contained in the Platform/Instrument/Sensor/long-name field OR one of the terms exactly matches the Platform/Instrument/Sensor/short-name field - weight 1.2
-6. The term field is a single string that exactly matches the science-keyword field - weight 1.2
-7. The term field is a single string that exactly matches the spatial-keyword field - weight 1.1
-8. The term field is a single string that exactly matches the temporal-keyword field  - weight 1.1
+2. The term field is a single string that exactly matches the entry-id field - weight 1.4
+3. All terms are contained in the Project/long-name field OR one of the terms exactly matches the Project/short-name field - weight 1.3
+4. All terms are contained in the Platform/long-name field OR one of the terms exactly matches the Platform/short-name field - weight 1.3
+5. All terms are contained in the Platform/Instrument/long-name field OR one of the terms exactly matches the Platform/Instrument/short-name field - weight 1.2
+6. All terms are contained in the Platform/Instrument/Sensor/long-name field OR one of the terms exactly matches the Platform/Instrument/Sensor/short-name field - weight 1.2
+7. The term field is a single string that exactly matches the science-keyword field - weight 1.2
+8. The term field is a single string that exactly matches the spatial-keyword field - weight 1.1
+9. The term field is a single string that exactly matches the temporal-keyword field  - weight 1.1
 
 ### <a name="facets"></a> Facets
 
