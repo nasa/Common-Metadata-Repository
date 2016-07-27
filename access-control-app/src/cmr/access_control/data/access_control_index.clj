@@ -190,8 +190,8 @@
 (defn acl->provider-id
   "Returns the provider-ids of the ACL."
   [acl]
-  (proto-repl.saved-values/save 6)
-  (or (:provider-id (:catalog-item-identity acl) "")))
+  (or (:provider-id (:catalog-item-identity acl))
+      (:provider-id (:provider-identity acl))))
 
 (defn- acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."
@@ -211,7 +211,6 @@
   (let [elastic-doc (acl-concept-map->elastic-doc concept-map)
         {:keys [concept-id revision-id]} concept-map
         elastic-store (esi/context->search-index context)]
-    (proto-repl.saved-values/save 5)
     (m/save-elastic-doc
       elastic-store acl-index-name acl-type-name concept-id elastic-doc revision-id
       {:ignore-conflict? true})))

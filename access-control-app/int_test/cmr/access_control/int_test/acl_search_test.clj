@@ -343,17 +343,19 @@
 
 (deftest acl-search-provider-test
   (let [token (e/login (u/conn-context) "user1")
-        acl1 (ingest-acl token (provider-acl "AUDIT_REPORT"))
+        acl1 (ingest-acl token (provider-acl "INGEST_MANAGEMENT_ACL"))
         acl2 (ingest-acl token (catalog-item-acl "Catalog_Item1_PROV1"))
         acl3 (ingest-acl token (catalog-item-acl "Catalog_Item2_PROV1"))
         acl4 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item3_PROV2")
-                                         [:catalog_item_identity :provider-id] "PROV2"))
+                                         [:catalog_item_identity :provider_id] "PROV2"))
         acl5 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item4_PROV3")
-                                         [:catalog_item_identity :provider-id] "PROV3"))
+                                         [:catalog_item_identity :provider_id] "PROV3"))
         acl6 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item5_PROV2")
-                                         [:catalog_item_identity :provider-id] "PROV2"))
-        prov1-acls [acl2 acl3]
-        prov1-and-2-acls [acl2 acl3 acl4 acl6]
+                                         [:catalog_item_identity :provider_id] "PROV2"))
+        acl7 (ingest-acl token (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
+                                         [:provider_identity :provider_id] "PROV2"))
+        prov1-acls [acl2 acl3 acl1]
+        prov1-and-2-acls [acl1 acl2 acl3 acl4 acl6 acl7]
         prov3-acls [acl5]]
     (u/wait-until-indexed)
     (testing "Search ACLs that grant permissions to objects owned by a single provider
