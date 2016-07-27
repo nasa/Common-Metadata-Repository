@@ -54,7 +54,7 @@
 ;; The following media types are recognized by the CMR for use in various places. The map below is used
 ;; to dynamically create vars containing the recognized base MIME type for each keyword on the left.
 
-(def format->mime-type
+(def ^:private base-format->mime-type
   "A map of format keywords to MIME types. Each keyword will have a corresponding var def'ed in this
   namespace for other namespaces to reference."
   {:json             "application/json"
@@ -82,30 +82,36 @@
    :opendap          "application/x-netcdf"
    :serf             "application/serf+xml"})
 
+(defn format->mime-type
+  [format]
+  (if (map? format)
+    (with-version (format->mime-type (:format format)) (:version format))
+    (base-format->mime-type format)))
+
 ;; Intern vars for each of the mime type formats, e.g. (def json "application/json")
 
-(doseq [[format-key mime-type] format->mime-type]
+(doseq [[format-key mime-type] base-format->mime-type]
   (intern *ns* (symbol (name format-key)) mime-type))
 
 (defn umm-json?
   "Returns true if the given mime type is recognized as UMM JSON."
   [mt]
   (when mt
-    (= (:umm-json format->mime-type) (base-mime-type-of mt))))
+    (= umm-json (base-mime-type-of mt))))
 
 (def any "*/*")
 
 (def base-mime-type-to-format
   "A map of MIME type strings to CMR data format keywords."
-  (set/map-invert format->mime-type))
+  (set/map-invert base-format->mime-type))
 
 (def all-supported-mime-types
   "A superset of all mime types supported by any CMR applications."
-  (vals format->mime-type))
+  (vals base-format->mime-type))
 
 (def all-formats
   "A set of all format keywords supported by CMR."
-  (set (keys format->mime-type)))
+  (set (keys base-format->mime-type)))
 
 (defn mime-type->format
   "Returns a format keyword for the given MIME type and optional default MIME type."

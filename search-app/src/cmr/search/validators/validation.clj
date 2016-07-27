@@ -5,15 +5,24 @@
             [cmr.common-app.services.search.query-model :as cqm]
             [cmr.spatial.validation :as spatial-validation]
             [cmr.search.validators.leading-wildcard-validation :as lwv]
+            [cmr.umm-spec.versioning :as umm-version]
             [clojure.set]
             [cmr.common.mime-types :as mt]
             ;; Must be required to be available.
             [cmr.spatial.ring-validations]))
 
+(def umm-versioned-result-formats
+  (for [format-key [:umm-json :umm-json-results]
+        version umm-version/versions]
+    {:format format-key
+     :version version}))
+
 (defmethod cqv/supported-result-formats :collection
   [_]
-  #{:xml, :json, :umm-json, :umm-json-results :legacy-umm-json :echo10, :dif, :dif10, :atom,
-    :iso19115, :kml, :opendata, :native})
+  (into #{:xml :json :legacy-umm-json :echo10 :dif :dif10 :atom :iso19115 :kml :opendata :native
+          ;; umm-json supported with and without versions
+          :umm-json :umm-json-results}
+        umm-versioned-result-formats))
 
 (defmethod cqv/supported-result-formats :granule
   [_]
@@ -21,7 +30,7 @@
 
 (def all-revisions-supported-result-formats
   "Supported search result format when all-revisions? is true."
-  #{:umm-json :umm-json-results :legacy-umm-json :xml})
+  (into #{:legacy-umm-json :xml :umm-json :umm-json-results} umm-versioned-result-formats))
 
 (defn validate-result-format-for-all-revisions
   "Validate requested search result format for all-revisions?."
