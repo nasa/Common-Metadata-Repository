@@ -83,6 +83,11 @@
               :format-key format-key)
        response))))
 
+(defn remove-ingest-associated-keys
+  "Removes the keys associated into the item from the ingest function."
+  [item]
+  (dissoc item :user-id :concept-id :revision-id :collection-concept-id :provider-id :status :format-key))
+
 (defn ingest-concept-with-metadata
   "Ingest the given concept with the given metadata."
   [{:keys [provider-id concept-type format format-key metadata native-id]}]
@@ -126,7 +131,7 @@
   [_ format-key item]
   (let [{:keys [concept-id revision-id collection-concept-id]} item
         ;; Remove test core added fields so they don't end up in the expected UMM JSON
-        item (dissoc item :concept-id :revision-id :collection-concept-id :provider-id :status :format-key)]
+        item (remove-ingest-associated-keys item)]
     (util/remove-nil-keys
       {:concept-id concept-id
        :revision-id revision-id
@@ -138,7 +143,7 @@
   [_ format-key item]
   (let [{:keys [concept-id revision-id collection-concept-id]} item
         ;; Remove test core added fields so they don't end up in the expected UMM JSON
-        item (dissoc item :concept-id :revision-id :collection-concept-id :provider-id :status :format-key)]
+        item (remove-ingest-associated-keys item)]
     (if collection-concept-id
       (util/remove-nil-keys
         {:echo_granule_id concept-id

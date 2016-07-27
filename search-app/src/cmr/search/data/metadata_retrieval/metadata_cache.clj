@@ -302,9 +302,6 @@
   (let [by-concept-rev-id (group-by #(vector (:concept-id %) (:revision-id %)) concepts)]
     (mapv #(first (get by-concept-rev-id %)) concept-tuples-order)))
 
-;; TODO add test that when searching by all revisions and umm json that the metadata is not cached
-;; for old revisions. We'll need to add an option here to avoid caching if missing. We'll set that
-;; to true when doing an all revisions search from the umm json results handler
 (defn get-formatted-concept-revisions
   "Returns concepts in the specific format requested. Uses cached metadata for collections."
   [context concept-type concept-tuples target-format]
