@@ -76,7 +76,8 @@
   (if (and (some? (:status search-result)) (not= 200 (:status search-result)))
     (is (= 200 (:status search-result)) (pr-str search-result))
     (do
-      ;; TODO check that the content type header is correct
+      (is (= mt/umm-json-results (mt/base-mime-type-of (:content-type search-result))))
+      (is (= version (mt/version-of (:content-type search-result))))
       (is (nil? (util/seqv (umm-json-schema/validate-umm-json-search-result (:body search-result) version)))
           "UMM search result JSON was invalid")
       (is (= (set (map #(collection->umm-json version %) collections))
@@ -150,8 +151,6 @@
         [coll1-1 coll1-2-tombstone coll1-3 coll2-1 coll2-2 coll2-3-tombstone coll3]
         {:all-revisions true}))
 
-    ;; TODO write API docs for all this stuff.
-
     (testing "finding collections in different versions of UMM JSON"
       (are3 [version accept-header url-extension]
         (let [options (if accept-header
@@ -174,7 +173,6 @@
         "1.3" nil "umm_json_v1_3"
         "Retrieve specified version 1.0 with URL extension"
         "1.0" nil "umm_json_v1_0"))
-
 
     (testing "find collections in umm-json format"
       (are3 [collections params]

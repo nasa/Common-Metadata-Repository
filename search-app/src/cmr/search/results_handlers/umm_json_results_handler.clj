@@ -11,7 +11,7 @@
             [cmr.common.mime-types :as mt]))
 
 (def meta-fields
-  "TODO"
+  "Defines the fields in elastic search we retrieve to populate the meta fields in the response."
   ["concept-id"
    "revision-id"
    "native-id"
@@ -22,7 +22,7 @@
    "deleted"])
 
 (defn- elastic-result->meta
-  "TODO"
+  "Takes an elasticsearch result and returns a map of the meta fields for the response."
   [elastic-result]
   (let [{[concept-id] :concept-id
          [revision-id] :revision-id

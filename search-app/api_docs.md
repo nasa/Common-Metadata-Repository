@@ -234,9 +234,10 @@ Here is a list of supported extensions and their corresponding MimeTypes:
   * `opendata`  "application/opendata+json" (only supported for collections)
   * `kml`       "application/vnd.google-earth.kml+xml"
   * `native`    "application/metadata+xml" (Returns search results in their individual native formats)
-  * `umm-json`   "application/umm+json" (only supported for collections)
-
-`umm-json` extension can only be used to retrieve UMM JSON search result based on the latest UMM JSON schema. User can use the Accept header to specify the exact MimeType to return the UMM JSON search result in any supported UMM JSON schema version. e.g. "application/umm+json;version=1.2" will return the search result in UMM JSON based on UMM JSON schema version 1.2.
+  * `umm_json`   "application/vnd.nasa.cmr.legacy_umm_results+json" (only supported for collections)
+    * The UMM JSON format was originally used for an alpha version of UMM JSON search results. Currently it still returns data in that style to avoid breaking clients dependent on it. This will be changed in a future version to return the latest version of the UMM.
+  * `umm_json_vX_Y` "application/vnd.nasa.cmr.umm_results+json; version=X.Y"
+    * X and Y should be replaced with a major and minor number of the UMM version requested.
 
 ### <a name="supported-result-formats"></a> Supported Result Formats
 
@@ -749,51 +750,101 @@ __Example__
 
 #### <a name="umm-json"></a> UMM JSON
 
-The JSON response contains meta-metadata of the collection and its UMM fields. The UMM JSON format is only applicable to collection searches. It is an alpha feature and subject to change in the future. The UMM-JSON response is helpful if you wish to get the native-id of a collection after ingesting it.
+The JSON response contains meta-metadata of the collection and the UMM fields. The UMM JSON format is only applicable to collection searches. The UMM-JSON response is helpful if you wish to get the native-id of a collection after ingesting it. The version of the UMM returned will be the version requested or the latest most version. Clients are recommended to always specify a version to avoid breaking changes in UMM.
+
+This format can be retrieved in a variety of methods:
+
+* A url extension with a version: `%CMR-ENDPOINT%/collections.umm_json_v1_4`
+  * Note extension `.umm_json` still returns the original alpha version of this response to avoid breaking clients. This will change in the future.
+* An accept header: `application/vnd.nasa.cmr.umm_results+json; version=1.4`
+   * The version is optional but recommended.
 
 __Example__
 
 ```json
 {
-  "hits": 2,
-  "took": 4,
-  "items": [{
-    "meta": {
-      "concept-id": "C1200000000-PROV1",
-      "concept-type": "collection",
-      "deleted": false,
-      "format": "application/echo10+xml",
-      "native-id": "et1",
-      "provider-id": "PROV1",
-      "revision-date": "2015-08-06T12:50:49Z",
-      "revision-id": 3
+  "hits" : 2,
+  "took" : 11,
+  "items" : [ {
+    "meta" : {
+      "revision-id" : 3,
+      "deleted" : false,
+      "format" : "application/echo10+xml",
+      "provider-id" : "PROV1",
+      "native-id" : "et1",
+      "concept-id" : "C1200000000-PROV1",
+      "revision-date" : "2016-07-27T12:00:17Z",
+      "concept-type" : "collection"
     },
-    "umm": {
-      "entry-id": "s1_v2",
-      "entry-title": "et1",
-      "short-name": "s1",
-      "version-id": "v2"
+    "umm" : {
+      "SpatialExtent" : {
+        "HorizontalSpatialDomain" : {
+          "Geometry" : {
+            "CoordinateSystem" : "GEODETIC",
+            "Points" : [ {
+              "Longitude" : 0.0,
+              "Latitude" : 90.0
+            } ]
+          }
+        },
+        "GranuleSpatialRepresentation" : "GEODETIC"
+      },
+      "ScienceKeywords" : [ {
+        "Category" : "Cat1",
+        "Topic" : "Topic1",
+        "Term" : "Term1"
+      } ],
+      "TemporalExtents" : [ {
+        "RangeDateTimes" : [ {
+          "BeginningDateTime" : "2000-01-01T00:00:00.000Z"
+        } ]
+      } ],
+      "ProcessingLevel" : {
+        "Id" : "Level 1"
+      },
+      "ShortName" : "s1",
+      "EntryTitle" : "et1",
+      "RelatedUrls" : [ {
+        "Description" : "description648",
+        "Relation" : [ "GET DATA" ],
+        "URLs" : [ "http://example.com/file649" ]
+      } ],
+      "DataDates" : [ {
+        "Date" : "2012-01-11T10:00:00.000Z",
+        "Type" : "CREATE"
+      }, {
+        "Date" : "2012-01-19T18:00:00.000Z",
+        "Type" : "UPDATE"
+      } ],
+      "Abstract" : "long-name651",
+      "Version" : "v2",
+      "DataCenters" : [ {
+        "Roles" : [ "ARCHIVER" ],
+        "ShortName" : "Not provided"
+      } ],
+      "Platforms" : [ {
+        "Type" : "Type647",
+        "ShortName" : "platform",
+        "LongName" : "long-name646"
+      } ]
     }
   }, {
-    "meta": {
-      "concept-id": "C1200000002-PROV2",
-      "concept-type": "collection",
-      "deleted": false,
-      "format": "application/echo10+xml",
-      "native-id": "et3",
-      "provider-id": "PROV2",
-      "revision-date": "2015-08-06T12:50:49Z",
-      "revision-id": 1
+    "meta" : {
+      "native-id" : "et3",
+      "provider-id" : "PROV2",
+      "concept-type" : "collection",
+      "concept-id" : "C1200000002-PROV2",
+      "revision-date" : "2016-07-27T12:00:17Z",
+      "user-id" : "user3",
+      "deleted" : false,
+      "revision-id" : 1,
+      "format" : "application/echo10+xml"
     },
-    "umm": {
-      "entry-id": "s1_v4",
-      "entry-title": "et3",
-      "short-name": "s1",
-      "version-id": "v4"
+    "umm" : {
+      "..."
     }
-  }]
+  } ]
 }
-
 ```
 
 #### <a name="kml"></a> KML
