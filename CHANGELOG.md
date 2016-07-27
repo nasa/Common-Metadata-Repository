@@ -85,3 +85,9 @@ Items to include in each issue
   * Deployment Impacts
     * Requires update of indexes
     * Requires reindexing of collections
+
+## 1.56
+
+* CMR-3225 - Entry ID field indexed for collection keyword searches
+  * Deployment Impacts
+    * Requires reindexing of collections

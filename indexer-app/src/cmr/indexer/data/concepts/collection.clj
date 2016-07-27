@@ -264,7 +264,8 @@
             ;; fields added to support keyword searches
             :keyword (k/create-keywords-field concept-id collection
                                               {:platform-long-names platform-long-names
-                                               :instrument-long-names instrument-long-names})
+                                               :instrument-long-names instrument-long-names
+                                               :entry-id entry-id})
             :long-name.lowercase (when long-name (str/lower-case long-name))
             :platform-ln.lowercase (map str/lower-case platform-long-names)
             :instrument-ln.lowercase (map str/lower-case instrument-long-names)

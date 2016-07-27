@@ -54,7 +54,7 @@
   :resource-paths ["resources" ~gem-install-path]
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
-                        [proto-repl "0.3.0"]
+                        [proto-repl "0.3.1"]
                         [pjstadig/humane-test-output "0.7.0"]]
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
