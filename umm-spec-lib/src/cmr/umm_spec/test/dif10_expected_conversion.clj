@@ -184,6 +184,17 @@
   [data-centers]
   (seq (mapv #(data-center->expected-dif10 %) data-centers)))
 
+(defn- expected-dif10-additional-attribute
+  [attribute]
+  (-> attribute
+      (assoc :Group nil)
+      (assoc :UpdateDate nil)
+      (assoc :MeasurementResolution nil)
+      (assoc :ParameterUnitsOfMeasure nil)
+      (assoc :ParameterValueAccuracy nil)
+      (assoc :ValueAccuracyExplanation nil)
+      (assoc :Description (su/with-default (:Description attribute)))))
+
 (defn umm-expected-conversion-dif10
   [umm-coll]
   (-> umm-coll
@@ -196,9 +207,7 @@
       (update-in [:DataDates] conversion-util/fixup-dif10-data-dates)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
-      (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil
-                      :MeasurementResolution nil :ParameterUnitsOfMeasure nil
-                      :ParameterValueAccuracy nil :ValueAccuracyExplanation nil)
+      (update-in-each [:AdditionalAttributes] expected-dif10-additional-attribute)
       (update-in [:ProcessingLevel] dif10-processing-level)
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] conversion-util/prune-empty-maps)

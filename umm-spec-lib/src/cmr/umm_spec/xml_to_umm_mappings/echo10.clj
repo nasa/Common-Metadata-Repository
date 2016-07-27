@@ -2,7 +2,7 @@
   "Defines mappings from ECHO10 XML into UMM records"
   (:require [cmr.common.xml.simple-xpath :refer [select text]]
             [cmr.common.xml.parse :refer :all]
-            [cmr.umm-spec.util :refer [without-default-value-of]]
+            [cmr.umm-spec.util :refer [without-default-value-of with-default]]
             [cmr.umm-spec.date-util :as date]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
@@ -115,7 +115,7 @@
    :AdditionalAttributes (for [aa (select doc "/Collection/AdditionalAttributes/AdditionalAttribute")]
                            {:Name (value-of aa "Name")
                             :DataType (value-of aa "DataType")
-                            :Description (without-default-value-of aa "Description")
+                            :Description (with-default (value-of aa "Description"))
                             :ParameterRangeBegin (value-of aa "ParameterRangeBegin")
                             :ParameterRangeEnd (value-of aa "ParameterRangeEnd")
                             :Value (value-of aa "Value")})

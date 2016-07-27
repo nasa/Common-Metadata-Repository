@@ -2,7 +2,8 @@
   "Defines mappings from DIF 9 Additional Attribute elements into UMM records"
   (:require [cmr.umm-spec.additional-attribute :as aa]
             [cmr.umm-spec.xml-to-umm-mappings.dif9.extended-metadata :as em]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [cmr.umm-spec.util :refer [with-default]]))
 
 (def all-data-types
   "List of all potential data types."
@@ -23,7 +24,14 @@
         (assoc :DataType data-type)
         util/remove-nil-keys)))
 
+(defn- update-additional-atttribute
+  "Update the additional attribute to be valid UMM"
+  [attr]
+  (-> attr
+      (normalize-data-type)
+      (assoc :Description (with-default (:Description attr)))))
+
 (defn xml-elem->AdditionalAttributes
   [doc]
   (when-let [aas (em/xml-elem->additional-attributes doc)]
-    (seq (map normalize-data-type aas))))
+    (seq (map update-additional-atttribute aas))))

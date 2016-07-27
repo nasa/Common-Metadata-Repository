@@ -79,11 +79,13 @@
   [{:Group "gov.nasa.gsfc.gcmd"
     :Name "metadata.uuid"
     :DataType "STRING"
-    :Value "743933e5-1404-4502-915f-83cde56af440"}
+    :Value "743933e5-1404-4502-915f-83cde56af440"
+    :Description "Not provided"}
    {:Group "gov.nasa.gsfc.gcmd"
     :Name "metadata.extraction_date"
     :DataType "STRING"
-    :Value "2013-09-30 09:45:15"}
+    :Value "2013-09-30 09:45:15"
+    :Description "Not provided"}
    {:Group "custom.group"
     :Name "String attribute"
     :Description "something string"
@@ -168,7 +170,8 @@
    {:Group "gov.nasa.gsfc.gcmd"
     :Name "metadata.uuid"
     :DataType "STRING"
-    :Value "743933e5-1404-4502-915f-83cde56af440"}])
+    :Value "743933e5-1404-4502-915f-83cde56af440"
+    :Description "Not provided"}])
 
 (deftest dif10-metadata-additional-attributes-test
   (testing "parse additional attributes from Extended_Metadata"
@@ -179,4 +182,3 @@
     (is (= expected-parsed-additional-attributes2
            (aa/xml-elem->AdditionalAttributes
             example-dif2)))))
-
