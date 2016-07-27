@@ -1,7 +1,9 @@
 (ns cmr.system-int-test.search.facets.facets-util
   "Helper vars and functions for testing collection facet responses."
   (:require [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.collection :as dc]))
+            [cmr.system-int-test.data2.collection :as dc]
+            [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
+            [cmr.common.util :as util]))
 
 (defn make-coll
   "Helper for creating and ingesting an ECHO10 collection"
@@ -87,3 +89,38 @@
            (for [child-facet (:children facet-response)]
              (prune-facet-response child-facet keys)))
     (select-keys facet-response keys)))
+
+(defn facet-group
+  "Returns the facet group for the given field."
+  [facet-response field]
+  (let [child-facets (:children facet-response)
+        field-title (v2h/fields->human-readable-label field)]
+    (first (filter #(= (:title %) field-title) child-facets))))
+
+(defn applied?
+  "Returns whether the provided facet field is marked as applied in the facet response."
+  [facet-response field]
+  (:applied (facet-group facet-response field)))
+
+(defn facet-values
+  "Returns the values of the facet for the given field"
+  [facet-response field]
+  (map :title (:children (facet-group facet-response field))))
+
+(defn facet-index
+  "Returns the (first) index of the facet value in the list"
+  [facet-response field value]
+  (first (keep-indexed #(when (= value %2) %1)
+                       (facet-values facet-response field))))
+
+(defn facet-included?
+  "Returns whether the provided facet value is included in the list"
+  [facet-response field value]
+  (some #(= value %) (facet-values facet-response field)))
+
+(defn in-alphabetical-order?
+  "Returns true if the values in the collection are sorted in alphabetical order."
+  [coll]
+  ;; Note that compare-natural-strings is thoroughly unit tested so we can use it to verify
+  ;; alphabetical order
+  (= coll (sort-by first util/compare-natural-strings coll)))

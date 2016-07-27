@@ -43,6 +43,7 @@
 (defn query-field->elastic-field
   "Returns the elastic field name for the equivalent query field name."
   [field concept-type]
+  (proto-repl.saved-values/save 1)
   (get (concept-type->field-mappings concept-type) (keyword field) field))
 
 (defn- elastic-field->query-field
@@ -87,6 +88,7 @@
   [query]
   (let [{:keys [concept-type condition]} (query-expense/order-conditions query)
         core-query (condition->elastic condition concept-type)]
+    (proto-repl.saved-values/save 9)
     {:query {:filtered {:query (q/match-all)
                         :filter core-query}}}))
 

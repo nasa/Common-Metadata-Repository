@@ -1,7 +1,8 @@
 (ns cmr.search.services.query-execution.facets.facets-v2-results-feature
   "Returns facets v2 along with collection search results. See
   https://wiki.earthdata.nasa.gov/display/CMR/Updated+facet+response"
-  (:require [cmr.common-app.services.search.query-execution :as query-execution]
+  (:require [cmr.common.util :as util]
+            [cmr.common-app.services.search.query-execution :as query-execution]
             [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
             [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]
             [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
@@ -25,13 +26,13 @@
   from a collection search. Size specifies the number of results to return. Only a subset of the
   facets are returned in the v2 facets, specifically those that help enable dataset discovery."
   [size query-params]
-  (let [sk-depth (hv2/get-depth-for-hierarchical-field query-params :science-keywords)]
-    {:science-keywords (hv2/nested-facet :science-keywords size sk-depth)
-     :platform (v2h/terms-facet :platform-sn size)
-     :instrument (v2h/terms-facet :instrument-sn size)
-     :data-center (v2h/terms-facet :data-center size)
-     :project (v2h/terms-facet :project-sn2 size)
-     :processing-level-id (v2h/terms-facet :processing-level-id size)}))
+  (let [sk-depth (hv2/get-depth-for-hierarchical-field query-params :science-keywords-h)]
+    {:science-keywords-h (hv2/nested-facet :science-keywords.humanized size sk-depth)
+     :platform-h (v2h/prioritized-facet :platform-sn.humanized2 size)
+     :instrument-h (v2h/prioritized-facet :instrument-sn.humanized2 size)
+     :data-center-h (v2h/prioritized-facet :organization.humanized2 size)
+     :project-h (v2h/prioritized-facet :project-sn.humanized2 size)
+     :processing-level-id-h (v2h/prioritized-facet :processing-level-id.humanized2 size)}))
 
 (def v2-facets-root
   "Root element for the facet response"
@@ -51,21 +52,21 @@
         missing-terms (remove #(some (set [(str/lower-case %)]) all-facet-values) search-terms)]
     (reduce #(conj %1 [%2 0]) value-counts missing-terms)))
 
-(defn- create-flat-v2-facets
+(defn- create-prioritized-v2-facets
   "Parses the elastic aggregations and generates the v2 facets for all flat fields."
   [elastic-aggregations base-url query-params]
-  (let [flat-fields [:platform :instrument :data-center :project :processing-level-id]]
+  (let [flat-fields [:platform-h :instrument-h :data-center-h :project-h :processing-level-id-h]]
     (remove nil?
       (for [field-name flat-fields
             :let [search-terms-from-query (lh/get-values-for-field query-params field-name)
                   value-counts (add-terms-with-zero-matching-collections
-                                (frf/buckets->value-count-pairs (field-name elastic-aggregations))
+                                (frf/buckets->value-count-pairs (get-in elastic-aggregations [field-name :values]))
                                 search-terms-from-query)
                   snake-case-field (csk/->snake_case_string field-name)
                   applied? (some? (or (get query-params snake-case-field)
                                       (get query-params (str snake-case-field "[]"))))
                   children (map (v2h/generate-filter-node base-url query-params field-name applied?)
-                                value-counts)]]
+                                (sort-by first util/compare-natural-strings value-counts))]]
         (when (seq children)
           (v2h/generate-group-node (field-name v2h/fields->human-readable-label) applied?
                                    children))))))
@@ -89,7 +90,7 @@
   (let [base-url (collection-search-root-url context)
         query-params (parse-params (:query-string context) "UTF-8")
         facets (concat (hv2/create-hierarchical-v2-facets aggs base-url query-params)
-                       (create-flat-v2-facets aggs base-url query-params))]
+                       (create-prioritized-v2-facets aggs base-url query-params))]
     (if (seq facets)
       (assoc v2-facets-root :has_children true :children facets)
       (assoc v2-facets-root :has_children false))))

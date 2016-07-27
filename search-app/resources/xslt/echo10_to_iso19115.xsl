@@ -234,10 +234,16 @@
         <xd:b>Version 1.32 (Dec. 9, 2015)</xd:b>
         <xd:p>Changed short name generation to be consistent with CMR</xd:p>
       </xd:p>
+      <xd:p>
+        <xd:b>Version 1.33 (July 11, 2016)</xd:b>
+        <xd:p>Changed test for Browse types of OnlineAccessURLs to be case insensitive.</xd:p>
+        <xd:p>Removed Restriction Flag and Restriction Comment mappings to avoid generating extraneous Resource Access Constraint entries.</xd:p>
+        <xd:p>Removed gmd:maintenanceNote hard-coded text.</xd:p>
+     </xd:p>
     </xd:desc>
   </xd:doc>
   <xsl:variable name="translationName" select="'ECHOToISO.xsl'"/>
-  <xsl:variable name="translationVersion" select="'1.32 (Dec. 9, 2015)'"/>
+  <xsl:variable name="translationVersion" select="'1.33 (July 11, 2016)'"/>
   <xsl:output method="xml" indent="yes"/>
   <xsl:strip-space elements="*"/>
   <xsl:param name="recordType"/>
@@ -299,6 +305,7 @@
       <xsl:comment>
         <xsl:value-of select="concat('Other Properties',', all:',$additionalAttributeCount,', coi:',$contentInformationCount,',ii:',$instrumentInformationCount,',si:',$sensorInformationCount,',pli:',$platformInformationCount,',pri:',$processingInformationCount,',qi:',$qualityInformationCount,',gi:',$geographicIdentifierCount,',ci:',$citation.identifierCount,',dk:',$descriptiveKeywordCount,',pcc:',$platformCharacteristicCount,',icc:',$instrumentCharacteristicCount,',scc:',$sensorCharacteristicCount)"/>
       </xsl:comment>
+      <xsl:comment>Translated from ECHO using ECHOToISO.xsl Version: 1.33</xsl:comment>
       <gmd:fileIdentifier>
         <gco:CharacterString>gov.nasa.echo:<xsl:value-of select="/*/DataSetId | /*/GranuleUR"/></gco:CharacterString>
       </gmd:fileIdentifier>
@@ -894,7 +901,7 @@
               </gmd:MD_BrowseGraphic>
             </gmd:graphicOverview>
           </xsl:for-each>
-          <xsl:for-each select="//OnlineResources/OnlineResource[Type='Browse' or Type='Thumbnail'] ">
+          <xsl:for-each select="//OnlineResources/OnlineResource[lower-case(Type)='browse' or lower-case(Type)='thumbnail'] ">
             <gmd:graphicOverview>
               <gmd:MD_BrowseGraphic>
                 <gmd:fileName>
@@ -1742,20 +1749,26 @@
               </gmd:MD_Keywords>
             </gmd:descriptiveKeywords>
           </xsl:if>
-          <gmd:resourceConstraints>
-            <gmd:MD_LegalConstraints>
-              <gmd:useLimitation>
-                <xsl:call-template name="writeCharacterString">
-                  <xsl:with-param name="stringToWrite" select="concat('Restriction Comment: ',/*/RestrictionComment)"/>
-                </xsl:call-template>
-              </gmd:useLimitation>
-              <gmd:otherConstraints>
-                <xsl:call-template name="writeCharacterString">
-                  <xsl:with-param name="stringToWrite" select="concat('Restriction Flag:',/*/RestrictionFlag)"/>
-                </xsl:call-template>
-              </gmd:otherConstraints>
-            </gmd:MD_LegalConstraints>
-          </gmd:resourceConstraints>
+          <xsl:if test="/*/RestrictionComment | /*/RestrictionFlag">
+            <gmd:resourceConstraints>
+              <gmd:MD_LegalConstraints>
+                <xsl:if test="/*/RestrictionComment">
+                  <gmd:useLimitation>
+                    <xsl:call-template name="writeCharacterString">
+                      <xsl:with-param name="stringToWrite" select="concat('Restriction Comment: ',/*/RestrictionComment)"/>
+                    </xsl:call-template>
+                  </gmd:useLimitation>
+                </xsl:if>
+                <xsl:if test="/*/RestrictionFlag">
+                  <gmd:otherConstraints>
+                    <xsl:call-template name="writeCharacterString">
+                      <xsl:with-param name="stringToWrite" select="concat('Restriction Flag: ',/*/RestrictionFlag)"/>
+                    </xsl:call-template>
+                  </gmd:otherConstraints>
+                </xsl:if>
+              </gmd:MD_LegalConstraints>
+            </gmd:resourceConstraints>
+          </xsl:if>
           <!-- Associated collections are treated differently in collection and granule records -->
           <!-- Collection Associations are used in collection records -->
           <!-- Collections associated with type = "Input" are listed as sources. Others described here -->
@@ -2667,11 +2680,6 @@
               <xsl:with-param name="codeListValue" select="'irregular'"/>
             </xsl:call-template>
           </gmd:maintenanceAndUpdateFrequency>
-          <gmd:maintenanceNote>
-            <gco:CharacterString>
-              <xsl:value-of select="concat('Translated from ECHO using ',$translationName,' Version: ',$translationVersion)"/>
-            </gco:CharacterString>
-          </gmd:maintenanceNote>
         </gmd:MD_MaintenanceInformation>
       </gmd:metadataMaintenance>
       <gmi:acquisitionInformation>

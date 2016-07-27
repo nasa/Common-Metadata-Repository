@@ -20,7 +20,7 @@
             [cmr.common-app.test.side-api :as side-api]
             [cmr.message-queue.test.queue-broker-wrapper :as queue-broker-wrapper]
             [cmr.message-queue.test.queue-broker-side-api :as queue-broker-side-api]
-            proto))
+            proto-repl.saved-values))
 
 (def system nil)
 

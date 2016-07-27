@@ -99,7 +99,7 @@
                         [criterium "0.4.3"]
                         ;; Must be listed here as metadata db depends on it.
                         [drift "1.5.3"]
-                        [proto-repl-charts "0.2.0"]
+                        [proto-repl-charts "0.3.0"]
                         [proto-repl "0.3.0"]]
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
@@ -111,4 +111,7 @@
   :aliases {;; Creates the checkouts directory to the local projects
             "create-checkouts" ~create-checkouts-commands
             ;; Alias to test2junit for consistency with lein-test-out
-            "test-out" ["test2junit"]})
+            "test-out" ["test2junit"]
+            ;; Installs the Elasticsearch Marvel plugin locally.
+            ;; Visit http://localhost:9210/_plugin/marvel/sense/index.html
+            "install-marvel" ["shell" "./support/install-marvel.sh"]})

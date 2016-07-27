@@ -188,9 +188,10 @@
   (map #(or (:user-type %) (:group-id %)) (:group-permissions acl)))
 
 (defn acl->provider-id
-  "Returns the provider-ids of the ACLs"
+  "Returns the provider-ids of the ACL."
   [acl]
-  (:provider-id (:catalog-item-identity acl)))
+  (proto-repl.saved-values/save 6)
+  (or (:provider-id (:catalog-item-identity acl) "")))
 
 (defn- acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."
@@ -202,13 +203,15 @@
            :identity-type (acl->identity-type acl)
            :permitted-group permitted-groups
            :permitted-group.lowercase (map str/lower-case permitted-groups)
-           :provider-id (acl->provider-id acl))))
+           :provider-id (acl->provider-id acl)
+           :provider-id.lowercase (str/lower-case (acl->provider-id acl)))))
 
 (defmethod index-concept :acl
   [context concept-map]
   (let [elastic-doc (acl-concept-map->elastic-doc concept-map)
         {:keys [concept-id revision-id]} concept-map
         elastic-store (esi/context->search-index context)]
+    (proto-repl.saved-values/save 5)
     (m/save-elastic-doc
       elastic-store acl-index-name acl-type-name concept-id elastic-doc revision-id
       {:ignore-conflict? true})))
@@ -225,6 +228,14 @@
   [context _ _]
   {:index-name acl-index-name
    :type-name acl-type-name})
+
+(defmethod q2e/concept-type->field-mappings :acl
+  [_]
+  {:provider :provider-id})
+
+(defmethod q2e/field->lowercase-field-mappings :acl
+  [_]
+  {:provider "provider-id.lowercase"})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common public functions

@@ -22,7 +22,14 @@
                  [org.clojure/data.csv "0.1.3"]
                  [org.clojure/tools.nrepl "0.2.11"]
                  [net.sf.saxon/Saxon-HE "9.6.0-7"]
-                 [com.github.fge/json-schema-validator "2.2.6"]]
+                 [com.github.fge/json-schema-validator "2.2.6"]
+
+                 ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
+                 ;; done.
+                 [metosin/ring-swagger-ui "2.1.4-0"]
+                 [metosin/ring-swagger "0.22.9"]
+                 [prismatic/schema "1.1.2"]]
+
   :plugins [[test2junit "1.2.1"]
             [lein-exec "0.3.4"]]
   :repl-options {:init-ns user
@@ -55,14 +62,18 @@
                        (use 'cmr.common-app.api-docs)
                        (use 'clojure.java.io)
                        (let [json-target (file "resources/public/site/JSONQueryLanguage.json")
-                             aql-target (file "resources/public/site/IIMSAQLQueryLanguage.xsd")]
+                             aql-target (file "resources/public/site/IIMSAQLQueryLanguage.xsd")
+                             swagger-target (file "resources/public/site/swagger.json")]
                          (println "Copying JSON Query Language Schema to" (str json-target))
                          (make-parents json-target)
                          (copy (file "resources/schema/JSONQueryLanguage.json")
                                json-target)
                          (println "Copying AQL Schema to" (str aql-target))
                          (copy (file "resources/schema/IIMSAQLQueryLanguage.xsd")
-                               aql-target))
+                               aql-target)
+                         (println "Copying swagger.json file to " (str swagger-target))
+                         (copy (file "resources/schema/swagger.json")
+                               swagger-target))
                        (generate
                          "CMR Search"
                          "api_docs.md"

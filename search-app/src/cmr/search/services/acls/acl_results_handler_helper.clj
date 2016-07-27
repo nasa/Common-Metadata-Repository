@@ -72,32 +72,3 @@
                 end-date (parse-elastic-datetime end-date)]
             (when start-date {:range-date-time {:beginning-date-time start-date
                                                 :ending-date-time end-date}}))))))
-
-(defmulti add-acl-enforcement-fields-to-concept
-  "Adds the fields necessary to enforce ACLs to the concept. Temporal and access value are relatively
-  expensive to extract so they are lazily associated. The values won't be evaluated until needed."
-  (fn [concept]
-    (:concept-type concept)))
-
-(defmethod add-acl-enforcement-fields-to-concept :default
-  [concept]
-  concept)
-
-(defmethod add-acl-enforcement-fields-to-concept :collection
-  [concept]
-  (-> concept
-      (u/lazy-assoc :access-value (ummc/parse-concept-access-value concept))
-      (u/lazy-assoc :temporal (ummc/parse-concept-temporal concept))
-      (assoc :entry-title (get-in concept [:extra-fields :entry-title]))))
-
-(defmethod add-acl-enforcement-fields-to-concept :granule
-  [concept]
-  (-> concept
-      (u/lazy-assoc :access-value (ummc/parse-concept-access-value concept))
-      (u/lazy-assoc :temporal (ummc/parse-concept-temporal concept))
-      (assoc :collection-concept-id (get-in concept [:extra-fields :parent-collection-id]))))
-
-(defn add-acl-enforcement-fields
-  "Adds the fields necessary to enforce ACLs to the concepts."
-  [concepts]
-  (mapv add-acl-enforcement-fields-to-concept concepts))

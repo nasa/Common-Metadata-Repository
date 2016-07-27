@@ -19,7 +19,9 @@
 (defn- spatial-extent->granule-spatial-representation
   "Returns the granule spatial representation given a parent collection spatial extent"
   [sp]
-  (csk/->kebab-case-keyword (get sp :GranuleSpatialRepresentation "NO_SPATIAL")))
+  (if-let [granule-spatial-representation (:GranuleSpatialRepresentation sp)]
+    (csk/->kebab-case-keyword granule-spatial-representation)
+    :no-spatial))
 
 (defn- collection->granule-spatial-representation
   "Returns the granule spatial representation given a parent collection"

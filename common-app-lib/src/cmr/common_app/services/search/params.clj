@@ -78,11 +78,11 @@
 
 (defmulti parameter->condition
   "Converts a parameter into a condition"
-  (fn [concept-type param value options]
+  (fn [context concept-type param value options]
     (param-name->type concept-type param)))
 
 (defmethod parameter->condition :default
-  [concept-type param value options]
+  [_context concept-type param value options]
   (errors/internal-error!
     (format "Could not find parameter handler for [%s] with concept-type [%s]"
             param concept-type)))
@@ -97,20 +97,20 @@
       (qm/string-condition param value case-sensitive pattern))))
 
 (defmethod parameter->condition :string
-  [concept-type param value options]
+  [_context concept-type param value options]
   (string-parameter->condition concept-type param value options))
 
 ;; or-conds --> "not (CondA and CondB)" == "(not CondA) or (not CondB)"
 (defmethod parameter->condition :exclude
-  [concept-type param value options]
+  [context concept-type param value options]
   (gc/or-conds
     (map (fn [[exclude-param exclude-val]]
            (qm/map->NegatedCondition
-             {:condition (parameter->condition concept-type exclude-param exclude-val options)}))
+             {:condition (parameter->condition context concept-type exclude-param exclude-val options)}))
          value)))
 
 (defmethod parameter->condition :boolean
-  [concept-type param value options]
+  [_context concept-type param value options]
   (cond
     (or (= "true" value) (= "false" value))
     (qm/map->BooleanCondition {:field param
@@ -123,7 +123,7 @@
     (errors/internal-error! (format "Boolean condition for %s has invalid value of [%s]" param value))))
 
 (defmethod parameter->condition :num-range
-  [concept-type param value options]
+  [_context concept-type param value options]
   (qm/numeric-range-str->condition param value))
 
 (defn parse-sort-key
@@ -185,7 +185,7 @@
 
 (defn parse-parameter-query
   "Converts parameters into a query model."
-  [concept-type params]
+  [context concept-type params]
   (let [[params query-attribs] (parse-query-level-params concept-type params)
         options (u/map-keys->kebab-case (get params :options {}))
         params (dissoc params :options)]
@@ -194,8 +194,7 @@
       (qm/query query-attribs)
       ;; Convert params into conditions
       (let [conditions (map (fn [[param value]]
-                              (parameter->condition concept-type param value options))
+                              (parameter->condition context concept-type param value options))
                             params)]
         (qm/query (assoc query-attribs
                          :condition (gc/and-conds conditions)))))))
-

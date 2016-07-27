@@ -34,7 +34,7 @@
 
 ;; Converts orbit-number parameter into a query condition
 (defmethod p/parameter->condition :equator-crossing-longitude
-  [concept-type param values options]
+  [_context concept-type param values options]
   (if (string? values)
     (equator-crossing-longitude-param-str->condition values)
     (equator-crossing-longitude-param-map->condition values)))

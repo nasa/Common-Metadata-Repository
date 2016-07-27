@@ -4,7 +4,8 @@
     [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
-    [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]])
+    [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]])
 
 (def dev-cmr-deps
   '[[nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
@@ -25,7 +26,7 @@
   :profiles
   {:dev {:dependencies ~(into '[[org.clojure/tools.namespace "0.2.11"]
                                 [pjstadig/humane-test-output "0.7.0"]
-                                [proto-repl "0.1.2"]]
+                                [proto-repl "0.3.0"]]
                           dev-cmr-deps)
          :source-paths ["src" "dev" "test" "int_test"]
          :test-paths ["test" "int_test"]

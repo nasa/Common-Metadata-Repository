@@ -208,6 +208,16 @@
   (parse-ingest-response
     (client/request (assoc params :throw-exceptions false :connection-manager (s/conn-mgr))) {}))
 
+(defn concept
+  "Returns the concept map for ingest"
+  [concept-type provider-id native-id format-key metadata]
+  (let [mime-type (mt/format->mime-type format-key)]
+    {:concept-type concept-type
+     :provider-id provider-id
+     :native-id native-id
+     :metadata metadata
+     :format mime-type}))
+
 (defn ingest-concept
   "Ingest a concept and return a map with status, concept-id, and revision-id"
   ([concept]

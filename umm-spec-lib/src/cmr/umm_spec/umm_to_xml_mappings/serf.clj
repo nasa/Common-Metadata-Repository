@@ -44,82 +44,6 @@
      [:Science_Variable_Level_3 (:VariableLevel3 sk)]
      [:Science_Detailed_Variable (:DetailedVariable sk)]]))
 
-(defn- extract-contacts-by-type
-  "Returns a map of contact types to a list of the values."
-  [contacts type]
-  (get (util/map-values #(map :Value %) (group-by :Type contacts)) type))
-
-(defn- contact-to-serf
-  "Converts a UMM-S Contact to the appropriate SERF Personnel elements as a vector"
-  [contacts]
-  (for [type ["email" "phone" "fax"]
-        value (extract-contacts-by-type contacts type)]
-    [(keyword (str/capitalize type) ) value]))
-
-(defn- address-to-serf
-  "Converts a UMM-S Addresses to the appropriate SERF Personnel elements as a vector.
-  Only takes the first address as required by the schema."
-  [addresses]
-  (when-let [address (first addresses)]
-    [:Contact_Address
-     [:Address (first (:StreetAddresses address))]
-     [:City (:City address)]
-     [:Province_or_State (:StateProvince address)]
-     [:Postal_Code (:PostalCode address)]
-     [:Country (:Country address)]]))
-
-(defn- create-root-personnel
-  "Converts UMM-S Responsibilities to a SERF Personnel element"
-  [responsibilities]
-  (for [responsibility responsibilities
-        :let [{{:keys [Contacts Addresses Person OrganizationName]} :Party} responsibility
-              role (or (get umm-roles->serf-roles (:Role responsibility)) (:Role responsibility))]
-        :when (and role (not= "SERVICE PROVIDER CONTACT" role))]
-    [:Personnel
-     [:Role role]
-     [:First_Name (:FirstName Person)]
-     [:Middle_Name (:MiddleName Person)]
-     [:Last_Name (or (:LastName Person) not-provided)]
-     (contact-to-serf Contacts)
-     (address-to-serf Addresses)]))
-
-(defn- create-service-provider-personnel
-  "Converts a UMM-S Responsibility to a SERF Personnel element"
-  [responsibilities]
-  (let [responsibility (first (filter #(= "RESOURCEPROVIDER" (:Role %)) responsibilities))
-        party (:Party responsibility)
-        person (:Person party)
-        contacts (:Contacts party)
-        addresses (:Addresses party)]
-    [:Personnel
-     [:Role (or (get umm-roles->serf-roles (:Role responsibility)) not-provided)]
-     [:First_Name (:FirstName person)]
-     [:Middle_Name (:MiddleName person)]
-     ;;For some reason Last Name is the only thing required by SERF
-     [:Last_Name (or (:LastName person) not-provided)]
-     (contact-to-serf contacts)
-     (address-to-serf addresses)]))
-
-(defn- create-service-provider
-  "Converts a UMM-S Responsibilities element to a SERF Service Provider element
-  Required in SERF so if no RESOURCEPROVIDER is found it will generate a default one"
-  [responsibilities]
-  (if-let [responsibility (first (filter #(= "RESOURCEPROVIDER" (:Role %)) responsibilities))]
-  (let [party (:Party responsibility)]
-    [:Service_Provider
-     [:Service_Organization
-      [:Short_Name (or (:ShortName (:OrganizationName party)) not-provided)]
-      [:Long_Name (:LongName (:OrganizationName party))]]
-     [:Service_Organization_URL (-> party :RelatedUrls first :URLs first)]
-     (create-service-provider-personnel responsibilities)])
-  ;;Default Case
-  [:Service_Provider
-     [:Service_Organization
-      [:Short_Name not-provided]]
-     [:Personnel
-       [:Role (get umm-roles->serf-roles "RESOURCEPROVIDER")]
-       [:Last_Name not-provided]]]))
-
 (defn- create-distributions
   "Creates a SERF Distributions element from a UMM-S Distributions Element"
   [s]
@@ -133,14 +57,14 @@
   "Creates a SERF Related URL element from a UMM-S Document"
   [s]
   (for [related-url (:RelatedUrls s)]
-       [:Related_URL
-        (when-let [[type subtype] (:Relation related-url)]
-          [:URL_Content_Type
-           [:Type type]
-           [:Subtype subtype]])
-        (for [url (:URLs related-url)]
-          [:URL url])
-        [:Description (:Description related-url)]]))
+    [:Related_URL
+     (when-let [[type subtype] (:Relation related-url)]
+       [:URL_Content_Type
+        [:Type type]
+        [:Subtype subtype]])
+     (for [url (:URLs related-url)]
+       [:URL url])
+     [:Description (:Description related-url)]]))
 
 (defn- create-service-citations
   "Creates a SERF Service Citation element from a UMM-S Service Citation"
@@ -166,10 +90,10 @@
   "Creates SERF Source Name elements from a UMM-S Platforms mapping"
   [s]
   (for [platform (:Platforms s)
-           :when (not= (:ShortName platform) not-provided)]
-       [:Source_Name
-        [:Short_Name (:ShortName platform)]
-        [:Long_Name (:LongName platform)]]))
+        :when (not= (:ShortName platform) not-provided)]
+    [:Source_Name
+     [:Short_Name (:ShortName platform)]
+     [:Long_Name (:LongName platform)]]))
 
 (defn- create-projects
   "Creates SERF Project elements from a UMM-S Projects mapping"
@@ -197,20 +121,20 @@
   (for [pub-ref pub-refs]
     [:Reference
      [:Author (:Author pub-ref)]
-      [:Publication_Date (:PublicationDate pub-ref)]
-      [:Title (:Title pub-ref)]
-      [:Series (:Series pub-ref)]
-      [:Edition (:Edition pub-ref)]
-      [:Volume (:Volume pub-ref)]
-      [:Issue (:Issue pub-ref)]
-      [:Report_Number (:ReportNumber pub-ref)]
-      [:Publication_Place (:PublicationPlace pub-ref)]
-      [:Publisher (:Publisher pub-ref)]
-      [:Pages (:Pages pub-ref)]
-      [:ISBN (:ISBN pub-ref)]
-      [:DOI (:DOI (:DOI pub-ref))]
-      [:Online_Resource (-> pub-ref :RelatedUrl :URLs first)]
-      [:Other_Reference_Details (:OtherReferenceDetails pub-ref)]]))
+     [:Publication_Date (:PublicationDate pub-ref)]
+     [:Title (:Title pub-ref)]
+     [:Series (:Series pub-ref)]
+     [:Edition (:Edition pub-ref)]
+     [:Volume (:Volume pub-ref)]
+     [:Issue (:Issue pub-ref)]
+     [:Report_Number (:ReportNumber pub-ref)]
+     [:Publication_Place (:PublicationPlace pub-ref)]
+     [:Publisher (:Publisher pub-ref)]
+     [:Pages (:Pages pub-ref)]
+     [:ISBN (:ISBN pub-ref)]
+     [:DOI (:DOI (:DOI pub-ref))]
+     [:Online_Resource (-> pub-ref :RelatedUrl :URLs first)]
+     [:Other_Reference_Details (:OtherReferenceDetails pub-ref)]]))
 
 (defn umm-s-to-serf-xml
   "Returns SERF XML structure from UMM collection record s."
@@ -221,8 +145,6 @@
      [:Entry_ID (:EntryId s)]
      [:Entry_Title (:EntryTitle s)]
      (create-service-citations s)
-     ;; CMR-2298 needs to be resolved before we can properly implement this
-     (create-root-personnel (:Responsibilities s))
      (create-service-parameters s)
      (create-science-parameters s)
      (for [topic-category (:ISOTopicCategories s)]
@@ -242,12 +164,17 @@
      ;;Multimedia Samples should go here in order but we don't have a way to distinguish them from
      ;;Related URLs.
      (create-publication-references (:PublicationReferences s))
-     (create-service-provider (:Responsibilities s))
+     [:Service_Provider
+      [:Service_Organization
+       [:Short_Name not-provided]]
+      [:Personnel
+       [:Role (get umm-roles->serf-roles "RESOURCEPROVIDER")]
+       [:Last_Name not-provided]]]
      [:Summary
       [:Abstract (:Abstract s)]
       [:Purpose (:Purpose s)]]
      (create-related-urls s)
-      [:Parent_SERF (:EntryId (first (:MetadataAssociations s)))]
+     [:Parent_SERF (:EntryId (first (:MetadataAssociations s)))]
      (create-idn-node s)
      [:Metadata_Name
       (or (:Value (first (filter #(= "Metadata_Name" (:Name %)) (:AdditionalAttributes s)))) not-provided)]
@@ -261,9 +188,9 @@
       (for [metadata  (:AdditionalAttributes s)
             :when (not (inserted-metadata (:Name metadata)))]
         [:Metadata [:Group (:Group metadata)]
-                    [:Name (or (:Name metadata) not-provided)]
-                    [:Description (:Description metadata)]
-                    [:Type (:DataType metadata)]
-                    [:Update_Date (when-let [date (:UpdateDate metadata)]
-                                    (time-format/unparse (time-format/formatters :date) date))]
-                    [:Value (:Value metadata)]])]]))
+         [:Name (or (:Name metadata) not-provided)]
+         [:Description (:Description metadata)]
+         [:Type (:DataType metadata)]
+         [:Update_Date (when-let [date (:UpdateDate metadata)]
+                         (time-format/unparse (time-format/formatters :date) date))]
+         [:Value (:Value metadata)]])]]))

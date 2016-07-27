@@ -78,6 +78,7 @@
                                (:index-name index-info)
                                [(:type-name index-info)]
                                query-map)]
+      (proto-repl.saved-values/save 4)
       ;; Replace the Elasticsearch field names with their query model field names within the results
       (update-in response [:hits :hits]
                  (fn [all-concepts]

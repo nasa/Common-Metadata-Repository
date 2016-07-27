@@ -8,11 +8,13 @@
             [ring.middleware.keyword-params :as keyword-params]
             [ring.middleware.json :as ring-json]
             [cheshire.core :as json]
+            [cmr.common.concepts :as cc]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.cache :as cache]
             [cmr.common.api.errors :as api-errors]
             [cmr.common.services.errors :as errors]
             [cmr.common.api.context :as context]
+            [cmr.common.validations.core :as validation]
             [cmr.common.validations.json-schema :as js]
             [cmr.common.mime-types :as mt]
             [cmr.acl.core :as acl]
@@ -22,7 +24,9 @@
             [cmr.access-control.data.acl-schema :as acl-schema]
             [cmr.access-control.services.acl-service :as acl-service]
             [cmr.access-control.services.group-service :as group-service]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [clojure.string :as str]
+            [cmr.common.util :as u]))
 
 ;;; Utility Functions
 
@@ -98,6 +102,24 @@
   "Validates the group mebers JSON string against the schema. Throws a service error if it is invalid."
   [json-str]
   (validate-json group-members-schema json-str))
+
+;; Misc route validations
+
+(defn- validate-get-permission-params
+  "Throws service errors if any invalid params or values are found."
+  [params]
+  (validate-params params :concept_id :user_id :user_type)
+  (let [{:keys [concept_id user_id user_type]} params
+        errors []
+        errors (if (empty? concept_id)
+                 (conj errors "Parameter [concept_id] is required.")
+                 errors)
+        errors (reduce #(concat %1 (cc/concept-id-validation %2)) errors concept_id)
+        errors (if-not (= 1 (count (remove str/blank? [user_id user_type])))
+                 (conj errors "One of parameters [user_type] or [user_id] are required.")
+                 errors)]
+    (when (seq errors)
+      (errors/throw-service-errors :bad-request errors))))
 
 ;;; Group Route Functions
 
@@ -204,6 +226,18 @@
   (-> (acl-service/search-for-acls context params)
       cr/search-response))
 
+(defn get-permissions
+  [request-context params]
+  (let [params (update-in params [:concept_id] u/seqify)]
+    (validate-get-permission-params params)
+    (let [{:keys [user_id user_type concept_id]} params
+          username-or-type (if user_type
+                             (keyword user_type)
+                             user_id)]
+      {:status 200
+       :body (json/generate-string
+               (acl-service/get-granted-permissions request-context username-or-type concept_id))})))
+
 ;;; Various Admin Route Functions
 
 (defn reset
@@ -306,7 +340,13 @@
 
           ;; Retrieve an ACL
           (GET "/" {:keys [request-context headers params]}
-            (get-acl request-context headers concept-id)))))
+            (get-acl request-context headers concept-id))))
+
+      (context "/permissions" []
+        (OPTIONS "/" [] cr/options-response)
+
+        (GET "/" {:keys [request-context params]}
+          (get-permissions request-context params))))
 
     (route/not-found "Not Found")))
 

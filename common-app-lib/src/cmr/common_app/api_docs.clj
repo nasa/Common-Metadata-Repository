@@ -57,7 +57,8 @@
             [ring.util.response :as r]
             [ring.util.request :as request]
             [clojure.java.io :as io]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [cmr.common-app.api.routes :as cr])
   (:import [org.pegdown
             PegDownProcessor
             Extensions]))
@@ -93,6 +94,17 @@
                             {:status 200
                              :body (slurp (io/resource welcome-page-location))}))
     (context "/site" []
+      ;; Return swagger.json if the application provides one
+      (GET "/swagger.json" {:keys [headers]}
+        (if-let [resource (site-resource "swagger.json")]
+          {:status 200
+           :body (-> resource
+                     slurp
+                     (str/replace "%CMR-PROTOCOL%" public-protocol)
+                     (str/replace "%CMR-HOST%" (headers "host"))
+                     (str/replace "%CMR-BASE-PATH%" relative-root-url))
+           :headers (:headers cr/options-response)}
+          (route/not-found (site-resource "404.html"))))
       ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
       (GET ["/:page", :page #".*\.html$"] {headers :headers, {page :page} :params}
         (when-let [resource (site-resource page)]
@@ -158,8 +170,3 @@
                            footer)))
 
   (println "Done"))
-
-
-
-
-

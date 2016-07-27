@@ -21,7 +21,8 @@
    :tag #{:concept-id :native-id}
    :tag-association #{:concept-id :native-id :associated-concept-id :associated-revision-id :tag-key}
    :service default-supported-find-parameters
-   :access-group default-supported-find-parameters})
+   :access-group default-supported-find-parameters
+   :acl default-supported-find-parameters})
 
 (def granule-supported-parameter-combinations
   "Supported search parameter combination sets for granule find. This does not include flags
@@ -75,7 +76,7 @@
       [provider])
     (provider-service/get-providers context)))
 
-(defn- find-tags-or-tag-associations
+(defn- find-cmr-concepts
   "Find tags or tag associations with specific parameters"
   [context params]
   (let [db (db-util/context->db context)
@@ -106,6 +107,6 @@
   "Find concepts with specific parameters"
   [context params]
   (validate-find-params params)
-  (if (contains? #{:tag :tag-association} (:concept-type params))
-    (find-tags-or-tag-associations context params)
+  (if (contains? #{:tag :tag-association :acl} (:concept-type params))
+    (find-cmr-concepts context params)
     (find-provider-concepts context params)))

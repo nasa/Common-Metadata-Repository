@@ -118,7 +118,6 @@
 (defn mime-type->format
   "Returns a format keyword for the given MIME type and optional default MIME type."
   ([mime-type]
-    ;; why does this default to JSON?
    (mime-type->format mime-type (:json core-formats->mime-types)))
   ([mime-type default-mime-type]
    (get base-mime-type-to-format (base-mime-type-of mime-type)

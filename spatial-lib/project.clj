@@ -54,7 +54,7 @@
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [criterium "0.4.3"]
-                        [proto-repl "0.1.2"]
+                        [proto-repl "0.3.0"]
                         [pjstadig/humane-test-output "0.7.0"]]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]

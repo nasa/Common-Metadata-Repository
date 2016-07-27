@@ -37,10 +37,10 @@
      :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
                        :dif-entry-id :collection-data-type :project :project-h :entry-id :version :provider
                        :entry-title :platform :platform-h :processing-level-id :processing-level-id-h
-                      :sensor :organization-h}
+                       :sensor :data-center-h}
      :always-case-sensitive #{:echo-collection-id}
      :disallow-pattern #{:echo-collection-id}
-     :allow-or #{:attribute :science-keywords}}))
+     :allow-or #{:attribute :science-keywords :science-keywords-h}}))
 
 (defmethod cpv/params-config :granule
   [_]
@@ -79,6 +79,7 @@
   [_]
   {:native-id cpv/pattern-option
    :data-center cpv/string-plus-and-options
+   :data-center-h cpv/string-plus-and-options
    :archive-center cpv/string-param-options
    :dataset-id cpv/pattern-option
    :entry-title cpv/string-plus-and-options
@@ -98,6 +99,7 @@
    :two-d-coordinate-system cpv/string-param-options
    :keyword cpv/pattern-option
    :science-keywords cpv/string-plus-or-options
+   :science-keywords-h cpv/string-plus-or-options
    :spatial-keyword cpv/string-plus-and-options
    :dif-entry-id cpv/string-plus-and-options
    :provider cpv/string-param-options
@@ -105,7 +107,6 @@
    :temporal (conj exclude-plus-and-or-option :limit-to-granules)
    :revision-date cpv/and-option
    :highlights highlights-option
-   :organization-h cpv/string-plus-and-options
 
    ;; Tag parameters for use querying other concepts.
    :tag-key cpv/pattern-option
@@ -284,9 +285,9 @@
       (mapcat #(-> % attrib/parse-value :errors) attributes)
       [(attrib-msg/attributes-must-be-sequence-msg)])))
 
-(defn science-keywords-validation
-  [concept-type params]
-  (when-let [science-keywords (:science-keywords params)]
+(defn science-keywords-validation-for-field
+  [field concept-type params]
+  (when-let [science-keywords (get params field)]
     (if (map? science-keywords)
       (let [values (vals science-keywords)]
         (if (some #(not (map? %)) values)
@@ -522,8 +523,8 @@
                   equator-crossing-date-validation
                   cloud-cover-validation
                   attribute-validation
-                  science-keywords-validation
-                  ;; CMR-3119 Humanized science keywords
+                  (partial science-keywords-validation-for-field :science-keywords)
+                  (partial science-keywords-validation-for-field :science-keywords-h)
                   exclude-validation
                   boolean-value-validation
                   polygon-validation
@@ -545,7 +546,7 @@
                equator-crossing-date-validation
                cloud-cover-validation
                attribute-validation
-               science-keywords-validation
+               (partial science-keywords-validation-for-field :science-keywords)
                exclude-validation
                boolean-value-validation
                polygon-validation
@@ -585,7 +586,9 @@
    (partial cpv/validate-map [:options :attribute])
    (partial cpv/validate-map [:exclude])
    (partial cpv/validate-map [:science-keywords])
-   (partial cpv/validate-all-map-values cpv/validate-map [:science-keywords])])
+   (partial cpv/validate-all-map-values cpv/validate-map [:science-keywords])
+   (partial cpv/validate-map [:science-keywords-h])
+   (partial cpv/validate-all-map-values cpv/validate-map [:science-keywords-h])])
 
 (defn validate-parameter-data-types
   "Validates data types of parameters.  Unlike other validations, this returns a tuple of

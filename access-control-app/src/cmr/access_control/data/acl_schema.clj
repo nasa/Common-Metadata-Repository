@@ -113,10 +113,7 @@
                    :AccessValueType {:type :object
                                      :properties {:min_value {:type :number}
                                                   :max_value {:type :number}
-                                                  :include_undefined_value {:type :boolean}}
-                                     :oneOf [{:required [:min_value :max_value]}
-                                             {:required [:min_value :max_value :include_undefined_value]}
-                                             {:required [:include_undefined_value]}]}
+                                                  :include_undefined_value {:type :boolean}}}
                    :TemporalIdentifierType {:type :object
                                             :properties {:start_date {:type :string
                                                                       :format :date-time}
@@ -124,7 +121,8 @@
                                                                      :format :date-time}
                                                          :mask {:enum ["intersect"
                                                                        "contains"
-                                                                       "disjoint"]}}}
+                                                                       "disjoint"]}}
+                                            :required [:start_date :end_date :mask]}
                    :CollectionIdentifierType {:type :object
                                               :properties {:entry_titles {:type :array
                                                                           :items {:type :string

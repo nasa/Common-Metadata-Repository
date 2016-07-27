@@ -3,6 +3,7 @@
   (:require [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [camel-snake-kebab.core :as csk]
+            [clojure.string :as str]
             [clojure.set :as set]
             [clojure.java.io :as io]
             [clojure.walk :as w]
@@ -14,7 +15,13 @@
            java.util.zip.GZIPOutputStream
            java.io.ByteArrayOutputStream
            java.io.ByteArrayInputStream
-           java.sql.Blob))
+           java.sql.Blob
+           java.util.Arrays
+           [net.jpountz.lz4
+            LZ4Compressor
+            LZ4SafeDecompressor
+            LZ4FastDecompressor
+            LZ4Factory]))
 
 (defmacro are2
   "DEPRECATED. Use are3 instead.
@@ -218,9 +225,10 @@
   [m]
   (remove-map-keys #(nil? %) m))
 
-(defn map-keys [f m]
+(defn map-keys
   "Maps f over the keys in map m and updates all keys with the result of f.
   This is a recommended function from the Camel Snake Kebab library."
+  [f m]
   (when m
     (letfn [(handle-value [v]
                           (cond
@@ -312,6 +320,11 @@
                              (throw t)))))
         futures (map-n-all build-future n items)]
     (mapv deref futures)))
+
+(defn fast-map
+  "Eager version of pmap"
+  [f values]
+  (doall (pmap f values)))
 
 (defmacro while-let
   "A macro that's similar to when let. It will continually evaluate the bindings and execute the body
@@ -414,10 +427,47 @@
               (io/delete-file file))]
       (delete-recursive (io/file fname)))))
 
+(defn string->lz4-bytes
+  "Compresses the string using LZ4 compression. Returns a map containing the compressed byte array
+   and the length of the original string in bytes. The decompression length is used during decompression.
+   LZ4 compression is faster than GZIP compression but uses more space."
+  [^String s]
+  (let [data (.getBytes s "UTF-8")
+        decompressed-length (count data)
+        ^LZ4Factory factory (LZ4Factory/fastestInstance)
+        ^LZ4Compressor compressor (.highCompressor factory)
+        max-compressed-length (.maxCompressedLength compressor decompressed-length)
+        compressed (byte-array max-compressed-length)
+        compressed-length (.compress compressor
+                                     ;; Data to compress and size
+                                     data 0 decompressed-length
+                                     ;; Target byte array and size
+                                     compressed 0 max-compressed-length)]
+    {:decompressed-length decompressed-length
+     :compressed (Arrays/copyOf compressed compressed-length)}))
+
+(defn lz4-bytes->string
+  "Takes a map as returned by string->lz4-bytes and decompresses it back to the original string."
+  [lz4-info]
+  (let [{:keys [^long decompressed-length
+                ^bytes compressed]} lz4-info
+        ^LZ4Factory factory (LZ4Factory/fastestInstance)
+        ^LZ4FastDecompressor decompressor (.fastDecompressor factory)
+        restored (byte-array decompressed-length)]
+    (.decompress decompressor
+                 compressed 0
+                 restored 0 decompressed-length)
+    (String. restored 0 decompressed-length)))
+
 (defn gzip-blob->string
   "Convert a gzipped BLOB to a string"
   [^Blob blob]
   (-> blob .getBinaryStream GZIPInputStream. slurp))
+
+(defn gzip-bytes->string
+  "Convert a byte array of gzipped data into a string."
+  [^bytes bytes]
+  (-> bytes ByteArrayInputStream. GZIPInputStream. slurp))
 
 (defn string->gzip-bytes
   "Convert a string to an array of compressed bytes"
@@ -627,3 +677,46 @@
   [coll]
   (when (seq coll)
     (vec coll)))
+
+(defn seqify
+  "When x is non-nil, returns x if it is sequential, or else returns a sequential collection containing only x."
+  [x]
+  (when (some? x)
+    (if (sequential? x)
+      x
+      [x])))
+
+(defn- decompose-natural-string
+  "Given a string, returns a vector containing the alternating sequences of
+  digit and non-digit subsequences. Digits are returned as integers and the
+  vector is guaranteed to start with a (potentially empty) string."
+  [s]
+  (let [lower-s (str/lower-case s)
+        result (map #(if (re-matches #"\d+" %)
+                       (Integer/parseInt % 10)
+                       %)
+                    (re-seq #"(?:\d+|[^\d]+)" lower-s))]
+    (if (number? (first result))
+      (into [""] result)
+      (vec result))))
+
+(defn compare-vectors
+  "Compares two vectors of potentially unequal size. The default comparator
+   for vectors considers length first, regardless of contents. compare-vectors
+   compares in a manner similar to strings, where contents are considered first.
+
+   > (compare [1 2 3] [2 1]) => 1
+   > (compare-vectors [1 2 3] [2 1]) => -1"
+  [v0 v1]
+  (let [len (min (count v0) (count v1))
+        cmp (compare (subvec v0 0 len) (subvec v1 0 len))]
+    (if (or (= cmp 0) (= (count v0) (count v1)))
+      (compare v0 v1)
+      cmp)))
+
+(defn compare-natural-strings
+  "A comparator function for two strings that does not consider case and
+  interprets numbers within the strings, so that ab1c < ab2c < AB10C"
+  [s0 s1]
+  (compare-vectors (decompose-natural-string s0)
+                   (decompose-natural-string s1)))

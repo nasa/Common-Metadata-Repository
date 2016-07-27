@@ -324,10 +324,13 @@
                         (iso-resource-constraints-element restriction-flag use-constraints)
                         (ca/generate-collection-associations collection-associations)
                         (h/iso-string-element :gmd:language "eng")
-                        (x/element :gmd:extent {}
-                                   (x/element :gmd:EX_Extent {:id "boundingExtent"}
-                                              (sp/spatial-coverage->extent-xml spatial-coverage)
-                                              (t/generate-temporal temporal)))
+                        (x/element
+                          :gmd:extent {}
+                          (x/element
+                            :gmd:EX_Extent {:id "boundingExtent"}
+                            (sp/spatial-coverage->extent-description-xml spatial-coverage)
+                            (sp/spatial-coverage->extent-xml spatial-coverage)
+                            (t/generate-temporal temporal)))
                         (iso-processing-level-id-element processing-level-id)))
                     (generate-distribution-info archive-center related-urls personnel)
                     (generate-data-quality-info organizations product-specific-attributes)

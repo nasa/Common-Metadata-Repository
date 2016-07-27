@@ -13,9 +13,9 @@
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
-            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.organizations-personnel :as org-per]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.metadata-association :as ma]
             [cmr.umm-spec.iso19115-2-util :refer :all]
+            [cmr.umm-spec.util :as u]
             [cmr.umm-spec.location-keywords :as lk]))
 
 (def md-data-id-base-xpath
@@ -107,22 +107,6 @@
       seq
       some?))
 
-(defn- parse-organizations
-  [doc]
-  (concat
-    (org-per/parse-responsible-parties
-      "POINTOFCONTACT"
-      (select doc (str md-data-id-base-xpath "/gmd:pointOfContact/gmd:CI_ResponsibleParty")))
-    (org-per/parse-responsible-parties
-      "ORIGINATOR"
-      (select doc (str citation-base-xpath "/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty")))
-    (org-per/parse-responsible-parties
-      "DISTRIBUTOR"
-      (select doc (str dru/distributor-xpath "[1]/gmd:distributorContact/gmd:CI_ResponsibleParty")))
-    (org-per/parse-responsible-parties
-      "PROCESSOR"
-      (select doc (str data-quality-info-xpath "/gmd:lineage/gmd:LI_Lineage/gmd:processStep/gmd:LI_ProcessStep/gmd:processor/gmd:CI_ResponsibleParty")))))
-
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
   [context doc]
@@ -143,7 +127,7 @@
      :AccessConstraints {:Description
                          (regex-value doc (str constraints-xpath
                                                "/gmd:useLimitation/gco:CharacterString")
-                                      #"Restriction Comment:(.+)")
+                                      #"Restriction Comment: (.+)")
 
                          :Value
                          (regex-value doc (str constraints-xpath
@@ -205,8 +189,9 @@
      :ScienceKeywords (kws/parse-science-keywords md-data-id-el)
      :RelatedUrls (dru/parse-related-urls doc)
      :AdditionalAttributes (aa/parse-additional-attributes doc)
-     :Personnel (org-per/parse-responsible-parties "POINTOFCONTACT" (select doc personnel-xpath))
-     :Organizations (parse-organizations doc)}))
+     ;; DataCenters is not implemented but is required in UMM-C
+     ;; Implement with CMR-3161
+     :DataCenters [u/not-provided-data-center]}))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document."

@@ -497,6 +497,10 @@
          nil "acd" "z" true
          nil "abc" "zyx" true)))
 
+(defspec lz4-compression 100
+  (for-all [s gen/string]
+    (= s (-> s util/string->lz4-bytes util/lz4-bytes->string))))
+
 (defspec gzip-base64-encode 100
   (for-all [s gen/string]
     (= s (-> s util/string->gzip-base64 util/gzip-base64->string))))
@@ -601,5 +605,57 @@
          {}
          {:b [{:c [4 5] :d 4} {:c [6]}]}
          {:b [{:d 6} {:d 7}]}]}
-   [:a :b :c]]
+    [:a :b :c]]
    [[1 2 3] [4 5] [6]]))
+
+(deftest compare-natural-strings
+  (testing "natural string sort"
+    (is (=
+         [""
+          "1abc2"
+          "2abc2"
+          "10abc2"
+          "ab10"
+          "abc"
+          "abc1"
+          "abc1abc 0"
+          "abc01abc 1"
+          "abc1abc 2"
+          "Abc1abc 3"
+          "Abc1abc 10"
+          "abc2"
+          "abc10"
+          "abc10a"]
+         (sort util/compare-natural-strings
+               [""
+                "abc"
+                "abc1"
+                "abc2"
+                "ab10"
+                "abc10a"
+                "abc10"
+                "1abc2"
+                "2abc2"
+                "10abc2"
+                "abc1abc 2"
+                "abc01abc 1"
+                "Abc1abc 10"
+                "Abc1abc 3"
+                "abc1abc 0"])))))
+
+(deftest compare-vectors
+  (testing "vector sort"
+    (is (=
+         [[]
+          [1 2]
+          [1 2 2]
+          [1 2 2 4]
+          [1 2 3]
+          [2 1]]
+         (sort util/compare-vectors
+               [[1 2 3]
+                [1 2 2]
+                [1 2 2 4]
+                []
+                [1 2]
+                [2 1]])))))

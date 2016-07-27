@@ -9,7 +9,6 @@
             [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.organizations-personnel :as org-per]
             [cmr.umm-spec.iso19115-2-util :as iso]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as dru]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]
@@ -166,11 +165,29 @@
                         :when (some? v)]
                     (str k "=" (str/replace v #"[,=]" ""))))))
 
+(defn- generate-user-constraints
+  "Returns the constraints appropriate for the given metadata."
+  [c]
+  (let [description (get-in c [:AccessConstraints :Description])
+        value (get-in c [:AccessConstraints :Value])
+        use-constraints (:UseConstraints c)]
+    [:gmd:resourceConstraints
+     (when (or description value use-constraints)
+       [:gmd:MD_LegalConstraints
+        (when use-constraints
+          [:gmd:useLimitation (char-string (:UseConstraints c))])
+        (when description
+          [:gmd:useLimitation
+            [:gco:CharacterString (str "Restriction Comment: " description)]])
+        (when value
+          [:gmd:otherConstraints
+            [:gco:CharacterString (str "Restriction Flag:" value)]])])]))
+
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
   (let [platforms (platform/platforms-with-id (:Platforms c))
-        organizations (:Organizations c)]
+        additional-attributes (:AdditionalAttributes c)]
     (xml
       [:gmi:MI_Metadata
        iso19115-2-xml-namespaces
@@ -182,11 +199,7 @@
        [:gmd:hierarchyLevel
         [:gmd:MD_ScopeCode {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
                             :codeListValue "series"} "series"]]
-       (if-let [responsibilities (org-per/responsibility-by-role (:Personnel c) "POINTOFCONTACT")]
-         (for [responsibility responsibilities]
-           [:gmd:contact
-            (org-per/generate-responsible-party responsibility)])
-         [:gmd:contact {:gco:nilReason "missing"}])
+         [:gmd:contact {:gco:nilReason "missing"}]
        [:gmd:dateStamp
         [:gco:DateTime "2014-08-25T15:25:44.641-04:00"]]
        [:gmd:metadataStandardName (char-string "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data")]
@@ -202,10 +215,7 @@
            [:gmd:identifier
             [:gmd:MD_Identifier
              [:gmd:code (char-string (:ShortName c))]
-             [:gmd:version (char-string (:Version c))]]]
-           (for [responsibility (org-per/responsibility-by-role (:Organizations c) "ORIGINATOR")]
-             [:gmd:citedResponsibleParty
-              (org-per/generate-responsible-party responsibility)])]]
+             [:gmd:version (char-string (:Version c))]]]]]
          [:gmd:abstract (char-string (or (:Abstract c) su/not-provided))]
          [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
          [:gmd:status
@@ -214,9 +224,6 @@
              {:codeList (str (:ngdc iso/code-lists) "#MD_ProgressCode")
               :codeListValue (str/lower-case collection-progress)}
              collection-progress])]
-         (for [responsibility (org-per/responsibility-by-role (:Organizations c) "POINTOFCONTACT")]
-           [:gmd:pointOfContact
-            (org-per/generate-responsible-party responsibility)])
          (dru/generate-browse-urls c)
          (generate-projects-keywords (:Projects c))
          (kws/generate-iso19115-descriptive-keywords
@@ -228,13 +235,7 @@
          (kws/generate-iso19115-descriptive-keywords nil (:AncillaryKeywords c))
          (platform/generate-platform-keywords platforms)
          (platform/generate-instrument-keywords platforms)
-         [:gmd:resourceConstraints
-          [:gmd:MD_LegalConstraints
-           [:gmd:useLimitation (char-string (:UseConstraints c))]
-           [:gmd:useLimitation
-            [:gco:CharacterString (str "Restriction Comment:" (-> c :AccessConstraints :Description))]]
-           [:gmd:otherConstraints
-            [:gco:CharacterString (str "Restriction Flag:" (-> c :AccessConstraints :Value))]]]]
+         (generate-user-constraints c)
          (ma/generate-non-source-metadata-associations c)
          (generate-publication-references (:PublicationReferences c))
          [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
@@ -269,7 +270,7 @@
           [:gmd:MD_Identifier
            [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
            [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
-       (aa/generate-additional-attributes (:AdditionalAttributes c))
+       (aa/generate-content-info-additional-attributes additional-attributes)
        [:gmd:contentInfo
         [:gmd:MD_ImageDescription
          [:gmd:attributeDescription ""]
@@ -307,12 +308,7 @@
              [:gmd:result {:gco:nilReason "missing"}]]])
          [:gmd:lineage
           [:gmd:LI_Lineage
-           [:gmd:processStep
-            [:gmd:LI_ProcessStep
-             [:gmd:description {:gco:nilReason "unknown"}]
-             (for [responsibility (org-per/responsibility-by-role (:Organizations c) "PROCESSOR")]
-               [:gmd:processor
-                (org-per/generate-responsible-party responsibility)])]]
+           (aa/generate-data-quality-info-additional-attributes additional-attributes)
            (ma/generate-source-metadata-associations c)]]]]
        [:gmi:acquisitionInformation
         [:gmi:MI_AcquisitionInformation

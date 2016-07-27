@@ -34,7 +34,18 @@
     (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
     (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"})))
 
-
+(deftest simple-search-test
+  (let [c1-echo (d/ingest "PROV1" (dc/collection) {:format :echo10})
+        g1-echo (d/ingest "PROV1" (dg/granule c1-echo {:granule-ur "g1"
+                                                       :producer-gran-id "p1"})
+                          {:format :echo10})]
+    (index/wait-until-indexed)
+    (let [params {:concept-id (:concept-id g1-echo)}
+          options {:accept nil
+                   :url-extension "native"}
+          format-key :echo10
+          response (search/find-metadata :granule format-key params options)]
+      (d/assert-metadata-results-match format-key [g1-echo] response))))
 
 (deftest search-granules-in-xml-metadata
   (let [c1-echo (d/ingest "PROV1" (dc/collection) {:format :echo10})
@@ -47,186 +58,200 @@
                                                        :producer-gran-id "p3"}) {:format :iso-smap})
         g2-smap (d/ingest "PROV2" (dg/granule c2-smap {:granule-ur "g4"
                                                        :producer-gran-id "p2"}) {:format :iso-smap})
-        all-granules [g1-echo g2-echo g1-smap g2-smap]]
+        ;; An item ingested with and XML preprocessing line to ensure this is tested
+        item (assoc (dg/granule c1-echo {:granule-ur "g5"
+                                         :producer-gran-id "p5"})
+                    :provider-id "PROV1")
+        concept (-> (d/item->concept item :echo10)
+                    (update :metadata #(str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" %)))
+        response (ingest/ingest-concept concept)
+        _ (is (= 200 (:status response)))
+        g5-echo (assoc item
+                       :concept-id (:concept-id response)
+                       :revision-id (:revision-id response)
+                       :format-key :echo10)
+        all-granules [g1-echo g2-echo g1-smap g2-smap g5-echo]]
     (index/wait-until-indexed)
 
     (testing "Finding refs ingested in different formats"
       (are [search expected]
-           (d/refs-match? expected (search/find-refs :granule search))
-           {} all-granules
-           {:granule-ur "g1"} [g1-echo]
-           {:granule-ur "g3"} [g1-smap]
-           {:producer-granule-id "p1"} [g1-echo]
-           {:producer-granule-id "p3"} [g1-smap]
-           {:producer-granule-id "p2"} [g2-echo g2-smap]
-           {:granule-ur ["g1" "g4"]} [g1-echo g2-smap]
-           {:producer-granule-id ["p1" "p3"]} [g1-echo g1-smap]))
+        (d/refs-match? expected (search/find-refs :granule search))
+        {} all-granules
+        {:granule-ur "g1"} [g1-echo]
+        {:granule-ur "g5"} [g5-echo]
+        {:granule-ur "g3"} [g1-smap]
+        {:producer-granule-id "p1"} [g1-echo]
+        {:producer-granule-id "p3"} [g1-smap]
+        {:producer-granule-id "p2"} [g2-echo g2-smap]
+        {:granule-ur ["g1" "g4"]} [g1-echo g2-smap]
+        {:producer-granule-id ["p1" "p3"]} [g1-echo g1-smap]))
 
     (testing "Retrieving results in native format"
       ;; Native format for search can be specified using Accept header application/metadata+xml
       ;; or the .native extension.
       (util/are2 [concepts format-key extension accept]
-                 (let [params {:concept-id (map :concept-id concepts)}
-                       options (-> {:accept nil}
-                                   (merge (when extension {:url-extension extension}))
-                                   (merge (when accept {:accept accept})))
-                       response (search/find-metadata :granule format-key params options)]
-                   (d/assert-metadata-results-match format-key concepts response))
-                 "ECHO10 .native extension" [g1-echo g2-echo] :echo10 "native" nil
-                 "SMAP ISO .native extension" [g1-smap g2-smap] :iso-smap "native" nil
-                 "ECHO10 accept application/metadata+xml" [g1-echo g2-echo] :echo10 nil "application/metadata+xml"
-                 "SMAP ISO accept application/metadata+xml" [g1-smap g2-smap] :iso-smap nil "application/metadata+xml"))
+        (let [params {:concept-id (map :concept-id concepts)}
+              options (-> {:accept nil}
+                          (merge (when extension {:url-extension extension}))
+                          (merge (when accept {:accept accept})))
+              response (search/find-metadata :granule format-key params options)]
+          (d/assert-metadata-results-match format-key concepts response))
+        "ECHO10 .native extension" [g1-echo g2-echo g5-echo] :echo10 "native" nil
+        "SMAP ISO .native extension" [g1-smap g2-smap] :iso-smap "native" nil
+        "ECHO10 accept application/metadata+xml" [g1-echo g2-echo g5-echo] :echo10 nil "application/metadata+xml"
+        "SMAP ISO accept application/metadata+xml" [g1-smap g2-smap] :iso-smap nil "application/metadata+xml"))
 
     (testing "native format direct retrieval"
       ;; Native format can be specified using application/xml, application/metadata+xml,
       ;; .native extension, or not specifying any format.
-      (util/are2 [concept format-key extension accept]
-                 (let [options (-> {:accept nil}
-                                   (merge (when extension {:url-extension extension}))
-                                   (merge (when accept {:accept accept})))
-                       response (search/retrieve-concept (:concept-id concept) nil options)]
-                   (and
-                     (search/mime-type-matches-response? response (mt/format->mime-type format-key))
-                     (= (umm/umm->xml concept format-key) (:body response))))
-                 "ECHO10 no extension" g1-echo :echo10 nil nil
-                 "SMAP ISO no extension" g1-smap :iso-smap nil nil
-                 "ECHO10 .native extension" g1-echo :echo10 "native" nil
-                 "SMAP ISO .native extension" g1-smap :iso-smap "native" nil
-                 "ECHO10 accept application/xml" g1-echo :echo10 nil "application/xml"
-                 "SMAP ISO accept application/xml" g1-smap :iso-smap nil "application/xml"
-                 "ECHO10 accept application/metadata+xml" g1-echo :echo10 nil "application/metadata+xml"
-                 "SMAP ISO accept application/metadata+xml" g1-smap :iso-smap nil "application/metadata+xml"))
+      (util/are3 [concept format-key extension accept]
+        (let [options (-> {:accept nil}
+                          (merge (when extension {:url-extension extension}))
+                          (merge (when accept {:accept accept})))
+              response (search/retrieve-concept (:concept-id concept) nil options)]
+          (is (search/mime-type-matches-response? response (mt/format->mime-type format-key)))
+          (is (= (umm/umm->xml concept format-key) (:body response))))
+        "ECHO10 no extension" g1-echo :echo10 nil nil
+        "SMAP ISO no extension" g1-smap :iso-smap nil nil
+        "ECHO10 .native extension" g1-echo :echo10 "native" nil
+        "SMAP ISO .native extension" g1-smap :iso-smap "native" nil
+        "ECHO10 accept application/xml" g1-echo :echo10 nil "application/xml"
+        "SMAP ISO accept application/xml" g1-smap :iso-smap nil "application/xml"
+        "ECHO10 accept application/metadata+xml" g1-echo :echo10 nil "application/metadata+xml"
+        "SMAP ISO accept application/metadata+xml" g1-smap :iso-smap nil "application/metadata+xml"))
 
     (testing "Get granule as concept in JSON format"
       (are [granule coll options]
-           (let [resp (search/retrieve-concept (:concept-id granule) nil options)]
-             (and
-               (search/mime-type-matches-response? resp mt/json)
-               (= (da/granule->expected-atom granule coll)
-                  (dissoc
-                    (dj/parse-json-granule (:body resp))
-                    :day-night-flag))))
-           g1-echo c1-echo {:accept        "application/json"}
-           g1-echo c1-echo {:url-extension "json"}
-           g1-smap c2-smap {:accept        "application/json"}
-           g1-smap c2-smap {:url-extension "json"}))
+        (let [resp (search/retrieve-concept (:concept-id granule) nil options)]
+          (and
+           (search/mime-type-matches-response? resp mt/json)
+           (= (da/granule->expected-atom granule coll)
+              (dissoc
+               (dj/parse-json-granule (:body resp))
+               :day-night-flag))))
+        g1-echo c1-echo {:accept        "application/json"}
+        g1-echo c1-echo {:url-extension "json"}
+        g1-smap c2-smap {:accept        "application/json"}
+        g1-smap c2-smap {:url-extension "json"}))
 
     (testing "Get granule as concept in Atom format"
       (are [granule coll options]
-           (let [resp (search/retrieve-concept (:concept-id granule) nil options)]
-             (and
-               (search/mime-type-matches-response? resp mt/atom)
-               (= [(da/granule->expected-atom granule coll)]
-                  (map #(dissoc % :day-night-flag)
-                       (:entries
-                         (da/parse-atom-result :granule (:body resp)))))))
-           g1-echo c1-echo {:accept        "application/atom+xml"}
-           g1-echo c1-echo {:url-extension "atom"}
-           g1-smap c2-smap {:accept        "application/atom+xml"}
-           g1-smap c2-smap {:url-extension "atom"}))
+        (let [resp (search/retrieve-concept (:concept-id granule) nil options)]
+          (and
+           (search/mime-type-matches-response? resp mt/atom)
+           (= [(da/granule->expected-atom granule coll)]
+              (map #(dissoc % :day-night-flag)
+                   (:entries
+                    (da/parse-atom-result :granule (:body resp)))))))
+        g1-echo c1-echo {:accept        "application/atom+xml"}
+        g1-echo c1-echo {:url-extension "atom"}
+        g1-smap c2-smap {:accept        "application/atom+xml"}
+        g1-smap c2-smap {:url-extension "atom"}))
 
     (testing "Retrieving results in echo10"
       (are [search expected]
-           (d/assert-metadata-results-match
-             :echo10 expected
-             (search/find-metadata :granule :echo10 search))
-           {} all-granules
-           {:granule-ur "g1"} [g1-echo]
-           {:granule-ur "g3"} [g1-smap])
+        (d/assert-metadata-results-match
+         :echo10 expected
+         (search/find-metadata :granule :echo10 search))
+        {} all-granules
+        {:granule-ur "g1"} [g1-echo]
+        {:granule-ur "g5"} [g5-echo]
+        {:granule-ur "g3"} [g1-smap]
+        {:concept-id (map :concept-id [g1-echo g5-echo g1-smap])} [g1-echo g5-echo g1-smap])
 
       (testing "as extension"
         (d/assert-metadata-results-match
-          :echo10 [g1-echo]
-          (search/find-metadata :granule :echo10
-                                {:granule-ur "g1"}
-                                {:url-extension "echo10"}))))
+         :echo10 [g1-echo g5-echo]
+         (search/find-metadata :granule :echo10
+                               {:granule-ur ["g1" "g5"]}
+                               {:url-extension "echo10"}))))
 
     (testing "Retrieving results in SMAP ISO format is not supported"
       (is (= {:errors ["The mime types specified in the accept header [application/iso:smap+xml] are not supported."],
               :status 400}
              (search/get-search-failure-xml-data
-               (search/find-metadata :granule :iso-smap {}))))
+              (search/find-metadata :granule :iso-smap {}))))
       (testing "as extension"
         (is (= {:errors ["The URL extension [iso_smap] is not supported."],
                 :status 400}
                (search/get-search-failure-xml-data
-                 (search/find-concepts-in-format
-                   nil :granule {} {:url-extension "iso_smap"}))))))
+                (search/find-concepts-in-format
+                 nil :granule {} {:url-extension "iso_smap"}))))))
 
     (testing "Retrieving granule results in DIF format is not supported"
       (is (= {:errors ["The mime type [application/dif+xml] is not supported for granules."],
               :status 400}
              (search/get-search-failure-xml-data
-               (search/find-metadata :granule :dif {}))))
+              (search/find-metadata :granule :dif {}))))
       (testing "as extension"
         (is (= {:errors ["The mime type [application/dif+xml] is not supported for granules."],
                 :status 400}
                (search/get-search-failure-xml-data
-                 (search/find-concepts-in-format
-                   nil :granule {} {:url-extension "dif"}))))))
+                (search/find-concepts-in-format
+                 nil :granule {} {:url-extension "dif"}))))))
 
     (testing "Retrieving results in ISO19115"
       (d/assert-metadata-results-match
-        :iso19115 all-granules
-        (search/find-metadata :granule :iso19115 {}))
+       :iso19115 all-granules
+       (search/find-metadata :granule :iso19115 {}))
       (testing "as extension"
         (are [url-extension]
-             (d/assert-metadata-results-match
-               :iso19115 [g1-echo]
-               (search/find-metadata :granule :iso19115 {:granule-ur "g1"} {:url-extension url-extension}))
-             "iso"
-             "iso19115")))
+          (d/assert-metadata-results-match
+           :iso19115 [g1-echo]
+           (search/find-metadata :granule :iso19115 {:granule-ur "g1"} {:url-extension url-extension}))
+          "iso"
+          "iso19115")))
 
     (testing "Retrieving results in a format specified as a comma separated list"
       (are [format-str]
-           (d/refs-match?
-             [g1-echo]
-             (search/parse-reference-response
-               false
-               (search/find-concepts-in-format
-                 format-str
-                 :granule
-                 {:granule-ur "g1"})))
-           "text/html,application/xhtml+xml, application/xml;q=0.9,*/*;q=0.8"
-           "text/html, application/xhtml+xml, application/xml;q=0.9,*/*;q=0.8"
-           "*/*; q=0.5, application/xml"))
+        (d/refs-match?
+         [g1-echo]
+         (search/parse-reference-response
+          false
+          (search/find-concepts-in-format
+           format-str
+           :granule
+           {:granule-ur "g1"})))
+        "text/html,application/xhtml+xml, application/xml;q=0.9,*/*;q=0.8"
+        "text/html, application/xhtml+xml, application/xml;q=0.9,*/*;q=0.8"
+        "*/*; q=0.5, application/xml"))
 
     (testing "invalid format"
       (is (= {:errors ["The mime types specified in the accept header [application/echo11+xml] are not supported."],
               :status 400}
              (search/get-search-failure-xml-data
-               (search/find-concepts-in-format
-                 "application/echo11+xml" :granule {})))))
+              (search/find-concepts-in-format
+               "application/echo11+xml" :granule {})))))
 
     (testing "invalid extension"
       (is (= {:errors ["The URL extension [echo11] is not supported."],
               :status 400}
              (search/get-search-failure-xml-data
-               (client/get (str (url/search-url :granule) ".echo11")
-                           {:connection-manager (s/conn-mgr)})))))
+              (client/get (str (url/search-url :granule) ".echo11")
+                          {:connection-manager (s/conn-mgr)})))))
 
     (testing "invalid param defaults to XML error response"
       (is (= {:errors ["Parameter [foo] was not recognized."],
               :status 400}
              (search/get-search-failure-xml-data
-               (client/get (str (url/search-url :granule) "?foo=bar")
-                           {:connection-manager (s/conn-mgr)})))))
+              (client/get (str (url/search-url :granule) "?foo=bar")
+                          {:connection-manager (s/conn-mgr)})))))
 
     (testing "invalid param with JSON accept header returns JSON error response"
       (is (= {:errors ["Parameter [foo] was not recognized."],
               :status 400}
              (search/get-search-failure-data
-               (client/get (str (url/search-url :granule) "?foo=bar")
-                           {:accept :application/json
-                            :connection-manager (s/conn-mgr)})))))
+              (client/get (str (url/search-url :granule) "?foo=bar")
+                          {:accept :application/json
+                           :connection-manager (s/conn-mgr)})))))
 
     (testing "format extension takes precedence over accept header"
       (is (= {:errors ["Parameter [foo] was not recognized."],
               :status 400}
              (search/get-search-failure-data
-               (client/get (str (url/search-url :granule) ".json?foo=bar")
-                           {:accept :application/xml
-                            :connection-manager (s/conn-mgr)})))))
+              (client/get (str (url/search-url :granule) ".json?foo=bar")
+                          {:accept :application/xml
+                           :connection-manager (s/conn-mgr)})))))
 
     (testing "reference XML"
       (let [refs (search/find-refs :granule {:granule-ur "g1"})
@@ -246,15 +271,15 @@
     (testing "ECHO Compatibility mode"
       (testing "XML References"
         (are [refs]
-             (and (d/echo-compatible-refs-match? all-granules refs)
-                  (= "array" (:type refs)))
-             (search/find-refs :granule {:echo-compatible true})
-             (search/find-refs-with-aql :granule [] [] {:query-params {:echo_compatible true}})))
+          (and (d/echo-compatible-refs-match? all-granules refs)
+               (= "array" (:type refs)))
+          (search/find-refs :granule {:echo-compatible true})
+          (search/find-refs-with-aql :granule [] [] {:query-params {:echo_compatible true}})))
 
       (testing "ECHO10"
         (d/assert-echo-compatible-metadata-results-match
-          :echo10 all-granules
-          (search/find-metadata :granule :echo10 {:echo-compatible true}))))))
+         :echo10 all-granules
+         (search/find-metadata :granule :echo10 {:echo-compatible true}))))))
 
 
 (deftest search-granule-csv

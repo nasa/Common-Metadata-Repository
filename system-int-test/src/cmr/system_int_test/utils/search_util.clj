@@ -1,11 +1,12 @@
-(ns ^{:doc "provides search related utilities."}
-  cmr.system-int-test.utils.search-util
+(ns cmr.system-int-test.utils.search-util
+  "provides search related utilities."
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [clj-time.core :as t]
             [clj-time.coerce :as tc]
             [clojure.string :as str]
             [cheshire.core :as json]
+            [cmr.system-int-test.utils.dev-system-util :as dev-util]
             [cmr.common.concepts :as cs]
             [cmr.common.mime-types :as mime-types]
             [cmr.system-int-test.utils.url-helper :as url]
@@ -30,6 +31,23 @@
             [cmr.system-int-test.data2.aql :as aql]
             [cmr.system-int-test.data2.aql-additional-attribute]
             [cmr.system-int-test.data2.facets :as f]))
+
+(defn refresh-collection-metadata-cache
+  "Triggers a full refresh of the collection granule aggregate cache in the indexer."
+  []
+  (let [response (client/post
+                  (url/refresh-collection-metadata-cache-url)
+                  {:connection-manager (s/conn-mgr)
+                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                   :throw-exceptions false})]
+    (is (= 200 (:status response)) (:body response))))
+
+(defn collection-metadata-cache-state
+  "Fetches the state of the collection metadata cache"
+  []
+  (dev-util/eval-in-dev-sys
+   `(cmr.search.data.metadata-retrieval.metadata-cache/cache-state
+     {:system (deref cmr.search.system/system-holder)})))
 
 (defn csv-response->granule-urs
   "Parses the csv response and returns the first column which is the granule ur."
@@ -154,11 +172,18 @@
          [url accept] (if url-extension
                         [(str (url/search-url concept-type) "." url-extension)]
                         [(url/search-url concept-type) (or (:accept options) format)])
-         response (client/get url {:accept accept
-                                   :headers headers
-                                   :query-params params
-                                   :throw-exceptions throw-exceptions?
-                                   :connection-manager (s/conn-mgr)})]
+         request-map {:url url
+                      :method (get options :method :get)
+                      :accept accept
+                      :headers headers
+                      :throw-exceptions throw-exceptions?
+                      :connection-manager (s/conn-mgr)}
+         request-map (if (= :post (:method request-map))
+                       (assoc request-map
+                              :form-params params
+                              :content-type :x-www-form-urlencoded)
+                       (assoc request-map :query-params params))
+         response (client/request request-map)]
      (when throw-exceptions?
        (is (= 200 (:status response))))
      response)))
@@ -362,7 +387,7 @@
                              :echo_granule_id echo_granule_id
                              :granule-count (when granule-count (Long. ^String granule-count))
                              :has-granules (when has-granules (= has-granules "true"))
-                             :metadata (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" metadata)})))
+                             :metadata metadata})))
                       (cx/elements-at-path parsed [:result])
                       metadatas)
            facets (f/parse-facets-xml (cx/element-at-path parsed [:facets]))]

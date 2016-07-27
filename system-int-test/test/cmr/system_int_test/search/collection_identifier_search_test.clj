@@ -714,6 +714,27 @@
            [coll2] "s2" {:ignore-case true}
            [] "s2" {:ignore-case false}))))
 
+(deftest search-by-too-many-conditions
+  (testing "Query with many concept ids is not rejected"
+    (let [response (search/find-refs
+                    :collection
+                    {:concept-id (for [n (range 3000)]
+                                   (str "C" n "-PROV1"))}
+                    {:method :post})]
+      (is (= {:hits 0 :refs []}
+             (select-keys response [:hits :refs])))))
+  (testing "Query with too many conditions"
+    (is (= {:errors ["The number of conditions in the query [3000] exceeded the maximum allowed for a query [2050]. Reduce the number of conditions in your query."]
+            :status 400}
+           (search/find-refs
+            :collection
+            {:science-keywords (into {} (for [n (range 1000)]
+                                          [(keyword (str n))
+                                           {:category n
+                                            :topic n
+                                            :term n}]))}
+            {:method :post})))))
+
 
 (deftest search-with-slashes-in-dataset-id
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"}))

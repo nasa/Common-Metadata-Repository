@@ -93,7 +93,10 @@
                           {:entry-title "ASTER Orthorectified Digital Elevation Model (DEM) V003"
                            :short-name "AST14DMO"
                            :version-id "003"
-                           :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}]}
+                           :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}
+                          {:entry-title "ASTER L1B Registered Radiance at the Sensor V003"
+                           :short-name "AST_L1B"
+                           :version-id "003"}]}
    ["GES_DISC" "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC"]
    {:short-name "OMUVBd"
     :virtual-collections [{:entry-title "OMI/Aura Surface UVB UV Index, Erythemal Dose, and Erythemal Dose Rate Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd_ErythemalUV) at GES DISC"

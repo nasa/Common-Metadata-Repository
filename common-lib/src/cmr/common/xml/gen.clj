@@ -1,6 +1,7 @@
 (ns cmr.common.xml.gen
   "Contains functions for generating XML using a Hiccup-style syntax."
   (:require [clojure.data.xml :as x]
+            [cmr.common.xml :as cx]
             [cmr.common.xml.simple-xpath :refer [select]]))
 
 (defprotocol GenerateXML
@@ -43,7 +44,8 @@
 (defn xml
   "Returns XML string from structure describing XML elements."
   [structure]
-  (x/indent-str (generate structure)))
+  (cx/remove-xml-processing-instructions
+   (x/emit-str (generate structure))))
 
 ;;; Helpers
 

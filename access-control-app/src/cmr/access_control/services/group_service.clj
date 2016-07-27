@@ -22,7 +22,8 @@
     ;; Must be required to be available at runtime
             [cmr.access-control.data.group-json-results-handler]
             [cmr.access-control.data.acl-json-results-handler]
-            [cmr.acl.core :as acl]))
+            [cmr.acl.core :as acl]
+            [cheshire.core :as json]))
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
@@ -128,7 +129,7 @@
   [context existing-group updated-group]
   (v/validate! (update-group-validations context) (assoc updated-group :existing existing-group)))
 
-(defn- validate-members-exist
+(defn validate-members-exist
   "Validates that the given usernames exist. Throws an exception if they do not."
   [context usernames]
   (when-let [non-existent-users (seq (remove #(urs/user-exists? context %) (distinct usernames)))]
@@ -239,11 +240,11 @@
    :legacy-guid :string})
 
 (defmethod cp/parameter->condition :access-group-provider
-  [concept-type param value options]
+  [context concept-type param value options]
 
   (if (sequential? value)
     (gc/group-conds (cp/group-operation param options)
-                    (map #(cp/parameter->condition concept-type param % options) value))
+                    (map #(cp/parameter->condition context concept-type param % options) value))
     ;; CMR indicates we should search for system groups
     (if (= (str/upper-case value) SYSTEM_PROVIDER_ID)
       (common-qm/negated-condition (common-qm/exist-condition :provider))
@@ -256,14 +257,15 @@
                                      (->> params
                                           cp/sanitize-params
                                           (validate-group-search-params :access-group)
-                                          (cp/parse-parameter-query :access-group)))
+                                          (cp/parse-parameter-query context :access-group)))
         [find-concepts-time results] (u/time-execution
                                       (cs/find-concepts context :access-group query))
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d access-groups in %d ms in format %s with params %s."
                   (:hits results) total-took (common-qm/base-result-format query) (pr-str params)))
-    (assoc results :took total-took)))
-
+    (-> results
+        (assoc :took total-took)
+        (update :results #(json/parse-string % keyword)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Member functions

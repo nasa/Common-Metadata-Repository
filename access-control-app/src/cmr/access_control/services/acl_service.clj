@@ -1,19 +1,29 @@
 (ns cmr.access-control.services.acl-service
   (:require [clojure.string :as str]
             [cmr.access-control.services.acl-service-messages :as msg]
-            [cmr.common.log :refer [info]]
+            [cmr.common.log :refer [info debug]]
             [cmr.common.util :as u]
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
             [cmr.transmit.echo.tokens :as tokens]
+            [cmr.transmit.metadata-db :as mdb1]
             [cmr.transmit.metadata-db2 :as mdb]
             [cmr.common-app.services.search :as cs]
             [cmr.common-app.services.search.params :as cp]
             [cmr.common-app.services.search.parameter-validation :as cpv]
             [cmr.common-app.services.search.query-model :as common-qm]
+            [cmr.common-app.services.search.group-query-conditions :as gc]
             [cheshire.core :as json]
             [clojure.edn :as edn]
-            [cmr.common.concepts :as concepts]))
+            [clojure.set :as set]
+            [cmr.common.concepts :as concepts]
+            [cmr.access-control.services.group-service :as groups]
+            [cmr.transmit.metadata-db :as mdb1]
+            [cmr.umm-spec.legacy :as umm-legacy]
+            [cmr.acl.core :as acl]
+            [cmr.umm.acl-matchers :as acl-matchers]
+            [cmr.common.util :as util]
+            [cmr.common.date-time-parser :as dtp]))
 
 (def acl-provider-id
   "The provider ID for all ACLs. Since ACLs are not owned by individual
@@ -52,6 +62,18 @@
       (errors/throw-service-error :not-found (msg/acl-deleted concept-id))
       concept)
     (errors/throw-service-error :not-found (msg/acl-does-not-exist concept-id))))
+
+(defn- get-sids
+  "Returns a seq of sids for the given username string or user type keyword
+   for use in checking permissions against acls."
+  [context username-or-type]
+  (cond
+    (contains? #{:guest :registered} username-or-type) [username-or-type]
+    (string? username-or-type) (concat [:registered]
+                                       (->> (groups/search-for-groups context {:member username-or-type})
+                                            :results
+                                            :items
+                                            (map :concept_id)))))
 
 (defn- acl->base-concept
   "Returns a basic concept map for the given request context and ACL map."
@@ -94,29 +116,17 @@
   (cpv/merge-params-config
     cpv/basic-params-config
     {:single-value #{}
-     :multiple-value #{:permitted-group :provider-id}
+     :multiple-value #{:permitted-group :identity-type :provider}
      :always-case-sensitive #{}
-     :disallow-pattern #{}
+     :disallow-pattern #{:identity-type :permitted-user}
      :allow-or #{}}))
 
 (defmethod cpv/valid-parameter-options :acl
   [_]
-  {:permitted-group cpv/string-param-options :provider-id cpv/string-param-options})
-
-(comment (defn- valid-provider-id?)
-  "Returns true of the given provider identity is valid"
-  [provider-id]
-  (or (.equalsIgnoreCase "PROV1" provider-id)))
-  ;test provider-id())
-
-(comment (defn- provider-id-validation)
-  "Validates provider parameters"
-  [context params]
-  (let [provider-ids (:provider-id params)
-        provider-ids (if (sequential? provider-ids) provider-ids (when provider-ids [provider-ids]))]
-    (when-let [invalid-provider-ids (seq (remove valid-provider-id? provider-ids))]
-      [(format "No ACLs found for provider [%s]."
-               (str/join ", " invalid-provider-ids))])))
+  {:permitted-group cpv/string-param-options
+   :provider cpv/string-param-options
+   :identity-type cpv/string-param-options
+   :permitted-user #{}})
 
 (defn- valid-permitted-group?
   "Returns true if the given permitted group is valid, i.e. guest, registered or conforms to
@@ -129,13 +139,31 @@
 (defn- permitted-group-validation
   "Validates permitted group parameters."
   [context params]
-  (let [permitted-groups (:permitted-group params)
-        permitted-groups (if (sequential? permitted-groups)
-                            permitted-groups
-                           (when permitted-groups [permitted-groups]))]
+  (let [permitted-groups (u/seqify (:permitted-group params))]
     (when-let [invalid-groups (seq (remove valid-permitted-group? permitted-groups))]
       [(format "Parameter permitted_group has invalid values [%s]. Only 'guest', 'registered' or a group concept id can be specified."
                (str/join ", " invalid-groups))])))
+
+(def acl-identity-type->search-value
+ "Maps identity type query paremter values to the actual values used in the index."
+ {"system" "System"
+  "single_instance" "Group"
+  "provider" "Provider"
+  "catalog_item" "Catalog Item"})
+
+(defn- valid-identity-type?
+  "Returns true if the given identity-type is valid, i.e., one of 'system', 'single_instance', 'provider', or 'catalog_item'."
+  [identity-type]
+  (contains? (set (keys acl-identity-type->search-value)) (str/lower-case identity-type)))
+
+(defn- identity-type-validation
+  "Validates identity-type parameters."
+  [context params]
+  (let [identity-types (u/seqify (:identity-type params))]
+    (when-let [invalid-types (seq (remove valid-identity-type? identity-types))]
+      [(format (str "Parameter identity_type has invalid values [%s]. "
+                    "Only 'provider', 'system', 'single_instance', or 'catalog_item' can be specified.")
+               (str/join ", " invalid-types))])))
 
 (defn validate-acl-search-params
   "Validates the parameters for an ACL search. Returns the parameters or throws an error if invalid."
@@ -143,15 +171,20 @@
   (let [[safe-params type-errors] (cpv/apply-type-validations
                                     params
                                     [(partial cpv/validate-map [:options])
-                                     (partial cpv/validate-map [:options :permitted-group])])]
-                                     ;;(partial cpv/validate-map [:options :provider-id])])]
+                                     (partial cpv/validate-map [:options :permitted-group])
+                                     (partial cpv/validate-map [:options :identity-type])
+                                     (partial cpv/validate-map [:options :provider])
+                                     (partial cpv/validate-map [:options :permitted-user])])]
     (cpv/validate-parameters
       :acl safe-params
       (concat cpv/common-validations
-              [permitted-group-validation])
-              ;[provider-id-validation])
+              [permitted-group-validation identity-type-validation])
       type-errors))
   params)
+
+(defmethod cp/always-case-sensitive-fields :acl
+  [_]
+  #{:concept-id :identity-type})
 
 (defmethod common-qm/default-sort-keys :acl
   [_]
@@ -159,7 +192,27 @@
 
 (defmethod cp/param-mappings :acl
   [_]
-  {:permitted-group :string :provider-id :string})
+  {:permitted-group :string
+   :identity-type :acl-identity-type
+   :provider :string
+   :permitted-user :acl-permitted-user})
+
+(defmethod cp/parameter->condition :acl-identity-type
+ [context concept-type param value options]
+ (if (sequential? value)
+   (gc/group-conds (cp/group-operation param options)
+                   (map #(cp/parameter->condition context concept-type param % options) value))
+   (let [value (get acl-identity-type->search-value (str/lower-case value))]
+     (cp/string-parameter->condition concept-type param value options))))
+
+(defmethod cp/parameter->condition :acl-permitted-user
+  [context concept-type param value options]
+  ;; reject non-existent users
+  (groups/validate-members-exist context [value])
+
+  (let [groups (->> (get-sids context value)
+                    (map name))]
+    (cp/string-parameter->condition concept-type :permitted-group groups options)))
 
 (defn search-for-acls
   [context params]
@@ -167,12 +220,10 @@
                                       (->> params
                                            cp/sanitize-params
                                            (validate-acl-search-params :acl)
-                                           (cp/parse-parameter-query :acl)))
+                                           (cp/parse-parameter-query context :acl)))
         [find-concepts-time results] (u/time-execution
                                        (cs/find-concepts context :acl query))
         total-took (+ query-creation-time find-concepts-time)]
-    (println (format "dbg: Found %d acls in %d ms in format %s with params %s."
-                  (:hits results) total-took (common-qm/base-result-format query) (pr-str params)))
     (info (format "Found %d acls in %d ms in format %s with params %s."
                   (:hits results) total-took (common-qm/base-result-format query) (pr-str params)))
     (assoc results :took total-took)))
@@ -184,3 +235,82 @@
   "Returns the parsed metadata of the latest revision of the ACL concept by id."
   [context concept-id]
   (edn/read-string (:metadata (fetch-acl-concept context concept-id))))
+
+(defn- echo-style-acl
+  "Returns acl with the older ECHO-style keywords for consumption in utility functions from other parts of the CMR."
+  [acl]
+  (-> acl
+      (set/rename-keys {:system-identity :system-object-identity
+                        :provider-identity :provider-object-identity
+                        :group-permissions :aces})
+      (util/update-in-each [:aces] update-in [:user-type] keyword)
+      (util/update-in-each [:aces] set/rename-keys {:group-id :group-guid})
+      (update-in [:catalog-item-identity :collection-identifier :temporal]
+                 (fn [t]
+                   (when t
+                     (-> t
+                         (assoc :temporal-field :acquisition)
+                         (update-in [:mask] keyword)
+                         (update-in [:start-date] dtp/try-parse-datetime)
+                         (update-in [:end-date] dtp/try-parse-datetime)))))
+      (update-in [:catalog-item-identity :collection-identifier :access-value]
+                 (fn [av]
+                   (when av
+                     (set/rename-keys av {:include-undefined-value :include-undefined}))))
+      util/remove-nil-keys))
+
+(def all-permissions
+  "The set of all permissions checked and returned by the functions below."
+  #{:read :order :update :delete})
+
+(def provider-level-permissions
+  "The set of permissions that are checked at the provider level."
+  #{:update :delete})
+
+(defn- grants-permission?
+  "Returns true if permission keyword is granted on concept to any sids by given acl."
+  [permission concept sids acl]
+  (and (acl/acl-matches-sids-and-permission? sids (name permission) acl)
+       (if (contains? provider-level-permissions permission)
+         (when-let [acl-provider-id (-> acl :provider-object-identity :provider-id)]
+           (= acl-provider-id (:provider-id concept)))
+         ;; else check that the concept matches
+         (condp = (:concept-type concept)
+           :collection (acl-matchers/coll-applicable-acl? (:provider-id concept) concept acl)
+           ;; part of CMR-2900 to be implemented in a future pull request
+           :granule false))))
+
+(defn- concept-permissions-granted-by-acls
+  "Returns the set of permission keywords (:read, :update, :order, or :delete) granted on concept
+   to the seq of group guids by seq of acls."
+  [concept sids acls]
+  ;; reduce the seq of acls into a set of granted permissions
+  (reduce (fn [granted-permissions acl]
+            (if (= all-permissions granted-permissions)
+              ;; terminate the reduce early, because all permissions have already been granted
+              (reduced granted-permissions)
+              ;; determine which permissions are granted by this specific acl
+              (reduce (fn [acl-permissions permission]
+                        (if (grants-permission? permission concept sids acl)
+                          (conj acl-permissions permission)
+                          acl-permissions))
+                      ;; start with the set of permissions granted so far
+                      granted-permissions
+                      ;; and only reduce over permissions that have not yet been granted
+                      (set/difference all-permissions granted-permissions))))
+          #{}
+          acls))
+
+(defn get-granted-permissions
+  "Returns a map of concept ids to seqs of permissions granted on that concept for the given username."
+  [context username-or-type concept-ids]
+  (let [concepts (acl-matchers/add-acl-enforcement-fields
+                   (mdb1/get-latest-concepts context concept-ids))
+        sids (get-sids context username-or-type)
+        ;; fetch and parse all ACLs lazily
+        acls (for [batch (mdb1/find-in-batches context :acl 1000 {:latest true})
+                   acl-concept batch]
+               (echo-style-acl (edn/read-string (:metadata acl-concept))))]
+    (into {}
+          (for [concept concepts]
+            [(:concept-id concept) (concept-permissions-granted-by-acls concept sids acls)]))))

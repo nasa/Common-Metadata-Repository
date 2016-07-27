@@ -15,6 +15,7 @@
             [cmr.common-app.services.search.query-model :as qm]
             [cmr.search.services.result-format-helper :as rfh]
             [cmr.common.mime-types :as mt]
+            [cmr.common.concepts :as concepts]
             [cmr.common-app.services.search :as common-search]
             [cmr.common-app.services.search.params :as common-params]
 
@@ -30,6 +31,7 @@
             [cmr.search.services.parameters.converters.spatial]
             [cmr.search.services.parameters.converters.science-keyword]
             [cmr.search.services.parameters.converters.two-d-coordinate-system]
+            [cmr.search.services.parameters.converters.humanizer]
 
             ;; json converters
             [cmr.search.services.json-parameters.conversion :as jp]
@@ -74,7 +76,7 @@
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.common-app.services.search.query-execution :as qe]
             [cmr.search.results-handlers.provider-holdings :as ph]
-            [cmr.search.services.transformer :as t]
+            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
             [cmr.metadata-db.services.search-service :as mdb-search]
             [cmr.metadata-db.services.concept-service :as concept-service]
             [cmr.metadata-db.api.route-helpers :as rh]
@@ -144,7 +146,7 @@
 
                                            (psn/replace-provider-short-names context)
                                            (pv/validate-parameters concept-type)
-                                           (common-params/parse-parameter-query concept-type)))
+                                           (common-params/parse-parameter-query context concept-type)))
         [find-concepts-time results] (u/time-execution
                                        (common-search/find-concepts context
                                                                     concept-type
@@ -211,7 +213,8 @@
   [context result-format concept-id]
   (if (contains? #{:atom :json} result-format)
     ;; do a query and use single-result->response
-    (let [query (common-params/parse-parameter-query (cc/concept-id->type concept-id)
+    (let [query (common-params/parse-parameter-query context
+                                                     (cc/concept-id->type concept-id)
                                                      {:page-size 1
                                                       :concept-id concept-id
                                                       :result-format result-format})
@@ -221,7 +224,8 @@
       {:results (common-search/single-result->response context query results)
        :result-format result-format})
     ;; else
-    (let [concept (first (t/get-latest-formatted-concepts context [concept-id] result-format))]
+    (let [concept (first (metadata-cache/get-latest-formatted-concepts
+                          context [concept-id] result-format))]
       (when-not concept
         (throw-id-not-found concept-id))
       {:results (:metadata concept)
@@ -233,7 +237,7 @@
   [context result-format concept-id revision-id]
   ;; We don't store revision id in the search index, so we can't use shortcuts for json/atom
   ;; like we do in find-concept-by-id.
-  (let [concept (t/get-formatted-concept context concept-id revision-id result-format)]
+  (let [concept (metadata-cache/get-formatted-concept context concept-id revision-id result-format)]
     (when-not concept
       (throw-concept-revision-not-found concept-id revision-id))
     {:results (:metadata concept)
@@ -249,7 +253,7 @@
                    (lp/process-legacy-multi-params-conditions :granule)
                    (lp/replace-science-keywords-or-option :granule)
                    pv/validate-timeline-parameters
-                   p/timeline-parameters->query)
+                   (p/timeline-parameters->query context))
         results (qe/execute-query context query)]
     (common-search/search-results->response context query results)))
 

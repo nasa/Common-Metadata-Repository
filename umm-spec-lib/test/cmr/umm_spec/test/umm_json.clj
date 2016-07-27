@@ -7,6 +7,7 @@
             [cmr.umm-spec.models.service :as umm-s]
             [cmr.umm-spec.models.common :as umm-cmn]
             [clj-time.core :as t]
+            [cmr.umm-spec.util :as u]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.test.umm-generators :as umm-gen]))
 
@@ -18,11 +19,7 @@
                     :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]})]
      :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"})
      :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
-     :Organizations [(umm-cmn/map->ResponsibilityType
-                       {:Role "RESOURCEPROVIDER"
-                        :Party (umm-cmn/map->PartyType
-                                 {:OrganizationName (umm-cmn/map->OrganizationNameType
-                                                      {:ShortName "custodian"})})})]
+     :DataCenters [u/not-provided-data-center]
      :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
      :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
 
@@ -40,14 +37,31 @@
     {:EntryTitle "Test Service"
      :EntryId "Entry ID Goes Here"
      :Abstract "An Abstract UMM-S Test Example"
-     :Responsibilities [(umm-cmn/map->ResponsibilityType
-                         {:Role "RESOURCEPROVIDER"
-                          :Party (umm-cmn/map->PartyType
-                                   {:OrganizationName (umm-cmn/map->OrganizationNameType
-                                                        {:ShortName "custodian"})})})]
      :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
      :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
      :ServiceKeywords [(umm-s/map->ServiceKeywordType {:Category "cat" :Topic "top" :Term "ter" :ServiceSpecificName "SSN"})]}))
+
+(def contact-group-example-umm-c-record
+  "This is the minimum valid UMM-C with contact groups."
+  (umm-c/map->UMM-C
+    {:Platforms [(umm-cmn/map->PlatformType
+                   {:ShortName "Platform"
+                    :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]})]
+     :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"})
+     :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
+     :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
+     :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
+
+     :ShortName "short"
+     :Version "V1"
+     :EntryTitle "The entry title V5"
+     :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
+                                         :Type "CREATE"})]
+     :Abstract "A very abstract collection"
+     :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]
+     :DataCenters [u/not-provided-data-center]
+     :ContactGroups [(umm-cmn/map->ContactGroupType {:Roles ["Investigator"]
+                                                     :GroupName "ABC"})]}))
 
 ;; This only tests a minimum example record for now. We need to test with larger more complicated
 ;; records. We will do this as part of CMR-1929
@@ -65,6 +79,14 @@
           _ (is (empty? (js/validate-umm-json json :collection)))
           parsed (uj/json->umm {} :collection json)]
       (is (= minimal-example-umm-c-record parsed)))))
+
+(deftest generate-and-parse-contact-group-umm-c-json
+  (testing "contact group umm-c record. We add this test mostly for future when we add allOf
+           support in umm-spec-lib to verify that validation is done correctly."
+    (let [json (uj/umm->json contact-group-example-umm-c-record)
+          _ (is (empty? (js/validate-umm-json json :collection)))
+          parsed (uj/json->umm {} :collection json)]
+      (is (= contact-group-example-umm-c-record parsed)))))
 
 (defspec all-umm-c-records 100
   (for-all [umm-c-record umm-gen/umm-c-generator]

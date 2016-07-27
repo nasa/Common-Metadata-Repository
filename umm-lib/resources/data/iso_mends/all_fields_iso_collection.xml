@@ -934,7 +934,7 @@
          <gmd:extent>
             <gmd:EX_Extent id="boundingExtent">
                <gmd:description>
-                  <gco:CharacterString>Temporal Range Type=Long Range, Time Type=Universal Time</gco:CharacterString>
+                  <gco:CharacterString>SpatialCoverageType=Horizontal, SpatialGranuleSpatialRepresentation=CARTESIAN, Temporal Range Type=Long Range, Time Type=Universal Time</gco:CharacterString>
                </gmd:description>
                <gmd:geographicElement>
                   <gmd:EX_GeographicDescription>

@@ -2,7 +2,7 @@
   (require [clojure.test :refer :all]
            [cmr.transmit.access-control :as ac]
            [cmr.mock-echo.client.echo-util :as e]
-           [cmr.common.util :as util :refer [are2]]
+           [cmr.common.util :as util :refer [are3]]
            [cmr.access-control.int-test.fixtures :as fixtures]
            [cmr.access-control.test.util :as u]
            [cmr.access-control.data.access-control-index :as access-control-index]))
@@ -234,27 +234,142 @@
 
            ["gust"] "gust"
            ["GUST" "registered" "AG10000-PROV" "G10000-PROV"] "GUST, G10000-PROV"))))
+
+(deftest acl-search-by-identity-type-test
+  (let [token (e/login (u/conn-context) "user1")
+        acl-system (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
+        acl-provider (ingest-acl token (provider-acl "AUDIT_REPORT"))
+        acl-single-instance (ingest-acl token (single-instance-acl "AG1234-CMR"))
+        acl-catalog-item (ingest-acl token (catalog-item-acl "All Collections"))
+        all-acls [acl-system acl-provider acl-single-instance acl-catalog-item]]
+    (u/wait-until-indexed)
+
+    (testing "Search with invalid identity type returns error"
+      (is (= {:status 400
+              :body {:errors [(str "Parameter identity_type has invalid values [foo]. "
+                                   "Only 'provider', 'system', 'single_instance', or 'catalog_item' can be specified.")]}
+              :content-type :json}
+             (ac/search-for-acls (u/conn-context) {:identity-type "foo"} {:raw? true}))))
+
+    (testing "Search with valid identity types"
+      (are3 [identity-types expected-acls]
+        (let [response (ac/search-for-acls (u/conn-context) {:identity-type identity-types})]
+          (is (= (acls->search-response (count expected-acls) expected-acls)
+                 (dissoc response :took))))
+
+        "Identity type 'provider'"
+        ["provider"] [acl-provider]
+
+        "Identity type 'system'"
+        ["system"] [acl-system]
+
+        "Identity type 'single_instance'"
+        ["single_instance"] [acl-single-instance]
+
+        "Identity type 'catalog_item'"
+        ["catalog_item"] [acl-catalog-item]
+
+        "Multiple identity types"
+        ["provider" "single_instance"] [acl-provider acl-single-instance]
+
+        "All identity types"
+        ["provider" "system" "single_instance" "catalog_item"] all-acls
+
+        "Identity type searches are always case-insensitive"
+        ["PrOvIdEr"] [acl-provider]))))
+
+(deftest acl-search-by-permitted-user-test
+  (let [token (e/login (u/conn-context) "user1")
+        group1 (u/ingest-group token {:name "group1"} ["user1"])
+        group2 (u/ingest-group token {:name "group2"} ["USER1" "user2"])
+        group3 (u/ingest-group token {:name "group3"} nil)
+        ;; No user should match this since all users are registered
+        acl-guest (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
+        acl-registered-1 (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE")
+                                                  :group_permissions
+                                                  [{:user_type "registered" :permissions ["create"]}]))
+        acl-group1 (ingest-acl token (assoc (system-acl "ARCHIVE_RECORD")
+                                            :group_permissions
+                                            [{:group_id (:concept_id group1) :permissions ["create"]}]))
+
+        acl-registered-2 (ingest-acl token (assoc (provider-acl "OPTION_DEFINITION")
+                                                  :group_permissions
+                                                  [{:user_type "registered" :permissions ["create"]}]))
+        acl-group2 (ingest-acl token (assoc (provider-acl "OPTION_ASSIGNMENT")
+                                            :group_permissions
+                                            [{:group_id (:concept_id group2) :permissions ["create"]}]))
+        ;; No user should match this acl since group3 has no members
+        acl-group3 (ingest-acl token (assoc (catalog-item-acl "All Granules")
+                                            :group_permissions
+                                            [{:group_id (:concept_id group3) :permissions ["create"]}]))
+
+        registered-acls [acl-registered-1 acl-registered-2]]
+
+    (u/wait-until-indexed)
+
+    (testing "Search with non-existent user returns error"
+      (are3 [user]
+        (is (= {:status 400
+                :body {:errors [(format "The following users do not exist [%s]" user)]}
+                :content-type :json}
+               (ac/search-for-acls (u/conn-context) {:permitted-user user} {:raw? true})))
+
+        "Invalid user"
+        "foo"
+
+        "'guest' is not a registered user"
+        "guest"
+
+        "'registered' is not a registered user either"
+        "registered"))
+
+    (testing "Search with valid users"
+      (are3 [users expected-acls]
+        (let [response (ac/search-for-acls (u/conn-context) {:permitted-user users})]
+          (is (= (acls->search-response (count expected-acls) expected-acls)
+                (dissoc response :took))))
+
+        "user3 is not in a group, but gets acls for registered but not guest"
+        ["user3"] (concat registered-acls)
+
+        "user1 gets acls for registered, group1, and group2"
+        ["user1"] [acl-registered-1 acl-registered-2 acl-group1 acl-group2]
+
+        "user2 gets acls for guest, registred, and group2"
+        ["user2"] [acl-registered-1 acl-registered-2 acl-group2]
+
+        "User names are case-insensitive"
+        ["USER1"] [acl-registered-1 acl-registered-2 acl-group1 acl-group2]))))
+
 (deftest acl-search-provider-test
   (let [token (e/login (u/conn-context) "user1")
         acl1 (ingest-acl token (provider-acl "AUDIT_REPORT"))
-        acl2 (ingest-acl token (catalog-item-acl "All Granules"))
-        prov1-acls [acl2]]
+        acl2 (ingest-acl token (catalog-item-acl "Catalog_Item1_PROV1"))
+        acl3 (ingest-acl token (catalog-item-acl "Catalog_Item2_PROV1"))
+        acl4 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item3_PROV2")
+                                         [:catalog_item_identity :provider-id] "PROV2"))
+        acl5 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item4_PROV3")
+                                         [:catalog_item_identity :provider-id] "PROV3"))
+        acl6 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item5_PROV2")
+                                         [:catalog_item_identity :provider-id] "PROV2"))
+        prov1-acls [acl2 acl3]
+        prov1-and-2-acls [acl2 acl3 acl4 acl6]
+        prov3-acls [acl5]]
     (u/wait-until-indexed)
     (testing "Search ACLs that grant permissions to objects owned by a single provider
               or by any provider where multiple are specified"
       (are [provider-ids acls]
-        (let [response (ac/search-for-acls (u/conn-context) {:provider-id provider-ids})]
+        (let [response (ac/search-for-acls (u/conn-context) {:provider provider-ids})]
           (= (acls->search-response (count acls) acls)
              (dissoc response :took)))
-        ["PROV1"] prov1-acls))))
 
-        ;;["NOT_PROV1"] prov1-acls))))
-(comment (testing "Search ACLs on provider where provider owns no objects")
-      (are [provider invalid-msg]
-           (= {:status 400
-               :body {:errors [(format "No ACLs found for provider [%s]."
-                                       invalid-msg)]}
-               :content-type :json}
-              (ac/search-for-acls (u/conn-context) {:provider-id provider} {:raw? true}))
-           ["NOT_A_PROVIDER"] prov1-acls))
-  ;;(testing "Search ACLs that grant permissions to objects owned by a multiple providers")
+        ["PROV1"] prov1-acls
+        ["prov1"] prov1-acls
+
+        ["PROV1" "PROV2"] prov1-and-2-acls
+        ["prov1" "prov2"] prov1-and-2-acls
+
+        ["PROV3"] prov3-acls
+        ["prov3"] prov3-acls
+
+        ["NOT_A_PROVIDER"] []))))

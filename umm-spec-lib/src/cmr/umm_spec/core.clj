@@ -24,6 +24,7 @@
             ;; UMM and JSON
             [cmr.umm-spec.umm-json :as umm-json]
             [cmr.umm-spec.versioning :as ver]
+            [cmr.umm-spec.version-migration :as vm]
             [cmr.common.mime-types :as mt])
   (:import (cmr.umm_spec.models.collection UMM-C)
            (cmr.umm_spec.models.service UMM-S)))
@@ -86,10 +87,10 @@
 
 (defn generate-metadata
   "Returns the generated metadata for the given metadata format and umm record.
-  umm is the umm record that is parsed from the given source umm json schema version
-  fmt is the target format of the generated metadata, it would either be in mime type format
-  (application/umm+json;version=1.1) or a map ({:format :umm-json, :version=\"1.1\"}
-  source-version if provided is the umm json schema version that the given umm record is in,
+  * umm is the umm record that is parsed from the given source umm json schema version
+  * fmt is the target format of the generated metadata, it would either be in mime type format
+  (application/umm+json;version=1.1), a keyword (:echo10), or a map ({:format :umm-json, :version=\"1.1\"})
+  * source-version if provided is the umm json schema version that the given umm record is in,
   defaults to the latest umm json schema version."
   ([context umm fmt]
    (generate-metadata context umm fmt nil))
@@ -97,7 +98,7 @@
    (let [concept-type (concept-type umm)
          source-version (or source-version ver/current-version)]
      (condp = [concept-type (mt/format-key fmt)]
-       [:collection :umm-json] (umm-json/umm->json (ver/migrate-umm context
+       [:collection :umm-json] (umm-json/umm->json (vm/migrate-umm context
                                                                     concept-type
                                                                     source-version
                                                                     (umm-json-version fmt)

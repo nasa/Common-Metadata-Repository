@@ -48,14 +48,14 @@
       (is (d/refs-match? [coll1 coll2]
                          (search/find-refs :collection {:project-h "USGS SOFIA"}))))))
 
-(deftest search-by-organization-humanized
+(deftest search-by-data-center-humanized
   (let [coll1 (d/ingest "PROV1" (dc/collection {:organizations [(dc/org :archive-center "NSIDC")]}))
         coll2 (d/ingest "PROV1" (dc/collection {:organizations [(dc/org :archive-center "NASA/NSIDC_DAAC")]}))
         coll3 (d/ingest "PROV1" (dc/collection {:organizations [(dc/org :archive-center "ASF")]}))]
     (index/wait-until-indexed)
     (testing "search collections by humanized organization"
       (is (d/refs-match? [coll1 coll2]
-                         (search/find-refs :collection {:organization-h "NSIDC"}))))))
+                         (search/find-refs :collection {:data-center-h "NSIDC"}))))))
 
 (deftest search-by-processing-level-id-humanized
   (let [coll1 (d/ingest "PROV1" (dc/collection {:processing-level-id "1T"}))
@@ -65,3 +65,39 @@
     (testing "search collections by humanized processing-level-id"
       (is (d/refs-match? [coll1 coll2]
                          (search/find-refs :collection {:processing-level-id-h "1T"}))))))
+
+(deftest search-by-science-keywords-humanized
+  (let [sk1 (dc/science-keyword {:category "bioosphere"
+                                 :topic "topic1"
+                                 :term "term1"})
+        sk2 (dc/science-keyword {:category "category1"
+                                 :topic "bioosphere"
+                                 :term "term1"})
+        sk3 (dc/science-keyword {:category "biosphere"
+                                 :topic "topic1"
+                                 :term "term1"})
+        sk4 (dc/science-keyword {:category "category1"
+                                 :topic "biosphere"
+                                 :term "term1"})
+        sk5 (dc/science-keyword {:category "category1"
+                                 :topic "topic1"
+                                 :term "term1"})
+        coll1 (d/ingest "PROV1" (dc/collection {:science-keywords [sk1]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:science-keywords [sk2]}))
+        coll3 (d/ingest "PROV1" (dc/collection {:science-keywords [sk3]}))
+        coll4 (d/ingest "PROV1" (dc/collection {:science-keywords [sk4]}))
+        coll5 (d/ingest "PROV1" (dc/collection {:science-keywords [sk5]}))]
+    (index/wait-until-indexed)
+    (testing "search collections by humanized science keyword"
+      (is (d/refs-match? [coll1 coll3]
+                         (search/find-refs
+                          :collection
+                          {:science-keywords-h {:0 {:category "biosphere"}}})))
+      (is (d/refs-match? [coll2 coll4]
+                         (search/find-refs
+                          :collection
+                          {:science-keywords-h {:0 {:topic "biosphere"}}})))
+      (is (d/refs-match? [coll1 coll2 coll3 coll4]
+                         (search/find-refs
+                          :collection
+                          {:science-keywords-h {:0 {:any "biosphere"}}}))))))

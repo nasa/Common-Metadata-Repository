@@ -125,17 +125,72 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing SpatialExtentType)
 
-;; Describes the Records the data and the changes that happened on that date for the metadata or
-;; data (the metadata or data is described by the scope element.)
-(defrecord LineageType
+;; Defines the contact information of a data center or data contact.
+(defrecord ContactInformationType
   [
-   ;; Describes the data held as either describing the metadata or data.
-   Scope
+   ;; A URL associated with the contact, e.g., the home page for the DAAC which is responsible for
+   ;; the collection.
+   RelatedUrls
 
-   ;; This encapsulates all of the changes for a specific date.
-   Dates
+   ;; Time period when the contact answers questions or provides services.
+   ServiceHours
+
+   ;; Supplemental instructions on how or when to contact the responsible party.
+   ContactInstruction
+
+   ;; Mechanisms of contacting.
+   ContactMechanisms
+
+   ;; Contact addresses.
+   Addresses
   ])
-(record-pretty-printer/enable-record-pretty-printing LineageType)
+(record-pretty-printer/enable-record-pretty-printing ContactInformationType)
+
+(defrecord ContactGroupType
+  [
+   ;; This is the roles of the data contact.
+   Roles
+
+   ;; Uuid of the data contact.
+   Uuid
+
+   ;; This is the contact person or group that is not affiliated with the data centers.
+   NonDataCenterAffiliation
+
+   ;; This is the contact information of the data contact.
+   ContactInformation
+
+   ;; This is the contact group name.
+   GroupName
+  ])
+(record-pretty-printer/enable-record-pretty-printing ContactGroupType)
+
+;; Defines a data center which is either an organization or institution responsible for
+;; distributing, archiving, or processing the data, etc.
+(defrecord DataCenterType
+  [
+   ;; This is the roles of the data center.
+   Roles
+
+   ;; This is the short name of the data center.
+   ShortName
+
+   ;; This is the long name of the data center.
+   LongName
+
+   ;; Uuid of the data center.
+   Uuid
+
+   ;; This is the contact groups of the data center.
+   ContactGroups
+
+   ;; This is the contact persons of the data center.
+   ContactPersons
+
+   ;; This is the contact information of the data center.
+   ContactInformation
+  ])
+(record-pretty-printer/enable-record-pretty-printing DataCenterType)
 
 ;; Describes media options, size, data format, and fees involved in distributing or accessing the
 ;; data.
@@ -154,30 +209,6 @@
    Fees
   ])
 (record-pretty-printer/enable-record-pretty-printing DistributionType)
-
-(defrecord PartyType
-  [
-   OrganizationName
-
-   Person
-
-   ;; Time period when individuals can speak to the responsible party.
-   ServiceHours
-
-   ;; Supplemental instructions on how or when to contact the responsible party.
-   ContactInstructions
-
-   ;; Contact information for the responsible party, including phone, fax, email, url, etc.
-   Contacts
-
-   ;; The address of the responsible party
-   Addresses
-
-   ;; A URL associated with the responsible party, e.g., the home page for the DAAC which is
-   ;; responsible for the collection.
-   RelatedUrls
-  ])
-(record-pretty-printer/enable-record-pretty-printing PartyType)
 
 ;; Building block text fields used to construct the recommended language for citing the collection
 ;; in professional scientific literature. The citation language constructed from these fields
@@ -274,6 +305,20 @@
    CenterPoint
   ])
 (record-pretty-printer/enable-record-pretty-printing LineType)
+
+;; Method for contacting the data contact. A contact can be available via phone, email, Facebook, or
+;; Twitter.
+(defrecord ContactMechanismType
+  [
+   ;; This is the method type for contacting the responsible party - phone, email, Facebook, or
+   ;; Twitter.
+   Type
+
+   ;; This is the contact phone number, email address, Facebook address, or Twitter handle
+   ;; associated with the contact method.
+   Value
+  ])
+(record-pretty-printer/enable-record-pretty-printing ContactMechanismType)
 
 ;; Enables specification of Earth science keywords related to the collection. The Earth Science
 ;; keywords are chosen from a controlled keyword hierarchy maintained in the Keyword Management
@@ -374,20 +419,6 @@
    Value
   ])
 (record-pretty-printer/enable-record-pretty-printing VerticalSpatialDomainType)
-
-;; Method for contacting the responsible party. A contact can be available via phone, email,
-;; Facebook, or Twitter.
-(defrecord ContactType
-  [
-   ;; This is the method type for contacting the responsible party - phone, email, Facebook, or
-   ;; Twitter.
-   Type
-
-   ;; This is the contact phone number, email address, Facebook address, or Twitter handle
-   ;; associated with the contact method.
-   Value
-  ])
-(record-pretty-printer/enable-record-pretty-printing ContactType)
 
 (defrecord GeometryType
   [
@@ -540,6 +571,31 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing BoundaryType)
 
+(defrecord ContactPersonType
+  [
+   ;; This is the roles of the data contact.
+   Roles
+
+   ;; Uuid of the data contact.
+   Uuid
+
+   ;; This is the contact person or group that is not affiliated with the data centers.
+   NonDataCenterAffiliation
+
+   ;; This is the contact information of the data contact.
+   ContactInformation
+
+   ;; First name of the individual.
+   FirstName
+
+   ;; Middle name of the individual.
+   MiddleName
+
+   ;; Last name of the individual.
+   LastName
+  ])
+(record-pretty-printer/enable-record-pretty-printing ContactPersonType)
+
 ;; Specifies the date and its type.
 (defrecord DateType
   [
@@ -571,30 +627,6 @@
    DataType
   ])
 (record-pretty-printer/enable-record-pretty-printing CharacteristicType)
-
-;; defines the point of contact for more information about the data set or the metadata. The contact
-;; personnel are defined by the Role, which include: Investigator: The person who headed the
-;; investigation or experiment that resulted in the acquisition of the data described (i.e.,
-;; Principal Investigator, Experiment Team Leader) Technical Contact: The person who is
-;; knowledgeable about the technical content of the data (quality, processing methods, units,
-;; available software for further processing) Metadata Author: The person who is responsible for the
-;; content of the Metadata. If the responsibility shifts from the original author to another person,
-;; the Metadata Author field should be updated to the new responsible person.
-(defrecord PersonType
-  [
-   ;; First name of the individual.
-   FirstName
-
-   ;; Middle name of the individual.
-   MiddleName
-
-   ;; Last name of the individual.
-   LastName
-
-   ;; Uuid of the individual.
-   Uuid
-  ])
-(record-pretty-printer/enable-record-pretty-printing PersonType)
 
 ;; Information which describes the temporal range or extent of a specific collection.
 (defrecord TemporalExtentType
@@ -652,37 +684,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing RelatedUrlType)
 
-;; Defines a responsibility by role which is either an organization such as a data center, or
-;; institution responsible for distributing, archiving, or processing the data, etc., or a person
-;; such as an Investigator, a Technical Contact, Metadata Author, etc.
-(defrecord ResponsibilityType
-  [
-   ;; This is the responsibility role.
-   Role
-
-   ;; This is the party responsible for the collection and its metadata - either a person or an
-   ;; organization.
-   Party
-  ])
-(record-pretty-printer/enable-record-pretty-printing ResponsibilityType)
-
-;; Encapsulates the data that describe the change that was made to either the metadata or data.
-(defrecord LineageDateType
-  [
-   ;; The date something changed with the metadata or data.
-   Date
-
-   ;; Documents the type of change that happened.
-   Type
-
-   ;; Describes the change.
-   Description
-
-   ;; Documents who made the change.
-   Responsibilities
-  ])
-(record-pretty-printer/enable-record-pretty-printing LineageDateType)
-
 ;; Orbit parameters for the collection used by the Orbital Backtrack Algorithm.
 (defrecord OrbitParametersType
   [
@@ -738,26 +739,11 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing PeriodicDateTimeType)
 
-;; consists of the ShortName and LongName of the organization that distributes, archives, or
-;; processes the data.
-(defrecord OrganizationNameType
-  [
-   ;; Short name of the organization.
-   ShortName
-
-   ;; Long name of the organization.
-   LongName
-
-   ;; Uuid of the organization.
-   Uuid
-  ])
-(record-pretty-printer/enable-record-pretty-printing OrganizationNameType)
-
-;; This entity contains the physical address details for the responsible party.
+;; This entity contains the physical address details for the contact.
 (defrecord AddressType
   [
    ;; An address line for the street address, used for mailing or physical addresses of
-   ;; organizations or individuals who serve as responsible parties for the collection.
+   ;; organizations or individuals who serve as contacts for the collection.
    StreetAddresses
 
    ;; The city portion of the physical address.
@@ -766,10 +752,10 @@
    ;; The state or province portion of the physical address.
    StateProvince
 
-   ;; The zip or other postal code portion of the physical address.
-   PostalCode
-
    ;; The country of the physical address.
    Country
+
+   ;; The zip or other postal code portion of the physical address.
+   PostalCode
   ])
 (record-pretty-printer/enable-record-pretty-printing AddressType)
