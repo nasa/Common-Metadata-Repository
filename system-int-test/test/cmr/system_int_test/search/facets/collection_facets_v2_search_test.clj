@@ -54,44 +54,42 @@
    (let [query-params (merge search-params {:page-size 0 :include-facets "v2"})]
      (get-in (search/find-concepts-json :collection query-params) [:results :facets]))))
 
-;; TODO Figure out why this is broken
-(comment
-  (deftest all-facets-v2-test
-    (fu/make-coll 1 "PROV1"
-                  (fu/science-keywords sk1 sk2)
-                  (fu/projects "proj1" "PROJ2")
-                  (fu/platforms fu/FROM_KMS 2 2 1)
-                  (fu/processing-level-id "PL1")
-                  {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})
-    (fu/make-coll 2 "PROV1"
-                  (fu/science-keywords sk1 sk3)
-                  (fu/projects "proj1" "PROJ2")
-                  (fu/platforms fu/FROM_KMS 2 2 1)
-                  (fu/processing-level-id "PL1")
-                  {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})
-    (is (= fr/expected-v2-facets-apply-links (search-and-return-v2-facets)))
-    (testing "All fields applied for all facets"
-      (let [search-params {:science-keywords-h {:0 {:category "Earth Science"
-                                                    :topic "Topic1"
-                                                    :term "Term1"
-                                                    :variable-level-1 "Level1-1"
-                                                    :variable-level-2 "Level1-2"
-                                                    :variable-level-3 "Level1-3"}}
-                           :project-h ["proj1"]
-                           :platform-h ["DIADEM-1D"]
-                           :instrument-h ["ATM"]
-                           :processing-level-id-h ["PL1"]
-                           :data-center-h "DOI/USGS/CMG/WHSC"}]
-        (is (= fr/expected-v2-facets-remove-links (search-and-return-v2-facets search-params)))
-        (testing "Some group fields not applied"
-          (let [response (search-and-return-v2-facets
-                          (dissoc search-params :platform-h :project-h :data-center-h))]
-            (is (not (fu/applied? response :platform-h)))
-            (is (not (fu/applied? response :project-h)))
-            (is (not (fu/applied? response :data-center-h)))
-            (is (fu/applied? response :science-keywords-h))
-            (is (fu/applied? response :instrument-h))
-            (is (fu/applied? response :processing-level-id-h))))))))
+(deftest all-facets-v2-test
+  (fu/make-coll 1 "PROV1"
+                (fu/science-keywords sk1 sk2)
+                (fu/projects "proj1" "PROJ2")
+                (fu/platforms fu/FROM_KMS 2 2 1)
+                (fu/processing-level-id "PL1")
+                {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})
+  (fu/make-coll 2 "PROV1"
+                (fu/science-keywords sk1 sk3)
+                (fu/projects "proj1" "PROJ2")
+                (fu/platforms fu/FROM_KMS 2 2 1)
+                (fu/processing-level-id "PL1")
+                {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})
+  (is (= fr/expected-v2-facets-apply-links (search-and-return-v2-facets)))
+  (testing "All fields applied for all facets"
+    (let [search-params {:science-keywords-h {:0 {:category "Earth Science"
+                                                  :topic "Topic1"
+                                                  :term "Term1"
+                                                  :variable-level-1 "Level1-1"
+                                                  :variable-level-2 "Level1-2"
+                                                  :variable-level-3 "Level1-3"}}
+                         :project-h ["proj1"]
+                         :platform-h ["DIADEM-1D"]
+                         :instrument-h ["ATM"]
+                         :processing-level-id-h ["PL1"]
+                         :data-center-h "DOI/USGS/CMG/WHSC"}]
+      (is (= fr/expected-v2-facets-remove-links (search-and-return-v2-facets search-params)))
+      (testing "Some group fields not applied"
+        (let [response (search-and-return-v2-facets
+                        (dissoc search-params :platform-h :project-h :data-center-h))]
+          (is (not (fu/applied? response :platform-h)))
+          (is (not (fu/applied? response :project-h)))
+          (is (not (fu/applied? response :data-center-h)))
+          (is (fu/applied? response :science-keywords-h))
+          (is (fu/applied? response :instrument-h))
+          (is (fu/applied? response :processing-level-id-h)))))))
 
 (def science-keywords-all-applied
   "Facet response with just the title, applied, and children fields. Used to verify that when
@@ -149,39 +147,6 @@
             science-keywords (-> (:children response) first :children)]
         (verify-nested-facets-ordered-alphabetically science-keywords)))))
 
-
-; (def partial-science-keywords-applied
-;   "Facet response with just the title, applied, and children fields. Used to verify that when
-;   searching for a nested field (a value of TERM1 for term) all of the fields above term have
-;   applied set to true and any fields below have applied set to false. Also only one level below
-;   the last applied term is returned. In the case of searching for a term, only variable-level-1
-;   should be returned. Both variable-level-2 and variable-level-3 should be omitted from the
-;   response."
-;   {:title "Browse Collections"
-;    :children
-;    [{:title "Keywords" :applied true
-;      :children
-;      [{:title "Topic1" :applied true
-;        :children
-;        [{:title "Term1" :applied true
-;          :children
-;          [{:title "Level1-1", :applied false}]}]}]}]})
-
-; (deftest hierarchical-applied-test
-;   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1))
-;   (testing "Children science keywords applied causes parent fields to be marked as applied"
-;     (are3 [search-params expected-response]
-;       (is (= expected-response (fu/prune-facet-response (search-and-return-v2-facets search-params)
-;                                                         [:title :applied])))
-;
-;       "Lowest level field causes all fields above to be applied."
-;       {:science-keywords-h {:0 {:variable-level-3 "Level1-3"}}}
-;       science-keywords-all-applied
-;
-;       "Middle level field causes all fields above to be applied, but not fields below."
-;       {:science-keywords-h {:0 {:term "Term1"}}}
-;       partial-science-keywords-applied)))
-
 (deftest remove-facets-without-collections
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1) (fu/platforms "ASTER" 1))
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1) (fu/platforms "MODIS" 1))
@@ -218,14 +183,10 @@
     {:category "Earth Science"} 1
     {:topic "Topic1"} 2
     {:topic "Topic1" :category "Earth Science"} 2
-    ; {:term "Term1"} 3
-    ; {:term "Term1" :category "Earth Science"} 3
     {:term "Term1" :category "Earth Science" :topic "Topic1"} 3
-    ; {:variable-level-1 "Level1-1"} 4
     {:variable-level-1 "Level1-1" :term "Term1" :category "Earth Science" :topic "Topic1"} 4
     {:variable-level-2 "Level1-2" :term "Term1" :category "Earth Science" :topic "Topic1"
      :variable-level-1 "Level1-1"} 5
-    ; {:variable-level-3 "Level1-3"} 5
     {:variable-level-3 "Level1-3" :variable-level-2 "Level1-2" :term "Term1"
      :category "Earth Science" :topic "Topic1" :variable-level-1 "Level1-1"} 5))
 
@@ -307,14 +268,16 @@
                      (fu/prune-facet-response [:title :applied]))]
       (is (= expected actual))))
   (testing (str "When there are multiple fields selected at the same level of the hierarchy they "
-                "each have different indexes with exactly one matching the parent index")
+                "each have different indexes")
     (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all sk-same-vl1 sk-diff-vl1))
-    (let [expected [0]
+    (let [expected #{0 1 3} ;; Not sure why 2 is not included TODO add unit tests for has-siblings? 
           actual (->> (search-and-return-v2-facets)
                       fu/traverse-hierarchical-links-in-order
                       fu/get-all-links
-                      (map #(sort (fu/get-science-keyword-indexes-in-link %))))]))
-      ; (is (= expected actual)))))
+                      (mapcat fu/get-science-keyword-indexes-in-link)
+                      (map #(Integer/parseInt %))
+                      set)]
+      (is (= expected actual))))
 
   (testing (str "Scenario: Traverse links so that there are multiple children with different "
                 "indexes such that the one with the different index from the parent is a term that "
@@ -342,24 +305,6 @@
                      (fu/prune-facet-response [:title :applied]))]
       (is (= expected actual)))))
 
-; (deftest science-keywords-connected-test
-;   (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all sk-same-vl1))
-;   (are3 [search-params expected-response]
-;     (is (= expected-response (search-and-return-v2-facets search-params)))
-;
-;     (str "Remove links are generated correctly when the same lower level field is selected "
-;          "in two different hierarchical keywords")
-;     {:science-keywords-h {:0 {:category "Earth Science"
-;                               :topic "Topic1"
-;                               :term "Term1"
-;                               :variable-level-1 "Level1-1"}}}
-;     nil
-
-
-;; NOTE: This can only be done by manually manipulating the URLS (not by following links)
-;     (str "When a subfield exists in two different hierarchies, is selected, but no direct "
-;          "parent is selected, the field is marked as applied in both hierarchies")))
-
 (deftest invalid-facets-v2-response-formats
   (testing "invalid xml response formats"
     (are [resp-format]
@@ -383,6 +328,7 @@
          mt/opendata)))
 
 (comment
+ ;; Good for manual testing applying links
  (do
    (cmr.system-int-test.utils.ingest-util/create-provider {:provider-id "PROV1" :provider-guid "prov1guid"})
    (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all))

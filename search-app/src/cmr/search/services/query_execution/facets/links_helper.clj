@@ -127,9 +127,6 @@
       (apply max indexes-int)
       -1)))
 
-(comment
- (first #{3 1 2}))
-
 (defn create-apply-link-for-hierarchical-field
   "Create a link that will modify the current search to also filter by the given hierarchical
   field-name and value.
@@ -141,7 +138,6 @@
                        (first parent-indexes))
         updated-field-name (format "%s[%d]%s" base-field index-to-use subfield)
         updated-query-params (assoc query-params updated-field-name value)
-        ; _ (if has-siblings? (println "The ancestors-map is" ancestors-map))
         updated-query-params (if (or has-siblings? (empty? parent-indexes))
                                ;; Add all of the ancestors for this index
                                (reduce
@@ -151,7 +147,6 @@
                                 updated-query-params
                                 (dissoc ancestors-map "category"))
                                updated-query-params)]
-
     {:apply (generate-query-string base-url updated-query-params)}))
 
 (defn- get-keys-to-update
@@ -233,23 +228,18 @@
         param-groups-by-index (group-by (fn [[k _]]
                                           (second (re-find #"\[\d+\]" k)))
                                         potential-qps)
-        _ (println "Params grouped by index" param-groups-by-index)
-        ;; Iterate (reduce) through each set of parameters
+        ;; Iterate through each set of parameters
         indexes-to-remove
          (set
           (flatten
            (for [[idx qps] param-groups-by-index
                  :let [qps (util/map-keys #(str/replace % #"\[\d+\]" "")
-                                          (into {} qps))
-                       _ (println "CDD: qps are" qps)]]
+                                          (into {} qps))]]
              (keep (fn [[matching-index matching-qps]]
                      (when (and (not= idx matching-index)
                                 ;; remove the index
                                 (let [matching-qps (util/map-keys #(str/replace % #"\[\d+\]" "")
-                                                                  (into {} matching-qps))
-                                      ;; TODO change matching-qps so that all the keys are compared by ignoring the index
-                                      _ (println "CDD: matching qps are:" matching-qps)
-                                      _ (println "IDX" (type idx) "Matching-index" (type matching-index))]
+                                                                  (into {} matching-qps))]
                                   ;; another group of params fully contains this group of params
                                   (and (= qps (select-keys matching-qps (keys qps)))
                                        (or (not= qps matching-qps)
@@ -259,12 +249,8 @@
                    param-groups-by-index))))
         query-keys-to-remove (mapcat #(keys (get param-groups-by-index %)) indexes-to-remove)]
     (if (seq query-keys-to-remove)
-      (do (println "Wow I am in here and need to remove" query-keys-to-remove)
-          (apply dissoc query-params query-keys-to-remove))
+      (apply dissoc query-params query-keys-to-remove)
       query-params)))
-
-  ;; if select-keys of another group of parameters contains all of these parameters then this one
-  ;; is no longer needed.
 
 (defn create-remove-link-for-hierarchical-field
   "Create a link that will modify the current search to no longer filter on the given hierarchical
@@ -276,12 +262,10 @@
   ([base-url query-params field-name ancestors-map parent-indexes value has-siblings? applied-children-tuples]
    (create-remove-link-for-hierarchical-field base-url query-params field-name ancestors-map parent-indexes value has-siblings? applied-children-tuples nil))
   ([base-url query-params field-name ancestors-map parent-indexes value has-siblings? applied-children-tuples potential-qp-matches]
-   (println "Someone told me to generate a remove link for this field" field-name "index" parent-indexes "value" value)
    (let [[base-field subfield] (str/split field-name #"\[0\]")
          updated-params (reduce (partial process-removal-for-field-value-tuple base-field potential-qp-matches)
                                 query-params
                                 (conj applied-children-tuples [subfield value]))
-         ;; TODO Remove any extraneous parameters
          updated-params (remove-duplicate-params updated-params base-field)]
      {:remove (generate-query-string base-url updated-params)})))
 
@@ -294,20 +278,12 @@
   applied-children-tuples - Tuples of [subfield term] for any applied children terms that should
                             also be removed if a remove link is being generated."
   [base-url query-params field-name ancestors-map parent-indexes value has-siblings? applied-children-tuples]
-  ;; TODO - I'm thinking that I need to pass the parent index into the sub-facets function
-  ;; For apply links - if none of the siblings for this parent are applied apply the
-  ;; same index as the parent index. Else increment the max index by one and use that.
-  ;; For remove links - if there is exactly one other sibling - Nevermind this seems bad.
-  ;; TODO - new solution for apply links... if none of the siblings are applied use the
-  ;; same index as the parent, otherwise increment the max index by one and duplicate all
-  ;; the parent parameters with the new index and add this field with the new index.
   (if (keys (dissoc ancestors-map "category"))
     ;; Check if all ancestors are in the query-params with the parent index
     ;; TODO Get rid of the first split and just use a single regex to get the subfield
     (let [[base-field subfield] (str/split field-name #"\[\d+\]")
           subfield (second (re-find #"\[(.*)\]" subfield))
           ancestor-match-fn (fn [base-field idx ancestors subfield value]
-                              ; (let [field-name (str/replace-first field-name "[0]" (format "[%s]" idx))]
                               (into {} (map (fn [[k v]]
                                               [(format "%s[%s][%s]"
                                                        base-field
@@ -320,58 +296,34 @@
                                                        (dissoc ancestors-map "category")
                                                        subfield value))
                                   parent-indexes)
-          ancestors-found (map (fn [ancestor]
-                                 (into {} (for [[k v] ancestor
-                                                :when (= (str/lower-case v)
-                                                         (some-> (get query-params k) str/lower-case))]
-                                            [k v])))
-                               ancestors-to-match)
-          ancestors-found? (when (seq ancestors-found)
-                             (= (count (first ancestors-to-match)) (apply max (map count ancestors-found))))
-
-          ;; TODO Removing Term2 didn't remove its children for some reason
-          ;; TODO Figure out the index for the matching field and value from the ancestors-found
+          ancestor-matches (map (fn [ancestor]
+                                  (into {} (for [[k v] ancestor
+                                                 :when (= (str/lower-case v)
+                                                          (some-> (get query-params k) str/lower-case))]
+                                             [k v])))
+                                ancestors-to-match)
+          ancestors-found? (when (seq ancestor-matches)
+                             (= (count (first ancestors-to-match))
+                                (apply max (map count ancestor-matches))))
           potential-qp-matches (->> (filter #(= (count (first ancestors-to-match)) (count %))
-                                            ancestors-found)
+                                            ancestor-matches)
                                     (map keys)
                                     (map first)
                                     (map (fn [qp]
                                            (str/replace-first qp #"\]\[.*\]"
                                                               (format "][%s]" subfield))))
                                     (select-keys query-params))
-
-          ;; TODO change to multiple indexes
-          ; idx (some->> potential-qp-matches
-          ;              keys
-          ;              first
-          ;              (re-find #"\[\d+\]")
-          ;              second)
-          ; _ (println "IDX=" idx)
-          ; child-matches (when idx
-          ;                 (concat (for [[k v] applied-children-tuples]
-          ;                           [(format "%s[%s][%s]" base-field idx (csk/->snake_case_string k))
-          ;                            v])))
           indexes (some->> potential-qp-matches
                            keys
                            (map #(re-find #"\[\d+\]" %))
                            (map second)
                            set)
-          _ (println "IDX=" indexes)
           child-matches (mapcat
                           (fn [idx]
                             (concat (for [[k v] applied-children-tuples]
                                       [(format "%s[%s][%s]" base-field idx (csk/->snake_case_string k))
                                        v])))
                           indexes)]
-        (println "Child matches are" child-matches)
-
-        (println "potential-qp-matches are" potential-qp-matches)
-
-      (if ancestors-found?
-        (println "Found all ancestors!! for" field-name "and" value)
-        (println "Did not find ancestors" ancestors-to-match ancestors-found))
-      ; (when has-siblings? (println "Value exists is " value-exists?))
-      ;; If all ancestors are found
       (if ancestors-found?
         (create-remove-link-for-hierarchical-field
          base-url query-params field-name ancestors-map parent-indexes value has-siblings?
@@ -389,8 +341,3 @@
         (create-apply-link-for-hierarchical-field
          base-url query-params field-name ancestors-map parent-indexes value has-siblings?
          applied-children-tuples)))))
-
-(comment
- (count {:a 1 "b" 2 :c nil :d 45})
- (get-keys-to-remove {"science_keywords_h[0][term]" "Term1"})
- (apply max (map count [{"science_keywords_h[0][topic]" "Topic1" "science_keywords_h[0][term]" "Term1"}])))

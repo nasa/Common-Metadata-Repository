@@ -269,3 +269,5 @@
      "food[151][c]" "c"
      "foofoo[140][a]" 15}
     12))
+
+;; TODO Add a bunch of tests to verify the new changes to the create links functions

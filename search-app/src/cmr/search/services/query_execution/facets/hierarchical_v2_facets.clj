@@ -190,7 +190,6 @@
   (for [bucket (get-in elastic-aggregations [field :buckets])
         :let [value (:key bucket)
               count (get-in bucket [:coll-count :doc_count] (:doc_count bucket))
-              ;; TODO conj the value onto parent params
               sub-facets (recursive-parse-fn value bucket)
               ;; Sort alphabetically
               sub-facets (when (seq (:children sub-facets))
@@ -228,8 +227,6 @@
           applied? (field-applied? query-params snake-parent-field snake-field)
           ;; Index in the param name does not matter
           param-name (format "%s[0][%s]" snake-parent-field snake-field)
-          ; parent-index (get-index-for-field-and-value query-params snake-parent-field
-          ;                                             snake-parent-subfield parent-value)
           parent-indexes (get-indexes-in-params query-params snake-parent-field
                                                 snake-parent-subfield parent-value)
           ;; If no value is applied in the search for the given field we can safely call create
@@ -351,6 +348,7 @@
   that field."
   [field bucket-map base-url query-params]
   (let [field-hierarchy (nested-fields-mappings field)
+        ;; TODO Figure out a better way to pass in the params without all these nils
         hierarchical-facet (-> (parse-hierarchical-bucket-v2 field nil field-hierarchy base-url
                                                              query-params nil nil bucket-map)
                                (prune-hierarchical-facet true)
