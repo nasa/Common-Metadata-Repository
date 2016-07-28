@@ -115,6 +115,7 @@
 
 (defmethod migrate-umm-version [:collection "1.5" "1.4"]
   [context c & _]
+  ;; Don't need to migrate Additional Attribute description back since 'Not provided' is valid
   c)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
