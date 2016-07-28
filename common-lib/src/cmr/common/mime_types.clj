@@ -83,6 +83,8 @@
    :serf             "application/serf+xml"})
 
 (defn format->mime-type
+  "Converts a format structure (a keyword or map containing :format and :version) to a mime type.
+   The mime type will contain a version if the format does."
   [format]
   (if (map? format)
     (with-version (format->mime-type (:format format)) (:version format))
