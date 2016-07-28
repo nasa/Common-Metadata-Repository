@@ -42,6 +42,8 @@
     ;; from search. access-control-app listens for :provider-delete messages and handles deleting the
     ;; relevant records from Elastic.
     (j/delete! db (ct/get-table-name provider :access-group) ["provider_id = ?" provider-id])
+    ;; ACLs are removed in a way similar to access groups
+    (j/delete! db (ct/get-table-name provider :acl) ["target_provider_id = ?" provider-id])
     (if small
       (delete-small-provider-concepts db provider)
       (ct/delete-provider-concept-tables db provider))

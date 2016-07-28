@@ -196,3 +196,20 @@
             :concept-id concept-id
             :revision-id revision-id}
            (dissoc concept :revision-date :transaction-id)))))
+
+(defn create-acl
+  "Creates an acl."
+  ([token acl]
+   (create-acl token acl nil))
+  ([token acl options]
+   (let [options (merge {:raw? true :token token} options)]
+     (util/map-keys->kebab-case
+       (process-response (ac/create-acl (conn-context) acl options))))))
+
+(defn search-for-acls
+  "Searches for groups using the given parameters"
+  ([token params]
+   (search-for-acls token params nil))
+  ([token params options]
+   (let [options (merge {:raw? true :token token} options)]
+     (process-response (ac/search-for-acls (conn-context) params options)))))

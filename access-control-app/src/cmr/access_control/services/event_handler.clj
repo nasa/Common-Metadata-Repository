@@ -30,7 +30,9 @@
   ;; The actual :access-group concept records are deleted from code within the metadata db
   ;; app itself. We need to ensure that the groups are unindexed here too, or else they will
   ;; still come up in search results, etc..
-  (index/delete-provider-groups context provider-id))
+  (index/delete-provider-groups context provider-id)
+  ;; ACLs are unindexed here, but we will tombstone
+  (index/delete-provider-acls context provider-id))
 
 (defn subscribe-to-events
   "Subscribe to event messages on various queues"

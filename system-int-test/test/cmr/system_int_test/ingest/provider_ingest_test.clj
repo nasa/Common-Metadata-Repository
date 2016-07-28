@@ -119,7 +119,18 @@
                          (transmit-config/echo-system-token)
                          {:name "Administrators"
                           :description "A Group"
-                          :provider_id "PROV1"}))]
+                          :provider_id "PROV1"}))
+          acl1 (access-control/create-acl (transmit-config/echo-system-token)
+                                          {:group_permissions [{:permissions [:read :order]
+                                                                :user_type "guest"}]
+                                           :catalog_item_identity {:name "PROV1 read, order"
+                                                                   :collection_applicable true
+                                                                   :provider_id "PROV1"}})
+          acl2 (access-control/create-acl (transmit-config/echo-system-token)
+                                          {:group_permissions [{:permissions [:read :order]
+                                                                :user_type "guest"}]
+                                           :provider_identity {:provider_id "PROV1"
+                                                               :target "INGEST_MANAGEMENT_ACL"}})]
       (index/wait-until-indexed)
 
       (is (= 2 (count (:refs (search/find-refs :collection {:provider-id "PROV1"})))))
@@ -130,6 +141,14 @@
              (map :concept-id (:items (u/map-keys->kebab-case
                                        (access-control/search-for-groups (transmit-config/echo-system-token)
                                                                          {:provider "PROV1"}))))))
+
+      ;; PROV1 ACLs are indexed
+      (is (= [(:concept_id acl1) (:concept_id acl2)]
+             (map :concept_id
+                  (:items
+                    (u/map-keys->kebab-case
+                      (access-control/search-for-acls (transmit-config/echo-system-token)
+                                                      {:provider "PROV1"}))))))
 
       ;; delete provider PROV1
       (let [{:keys [status content-length]} (ingest/delete-ingest-provider "PROV1")]
@@ -145,12 +164,19 @@
         gran1
         gran2
         gran3
-        access-group)
+        access-group
+        acl1
+        acl2)
 
       ;; PROV1 access group is unindexed
       (is (= 0 (:hits
                 (access-control/search-for-groups (transmit-config/echo-system-token)
                                                   {:provider "PROV1"}))))
+
+      ;; PROV1 ACLs are no longer indexed
+      (is (= 0 (:hits
+                 (access-control/search-for-acls (transmit-config/echo-system-token)
+                                                 {:provider "PROV1"}))))
 
       ;; PROV2 concepts are in metadata-db
       (are [concept]

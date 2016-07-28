@@ -75,6 +75,13 @@
                                             :items
                                             (map :concept_id)))))
 
+(defn acl-target-provider-id
+  "Returns the provider ID which the ACL targets through its catalog item identity
+   or provider identity, if applicable."
+  [acl]
+  (or (get-in acl [:provider-identity :provider-id])
+      (get-in acl [:catalog-item-identity :provider-id])))
+
 (defn- acl->base-concept
   "Returns a basic concept map for the given request context and ACL map."
   [context acl]
@@ -84,7 +91,8 @@
    :provider-id acl-provider-id
    :user-id (tokens/get-user-id context (:token context))
    ;; ACL-specific fields
-   :extra-fields {:acl-identity (acl-identity acl)}})
+   :extra-fields {:acl-identity (acl-identity acl)
+                  :target-provider-id (acl-target-provider-id acl)}})
 
 (defn create-acl
   "Save a new ACL to Metadata DB. Returns map with concept and revision id of created acl."
