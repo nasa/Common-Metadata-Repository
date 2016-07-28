@@ -611,9 +611,9 @@ Content-Type: application/json;charset=ISO-8859-1
 
 ### <a name="get-permissions"></a> Checking User Permissions
 
-You can check the permissions granted to a specific user or user type on specific concepts by making a GET request to `%CMR-ENDPOINT%/permissions`.
+You can check the permissions granted to a specific user or user type on specific concepts or system objects by making a GET request to `%CMR-ENDPOINT%/permissions`.
 
-The response is a JSON object mapping concept ids to arrays of permissions granted to the specified user for the respective concept.
+The response is a JSON object mapping target ids to arrays of permissions granted to the specified user for the respective concept.
 
 Example request:
 
@@ -628,11 +628,12 @@ Content-Type: application/json;charset=ISO-8859-1
 
 #### Parameters
 
-`concept_id`, and one of either `user_id` or `user_type` are required.
-
-* `concept_id` - Required. Must be a valid concept id, or else use `concept_id[]=...&concept_id[]=...` to specify multiple concepts.
-* `user_id` - The user whose permissions will be computed. Required when `user_type` is not specified.
-* `user_type` - Either "guest" or "registered". Required when `user_id` is not specified.
+* One of:
+** `concept_id` - Must be a valid concept id, or else use `concept_id[]=...&concept_id[]=...` to specify multiple concepts.
+** `system_object` - A system object identity target, e.g. "GROUP" 
+* And one of:
+** `user_id` - The user whose permissions will be computed.
+** `user_type` - Either "guest" or "registered".
 
 ### <a name="application-health"></a> Application Health
 
