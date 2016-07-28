@@ -346,24 +346,55 @@
                                          [:catalog_item_identity :provider_id] "PROV2"))
         acl7 (ingest-acl token (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
                                          [:provider_identity :provider_id] "PROV2"))
-        prov1-acls [acl2 acl3 acl1]
+        acl8 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item6_PROV4")
+                                         [:catalog_item_identity :provider_id] "PROV4"))
+        prov1-acls [acl1 acl2 acl3]
         prov1-and-2-acls [acl1 acl2 acl3 acl4 acl6 acl7]
         prov3-acls [acl5]]
     (u/wait-until-indexed)
     (testing "Search ACLs that grant permissions to objects owned by a single provider
               or by any provider where multiple are specified"
-      (are [provider-ids acls]
+      (are3 [provider-ids acls]
         (let [response (ac/search-for-acls (u/conn-context) {:provider provider-ids})]
           (= (acls->search-response (count acls) acls)
              (dissoc response :took)))
 
+        "Single provider with multiple results"
         ["PROV1"] prov1-acls
+
+        "Single provider with multiple results, case-insensitive"
         ["prov1"] prov1-acls
 
+        "Multiple providers with multiple results"
         ["PROV1" "PROV2"] prov1-and-2-acls
+
+        "Multiple providers with multiple results, case-insensitive"
         ["prov1" "prov2"] prov1-and-2-acls
 
+        "Single provider with single result"
         ["PROV3"] prov3-acls
+
+        "Single provider with single result, case-insensitive"
         ["prov3"] prov3-acls
 
-        ["NOT_A_PROVIDER"] []))))
+        "Provider that doens't exist"
+        ["NOT_A_PROVIDER"] []))
+
+    (testing "Search ACLs by provider with options"
+      (are3 [provider-ids options acls]
+       (let [response (ac/search-for-acls (u/conn-context)
+                                          (merge {:provider provider-ids} options))]
+         (= (acls->search-response (count acls) acls)
+            (dissoc response :took)))
+
+       "Multiple providers with multiple results using ignore_case=false option"
+       ["PROV1"] {"options[provider][ignore_case]" false} prov1-acls
+
+       "Multiple providers with multiple results using ignore_case=true option"
+       ["prov1"] {"options[provider][ignore_case]" true} prov1-acls
+
+       "Multiple providers with multiple results using ignore_case=false option"
+       ["PROV1"] {"options[provider][ignore_case]" true} prov1-acls
+
+       "Multiple providers with empty results using ignore_case=false option"
+       ["prov1"] {"options[provider][ignore_case]" false} []))))

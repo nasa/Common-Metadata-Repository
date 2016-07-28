@@ -207,7 +207,7 @@
            :permitted-group permitted-groups
            :permitted-group.lowercase (map str/lower-case permitted-groups)
            :target-provider-id provider-id
-           :target-provider-id.lowercase (when provider-id (str/lower-case provider-id)))))
+           :target-provider-id.lowercase (safe-lowercase provider-id))))
 
 (defmethod index-concept :acl
   [context concept-map]
