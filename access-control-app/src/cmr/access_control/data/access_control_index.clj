@@ -136,7 +136,8 @@
    :permitted-group (m/stored m/string-field-mapping)
    :permitted-group.lowercase m/string-field-mapping
 
-   ;; target-provider-id indexes the provider id of the provider-identity field of an acl, if present
+   ;; target-provider-id indexes the provider id of the provider-identity or
+   ;; catalog-item-identity field of an acl, if present
    :target-provider-id (m/stored m/string-field-mapping)
    :target-provider-id.lowercase m/string-field-mapping
 
