@@ -190,6 +190,15 @@
           1 6 {coll2 0 coll3 3 coll4 3 coll5 3 coll6 3}
           2 3 {coll2 0 coll3 2 coll4 1 coll6 1}))
 
+      (testing "granule counts for temporal queries with limit_to_granules"
+        (are [start stop expected-counts]
+          (let [refs (search/find-refs :collection {:include-granule-counts true
+                                                    "options[temporal][limit_to_granules]" true
+                                                    :temporal (temporal-search-range start stop)})]
+            (gran-counts/granule-counts-match? :xml expected-counts refs))
+          1 6 {coll2 0 coll3 3 coll4 3 coll5 3 coll6 3}
+          2 3 {coll2 0 coll3 2 coll4 1 coll6 1}))
+
       (testing "granule counts for both spatial and temporal queries"
         (let [refs (search/find-refs :collection {:include-granule-counts true
                                                   :temporal (temporal-search-range 2 3)
