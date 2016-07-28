@@ -398,6 +398,8 @@ The following parameters are supported when searching for ACLs.
 * permitted-user
   * options: none (always case-insensitive)
   * user is a URS user name corresponding to a member of a group that has access to an ACL.
+* provider
+  * options: ignore_case
 
 ##### ACL Search Response
 
@@ -509,6 +511,47 @@ Content-Length: 702
     "identity_type" : "Provider",
     "name" : "Provider - PROV1 - AUDIT_REPORT",
     "location" : "%CMR-ENDPOINT%/acls/ACL1200000001-CMR"
+  } ]
+}
+```
+
+###### By provider
+
+```
+curl -i "%CMR-ENDPOINT%/acls?provider=prov1&pretty=true"
+
+HTTP/1.1 200 OK
+Date: Thu, 28 Jul 2016 13:16:36 GMT
+Content-Type: application/json; charset=UTF-8
+Access-Control-Expose-Headers: CMR-Hits, CMR-Request-Id
+Access-Control-Allow-Origin: *
+CMR-Hits: 3
+CMR-Took: 10
+CMR-Request-Id: 04d273f9-c0c5-4f74-a788-00837d2b80f3
+Content-Length: 688
+Server: Jetty(9.2.10.v20150310)
+
+{
+  "hits" : 3,
+  "took" : 10,
+  "items" : [ {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000001-CMR",
+    "identity_type" : "Catalog Item",
+    "name" : "Catalog_Item1_PROV1",
+    "location" : "http://localhost:3011/acls/ACL1200000001-CMR"
+  }, {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000002-CMR",
+    "identity_type" : "Catalog Item",
+    "name" : "Catalog_Item2_PROV1",
+    "location" : "http://localhost:3011/acls/ACL1200000002-CMR"
+  }, {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000000-CMR",
+    "identity_type" : "Provider",
+    "name" : "Provider - PROV1 - INGEST_MANAGEMENT_ACL",
+    "location" : "http://localhost:3011/acls/ACL1200000000-CMR"
   } ]
 }
 ```
