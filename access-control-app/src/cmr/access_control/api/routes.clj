@@ -25,8 +25,7 @@
             [cmr.access-control.services.acl-service :as acl-service]
             [cmr.access-control.services.group-service :as group-service]
             [cmr.common.util :as util]
-            [clojure.string :as str]
-            [cmr.common.util :as u]))
+            [clojure.string :as str]))
 
 ;;; Utility Functions
 
@@ -108,11 +107,13 @@
 (defn- validate-get-permission-params
   "Throws service errors if any invalid params or values are found."
   [params]
-  (validate-params params :concept_id :user_id :user_type)
-  (let [{:keys [concept_id user_id user_type]} params
+  (validate-params params :system_object :concept_id :user_id :user_type)
+  (let [{:keys [system_object concept_id user_id user_type]} params
         errors []
-        errors (if (empty? concept_id)
-                 (conj errors "Parameter [concept_id] is required.")
+        errors (if (or (and (not (str/blank? system_object))
+                            (seq concept_id))
+                       (and (str/blank? system_object) (empty? concept_id)))
+                 (conj errors "One of parameters [concept_id] or [system_object] are required.")
                  errors)
         errors (reduce #(concat %1 (cc/concept-id-validation %2)) errors concept_id)
         errors (if-not (= 1 (count (remove str/blank? [user_id user_type])))
@@ -233,15 +234,18 @@
 
 (defn get-permissions
   [request-context params]
-  (let [params (update-in params [:concept_id] u/seqify)]
+  (let [params (update-in params [:concept_id] util/seqify)]
     (validate-get-permission-params params)
-    (let [{:keys [user_id user_type concept_id]} params
+    (let [{:keys [user_id user_type concept_id system_object]} params
           username-or-type (if user_type
                              (keyword user_type)
-                             user_id)]
+                             user_id)
+          _ (info "!!!!! system_object =" system_object)
+          result (if system_object
+                   (acl-service/get-system-permissions request-context username-or-type system_object)
+                   (acl-service/get-concept-permissions request-context username-or-type concept_id))]
       {:status 200
-       :body (json/generate-string
-               (acl-service/get-granted-permissions request-context username-or-type concept_id))})))
+       :body (json/generate-string result)})))
 
 ;;; Various Admin Route Functions
 
