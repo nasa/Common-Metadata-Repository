@@ -240,7 +240,6 @@
           username-or-type (if user_type
                              (keyword user_type)
                              user_id)
-          _ (info "!!!!! system_object =" system_object)
           result (if system_object
                    (acl-service/get-system-permissions request-context username-or-type system_object)
                    (acl-service/get-concept-permissions request-context username-or-type concept_id))]

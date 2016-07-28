@@ -333,9 +333,6 @@
 (defn- system-permissions-granted-by-acls
   "Returns a set of permission keywords granted on the system target to the given sids by the given acls."
   [system-object-target sids acls]
-  (info "system-object-target =" (pr-str system-object-target)
-        "sids =" (pr-str sids)
-        "acls =" (pr-str acls))
   (reduce (fn [granted-permissions acl]
             (if (= all-permissions granted-permissions)
               ;; terminate the reduce early, because all permissions have already been granted
