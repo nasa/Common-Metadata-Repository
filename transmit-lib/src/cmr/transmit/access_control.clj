@@ -114,9 +114,7 @@
 (h/defgetter get-acl :access-control acl-concept-id-url)
 
 (h/defsearcher get-permissions :access-control acl-permission-url)
-
 ;;; Misc. Functions
 
 ;; Defines health check function
 (h/defhealther get-access-control-health :access-control 2)
-
