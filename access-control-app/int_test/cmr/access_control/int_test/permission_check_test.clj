@@ -30,10 +30,14 @@
     {:user_id "" :concept_id []} ["One of parameters [concept_id] or [system_object] are required."
                                   "One of parameters [user_type] or [user_id] are required."]
     {:user_id "foobar"} ["One of parameters [concept_id] or [system_object] are required."]
-    {:concept_id "C12345-ABC2" :system_object "bar" :user_id "bat"} ["One of parameters [concept_id] or [system_object] are required."]
+    {:concept_id "C12345-ABC2" :system_object "GROUP" :user_id "bat"} ["One of parameters [concept_id] or [system_object] are required."]
     {:concept_id "C1200000-PROV1" :user_type "GROUP" :user_id "foo"} ["One of parameters [user_type] or [user_id] are required."]
     {:not_a_valid_param "foo"} ["Parameter [not_a_valid_param] was not recognized."]
-    {:user_id "foo" :concept_id ["XXXXX"]} ["Concept-id [XXXXX] is not valid."]))
+    {:user_id "foo" :concept_id ["XXXXX"]} ["Concept-id [XXXXX] is not valid."])
+  (is (some #(re-find #"Parameter \[system_object\] must be one of: .*GROUP.*" %)
+            (:errors (:body (ac/get-permissions (u/conn-context) {:user_id "foo" :system_object "GROUPE"} {:raw? true})))))
+  (is (some #(re-find #"Parameter \[system_object\] must be one of: .*GROUP.*" %)
+            (:errors (:body (ac/get-permissions (u/conn-context) {:user_id "foo" :system_object "group"} {:raw? true}))))))
 
 (defn get-permissions
   "Helper to get permissions with the current context and the specified username string or user type keyword and concept ids."
@@ -463,11 +467,6 @@
                                               {:user_type (name user)}
                                               {:user_id user})))))]
 
-    ;; Create a "dummy" ACL to ensure it DOESN'T get matched
-    (create-acl {:group_permissions [{:permissions [:read :order]
-                                      :user_type :guest}]
-                 :system_identity {:target "PROVIDER"}})
-
     (testing "no permissions granted"
       (are [user permissions]
         (= {"GROUP" permissions}
@@ -494,6 +493,17 @@
           :guest []
           :registered ["update" "delete"]
           "user1" ["update" "delete"]))
+
+      (testing "other ACLs are not matched when searching other targets"
+        (create-acl {:group_permissions [{:permissions [:read]
+                                          :user_type :registered}]
+                     :system_identity {:target "PROVIDER"}})
+        (are [user permissions]
+          (= {"PROVIDER" permissions}
+             (get-system-permissions user "PROVIDER"))
+          :guest []
+          :registered ["read"]
+          "user1" ["read"]))
 
       (testing "granted to specific groups"
         (update-acl acl-concept-id

@@ -115,6 +115,11 @@
                        (and (str/blank? system_object) (empty? concept_id)))
                  (conj errors "One of parameters [concept_id] or [system_object] are required.")
                  errors)
+        errors (if system_object
+                 (if (some #{system_object} acl-schema/system-object-targets)
+                   errors
+                   (conj errors (str "Parameter [system_object] must be one of: " (pr-str acl-schema/system-object-targets))))
+                 errors)
         errors (reduce #(concat %1 (cc/concept-id-validation %2)) errors concept_id)
         errors (if-not (= 1 (count (remove str/blank? [user_id user_type])))
                  (conj errors "One of parameters [user_type] or [user_id] are required.")

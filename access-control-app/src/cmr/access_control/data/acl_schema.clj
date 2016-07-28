@@ -10,6 +10,32 @@
                 (name id)
                 id))})
 
+(def system-object-targets
+  "A collection of valid system_object.target values."
+  ["SYSTEM_AUDIT_REPORT"
+   "METRIC_DATA_POINT_SAMPLE"
+   "SYSTEM_INITIALIZER"
+   "ARCHIVE_RECORD"
+   "ERROR_MESSAGE"
+   "TOKEN"
+   "TOKEN_REVOCATION"
+   "EXTENDED_SERVICE_ACTIVATION"
+   "ORDER_AND_ORDER_ITEMS"
+   "PROVIDER"
+   "TAG_GROUP"
+   "TAXONOMY"
+   "TAXONOMY_ENTRY"
+   "USER_CONTEXT"
+   "USER"
+   "GROUP"
+   "ANY_ACL"
+   "EVENT_NOTIFICATION"
+   "EXTENDED_SERVICE"
+   "SYSTEM_OPTION_DEFINITION"
+   "SYSTEM_OPTION_DEFINITION_DEPRECATION"
+   "INGEST_MANAGEMENT_ACL"
+   "SYSTEM_CALENDAR_EVENT"])
+
 (def acl-schema
   (js/parse-json-schema
     {:type :object
@@ -43,29 +69,7 @@
                                                                           "guest"]}}
                                           :oneOf [{:required [:permissions :group_id]}
                                                   {:required [:permissions :user_type]}]}
-                   :SystemObjectTargetType {:enum ["SYSTEM_AUDIT_REPORT"
-                                                   "METRIC_DATA_POINT_SAMPLE"
-                                                   "SYSTEM_INITIALIZER"
-                                                   "ARCHIVE_RECORD"
-                                                   "ERROR_MESSAGE"
-                                                   "TOKEN"
-                                                   "TOKEN_REVOCATION"
-                                                   "EXTENDED_SERVICE_ACTIVATION"
-                                                   "ORDER_AND_ORDER_ITEMS"
-                                                   "PROVIDER"
-                                                   "TAG_GROUP"
-                                                   "TAXONOMY"
-                                                   "TAXONOMY_ENTRY"
-                                                   "USER_CONTEXT"
-                                                   "USER"
-                                                   "GROUP"
-                                                   "ANY_ACL"
-                                                   "EVENT_NOTIFICATION"
-                                                   "EXTENDED_SERVICE"
-                                                   "SYSTEM_OPTION_DEFINITION"
-                                                   "SYSTEM_OPTION_DEFINITION_DEPRECATION"
-                                                   "INGEST_MANAGEMENT_ACL"
-                                                   "SYSTEM_CALENDAR_EVENT"]}
+                   :SystemObjectTargetType {:enum system-object-targets}
                    :ProviderObjectTargetType {:enum ["AUDIT_REPORT"
                                                      "OPTION_ASSIGNMENT"
                                                      "OPTION_DEFINITION"
