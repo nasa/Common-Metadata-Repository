@@ -124,7 +124,7 @@
   (cpv/merge-params-config
     cpv/basic-params-config
     {:single-value #{}
-     :multiple-value #{:permitted-group :identity-type}
+     :multiple-value #{:permitted-group :identity-type :provider}
      :always-case-sensitive #{}
      :disallow-pattern #{:identity-type :permitted-user}
      :allow-or #{}}))
@@ -132,6 +132,7 @@
 (defmethod cpv/valid-parameter-options :acl
   [_]
   {:permitted-group cpv/string-param-options
+   :provider cpv/string-param-options
    :identity-type cpv/string-param-options
    :permitted-user #{}})
 
@@ -180,6 +181,7 @@
                                     [(partial cpv/validate-map [:options])
                                      (partial cpv/validate-map [:options :permitted-group])
                                      (partial cpv/validate-map [:options :identity-type])
+                                     (partial cpv/validate-map [:options :provider])
                                      (partial cpv/validate-map [:options :permitted-user])])]
     (cpv/validate-parameters
       :acl safe-params
@@ -200,6 +202,7 @@
   [_]
   {:permitted-group :string
    :identity-type :acl-identity-type
+   :provider :string
    :permitted-user :acl-permitted-user})
 
 (defmethod cp/parameter->condition :acl-identity-type
