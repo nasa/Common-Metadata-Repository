@@ -19,7 +19,8 @@
             [cmr.umm.collection :as umm-c]
             [cmr.umm.dif.core :as dif]
             [cmr.spatial.mbr :as m]
-            [cmr.umm.test.echo10.collection :as test-echo10])
+            [cmr.umm.test.echo10.collection :as test-echo10]
+            [cmr.umm.validation.core :as v])
   (:import cmr.spatial.mbr.Mbr))
 
 (defn- spatial-coverage->expected-parsed
@@ -557,13 +558,15 @@
          :name "metadata.uuid"
          :data-type :string
          :value "743933e5-1404-4502-915f-83cde56af440"
-         :parsed-value "743933e5-1404-4502-915f-83cde56af440"})
+         :parsed-value "743933e5-1404-4502-915f-83cde56af440"
+         :description "Not provided"})
       (umm-c/map->ProductSpecificAttribute
         {:group "gov.nasa.gsfc.gcmd"
          :name "metadata.extraction_date"
          :data-type :string
          :value "2013-09-30 09:45:15"
-         :parsed-value "2013-09-30 09:45:15"})
+         :parsed-value "2013-09-30 09:45:15"
+         :description "Not provided"})
       (umm-c/map->ProductSpecificAttribute
         {:group "custom.group"
          :name "String attribute"
@@ -656,6 +659,11 @@
                                  {:type :email
                                   :value "geo@unepgrid.ch"})]})]
      :access-value 1.0}))
+
+; (deftest validated-parsed-dif-test
+;   (testing "Validate DIF to UMM Collection"
+;    (let [parsed-dif (c/parse-collection all-fields-collection-xml)]
+;      (is (= 0 (count (v/validate-collection parsed-dif)))))))
 
 (deftest parse-collection-test
   (testing "parse collection"

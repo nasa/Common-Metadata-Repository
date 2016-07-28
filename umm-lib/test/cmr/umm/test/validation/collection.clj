@@ -75,24 +75,30 @@
 (deftest collection-product-specific-attributes-validation
   (testing "product specific attributes names"
     (testing "valid product specific attributes names"
-      (assert-valid (coll-with-psas [{:name "foo" :data-type :string}
-                                     {:name "bar" :data-type :string}])))
+      (assert-valid (coll-with-psas [{:name "foo" :data-type :string :description "test"}
+                                     {:name "bar" :data-type :string :description "test"}])))
     (testing "invalid product specific attributes names"
       (testing "duplicate names"
-        (let [coll (coll-with-psas [{:name "foo" :data-type :string}
-                                    {:name "foo" :data-type :string}
-                                    {:name "bar" :data-type :string}
-                                    {:name "bar" :data-type :string}
-                                    {:name "charlie" :data-type :string}])]
+        (let [coll (coll-with-psas [{:name "foo" :data-type :string :description "test"}
+                                    {:name "foo" :data-type :string :description "test"}
+                                    {:name "bar" :data-type :string :description "test"}
+                                    {:name "bar" :data-type :string :description "test"}
+                                    {:name "charlie" :data-type :string :description "test"}])]
           (assert-invalid
             coll
             [:product-specific-attributes]
             ["Product Specific Attributes must be unique. This contains duplicates named [foo, bar]."])))))
 
+  (testing "product specific attributes nil description"
+    (assert-invalid
+     (coll-with-psas [{:name "foo" :data-type :string}])
+     [:product-specific-attributes 0 :description]
+     ["Description is required."]))
+
   (testing "product specific attributes data type"
     (testing "valid data types"
       (are [data-type]
-           (assert-valid (coll-with-psas [{:name "foo" :data-type data-type}]))
+           (assert-valid (coll-with-psas [{:name "foo" :data-type data-type :description "test"}]))
            :string
            :float
            :int
@@ -106,13 +112,14 @@
 
     (testing "invalid data type"
       (are [data-type error]
-           (let [coll (coll-with-psas [{:name "foo" :data-type data-type}])]
+           (let [coll (coll-with-psas [{:name "foo" :data-type data-type  :description "test"}])]
              (assert-invalid coll [:product-specific-attributes 0 :data-type] [error]))
            nil "Additional Attribute Data Type [] is not a valid data type."
            :intstring "Additional Attribute Data Type [INTSTRING] is not a valid data type."))
 
     (testing "multiple invalid data types"
-      (let [coll (coll-with-psas [{:name "foo"} {:name "bar" :data-type :intstring}])]
+      (let [coll (coll-with-psas [{:name "foo" :description "test"}
+                                  {:name "bar" :data-type :intstring :description "test"}])]
         (assert-multiple-invalid
           coll
           [{:path [:product-specific-attributes 0 :data-type]
@@ -125,7 +132,7 @@
   (testing "product specific attributes values match data type"
     (testing "valid values"
       (are [data-type value]
-           (assert-valid (coll-with-psas [{:name "foo" :data-type data-type :value value}]))
+           (assert-valid (coll-with-psas [{:name "foo" :data-type data-type :value value :description "test"}]))
            :string "string value"
            :float "1.0"
            :int "1"
@@ -148,8 +155,8 @@
            :datetime-string nil)
       (are [data-type value]
            (and
-             (assert-valid (coll-with-psas [{:name "foo" :data-type data-type :parameter-range-begin value}]))
-             (assert-valid (coll-with-psas [{:name "foo" :data-type data-type :parameter-range-end value}])))
+             (assert-valid (coll-with-psas [{:name "foo" :data-type data-type :parameter-range-begin value :description "test"}]))
+             (assert-valid (coll-with-psas [{:name "foo" :data-type data-type :parameter-range-end value :description "test"}])))
            :float "1.0"
            :int "1"
            :date "1986-10-14"
@@ -172,7 +179,7 @@
     (testing "invalid values"
       (are [data-type value field errors]
            (assert-invalid
-             (coll-with-psas [{:name "foo" :data-type data-type field value}])
+             (coll-with-psas [{:name "foo" :data-type data-type field value :description "test"}])
              [:product-specific-attributes 0] errors)
 
            :boolean "true" :parameter-range-begin ["Parameter Range Begin is not allowed for type [BOOLEAN]"]
@@ -198,9 +205,9 @@
 
     (testing "multiple invalid values"
       (assert-multiple-invalid
-        (coll-with-psas [{:name "foo" :data-type :float :value "str"}
-                         {:name "bar" :data-type :float :value "1.0"}
-                         {:name "baz" :data-type :int :value "1.0"}])
+        (coll-with-psas [{:name "foo" :data-type :float :value "str" :description "test"}
+                         {:name "bar" :data-type :float :value "1.0" :description "test"}
+                         {:name "baz" :data-type :int :value "1.0" :description "test"}])
         [{:path [:product-specific-attributes 0]
           :errors
           ["Value [str] is not a valid value for type [FLOAT]."]}
@@ -215,7 +222,8 @@
                                            :data-type data-type
                                            :parsed-parameter-range-begin (psa/parse-value data-type begin)
                                            :parsed-parameter-range-end (psa/parse-value data-type end)
-                                           :parsed-value (psa/parse-value data-type value)}]))
+                                           :parsed-value (psa/parse-value data-type value)
+                                           :description "test"}]))
            :string nil nil "string value"
            :float "1.0" "3.0" "2.0"
            :int "1" "3" "2"
@@ -236,7 +244,8 @@
                                  :data-type data-type
                                  :parsed-parameter-range-begin (psa/parse-value data-type begin)
                                  :parsed-parameter-range-end (psa/parse-value data-type end)
-                                 :parsed-value (psa/parse-value data-type value)}])
+                                 :parsed-value (psa/parse-value data-type value)
+                                 :description "test"}])
                [:product-specific-attributes 0] errors)
 
              :float "3.0" "1.0" "2.0"
@@ -260,7 +269,8 @@
                                  :data-type data-type
                                  :parsed-parameter-range-begin (psa/parse-value data-type begin)
                                  :parsed-parameter-range-end (psa/parse-value data-type end)
-                                 :parsed-value (psa/parse-value data-type value)}])
+                                 :parsed-value (psa/parse-value data-type value)
+                                 :description "test"}])
                [:product-specific-attributes 0] errors)
 
              :float "2.0" "3.0" "1.0"
@@ -284,7 +294,8 @@
                                  :data-type data-type
                                  :parsed-parameter-range-begin (psa/parse-value data-type begin)
                                  :parsed-parameter-range-end (psa/parse-value data-type end)
-                                 :parsed-value (psa/parse-value data-type value)}])
+                                 :parsed-value (psa/parse-value data-type value)
+                                 :description "test"}])
                [:product-specific-attributes 0] errors)
 
              :float "1.0" "2.0" "3.0"
@@ -610,4 +621,3 @@
            {:path [:science-keywords 1 :topic]
             :errors
             ["Topic is required."]}])))))
-

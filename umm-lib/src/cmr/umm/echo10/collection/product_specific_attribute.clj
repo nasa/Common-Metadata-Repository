@@ -12,7 +12,10 @@
         data-type (psa/parse-data-type (cx/string-at-path psa-elem [:DataType]))
         begin (cx/string-at-path psa-elem [:ParameterRangeBegin])
         end (cx/string-at-path psa-elem [:ParameterRangeEnd])
-        value (cx/string-at-path psa-elem [:Value])]
+        value (cx/string-at-path psa-elem [:Value])
+        description (if (nil? description)
+                      c/not-provided
+                      description)]
     (c/map->ProductSpecificAttribute
       {:name name
        :description description
@@ -44,4 +47,3 @@
                      (gu/optional-elem :ParameterRangeBegin parameter-range-begin)
                      (gu/optional-elem :ParameterRangeEnd parameter-range-end)
                      (gu/optional-elem :Value value)))))))
-

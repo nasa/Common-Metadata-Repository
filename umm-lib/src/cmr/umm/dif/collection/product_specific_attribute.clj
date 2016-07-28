@@ -20,7 +20,10 @@
                                   (psa/parse-data-type data-type)
                                   (or (first (filter #(some? (psa/safe-parse-value % value))
                                                  all-data-types))
-                                      :string))]
+                                      :string))
+                      description (if (nil? description)
+                                    c/not-provided
+                                    description)]
                   (c/map->ProductSpecificAttribute
                     (util/remove-nil-keys
                       {:name name
@@ -35,4 +38,3 @@
   [psas]
   (when (seq psas)
     (em/generate-metadata-elements psas)))
-

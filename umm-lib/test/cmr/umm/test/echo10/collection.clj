@@ -215,6 +215,10 @@
         <ParameterRangeEnd>100.43</ParameterRangeEnd>
         <Value>12.3</Value>
       </AdditionalAttribute>
+      <AdditionalAttribute>
+        <Name>No description attrib</Name>
+        <DataType>STRING</DataType>
+      </AdditionalAttribute>
     </AdditionalAttributes>
     <Platforms>
       <Platform>
@@ -439,7 +443,11 @@
          :value "12.3"
          :parsed-parameter-range-begin 0.1
          :parsed-parameter-range-end 100.43
-         :parsed-value 12.3})]
+         :parsed-value 12.3})
+      (umm-c/map->ProductSpecificAttribute
+       {:name "No description attrib"
+        :description "Not provided"
+        :data-type :string})]
      :platforms
      [(umm-c/map->Platform
         {:short-name "RADARSAT-1"
@@ -555,4 +563,3 @@
     (println (= parsed collection))
     (clojure.data/diff parsed collection)))
   ;;;;;;;;;;;;'
-

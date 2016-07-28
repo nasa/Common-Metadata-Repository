@@ -92,6 +92,7 @@
 (def psa-validations
   "Defines the product specific attribute validations for collections"
   [{:data-type data-type-validator}
+   {:description v/required}
    values-match-data-type-validation
    parameter-range-validation])
 
