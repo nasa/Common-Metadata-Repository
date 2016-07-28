@@ -202,8 +202,7 @@
             (gran-counts/granule-counts-match? :xml expected-counts refs))
           1 6 {coll2 0 coll3 3 coll4 3 coll5 3 coll6 3}
 
-          ;; coll3 not returned here because it has no granules that cover the time range even though
-          ;; it's temporal matches the range.
+          ;; coll3 not returned here because it has no granules that cover the time range
           5 6 {coll4 1 coll5 2 coll6 1}
 
           2 3 {coll2 0 coll3 2 coll4 1 coll6 1}))
