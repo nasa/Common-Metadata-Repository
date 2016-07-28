@@ -55,8 +55,8 @@
 
 (defn generate-filter-node
   "Returns a function to generate a child node with the provided base-url, query-params, and
-  field-name. Returned function takes two arguments (a term and a count of collections containing
-  that term)."
+  field-name. Returned function takes a tuple (a term and a count of collections containing that
+  term)."
   [base-url query-params field-name some-term-applied?]
   (fn [[term count]]
     (let [links (if some-term-applied?
@@ -73,7 +73,7 @@
 (defn- any-facet-applied?
   "Returns true if any of the facets have an applied value of true, false otherwise."
   [facets]
-  (-> (filter :applied facets) seq some?))
+  (some? (seq (filter :applied facets))))
 
 (defn generate-hierarchical-filter-node
   "Generates a filter node for a hierarchical field. Takes a title, count, links and sub-facets."
