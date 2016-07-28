@@ -14,23 +14,3 @@
         format))
     result-format))
 
-(defn search-result-format->mime-type
-  "Returns the mime-type of the given search result format"
-  [result-format]
-  {:pre [(or (keyword? result-format)
-             (and (map? result-format) (keyword? (:format result-format))))]}
-  (if (map? result-format)
-    (let [{:keys [format version]} result-format
-          version (or version ver/current-version)]
-      (mt/with-version (mt/format->mime-type format) version))
-    (if (string? result-format)
-      result-format
-      (mt/format->mime-type result-format))))
-
-(defn mime-type->search-result-format
-  "Returns the search result format of the given mime type"
-  [mime-type]
-  (let [result-format (mt/mime-type->format mime-type)]
-    (if-let [version (mt/version-of mime-type)]
-      {:format result-format :version version}
-      result-format)))

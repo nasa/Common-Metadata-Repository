@@ -8,7 +8,6 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.mime-types :as mt]
             [cmr.common-app.services.search.query-model :as qm]
-            [cmr.search.services.result-format-helper :as rfh]
 
             ;; UMM library
             [cmr.umm.core :as umm-lib-core]
@@ -66,7 +65,7 @@
   (let [concept-mime-type (:format concept)]
     (cond
       ;; No conversion is required
-      (= (rfh/mime-type->search-result-format concept-mime-type) target-format)
+      (= (mt/mime-type->format concept-mime-type) target-format)
       :current-format
 
       ;; Use XSLT
@@ -99,7 +98,7 @@
 
 (defmethod transform-with-strategy :current-format
   [context concept _ _]
-  {(rfh/mime-type->search-result-format (:format concept))
+  {(mt/mime-type->format (:format concept))
    (cx/remove-xml-processing-instructions (:metadata concept))})
 
 (defmethod transform-with-strategy :xslt
@@ -116,6 +115,7 @@
 (defmethod transform-with-strategy :html
   [context concept _ _]
   {:html (generate-html-response context concept)})
+
 
 (defmethod transform-with-strategy :umm-spec
   [context concept _ target-formats]
@@ -140,6 +140,7 @@
 (defn transform-to-multiple-formats
   "Transforms the concept into multiple different formats. Returns a map of target format to metadata."
   [context concept target-formats ignore-exceptions?]
+  {:pre [(not (:deleted concept))]}
   (->> target-formats
        (group-by #(transform-strategy concept %))
        (keep (fn [[k v]]
@@ -147,16 +148,18 @@
                  (try
                    (transform-with-strategy context concept k v)
                    (catch Throwable e
-                     ;; Namespace used to reference error here to allow redefing in tests
-                     (log/error e "Ignoring exception while trying to transform metadata for concept"
-                                (:concept-id concept) "with revision" (:revision-id concept) "error:"
-                                (.getMessage e))))
+                     (log/error
+                      e
+                      (str "Ignoring exception while trying to transform metadata for concept "
+                           (:concept-id concept) " with revision " (:revision-id concept) " error: "
+                           (.getMessage e)))))
                  (transform-with-strategy context concept k v))))
        (reduce into {})))
 
 (defn transform
   "Transforms a concept to the target format given returning metadata."
   [context concept target-format]
+  {:pre [(not (:deleted concept))]}
   (if (= target-format :native)
     (:metadata concept)
     (let [strategy (transform-strategy concept target-format)
@@ -165,12 +168,16 @@
       (get target-format-result-map target-format))))
 
 (defn transform-concepts
-  "Transforms concepts to the given format returning an updated concept."
+  "Transforms concepts to the given format returning an updated concept. Handles deleted concepts."
   [context concepts target-format]
   (if (= :native target-format)
     concepts
     (u/fast-map (fn [concept]
-                  (assoc concept
-                         :format (rfh/search-result-format->mime-type target-format)
-                         :metadata (transform context concept target-format)))
+                  (if (:deleted concept)
+                    ;; A deleted concept needs no transformation.
+                    (assoc concept
+                           :format (mt/format->mime-type target-format))
+                    (assoc concept
+                           :format (mt/format->mime-type target-format)
+                           :metadata (transform context concept target-format))))
                 concepts)))

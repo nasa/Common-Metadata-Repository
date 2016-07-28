@@ -33,7 +33,7 @@
   but do not modify these existing values."
   {mt/echo10   "ECHO10"
    mt/iso-smap "ISO_SMAP"
-   mt/iso      "ISO19115"
+   mt/iso19115 "ISO19115"
    mt/dif      "DIF"
    mt/dif10    "DIF10"
    mt/edn      "EDN"

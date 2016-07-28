@@ -109,7 +109,10 @@
      ~@body
      (catch clojure.lang.ExceptionInfo e#
        (let [{status# :status body# :body} (ex-data e#)
-             errors# (:errors (json/decode body# true))]
+             errors# (try
+                       (:errors (json/decode body# true))
+                       (catch Exception e2#
+                         body#))]
          {:status status# :errors errors#}))))
 
 (defn safe-parse-error-xml
@@ -351,10 +354,12 @@
    (find-concepts-umm-json concept-type params {}))
   ([concept-type params options]
    (let [response (get-search-failure-data
-                    (find-concepts-in-format mime-types/umm-json concept-type params options))
+                   (find-concepts-in-format mime-types/umm-json concept-type params options))
          {:keys [status body]} response]
      (if (= status 200)
        {:status status
+        :body body
+        :content-type (get-in response [:headers "content-type"])
         :results (json/decode body true)}
        response))))
 

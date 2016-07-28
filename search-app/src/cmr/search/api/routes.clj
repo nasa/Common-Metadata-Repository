@@ -17,7 +17,7 @@
             [cmr.common.concepts :as concepts]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
-            [cmr.common-app.api.routes :as common-routes]
+
             [cmr.common.cache :as cache]
             [cmr.common.services.errors :as svc-errors]
             [cmr.common.util :as util]
@@ -30,10 +30,12 @@
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.services.health-service :as hs]
             [cmr.search.api.tags-api :as tags-api]
+            [cmr.umm-spec.versioning :as umm-version]
             [cmr.acl.core :as acl]
             [cmr.search.api.keyword :as keyword-api]
             [cmr.common-app.api.routes :as cr]
             [cmr.common-app.api-docs :as api-docs]
+            [cmr.common-app.services.search.query-model :as common-qm]
             [cmr.search.services.result-format-helper :as rfh]
             [cmr.collection-renderer.api.routes :as collection-renderer-routes]
 
@@ -67,11 +69,13 @@
     mt/xml
     mt/json
     mt/umm-json
+    mt/umm-json-results
+    mt/legacy-umm-json
     mt/echo10
     mt/dif
     mt/dif10
     mt/atom
-    mt/iso
+    mt/iso19115
     mt/opendata
     mt/csv
     mt/kml
@@ -92,22 +96,20 @@
                  mt/atom
                  mt/json
                  mt/echo10
-                 mt/iso
+                 mt/iso19115
                  mt/iso-smap
                  mt/dif
                  mt/dif10
-                 mt/umm-json}
+                 mt/umm-json
+                 mt/legacy-umm-json}
    :granule #{mt/any
               mt/xml ; allows retrieving native format
               mt/native ; retrieve in native format
               mt/atom
               mt/json
               mt/echo10
-              mt/iso
-              mt/iso-smap
-              mt/dif
-              mt/dif10
-              mt/umm-json}})
+              mt/iso19115
+              mt/iso-smap}})
 
 
 (def find-by-concept-id-concept-types
@@ -120,15 +122,6 @@
       (re-matches concept-type-w-extension)
       second
       keyword))
-
-(defn- path-w-extension->mime-type
-  "Parses the search path with extension and returns the requested mime-type or nil if no extension
-  was passed."
-  [search-path-w-extension valid-mime-types]
-  (when-let [extension (second (re-matches #"[^.]+(?:\.(.+))$" search-path-w-extension))]
-    (or (valid-mime-types (mt/format->mime-type (keyword extension)))
-        (svc-errors/throw-service-error
-          :bad-request (format "The URL extension [%s] is not supported." extension)))))
 
 (defn path-w-extension->concept-id
   "Parses the path-w-extension to remove the concept id from the beginning"
@@ -157,27 +150,39 @@
      path-w-extension headers search-result-supported-mime-types default-mime-type))
   ([path-w-extension headers valid-mime-types default-mime-type]
    (let [result-format (mt/mime-type->format
-                         (or (path-w-extension->mime-type path-w-extension valid-mime-types)
+                         (or (mt/path->mime-type path-w-extension valid-mime-types)
                              (mt/extract-header-mime-type valid-mime-types headers "accept" true)
                              (mt/extract-header-mime-type valid-mime-types headers "content-type" false))
                          default-mime-type)]
-     (if (= :umm-json result-format)
+     (if (contains? #{:umm-json :umm-json-results} result-format)
        {:format result-format
-        :version (mt/version-of (mt/get-header headers "accept"))}
+        :version (or (mt/version-of (mt/get-header headers "accept"))
+                     umm-version/current-version)}
        result-format))))
 
 (defn- process-params
   "Processes the parameters by removing unecessary keys and adding other keys like result format."
-  [params path-w-extension headers default-mime-type]
-  (-> params
-      (dissoc :path-w-extension)
-      (dissoc :token)
-      (assoc :result-format (get-search-results-format path-w-extension headers default-mime-type))))
+  [params ^String path-w-extension headers default-mime-type]
+  (let [result-format (get-search-results-format path-w-extension headers default-mime-type)
+        ;; Continue to treat the search extension "umm-json" as the legacy umm json response for now
+        ;; to avoid breaking clients
+        result-format (if (.endsWith path-w-extension ".umm-json")
+                        :legacy-umm-json
+                        result-format)
+        ;; For search results umm-json is an alias of umm-json-results since we can't actually return
+        ;; a set of search results that would match the UMM-C JSON schema
+        result-format (if (= :umm-json (:format result-format))
+                        (assoc result-format :format :umm-json-results)
+                        result-format)]
+    (-> params
+        (dissoc :path-w-extension)
+        (dissoc :token)
+        (assoc :result-format result-format))))
 
 (defn- search-response
   "Returns the response map for finding concepts"
   [response]
-  (cr/search-response (update response :result-format rfh/search-result-format->mime-type)))
+  (cr/search-response (update response :result-format mt/format->mime-type)))
 
 (defn- find-concepts-by-json-query
   "Invokes query service to parse the JSON query, find results and return the response."
@@ -220,7 +225,6 @@
        :headers {cr/CORS_ORIGIN_HEADER "*"}
        :body (str "Unsupported content type ["
                   (get headers (str/lower-case cr/CONTENT_TYPE_HEADER)) "]")})))
-
 
 (defn- get-granules-timeline
   "Retrieves a timeline of granules within each collection found."
@@ -380,7 +384,7 @@
         keyword-api/keyword-api-routes
 
         ;; add routes for managing jobs
-        (common-routes/job-api-routes
+        (cr/job-api-routes
           (routes
             (POST "/refresh-collection-metadata-cache" {:keys [headers params request-context]}
               (acl/verify-ingest-management-permission request-context :update)
