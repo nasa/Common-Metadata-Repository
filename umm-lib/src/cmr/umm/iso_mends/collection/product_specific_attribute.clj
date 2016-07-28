@@ -13,7 +13,7 @@
                psa-elem [:reference :EOS_AdditionalAttributeDescription :name :CharacterString])
         description (cx/string-at-path
                       psa-elem [:reference :EOS_AdditionalAttributeDescription :description :CharacterString])
-        description-with-default (if (nil? description)
+        description-with-default (if (empty? description)
                                    c/not-provided
                                    description)
         data-type (psa/parse-data-type

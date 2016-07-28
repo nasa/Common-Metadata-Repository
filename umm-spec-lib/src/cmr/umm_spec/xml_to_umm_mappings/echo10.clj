@@ -2,7 +2,6 @@
   "Defines mappings from ECHO10 XML into UMM records"
   (:require [cmr.common.xml.simple-xpath :refer [select text]]
             [cmr.common.xml.parse :refer :all]
-            [cmr.umm-spec.util :refer [without-default-value-of with-default]]
             [cmr.umm-spec.date-util :as date]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
@@ -88,7 +87,7 @@
   [context doc]
   {:EntryTitle (value-of doc "/Collection/DataSetId")
    :ShortName  (value-of doc "/Collection/ShortName")
-   :Version    (without-default-value-of doc "/Collection/VersionId")
+   :Version    (u/without-default-value-of doc "/Collection/VersionId")
    :DataDates  (parse-data-dates doc)
    :Abstract   (value-of doc "/Collection/Description")
    :CollectionDataType (value-of doc "/Collection/CollectionDataType")
@@ -105,9 +104,9 @@
    :SpatialExtent    (spatial/parse-spatial doc)
    :TemporalExtents  (parse-temporal doc)
    :Platforms (for [plat (select doc "/Collection/Platforms/Platform")]
-                {:ShortName (without-default-value-of plat "ShortName")
-                 :LongName (without-default-value-of plat "LongName")
-                 :Type (without-default-value-of plat "Type")
+                {:ShortName (u/without-default-value-of plat "ShortName")
+                 :LongName (u/without-default-value-of plat "LongName")
+                 :Type (u/without-default-value-of plat "Type")
                  :Characteristics (parse-characteristics plat)
                  :Instruments (map parse-instrument (select plat "Instruments/Instrument"))})
    :ProcessingLevel {:Id (value-of doc "/Collection/ProcessingLevelId")
@@ -115,7 +114,7 @@
    :AdditionalAttributes (for [aa (select doc "/Collection/AdditionalAttributes/AdditionalAttribute")]
                            {:Name (value-of aa "Name")
                             :DataType (value-of aa "DataType")
-                            :Description (with-default (value-of aa "Description"))
+                            :Description (u/with-default (value-of aa "Description"))
                             :ParameterRangeBegin (value-of aa "ParameterRangeBegin")
                             :ParameterRangeEnd (value-of aa "ParameterRangeEnd")
                             :Value (value-of aa "Value")})

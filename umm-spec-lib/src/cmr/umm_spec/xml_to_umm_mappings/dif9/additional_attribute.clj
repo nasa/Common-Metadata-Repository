@@ -3,7 +3,7 @@
   (:require [cmr.umm-spec.additional-attribute :as aa]
             [cmr.umm-spec.xml-to-umm-mappings.dif9.extended-metadata :as em]
             [cmr.common.util :as util]
-            [cmr.umm-spec.util :refer [with-default]]))
+            [cmr.umm-spec.util :as su]))
 
 (def all-data-types
   "List of all potential data types."
@@ -29,7 +29,7 @@
   [attr]
   (-> attr
       (normalize-data-type)
-      (assoc :Description (with-default (:Description attr)))))
+      (update :Description su/with-default)))
 
 (defn xml-elem->AdditionalAttributes
   [doc]

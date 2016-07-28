@@ -89,12 +89,6 @@
             [:product-specific-attributes]
             ["Product Specific Attributes must be unique. This contains duplicates named [foo, bar]."])))))
 
-  (testing "product specific attributes nil description"
-    (assert-invalid
-     (coll-with-psas [{:name "foo" :data-type :string}])
-     [:product-specific-attributes 0 :description]
-     ["Description is required."]))
-
   (testing "product specific attributes data type"
     (testing "valid data types"
       (are [data-type]

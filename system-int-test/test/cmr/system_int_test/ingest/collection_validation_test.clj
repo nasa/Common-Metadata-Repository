@@ -5,6 +5,8 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
+            [cmr.common.mime-types :as mt]
+            [cmr.umm.collection :as c]
             [cmr.umm.spatial :as umm-s]
             [cmr.common.util :refer [are2]]
             [cmr.common-app.test.side-api :as side]
@@ -504,6 +506,32 @@
       (is (= {:status 422
               :errors ["Version is required."]}
              response)))))
+
+(deftest dif-to-echo10-conversion
+  (let [coll (d/ingest "PROV1"
+                       (dc/collection-dif {:short-name "S1"
+                                           :version-id "V1"
+                                           :entry-title "ET1"
+                                           :long-name "L4"
+                                           :summary (name :dif)
+                                           ;; The following fields are needed for DIF to pass xml validation
+                                           :science-keywords [(dc/science-keyword {:category "upcase"
+                                                                                   :topic "Cool"
+                                                                                   :term "Mild"})]
+                                           :organizations [(dc/org :distribution-center "Larc")]
+                                           ;; The following fields are needed for DIF10 to pass xml validation
+                                           :beginning-date-time "1965-12-12T12:00:00Z"
+                                           :ending-date-time "1967-12-12T12:00:00Z"
+                                           :product-specific-attributes [(c/map->ProductSpecificAttribute {:name "moo" :data-type :string})]})
+                       {:format :dif})
+        response (search/retrieve-concept (:concept-id coll) nil {:accept mt/echo10})
+        concept-map {:metadata (:body response)
+                     :format mt/echo10
+                     :concept-type :collection
+                     :provider-id "PROV1"
+                     :native-id "new collection"}
+        {:keys [status body]} (ingest/validate-concept concept-map {:accept-format mt/echo10 :raw? true})]
+    (= [200 ""] [status body])))
 
 (comment
   (ingest/delete-provider "PROV1")

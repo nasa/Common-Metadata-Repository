@@ -2,13 +2,13 @@
   (:require [cmr.common.xml.simple-xpath :refer [select]]
             [cmr.common.xml.parse :refer :all]
             [cmr.common.util :as util]
-            [cmr.umm-spec.util :refer [with-default]]
+            [cmr.umm-spec.util :as su]
             [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as d9-aa]))
 
 (defn xml-elem->AdditionalAttribute
   [aa-elem]
   (let [attribs {:Name (value-of aa-elem "Name")
-                 :Description (with-default (value-of aa-elem "Description"))
+                 :Description (su/with-default (value-of aa-elem "Description"))
                  :DataType (value-of aa-elem "DataType")
                  :ParameterRangeBegin (value-of aa-elem "ParameterRangeBegin")
                  :ParameterRangeEnd (value-of aa-elem "ParameterRangeEnd")

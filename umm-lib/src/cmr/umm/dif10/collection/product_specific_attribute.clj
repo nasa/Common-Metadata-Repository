@@ -41,7 +41,7 @@
   [psas]
   (for [psa psas]
     (let [{:keys [data-type name description parameter-range-begin parameter-range-end value]} psa
-          description (if (nil? description)
+          description (if (empty? description)
                         c/not-provided
                         description)]
       (x/element :Additional_Attributes {}

@@ -21,7 +21,7 @@
                                   (or (first (filter #(some? (psa/safe-parse-value % value))
                                                  all-data-types))
                                       :string))
-                      description (if (nil? description)
+                      description (if (empty? description)
                                     c/not-provided
                                     description)]
                   (c/map->ProductSpecificAttribute

@@ -13,7 +13,7 @@
         begin (cx/string-at-path psa-elem [:ParameterRangeBegin])
         end (cx/string-at-path psa-elem [:ParameterRangeEnd])
         value (cx/string-at-path psa-elem [:Value])
-        description (if (nil? description)
+        description (if (empty? description)
                       c/not-provided
                       description)]
     (c/map->ProductSpecificAttribute
