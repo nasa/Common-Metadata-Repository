@@ -56,50 +56,50 @@
 (deftest collection-ingest-user-id-test
   (testing "ingest of new concept"
     (util/are2 [ingest-headers expected-user-id]
-               (let [concept (dc/collection-concept {})
-                     {:keys [concept-id revision-id]} (ingest/ingest-concept concept ingest-headers)]
-                 (index/wait-until-indexed)
-                 (assert-user-id concept-id revision-id expected-user-id))
+      (let [concept (dc/collection-concept {})
+            {:keys [concept-id revision-id]} (ingest/ingest-concept concept ingest-headers)]
+        (index/wait-until-indexed)
+        (assert-user-id concept-id revision-id expected-user-id))
 
-               "user id from token"
-               {:token (e/login (s/context) "user1")} "user1"
+      "user id from token"
+      {:token (e/login (s/context) "user1")} "user1"
 
-               "user id from user-id header"
-               {:user-id "user2"} "user2"
+      "user id from user-id header"
+      {:user-id "user2"} "user2"
 
-               "both user-id and token in the header results in the revision getting user id from user-id header"
-               {:token (e/login (s/context) "user3")
-                :user-id "user4"} "user4"
+      "both user-id and token in the header results in the revision getting user id from user-id header"
+      {:token (e/login (s/context) "user3")
+       :user-id "user4"} "user4"
 
-               "neither user-id nor token in the header"
-               {} nil))
+      "neither user-id nor token in the header"
+      {} nil))
   (testing "update of existing concept with new user-id"
     (util/are2 [ingest-header1 expected-user-id1
                 ingest-header2 expected-user-id2
                 ingest-header3 expected-user-id3
                 ingest-header4 expected-user-id4]
-               (let [concept (dc/collection-concept {})
-                     {:keys [concept-id revision-id]} (ingest/ingest-concept concept ingest-header1)]
-                 (ingest/ingest-concept concept ingest-header2)
-                 (ingest/delete-concept concept ingest-header3)
-                 (ingest/ingest-concept concept ingest-header4)
-                 (index/wait-until-indexed)
-                 (assert-user-id concept-id revision-id expected-user-id1)
-                 (assert-user-id concept-id (inc revision-id) expected-user-id2)
-                 (assert-user-id concept-id (inc (inc revision-id)) expected-user-id3)
-                 (assert-user-id concept-id (inc (inc (inc revision-id))) expected-user-id4))
+      (let [concept (dc/collection-concept {})
+            {:keys [concept-id revision-id]} (ingest/ingest-concept concept ingest-header1)]
+        (ingest/ingest-concept concept ingest-header2)
+        (ingest/delete-concept concept ingest-header3)
+        (ingest/ingest-concept concept ingest-header4)
+        (index/wait-until-indexed)
+        (assert-user-id concept-id revision-id expected-user-id1)
+        (assert-user-id concept-id (inc revision-id) expected-user-id2)
+        (assert-user-id concept-id (inc (inc revision-id)) expected-user-id3)
+        (assert-user-id concept-id (inc (inc (inc revision-id))) expected-user-id4))
 
-               "user id from token"
-               {:token (e/login (s/context) "user1")} "user1"
-               {:token (e/login (s/context) "user2")} "user2"
-               {:token (e/login (s/context) "user3")} "user3"
-               {:token nil} nil
+      "user id from token"
+      {:token (e/login (s/context) "user1")} "user1"
+      {:token (e/login (s/context) "user2")} "user2"
+      {:token (e/login (s/context) "user3")} "user3"
+      {:token nil} nil
 
-               "user id from user-id header"
-               {:user-id "user1"} "user1"
-               {:user-id "user2"} "user2"
-               {:user-id "user3"} "user3"
-               {:user-id nil} nil)))
+      "user id from user-id header"
+      {:user-id "user1"} "user1"
+      {:user-id "user2"} "user2"
+      {:user-id "user3"} "user3"
+      {:user-id nil} nil)))
 
 ;; Verify deleting non-existent concepts returns good error messages
 (deftest deletion-of-non-existent-concept-error-message-test

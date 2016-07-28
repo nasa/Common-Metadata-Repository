@@ -77,7 +77,7 @@
   key set on the ExceptionInfo object passed in as parameter e. Defaults to json if
   the default format has not been set to :xml."
   [_request e]
-  (get mt/format->mime-type (:default-format (ex-data e)) mt/json))
+  (or (mt/format->mime-type (:default-format (ex-data e))) mt/json))
 
 (defn make-api [system]
   (-> (build-routes system)

@@ -70,7 +70,10 @@
   ;;Assume that IsoTopicCategories will not deviate from the 1.1 list of allowed values.
   (-> c
       (assoc :SpatialKeywords
-             (lk/location-keywords->spatial-keywords (:LocationKeywords c)))
+             (or (seq (lk/location-keywords->spatial-keywords (:LocationKeywords c)))
+                 (:SpatialKeywords c)
+                 ;; Spatial keywords are required
+                 [u/not-provided]))
       (assoc :LocationKeywords nil)))
 
 (defmethod migrate-umm-version [:collection "1.2" "1.3"]

@@ -80,29 +80,30 @@
         coll1 (ingest-prov1-collection "coll1")
         coll2 (ingest-prov1-collection "coll2")
         coll3 (ingest-prov1-collection "coll3")
-        gran1 (mdb/save-concept (u/conn-context)
-                                {:format "application/echo10+xml"
-                                 :metadata granule-metadata
-                                 :concept-type :granule
-                                 :provider-id "PROV1"
-                                 :native-id "gran1"
-                                 :revision-id 1
-                                 :extra-fields {:short-name "gran1"
-                                                :entry-title "gran1"
-                                                :entry-id "gran1"
-                                                :granule-ur "gran1ur"
-                                                :version-id "v1"
-                                                :parent-collection-id coll1
-                                                :parent-entry-title "coll1"}})
+        gran1 (:concept-id
+                (mdb/save-concept (u/conn-context)
+                                  {:format "application/echo10+xml"
+                                   :metadata granule-metadata
+                                   :concept-type :granule
+                                   :provider-id "PROV1"
+                                   :native-id "gran1"
+                                   :revision-id 1
+                                   :extra-fields {:short-name "gran1"
+                                                  :entry-title "gran1"
+                                                  :entry-id "gran1"
+                                                  :granule-ur "gran1ur"
+                                                  :version-id "v1"
+                                                  :parent-collection-id coll1
+                                                  :parent-entry-title "coll1"}}))
         ;; local helpers to make the body of the test cleaner
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
         get-collection-permissions #(get-permissions %1 coll1)
-        get-granule-permissions #(get-permissions %1 (:concept-id gran1))]
+        get-granule-permissions #(get-permissions %1 gran1)]
 
     (testing "no permissions granted"
       (are [user permissions]
-        (= {"C1200000001-PROV1" permissions}
+        (= {coll1 permissions}
            (get-collection-permissions user))
         :guest []
         :registered []
@@ -118,7 +119,7 @@
 
         (testing "for guest users"
           (are [user permissions]
-            (= {"C1200000001-PROV1" permissions}
+            (= {coll1 permissions}
                (get-collection-permissions user))
             :guest ["read" "order"]
             :registered []
@@ -132,7 +133,7 @@
                                                :collection_applicable true
                                                :provider_id "PROV1"}})
           (are [user permissions]
-            (= {"C1200000001-PROV1" permissions}
+            (= {coll1 permissions}
                (get-collection-permissions user))
             :guest []
             :registered ["read" "order"]
@@ -148,7 +149,7 @@
                                                :provider_id "PROV1"}})
 
           (are [user permissions]
-            (= {"C1200000001-PROV1" permissions}
+            (= {coll1 permissions}
                (get-collection-permissions user))
             :guest []
             :registered []
@@ -166,7 +167,7 @@
                                                    :collection_applicable true
                                                    :provider_id "PROV1"}})
               (are [user permissions]
-                (= {"C1200000001-PROV1" permissions}
+                (= {coll1 permissions}
                    (get-collection-permissions user))
                 :guest []
                 :registered []
@@ -184,20 +185,20 @@
                                        :provider_id "PROV1"}})
             (testing "for collection in ACL's entry titles"
               (are [user permissions]
-                (= {"C1200000002-PROV1" permissions}
-                   (get-permissions user "C1200000002-PROV1"))
+                (= {coll2 permissions}
+                   (get-permissions user coll2))
                 :guest ["read"]
                 :registered []))
             (testing "for collection not in ACL's entry titles"
               (are [user permissions]
-                (= {"C1200000003-PROV1" permissions}
-                   (get-permissions user "C1200000003-PROV1"))
+                (= {coll3 permissions}
+                   (get-permissions user coll3))
                 :guest []
                 :registered []))))))
 
     (testing "granule level permissions"
       (testing "no permissions granted"
-        (is (= {"G1200000004-PROV1" []}
+        (is (= {gran1 []}
                (get-granule-permissions "user1")))))))
 
 (deftest collection-catalog-item-identifier-access-value-test
@@ -223,10 +224,10 @@
     (u/wait-until-indexed)
 
     (testing "no permissions granted"
-      (is (= {"C1200000000-PROV1" []
-              "C1200000001-PROV1" []
-              "C1200000002-PROV1" []
-              "C1200000003-PROV1" []}
+      (is (= {coll1 []
+              coll2 []
+              coll3 []
+              coll4 []}
              (get-coll-permissions))))
 
     (let [acl-id (create-acl
@@ -238,10 +239,10 @@
                                             :provider_id "PROV1"}})]
 
       (testing "ACL matching all access values"
-        (is (= {"C1200000000-PROV1" ["read"]
-                "C1200000001-PROV1" ["read"]
-                "C1200000002-PROV1" ["read"]
-                "C1200000003-PROV1" []}
+        (is (= {coll1 ["read"]
+                coll2 ["read"]
+                coll3 ["read"]
+                coll4 []}
                (get-coll-permissions))))
 
       (testing "ACL matching only high access values"
@@ -252,10 +253,10 @@
                                                     :collection_identifier {:access_value {:min_value 4 :max_value 10}}
                                                     :provider_id "PROV1"}})
 
-        (is (= {"C1200000000-PROV1" []
-                "C1200000001-PROV1" ["read"]
-                "C1200000002-PROV1" ["read"]
-                "C1200000003-PROV1" []}
+        (is (= {coll1 []
+                coll2 ["read"]
+                coll3 ["read"]
+                coll4 []}
                (get-coll-permissions))))
 
       (testing "ACL matching only one access value"
@@ -266,10 +267,10 @@
                                                     :collection_identifier {:access_value {:min_value 4 :max_value 5}}
                                                     :provider_id "PROV1"}})
 
-        (is (= {"C1200000000-PROV1" []
-                "C1200000001-PROV1" ["read"]
-                "C1200000002-PROV1" []
-                "C1200000003-PROV1" []}
+        (is (= {coll1 []
+                coll2 ["read"]
+                coll3 []
+                coll4 []}
                (get-coll-permissions))))
 
       (testing "ACL matching only collections with undefined access values"
@@ -282,10 +283,10 @@
                                                                                            :include_undefined_value true}}
                                                     :provider_id "PROV1"}})
 
-        (is (= {"C1200000000-PROV1" ["read"]
-                "C1200000001-PROV1" ["read"]
-                "C1200000002-PROV1" ["read"]
-                "C1200000003-PROV1" ["read"]}
+        (is (= {coll1 ["read"]
+                coll2 ["read"]
+                coll3 ["read"]
+                coll4 ["read"]}
                (get-coll-permissions)))))))
 
 (deftest collection-catalog-item-identifier-temporal-test
@@ -312,10 +313,10 @@
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
         get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)]
     (u/wait-until-indexed)
-    (is (= {"C1200000000-PROV1" []
-            "C1200000001-PROV1" []
-            "C1200000002-PROV1" []
-            "C1200000003-PROV1" []}
+    (is (= {coll1 []
+            coll2 []
+            coll3 []
+            coll4 []}
            (get-coll-permissions)))
 
     (let [acl-id (create-acl
@@ -329,10 +330,10 @@
                                             :provider_id "PROV1"}})]
 
       (testing "\"intersect\" mask"
-        (is (= {"C1200000000-PROV1" ["read"]
-                "C1200000001-PROV1" ["read"]
-                "C1200000002-PROV1" ["read"]
-                "C1200000003-PROV1" []}
+        (is (= {coll1 ["read"]
+                coll2 ["read"]
+                coll3 ["read"]
+                coll4 []}
                (get-coll-permissions))))
 
       (testing "\"disjoint\" mask"
@@ -344,10 +345,10 @@
                                                                                        :end_date "2006-01-01T00:00:00Z"
                                                                                        :mask "disjoint"}}
                                                     :provider_id "PROV1"}})
-        (is (= {"C1200000000-PROV1" ["read"]
-                "C1200000001-PROV1" []
-                "C1200000002-PROV1" ["read"]
-                "C1200000003-PROV1" []}
+        (is (= {coll1 ["read"]
+                coll2 []
+                coll3 ["read"]
+                coll4 []}
                (get-coll-permissions))))
 
       (testing "\"contains\" mask"
@@ -359,10 +360,10 @@
                                                                                        :end_date "2006-01-01T00:00:00Z"
                                                                                        :mask "contains"}}
                                                     :provider_id "PROV1"}})
-        (is (= {"C1200000000-PROV1" []
-                "C1200000001-PROV1" ["read"]
-                "C1200000002-PROV1" []
-                "C1200000003-PROV1" []}
+        (is (= {coll1 []
+                coll2 ["read"]
+                coll3 []
+                coll4 []}
                (get-coll-permissions)))))))
 
 ;; For CMR-3210:
@@ -392,7 +393,7 @@
 
     (testing "no permissions granted"
       (are [user permissions]
-        (= {"C1200000001-PROV1" permissions}
+        (= {coll1 permissions}
            (get-coll1-permissions user))
         :guest []
         :registered []
@@ -407,7 +408,7 @@
         (u/wait-until-indexed)
 
         (are [user permissions]
-          (= {"C1200000001-PROV1" permissions}
+          (= {coll1 permissions}
              (get-coll1-permissions user))
           :guest ["update" "delete"]
           :registered []
@@ -421,7 +422,7 @@
                                            :target "INGEST_MANAGEMENT_ACL"}})
 
           (are [user permissions]
-            (= {"C1200000001-PROV1" permissions}
+            (= {coll1 permissions}
                (get-coll1-permissions user))
             :guest []
             :registered ["update" "delete"]
@@ -435,7 +436,7 @@
                                            :target "INGEST_MANAGEMENT_ACL"}})
 
           (are [user permissions]
-            (= {"C1200000001-PROV1" permissions}
+            (= {coll1 permissions}
                (get-coll1-permissions user))
             :guest []
             :registered []
