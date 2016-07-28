@@ -395,10 +395,10 @@ The following parameters are supported when searching for ACLs.
     * provider
     * single_instance
     * catalog_item
-* permitted-user
+* permitted_user
   * options: none (always case-insensitive)
   * user is a URS user name corresponding to a member of a group that has access to an ACL.
-* provider
+* provider - Matches ACLs which reference a provider through a catalog item identity or a provider identity.
   * options: ignore_case
 
 ##### ACL Search Response
