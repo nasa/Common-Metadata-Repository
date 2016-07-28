@@ -203,8 +203,7 @@
    (create-acl token acl nil))
   ([token acl options]
    (let [options (merge {:raw? true :token token} options)]
-     (util/map-keys->kebab-case
-       (process-response (ac/create-acl (conn-context) acl options))))))
+     (process-response (ac/create-acl (conn-context) acl options)))))
 
 (defn search-for-acls
   "Searches for groups using the given parameters"
