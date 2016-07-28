@@ -54,11 +54,17 @@
 ;; The following media types are recognized by the CMR for use in various places. The map below is used
 ;; to dynamically create vars containing the recognized base MIME type for each keyword on the left.
 
-(def ^:private core-formats->mime-types
+(def ^:private base-format->mime-type
   "A map of format keywords to MIME types. Each keyword will have a corresponding var def'ed in this
   namespace for other namespaces to reference."
   {:json             "application/json"
    :umm-json         "application/vnd.nasa.cmr.umm+json"
+   ;; Search results containing UMM JSON
+   :umm-json-results "application/vnd.nasa.cmr.umm_results+json"
+
+   ;; Search results containing the original alpha version of UMM JSON search results.
+   :legacy-umm-json "application/vnd.nasa.cmr.legacy_umm_results+json"
+
    :xml              "application/xml"
    :form-url-encoded "application/x-www-form-urlencoded"
    :echo10           "application/echo10+xml"
@@ -76,58 +82,55 @@
    :opendap          "application/x-netcdf"
    :serf             "application/serf+xml"})
 
-(def ^:private format-aliases
-  "A map of alternative format keyword aliases to format keywords."
-  {:iso :iso19115
-   :iso_smap :iso-smap
-   :umm_json :umm-json})
-
-(def format->mime-type
-  "A map of CMR data format keywords and aliases to base MIME types."
-  (merge core-formats->mime-types
-         ;; lookup aliases
-         (zipmap (keys format-aliases)
-                 (map core-formats->mime-types
-                      (vals format-aliases)))))
+(defn format->mime-type
+  "Converts a format structure (a keyword or map containing :format and :version) to a mime type.
+   The mime type will contain a version if the format does."
+  [format]
+  (if (map? format)
+    (with-version (format->mime-type (:format format)) (:version format))
+    (base-format->mime-type format)))
 
 ;; Intern vars for each of the mime type formats, e.g. (def json "application/json")
 
-(doseq [[format-key mime-type] format->mime-type]
+(doseq [[format-key mime-type] base-format->mime-type]
   (intern *ns* (symbol (name format-key)) mime-type))
 
 (defn umm-json?
   "Returns true if the given mime type is recognized as UMM JSON."
   [mt]
   (when mt
-    (= (:umm-json core-formats->mime-types) (base-mime-type-of mt))))
+    (= umm-json (base-mime-type-of mt))))
 
 (def any "*/*")
 
 (def base-mime-type-to-format
   "A map of MIME type strings to CMR data format keywords."
-  (set/map-invert core-formats->mime-types))
+  (set/map-invert base-format->mime-type))
 
 (def all-supported-mime-types
   "A superset of all mime types supported by any CMR applications."
-  (vals core-formats->mime-types))
+  (vals base-format->mime-type))
 
 (def all-formats
   "A set of all format keywords supported by CMR."
-  (set (keys format->mime-type)))
+  (set (keys base-format->mime-type)))
 
 (defn mime-type->format
   "Returns a format keyword for the given MIME type and optional default MIME type."
   ([mime-type]
-   (mime-type->format mime-type (:json core-formats->mime-types)))
+   (mime-type->format mime-type (:json format->mime-type)))
   ([mime-type default-mime-type]
-   (get base-mime-type-to-format (base-mime-type-of mime-type)
-        (get base-mime-type-to-format default-mime-type))))
+   (if-let [format-key (get base-mime-type-to-format (base-mime-type-of mime-type))]
+     (if-let [version (version-of mime-type)]
+       {:format format-key :version version}
+       format-key)
+     (get base-mime-type-to-format default-mime-type))))
 
 (defn format-key
   "Returns CMR format keyword from given value. Value may be a keyword, a MIME type string or a map."
   [x]
   (cond
-    (string? x) (mime-type->format x nil)
+    (string? x) (format-key (mime-type->format x nil))
     (keyword? x) (get all-formats x)
     (map? x) (:format x)
     :else nil))
@@ -185,12 +188,34 @@
   "Returns the mime type passed in the Content-Type header"
   (header-mime-type-getter "content-type"))
 
+(def extension-aliases
+  "This defines aliases for URL extensions that are supported"
+  {:iso :iso19115})
+
+(defn- parse-versioned-umm-json-path-extension
+  "Tries to parse the extension as if it is for version UMM JSON. If the extension is of the format
+   umm_json_vX_Y where X and Y are some major and minor version number then it will return a UMM
+   JSON mime type with the specified version."
+  [extension]
+  (when-let [[_ major minor] (re-matches #"umm_json_v(\d+)_(\d+)" extension)]
+    (format "%s;version=%s.%s" umm-json major minor)))
+
 (defn path->mime-type
   "Parses the search path with extension and returns the requested mime-type or nil if no extension
   was passed."
-  [search-path-w-extension]
-  (when-let [extension (second (re-matches #"[^.]+(?:\.(.+))$" search-path-w-extension))]
-    (format->mime-type (keyword extension))))
+  ([search-path-w-extension]
+   (path->mime-type search-path-w-extension nil))
+  ([search-path-w-extension valid-mime-types]
+   (when-let [extension (second (re-matches #"[^.]+(?:\.(.+))$" search-path-w-extension))]
+     ;; Convert extension into a keyword. We don't use camel snake kebab as it would convert "echo10" to "echo-10"
+     (let [extension-key (keyword (str/replace extension #"_" "-"))
+           ;; Parse the extension as version UMM JSON extension or look it up using format->mime-type
+           mime-type (or (parse-versioned-umm-json-path-extension extension)
+                         (format->mime-type (get extension-aliases extension-key extension-key)))]
+       (if (and (some? valid-mime-types) (not (contains? valid-mime-types (base-mime-type-of mime-type))))
+         (svc-errors/throw-service-error
+          :bad-request (format "The URL extension [%s] is not supported." extension))
+         mime-type)))))
 
 (defn extract-header-mime-type
   "Extracts the given header value from the headers and returns the first valid preferred mime type.

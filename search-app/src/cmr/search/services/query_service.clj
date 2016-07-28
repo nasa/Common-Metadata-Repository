@@ -229,7 +229,7 @@
       (when-not concept
         (throw-id-not-found concept-id))
       {:results (:metadata concept)
-       :result-format (rfh/mime-type->search-result-format (:format concept))})))
+       :result-format (mt/mime-type->format (:format concept))})))
 
 (defn find-concept-by-id-and-revision
   "Executes a search to metadata-db and returns the concept with the given concept-id and
@@ -241,7 +241,7 @@
     (when-not concept
       (throw-concept-revision-not-found concept-id revision-id))
     {:results (:metadata concept)
-     :result-format (rfh/mime-type->search-result-format (:format concept))}))
+     :result-format (mt/mime-type->format (:format concept))}))
 
 (defn get-granule-timeline
   "Finds granules and returns the results as a list of intervals of granule counts per collection."

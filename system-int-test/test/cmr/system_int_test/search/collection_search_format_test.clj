@@ -10,6 +10,7 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.atom :as da]
             [cmr.system-int-test.data2.atom-json :as dj]
+            [cmr.system-int-test.data2.umm-json :as du]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.system :as s]
             [cheshire.core :as json]
@@ -66,13 +67,22 @@
                               :cached-formats (set format-keys)}]))]
    (is (= expected (search/collection-metadata-cache-state)))))
 
-
 (defn assert-found-by-format
   [collections format-key accept-header]
   (let [params {:concept-id (map :concept-id collections)}
         options {:accept accept-header}
         response (search/find-metadata :collection format-key params options)]
     (d/assert-metadata-results-match format-key collections response)))
+
+(defn assert-umm-json-found
+  ([collections version]
+   (assert-umm-json-found collections version nil))
+  ([collections version params]
+   (let [params (merge {:concept-id (map :concept-id collections)} params)
+         options {:accept (mt/with-version mt/umm-json-results version)}
+         response (search/find-concepts-umm-json :collection params options)]
+     (du/assert-umm-jsons-match version collections response))))
+
 
 ;; This tests that searching for and retrieving metadata after refreshing the search cache works.
 ;; Other metadata tests all run before refreshing the cache so they cover that case.
@@ -175,7 +185,7 @@
               "DIF10" [c8-dif10] :dif10
               "ISO MENDS" [c5-iso] :iso19115
               "SMAP ISO" [c7-smap] :iso-smap
-              "UMM JSON" [c10-umm-json] :umm-json))
+              "UMM JSON" [c10-umm-json] {:format :umm-json :version umm-version/current-version}))
 
           (testing "Retrieving all in specified format"
             (are3 [format-key]
@@ -186,6 +196,47 @@
               "DIF" :dif
               "DIF10" :dif10
               "ISO" :iso19115)))))))
+
+(deftest collection-umm-json-metadata-cache-test
+  (let [c1-r1-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"})
+                             {:format :echo10})
+        c1-r2-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"
+                                                              :description "updated"})
+                             {:format :echo10})
+        c2-echo (d/ingest "PROV2" (du/umm-spec-collection {:entry-title "c2-echo"})
+                          {:format :echo10})
+        c10-umm-json (d/ingest "PROV1"
+                               exp-conv/example-collection-record
+                               {:format :umm-json
+                                :accept-format :json})
+        latest-umm-format {:format :umm-json :version umm-version/current-version}]
+    (index/wait-until-indexed)
+
+    (testing "Initial cache state is empty"
+      (assert-cache-state {}))
+
+    (testing "Fetching older UMM json will not cache it"
+      (assert-umm-json-found [c1-r2-echo c2-echo c10-umm-json] "1.2")
+      (assert-cache-state {}))
+
+    (testing "Fetching newest UMM json not in cache will cache it"
+      (assert-umm-json-found [c1-r2-echo c2-echo c10-umm-json] umm-version/current-version)
+      (assert-cache-state {c1-r2-echo [:echo10 latest-umm-format]
+                           c2-echo [:echo10 latest-umm-format]
+                           c10-umm-json [latest-umm-format]}))
+
+    (testing "Fetching older UMM json will not cache it even if item already in cache"
+      (assert-umm-json-found [c1-r2-echo c2-echo c10-umm-json] "1.2")
+      (assert-cache-state {c1-r2-echo [:echo10 latest-umm-format]
+                           c2-echo [:echo10 latest-umm-format]
+                           c10-umm-json [latest-umm-format]}))
+
+    (testing "Older revisions found are not cached"
+      (assert-umm-json-found
+       [c1-r1-echo c1-r2-echo c2-echo c10-umm-json] umm-version/current-version {:all-revisions true})
+      (assert-cache-state {c1-r2-echo [:echo10 latest-umm-format]
+                           c2-echo [:echo10 latest-umm-format]
+                           c10-umm-json [latest-umm-format]}))))
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
