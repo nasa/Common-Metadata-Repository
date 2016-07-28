@@ -23,7 +23,8 @@
             [cmr.acl.core :as acl]
             [cmr.umm.acl-matchers :as acl-matchers]
             [cmr.common.util :as util]
-            [cmr.common.date-time-parser :as dtp]))
+            [cmr.common.date-time-parser :as dtp]
+            [cmr.access-control.data.access-control-index :as index]))
 
 (def acl-provider-id
   "The provider ID for all ACLs. Since ACLs are not owned by individual
@@ -75,13 +76,6 @@
                                             :items
                                             (map :concept_id)))))
 
-(defn acl-target-provider-id
-  "Returns the provider ID which the ACL targets through its catalog item identity
-   or provider identity, if applicable."
-  [acl]
-  (or (get-in acl [:provider-identity :provider-id])
-      (get-in acl [:catalog-item-identity :provider-id])))
-
 (defn- acl->base-concept
   "Returns a basic concept map for the given request context and ACL map."
   [context acl]
@@ -92,7 +86,7 @@
    :user-id (tokens/get-user-id context (:token context))
    ;; ACL-specific fields
    :extra-fields {:acl-identity (acl-identity acl)
-                  :target-provider-id (acl-target-provider-id acl)}})
+                  :target-provider-id (index/acl->provider-id acl)}})
 
 (defn create-acl
   "Save a new ACL to Metadata DB. Returns map with concept and revision id of created acl."
