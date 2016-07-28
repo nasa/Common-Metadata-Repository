@@ -168,7 +168,8 @@
                              :ParameterValueAccuracy "1"
                              :ValueAccuracyExplanation "explaination for value accuracy"}
                             {:Name "aa-name"
-                             :DataType "INT"}]
+                             :DataType "INT"
+                             :Description "Not provided"}]
      :ContactGroups [{:Roles ["Investigator"]
                       :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
                       :ContactInformation [{:RelatedUrls [{:Description "Contact group related url description"

@@ -161,3 +161,22 @@
     (is (nil? (:DataCenters result)))
     (is (nil? (:ContactGroups result)))
     (is (nil? (:ContactPersons result)))))
+
+(deftest migrate-1_4-up-to-1_5
+  (let [result (vm/migrate-umm {} :collection "1.4" "1.5"
+                           {:AdditionalAttributes
+                             [{:Name "aa1"
+                               :Description "aa1"}
+                              {:Name "aa2"}]})]
+      (is (= "aa1" (:Description (first (:AdditionalAttributes result)))))
+      (is (= "Not provided" (:Description (second (:AdditionalAttributes result)))))))
+
+(deftest migrate-1_5-down-to-1_4
+    (let [result (vm/migrate-umm {} :collection "1.5" "1.4"
+                             {:AdditionalAttributes
+                               [{:Name "aa1"
+                                 :Description "aa1"}
+                                {:Name "aa2"
+                                 :Description "Not provided"}]})]
+        (is (= "aa1" (:Description (first (:AdditionalAttributes result)))))
+        (is (= "Not provided" (:Description (second (:AdditionalAttributes result)))))))
