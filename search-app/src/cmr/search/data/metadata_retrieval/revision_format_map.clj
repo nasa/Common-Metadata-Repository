@@ -6,7 +6,7 @@
            [clojure.string :as str]
            [clojure.set :as set]
            [cmr.common.log :as log :refer (debug info warn error)]
-           [cmr.search.services.result-format-helper :as rfh]
+           [cmr.common.mime-types :as mt]
            [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]))
 
 (def ^:private non-metadata-fields
@@ -97,8 +97,8 @@
      :concept-type :collection
      :metadata (get-metadata-in-format target-format revision-format-map)
      :format (if (= :native target-format)
-               (rfh/search-result-format->mime-type (:native-format revision-format-map))
-               (rfh/search-result-format->mime-type target-format))}))
+               (mt/format->mime-type (:native-format revision-format-map))
+               (mt/format->mime-type target-format))}))
 
 (defn revision-format-maps->concepts
   "Converts a set of revision format maps to concepts with the target format."
@@ -107,21 +107,22 @@
               revision-format-maps))
 
 (defn concept->revision-format-map
-  "Converts a concept into a revision format map. See namespace documentation for details."
+  "Converts a concept into a revision format map. Returns nil if the concept was deleted."
   ([context concept target-format-set]
    (concept->revision-format-map context concept target-format-set false))
   ([context concept target-format-set ignore-exceptions?]
-   (let [{:keys [concept-id revision-id metadata] concept-mime-type :format} concept
-         native-format (rfh/mime-type->search-result-format concept-mime-type)
-         base-map {:concept-id concept-id
-                   :revision-id revision-id
-                   :native-format native-format
-                   native-format metadata}
-         ;; Translate to all the cached formats except the native format.
-         target-formats (disj target-format-set native-format :native)
-         formats-map (metadata-transformer/transform-to-multiple-formats
-                      context concept target-formats ignore-exceptions?)]
-     (merge base-map formats-map))))
+   (when-not (:deleted concept)
+     (let [{:keys [concept-id revision-id metadata] concept-mime-type :format} concept
+           native-format (mt/mime-type->format concept-mime-type)
+           base-map {:concept-id concept-id
+                     :revision-id revision-id
+                     :native-format native-format
+                     native-format metadata}
+           ;; Translate to all the cached formats except the native format.
+           target-formats (disj target-format-set native-format :native)
+           formats-map (metadata-transformer/transform-to-multiple-formats
+                        context concept target-formats ignore-exceptions?)]
+       (merge base-map formats-map)))))
 
 (defn add-additional-format
   "Adds an additional stored format to the revision format map."

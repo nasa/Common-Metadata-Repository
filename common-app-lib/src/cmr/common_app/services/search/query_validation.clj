@@ -17,10 +17,16 @@
 (defn validate-concept-type-result-format
   "Validate requested search result format for concept type."
   [concept-type result-format]
-  (let [result-format (qm/base-result-format result-format)
-        mime-type (mt/format->mime-type result-format)]
+  (let [mime-type (mt/format->mime-type result-format)
+        result-format (if (and (map? result-format) (nil? (:version result-format)))
+                        ;; No version was specified so validate just format key
+                        (mt/format-key result-format)
+                        result-format)]
     (when-not (get (supported-result-formats concept-type) result-format)
-      [(format "The mime type [%s] is not supported for %ss." mime-type (name concept-type))])))
+      (if-let [version (mt/version-of mime-type)]
+        [(format "The mime type [%s] with version [%s] is not supported for %ss."
+                 (mt/base-mime-type-of mime-type) version (name concept-type))]
+        [(format "The mime type [%s] is not supported for %ss." mime-type (name concept-type))]))))
 
 (defprotocol Validator
   "Defines the protocol for validating query conditions.

@@ -348,7 +348,7 @@
               search/find-concepts-opendata :opendata
 
               "search in umm-json format"
-              search/find-concepts-umm-json :umm-json))
+              search/find-concepts-umm-json :umm-json-results))
 
       (testing "include-tags is not supported on granule searches."
         (is (= {:status 400

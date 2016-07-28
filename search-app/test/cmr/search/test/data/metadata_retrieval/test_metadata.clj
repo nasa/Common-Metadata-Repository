@@ -1,8 +1,7 @@
 (ns cmr.search.test.data.metadata-retrieval.test-metadata
   (require [clojure.java.io :as io]
            [cmr.search.data.metadata-retrieval.metadata-transformer :as t]
-           [cmr.common.mime-types :as mt]
-           [cmr.search.services.result-format-helper :as rfh]))
+           [cmr.common.mime-types :as mt]))
 
 ;; Define some test metadata
 (def dif-resource
@@ -24,7 +23,7 @@
   [format]
   (assoc dif-concept
          :metadata (test-metadata-in-format format)
-         :format (rfh/search-result-format->mime-type format)))
+         :format (mt/format->mime-type format)))
 
 (def echo10-concept
   (concept-in-format :echo10))

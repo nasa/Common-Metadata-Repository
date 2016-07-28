@@ -184,15 +184,21 @@
 
 (defmethod parse-ingest-body :xml
   [response-format response]
-  (let [xml-elem (x/parse-str (:body response))]
-    (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
-      (parse-xml-error-response-elem xml-elem)
-      {:concept-id (cx/string-at-path xml-elem [:concept-id])
-       :revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))})))
+  (try
+    (let [xml-elem (x/parse-str (:body response))]
+      (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
+        (parse-xml-error-response-elem xml-elem)
+        {:concept-id (cx/string-at-path xml-elem [:concept-id])
+         :revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))}))
+    (catch Exception e
+      (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
 
 (defmethod parse-ingest-body :json
   [response-format response]
-  (json/decode (:body response) true))
+  (try
+    (json/decode (:body response) true)
+    (catch Exception e
+      (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response))) e)))))
 
 (defn parse-ingest-response
   "Parse an ingest response (if required) and append a status"
