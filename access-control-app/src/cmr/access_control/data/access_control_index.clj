@@ -136,6 +136,8 @@
    :permitted-group (m/stored m/string-field-mapping)
    :permitted-group.lowercase m/string-field-mapping
 
+   :provider-id (m/stored m/string-field-mapping)
+   :provider-id.lowercase m/string-field-mapping
    ;; The name of the ACL for returning in the references response.
    ;; This will be the catalog item identity name or a string containing
    ;; "<identity type> - <target>". For example "System - PROVIDER"
@@ -185,16 +187,25 @@
   [acl]
   (map #(or (:user-type %) (:group-id %)) (:group-permissions acl)))
 
+(defn acl->provider-id
+  "Returns the provider-ids of the ACL."
+  [acl]
+  (or (:provider-id (:catalog-item-identity acl))
+      (:provider-id (:provider-identity acl))))
+
 (defn- acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."
   [concept-map]
   (let [acl (edn/read-string (:metadata concept-map))
-        permitted-groups (acl->permitted-groups acl)]
+        permitted-groups (acl->permitted-groups acl)
+        provider-id (acl->provider-id acl)]
     (assoc (select-keys concept-map [:concept-id :revision-id])
            :display-name (acl->display-name acl)
            :identity-type (acl->identity-type acl)
            :permitted-group permitted-groups
-           :permitted-group.lowercase (map str/lower-case permitted-groups))))
+           :permitted-group.lowercase (map str/lower-case permitted-groups)
+           :provider-id provider-id
+           :provider-id.lowercase (safe-lowercase provider-id))))
 
 (defmethod index-concept :acl
   [context concept-map]
@@ -217,6 +228,14 @@
   [context _ _]
   {:index-name acl-index-name
    :type-name acl-type-name})
+
+(defmethod q2e/concept-type->field-mappings :acl
+  [_]
+  {:provider :provider-id})
+
+(defmethod q2e/field->lowercase-field-mappings :acl
+  [_]
+  {:provider "provider-id.lowercase"})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common public functions

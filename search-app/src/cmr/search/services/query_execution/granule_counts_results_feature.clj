@@ -56,12 +56,21 @@
     query
     ;; Matches spatial or temporal conditions
     (fn [condition-path condition]
-      (let [cond-type (type condition)]
-        (when (or (= cond-type SpatialCondition)
-                  (= cond-type TemporalCondition))
-          ;; Validate that the parent of the spatial or temporal condition is acceptable
-          (validate-path-to-condition query condition-path)
-          true)))))
+      (when (or (instance? SpatialCondition condition)
+                (instance? TemporalCondition condition))
+        ;; Validate that the parent of the spatial or temporal condition is acceptable
+        (validate-path-to-condition query condition-path)
+        true))))
+
+
+(defn- convert-spatial-or-temporal-condition
+  "Applies any necessary changes to spatial or temporal condition to make them work with granules"
+  [condition]
+  (if (instance? TemporalCondition condition)
+    ;; Turn off limit to granules so that the correct fields will be searched. limit to granules is a
+    ;; collection applicable parameter.
+    (assoc condition :limit-to-granules false)
+    condition))
 
 (defn extract-granule-count-query
   "Extracts a query to find the number of granules per collection in the results from a collection query
@@ -69,7 +78,9 @@
   results - the results of the collection query"
   [coll-query results]
   (let [collection-ids (query-results->concept-ids results)
-        spatial-temp-conds (extract-spatial-and-temporal-conditions coll-query)
+        spatial-temp-conds (->> coll-query
+                                extract-spatial-and-temporal-conditions
+                                (map convert-spatial-or-temporal-condition))
         condition (if (seq collection-ids)
                     (gc/and-conds (cons (q/string-conditions :collection-concept-id collection-ids true)
                                         spatial-temp-conds))
