@@ -73,7 +73,7 @@
         ;; western hemisphere
         coll2 (make-coll 2 (m/mbr -180 90 0 -90) (temporal-range 1 3))
         ;; eastern hemisphere
-        coll3 (make-coll 3 (m/mbr 0 90 180 -90) (temporal-range 2 4))
+        coll3 (make-coll 3 (m/mbr 0 90 180 -90) (temporal-range 2 5))
         ;; northern hemisphere
         coll4 (make-coll 4 (m/mbr -180 90 180 0) (temporal-range 3 5))
         ;; southern hemisphere
@@ -188,6 +188,23 @@
                                                     :temporal (temporal-search-range start stop)})]
             (gran-counts/granule-counts-match? :xml expected-counts refs))
           1 6 {coll2 0 coll3 3 coll4 3 coll5 3 coll6 3}
+
+          ;; coll3 is returned because it covers the time range but it has no granules that cover it.
+          5 6 {coll3 0 coll4 1 coll5 2 coll6 1}
+
+          2 3 {coll2 0 coll3 2 coll4 1 coll6 1}))
+
+      (testing "granule counts for temporal queries with limit_to_granules"
+        (are [start stop expected-counts]
+          (let [refs (search/find-refs :collection {:include-granule-counts true
+                                                    "options[temporal][limit_to_granules]" true
+                                                    :temporal (temporal-search-range start stop)})]
+            (gran-counts/granule-counts-match? :xml expected-counts refs))
+          1 6 {coll2 0 coll3 3 coll4 3 coll5 3 coll6 3}
+
+          ;; coll3 not returned here because it has no granules that cover the time range
+          5 6 {coll4 1 coll5 2 coll6 1}
+
           2 3 {coll2 0 coll3 2 coll4 1 coll6 1}))
 
       (testing "granule counts for both spatial and temporal queries"
