@@ -24,7 +24,8 @@
   (->> search-results
        :results
        :entries
-       (map :highlighted-summary-snippets)))
+       (map :highlighted-summary-snippets)
+       set))
 
 (defn- ingest-collections-for-test
   "Ingest all of the collections that will be used for testing"
@@ -48,7 +49,7 @@
   (ingest-collections-for-test)
   (util/are2
     [expected-results search-params options]
-    (= expected-results
+    (= (set expected-results)
        (get-search-results-summaries
          (search/find-concepts-json :collection (merge {:include-highlights true} search-params options))))
 
@@ -108,10 +109,11 @@
   (ingest-collections-for-test)
   (util/are2
     [expected-results json-query-conditions options]
-    (= expected-results (get-search-results-summaries (search/find-concepts-in-json-with-json-query
-                                                        :collection
-                                                        (merge {:include-highlights true} options)
-                                                        json-query-conditions)))
+    (= (set expected-results)
+       (get-search-results-summaries (search/find-concepts-in-json-with-json-query
+                                      :collection
+                                      (merge {:include-highlights true} options)
+                                      json-query-conditions)))
 
     "JSON Query keyword with spaces treats as two separate keywords AND'ed together"
     [["Match on either '<em>ocean</em>' or '<em>collection</em>'."]
@@ -212,11 +214,11 @@
 (deftest special-characters-test
   (make-coll 1 {:summary "MODIS/Terra dataset."})
   (index/wait-until-indexed)
-  (is (= [["<em>MODIS</em>/<em>Terra</em> dataset."]]
+  (is (= #{["<em>MODIS</em>/<em>Terra</em> dataset."]}
          (get-search-results-summaries (search/find-concepts-in-json-with-json-query
-                                         :collection
-                                         {:include-highlights true}
-                                         {:keyword "MODIS/Terra"})))))
+                                        :collection
+                                        {:include-highlights true}
+                                        {:keyword "MODIS/Terra"})))))
 
 (deftest reserved-characters-test
   ;; This test documents the current elasticsearch highlighting behavior with respect to reserved
@@ -232,30 +234,30 @@
 
     (testing "Most reserved characters are not highlighted when they are searched against."
       (doseq [reserved-string (set/difference reserved-strings
-                                              reserved-strings-with-different-behavior)]
-        (is (= [[(format "<em>MODIS</em>%s<em>TERRA</em> dataset." reserved-string)]]
+                                reserved-strings-with-different-behavior)]
+        (is (= #{[(format "<em>MODIS</em>%s<em>TERRA</em> dataset." reserved-string)]}
                (get-search-results-summaries (search/find-concepts-in-json-with-json-query
-                                               :collection
-                                               {:include-highlights true}
-                                               {:keyword (format "MODIS%sTERRA"
-                                                                 reserved-string)}))))))
+                                              :collection
+                                              {:include-highlights true}
+                                              {:keyword (format "MODIS%sTERRA"
+                                                                reserved-string)}))))))
 
     (testing "Colons are highlighted along with the search string."
-      (is (= [["<em>MODIS:TERRA</em> dataset."]]
+      (is (= #{["<em>MODIS:TERRA</em> dataset."]}
              (get-search-results-summaries (search/find-concepts-in-json-with-json-query
-                                             :collection
-                                             {:include-highlights true}
-                                             {:keyword "MODIS:TERRA"})))))
+                                            :collection
+                                            {:include-highlights true}
+                                            {:keyword "MODIS:TERRA"})))))
 
     (testing "Wildcard searches do not highlight any strings with reserved characters except for
              colon."
-             (doseq [reserved-string #{"*" "?"}]
-               (is (= (set [nil ["<em>MODIS:TERRA</em> dataset."]])
-                      (set (get-search-results-summaries
-                             (search/find-concepts-in-json-with-json-query
-                                                           :collection
-                                                           {:include-highlights true
-                                                            :page-size 1000}
-                                                           {:keyword (format "MODIS%sTERRA"
-                                                                             reserved-string)})))))))))
+      (doseq [reserved-string #{"*" "?"}]
+        (is (= (set [nil ["<em>MODIS:TERRA</em> dataset."]])
+               (get-search-results-summaries
+                (search/find-concepts-in-json-with-json-query
+                 :collection
+                 {:include-highlights true
+                  :page-size 1000}
+                 {:keyword (format "MODIS%sTERRA"
+                                   reserved-string)}))))))))
 
