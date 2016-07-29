@@ -10,7 +10,8 @@
             [clj-time.core :as t]
             [cmr.common.time-keeper :as tk]
             [clj-time.format :as f]
-            [cmr.common.date-time-parser :as p]))
+            [cmr.common.date-time-parser :as p]
+            [cmr.metadata-db.services.provider-validation :as pv]))
 
 (defn after-save
   "Handler for save calls. It will be passed the list of concepts and the concept that was just
@@ -339,10 +340,14 @@
   (delete-provider
     [db provider]
     ;; Cascade to delete the concepts
-    (doseq [{:keys [concept-type concept-id revision-id]} (concepts/find-concepts
-                                                            db provider {:provider-id provider})]
+    (doseq [{:keys [concept-type concept-id revision-id]} (concepts/find-concepts db [provider] nil)]
       (concepts/force-delete db concept-type provider concept-id revision-id))
-
+    ;; to find items that reference the provider that should be deleted (e.g. ACLs)
+    (doseq [{:keys [concept-type concept-id revision-id]} (concepts/find-concepts
+                                                            db
+                                                            [pv/cmr-provider]
+                                                            {:target-provider-id (:provider-id provider)})]
+      (concepts/force-delete db concept-type pv/cmr-provider concept-id revision-id))
     (swap! providers-atom dissoc (:provider-id provider)))
 
   (reset-providers
