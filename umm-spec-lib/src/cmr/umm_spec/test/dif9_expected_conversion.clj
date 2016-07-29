@@ -204,6 +204,17 @@
                                                :LastName su/not-provided})]})])]
     (seq (concat originating-centers data-centers))))
 
+(defn- expected-dif-additional-attribute
+  [attribute]
+  (-> attribute
+      (assoc :ParameterRangeBegin nil)
+      (assoc :ParameterRangeEnd nil)
+      (assoc :MeasurementResolution nil)
+      (assoc :ParameterUnitsOfMeasure nil)
+      (assoc :ParameterValueAccuracy nil)
+      (assoc :ValueAccuracyExplanation nil)
+      (assoc :Description (su/with-default (:Description attribute)))))
+
 (defn umm-expected-conversion-dif9
   [umm-coll]
   (let [expected-contact-persons (expected-dif-contact-persons umm-coll)]
@@ -226,10 +237,8 @@
         ;; unable to be implemented as specified.
         (update-in [:Platforms] expected-dif-platforms)
         (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
-        (update-in-each [:AdditionalAttributes] assoc :ParameterRangeBegin nil :ParameterRangeEnd nil
-                        :MeasurementResolution nil :ParameterUnitsOfMeasure nil
-                        :ParameterValueAccuracy nil :ValueAccuracyExplanation nil)
         (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
+        (update-in-each [:AdditionalAttributes] expected-dif-additional-attribute)
         (update-in-each [:PublicationReferences] conversion-util/dif-publication-reference)
         (update-in [:RelatedUrls] conversion-util/expected-related-urls-for-dif-serf)
         ;;CMR-2716 SpatialKeywords are being replaced by LocationKeywords.

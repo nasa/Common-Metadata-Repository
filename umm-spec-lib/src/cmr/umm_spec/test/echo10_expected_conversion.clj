@@ -63,6 +63,17 @@
                  conversion-util/geometry-with-coordinate-system)
       spatial-extent)))
 
+(defn- expected-echo10-additional-attribute
+  [attribute]
+  (-> attribute
+      (assoc :Group nil)
+      (assoc :UpdateDate nil)
+      (assoc :MeasurementResolution nil)
+      (assoc :ParameterUnitsOfMeasure nil)
+      (assoc :ParameterValueAccuracy nil)
+      (assoc :ValueAccuracyExplanation nil)
+      (assoc :Description (su/with-default (:Description attribute)))))
+
 (defn umm-expected-conversion-echo10
   [umm-coll]
   (-> umm-coll
@@ -82,9 +93,7 @@
       (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons]
                       conversion-util/fix-echo10-dif10-polygon)
       (update-in [:SpatialExtent] expected-echo10-spatial-extent)
-      (update-in-each [:AdditionalAttributes] assoc :Group nil :MeasurementResolution nil
-                      :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
-                      :ValueAccuracyExplanation nil :UpdateDate nil)
+      (update-in-each [:AdditionalAttributes] expected-echo10-additional-attribute)
       (update-in-each [:Projects] assoc :Campaigns nil)
       (update-in [:RelatedUrls] expected-echo10-related-urls)
       ;; We can't restore Detailed Location because it doesn't exist in the hierarchy.

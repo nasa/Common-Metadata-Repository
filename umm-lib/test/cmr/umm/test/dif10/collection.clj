@@ -595,13 +595,15 @@
                                      :name "metadata.uuid"
                                      :data-type :string
                                      :value "743933e5-1404-4502-915f-83cde56af440"
-                                     :parsed-value "743933e5-1404-4502-915f-83cde56af440"})
+                                     :parsed-value "743933e5-1404-4502-915f-83cde56af440"
+                                     :description "Not provided"})
                                   (umm-c/map->ProductSpecificAttribute
                                     {:group "gov.nasa.gsfc.gcmd"
                                      :name "metadata.extraction_date"
                                      :data-type :string
                                      :value "2013-09-30 09:45:15"
-                                     :parsed-value "2013-09-30 09:45:15"})
+                                     :parsed-value "2013-09-30 09:45:15"
+                                     :description "Not provided"})
                                   (umm-c/map->ProductSpecificAttribute
                                     {:group "custom.group"
                                      :name "String attribute"

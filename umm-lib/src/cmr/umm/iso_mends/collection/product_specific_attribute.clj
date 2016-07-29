@@ -13,6 +13,9 @@
                psa-elem [:reference :EOS_AdditionalAttributeDescription :name :CharacterString])
         description (cx/string-at-path
                       psa-elem [:reference :EOS_AdditionalAttributeDescription :description :CharacterString])
+        description-with-default (if (empty? description)
+                                   c/not-provided
+                                   description)
         data-type (psa/parse-data-type
                     (cx/string-at-path
                       psa-elem [:reference :EOS_AdditionalAttributeDescription :dataType
@@ -24,7 +27,7 @@
         value (cx/string-at-path psa-elem [:value :CharacterString])]
     (c/map->ProductSpecificAttribute
       {:name name
-       :description description
+       :description description-with-default
        :data-type data-type
        :parameter-range-begin begin
        :parameter-range-end end
@@ -104,4 +107,3 @@
                       (string-element-if-exist :eos:parameterRangeBegin parameter-range-begin)
                       (string-element-if-exist :eos:parameterRangeEnd parameter-range-end)))
                   (string-element-if-exist :eos:value value))))))))))
-
