@@ -70,7 +70,10 @@
   ;;Assume that IsoTopicCategories will not deviate from the 1.1 list of allowed values.
   (-> c
       (assoc :SpatialKeywords
-             (lk/location-keywords->spatial-keywords (:LocationKeywords c)))
+             (or (seq (lk/location-keywords->spatial-keywords (:LocationKeywords c)))
+                 (:SpatialKeywords c)
+                 ;; Spatial keywords are required
+                 [u/not-provided]))
       (assoc :LocationKeywords nil)))
 
 (defmethod migrate-umm-version [:collection "1.2" "1.3"]
@@ -98,6 +101,25 @@
       ;; This is a lossy migration. DataCenters, ContactGroups and ContactPersons fields in the original UMM JSON are dropped.
       (dissoc :DataCenters :ContactGroups :ContactPersons)
       (assoc :Organizations [not-provided-organization])))
+
+(defn update-attribute-description
+  "If description is nil, set to default of 'Not provided'"
+  [attribute]
+  (if (nil? (:Description attribute))
+     (assoc attribute :Description u/not-provided)
+     attribute))
+
+(defmethod migrate-umm-version [:collection "1.4" "1.5"]
+  [context c & _]
+  (-> c
+    ;; If an Additional Attribute has no description, set the description
+    ;; to the default "Not provided"
+    (update-in [:AdditionalAttributes] #(mapv update-attribute-description %))))
+
+(defmethod migrate-umm-version [:collection "1.5" "1.4"]
+  [context c & _]
+  ;; Don't need to migrate Additional Attribute description back since 'Not provided' is valid
+  c)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface

@@ -6,7 +6,9 @@
             [camel-snake-kebab.core :as csk]
             [clj-time.format :as f]
             [cmr.umm-spec.util :as u :refer [with-default]]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [cmr.umm-spec.umm-to-xml-mappings.dif10.data-center :as center]
+            [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]))
 
 (def platform-types
   "The set of values that DIF 10 defines for platform types as enumerations in its schema"
@@ -276,6 +278,7 @@
       [:Short_Name (:ShortName c)]
       [:Version (u/with-default (:Version c))]]
      [:Entry_Title (or (:EntryTitle c) u/not-provided)]
+     (contact/generate-collection-personnel c)
 
      (if-let [sks (:ScienceKeywords c)]
        ;; From UMM keywords
@@ -347,14 +350,7 @@
      [:Access_Constraints (-> c :AccessConstraints :Description)]
      [:Use_Constraints (:UseConstraints c)]
      (generate-metadata-language c)
-     [:Organization
-      [:Organization_Type "ARCHIVER"]
-      [:Organization_Name
-       [:Short_Name "dummy organization short name"]]
-      [:Personnel
-       [:Role "DATA CENTER CONTACT"]
-       [:Contact_Person
-        [:Last_Name u/not-provided]]]]
+     (center/generate-organizations c)
      (for [dist (:Distributions c)]
        [:Distribution
         [:Distribution_Media (:DistributionMedia dist)]

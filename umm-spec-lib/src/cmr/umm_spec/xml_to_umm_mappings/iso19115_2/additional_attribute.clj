@@ -2,6 +2,7 @@
   "Functions for parsing UMM additional attribute records out of ISO19115-2 XML documents."
   (:require [cmr.common.xml.simple-xpath :refer [select text]]
             [cmr.common.xml.parse :refer :all]
+            [cmr.umm-spec.util :as su]
             [cmr.umm-spec.iso19115-2-util :refer [char-string-value]]))
 
 (def ^:private content-info-base-xpath
@@ -30,7 +31,7 @@
        :DataType (value-of aa (str additional-attribute-xpath
                                    "/eos:dataType/eos:EOS_AdditionalAttributeDataTypeCode"))
        :Value (char-string-value aa "eos:value")
-       :Description (char-string-value aa (str additional-attribute-xpath "/eos:description"))
+       :Description (su/with-default (char-string-value aa (str additional-attribute-xpath "/eos:description")))
        :MeasurementResolution (char-string-value aa (str additional-attribute-xpath
                                                          "/eos:measurementResolution"))
        :ParameterRangeBegin (char-string-value aa (str additional-attribute-xpath

@@ -17,6 +17,10 @@
   {:collection "umm-c-json-schema.json"
    :service    "umm-s-json-schema.json"})
 
+(def search-result-schema-name
+  "Defines the name of the search result schema."
+  "umm-search-results-json-schema.json")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Code for loading schema files.
 
@@ -82,9 +86,9 @@
                   (update-in type-def [:properties] (partial resolve-ref-deflist schema-name))
                   type-def)]
     (->> updated
-         (resolve-one-of schema-name)
+         (resolve-one-of schema-name))))
          ;; other resolvers can go here, e.g. for allOf
-         )))
+
 
 (defmethod resolve-ref "array"
   [schema-name type-def]
@@ -175,9 +179,9 @@
 (defn concept-schema*
   ([concept-type]
     ;; Default to the current UMM version.
-    (concept-schema* ver/current-version concept-type))
+   (concept-schema* ver/current-version concept-type))
   ([umm-version concept-type]
-    (load-schema umm-version (concept-schema-name concept-type))))
+   (load-schema umm-version (concept-schema-name concept-type))))
 
 ;; Define a memoized version of concept-schema to cache loaded JSON schemas.
 (def concept-schema
@@ -201,6 +205,17 @@
   ([json-str concept-type umm-version]
    (let [schema-name (concept-schema-name concept-type)
          schema-url (umm-schema-resource umm-version schema-name)]
+     (if schema-url
+       (let [java-schema-obj (js-validations/parse-json-schema-from-uri schema-url)]
+         (js-validations/validate-json java-schema-obj json-str))
+       [(str "Unknown UMM JSON schema version: " (pr-str umm-version))]))))
+
+(defn validate-umm-json-search-result
+  "Validates the UMM JSON search result and returns a list of errors if invalid."
+  ([json-str]
+   (validate-umm-json-search-result json-str ver/current-version))
+  ([json-str umm-version]
+   (let [schema-url (umm-schema-resource umm-version search-result-schema-name)]
      (if schema-url
        (let [java-schema-obj (js-validations/parse-json-schema-from-uri schema-url)]
          (js-validations/validate-json java-schema-obj json-str))
@@ -333,5 +348,5 @@
            :TemporalExtents [{:EndsAtPresentFlag "true"
                               :SingleDateTimes ["2000-01-01T00:00:00.000Z"]}]
            :Distributions [{:Fees "123.4"
-                            :Sizes [{:Size "123" :Unit "MB"}]}]})
-  )
+                            :Sizes [{:Size "123" :Unit "MB"}]}]}))
+

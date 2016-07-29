@@ -57,7 +57,7 @@
   to valid XML in the given format."
   [concept-type metadata-format record]
   (let [metadata-xml (core/generate-metadata test-context record metadata-format)]
-    (core/validate-xml concept-type metadata-format metadata-xml)))
+    (core/validate-metadata concept-type metadata-format metadata-xml)))
 
 (deftest roundtrip-example-collection-record
   (doseq [metadata-format tested-collection-formats]
@@ -79,6 +79,13 @@
     (testing (str origin-format " to " dest-format)
       (is (empty? (generate-and-validate-xml :collection dest-format umm-c-record))))))
 
+(deftest validate-umm-json-example-record
+  ;; Test that going from any format to UMM generates valid UMM.
+  (doseq [[format filename] collection-format-examples
+          :let [umm-c-record (xml-round-trip :collection format expected-conversion/example-collection-record)]]
+    (testing (str format " to :umm-json")
+      (is (empty? (generate-and-validate-xml :collection :umm-json umm-c-record))))))
+
 (defspec roundtrip-generated-collection-records 100
   (for-all [umm-record (gen/no-shrink umm-gen/umm-c-generator)
             metadata-format (gen/elements tested-collection-formats)]
@@ -90,6 +97,7 @@
             metadata-format (gen/elements tested-service-formats)]
     (is (= (expected-conversion/convert umm-record metadata-format)
            (xml-round-trip :service metadata-format umm-record)))))
+
 (comment
 
   (is (= (expected-conversion/convert failing-value :serf)
@@ -140,8 +148,8 @@
 
 (comment
 
-  (is (= (expected-conversion/convert failing-value :iso19115)
-         (xml-round-trip :collection failing-value :iso19115)))
+  (is (= (expected-conversion/convert user/failing-value :iso19115)
+         (xml-round-trip :collection :iso19115 user/failing-value)))
 
   ;; random XML gen
   (def metadata-format :echo10)

@@ -42,7 +42,7 @@
                     mt/echo10 (echo10-c/validate-xml metadata)
                     mt/dif (dif-c/validate-xml metadata)
                     mt/dif10 (dif10-c/validate-xml metadata)
-                    mt/iso (iso-mends-c/validate-xml metadata)
+                    mt/iso19115 (iso-mends-c/validate-xml metadata)
                     mt/iso-smap (iso-smap-c/validate-xml metadata))
 
       :granule (condp = format
@@ -58,7 +58,7 @@
                     mt/echo10 (echo10-c/parse-collection metadata)
                     mt/dif (dif-c/parse-collection metadata)
                     mt/dif10 (dif10-c/parse-collection metadata)
-                    mt/iso (iso-mends-c/parse-collection metadata)
+                    mt/iso19115 (iso-mends-c/parse-collection metadata)
                     mt/iso-smap (iso-smap-c/parse-collection metadata))
 
       :granule (condp = format
@@ -74,7 +74,7 @@
                     mt/echo10 (echo10-c/parse-temporal metadata)
                     mt/dif (dif-c/parse-temporal metadata)
                     mt/dif10 (dif10-c/parse-temporal metadata)
-                    mt/iso (iso-mends-c/parse-temporal metadata)
+                    mt/iso19115 (iso-mends-c/parse-temporal metadata)
                     mt/iso-smap (iso-smap-c/parse-temporal metadata))
 
       :granule (condp = format
@@ -90,7 +90,7 @@
                     mt/echo10 (echo10-c/parse-access-value metadata)
                     mt/dif (dif-c/parse-access-value metadata)
                     mt/dif10 (dif10-c/parse-access-value metadata)
-                    mt/iso (iso-mends-c/parse-access-value metadata)
+                    mt/iso19115 (iso-mends-c/parse-access-value metadata)
                     mt/iso-smap nil)
 
       :granule (condp = format

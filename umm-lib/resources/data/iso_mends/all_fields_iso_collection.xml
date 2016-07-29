@@ -1195,6 +1195,24 @@
                                         <gco:CharacterString>alpha1</gco:CharacterString>
                                         </eos:value>
                                       </eos:AdditionalAttribute>
+                                      <eos:AdditionalAttribute>
+                                        <eos:reference>
+                                        <eos:EOS_AdditionalAttributeDescription>
+                                        <eos:type>
+                                        <eos:EOS_AdditionalAttributeTypeCode codeList="http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="processingInformation">processingInformation</eos:EOS_AdditionalAttributeTypeCode>
+                                        </eos:type>
+                                        <eos:name>
+                                        <gco:CharacterString>No description</gco:CharacterString>
+                                        </eos:name>
+                                        <eos:dataType>
+                                        <eos:EOS_AdditionalAttributeDataTypeCode codeList="http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode" codeListValue="STRING">STRING</eos:EOS_AdditionalAttributeDataTypeCode>
+                                        </eos:dataType>
+                                        </eos:EOS_AdditionalAttributeDescription>
+                                        </eos:reference>
+                                        <eos:value>
+                                        <gco:CharacterString>alpha2</gco:CharacterString>
+                                        </eos:value>
+                                      </eos:AdditionalAttribute>
                                   </eos:AdditionalAttributes>
                               </gco:Record>
                           </eos:otherProperty>

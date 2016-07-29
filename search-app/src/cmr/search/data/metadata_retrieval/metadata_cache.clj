@@ -214,6 +214,7 @@
 
           ;; Convert concepts to revision format maps with the target format.
           target-format-set #{target-format}
+          ;; revision-format-maps will contain nil if concept was deleted
           [t3 revision-format-maps] (u/time-execution
                                      (u/fast-map #(rfm/concept->revision-format-map context % target-format-set)
                                                  concepts))
@@ -221,13 +222,18 @@
           ;; Convert revision format maps to concepts with the specific format. We must return these
           ;; concepts because they contain the correct metadata.
           [t4 concepts] (u/time-execution
-                         (u/fast-map #(rfm/revision-format-map->concept target-format %)
-                                     revision-format-maps))
+                         (mapv (fn [rvm concept]
+                                 (if rvm
+                                   (rfm/revision-format-map->concept target-format rvm)
+                                   ;; rvm would be nil if concept was a tombstone. Return original tombstone in that case.
+                                   concept))
+                               revision-format-maps
+                               concepts))
 
           ;; Cache the revision format maps. Note time captured includes compression
           [t5 _] (u/time-execution
                   (when (contains? (cached-formats) target-format)
-                    (update-cache context revision-format-maps)))]
+                    (update-cache context (remove nil? revision-format-maps))))]
 
       (debug "fetch-and-cache of " (count concept-tuples) " concepts:"
              "get-concepts:" t1 "remove-xml-processing-instructions:" t2

@@ -22,11 +22,10 @@
 (defspec all-migrations-produce-valid-umm-spec 100
   (for-all [umm-record   (gen/no-shrink umm-gen/umm-c-generator)
             dest-version (gen/elements v/versions)]
-           (let [dest-media-type (str mt/umm-json "; version=" dest-version)
-                 metadata (core/generate-metadata (lkt/setup-context-for-test
-                                                   {:spatial-keywords lkt/sample-keyword-map})
-                                                  umm-record dest-media-type)]
-             (empty? (core/validate-metadata :collection dest-media-type metadata)))))
+    (let [dest-media-type (str mt/umm-json "; version=" dest-version)
+          metadata (core/generate-metadata (lkt/setup-context-for-test lkt/sample-keyword-map)
+                                           umm-record dest-media-type)]
+      (empty? (core/validate-metadata :collection dest-media-type metadata)))))
 
 (deftest migrate-1_0-up-to-1_1
   (is (nil?
@@ -55,11 +54,11 @@
 
 (deftest migrate-1_1-up-to-1_2
   (is (empty? (:LocationKeywords
-             (vm/migrate-umm (lkt/setup-context-for-test lkt/sample-keyword-map)
-                            :collection "1.1" "1.2" {:SpatialKeywords nil}))))
+               (vm/migrate-umm (lkt/setup-context-for-test lkt/sample-keyword-map)
+                               :collection "1.1" "1.2" {:SpatialKeywords nil}))))
   (is (empty? (:LocationKeywords
-             (vm/migrate-umm (lkt/setup-context-for-test lkt/sample-keyword-map)
-                            :collection "1.1" "1.2" {:SpatialKeywords []}))))
+               (vm/migrate-umm (lkt/setup-context-for-test lkt/sample-keyword-map)
+                               :collection "1.1" "1.2" {:SpatialKeywords []}))))
 
   (is (= [{:Category "CONTINENT"}]
          (:LocationKeywords
@@ -84,31 +83,38 @@
   (is (nil?
        (:LocationKeywords
         (vm/migrate-umm {} :collection "1.2" "1.1"
-                       {:LocationKeywords
-                        [{:Category "CONTINENT"}]}))))
+                        {:LocationKeywords
+                         [{:Category "CONTINENT"}]}))))
+
+  ;; Spatial keywords is required in 1.1
+  (is (= [u/not-provided]
+         (:SpatialKeywords
+          (vm/migrate-umm {} :collection "1.2" "1.1"
+                          {:LocationKeywords nil}))))
+
   (is (= ["CONTINENT"]
-          (:SpatialKeywords
-           (vm/migrate-umm {} :collection "1.2" "1.1"
+         (:SpatialKeywords
+          (vm/migrate-umm {} :collection "1.2" "1.1"
                           {:LocationKeywords
                            [{:Category "CONTINENT"}]}))))
   (is (= ["ANGOLA"]
          (:SpatialKeywords
           (vm/migrate-umm {} :collection "1.2" "1.1"
-                         {:LocationKeywords [{:Category "CONTINENT"
-                                              :Type "AFRICA"
-                                              :Subregion1 "CENTRAL AFRICA"
-                                              :Subregion2 "ANGOLA"}]}))))
+                          {:LocationKeywords [{:Category "CONTINENT"
+                                               :Type "AFRICA"
+                                               :Subregion1 "CENTRAL AFRICA"
+                                               :Subregion2 "ANGOLA"}]}))))
   (is (= ["Somewhereville" "Nowhereville"]
          (:SpatialKeywords
           (vm/migrate-umm {} :collection "1.2" "1.1"
-                         {:LocationKeywords [{:Category "OTHER" :Type "Somewhereville"}
-                                             {:Category "OTHER" :Type "Nowhereville"}]})))))
+                          {:LocationKeywords [{:Category "OTHER" :Type "Somewhereville"}
+                                              {:Category "OTHER" :Type "Nowhereville"}]})))))
 
 (deftest migrate-1_2-up-to-1_3
   (is (nil?
-        (:PaleoTemporalCoverages
-          (vm/migrate-umm {} :collection "1.2" "1.3"
-                         {:PaleoTemporalCoverage nil}))))
+       (:PaleoTemporalCoverages
+        (vm/migrate-umm {} :collection "1.2" "1.3"
+                        {:PaleoTemporalCoverage nil}))))
   (let [paleo-coverage {:StartDate "5 Ma"
                         :EndDate "2 Ma"
                         :ChronostratigraphicUnits [{:Eon "PHANEROZOIC"
@@ -117,17 +123,17 @@
                                                     :Epoch "Pliocene"}]}]
     (is (= [paleo-coverage]
            (:PaleoTemporalCoverages
-             (vm/migrate-umm {} :collection "1.2" "1.3" {:PaleoTemporalCoverage paleo-coverage}))))))
+            (vm/migrate-umm {} :collection "1.2" "1.3" {:PaleoTemporalCoverage paleo-coverage}))))))
 
 (deftest migrate-1_3-down-to-1_2
   (is (nil?
-        (:PaleoTemporalCoverage
-          (vm/migrate-umm {} :collection "1.3" "1.2"
-                         {:PaleoTemporalCoverages nil}))))
+       (:PaleoTemporalCoverage
+        (vm/migrate-umm {} :collection "1.3" "1.2"
+                        {:PaleoTemporalCoverages nil}))))
   (is (nil?
-        (:PaleoTemporalCoverage
-          (vm/migrate-umm {} :collection "1.3" "1.2"
-                         {:PaleoTemporalCoverages []}))))
+       (:PaleoTemporalCoverage
+        (vm/migrate-umm {} :collection "1.3" "1.2"
+                        {:PaleoTemporalCoverages []}))))
   (let [paleo-coverage-1 {:StartDate "5 Ma"
                           :EndDate "2 Ma"
                           :ChronostratigraphicUnits [{:Eon "PHANEROZOIC"
@@ -138,13 +144,13 @@
                           :EndDate "0 ybp"}]
     (is (= paleo-coverage-1
            (:PaleoTemporalCoverage
-             (vm/migrate-umm {} :collection "1.3" "1.2"
+            (vm/migrate-umm {} :collection "1.3" "1.2"
                             {:PaleoTemporalCoverages [paleo-coverage-1 paleo-coverage-2]}))))))
 
 (deftest migrate-1_3-up-to-1_4
   (let [result (vm/migrate-umm {} :collection "1.3" "1.4"
-                         {:Organizations [vm/not-provided-organization]
-                          :Personnel "placeholder"})]
+                               {:Organizations [vm/not-provided-organization]
+                                :Personnel "placeholder"})]
     (is (= [u/not-provided-data-center] (:DataCenters result)))
     (is (nil? (:ContactGroups result)))
     (is (nil? (:ContactPersons result)))
@@ -153,11 +159,30 @@
 
 (deftest migrate-1_4-down-to-1_3
   (let [result (vm/migrate-umm {} :collection "1.4" "1.3"
-                         {:DataCenters [u/not-provided-data-center]
-                          :ContactGroups "placeholder"
-                          :ContactPersons "placeholder"})]
+                               {:DataCenters [u/not-provided-data-center]
+                                :ContactGroups "placeholder"
+                                :ContactPersons "placeholder"})]
     (is (= [vm/not-provided-organization] (:Organizations result)))
     (is (nil? (:Personnel result)))
     (is (nil? (:DataCenters result)))
     (is (nil? (:ContactGroups result)))
     (is (nil? (:ContactPersons result)))))
+
+(deftest migrate-1_4-up-to-1_5
+  (let [result (vm/migrate-umm {} :collection "1.4" "1.5"
+                           {:AdditionalAttributes
+                             [{:Name "aa1"
+                               :Description "aa1"}
+                              {:Name "aa2"}]})]
+      (is (= "aa1" (:Description (first (:AdditionalAttributes result)))))
+      (is (= "Not provided" (:Description (second (:AdditionalAttributes result)))))))
+
+(deftest migrate-1_5-down-to-1_4
+    (let [result (vm/migrate-umm {} :collection "1.5" "1.4"
+                             {:AdditionalAttributes
+                               [{:Name "aa1"
+                                 :Description "aa1"}
+                                {:Name "aa2"
+                                 :Description "Not provided"}]})]
+        (is (= "aa1" (:Description (first (:AdditionalAttributes result)))))
+        (is (= "Not provided" (:Description (second (:AdditionalAttributes result)))))))

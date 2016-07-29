@@ -12,35 +12,33 @@
       [headers mime-type]
       (= mime-type (mt/accept-mime-type headers))
 
-          "extract first preferred valid mime type"
-          {"accept" "text/foo, application/json"} mt/json
+      "extract first preferred valid mime type"
+      {"accept" "text/foo, application/json"} mt/json
 
-          "accept parameters are ignored"
-          {"accept" "application/xml; q=1"} mt/xml
+      "accept parameters are ignored"
+      {"accept" "application/xml; q=1"} mt/xml
 
-          "nil if no accept header"
-          {"content-type" "application/xml; q=1"} nil
+      "nil if no accept header"
+      {"content-type" "application/xml; q=1"} nil
 
-          "nil if no acceptable type"
-          {"accept" "text/foo, application/foo"} nil
+      "nil if no acceptable type"
+      {"accept" "text/foo, application/foo"} nil
 
-          "*/* header is ignored"
-          {"accept" "*/*"} nil))
+      "*/* header is ignored"
+      {"accept" "*/*"} nil))
 
   (testing "content type header"
     (are2
       [headers mime-type]
       (= mime-type (mt/content-type-mime-type headers))
-          "parameters are ignored"
-          {"content-type" "application/xml; q=1"} mt/xml
+      "parameters are ignored"
+      {"content-type" "application/xml; q=1"} mt/xml
 
-          "nil if no content-type header"
-          {"accept" "application/xml; q=1"} nil
+      "nil if no content-type header"
+      {"accept" "application/xml; q=1"} nil
 
-          "nil if no acceptable type"
-          {"content-type" "text/html2, application/foo"} nil)))
-
-
+      "nil if no acceptable type"
+      {"content-type" "text/html2, application/foo"} nil)))
 
 (deftest convert-format-extension-to-mime-type
   (testing "valid extensions"
@@ -49,23 +47,35 @@
     (is (= mt/echo10 (mt/path->mime-type "granules.echo10")))
     (is (= mt/iso-smap (mt/path->mime-type "granules.iso-smap")))
     (is (= mt/iso-smap (mt/path->mime-type "granules.iso_smap")))
-    (is (= mt/iso (mt/path->mime-type "granules.iso")))
-    (is (= mt/iso (mt/path->mime-type "granules.iso19115")))
+    (is (= mt/iso19115 (mt/path->mime-type "granules.iso")))
+    (is (= mt/iso19115 (mt/path->mime-type "granules.iso19115")))
     (is (= mt/dif (mt/path->mime-type "granules.dif")))
     (is (= mt/csv (mt/path->mime-type "granules.csv")))
     (is (= mt/kml (mt/path->mime-type "granules.kml")))
     (is (= mt/html (mt/path->mime-type "granules.html")))
     (is (= mt/opendata (mt/path->mime-type "granules.opendata"))))
-  (testing "invalid extensions"
+  (testing "UMM JSON with version"
+    (is (= (str mt/umm-json ";version=1.3")
+           (mt/path->mime-type "granules.umm_json_v1_3")))
+    (is (= (str mt/umm-json ";version=99.88")
+           (mt/path->mime-type "granules.umm_json_v99_88")))
+    (testing "Should be considered valid as a mime type"
+      ;; No exception should be thrown.
+      (mt/path->mime-type "granules.umm_json_v99_88"
+                          #{mt/umm-json})))
+  (testing "No extension"
     (are [uri]
-         (= nil (mt/path->mime-type uri))
-         "granules.text"
-         "granules.json.2"
-         "granulesjson"
-         "  "
-         ""
-         "granules.json/json"
-         "granules.j%25son")))
+      (= nil (mt/path->mime-type uri))
+      "granulesjson"
+      "  "
+      ""))
+  (testing "invalid extensions"
+    (are [extension uri]
+      (= nil (mt/path->mime-type uri))
+      "granules.text"
+      "granules.json.2"
+      "granules.json/json"
+      "granules.j%25son")))
 
 (deftest test-version-of
   (is (= "1.0" (mt/version-of "application/json;version=1.0")))
@@ -86,6 +96,5 @@
 
 (deftest test-format->mime-type
   (is (= "application/json" (mt/format->mime-type :json)))
-  (is (= "application/vnd.nasa.cmr.umm+json" (mt/format->mime-type :umm-json)))
-  (testing "aliases"
-    (is (= "application/vnd.nasa.cmr.umm+json" (mt/format->mime-type :umm_json)))))
+  (is (= "application/vnd.nasa.cmr.umm+json" (mt/format->mime-type :umm-json))))
+
