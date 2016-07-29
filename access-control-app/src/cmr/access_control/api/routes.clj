@@ -104,28 +104,44 @@
 
 ;; Misc route validations
 
+(defn system_object-concept_id-validation
+  "Validates system_object and concept_id parameter lookup permissions."
+  [{:keys [system_object concept_id]}]
+  (when (or (and (not (str/blank? system_object))
+                 (seq concept_id))
+            (and (str/blank? system_object) (empty? concept_id)))
+    ["One of parameters [concept_id] or [system_object] are required."]))
+
+(defn system_object-validation
+  "Validates that system_object parameter has a valid value, if present."
+  [{:keys [system_object]}]
+  (when system_object
+    (when-not (some #{system_object} acl-schema/system-object-targets)
+      [(str "Parameter [system_object] must be one of: " (pr-str acl-schema/system-object-targets))])))
+
+(defn concept_ids-validation
+  "Validates that all values in the multi-valued concept_id param are valid concept IDs"
+  [{:keys [concept_id]}]
+  (mapcat cc/concept-id-validation concept_id))
+
+(defn user_id-user_type-validation
+  "Validates that only one of user_id or user_type are specified."
+  [{:keys [user_id user_type]}]
+  (if-not (= 1 (count (remove str/blank? [user_id user_type])))
+    ["One of parameters [user_type] or [user_id] are required."]))
+
+(def get-permissions-validations
+  [system_object-concept_id-validation
+   user_id-user_type-validation
+   system_object-validation
+   concept_ids-validation])
+
 (defn- validate-get-permission-params
   "Throws service errors if any invalid params or values are found."
   [params]
   (validate-params params :system_object :concept_id :user_id :user_type)
-  (let [{:keys [system_object concept_id user_id user_type]} params
-        errors []
-        errors (if (or (and (not (str/blank? system_object))
-                            (seq concept_id))
-                       (and (str/blank? system_object) (empty? concept_id)))
-                 (conj errors "One of parameters [concept_id] or [system_object] are required.")
-                 errors)
-        errors (if system_object
-                 (if (some #{system_object} acl-schema/system-object-targets)
-                   errors
-                   (conj errors (str "Parameter [system_object] must be one of: " (pr-str acl-schema/system-object-targets))))
-                 errors)
-        errors (reduce #(concat %1 (cc/concept-id-validation %2)) errors concept_id)
-        errors (if-not (= 1 (count (remove str/blank? [user_id user_type])))
-                 (conj errors "One of parameters [user_type] or [user_id] are required.")
-                 errors)]
-    (when (seq errors)
-      (errors/throw-service-errors :bad-request errors))))
+  (when-let [errors (seq (mapcat #(% params) get-permissions-validations))]
+    (errors/throw-service-errors :bad-request errors)))
 
 ;;; Group Route Functions
 
