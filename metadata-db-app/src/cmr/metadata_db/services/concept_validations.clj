@@ -83,7 +83,7 @@
   can sometimes be nil."
   [concept]
   (nil-fields-validation (apply dissoc (:extra-fields concept)
-                                [:delete-time :version-id :associated-revision-id])))
+                                [:delete-time :version-id :associated-revision-id :target-provider-id])))
 
 (defn concept-id-validation
   [concept]
