@@ -25,6 +25,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * /acls/:acl-id
     * [GET - Retrieve an ACL](#retrieve-acl)
     * [PUT - Update an ACL](#update-acl)
+    * [DELETE - Delete an ACL](#delete-acl)
   * /permissions
     * [GET - Check User Permissions](#get-permissions)
   * /health
@@ -607,6 +608,20 @@ HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 
 {"revision_id":2,"concept_id":"ACL1200000000-CMR"}
+```
+
+### <a name="delete-acl"></a> Delete ACL
+
+An ACL can be deleted with a DELETE request to `%CMR-ENDPOINT%/acls/<concept-id>` where `concept-id` is the concept id of the ACL returned when it was created.
+
+```
+curl -XDELETE -i -H "Echo-Token: mock-echo-system-token" %CMR-ENDPOINT%/acls/ACL1200000000-CMR
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 50
+
+{"revision-id":3,"concept-id":"ACL1200000000-CMR"}
 ```
 
 ### <a name="get-permissions"></a> Checking User Permissions
