@@ -40,7 +40,10 @@
 (defn generate-product-specific-attributes
   [psas]
   (for [psa psas]
-    (let [{:keys [data-type name description parameter-range-begin parameter-range-end value]} psa]
+    (let [{:keys [data-type name description parameter-range-begin parameter-range-end value]} psa
+          description (if (empty? description)
+                        c/not-provided
+                        description)]
       (x/element :Additional_Attributes {}
                  (x/element :Name {} name)
                  (x/element :DataType {} (psa/gen-data-type data-type))
