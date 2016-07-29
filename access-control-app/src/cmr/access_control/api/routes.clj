@@ -248,12 +248,14 @@
       api-response))
 
 (defn search-for-acls
+  "Returns a Ring response with ACL search results for the given params."
   [context headers params]
   (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
   (-> (acl-service/search-for-acls context params)
       cr/search-response))
 
 (defn get-permissions
+  "Returns a Ring response with the requested permission check results."
   [request-context params]
   (let [params (update-in params [:concept_id] util/seqify)]
     (validate-get-permission-params params)
