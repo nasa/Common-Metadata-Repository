@@ -267,7 +267,13 @@
          :value "alpha1"
          :parsed-parameter-range-begin "alpha"
          :parsed-parameter-range-end "bravo"
-         :parsed-value "alpha1"})]
+         :parsed-value "alpha1"})
+      (umm-c/map->ProductSpecificAttribute
+         {:name "No description"
+          :description "Not provided"
+          :data-type :string
+          :value "alpha2"
+          :parsed-value "alpha2"})]
      :collection-associations [(umm-c/map->CollectionAssociation
                                  {:short-name "COLLOTHER-237"
                                   :version-id "1"})
@@ -342,4 +348,3 @@
                  "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
                  "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
            (c/validate-xml (s/replace valid-collection-xml "fileIdentifier" "XXXX"))))))
-

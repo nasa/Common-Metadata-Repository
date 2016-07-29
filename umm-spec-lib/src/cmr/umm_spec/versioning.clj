@@ -8,7 +8,7 @@
 (def versions
   "A sequence of valid UMM Schema versions, with the newest one last. This sequence must be updated
    when new schema versions are added to the CMR."
-  ["1.0" "1.1" "1.2" "1.3" "1.4"])
+  ["1.0" "1.1" "1.2" "1.3" "1.4" "1.5"])
 
 (def current-version
   "The current version of the UMM schema."
@@ -29,4 +29,3 @@
   (if (mt/umm-json? fmt)
     (with-default-version fmt)
     fmt))
-

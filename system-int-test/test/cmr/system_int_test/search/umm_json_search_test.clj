@@ -174,7 +174,7 @@
 (deftest search-umm-json-error-cases
   (testing "granule umm-json search is not supported"
     (is (= {:status 400
-            :errors ["The mime type [application/vnd.nasa.cmr.umm_results+json] with version [1.4] is not supported for granules."]}
+            :errors ["The mime type [application/vnd.nasa.cmr.umm_results+json] with version [1.5] is not supported for granules."]}
            (select-keys (search/find-concepts-umm-json :granule {}) [:status :errors]))))
   (testing "Searching with invalid UMM JSON extension"
     (is (= {:status 400
@@ -195,5 +195,3 @@
     (is (= {:status 400
             :errors ["The mime type [application/vnd.nasa.cmr.umm_results+json] with version [9.1] is not supported for collections."]}
            (dissoc (search/find-concepts-umm-json :collection {} {:url-extension "umm_json_v9_1"}) :body)))))
-
-

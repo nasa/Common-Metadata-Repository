@@ -162,6 +162,12 @@
     (assoc-in umm conversion-util/bounding-rectangles-path (mapv normalize-bounding-rectangle brs))
     umm))
 
+(defn- expected-iso19115-additional-attribute
+  [attribute]
+  (-> attribute
+      (assoc :UpdateDate nil)
+      (assoc :Description (su/with-default (:Description attribute)))))
+
 (defn umm-expected-conversion-iso19115
   [umm-coll]
   (-> umm-coll
@@ -181,7 +187,7 @@
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
       (update-in [:PublicationReferences] iso-19115-2-publication-reference)
       (update-in [:RelatedUrls] expected-iso-19115-2-related-urls)
-      (update-in-each [:AdditionalAttributes] assoc :UpdateDate nil)
+      (update-in-each [:AdditionalAttributes] expected-iso19115-additional-attribute)
       (update-in [:MetadataAssociations] group-metadata-assocations)
       (update-in [:ISOTopicCategories] update-iso-topic-categories)
       (update-in [:LocationKeywords] conversion-util/fix-location-keyword-conversion)
