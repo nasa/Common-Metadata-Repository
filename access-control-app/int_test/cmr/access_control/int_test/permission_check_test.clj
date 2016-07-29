@@ -25,12 +25,19 @@
   (are [params errors]
     (= {:status 400 :body {:errors errors} :content-type :json}
        (ac/get-permissions (u/conn-context) params {:raw? true}))
-    {} ["Parameter [concept_id] is required." "One of parameters [user_type] or [user_id] are required."]
-    {:user_id "" :concept_id []} ["Parameter [concept_id] is required." "One of parameters [user_type] or [user_id] are required."]
-    {:user_id "foobar"} ["Parameter [concept_id] is required."]
-    {:concept_id "C1200000-PROV1" :user_type "guest" :user_id "foo"} ["One of parameters [user_type] or [user_id] are required."]
+    {} ["One of parameters [concept_id] or [system_object] are required."
+        "One of parameters [user_type] or [user_id] are required."]
+    {:user_id "" :concept_id []} ["One of parameters [concept_id] or [system_object] are required."
+                                  "One of parameters [user_type] or [user_id] are required."]
+    {:user_id "foobar"} ["One of parameters [concept_id] or [system_object] are required."]
+    {:concept_id "C12345-ABC2" :system_object "GROUP" :user_id "bat"} ["One of parameters [concept_id] or [system_object] are required."]
+    {:concept_id "C1200000-PROV1" :user_type "GROUP" :user_id "foo"} ["One of parameters [user_type] or [user_id] are required."]
     {:not_a_valid_param "foo"} ["Parameter [not_a_valid_param] was not recognized."]
-    {:user_id "foo" :concept_id ["XXXXX"]} ["Concept-id [XXXXX] is not valid."]))
+    {:user_id "foo" :concept_id ["XXXXX"]} ["Concept-id [XXXXX] is not valid."])
+  (is (some #(re-find #"Parameter \[system_object\] must be one of: .*GROUP.*" %)
+            (:errors (:body (ac/get-permissions (u/conn-context) {:user_id "foo" :system_object "GROUPE"} {:raw? true})))))
+  (is (some #(re-find #"Parameter \[system_object\] must be one of: .*GROUP.*" %)
+            (:errors (:body (ac/get-permissions (u/conn-context) {:user_id "foo" :system_object "group"} {:raw? true}))))))
 
 (defn get-permissions
   "Helper to get permissions with the current context and the specified username string or user type keyword and concept ids."
@@ -442,3 +449,72 @@
             :registered []
             "user1" ["update" "delete"]
             "user2" []))))))
+
+(deftest system-level-permission-check
+  (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
+        ;; then create a group that contains our user, so we can find collections that grant access to this user
+        group (u/make-group {:name "groupwithuser1" :members ["user1"]})
+        created-group-concept-id (:concept_id (u/create-group token group))
+        ;; local helpers to make the body of the test cleaner
+        create-acl #(ac/create-acl (u/conn-context) % {:token token})
+        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
+        get-system-permissions (fn [user system-object]
+                                 (json/parse-string
+                                   (ac/get-permissions
+                                     (u/conn-context)
+                                     (merge {:system_object system-object}
+                                            (if (keyword? user)
+                                              {:user_type (name user)}
+                                              {:user_id user})))))]
+
+    (testing "no permissions granted"
+      (are [user permissions]
+        (= {"GROUP" permissions}
+           (get-system-permissions user "GROUP"))
+        :guest []
+        :registered []
+        "user1" []))
+
+    (let [acl {:group_permissions [{:permissions [:update :delete]
+                                    :user_type :guest}]
+               :system_identity {:target "GROUP"}}
+          acl-concept-id (:concept_id (create-acl acl))]
+      (u/wait-until-indexed)
+
+      (testing "granted to registered users"
+        (update-acl acl-concept-id
+                    {:group_permissions [{:permissions [:update :delete]
+                                          :user_type :registered}]
+                     :system_identity {:target "GROUP"}})
+
+        (are [user permissions]
+          (= {"GROUP" permissions}
+             (get-system-permissions user "GROUP"))
+          :guest []
+          :registered ["update" "delete"]
+          "user1" ["update" "delete"]))
+
+      (testing "other ACLs are not matched when searching other targets"
+        (create-acl {:group_permissions [{:permissions [:read]
+                                          :user_type :registered}]
+                     :system_identity {:target "PROVIDER"}})
+        (are [user permissions]
+          (= {"PROVIDER" permissions}
+             (get-system-permissions user "PROVIDER"))
+          :guest []
+          :registered ["read"]
+          "user1" ["read"]))
+
+      (testing "granted to specific groups"
+        (update-acl acl-concept-id
+                    {:group_permissions [{:permissions [:update :delete]
+                                          :group_id created-group-concept-id}]
+                     :system_identity {:target "GROUP"}})
+
+        (are [user permissions]
+          (= {"GROUP" permissions}
+             (get-system-permissions user "GROUP"))
+          :guest []
+          :registered []
+          "user1" ["update" "delete"]
+          "user2" [])))))
