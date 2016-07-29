@@ -660,10 +660,10 @@
                                   :value "geo@unepgrid.ch"})]})]
      :access-value 1.0}))
 
-(deftest validated-parsed-dif-test
+(deftest validate-parsed-dif-test
   (testing "Validate DIF to UMM Collection"
    (let [parsed-dif (c/parse-collection all-fields-collection-xml)]
-     (is (= 0 (count (v/validate-collection parsed-dif)))))))
+     (is (empty? (v/validate-collection parsed-dif))))))
 
 (deftest parse-collection-test
   (testing "parse collection"

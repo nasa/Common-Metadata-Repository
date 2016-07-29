@@ -531,7 +531,7 @@
                      :provider-id "PROV1"
                      :native-id "new collection"}
         {:keys [status body]} (ingest/validate-concept concept-map {:accept-format mt/echo10 :raw? true})]
-    (= [200 ""] [status body])))
+    (is (= [200 ""] [status body]))))
 
 (comment
   (ingest/delete-provider "PROV1")
