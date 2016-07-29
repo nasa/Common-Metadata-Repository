@@ -1,7 +1,8 @@
 (ns cmr.metadata-db.data.oracle.concepts.acl
   "Implements multi-methods for ACL concepts."
   (:require [cmr.metadata-db.data.oracle.concepts :as c]
-            [cmr.metadata-db.data.oracle.concepts.group :as g]))
+            [cmr.metadata-db.data.oracle.concepts.group :as g]
+            [cmr.common.util :as u]))
 
 ;; NOTE: borrowing Access Group functions to implement these methods, because they are identical
 
@@ -10,7 +11,8 @@
   (some-> (c/db-result->concept-map :access-group db provider-id result)
           (assoc :concept-type :acl)
           (assoc-in [:extra-fields :acl-identity] (:acl_identity result))
-          (assoc-in [:extra-fields :target-provider-id] (:target_provider_id result))))
+          (assoc-in [:extra-fields :target-provider-id] (:target_provider_id result))
+          (update-in [:extra-fields] u/remove-nil-keys)))
 
 (defn- acl-insert-args
   [concept]
