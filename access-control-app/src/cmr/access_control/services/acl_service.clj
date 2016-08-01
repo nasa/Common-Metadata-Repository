@@ -269,6 +269,13 @@
                      (set/rename-keys av {:include-undefined-value :include-undefined}))))
       util/remove-nil-keys))
 
+(defn- get-echo-style-acls
+  "Returns all ACLs in metadata db, converted to \"ECHO-style\" keys for use with existing ACL functions."
+  [context]
+  (for [batch (mdb1/find-in-batches context :acl 1000 {:latest true})
+        acl-concept batch]
+    (echo-style-acl (edn/read-string (:metadata acl-concept)))))
+
 (def all-permissions
   "The set of all permissions checked and returned by the functions below."
   #{:read :order :update :delete})
@@ -277,9 +284,28 @@
   "The set of permissions that are checked at the provider level."
   #{:update :delete})
 
-(defn- grants-permission?
+(defn- collect-permissions
+  "Returns seq of any permissions where (grants-permission? acl permission) returns true for any acl in acls."
+  [grants-permission? acls]
+  (reduce (fn [granted-permissions acl]
+            (if (= all-permissions granted-permissions)
+              ;; terminate the reduce early, because all permissions have already been granted
+              (reduced granted-permissions)
+              ;; determine which permissions are granted by this specific acl
+              (reduce (fn [acl-permissions permission]
+                        (if (grants-permission? acl permission)
+                          (conj acl-permissions permission)
+                          acl-permissions))
+                      ;; start with the set of permissions granted so far
+                      granted-permissions
+                      ;; and only reduce over permissions that have not yet been granted
+                      (set/difference all-permissions granted-permissions))))
+          #{}
+          acls))
+
+(defn- grants-concept-permission?
   "Returns true if permission keyword is granted on concept to any sids by given acl."
-  [permission concept sids acl]
+  [acl permission concept sids]
   (and (acl/acl-matches-sids-and-permission? sids (name permission) acl)
        (if (contains? provider-level-permissions permission)
          (when-let [acl-provider-id (-> acl :provider-object-identity :provider-id)]
@@ -294,22 +320,8 @@
   "Returns the set of permission keywords (:read, :update, :order, or :delete) granted on concept
    to the seq of group guids by seq of acls."
   [concept sids acls]
-  ;; reduce the seq of acls into a set of granted permissions
-  (reduce (fn [granted-permissions acl]
-            (if (= all-permissions granted-permissions)
-              ;; terminate the reduce early, because all permissions have already been granted
-              (reduced granted-permissions)
-              ;; determine which permissions are granted by this specific acl
-              (reduce (fn [acl-permissions permission]
-                        (if (grants-permission? permission concept sids acl)
-                          (conj acl-permissions permission)
-                          acl-permissions))
-                      ;; start with the set of permissions granted so far
-                      granted-permissions
-                      ;; and only reduce over permissions that have not yet been granted
-                      (set/difference all-permissions granted-permissions))))
-          #{}
-          acls))
+  (collect-permissions #(grants-concept-permission? %1 %2 concept sids)
+                       acls))
 
 (defn get-concept-permissions
   "Returns a map of concept ids to seqs of permissions granted on that concept for the given username."
@@ -317,46 +329,37 @@
   (let [concepts (acl-matchers/add-acl-enforcement-fields
                    (mdb1/get-latest-concepts context concept-ids))
         sids (get-sids context username-or-type)
-        ;; fetch and parse all ACLs lazily
-        acls (for [batch (mdb1/find-in-batches context :acl 1000 {:latest true})
-                   acl-concept batch]
-               (echo-style-acl (edn/read-string (:metadata acl-concept))))]
+        acls (get-echo-style-acls context)]
     (into {}
           (for [concept concepts]
             [(:concept-id concept) (concept-permissions-granted-by-acls concept sids acls)]))))
 
-(defn grants-system-permission?
-  "Returns true if acl grants the permission keyword to the system object for any of the sids."
-  [permission system-object-target sids acl]
-  (and
-    (= system-object-target (:target (:system-object-identity acl)))
-    (acl/acl-matches-sids-and-permission? sids (name permission) acl)))
-
 (defn- system-permissions-granted-by-acls
   "Returns a set of permission keywords granted on the system target to the given sids by the given acls."
   [system-object-target sids acls]
-  (reduce (fn [granted-permissions acl]
-            (if (= all-permissions granted-permissions)
-              ;; terminate the reduce early, because all permissions have already been granted
-              (reduced granted-permissions)
-              ;; determine which permissions are granted by this specific acl
-              (reduce (fn [acl-permissions permission]
-                        (if (grants-system-permission? permission system-object-target sids acl)
-                          (conj acl-permissions permission)
-                          acl-permissions))
-                      ;; start with the set of permissions granted so far
-                      granted-permissions
-                      ;; and only reduce over permissions that have not yet been granted
-                      (set/difference all-permissions granted-permissions))))
-          #{}
-          acls))
+  (collect-permissions (fn [acl permission]
+                         (and (= system-object-target (:target (:system-object-identity acl)))
+                              (acl/acl-matches-sids-and-permission? sids (name permission) acl)))
+                       acls))
 
 (defn get-system-permissions
   "Returns a map of the system object type to the set of permissions granted to the given username or user type."
   [context username-or-type system-object-target]
   (let [sids (get-sids context username-or-type)
-        ;; fetch and parse all ACLs lazily
-        acls (for [batch (mdb1/find-in-batches context :acl 1000 {:latest true})
-                   acl-concept batch]
-               (echo-style-acl (edn/read-string (:metadata acl-concept))))]
+        acls (get-echo-style-acls context)]
     (hash-map system-object-target (system-permissions-granted-by-acls system-object-target sids acls))))
+
+(defn provider-permissions-granted-by-acls
+  "Returns all permissions granted to provider target for given sids and acls."
+  [provider-id target sids acls]
+  (collect-permissions (fn [acl permission]
+                         (and (= target (:target (:provider-object-identity acl)))
+                              (acl/acl-matches-sids-and-permission? sids (name permission) acl)))
+                       acls))
+
+(defn get-provider-permissions
+  "Returns a map of target object ids to permissions granted to the specified user for the specified provider id."
+  [context username-or-type provider-id target]
+  (let [sids (get-sids context username-or-type)
+        acls (get-echo-style-acls context)]
+    (hash-map target (provider-permissions-granted-by-acls provider-id target sids acls))))

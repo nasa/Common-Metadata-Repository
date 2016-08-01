@@ -104,13 +104,17 @@
 
 ;; Misc route validations
 
-(defn system_object-concept_id-validation
+(defn system_object-concept_id-provider-target-validation
   "Validates system_object and concept_id parameter lookup permissions."
-  [{:keys [system_object concept_id]}]
-  (when (or (and (not (str/blank? system_object))
-                 (seq concept_id))
-            (and (str/blank? system_object) (empty? concept_id)))
-    ["One of parameters [concept_id] or [system_object] are required."]))
+  [{:keys [system_object concept_id provider target]}]
+  (let [present? #(if (string? %)
+                   (not (str/blank? %))
+                   (seq %))]
+    (when-not (util/xor (present? system_object)
+                        (present? concept_id)
+                        (and (present? provider)
+                             (present? target)))
+      ["One of [concept_id], [system_object], or [provider] and [target] are required."])))
 
 (defn system_object-validation
   "Validates that system_object parameter has a valid value, if present."
@@ -130,8 +134,15 @@
   (if-not (= 1 (count (remove str/blank? [user_id user_type])))
     ["One of parameters [user_type] or [user_id] are required."]))
 
+(defn provider-target-validation
+  "Validates that when provider param is specified, target param is a valid enum value."
+  [{:keys [provider target]}]
+  (when (and provider (not (some #{target} acl-schema/provider-object-targets)))
+    [(str "Parameter [target] must be one of: " (pr-str acl-schema/provider-object-targets))]))
+
 (def get-permissions-validations
-  [system_object-concept_id-validation
+  [system_object-concept_id-provider-target-validation
+   provider-target-validation
    user_id-user_type-validation
    system_object-validation
    concept_ids-validation])
@@ -139,7 +150,7 @@
 (defn- validate-get-permission-params
   "Throws service errors if any invalid params or values are found."
   [params]
-  (validate-params params :system_object :concept_id :user_id :user_type)
+  (validate-params params :system_object :concept_id :user_id :user_type :provider :target)
   (when-let [errors (seq (mapcat #(% params) get-permissions-validations))]
     (errors/throw-service-errors :bad-request errors)))
 
@@ -259,13 +270,14 @@
   [request-context params]
   (let [params (update-in params [:concept_id] util/seqify)]
     (validate-get-permission-params params)
-    (let [{:keys [user_id user_type concept_id system_object]} params
+    (let [{:keys [user_id user_type concept_id system_object provider target]} params
           username-or-type (if user_type
                              (keyword user_type)
                              user_id)
-          result (if system_object
-                   (acl-service/get-system-permissions request-context username-or-type system_object)
-                   (acl-service/get-concept-permissions request-context username-or-type concept_id))]
+          result (cond
+                   system_object (acl-service/get-system-permissions request-context username-or-type system_object)
+                   target (acl-service/get-provider-permissions request-context username-or-type provider target)
+                   :else (acl-service/get-concept-permissions request-context username-or-type concept_id))]
       {:status 200
        :body (json/generate-string result)})))
 
