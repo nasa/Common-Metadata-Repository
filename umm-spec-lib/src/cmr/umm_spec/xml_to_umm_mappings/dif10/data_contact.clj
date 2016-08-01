@@ -54,8 +54,8 @@
      {:Roles roles
       :GroupName (value-of contact-group "Name")
       :Uuid (:uuid (:attrs (first (filter #(= :Contact_Group (:tag %)) (:content personnel)))))
-      :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms contact-group)
-                            :Addresses (parse-address contact-group)}]})))
+      :ContactInformation {:ContactMechanisms (parse-contact-mechanisms contact-group)
+                           :Addresses (parse-address contact-group)}})))
 
 
 (defn parse-contact-persons
@@ -71,5 +71,5 @@
       :MiddleName (value-of contact-person "Middle_Name")
       :LastName (value-of contact-person "Last_Name")
       :Uuid (:uuid (:attrs (first (filter #(= :Contact_Person (:tag %)) (:content personnel)))))
-      :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms contact-person)
-                            :Addresses (parse-address contact-person)}]})))
+      :ContactInformation {:ContactMechanisms (parse-contact-mechanisms contact-person)
+                           :Addresses (parse-address contact-person)}})))

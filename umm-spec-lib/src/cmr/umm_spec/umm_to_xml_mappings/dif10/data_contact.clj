@@ -63,7 +63,7 @@
 (defn- contact->contact-person
   "Returns the DIF10 contact person elements for a data center or collection contact person"
   [contact roles]
-  (let [contact-info (first (:ContactInformation contact))
+  (let [contact-info (:ContactInformation contact)
         contact-mechanisms (:ContactMechanisms contact-info)]
    [:Personnel
      (for [role roles]
@@ -79,7 +79,7 @@
 (defn- contact->contact-group
   "Returns the DIF10 contact group elements for a data center or collection contact group"
   [contact roles]
-  (let [contact-info (first (:ContactInformation contact))
+  (let [contact-info (:ContactInformation contact)
         contact-mechanisms (:ContactMechanisms contact-info)]
    [:Personnel
     (for [role roles]

@@ -121,6 +121,44 @@
   ;; Don't need to migrate Additional Attribute description back since 'Not provided' is valid
   c)
 
+(defn first-contact-info
+  [c]
+  (update-in c [:ContactInformation] first))
+
+(defn update-data-center-contact-info
+  [data-center]
+  (-> data-center
+      (first-contact-info)
+      (update-in [:ContactPersons] #(mapv first-contact-info %))
+      (update-in [:ContactGroups] #(mapv first-contact-info %))))
+
+(defmethod migrate-umm-version [:collection "1.5" "1.6"]
+  [context c & _]
+  (-> c
+    (update-in [:DataCenters] #(mapv update-data-center-contact-info %))
+    (update-in [:ContactPersons] #(mapv first-contact-info %))
+    (update-in [:ContactGroups] #(mapv first-contact-info %))))
+
+(defn contact-info-to-array
+  [c]
+  (if (some? (:ContactInformation c))
+   (assoc c :ContactInformation [(:ContactInformation c)])
+   c))
+
+(defn update-data-center-contact-info-to-array
+  [data-center]
+  (-> data-center
+      (contact-info-to-array)
+      (update-in [:ContactPersons] #(mapv contact-info-to-array %))
+      (update-in [:ContactGroups] #(mapv contact-info-to-array %))))
+
+(defmethod migrate-umm-version [:collection "1.6" "1.5"]
+  [context c & _]
+  (-> c
+      (update-in [:DataCenters] #(mapv update-data-center-contact-info-to-array %))
+      (update-in [:ContactPersons] #(mapv contact-info-to-array %))
+      (update-in [:ContactGroups] #(mapv contact-info-to-array %))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface
 
