@@ -188,7 +188,7 @@
                  parameter name and the value as either a single value or a collection of values.
   ancestors-map - A map of containing all of the parent terms for this node. The keys are snake
                   case subfield strings and the keys are the value for that subfield. For example,
-                  {\"category\" \"Earth Science\" \"topic\" \"Atmosphere\"}.
+                  {\"topic\" \"Atmosphere\" \"term\" \"Clouds\"}.
   parent-value - The value of the direct parent (e.g. \"Atmosphere\") if the current field is a
                  child, nil otherwise.
   elastic-aggs - the portion of the elastic-aggregations response to parse. As each field is parsed
@@ -205,6 +205,10 @@
      (let [snake-base-field (csk/->snake_case_string base-field)
            snake-parent-subfield (when parent-subfield (csk/->snake_case_string parent-subfield))
            snake-subfield (csk/->snake_case_string subfield)
+           ;; Special case to remove category for science keywords
+           ancestors-map (if (= :science-keywords-h base-field)
+                           (dissoc ancestors-map "category")
+                           ancestors-map)
            ancestors-map (if parent-value
                            (assoc ancestors-map snake-parent-subfield parent-value)
                            ancestors-map)
@@ -306,9 +310,8 @@
          :let [param-name (format "%s[0][%s]"
                                   (csk/->snake_case_string field)
                                   (csk/->snake_case_string subfield))
-               ;; TODO stop passing in all these nils
-               link (lh/create-link-for-hierarchical-field
-                     base-url query-params param-name nil nil search-term false nil)]]
+               link (lh/create-link-for-hierarchical-field base-url query-params param-name
+                                                           search-term)]]
      (v2h/generate-hierarchical-filter-node search-term 0 link nil)))
 
 (def earth-science-category-string

@@ -270,7 +270,7 @@
   (testing (str "When there are multiple fields selected at the same level of the hierarchy they "
                 "each have different indexes")
     (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all sk-same-vl1 sk-diff-vl1))
-    (let [expected #{0 1 3} ;; Not sure why 2 is not included TODO add unit tests for has-siblings? 
+    (let [expected #{0 1 3} ;; Not sure why 2 is not included TODO add unit tests for has-siblings?
           actual (->> (search-and-return-v2-facets)
                       fu/traverse-hierarchical-links-in-order
                       fu/get-all-links
@@ -328,7 +328,7 @@
          mt/opendata)))
 
 (comment
- ;; Good for manual testing applying links
+ ;; Good for manually testing applying links
  (do
    (cmr.system-int-test.utils.ingest-util/create-provider {:provider-id "PROV1" :provider-guid "prov1guid"})
    (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all))
