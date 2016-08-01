@@ -6,7 +6,7 @@
   (:require [cmr.common-app.services.kms-fetcher :as kms-fetcher]
             [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
             [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
-            [cmr.search.services.query-execution.facets.links-helper :as lh]
+            [cmr.search.services.query-execution.facets.hierarchical-links-helper :as hlh]
             [cmr.common.util :as util]
             [camel-snake-kebab.core :as csk]
             [clojure.string :as str]))
@@ -221,9 +221,9 @@
            ;; field we can safely call create apply link. Otherwise we need to determine if an
            ;; apply or a remove link should be generated.
            generate-links-fn (if applied?
-                               (partial lh/create-link-for-hierarchical-field base-url query-params
+                               (partial hlh/create-link-for-hierarchical-field base-url query-params
                                         param-name ancestors-map parent-indexes)
-                               (partial lh/create-apply-link-for-hierarchical-field base-url
+                               (partial hlh/create-apply-link-for-hierarchical-field base-url
                                         query-params param-name ancestors-map parent-indexes))
            recursive-parse-fn (partial parse-hierarchical-bucket-v2 base-field subfield
                                        (rest field-hierarchy) base-url query-params ancestors-map)
@@ -310,8 +310,8 @@
          :let [param-name (format "%s[0][%s]"
                                   (csk/->snake_case_string field)
                                   (csk/->snake_case_string subfield))
-               link (lh/create-link-for-hierarchical-field base-url query-params param-name
-                                                           search-term)]]
+               link (hlh/create-link-for-hierarchical-field base-url query-params param-name
+                                                            search-term)]]
      (v2h/generate-hierarchical-filter-node search-term 0 link nil)))
 
 (def earth-science-category-string
