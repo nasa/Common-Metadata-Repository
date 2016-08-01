@@ -105,7 +105,7 @@
 ;; Misc route validations
 
 (defn system_object-concept_id-provider-target-validation
-  "Validates system_object and concept_id parameter lookup permissions."
+  "Validates presence and combinations of system_object, concept_id, provider, and target parameters."
   [{:keys [system_object concept_id provider target]}]
   (let [present? #(if (string? %)
                    (not (str/blank? %))
