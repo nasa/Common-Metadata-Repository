@@ -90,12 +90,11 @@
   "Retruns the expected contact information for the given contact information."
   [contact-info]
   (let [contact-info (some-> contact-info
-                             first
                              (dissoc :RelatedUrls nil :ServiceHours nil :ContactInstruction nil)
                              (update :ContactMechanisms expected-dif-contact-mechanisms)
                              (update :Addresses conversion-util/expected-dif-addresses))]
     (when (seq (util/remove-nil-keys contact-info))
-      [(cmn/map->ContactInformationType contact-info)])))
+      (cmn/map->ContactInformationType contact-info))))
 
 (def ^:private role->expected
   "Defines mapping of original UMM data contact Role to the expected. DIF9 data contact Role
@@ -169,10 +168,10 @@
 (defn- expected-dif-data-center-contact-info
   "Returns the expected DIF9 data center contact information."
   [contact-info]
-  (when-let [related-url (first (:URLs (first (:RelatedUrls (first contact-info)))))]
-    [(cmn/map->ContactInformationType
+  (when-let [related-url (first (:URLs (first (:RelatedUrls contact-info))))]
+    (cmn/map->ContactInformationType
        {:RelatedUrls [(cmn/map->RelatedUrlType
-                        {:URLs [related-url]})]})]))
+                        {:URLs [related-url]})]})))
 
 (defn- expected-dif-data-centers
   "Returns the expected DIF parsed data centers for the given UMM collection."

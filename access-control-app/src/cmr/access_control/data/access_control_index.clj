@@ -136,8 +136,11 @@
    :permitted-group (m/stored m/string-field-mapping)
    :permitted-group.lowercase m/string-field-mapping
 
-   :provider-id (m/stored m/string-field-mapping)
-   :provider-id.lowercase m/string-field-mapping
+   ;; target-provider-id indexes the provider id of the provider-identity or
+   ;; catalog-item-identity field of an acl, if present
+   :target-provider-id (m/stored m/string-field-mapping)
+   :target-provider-id.lowercase m/string-field-mapping
+
    ;; The name of the ACL for returning in the references response.
    ;; This will be the catalog item identity name or a string containing
    ;; "<identity type> - <target>". For example "System - PROVIDER"
@@ -204,8 +207,8 @@
            :identity-type (acl->identity-type acl)
            :permitted-group permitted-groups
            :permitted-group.lowercase (map str/lower-case permitted-groups)
-           :provider-id provider-id
-           :provider-id.lowercase (safe-lowercase provider-id))))
+           :target-provider-id provider-id
+           :target-provider-id.lowercase (safe-lowercase provider-id))))
 
 (defmethod index-concept :acl
   [context concept-map]
@@ -231,11 +234,19 @@
 
 (defmethod q2e/concept-type->field-mappings :acl
   [_]
-  {:provider :provider-id})
+  {:provider :target-provider-id})
 
 (defmethod q2e/field->lowercase-field-mappings :acl
   [_]
-  {:provider "provider-id.lowercase"})
+  {:provider "target-provider-id.lowercase"})
+
+(defn delete-provider-acls
+  "Removes all ACLs granting permissions to the specified provider ID from the index."
+  [context provider-id]
+  (m/delete-by-query (esi/context->search-index context)
+                     acl-index-name
+                     acl-type-name
+                     {:term {:target-provider-id.lowercase (str/lower-case provider-id)}}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common public functions

@@ -10,6 +10,60 @@
                 (name id)
                 id))})
 
+(def system-object-targets
+  "A collection of valid system_object.target values."
+  ["SYSTEM_AUDIT_REPORT"
+   "METRIC_DATA_POINT_SAMPLE"
+   "SYSTEM_INITIALIZER"
+   "ARCHIVE_RECORD"
+   "ERROR_MESSAGE"
+   "TOKEN"
+   "TOKEN_REVOCATION"
+   "EXTENDED_SERVICE_ACTIVATION"
+   "ORDER_AND_ORDER_ITEMS"
+   "PROVIDER"
+   "TAG_GROUP"
+   "TAXONOMY"
+   "TAXONOMY_ENTRY"
+   "USER_CONTEXT"
+   "USER"
+   "GROUP"
+   "ANY_ACL"
+   "EVENT_NOTIFICATION"
+   "EXTENDED_SERVICE"
+   "SYSTEM_OPTION_DEFINITION"
+   "SYSTEM_OPTION_DEFINITION_DEPRECATION"
+   "INGEST_MANAGEMENT_ACL"
+   "SYSTEM_CALENDAR_EVENT"])
+
+(def provider-object-targets
+  "A collection of valid provider_object.target values."
+  ["AUDIT_REPORT"
+   "OPTION_ASSIGNMENT"
+   "OPTION_DEFINITION"
+   "OPTION_DEFINITION_DEPRECATION"
+   "DATASET_INFORMATION"
+   "PROVIDER_HOLDINGS"
+   "EXTENDED_SERVICE"
+   "PROVIDER_ORDER"
+   "PROVIDER_ORDER_RESUBMISSION"
+   "PROVIDER_ORDER_ACCEPTANCE"
+   "PROVIDER_ORDER_REJECTION"
+   "PROVIDER_ORDER_CLOSURE"
+   "PROVIDER_ORDER_TRACKING_ID"
+   "PROVIDER_INFORMATION"
+   "PROVIDER_CONTEXT"
+   "AUTHENTICATOR_DEFINITION"
+   "PROVIDER_POLICIES"
+   "USER"
+   "GROUP"
+   "PROVIDER_OBJECT_ACL"
+   "CATALOG_ITEM_ACL"
+   "INGEST_MANAGEMENT_ACL"
+   "DATA_QUALITY_SUMMARY_DEFINITION"
+   "DATA_QUALITY_SUMMARY_ASSIGNMENT"
+   "PROVIDER_CALENDAR_EVENT"])
+
 (def acl-schema
   (js/parse-json-schema
     {:type :object
@@ -43,60 +97,12 @@
                                                                           "guest"]}}
                                           :oneOf [{:required [:permissions :group_id]}
                                                   {:required [:permissions :user_type]}]}
-                   :SystemObjectTargetType {:enum ["SYSTEM_AUDIT_REPORT"
-                                                   "METRIC_DATA_POINT_SAMPLE"
-                                                   "SYSTEM_INITIALIZER"
-                                                   "ARCHIVE_RECORD"
-                                                   "ERROR_MESSAGE"
-                                                   "TOKEN"
-                                                   "TOKEN_REVOCATION"
-                                                   "EXTENDED_SERVICE_ACTIVATION"
-                                                   "ORDER_AND_ORDER_ITEMS"
-                                                   "PROVIDER"
-                                                   "TAG_GROUP"
-                                                   "TAXONOMY"
-                                                   "TAXONOMY_ENTRY"
-                                                   "USER_CONTEXT"
-                                                   "USER"
-                                                   "GROUP"
-                                                   "ANY_ACL"
-                                                   "EVENT_NOTIFICATION"
-                                                   "EXTENDED_SERVICE"
-                                                   "SYSTEM_OPTION_DEFINITION"
-                                                   "SYSTEM_OPTION_DEFINITION_DEPRECATION"
-                                                   "INGEST_MANAGEMENT_ACL"
-                                                   "SYSTEM_CALENDAR_EVENT"]}
-                   :ProviderObjectTargetType {:enum ["AUDIT_REPORT"
-                                                     "OPTION_ASSIGNMENT"
-                                                     "OPTION_DEFINITION"
-                                                     "OPTION_DEFINITION_DEPRECATION"
-                                                     "DATASET_INFORMATION"
-                                                     "PROVIDER_HOLDINGS"
-                                                     "EXTENDED_SERVICE"
-                                                     "PROVIDER_ORDER"
-                                                     "PROVIDER_ORDER_RESUBMISSION"
-                                                     "PROVIDER_ORDER_ACCEPTANCE"
-                                                     "PROVIDER_ORDER_REJECTION"
-                                                     "PROVIDER_ORDER_CLOSURE"
-                                                     "PROVIDER_ORDER_TRACKING_ID"
-                                                     "PROVIDER_INFORMATION"
-                                                     "PROVIDER_CONTEXT"
-                                                     "AUTHENTICATOR_DEFINITION"
-                                                     "PROVIDER_POLICIES"
-                                                     "USER"
-                                                     "GROUP"
-                                                     "PROVIDER_OBJECT_ACL"
-                                                     "CATALOG_ITEM_ACL"
-                                                     "INGEST_MANAGEMENT_ACL"
-                                                     "DATA_QUALITY_SUMMARY_DEFINITION"
-                                                     "DATA_QUALITY_SUMMARY_ASSIGNMENT"
-                                                     "PROVIDER_CALENDAR_EVENT"]}
                    :SystemIdentityType {:type :object
-                                        :properties {:target (ref-def :SystemObjectTargetType)}
+                                        :properties {:target {:enum system-object-targets}}
                                         :required [:target]}
                    :ProviderIdentityType {:type :object
                                           :properties {:provider_id (ref-def :IdentifierType)
-                                                       :target (ref-def :ProviderObjectTargetType)}
+                                                       :target {:enum provider-object-targets}}
                                           :required [:provider_id :target]}
                    :SingleInstanceIdentityType {:type :object
                                                 :properties {:target_id (ref-def :IdentifierType)

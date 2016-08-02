@@ -720,3 +720,8 @@
   [s0 s1]
   (compare-vectors (decompose-natural-string s0)
                    (decompose-natural-string s1)))
+
+(defn xor
+  "Returns true if only one of xs is truthy."
+  [& xs]
+  (= 1 (count (filter identity xs))))

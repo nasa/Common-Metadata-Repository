@@ -25,8 +25,7 @@
             [cmr.access-control.services.acl-service :as acl-service]
             [cmr.access-control.services.group-service :as group-service]
             [cmr.common.util :as util]
-            [clojure.string :as str]
-            [cmr.common.util :as u]))
+            [clojure.string :as str]))
 
 ;;; Utility Functions
 
@@ -105,21 +104,55 @@
 
 ;; Misc route validations
 
+(defn system_object-concept_id-provider-target-validation
+  "Validates presence and combinations of system_object, concept_id, provider, and target parameters."
+  [{:keys [system_object concept_id provider target]}]
+  (let [present? #(if (string? %)
+                   (not (str/blank? %))
+                   (seq %))]
+    (when-not (util/xor (present? system_object)
+                        (present? concept_id)
+                        (and (present? provider)
+                             (present? target)))
+      ["One of [concept_id], [system_object], or [provider] and [target] are required."])))
+
+(defn system_object-validation
+  "Validates that system_object parameter has a valid value, if present."
+  [{:keys [system_object]}]
+  (when system_object
+    (when-not (some #{system_object} acl-schema/system-object-targets)
+      [(str "Parameter [system_object] must be one of: " (pr-str acl-schema/system-object-targets))])))
+
+(defn concept_ids-validation
+  "Validates that all values in the multi-valued concept_id param are valid concept IDs"
+  [{:keys [concept_id]}]
+  (mapcat cc/concept-id-validation concept_id))
+
+(defn user_id-user_type-validation
+  "Validates that only one of user_id or user_type are specified."
+  [{:keys [user_id user_type]}]
+  (if-not (= 1 (count (remove str/blank? [user_id user_type])))
+    ["One of parameters [user_type] or [user_id] are required."]))
+
+(defn provider-target-validation
+  "Validates that when provider param is specified, target param is a valid enum value."
+  [{:keys [provider target]}]
+  (when (and provider (not (some #{target} acl-schema/provider-object-targets)))
+    [(str "Parameter [target] must be one of: " (pr-str acl-schema/provider-object-targets))]))
+
+(def get-permissions-validations
+  [system_object-concept_id-provider-target-validation
+   provider-target-validation
+   user_id-user_type-validation
+   system_object-validation
+   concept_ids-validation])
+
 (defn- validate-get-permission-params
   "Throws service errors if any invalid params or values are found."
   [params]
-  (validate-params params :concept_id :user_id :user_type)
-  (let [{:keys [concept_id user_id user_type]} params
-        errors []
-        errors (if (empty? concept_id)
-                 (conj errors "Parameter [concept_id] is required.")
-                 errors)
-        errors (reduce #(concat %1 (cc/concept-id-validation %2)) errors concept_id)
-        errors (if-not (= 1 (count (remove str/blank? [user_id user_type])))
-                 (conj errors "One of parameters [user_type] or [user_id] are required.")
-                 errors)]
-    (when (seq errors)
-      (errors/throw-service-errors :bad-request errors))))
+  (validate-params params :system_object :concept_id :user_id :user_type :provider :target)
+  (when-let [errors (seq (mapcat #(% params) get-permissions-validations))]
+    (errors/throw-service-errors :bad-request errors)))
 
 ;;; Group Route Functions
 
@@ -226,22 +259,27 @@
       api-response))
 
 (defn search-for-acls
+  "Returns a Ring response with ACL search results for the given params."
   [context headers params]
   (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
   (-> (acl-service/search-for-acls context params)
       cr/search-response))
 
 (defn get-permissions
+  "Returns a Ring response with the requested permission check results."
   [request-context params]
-  (let [params (update-in params [:concept_id] u/seqify)]
+  (let [params (update-in params [:concept_id] util/seqify)]
     (validate-get-permission-params params)
-    (let [{:keys [user_id user_type concept_id]} params
+    (let [{:keys [user_id user_type concept_id system_object provider target]} params
           username-or-type (if user_type
                              (keyword user_type)
-                             user_id)]
+                             user_id)
+          result (cond
+                   system_object (acl-service/get-system-permissions request-context username-or-type system_object)
+                   target (acl-service/get-provider-permissions request-context username-or-type provider target)
+                   :else (acl-service/get-concept-permissions request-context username-or-type concept_id))]
       {:status 200
-       :body (json/generate-string
-               (acl-service/get-granted-permissions request-context username-or-type concept_id))})))
+       :body (json/generate-string result)})))
 
 ;;; Various Admin Route Functions
 

@@ -4,20 +4,19 @@
             [cmr.common.xml.parse :refer :all]
             [cmr.common.xml.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]))
-            ; [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]))
 
 
 (defn- parse-contact-information
- "Returns UMM-C ContactInformation from DIF 10 XML Organization"
- [center]
- (let [service-hours (value-of center "Hours_Of_Service")
-       instruction (value-of center "Instructions")
-       related-url (value-of center "Organization_URL")]
-   (when (or service-hours instruction related-url)
-     [{:ServiceHours service-hours
+  "Returns UMM-C ContactInformation from DIF 10 XML Organization"
+  [center]
+  (let [service-hours (value-of center "Hours_Of_Service")
+        instruction (value-of center "Instructions")
+        related-url (value-of center "Organization_URL")]
+    (when (or service-hours instruction related-url)
+      {:ServiceHours service-hours
        :ContactInstruction instruction
        :RelatedUrls (when-let [related-url (value-of center "Organization_URL")]
-                      [{:URLs [related-url]}])}])))
+                      [{:URLs [related-url]}])})))
 
 (defn parse-data-centers
   "Returns UMM-C data centers from DIF 10 XML document."

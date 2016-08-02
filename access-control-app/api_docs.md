@@ -25,6 +25,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * /acls/:acl-id
     * [GET - Retrieve an ACL](#retrieve-acl)
     * [PUT - Update an ACL](#update-acl)
+    * [DELETE - Delete an ACL](#delete-acl)
   * /permissions
     * [GET - Check User Permissions](#get-permissions)
   * /health
@@ -609,11 +610,25 @@ Content-Type: application/json;charset=ISO-8859-1
 {"revision_id":2,"concept_id":"ACL1200000000-CMR"}
 ```
 
+### <a name="delete-acl"></a> Delete ACL
+
+An ACL can be deleted with a DELETE request to `%CMR-ENDPOINT%/acls/<concept-id>` where `concept-id` is the concept id of the ACL returned when it was created.
+
+```
+curl -XDELETE -i -H "Echo-Token: mock-echo-system-token" %CMR-ENDPOINT%/acls/ACL1200000000-CMR
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 50
+
+{"revision-id":3,"concept-id":"ACL1200000000-CMR"}
+```
+
 ### <a name="get-permissions"></a> Checking User Permissions
 
-You can check the permissions granted to a specific user or user type on specific concepts by making a GET request to `%CMR-ENDPOINT%/permissions`.
+You can check the permissions granted to a specific user or user type on specific concepts or system objects by making a GET request to `%CMR-ENDPOINT%/permissions`.
 
-The response is a JSON object mapping concept ids to arrays of permissions granted to the specified user for the respective concept.
+The response is a JSON object mapping target ids to arrays of permissions granted to the specified user for the respective concept.
 
 Example request:
 
@@ -628,11 +643,13 @@ Content-Type: application/json;charset=ISO-8859-1
 
 #### Parameters
 
-`concept_id`, and one of either `user_id` or `user_type` are required.
-
-* `concept_id` - Required. Must be a valid concept id, or else use `concept_id[]=...&concept_id[]=...` to specify multiple concepts.
-* `user_id` - The user whose permissions will be computed. Required when `user_type` is not specified.
-* `user_type` - Either "guest" or "registered". Required when `user_id` is not specified.
+* One of:
+** `concept_id` - Must be a valid concept id, or else use `concept_id[]=...&concept_id[]=...` to specify multiple concepts.
+** `system_object` - A system object identity target, e.g. "GROUP" 
+** `provider` AND `target` - A provider id and a provider object identity target, e.g. "PROVIDER_HOLDINGS"
+* And one of:
+** `user_id` - The user whose permissions will be computed.
+** `user_type` - Either "guest" or "registered".
 
 ### <a name="application-health"></a> Application Health
 
