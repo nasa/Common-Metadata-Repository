@@ -45,8 +45,8 @@
      (for [personnel personnels]
        {:Roles (seq (map #(get dif9-role-umm-role-mapping % "Data Center Contact")
                          (values-at personnel "Role")))
-        :ContactInformation [{:ContactMechanisms (parse-contact-mechanisms personnel)
-                              :Addresses (parse-address personnel)}]
+        :ContactInformation {:ContactMechanisms (parse-contact-mechanisms personnel)
+                             :Addresses (parse-address personnel)}
         :FirstName (value-of personnel "First_Name")
         :MiddleName (value-of personnel "Middle_Name")
         :LastName (value-of personnel "Last_Name")}))))

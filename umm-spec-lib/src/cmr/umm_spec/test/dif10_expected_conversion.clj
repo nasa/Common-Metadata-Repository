@@ -85,14 +85,13 @@
   "Retruns the expected contact information for the given contact information."
   [contact-info]
   (let [contact-info (-> contact-info
-                         (first)
                          (dissoc :ServiceHours)
                          (dissoc :RelatedUrls)
                          (dissoc :ContactInstruction)
                          (update :ContactMechanisms expected-dif10-contact-mechanisms)
                          (update :Addresses conversion-util/expected-dif-addresses))]
     (when (seq (util/remove-nil-keys contact-info))
-      [(cmn/map->ContactInformationType contact-info)])))
+      (cmn/map->ContactInformationType contact-info))))
 
 (defn- expected-dif10-contact-info-urls
   "Returns a vector of the first URL in the list"
@@ -122,19 +121,18 @@
    If all fields are nil, return nil. Data Center contact infos do not have Contact Mechanisms
    or Addresses"
   [contact-info]
-  (let [contact-info (first contact-info)]
-     (if (and (nil? (:ServiceHours contact-info))
-              (nil? (:ContactInstruction contact-info))
-              (nil? (:RelatedUrls contact-info)))
-      nil
-      (let [contact-info
-             (-> contact-info
-                 (update :RelatedUrls expected-dif-10-contact-info-related-urls)
-                 (dissoc :ContactMechanisms)
-                 (dissoc :Addresses))]
-        (if (seq (util/remove-nil-keys contact-info))
-          [(cmn/map->ContactInformationType contact-info)]
-          contact-info)))))
+  (if (and (nil? (:ServiceHours contact-info))
+           (nil? (:ContactInstruction contact-info))
+           (nil? (:RelatedUrls contact-info)))
+    nil
+    (let [contact-info
+          (-> contact-info
+              (update :RelatedUrls expected-dif-10-contact-info-related-urls)
+              (dissoc :ContactMechanisms)
+              (dissoc :Addresses))]
+      (if (seq (util/remove-nil-keys contact-info))
+        (cmn/map->ContactInformationType contact-info)
+        contact-info))))
 
 (defn- contact->expected-dif10-collection
   "Return the expected contact person or contact group for the DIF 10 collection, not associated

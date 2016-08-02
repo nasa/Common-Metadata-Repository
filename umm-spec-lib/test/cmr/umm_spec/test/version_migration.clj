@@ -186,3 +186,76 @@
                                  :Description "Not provided"}]})]
         (is (= "aa1" (:Description (first (:AdditionalAttributes result)))))
         (is (= "Not provided" (:Description (second (:AdditionalAttributes result)))))))
+
+(deftest migrate-1_5-up-to-1_6
+  (let [result (vm/migrate-umm {} :collection "1.5" "1.6"
+                               {:DataCenters
+                                [{:ShortName "dc1"
+                                  :ContactInformation
+                                  [{:ServiceHours "M-F 9-5"
+                                    :ContactInstruction "Call"}
+                                   {:ServiceHours "M-W 6-9"}]
+                                  :ContactPersons
+                                  [{:LastName "A"
+                                    :ContactInformation
+                                    [{:ServiceHours "M-F 9-5"
+                                      :ContactInstruction "Call"}
+                                     {:ServiceHours "M-W 6-9"}]}]
+                                  :ContactGroups
+                                  [{:GroupName "B"
+                                    :ContactInformation
+                                    [{:ServiceHours "M-F 9-5"
+                                      :ContactInstruction "Call"}
+                                     {:ServiceHours "M-W 6-9"}]}]}]
+                                :ContactPersons
+                                [{:LastName "A"
+                                  :ContactInformation
+                                  [{:ServiceHours "M-F 9-5"
+                                    :ContactInstruction "Call"}
+                                   {:ServiceHours "M-W 6-9"}]}]
+                                :ContactGroups
+                                [{:GroupName "B"
+                                  :ContactInformation
+                                  [{:ServiceHours "M-F 9-5"
+                                    :ContactInstruction "Call"}
+                                   {:ServiceHours "M-W 6-9"}]}]})]
+
+    (is (not (vector? (:ContactInformation (first (:DataCenters result))))))
+    (is (not (vector? (:ContactInformation (first (:ContactPersons (first (:DataCenters result))))))))
+    (is (not (vector? (:ContactInformation (first (:ContactGroups (first (:DataCenters result))))))))
+    (is (not (vector? (:ContactInformation (first (:ContactPersons result))))))
+    (is (not (vector? (:ContactInformation (first (:ContactGroups result))))))))
+
+(deftest migrate-1_6-down-to-1_5
+  (let [result (vm/migrate-umm {} :collection "1.6" "1.5"
+                               {:DataCenters
+                                [{:ShortName "dc1"
+                                  :ContactInformation
+                                  {:ServiceHours "M-F 9-5"
+                                   :ContactInstruction "Call"}
+                                  :ContactPersons
+                                  [{:LastName "A"
+                                    :ContactInformation
+                                    {:ServiceHours "M-F 9-5"
+                                     :ContactInstruction "Call"}}]
+                                  :ContactGroups
+                                  [{:GroupName "B"
+                                    :ContactInformation
+                                    {:ServiceHours "M-F 9-5"
+                                     :ContactInstruction "Call"}}]}]
+                                :ContactPersons
+                                [{:LastName "A"
+                                  :ContactInformation
+                                  {:ServiceHours "M-F 9-5"
+                                   :ContactInstruction "Call"}}]
+                                :ContactGroups
+                                [{:GroupName "B"
+                                  :ContactInformation
+                                  {:ServiceHours "M-F 9-5"
+                                   :ContactInstruction "Call"}}]})]
+
+    (is (vector? (:ContactInformation (first (:DataCenters result)))))
+    (is (vector? (:ContactInformation (first (:ContactPersons (first (:DataCenters result)))))))
+    (is (vector? (:ContactInformation (first (:ContactGroups (first (:DataCenters result)))))))
+    (is (vector? (:ContactInformation (first (:ContactPersons result)))))
+    (is (vector? (:ContactInformation (first (:ContactGroups result)))))))

@@ -23,265 +23,265 @@
 (def example-collection-record
   "An example record with fields supported by most formats."
   (js/parse-umm-c
-    {:Platforms [{:ShortName "Platform 1"
-                  :LongName "Example Platform Long Name 1"
-                  :Type "Aircraft"
-                  :Characteristics [{:Name "OrbitalPeriod"
-                                     :Description "Orbital period in decimal minutes."
-                                     :DataType "float"
-                                     :Unit "Minutes"
-                                     :Value "96.7"}]
-                  :Instruments [{:ShortName "An Instrument"
-                                 :LongName "The Full Name of An Instrument v123.4"
-                                 :Technique "Two cans and a string"
-                                 :NumberOfSensors 1
-                                 :OperationalModes ["on" "off"]
-                                 :Characteristics [{:Name "Signal to Noise Ratio"
-                                                    :Description "Is that necessary?"
-                                                    :DataType "float"
-                                                    :Unit "dB"
-                                                    :Value "10"}]
-                                 :Sensors [{:ShortName "ABC"
-                                            :LongName "Long Range Sensor"
-                                            :Characteristics [{:Name "Signal to Noise Ratio"
-                                                               :Description "Is that necessary?"
-                                                               :DataType "float"
-                                                               :Unit "dB"
-                                                               :Value "10"}]
-                                            :Technique "Drunken Fist"}]}]}]
-     :TemporalExtents [{:TemporalRangeType "temp range"
-                        :PrecisionOfSeconds 3
-                        :EndsAtPresentFlag false
-                        :RangeDateTimes [{:BeginningDateTime (t/date-time 2000)
-                                          :EndingDateTime (t/date-time 2001)}
-                                         {:BeginningDateTime (t/date-time 2002)
-                                          :EndingDateTime (t/date-time 2003)}]}]
-     :ProcessingLevel {:Id "3"
-                       :ProcessingLevelDescription "Processing level description"}
-     :ScienceKeywords [{:Category "EARTH SCIENCE" :Topic "top" :Term "ter"}
-                       {:Category "EARTH SCIENCE SERVICES" :Topic "topic" :Term "term"
-                        :VariableLevel1 "var 1" :VariableLevel2 "var 2"
-                        :VariableLevel3 "var 3" :DetailedVariable "detailed"}]
-     :LocationKeywords [{:Category "CONTINENT"
-                         :Type "AFRICA"
-                         :Subregion1 "CENTRAL AFRICA"
-                         :Subregion2 "ANGOLA"
-                         :Subregion3 nil}
-                        {:Category "CONTINENT"
-                         :Type "Somewhereville"
-                         :DetailedLocation "Detailed Somewhereville"}]
-     :SpatialKeywords ["ANGOLA" "Somewhereville"]
-     :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
-                     :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
+   {:Platforms [{:ShortName "Platform 1"
+                 :LongName "Example Platform Long Name 1"
+                 :Type "Aircraft"
+                 :Characteristics [{:Name "OrbitalPeriod"
+                                    :Description "Orbital period in decimal minutes."
+                                    :DataType "float"
+                                    :Unit "Minutes"
+                                    :Value "96.7"}]
+                 :Instruments [{:ShortName "An Instrument"
+                                :LongName "The Full Name of An Instrument v123.4"
+                                :Technique "Two cans and a string"
+                                :NumberOfSensors 1
+                                :OperationalModes ["on" "off"]
+                                :Characteristics [{:Name "Signal to Noise Ratio"
+                                                   :Description "Is that necessary?"
+                                                   :DataType "float"
+                                                   :Unit "dB"
+                                                   :Value "10"}]
+                                :Sensors [{:ShortName "ABC"
+                                           :LongName "Long Range Sensor"
+                                           :Characteristics [{:Name "Signal to Noise Ratio"
+                                                              :Description "Is that necessary?"
+                                                              :DataType "float"
+                                                              :Unit "dB"
+                                                              :Value "10"}]
+                                           :Technique "Drunken Fist"}]}]}]
+    :TemporalExtents [{:TemporalRangeType "temp range"
+                       :PrecisionOfSeconds 3
+                       :EndsAtPresentFlag false
+                       :RangeDateTimes [{:BeginningDateTime (t/date-time 2000)
+                                         :EndingDateTime (t/date-time 2001)}
+                                        {:BeginningDateTime (t/date-time 2002)
+                                         :EndingDateTime (t/date-time 2003)}]}]
+    :ProcessingLevel {:Id "3"
+                      :ProcessingLevelDescription "Processing level description"}
+    :ScienceKeywords [{:Category "EARTH SCIENCE" :Topic "top" :Term "ter"}
+                      {:Category "EARTH SCIENCE SERVICES" :Topic "topic" :Term "term"
+                       :VariableLevel1 "var 1" :VariableLevel2 "var 2"
+                       :VariableLevel3 "var 3" :DetailedVariable "detailed"}]
+    :LocationKeywords [{:Category "CONTINENT"
+                        :Type "AFRICA"
+                        :Subregion1 "CENTRAL AFRICA"
+                        :Subregion2 "ANGOLA"
+                        :Subregion3 nil}
+                       {:Category "CONTINENT"
+                        :Type "Somewhereville"
+                        :DetailedLocation "Detailed Somewhereville"}]
+    :SpatialKeywords ["ANGOLA" "Somewhereville"]
+    :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
+                    :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
                                                :Geometry {:CoordinateSystem "GEODETIC"
                                                           :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}
-                     :VerticalSpatialDomains [{:Type "Some kind of type"
-                                               :Value "Some kind of value"}]
-                     :OrbitParameters {:SwathWidth 2.0
-                                       :Period 96.7
-                                       :InclinationAngle 94.0
-                                       :NumberOfOrbits 2.0
-                                       :StartCircularLatitude 50.0}}
-     :TilingIdentificationSystems [{:TilingIdentificationSystemName "Tiling System Name"
+                    :VerticalSpatialDomains [{:Type "Some kind of type"
+                                              :Value "Some kind of value"}]
+                    :OrbitParameters {:SwathWidth 2.0
+                                      :Period 96.7
+                                      :InclinationAngle 94.0
+                                      :NumberOfOrbits 2.0
+                                      :StartCircularLatitude 50.0}}
+    :TilingIdentificationSystems [{:TilingIdentificationSystemName "Tiling System Name"
                                     :Coordinate1 {:MinimumValue 1.0
                                                   :MaximumValue 10.0}
                                     :Coordinate2 {:MinimumValue 1.0
                                                   :MaximumValue 10.0}}]
-     :AccessConstraints {:Description "Restriction Comment: Access constraints"
-                         :Value "0"}
-     :UseConstraints "Restriction Flag: Use constraints"
-     :Distributions [{:Sizes [{:Size 15.0 :Unit "KB"}]
-                      :DistributionMedia "8 track"
-                      :DistributionFormat "Animated GIF"
-                      :Fees "Gratuit-Free"}
-                     {:Sizes [{:Size 1.0 :Unit "MB"}]
-                      :DistributionMedia "Download"
-                      :DistributionFormat "Bits"
-                      :Fees "0.99"}]
-     :EntryTitle "The entry title V5"
-     :ShortName "Short"
-     :Version "V5"
-     :DataDates [{:Date (t/date-time 2012)
-                  :Type "CREATE"}]
-     :Abstract "A very abstract collection"
-     :DataLanguage "English"
-     :CollectionDataType "SCIENCE_QUALITY"
-     :Projects [{:ShortName "project short_name"}]
-     :Quality "Pretty good quality"
-     :PublicationReferences [{:PublicationDate (t/date-time 2015)
-                              :OtherReferenceDetails "Other reference details"
-                              :Series "series"
-                              :Title "title"
-                              :DOI {:DOI "doi:xyz"
-                                    :Authority "DOI"}
-                              :Pages "100"
-                              :Edition "edition"
-                              :ReportNumber "25"
-                              :Volume "volume"
-                              :Publisher "publisher"
-                              :RelatedUrl {:URLs ["www.foo.com" "www.shoo.com"]}
-                              :ISBN "ISBN"
-                              :Author "author"
-                              :Issue "issue"
-                              :PublicationPlace "publication place"}
-                             {:DOI {:DOI "identifier"
-                                    :Authority "authority"}}
-                             {:Title "some title"}]
-     :TemporalKeywords ["temporal keyword 1" "temporal keyword 2"]
-     :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]
-     :RelatedUrls [{:Description "Related url description"
-                    :Relation ["GET DATA" "sub type"]
-                    :URLs ["www.foo.com", "www.shoo.com"]
-                    :Title "related url title"
-                    :MimeType "mime type"}
-                   {:Description "Related url 3 description "
-                    :Relation ["Some type" "sub type"]
-                    :URLs ["www.foo.com"]}
-                   {:Description "Related url 2 description"
-                    :Relation ["GET RELATED VISUALIZATION"]
-                    :URLs ["www.foo.com"]
-                    :FileSize {:Size 10.0 :Unit "MB"}}]
-     :MetadataAssociations [{:Type "SCIENCE ASSOCIATED"
-                             :Description "Associated with a collection"
-                             :EntryId "AssocEntryId"
-                             :Version "V8"},
-                            {:Type "INPUT"
-                             :Description "Some other collection"
-                             :EntryId "AssocEntryId2"
-                             :Version "V2"}
-                            {:Type nil
-                             :Description nil
-                             :EntryId "AssocEntryId3"
-                             :Version nil}
-                            {:Type "INPUT"
-                             :EntryId "AssocEntryId4"}]
-     :AdditionalAttributes [{:Group "Accuracy"
-                             :Name "PercentGroundHit"
-                             :DataType "FLOAT"
-                             :Description "Percent of data for this granule that had a detected ground return of the transmitted laser pulse."
-                             :MeasurementResolution "1"
-                             :ParameterRangeBegin "0.0"
-                             :ParameterRangeEnd "100.0"
-                             :ParameterUnitsOfMeasure "Percent"
-                             :UpdateDate "2015-10-22"
-                             :Value "50"
-                             :ParameterValueAccuracy "1"
-                             :ValueAccuracyExplanation "explaination for value accuracy"}
-                            {:Name "aa-name"
-                             :DataType "INT"
-                             :Description su/not-provided}]
-     :ContactGroups [{:Roles ["Investigator"]
-                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
-                      :ContactInformation [{:RelatedUrls [{:Description "Contact group related url description"
-                                                           :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                                           :URLs ["www.contact.group.foo.com"]
-                                                           :Title "contact group related url title"
-                                                           :MimeType "application/html"}]
-                                            :ServiceHours "Weekdays 9AM - 5PM"
-                                            :ContactInstruction "sample contact group instruction"
-                                            :ContactMechanisms [{:Type "Fax" :Value "301-851-1234"}]
-                                            :Addresses [{:StreetAddresses ["5700 Rivertech Ct"]
-                                                         :City "Riverdale"
-                                                         :StateProvince "MD"
-                                                         :PostalCode "20774"
-                                                         :Country "U.S.A."}]}]
-                      :GroupName "NSIDC_IceBridge"}]
-     :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
-                       :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
-                       :ContactInformation [{:RelatedUrls [{:Description "Contact related url description"
-                                                            :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                                            :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
-                                                            :Title "contact related url title"
-                                                            :MimeType "application/html"}]
-                                             :ServiceHours "Weekdays 9AM - 5PM"
-                                             :ContactInstruction "sample contact instruction"
-                                             :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
-                                                                 {:Type "Email" :Value "cmr@nasa.gov"}]
-                                             :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
-                                                          :City "Greenbelt"
-                                                          :StateProvince "MD"
-                                                          :PostalCode "20771"
-                                                          :Country "U.S.A."}]}]
-                       :FirstName "John"
-                       :MiddleName "D"
-                       :LastName "Smith"}]
-     :DataCenters [{:Roles ["ORIGINATOR"]
-                    :ShortName "LPDAAC"
-                    :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
-                                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
-                                      :ContactInformation [{:RelatedUrls [{:Description "Contact related url description"
-                                                                           :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                                                           :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
-                                                                           :Title "contact related url title"
-                                                                           :MimeType "application/html"}]
-                                                            :ServiceHours "Weekdays 9AM - 5PM"
-                                                            :ContactInstruction "sample contact instruction"
-                                                            :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
-                                                                                {:Type "Email" :Value "cmr@nasa.gov"}]
-                                                            :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
-                                                                         :City "Greenbelt"
-                                                                         :StateProvince "MD"
-                                                                         :PostalCode "20771"
-                                                                         :Country "U.S.A."}]}]
-                                      :FirstName "John"
-                                      :MiddleName "D"
-                                      :LastName "Smith"}]}
-                   {:Roles ["ARCHIVER" "DISTRIBUTOR"]
-                    :ShortName "TNRIS"
-                    :LongName "Texas Natural Resources Information System"
-                    :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
-                    :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
-                                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
-                                      :ContactInformation [{:RelatedUrls [{:Description "Contact related url description"
-                                                                           :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                                                           :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
-                                                                           :Title "contact related url title"
-                                                                           :MimeType "application/html"}]
-                                                            :ServiceHours "Weekdays 9AM - 5PM"
-                                                            :ContactInstruction "sample contact instruction"
-                                                            :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
-                                                                                {:Type "Email" :Value "cmr@nasa.gov"}]
-                                                            :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
-                                                                         :City "Greenbelt"
-                                                                         :StateProvince "MD"
-                                                                         :PostalCode "20771"
-                                                                         :Country "U.S.A."}]}]
-                                      :FirstName "John"
-                                      :MiddleName "D"
-                                      :LastName "Smith"}]}
-                   {:Roles ["ARCHIVER" "DISTRIBUTOR"]
-                    :ShortName "NSIDC"
-                    :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
-                    :ContactInformation [{:RelatedUrls [{:Description "Contact related url description"
+    :AccessConstraints {:Description "Restriction Comment: Access constraints"
+                        :Value "0"}
+    :UseConstraints "Restriction Flag: Use constraints"
+    :Distributions [{:Sizes [{:Size 15.0 :Unit "KB"}]
+                     :DistributionMedia "8 track"
+                     :DistributionFormat "Animated GIF"
+                     :Fees "Gratuit-Free"}
+                    {:Sizes [{:Size 1.0 :Unit "MB"}]
+                     :DistributionMedia "Download"
+                     :DistributionFormat "Bits"
+                     :Fees "0.99"}]
+    :EntryTitle "The entry title V5"
+    :ShortName "Short"
+    :Version "V5"
+    :DataDates [{:Date (t/date-time 2012)
+                 :Type "CREATE"}]
+    :Abstract "A very abstract collection"
+    :DataLanguage "English"
+    :CollectionDataType "SCIENCE_QUALITY"
+    :Projects [{:ShortName "project short_name"}]
+    :Quality "Pretty good quality"
+    :PublicationReferences [{:PublicationDate (t/date-time 2015)
+                             :OtherReferenceDetails "Other reference details"
+                             :Series "series"
+                             :Title "title"
+                             :DOI {:DOI "doi:xyz"
+                                   :Authority "DOI"}
+                             :Pages "100"
+                             :Edition "edition"
+                             :ReportNumber "25"
+                             :Volume "volume"
+                             :Publisher "publisher"
+                             :RelatedUrl {:URLs ["www.foo.com" "www.shoo.com"]}
+                             :ISBN "ISBN"
+                             :Author "author"
+                             :Issue "issue"
+                             :PublicationPlace "publication place"}
+                            {:DOI {:DOI "identifier"
+                                   :Authority "authority"}}
+                            {:Title "some title"}]
+    :TemporalKeywords ["temporal keyword 1" "temporal keyword 2"]
+    :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]
+    :RelatedUrls [{:Description "Related url description"
+                   :Relation ["GET DATA" "sub type"]
+                   :URLs ["www.foo.com", "www.shoo.com"]
+                   :Title "related url title"
+                   :MimeType "mime type"}
+                  {:Description "Related url 3 description "
+                   :Relation ["Some type" "sub type"]
+                   :URLs ["www.foo.com"]}
+                  {:Description "Related url 2 description"
+                   :Relation ["GET RELATED VISUALIZATION"]
+                   :URLs ["www.foo.com"]
+                   :FileSize {:Size 10.0 :Unit "MB"}}]
+    :MetadataAssociations [{:Type "SCIENCE ASSOCIATED"
+                            :Description "Associated with a collection"
+                            :EntryId "AssocEntryId"
+                            :Version "V8"},
+                           {:Type "INPUT"
+                            :Description "Some other collection"
+                            :EntryId "AssocEntryId2"
+                            :Version "V2"}
+                           {:Type nil
+                            :Description nil
+                            :EntryId "AssocEntryId3"
+                            :Version nil}
+                           {:Type "INPUT"
+                            :EntryId "AssocEntryId4"}]
+    :AdditionalAttributes [{:Group "Accuracy"
+                            :Name "PercentGroundHit"
+                            :DataType "FLOAT"
+                            :Description "Percent of data for this granule that had a detected ground return of the transmitted laser pulse."
+                            :MeasurementResolution "1"
+                            :ParameterRangeBegin "0.0"
+                            :ParameterRangeEnd "100.0"
+                            :ParameterUnitsOfMeasure "Percent"
+                            :UpdateDate "2015-10-22"
+                            :Value "50"
+                            :ParameterValueAccuracy "1"
+                            :ValueAccuracyExplanation "explaination for value accuracy"}
+                           {:Name "aa-name"
+                            :DataType "INT"
+                            :Description su/not-provided}]
+    :ContactGroups [{:Roles ["Investigator"]
+                     :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
+                     :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
                                                          :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                                         :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
-                                                         :Title "contact related url title"
+                                                         :URLs ["www.contact.group.foo.com"]
+                                                         :Title "contact group related url title"
                                                          :MimeType "application/html"}]
                                           :ServiceHours "Weekdays 9AM - 5PM"
-                                          :ContactInstruction "sample contact instruction"
-                                          :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
-                                                              {:Type "Email" :Value "cmr@nasa.gov"}]
-                                          :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
-                                                       :City "Greenbelt"
+                                          :ContactInstruction "sample contact group instruction"
+                                          :ContactMechanisms [{:Type "Fax" :Value "301-851-1234"}]
+                                          :Addresses [{:StreetAddresses ["5700 Rivertech Ct"]
+                                                       :City "Riverdale"
                                                        :StateProvince "MD"
-                                                       :PostalCode "20771"
-                                                       :Country "U.S.A."}]}]
-                    :ContactGroups [{:Roles ["Investigator"]
-                                     :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
-                                     :ContactInformation [{:RelatedUrls [{:Description "Contact group related url description"
-                                                                          :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                                                          :URLs ["www.contact.group.foo.com"]
-                                                                          :Title "contact group related url title"
-                                                                          :MimeType "application/html"}]
-                                                           :ServiceHours "Weekdays 9AM - 5PM"
-                                                           :ContactInstruction "sample contact group instruction"
-                                                           :ContactMechanisms [{:Type "Fax" :Value "301-851-1234"}]
-                                                           :Addresses [{:StreetAddresses ["5700 Rivertech Ct"]
-                                                                        :City "Riverdale"
-                                                                        :StateProvince "MD"
-                                                                        :PostalCode "20774"
-                                                                        :Country "U.S.A."}]}]
-                                     :GroupName "NSIDC_IceBridge"}]}]}))
+                                                       :PostalCode "20774"
+                                                       :Country "U.S.A."}]}
+                     :GroupName "NSIDC_IceBridge"}]
+    :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
+                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+                      :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
+                                                          :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                          :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                          :Title "contact related url title"
+                                                          :MimeType "application/html"}]
+                                           :ServiceHours "Weekdays 9AM - 5PM"
+                                           :ContactInstruction "sample contact instruction"
+                                           :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                               {:Type "Email" :Value "cmr@nasa.gov"}]
+                                           :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                        :City "Greenbelt"
+                                                        :StateProvince "MD"
+                                                        :PostalCode "20771"
+                                                        :Country "U.S.A."}]}
+                      :FirstName "John"
+                      :MiddleName "D"
+                      :LastName "Smith"}]
+    :DataCenters [{:Roles ["ORIGINATOR"]
+                   :ShortName "LPDAAC"
+                   :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
+                                     :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+                                     :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
+                                                                         :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                         :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                                         :Title "contact related url title"
+                                                                         :MimeType "application/html"}]
+                                                          :ServiceHours "Weekdays 9AM - 5PM"
+                                                          :ContactInstruction "sample contact instruction"
+                                                          :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                                              {:Type "Email" :Value "cmr@nasa.gov"}]
+                                                          :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                                       :City "Greenbelt"
+                                                                       :StateProvince "MD"
+                                                                       :PostalCode "20771"
+                                                                       :Country "U.S.A."}]}
+                                     :FirstName "John"
+                                     :MiddleName "D"
+                                     :LastName "Smith"}]}
+                  {:Roles ["ARCHIVER" "DISTRIBUTOR"]
+                   :ShortName "TNRIS"
+                   :LongName "Texas Natural Resources Information System"
+                   :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
+                   :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
+                                     :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+                                     :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
+                                                                         :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                         :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                                         :Title "contact related url title"
+                                                                         :MimeType "application/html"}]
+                                                          :ServiceHours "Weekdays 9AM - 5PM"
+                                                          :ContactInstruction "sample contact instruction"
+                                                          :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                                              {:Type "Email" :Value "cmr@nasa.gov"}]
+                                                          :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                                       :City "Greenbelt"
+                                                                       :StateProvince "MD"
+                                                                       :PostalCode "20771"
+                                                                       :Country "U.S.A."}]}
+                                     :FirstName "John"
+                                     :MiddleName "D"
+                                     :LastName "Smith"}]}
+                  {:Roles ["ARCHIVER" "DISTRIBUTOR"]
+                   :ShortName "NSIDC"
+                   :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
+                   :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
+                                                       :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                       :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                       :Title "contact related url title"
+                                                       :MimeType "application/html"}]
+                                        :ServiceHours "Weekdays 9AM - 5PM"
+                                        :ContactInstruction "sample contact instruction"
+                                        :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                            {:Type "Email" :Value "cmr@nasa.gov"}]
+                                        :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                     :City "Greenbelt"
+                                                     :StateProvince "MD"
+                                                     :PostalCode "20771"
+                                                     :Country "U.S.A."}]}
+                   :ContactGroups [{:Roles ["Investigator"]
+                                    :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
+                                    :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
+                                                                        :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                        :URLs ["www.contact.group.foo.com"]
+                                                                        :Title "contact group related url title"
+                                                                        :MimeType "application/html"}]
+                                                         :ServiceHours "Weekdays 9AM - 5PM"
+                                                         :ContactInstruction "sample contact group instruction"
+                                                         :ContactMechanisms [{:Type "Fax" :Value "301-851-1234"}]
+                                                         :Addresses [{:StreetAddresses ["5700 Rivertech Ct"]
+                                                                      :City "Riverdale"
+                                                                      :StateProvince "MD"
+                                                                      :PostalCode "20774"
+                                                                      :Country "U.S.A."}]}
+                                    :GroupName "NSIDC_IceBridge"}]}]}))
 
 (def example-service-record
   "An example record with fields supported by most formats."

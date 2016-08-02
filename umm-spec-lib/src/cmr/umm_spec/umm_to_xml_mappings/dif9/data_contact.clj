@@ -57,7 +57,7 @@
   ;; information and write it out. Even though theoretically the first contact group could not
   ;; have contact address, but a later contact group could, we don't think it happens
   ;; in real world use cases and just ignore the rest of the contact groups.
-  (let [contact-info (first (:ContactInformation contact))
+  (let [contact-info (:ContactInformation contact)
         contact-mechanisms (:ContactMechanisms contact-info)]
     (vec (concat
            [:Personnel
@@ -81,14 +81,3 @@
   ([c umm-role-dif9-role-mapping]
    (for [contact-group (concat (:ContactGroups c) (:ContactPersons c))]
      (contact->personnel contact-group umm-role-dif9-role-mapping))))
-
-
-
-
-
-
-
-
-
-
-
