@@ -7,7 +7,8 @@
             [cmr.umm-spec.date-util :as dates]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as spatial]
             [cmr.common.util :as util]
-            [cmr.umm-spec.location-keywords :as lk]))
+            [cmr.umm-spec.location-keywords :as lk]
+            [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]))
 
 (defn characteristic-mapping
   [data]
@@ -149,6 +150,7 @@
       (for [kw (:TemporalKeywords c)]
         [:Keyword kw])]
      (echo10-temporal c)
+     (dc/generate-contacts c)
      (echo10-sciencekeywords c)
      (echo10-platforms c)
      [:AdditionalAttributes

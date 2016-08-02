@@ -74,6 +74,30 @@
       (assoc :ValueAccuracyExplanation nil)
       (assoc :Description (su/with-default (:Description attribute)))))
 
+(defn- expected-echo10-contact-information
+  [contact-information]
+  (when (some? contact-information)
+   (-> contact-information
+       (assoc :RelatedUrls nil)
+       (assoc :Addresses nil)
+       (assoc :ContactMechanisms nil))))
+
+(defn- expected-echo10-data-center
+  [data-center]
+  (-> data-center
+      (assoc :ContactGroups nil)
+      (assoc :ContactPersons nil)
+      (assoc :Uuid nil)
+      (assoc :LongName (:ShortName data-center))
+      (assoc :Roles [(first (:Roles data-center))])
+      (assoc-in [:ContactInformation] (expected-echo10-contact-information (:ContactInformation data-center)))))
+
+(defn- expected-echo10-data-centers
+  [data-centers]
+  (if (seq data-centers)
+    (mapv #(expected-echo10-data-center %) data-centers)
+    [su/not-provided-data-center]))
+
 (defn umm-expected-conversion-echo10
   [umm-coll]
   (-> umm-coll
@@ -85,7 +109,7 @@
       (assoc :PublicationReferences nil)
       (assoc :AncillaryKeywords nil)
       (assoc :ISOTopicCategories nil)
-      (assoc :DataCenters [su/not-provided-data-center])
+      (update-in [:DataCenters] expected-echo10-data-centers)
       (assoc :ContactGroups nil)
       (assoc :ContactPersons nil)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)

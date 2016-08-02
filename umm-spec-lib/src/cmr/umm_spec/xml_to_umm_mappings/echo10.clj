@@ -7,7 +7,8 @@
             [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.util :as u]
-            [cmr.umm-spec.location-keywords :as lk]))
+            [cmr.umm-spec.location-keywords :as lk]
+            [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as dc]))
 
 (defn parse-temporal
   "Returns seq of UMM temporal extents from an ECHO10 XML document."
@@ -134,9 +135,7 @@
                        :VariableLevel2 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/Value")
                        :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
                        :DetailedVariable (value-of sk "DetailedVariableKeyword")})
-     ;; DataCenters is not implemented but is required in UMM-C
-     ;; Implement with CMR-3158
-     :DataCenters [u/not-provided-data-center]})
+     :DataCenters (dc/parse-data-centers doc)})
 
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document."
