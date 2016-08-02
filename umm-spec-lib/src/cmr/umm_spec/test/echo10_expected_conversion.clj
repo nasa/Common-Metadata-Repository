@@ -8,7 +8,8 @@
            [cmr.umm-spec.related-url :as ru-gen]
            [cmr.umm-spec.location-keywords :as lk]
            [cmr.umm-spec.test.location-keywords-helper :as lkt]
-           [cmr.umm-spec.models.collection :as umm-c]))
+           [cmr.umm-spec.models.collection :as umm-c]
+           [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]))
 
 
 (defn- fixup-echo10-data-dates
@@ -74,13 +75,20 @@
       (assoc :ValueAccuracyExplanation nil)
       (assoc :Description (su/with-default (:Description attribute)))))
 
+(defn- order-contact-mechanisms
+  [mechanisms]
+  (def mechanisms mechanisms)
+  (seq (concat
+          (remove #(contains? dc/echo10-non-phone-contact-mechanisms (:Type %)) mechanisms)
+          (filter #(= "Email" (:Type %)) mechanisms))))
+
 (defn- expected-echo10-contact-information
   [contact-information]
-  (when (some? contact-information)
+  (when contact-information
    (-> contact-information
        (assoc :RelatedUrls nil)
        (assoc :Addresses nil)
-       (assoc :ContactMechanisms nil))))
+       (update-in [:ContactMechanisms] order-contact-mechanisms))))
 
 (defn- expected-echo10-data-center
   [data-center]

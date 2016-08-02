@@ -19,13 +19,26 @@
     "PROCESSOR" "PROCESSOR"
     "Producer" "PROCESSOR"})
 
+(defn- parse-contact-mechanisms
+  [contact]
+  (def contact contact)
+  (seq (concat
+        (for [phone (select contact "OrganizationPhones/Phone")]
+          {:Type (value-of phone "Type")
+           :Value (value-of phone "Number")})
+        (for [email (values-at contact "OrganizationEmails/Email")]
+          {:Type "Email"
+           :Value email}))))
+
 (defn- parse-contact-information
   [contact]
   (let [service-hours (value-of contact "HoursOfService")
-        instructions (value-of contact "Instructions")]
-    (when (or (some? service-hours) (some? instructions))
+        instructions (value-of contact "Instructions")
+        mechanisms (parse-contact-mechanisms contact)]
+    (when (or service-hours instructions mechanisms)
       {:ServiceHours service-hours
-       :ContactInstruction instructions})))
+       :ContactInstruction instructions
+       :ContactMechanisms mechanisms})))
 
 (defn parse-data-centers
   [doc]
