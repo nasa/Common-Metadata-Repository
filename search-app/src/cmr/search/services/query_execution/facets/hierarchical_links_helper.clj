@@ -124,37 +124,46 @@
                                   (get-potential-matching-query-params query-params field-name))]
      (remove-value-from-query-params-for-hierachical-field query-params potential-qp-matches value))))
 
+(defn- remove-index-from-params
+  "Returns the query parameters for the provided base-field with the index removed from the
+  parameter name."
+  [query-params base-field]
+  (util/map-keys #(str/replace % #"\[\d+\]" "") query-params))
+
+(defn- find-duplicate-indexes
+  "Returns a set of indexes that have query parameters that are completely duplicated by another
+  index for the given base field."
+  [base-field params-by-index]
+  (set
+   (flatten
+    (for [[idx qps] params-by-index
+          :let [qps (remove-index-from-params qps base-field)]]
+      (keep (fn [[matching-index matching-qps]]
+              (when (and (not= idx matching-index)
+                         ;; remove the index from the parameters to compare
+                         (let [matching-qps (remove-index-from-params matching-qps base-field)]
+                           ;; another group of params fully contains this group of params
+                           (and (= qps (select-keys matching-qps (keys qps)))
+                                (or (not= qps matching-qps)
+                                    ;; If multiple sets of parameters exactly match, get rid of one
+                                    ;; and keep one
+                                    (< idx matching-index)))))
+                idx))
+            params-by-index)))))
+
 (defn- remove-duplicate-params
   "Removes any parameters for the provided field which are exact subsets of another index for the
   same field."
   [query-params base-field]
-  (let [potential-qps (filter (fn [[k _]]
-                                (re-find (re-pattern base-field) k))
-                              query-params)   ;; Eliminate any params we do not care about
-        ;; Group the remaining params by index
-        param-groups-by-index (group-by (fn [[k _]]
-                                          (second (re-find #"\[\d+\]" k)))
-                                        potential-qps)
-        ;; Iterate through each set of parameters
-        indexes-to-remove
-         (set
-          (flatten
-           (for [[idx qps] param-groups-by-index
-                 :let [qps (util/map-keys #(str/replace % #"\[\d+\]" "")
-                                          (into {} qps))]]
-             (keep (fn [[matching-index matching-qps]]
-                     (when (and (not= idx matching-index)
-                                ;; remove the index
-                                (let [matching-qps (util/map-keys #(str/replace % #"\[\d+\]" "")
-                                                                  (into {} matching-qps))]
-                                  ;; another group of params fully contains this group of params
-                                  (and (= qps (select-keys matching-qps (keys qps)))
-                                       (or (not= qps matching-qps)
-                                           (< (Integer/parseInt (format "%s" idx))
-                                              (Integer/parseInt (format "%s" matching-index)))))))
-                       idx))
-                   param-groups-by-index))))
-        query-keys-to-remove (mapcat #(keys (get param-groups-by-index %)) indexes-to-remove)]
+  (let [base-field-params-by-index (group-by (fn [[k _]]
+                                               (when (re-find (re-pattern base-field) k)
+                                                 (->> (re-find #"\[\d+\]" k)
+                                                      second
+                                                      (format "%s")
+                                                      Integer/parseInt)))
+                                             query-params)
+        indexes-to-remove (find-duplicate-indexes base-field base-field-params-by-index)
+        query-keys-to-remove (mapcat #(keys (get base-field-params-by-index %)) indexes-to-remove)]
     (if (seq query-keys-to-remove)
       (apply dissoc query-params query-keys-to-remove)
       query-params)))
@@ -190,8 +199,7 @@
     applied-children-tuples]
    (if (keys (dissoc ancestors-map "category"))
      ;; Check if all ancestors are in the query-params with the parent index
-    ;  (let [[base-field subfield] (split-into-base-field-and-subfield field-name)
-     (let [[_ base-field subfield] (re-find #"(.*)\[\d+\]\[(.*)\]" field-name)
+     (let [[base-field subfield] (split-into-base-field-and-subfield field-name)
            ;; In order for a field to be considered for removal, it and all of its ancestors must
            ;; be found in the query parameters. This builds a sequence of query parameters to check
            ;; against (one set of query parameters for each potential parent index).
