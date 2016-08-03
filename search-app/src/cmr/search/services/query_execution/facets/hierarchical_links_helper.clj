@@ -22,6 +22,10 @@
 (defn- get-indexes-for-field-name
   "Returns a set of all of the indexes for the given field name within the query parameters."
   [query-params base-field]
+  ;; Regex to find any query params for the base-field, and extract the index for each matching
+  ;; param. e.g. with a base field of "foo" and param name of "foo[11][bar]", the regex will
+  ;; extract 11 as the index. It would not match "notfoo[11][bar]" because of the different base
+  ;; field.
   (let [field-regex (re-pattern (format "%s\\[(\\d+)\\]\\[.*\\]" base-field))]
     (set (keep #(some-> (re-matches field-regex %) second Integer/parseInt)
                (keys query-params)))))
@@ -46,22 +50,20 @@
   passed in value. Looks for matches case insensitively."
   [query-params value]
   (let [value (str/lower-case value)]
-    (keep (fn [[k value-or-values]]
-            (when (coll? value-or-values)
-              (when (some #{value} (map str/lower-case value-or-values))
-                k)))
-          query-params)))
+    (for [[k value-or-values] query-params
+          :when (and (coll? value-or-values)
+                     (some #{value} (map str/lower-case value-or-values)))]
+      k)))
 
 (defn- get-keys-to-remove
   "Returns a sequence of keys that have a single value which matches the passed in value. Looks for
   matches case insensitively."
   [query-params value]
   (let [value (str/lower-case value)]
-    (keep (fn [[k value-or-values]]
-            (when-not (coll? value-or-values)
-              (when (= (str/lower-case value-or-values) value)
-                k)))
-          query-params)))
+    (for [[k value-or-values] query-params
+          :when (and (not (coll? value-or-values))
+                     (= (str/lower-case value-or-values) value))]
+      k)))
 
 (defn- get-potential-matching-query-params
   "Returns a subset of query parameters whose keys match the provided field-name and ignoring the

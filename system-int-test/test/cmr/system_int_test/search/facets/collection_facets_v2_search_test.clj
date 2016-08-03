@@ -244,11 +244,11 @@
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all))
   (testing (str "Traversing a single hierarchical keyword returns the same index for all subfields "
                 "in the remove links")
-    (is (= #{"0"} (->> (search-and-return-v2-facets)
-                       fu/traverse-hierarchical-links-in-order
-                       fu/get-all-links
-                       (mapcat fu/get-science-keyword-indexes-in-link)
-                       set))))
+    (is (= #{0} (->> (search-and-return-v2-facets)
+                     fu/traverse-hierarchical-links-in-order
+                     fu/get-all-links
+                     (mapcat fu/get-science-keyword-indexes-in-link)
+                     set))))
   (testing (str "Selecting a field with the same name in another hierarchical field will result in "
                 "only the correct hierarchical field from being applied in the facets.")
     (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all sk-same-vl1))
@@ -275,7 +275,6 @@
                       fu/traverse-hierarchical-links-in-order
                       fu/get-all-links
                       (mapcat fu/get-science-keyword-indexes-in-link)
-                      (map #(Integer/parseInt %))
                       set)]
       (is (= expected actual))))
 

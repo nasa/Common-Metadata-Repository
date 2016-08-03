@@ -138,10 +138,8 @@
 (defn- find-first-apply-link
   "Takes a facet response and recursively finds the first apply link starting at the top node."
   [facet-response]
-  (if-let [apply-link (get-in facet-response [:links :apply])]
-    apply-link
-    (when-let [first-apply-link (some find-first-apply-link (:children facet-response))]
-      first-apply-link)))
+  (or (get-in facet-response [:links :apply])
+      (some find-first-apply-link (:children facet-response))))
 
 (defn traverse-hierarchical-links-in-order
   "Takes a facet response and recursively clicks on the first apply link in the hierarchy until
@@ -163,7 +161,7 @@
            all-indexes nil]
       (if-not matches
         all-indexes
-        (recur (re-find matcher) (conj all-indexes (second matches)))))))
+        (recur (re-find matcher) (conj all-indexes (Integer/parseInt (second matches))))))))
 
 (defn get-all-links
   "Returns all of the links in a facet response."
