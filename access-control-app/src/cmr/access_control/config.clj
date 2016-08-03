@@ -27,7 +27,8 @@
          :queues [(index-queue-name)]
          :exchanges [(access-control-exchange-name)]
          :queues-to-exchanges {(index-queue-name) [(access-control-exchange-name)
-                                                   (provider-exchange-name)]}))
+                                                   (provider-exchange-name)
+                                                   "cmr_ingest.exchange"]}))
 
 
 

@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.ingest.collection-ingest-test
   "CMR collection ingest integration tests"
   (:require [clojure.test :refer :all]
+            [cmr.access-control.test.util :as ac]
             [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.index-util :as index]
@@ -386,6 +387,41 @@
     (is (d/refs-match?
           [gran3]
           (search/find-refs :granule {"concept-id" (:concept-id gran3)})))))
+
+(deftest delete-collection-acls-test
+  ;; Ingest a collection under PROV1.
+  (let [coll1 (d/ingest "PROV1" (dc/collection))
+        coll2 (d/ingest "PROV1" (dc/collection))
+        token (e/login (s/context) "user1")]
+    ;; Ingest some ACLs that reference the collection by concept id.
+    (ac/create-acl token {:group_permissions [{:user_type "registered"
+                                               :permissions ["read" "order"]}]
+                          :catalog_item_identity {:name "coll1 ACL"
+                                                  :provider_id "PROV1"
+                                                  :collection_identifier {:entry_titles [(:entry-title coll1)]}}})
+    (ac/create-acl token {:group_permissions [{:user_type "guest"
+                                               :permissions ["read"]}]
+                          :catalog_item_identity {:name "coll1/coll2 ACL"
+                                                  :provider_id "PROV1"
+                                                  :collection_identifier {:entry_titles [(:entry-title coll1) (:entry-title coll2)]}}})
+    (index/wait-until-indexed)
+    ;; Verify that the ACLs are found in Access Control Service search.
+    (let [results (:items (ac/search-for-acls token {:identity_type "catalog_item"}))]
+      (is (= [1 1] (map :revision_id results)))
+      (is (= ["coll1 ACL" "coll1/coll2 ACL"] (map :name results))))
+    ;; Delete the collection via ingest.
+    ;; NOTE: I don't understand what d/item->concept is for... why can't I call delete-concept with the value returned from ingest?
+    (ingest/delete-concept (d/item->concept coll1 :echo10))
+    (index/wait-until-indexed)
+    ;; Verify that those ACLs are NOT found.
+    (let [results (:items (ac/search-for-acls token {:identity_type "catalog_item"}))]
+      (is (= [2] (map :revision_id results)))
+      (is (= ["coll1/coll2 ACL"] (map :name results)))
+      (is (= [(:entry-title coll2)]
+             (-> (ac/get-acl token (:concept_id (first results)))
+                 :catalog_item_identity
+                 :collection_identifier
+                 :entry_titles))))))
 
 (deftest delete-deleted-collection-with-new-revision-id-returns-404
   (let [coll (d/ingest "PROV1" (dc/collection))
