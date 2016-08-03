@@ -270,7 +270,7 @@
   (testing (str "When there are multiple fields selected at the same level of the hierarchy they "
                 "each have different indexes")
     (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all sk-same-vl1 sk-diff-vl1))
-    (let [expected #{0 1 2 3} ;; Went from 3 to 4 values - Not sure why 2 is not included TODO add unit tests for has-siblings?
+    (let [expected #{0 1 2 3}
           actual (->> (search-and-return-v2-facets)
                       fu/traverse-hierarchical-links-in-order
                       fu/get-all-links
