@@ -9,6 +9,15 @@
   "ORIGINATOR" "Data Originator"
   "PROCESSOR" "PROCESSOR"})
 
+(def umm-contact-person-role->echo10-contact-person-role
+ {"Data Center Contact" "DATA CENTER CONTACT"
+  "Technical Contact" "TECHNICAL CONTACT"
+  "Science Contact" "Technical Contact for Science"
+  "Investigator" "INVESTIGATOR"
+  "Metadata Author" "METADATA AUTHOR"
+  "User Services" "User Services"
+  "Science Software" "Science Software Development Manager"})
+
 ;; ECHO10 has email and phone contact mechanisms. UMM Email goes to ECHO10 email. Facebook and Twitter
 ;; contact mechanisms are dropped. Everything else is considered phone.
 (def echo10-non-phone-contact-mechanisms
@@ -54,6 +63,28 @@
             [:PostalCode (:PostalCode address)]
             [:Country (:Country address)]])])))
 
+
+(defn required-name
+ [name]
+ (if name
+   name
+   u/not-provided))
+
+(defn- generate-contact-persons
+  "Returns the ECHO10 Contact Person elements from the given UMM collection or data center"
+  [c]
+  (let [contact-persons (:ContactPersons c)]
+    (when (seq contact-persons)
+      [:ContactPersons
+        (for [person contact-persons]
+          [:ContactPerson
+           [:FirstName (required-name (:FirstName person))]
+           [:MiddleName (:MiddleName person)]
+           [:LastName (required-name (:LastName person))]
+           [:JobPosition (first
+                          (map #(get umm-contact-person-role->echo10-contact-person-role %)
+                           (:Roles person)))]])])))
+
 (defn- generate-organization-contacts
   "Returns the ECHO10 Contact elements from the given UMM collection data centers."
   [c]
@@ -68,10 +99,10 @@
        [:HoursOfService (:ServiceHours contact-information)]
        [:Instructions (:ContactInstruction contact-information)]
        [:OrganizationName (:ShortName center)]
-       ;[:OrganizationName (:LongName center)]])))
        (generate-addresses contact-information)
        (generate-phones contact-information)
-       (generate-emails contact-information)])))
+       (generate-emails contact-information)
+       (generate-contact-persons center)])))
 
 (defn generate-contacts
   "Returns the ECHO10 Contact elements from the given UMM"

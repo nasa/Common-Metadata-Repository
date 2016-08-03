@@ -19,6 +19,27 @@
     "PROCESSOR" "PROCESSOR"
     "Producer" "PROCESSOR"})
 
+(def echo10-job-position0->umm-contact-person-role
+ {"DATA CENTER CONTACT" "Data Center Contact"
+  "Primary Contact" "Data Center Contact"
+  "TECHNICAL CONTACT" "Technical Contact"
+  "Product Team Leader" "Technical Contact"
+  "Technical Contact for Science" "Science Contact"
+  "GLAS Science Team Leader" "Science Contact"
+  "ICESAT Project Scientist" "Science Contact"
+  "INVESTIGATOR" "Investigator"
+  "Associate Principal Investigator" "Investigator"
+  "METADATA AUTHOR" "Metadata Author"
+  "DIF AUTHOR" "Metadata Author"
+  "TECHNICAL CONTACT, DIF AUTHOR" "Metadata Author"
+  "NSIDC USER Services" "User Services"
+  "User Services" "User Services"
+  "GHRC USER SERVICES" "User Services"
+  "Science Software Development Manager" "Science Software"
+  "Deputy Science Software Development Manager" "Science Software"
+  "Sea Ice Algorithms" "Science Software"
+  "Snow Algorithms" "Science Software"})
+
 (defn- parse-contact-mechanisms
   [contact]
   (seq (concat
@@ -50,6 +71,15 @@
        :ContactMechanisms mechanisms
        :Addresses addresses})))
 
+(defn- parse-contact-persons
+  [contact]
+  (for [person (select contact "ContactPersons/ContactPerson")]
+    {:Roles (map #(get echo10-job-position0->umm-contact-person-role %)
+              [(value-of person "JobPosition")])
+     :FirstName (value-of person "FirstName")
+     :MiddleName (value-of person "MiddleName")
+     :LastName (value-of person "LastName")}))
+
 (defn parse-data-centers
   [doc]
   (let [contacts (select doc "/Collection/Contacts/Contact")]
@@ -57,6 +87,6 @@
     (for [contact contacts]
       {:Roles (map #(get echo10-contact-role->umm-data-center-role %) [(value-of contact "Role")])
        :ShortName (value-of contact "OrganizationName")
-       :LongName (value-of contact "OrganizationName")
-       :ContactInformation (parse-contact-information contact)})
+       :ContactInformation (parse-contact-information contact)
+       :ContactPersons (parse-contact-persons contact)})
     [u/not-provided-data-center])))

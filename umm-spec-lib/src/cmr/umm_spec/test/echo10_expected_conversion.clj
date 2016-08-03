@@ -97,13 +97,29 @@
        (update-in [:Addresses] #(mapv expected-echo10-address %))
        (update-in [:ContactMechanisms] expected-contact-mechanisms))))
 
+
+(defn- expected-echo10-contact-person
+  [contact-person]
+  (when contact-person
+   (-> contact-person
+       (assoc :ContactInformation nil)
+       (assoc :Uuid nil)
+       (update-in [:FirstName] dc/required-name)
+       (update-in [:LastName] dc/required-name)
+       (assoc-in [:Roles] [(first (:Roles contact-person))]))))
+
+(defn- expected-echo10-contact-persons
+  [contact-persons]
+  (when (seq contact-persons)
+    (mapv expected-echo10-contact-person contact-persons)))
+
 (defn- expected-echo10-data-center
   [data-center]
   (-> data-center
       (assoc :ContactGroups nil)
-      (assoc :ContactPersons nil)
+      (update-in [:ContactPersons] expected-echo10-contact-persons)
       (assoc :Uuid nil)
-      (assoc :LongName (:ShortName data-center))
+      (assoc :LongName nil)
       (assoc :Roles [(first (:Roles data-center))])
       (assoc-in [:ContactInformation] (expected-echo10-contact-information (:ContactInformation data-center)))))
 
