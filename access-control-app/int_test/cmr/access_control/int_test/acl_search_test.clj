@@ -443,14 +443,16 @@
                                                              :permitted-user users})]
           (is (= (acls->search-response (count acls) acls)
                  (dissoc response :took))))
-        "Four criteria catalog item search"
+        "Multiple search criteria"
         ["PROV1"] ["registered"] ["catalog_item"] ["user1"] first-result
 
-        "One criteria is wrong"
+        "One criteria changed to get empy result"
         ["PROV1"] ["guest"] ["catalog_item"] ["user1"] []
 
-        "Multiple search criteria with only permitted groups being registered and guest but user1 being specified as permitted user"
+        ;;To show that when permitted groups are specified, the groups associated with the user but not included in the permitted groups params are not returned
+        "Multiple search criteria with permitted groups being registered and guest but user1 being specified as permitted user"
         ["PROV1" "PROV2"] ["registered" "guest"] ["catalog_item" "provider"] ["user1"] second-result
 
+        ;;Shows when permitted groups are not specified, then all user groups are returned for that user
         "Multiple search criteria with no permitted group specified and permitted users set to user2"
         ["PROV1" "PROV2"] [""] ["catalog_item" "provider"] ["user2"] third-result))))
