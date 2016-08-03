@@ -3,10 +3,70 @@
             [clojure.string :as s]
             [clj-time.coerce :as c]
             [clojure.test.check.clojure-test]
-            [clojure.test.check]
+            [clojure.test.check :as test-check]
+            [com.gfredericks.test.chuck.clojure-test :as chuck]
+            [clojure.test.check.properties :as prop]
             [clojure.test]
+            [proto-repl.saved-values :as proto-repl-saved-values]
             [clojure.pprint])
   (:import java.util.Random))
+
+(defn save-last-failed-values
+  "Saves the bindings map captured from the given namespace into the Proto REPL saved values atom so
+   it can be displayed like normal saved values."
+  [name current-ns bindings-map]
+  (let [saved-values-atom (var-get #'proto-repl-saved-values/saved-values-atom)
+        saved-values {:id (proto-repl-saved-values/guid)
+                      :the-ns current-ns
+                      :values bindings-map}]
+   (swap! saved-values-atom assoc name [saved-values])))
+
+(defn binding-values
+  "Macro helper. Takes a binding vector and returns a map of code to quote the binding name to
+   the value of the binding. Used to create a map of binding names to values."
+  [bindings]
+  (into {} (for [[binding-name _] (partition 2 bindings)]
+             [`(quote ~binding-name) binding-name])))
+
+(defmacro qc-and-report-exception
+  [name final-reports tests bindings & body]
+  `(chuck/report-exception
+    (test-check/quick-check
+      ~tests
+      (prop/for-all ~bindings
+        (let [reports# (chuck/capture-reports ~@body)]
+          (swap! ~final-reports chuck/save-to-final-reports reports#)
+
+          ;; CODE Added to original qc-and-report-exception function
+          ;; Saves the values into the Proto REPL saved values atom so they can be displayed.
+          (when-not (chuck/pass? reports#)
+            (save-last-failed-values ~name (symbol (str *ns*)) ~(binding-values bindings)))
+
+          (chuck/pass? reports#))))))
+
+(defmacro checking
+  "Copied from com.gfredericks.test.chuck.clojure-test so that we can add code to capture the generated
+   values.
+
+  ORIGINAL DESCRIPTION:
+  A macro intended to replace the testing macro in clojure.test with a
+  generative form. To make (testing \"doubling\" (is (= (* 2 2) (+ 2 2))))
+  generative, you simply have to change it to
+  (checking \"doubling\" 100 [x gen/int] (is (= (* 2 x) (+ x x)))).
+
+  For more details on this code, see http://blog.colinwilliams.name/blog/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check/"
+  [name tests bindings & body]
+  `(chuck/-testing ~name
+    (fn []
+      (let [final-reports# (atom [])]
+        (qc-and-report-exception ~name final-reports# ~tests ~bindings ~@body)
+        (doseq [r# @final-reports#]
+          (chuck/-report r#))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; DEPRECATED
+;; The following functions until END OF DEPRECATED are deprecated in lieu of the above checking code
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; The following two functions were copy and pasted from the clojure test.check library to fix a small
@@ -41,7 +101,8 @@
       (clojure.test/is result))))
 
 (defmacro defspec
-  "Defines a new clojure.test test var that uses `quick-check` to verify
+  "DEPRECATED. Use deftest with checking function.
+  Defines a new clojure.test test var that uses `quick-check` to verify
   [property] with the given [args] (should be a sequence of generators).
   You can call the function defined as [name]
   with no arguments to trigger this test directly (i.e.  without starting a
@@ -73,8 +134,9 @@
              (flatten (seq quick-check-opts#)))))))))
 
 
-;; End of copy and pasted section
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; END OF DEPRECATED
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 
 (defn optional
