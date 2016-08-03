@@ -249,10 +249,10 @@
   the facet terms at the provided depth in the tree. Returns a sequence of the terms."
   [facet depth terms]
   (if (<= depth 0)
-      (concat terms (keep :title (:children facet)))
-      (when (:children facet)
-        (apply concat terms (for [child-facet (:children facet)]
-                              (get-terms-at-depth child-facet (dec depth) terms))))))
+    (concat terms (keep :title (:children facet)))
+    (when (:children facet)
+      (apply concat terms (for [child-facet (:children facet)]
+                            (get-terms-at-depth child-facet (dec depth) terms))))))
 
 (defn- get-terms-for-subfield
   "Returns all of the terms for the provided subfield within a hierarchical facet response."
@@ -272,16 +272,16 @@
                           field-hierarchy)]
     (remove nil?
       (apply concat
-         (keep (fn [subfield]
-                 (when-let [search-terms (seq (get-search-terms-for-hierarchical-field
-                                               field subfield query-params))]
-                   (let [terms-in-facets (map str/lower-case
-                                              (get-terms-for-subfield hierarchical-facet subfield
-                                                                      field-hierarchy))]
-                     (for [term search-terms]
-                       (when-not (some #{(str/lower-case term)} terms-in-facets)
-                         [subfield term])))))
-               field-hierarchy)))))
+        (for [subfield field-hierarchy
+              :let [search-terms (get-search-terms-for-hierarchical-field field subfield
+                                                                          query-params)]
+              :when (seq search-terms)]
+          (let [terms-in-facets (map str/lower-case
+                                     (get-terms-for-subfield hierarchical-facet subfield
+                                                             field-hierarchy))]
+            (for [term search-terms
+                  :when (not (some #{(str/lower-case term)} terms-in-facets))]
+              [subfield term])))))))
 
 (defn- prune-hierarchical-facet
   "Limits a hierarchical facet to a single level below the lowest applied facet. If
@@ -353,16 +353,16 @@
   "Parses the elastic aggregations and generates the v2 facets for all hierarchical fields."
   [elastic-aggregations base-url query-params]
   (let [hierarchical-fields [:science-keywords-h]]
-    (keep (fn [field]
-              (when-let [sub-facets (hierarchical-bucket-map->facets-v2
-                                      field (field elastic-aggregations)
-                                      base-url
-                                      query-params)]
-                (let [field-reg-ex (re-pattern (str (csk/->snake_case_string field) ".*"))
-                      applied? (some? (seq (filter (fn [[k v]] (re-matches field-reg-ex k))
-                                                   query-params)))]
-                  (merge v2h/sorted-facet-map
-                         (assoc sub-facets
-                                :title (field v2h/fields->human-readable-label)
-                                :applied applied?)))))
-          hierarchical-fields)))
+    (for [field hierarchical-fields
+          :let [sub-facets (hierarchical-bucket-map->facets-v2 field (field elastic-aggregations)
+                                                               base-url query-params)]
+          :when (seq sub-facets)]
+      (let [field-reg-ex (re-pattern (str (csk/->snake_case_string field) ".*"))
+            applied? (->> query-params
+                          (filter (fn [[k v]] (re-matches field-reg-ex k)))
+                          seq
+                          some?)]
+        (merge v2h/sorted-facet-map
+               (assoc sub-facets
+                      :title (field v2h/fields->human-readable-label)
+                      :applied applied?))))))

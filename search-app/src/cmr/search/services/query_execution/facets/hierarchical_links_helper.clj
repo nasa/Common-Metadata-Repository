@@ -2,13 +2,16 @@
   "Functions to create links for hierarchical fields within v2 facets. Facets (v2) includes links
   within each value to conduct the same search with either a value added to the query or with the
   value removed. This namespace contains functions to create the links that include or exclude a
-  particular parameter.
+  particular parameter. See https://wiki.earthdata.nasa.gov/display/CMR/Updated+facet+response for
+  details.
 
   Commonly used parameters in the functions include:
 
   base-url - root URL for the link being created.
   query-params - the query parameters from the current search as a map with a key for each
                  parameter name and the value as either a single value or a collection of values.
+  base-field - the base field for the field as a snake case string. For example for a param
+               \"science_keywords_h[0][topic]\" the base-field is \"science_keywords_h\".
   field-name - the query-field that needs to be added to (or removed from) the current search.
   value - the value to apply (or remove) for the given field-name."
   (:require [camel-snake-kebab.core :as csk]
@@ -114,24 +117,23 @@
 
 (defn- find-duplicate-indexes
   "Returns a set of indexes that have query parameters that are completely duplicated by another
-  index."
+  index.
+  params-by-index - A map with the key being a numerical index and values of all the query
+                    parameters for that index."
   [params-by-index]
   (set
-   (flatten
-    (for [[idx qps] params-by-index
-          :let [qps (remove-index-from-params qps)]]
-      (keep (fn [[matching-index matching-qps]]
-              (when (and (not= idx matching-index)
-                         ;; remove the index from the parameters to compare
-                         (let [matching-qps (remove-index-from-params matching-qps)]
-                           ;; another group of params fully contains this group of params
-                           (and (= qps (select-keys matching-qps (keys qps)))
-                                (or (not= qps matching-qps)
-                                    ;; If multiple sets of parameters exactly match, get rid of one
-                                    ;; and keep one
-                                    (> idx matching-index)))))
-                idx))
-            params-by-index)))))
+   (for [[idx qps] params-by-index
+         [matching-index matching-qps] params-by-index
+         ;; Ignore the index when comparing the query parameters
+         :let [qps (remove-index-from-params qps)
+               matching-qps (remove-index-from-params matching-qps)]
+         :when (and (not= idx matching-index)
+                    (and (= qps (select-keys matching-qps (keys qps)))
+                         ;; another group of params fully contains this group of params
+                         (or (not= qps matching-qps)
+                             ;; If multiple sets of parameters exactly match, get rid of all but one
+                             (> idx matching-index))))]
+     idx)))
 
 (defn- remove-duplicate-params
   "Removes any parameters for the provided field which are exact subsets of another index for the
@@ -156,7 +158,9 @@
   Field-name must be of the form <string>[<int>][<string>].
 
   applied-children-tuples - Tuples of [subfield term] for any applied children terms that should
-                            also be removed in the remove link being generated."
+                            also be removed in the remove link being generated.
+  potential-qp-matches - List of query parameters which may need to be removed when generating the
+                         remove link."
   [base-url query-params field-name value applied-children-tuples potential-qp-matches]
   (let [[base-field subfield] (split-into-base-field-and-subfield field-name)
         updated-params (reduce (partial process-removal-for-field-value-tuple base-field
@@ -173,10 +177,8 @@
   (let [;; In order for a field to be considered for removal, it and all of its ancestors must
         ;; be found in the query parameters. This builds a sequence of query parameters to check
         ;; against (one set of query parameters for each potential parent index).
-        ancestors-to-match (map (fn [idx]
-                                  (util/map-keys #(format "%s[%d][%s]" base-field idx %)
-                                                 ancestors-map))
-                                parent-indexes)
+        ancestors-to-match (for [idx parent-indexes]
+                             (util/map-keys #(format "%s[%d][%s]" base-field idx %) ancestors-map))
         num-ancestors (count (first ancestors-to-match))
         ;; Sequences of actual matches against the query parameters for each potential index
         ancestor-matches (map (fn [ancestor]
@@ -194,12 +196,10 @@
   "Returns a map of query params for the given base-field, indexes, and subfield-value-tuples"
   [base-field indexes subfield-value-tuples]
   (into {}
-        (mapcat (fn [idx]
-                  (concat (for [[k v] subfield-value-tuples]
-                            [(format "%s[%d][%s]" base-field idx
-                                     (csk/->snake_case_string k))
-                             v])))
-                indexes)))
+        (for [idx indexes
+              [k v] subfield-value-tuples
+              :let [param-name (format "%s[%d][%s]" base-field idx (csk/->snake_case_string k))]]
+          [param-name v])))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Public functions
