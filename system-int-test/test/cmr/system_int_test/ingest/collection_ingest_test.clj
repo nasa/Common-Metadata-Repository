@@ -410,7 +410,6 @@
       (is (= [1 1] (map :revision_id results)))
       (is (= ["coll1 ACL" "coll1/coll2 ACL"] (map :name results))))
     ;; Delete the collection via ingest.
-    ;; NOTE: I don't understand what d/item->concept is for... why can't I call delete-concept with the value returned from ingest?
     (ingest/delete-concept (d/item->concept coll1 :echo10))
     (index/wait-until-indexed)
     ;; Verify that those ACLs are NOT found.

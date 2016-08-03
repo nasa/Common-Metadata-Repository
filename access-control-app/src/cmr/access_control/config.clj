@@ -15,6 +15,10 @@
   "The queue containing ingest events for access control"
   {:default "cmr_access_control_index.queue"})
 
+(defconfig concept-ingest-exchange-name
+  "The ingest exchange to which collection and granule change messages are published."
+  {:default "cmr_ingest.exchange"})
+
 (defconfig index-queue-listener-count
   "Number of worker threads to use for the queue listener"
   {:default 5
@@ -28,7 +32,7 @@
          :exchanges [(access-control-exchange-name)]
          :queues-to-exchanges {(index-queue-name) [(access-control-exchange-name)
                                                    (provider-exchange-name)
-                                                   "cmr_ingest.exchange"]}))
+                                                   (concept-ingest-exchange-name)]}))
 
 
 
