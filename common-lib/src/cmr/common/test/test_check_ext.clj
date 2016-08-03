@@ -7,19 +7,26 @@
             [com.gfredericks.test.chuck.clojure-test :as chuck]
             [clojure.test.check.properties :as prop]
             [clojure.test]
-            [proto-repl.saved-values :as proto-repl-saved-values]
             [clojure.pprint])
   (:import java.util.Random))
+
+(defn require-proto-repl-saved-values
+  "Tries to require proto repl saved values safely. Does nothing if not available."
+  []
+  (try
+   (require 'proto-repl.saved-values)
+   (catch Throwable _)))
 
 (defn save-last-failed-values
   "Saves the bindings map captured from the given namespace into the Proto REPL saved values atom so
    it can be displayed like normal saved values."
   [name current-ns bindings-map]
-  (let [saved-values-atom (var-get #'proto-repl-saved-values/saved-values-atom)
-        saved-values {:id (proto-repl-saved-values/guid)
-                      :the-ns current-ns
-                      :values bindings-map}]
-   (swap! saved-values-atom assoc name [saved-values])))
+  (when (find-ns 'proto-repl.saved-values)
+    (let [saved-values-atom (var-get (find-var 'proto-repl.saved-values/saved-values-atom))
+          saved-values {:id (.toString (java.util.UUID/randomUUID))
+                        :the-ns current-ns
+                        :values bindings-map}]
+      (swap! saved-values-atom assoc name [saved-values]))))
 
 (defn binding-values
   "Macro helper. Takes a binding vector and returns a map of code to quote the binding name to
@@ -56,12 +63,15 @@
 
   For more details on this code, see http://blog.colinwilliams.name/blog/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check/"
   [name tests bindings & body]
-  `(chuck/-testing ~name
-    (fn []
-      (let [final-reports# (atom [])]
-        (qc-and-report-exception ~name final-reports# ~tests ~bindings ~@body)
-        (doseq [r# @final-reports#]
-          (chuck/-report r#))))))
+  `(do
+     (require-proto-repl-saved-values)
+     (chuck/-testing
+      ~name
+      (fn []
+        (let [final-reports# (atom [])]
+          (qc-and-report-exception ~name final-reports# ~tests ~bindings ~@body)
+          (doseq [r# @final-reports#]
+            (chuck/-report r#)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DEPRECATED
