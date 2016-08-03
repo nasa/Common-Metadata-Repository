@@ -76,14 +76,9 @@
       (is (= nil
              (find-applied-children {:applied false :title "A"} field-hierarchy true))))))
 
-;; TODO why isn't this working
-(def get-indexes-in-params
-  "Var to call private get-indexes-in-params function in hierarchical facets namespace."
-  #'hv2/get-indexes-in-params)
-
 (deftest get-indexes-in-params
   (are3 [query-params expected]
-    (is (= expected (hv2/get-indexes-in-params query-params "foo" "alpha" "found")))
+    (is (= expected (#'hv2/get-indexes-in-params query-params "foo" "alpha" "found")))
 
     "Single matching param and value"
     {"foo[0][alpha]" "found"} #{0}

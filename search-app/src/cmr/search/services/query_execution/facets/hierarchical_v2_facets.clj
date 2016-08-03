@@ -88,7 +88,7 @@
         relevant-query-params (filter (fn [[k v]] (re-matches subfield-reg-ex k)) query-params)]
     (some? (seq relevant-query-params))))
 
-(defn get-indexes-in-params
+(defn- get-indexes-in-params
   "Returns a list of all of the indexes for the given hierarchical field within the query-params
   that have the provided value.
 
@@ -115,17 +115,15 @@
   include-root? - True if the top level term should be included."
   [facet field-hierarchy include-root?]
   (when (:applied facet)
-    (let [applied-children (remove nil?
-                                   (mapcat #(find-applied-children % (rest field-hierarchy) true)
-                                           (:children facet)))]
+    (let [applied-children (mapcat #(find-applied-children % (rest field-hierarchy) true)
+                                   (:children facet))]
       (if include-root?
         (conj applied-children [(first field-hierarchy) (:title facet)])
         applied-children))))
 
 (defn- has-siblings?
   "Returns true if the given hierarchical field and value have any applied sibling values in the
-  provided query params. Comparisons to the provided value are made case in a case insensitive
-  manner.
+  provided query params. Comparisons to the provided value are made in a case insensitive manner.
 
   base-field - a snake case string, e.g \"science_keywords\"
   parent-subfield - a snake case string for the parent, e.g. \"term\"
@@ -143,7 +141,7 @@
             ;; hierarchy as the provided parameter.
             same-level-indexes (for [[k v] query-params-lowercase
                                      :when (not= value-lowercase (str/lower-case v))]
-                                  (second (re-matches subfield-regex k)))]
+                                 (second (re-matches subfield-regex k)))]
         ;; Filter the query-params to just those with the same index, parent-subfield, and
         ;; parent-value when compared case insensitively
         (seq (for [idx same-level-indexes

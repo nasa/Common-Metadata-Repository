@@ -199,7 +199,7 @@
 (deftest empty-v2-facets-test
   (is (= empty-v2-facets (search-and-return-v2-facets))))
 
-(deftest some-facets-missing-testx
+(deftest some-facets-missing-test
   (fu/make-coll 1 "PROV1"
                 (fu/science-keywords sk3 sk2)
                 (fu/processing-level-id "PL1"))

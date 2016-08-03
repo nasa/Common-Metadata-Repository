@@ -203,7 +203,5 @@
   (if-let [first-title (first titles)]
     (let [child-facet (first (filter #(= first-title (:title %)) (:children facet-response)))]
       (recur child-facet (rest titles)))
-    (let [link (-> (get facet-response :links)
-                   vals
-                   first)]
+    (let [link (-> (get facet-response :links) vals first)]
       (get-in (client/get link {:as :json}) [:body :feed :facets]))))
