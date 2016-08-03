@@ -428,12 +428,7 @@
         acl9 (ingest-acl token (assoc-in (assoc (catalog-item-acl "All Granules PROV2")
                                                 :group_permissions
                                                 [{:group_id (:concept_id group2) :permissions ["create"]}])
-                                         [:catalog_item_identity :provider_id] "PROV2"))
-
-        first-result [acl7]
-        second-result [acl4 acl7]
-        third-result [acl4 acl5 acl6 acl7 acl9]
-        group2-concept-id (:concept_id group2)]
+                                         [:catalog_item_identity :provider_id] "PROV2"))]
     (u/wait-until-indexed)
     (testing "Search with every criteria"
       (are3 [params acls]
