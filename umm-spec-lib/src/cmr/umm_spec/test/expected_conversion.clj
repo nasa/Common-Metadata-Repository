@@ -262,7 +262,7 @@
                                         :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
                                                             {:Type "Email" :Value "cmr@nasa.gov"}
                                                             {:Type "Fax" :Value "301-851-4321"}]
-                                        :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                        :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2" "AAAA"]
                                                      :City "Greenbelt"
                                                      :StateProvince "MD"
                                                      :PostalCode "20771"

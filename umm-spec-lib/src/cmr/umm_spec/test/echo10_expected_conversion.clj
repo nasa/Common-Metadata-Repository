@@ -2,6 +2,7 @@
  "ECHO 10 specific expected conversion functionality"
  (:require [clj-time.core :as t]
            [clj-time.format :as f]
+           [clojure.string :as str]
            [cmr.umm-spec.util :as su]
            [cmr.common.util :as util :refer [update-in-each]]
            [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
@@ -75,20 +76,26 @@
       (assoc :ValueAccuracyExplanation nil)
       (assoc :Description (su/with-default (:Description attribute)))))
 
-(defn- order-contact-mechanisms
+(defn- expected-contact-mechanisms
+   "Remove contact mechanisms with a type that is not supported by ECHO10. ECHO10 contact mechanisms
+   are split up by phone and email in ECHO10 and will come back from XML in that order so make sure
+   they are in the correct order."
   [mechanisms]
-  (def mechanisms mechanisms)
   (seq (concat
           (remove #(contains? dc/echo10-non-phone-contact-mechanisms (:Type %)) mechanisms)
           (filter #(= "Email" (:Type %)) mechanisms))))
+
+(defn- expected-echo10-address
+  [address]
+  (assoc-in address [:StreetAddresses] [(dc/join-street-addresses (:StreetAddresses address))]))
 
 (defn- expected-echo10-contact-information
   [contact-information]
   (when contact-information
    (-> contact-information
        (assoc :RelatedUrls nil)
-       (assoc :Addresses nil)
-       (update-in [:ContactMechanisms] order-contact-mechanisms))))
+       (update-in [:Addresses] #(mapv expected-echo10-address %))
+       (update-in [:ContactMechanisms] expected-contact-mechanisms))))
 
 (defn- expected-echo10-data-center
   [data-center]

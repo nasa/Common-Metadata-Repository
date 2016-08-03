@@ -21,7 +21,6 @@
 
 (defn- parse-contact-mechanisms
   [contact]
-  (def contact contact)
   (seq (concat
         (for [phone (select contact "OrganizationPhones/Phone")]
           {:Type (value-of phone "Type")
@@ -30,15 +29,26 @@
           {:Type "Email"
            :Value email}))))
 
+(defn- parse-addresses
+  [contact]
+  (for [address (select contact "OrganizationAddresses/Address")]
+    {:StreetAddresses [(value-of address "StreetAddress")]
+     :City (value-of address "City")
+     :StateProvince (value-of address "StateProvince")
+     :PostalCode (value-of address "PostalCode")
+     :Country (value-of address "Country")}))
+
 (defn- parse-contact-information
   [contact]
   (let [service-hours (value-of contact "HoursOfService")
         instructions (value-of contact "Instructions")
-        mechanisms (parse-contact-mechanisms contact)]
-    (when (or service-hours instructions mechanisms)
+        mechanisms (parse-contact-mechanisms contact)
+        addresses (parse-addresses contact)]
+    (when (or service-hours instructions mechanisms addresses)
       {:ServiceHours service-hours
        :ContactInstruction instructions
-       :ContactMechanisms mechanisms})))
+       :ContactMechanisms mechanisms
+       :Addresses addresses})))
 
 (defn parse-data-centers
   [doc]
