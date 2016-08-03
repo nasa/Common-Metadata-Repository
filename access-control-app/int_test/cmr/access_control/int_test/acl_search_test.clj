@@ -436,23 +436,36 @@
         group2-concept-id (:concept_id group2)]
     (u/wait-until-indexed)
     (testing "Search with every criteria"
-      (are3 [provider-ids permitted-groups identity-types users acls]
-        (let [response (ac/search-for-acls (u/conn-context) {:provider provider-ids
-                                                             :permitted-group permitted-groups
-                                                             :identity-type identity-types
-                                                             :permitted-user users})]
+      (are3 [params acls]
+        (let [response (ac/search-for-acls (u/conn-context) params)]
           (is (= (acls->search-response (count acls) acls)
                  (dissoc response :took))))
         "Multiple search criteria"
-        ["PROV1"] ["registered"] ["catalog_item"] ["user1"] first-result
+        {:provider "PROV1"
+         :permitted-group "registered"
+         :identity-type "catalog_item"
+         :permitted-user "user1"}
+        [acl7]
 
         "One criteria changed to get empy result"
-        ["PROV1"] ["guest"] ["catalog_item"] ["user1"] []
+        {:provider "PROV1"
+         :permitted-group "guest"
+         :identity-type "catalog_item"
+         :permitted-user "user1"}
+        []
 
         ;;To show that when permitted groups are specified, the groups associated with the user but not included in the permitted groups params are not returned
         "Multiple search criteria with permitted groups being registered and guest but user1 being specified as permitted user"
-        ["PROV1" "PROV2"] ["registered" "guest"] ["catalog_item" "provider"] ["user1"] second-result
+        {:provider ["PROV1" "PROV2"]
+         :permitted-group ["guest" "registered"]
+         :identity-type ["catalog_item" "provider"]
+         :permitted-user "user1"}
+        [acl4 acl7]
 
         ;;Shows when permitted groups are not specified, then all user groups are returned for that user
         "Multiple search criteria with no permitted group specified and permitted users set to user2"
-        ["PROV1" "PROV2"] [""] ["catalog_item" "provider"] ["user2"] third-result))))
+        {:provider ["PROV1" "PROV2"]
+         :permitted-group ""
+         :identity-type ["catalog_item" "provider"]
+         :permitted-user "user2"}
+        [acl4 acl5 acl6 acl7 acl9]))))
