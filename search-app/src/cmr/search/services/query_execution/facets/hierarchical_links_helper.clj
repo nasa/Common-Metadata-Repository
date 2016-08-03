@@ -16,16 +16,20 @@
             [cmr.common.util :as util]
             [cmr.search.services.query-execution.facets.links-helper :as lh]))
 
+(defn- get-indexes-for-field-name
+  "Returns a set of all of the indexes for the given field name within the query parameters."
+  [query-params base-field]
+  (let [field-regex (re-pattern (format "%s\\[(\\d+)\\]\\[.*\\]" base-field))]
+    (set (keep #(some-> (re-matches field-regex %) second Integer/parseInt)
+               (keys query-params)))))
+
 (defn- get-max-index-for-field-name
-  "Returns the max index for the provided field-name within the query parameters.
+  "Returns the max index for the provided field name within the query parameters.
 
   For example if the query parameters included fields foo[0][alpha]=bar and foo[6][beta]=zeta the
   max index of field foo would be 6. If the field is not found then -1 is returned."
   [query-params base-field]
-  (let [field-regex (re-pattern (format "%s\\[(\\d+)\\]\\[.*\\]" base-field))
-        indexes (keep #(some-> (re-matches field-regex %) second Integer/parseInt)
-                      (keys query-params))]
-    (apply max -1 indexes)))
+  (apply max -1 (get-indexes-for-field-name query-params base-field)))
 
 (defn- split-into-base-field-and-subfield
   "Takes a query parameter name and returns the base field and subfield for that query parameter.
@@ -33,28 +37,6 @@
   [param-name]
   (let [[_ base-field subfield] (re-find #"(.*)\[\d+\]\[(.*)\]" param-name)]
     [base-field subfield]))
-
-(defn create-apply-link-for-hierarchical-field
-  "Create a link that will modify the current search to also filter by the given hierarchical
-  field-name and value.
-  Field-name must be of the form <string>[<int>][<string>] such as science_keywords[0][topic]."
-  [base-url query-params field-name ancestors-map parent-indexes value has-siblings? _]
-  (let [[base-field subfield] (split-into-base-field-and-subfield field-name)
-        index-to-use (if (or has-siblings? (empty? parent-indexes))
-                       (inc (get-max-index-for-field-name query-params base-field))
-                       (first parent-indexes))
-        updated-field-name (format "%s[%d][%s]" base-field index-to-use subfield)
-        updated-query-params (assoc query-params updated-field-name value)
-        updated-query-params (if (or has-siblings? (empty? parent-indexes))
-                               ;; Add all of the ancestors for this index
-                               (reduce
-                                (fn [query-params [k v]]
-                                  (let [query-param (format "%s[%d][%s]" base-field index-to-use k)]
-                                    (assoc query-params query-param v)))
-                                updated-query-params
-                                (dissoc ancestors-map "category"))
-                               updated-query-params)]
-    {:apply (lh/generate-query-string base-url updated-query-params)}))
 
 (defn- get-keys-to-update
   "Returns a sequence of keys that have multiple values where at least one of values matches the
@@ -78,7 +60,7 @@
                 k)))
           query-params)))
 
-(defn get-potential-matching-query-params
+(defn- get-potential-matching-query-params
   "Returns a subset of query parameters whose keys match the provided field-name and ignoring the
   index.
 
@@ -116,38 +98,38 @@
 (defn- process-removal-for-field-value-tuple
   "Helper to process a subfield and value tuple to remove the appropriate term from the query
   parameters."
-  ([base-field potential-qp-matches query-params field-value-tuple]
-   (let [[field value] field-value-tuple
-         value (str/lower-case value)
-         field-name (format "%s[0][%s]" base-field (csk/->snake_case_string field))
-         potential-qp-matches (or potential-qp-matches
-                                  (get-potential-matching-query-params query-params field-name))]
-     (remove-value-from-query-params-for-hierachical-field query-params potential-qp-matches value))))
+  [base-field potential-qp-matches query-params field-value-tuple]
+  (let [[field value] field-value-tuple
+        value (str/lower-case value)
+        field-name (format "%s[0][%s]" base-field (csk/->snake_case_string field))
+        potential-qp-matches (or potential-qp-matches
+                                (get-potential-matching-query-params query-params field-name))]
+    (remove-value-from-query-params-for-hierachical-field query-params potential-qp-matches value)))
 
 (defn- remove-index-from-params
   "Returns the query parameters for the provided base-field with the index removed from the
   parameter name."
-  [query-params base-field]
+  [query-params]
   (util/map-keys #(str/replace % #"\[\d+\]" "") query-params))
 
 (defn- find-duplicate-indexes
   "Returns a set of indexes that have query parameters that are completely duplicated by another
-  index for the given base field."
-  [base-field params-by-index]
+  index."
+  [params-by-index]
   (set
    (flatten
     (for [[idx qps] params-by-index
-          :let [qps (remove-index-from-params qps base-field)]]
+          :let [qps (remove-index-from-params qps)]]
       (keep (fn [[matching-index matching-qps]]
               (when (and (not= idx matching-index)
                          ;; remove the index from the parameters to compare
-                         (let [matching-qps (remove-index-from-params matching-qps base-field)]
+                         (let [matching-qps (remove-index-from-params matching-qps)]
                            ;; another group of params fully contains this group of params
                            (and (= qps (select-keys matching-qps (keys qps)))
                                 (or (not= qps matching-qps)
                                     ;; If multiple sets of parameters exactly match, get rid of one
                                     ;; and keep one
-                                    (< idx matching-index)))))
+                                    (> idx matching-index)))))
                 idx))
             params-by-index)))))
 
@@ -155,35 +137,93 @@
   "Removes any parameters for the provided field which are exact subsets of another index for the
   same field."
   [query-params base-field]
-  (let [base-field-params-by-index (group-by (fn [[k _]]
-                                               (when (re-find (re-pattern base-field) k)
-                                                 (->> (re-find #"\[\d+\]" k)
+  (let [query-param-regex (re-pattern (str "^" base-field "\\[\\d+\\]\\["))
+        base-field-params-by-index (group-by (fn [[k _]]
+                                               (when (re-find query-param-regex k)
+                                                 (->> (re-find #"\[(\d+)\]" k)
                                                       second
-                                                      (format "%s")
                                                       Integer/parseInt)))
                                              query-params)
-        indexes-to-remove (find-duplicate-indexes base-field base-field-params-by-index)
+        indexes-to-remove (find-duplicate-indexes base-field-params-by-index)
         query-keys-to-remove (mapcat #(keys (get base-field-params-by-index %)) indexes-to-remove)]
     (if (seq query-keys-to-remove)
       (apply dissoc query-params query-keys-to-remove)
       query-params)))
 
-(defn create-remove-link-for-hierarchical-field
+(defn- create-remove-link-for-hierarchical-field
   "Create a link that will modify the current search to no longer filter on the given hierarchical
   field-name and value. Looks for matches case insensitively.
   Field-name must be of the form <string>[<int>][<string>].
 
   applied-children-tuples - Tuples of [subfield term] for any applied children terms that should
                             also be removed in the remove link being generated."
-  ([base-url query-params field-name _ _ value _ applied-children-tuples]
-   (create-remove-link-for-hierarchical-field base-url query-params field-name _ _ value _ applied-children-tuples nil))
-  ([base-url query-params field-name _ _ value _ applied-children-tuples potential-qp-matches]
-   (let [[base-field subfield] (split-into-base-field-and-subfield field-name)
-         updated-params (reduce (partial process-removal-for-field-value-tuple base-field potential-qp-matches)
-                                query-params
-                                (conj applied-children-tuples [subfield value]))
-         updated-params (remove-duplicate-params updated-params base-field)]
-     {:remove (lh/generate-query-string base-url updated-params)})))
+  [base-url query-params field-name value applied-children-tuples potential-qp-matches]
+  (let [[base-field subfield] (split-into-base-field-and-subfield field-name)
+        updated-params (reduce (partial process-removal-for-field-value-tuple base-field
+                                        potential-qp-matches)
+                              query-params
+                              (conj applied-children-tuples [subfield value]))
+        updated-params (remove-duplicate-params updated-params base-field)]
+    {:remove (lh/generate-query-string base-url updated-params)}))
+
+(defn- get-matching-ancestors
+  "Returns a sequence of query parameters for each unique index that completely matches the
+  hierarchical ancestors of the provided field."
+  [base-field query-params parent-indexes ancestors-map]
+  (let [;; In order for a field to be considered for removal, it and all of its ancestors must
+        ;; be found in the query parameters. This builds a sequence of query parameters to check
+        ;; against (one set of query parameters for each potential parent index).
+        ancestors-to-match (map (fn [idx]
+                                  (util/map-keys #(format "%s[%d][%s]" base-field idx %)
+                                                 ancestors-map))
+                                parent-indexes)
+        num-ancestors (count (first ancestors-to-match))
+        ;; Sequences of actual matches against the query parameters for each potential index
+        ancestor-matches (map (fn [ancestor]
+                                (into {} (for [[k v] ancestor
+                                               :when (= (str/lower-case v)
+                                                        (some->
+                                                         (get query-params k) str/lower-case))]
+                                           [k v])))
+                              ancestors-to-match)]
+    ;; Filter the results to only those where every ancestor was found in the query parameters for
+    ;; that index
+    (into {} (mapcat #(when (= num-ancestors (count %)) %) ancestor-matches))))
+
+(defn- generate-query-params
+  "Returns a map of query params for the given base-field, indexes, and subfield-value-tuples"
+  [base-field indexes subfield-value-tuples]
+  (into {}
+        (mapcat (fn [idx]
+                  (concat (for [[k v] subfield-value-tuples]
+                            [(format "%s[%d][%s]" base-field idx
+                                     (csk/->snake_case_string k))
+                             v])))
+                indexes)))
+
+;;;;;;;;;;;;;;;;;;;;
+;; Public functions
+(defn create-apply-link-for-hierarchical-field
+  "Create a link that will modify the current search to also filter by the given hierarchical
+  field-name and value.
+  Field-name must be of the form <string>[<int>][<string>] such as science_keywords[0][topic]."
+  [base-url query-params field-name ancestors-map parent-indexes value has-siblings? & _]
+  (let [[base-field subfield] (split-into-base-field-and-subfield field-name)
+        index-to-use (if (or has-siblings? (empty? parent-indexes))
+                       (inc (get-max-index-for-field-name query-params base-field))
+                       (apply min parent-indexes))
+        updated-field-name (format "%s[%d][%s]" base-field index-to-use subfield)
+        updated-query-params (assoc query-params updated-field-name value)
+        updated-query-params (if (or has-siblings? (empty? parent-indexes))
+                               ;; Add all of the ancestors for this index
+                               (reduce
+                                (fn [query-params [k v]]
+                                  (let [param-name (format "%s[%d][%s]" base-field index-to-use k)]
+                                    (assoc query-params param-name v)))
+                                updated-query-params
+                                ancestors-map)
+                               updated-query-params)]
+    {:apply (lh/generate-query-string base-url updated-query-params)}))
 
 (defn create-link-for-hierarchical-field
   "Creates either a remove or an apply link based on whether this particular value is already
@@ -198,58 +238,25 @@
   ([base-url query-params field-name ancestors-map parent-indexes value has-siblings?
     applied-children-tuples]
    (if (keys (dissoc ancestors-map "category"))
-     ;; Check if all ancestors are in the query-params with the parent index
      (let [[base-field subfield] (split-into-base-field-and-subfield field-name)
-           ;; In order for a field to be considered for removal, it and all of its ancestors must
-           ;; be found in the query parameters. This builds a sequence of query parameters to check
-           ;; against (one set of query parameters for each potential parent index).
-           ancestors-to-match (map (fn [idx]
-                                     (util/map-keys #(format "%s[%d][%s]" base-field idx %)
-                                                    (assoc ancestors-map subfield value)))
-                                   parent-indexes)
-           num-ancestors (count (first ancestors-to-match))
-           ;; Sequences of actual matches against the query parameters for each potential index
-           ancestor-matches (map (fn [ancestor]
-                                   (into {} (for [[k v] ancestor
-                                                  :when (= (str/lower-case v)
-                                                           (some-> (get query-params k) str/lower-case))]
-                                              [k v])))
-                                 ancestors-to-match)
-           ;; Check if any of the sequences of query parameters to match, matched every parameter
-           ancestors-found? (= num-ancestors (apply max -1 (map count ancestor-matches)))]
-       (if ancestors-found?
-         (let [potential-qp-matches (->> (filter #(= (count (first ancestors-to-match)) (count %))
-                                                 ancestor-matches)
-                                         (map keys)
-                                         (map first)
-                                         (map (fn [qp]
-                                                (str/replace-first qp #"\]\[.*\]"
-                                                                   (format "][%s]" subfield))))
-                                         (select-keys query-params))
-               indexes (some->> potential-qp-matches
-                                keys
-                                (map #(re-find #"\[\d+\]" %))
-                                (map second)
-                                set)
-               child-matches (mapcat
-                               (fn [idx]
-                                 (concat (for [[k v] applied-children-tuples]
-                                           [(format "%s[%s][%s]" base-field idx (csk/->snake_case_string k))
-                                            v])))
-                               indexes)]
-           (create-remove-link-for-hierarchical-field
-            base-url query-params field-name ancestors-map parent-indexes value has-siblings?
-            applied-children-tuples (concat child-matches potential-qp-matches)))
-         (create-apply-link-for-hierarchical-field
-          base-url query-params field-name ancestors-map parent-indexes value has-siblings?
-          applied-children-tuples)))
+           ancestor-matches (get-matching-ancestors base-field query-params parent-indexes
+                                                    (assoc ancestors-map subfield value))]
+       (if (seq ancestor-matches)
+         (let [indexes (get-indexes-for-field-name ancestor-matches base-field)
+               ;; Children params can exist for any of the indexes that matched
+               potential-children-params (generate-query-params base-field indexes
+                                                                applied-children-tuples)
+               all-potential-params (merge potential-children-params ancestor-matches)]
+           (create-remove-link-for-hierarchical-field base-url query-params field-name value
+                                                      applied-children-tuples all-potential-params))
+         (create-apply-link-for-hierarchical-field base-url query-params field-name ancestors-map
+                                                   parent-indexes value has-siblings?)))
+
      (let [potential-query-params (get-potential-matching-query-params query-params field-name)
            value-exists? (or (seq (get-keys-to-remove potential-query-params value))
                              (seq (get-keys-to-update potential-query-params value)))]
        (if value-exists?
-         (create-remove-link-for-hierarchical-field
-          base-url query-params field-name ancestors-map parent-indexes value has-siblings?
-          applied-children-tuples)
-         (create-apply-link-for-hierarchical-field
-          base-url query-params field-name ancestors-map parent-indexes value has-siblings?
-          applied-children-tuples))))))
+         (create-remove-link-for-hierarchical-field base-url query-params field-name value
+                                                    applied-children-tuples nil)
+         (create-apply-link-for-hierarchical-field base-url query-params field-name ancestors-map
+                                                   parent-indexes value has-siblings?))))))

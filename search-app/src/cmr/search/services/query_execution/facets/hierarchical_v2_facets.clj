@@ -205,11 +205,10 @@
      (let [snake-base-field (csk/->snake_case_string base-field)
            snake-parent-subfield (when parent-subfield (csk/->snake_case_string parent-subfield))
            snake-subfield (csk/->snake_case_string subfield)
-           ;; Special case to remove category for science keywords
-           ancestors-map (if (= :science-keywords-h base-field)
-                           (dissoc ancestors-map "category")
-                           ancestors-map)
-           ancestors-map (if parent-value
+           ancestors-map (if (and parent-value
+                                  ;; Special case to not include category for science keywords
+                                  (or (not= :science-keywords-h base-field)
+                                      (not= :category parent-subfield)))
                            (assoc ancestors-map snake-parent-subfield parent-value)
                            ancestors-map)
            applied? (field-applied? query-params snake-base-field snake-subfield)
