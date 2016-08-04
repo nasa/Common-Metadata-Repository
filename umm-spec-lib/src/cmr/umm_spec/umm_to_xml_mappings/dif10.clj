@@ -276,7 +276,7 @@
      dif10-xml-namespaces
      [:Entry_ID
       [:Short_Name (:ShortName c)]
-      [:Version (u/with-default (:Version c))]]
+      [:Version (:Version c)]]
      [:Entry_Title (or (:EntryTitle c) u/not-provided)]
      (contact/generate-collection-personnel c)
 
