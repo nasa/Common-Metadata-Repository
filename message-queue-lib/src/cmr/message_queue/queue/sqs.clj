@@ -60,16 +60,20 @@
   [queue-name]
   (str/replace queue-name "." "_"))
 
-(defn- get-topic
+(defn- -get-topic
   "Returns the Topic with the given display name."
-  [client exchange-name]
+  [sns-client exchange-name]
   (let [exchange-name (normalize-queue-name exchange-name)
-        topics (into [] (.getTopics (.listTopics client)))]
+        topics (into [] (.getTopics (.listTopics sns-client)))]
    (some (fn [topic] (let [topic-arn (.getTopicArn topic)
                            topic-name (arn->name topic-arn)]
-                        (when (= exchange-name topic-name)
-                         topic)))
+                      (when (= exchange-name topic-name)
+                       topic)))
          topics)))
+
+(def get-topic
+ "Memoized function that returns the Topic with the given display name."
+ (memoize -get-topic))
 
 (defn- get-queue-arn
   "Get the Amazon Resource Name (ARN) for the given queue.
@@ -88,24 +92,24 @@
   [queue-broker queue-name handler]
   (debug  "Starting listener for queue: " queue-name)
   (let [queue-name (normalize-queue-name queue-name)
-        client (get queue-broker :sqs-client)
-        queue-url (.getQueueUrl (.getQueueUrl client queue-name))
+        sqs-client (get queue-broker :sqs-client)
+        queue-url (.getQueueUrl (.getQueueUrl sqs-client queue-name))
         rec-req (ReceiveMessageRequest. queue-url)
-        timeout (queue-polling-timeout)
-        ;; Only take one message at a time form the queueu.
-        _ (.setMaxNumberOfMessages rec-req (Integer. 1))
-        ;; Tell SQS how long to wait before returning with no data (long polling).
-        _ (.setWaitTimeSeconds rec-req (Integer. (queue-polling-timeout)))]
+        timeout (queue-polling-timeout)]
+    ;; Only take one message at a time form the queue.
+    (.setMaxNumberOfMessages rec-req (Integer. 1))
+    ;; Tell SQS how long to wait before returning with no data (long polling).
+    (.setWaitTimeSeconds rec-req (Integer. (queue-polling-timeout)))
     (a/thread
       (try
-        (u/while-let [rec-result (.receiveMessage client rec-req)]
+        (u/while-let [rec-result (.receiveMessage sqs-client rec-req)]
           (let [messages (into [] (.getMessages rec-result))]
             (when-let [msg (first messages)]
               (let [msg-body (.getBody msg)
                     msg-content (json/decode msg-body true)]
                 (try
                   (handler msg-content)
-                  (.deleteMessage client queue-url (.getReceiptHandle msg))
+                  (.deleteMessage sqs-client queue-url (.getReceiptHandle msg))
                   (catch Throwable e
                     (error e "Message processing failed for message" (pr-str msg) "on queue" queue-name)))))))
         (catch Exception e
@@ -120,16 +124,14 @@
        dlq-url (.getQueueUrl (.createQueue sqs-client dlq-name))
        dlq-arn (get-queue-arn sqs-client dlq-name)
        create-queue-request (CreateQueueRequest. q-name)
-       ;; the policty that sets retries and what dead-letter-queue to use
+       ;; the policy that sets retries and what dead-letter-queue to use
        redrive-policy (str "{\"maxReceiveCount\":\"5\", \"deadLetterTargetArn\": \"" dlq-arn "\"}")
        ;; create the primary queue
        queue-url (.getQueueUrl (.createQueue sqs-client q-name))
-       q-attrs (-> {"RedrivePolicy" redrive-policy
-                    "VisibilityTimeout" "30"}
-                   java.util.HashMap.)
-       set-queue-attrs-request (SetQueueAttributesRequest.)
-       _ (.setAttributes set-queue-attrs-request q-attrs)
-       _ (.setQueueUrl set-queue-attrs-request queue-url)]
+       q-attrs (java.util.HashMap. {"RedrivePolicy" redrive-policy "VisibilityTimeout" "30"})
+       set-queue-attrs-request (doto (SetQueueAttributesRequest.)
+                                     (.setAttributes q-attrs)
+                                     (.setQueueUrl queue-url))]
     (.setQueueAttributes sqs-client set-queue-attrs-request)))
 
 (defn- create-exchange
@@ -138,7 +140,8 @@
  (.createTopic sns-client (normalize-queue-name exchange-name)))
 
 (defn- topic-conditions
-  "Returns a sequence of Conditions allowing the given exchanges access to a given queue."
+  "Returns a sequence of Conditions allowing the given exchanges access to a queue.
+  These will be applied to an explicit queue later."
   [sns-client exchange-names]
   (map (fn [exchange-name]
            (let [ex-name (normalize-queue-name exchange-name)
@@ -151,12 +154,11 @@
   "Returns an access policy allowing the given SNS topic to publish to the given SQS queue."
   [sns-client sqs-client queue-name exchange-names]
   (let [conditions (topic-conditions sns-client exchange-names)
-        statement (-> (Statement. Statement$Effect/Allow)
-                      (.withPrincipals (into-array Principal [Principal/AllUsers]))
-                      (.withActions (into-array SQSActions [SQSActions/SendMessage]))
-                      (.withConditions (into-array Condition conditions)))
-        policy (-> (Policy.)
-                   (.withStatements (into-array Statement [statement])))]
+        statement (doto (Statement. Statement$Effect/Allow)
+                        (.withPrincipals (into-array Principal [Principal/AllUsers]))
+                        (.withActions (into-array SQSActions [SQSActions/SendMessage]))
+                        (.withConditions (into-array Condition conditions)))
+        policy (.withStatements (Policy.) (into-array Statement [statement]))]
     (.toJson policy)))
 
 (defn- bind-queue-to-exchanges
@@ -165,15 +167,15 @@
  (let [q-name (normalize-queue-name queue-name)
        q-arn (get-queue-arn sqs-client q-name)
        q-url (.getQueueUrl (.getQueueUrl sqs-client q-name))
-       ;; create an access policty to allow the topic to publish to the queue
+       ;; create an access policy to allow the topic to publish to the queue
        access-policy (sns-to-sqs-access-policy sns-client sqs-client queue-name exchange-names)
-       q-attrs (-> {"Policy" access-policy}
-                   java.util.HashMap.)
+       q-attrs (java.util.HashMap. {"Policy" access-policy})
+
        ;; create and empty SetQueueAttributesRequest object and then set the attributes on it
-       set-queue-attrs-request (SetQueueAttributesRequest.)
-       _ (.setAttributes set-queue-attrs-request q-attrs)
-       _ (.setQueueUrl set-queue-attrs-request q-url)]
-    ;; make the call to set the access policty attribute on the queue
+       set-queue-attrs-request (doto (SetQueueAttributesRequest.)
+                                     (.setAttributes q-attrs)
+                                     (.setQueueUrl q-url))]
+    ;; make the call to set the access policy attribute on the queue
     (.setQueueAttributes sqs-client set-queue-attrs-request)
     (doseq [exchange-name exchange-names
             :let [ex-name (normalize-queue-name exchange-name)
@@ -186,6 +188,15 @@
   "Convert a normalized queue name to the original queue name used to create it."
   [queue-broker queue-name]
   (get (:normalized-queue-names queue-broker) queue-name queue-name))
+
+(defn- -get-queue-url
+  "Returns the queue url for the given queue name."
+  [sqs-client queue-name]
+  (.getQueueUrl (.getQueueUrl sqs-client queue-name)))
+
+(def get-queue-url
+  "Memoized function that returns the queue url for the given name."
+  (memoize -get-queue-url))
 
 (defrecord SQSQueueBroker
  [
@@ -239,7 +250,7 @@
     [this queue-name msg]
     (let [msg (json/generate-string msg)
           queue-name (normalize-queue-name queue-name)
-          queue-url (.getQueueUrl (.getQueueUrl sqs-client queue-name))]
+          queue-url (get-queue-url sqs-client queue-name)]
       (.sendMessage sqs-client queue-url msg)))
 
   (get-queues-bound-to-exchange

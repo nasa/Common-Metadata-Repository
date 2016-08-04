@@ -67,7 +67,6 @@
                  [nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [com.amazonaws/aws-java-sdk "1.10.60"]
                  [org.clojure/tools.nrepl "0.2.11"]]
 
 
