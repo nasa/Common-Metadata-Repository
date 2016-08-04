@@ -44,7 +44,6 @@
   (println "Logging level set to" level)
   nil)
 
-
 (defn start
   "Starts the current development system."
   []
@@ -74,9 +73,9 @@
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  (system/set-dev-system-message-queue-type! :aws)
-  ; (system/set-dev-system-message-queue-type! :in-memory)
+  (system/set-dev-system-message-queue-type! :in-memory)
   ; (system/set-dev-system-message-queue-type! :external)
+  ; (system/set-dev-system-message-queue-type! :aws)
 
   (sit-sys/set-logging-level @settings/logging-level)
 
