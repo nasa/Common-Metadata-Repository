@@ -127,15 +127,15 @@
      :AccessConstraints {:Description
                          (regex-value doc (str constraints-xpath
                                                "/gmd:useLimitation/gco:CharacterString")
-                                      #"Restriction Comment: (.+)")
+                                      #"(?s)Restriction Comment: (.+)")
 
                          :Value
                          (regex-value doc (str constraints-xpath
                                                "/gmd:otherConstraints/gco:CharacterString")
-                                      #"Restriction Flag:(.+)")}
+                                      #"(?s)Restriction Flag:(.+)")}
      :UseConstraints
      (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
-                  #"^(?!Restriction Comment:).+")
+                  #"(?s)^(?!Restriction Comment:).+")
      :LocationKeywords (lk/translate-spatial-keywords
                         context (kws/descriptive-keywords md-data-id-el "place"))
      :TemporalKeywords (kws/descriptive-keywords md-data-id-el "temporal")

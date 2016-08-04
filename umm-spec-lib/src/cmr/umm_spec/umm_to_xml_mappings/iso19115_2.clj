@@ -199,7 +199,7 @@
        [:gmd:hierarchyLevel
         [:gmd:MD_ScopeCode {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
                             :codeListValue "series"} "series"]]
-         [:gmd:contact {:gco:nilReason "missing"}]
+       [:gmd:contact {:gco:nilReason "missing"}]
        [:gmd:dateStamp
         [:gco:DateTime "2014-08-25T15:25:44.641-04:00"]]
        [:gmd:metadataStandardName (char-string "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data")]

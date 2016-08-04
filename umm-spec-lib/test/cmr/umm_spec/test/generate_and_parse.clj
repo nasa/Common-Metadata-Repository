@@ -77,8 +77,6 @@
              :let [metadata (slurp example-file)
                    umm (core/parse-metadata test-context :collection metadata-format metadata)]]
 
-       (proto-repl.saved-values/save 5 metadata-format metadata umm)
-
        ;; input file is valid
        (check-failure
         (is (empty? (core/validate-xml :collection metadata-format metadata))
@@ -92,7 +90,7 @@
                :let [expected (expected-conversion/convert umm target-format)
                      actual (xml-round-trip :collection target-format umm)]]
 
-         (proto-repl.saved-values/save 4 target-format expected actual)
+         (proto-repl.saved-values/save 4 metadata-format target-format umm)
 
          (check-failure
           (is (= expected actual)
