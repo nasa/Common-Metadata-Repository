@@ -58,6 +58,15 @@
        kws/parse-science-keywords
        (filter #(.contains kws/science-keyword-categories (:Category %)))))
 
+(defn parse-temporal-extents
+  [data-id-el]
+  (for [temporal (select data-id-el temporal-extent-xpath-str)]
+    {:RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
+                       {:BeginningDateTime (value-of period "gml:beginPosition")
+                        :EndingDateTime    (value-of period "gml:endPosition")})
+     :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")
+     :EndsAtPresentFlag (some? (seq (select temporal "gml:TimePeriod/gml:endPosition[@indeterminatePosition='now']")))}))
+
 (defn iso-smap-xml-to-umm-c
   [doc]
   (let [data-id-el (first (select doc md-identification-base-xpath))
@@ -77,12 +86,8 @@
        :DataLanguage (value-of short-name-el "gmd:language/gco:CharacterString")
        :Platforms (let [smap-keywords (values-at data-id-el keywords-xpath-str)]
                     (kws/parse-platforms smap-keywords))
-       :TemporalExtents (for [temporal (select data-id-el temporal-extent-xpath-str)]
-                          {:RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
-                                             {:BeginningDateTime (value-of period "gml:beginPosition")
-                                              :EndingDateTime    (value-of period "gml:endPosition")})
-                           :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")
-                           :EndsAtPresentFlag (some? (seq (select temporal "gml:TimePeriod/gml:endPosition[@indeterminatePosition='now']")))})
+       :TemporalExtents (or (seq (parse-temporal-extents data-id-el))
+                            u/default-temporal-extents)
        :ScienceKeywords (parse-science-keywords data-id-el)
        :SpatialExtent (spatial/parse-spatial data-id-el)
        :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)

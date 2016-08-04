@@ -5,22 +5,22 @@
             [clojure.java.io :as io]
             [clojure.test.check.generators :as gen]
             [com.gfredericks.test.chuck.clojure-test :as ct :refer [for-all]]
-            [cmr.common.util :refer [update-in-each]]
+            [cmr.common.util :refer [update-in-each are2]]
             [cmr.common.test.test-check-ext :as ext :refer [checking]]
-            [cmr.umm-spec.test.expected-conversion :as expected-conversion]
-            [cmr.umm-spec.test.umm-record-sanitizer :as sanitize]
+            [cmr.common.xml.simple-xpath :refer [select context]]
             [cmr.umm-spec.core :as core]
             [cmr.umm-spec.validation.core :as umm-validation]
-            [cmr.common.xml.simple-xpath :refer [select context]]
-            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso-xml-to-umm]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso-umm-to-xml]
             [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.iso19115-2-util :as iu]
-            [cmr.umm-spec.umm-to-xml-mappings.echo10 :as echo10]
-            [cmr.common.util :refer [are2]]
-            [cmr.umm-spec.test.umm-generators :as umm-gen]
             [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
+            [cmr.umm-spec.umm-json :as umm-json]
+            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso-xml-to-umm]
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso-umm-to-xml]
+            [cmr.umm-spec.umm-to-xml-mappings.echo10 :as echo10]
+            [cmr.umm-spec.test.umm-generators :as umm-gen]
+            [cmr.umm-spec.test.location-keywords-helper :as lkt]
+            [cmr.umm-spec.test.expected-conversion :as expected-conversion]
+            [cmr.umm-spec.test.umm-record-sanitizer :as sanitize]))
 
 (def tested-collection-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
@@ -47,11 +47,14 @@
 (defn xml-round-trip
   "Returns record after being converted to XML and back to UMM through
   the given to-xml and to-umm mappings."
-  [concept-type metadata-format record]
-  (let [metadata-xml (core/generate-metadata test-context record metadata-format)]
-    ;; validate against xml schema
-    (is (empty? (core/validate-xml concept-type metadata-format metadata-xml)))
-    (core/parse-metadata test-context concept-type metadata-format metadata-xml)))
+  ([concept-type metadata-format record]
+   (xml-round-trip concept-type metadata-format record false))
+  ([concept-type metadata-format record print-xml?]
+   (let [metadata-xml (core/generate-metadata test-context record metadata-format)]
+     (when print-xml? (println metadata-xml))
+     ;; validate against xml schema
+     (is (empty? (core/validate-xml concept-type metadata-format metadata-xml)))
+     (core/parse-metadata test-context concept-type metadata-format metadata-xml))))
 
 (defn- generate-and-validate-xml
   "Returns a vector of errors (empty if none) from attempting to convert the given UMM record
@@ -61,13 +64,23 @@
     (core/validate-metadata concept-type metadata-format metadata-xml)))
 
 (defn example-files
-  "TODO"
+  "Returns a set of example metadata files in the given format."
   [metadata-format]
   (seq (.listFiles (io/file (io/resource (str "example_data/" (name metadata-format)))))))
 
+;; Remove this test after roundtrip-example-metadata is uncommented
+(deftest roundrobin-collection-example-record
+  (doseq [[origin-format filename] collection-format-examples
+          :let [metadata (slurp (io/resource (str "example_data/" filename)))
+                umm-c-record (core/parse-metadata test-context :collection origin-format metadata)]
+          dest-format collection-destination-formats
+          :when (not= origin-format dest-format)]
+    (testing (str origin-format " to " dest-format)
+      (is (empty? (generate-and-validate-xml :collection dest-format umm-c-record))))))
+
 (comment
- ;; Commetned out until problems are fixed
- (deftest rountrip-example-metadata
+ ;; Commented out until problems are fixed
+ (deftest roundtrip-example-metadata
    (let [failed-atom (atom false)
          check-failure (fn [result]
                          (when-not result (reset! failed-atom true)))]
@@ -82,9 +95,17 @@
         (is (empty? (core/validate-xml :collection metadata-format metadata))
             (format "Source file %s is not valid %s XML" example-file metadata-format)))
        ; Parsed UMM is valid
+
+       (check-failure
+        (is (empty? (js/validate-umm-json (umm-json/umm->json umm) :collection))
+            (format "Parsing source file %s in format %s to UMM produced invalid UMM JSON."
+                    example-file metadata-format)))
+
        (check-failure
         (is (empty? (umm-validation/validate-collection umm))
-            (format "Parsing source file %s to UMM produced invalid UMM." example-file)))
+            (format "Parsing source file %s in format %s to UMM had validation errors"
+                    example-file metadata-format)))
+
        (doseq [target-format tested-collection-formats
                :when (not @failed-atom)
                :let [expected (expected-conversion/convert umm target-format)
@@ -107,15 +128,6 @@
 (deftest roundtrip-example-service-record
   (is (= (expected-conversion/convert expected-conversion/example-service-record :serf)
          (xml-round-trip :service :serf expected-conversion/example-service-record))))
-
-(deftest roundrobin-collection-example-record
-  (doseq [[origin-format filename] collection-format-examples
-          :let [metadata (slurp (io/resource (str "example_data/" filename)))
-                umm-c-record (core/parse-metadata test-context :collection origin-format metadata)]
-          dest-format collection-destination-formats
-          :when (not= origin-format dest-format)]
-    (testing (str origin-format " to " dest-format)
-      (is (empty? (generate-and-validate-xml :collection dest-format umm-c-record))))))
 
 (deftest validate-umm-json-example-record
   ;; Test that going from any format to UMM generates valid UMM.
@@ -156,14 +168,3 @@
           expected-projects-keywords (seq (map iu/generate-title projects))]
       (is (= expected-projects-keywords
              (parse-iso19115-projects-keywords metadata-xml))))))
-
-(def minimal-umm-c
-  "UMM-C with the bare minimum number of fields. It does not include all required fields because
-  there is existing data in the system which does not contain all of the required UMM-C fields. We
-  are testing that even without all the required UMM-C fields, we still produce valid XML in each
-  of the formats."
-  (js/parse-umm-c {:ShortName "foo" :Version "bar"}))
-
-(deftest minimal-dif10
-  (is (empty? (generate-and-validate-xml :collection :dif10 minimal-umm-c))))
-

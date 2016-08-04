@@ -297,6 +297,7 @@
                    (= "true" x)
                    (boolean x))
 
+
        ;; The most important job of this function:
        "object"  (let [ctor (record-ctor schema type-name)
                        ;; Reduce an empty map with each pair of (non-nil) key/vals in x, trying to
@@ -318,8 +319,8 @@
                                                       {:error msg}))))
                                       results (remove nil? results)]
                                   (cond-> m
-                                    (seq results) (assoc k (mapv :value results))
-                                    (some :error results) (assoc-in [:_errors k] (mapv :error results))))
+                                          (seq results) (assoc k (mapv :value results))
+                                          (some :error results) (assoc-in [:_errors k] (mapv :error results))))
                                 ;; non-array types
                                 (try
                                   (let [parsed (coerce schema prop-type-definition v)]
@@ -330,7 +331,7 @@
                                     (let [msg (parse-error-msg prop-type-definition v)]
                                       (assoc-in m [:_errors k] msg)))))))
                           nil
-                          (filter val x))]
+                          (filter (comp some? val) x))]
                    ;; Return nil instead of empty maps/records here.
                    (when m
                      (ctor m)))

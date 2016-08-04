@@ -102,7 +102,7 @@
                       (lk/get-spatial-keywords-maps context)
                       (values-at doc "/Collection/SpatialKeywords/Keyword"))
    :SpatialExtent    (spatial/parse-spatial doc)
-   :TemporalExtents  (parse-temporal doc)
+   :TemporalExtents  (or (seq (parse-temporal doc)) u/default-temporal-extents)
    :Platforms (for [plat (select doc "/Collection/Platforms/Platform")]
                 {:ShortName (value-of plat "ShortName")
                  :LongName (u/without-default-value-of plat "LongName")

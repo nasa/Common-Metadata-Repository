@@ -3,6 +3,7 @@
  (:require [clj-time.core :as t]
            [clj-time.format :as f]
            [cmr.umm-spec.util :as su]
+           [cmr.umm-spec.json-schema :as js]
            [cmr.common.util :as util :refer [update-in-each]]
            [cmr.umm-spec.models.common :as cmn]
            [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
@@ -27,9 +28,10 @@
         ranges (mapcat :RangeDateTimes temporal-extents)
         all-ranges (concat ranges
                            (map single-date->range singles))]
-    (when (seq all-ranges)
+    (if (seq all-ranges)
       [(cmn/map->TemporalExtentType
-         {:RangeDateTimes all-ranges})])))
+         {:RangeDateTimes all-ranges})]
+      su/default-temporal-extents)))
 
 (defn- expected-dif-instruments
   "Returns the expected DIF instruments for the given instruments"
@@ -240,4 +242,5 @@
         (update-in-each [:PublicationReferences] conversion-util/dif-publication-reference)
         (update-in [:RelatedUrls] conversion-util/expected-related-urls-for-dif-serf)
         ;;CMR-2716 SpatialKeywords are being replaced by LocationKeywords.
-        (assoc :SpatialKeywords nil))))
+        (assoc :SpatialKeywords nil)
+        js/parse-umm-c)))

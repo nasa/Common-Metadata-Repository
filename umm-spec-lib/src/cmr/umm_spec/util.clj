@@ -2,6 +2,7 @@
   "This contains utilities for the UMM Spec code."
   (:require [clojure.string :as str]
             [cmr.common.util :as util]
+            [cmr.umm-spec.date-util :as du]
             [cmr.umm-spec.models.common :as cmn]
             [clj-time.format :as f]
             [cmr.common.xml.parse :as p]
@@ -30,6 +31,9 @@
 (def default-granule-spatial-representation
   "Default value for GranuleSpatialRepresentation"
   "CARTESIAN")
+
+(def default-temporal-extents
+  [{:RangeDateTimes [{:BeginningDateTime du/parsed-default-date}]}])
 
 (defn convert-empty-record-to-nil
   "Converts empty record to nil."

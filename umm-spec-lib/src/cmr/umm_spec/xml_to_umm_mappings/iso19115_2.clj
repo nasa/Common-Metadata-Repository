@@ -107,6 +107,17 @@
       seq
       some?))
 
+(defn parse-temporal-extents
+  [doc extent-info md-data-id-el]
+  (for [temporal (select md-data-id-el temporal-xpath)]
+    {:PrecisionOfSeconds (value-of doc precision-xpath)
+     :EndsAtPresentFlag (temporal-ends-at-present? temporal)
+     :TemporalRangeType (get extent-info "Temporal Range Type")
+     :RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
+                       {:BeginningDateTime (value-of period "gml:beginPosition")
+                        :EndingDateTime    (value-of period "gml:endPosition")})
+     :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")}))
+
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
   [context doc]
@@ -143,14 +154,8 @@
      :ISOTopicCategories (values-at doc topic-categories-xpath)
      :SpatialExtent (spatial/parse-spatial doc extent-info)
      :TilingIdentificationSystems (tiling/parse-tiling-system md-data-id-el)
-     :TemporalExtents (for [temporal (select md-data-id-el temporal-xpath)]
-                        {:PrecisionOfSeconds (value-of doc precision-xpath)
-                         :EndsAtPresentFlag (temporal-ends-at-present? temporal)
-                         :TemporalRangeType (get extent-info "Temporal Range Type")
-                         :RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
-                                           {:BeginningDateTime (value-of period "gml:beginPosition")
-                                            :EndingDateTime    (value-of period "gml:endPosition")})
-                         :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")})
+     :TemporalExtents (or (seq (parse-temporal-extents doc extent-info md-data-id-el))
+                          u/default-temporal-extents)
      :ProcessingLevel {:Id
                        (char-string-value
                          md-data-id-el

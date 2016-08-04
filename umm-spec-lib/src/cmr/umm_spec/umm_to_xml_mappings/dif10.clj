@@ -272,139 +272,134 @@
   "Returns DIF10 XML from a UMM-C collection record."
   [c]
   (xml
-    [:DIF
-     dif10-xml-namespaces
-     [:Entry_ID
-      [:Short_Name (:ShortName c)]
-      [:Version (:Version c)]]
-     [:Entry_Title (or (:EntryTitle c) u/not-provided)]
-     (contact/generate-collection-personnel c)
+   [:DIF
+    dif10-xml-namespaces
+    [:Entry_ID
+     [:Short_Name (:ShortName c)]
+     [:Version (:Version c)]]
+    [:Entry_Title (or (:EntryTitle c) u/not-provided)]
+    (contact/generate-collection-personnel c)
 
-     (if-let [sks (:ScienceKeywords c)]
-       ;; From UMM keywords
-       (for [sk sks]
-         [:Science_Keywords
-          [:Category (:Category sk)]
-          [:Topic (:Topic sk)]
-          [:Term (:Term sk)]
-          [:Variable_Level_1 (:VariableLevel1 sk)]
-          [:Variable_Level_2 (:VariableLevel2 sk)]
-          [:Variable_Level_3 (:VariableLevel3 sk)]
-          [:Detailed_Variable (:DetailedVariable sk)]])
-       ;; Default element
-       [:Science_Keywords
-        [:Category u/not-provided]
-        [:Topic u/not-provided]
-        [:Term u/not-provided]])
+    (if-let [sks (:ScienceKeywords c)]
+      ;; From UMM keywords
+      (for [sk sks]
+        [:Science_Keywords
+         [:Category (:Category sk)]
+         [:Topic (:Topic sk)]
+         [:Term (:Term sk)]
+         [:Variable_Level_1 (:VariableLevel1 sk)]
+         [:Variable_Level_2 (:VariableLevel2 sk)]
+         [:Variable_Level_3 (:VariableLevel3 sk)]
+         [:Detailed_Variable (:DetailedVariable sk)]])
+      ;; Default element
+      [:Science_Keywords
+       [:Category u/not-provided]
+       [:Topic u/not-provided]
+       [:Term u/not-provided]])
 
-     (for [topic-category (:ISOTopicCategories c)]
-       [:ISO_Topic_Category topic-category])
+    (for [topic-category (:ISOTopicCategories c)]
+      [:ISO_Topic_Category topic-category])
 
-     (for [ak (:AncillaryKeywords c)]
-       [:Ancillary_Keyword ak])
+    (for [ak (:AncillaryKeywords c)]
+      [:Ancillary_Keyword ak])
 
-     (if-let [platforms (:Platforms c)]
-       (for [platform platforms]
-         [:Platform
-          [:Type (get platform-types (:Type platform) u/not-provided)]
-          [:Short_Name (:ShortName platform)]
-          [:Long_Name (:LongName platform)]
-          (characteristics-for platform)
-          (generate-instruments (:Instruments platform))])
-       ;; Default Platform element
-       [:Platform
-        [:Type u/not-provided]
-        [:Short_Name u/not-provided]
-        [:Long_Name u/not-provided]
-        [:Instrument [:Short_Name u/not-provided]]])
+    (if-let [platforms (:Platforms c)]
+      (for [platform platforms]
+        [:Platform
+         [:Type (get platform-types (:Type platform) u/not-provided)]
+         [:Short_Name (:ShortName platform)]
+         [:Long_Name (:LongName platform)]
+         (characteristics-for platform)
+         (generate-instruments (:Instruments platform))])
+      ;; Default Platform element
+      [:Platform
+       [:Type u/not-provided]
+       [:Short_Name u/not-provided]
+       [:Long_Name u/not-provided]
+       [:Instrument [:Short_Name u/not-provided]]])
 
-     ;; DIF10 has TemporalKeywords bundled together with TemporalExtents in the Temporal_Coverage
-     ;; element. There is no clear definition on which TemporalExtent the TemporalKeywords should
-     ;; be associated with. This is something DIF10 team will look into at improving, but in the
-     ;; mean time, we put the TemporalKeywords on the first TemporalExtent element.
-     (if-let [extent (-> c :TemporalExtents first)]
-       (conj (temporal-coverage-without-temporal-keywords extent)
-             [:Temporal_Info
-              (for [tkw (:TemporalKeywords c)]
-                [:Ancillary_Temporal_Keyword tkw])])
+    ;; DIF10 has TemporalKeywords bundled together with TemporalExtents in the Temporal_Coverage
+    ;; element. There is no clear definition on which TemporalExtent the TemporalKeywords should
+    ;; be associated with. This is something DIF10 team will look into at improving, but in the
+    ;; mean time, we put the TemporalKeywords on the first TemporalExtent element.
+    (let [extent (-> c :TemporalExtents first)]
+      (conj (temporal-coverage-without-temporal-keywords extent)
+            [:Temporal_Info
+             (for [tkw (:TemporalKeywords c)]
+               [:Ancillary_Temporal_Keyword tkw])]))
 
-       ;; default Temporal_Coverage element
-       [:Temporal_Coverage
-        [:Range_DateTime
-         [:Beginning_Date_Time date/default-date-value]]])
-
-     (map temporal-coverage-without-temporal-keywords (drop 1 (:TemporalExtents c)))
-     (generate-paleo-temporal (:PaleoTemporalCoverages c))
-     (generate-dataset-progress c)
-     (spatial/spatial-element c)
-     (for [location-keyword-map (:LocationKeywords c)]
-       [:Location
-        [:Location_Category (:Category location-keyword-map)]
-        [:Location_Type (:Type location-keyword-map)]
-        [:Location_Subregion1 (:Subregion1 location-keyword-map)]
-        [:Location_Subregion2 (:Subregion2 location-keyword-map)]
-        [:Location_Subregion3 (:Subregion3 location-keyword-map)]
-        [:Detailed_Location (:DetailedLocation location-keyword-map)]])
-     (generate-projects (:Projects c))
-     [:Quality (:Quality c)]
-     [:Access_Constraints (-> c :AccessConstraints :Description)]
-     [:Use_Constraints (:UseConstraints c)]
-     (generate-metadata-language c)
-     (center/generate-organizations c)
-     (for [dist (:Distributions c)]
-       [:Distribution
-        [:Distribution_Media (:DistributionMedia dist)]
-        [:Distribution_Size (u/data-size-str (:Sizes dist))]
-        [:Distribution_Format (:DistributionFormat dist)]
-        [:Fees (:Fees dist)]])
-     (for [pub-ref (:PublicationReferences c)]
-       [:Reference
-        (map (fn [x] (if (keyword? x)
-                       [x ((csk/->PascalCaseKeyword x) pub-ref)]
-                       x))
-             [:Author
-              :Publication_Date
-              :Title
-              :Series
-              :Edition
-              :Volume
-              :Issue
-              :Report_Number
-              :Publication_Place
-              :Publisher
-              :Pages
-              [:ISBN (:ISBN pub-ref)]
-              (when (get-in pub-ref [:DOI :DOI])
-                [:Persistent_Identifier
+    (map temporal-coverage-without-temporal-keywords (drop 1 (:TemporalExtents c)))
+    (generate-paleo-temporal (:PaleoTemporalCoverages c))
+    (generate-dataset-progress c)
+    (spatial/spatial-element c)
+    (for [location-keyword-map (:LocationKeywords c)]
+      [:Location
+       [:Location_Category (:Category location-keyword-map)]
+       [:Location_Type (:Type location-keyword-map)]
+       [:Location_Subregion1 (:Subregion1 location-keyword-map)]
+       [:Location_Subregion2 (:Subregion2 location-keyword-map)]
+       [:Location_Subregion3 (:Subregion3 location-keyword-map)]
+       [:Detailed_Location (:DetailedLocation location-keyword-map)]])
+    (generate-projects (:Projects c))
+    [:Quality (:Quality c)]
+    [:Access_Constraints (-> c :AccessConstraints :Description)]
+    [:Use_Constraints (:UseConstraints c)]
+    (generate-metadata-language c)
+    (center/generate-organizations c)
+    (for [dist (:Distributions c)]
+      [:Distribution
+       [:Distribution_Media (:DistributionMedia dist)]
+       [:Distribution_Size (u/data-size-str (:Sizes dist))]
+       [:Distribution_Format (:DistributionFormat dist)]
+       [:Fees (:Fees dist)]])
+    (for [pub-ref (:PublicationReferences c)]
+      [:Reference
+       (map (fn [x] (if (keyword? x)
+                      [x ((csk/->PascalCaseKeyword x) pub-ref)]
+                      x))
+            [:Author
+             :Publication_Date
+             :Title
+             :Series
+             :Edition
+             :Volume
+             :Issue
+             :Report_Number
+             :Publication_Place
+             :Publisher
+             :Pages
+             [:ISBN (:ISBN pub-ref)]
+             (when (get-in pub-ref [:DOI :DOI])
+               [:Persistent_Identifier
                  [:Type "DOI"]
                  [:Identifier (get-in pub-ref [:DOI :DOI])]])
-              [:Online_Resource (get-in pub-ref [:RelatedUrl :URLs 0])]
-              :Other_Reference_Details])])
-     [:Summary
-      ;; DIF 10 requires a Summary element but none of the contents are required, so either one will
-      ;; work fine.
-      [:Abstract (u/with-default (:Abstract c))]
-      [:Purpose (:Purpose c)]]
-     (generate-related-urls c)
-     (for [ma (:MetadataAssociations c)
-           :when (contains? #{"SCIENCE ASSOCIATED" "DEPENDENT" "INPUT" "PARENT" "CHILD" "RELATED" nil} (:Type ma))]
-       [:Metadata_Association
-        [:Entry_ID
-         [:Short_Name (:EntryId ma)]
-         [:Version (u/with-default (:Version ma))]]
-        [:Type (or (u/capitalize-words (:Type ma)) "Science Associated")]
-        [:Description (:Description ma)]])
-     [:Metadata_Name "CEOS IDN DIF"]
-     [:Metadata_Version "VERSION 10.2"]
-     [:Metadata_Dates
-      [:Metadata_Creation "2000-03-24T22:20:41-05:00"]
-      [:Metadata_Last_Revision "2000-03-24T22:20:41-05:00"]
-      (generate-data-dates c)]
-     (generate-additional-attributes (:AdditionalAttributes c))
-     [:Product_Level_Id (dif10-product-level-id (-> c :ProcessingLevel :Id))]
-     [:Collection_Data_Type (:CollectionDataType c)]
-     (when-let [access-value (get-in c [:AccessConstraints :Value])]
-       [:Extended_Metadata
-        [:Metadata
-         [:Name "Restriction"]
-         [:Value access-value]]])]))
+             [:Online_Resource (get-in pub-ref [:RelatedUrl :URLs 0])]
+             :Other_Reference_Details])])
+    [:Summary
+     ;; DIF 10 requires a Summary element but none of the contents are required, so either one will
+     ;; work fine.
+     [:Abstract (u/with-default (:Abstract c))]
+     [:Purpose (:Purpose c)]]
+    (generate-related-urls c)
+    (for [ma (:MetadataAssociations c)
+          :when (contains? #{"SCIENCE ASSOCIATED" "DEPENDENT" "INPUT" "PARENT" "CHILD" "RELATED" nil} (:Type ma))]
+      [:Metadata_Association
+       [:Entry_ID
+        [:Short_Name (:EntryId ma)]
+        [:Version (u/with-default (:Version ma))]]
+       [:Type (or (u/capitalize-words (:Type ma)) "Science Associated")]
+       [:Description (:Description ma)]])
+    [:Metadata_Name "CEOS IDN DIF"]
+    [:Metadata_Version "VERSION 10.2"]
+    [:Metadata_Dates
+     [:Metadata_Creation "2000-03-24T22:20:41-05:00"]
+     [:Metadata_Last_Revision "2000-03-24T22:20:41-05:00"]
+     (generate-data-dates c)]
+    (generate-additional-attributes (:AdditionalAttributes c))
+    [:Product_Level_Id (dif10-product-level-id (-> c :ProcessingLevel :Id))]
+    [:Collection_Data_Type (:CollectionDataType c)]
+    (when-let [access-value (get-in c [:AccessConstraints :Value])]
+      [:Extended_Metadata
+       [:Metadata
+        [:Name "Restriction"]
+        [:Value access-value]]])]))
