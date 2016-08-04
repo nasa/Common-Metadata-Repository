@@ -1,0 +1,207 @@
+
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+  <Entry_ID>
+    <Short_Name>D.Parmelee_QuatGeo_Erebus_Holocene_cosmogenic</Short_Name>
+    <Version>1</Version>
+  </Entry_ID>
+  <Entry_Title>A new Holocene eruptive history of Erebus volcano, Antarctica, using cosmogenic 3He and 36Cl exposure ages</Entry_Title>
+  <Dataset_Citation>
+    <Dataset_Creator>New Mexico Institute of Mining and Technology</Dataset_Creator>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.1016/j.quageo.2015.09.001</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>http://www.sciencedirect.com/science/article/pii/S187110141530056X</Online_Resource>
+  </Dataset_Citation>
+  <Personnel>
+    <Role>INVESTIGATOR</Role>
+    <Contact_Person>
+      <First_Name>PHILIP</First_Name>
+      <Last_Name>KYLE</Last_Name>
+      <Address>
+        <Street_Address>New Mexico Institute of Mining and Technology</Street_Address>
+        <City>Socorro</City>
+        <State_Province>NM</State_Province>
+        <Postal_Code>87801</Postal_Code>
+        <Country>US</Country>
+      </Address>
+      <Email>kyle@nmt.edu</Email>
+    </Contact_Person>
+    <Contact_Person>
+      <First_Name>David</First_Name>
+      <Last_Name>Parmelee</Last_Name>
+      <Email>davidefparmelee@gmail.com</Email>
+    </Contact_Person>
+  </Personnel>
+  <Personnel>
+    <Role>METADATA AUTHOR</Role>
+    <Contact_Person>
+      <First_Name>Holly</First_Name>
+      <Last_Name>Rotman</Last_Name>
+      <Address>
+        <Street_Address>New Mexico Institute of Mining and Technology</Street_Address>
+        <City>Socorro</City>
+        <State_Province>NM</State_Province>
+        <Postal_Code>87801</Postal_Code>
+        <Country>US</Country>
+      </Address>
+      <Email>hrotman@alumni.nmt.edu</Email>
+    </Contact_Person>
+  </Personnel>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>SOLID EARTH</Topic>
+    <Term>GEOCHEMISTRY</Term>
+    <Variable_Level_1>GEOCHEMICAL PROPERTIES</Variable_Level_1>
+    <Variable_Level_2>ISOTOPIC AGE</Variable_Level_2>
+  </Science_Keywords>
+  <ISO_Topic_Category>GEOSCIENTIFIC INFORMATION</ISO_Topic_Category>
+  <Ancillary_Keyword>cosmogenic nuclides, CRONUS, Erebus, Holocene, eruptive history</Ancillary_Keyword>
+  <Platform>
+    <Type>Models/Analyses</Type>
+    <Short_Name>OBSERVATION BASED</Short_Name>
+    <Long_Name>OBSERVATION BASED ANALYSES</Long_Name>
+    <Instrument>
+      <Short_Name>AMS</Short_Name>
+      <Long_Name>ACCELERATOR MASS SPECTROMETERS</Long_Name>
+    </Instrument>
+    <Instrument>
+      <Short_Name>XRF</Short_Name>
+      <Long_Name>X-Ray Fluorescence Spectrometer</Long_Name>
+    </Instrument>
+    <Instrument>
+      <Short_Name>ELECTRON MICROPROBES</Short_Name>
+    </Instrument>
+    <Instrument>
+      <Short_Name>ICP-MS</Short_Name>
+      <Long_Name>Inductively Coupled Plasma Mass Spectrometer</Long_Name>
+    </Instrument>
+    <Instrument>
+      <Short_Name>ICP-ES</Short_Name>
+      <Long_Name>INDUCTIVELY COUPLED PLASMA EMISSION SPECTROSCOPY</Long_Name>
+    </Instrument>
+  </Platform>
+  <Temporal_Coverage>
+    <Date_Type>Collection</Date_Type>
+    <Range_DateTime>
+      <Beginning_Date_Time>2011-12-12T18:55:00</Beginning_Date_Time>
+      <Ending_Date_Time>2011-12-29T13:50:00</Ending_Date_Time>
+    </Range_DateTime>
+  </Temporal_Coverage>
+  <Temporal_Coverage>
+    <Date_Type>Analysis: Eruption Ages</Date_Type>
+    <Paleo_DateTime>
+      <Paleo_Start_Date>74.94 ka</Paleo_Start_Date>
+      <Paleo_Stop_Date>3.66 ka</Paleo_Stop_Date>
+    </Paleo_DateTime>
+  </Temporal_Coverage>
+  <Dataset_Progress>COMPLETE</Dataset_Progress>
+  <Spatial_Coverage>
+    <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+    <Geometry>
+      <Coordinate_System>CARTESIAN</Coordinate_System>
+      <Bounding_Rectangle>
+        <Southernmost_Latitude>-77.70</Southernmost_Latitude>
+        <Northernmost_Latitude>-77.3</Northernmost_Latitude>
+        <Westernmost_Longitude>167</Westernmost_Longitude>
+        <Easternmost_Longitude>167.5</Easternmost_Longitude>
+      </Bounding_Rectangle>
+    </Geometry>
+  </Spatial_Coverage>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ANTARCTICA</Location_Type>
+    <Location_Subregion1>ROSS ISLAND</Location_Subregion1>
+  </Location>
+  <Project>
+    <Short_Name>MEVO</Short_Name>
+    <Long_Name>Mount Erebus Volcano Observatory</Long_Name>
+  </Project>
+  <Quality>The data set has been published in a peer-reviewed publication.</Quality>
+  <Access_Constraints>None.  The publication is open-access, and the supplementary data contains sample locations and full analysis results.</Access_Constraints>
+  <Use_Constraints>None.</Use_Constraints>
+  <Dataset_Language>English</Dataset_Language>
+  <Originating_Center>NMIMT</Originating_Center>
+  <Organization>
+    <Organization_Type>ORIGINATOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>NMTECH/EES</Short_Name>
+      <Long_Name>Department of Earth and Environmental Science, New Mexico Institute of Mining and Technology</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://www.ees.nmt.edu/</Organization_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Person>
+        <First_Name>PHILIP</First_Name>
+        <Last_Name>KYLE</Last_Name>
+        <Address>
+          <Street_Address>New Mexico Institute of Mining and Technology</Street_Address>
+          <City>Socorro</City>
+          <State_Province>NM</State_Province>
+          <Postal_Code>87801</Postal_Code>
+          <Country>US</Country>
+        </Address>
+        <Email>kyle@nmt.edu</Email>
+      </Contact_Person>
+    </Personnel>
+  </Organization>
+  <Distribution>
+    <Distribution_Media>View or download article</Distribution_Media>
+    <Distribution_Size>2.6 MB</Distribution_Size>
+    <Distribution_Format>HTML_or_PDF</Distribution_Format>
+  </Distribution>
+  <Distribution>
+    <Distribution_Media>Download supplementary information</Distribution_Media>
+    <Distribution_Size>1.8 MB</Distribution_Size>
+    <Distribution_Format>PDF</Distribution_Format>
+  </Distribution>
+  <Reference>
+    <Author>Parmelee, D.E.F., Kyle, P.R., Kurz, M.D., Marrero, S.M., and Phillips, F.M.</Author>
+    <Publication_Date>2015-09-05</Publication_Date>
+    <Title>A new Holocene eruptive history of Erebus volcano, Antarctica using cosmogenic 3He and 36Cl exposure ages</Title>
+    <Series>Quaternary Geochronology</Series>
+    <Volume>30</Volume>
+    <Issue>A</Issue>
+    <Pages>114-131</Pages>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.1016/j.quageo.2015.09.001</Identifier>
+    </Persistent_Identifier>
+  </Reference>
+  <Summary>
+    <Abstract>The ages of recent effusive eruptions on Erebus volcano, Antarctica are poorly known. Published 40Ar/39Ar ages of the 10 youngest ?post-caldera? lava flows are unreliable because of the young ages of the flows (&lt;10 ka) and the presence of excess 40Ar. Here we use cosmogenic 3He and 36Cl to provide new ages for the 10 youngest flows and 3 older summit flows, including a newly recognized flow distin- guished by its exposure age. Estimated eruption ages of the post-caldera flows, assuming no erosion or prior snow cover, range from 4.52 � 0.08 ka to 8.50 � 0.19 ka, using Lifton et al. (2014) to scale cosmogenic production rates. If the older Lal (1991)/Stone (2000) model is used to scale production rates, calculated ages are older by 16e25%. Helium-3 and chlorine-36 exposure ages measured on the same samples show excellent agreement. Helium-3 ages measured on clinopyroxene and olivine from the same samples are discordant, probably due in part to lower-than-expected 3He production rates in the Fe-rich olivine. Close agreement of multiple clinopyroxene 3He ages from each flow indicates that the effects of past snow coverage on the exposure ages have been minimal.
+The new cosmogenic ages differ considerably from published 40Ar/39Ar and 36Cl ages and reveal that the post-caldera flows were erupted during relatively brief periods of effusive activity spread over an interval of ~4 ka. The average eruption rate over this interval is estimated to be 0.01 km3/ka. Because the last eruption was at least 4 ka ago, and the longest repose interval between the 10 youngest eruptions is ~1 ka, we consider the most recent period of effusive activity to have ended.</Abstract>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW RELATED INFORMATION</Type>
+      <Subtype>PUBLICATIONS</Subtype>
+    </URL_Content_Type>
+    <URL>http://www.sciencedirect.com/science/article/pii/S187110141530056X</URL>
+  </Related_URL>
+  <Metadata_Association>
+    <Entry_ID>
+      <Short_Name>D.Parmelee_QuatGeo_Erebus_Holocene_cosmogenic</Short_Name>
+      <Version>1</Version>
+    </Entry_ID>
+    <Type>Science Associated</Type>
+  </Metadata_Association>
+  <IDN_Node>
+    <Short_Name>USA/NSF</Short_Name>
+  </IDN_Node>
+  <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 10.2</Metadata_Version>
+  <Metadata_Dates>
+    <Metadata_Creation>2016-06-10</Metadata_Creation>
+    <Metadata_Last_Revision>2016-07-08</Metadata_Last_Revision>
+    <Data_Creation>2011-12-12</Data_Creation>
+    <Data_Last_Revision>2015-09-05</Data_Last_Revision>
+  </Metadata_Dates>
+  <Private>False</Private>
+  <Extended_Metadata>
+    <Metadata>
+      <Name>2016-06-10</Name>
+    </Metadata>
+  </Extended_Metadata>
+</DIF>
