@@ -205,6 +205,13 @@
    (let [options (merge {:raw? true :token token} options)]
      (process-response (ac/create-acl (conn-context) acl options)))))
 
+(defn get-acl
+  "Retrieves an ACL by concept id"
+  ([token concept-id params]
+   (process-response (ac/get-acl (conn-context) concept-id {:raw? true :token token :http-options {:query-params params}})))
+  ([token concept-id]
+   (get-acl token concept-id nil)))
+
 (defn search-for-acls
   "Searches for groups using the given parameters"
   ([token params]
