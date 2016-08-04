@@ -20,17 +20,3 @@
 
 (def token-required-for-acl-modification
   "Acls cannot be modified without a valid user token.")
-
-(defn- get-acl-name-from-concept
-  "Gets a acl name from a acl concept's metadata.
-   This is because we lowercase the native-id so it does not match the actual group name."
-  [concept]
-  (-> concept :metadata edn/read-string :name))
-
-(defn acl-already-exists
-  [acl concept]
-  (if (:provider-id acl)
-    (format "A provider acl with name [%s] already exists with concept id [%s] for provider [%s]."
-            (get-acl-name-from-concept concept) (:concept-id concept) (:provider-id acl))
-    (format "A system acl with name [%s] already exists with concept id [%s]."
-            (get-acl-name-from-concept concept) (:concept-id concept))))
