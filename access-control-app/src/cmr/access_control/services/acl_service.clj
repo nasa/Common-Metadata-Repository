@@ -98,7 +98,7 @@
 (defn validate-provider-exists
   "Validates that the acl provider exists."
   [context fieldpath acl]
-  (let [provider-id (index/acl->provider-id acl)]
+  (let [provider-id (acls/acl->provider-id acl)]
     (when (and provider-id (not (some #{provider-id} (map :provider-id (mdb/get-providers context)))))
           {fieldpath [(msg/provider-does-not-exist provider-id)]})))
 
@@ -417,4 +417,3 @@
   (let [sids (get-sids context username-or-type)
         acls (get-echo-style-acls context)]
     (hash-map target (provider-permissions-granted-by-acls provider-id target sids acls))))
-
