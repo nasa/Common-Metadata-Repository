@@ -18,11 +18,7 @@
             [cmr.common.util :as u]
             [cmr.message-queue.config :as config]
             [cmr.message-queue.services.queue :as queue])
-  (:import com.amazonaws.AmazonClientException
-           com.amazonaws.AmazonServiceException
-           com.amazonaws.auth.AWSCredentials
-           com.amazonaws.auth.DefaultAWSCredentialsProviderChain
-           com.amazonaws.auth.policy.actions.SQSActions
+  (:import com.amazonaws.auth.policy.actions.SQSActions
            com.amazonaws.auth.policy.Condition
            com.amazonaws.auth.policy.conditions.ConditionFactory
            com.amazonaws.auth.policy.Policy
@@ -38,9 +34,6 @@
            com.amazonaws.services.sqs.model.SendMessageResult
            com.amazonaws.services.sqs.model.SetQueueAttributesRequest
            com.amazonaws.ClientConfiguration
-           com.amazonaws.Protocol
-           com.amazonaws.regions.Region
-           com.amazonaws.regions.Regions
            java.util.ArrayList
            java.util.HashMap
            java.io.IOException))
