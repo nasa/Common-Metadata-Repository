@@ -24,7 +24,7 @@
             [cmr.umm.acl-matchers :as acl-matchers]
             [cmr.common.util :as util]
             [cmr.common.date-time-parser :as dtp]
-            [cmr.access-control.data.access-control-index :as index]))
+            [cmr.access-control.data.acls :as acls]))
 
 (def acl-provider-id
   "The provider ID for all ACLs. Since ACLs are not owned by individual
@@ -83,10 +83,11 @@
    :metadata (pr-str acl)
    :format mt/edn
    :provider-id acl-provider-id
-   :user-id (tokens/get-user-id context (:token context))
+   :user-id (when-let [token (:token context)]
+              (tokens/get-user-id context token))
    ;; ACL-specific fields
    :extra-fields {:acl-identity (acl-identity acl)
-                  :target-provider-id (index/acl->provider-id acl)}})
+                  :target-provider-id (acls/acl->provider-id acl)}})
 
 (defn create-acl
   "Save a new ACL to Metadata DB. Returns map with concept and revision id of created acl."
@@ -269,12 +270,22 @@
                      (set/rename-keys av {:include-undefined-value :include-undefined}))))
       util/remove-nil-keys))
 
-(defn- get-echo-style-acls
-  "Returns all ACLs in metadata db, converted to \"ECHO-style\" keys for use with existing ACL functions."
+(defn get-all-acl-concepts
+  "Returns all ACLs in metadata db."
   [context]
   (for [batch (mdb1/find-in-batches context :acl 1000 {:latest true})
         acl-concept batch]
-    (echo-style-acl (edn/read-string (:metadata acl-concept)))))
+    acl-concept))
+
+(defn get-parsed-acl
+  "Returns the ACL concept's metadata parased from EDN."
+  [acl-concept]
+  (edn/read-string (:metadata acl-concept)))
+
+(defn- get-echo-style-acls
+  "Returns all ACLs in metadata db, converted to \"ECHO-style\" keys for use with existing ACL functions."
+  [context]
+  (map echo-style-acl (map get-parsed-acl (get-all-acl-concepts context))))
 
 (def all-permissions
   "The set of all permissions checked and returned by the functions below."
@@ -363,3 +374,4 @@
   (let [sids (get-sids context username-or-type)
         acls (get-echo-style-acls context)]
     (hash-map target (provider-permissions-granted-by-acls provider-id target sids acls))))
+
