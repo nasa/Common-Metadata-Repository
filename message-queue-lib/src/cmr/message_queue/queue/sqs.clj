@@ -204,7 +204,7 @@
    ;; queues known to this broker
    queues
 
-   ;; map of normalized queue names to original queue names - needed for testing with queue broker wraper
+   ;; map of normalized queue names to original queue names - needed for testing with queue broker wrapper
    normalized-queue-names
 
    ;; exchanges (topics) known to this broker
