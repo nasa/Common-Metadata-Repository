@@ -234,7 +234,7 @@
   enumerations. Defaults to generating a Dataset_Language of English if translation cannot be
   determined."
   [c]
-  (when-let [data-language (:DataLanguage c)]
+  (when-let [data-language (u/capitalize-words (:DataLanguage c))]
     [:Dataset_Language (if (dif10-dataset-languages data-language)
                          data-language
                          (get iso-639-2->dif10-dataset-language data-language "English"))]))
