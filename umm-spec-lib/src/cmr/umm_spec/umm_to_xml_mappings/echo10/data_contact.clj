@@ -21,6 +21,12 @@
 (def default-echo10-contact-role
  "TECHNICAL CONTACT")
 
+(defn country-with-default
+ [country]
+ (if country
+   country
+   "Unknown"))
+
 ;; ECHO10 has email and phone contact mechanisms. UMM Email goes to ECHO10 email. Facebook and Twitter
 ;; contact mechanisms are dropped. Everything else is considered phone.
 (def echo10-non-phone-contact-mechanisms
@@ -30,8 +36,9 @@
   "UMM has multiple street addresses and ECHO10 has 1, so join the street addresses in UMM street
   addresses into 1 street address string"
   [street-addresses]
-  (when street-addresses
-   (str/join " " street-addresses)))
+  (if street-addresses
+   (str/join " " street-addresses)
+   u/not-provided))
 
 (defn- generate-emails
   "Returns ECHO10 organization contact emails from the UMM contact information contact mechanisms"
@@ -62,17 +69,10 @@
         (for [address addresses]
           [:Address
             [:StreetAddress (join-street-addresses (:StreetAddresses address))]
-            [:City (:City address)]
-            [:StateProvince (:StateProvince address)]
-            [:PostalCode (:PostalCode address)]
-            [:Country (:Country address)]])])))
-
-
-(defn required-name
- [name]
- (if name
-   name
-   u/not-provided))
+            [:City (u/with-default (:City address))]
+            [:StateProvince (u/with-default (:StateProvince address))]
+            [:PostalCode (u/with-default (:PostalCode address))]
+            [:Country (country-with-default (:Country address))]])])))
 
 (defn- generate-contact-persons
   "Returns the ECHO10 Contact Person elements from the given UMM collection or data center"
@@ -82,24 +82,27 @@
       [:ContactPersons
         (for [person contact-persons]
           [:ContactPerson
-           [:FirstName (required-name (:FirstName person))]
+           [:FirstName (u/with-default (:FirstName person))]
            [:MiddleName (:MiddleName person)]
-           [:LastName (required-name (:LastName person))]
+           [:LastName (u/with-default (:LastName person))]
            [:JobPosition (first
                           (map #(get umm-contact-person-role->echo10-contact-person-role %)
                            (:Roles person)))]])])))
 
 (defn- generate-organization-contacts
-  "Returns the ECHO10 Contact elements from the given UMM collection data centers."
+  "Returns the ECHO10 Contact elements from the given UMM collection data centers.
+  ECHO10 XML only supports one role per data center so for each UMM data center role, create
+  a Contact - essentially creating a Data Center per role with the rest of the info the same"
   [c]
   (let [data-centers (if (seq (:DataCenters c))
                        (:DataCenters c)
                        [u/not-provided-data-center])]
     (for [center data-centers
+          role (mapv #(get umm-data-center-role->echo10-contact-organization-role %)
+                     (:Roles center))
           :let [contact-information (:ContactInformation center)]]
       [:Contact
-       [:Role (first (map #(get umm-data-center-role->echo10-contact-organization-role %)
-                       (:Roles center)))]
+       [:Role role]
        [:HoursOfService (:ServiceHours contact-information)]
        [:Instructions (:ContactInstruction contact-information)]
        [:OrganizationName (:ShortName center)]

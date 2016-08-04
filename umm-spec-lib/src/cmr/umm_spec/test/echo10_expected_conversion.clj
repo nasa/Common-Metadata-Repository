@@ -87,11 +87,20 @@
 
 (defn- expected-echo10-address
   [address]
-  (assoc-in address [:StreetAddresses] [(dc/join-street-addresses (:StreetAddresses address))]))
+  (-> address
+      (assoc-in [:StreetAddresses] [(dc/join-street-addresses (:StreetAddresses address))])
+      (update-in [:City] su/with-default)
+      (update-in [:StateProvince] su/with-default)
+      (update-in [:PostalCode] su/with-default)
+      (update-in [:Country] dc/country-with-default)))
 
 (defn- expected-echo10-contact-information
   [contact-information]
-  (when contact-information
+  (when (and contact-information
+             (or (:ServiceHours contact-information)
+                 (:ContactMechanisms contact-information)
+                 (:ContactInstruction contact-information)
+                 (:Addresses contact-information)))
    (-> contact-information
        (assoc :RelatedUrls nil)
        (update-in [:Addresses] #(when (seq %)
@@ -106,8 +115,8 @@
        (assoc :ContactInformation nil)
        (assoc :Uuid nil)
        (assoc :NonDataCenterAffiliation nil)
-       (update-in [:FirstName] dc/required-name)
-       (update-in [:LastName] dc/required-name)
+       (update-in [:FirstName] su/with-default)
+       (update-in [:LastName] su/with-default)
        (assoc-in [:Roles] [(first (:Roles contact-person))]))))
 
 (defn- expected-echo10-contact-persons
@@ -117,18 +126,19 @@
 
 (defn- expected-echo10-data-center
   [data-center]
-  (-> data-center
-      (assoc :ContactGroups nil)
-      (update-in [:ContactPersons] expected-echo10-contact-persons)
-      (assoc :Uuid nil)
-      (assoc :LongName nil)
-      (assoc :Roles [(first (:Roles data-center))])
-      (assoc-in [:ContactInformation] (expected-echo10-contact-information (:ContactInformation data-center)))))
+  (for [role (:Roles data-center)]
+    (-> data-center
+        (assoc :ContactGroups nil)
+        (update-in [:ContactPersons] expected-echo10-contact-persons)
+        (assoc :Uuid nil)
+        (assoc :LongName nil)
+        (assoc :Roles [role])
+        (assoc-in [:ContactInformation] (expected-echo10-contact-information (:ContactInformation data-center))))))
 
 (defn- expected-echo10-data-centers
   [data-centers]
   (if (seq data-centers)
-    (mapv #(expected-echo10-data-center %) data-centers)
+    (flatten (mapv #(expected-echo10-data-center %) data-centers))
     [su/not-provided-data-center]))
 
 (defn umm-expected-conversion-echo10
