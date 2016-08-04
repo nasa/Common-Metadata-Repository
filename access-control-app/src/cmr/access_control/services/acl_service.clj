@@ -5,6 +5,7 @@
             [cmr.common.util :as u]
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
+            [cmr.common.validations.core :as v]
             [cmr.transmit.echo.tokens :as tokens]
             [cmr.transmit.metadata-db :as mdb1]
             [cmr.transmit.metadata-db2 :as mdb]
@@ -88,12 +89,54 @@
    :extra-fields {:acl-identity (acl-identity acl)
                   :target-provider-id (index/acl->provider-id acl)}})
 
+(defn- acl->mdb-provider-id
+  "Returns the provider id to use in metadata db for the group"
+  [acl]
+  (get acl :provider-id acl-provider-id))
+
+(defn validate-provider-exists
+  "Validates that the acl provider exists."
+  [context fieldpath acl]
+  (let [provider-id (index/acl->provider-id acl)]
+    (when (and provider-id (not (some #{provider-id} (map :provider-id (mdb/get-providers context)))))
+          {fieldpath [(msg/provider-does-not-exist provider-id)]})))
+
+(defn- create-acl-validations
+  "Returns validations for creating acls."
+  [context]
+  [#(validate-provider-exists context %1 %2)])
+
+(defn- validate-create-acl
+  "Validates an acl create."
+  [context acl]
+  (v/validate! (create-acl-validations context) acl))
+
+(defn- context->user-id
+  "Returns user id of the token in the context. Throws an error if no token is provided"
+  [context]
+  (if-let [token (:token context)]
+    (tokens/get-user-id context (:token context))
+    (errors/throw-service-error :unauthorized msg/token-required-for-acl-modification)))
+
+(defn- save-updated-acl-concept
+  "Saves an updated acl concept"
+  [context existing-concept updated-acl]
+  (mdb/save-concept
+    context
+    (-> existing-concept
+        (assoc :metadata (pr-str updated-acl)
+               :deleted false
+               :user-id (context->user-id context))
+        (dissoc :revision-date)
+        (update :revision-id inc))))
+
 (defn create-acl
   "Save a new ACL to Metadata DB. Returns map with concept and revision id of created acl."
   [context acl]
+  (validate-create-acl context acl)
   (mdb/save-concept context (merge (acl->base-concept context acl)
-                                   {:revision-id 1
-                                    :native-id (str (java.util.UUID/randomUUID))})))
+                                 {:revision-id 1
+                                  :native-id (str (java.util.UUID/randomUUID))})))
 
 (defn update-acl
   "Update the ACL with the given concept-id in Metadata DB. Returns map with concept and revision id of updated acl."
