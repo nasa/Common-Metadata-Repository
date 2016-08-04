@@ -108,8 +108,7 @@
           (let [messages (into [] (.getMessages rec-result))]
             (when-let [msg (first messages)]
               (let [msg-body (.getBody msg)
-                    msg-content (json/decode msg-body true)
-                    _ (warn "RECEIVED_MESSAGE ON QUEUE: " queue-name " MESSAGE: " msg-content)]
+                    msg-content (json/decode msg-body true)]
                 (try
                   (handler msg-content)
                   (.deleteMessage client queue-url (.getReceiptHandle msg))
@@ -246,7 +245,6 @@
     [this queue-name msg]
     (let [msg (json/generate-string msg)
           queue-name (normalize-queue-name queue-name)
-          _ (warn "PUBLISHING TO QUEUE: " queue-name " MESSAGE: " msg)
           queue-url (.getQueueUrl (.getQueueUrl sqs-client queue-name))]
       (.sendMessage sqs-client queue-url msg)))
 
