@@ -65,7 +65,7 @@
     (js/parse-umm-c
       {:ShortName (value-of data-id-el short-name-xpath)
        :EntryTitle (value-of doc entry-title-xpath)
-       :Version (without-default-value-of data-id-el version-xpath)
+       :Version (value-of data-id-el version-xpath)
        :Abstract (value-of short-name-el "gmd:abstract/gco:CharacterString")
        :Purpose (value-of short-name-el "gmd:purpose/gco:CharacterString")
        :CollectionProgress (value-of data-id-el "gmd:status/gmd:MD_ProgressCode")
