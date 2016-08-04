@@ -142,7 +142,7 @@
       (assoc :ISOTopicCategories nil)
       (update-in [:DataCenters] expected-echo10-data-centers)
       (assoc :ContactGroups nil)
-      (assoc :ContactPersons nil)
+      (update-in [:ContactPersons] expected-echo10-contact-persons)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
       (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons]

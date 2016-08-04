@@ -4,7 +4,8 @@
   (:require [clojure.set :as set]
             [cmr.common.xml.parse :refer :all]
             [cmr.common.xml.simple-xpath :refer [select text]]
-            [cmr.umm-spec.util :as u]))
+            [cmr.umm-spec.util :as u]
+            [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]))
 
 (def echo10-contact-role->umm-data-center-role
    {"ARCHIVER" "ARCHIVER"
@@ -80,9 +81,22 @@
      :MiddleName (value-of person "MiddleName")
      :LastName (value-of person "LastName")}))
 
+(defn parse-data-contact-persons
+  [doc]
+  (let [all-contacts (select doc "/Collection/Contacts/Contact")
+        contacts (filter #(and (= (value-of % "Role") dc/default-echo10-contact-role)
+                               (empty? (value-of % "OrganizationName")))
+                         all-contacts)]
+    (flatten
+     (for [contact contacts]
+       (parse-contact-persons contact)))))
+
 (defn parse-data-centers
   [doc]
-  (let [contacts (select doc "/Collection/Contacts/Contact")]
+  (let [all-contacts (select doc "/Collection/Contacts/Contact")
+        contacts (remove #(and (= (value-of % "Role") dc/default-echo10-contact-role)
+                               (empty? (value-of % "OrganizationName")))
+                   all-contacts)]
    (if (seq contacts)
     (for [contact contacts]
       {:Roles (map #(get echo10-contact-role->umm-data-center-role %) [(value-of contact "Role")])

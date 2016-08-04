@@ -18,6 +18,9 @@
   "User Services" "User Services"
   "Science Software" "Science Software Development Manager"})
 
+(def default-echo10-contact-role
+ "TECHNICAL CONTACT")
+
 ;; ECHO10 has email and phone contact mechanisms. UMM Email goes to ECHO10 email. Facebook and Twitter
 ;; contact mechanisms are dropped. Everything else is considered phone.
 (def echo10-non-phone-contact-mechanisms
@@ -108,5 +111,8 @@
   "Returns the ECHO10 Contact elements from the given UMM"
   [c]
   [:Contacts
-   (generate-organization-contacts c)])
-   ;; TO DO: Generate persons
+   (generate-organization-contacts c)
+   (when (seq (:ContactPersons c))
+     [:Contact
+       [:Role default-echo10-contact-role]
+       (generate-contact-persons c)])])

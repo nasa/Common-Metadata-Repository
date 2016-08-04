@@ -150,7 +150,7 @@
       (for [kw (:TemporalKeywords c)]
         [:Keyword kw])]
      (echo10-temporal c)
-     (dc/generate-contacts c)
+     (dc/generate-contacts c) ;; Contacts are both Data Centers and Contact Persons
      (echo10-sciencekeywords c)
      (echo10-platforms c)
      [:AdditionalAttributes
