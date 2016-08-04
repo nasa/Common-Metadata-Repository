@@ -269,16 +269,16 @@
 
   (reset
      [this]
-     (let [sqs-client (:sqs-client this)]))
-      ;  (doseq [queue (:queues this)
-      ;          :let [queue-name (normalize-queue-name queue)
-      ;                dlq-name (dead-letter-queue queue-name)
-      ;                queue-url (.getQueueUrl (.getQueueUrl sqs-client queue-name))
-      ;                dlq-url (.getQueueUrl (.getQueueUrl sqs-client dlq-name))
-      ;                q-purge-req (PurgeQueueRequest. queue-url)
-      ;                dlq-purge-req (PurgeQueueRequest. dlq-url)]]
-      ;    (.purgeQueue sqs-client q-purge-req)
-      ;    (.purgeQueue sqs-client dlq-purge-req))))
+     (let [sqs-client (:sqs-client this)]
+       (doseq [queue (:queues this)
+               :let [queue-name (normalize-queue-name queue)
+                     dlq-name (dead-letter-queue queue-name)
+                     queue-url (.getQueueUrl (.getQueueUrl sqs-client queue-name))
+                     dlq-url (.getQueueUrl (.getQueueUrl sqs-client dlq-name))
+                     q-purge-req (PurgeQueueRequest. queue-url)
+                     dlq-purge-req (PurgeQueueRequest. dlq-url)]]
+         (.purgeQueue sqs-client q-purge-req)
+         (.purgeQueue sqs-client dlq-purge-req))))
 
   (health
      [this]
