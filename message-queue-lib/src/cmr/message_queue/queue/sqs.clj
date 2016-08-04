@@ -8,6 +8,7 @@
             [clj-time.core :as t]
             [clj-time.format :as f]
             [clojure.core.async :as a]
+            [clojure.string :as str]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
             [cmr.common.lifecycle :as lifecycle]
@@ -43,21 +44,21 @@
  {:default 20
   :type Long})
 
-(defn dead-letter-queue
+(defn- dead-letter-queue
   "Returns the dead-letter-queue name for a given queue name. The
   given queue name should already be normalized."
   [queue]
   (str queue "_dead_letter_queue"))
 
-(defn arn->name
-  "Convert an Amazaon Resource Name (ARN) to a name (topic, queue, etc.)."
+(defn- arn->name
+  "Convert an Amazon Resource Name (ARN) to a name (topic, queue, etc.)."
   [arn]
-  (clojure.string/replace arn #".*:" ""))
+  (str/replace arn #".*:" ""))
 
-(defn normalize-queue-name
+(defn- normalize-queue-name
   "Replace dots with underscores"
   [queue-name]
-  (clojure.string/replace queue-name "." "_"))
+  (str/replace queue-name "." "_"))
 
 (defn- get-topic
   "Returns the Topic with the given display name."
@@ -268,16 +269,16 @@
 
   (reset
      [this]
-     (let [sqs-client (:sqs-client this)]
-       (doseq [queue (:queues this)
-               :let [queue-name (normalize-queue-name queue)
-                     dlq-name (dead-letter-queue queue-name)
-                     queue-url (.getQueueUrl (.getQueueUrl sqs-client queue-name))
-                     dlq-url (.getQueueUrl (.getQueueUrl sqs-client dlq-name))
-                     q-purge-req (PurgeQueueRequest. queue-url)
-                     dlq-purge-req (PurgeQueueRequest. dlq-url)]]
-         (.purgeQueue sqs-client q-purge-req)
-         (.purgeQueue sqs-client dlq-purge-req))))
+     (let [sqs-client (:sqs-client this)]))
+      ;  (doseq [queue (:queues this)
+      ;          :let [queue-name (normalize-queue-name queue)
+      ;                dlq-name (dead-letter-queue queue-name)
+      ;                queue-url (.getQueueUrl (.getQueueUrl sqs-client queue-name))
+      ;                dlq-url (.getQueueUrl (.getQueueUrl sqs-client dlq-name))
+      ;                q-purge-req (PurgeQueueRequest. queue-url)
+      ;                dlq-purge-req (PurgeQueueRequest. dlq-url)]]
+      ;    (.purgeQueue sqs-client q-purge-req)
+      ;    (.purgeQueue sqs-client dlq-purge-req))))
 
   (health
      [this]
