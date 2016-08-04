@@ -19,4 +19,4 @@
   (format "Provider with provider-id [%s] does not exist." provider-id))
 
 (def token-required-for-acl-modification
-  "Acls cannot be modified without a valid user token.")
+  "ACLs cannot be modified without a valid user token.")

@@ -263,6 +263,3 @@
                (ac/get-permissions (u/conn-context)
                                    {:concept_id coll1 :user_type "guest"}
                                    {:token token})))))))
-
-(deftest validate-acl-provider-identity
-    (let [token (e/login (u/conn-context) "admin")]))
