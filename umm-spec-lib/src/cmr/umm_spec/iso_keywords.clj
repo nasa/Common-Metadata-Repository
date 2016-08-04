@@ -10,6 +10,7 @@
             [cmr.common.xml :as cx]
             [cmr.umm-spec.models.common :as c]
             [cmr.common.xml.parse :refer :all]
+            [cmr.umm-spec.util :as su]
             [cmr.umm-spec.iso19115-2-util :as iso]))
 
 (def nil-science-keyword-field
@@ -95,8 +96,8 @@
                detailed-variable] (map #(if (= nil-science-keyword-field %) nil %)
                                        (str/split sk iso/keyword-separator-split))]]
     {:Category category
-     :Topic topic
-     :Term term
+     :Topic (su/with-default topic)
+     :Term (su/with-default term)
      :VariableLevel1 variable-level-1
      :VariableLevel2 variable-level-2
      :VariableLevel3 variable-level-3
