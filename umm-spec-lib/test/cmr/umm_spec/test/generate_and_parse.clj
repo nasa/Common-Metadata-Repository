@@ -131,7 +131,8 @@
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
      metadata-format (gen/elements tested-collection-formats)]
     (is (= (expected-conversion/convert umm-record metadata-format)
-           (xml-round-trip :collection metadata-format umm-record)))))
+           (xml-round-trip :collection metadata-format umm-record))
+        (str "Unable to roundtrip with format " metadata-format))))
 
 (deftest roundtrip-generated-service-records
   (checking "service round tripping" 100

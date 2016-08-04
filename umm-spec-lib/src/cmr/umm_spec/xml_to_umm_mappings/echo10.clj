@@ -87,7 +87,7 @@
   [context doc]
   {:EntryTitle (value-of doc "/Collection/DataSetId")
    :ShortName  (value-of doc "/Collection/ShortName")
-   :Version    (u/without-default-value-of doc "/Collection/VersionId")
+   :Version    (value-of doc "/Collection/VersionId")
    :DataDates  (parse-data-dates doc)
    :Abstract   (value-of doc "/Collection/Description")
    :CollectionDataType (value-of doc "/Collection/CollectionDataType")
@@ -104,7 +104,7 @@
    :SpatialExtent    (spatial/parse-spatial doc)
    :TemporalExtents  (parse-temporal doc)
    :Platforms (for [plat (select doc "/Collection/Platforms/Platform")]
-                {:ShortName (u/without-default-value-of plat "ShortName")
+                {:ShortName (value-of plat "ShortName")
                  :LongName (u/without-default-value-of plat "LongName")
                  :Type (u/without-default-value-of plat "Type")
                  :Characteristics (parse-characteristics plat)

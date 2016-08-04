@@ -65,7 +65,6 @@
       (map #(assoc % :Instruments instruments) platforms)
       (if instruments
         (conj platforms {:ShortName su/not-provided
-                         :LongName su/not-provided
                          :Instruments instruments})
         platforms))))
 

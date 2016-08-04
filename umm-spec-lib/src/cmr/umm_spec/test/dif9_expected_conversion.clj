@@ -53,7 +53,6 @@
       (if-let [instruments (seq (mapcat :Instruments platforms))]
         (conj (map #(assoc % :Instruments nil) platforms)
               (cmn/map->PlatformType {:ShortName su/not-provided
-                                      :LongName su/not-provided
                                       :Instruments instruments}))
         platforms))))
 
