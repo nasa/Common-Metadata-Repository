@@ -11,7 +11,7 @@
                        (:DataCenters c)
                        [u/not-provided-data-center])]
     (for [center data-centers
-          :let [contact-information (first (:ContactInformation center))]]
+          :let [contact-information (:ContactInformation center)]]
       [:Organization
        (for [role (:Roles center)]
          [:Organization_Type role])

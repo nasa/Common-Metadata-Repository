@@ -31,7 +31,6 @@
         [:Short_Name (:ShortName center)]
         [:Long_Name (:LongName center)]]
        [:Data_Center_URL (-> (:ContactInformation center)
-                             first
                              :RelatedUrls
                              first
                              :URLs

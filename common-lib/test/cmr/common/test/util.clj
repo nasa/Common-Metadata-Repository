@@ -659,3 +659,13 @@
                 []
                 [1 2]
                 [2 1]])))))
+
+(deftest xor-test
+  (is (false? (util/xor)))
+  (is (false? (util/xor false)))
+  (is (false? (util/xor false nil)))
+  (is (false? (util/xor false false false)))
+  (is (true? (util/xor true)))
+  (is (true? (util/xor true false)))
+  (is (true? (util/xor nil nil 1 nil)))
+  (is (true? (util/xor false true false))))
