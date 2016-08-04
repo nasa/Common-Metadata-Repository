@@ -98,7 +98,7 @@
    (let [start-time (System/currentTimeMillis)]
      (loop [current-states (set (current-message-states broker-wrapper))]
        (when (seq (set/difference current-states terminal-states))
-         (Thread/sleep 100)
+         (Thread/sleep 10)
          (if (< (- (System/currentTimeMillis) start-time) ms-to-wait)
            (recur (set (current-message-states broker-wrapper)))
            (warn (format "Waited %d ms for messages to complete, but they did not complete: %s"
