@@ -16,7 +16,7 @@
   "Investigator" "INVESTIGATOR"
   "Metadata Author" "METADATA AUTHOR"
   "User Services" "User Services"
-  "Science Software" "Science Software Development Manager"})
+  "Science Software Development" "Science Software Development Manager"})
 
 (def default-echo10-contact-role
  "TECHNICAL CONTACT")
@@ -30,7 +30,8 @@
   "UMM has multiple street addresses and ECHO10 has 1, so join the street addresses in UMM street
   addresses into 1 street address string"
   [street-addresses]
-  (str/join " " street-addresses))
+  (when street-addresses
+   (str/join " " street-addresses)))
 
 (defn- generate-emails
   "Returns ECHO10 organization contact emails from the UMM contact information contact mechanisms"

@@ -36,7 +36,7 @@
   "NSIDC USER Services" "User Services"
   "User Services" "User Services"
   "GHRC USER SERVICES" "User Services"
-  "Science Software Development Manager" "Science Software"
+  "Science Software Development Manager" "Science Software Development"
   "Deputy Science Software Development Manager" "Science Software"
   "Sea Ice Algorithms" "Science Software"
   "Snow Algorithms" "Science Software"})

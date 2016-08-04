@@ -94,7 +94,8 @@
   (when contact-information
    (-> contact-information
        (assoc :RelatedUrls nil)
-       (update-in [:Addresses] #(mapv expected-echo10-address %))
+       (update-in [:Addresses] #(when (seq %)
+                                  (mapv expected-echo10-address %)))
        (update-in [:ContactMechanisms] expected-contact-mechanisms))))
 
 
@@ -104,6 +105,7 @@
    (-> contact-person
        (assoc :ContactInformation nil)
        (assoc :Uuid nil)
+       (assoc :NonDataCenterAffiliation nil)
        (update-in [:FirstName] dc/required-name)
        (update-in [:LastName] dc/required-name)
        (assoc-in [:Roles] [(first (:Roles contact-person))]))))
