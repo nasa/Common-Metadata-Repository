@@ -142,3 +142,9 @@
 (deftest test-maybe-long
   (is (= 99 (c/maybe-long "99")))
   (is (nil? (c/maybe-long nil))))
+
+(deftest test1-check-env-vars
+  (is (= "AllEnvVarsRecognized" (c/check-env-vars {"CMR_DB_USERNAME" "defconfig db-username", "CMR_DB_PASSWORD" "defconfig db-password"}))))
+
+(deftest test2-check-env-vars
+  (is (nil? (c/check-env-vars {"CMR_NOTRecognizable" "not recognized"}))))

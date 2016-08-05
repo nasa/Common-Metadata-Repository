@@ -3,7 +3,7 @@
   token as stored in the ECHO database. This was added as a temporary workaround to performance
   problems retrieving sids from ECHO. See Jira issues CMR-1126 and ECHO-180. CMR-1128 was added
   to remove this temporary fix."
-  (:require [cmr.common.config :as cfg]
+  (:require [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
             [cmr.oracle.sql-utils :as sql-utils]
@@ -11,7 +11,9 @@
             [clj-time.core :as t]
             [cmr.metadata-db.data.memory-db]))
 
-(def business-user (cfg/config-value-fn :echo-business-user "DEV_52_BUSINESS"))
+(defconfig business-user
+  "echo business user"
+  {:default "DEV_52_BUSINESS"})
 
 (defn- context->db
   "Returns the metadata db database instance."

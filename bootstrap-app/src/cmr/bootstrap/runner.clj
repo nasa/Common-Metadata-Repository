@@ -4,11 +4,13 @@
             [clojure.string :as string]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
-            [cmr.bootstrap.api.routes :as routes])
+            [cmr.bootstrap.api.routes :as routes]
+            [cmr.common.config :refer [check-env-vars]])
   (:gen-class))
 
 (defn -main
   "Starts the App."
   [& args]
   (let [system (system/start (system/create-system))]
-    (info "Running bootstrap...")))
+    (info "Running bootstrap...")
+    (check-env-vars)))

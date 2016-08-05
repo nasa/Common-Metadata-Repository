@@ -50,26 +50,6 @@
         (some? override-value) override-value
         :else default-value))))
 
-(defn ^:deprecated config-value-fn
-  "DEPRECATED: This will be removed eventually. Use defconfig instead.
-
-  Returns a function that can retrieve a configuration value which can be set as an environment
-  variable on the command line or default to a value.
-  A parser function can optionally be specified for parsing the value out of the environment variable
-  which comes back as a string unless the parser function is provided."
-  ([config-name default-value]
-   (config-value-fn config-name default-value identity))
-  ([config-name default-value parser-fn]
-
-   ;; Environment variables can't change at runtime so we look them up initially.
-   (let [parser-when #(when (some? %) (parser-fn %))
-         parsed-default (parser-when default-value)
-         env-value (parser-when (env-var-value (config-name->env-name config-name)))]
-     (fn []
-       (or (parser-when (get @runtime-config-values config-name))
-           env-value
-           parsed-default)))))
-
 (defonce ^{:doc "This contains information about all of the
                  configuration parameters that have been added using
                  defconfig. It is used for allowing documentation
@@ -224,7 +204,6 @@
            [value#]
            (set-config-value! ~config-name-key value#))))))
 
-;; TODO put this in place once we get rid of config-value-fn and have everything using defconfig
 (defn check-env-vars
   "Checks any environment variables starting with CMR_ are recognized as known environment variables.
   If any are unrecognized a warning message is logged. Usually this should be called at the start
@@ -238,7 +217,8 @@
          cmr-env-vars (filter #(.startsWith ^String % "CMR_")
                               (keys env-var-map))
          unknown-vars (set/difference (set cmr-env-vars) (set known-env-vars))]
-     (when (seq unknown-vars)
+     (if (seq unknown-vars)
        (warn "POTENTIAL CONFIGURATION ERROR: The following CMR Environment variables were configured but were not recognized:"
-             (pr-str unknown-vars))))))
+             (pr-str unknown-vars))
+       "AllEnvVarsRecognized"))))
 

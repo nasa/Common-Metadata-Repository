@@ -4,11 +4,13 @@
             [clojure.string :as string]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
-            [cmr.index-set.api.routes :as routes])
+            [cmr.index-set.api.routes :as routes]
+            [cmr.common.config :refer [check-env-vars]])
   (:gen-class))
 
 (defn -main
   "Starts the App."
   [& args]
   (let [system (system/start (system/create-system))]
-    (info "Running index-set...")))
+    (info "Running index-set...")
+    (check-env-vars)))
