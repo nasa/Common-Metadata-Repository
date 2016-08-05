@@ -339,7 +339,7 @@
                                                       (dc/psa {:name "bool2" :data-type :boolean :value true})]})
                              {:allow-failure? true})]
       (is (= {:status 422
-              :errors ["object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\"])"]}
+              :errors ["object has missing required properties ([\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\"])"]}
              (select-keys response [:status :errors]))))
     ;; disable return of schema validation errors from API
     (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
