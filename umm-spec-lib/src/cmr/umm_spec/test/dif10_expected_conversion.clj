@@ -3,7 +3,6 @@
  (:require [clj-time.core :as t]
            [clj-time.format :as f]
            [cmr.umm-spec.util :as su]
-           [cmr.umm-spec.date-util :as du]
            [cmr.umm-spec.json-schema :as js]
            [cmr.common.util :as util :refer [update-in-each]]
            [cmr.umm-spec.models.common :as cmn]

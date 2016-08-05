@@ -32,8 +32,13 @@
   "Default value for GranuleSpatialRepresentation"
   "CARTESIAN")
 
-(def default-temporal-extents
+(def not-provided-temporal-extents
+  "Default temporal extents to use if none is provided"
   [{:RangeDateTimes [{:BeginningDateTime du/parsed-default-date}]}])
+
+(def not-provided-platforms
+  "Default platforms to use if none is provided"
+  [{:ShortName not-provided}])
 
 (defn convert-empty-record-to-nil
   "Converts empty record to nil."

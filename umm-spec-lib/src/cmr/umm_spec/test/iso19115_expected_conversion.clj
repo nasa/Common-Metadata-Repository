@@ -77,7 +77,7 @@
        (split-temporals :RangeDateTimes)
        (split-temporals :SingleDateTimes)
        sort-by-date-type-iso
-       (#(or (seq %) su/default-temporal-extents))))
+       (#(or (seq %) su/not-provided-temporal-extents))))
 
 (defn- iso-19115-2-publication-reference
   "Returns the expected value of a parsed ISO-19115-2 publication references"

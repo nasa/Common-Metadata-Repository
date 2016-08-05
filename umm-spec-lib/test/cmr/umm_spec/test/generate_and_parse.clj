@@ -68,7 +68,8 @@
   [metadata-format]
   (seq (.listFiles (io/file (io/resource (str "example_data/" (name metadata-format)))))))
 
-;; Remove this test after roundtrip-example-metadata is uncommented
+;; Remove this test after formats-to-skip is done.
+;; Also remove the example files that it's using in resources. They are dif.xml, echo10.xml, etc.
 (deftest roundrobin-collection-example-record
   (doseq [[origin-format filename] collection-format-examples
           :let [metadata (slurp (io/resource (str "example_data/" filename)))
@@ -78,45 +79,50 @@
     (testing (str origin-format " to " dest-format)
       (is (empty? (generate-and-validate-xml :collection dest-format umm-c-record))))))
 
-(comment
- ;; Commented out until problems are fixed
- (deftest roundtrip-example-metadata
-   (let [failed-atom (atom false)
-         check-failure (fn [result]
-                         (when-not result (reset! failed-atom true)))]
-     (doseq [metadata-format tested-collection-formats
-             example-file (example-files metadata-format)
-             :when (not @failed-atom)
-             :let [metadata (slurp example-file)
-                   umm (core/parse-metadata test-context :collection metadata-format metadata)]]
+(def formats-to-skip
+  "A set of formats to skip in the roundtrip example metadata test. These will be fixed as part of
+   separate issues."
+  #{:dif :dif10 :iso19115 :iso-smap})
 
-       ;; input file is valid
-       (check-failure
-        (is (empty? (core/validate-xml :collection metadata-format metadata))
-            (format "Source file %s is not valid %s XML" example-file metadata-format)))
-       ; Parsed UMM is valid
+(deftest roundtrip-example-metadata
+  (let [failed-atom (atom false)
+        check-failure (fn [result]
+                        (when-not result (reset! failed-atom true)))]
+    (doseq [metadata-format tested-collection-formats
+            :when (not (formats-to-skip metadata-format))
+            example-file (example-files metadata-format)
+            :when (not @failed-atom)
+            :let [metadata (slurp example-file)
+                  umm (core/parse-metadata test-context :collection metadata-format metadata)]]
 
-       (check-failure
-        (is (empty? (js/validate-umm-json (umm-json/umm->json umm) :collection))
-            (format "Parsing source file %s in format %s to UMM produced invalid UMM JSON."
-                    example-file metadata-format)))
+      ;; input file is valid
+      (check-failure
+       (is (empty? (core/validate-xml :collection metadata-format metadata))
+           (format "Source file %s is not valid %s XML" example-file metadata-format)))
 
-       (check-failure
-        (is (empty? (umm-validation/validate-collection umm))
-            (format "Parsing source file %s in format %s to UMM had validation errors"
-                    example-file metadata-format)))
+      ;; Parsed UMM is valid against the JSON schema
+      (check-failure
+       (is (empty? (js/validate-umm-json (umm-json/umm->json umm) :collection))
+           (format "Parsing source file %s in format %s to UMM produced invalid UMM JSON."
+                   example-file metadata-format)))
 
-       (doseq [target-format tested-collection-formats
-               :when (not @failed-atom)
-               :let [expected (expected-conversion/convert umm target-format)
-                     actual (xml-round-trip :collection target-format umm)]]
+      ;; Parsed UMM is valid against the UMM validation rules
+      (check-failure
+       (is (empty? (umm-validation/validate-collection umm))
+           (format "Parsing source file %s in format %s to UMM had validation errors"
+                   example-file metadata-format)))
 
-         (proto-repl.saved-values/save 4 metadata-format target-format umm)
+      (doseq [target-format tested-collection-formats
+              :when (not (formats-to-skip target-format))
+              :when (not @failed-atom)
+              :let [expected (expected-conversion/convert umm target-format)
+                    actual (xml-round-trip :collection target-format umm)]]
 
-         (check-failure
-          (is (= expected actual)
-              (format "Parsing example file %s and converting to %s and then parsing again did not result in expected umm."
-                      example-file target-format))))))))
+        ;; Taking the parsed UMM and converting it to another format produces the expected UMM
+        (check-failure
+         (is (= expected actual)
+             (format "Parsing example file %s and converting to %s and then parsing again did not result in expected umm."
+                     example-file target-format)))))))
 
 (deftest roundtrip-example-collection-record
   (doseq [metadata-format tested-collection-formats]

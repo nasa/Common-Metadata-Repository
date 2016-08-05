@@ -155,16 +155,16 @@
      :SpatialExtent (spatial/parse-spatial doc extent-info)
      :TilingIdentificationSystems (tiling/parse-tiling-system md-data-id-el)
      :TemporalExtents (or (seq (parse-temporal-extents doc extent-info md-data-id-el))
-                          u/default-temporal-extents)
+                          u/not-provided-temporal-extents)
      :ProcessingLevel {:Id
                        (char-string-value
-                         md-data-id-el
-                         "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
+                        md-data-id-el
+                        "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
 
                        :ProcessingLevelDescription
                        (char-string-value
-                         md-data-id-el
-                         "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
+                        md-data-id-el
+                        "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
      :Distributions (dru/parse-distributions doc)
      :Platforms (platform/parse-platforms doc)
      :Projects (parse-projects doc)
@@ -173,7 +173,7 @@
                                   :let [role-xpath "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue='%s']"
                                         select-party (fn [name xpath]
                                                        (char-string-value publication
-                                                                              (str (format role-xpath name) xpath)))]]
+                                                                          (str (format role-xpath name) xpath)))]]
                               {:Author (select-party "author" "/gmd:organisationName")
                                :PublicationDate (str (date-at publication
                                                               (str "gmd:date/gmd:CI_Date[gmd:dateType/gmd:CI_DateTypeCode/@codeListValue='publication']/"
@@ -189,8 +189,8 @@
                                :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})
      :MetadataAssociations (ma/xml-elem->metadata-associations doc)
      :AncillaryKeywords (descriptive-keywords-type-not-equal
-                          md-data-id-el
-                          ["place" "temporal" "project" "platform" "instrument" "theme"])
+                         md-data-id-el
+                         ["place" "temporal" "project" "platform" "instrument" "theme"])
      :ScienceKeywords (kws/parse-science-keywords md-data-id-el)
      :RelatedUrls (dru/parse-related-urls doc)
      :AdditionalAttributes (aa/parse-additional-attributes doc)

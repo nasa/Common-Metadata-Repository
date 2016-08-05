@@ -31,7 +31,7 @@
     (if (seq all-ranges)
       [(cmn/map->TemporalExtentType
          {:RangeDateTimes all-ranges})]
-      su/default-temporal-extents)))
+      su/not-provided-temporal-extents)))
 
 (defn- expected-dif-instruments
   "Returns the expected DIF instruments for the given instruments"

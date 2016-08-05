@@ -87,7 +87,7 @@
        :Platforms (let [smap-keywords (values-at data-id-el keywords-xpath-str)]
                     (kws/parse-platforms smap-keywords))
        :TemporalExtents (or (seq (parse-temporal-extents data-id-el))
-                            u/default-temporal-extents)
+                            u/not-provided-temporal-extents)
        :ScienceKeywords (parse-science-keywords data-id-el)
        :SpatialExtent (spatial/parse-spatial data-id-el)
        :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)

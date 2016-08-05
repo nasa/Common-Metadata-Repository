@@ -66,7 +66,7 @@
       (if instruments
         (conj platforms {:ShortName su/not-provided
                          :Instruments instruments})
-        (or (seq platforms) [{:ShortName su/not-provided}])))))
+        (or (seq platforms) su/not-provided-platforms)))))
 
 (defn- get-short-name
   "Returns the short-name from the given entry-id and version-id, where entry-id is
@@ -119,7 +119,7 @@
                         [{:RangeDateTimes (for [temporal temporals]
                                             {:BeginningDateTime (value-of temporal "Start_Date")
                                              :EndingDateTime (parse-dif-end-date (value-of temporal "Stop_Date"))})}]
-                        su/default-temporal-extents)
+                        su/not-provided-temporal-extents)
      :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
      :SpatialExtent (merge {:GranuleSpatialRepresentation (or (value-of doc "/DIF/Extended_Metadata/Metadata[Name='GranuleSpatialRepresentation']/Value")
                                                               "NO_SPATIAL")}
