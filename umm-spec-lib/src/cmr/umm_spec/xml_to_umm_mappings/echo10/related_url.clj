@@ -87,9 +87,20 @@
      :MimeType (value-of resource "MimeType")
      :Relation ["GET RELATED VISUALIZATION"]}))
 
+(defn cleanup-urls
+  "Fixes bad URLs with whitespace in the middle."
+  [related-url]
+  (update related-url :URLs
+          (fn [urls]
+            (seq
+             (map (fn [s]
+                    (str/replace s #"(?s)\s+" ""))
+                  urls)))))
+
 (defn parse-related-urls
   "Returns related-urls elements from a parsed XML structure"
   [doc]
-  (seq (concat (parse-online-access-urls doc)
-               (parse-online-resource-urls doc)
-               (parse-browse-urls doc))))
+  (seq (map cleanup-urls
+            (concat (parse-online-access-urls doc)
+                    (parse-online-resource-urls doc)
+                    (parse-browse-urls doc)))))

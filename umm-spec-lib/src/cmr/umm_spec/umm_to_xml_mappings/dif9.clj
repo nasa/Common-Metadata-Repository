@@ -185,7 +185,7 @@
          [:Value collection-data-type]])
       [:Metadata
        [:Name "ProcessingLevelId"]
-       [:Value (-> c :ProcessingLevel :Id)]]
+       [:Value (-> c :ProcessingLevel :Id u/without-default)]]
       [:Metadata
        [:Name "ProcessingLevelDescription"]
        [:Value (-> c :ProcessingLevel :ProcessingLevelDescription)]]

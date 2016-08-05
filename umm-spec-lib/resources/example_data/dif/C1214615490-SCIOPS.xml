@@ -1,0 +1,321 @@
+
+<DIF 
+    xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd">
+   <Entry_ID>Canada_GeoGratis_1kmWatFracNTDB</Entry_ID>
+   <Entry_Title>1-km Water Fraction From National Topographic Data Base Maps, Canada</Entry_Title>
+   <Data_Set_Citation>
+      <Dataset_Creator>Government of Canada, Natural Resources Canada, Canada Centre for Remote Sensing, GeoAccess Division</Dataset_Creator>
+      <Dataset_Title>1-km Water Fraction From National Topographic Data Base Maps, Canada</Dataset_Title>
+      <Dataset_Release_Place>Ottawa, Ontario, Canada</Dataset_Release_Place>
+      <Dataset_Publisher>Government of Canada, Natural Resources Canada, Canada Centre for Remote Sensing, GeoAccess Division</Dataset_Publisher>
+      <Online_Resource>http://geogratis.cgdi.gc.ca/download/WaterFraction/</Online_Resource>
+   </Data_Set_Citation>
+   <Personnel>
+      <Role>TECHNICAL CONTACT</Role>
+      <First_Name>DR. RICHARD</First_Name>
+      <Last_Name>FERNANDES</Last_Name>
+      <Email>richard.fernandes@ccrs.nrcan.gc.ca</Email>
+      <Phone>+01-613-947-1292</Phone>
+      <Fax>+01-613-947-1383</Fax>
+      <Contact_Address>
+         <Address>588 Booth Street, 4th Floor</Address>
+         <City>Ottawa</City>
+         <Province_or_State>Ontario</Province_or_State>
+         <Postal_Code>K1A 0Y7</Postal_Code>
+         <Country>Canada</Country>
+      </Contact_Address>
+   </Personnel>
+   <Parameters uuid="734f8f27-6976-4b67-8794-c7fc79d6161e">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>TERRESTRIAL HYDROSPHERE</Topic>
+      <Term>GROUND WATER</Term>
+   </Parameters>
+   <Parameters uuid="960037c5-57b1-4cdf-84be-4542beee7d5a">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>TERRESTRIAL HYDROSPHERE</Topic>
+      <Term>SURFACE WATER</Term>
+      <Variable_Level_1>HYDROPATTERN</Variable_Level_1>
+   </Parameters>
+   <Parameters uuid="5e3c573f-a787-4afa-80a4-047c2c5d83f2">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>TERRESTRIAL HYDROSPHERE</Topic>
+      <Term>SURFACE WATER</Term>
+      <Variable_Level_1>RIVERS/STREAMS</Variable_Level_1>
+   </Parameters>
+   <Parameters uuid="5debb283-51e4-435e-b2a2-e8e2a977220d">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>TERRESTRIAL HYDROSPHERE</Topic>
+      <Term>SURFACE WATER</Term>
+   </Parameters>
+   <Parameters uuid="75c312bc-79f9-4d74-a7c0-3c67c019196c">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>LAND SURFACE</Topic>
+      <Term>LAND USE/LAND COVER</Term>
+      <Variable_Level_1>LAND USE/LAND COVER CLASSIFICATION</Variable_Level_1>
+   </Parameters>
+   <Parameters uuid="f36d71c6-f2ad-49c4-809f-09b4f0688412">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>LAND SURFACE</Topic>
+      <Term>LANDSCAPE</Term>
+   </Parameters>
+   <ISO_Topic_Category uuid="81a52fa1-4a8f-4c4d-9736-7aaf0859df9d">ENVIRONMENT</ISO_Topic_Category>
+   <ISO_Topic_Category uuid="d9cd5b7e-e9e7-4746-bbc8-bc69f7b606c7">GEOSCIENTIFIC INFORMATION</ISO_Topic_Category>
+   <ISO_Topic_Category uuid="26ebb539-cae2-4961-9252-7f367642fa57">IMAGERY/BASE MAPS/EARTH COVER</ISO_Topic_Category>
+   <ISO_Topic_Category uuid="0353d44f-2fc2-44df-9143-b1a3b86d5aa1">INLAND WATERS</ISO_Topic_Category>
+   <Keyword>GCMD</Keyword>
+   <Data_Set_Progress>IN WORK</Data_Set_Progress>
+   <Spatial_Coverage>
+      <Southernmost_Latitude>41.5</Southernmost_Latitude>
+      <Northernmost_Latitude>84.0</Northernmost_Latitude>
+      <Westernmost_Longitude>-141.0</Westernmost_Longitude>
+      <Easternmost_Longitude>-52.0</Easternmost_Longitude>
+   </Spatial_Coverage>
+   <Location uuid="d0081284-5cef-484d-b1ee-a6787b197a33">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+      <Location_Subregion1>CANADA</Location_Subregion1>
+   </Location>
+   <Location uuid="d0081284-5cef-484d-b1ee-a6787b197a33">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+      <Location_Subregion1>CANADA</Location_Subregion1>
+      <Detailed_Location>Alberta</Detailed_Location>
+   </Location>
+   <Location uuid="d0081284-5cef-484d-b1ee-a6787b197a33">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+      <Location_Subregion1>CANADA</Location_Subregion1>
+      <Detailed_Location>British Columbia</Detailed_Location>
+   </Location>
+   <Location uuid="d0081284-5cef-484d-b1ee-a6787b197a33">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+      <Location_Subregion1>CANADA</Location_Subregion1>
+      <Detailed_Location>Manitoba</Detailed_Location>
+   </Location>
+   <Location uuid="d0081284-5cef-484d-b1ee-a6787b197a33">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+      <Location_Subregion1>CANADA</Location_Subregion1>
+      <Detailed_Location>New Brunswick</Detailed_Location>
+   </Location>
+   <Location uuid="d0081284-5cef-484d-b1ee-a6787b197a33">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+      <Location_Subregion1>CANADA</Location_Subregion1>
+      <Detailed_Location>Newfoundland And Labrador</Detailed_Location>
+   </Location>
+   <Location uuid="d0081284-5cef-484d-b1ee-a6787b197a33">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+      <Location_Subregion1>CANADA</Location_Subregion1>
+      <Detailed_Location>Northwest Territories</Detailed_Location>
+   </Location>
+   <Location uuid="d0081284-5cef-484d-b1ee-a6787b197a33">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+      <Location_Subregion1>CANADA</Location_Subregion1>
+      <Detailed_Location>Nova Scotia</Detailed_Location>
+   </Location>
+   <Location uuid="d0081284-5cef-484d-b1ee-a6787b197a33">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+      <Location_Subregion1>CANADA</Location_Subregion1>
+      <Detailed_Location>Nunavut</Detailed_Location>
+   </Location>
+   <Location uuid="d0081284-5cef-484d-b1ee-a6787b197a33">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+      <Location_Subregion1>CANADA</Location_Subregion1>
+      <Detailed_Location>Ontario</Detailed_Location>
+   </Location>
+   <Location uuid="d0081284-5cef-484d-b1ee-a6787b197a33">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+      <Location_Subregion1>CANADA</Location_Subregion1>
+      <Detailed_Location>Prince Edward Island</Detailed_Location>
+   </Location>
+   <Location uuid="d0081284-5cef-484d-b1ee-a6787b197a33">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+      <Location_Subregion1>CANADA</Location_Subregion1>
+      <Detailed_Location>Quebec</Detailed_Location>
+   </Location>
+   <Location uuid="d0081284-5cef-484d-b1ee-a6787b197a33">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+      <Location_Subregion1>CANADA</Location_Subregion1>
+      <Detailed_Location>Saskatchewan</Detailed_Location>
+   </Location>
+   <Location uuid="88bc8b39-ad19-4415-b426-e7d37450341a">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+   </Location>
+   <Location uuid="46769685-522d-49c3-ad81-22e1cc8c0c2b">
+      <Location_Category>GEOGRAPHIC REGION</Location_Category>
+      <Location_Type>MID-LATITUDE</Location_Type>
+   </Location>
+   <Location uuid="507794a1-9563-49a4-b2d3-8a28347c1fd7">
+      <Location_Category>GEOGRAPHIC REGION</Location_Category>
+      <Location_Type>NORTHERN HEMISPHERE</Location_Type>
+   </Location>
+   <Location uuid="a29a6a2b-e0e5-4ba9-9768-df67db4f34a6">
+      <Location_Category>GEOGRAPHIC REGION</Location_Category>
+      <Location_Type>WESTERN HEMISPHERE</Location_Type>
+   </Location>
+   <Location uuid="5810d615-a3fc-4f79-947a-bae456b728c2">
+      <Location_Category>VERTICAL LOCATION</Location_Category>
+      <Location_Type>SEA SURFACE</Location_Type>
+   </Location>
+   <Quality>
+            Water fraction coverage proportion scaled from 1 (0%) to 10000 (100%).  'No
+            data' is represented by 10000 although this will either represent large lakes
+            or oceans not mapped within the NTDB framework OR land regions not contained
+            within Canada.
+   </Quality>
+   <Access_Constraints>
+            none
+   </Access_Constraints>
+   <Use_Constraints>
+            Licensing information located at
+            http://geogratis.cgdi.gc.ca/geogratis/en/index.html copyright
+   </Use_Constraints>
+   <Originating_Center></Originating_Center>
+   <Data_Center>
+      <Data_Center_Name uuid="861cdd4d-8df9-41e8-bec1-4916ca8f71fc">
+         <Short_Name>CA/NRCAN/ESS/GC/CCRS/GEO</Short_Name>
+         <Long_Name>GeoAccess Division, Canada Centre for Remote Sensing, Geomatics Canada, Earth Sciences Sector, Natural Resources Canada</Long_Name>
+      </Data_Center_Name>
+   <Data_Center_URL>http://geogratis.cgdi.gc.ca/</Data_Center_URL>
+      <Personnel>
+         <Role>DATA CENTER CONTACT</Role>
+         <First_Name>GEOGRATIS</First_Name>
+         <Middle_Name>CLIENT</Middle_Name>
+         <Last_Name>SERVICES</Last_Name>
+         <Email>info@GeoGratis.cgdi.gc.ca</Email>
+         <Fax>+01-613-947-2410</Fax>
+         <Contact_Address>
+            <Address>615 Booth Street, Room 650</Address>
+            <City>Ottawa</City>
+            <Province_or_State>Ontario</Province_or_State>
+            <Postal_Code>K1A 0E9</Postal_Code>
+            <Country>Canada</Country>
+         </Contact_Address>
+      </Personnel>
+   </Data_Center>
+   <Distribution>
+      <Fees>Gratuit-Free</Fees>
+   </Distribution>
+   <Summary>
+      <Abstract>This product is a raster coverage representing the fraction of area within each
+      1km grid cell over Canada's land mass covered by waterbodies, as mapped within
+      the National Topographic Data Base v3.1. In NTDB, waterbody is defined as area
+      covered by open water belonging to one of five categories (section 1.5.1). The
+      product involves negligible errors due to aggregation and data format
+      conversion in comparison with the NTDB digital base maps used in its
+      generation. As such, the errors between mapped and actual water fractions are
+      primarily due to differences between the NTDB source maps and the actual
+      waterbody coverage in a grid cell. Since water area fluctuates seasonally and
+      interanually one should use caution in applying this product for local mapping
+      and modeling purposes. At a minimum, one should verify that the survey dates of
+      the source NTDB maps are appropriate. Furthermore, some consideration should be
+      given to seasonal shifts in waterbody extent. The majority of NTDB source maps
+      were surveyed within the growing season (post snow-melt) and should therefore
+      be relatively unbiased during the growing season in the absence of drought or
+      severe precipitation events. At regional and national scales we expect that
+      seasonal (weather-induced) fluctuations in water extent are the major
+      uncertainty in water fractions.There are three major objectives for generating
+      this product:
+      
+               1.     Providing information of water fraction coverage as input to
+      the processing, analysis and interpretation of satellite data.
+               2.     Providing a visualization of regional and national water
+      fraction coverage.
+               3.     Providing initial estimates of water fraction coverage for
+      numerical simulation models independent of topology information available from
+      hydrographic networks.
+      
+               There may be other applications we have not envisioned. The spatial
+      resolution of the raster grid can be easily improved, limited only by copyright
+      restrictions when the resolution allows representation of base map features
+      indistinguishable from the vector data layers.
+      
+               The release of this data on GeoGratis is to promote geomatics use and
+      education by providing a web and file transfer protocol (ftp) site that
+      distributes geospatial data of Canada. Data is available for download, without
+      charge.
+      Spatial Data Organization Information -
+      
+          Indirect Spatial Reference:
+          Direct Spatial Reference: Raster
+          Raster Object Type:
+          Row Count:
+          Column Count:
+          Vertical Count: 
+      Spatial Reference Information -
+           Horizontal Coordinate System Definition -
+      
+      Planar -
+      
+            Map Projection Name: Lambert Conformal Conic
+          Standard Parallel:
+          Standard Parallel:
+          Longitude of Central Meridian:
+          Latitude of Projection Origin:
+          False Easting:
+          False Northing:
+          Planar Coordinate Encoding Method:
+          Coordinate Representation:
+           Abscissa Resolution:
+           Ordinate Resolution:
+          Distance and Bearing Representation:
+           Distance Resolution:
+           Bearing Resolution:
+           Bearing Units:
+           Bearing Reference Direction:
+           Bearing Reference Meridian:
+          Planar Distance Units:
+      
+         Geodetic Model:
+           Horizontal Datum Name: The North American Datum of 1983 (NAD83)
+          Ellipsoid Name: Clarke 1866
+          Semi-major Axis:
+          Denominator of Flattening Ratio: 
+      
+      Metadata for this dataset is included with the image in the compressed file
+      (waterfraction.zip).</Abstract>
+   </Summary>
+   <Related_URL>
+      <URL>http://geodiscover.cgdi.ca/</URL>
+      <Description>
+         GeoConnections Discovery Portal. Canada's IDN Node.
+      </Description>
+   </Related_URL>
+   <IDN_Node uuid="1e9c313a-ca4a-4fab-a80f-c7aeb68a5d0b">
+      <Short_Name>CANADA/CGDI</Short_Name>
+   </IDN_Node>
+   <IDN_Node uuid="edff0791-121c-40aa-adf2-33feb2bc30e5">
+      <Short_Name>CEOS</Short_Name>
+   </IDN_Node>
+   <Originating_Metadata_Node>CANADA-CGDI</Originating_Metadata_Node>
+   <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+   <Metadata_Version>VERSION 9.7</Metadata_Version>
+   <DIF_Creation_Date>2002-08-12</DIF_Creation_Date>
+   <Last_DIF_Revision_Date>2015-12-02</Last_DIF_Revision_Date>
+   <Future_DIF_Review_Date>2006-06-17</Future_DIF_Review_Date>
+   <Extended_Metadata>
+      <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>metadata.extraction_date</Name>
+        <Value>2015-12-02 13:12:27</Value>
+      </Metadata>
+      <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>metadata.keyword_version</Name>
+        <Value>8.1</Value>
+      </Metadata>
+   </Extended_Metadata>
+</DIF>

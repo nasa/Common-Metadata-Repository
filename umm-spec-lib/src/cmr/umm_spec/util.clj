@@ -2,6 +2,7 @@
   "This contains utilities for the UMM Spec code."
   (:require [clojure.string :as str]
             [cmr.common.util :as util]
+            [cmr.umm-spec.date-util :as du]
             [cmr.umm-spec.models.common :as cmn]
             [clj-time.format :as f]
             [cmr.common.xml.parse :as p]
@@ -31,6 +32,14 @@
   "Default value for GranuleSpatialRepresentation"
   "CARTESIAN")
 
+(def not-provided-temporal-extents
+  "Default temporal extents to use if none is provided"
+  [{:RangeDateTimes [{:BeginningDateTime du/parsed-default-date}]}])
+
+(def not-provided-platforms
+  "Default platforms to use if none is provided"
+  [{:ShortName not-provided}])
+
 (defn convert-empty-record-to-nil
   "Converts empty record to nil."
   [record]
@@ -53,13 +62,15 @@
     not-provided))
 
 (defn without-default
-  "Returns nil if x is the not-provided placeholder value, else returns x."
+  "DEPRECATED: We will no longer remove default values.
+   Returns nil if x is the not-provided placeholder value, else returns x."
   [x]
   (when (not= x not-provided)
     x))
 
 (defn without-default-value-of
-  "Returns the parsed value of the given doc on the given xpath and converting the 'Not provided'
+  "DEPRECATED: We will no longer remove default values.
+   Returns the parsed value of the given doc on the given xpath and converting the 'Not provided'
   default value to nil."
   [doc xpath]
   (let [value (p/value-of doc xpath)]

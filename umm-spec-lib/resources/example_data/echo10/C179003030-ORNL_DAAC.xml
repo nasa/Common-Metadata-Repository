@@ -1,0 +1,141 @@
+<Collection>
+			<ShortName>doi:10.3334/ORNLDAAC/1</ShortName>		
+			<VersionId>1</VersionId>
+			<InsertTime>2008-12-02T00:00:00Z</InsertTime>
+			<LastUpdate>2008-12-02T00:00:00Z</LastUpdate>
+			<LongName>15 Minute Stream Flow Data: USGS (FIFE)</LongName>
+      <DataSetId>15 Minute Stream Flow Data: USGS (FIFE)</DataSetId>
+			<Description>USGS 15 minute stream flow data for Kings Creek on the Konza Prairie</Description>
+			<Orderable>false</Orderable>
+			<Visible>true</Visible>
+			<RevisionDate>2008-12-02T00:00:00Z</RevisionDate>
+			<ProcessingCenter>ORNL_DAAC</ProcessingCenter>
+			<ProcessingLevelId>3</ProcessingLevelId>
+			<ProcessingLevelDescription>Data or retrieved environmental variables that have been spatially and/or temporally resampled (i.e., derived from Level 1 or Level 2 data products). Such resampling may include averaging and compositing</ProcessingLevelDescription>
+			<ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+			<CitationForExternalPublication>Wood, E. F. 1994. 15 Minute Stream Flow Data: USGS (FIFE). Data set. Available on-line [http://www.daac.ornl.gov] from Oak Ridge National Laboratory Distributed Active Archive Center, Oak Ridge, Tennessee, U.S.A. Also published in D. E. Strebel, D. R. Landis, K. F. Huemmrich, and B. W. Meeson (eds.), Collected Data of the First ISLSCP Field Experiment, Vol. 1: Surface Observations and Non-Image Data Sets. CD-ROM. National Aeronautics and Space Administration, Goddard Space Flight Center, Greenbelt, Maryland, U.S.A. (available from http://www.daac.ornl.gov). doi:10.3334/ORNLDAAC/1</CitationForExternalPublication>
+			<CollectionState>COMPLETED</CollectionState>
+			<MaintenanceAndUpdateFrequency>as needed</MaintenanceAndUpdateFrequency>
+			<Price>0</Price>
+			<Temporal>
+				<RangeDateTime>
+					<BeginningDateTime>1984-12-25T00:00:00Z</BeginningDateTime>
+					<EndingDateTime>1988-03-04T00:00:00Z</EndingDateTime>
+				</RangeDateTime>
+			</Temporal>
+      <Contacts>
+        <Contact>
+          <Role>DATA CENTER CONTACT</Role>
+          <OrganizationAddresses>
+            <Address>
+              <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+              <City>Oak Ridge</City>
+              <StateProvince>Tennessee</StateProvince>
+              <PostalCode>37831-6407</PostalCode>
+              <Country>USA</Country>
+            </Address>
+          </OrganizationAddresses>
+          <OrganizationPhones>
+            <Phone>
+              <Number>(865) 241-3952</Number>
+              <Type>Direct Line</Type>
+            </Phone>
+            <Phone>
+              <Number>(865) 574-4665</Number>
+              <Type>Fax</Type>
+            </Phone>
+          </OrganizationPhones>
+          <OrganizationEmails>
+            <Email>ornldaac@ornl.gov</Email>
+          </OrganizationEmails>
+          <ContactPersons>
+            <ContactPerson>
+              <FirstName>PLEASE CONTACT</FirstName>
+              <LastName>ORNL DAAC User Services</LastName>
+            </ContactPerson>
+          </ContactPersons>
+        </Contact>
+      </Contacts>
+			<ScienceKeywords>
+        <ScienceKeyword>
+          <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+          <TopicKeyword>HYDROSPHERE</TopicKeyword>
+          <TermKeyword>SURFACE WATER</TermKeyword>
+          <VariableLevel1Keyword>
+            <Value>DISCHARGE/FLOW</Value>
+          </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+          <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+          <TopicKeyword>HYDROSPHERE</TopicKeyword>
+          <TermKeyword>SURFACE WATER</TermKeyword>
+          <VariableLevel1Keyword>
+            <Value>STAGE HEIGHT</Value>
+          </VariableLevel1Keyword>
+        </ScienceKeyword>
+			</ScienceKeywords>
+			<Platforms>
+        <Platform>
+          <ShortName>SURFACE WATER WEIR</ShortName>
+          <LongName>SURFACE WATER WEIR</LongName>
+          <Type>Ground Based</Type>
+          <Instruments>
+						<Instrument>
+              <ShortName>STILLING WELL</ShortName>
+              <LongName>STILLING WELL</LongName>
+              <Sensors>
+                <Sensor>
+                  <ShortName>STILLING WELL</ShortName>
+                </Sensor>
+              </Sensors>
+            </Instrument>
+					</Instruments>
+        </Platform>
+      </Platforms>
+      <Campaigns>
+        <Campaign>
+          <ShortName>First ISLSCP Field Experiment (FIFE)</ShortName>
+          <LongName>First ISLSCP Field Experiment (FIFE)</LongName>
+        </Campaign>
+        <Campaign>
+          <ShortName>ESIP</ShortName>
+          <LongName>Earth Science Information Partners Program</LongName>
+        </Campaign>
+        <Campaign>
+          <ShortName>EOSDIS</ShortName>
+          <LongName>Earth Observing System Data Information System</LongName>
+        </Campaign>
+      </Campaigns>
+      <OnlineAccessURLs>
+        <OnlineAccessURL>
+          <URL>http://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=1</URL>
+          <URLDescription />
+          <MimeType />
+        </OnlineAccessURL>
+      </OnlineAccessURLs>
+      <OnlineResources>
+        <OnlineResource>
+          <URL>http://daac.ornl.gov/FIFE/guides/15_min_strm_flow.html</URL>
+					<Description>USGS 15 minute stream flow data for Kings Creek on the Konza Prairie</Description>
+          <Type>VIEW RELATED INFORMATION</Type>
+        </OnlineResource>
+      </OnlineResources>
+      <AssociatedDIFs>
+        <DIF>
+          <EntryId>FIFE_STRM_15M</EntryId>
+        </DIF>
+      </AssociatedDIFs>
+      <Spatial>
+        <SpatialCoverageType>Horizontal</SpatialCoverageType>
+        <HorizontalSpatialDomain>
+          <Geometry>
+            <CoordinateSystem>CARTESIAN</CoordinateSystem>
+						<Point>
+              <PointLongitude>-96.60</PointLongitude>
+              <PointLatitude>39.10</PointLatitude>
+            </Point>
+          </Geometry>
+        </HorizontalSpatialDomain>
+        <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+      </Spatial>
+    </Collection>
