@@ -70,6 +70,7 @@
 (defn- -get-topic
   "Returns the Topic with the given display name."
   [sns-client exchange-name]
+  (debug "Calling SNS to get topic " exchange-name)
   (let [exchange-name (normalize-queue-name exchange-name)
         topics (into [] (.getTopics (.listTopics sns-client)))]
    (some (fn [topic]
@@ -199,6 +200,7 @@
 (defn- -get-queue-url
   "Returns the queue url for the given queue name."
   [sqs-client queue-name]
+  (debug "Calling SQS to get URL for queue " queue-name)
   (.getQueueUrl (.getQueueUrl sqs-client queue-name)))
 
 (def get-queue-url
