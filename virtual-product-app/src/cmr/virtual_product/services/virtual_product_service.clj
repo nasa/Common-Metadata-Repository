@@ -16,6 +16,15 @@
             [cmr.virtual-product.config :as config]
             [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
 
+(def ^:private num-retries-delete-not-found
+  "Number of retries for not found error during deletion of source granule.
+  The default CMR RabbitMQ retries 5 times with increasing delays as in [5, 50, 500, 5000, 50000].
+  It takes too long to exhaust the retries when deleting virtual granules as some of the virtual
+  granules will not be generated for some source granules (e.g. AST_L1A) and we will always get
+  the 404 status code back. This setting shortens the wait time in this case and make the virtual
+  granule deletion more prompt."
+  2)
+
 (defmulti handle-ingest-event
   "Handles an ingest event. Checks if it is an event that should be applied to virtual granules. If
   it is then delegates to a granule event handler."
@@ -150,11 +159,17 @@
            :entry-title entry-title)))
 
 (defn- handle-delete-response
-  "Handle response received from ingest service to a delete request. Status codes which do not
-  fall between 200 and 299 or not equal to 409 will cause an exception which in turn causes the
-  corresponding queue event to be put back in the queue to be retried."
+  "Handle response received from ingest service to a delete request. Returns true if the source
+  granule deletion event need to be retried. Status codes which do not fall between 200 and 299
+  or not equal to 404 or 409 will cause an exception which in turn causes the corresponding queue
+  event to be put back in the queue to be retried indefinitely. Status code 404 will be retried
+  twice. Other status codes are treated as success."
   [response granule-ur retry-count]
-  (let [{:keys [status body]} response]
+  (let [{:keys [status body]} response
+        retry-count (or retry-count 0)
+        needs-retry (when (and (= status 404)
+                               (< retry-count num-retries-delete-not-found))
+                      true)]
     (cond
       (<= 200 status 299)
       (info (format "Deleted virtual granule [%s] with the following response: [%s]"
@@ -179,14 +194,14 @@
       ;;    maximum number of retries for an event. After the retries, the delete event will be
       ;;    considered as a success.
       (= status 404)
-      (if (>= retry-count (count (queue-config/rabbit-mq-ttls)))
+      (if (< retry-count num-retries-delete-not-found)
+        (info (format (str "Received a response with status code [404] and the following "
+                           "response body when deleting the virtual granule [%s] : [%s]. "
+                           "The delete request will be retried.")
+                      granule-ur (pr-str body)))
         (info (format (str "The number of retries has exceeded the maximum retry count."
-                           "The delete event for the virtual granule [%s] will be ignored") granule-ur))
-        (errors/internal-error!
-          (format (str "Received a response with status code [404] and the following response body "
-                       "when deleting the virtual granule [%s] : [%s]. The delete request will be "
-                       "retried.")
-                  granule-ur (pr-str body))))
+                           "The delete event for the virtual granule [%s] will be ignored")
+                      granule-ur)))
 
       ;; Conflict (status code 409)
       ;; This would occurs if a delete event with lower revision-id is consumed after an event with
@@ -200,23 +215,33 @@
       (errors/internal-error!
         (format (str "Received unexpected status code [%s] and the following response when "
                      "deleting the virtual granule [%s] : [%s]")
-                status granule-ur (pr-str response))))))
+                status granule-ur (pr-str response))))
+    needs-retry))
 
 (defn-timed apply-source-granule-delete-event
   "Applies a source granule delete event to the virtual granules"
   [context {:keys [provider-id revision-id granule-ur entry-title retry-count]}]
   (let [vp-config (svm/source-to-virtual-product-mapping
-                    [(svm/provider-alias->provider-id provider-id) entry-title])]
-    (doseq [virtual-coll (:virtual-collections vp-config)]
-      (let [new-granule-ur (svm/generate-granule-ur provider-id
-                                                    (:short-name vp-config)
-                                                    (:short-name virtual-coll)
-                                                    granule-ur)
-            resp (ingest/delete-concept context {:provider-id provider-id
-                                                 :concept-type :granule
-                                                 :native-id new-granule-ur}
-                                        (build-ingest-headers revision-id) true)]
-        (handle-delete-response resp new-granule-ur retry-count)))))
+                    [(svm/provider-alias->provider-id provider-id) entry-title])
+        virtual-colls (:virtual-collections vp-config)
+        delete-virtual-granule (fn [virtual-coll]
+                                 (let [new-granule-ur (svm/generate-granule-ur
+                                                        provider-id
+                                                        (:short-name vp-config)
+                                                        (:short-name virtual-coll)
+                                                        granule-ur)
+                                       resp (ingest/delete-concept
+                                              context
+                                              {:provider-id provider-id
+                                               :concept-type :granule
+                                               :native-id new-granule-ur}
+                                              (build-ingest-headers revision-id) true)]
+                                   (handle-delete-response resp new-granule-ur retry-count)))
+        need-retries (doall (map delete-virtual-granule virtual-colls))]
+    (when (some true? need-retries)
+      (errors/internal-error!
+        (format "Need to retry deletion of source granule [%s] due to virtual granule deletion warnings"
+                granule-ur)))))
 
 (defmethod handle-ingest-event :concept-delete
   [context event]
