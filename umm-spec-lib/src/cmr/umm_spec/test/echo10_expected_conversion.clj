@@ -90,25 +90,21 @@
   when necessary"
   [address]
   (-> address
-      (assoc-in [:StreetAddresses] [(dc/join-street-addresses (:StreetAddresses address))])
-      (update-in [:City] su/with-default)
-      (update-in [:StateProvince] su/with-default)
-      (update-in [:PostalCode] su/with-default)
-      (update-in [:Country] dc/country-with-default)))
+      (assoc :StreetAddresses [(dc/join-street-addresses (:StreetAddresses address))])
+      (update :City su/with-default)
+      (update :StateProvince su/with-default)
+      (update :PostalCode su/with-default)
+      (update :Country su/country-with-default)))
 
 (defn- expected-echo10-contact-information
   "Expected contact information"
   [contact-information]
-  (when (and contact-information
-             (or (:ServiceHours contact-information)
-                 (:ContactMechanisms contact-information)
-                 (:ContactInstruction contact-information)
-                 (:Addresses contact-information)))
-   (-> contact-information
-       (assoc :RelatedUrls nil)
-       (update-in [:Addresses] #(when (seq %)
-                                  (mapv expected-echo10-address %)))
-       (update-in [:ContactMechanisms] expected-contact-mechanisms))))
+  (let [contact-information (assoc contact-information :RelatedUrls nil)]
+   (when (seq (util/remove-nil-keys contact-information))
+     (-> contact-information
+         (update :Addresses #(when (seq %)
+                               (mapv expected-echo10-address %)))
+         (update :ContactMechanisms expected-contact-mechanisms)))))
 
 
 (defn- expected-echo10-contact-person
@@ -122,9 +118,9 @@
          (assoc :ContactInformation nil)
          (assoc :Uuid nil)
          (assoc :NonDataCenterAffiliation nil)
-         (update-in [:FirstName] su/with-default)
-         (update-in [:LastName] su/with-default)
-         (assoc-in [:Roles] [role])))))
+         (update :FirstName su/with-default)
+         (update :LastName su/with-default)
+         (assoc :Roles [role])))))
 
 (defn- expected-echo10-contact-persons
   "Returns the list of expected contact persons"
@@ -140,11 +136,11 @@
   (for [role (:Roles data-center)]
     (-> data-center
         (assoc :ContactGroups nil)
-        (update-in [:ContactPersons] expected-echo10-contact-persons)
+        (update :ContactPersons expected-echo10-contact-persons)
         (assoc :Uuid nil)
         (assoc :LongName nil)
         (assoc :Roles [role])
-        (assoc-in [:ContactInformation] (expected-echo10-contact-information (:ContactInformation data-center))))))
+        (assoc :ContactInformation (expected-echo10-contact-information (:ContactInformation data-center))))))
 
 (defn- expected-echo10-data-centers
   "Returns the list of expected data centers"

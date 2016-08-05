@@ -20,7 +20,7 @@
     "PROCESSOR" "PROCESSOR"
     "Producer" "PROCESSOR"})
 
-(def echo10-job-position0->umm-contact-person-role
+(def echo10-job-position->umm-contact-person-role
  {"DATA CENTER CONTACT" "Data Center Contact"
   "Primary Contact" "Data Center Contact"
   "TECHNICAL CONTACT" "Technical Contact"
@@ -79,8 +79,7 @@
   "Parse ECHO10 Contact Persons to UMM"
   [contact]
   (for [person (select contact "ContactPersons/ContactPerson")]
-    {:Roles (map #(get echo10-job-position0->umm-contact-person-role %)
-              [(value-of person "JobPosition")])
+    {:Roles (map echo10-job-position->umm-contact-person-role [(value-of person "JobPosition")])
      :FirstName (value-of person "FirstName")
      :MiddleName (value-of person "MiddleName")
      :LastName (value-of person "LastName")}))
@@ -97,9 +96,7 @@
         contacts (filter #(and (= (value-of % "Role") dc/default-echo10-contact-role)
                                (empty? (value-of % "OrganizationName")))
                          all-contacts)]
-    (flatten
-     (for [contact contacts]
-       (parse-contact-persons contact)))))
+    (mapcat parse-contact-persons contacts)))
 
 (defn- parse-data-centers-from-contacts
   "Parse ECHO10 contacts to UMM data center contact persons.
@@ -114,7 +111,7 @@
                                (empty? (value-of % "OrganizationName")))
                          all-contacts)]
     (for [contact contacts]
-      {:Roles (map #(get echo10-contact-role->umm-data-center-role %) [(value-of contact "Role")])
+      {:Roles (map echo10-contact-role->umm-data-center-role [(value-of contact "Role")])
        :ShortName (value-of contact "OrganizationName")
        :ContactInformation (parse-contact-information contact)
        :ContactPersons (parse-contact-persons contact)})))
