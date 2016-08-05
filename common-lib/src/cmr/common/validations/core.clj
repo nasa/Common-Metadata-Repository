@@ -73,7 +73,7 @@
    (cond
      (sequential? validation) (reduce (fn [error-map v]
                                         (merge-with concat error-map (validate v key-path value)))
-                                      nil
+                                      {}
                                       validation)
      (map? validation) (reduce (fn [error-map [k v]]
                                  (merge error-map (validate v (conj key-path k) (get value k))))
