@@ -33,7 +33,7 @@
                         :permissions ["create" "delete"]}]
    :catalog_item_identity {:name "A Catalog Item ACL"
                            :provider_id "PROV1"
-                           :collection_identifier {:entry_titles ["foo" "bar"]}}})
+                           :collection_applicable true}})
 
 (deftest create-acl-test
   (let [token (e/login (u/conn-context) "admin")
@@ -61,14 +61,14 @@
           #"system_identity object has missing required properties"
           (update-in system-acl [:system_identity] dissoc :target)
 
-          "Acceptance criteria: I receive an error if creating an ACL with a non-existent system identity, provider identity, or single instance identity target."
+          "Acceptance criteria: I receive an error if creating an ACL with a non-existent system
+           identity, provider identity, or single instance identity target."
           #"instance value .* not found in enum"
           (update-in system-acl [:system_identity] assoc :target "WHATEVER")
 
           "Value not found in enum"
           #"instance value .* not found in enum"
           (update-in provider-acl [:provider_identity] assoc :target "WHATEVER"))
-
 
     (testing "Acceptance criteria: I receive an error if creating an ACL with invalid JSON"
       (is
@@ -90,6 +90,77 @@
                       :headers {"Content-Type" "application/xml"
                                 "ECHO-Token" token}
                       :throw-exceptions false})))))))
+
+(deftest acl-catalog-item-identity-validation-test
+  (let [token (e/login (u/conn-context) "admin")]
+    (are2 [errors acl] (= errors (:errors (u/create-acl token acl {:raw? true})))
+
+          "An error is returned if creating a catalog item identity that does not grant permission
+               to collections or granules. (It must grant to collections or granules or both.)"
+          ["when catalog_item_identity is specified, one or both of collection_applicable or granule_applicable must be true"]
+          {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+           :catalog_item_identity {:name "A Catalog Item ACL"
+                                   :provider_id "PROV1"}}
+
+          "An error is returned if creating a collection applicable catalog item identity with a granule identifier"
+          ["granule_applicable must be true when granule_identifier is specified"]
+          {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+           :catalog_item_identity {:name "A Catalog Item ACL"
+                                   :provider_id "PROV1"
+                                   :collection_applicable true
+                                   :granule_identifier {:access_value {:include_undefined_value true}}}}
+
+          "An error is returned if specifying a collection identifier with collection entry titles that do not exist."
+          ["collection with entry-title [notreal] does not exist in provider [PROV1]"]
+          {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+           :catalog_item_identity {:name "A Catalog Item ACL"
+                                   :provider_id "PROV1"
+                                   :collection_applicable true
+                                   :collection_identifier {:entry-titles ["notreal"]}}}
+
+          "At least one of a range (min and/or max) or include_undefined value must be specified."
+          ["min_value and/or max_value must be specified when include_undefined_value is false"]
+          {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+           :catalog_item_identity {:name "A Catalog Item ACL"
+                                   :provider_id "PROV1"
+                                   :collection_applicable true
+                                   :collection_identifier {:access_value {:include_undefined_value false}}}}
+
+          "include_undefined_value and range values can't be used together"
+          ["min_value and/or max_value must not be specified if include_undefined_value is true"]
+          {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+           :catalog_item_identity {:name "A Catalog Item ACL"
+                                   :provider_id "PROV1"
+                                   :collection_applicable true
+                                   :collection_identifier {:access_value {:min_value 4
+                                                                          :include_undefined_value true}}}}
+
+          "temporal validation: stop must be greater than or equal to start"
+          ["start_date must be before end_date"]
+          {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+           :catalog_item_identity {:name "A Catalog Item ACL"
+                                   :provider_id "PROV1"
+                                   :collection_applicable true
+                                   :collection_identifier {:temporal {:start_date "2012-01-01T12:00:00Z"
+                                                                      :end_date "2011-01-01T12:00:00Z"
+                                                                      :mask "intersect"}}}})
+
+    (testing "collection entry_title check passes when collection exists"
+      (u/save-collection {:entry-title "coll1 v1"
+                          :native-id "coll1"
+                          :entry-id "coll1"
+                          :short-name "coll1"
+                          :version "v1"
+                          :provider-id "PROV1"})
+      (u/wait-until-indexed)
+      (is (= {:revision_id 1 :status 200}
+             (select-keys
+               (u/create-acl token {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+                                    :catalog_item_identity {:name "A real live catalog item ACL"
+                                                            :provider_id "PROV1"
+                                                            :collection_applicable true
+                                                            :collection_identifier {:entry-titles ["coll1 v1"]}}})
+               [:revision_id :status]))))))
 
 (deftest create-duplicate-acl-test
   (let [token (e/login (u/conn-context) "admin")]

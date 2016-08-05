@@ -43,57 +43,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Support functions
 
-(declare auto-validation-convert)
-
-(defn record-validation
-  "Converts a map into a record validator. Each field of the map passed in corresponds to a field
-  in a record being validated."
-  [field-map]
-  (fn [field-path value]
-    (when value
-      (reduce (fn [field-errors [validation-field validation]]
-                (let [validation (auto-validation-convert validation)
-                      errors (validation (conj field-path validation-field)
-                                         (validation-field value))]
-                  (if (seq errors)
-                    (merge field-errors errors)
-                    field-errors)))
-              {}
-              field-map))))
-
-(defn seq-of-validations
-  "Returns a validator merging results from a list of validators. Takes an optional argument
-  indicating if validations should short circuit. When short circuiting the error messages from the
-  first validation will be returned without running subsequent validations."
-  ([validators]
-   (seq-of-validations validators false))
-  ([validators short-circuit?]
-   (let [validators (map auto-validation-convert validators)]
-     (fn [field-path value]
-       (reduce (fn [field-errors validator]
-                 (let [errors (validator field-path value)]
-                   (if (seq errors)
-                     (if short-circuit?
-                       ;; The call to reduced here will make reduce exit early with only these errors
-                       (reduced errors)
-                       (merge-with concat field-errors errors))
-                     field-errors)))
-               {}
-               validators)))))
-
-(defn first-failing
-  "Syntactic sugar for creating a sequence of validations that will short circuit."
-  [& validators]
-  (seq-of-validations validators true))
-
-(defn auto-validation-convert
-  "Handles converting basic clojure data structures into a validation function."
-  [validation]
-  (cond
-    (map? validation) (record-validation validation)
-    (sequential? validation) (seq-of-validations validation)
-    :else validation))
-
 (defn humanize-field
   "Converts a keyword to a humanized field name"
   [field]
@@ -117,29 +66,49 @@
     (create-error-message field-path error)))
 
 (defn validate
-  "Validates the given value with the validation. Returns a map of fields to error formats."
-  [validation value]
-  (let [validation (auto-validation-convert validation)]
-    (validation [] value)))
+  "Returns a map of fields to error messages."
+  ([validation value]
+    (validate validation [] value))
+  ([validation key-path value]
+   (cond
+     (sequential? validation) (reduce (fn [error-map v]
+                                        (merge-with concat error-map (validate v key-path value)))
+                                      nil
+                                      validation)
+     (map? validation) (reduce (fn [error-map [k v]]
+                                 (merge error-map (validate v (conj key-path k) (get value k))))
+                               {}
+                               validation)
+     (fn? validation) (validation key-path value))))
 
 (defn validate!
   "Validates the given value with the validation. If there are any errors they are thrown as a service
   error"
   [validation value]
-  (let [errors (validate validation value)]
+  (let [errors (validate validation [] value)]
     (when (seq errors)
       (errors/throw-service-errors :bad-request (create-error-messages errors)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations
 
+(defn first-failing
+  "Returns a validator that returns the output of the first validator in validators to return any errors."
+  [& validators]
+  (fn [key-path value]
+    (loop [[v & more] validators]
+      (when v
+        (let [errors (validate v key-path value)]
+          (if (seq errors)
+            errors
+            (recur more)))))))
+
 (defn pre-validation
   "Runs a function on the value before validation begins. The result of prefn is passed to the
   validation."
   [prefn validation]
-  (let [validation (auto-validation-convert validation)]
-    (fn [field-path value]
-      (validation field-path (prefn value)))))
+  (fn [field-path value]
+    (validate validation field-path (prefn value))))
 
 (defn required-msg
   []
@@ -155,13 +124,10 @@
   "Validate a validation against every item in a sequence. The field path will contain the index of
   the item that had an error"
   [validation]
-  (let [validator (auto-validation-convert validation)]
-    (fn [field-path values]
-      (let [error-maps (for [[idx value] (map-indexed vector values)
-                             :let [errors-map (validator (conj field-path idx) value)]
-                             :when (seq errors-map)]
-                         errors-map)]
-        (apply merge-with concat error-maps)))))
+  (fn [field-path values]
+    (let [error-maps (for [[idx value] (map-indexed vector values)]
+                       (validate validation (conj field-path idx) value))]
+      (apply merge-with concat error-maps))))
 
 (defn integer-msg
   [value]
@@ -214,3 +180,10 @@
                   (not= existing-value new-value))
          {(conj field-path field)
           [(field-cannot-be-changed-msg existing-value new-value)]})))))
+
+(defn when-present
+  "Validation-transformer: Returns a validation which only runs validations when a value is present."
+  [validation]
+  (fn [key-path v]
+    (when (some? v)
+      (validate validation key-path v))))
