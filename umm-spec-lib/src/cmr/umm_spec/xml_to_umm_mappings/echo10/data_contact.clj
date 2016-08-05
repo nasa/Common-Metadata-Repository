@@ -42,6 +42,7 @@
   "Snow Algorithms" "Science Software"})
 
 (defn- parse-contact-mechanisms
+  "Parse ECHO10 contact mechanisms to UMM."
   [contact]
   (seq (concat
         (for [phone (select contact "OrganizationPhones/Phone")]
@@ -52,6 +53,7 @@
            :Value email}))))
 
 (defn- parse-addresses
+  "Parse ECHO10 addresses to UMM"
   [contact]
   (for [address (select contact "OrganizationAddresses/Address")]
     {:StreetAddresses [(value-of address "StreetAddress")]
@@ -61,6 +63,7 @@
      :Country (value-of address "Country")}))
 
 (defn- parse-contact-information
+  "Parse ECHO10 contact information into UMM"
   [contact]
   (let [service-hours (value-of contact "HoursOfService")
         instructions (value-of contact "Instructions")
@@ -73,6 +76,7 @@
        :Addresses addresses})))
 
 (defn- parse-contact-persons
+  "Parse ECHO10 Contact Persons to UMM"
   [contact]
   (for [person (select contact "ContactPersons/ContactPerson")]
     {:Roles (map #(get echo10-job-position0->umm-contact-person-role %)
@@ -82,6 +86,12 @@
      :LastName (value-of person "LastName")}))
 
 (defn parse-data-contact-persons
+  "Parse ECHO10 contacts to UMM collection ContactPersons (as opposed to ContactPersons)
+  associated with a data center). ECHO10 has Contacts/Contact which holds both data center
+  and contact person info. To differentiate between a data center and a Contacts/Contact
+  used to hold a list of ContactPersons not associated with a data center, get the contacts
+  that have the default role and empty organization name. The ContactPersons on that Contact
+  should be associated with the collection but not the data center."
   [doc]
   (let [all-contacts (select doc "/Collection/Contacts/Contact")
         contacts (filter #(and (= (value-of % "Role") dc/default-echo10-contact-role)
@@ -91,16 +101,58 @@
      (for [contact contacts]
        (parse-contact-persons contact)))))
 
-(defn parse-data-centers
+(defn- parse-data-centers-from-contacts
+  "Parse ECHO10 contacts to UMM data center contact persons.
+  ECHO10 has Contacts/Contact which holds both data center
+  and contact person info. To differentiate between a data center and a Contacts/Contact
+  used to hold a list of ContactPersons not associated with a data center, remove the contacts
+  that have the default role and empty organization name. The ContactPersons on that Contact
+  should be associated with the collection but not the data center."
   [doc]
   (let [all-contacts (select doc "/Collection/Contacts/Contact")
         contacts (remove #(and (= (value-of % "Role") dc/default-echo10-contact-role)
                                (empty? (value-of % "OrganizationName")))
-                   all-contacts)]
-   (if (seq contacts)
+                         all-contacts)]
     (for [contact contacts]
       {:Roles (map #(get echo10-contact-role->umm-data-center-role %) [(value-of contact "Role")])
        :ShortName (value-of contact "OrganizationName")
        :ContactInformation (parse-contact-information contact)
-       :ContactPersons (parse-contact-persons contact)})
-    [u/not-provided-data-center])))
+       :ContactPersons (parse-contact-persons contact)})))
+
+(defn- parse-additional-center
+  "ECHO10 has both ArchiveCenter and ProcessingCenter fields which can each hold an additional
+  data center. If that data center already exists in Contacts/Contact, don't create a new data
+  center. Otherwise create a data center.
+  The situation where the data center already exists would happen if the data was already coverted
+  to UMM. When it's converted from UMM, the data is put into Contacts/Contact and ArchiveCenter or
+  ProcessingCenter to avoid the loss of any data, thus there already be a record for that data center
+  in UMM.
+
+  doc - XML doc
+  data-centers - data centers converted to UMM from Contacts/Contact
+  center-name - name by which to find in XML - 'ArchiveCenter' or 'ProcessingCenter'
+  center-role - role for the data center"
+  [doc data-centers center-name center-role]
+  (let [center (value-of doc (str "/Collection/" center-name))]
+    (if center
+      ;; Check to see if we already have an entry for this data center - the role and short name
+      ;; match. If so, don't create a new record.
+      (when (not-any?
+             #(and (.contains (:Roles %) center-role)
+                   (= (:ShortName %) center))
+             data-centers)
+       {:Roles [center-role]
+        :ShortName center}))))
+
+(defn parse-data-centers
+  "Parse data centers from ECHO10 XML. Data center information comes from Contacts/Contact,
+  ArchiveCenter, and ProcessingCenter."
+  [doc]
+  (let [data-centers (parse-data-centers-from-contacts doc)
+        data-centers (concat
+                      data-centers
+                      (parse-additional-center doc data-centers "ArchiveCenter" "ARCHIVER")
+                      (parse-additional-center doc data-centers "ProcessingCenter" "PROCESSOR"))]
+    (if (seq data-centers)
+      data-centers
+      [u/not-provided-data-center])))

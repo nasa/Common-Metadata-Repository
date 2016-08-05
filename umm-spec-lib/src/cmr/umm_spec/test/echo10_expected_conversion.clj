@@ -86,6 +86,8 @@
           (filter #(= "Email" (:Type %)) mechanisms))))
 
 (defn- expected-echo10-address
+  "Expected address. All address fields are required in ECHO10, so replace with default
+  when necessary"
   [address]
   (-> address
       (assoc-in [:StreetAddresses] [(dc/join-street-addresses (:StreetAddresses address))])
@@ -95,6 +97,7 @@
       (update-in [:Country] dc/country-with-default)))
 
 (defn- expected-echo10-contact-information
+  "Expected contact information"
   [contact-information]
   (when (and contact-information
              (or (:ServiceHours contact-information)
@@ -109,22 +112,30 @@
 
 
 (defn- expected-echo10-contact-person
+  "Returns an expected contact person for each role. ECHO10 only allows for 1 role per
+  ContactPerson, so when converted to UMM a contact person is created for each role with
+  the rest of the info copied."
   [contact-person]
   (when contact-person
-   (-> contact-person
-       (assoc :ContactInformation nil)
-       (assoc :Uuid nil)
-       (assoc :NonDataCenterAffiliation nil)
-       (update-in [:FirstName] su/with-default)
-       (update-in [:LastName] su/with-default)
-       (assoc-in [:Roles] [(first (:Roles contact-person))]))))
+   (for [role (:Roles contact-person)]
+     (-> contact-person
+         (assoc :ContactInformation nil)
+         (assoc :Uuid nil)
+         (assoc :NonDataCenterAffiliation nil)
+         (update-in [:FirstName] su/with-default)
+         (update-in [:LastName] su/with-default)
+         (assoc-in [:Roles] [role])))))
 
 (defn- expected-echo10-contact-persons
+  "Returns the list of expected contact persons"
   [contact-persons]
   (when (seq contact-persons)
-    (mapv expected-echo10-contact-person contact-persons)))
+    (flatten (mapv expected-echo10-contact-person contact-persons))))
 
 (defn- expected-echo10-data-center
+  "Returns an expected data center for each role. ECHO10 only allows for 1 role per
+  data center, so when converted to UMM a data center is created for each role with
+  the rest of the info copied."
   [data-center]
   (for [role (:Roles data-center)]
     (-> data-center
@@ -136,9 +147,10 @@
         (assoc-in [:ContactInformation] (expected-echo10-contact-information (:ContactInformation data-center))))))
 
 (defn- expected-echo10-data-centers
+  "Returns the list of expected data centers"
   [data-centers]
   (if (seq data-centers)
-    (flatten (mapv #(expected-echo10-data-center %) data-centers))
+    (flatten (mapv expected-echo10-data-center data-centers))
     [su/not-provided-data-center]))
 
 (defn umm-expected-conversion-echo10

@@ -131,8 +131,10 @@
      [:Orderable "true"]
      [:Visible "true"]
      [:SuggestedUsage (util/trunc (:Purpose c) 4000)]
+     (dc/generate-processing-centers c)
      [:ProcessingLevelId (-> c :ProcessingLevel :Id)]
      [:ProcessingLevelDescription (-> c :ProcessingLevel :ProcessingLevelDescription)]
+     (dc/generate-archive-centers c)
      [:CollectionState (:CollectionProgress c)]
      [:RestrictionFlag (-> c :AccessConstraints :Value)]
      [:RestrictionComment (util/trunc (-> c :AccessConstraints :Description) 1024)]
