@@ -4,9 +4,9 @@
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
             [clojure.test.check.generators :as gen]
-            [com.gfredericks.test.chuck.clojure-test :refer [for-all]]
+            [com.gfredericks.test.chuck.clojure-test :as ct :refer [for-all]]
             [cmr.common.util :refer [update-in-each]]
-            [cmr.common.test.test-check-ext :as ext :refer [defspec]]
+            [cmr.common.test.test-check-ext :as ext :refer [checking]]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]
             [cmr.umm-spec.test.umm-record-sanitizer :as sanitize]
             [cmr.umm-spec.core :as core]
@@ -86,38 +86,19 @@
     (testing (str format " to :umm-json")
       (is (empty? (generate-and-validate-xml :collection :umm-json umm-c-record))))))
 
-(defspec roundtrip-generated-collection-records 100
-  (for-all [umm-record (gen/no-shrink umm-gen/umm-c-generator)
-            metadata-format (gen/elements tested-collection-formats)]
+(deftest roundtrip-generated-collection-records
+  (checking "collection round tripping" 100
+    [umm-record (gen/no-shrink umm-gen/umm-c-generator)
+     metadata-format (gen/elements tested-collection-formats)]
     (is (= (expected-conversion/convert umm-record metadata-format)
            (xml-round-trip :collection metadata-format umm-record)))))
 
-(defspec roundtrip-generated-service-records 100
-  (for-all [umm-record (gen/no-shrink umm-gen/umm-s-generator)
-            metadata-format (gen/elements tested-service-formats)]
+(deftest roundtrip-generated-service-records
+  (checking "service round tripping" 100
+    [umm-record (gen/no-shrink umm-gen/umm-s-generator)
+     metadata-format (gen/elements tested-service-formats)]
     (is (= (expected-conversion/convert umm-record metadata-format)
            (xml-round-trip :service metadata-format umm-record)))))
-
-(comment
-
-  (is (= (expected-conversion/convert failing-value :serf)
-         (xml-round-trip :service :serf failing-value)))
-
-  (= (type (expected-conversion/convert user/failing-value :serf))
-     (type (xml-round-trip :service :serf user/failing-value)))
-
-  (is (= (:Platforms (expected-conversion/convert user/failing-value :serf))
-         (:Platforms (xml-round-trip :service :serf user/failing-value))))
-
-  (is (= (:Responsibilities (expected-conversion/convert expected-conversion/example-service-record :serf))
-         (:Responsibilities (xml-round-trip :service :serf expected-conversion/example-service-record))))
-
-  (is (= (expected-conversion/convert expected-conversion/example-service-record :serf)
-         (xml-round-trip :service :serf expected-conversion/example-service-record)))
-
-  (is (= (:Responsibilities (:Party (last (:Responsibilities (expected-conversion/convert expected-conversion/example-service-record :serf)))))
-         (:Responsibilities (:Party (last (:Responsibilities (xml-round-trip :service :serf expected-conversion/example-service-record))))))))
-
 
 (defn- parse-iso19115-projects-keywords
   "Returns the parsed projects keywords for the given ISO19115-2 xml"
@@ -128,8 +109,9 @@
 ;; Info in UMM Projects field is duplicated in ISO191152 xml in two different places.
 ;; We parse UMM Projects from the gmi:MI_Operation, not from gmd:descriptiveKeywords.
 ;; This test is to verify that we populate UMM Projects in gmd:descriptiveKeywords correctly as well.
-(defspec iso19115-projects-keywords 100
-  (for-all [umm-record umm-gen/umm-c-generator]
+(deftest iso19115-projects-keywords
+  (checking "Converting iso19115 project keywords" 100
+    [umm-record umm-gen/umm-c-generator]
     (let [metadata-xml (core/generate-metadata test-context umm-record :iso19115)
           projects (:Projects (core/parse-metadata test-context :collection :iso19115 metadata-xml))
           expected-projects-keywords (seq (map iu/generate-title projects))]
@@ -146,51 +128,3 @@
 (deftest minimal-dif10
   (is (empty? (generate-and-validate-xml :collection :dif10 minimal-umm-c))))
 
-(comment
-
-  (is (= (expected-conversion/convert user/failing-value :iso19115)
-         (xml-round-trip :collection :iso19115 user/failing-value)))
-
-  ;; random XML gen
-  (def metadata-format :echo10)
-  (def metadata-format :dif)
-  (def metadata-format :dif10)
-  (def metadata-format :iso19115)
-  (def metadata-format :iso-smap)
-  (def metadata-format :serf)
-
-  ;; UMM concept-type
-  (def concept-type :collection)
-  (def concept-type :service)
-
-
-  (def sample-record (first (gen/sample (gen/such-that
-                                          #(not-any? :Instruments (:Platforms %))
-                                          umm-gen/umm-c-generator) 1)))
-
-  ;; Evaluate this expression to use user/failing-value in the following expressions.
-  (def sample-record failing-value)
-  (def umm-record failing-value)
-
-  ;; Evaluate this expression to use the standard UMM example record.
-  (def sample-record expected-conversion/example-service-record)
-
-  ;; Evaluate to print generated metadata from the record selected above.
-  (println (core/generate-metadata test-context sample-record [:collection :dif10]))
-
-  ;; our simple example record
-  (core/generate-metadata :collection metadata-format sample-record)
-  (core/generate-metadata :service metadata-format expected-conversion/example-service-record)
-
-  (core/validate-xml :service metadata-format metadata-xml)
-
-  ;; round-trip
-  (xml-round-trip concept-type metadata-format sample-record)
-
-  ;; Evaluate to see diff between expected conversion and result of XML round trip.
-  (is (= (expected-conversion/convert sample-record metadata-format)
-         (xml-round-trip concept-type metadata-format sample-record)))
-
-  ;; for generated test failures
-  (is (= (expected-conversion/convert user/failing-value metadata-format)
-         (xml-round-trip concept-type metadata-format user/failing-value))))
