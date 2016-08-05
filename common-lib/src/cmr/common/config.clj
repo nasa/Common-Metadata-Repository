@@ -218,7 +218,9 @@
                               (keys env-var-map))
          unknown-vars (set/difference (set cmr-env-vars) (set known-env-vars))]
      (if (seq unknown-vars)
-       (do (warn "POTENTIAL CONFIGURATION ERROR: The following CMR Environment variables were configured but were not recognized:"
-             (pr-str unknown-vars)) true)
+       (do 
+         (warn "POTENTIAL CONFIGURATION ERROR: The following CMR Environment variables were configured but were not recognized:"
+               (pr-str unknown-vars)) 
+         true)
        false))))
 
