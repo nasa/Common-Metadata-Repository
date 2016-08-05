@@ -13,6 +13,18 @@
 ;;       file. Once humanizers can be set by the ingest service, these
 ;;       should be updated to ingest the humanizers they use.
 
+
+;; Trying out the humanizers report
+;; 1. Run a test
+;; 2. Refresh the metadata cache.
+(comment
+ (cmr.search.data.metadata-retrieval.metadata-cache/refresh-cache
+  {:system (get-in user/system [:apps :search])}))
+;;3. Retrieve the reporting
+;;  curl http://localhost:3003/humanizers/report
+
+
+
 (deftest search-by-platform-humanized
   (let [coll1 (d/ingest "PROV1" (dc/collection {:platforms [(dc/platform {:short-name "TERRA"})]}))
         coll2 (d/ingest "PROV1" (dc/collection {:platforms [(dc/platform {:short-name "AM-1"})]}))
