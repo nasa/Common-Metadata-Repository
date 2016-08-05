@@ -1,0 +1,282 @@
+
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd">
+  <Entry_ID>GLCF_GLC_1km</Entry_ID>
+  <Entry_Title>1 Kilometer Land Cover Product from the University of Maryland</Entry_Title>
+  <Data_Set_Citation>
+    <Dataset_Creator>Hansen, M.C., DeFries, R.F., Townshend, J.R.G., and Sohlberg, R</Dataset_Creator>
+    <Dataset_Title>Global land cover classification at 1km spatial resolution using a classification tree approach</Dataset_Title>
+    <Dataset_Release_Date>1998</Dataset_Release_Date>
+    <Dataset_Release_Place>Maryland</Dataset_Release_Place>
+    <Dataset_Publisher>University of Maryland</Dataset_Publisher>
+    <Version>1.0</Version>
+    <Online_Resource>http://glcf.umd.edu/data/landcover/</Online_Resource>
+  </Data_Set_Citation>
+  <Personnel>
+    <Role>INVESTIGATOR</Role>
+    <First_Name>RUTH</First_Name>
+    <Middle_Name>S.</Middle_Name>
+    <Last_Name>DEFRIES</Last_Name>
+    <Email>rd63@umail.umd.edu</Email>
+    <Phone>301-405-4884</Phone>
+    <Fax>301-314-9299</Fax>
+    <Contact_Address>
+      <Address>Laboratory for Global Remote Sensing Studies</Address>
+      <Address>Department of Geography</Address>
+      <Address>2181 LeFrak Hall</Address>
+      <Address>University of Maryland at College Park</Address>
+      <City>College Park</City>
+      <Province_or_State>MD</Province_or_State>
+      <Postal_Code>20742-8225</Postal_Code>
+      <Country>USA</Country>
+    </Contact_Address>
+  </Personnel>
+  <Personnel>
+    <Role>INVESTIGATOR</Role>
+    <First_Name>MATTHEW</First_Name>
+    <Last_Name>HANSEN</Last_Name>
+    <Email>mhansen@glue.umd.edu</Email>
+    <Phone>(301) 405-3043</Phone>
+    <Contact_Address>
+      <Address>Laboratory for Global Remote Sensing Studies</Address>
+      <Address>Department of Geography</Address>
+      <Address>University of Maryland</Address>
+      <City>College Park</City>
+      <Province_or_State>MD</Province_or_State>
+      <Postal_Code>20742-8225</Postal_Code>
+      <Country>USA</Country>
+    </Contact_Address>
+  </Personnel>
+  <Personnel>
+    <Role>INVESTIGATOR</Role>
+    <First_Name>ROBERT</First_Name>
+    <Last_Name>SOHLBERG</Last_Name>
+    <Email>rsohlber@geog.umd.edu</Email>
+    <Phone>(301) 405-4292</Phone>
+    <Contact_Address>
+      <Address>Department of Geography</Address>
+      <Address>University of Maryland</Address>
+      <Address>Laboratory for Global Remote Sensing Studies</Address>
+      <City>College Park</City>
+      <Province_or_State>MD</Province_or_State>
+      <Postal_Code>20742-8225</Postal_Code>
+      <Country>GLOBAL</Country>
+    </Contact_Address>
+  </Personnel>
+  <Personnel>
+    <Role>INVESTIGATOR</Role>
+    <First_Name>JOHN</First_Name>
+    <Middle_Name>R. G.</Middle_Name>
+    <Last_Name>TOWNSHEND</Last_Name>
+    <Email>jrtownsh@geog.umd.edu</Email>
+    <Phone>301-405-4050</Phone>
+    <Fax>301-314-9299</Fax>
+    <Contact_Address>
+      <Address>Laboratory for Global Remote Sensing Studies</Address>
+      <Address>Department of Geography</Address>
+      <Address>2181 LeFrak Hall</Address>
+      <Address>University of Maryland at College Park</Address>
+      <City>College Park</City>
+      <Province_or_State>MD</Province_or_State>
+      <Postal_Code>20742-8225</Postal_Code>
+      <Country>USA</Country>
+    </Contact_Address>
+  </Personnel>
+  <Discipline>
+    <Discipline_Name>EARTH SCIENCE</Discipline_Name>
+  </Discipline>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>BIOSPHERE</Topic>
+    <Term>VEGETATION</Term>
+    <Variable_Level_1>BIOMASS</Variable_Level_1>
+  </Parameters>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>BIOSPHERE</Topic>
+    <Term>VEGETATION</Term>
+    <Variable_Level_1>VEGETATION COVER</Variable_Level_1>
+  </Parameters>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>BIOSPHERE</Topic>
+    <Term>VEGETATION</Term>
+    <Variable_Level_1>VEGETATION INDEX</Variable_Level_1>
+    <Detailed_Variable>NDVI</Detailed_Variable>
+  </Parameters>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>ENVIRONMENTAL GOVERNANCE/MANAGEMENT</Term>
+    <Variable_Level_1>LAND MANAGEMENT</Variable_Level_1>
+    <Variable_Level_2>LAND USE CLASSES</Variable_Level_2>
+  </Parameters>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>LAND SURFACE</Topic>
+    <Term>LAND USE/LAND COVER</Term>
+    <Variable_Level_1>LAND USE CLASSES</Variable_Level_1>
+  </Parameters>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>SPECTRAL/ENGINEERING</Topic>
+    <Term>INFRARED WAVELENGTHS</Term>
+    <Variable_Level_1>INFRARED IMAGERY</Variable_Level_1>
+  </Parameters>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>SPECTRAL/ENGINEERING</Topic>
+    <Term>INFRARED WAVELENGTHS</Term>
+    <Variable_Level_1>THERMAL INFRARED</Variable_Level_1>
+  </Parameters>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>LAND SURFACE</Topic>
+    <Term>LAND USE/LAND COVER</Term>
+    <Variable_Level_1>LAND USE/LAND COVER CLASSIFICATION</Variable_Level_1>
+    <Variable_Level_2>VEGETATION INDEX</Variable_Level_2>
+  </Parameters>
+  <ISO_Topic_Category>BIOTA</ISO_Topic_Category>
+  <ISO_Topic_Category>ENVIRONMENT</ISO_Topic_Category>
+  <ISO_Topic_Category>GEOSCIENTIFIC INFORMATION</ISO_Topic_Category>
+  <ISO_Topic_Category>IMAGERY/BASE MAPS/EARTH COVER</ISO_Topic_Category>
+  <ISO_Topic_Category>PLANNING CADASTRE</ISO_Topic_Category>
+  <Keyword>1 KM</Keyword>
+  <Keyword>1-KM</Keyword>
+  <Keyword>1KM</Keyword>
+  <Keyword>AVHRR</Keyword>
+  <Keyword>GLCF</Keyword>
+  <Keyword>LAND CLASSIFICATION</Keyword>
+  <Keyword>LAND COVER</Keyword>
+  <Keyword>LAND COVER TYPES</Keyword>
+  <Keyword>LGRSS</Keyword>
+  <Keyword>NASA/NOAA PAL</Keyword>
+  <Keyword>NASA/NOAA PATHFINDER LAND</Keyword>
+  <Keyword>NDVI</Keyword>
+  <Keyword>NORMALIZED DIFFERENCE VEGETATION INDEX</Keyword>
+  <Keyword>PAL</Keyword>
+  <Keyword>PATHFINDER</Keyword>
+  <Keyword>REMOTE SENSING</Keyword>
+  <Sensor_Name>
+    <Short_Name>AVHRR</Short_Name>
+    <Long_Name>Advanced Very High Resolution Radiometer</Long_Name>
+  </Sensor_Name>
+  <Source_Name>
+    <Short_Name>NOAA-11</Short_Name>
+    <Long_Name>National Oceanic &amp; Atmospheric Administration-11</Long_Name>
+  </Source_Name>
+  <Source_Name>
+    <Short_Name>NOAA-7</Short_Name>
+    <Long_Name>National Oceanic &amp; Atmospheric Administration-7</Long_Name>
+  </Source_Name>
+  <Source_Name>
+    <Short_Name>NOAA-9</Short_Name>
+    <Long_Name>National Oceanic &amp; Atmospheric Administration-9</Long_Name>
+  </Source_Name>
+  <Temporal_Coverage>
+    <Start_Date>1981-01-01</Start_Date>
+    <Stop_Date>1994-01-01</Stop_Date>
+  </Temporal_Coverage>
+  <Data_Set_Progress>COMPLETE</Data_Set_Progress>
+  <Spatial_Coverage>
+    <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+    <Northernmost_Latitude>90.0</Northernmost_Latitude>
+    <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+    <Easternmost_Longitude>180.0</Easternmost_Longitude>
+  </Spatial_Coverage>
+  <Location>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>GLOBAL LAND</Location_Type>
+  </Location>
+  <Data_Resolution>
+    <Latitude_Resolution>1 km</Latitude_Resolution>
+    <Longitude_Resolution>1 km</Longitude_Resolution>
+    <Horizontal_Resolution_Range>1 km - &lt; 10 km or approximately .01 degree - &lt; .09 degree</Horizontal_Resolution_Range>
+  </Data_Resolution>
+  <Project>
+    <Short_Name>GOFC</Short_Name>
+    <Long_Name>Global Observation of Forest Cover</Long_Name>
+  </Project>
+  <Project>
+    <Short_Name>ESIP</Short_Name>
+    <Long_Name>Earth Science Information Partners Program</Long_Name>
+  </Project>
+  <Project>
+    <Short_Name>REASON</Short_Name>
+    <Long_Name>Research, Education, and Applications Solution Network</Long_Name>
+  </Project>
+  <Access_Constraints>None</Access_Constraints>
+  <Use_Constraints>Please use the following citation to cite the data: Hansen, M.C., DeFries,
+                  R.S., Townshend, J.R.G., and Sohlberg, R., Global land cover classification at
+                  1km spatial resolution using a classification tree approach, International
+                  Journal of Remote Sensing (submitted).</Use_Constraints>
+  <Data_Set_Language>English</Data_Set_Language>
+  <Originating_Center>UMD/LGRSS</Originating_Center>
+  <Data_Center>
+    <Data_Center_Name>
+      <Short_Name>UMD/GLCF</Short_Name>
+      <Long_Name>Global Land Cover Facility, University of Maryland</Long_Name>
+    </Data_Center_Name>
+    <Data_Center_URL>http://glcf.umd.edu/</Data_Center_URL>
+    <Data_Set_ID>1 km Global Land Cover Data</Data_Set_ID>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Last_Name>GLOBAL LAND COVER FACILITY</Last_Name>
+      <Email>glcf@umd.edu</Email>
+      <Contact_Address>
+        <Address>Global Land Cover Facility</Address>
+        <Address>3166 A.V. Williams Bldg</Address>
+        <Address>University of Maryland</Address>
+        <City>College Park</City>
+        <Province_or_State>MD</Province_or_State>
+        <Postal_Code>20742</Postal_Code>
+        <Country>USA</Country>
+      </Contact_Address>
+    </Personnel>
+  </Data_Center>
+  <Distribution>
+    <Distribution_Media>Online Internet (HTTP)</Distribution_Media>
+    <Distribution_Format>gzipped</Distribution_Format>
+    <Fees>None</Fees>
+  </Distribution>
+  <Reference>Hansen, M.C., DeFries, R.S., Townshend, J.R.G., and Sohlberg, R.,
+      Global land cover classification at 1km spatial resolution using a
+      classification tree approach, International Journal of Remote Sensing
+      (submitted).</Reference>
+  <Summary>
+    <Abstract>Over the past several years, researchers have increasingly turned to remotely sensed data to improve the accuracy of data sets that describe the geographic distribution of land cover at regional and global scales. To develop improved methodologies for global land cover classifications as well as to provide global land cover products for immediate use in global change research, we have employed the NASA/NOAA Pathfinder Land (PAL) data set with a spatial resolution of 1km. This data set has a length of record of 14 years (1981-1994), providing the ability to test the stability of classification algorithms. Furthermore, this data set includes red, infrared, and thermal bands in addition to the Normalized Difference Vegetation Index (NDVI). Inclusion of these additional bands improves discrimination between cover types. We aim through this study to 1) develop methodologies for global land cover classifications that are objective, reproducible, and feasible to implement on data from additional years and 2) produce a global land cover classification at 1 km spatial resolution accessible to the global change research community.</Abstract>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET DATA</Type>
+    </URL_Content_Type>
+    <URL>http://glcf.umd.edu/data/landcover/data.shtml</URL>
+    <Description>Download the Land Cover Product.</Description>
+  </Related_URL>
+  <IDN_Node>
+    <Short_Name>USA/NASA</Short_Name>
+  </IDN_Node>
+  <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 9.9.3</Metadata_Version>
+  <DIF_Creation_Date>2000-05-12</DIF_Creation_Date>
+  <Last_DIF_Revision_Date>2015-12-02</Last_DIF_Revision_Date>
+  <DIF_Revision_History>Added the URL to the ESIP website, May 17, 2000.
+            Added LGRSS Data Center and revised Dr. Townshend's address, May 18, 2000.</DIF_Revision_History>
+  <Extended_Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>metadata.uuid</Name>
+      <Value>e2a4bfef-b9f0-4d91-95bc-544901f3cf25</Value>
+    </Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>metadata.extraction_date</Name>
+      <Value>2015-12-02 12:37:08</Value>
+    </Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>metadata.keyword_version</Name>
+      <Value>8.1</Value>
+    </Metadata>
+  </Extended_Metadata>
+</DIF>

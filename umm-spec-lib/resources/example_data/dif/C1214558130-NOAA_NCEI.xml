@@ -1,0 +1,187 @@
+
+<DIF 
+    xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd">
+   <Entry_ID>gov.noaa.ngdc.mgg.geophysics.G01414</Entry_ID>
+   <Entry_Title>1-deg x 1-deg Terrestrial Mean Free-Air Anomalies</Entry_Title>
+   <Data_Set_Citation>
+      <Dataset_Creator>DOC/NOAA/NESDIS/NCEI > National Centers for Environmental Information, NESDIS, NOAA, U.S. Department of Commerce</Dataset_Creator>
+      <Dataset_Title>1-deg x 1-deg Terrestrial Mean Free-Air Anomalies</Dataset_Title>
+      <Dataset_Release_Date>1999-01-01</Dataset_Release_Date>
+      <Version>1999 Edition</Version>
+   </Data_Set_Citation>
+   <Personnel>
+      <Role>DIF AUTHOR</Role>
+      <First_Name>BRIAN</First_Name>
+      <Last_Name>MEYER</Last_Name>
+      <Email>Brian.Meyer@noaa.gov</Email>
+      <Phone>303-497-6125</Phone>
+      <Contact_Address>
+      </Contact_Address>
+   </Personnel>
+   <Personnel>
+      <Role>TECHNICAL CONTACT</Role>
+      <First_Name>SUSAN</First_Name>
+      <Last_Name>MCLEAN</Last_Name>
+      <Email>Susan.McLean@noaa.gov</Email>
+      <Phone>(303) 497-6478</Phone>
+      <Fax>(303) 497-6513</Fax>
+      <Contact_Address>
+         <Address>NOAA/NESDIS/NGDC</Address>
+         <Address>E/GC2 325 Broadway</Address>
+         <City>Boulder</City>
+         <Province_or_State>CO</Province_or_State>
+         <Postal_Code>80305-3328</Postal_Code>
+         <Country>USA</Country>
+      </Contact_Address>
+   </Personnel>
+   <Parameters uuid="8b39b880-f385-4dab-a563-24064b43be7e">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>SOLID EARTH</Topic>
+      <Term>GRAVITY/GRAVITATIONAL FIELD</Term>
+      <Variable_Level_1>CONTROL SURVEYS</Variable_Level_1>
+   </Parameters>
+   <Parameters uuid="69af3046-08e0-4c24-981d-803c0412ce58">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>SOLID EARTH</Topic>
+      <Term>GRAVITY/GRAVITATIONAL FIELD</Term>
+      <Variable_Level_1>GRAVITY</Variable_Level_1>
+   </Parameters>
+   <Parameters uuid="71278ba7-9a13-43ba-9ec3-62ae2b39de88">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>SOLID EARTH</Topic>
+      <Term>GRAVITY/GRAVITATIONAL FIELD</Term>
+      <Variable_Level_1>SATELLITE ORBITS/REVOLUTION</Variable_Level_1>
+   </Parameters>
+   <ISO_Topic_Category uuid="d9cd5b7e-e9e7-4746-bbc8-bc69f7b606c7">GEOSCIENTIFIC INFORMATION</ISO_Topic_Category>
+   <Keyword>EARTH SCIENCE>SOLID EARTH>Geodetics/Gravity>Control Surveys</Keyword>
+   <Keyword>EARTH SCIENCE>SOLID EARTH>Geodetics/Gravity>Gravitational Field</Keyword>
+   <Keyword>EARTH SCIENCE>SOLID EARTH>Geodetics/Gravity>Gravity</Keyword>
+   <Keyword>EARTH SCIENCE>SOLID EARTH>Geodetics/Gravity>Reference Systems</Keyword>
+   <Keyword>EARTH SCIENCE>SOLID EARTH>Geodetics/Gravity>Satellite Orbits</Keyword>
+   <Keyword>Absolute Gravity</Keyword>
+   <Keyword>Bouguer Gravity</Keyword>
+   <Keyword>Free Air Anomaly</Keyword>
+   <Keyword>Gridded Gravity</Keyword>
+   <Keyword>Land Gravity</Keyword>
+   <Keyword>Observed Gravity</Keyword>
+   <Keyword>ICSU-WDS > International Council for Science - World Data System</Keyword>
+   <Keyword>Global</Keyword>
+   <Keyword>North America</Keyword>
+   <Keyword>DOC/NOAA/NESDIS/NCEI > National Centers for Environmental Information, NESDIS, NOAA, U.S. Department of Commerce</Keyword>
+   <Keyword>DOC/NOAA/NESDIS/NGDC > National Geophysical Data Center, NESDIS, NOAA, U.S. Department of Commerce</Keyword>
+   <Data_Set_Progress>COMPLETE</Data_Set_Progress>
+   <Spatial_Coverage>
+      <Southernmost_Latitude>-71.0</Southernmost_Latitude>
+      <Northernmost_Latitude>72.0</Northernmost_Latitude>
+      <Westernmost_Longitude>0.0</Westernmost_Longitude>
+      <Easternmost_Longitude>-1.0</Easternmost_Longitude>
+   </Spatial_Coverage>
+   <Location uuid="51e3593f-4b42-4141-972e-96666c479f9c">
+      <Location_Category>GEOGRAPHIC REGION</Location_Category>
+      <Location_Type>GLOBAL</Location_Type>
+   </Location>
+   <Location uuid="88bc8b39-ad19-4415-b426-e7d37450341a">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+   </Location>
+   <Project uuid="42a14306-6fd9-4c07-8de9-5d3e53ee0864">
+      <Short_Name>ICSU-WDS</Short_Name>
+      <Long_Name>International Council for Science - World Data System</Long_Name>
+   </Project>
+   <Use_Constraints>
+      Use Constraints: If you use this data, please cite the National Geophysical Data Center and the originator of the data.
+   </Use_Constraints>
+   <Data_Set_Language>English</Data_Set_Language>
+   <Data_Center>
+      <Data_Center_Name uuid="e59896e0-3b4d-43ea-9348-f1f456305d05">
+         <Short_Name>DOC/NOAA/NESDIS/NCEI</Short_Name>
+         <Long_Name>National Centers for Environmental Information, NESDIS, NOAA, U.S. Department of Commerce</Long_Name>
+      </Data_Center_Name>
+   <Data_Center_URL>https://ncei.noaa.gov/</Data_Center_URL>
+      <Personnel>
+         <Role>DATA CENTER CONTACT</Role>
+         <First_Name>BRIAN</First_Name>
+         <Last_Name>MEYER</Last_Name>
+         <Email>Brian.Meyer@noaa.gov</Email>
+         <Phone>303-497-6125</Phone>
+         <Contact_Address>
+         </Contact_Address>
+      </Personnel>
+   </Data_Center>
+   <Data_Center>
+      <Data_Center_Name uuid="965806e5-6c00-4517-8765-e9cff041c77d">
+         <Short_Name>DOC/NOAA/NESDIS/NGDC</Short_Name>
+         <Long_Name>National Geophysical Data Center, NESDIS, NOAA, U.S. Department of Commerce</Long_Name>
+      </Data_Center_Name>
+   <Data_Center_URL>http://www.ngdc.noaa.gov/</Data_Center_URL>
+      <Personnel>
+         <Role>DATA CENTER CONTACT</Role>
+         <First_Name>BRIAN</First_Name>
+         <Last_Name>MEYER</Last_Name>
+         <Email>Brian.Meyer@noaa.gov</Email>
+         <Phone>303-497-6125</Phone>
+         <Contact_Address>
+         </Contact_Address>
+      </Personnel>
+   </Data_Center>
+   <Distribution>
+      <Distribution_Format>Binary</Distribution_Format>
+      <Fees>Depends on the data set</Fees>
+   </Distribution>
+   <Summary>
+      <Abstract>The 1x1 degree Terrestrial Mean Free-Air Gravity Anomaly and Geoid Undulations Data Base was compiled and developed by the Ohio State University. This data base was received in March 1993. Principal gravity parameters include mean elevation, mean free-air anomaly and source id. The gravity anomaly computation uses the Geodetic Reference System 1967 (GRS 67) theoretical formula. The data are global in coverage where data are available.</Abstract>
+      <Purpose>To provide easy access to global and regional gravity data and related models for scientific studies.</Purpose>
+   </Summary>
+   <Related_URL>
+      <URL_Content_Type uuid="750f6c61-0f15-4185-94d8-c029dec04bc5">
+     <Type>GET DATA</Type>
+      </URL_Content_Type>
+      <URL>http://www.ngdc.noaa.gov/mgg/fliers/se-0703.html</URL>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="750f6c61-0f15-4185-94d8-c029dec04bc5">
+     <Type>GET DATA</Type>
+      </URL_Content_Type>
+      <URL>http://www.ngdc.noaa.gov/mgg/gravity/1999/document/html/tablegri.html</URL>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="3c9d4493-22fd-48a8-9af5-bf0d16b7ede5">
+     <Type>VIEW EXTENDED METADATA</Type>
+      </URL_Content_Type>
+      <URL>http://www.ngdc.noaa.gov/nmmrview/xmls/xml-to-text.jsp?id=gov.noaa.ngdc.mgg.geophysics:G01414</URL>
+      <Description>
+         View Source Metadata
+      </Description>
+   </Related_URL>
+   <IDN_Node uuid="3d117d54-4c0f-4630-8b46-a6ddb1ffc9b3">
+      <Short_Name>USA/NOAA</Short_Name>
+   </IDN_Node>
+   <IDN_Node uuid="edff0791-121c-40aa-adf2-33feb2bc30e5">
+      <Short_Name>CEOS</Short_Name>
+   </IDN_Node>
+   <Originating_Metadata_Node>NOAA-NGDC</Originating_Metadata_Node>
+   <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+   <Metadata_Version>VERSION 9.8.4</Metadata_Version>
+   <DIF_Creation_Date>2015-10-01</DIF_Creation_Date>
+   <Last_DIF_Revision_Date>2015-12-02</Last_DIF_Revision_Date>
+   <Extended_Metadata>
+      <Metadata>
+         <Group>gov.nasa.gsfc.gcmd</Group>
+         <Name>metadata.uuid</Name>
+         <Value>e51d5f33-8e84-424a-b426-d936e582e298</Value>
+      </Metadata>
+      <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>metadata.extraction_date</Name>
+        <Value>2015-12-01 14:39:50</Value>
+      </Metadata>
+      <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>metadata.keyword_version</Name>
+        <Value>8.1</Value>
+      </Metadata>
+   </Extended_Metadata>
+</DIF>
