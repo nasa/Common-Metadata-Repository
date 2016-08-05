@@ -108,6 +108,8 @@
       some?))
 
 (defn parse-temporal-extents
+  "Parses the collection temporal extents from the the collection document, the extent information,
+   and the data identification element."
   [doc extent-info md-data-id-el]
   (for [temporal (select md-data-id-el temporal-xpath)]
     {:PrecisionOfSeconds (value-of doc precision-xpath)

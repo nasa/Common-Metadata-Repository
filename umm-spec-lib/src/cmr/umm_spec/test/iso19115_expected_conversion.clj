@@ -58,7 +58,7 @@
                                                         (when-not ends-at-present
                                                           x)))
           (assoc :EndsAtPresentFlag
-                 (if (and rdts ends-at-present) true false))))))
+                 (boolean (and rdts ends-at-present)))))))
 
 (defn- fixup-comma-encoded-values
   [temporal-extents]

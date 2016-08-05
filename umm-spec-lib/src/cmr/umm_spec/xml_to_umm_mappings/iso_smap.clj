@@ -59,6 +59,7 @@
        (filter #(.contains kws/science-keyword-categories (:Category %)))))
 
 (defn parse-temporal-extents
+  "Parses the collection temporal extents from the data identification element"
   [data-id-el]
   (for [temporal (select data-id-el temporal-extent-xpath-str)]
     {:RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
