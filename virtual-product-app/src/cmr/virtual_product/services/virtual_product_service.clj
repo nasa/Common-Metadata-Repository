@@ -17,7 +17,12 @@
             [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
 
 (def ^:private num-retries-delete-not-found
-  "Number of retries for not found error during deletion of source granule"
+  "Number of retries for not found error during deletion of source granule.
+  The default CMR RabbitMQ retries 5 times with increasing delays as in [5, 50, 500, 5000, 50000].
+  It takes too long to exhaust the retries when deleting virtual granules as some of the virtual
+  granules will not be generated for some source granules (e.g. AST_L1A) and we will always get
+  the 404 status code back. This setting shortens the wait time in this case and make the virtual
+  granule deletion more prompt."
   2)
 
 (defmulti handle-ingest-event
