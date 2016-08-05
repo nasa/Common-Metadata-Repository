@@ -6,7 +6,7 @@
             [cmr.common.api.web-server :as web]
             [cmr.oracle.connection :as oracle]
             [cmr.metadata-db.api.routes :as routes]
-            [cmr.common.config :refer [check-env-vars]])
+            [cmr.common.config :as cfg])
   (:gen-class))
 
 (defn -main
@@ -14,4 +14,4 @@
   [& args]
   (let [system (system/start (system/create-system))]
     (info "Running...")
-    (check-env-vars)))
+    (cfg/check-env-vars)))

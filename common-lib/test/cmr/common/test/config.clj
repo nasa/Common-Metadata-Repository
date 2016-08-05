@@ -143,8 +143,17 @@
   (is (= 99 (c/maybe-long "99")))
   (is (nil? (c/maybe-long nil))))
 
-(deftest test1-check-env-vars
-  (is (= "AllEnvVarsRecognized" (c/check-env-vars {"CMR_DB_USERNAME" "defconfig db-username", "CMR_DB_PASSWORD" "defconfig db-password"}))))
+;;define two sample configs to be used by test-check-env-vars 
+(defconfig test-health-check-timeout-seconds
+  "Timeout in seconds for health check operation."
+  {:default 10 :type Long})
 
-(deftest test2-check-env-vars
-  (is (nil? (c/check-env-vars {"CMR_NOTRecognizable" "not recognized"}))))
+(defconfig test-default-job-start-delay
+  "The start delay of the job in seconds."
+  {:default 5
+   :type Long})
+
+(deftest test-check-env-vars
+  (is (false? (c/check-env-vars {"CMR_TEST_DEFAULT_JOB_START_DELAY" "common-lib test defconfig",
+                                 "CMR_TEST_HEALTH_CHECK_TIMEOUT_SECONDS" "common-lib test defconfig"})))
+  (is (true? (c/check-env-vars {"CMR_NOTRecognizable" "not recognized"}))))
