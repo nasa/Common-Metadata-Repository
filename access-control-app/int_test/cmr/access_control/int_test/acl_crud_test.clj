@@ -143,7 +143,35 @@
                                    :collection_applicable true
                                    :collection_identifier {:temporal {:start_date "2012-01-01T12:00:00Z"
                                                                       :end_date "2011-01-01T12:00:00Z"
-                                                                      :mask "intersect"}}}})
+                                                                      :mask "intersect"}}}}
+
+          ;; Repeated for Granule Identifier
+          "At least one of a range (min and/or max) or include_undefined value must be specified."
+          ["min_value and/or max_value must be specified when include_undefined_value is false"]
+          {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+           :catalog_item_identity {:name "A Catalog Item ACL"
+                                   :provider_id "PROV1"
+                                   :granule_applicable true
+                                   :granule_identifier {:access_value {:include_undefined_value false}}}}
+
+          "include_undefined_value and range values can't be used together"
+          ["min_value and/or max_value must not be specified if include_undefined_value is true"]
+          {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+           :catalog_item_identity {:name "A Catalog Item ACL"
+                                   :provider_id "PROV1"
+                                   :granule_applicable true
+                                   :granule_identifier {:access_value {:min_value 4
+                                                                       :include_undefined_value true}}}}
+
+          "temporal validation: stop must be greater than or equal to start"
+          ["start_date must be before end_date"]
+          {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+           :catalog_item_identity {:name "A Catalog Item ACL"
+                                   :provider_id "PROV1"
+                                   :granule_applicable true
+                                   :granule_identifier {:temporal {:start_date "2012-01-01T12:00:00Z"
+                                                                   :end_date "2011-01-01T12:00:00Z"
+                                                                   :mask "intersect"}}}})
 
     (testing "collection entry_title check passes when collection exists"
       (u/save-collection {:entry-title "coll1 v1"

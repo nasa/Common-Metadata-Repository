@@ -85,8 +85,8 @@
 
 (def granule-identifier-validation
   "Validation for the catalog_item_identity.granule_identifier portion of an ACL."
-  {:access-value access-value-validation
-   :temporal temporal-identifier-validation})
+  {:access-value (v/when-present access-value-validation)
+   :temporal (v/when-present temporal-identifier-validation)})
 
 (defn- make-catalog-item-identity-validations
   "Returns a standard validation for an ACL catalog_item_identity field closed over the given context and ACL to be validated."
