@@ -86,5 +86,3 @@
           :service-unavailable
           (str "Request timed out when attempting to publish message: " msg)
           e)))))
-
-

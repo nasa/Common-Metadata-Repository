@@ -1,0 +1,566 @@
+
+<Collection>
+			<ShortName>CIESIN_SEDAC_ESI_2001</ShortName> 
+			<VersionId>2001.00</VersionId> 
+			<InsertTime>2012-12-12T00:00:00Z</InsertTime>  
+			<LastUpdate>2015-08-04T00:00:00Z</LastUpdate>
+			<LongName>2001 Environmental Sustainability Index (ESI)</LongName> 
+			<DataSetId>2001 Environmental Sustainability Index (ESI)</DataSetId> 
+			<Description>The 2001 Environmental Sustainability Index (ESI) utilizes a refined methodology based on the 2000 Pilot ESI effort, to construct an index covering 
+
+122 countries that measures the overall progress towards environmental sustainability. The index is a composite measure of the current status of a nation's environmental systems, 
+
+pressures on those systems, human vulnerability to environmental change, national capacity to respond, and contributions to global environmental stewardship. The refinements included the 
+
+addition and deletion of indicators, filling gaps in data coverage, new data sets, and the modification of the aggregation scheme. The index was unveiled at the World Economic Forum's 
+
+annual meeting, January 2001, Davos, Switzerland. The 2001 ESI is the result of collaboration among the World Economic Forum (WEF), Yale Center for Environmental Law and Policy (YCELP), 
+
+and the Columbia University Center for International Earth Science Information Network (CIESIN)</Description> 
+			<Orderable>false</Orderable> 
+			<Visible>true</Visible>
+			<SuggestedUsage>To provide  a comparative index of national-level environmental sustainability based on lessons learned from the year 2000 pilot 
+
+effort.</SuggestedUsage> 
+			<ProcessingCenter>SEDAC</ProcessingCenter> 
+			<ProcessingLevelId>Level 2</ProcessingLevelId> 
+			 
+			<ArchiveCenter>SEDAC</ArchiveCenter> 
+			 
+			<CitationForExternalPublication>World Economic Forum - WEF - Global Leaders for Tomorrow Environment Task Force, Yale Center for Environmental Law and Policy - 
+
+YCELP - Yale University, and Center for International Earth Science Information Network - CIESIN - Columbia University. 2001. 2001 Environmental Sustainability Index (ESI). Palisades, 
+
+NY:NASA Socioeconomic Data and Applications Center (SEDAC). http://dx.doi.org/10.7927/H4X34VDM</CitationForExternalPublication> 
+			<CollectionState>Final</CollectionState> 
+			<MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency> 
+			<RestrictionComment>Users are free to use, copy, distribute, transmit, and adapt the work for commercial and non-commercial purposes, without restriction, as long 
+
+as clear attribution of the source is provided.</RestrictionComment>
+			<Price>0</Price> 
+			<DataFormat>PDF, XLS</DataFormat> 
+			<SpatialKeywords>
+  <Keyword>Africa</Keyword> 
+  <Keyword>Asia</Keyword> 
+  <Keyword>Australia</Keyword> 
+  <Keyword>Central America</Keyword> 
+  <Keyword>Equatorial</Keyword> 
+  <Keyword>Europe</Keyword>
+  <Keyword>Global</Keyword> 
+  <Keyword>Middle East</Keyword> 
+  <Keyword>Mid-Latitude</Keyword> 
+  <Keyword>North America</Keyword> 
+  <Keyword>Oceania</Keyword> 
+  <Keyword>South America</Keyword> 
+  <Keyword>Albania</Keyword> 
+  <Keyword>Algeria</Keyword> 
+  <Keyword>Argentina</Keyword> 
+  <Keyword>Armenia</Keyword> 
+  <Keyword>Australia</Keyword> 
+  <Keyword>Australia</Keyword> 
+  <Keyword>Azerbaijan</Keyword> 
+  <Keyword>Bangladesh</Keyword> 
+  <Keyword>Belarus</Keyword> 
+  <Keyword>Belgium</Keyword> 
+  <Keyword>Benin</Keyword> 
+  <Keyword>Bhutan</Keyword> 
+  <Keyword>Bolivia</Keyword> 
+  <Keyword>Botswana</Keyword> 
+  <Keyword>Brazil</Keyword> 
+  <Keyword>Bulgaria</Keyword> 
+  <Keyword>Burkina Faso</Keyword> 
+  <Keyword>Burundi</Keyword> 
+  <Keyword>Cameroon</Keyword> 
+  <Keyword>Canada</Keyword> 
+  <Keyword>Central African Republic</Keyword> 
+  <Keyword>Chile</Keyword> 
+  <Keyword>China</Keyword> 
+  <Keyword>Colombia</Keyword> 
+  <Keyword>Costa Rica</Keyword> 
+  <Keyword>Croatia</Keyword> 
+  <Keyword>Cuba</Keyword> 
+  <Keyword>Czech Republic</Keyword> 
+  <Keyword>Denmark</Keyword> 
+  <Keyword>Dominican Republic</Keyword> 
+  <Keyword>Ecuador</Keyword> 
+  <Keyword>Egypt</Keyword> 
+  <Keyword>El Salvador</Keyword> 
+  <Keyword>Estonia</Keyword> 
+  <Keyword>Ethiopia</Keyword> 
+  <Keyword>Fiji</Keyword> 
+  <Keyword>Finland</Keyword> 
+  <Keyword>France</Keyword> 
+  <Keyword>Gabon</Keyword> 
+  <Keyword>Germany</Keyword> 
+  <Keyword>Ghana</Keyword> 
+  <Keyword>Greece</Keyword> 
+  <Keyword>Guatemala</Keyword> 
+  <Keyword>Haiti</Keyword> 
+  <Keyword>Honduras</Keyword> 
+  <Keyword>Hungary</Keyword> 
+  <Keyword>Iceland</Keyword> 
+  <Keyword>India</Keyword> 
+  <Keyword>Indonesia</Keyword> 
+  <Keyword>Iran</Keyword> 
+  <Keyword>Ireland</Keyword> 
+  <Keyword>Israel</Keyword> 
+  <Keyword>Italy</Keyword> 
+  <Keyword>Jamaica</Keyword> 
+  <Keyword>Japan</Keyword> 
+  <Keyword>Jordan</Keyword> 
+  <Keyword>Kazakhstan</Keyword> 
+  <Keyword>Kenya</Keyword> 
+  <Keyword>Kuwait</Keyword> 
+  <Keyword>Latvia</Keyword> 
+  <Keyword>Lebanon</Keyword> 
+  <Keyword>Libya</Keyword> 
+  <Keyword>Lithuania</Keyword> 
+  <Keyword>Macedonia</Keyword> 
+  <Keyword>Madagascar</Keyword> 
+  <Keyword>Malawi</Keyword> 
+  <Keyword>Malaysia</Keyword> 
+  <Keyword>Mali</Keyword> 
+  <Keyword>Mauritius</Keyword> 
+  <Keyword>Mexico</Keyword> 
+  <Keyword>Moldova</Keyword> 
+  <Keyword>Mongolia</Keyword> 
+  <Keyword>Morocco</Keyword> 
+  <Keyword>Mozambique</Keyword> 
+  <Keyword>Nepal</Keyword> 
+  <Keyword>Netherlands</Keyword> 
+  <Keyword>New Zealand</Keyword> 
+  <Keyword>Nicaragua</Keyword> 
+  <Keyword>Niger</Keyword> 
+  <Keyword>Nigeria</Keyword> 
+  <Keyword>North Korea</Keyword> 
+  <Keyword>Norway</Keyword> 
+  <Keyword>Pakistan</Keyword> 
+  <Keyword>Panama</Keyword> 
+  <Keyword>Papua New Guinea</Keyword> 
+  <Keyword>Paraguay</Keyword> 
+  <Keyword>Peru</Keyword> 
+  <Keyword>Philippines</Keyword> 
+  <Keyword>Poland</Keyword> 
+  <Keyword>Portugal</Keyword> 
+  <Keyword>Romania</Keyword> 
+  <Keyword>Russia</Keyword> 
+  <Keyword>Rwanda</Keyword> 
+  <Keyword>Saudi Arabia</Keyword> 
+  <Keyword>Singapore</Keyword> 
+  <Keyword>Slovakia</Keyword> 
+  <Keyword>Slovenia</Keyword> 
+  <Keyword>South Africa</Keyword> 
+  <Keyword>South Korea</Keyword> 
+  <Keyword>Spain</Keyword> 
+  <Keyword>Sri Lanka</Keyword> 
+  <Keyword>Sudan</Keyword> 
+  <Keyword>Sweden</Keyword> 
+  <Keyword>Switzerland</Keyword> 
+  <Keyword>Syria</Keyword> 
+  <Keyword>Tanzania</Keyword> 
+  <Keyword>Thailand</Keyword> 
+  <Keyword>Togo</Keyword> 
+  <Keyword>Trinidad and Tobago</Keyword> 
+  <Keyword>Tunisia</Keyword> 
+  <Keyword>Turkey</Keyword> 
+  <Keyword>Uganda</Keyword> 
+  <Keyword>Ukraine</Keyword> 
+  <Keyword>United Kingdom</Keyword> 
+  <Keyword>United States</Keyword> 
+  <Keyword>Uruguay</Keyword> 
+  <Keyword>Uzbekistan</Keyword> 
+  <Keyword>Venezuela</Keyword> 
+  <Keyword>Vietnam</Keyword> 
+  <Keyword>Zambia</Keyword> 
+  <Keyword>Zimbabwe</Keyword> 
+			</SpatialKeywords>
+			<Temporal>
+				<TimeType>Universal Time</TimeType> 
+				<DateType>Eastern Daylight</DateType> 
+				<TemporalRangeType>Long Range</TemporalRangeType> 
+				<PrecisionOfSeconds>1</PrecisionOfSeconds> 
+				<EndsAtPresentFlag>true</EndsAtPresentFlag> 
+				<RangeDateTime>
+					<BeginningDateTime>1980-01-01T00:00:00Z</BeginningDateTime>  
+					<EndingDateTime>2000-12-31T00:00:00Z</EndingDateTime>  
+				</RangeDateTime>
+			</Temporal>
+			<Contacts>
+				<Contact>
+					<Role>Archive</Role> 
+					<HoursOfService>9:00 A.M. to 5:00 P.M., Monday to Friday</HoursOfService> 
+					<OrganizationName>Socioeconomic Data and Applications Center (SEDAC)</OrganizationName> 
+					<OrganizationAddresses>
+						<Address>
+							<StreetAddress>CIESIN, Columbia University, 61 Route 9W, P.O. Box 1000</StreetAddress> 
+							<City>Palisades</City> 
+							<StateProvince>NY</StateProvince> 
+							<PostalCode>10964</PostalCode> 
+							<Country>USA</Country> 
+						</Address>
+					</OrganizationAddresses>
+					<OrganizationPhones>
+						<Phone>
+							<Number>+1 845-365-8920</Number> 
+							<Type>Telephone</Type> 
+						</Phone>
+						<Phone>
+							<Number>+1 845-365-8922</Number> 
+							<Type>Fax</Type> 
+						</Phone>
+					</OrganizationPhones>
+					<OrganizationEmails>
+						<Email>ciesin.info@ciesin.columbia.edu</Email> 
+					</OrganizationEmails>
+					<ContactPersons>
+						<ContactPerson>
+							<FirstName>SEDAC</FirstName> 
+							<MiddleName>User</MiddleName> 
+							<LastName>Services</LastName> 
+						</ContactPerson>
+					</ContactPersons>
+				</Contact>
+			</Contacts>
+			<ScienceKeywords>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>ATMOSPHERE</TopicKeyword>
+<TermKeyword>AIR QUALITY</TermKeyword>
+<VariableLevel1Keyword><Value>EMISSIONS</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>ATMOSPHERE</TopicKeyword>
+<TermKeyword>AIR QUALITY</TermKeyword>
+<VariableLevel1Keyword><Value>NITROGEN OXIDES</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>ATMOSPHERE</TopicKeyword>
+<TermKeyword>AIR QUALITY</TermKeyword>
+<VariableLevel1Keyword><Value>PARTICULATES</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>ATMOSPHERE</TopicKeyword>
+<TermKeyword>AIR QUALITY</TermKeyword>
+<VariableLevel1Keyword><Value>SULFUR OXIDES</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>ATMOSPHERE</TopicKeyword>
+<TermKeyword>AIR QUALITY</TermKeyword>
+<VariableLevel1Keyword><Value>VOLATILE ORGANIC COMPOUNDS</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>ATMOSPHERE</TopicKeyword>
+<TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+<VariableLevel1Keyword><Value>CARBON AND HYDROCARBON COMPOUNDS</Value>
+<VariableLevel2Keyword><Value>CARBON DIOXIDE</Value></VariableLevel2Keyword>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>ATMOSPHERE</TopicKeyword>
+<TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+<VariableLevel1Keyword><Value>CARBON AND HYDROCARBON COMPOUNDS</Value>
+<VariableLevel2Keyword><Value>NON-METHANE HYDROCARBONS/VOLATILE ORGANIC COMPOUNDS</Value></VariableLevel2Keyword>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>ATMOSPHERE</TopicKeyword>
+<TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+<VariableLevel1Keyword><Value>HALOCARBONS AND HALOGENS</Value>
+<VariableLevel2Keyword><Value>CHLOROFLUOROCARBONS</Value></VariableLevel2Keyword>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>ATMOSPHERE</TopicKeyword>
+<TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+<VariableLevel1Keyword><Value>NITROGEN COMPOUNDS</Value>
+<VariableLevel2Keyword><Value>NITROGEN DIOXIDE</Value></VariableLevel2Keyword>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>ATMOSPHERE</TopicKeyword>
+<TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+<VariableLevel1Keyword><Value>NITROGEN COMPOUNDS</Value>
+<VariableLevel2Keyword><Value>NITROGEN OXIDES</Value></VariableLevel2Keyword>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>ATMOSPHERE</TopicKeyword>
+<TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+<VariableLevel1Keyword><Value>NITROGEN COMPOUNDS</Value>
+<VariableLevel2Keyword><Value>NITROUS OXIDE</Value></VariableLevel2Keyword>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>ATMOSPHERE</TopicKeyword>
+<TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+<VariableLevel1Keyword><Value>OXYGEN COMPOUNDS</Value>
+<VariableLevel2Keyword><Value>MOLECULAR OXYGEN</Value></VariableLevel2Keyword>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>ATMOSPHERE</TopicKeyword>
+<TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+<VariableLevel1Keyword><Value>SULFUR COMPOUNDS</Value>
+<VariableLevel2Keyword><Value>SULFUR DIOXIDE</Value></VariableLevel2Keyword>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>ATMOSPHERE</TopicKeyword>
+<TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+<VariableLevel1Keyword><Value>SULFUR COMPOUNDS</Value>
+<VariableLevel2Keyword><Value>SULFUR OXIDES</Value></VariableLevel2Keyword>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>BIOLOGICAL CLASSIFICATION</TopicKeyword>
+<TermKeyword>ANIMALS/VERTEBRATES</TermKeyword>
+<VariableLevel1Keyword><Value>BIRDS</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>BIOLOGICAL CLASSIFICATION</TopicKeyword>
+<TermKeyword>ANIMALS/VERTEBRATES</TermKeyword>
+<VariableLevel1Keyword><Value>MAMMALS</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>BIOSPHERE</TopicKeyword>
+<TermKeyword>ECOLOGICAL DYNAMICS</TermKeyword>
+<VariableLevel1Keyword><Value>SPECIES/POPULATION INTERACTIONS</Value>
+<VariableLevel2Keyword><Value>ENDANGERED SPECIES</Value></VariableLevel2Keyword>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>BIOSPHERE</TopicKeyword>
+<TermKeyword>VEGETATION</TermKeyword>
+<VariableLevel1Keyword><Value>VEGETATION SPECIES</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>
+<TermKeyword>HABITAT CONVERSION/FRAGMENTATION</TermKeyword>
+<VariableLevel1Keyword><Value>DEFORESTATION</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>
+<TermKeyword>ENVIRONMENTAL IMPACTS</TermKeyword>
+<VariableLevel1Keyword><Value>INDUSTRIAL EMISSIONS</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>
+<TermKeyword>SOCIOECONOMICS</TermKeyword>
+<VariableLevel1Keyword><Value>INDUSTRIALIZATION</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>
+<TermKeyword>ENVIRONMENTAL IMPACTS</TermKeyword>
+<VariableLevel1Keyword><Value>URBANIZATION</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>
+<TermKeyword>ENVIRONMENTAL IMPACTS</TermKeyword>
+<VariableLevel1Keyword><Value>WATER MANAGEMENT</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>
+<TermKeyword>HUMAN HEALTH</TermKeyword>
+<VariableLevel1Keyword><Value>ANATOMICAL PARAMETERS</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>
+<TermKeyword>PUBLIC HEALTH</TermKeyword>
+<VariableLevel1Keyword><Value>DISEASES/EPIDEMICS</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>
+<TermKeyword>HUMAN HEALTH</TermKeyword>
+<VariableLevel1Keyword><Value>VITAL STATISTICS</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+<TermKeyword>GROUND WATER</TermKeyword>
+<VariableLevel1Keyword><Value>GROUNDWATER CHEMISTRY</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+<TermKeyword>WATER QUALITY/WATER CHEMISTRY</TermKeyword>
+<VariableLevel1Keyword><Value>CONTAMINANTS</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+<TermKeyword>WATER QUALITY/WATER CHEMISTRY</TermKeyword>
+<VariableLevel1Keyword><Value>DISSOLVED GASES</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+<TermKeyword>WATER QUALITY/WATER CHEMISTRY</TermKeyword>
+<VariableLevel1Keyword><Value>DISSOLVED SOLIDS</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+<TermKeyword>WATER QUALITY/WATER CHEMISTRY</TermKeyword>
+<VariableLevel1Keyword><Value>PHOSPHORUS COMPOUNDS</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+<TermKeyword>WATER QUALITY/WATER CHEMISTRY</TermKeyword>
+<VariableLevel1Keyword><Value>SUSPENDED SOLIDS</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+<TermKeyword>WATER QUALITY/WATER CHEMISTRY</TermKeyword>
+<VariableLevel1Keyword><Value>TOXIC CHEMICALS</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>LAND SURFACE</TopicKeyword>
+<TermKeyword>EROSION/SEDIMENTATION</TermKeyword>
+<VariableLevel1Keyword><Value>DEGRADATION</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>LAND SURFACE</TopicKeyword>
+<TermKeyword>EROSION/SEDIMENTATION</TermKeyword>
+<VariableLevel1Keyword><Value>EROSION</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>LAND SURFACE</TopicKeyword>
+<TermKeyword>LAND USE/LAND COVER</TermKeyword>
+<VariableLevel1Keyword><Value>LAND RESOURCES</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>LAND SURFACE</TopicKeyword>
+<TermKeyword>SOILS</TermKeyword>
+<VariableLevel1Keyword><Value>SOIL STRUCTURE</Value></VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>SOLID EARTH</TopicKeyword>  
+<TermKeyword>ROCKS/MINERALS/CRYSTALS</TermKeyword>
+<VariableLevel1Keyword>
+<Value>SEDIMENTARY ROCKS</Value>
+<VariableLevel2Keyword>
+<Value>COAL</Value>
+</VariableLevel2Keyword>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>  
+<TermKeyword>ENVIRONMENTAL GOVERNANCE/MANAGEMENT</TermKeyword>
+<VariableLevel1Keyword>
+<Value>WATER MANAGEMENT</Value>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>  
+<TermKeyword>ENVIRONMENTAL IMPACTS</TermKeyword> 
+<VariableLevel1Keyword>
+<Value>CONSERVATION</Value>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>  
+<TermKeyword>SUSTAINABILITY</TermKeyword> 
+<VariableLevel1Keyword>
+<Value>ENVIRONMENTAL SUSTAINABILITY</Value>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>  
+<TermKeyword>HABITAT  CONVERSION/FRAGMENTATION</TermKeyword>  
+<VariableLevel1Keyword>
+<Value>URBANIZATION/URBAN SPRAWL</Value>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>  
+<TermKeyword>PUBLIC HEALTH</TermKeyword> 
+<VariableLevel1Keyword>
+<Value>ENVIRONMENTAL HEALTH FACTORS</Value>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>  
+<TermKeyword>ENVIRONMENTAL GOVERNANCE/MANAGEMENT</TermKeyword>
+</ScienceKeyword>
+			</ScienceKeywords>
+			<Campaigns>
+				<Campaign>
+					<ShortName>ESI</ShortName> 
+					<LongName>Environmental Sustainability Index</LongName> 
+				</Campaign>
+			</Campaigns>
+			<SpatialInfo>
+				<SpatialCoverageType>Horizontal</SpatialCoverageType> 
+			</SpatialInfo>
+			<OnlineAccessURLs>
+				<OnlineAccessURL>
+					<URL>http://sedac.ciesin.columbia.edu/data/set/esi-environmental-sustainability-index-2001/data-download</URL> 
+					<URLDescription>data download page</URLDescription> 
+				</OnlineAccessURL>
+			</OnlineAccessURLs>
+			<OnlineResources>
+				<OnlineResource>
+					<URL>http://dx.doi.org/10.7927/H4X34VDM</URL> 
+					<Description>data set DOI and homepage</Description> 
+ 					<Type>DOI URL</Type>
+ 				</OnlineResource>
+			</OnlineResources>
+			<AssociatedDIFs>
+				<DIF>
+					<EntryId>CIESIN_SEDAC_ESI_2001</EntryId> 
+				</DIF>
+			</AssociatedDIFs>
+			<Spatial>
+				<SpatialCoverageType>Horizontal</SpatialCoverageType> 
+				<HorizontalSpatialDomain>
+					<Geometry>
+						<CoordinateSystem>CARTESIAN</CoordinateSystem>
+						<BoundingRectangle>
+							<WestBoundingCoordinate>-180</WestBoundingCoordinate> 
+							<NorthBoundingCoordinate>90</NorthBoundingCoordinate> 
+							<EastBoundingCoordinate>180</EastBoundingCoordinate> 
+							<SouthBoundingCoordinate>-55</SouthBoundingCoordinate> 
+						</BoundingRectangle>
+					</Geometry>
+				</HorizontalSpatialDomain>
+				<GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+			</Spatial>
+		</Collection>

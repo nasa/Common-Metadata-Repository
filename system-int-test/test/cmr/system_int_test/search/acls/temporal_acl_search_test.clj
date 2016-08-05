@@ -203,6 +203,13 @@
                                                :concept-id all-coll-concept-ids}))))))))))
 
 (deftest granule-search-with-temporal-acls-test
+  ;; Users have access to the collection
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
+  (grant-temporal :granule "group-guid1" :intersect 0 5)
+  (grant-temporal :granule "group-guid2" :intersect 5 9)
+  (grant-temporal :granule "group-guid3" :disjoint 3 5)
+  (grant-temporal :granule "group-guid4" :contains 3 7)
+  
   (let [collection (d/ingest "PROV1" (dc/collection {:beginning-date-time (tu/n->date-time-string 0)}))
         gran-num (atom 0)
         single-date-gran (fn [n metadata-format]
@@ -222,13 +229,6 @@
                             {:format metadata-format}))]
     ;; Set current time
     (dev-sys-util/freeze-time! (tu/n->date-time-string now-n))
-
-    ;; Users have access to the collection
-    (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
-    (grant-temporal :granule "group-guid1" :intersect 0 5)
-    (grant-temporal :granule "group-guid2" :intersect 5 9)
-    (grant-temporal :granule "group-guid3" :disjoint 3 5)
-    (grant-temporal :granule "group-guid4" :contains 3 7)
 
     ;; Create granules
     (let [gran1 (single-date-gran 1 :echo10)
@@ -323,4 +323,3 @@
         (let [refs-result (search/find-refs :collection {:token user1
                                                          :include-granule-counts true})]
           (is (gran-counts/granule-counts-match? :xml {collection 5} refs-result)))))))
-

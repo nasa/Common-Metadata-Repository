@@ -74,7 +74,7 @@
   [doc]
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
    :ShortName (value-of doc "/DIF/Entry_ID/Short_Name")
-   :Version (without-default-value-of doc "/DIF/Entry_ID/Version")
+   :Version (value-of doc "/DIF/Entry_ID/Version")
    :Abstract (value-of doc "/DIF/Summary/Abstract")
    :CollectionDataType (value-of doc "/DIF/Collection_Data_Type")
    :Purpose (value-of doc "/DIF/Summary/Purpose")

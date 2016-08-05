@@ -1,0 +1,161 @@
+
+<DIF 
+    xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd">
+   <Entry_ID>NIPR_UAP_ELF_SYO</Entry_ID>
+   <Entry_Title>1-100Hz ULF/ELF Electromagnetic Wave Observation at Syowa Station</Entry_Title>
+   <Personnel>
+      <Role>INVESTIGATOR</Role>
+      <First_Name>YUKIHIRO</First_Name>
+      <Last_Name>TAKAHASHI</Last_Name>
+      <Email>yukihiro@pat.geophys.tohoku.ac.jp</Email>
+      <Phone>+81-22-795-5775</Phone>
+      <Fax>+81-22-795-5775</Fax>
+      <Contact_Address>
+         <Address>Aramaki, Aoba-ku</Address>
+         <City>Sendai</City>
+         <Province_or_State>Miyagi</Province_or_State>
+         <Postal_Code>980-8578</Postal_Code>
+         <Country>Japan</Country>
+      </Contact_Address>
+   </Personnel>
+   <Parameters uuid="637ac172-e624-4ae0-aac4-0d1adcc889a2">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>ATMOSPHERE</Topic>
+      <Term>ATMOSPHERIC ELECTRICITY</Term>
+      <Variable_Level_1>LIGHTNING</Variable_Level_1>
+   </Parameters>
+   <Parameters uuid="f24c4f33-5b89-4e8d-8de7-296078a7f18a">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>ATMOSPHERE</Topic>
+      <Term>ATMOSPHERIC PHENOMENA</Term>
+      <Variable_Level_1>LIGHTNING</Variable_Level_1>
+   </Parameters>
+   <ISO_Topic_Category uuid="1ebf71bd-d007-42f8-8f9b-8c44a6b65a28">CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+   <Keyword>SHOWA STATION</Keyword>
+   <Sensor_Name uuid="84df34de-8d78-4f98-bdd3-475d34cb364c">
+      <Short_Name>SCM</Short_Name>
+      <Long_Name>SEARCH COIL MAGNETOMETERS</Long_Name>
+   </Sensor_Name>
+   <Temporal_Coverage>
+      <Start_Date>2000-01-01</Start_Date>
+   </Temporal_Coverage>
+   <Spatial_Coverage>
+      <Southernmost_Latitude>-69.0</Southernmost_Latitude>
+      <Northernmost_Latitude>-69.0</Northernmost_Latitude>
+      <Westernmost_Longitude>39.6</Westernmost_Longitude>
+      <Easternmost_Longitude>39.6</Easternmost_Longitude>
+   </Spatial_Coverage>
+   <Location uuid="70fb5a3b-35b1-4048-a8be-56a0d865281c">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>ANTARCTICA</Location_Type>
+      <Detailed_Location>SYOWA STATION</Detailed_Location>
+   </Location>
+   <Location uuid="3fedcf7c-7b0c-4b51-abd2-2c54de713061">
+      <Location_Category>GEOGRAPHIC REGION</Location_Category>
+      <Location_Type>POLAR</Location_Type>
+   </Location>
+   <Project uuid="4458a668-7ca2-45eb-8f34-37a579f09a1a">
+      <Short_Name>JARE</Short_Name>
+      <Long_Name>Japanese Antarctic Research Expedition</Long_Name>
+   </Project>
+   <Project uuid="9e8894ee-13b5-4e98-8031-06d6fe64de2a">
+      <Short_Name>IPY</Short_Name>
+      <Long_Name>INTERNATIONAL POLAR YEAR</Long_Name>
+   </Project>
+   <Use_Constraints>
+      PICCCBY
+   </Use_Constraints>
+   <Data_Set_Language>English</Data_Set_Language>
+   <Data_Center>
+      <Data_Center_Name uuid="27c014f8-3dfd-4f15-8720-06d643fb2c8b">
+         <Short_Name>TOHOKU/PAT</Short_Name>
+         <Long_Name>Planetary Atmosphere Physics Laboratory, Tohoku University, Japan</Long_Name>
+      </Data_Center_Name>
+   <Data_Center_URL>http://pat.geophys.tohoku.ac.jp/</Data_Center_URL>
+      <Personnel>
+         <Role>DATA CENTER CONTACT</Role>
+         <First_Name>YUKIHIRO</First_Name>
+         <Last_Name>TAKAHASHI</Last_Name>
+         <Email>yukihiro@pat.geophys.tohoku.ac.jp</Email>
+         <Phone>+81-22-795-5775</Phone>
+         <Fax>+81-22-795-5775</Fax>
+         <Contact_Address>
+            <Address>Aramaki, Aoba-ku</Address>
+            <City>Sendai</City>
+            <Province_or_State>Miyagi</Province_or_State>
+            <Postal_Code>980-8578</Postal_Code>
+            <Country>Japan</Country>
+         </Contact_Address>
+      </Personnel>
+   </Data_Center>
+   <Multimedia_Sample>
+   <URL>http://scidbase.nipr.ac.jp/uploads/metadata/obs_photo1_0_dab2963c604812bb.jpg</URL>
+   </Multimedia_Sample>
+   <Multimedia_Sample>
+   <URL>http://scidbase.nipr.ac.jp/uploads/metadata/obs_photo2_0_dab2963c604812bb.jpg</URL>
+   </Multimedia_Sample>
+   <Reference>
+      Sato, M. and Fukunishi, H. (2005): New evidence for a link between lightning activity and tropical upper cloud coverage. Geophys. Res. Lett., 32(12), L12807, doi:10.1029/2005GL022865. 
+                        
+                        Adachi, T., Fukunishi, H., Takahashi, Y., Sato, M., Ohkubo, A. and Yamamoto, K. (2005): Characteristics of thunderstorm systems producing winter sprites in Japan. J. Geophys. Res., 110 (D11), D11203, doi:10.1029/2004JD005012.
+                        
+                        Price, C., Greenberg, E., Yair, Y., Satori, G., Bor, J., Fukunishi, H., Sato, M., Israelevich, P., Moalem, M., Devir, A., Levin, Z., Joseph, JH., Mayo, I., Ziv, B. and Sternlieb, A. (2004): Ground-based detection of TLE-producing intense lightning during the MEIDEX mission on board the space shuttle Columbia. Geophys. Res. Lett., 31(20), L20107, doi:10.1029/2004GL020711.
+                        
+                        Adachi, T., Fukunishi, H., Takahashi, Y., Sato, M. (2004): Roles of the EMP and QE field in the generation of columniform sprites. Geophys. Res. Lett., 31(4), L04107, doi:10.1029/2003GL019081.
+                        
+                        Sato, M. and Fukunishi, H. (2003): Global sprite occurrence locations and rates derived from triangulation of transient Schumann resonance events. Geophys. Res. Lett., 30(16), 1859.
+                        
+                        Su, H.T., Hsu. R.R., Chen, A.B., Wang, Y.C., Hsiao, W.S., Lai, W.C., Lee, L.C., Sato, M. and Fukunishi, H. (2003): Gigantic jets between a thundercloud and the ionosphere. Nature, 423, 974-976.
+                        
+                        Sato, M., Fukunishi, H., Kikuchi, M., Yamagishi, H. and Lyons, W.A. (2003): Validation of sprite-inducing cloud-to-ground lightning based on ELF observations at Syowa station in Antarctica. J. Atmos. Solar-Terr. Phys., 65(5), 607-614.   </Reference>
+   <Summary>
+      <Abstract>1-100Hz ULF/ELF Electromagnetic Wave Observation at Syowa Station</Abstract>
+   </Summary>
+   <Related_URL>
+      <URL_Content_Type uuid="750f6c61-0f15-4185-94d8-c029dec04bc5">
+     <Type>GET DATA</Type>
+      </URL_Content_Type>
+      <URL>http://edac.geophys.tohoku.ac.jp/</URL>
+      <Description>
+         EDAC (ELF Data Archive Center)
+      </Description>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="750f6c61-0f15-4185-94d8-c029dec04bc5">
+     <Type>GET DATA</Type>
+      </URL_Content_Type>
+      <URL>http://scidbase.nipr.ac.jp/?ml_lang=en</URL>
+   </Related_URL>
+   <IDN_Node uuid="21474392-1374-433e-b4b0-46c19c1561b2">
+      <Short_Name>AMD/JP</Short_Name>
+   </IDN_Node>
+   <IDN_Node uuid="edff0791-121c-40aa-adf2-33feb2bc30e5">
+      <Short_Name>CEOS</Short_Name>
+   </IDN_Node>
+   <IDN_Node uuid="47308f11-79b0-46c2-b0c9-06d0b15ae845">
+      <Short_Name>AMD</Short_Name>
+   </IDN_Node>
+   <IDN_Node uuid="8c29c974-d599-4a7a-a05e-769ae04e1a59">
+      <Short_Name>IPY</Short_Name>
+   </IDN_Node>
+   <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+   <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+   <Metadata_Version>VERSION 9.8.2.2</Metadata_Version>
+   <DIF_Creation_Date>2008-03-12</DIF_Creation_Date>
+   <Last_DIF_Revision_Date>2015-12-02</Last_DIF_Revision_Date>
+   <Extended_Metadata>
+      <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>metadata.extraction_date</Name>
+        <Value>2015-12-02 13:37:30</Value>
+      </Metadata>
+      <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>metadata.keyword_version</Name>
+        <Value>8.1</Value>
+      </Metadata>
+   </Extended_Metadata>
+</DIF>

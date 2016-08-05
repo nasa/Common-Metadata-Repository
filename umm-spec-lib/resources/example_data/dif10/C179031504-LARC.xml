@@ -1,0 +1,210 @@
+<DIF xmlns='http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/' xmlns:dif='http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd'>
+  <Entry_ID>
+    <Short_Name>ACR3L2DM</Short_Name>
+    <Version>1</Version>
+  </Entry_ID>
+  <Version_Description>Not provided</Version_Description>
+  <Entry_Title>ACRIM III Level 2 Daily Mean Data V001</Entry_Title>
+  <Dataset_Citation>
+    <Dataset_Release_Date>Not provided</Dataset_Release_Date>
+    <Online_Resource>http://eosweb.larc.nasa.gov/project/acrimIII/acrimIII_table</Online_Resource>
+  </Dataset_Citation>
+  <Personnel>
+    <Role>METADATA AUTHOR</Role>
+    <Contact_Person>
+      <First_Name>ASDC</First_Name>
+      <Last_Name>USER SERVICES</Last_Name>
+      <Address>
+        <Street_Address>NASA Langley Atmospheric Science Data Center</Street_Address>
+        <Street_Address>User and Data Services</Street_Address>
+        <Street_Address>NASA Langley Research Center</Street_Address>
+        <Street_Address>Mail Stop 157D</Street_Address>
+        <City>Hampton</City>
+        <State_Province>VA</State_Province>
+        <Postal_Code>23681-2199</Postal_Code>
+        <Country>United States</Country>
+      </Address>
+      <Phone>
+        <Number>757-864-8656</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Email>support-asdc@earthdata.nasa.gov</Email>
+    </Contact_Person>
+  </Personnel>
+  <Personnel>
+    <Role>INVESTIGATOR</Role>
+    <Role>TECHNICAL CONTACT</Role>
+    <Contact_Person>
+      <First_Name>RICHARD</First_Name>
+      <Middle_Name>C.</Middle_Name>
+      <Last_Name>WILLSON</Last_Name>
+      <Address>
+        <Street_Address>Columbia University</Street_Address>
+        <Street_Address>1001 B Avenue, Suite 200</Street_Address>
+        <City>CORONADO</City>
+        <State_Province>CA</State_Province>
+        <Postal_Code>92118</Postal_Code>
+        <Country>United States</Country>
+      </Address>
+      <Phone>
+        <Number>(619) 522-2945</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Phone>
+        <Number>(619) 522-2967</Number>
+        <Type>Fax</Type>
+      </Phone>
+      <Email>acrim@acrim.com</Email>
+    </Contact_Person>
+  </Personnel>
+  <Science_Keywords uuid='ec9e0b6a-1315-4569-93bc-0f1190bb8c08'>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC RADIATION</Term>
+    <Variable_Level_1>SCATTERING</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords uuid='2e83362e-d8f8-4bca-83fd-bae360ebe94b'>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>SUN-EARTH INTERACTIONS</Topic>
+    <Term>SOLAR ACTIVITY</Term>
+  </Science_Keywords>
+  <ISO_Topic_Category uuid='1ebf71bd-d007-42f8-8f9b-8c44a6b65a28'>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+  <Ancillary_Keyword>LEVEL 2 DATA</Ancillary_Keyword>
+  <Ancillary_Keyword>EOSDIS</Ancillary_Keyword>
+  <Ancillary_Keyword>TSI</Ancillary_Keyword>
+  <Platform uuid='76e768b0-150f-4986-8504-42a713c9c841'>
+    <Type>Solar/Space Observation Satellites</Type>
+    <Short_Name>ACRIMSAT</Short_Name>
+    <Long_Name>Active Cavity Radiometer Irradiance Monitor Satellite</Long_Name>
+    <Instrument>
+      <Short_Name>Not provided</Short_Name>
+    </Instrument>
+  </Platform>
+  <Platform>
+    <Type>Not provided</Type>
+    <Short_Name>Not provided</Short_Name>
+    <Instrument uuid='2cd4dc41-07f3-4c0d-a4fe-235fdd7cbc29'>
+      <Short_Name>ACRIM III</Short_Name>
+      <Long_Name>Active Cavity Radiometer Irradiance Monitor III</Long_Name>
+    </Instrument>
+  </Platform>
+  <Temporal_Coverage>
+    <Range_DateTime>
+      <Beginning_Date_Time>2000-04-05T00:00:00Z</Beginning_Date_Time>
+    </Range_DateTime>
+  </Temporal_Coverage>
+  <Dataset_Progress>IN WORK</Dataset_Progress>
+  <Spatial_Coverage>
+    <Granule_Spatial_Representation>NO_SPATIAL</Granule_Spatial_Representation>
+    <Geometry>
+      <Coordinate_System>CARTESIAN</Coordinate_System>
+      <Bounding_Rectangle>
+        <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+        <Northernmost_Latitude>90.0</Northernmost_Latitude>
+        <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+        <Easternmost_Longitude>180.0</Easternmost_Longitude>
+        <Minimum_Altitude>37</Minimum_Altitude>
+        <Maximum_Altitude>76</Maximum_Altitude>
+      </Bounding_Rectangle>
+    </Geometry>
+  </Spatial_Coverage>
+  <Location uuid='51e3593f-4b42-4141-972e-96666c479f9c'>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>GLOBAL</Location_Type>
+  </Location>
+  <Project uuid='a65263c0-9b7b-4c4d-9334-06dda7e3895a'>
+    <Short_Name>ACRIM III</Short_Name>
+    <Long_Name>Active Cavity Radiometer Irradiance Monitor III</Long_Name>
+  </Project>
+  <Dataset_Language>English</Dataset_Language>
+  <Organization>
+    <Organization_Type>ARCHIVER</Organization_Type>
+    <Organization_Name>
+      <Short_Name>ASDC</Short_Name>
+      <Long_Name>Atmospheric Science Data Center</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://eosweb.larc.nasa.gov</Organization_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Person>
+        <First_Name>ASDC</First_Name>
+        <Last_Name>USER SERVICES</Last_Name>
+        <Address>
+          <Street_Address>NASA Langley Atmospheric Science Data Center</Street_Address>
+          <Street_Address>User and Data Services</Street_Address>
+          <Street_Address>NASA Langley Research Center</Street_Address>
+          <Street_Address>Mail Stop 157D</Street_Address>
+          <City>Hampton</City>
+          <State_Province>VA</State_Province>
+          <Postal_Code>23681-2199</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>757-864-8656</Number>
+          <Type>Telephone</Type>
+        </Phone>
+        <Email>support-asdc@earthdata.nasa.gov</Email>
+      </Contact_Person>
+    </Personnel>
+  </Organization>
+  <Summary>
+    <Abstract>Active Cavity Radiometer Irradiance Monitor (ACRIM) III Level 2 Daily Mean Data product consists of Level 2 total solar irradiance in the form of daily means gathered by the ACRIM III instrument on the ACRIMSAT satellite. The daily means are constructed from the shutter cycle results for each day.</Abstract>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type uuid='5ec1bb9d-0efc-4099-9b31-ec791bbd8145'>
+      <Type>VIEW RELATED INFORMATION</Type>
+    </URL_Content_Type>
+    <URL>http://eosweb.larc.nasa.gov/project/acrimIII/acrimIII_table</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='5ec1bb9d-0efc-4099-9b31-ec791bbd8145'>
+      <Type>VIEW RELATED INFORMATION</Type>
+    </URL_Content_Type>
+    <URL>http://eospso.gsfc.nasa.gov/atbd-category/36</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='5ec1bb9d-0efc-4099-9b31-ec791bbd8145'>
+      <Type>VIEW RELATED INFORMATION</Type>
+    </URL_Content_Type>
+    <URL>http://acrim.jpl.nasa.gov/</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='9d75fcf8-fa66-41e3-bcf1-1944377d0711'>
+      <Type>GET DATA</Type>
+      <Subtype>ECHO</Subtype>
+    </URL_Content_Type>
+    <URL>http://reverb.echo.nasa.gov/reverb/#utf8=%E2%9C%93&amp;spatial_map=satellite&amp;spatial_type=rectangle&amp;keywords=ACR3L2DM1</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='3779ec72-c1e0-4a0f-aff8-8e2a2a7af486'>
+      <Type>GET DATA</Type>
+      <Subtype>EOSDIS DATA POOL</Subtype>
+    </URL_Content_Type>
+    <URL>ftp://l5eil01.larc.nasa.gov/ACRIM_III/ACR3L2DM.001/</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='5cb9c24e-1afe-471d-9f1a-808d390ab623'>
+      <Type>GET DATA</Type>
+      <Subtype>REVERB</Subtype>
+    </URL_Content_Type>
+    <URL>http://reverb.echo.nasa.gov/reverb/#utf8=%E2%9C%93&amp;spatial_map=satellite&amp;spatial_type=rectangle&amp;keywords=ACRIM</URL>
+  </Related_URL>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 10.2</Metadata_Version>
+  <DIF_Revision_History>2007-05-14, removed spatial coverage information. 2007-05-16, corrected EntryID, Location, and Data Set ID 2016-01-13, Updated spatial extent. Updated science keywords</DIF_Revision_History>
+  <Metadata_Dates>
+    <Metadata_Creation>2000-03-23</Metadata_Creation>
+    <Metadata_Last_Revision>2016-01-13</Metadata_Last_Revision>
+    <Data_Creation>Not provided</Data_Creation>
+    <Data_Last_Revision>Not provided</Data_Last_Revision>
+  </Metadata_Dates>
+  <Product_Level_Id>Not provided</Product_Level_Id>
+  <Product_Flag>DATA_PRODUCT_FILE</Product_Flag>
+  <Extended_Metadata>
+    <Metadata>
+      <Group>gov.nasa.earthdata.cmr.restriction</Group>
+      <Name>Restriction</Name>
+      <Value>5</Value>
+    </Metadata>
+  </Extended_Metadata>
+</DIF>
