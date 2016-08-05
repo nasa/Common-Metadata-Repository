@@ -175,8 +175,3 @@
 
   (queue/publish-to-exchange running-qb "e1" {:id 4})
   (queue/publish-to-exchange running-qb "e2" {:id 5}))
-
-
-
-
-
