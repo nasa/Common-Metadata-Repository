@@ -5,13 +5,15 @@
             [cmr.oracle.user :as o]
             [cmr.oracle.config :as oracle-config]
             [cmr.metadata-db.config :as mdb-config]
-            [cmr.common.config :as cfg]
+            [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.oracle.sql-utils :as su]
             [config.migrate-config :as mc]
             [clojure.java.jdbc :as j])
   (:gen-class))
 
-(def business-user (cfg/config-value-fn :echo-business-user "DEV_52_BUSINESS"))
+(defconfig business-user
+  "echo business user"
+  {:default "DEV_52_BUSINESS"})
 
 (def create-security-token-table-sql
   "Create security token table in ECHO business schema"
