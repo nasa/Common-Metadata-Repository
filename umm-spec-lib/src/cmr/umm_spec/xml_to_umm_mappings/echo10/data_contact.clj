@@ -14,6 +14,7 @@
     "CUSTODIAN" "ARCHIVER"
     "Data Manager" "ARCHIVER"
     "internal data center" "ARCHIVER"
+    "DATA CENTER CONTACT" "ARCHIVER"
     "DISTRIBUTOR" "DISTRIBUTOR"
     "Data Originator" "ORIGINATOR"
     "author" "ORIGINATOR"
@@ -79,7 +80,7 @@
   "Parse ECHO10 Contact Persons to UMM"
   [contact]
   (for [person (select contact "ContactPersons/ContactPerson")]
-    {:Roles (map echo10-job-position->umm-contact-person-role [(value-of person "JobPosition")])
+    {:Roles (map #(echo10-job-position->umm-contact-person-role % "Technical Contact") [(value-of person "JobPosition")])
      :FirstName (value-of person "FirstName")
      :MiddleName (value-of person "MiddleName")
      :LastName (value-of person "LastName")}))
@@ -112,7 +113,7 @@
                          all-contacts)]
     (for [contact contacts]
       {:Roles (map echo10-contact-role->umm-data-center-role [(value-of contact "Role")])
-       :ShortName (value-of contact "OrganizationName")
+       :ShortName (u/with-default (value-of contact "OrganizationName"))
        :ContactInformation (parse-contact-information contact)
        :ContactPersons (parse-contact-persons contact)})))
 
@@ -146,10 +147,10 @@
   ArchiveCenter, and ProcessingCenter."
   [doc]
   (let [data-centers (parse-data-centers-from-contacts doc)
-        data-centers (concat
+        data-centers (conj
                       data-centers
                       (parse-additional-center doc data-centers "ArchiveCenter" "ARCHIVER")
                       (parse-additional-center doc data-centers "ProcessingCenter" "PROCESSOR"))]
-    (if (seq data-centers)
+    (if (seq (remove nil? data-centers))
       data-centers
       [u/not-provided-data-center])))
