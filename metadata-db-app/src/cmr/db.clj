@@ -11,7 +11,7 @@
             [clojure.java.jdbc :as j])
   (:gen-class))
 
-(defconfig business-user
+(defconfig echo-business-user
   "echo business user"
   {:default "DEV_52_BUSINESS"})
 
