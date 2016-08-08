@@ -331,3 +331,14 @@
     (let [params {:root {:0 {:k0 :v0} :1 :v1 :2 {:k2 :v2}}}]
       (is (= [{:root {:0 {:k0 :v0} :2 {:k2 :v2}}} ["Parameter [root[1]] must include a nested key, root[1][...]=value."]]
              (cpv/validate-all-map-values cpv/validate-map [:root] params))))))
+
+(deftest collection-concept-id-validation-test
+  (is (nil? (pv/collection-concept-id-validation :granule {:collection-concept-id "C1234-ABC"})))
+  (is (= ["Concept-id [C1234-ABC'] is not valid."] (pv/collection-concept-id-validation :granule {:collection-concept-id "C1234-ABC'"})))
+  (is (= ["Concept-id [C1234-ABC'] is not valid.Concept-id [C5678-ABC'] is not valid."] (pv/collection-concept-id-validation :granule {:collection-concept-id ["C1234-ABC'" "C5678-ABC'" "C5678-Valid"]}))))
+  
+
+
+
+
+

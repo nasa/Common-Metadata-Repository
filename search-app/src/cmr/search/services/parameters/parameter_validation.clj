@@ -4,6 +4,7 @@
             [clojure.string :as s]
             [cmr.common-app.services.search.parameter-validation :as cpv]
             [cmr.common-app.services.search.query-model :as cqm]
+            [cmr.common.concepts :as c-ccpts]
             [cmr.common.services.errors :as errors]
             [cmr.common.services.messages :as c-msg]
             [cmr.common.parameter-parser :as parser]
@@ -417,6 +418,19 @@
   ([params] (line-validation nil params))
   ([_ params] (spatial-validation params :line)))
 
+(defn collection-concept-id-validation
+  "Validates the collection-concept-id(s) follow the right format"
+  [concept-type params]
+  (when-let [cconceptids (:collection-concept-id params)]
+    (if (vector? cconceptids)
+      (let [cconceptiderr (mapcat c-ccpts/concept-id-validation cconceptids)]
+        (if (= cconceptiderr ())
+          nil
+          (vector(reduce str cconceptiderr))))
+      ;; collection-concept-id-validation is after the multiple-value-validation
+      ;; so it's either a vector or a single value.
+      (c-ccpts/concept-id-validation cconceptids))))
+
 (defn timeline-start-date-validation
   "Validates the timeline start date parameter"
   [concept-type params]
@@ -552,7 +566,8 @@
                polygon-validation
                bounding-box-validation
                point-validation
-               line-validation])
+               line-validation
+               collection-concept-id-validation ])
    :tag cpv/common-validations})
 
 (def standard-query-parameter-validations
