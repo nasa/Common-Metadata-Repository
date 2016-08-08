@@ -84,6 +84,7 @@
    separate issues. The issues CMR-3252, CMR-3253, CMR-3254, and CMR-3255 are filed to fix this."
   #{:dif :dif10 :iso19115 :iso-smap})
 
+
 (deftest roundtrip-example-metadata
   (let [failed-atom (atom false)
         check-failure (fn [result]

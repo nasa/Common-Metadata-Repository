@@ -5,15 +5,15 @@
             [cmr.oracle.connection :as conn]
             [cmr.message-queue.config :as rmq-conf]))
 
-(defconfig db-username
+(defconfig metadata-db-username
   "The database username"
-  {:default "METADATA_DB"}) 
+  {:default "METADATA_DB"})
 
-(defconfig db-password
+(defconfig metadata-db-password
   "The database password"
   {:default "METADATA_DB"})
 
-(defconfig catalog-rest-db-username 
+(defconfig catalog-rest-db-username
   "The catalog rest db username"
   {:default "DEV_52_CATALOG_REST"})
 
@@ -25,13 +25,13 @@
     (oracle-config/db-url)
     (oracle-config/db-fcf-enabled)
     (oracle-config/db-ons-config)
-    (db-username)
-    (db-password)))
+    (metadata-db-username)
+    (metadata-db-password)))
 
 (defconfig parallel-chunk-size
   "Gets the number of concepts that should be processed in each thread of get-concepts."
   {:default 200
-   :type Long}) 
+   :type Long})
 
 (defconfig result-set-fetch-size
   "Gets the setting for query fetch-size (number of rows to fetch at once)"
@@ -78,7 +78,3 @@
          :exchanges [(deleted-collection-revision-exchange-name)
                      (ingest-exchange-name)
                      (access-control-exchange-name)]))
-
-
-
-

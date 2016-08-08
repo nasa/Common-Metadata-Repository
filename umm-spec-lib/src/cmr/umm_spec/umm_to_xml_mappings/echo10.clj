@@ -7,7 +7,8 @@
             [cmr.umm-spec.date-util :as dates]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as spatial]
             [cmr.common.util :as util]
-            [cmr.umm-spec.location-keywords :as lk]))
+            [cmr.umm-spec.location-keywords :as lk]
+            [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]))
 
 (defn characteristic-mapping
   [data]
@@ -130,8 +131,10 @@
      [:Orderable "true"]
      [:Visible "true"]
      [:SuggestedUsage (util/trunc (:Purpose c) 4000)]
+     (dc/generate-processing-centers c)
      [:ProcessingLevelId (-> c :ProcessingLevel :Id)]
      [:ProcessingLevelDescription (-> c :ProcessingLevel :ProcessingLevelDescription)]
+     (dc/generate-archive-centers c)
      [:CollectionState (:CollectionProgress c)]
      [:RestrictionFlag (-> c :AccessConstraints :Value)]
      [:RestrictionComment (util/trunc (-> c :AccessConstraints :Description) 1024)]
@@ -149,6 +152,7 @@
       (for [kw (:TemporalKeywords c)]
         [:Keyword kw])]
      (echo10-temporal c)
+     (dc/generate-contacts c) ;; Contacts are both Data Centers and Contact Persons
      (echo10-sciencekeywords c)
      (echo10-platforms c)
      [:AdditionalAttributes
