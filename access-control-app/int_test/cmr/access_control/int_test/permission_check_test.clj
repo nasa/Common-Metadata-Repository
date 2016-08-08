@@ -289,14 +289,12 @@
                                                  :user_type :guest}]
                             :catalog_item_identity {:name "coll2 guest read"
                                                     :collection_applicable true
-                                                    :collection_identifier {:access_value {:min_value 1
-                                                                                           :max_value 10
-                                                                                           :include_undefined_value true}}
+                                                    :collection_identifier {:access_value {:include_undefined_value true}}
                                                     :provider_id "PROV1"}})
 
-        (is (= {coll1 ["read"]
-                coll2 ["read"]
-                coll3 ["read"]
+        (is (= {coll1 []
+                coll2 []
+                coll3 []
                 coll4 ["read"]}
                (get-coll-permissions)))))))
 
