@@ -2,13 +2,15 @@
  "ECHO 10 specific expected conversion functionality"
  (:require [clj-time.core :as t]
            [clj-time.format :as f]
+           [clojure.string :as str]
            [cmr.umm-spec.util :as su]
            [cmr.common.util :as util :refer [update-in-each]]
            [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
            [cmr.umm-spec.related-url :as ru-gen]
            [cmr.umm-spec.location-keywords :as lk]
            [cmr.umm-spec.test.location-keywords-helper :as lkt]
-           [cmr.umm-spec.models.collection :as umm-c]))
+           [cmr.umm-spec.models.collection :as umm-c]
+           [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]))
 
 
 (defn- fixup-echo10-data-dates
@@ -74,6 +76,79 @@
       (assoc :ValueAccuracyExplanation nil)
       (assoc :Description (su/with-default (:Description attribute)))))
 
+(defn- expected-contact-mechanisms
+   "Remove contact mechanisms with a type that is not supported by ECHO10. ECHO10 contact mechanisms
+   are split up by phone and email in ECHO10 and will come back from XML in that order so make sure
+   they are in the correct order."
+  [mechanisms]
+  (seq (concat
+          (remove #(contains? dc/echo10-non-phone-contact-mechanisms (:Type %)) mechanisms)
+          (filter #(= "Email" (:Type %)) mechanisms))))
+
+(defn- expected-echo10-address
+  "Expected address. All address fields are required in ECHO10, so replace with default
+  when necessary"
+  [address]
+  (-> address
+      (assoc :StreetAddresses [(dc/join-street-addresses (:StreetAddresses address))])
+      (update :City su/with-default)
+      (update :StateProvince su/with-default)
+      (update :PostalCode su/with-default)
+      (update :Country su/country-with-default)))
+
+(defn- expected-echo10-contact-information
+  "Expected contact information"
+  [contact-information]
+  (let [contact-information (assoc contact-information :RelatedUrls nil)]
+   (when (seq (util/remove-nil-keys contact-information))
+     (-> contact-information
+         (update :Addresses #(when (seq %)
+                               (mapv expected-echo10-address %)))
+         (update :ContactMechanisms expected-contact-mechanisms)))))
+
+
+(defn- expected-echo10-contact-person
+  "Returns an expected contact person for each role. ECHO10 only allows for 1 role per
+  ContactPerson, so when converted to UMM a contact person is created for each role with
+  the rest of the info copied."
+  [contact-person]
+  (when contact-person
+   (for [role (:Roles contact-person)]
+     (-> contact-person
+         (assoc :ContactInformation nil)
+         (assoc :Uuid nil)
+         (assoc :NonDataCenterAffiliation nil)
+         (update :FirstName su/with-default)
+         (update :LastName su/with-default)
+         (assoc :Roles [role])))))
+
+(defn- expected-echo10-contact-persons
+  "Returns the list of expected contact persons"
+  [contact-persons]
+  (when (seq contact-persons)
+    (flatten (mapv expected-echo10-contact-person contact-persons))))
+
+(defn- expected-echo10-data-center
+  "Returns an expected data center for each role. ECHO10 only allows for 1 role per
+  data center, so when converted to UMM a data center is created for each role with
+  the rest of the info copied."
+  [data-center]
+  (for [role (:Roles data-center)]
+    (-> data-center
+        (assoc :ContactGroups nil)
+        (update :ContactPersons expected-echo10-contact-persons)
+        (assoc :Uuid nil)
+        (assoc :LongName nil)
+        (assoc :Roles [role])
+        (assoc :ContactInformation (expected-echo10-contact-information (:ContactInformation data-center))))))
+
+(defn- expected-echo10-data-centers
+  "Returns the list of expected data centers"
+  [data-centers]
+  (if (seq data-centers)
+    (flatten (mapv expected-echo10-data-center data-centers))
+    [su/not-provided-data-center]))
+
 (defn umm-expected-conversion-echo10
   [umm-coll]
   (-> umm-coll
@@ -85,9 +160,9 @@
       (assoc :PublicationReferences nil)
       (assoc :AncillaryKeywords nil)
       (assoc :ISOTopicCategories nil)
-      (assoc :DataCenters [su/not-provided-data-center])
+      (update-in [:DataCenters] expected-echo10-data-centers)
       (assoc :ContactGroups nil)
-      (assoc :ContactPersons nil)
+      (update-in [:ContactPersons] expected-echo10-contact-persons)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
       (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons]

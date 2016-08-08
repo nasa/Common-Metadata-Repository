@@ -33,8 +33,8 @@
 
   Example message-queue-history-map:
   {:action {:action-type :enqueue
-  :message {:id 1 :concept-id \"C1-PROV1\" :revision-id 1 :state :initial}}
-  :messages [{:id 1 :concept-id \"C1-PROV1\" :revision-id 1 :state :initial}]}"
+            :message {:id 1 :concept-id \"C1-PROV1\" :revision-id 1 :state :initial}}
+   :messages [{:id 1 :concept-id \"C1-PROV1\" :revision-id 1 :state :initial}]}"
   [queue-history action-type message resulting-state]
   {:pre [(valid-action-types action-type) message]}
   (let [message-with-state (assoc message :state resulting-state)
@@ -64,8 +64,8 @@
   "Set of valid message states:
   :initial - message first created
   :retry - the message failed processing and is currently retrying
-  :failed - the message failed processing and all retries have been exhausted
-  :processed - the message has completed successfully"
+  :failure - the message failed processing and all retries have been exhausted
+  :success - the message has completed successfully"
   #{:initial
     :retry
     :failure
