@@ -170,8 +170,15 @@
 
           "Value not found in enum"
           #"instance value .* not found in enum"
-          (update-in provider-acl [:provider_identity] assoc :target "WHATEVER"))
+          (update-in provider-acl [:provider_identity] assoc :target "WHATEVER")
 
+          "Provider doesn't exist, provider version"
+          #"Provider with provider-id .* does not exist"
+          (assoc-in provider-acl [:provider_identity :provider_id] "WHATEVER")
+
+          "Provider doesn't exist, catalog-item version"
+          #"Provider with provider-id .* does not exist"
+          (assoc-in catalog-item-acl [:catalog_item_identity :provider_id] "WHATEVER"))
 
     (testing "Acceptance criteria: I receive an error if updating an ACL with invalid JSON"
       (is

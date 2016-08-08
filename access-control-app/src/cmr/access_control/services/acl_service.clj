@@ -90,25 +90,21 @@
    :extra-fields {:acl-identity (acl-identity acl)
                   :target-provider-id (acls/acl->provider-id acl)}})
 
-(defn- acl->mdb-provider-id
-  "Returns the provider id to use in metadata db for the group"
-  [acl]
-  (get acl :provider-id acl-provider-id))
-
 (defn validate-provider-exists
   "Validates that the acl provider exists."
   [context fieldpath acl]
   (let [provider-id (acls/acl->provider-id acl)]
-    (when (and provider-id (not (some #{provider-id} (map :provider-id (mdb/get-providers context)))))
-          {fieldpath [(msg/provider-does-not-exist provider-id)]})))
+    (when (and provider-id
+               (not (some #{provider-id} (map :provider-id (mdb/get-providers context)))))
+      {fieldpath [(msg/provider-does-not-exist provider-id)]})))
 
 (defn- create-acl-validations
   "Returns validations for creating acls."
   [context]
   [#(validate-provider-exists context %1 %2)])
 
-(defn- validate-create-acl
-  "Validates an acl create."
+(defn- validate-acl-save
+  "Validates an acl save."
   [context acl]
   (v/validate! (create-acl-validations context) acl))
 
@@ -134,7 +130,7 @@
 (defn create-acl
   "Save a new ACL to Metadata DB. Returns map with concept and revision id of created acl."
   [context acl]
-  (validate-create-acl context acl)
+  (validate-acl-save context acl)
   (mdb/save-concept context (merge (acl->base-concept context acl)
                                  {:revision-id 1
                                   :native-id (str (java.util.UUID/randomUUID))})))
@@ -143,6 +139,7 @@
   "Update the ACL with the given concept-id in Metadata DB. Returns map with concept and revision id of updated acl."
   [context concept-id acl]
   ;; This fetch acl call also validates if the ACL with the concept id does not exist or is deleted
+  (validate-acl-save context acl)
   (let [existing-concept (fetch-acl-concept context concept-id)
         existing-legacy-guid (:legacy-guid (edn/read-string (:metadata existing-concept)))
         legacy-guid (:legacy-guid acl)]
