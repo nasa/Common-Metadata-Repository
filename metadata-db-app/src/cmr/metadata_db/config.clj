@@ -25,8 +25,8 @@
     (oracle-config/db-url)
     (oracle-config/db-fcf-enabled)
     (oracle-config/db-ons-config)
-    (db-username)
-    (db-password)))
+    (metadata-db-username)
+    (metadata-db-password)))
 
 (defconfig parallel-chunk-size
   "Gets the number of concepts that should be processed in each thread of get-concepts."
