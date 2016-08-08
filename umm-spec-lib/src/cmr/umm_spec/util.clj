@@ -54,6 +54,11 @@
        (keep convert-empty-record-to-nil)
        seq))
 
+(defn country-with-default
+ "The default of 'Not provided' is too long so specify an alternative default for country."
+ [country]
+ (or country "Unknown"))
+
 (defn with-default
   "Returns the value if it exists or returns the default value 'Not provided'."
   [value]
@@ -160,4 +165,3 @@
   "Returns an ISO gco:CharacterString with contents taken from the given xpath."
   [context xpath]
   (char-string (select context xpath)))
-
