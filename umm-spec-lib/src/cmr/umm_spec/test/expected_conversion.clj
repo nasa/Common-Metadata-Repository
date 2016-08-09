@@ -260,7 +260,8 @@
                                         :ServiceHours "Weekdays 9AM - 5PM"
                                         :ContactInstruction "sample contact instruction"
                                         :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
-                                                            {:Type "Email" :Value "cmr@nasa.gov"}]
+                                                            {:Type "Email" :Value "cmr@nasa.gov"}
+                                                            {:Type "Fax" :Value "301-851-4321"}]
                                         :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
                                                      :City "Greenbelt"
                                                      :StateProvince "MD"

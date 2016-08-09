@@ -2,7 +2,10 @@
   (:require [cmr.common.validations.core :as v]
             [cmr.common.date-time-parser :as dtp]
             [clj-time.core :as t]
-            [cmr.transmit.metadata-db :as mdb1]))
+            [cmr.transmit.metadata-db :as mdb1]
+            [cmr.access-control.services.acl-service-messages :as msg]
+            [cmr.transmit.metadata-db2 :as mdb]
+            [cmr.access-control.data.acls :as acls]))
 
 (defn- catalog-item-identity-collection-applicable-validation
   "Validates the relationship between collection_applicable and collection_identifier."
@@ -73,10 +76,19 @@
    {:collection-identifier (v/when-present (make-collection-identifier-validation context acl))
     :granule-identifier (v/when-present granule-identifier-validation)}])
 
+(defn validate-provider-exists
+  "Validates that the acl provider exists."
+  [context fieldpath acl]
+  (let [provider-id (acls/acl->provider-id acl)]
+    (when (and provider-id
+               (not (some #{provider-id} (map :provider-id (mdb/get-providers context)))))
+      {fieldpath [(msg/provider-does-not-exist provider-id)]})))
+
 (defn- make-acl-validations
   "Returns a sequence of validations closed over the given context for validating ACL records."
   [context acl]
-  {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl))})
+  [#(validate-provider-exists context %1 %2)
+   {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl))}])
 
 (defn validate-acl-save!
   "Throws service errors if ACL is invalid."

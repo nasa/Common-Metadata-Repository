@@ -8,7 +8,8 @@
            [cmr.access-control.data.access-control-index :as access-control-index]))
 
 (use-fixtures :each
-  (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"}
+  (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2", "prov3guid" "PROV3",
+                           "prov4guid" "PROV4"}
                           ["user1" "user2" "user3" "user4" "user5"])
   (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 (use-fixtures :once (fixtures/int-test-fixtures))
@@ -334,21 +335,24 @@
 (deftest acl-search-provider-test
   (let [token (e/login (u/conn-context) "user1")
         acl1 (ingest-acl token (provider-acl "INGEST_MANAGEMENT_ACL"))
-        acl2 (ingest-acl token (catalog-item-acl "Catalog_Item1_PROV1"))
-        acl3 (ingest-acl token (catalog-item-acl "Catalog_Item2_PROV1"))
-        acl4 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item3_PROV2")
-                                         [:catalog_item_identity :provider_id] "PROV2"))
-        acl5 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item4_PROV3")
-                                         [:catalog_item_identity :provider_id] "PROV3"))
-        acl6 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item5_PROV2")
-                                         [:catalog_item_identity :provider_id] "PROV2"))
-        acl7 (ingest-acl token (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
+        acl2 (ingest-acl token (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
                                          [:provider_identity :provider_id] "PROV2"))
-        acl8 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item6_PROV4")
+        acl3 (ingest-acl token (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
+                                         [:provider_identity :provider_id] "PROV3"))
+        acl4 (ingest-acl token (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
+                                         [:provider_identity :provider_id] "PROV4"))
+        acl5 (ingest-acl token (catalog-item-acl "Catalog_Item1_PROV1"))
+        acl6 (ingest-acl token (catalog-item-acl "Catalog_Item2_PROV1"))
+        acl7 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item3_PROV2")
+                                         [:catalog_item_identity :provider_id] "PROV2"))
+        acl8 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item5_PROV2")
+                                         [:catalog_item_identity :provider_id] "PROV2"))
+
+        acl9 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item6_PROV4")
                                          [:catalog_item_identity :provider_id] "PROV4"))
-        prov1-acls [acl1 acl2 acl3]
-        prov1-and-2-acls [acl1 acl2 acl3 acl4 acl6 acl7]
-        prov3-acls [acl5]]
+        prov1-acls [acl1 acl5 acl6]
+        prov1-and-2-acls [acl1 acl2 acl5 acl6 acl7 acl8]
+        prov3-acls [acl3]]
     (u/wait-until-indexed)
     (testing "Search ACLs that grant permissions to objects owned by a single provider
               or by any provider where multiple are specified"

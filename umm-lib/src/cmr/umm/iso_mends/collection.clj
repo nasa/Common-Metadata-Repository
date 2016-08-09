@@ -78,7 +78,7 @@
         {:keys [version-id]} product
         data-provider-timestamps (xml-elem->DataProviderTimestamps id-elem)]
     (c/map->UmmCollection
-      {:entry-title (cx/string-at-path xml-struct [:fileIdentifier :CharacterString])
+      {:entry-title (cx/string-at-path id-elem [:citation :CI_Citation :title :CharacterString])
        :summary (cx/string-at-path id-elem [:abstract :CharacterString])
        :purpose (cx/string-at-path id-elem [:purpose :CharacterString])
        :product product

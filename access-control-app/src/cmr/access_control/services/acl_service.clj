@@ -90,13 +90,20 @@
    :extra-fields {:acl-identity (acl-identity acl)
                   :target-provider-id (acls/acl->provider-id acl)}})
 
+(defn- context->user-id
+  "Returns user id of the token in the context. Throws an error if no token is provided"
+  [context]
+  (if-let [token (:token context)]
+    (tokens/get-user-id context (:token context))
+    (errors/throw-service-error :unauthorized msg/token-required-for-acl-modification)))
+
 (defn create-acl
   "Save a new ACL to Metadata DB. Returns map with concept and revision id of created acl."
   [context acl]
   (v/validate-acl-save! context acl)
   (mdb/save-concept context (merge (acl->base-concept context acl)
-                                   {:revision-id 1
-                                    :native-id (str (java.util.UUID/randomUUID))})))
+                                 {:revision-id 1
+                                  :native-id (str (java.util.UUID/randomUUID))})))
 
 (defn update-acl
   "Update the ACL with the given concept-id in Metadata DB. Returns map with concept and revision id of updated acl."
@@ -378,4 +385,3 @@
   (let [sids (get-sids context username-or-type)
         acls (get-echo-style-acls context)]
     (hash-map target (provider-permissions-granted-by-acls provider-id target sids acls))))
-
