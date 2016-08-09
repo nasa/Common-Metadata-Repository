@@ -207,7 +207,7 @@
 
 (def expected-collection
   (umm-c/map->UmmCollection
-    {:entry-title "A minimal valid collection V 1"
+    {:entry-title "MINIMAL > A minimal valid collection"
      :summary "A minimal valid collection"
      :purpose "A grand purpose"
      :metadata-language "eng"
