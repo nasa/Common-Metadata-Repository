@@ -39,13 +39,6 @@
       (map humanizer/umm-collection->umm-collection+humanizers)
       (mapcat humanized-collection->reported-fields)))
 
-;; TODO unit tests are needed for this function.
-;; Create a collection with multiple values for each of the humanized fields.
-;; There should be at least three values for each field.
-;; - Two values that will get humanized and is reportable
-;; - one value that is humanized but not reportable.
-;; Dynamically setup some humanizers in the test that will make the above happen.
-
 (defn humanized-collection->reported-rows
   "Takes a humanized collection and returns rows to populate the CSV report."
   [collection]
