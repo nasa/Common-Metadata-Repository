@@ -135,6 +135,14 @@
                                    :collection_identifier {:access_value {:min_value 4
                                                                           :include_undefined_value true}}}}
 
+          "min and max value must be valid numbers if specified"
+          ["/catalog_item_identity/granule_identifier/access_value/min_value instance type (string) does not match any allowed primitive type (allowed: [\"integer\",\"number\"])"]
+          {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+           :catalog_item_identity {:name "A Catalog Item ACL"
+                                   :provider_id "PROV1"
+                                   :collection_applicable true
+                                   :granule_identifier {:access_value {:min_value "potato"}}}}
+
           "temporal validation: stop must be greater than or equal to start"
           ["start_date must be before stop_date"]
           {:group_permissions [{:user_type "guest" :permissions ["read"]}]
@@ -191,7 +199,17 @@
                                    :granule_applicable true
                                    :granule_identifier {:temporal {:start_date "2012-01-01T12:00:00Z"
                                                                    :stop_date "2011-01-01T12:00:00Z"
-                                                                   :mask "intersect"}}}})
+                                                                   :mask "intersect"}}}}
+
+          "Must specify a valid temporal mask"
+          ["/catalog_item_identity/granule_identifier/temporal/mask instance value (\"underwhelm\") not found in enum (possible values: [\"intersect\",\"contains\",\"disjoint\"])"]
+          {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+           :catalog_item_identity {:name "A Catalog Item ACL"
+                                   :provider_id "PROV1"
+                                   :granule_applicable true
+                                   :granule_identifier {:temporal {:start_date "2012-01-01T12:00:00Z"
+                                                                   :stop_date "2011-01-01T12:00:00Z"
+                                                                   :mask "underwhelm"}}}})
 
     (testing "collection entry_title check passes when collection exists"
       (u/save-collection {:entry-title "coll1 v1"
