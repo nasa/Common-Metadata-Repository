@@ -39,6 +39,7 @@
 
             [cmr.message-queue.config :as rmq-conf]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
+            [cmr.message-queue.queue.sqs :as sqs]
             [cmr.message-queue.services.queue :as queue]
             [cmr.message-queue.queue.memory-queue :as mem-queue]
 
@@ -166,6 +167,14 @@
   (fn [type]
     type))
 
+(defmethod create-queue-broker :aws
+  [type]
+  (-> (indexer-config/rabbit-mq-config)
+      (rmq-conf/merge-configs (vp-config/rabbit-mq-config))
+      (rmq-conf/merge-configs (access-control-config/rabbit-mq-config))
+      sqs/create-queue-broker
+      wrapper/create-queue-broker-wrapper))
+
 (defmethod create-queue-broker :in-memory
   [type]
   (-> (indexer-config/rabbit-mq-config)
@@ -240,11 +249,22 @@
               [:embedded-systems :metadata-db :queue-broker]
               queue-broker)))
 
-(defn parse-dev-system-component-type
-  [value]
-  (when-not (#{"in-memory" "external"} value)
+(defn- base-parse-dev-system-component-type
+  "Parse the component type and validate it against the given set."
+  [value valid-types-set]
+  (when-not (valid-types-set value)
     (throw (Exception. (str "Unexpected component type value:" value))))
   (keyword value))
+
+(defn parse-dev-system-component-type
+  "Parse the component type and validate it is either in-memory or external."
+  [value]
+  (base-parse-dev-system-component-type value #{"in-memory" "external"}))
+
+(defn parse-dev-system-message-queue-type
+  "Parse the component type and validate it one of the valid queue types."
+  [value]
+  (base-parse-dev-system-component-type value #{"in-memory" "aws" "external"}))
 
 (defconfig dev-system-echo-type
   "Specifies whether dev system should run an in-memory mock ECHO or use an external ECHO."
@@ -259,7 +279,7 @@
 (defconfig dev-system-message-queue-type
   "Specifies whether dev system should skip the use of a message queue or use an external message queue"
   {:default :in-memory
-   :parser parse-dev-system-component-type})
+   :parser parse-dev-system-message-queue-type})
 
 (defconfig dev-system-elastic-type
   "Specifies whether dev system should run an in-memory elasticsearch or use an external instance."

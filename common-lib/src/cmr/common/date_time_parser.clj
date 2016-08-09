@@ -9,6 +9,7 @@
 (def datetime-regex->formatter
   "A map of regular expressions matching a date time to the formatter to use"
   {#"^\d\d\d\d-\d\d-\d\d$" (f/formatters :date)
+   #"^\d\d\d\d$" (f/formatters :year)
    #"^[^T]+T[^.]+\.\d+(?:(?:[+-]\d\d:\d\d)|Z)$" (f/formatters :date-time)
    #"^[^T]+T[^.]+(?:(?:[+-]\d\d:\d\d)|Z)$" (f/formatters :date-time-no-ms)
    #"^[^T]+T[^.]+\.\d+$" (f/formatters :date-hour-minute-second-ms)

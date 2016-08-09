@@ -782,6 +782,5 @@
             "ISO-SMAP only has archive-center and processing-center"
             "S-ISO-SMAP" ["archive-org" "processing-org"]
 
-            "UMM-JSON has not implemented organizations, so the expected value is nil"
-            "S-UMM-JSON" nil))))
-
+            "UMM-JSON has an archive center"
+            "S-UMM-JSON" ["TNRIS"]))))

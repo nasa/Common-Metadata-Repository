@@ -5,11 +5,13 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.oracle.connection :as oracle]
-            [cmr.metadata-db.api.routes :as routes])
+            [cmr.metadata-db.api.routes :as routes]
+            [cmr.common.config :as cfg])
   (:gen-class))
 
 (defn -main
   "Starts the App."
   [& args]
   (let [system (system/start (system/create-system))]
-    (info "Running...")))
+    (info "Running...")
+    (cfg/check-env-vars)))

@@ -89,7 +89,7 @@
 
            [:gmd:identifier
             [:gmd:MD_Identifier
-             [:gmd:code (char-string (with-default (:Version c)))]
+             [:gmd:code (char-string (:Version c))]
              [:gmd:description [:gco:CharacterString "The ECS Version ID"]]]]]]
          [:gmd:abstract (char-string (or (:Abstract c) su/not-provided))]
          [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]

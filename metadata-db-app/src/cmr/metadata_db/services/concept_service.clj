@@ -6,7 +6,7 @@
             [cmr.common.util :as cutil]
             [cmr.metadata-db.services.messages :as msg]
             [cmr.common.services.messages :as cmsg]
-            [cmr.common.config :as cfg]
+            [cmr.common.config :as cfg :refer [defconfig] ]
             [cmr.metadata-db.services.util :as util]
             [cmr.metadata-db.services.concept-validations :as cv]
             [cmr.metadata-db.services.provider-service :as provider-service]
@@ -40,9 +40,10 @@
    :tag-association 10
    :access-group 10})
 
-(def days-to-keep-tombstone
+(defconfig days-to-keep-tombstone
   "Number of days to keep a tombstone before is removed from the database."
-  (cfg/config-value-fn :days-to-keep-tombstone 365 #(Integer. %)))
+  {:default 365
+   :type Long})
 
 (def concept-truncation-batch-size
   "Maximum number of concepts to process in each iteration of the delete old concepts job."
