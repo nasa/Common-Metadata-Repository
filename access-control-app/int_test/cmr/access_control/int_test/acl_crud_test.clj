@@ -116,7 +116,7 @@
            :catalog_item_identity {:name "A Catalog Item ACL"
                                    :provider_id "PROV1"
                                    :collection_applicable true
-                                   :collection_identifier {:entry-titles ["notreal"]}}}
+                                   :collection_identifier {:entry_titles ["notreal"]}}}
 
           "At least one of a range (min and/or max) or include_undefined value must be specified."
           ["min_value and/or max_value must be specified when include_undefined_value is false"]
@@ -225,7 +225,7 @@
                                     :catalog_item_identity {:name "A real live catalog item ACL"
                                                             :provider_id "PROV1"
                                                             :collection_applicable true
-                                                            :collection_identifier {:entry-titles ["coll1 v1"]}}})
+                                                            :collection_identifier {:entry_titles ["coll1 v1"]}}})
                [:revision_id :status]))))))
 
 (deftest create-duplicate-acl-test
