@@ -8,7 +8,7 @@
             [cmr.transmit.access-control :as ac]
             [cmr.transmit.metadata-db2 :as mdb]
             [cheshire.core :as json]
-            [cmr.common.util :as util :refer [are2]]
+            [cmr.common.util :as util :refer [are3]]
             [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each
@@ -44,8 +44,8 @@
 
 (deftest create-acl-errors-test
   (let [token (e/login (u/conn-context) "admin")]
-    (are2 [re acl]
-          (thrown-with-msg? Exception re (ac/create-acl (u/conn-context) acl {:token token}))
+    (are3 [re acl]
+          (is (thrown-with-msg? Exception re (ac/create-acl (u/conn-context) acl {:token token})))
 
           ;; Acceptance criteria: I receive an error if creating an ACL missing required fields.
           ;; Note: this tests a few fields, and is not exhaustive. The JSON schema handles this check.
@@ -93,7 +93,7 @@
 
 (deftest acl-catalog-item-identity-validation-test
   (let [token (e/login (u/conn-context) "admin")]
-    (are2 [errors acl] (= errors (:errors (u/create-acl token acl {:raw? true})))
+    (are3 [errors acl] (is (= errors (:errors (u/create-acl token acl {:raw? true}))))
 
           "An error is returned if creating a catalog item identity that does not grant permission
                to collections or granules. (It must grant to collections or granules or both.)"
@@ -233,8 +233,8 @@
 (deftest update-acl-errors-test
   (let [token (e/login (u/conn-context) "admin")
         {concept-id :concept_id} (ac/create-acl (u/conn-context) system-acl {:token token})]
-    (are2 [re acl]
-          (thrown-with-msg? Exception re (ac/update-acl (u/conn-context) concept-id acl {:token token}))
+    (are3 [re acl]
+          (is (thrown-with-msg? Exception re (ac/update-acl (u/conn-context) concept-id acl {:token token})))
 
           ;; Acceptance criteria: I receive an error if creating an ACL missing required fields.
           ;; Note: this tests a few fields, and is not exhaustive. The JSON schema handles this check.
