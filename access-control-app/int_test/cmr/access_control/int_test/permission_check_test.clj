@@ -334,7 +334,7 @@
                     :catalog_item_identity {:name "coll2 guest read"
                                             :collection_applicable true
                                             :collection_identifier {:temporal {:start_date "2000-01-01T00:00:00Z"
-                                                                               :end_date "2010-01-01T00:00:00Z"
+                                                                               :stop_date "2010-01-01T00:00:00Z"
                                                                                :mask "intersect"}}
                                             :provider_id "PROV1"}})]
 
@@ -351,7 +351,7 @@
                             :catalog_item_identity {:name "coll2 guest read"
                                                     :collection_applicable true
                                                     :collection_identifier {:temporal {:start_date "2003-01-01T00:00:00Z"
-                                                                                       :end_date "2006-01-01T00:00:00Z"
+                                                                                       :stop_date "2006-01-01T00:00:00Z"
                                                                                        :mask "disjoint"}}
                                                     :provider_id "PROV1"}})
         (is (= {coll1 ["read"]
@@ -366,7 +366,7 @@
                             :catalog_item_identity {:name "coll2 guest read"
                                                     :collection_applicable true
                                                     :collection_identifier {:temporal {:start_date "2003-01-01T00:00:00Z"
-                                                                                       :end_date "2006-01-01T00:00:00Z"
+                                                                                       :stop_date "2006-01-01T00:00:00Z"
                                                                                        :mask "contains"}}
                                                     :provider_id "PROV1"}})
         (is (= {coll1 []

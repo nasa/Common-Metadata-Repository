@@ -136,13 +136,13 @@
                                                                           :include_undefined_value true}}}}
 
           "temporal validation: stop must be greater than or equal to start"
-          ["start_date must be before end_date"]
+          ["start_date must be before stop_date"]
           {:group_permissions [{:user_type "guest" :permissions ["read"]}]
            :catalog_item_identity {:name "A Catalog Item ACL"
                                    :provider_id "PROV1"
                                    :collection_applicable true
                                    :collection_identifier {:temporal {:start_date "2012-01-01T12:00:00Z"
-                                                                      :end_date "2011-01-01T12:00:00Z"
+                                                                      :stop_date "2011-01-01T12:00:00Z"
                                                                       :mask "intersect"}}}}
 
           ;; Repeated for Granule Identifier
@@ -163,14 +163,34 @@
                                    :granule_identifier {:access_value {:min_value 4
                                                                        :include_undefined_value true}}}}
 
-          "temporal validation: stop must be greater than or equal to start"
-          ["start_date must be before end_date"]
+          "start and stop dates must be valid dates"
+          ["/catalog_item_identity/granule_identifier/temporal/start_date string \"banana\" is invalid against requested date format(s) [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.SSSZ]"]
+          {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+           :catalog_item_identity {:name "A Catalog Item ACL"
+                                   :provider_id "PROV1"
+                                   :granule_applicable true
+                                   :granule_identifier {:temporal {:start_date "banana"
+                                                                   :stop_date "2012-01-01T12:00:00Z"
+                                                                   :mask "intersect"}}}}
+
+          "start and stop dates must be valid dates"
+          ["/catalog_item_identity/granule_identifier/temporal/stop_date string \"robot\" is invalid against requested date format(s) [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.SSSZ]"]
           {:group_permissions [{:user_type "guest" :permissions ["read"]}]
            :catalog_item_identity {:name "A Catalog Item ACL"
                                    :provider_id "PROV1"
                                    :granule_applicable true
                                    :granule_identifier {:temporal {:start_date "2012-01-01T12:00:00Z"
-                                                                   :end_date "2011-01-01T12:00:00Z"
+                                                                   :stop_date "robot"
+                                                                   :mask "intersect"}}}}
+
+          "temporal validation: stop must be greater than or equal to start"
+          ["start_date must be before stop_date"]
+          {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+           :catalog_item_identity {:name "A Catalog Item ACL"
+                                   :provider_id "PROV1"
+                                   :granule_applicable true
+                                   :granule_identifier {:temporal {:start_date "2012-01-01T12:00:00Z"
+                                                                   :stop_date "2011-01-01T12:00:00Z"
                                                                    :mask "intersect"}}}})
 
     (testing "collection entry_title check passes when collection exists"

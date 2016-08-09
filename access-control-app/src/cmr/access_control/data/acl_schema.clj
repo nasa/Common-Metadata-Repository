@@ -128,7 +128,7 @@
                                                          :mask {:enum ["intersect"
                                                                        "contains"
                                                                        "disjoint"]}}
-                                            :required [:start_date :end_date :mask]}
+                                            :required [:start_date :stop_date :mask]}
                    :CollectionIdentifierType {:type :object
                                               :properties {:entry_titles {:type :array
                                                                           :items {:type :string

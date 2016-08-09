@@ -71,10 +71,10 @@
 (defn temporal-identifier-validation
   "A validation for the temporal part of an ACL collection or granule identifier."
   [key-path temporal]
-  (let [{:keys [start-date end-date]} temporal]
-    (when (and start-date end-date
-               (t/after? (dtp/parse-datetime start-date) (dtp/parse-datetime end-date)))
-      {key-path ["start_date must be before end_date"]})))
+  (let [{:keys [start-date stop-date]} temporal]
+    (when (and start-date stop-date
+               (t/after? (dtp/parse-datetime start-date) (dtp/parse-datetime stop-date)))
+      {key-path ["start_date must be before stop_date"]})))
 
 (defn- make-collection-identifier-validation
   "Returns a validation for an ACL catalog_item_identity.collection_identifier closed over the given context and ACL to be validated."
@@ -348,7 +348,8 @@
                          (assoc :temporal-field :acquisition)
                          (update-in [:mask] keyword)
                          (update-in [:start-date] dtp/try-parse-datetime)
-                         (update-in [:end-date] dtp/try-parse-datetime)))))
+                         (update-in [:stop-date] dtp/try-parse-datetime)
+                         (set/rename-keys {:stop-date :end-date})))))
       (update-in [:catalog-item-identity :collection-identifier :access-value]
                  (fn [av]
                    (when av
