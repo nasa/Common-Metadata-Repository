@@ -173,7 +173,7 @@
           (update-in provider-acl [:provider_identity] assoc :target "WHATEVER")
 
           "Provider doesn't exist, provider version"
-          #"Provider with provider-id \[WHATEVER\].* does not exist"
+          #"Provider with provider-id \[WHATEVER\] does not exist"
           (assoc-in provider-acl [:provider_identity :provider_id] "WHATEVER")
 
           "Provider doesn't exist, catalog-item version"
