@@ -11,7 +11,7 @@
             [clj-time.core :as t]
             [cmr.metadata-db.data.memory-db]))
 
-(defconfig business-user
+(defconfig echo-business-user
   "echo business user"
   {:default "DEV_52_BUSINESS"})
 
@@ -44,7 +44,7 @@
       [conn db]
       (let [sql (format "select guest, user_guid, act_as_user_guid, expires, revoked
                         from %s.security_token where token = ?"
-                        (business-user))
+                        (echo-business-user))
             stmt [sql token]]
         (when-let [{:keys [guest user_guid act_as_user_guid expires revoked]}
                    (first (sql-utils/query conn stmt))]
@@ -57,7 +57,8 @@
 
   (get-group-guids
     [db user-guid]
-    (let [sql (format "select group_guid from %s.GROUP2_MEMBER where USER_GUID = ?" (business-user))
+    (let [sql (format "select group_guid from %s.GROUP2_MEMBER where USER_GUID = ?"
+                      (echo-business-user))
           stmt [sql user-guid]]
       (mapv :group_guid (sql-utils/query db stmt)))))
 
