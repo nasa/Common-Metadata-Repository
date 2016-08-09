@@ -1,6 +1,7 @@
 (ns cmr.access-control.services.acl-service
   (:require [clojure.string :as str]
-            [cmr.access-control.services.acl-service-messages :as msg]
+            [cmr.access-control.services.acl-service-messages :as acl-msg]
+            [cmr.access-control.services.messages :as msg]
             [cmr.access-control.services.acl-validation :as v]
             [cmr.common.log :refer [info debug]]
             [cmr.common.util :as u]
@@ -57,13 +58,13 @@
   [context concept-id]
   (let [{:keys [concept-type provider-id]} (concepts/parse-concept-id concept-id)]
     (when (not= :acl concept-type)
-      (errors/throw-service-error :bad-request (msg/bad-acl-concept-id concept-id))))
+      (errors/throw-service-error :bad-request (acl-msg/bad-acl-concept-id concept-id))))
 
   (if-let [concept (mdb/get-latest-concept context concept-id false)]
     (if (:deleted concept)
-      (errors/throw-service-error :not-found (msg/acl-deleted concept-id))
+      (errors/throw-service-error :not-found (acl-msg/acl-deleted concept-id))
       concept)
-    (errors/throw-service-error :not-found (msg/acl-does-not-exist concept-id))))
+    (errors/throw-service-error :not-found (acl-msg/acl-does-not-exist concept-id))))
 
 (defn- get-sids
   "Returns a seq of sids for the given username string or user type keyword
@@ -95,7 +96,7 @@
   [context]
   (if-let [token (:token context)]
     (tokens/get-user-id context (:token context))
-    (errors/throw-service-error :unauthorized msg/token-required-for-acl-modification)))
+    (errors/throw-service-error :unauthorized msg/token-required)))
 
 (defn create-acl
   "Save a new ACL to Metadata DB. Returns map with concept and revision id of created acl."

@@ -3,9 +3,9 @@
             [cmr.common.date-time-parser :as dtp]
             [clj-time.core :as t]
             [cmr.transmit.metadata-db :as mdb1]
-            [cmr.access-control.services.acl-service-messages :as msg]
             [cmr.transmit.metadata-db2 :as mdb]
-            [cmr.access-control.data.acls :as acls]))
+            [cmr.access-control.data.acls :as acls]
+            [cmr.metadata-db.services.messages :as msg]))
 
 (defn- catalog-item-identity-collection-applicable-validation
   "Validates the relationship between collection_applicable and collection_identifier."
