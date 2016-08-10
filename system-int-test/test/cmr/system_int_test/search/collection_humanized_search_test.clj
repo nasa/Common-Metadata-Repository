@@ -5,9 +5,12 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]))
+            [cmr.system-int-test.data2.core :as d]
+            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+
+(def context (lkt/setup-context-for-test lkt/sample-keyword-map))
 
 ;; Note: These specs rely on data in the indexer's humanizers.json config
 ;;       file. Once humanizers can be set by the ingest service, these
@@ -23,7 +26,16 @@
 ;;3. Retrieve the reporting
 ;;  curl http://localhost:3003/humanizers/report
 
-
+(deftest humanizer-report
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:platforms [(dc/platform {:short-name "TERRA"})]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:platforms [(dc/platform {:short-name "AM-1"})]}))
+        coll3 (d/ingest "PROV1" (dc/collection {:platforms [(dc/platform {:short-name "Aqua"})]}))]
+    (index/wait-until-indexed)
+    ;; Refresh the metadata cache
+    (search/refresh-collection-metadata-cache)
+    (let [report (search/get-humanizers-report)]
+      (println report)
+      (proto-repl.saved-values/save 14))))
 
 (deftest search-by-platform-humanized
   (let [coll1 (d/ingest "PROV1" (dc/collection {:platforms [(dc/platform {:short-name "TERRA"})]}))

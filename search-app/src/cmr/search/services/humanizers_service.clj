@@ -6,6 +6,7 @@
            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
            [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
            [cmr.umm-spec.legacy :as umm-legacy]
+           [cmr.common.log :as log :refer (debug info warn error)]
            [clojure.data.csv :as csv])
   (:import java.io.StringWriter))
 
@@ -62,14 +63,21 @@
   "Returns a report on humanizers in use in collections as a CSV."
   [context]
   ;; TODO add logging of times taken for each step. See Metadata Cache functions for examples of how we do that.
-  (let [collections (get-all-collections context)
-        humanized-rows (pmap (fn [coll]
-                               (->> coll
-                                    humanizer/umm-collection->umm-collection+humanizers
-                                    humanized-collection->reported-rows))
-                             collections)
-        rows (cons CSV_HEADER
-                   (apply concat humanized-rows))
+  (let [[t1 collections] (u/time-execution
+                          (get-all-collections context))
+        [t2 humanized-rows] (u/time-execution
+                             (pmap (fn [coll]
+                                     (->> coll
+                                          humanizer/umm-collection->umm-collection+humanizers
+                                          humanized-collection->reported-rows))
+                               collections))
+        [t3 rows] (u/time-execution
+                   (cons CSV_HEADER
+                         (apply concat humanized-rows)))
         string-writer (StringWriter.)]
     (csv/write-csv string-writer rows)
+    (debug "Write humanizer report of " (count humanized-rows) " rows for " (count collections)
+           "get-all-collections:" t1
+           "get humanized rows:" t2
+           "concat humanized rows:" t3)
     (str string-writer)))

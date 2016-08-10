@@ -614,4 +614,9 @@
          :results (json/decode body)}
         response))))
 
-
+(defn get-humanizers-report
+  []
+  (let [response (client/get (url/humanizers-report-url) {:connection-manager (s/conn-mgr)})]
+    (if (= 200 (:status response))
+      (:body response)
+      response)))

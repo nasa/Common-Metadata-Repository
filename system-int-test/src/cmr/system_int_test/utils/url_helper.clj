@@ -271,6 +271,11 @@
    (str "http://localhost:" (transmit-config/search-port) "/concepts/" concept-id
         (when revision-id (str "/" revision-id)))))
 
+(defn humanizers-report-url
+  "URL to get the humanizers report"
+  []
+  (format "http://localhost:%s/humanizers/report" (transmit-config/search-port)))
+
 (defn search-root
   "Returns the search url root"
   []
