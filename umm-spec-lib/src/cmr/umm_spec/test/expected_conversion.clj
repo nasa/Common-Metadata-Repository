@@ -225,7 +225,8 @@
                                                                        :Country "U.S.A."}]}
                                      :FirstName "John"
                                      :MiddleName "D"
-                                     :LastName "Smith"}]}
+                                     :LastName "Smith"}]
+                   :ContactInformation {:ContactMechanisms [{:Type "Twitter" :Value "@lpdaac"}]}}
                   {:Roles ["ARCHIVER" "DISTRIBUTOR"]
                    :ShortName "TNRIS"
                    :LongName "Texas Natural Resources Information System"

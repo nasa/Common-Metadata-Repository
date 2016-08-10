@@ -67,16 +67,22 @@
   (fn [format-key umm response]
     format-key))
 
+(defn- update-iso-entry-title
+  "Returns the ISO19115 collection with entry title updated to the given value.
+  This is a temporary workaround and should be removed once CMR-3256 is fixed."
+  [coll correct-entry-title]
+  (assoc coll :entry-title correct-entry-title))
+
 ;; ISO-19115 must be handled separately from the other formats becaue it uses xslt to translate
 ;; ECHO10 and the resulting XML is not quite the same as what we get when going from UMM to XML.
 (defmethod result-matches? :iso19115
   [format-key umm response]
   (let [metadata-xml (:body response)
         metadata-umm (-> (umm-c/parse-collection metadata-xml)
-                         ;; parser prepends "gov.nasa.echo:" to entry-title for some reason
-                         (update-in [:entry-title]
-                                    (fn [entry-title]
-                                      (str/replace entry-title "gov.nasa.echo:" "")))
+                         ;; Update entry-title to the correct value as the xslt is not generating
+                         ;; the correct entry-title as of now.
+                         ;; This is temporary and should be removed once CMR-3256 is fixed.
+                         (update-iso-entry-title (:entry-title umm))
                          ;; remove default added by parser
                          (assoc :metadata-language nil)
                          ;; remove default added by parser

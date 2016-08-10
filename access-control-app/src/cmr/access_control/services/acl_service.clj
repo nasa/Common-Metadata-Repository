@@ -1,6 +1,8 @@
 (ns cmr.access-control.services.acl-service
   (:require [clojure.string :as str]
-            [cmr.access-control.services.acl-service-messages :as msg]
+            [cmr.access-control.services.acl-service-messages :as acl-msg]
+            [cmr.access-control.services.messages :as msg]
+            [cmr.access-control.services.acl-validation :as v]
             [cmr.common.log :refer [info debug]]
             [cmr.common.util :as u]
             [cmr.common.mime-types :as mt]
@@ -13,18 +15,18 @@
             [cmr.common-app.services.search.parameter-validation :as cpv]
             [cmr.common-app.services.search.query-model :as common-qm]
             [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cheshire.core :as json]
             [clojure.edn :as edn]
             [clojure.set :as set]
             [cmr.common.concepts :as concepts]
             [cmr.access-control.services.group-service :as groups]
             [cmr.transmit.metadata-db :as mdb1]
-            [cmr.umm-spec.legacy :as umm-legacy]
             [cmr.acl.core :as acl]
             [cmr.umm.acl-matchers :as acl-matchers]
             [cmr.common.util :as util]
             [cmr.common.date-time-parser :as dtp]
             [cmr.access-control.data.acls :as acls]))
+
+;;; Misc constants and accessor functions
 
 (def acl-provider-id
   "The provider ID for all ACLs. Since ACLs are not owned by individual
@@ -56,13 +58,13 @@
   [context concept-id]
   (let [{:keys [concept-type provider-id]} (concepts/parse-concept-id concept-id)]
     (when (not= :acl concept-type)
-      (errors/throw-service-error :bad-request (msg/bad-acl-concept-id concept-id))))
+      (errors/throw-service-error :bad-request (acl-msg/bad-acl-concept-id concept-id))))
 
   (if-let [concept (mdb/get-latest-concept context concept-id false)]
     (if (:deleted concept)
-      (errors/throw-service-error :not-found (msg/acl-deleted concept-id))
+      (errors/throw-service-error :not-found (acl-msg/acl-deleted concept-id))
       concept)
-    (errors/throw-service-error :not-found (msg/acl-does-not-exist concept-id))))
+    (errors/throw-service-error :not-found (acl-msg/acl-does-not-exist concept-id))))
 
 (defn- get-sids
   "Returns a seq of sids for the given username string or user type keyword
@@ -89,16 +91,25 @@
    :extra-fields {:acl-identity (acl-identity acl)
                   :target-provider-id (acls/acl->provider-id acl)}})
 
+(defn- context->user-id
+  "Returns user id of the token in the context. Throws an error if no token is provided"
+  [context]
+  (if-let [token (:token context)]
+    (tokens/get-user-id context (:token context))
+    (errors/throw-service-error :unauthorized msg/token-required)))
+
 (defn create-acl
   "Save a new ACL to Metadata DB. Returns map with concept and revision id of created acl."
   [context acl]
+  (v/validate-acl-save! context acl)
   (mdb/save-concept context (merge (acl->base-concept context acl)
-                                   {:revision-id 1
-                                    :native-id (str (java.util.UUID/randomUUID))})))
+                                 {:revision-id 1
+                                  :native-id (str (java.util.UUID/randomUUID))})))
 
 (defn update-acl
   "Update the ACL with the given concept-id in Metadata DB. Returns map with concept and revision id of updated acl."
   [context concept-id acl]
+  (v/validate-acl-save! context acl)
   ;; This fetch acl call also validates if the ACL with the concept id does not exist or is deleted
   (let [existing-concept (fetch-acl-concept context concept-id)
         existing-legacy-guid (:legacy-guid (edn/read-string (:metadata existing-concept)))
@@ -263,7 +274,8 @@
                          (assoc :temporal-field :acquisition)
                          (update-in [:mask] keyword)
                          (update-in [:start-date] dtp/try-parse-datetime)
-                         (update-in [:end-date] dtp/try-parse-datetime)))))
+                         (update-in [:stop-date] dtp/try-parse-datetime)
+                         (set/rename-keys {:stop-date :end-date})))))
       (update-in [:catalog-item-identity :collection-identifier :access-value]
                  (fn [av]
                    (when av
@@ -374,4 +386,3 @@
   (let [sids (get-sids context username-or-type)
         acls (get-echo-style-acls context)]
     (hash-map target (provider-permissions-granted-by-acls provider-id target sids acls))))
-

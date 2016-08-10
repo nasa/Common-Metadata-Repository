@@ -192,7 +192,7 @@
     (u/wait-until-indexed)
     (testing "Delete without token"
       (is (= {:status 401
-              :errors ["Groups cannot be modified without a valid user token."]}
+              :errors ["Valid user token required."]}
              (u/delete-group nil concept_id))))
 
     (testing "Delete success"
@@ -253,7 +253,7 @@
 
     (testing "Update without token"
       (is (= {:status 401
-              :errors ["Groups cannot be modified without a valid user token."]}
+              :errors ["Valid user token required."]}
              (u/update-group nil concept_id group))))
 
     (testing "Fields that cannot be changed"

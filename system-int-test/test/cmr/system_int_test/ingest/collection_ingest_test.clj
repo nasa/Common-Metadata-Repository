@@ -393,16 +393,20 @@
   (let [coll1 (d/ingest "PROV1" (dc/collection))
         coll2 (d/ingest "PROV1" (dc/collection))
         token (e/login (s/context) "user1")]
+    ;; wait for the collections to be indexed so that ACLs will be valid
+    (index/wait-until-indexed)
     ;; Ingest some ACLs that reference the collection by concept id.
     (ac/create-acl token {:group_permissions [{:user_type "registered"
                                                :permissions ["read" "order"]}]
                           :catalog_item_identity {:name "coll1 ACL"
                                                   :provider_id "PROV1"
+                                                  :collection_applicable true
                                                   :collection_identifier {:entry_titles [(:entry-title coll1)]}}})
     (ac/create-acl token {:group_permissions [{:user_type "guest"
                                                :permissions ["read"]}]
                           :catalog_item_identity {:name "coll1/coll2 ACL"
                                                   :provider_id "PROV1"
+                                                  :collection_applicable true
                                                   :collection_identifier {:entry_titles [(:entry-title coll1) (:entry-title coll2)]}}})
     (index/wait-until-indexed)
     ;; Verify that the ACLs are found in Access Control Service search.

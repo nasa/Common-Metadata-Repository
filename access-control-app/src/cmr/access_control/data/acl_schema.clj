@@ -83,6 +83,7 @@
                                     :minLength 1
                                     :maxLength 100}
                    :GroupPermissionsType {:type :object
+                                          :additionalProperties false
                                           :properties {:permissions {:type :array
                                                                      :items {:enum ["create"
                                                                                     "read"
@@ -98,17 +99,21 @@
                                           :oneOf [{:required [:permissions :group_id]}
                                                   {:required [:permissions :user_type]}]}
                    :SystemIdentityType {:type :object
+                                        :additionalProperties false
                                         :properties {:target {:enum system-object-targets}}
                                         :required [:target]}
                    :ProviderIdentityType {:type :object
+                                          :additionalProperties false
                                           :properties {:provider_id (ref-def :IdentifierType)
                                                        :target {:enum provider-object-targets}}
                                           :required [:provider_id :target]}
                    :SingleInstanceIdentityType {:type :object
+                                                :additionalProperties false
                                                 :properties {:target_id (ref-def :IdentifierType)
                                                              :target {:enum ["GROUP_MANAGEMENT"]}}
                                                 :required [:target_id :target]}
                    :CatalogItemIdentityType {:type :object
+                                             :additionalProperties false
                                              :properties {:name (ref-def :IdentifierType)
                                                           :provider_id (ref-def :IdentifierType)
                                                           :collection_applicable {:type :boolean}
@@ -117,10 +122,12 @@
                                                           :granule_identifier (ref-def :GranuleIdentifierType)}
                                              :required [:name :provider_id]}
                    :AccessValueType {:type :object
+                                     :additionalProperties false
                                      :properties {:min_value {:type :number}
                                                   :max_value {:type :number}
                                                   :include_undefined_value {:type :boolean}}}
                    :TemporalIdentifierType {:type :object
+                                            :additionalProperties false
                                             :properties {:start_date {:type :string
                                                                       :format :date-time}
                                                          :stop_date {:type :string
@@ -128,8 +135,9 @@
                                                          :mask {:enum ["intersect"
                                                                        "contains"
                                                                        "disjoint"]}}
-                                            :required [:start_date :end_date :mask]}
+                                            :required [:start_date :stop_date :mask]}
                    :CollectionIdentifierType {:type :object
+                                              :additionalProperties false
                                               :properties {:entry_titles {:type :array
                                                                           :items {:type :string
                                                                                   :minLength 1
@@ -137,5 +145,6 @@
                                                            :access_value (ref-def :AccessValueType)
                                                            :temporal (ref-def :TemporalIdentifierType)}}
                    :GranuleIdentifierType {:type :object
+                                           :additionalProperties false
                                            :properties {:access_value (ref-def :AccessValueType)
                                                         :temporal (ref-def :TemporalIdentifierType)}}}}))

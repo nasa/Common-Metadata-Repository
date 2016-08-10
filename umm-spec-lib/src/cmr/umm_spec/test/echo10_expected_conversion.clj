@@ -99,13 +99,15 @@
 (defn- expected-echo10-contact-information
   "Expected contact information"
   [contact-information]
-  (let [contact-information (assoc contact-information :RelatedUrls nil)]
-   (when (seq (util/remove-nil-keys contact-information))
-     (-> contact-information
-         (update :Addresses #(when (seq %)
-                               (mapv expected-echo10-address %)))
-         (update :ContactMechanisms expected-contact-mechanisms)))))
-
+  (let [contact-information (-> contact-information
+                                (assoc :RelatedUrls nil)
+                                (update :Addresses #(when (seq %)
+                                                      (mapv expected-echo10-address %)))
+                                (update :ContactMechanisms expected-contact-mechanisms))]
+    ;; Check for nil after updates because contact mechanisms could have been dropped making
+    ;; contact information nil
+    (when (seq (util/remove-nil-keys contact-information))
+      contact-information)))
 
 (defn- expected-echo10-contact-person
   "Returns an expected contact person for each role. ECHO10 only allows for 1 role per
