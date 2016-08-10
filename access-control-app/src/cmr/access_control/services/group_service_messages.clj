@@ -2,15 +2,11 @@
   (:require [clojure.string :as str]
             [clojure.edn :as edn]))
 
-(def token-required-for-group-modification
-  "Groups cannot be modified without a valid user token.")
-
 (defn- get-group-name-from-concept
   "Gets a group name from a access-group concept's metadata.
    This is because we lowercase the native-id so it does not match the actual group name."
   [concept]
   (-> concept :metadata edn/read-string :name))
-
 
 (defn group-already-exists
   [group concept]
@@ -31,11 +27,3 @@
 (defn group-deleted
   [concept-id]
   (format "Group with concept id [%s] was deleted." concept-id))
-
-(defn provider-does-not-exist
-  [provider-id]
-  (format "Provider with provider-id [%s] does not exist." provider-id))
-
-(defn users-do-not-exist
-  [usernames]
-  (format "The following users do not exist [%s]" (str/join ", " usernames)))
