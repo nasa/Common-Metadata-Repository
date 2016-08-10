@@ -3,6 +3,7 @@
  (:require [clj-time.core :as t]
            [clj-time.format :as f]
            [cmr.umm-spec.util :as su]
+           [cmr.umm-spec.json-schema :as js]
            [cmr.common.util :as util :refer [update-in-each]]
            [cmr.umm-spec.models.common :as cmn]
            [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
@@ -211,7 +212,9 @@
       (update-in [:PublicationReferences] conversion-util/prune-empty-maps)
       (update-in-each [:PublicationReferences] conversion-util/dif-publication-reference)
       (update-in [:RelatedUrls] conversion-util/expected-related-urls-for-dif-serf)
+      (update :DataLanguage su/capitalize-words)
       ;; DIF 10 required element
       (update-in [:Abstract] #(or % su/not-provided))
       ;; CMR-2716 SpatialKeywords are replaced by LocationKeywords
-      (assoc :SpatialKeywords nil)))
+      (assoc :SpatialKeywords nil)
+      js/parse-umm-c))

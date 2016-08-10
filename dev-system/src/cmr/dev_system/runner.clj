@@ -11,4 +11,5 @@
   [& args]
   (config/print-all-configs-docs)
   (let [system (system/start (system/create-system))]
-    (info "Running...")))
+    (info "Running...")
+    (config/check-env-vars)))

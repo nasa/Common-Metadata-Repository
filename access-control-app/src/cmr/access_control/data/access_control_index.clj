@@ -1,23 +1,37 @@
 (ns cmr.access-control.data.access-control-index
   "Performs search and indexing of access control data."
-  (:require [cmr.elastic-utils.index-util :as m :refer [defmapping]]
+  (:require [cmr.access-control.services.acl-service :as acl-service]
+            [cmr.access-control.data.acls :as acls]
+            [cmr.elastic-utils.index-util :as m :refer [defmapping]]
+            [cmr.common.log :refer [info debug]]
             [cmr.common-app.services.search.elastic-search-index :as esi]
             [cmr.common-app.services.search.query-to-elastic :as q2e]
             [cmr.common.lifecycle :as l]
             [cmr.common.services.errors :as errors]
             [cmr.transmit.metadata-db2 :as mdb]
             [clojure.string :as str]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [cmr.umm.acl-matchers :as acl-matchers]))
 
 (defmulti index-concept
   "Indexes the concept map in elastic search."
   (fn [context concept-map]
     (:concept-type concept-map)))
 
+(defmethod index-concept :default
+  [context concept-map]
+  ;; Do nothing
+  )
+
 (defmulti delete-concept
   "Deletes the concept map in elastic search."
   (fn [context concept-map]
     (:concept-type concept-map)))
+
+(defmethod delete-concept :default
+  [context concept-map]
+  ;; Do nothing
+  )
 
 (defn- safe-lowercase
   [v]
@@ -190,18 +204,12 @@
   [acl]
   (map #(or (:user-type %) (:group-id %)) (:group-permissions acl)))
 
-(defn acl->provider-id
-  "Returns the provider-ids of the ACL."
-  [acl]
-  (or (:provider-id (:catalog-item-identity acl))
-      (:provider-id (:provider-identity acl))))
-
 (defn- acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."
   [concept-map]
   (let [acl (edn/read-string (:metadata concept-map))
         permitted-groups (acl->permitted-groups acl)
-        provider-id (acl->provider-id acl)]
+        provider-id (acls/acl->provider-id acl)]
     (assoc (select-keys concept-map [:concept-id :revision-id])
            :display-name (acl->display-name acl)
            :identity-type (acl->identity-type acl)
@@ -222,6 +230,7 @@
 (defmethod delete-concept :acl
   [context concept-map]
   (let [id (:concept-id concept-map)]
+    (info "Unindexing ACL concept" id)
     (m/delete-by-id (esi/context->search-index context)
                     acl-index-name
                     acl-type-name
@@ -247,6 +256,29 @@
                      acl-index-name
                      acl-type-name
                      {:term {:target-provider-id.lowercase (str/lower-case provider-id)}}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Propagating Concept Deletes to ACLs
+
+(defmethod delete-concept :collection
+  [context concept-map]
+  (let [collection-concept (acl-matchers/add-acl-enforcement-fields-to-concept concept-map)
+        entry-title (:entry-title collection-concept)]
+    (doseq [acl-concept (acl-service/get-all-acl-concepts context)
+            :let [parsed-acl (acl-service/get-parsed-acl acl-concept)
+                  catalog-item-id (:catalog-item-identity parsed-acl)
+                  acl-entry-titles (:entry-titles (:collection-identifier catalog-item-id))]
+            :when (and (= (:provider-id collection-concept) (:provider-id catalog-item-id))
+                       (some #{entry-title} acl-entry-titles))]
+      (debug "relevant ACL =" (pr-str acl-concept))
+      (if (= 1 (count acl-entry-titles))
+        ;; the ACL only references the collection being deleted, and therefore the ACL should be deleted
+        (acl-service/delete-acl context (:concept-id acl-concept))
+        ;; otherwise the ACL references other collections, and will be updated
+        (let [new-acl (update-in parsed-acl
+                                 [:catalog-item-identity :collection-identifier :entry-titles]
+                                 #(remove #{entry-title} %))]
+          (acl-service/update-acl context (:concept-id acl-concept) new-acl))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common public functions

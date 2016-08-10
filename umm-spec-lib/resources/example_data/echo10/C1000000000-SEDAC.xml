@@ -1,0 +1,341 @@
+
+<Collection>
+			<ShortName>CIESIN_SEDAC_EPI_2012</ShortName> 
+			<VersionId>2012.00</VersionId> 
+			<InsertTime>2013-02-07T00:00:00Z</InsertTime>  
+			<LastUpdate>2015-08-04T00:00:00Z</LastUpdate>
+			<LongName>2012 Environmental Performance Index and Pilot Trend Environmental Performance Index</LongName> 
+			<DataSetId>2012 Environmental Performance Index and Pilot Trend Environmental Performance Index</DataSetId> 
+			<Description>The 2012 Environmental Performance Index (EPI) ranks 132 countries on 22 performance indicators in the following 10 policy categories:  environmental burden of disease, water (effects on human health), air pollution (effects on human health), air pollution (ecosystem effects), water resources (ecosystem effects), biodiversity and habitat, forestry, fisheries, agriculture and climate change. These categories track performance and progress on two broad policy objectives, environmental health and ecosystem vitality. Each indicator has an associated environmental public health or ecosystem sustainability target. The EPI's proximity-to-target methodology facilitates cross-country comparisons among economic and regional peer groups.
+
+The Pilot Trend Environmental Performance Index (Trend EPI) ranks countries on the change in their environmental performance over the last decade. As a complement to the EPI, the Trend EPI shows who is improving and who is declining over time. 
+
+The 2012 EPI and Pilot Trend EPI were formally released in Davos, Switzerland, at the annual meeting of the World Economic Forum on January 27, 2012. These are the result of collaboration between the Yale Center for Environmental Law and Policy (YCELP) and the Columbia University Center for International Earth Science Information Network (CIESIN). The Interactive Website for the 2012 EPI is at http://epi.yale.edu/.</Description> 
+			<Orderable>true</Orderable> 
+			<Visible>true</Visible>
+			<SuggestedUsage>To provide quantitative metrics for evaluating a country's environmental performance in different policy categories relative to clearly defined targets.</SuggestedUsage> 
+			<ProcessingCenter>SEDAC</ProcessingCenter> 
+			<ProcessingLevelId>Level 2</ProcessingLevelId> 
+			<ArchiveCenter>SEDAC</ArchiveCenter> 
+			<CitationForExternalPublication>Yale Center for Environmental Law and Policy - YCELP - Yale University; Center for International Earth Science Information Network - CIESIN - Columbia University; World Economic Forum - WEF; Joint Research Centre - JRC - European Commission. 2012. 2012 Environmental Performance Index and Pilot Trend Environmental Performance Index. Palisades, NY:NASA Socioeconomic Data and Applications Center (SEDAC). http://dx.doi.org/10.7927/H48913SG</CitationForExternalPublication> 
+			<CollectionState>Final</CollectionState> 
+			<MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency> 
+			<RestrictionComment>Users are free to use, copy, distribute, transmit, and adapt the work for commercial and non-commercial purposes, without restriction, as long as clear attribution of the source is provided.</RestrictionComment> 
+			<Price>0</Price> 
+			<DataFormat>XLS, PDF, PNG</DataFormat> 
+			<SpatialKeywords>
+			<Keyword>Africa</Keyword>
+			<Keyword>Albania</Keyword>
+			<Keyword>Algeria</Keyword>
+			<Keyword>Angola</Keyword>
+			<Keyword>Argentina</Keyword>
+			<Keyword>Armenia</Keyword>
+			<Keyword>Asia</Keyword>
+			<Keyword>Australia</Keyword>
+			<Keyword>Australia</Keyword>
+			<Keyword>Austria</Keyword>
+			<Keyword>Azerbaijan</Keyword>
+			<Keyword>Bangladesh</Keyword>
+			<Keyword>Belarus</Keyword>
+			<Keyword>Belgium</Keyword>
+			<Keyword>Benin</Keyword>
+			<Keyword>Bolivia</Keyword>
+			<Keyword>Bosnia and Herzegovina</Keyword>
+			<Keyword>Botswana</Keyword>
+			<Keyword>Brazil</Keyword>
+			<Keyword>Brunei Darussalam</Keyword>
+			<Keyword>Bulgaria</Keyword>
+			<Keyword>Cambodia</Keyword>
+			<Keyword>Cameroon</Keyword>
+			<Keyword>Canada</Keyword>
+			<Keyword>Caribbean</Keyword>
+			<Keyword>Central Africa</Keyword>
+			<Keyword>Central America</Keyword>
+			<Keyword>Chile</Keyword>
+			<Keyword>China</Keyword>
+			<Keyword>Colombia</Keyword>
+			<Keyword>Costa Rica</Keyword>
+			<Keyword>Cote D'Ivoire</Keyword>
+			<Keyword>Croatia</Keyword>
+			<Keyword>Cuba</Keyword>
+			<Keyword>Cyprus</Keyword>
+			<Keyword>Czech Republic</Keyword>
+			<Keyword>Democratic Republic of the Congo</Keyword>
+			<Keyword>Denmark</Keyword>
+			<Keyword>Dominican Republic</Keyword>
+			<Keyword>East Asia</Keyword>
+			<Keyword>Ecuador</Keyword>
+			<Keyword>Egypt</Keyword>
+			<Keyword>El Salvador</Keyword>
+			<Keyword>Equatorial</Keyword>
+			<Keyword>Eritrea</Keyword>
+			<Keyword>Estonia</Keyword>
+			<Keyword>Ethiopia</Keyword>
+			<Keyword>Europe</Keyword>
+			<Keyword>Finland</Keyword>
+			<Keyword>France</Keyword>
+			<Keyword>Gabon</Keyword>
+			<Keyword>Georgia</Keyword>
+			<Keyword>Germany</Keyword>
+			<Keyword>Ghana</Keyword>
+			<Keyword>Global</Keyword>
+			<Keyword>Greece</Keyword>
+			<Keyword>Guatemala</Keyword>
+			<Keyword>Haiti</Keyword>
+			<Keyword>Honduras</Keyword>
+			<Keyword>Hungary</Keyword>
+			<Keyword>Iceland</Keyword>
+			<Keyword>India</Keyword>
+			<Keyword>Indonesia</Keyword>
+			<Keyword>Iran</Keyword>
+			<Keyword>Iraq</Keyword>
+			<Keyword>Ireland</Keyword>
+			<Keyword>Israel</Keyword>
+			<Keyword>Italy</Keyword>
+			<Keyword>Jamaica</Keyword>
+			<Keyword>Japan</Keyword>
+			<Keyword>Jordan</Keyword>
+			<Keyword>Kazakhstan</Keyword>
+			<Keyword>Kenya</Keyword>
+			<Keyword>Kuwait</Keyword>
+			<Keyword>Kyrgyzstan</Keyword>
+			<Keyword>Latvia</Keyword>
+			<Keyword>Lebanon</Keyword>
+			<Keyword>Libyan Arab Jamahiriya</Keyword>
+			<Keyword>Lithuania</Keyword>
+			<Keyword>Luxembourg</Keyword>
+			<Keyword>Macedonia</Keyword>
+			<Keyword>Malawi</Keyword>
+			<Keyword>Malaysia</Keyword>
+			<Keyword>Malta</Keyword>
+			<Keyword>Mexico</Keyword>
+			<Keyword>Middle East</Keyword>
+			<Keyword>Mid-Latitude</Keyword>
+			<Keyword>Moldova</Keyword>
+			<Keyword>Mongolia</Keyword>
+			<Keyword>Morocco</Keyword>
+			<Keyword>Mozambique</Keyword>
+			<Keyword>Myanmar</Keyword>
+			<Keyword>Namibia</Keyword>
+			<Keyword>Nepal</Keyword>
+			<Keyword>Netherlands</Keyword>
+			<Keyword>New Zealand</Keyword>
+			<Keyword>Nicaragua</Keyword>
+			<Keyword>Nigeria</Keyword>
+			<Keyword>North Africa</Keyword>
+			<Keyword>North America</Keyword>
+			<Keyword>Norway</Keyword>
+			<Keyword>Oceania</Keyword>
+			<Keyword>Oman</Keyword>
+			<Keyword>Pacific Islands</Keyword>
+			<Keyword>Pakistan</Keyword>
+			<Keyword>Panama</Keyword>
+			<Keyword>Paraguay</Keyword>
+			<Keyword>Peru</Keyword>
+			<Keyword>Philippines</Keyword>
+			<Keyword>Poland</Keyword>
+			<Keyword>Polar</Keyword>
+			<Keyword>Portugal</Keyword>
+			<Keyword>Qatar</Keyword>
+			<Keyword>Republic of the Congo</Keyword>
+			<Keyword>Romania</Keyword>
+			<Keyword>Russia</Keyword>
+			<Keyword>Saudi Arabia</Keyword>
+			<Keyword>Senegal</Keyword>
+			<Keyword>Serbia</Keyword>
+			<Keyword>Singapore</Keyword>
+			<Keyword>Slovakia</Keyword>
+			<Keyword>Slovenia</Keyword>
+			<Keyword>South Africa</Keyword>
+			<Keyword>South America</Keyword>
+			<Keyword>South Asia</Keyword>
+			<Keyword>South Korea</Keyword>
+			<Keyword>Southeast Asia</Keyword>
+			<Keyword>Spain</Keyword>
+			<Keyword>Sri Lanka</Keyword>
+			<Keyword>Sudan</Keyword>
+			<Keyword>Sweden</Keyword>
+			<Keyword>Switzerland</Keyword>
+			<Keyword>Syria</Keyword>
+			<Keyword>Taiwan</Keyword>
+			<Keyword>Tajikistan</Keyword>
+			<Keyword>Tanzania</Keyword>
+			<Keyword>Thailand</Keyword>
+			<Keyword>Togo</Keyword>
+			<Keyword>Trinidad and Tobago</Keyword>
+			<Keyword>Tunisia</Keyword>
+			<Keyword>Turkey</Keyword>
+			<Keyword>Turkmenistan</Keyword>
+			<Keyword>Ukraine</Keyword>
+			<Keyword>United Arab Emirates</Keyword>
+			<Keyword>United Kingdom</Keyword>
+			<Keyword>United States</Keyword>
+			<Keyword>Uruguay</Keyword>
+			<Keyword>Uzbekistan</Keyword>
+			<Keyword>Venezuela</Keyword>
+			<Keyword>Vietnam</Keyword>
+			<Keyword>West Africa</Keyword>
+			<Keyword>Yemen</Keyword>
+			<Keyword>Zambia</Keyword>
+			<Keyword>Zimbabwe</Keyword>
+			</SpatialKeywords>
+			<Temporal>
+				<TimeType>Universal Time</TimeType> 
+				<DateType>Eastern Daylight</DateType> 
+				<TemporalRangeType>Long Range</TemporalRangeType> 
+				<PrecisionOfSeconds>1</PrecisionOfSeconds> 
+				<EndsAtPresentFlag>true</EndsAtPresentFlag> 
+				<RangeDateTime>
+					<BeginningDateTime>2000-01-01T00:00:00Z</BeginningDateTime>  
+					<EndingDateTime>2010-12-31T00:00:00Z</EndingDateTime>  
+				</RangeDateTime>
+			</Temporal>
+			<Contacts>
+				<Contact>
+					<Role>Archive</Role> 
+					<HoursOfService>9:00 A.M. to 5:00 P.M., Monday to Friday</HoursOfService> 
+					<OrganizationName>Socioeconomic Data and Applications Center (SEDAC)</OrganizationName> 
+					<OrganizationAddresses>
+						<Address>
+							<StreetAddress>CIESIN, Columbia University, 61 Route 9W, P.O. Box 1000</StreetAddress> 
+							<City>Palisades</City> 
+							<StateProvince>NY</StateProvince> 
+							<PostalCode>10964</PostalCode> 
+							<Country>USA</Country> 
+						</Address>
+					</OrganizationAddresses>
+					<OrganizationPhones>
+						<Phone>
+							<Number>+1 845-365-8920</Number> 
+							<Type>Telephone</Type> 
+						</Phone>
+						<Phone>
+							<Number>+1 845-365-8922</Number> 
+							<Type>Fax</Type> 
+						</Phone>
+					</OrganizationPhones>
+					<OrganizationEmails>
+						<Email>ciesin.info@ciesin.columbia.edu</Email> 
+					</OrganizationEmails>
+					<ContactPersons>
+						<ContactPerson>
+							<FirstName>SEDAC</FirstName> 
+							<MiddleName>User</MiddleName> 
+							<LastName>Services</LastName> 
+							</ContactPerson>
+					</ContactPersons>
+				</Contact>
+			</Contacts>
+			<ScienceKeywords>
+				<ScienceKeyword>
+				<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+				<TopicKeyword>AGRICULTURE</TopicKeyword>
+				<TermKeyword>AGRICULTURAL AQUATIC SCIENCES</TermKeyword>
+				<VariableLevel1Keyword><Value>FISHERIES</Value></VariableLevel1Keyword>
+				</ScienceKeyword>
+				<ScienceKeyword>
+				<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+				<TopicKeyword>ATMOSPHERE</TopicKeyword>
+				<TermKeyword>AIR QUALITY</TermKeyword>
+				<VariableLevel1Keyword><Value>PARTICULATES</Value></VariableLevel1Keyword>
+				</ScienceKeyword>
+				<ScienceKeyword>
+				<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+				<TopicKeyword>BIOSPHERE</TopicKeyword>
+				<TermKeyword>ECOLOGICAL DYNAMICS</TermKeyword>
+				<VariableLevel1Keyword><Value>COMMUNITY DYNAMICS</Value>
+				<VariableLevel2Keyword><Value>BIODIVERSITY FUNCTIONS</Value></VariableLevel2Keyword></VariableLevel1Keyword>
+				</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>  
+<TermKeyword>ENVIRONMENTAL GOVERNANCE/MANAGEMENT</TermKeyword>
+<VariableLevel1Keyword>
+<Value>WATER MANAGEMENT</Value>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>  
+<TermKeyword>ENVIRONMENTAL IMPACTS</TermKeyword> 
+<VariableLevel1Keyword>
+<Value>CONSERVATION</Value>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>  
+<TermKeyword>HUMAN SETTLEMENTS</TermKeyword> 
+<VariableLevel1Keyword>
+<Value>COASTAL AREAS</Value>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>  
+<TermKeyword>PUBLIC HEALTH</TermKeyword> 
+<VariableLevel1Keyword>
+<Value>ENVIRONMENTAL HEALTH FACTORS</Value>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+<ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>  
+<TermKeyword>SUSTAINABILITY</TermKeyword> 
+<VariableLevel1Keyword>
+<Value>ENVIRONMENTAL SUSTAINABILITY</Value>
+</VariableLevel1Keyword>
+</ScienceKeyword>
+			</ScienceKeywords>
+			<Campaigns>
+				<Campaign>
+					<ShortName>EPI</ShortName> 
+					<LongName>Environmental Performance Index</LongName> 
+				</Campaign>
+			</Campaigns>
+			<SpatialInfo>
+				<SpatialCoverageType>Horizontal</SpatialCoverageType> 
+			</SpatialInfo>
+			<OnlineAccessURLs>
+				<OnlineAccessURL>
+					<URL>http://sedac.ciesin.columbia.edu/data/set/epi-environmental-performance-index-pilot-trend-2012/data-download</URL> 
+					<URLDescription>data download page</URLDescription> 
+				</OnlineAccessURL>
+				<OnlineAccessURL>
+					<URL>http://sedac.ciesin.columbia.edu/data/set/epi-environmental-performance-index-pilot-trend-2012/maps</URL> 
+					<URLDescription>maps download page</URLDescription> 
+				</OnlineAccessURL>
+			</OnlineAccessURLs>
+			<OnlineResources>
+				<OnlineResource>
+					<URL>http://dx.doi.org/10.7927/H48913SG</URL> 
+					<Description>data set DOI and homepage</Description>  
+					<Type>DOI URL</Type> 
+				</OnlineResource>
+			</OnlineResources>
+			<AssociatedDIFs>
+				<DIF>
+					<EntryId>CIESIN_SEDAC_EPI_2012</EntryId> 
+				</DIF>
+			</AssociatedDIFs>
+			<Spatial>
+				<SpatialCoverageType>Horizontal</SpatialCoverageType> 
+				<HorizontalSpatialDomain>
+					<Geometry>
+						<CoordinateSystem>CARTESIAN</CoordinateSystem>
+						<BoundingRectangle>
+							<WestBoundingCoordinate>-180.000000</WestBoundingCoordinate> 
+							<NorthBoundingCoordinate>90.000000</NorthBoundingCoordinate> 
+							<EastBoundingCoordinate>180.000000</EastBoundingCoordinate> 
+							<SouthBoundingCoordinate>-55.000000</SouthBoundingCoordinate> 
+						</BoundingRectangle>
+					</Geometry>
+				</HorizontalSpatialDomain>
+				<GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+			</Spatial>
+                        <AssociatedBrowseImageUrls>
+    <ProviderBrowseUrl>
+                 <URL>http://sedac.ciesin.columbia.edu/downloads/maps/epi/epi-environmental-performance-index-pilot-trend-2012/2012-epi.pdf</URL>
+    </ProviderBrowseUrl>
+                        </AssociatedBrowseImageUrls>
+		</Collection>

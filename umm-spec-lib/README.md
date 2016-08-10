@@ -91,6 +91,23 @@ See the DSL documentation and existing formats for examples.
 
 Update the EMFD project with the new directory. The repo can be located here: ***REMOVED***projects/EMFD/repos/unified-metadata-model/
 
+### Rules for Implementing Mappings
+
+#### When to Use Default Values
+
+The following table defines when we should use default values. It depends on whether the field is required or not in UMM and the XML schema and whether we're coming from XML or going to XML.
+
+| Required in UMM | Required in XML schema | When Parsing XML | When Generating XML |
+|-----------------|------------------------|------------------|---------------------|
+| required        | required               | -                | -                   |
+| required        | not required           | use default      | -                   |
+| not required    | required               | -                | use default         |
+| not required    | not required           | -                | -                   |
+
+* We never remove default values that were added. Originally we did this but the functions have been deprecated.
+* Whenever possible use a central function defined in `cmr.umm-spec.util` to decide when to apply a default value.
+  * This is to allow the future possibility of making defaults optional so we can start rejecting formats that are missing some fields.
+
 ## License
 
 Copyright © 2015 NASA

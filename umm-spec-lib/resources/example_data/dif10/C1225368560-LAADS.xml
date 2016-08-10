@@ -1,0 +1,349 @@
+
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+   <Entry_ID>
+    <Short_Name>MYBARS</Short_Name>
+<Version>5</Version>
+  </Entry_ID>
+   <!--added-->
+<Version_Description>Not provided</Version_Description>
+  <!--Entry_Title was trimmed-->
+<Entry_Title>Aerosol Ratio Small MODIS L2 (AQUA Browse Product)</Entry_Title>
+   <!--renamed from Data_Set_Citation to Dataset_Citation-->
+<Dataset_Citation>
+      <Dataset_Creator>MODIS Science Team</Dataset_Creator>
+      <!--Dataset_Title was trimmed-->
+<Dataset_Title>Aerosol Ratio Small MODIS L2 (Browse Product)</Dataset_Title>
+      <Version>Collection 5</Version>
+      <Online_Resource>http://modis-atmos.gsfc.nasa.gov/</Online_Resource>
+   </Dataset_Citation>
+   <Personnel>
+    <Role>TECHNICAL CONTACT</Role>
+    <Contact_Person>
+      <Last_Name>LAADS USER SUPPORT TEAM</Last_Name>
+      <!--renamed from Contact_Address to Address-->
+<Address>
+         <!--renamed from Address to Street_Address-->
+<Street_Address>LAADS User Support Team</Street_Address>
+         <!--renamed from Address to Street_Address-->
+<Street_Address>NASA/GSFC</Street_Address>
+         <!--renamed from Address to Street_Address-->
+<Street_Address>Mail Code: 619</Street_Address>
+         <City>Greenbelt</City>
+         <!--renamed from Province_or_State to State_Province-->
+<State_Province>MD</State_Province>
+         <Postal_Code>20771</Postal_Code>
+         <Country>USA</Country>
+      </Address>
+        <Phone>
+        <Number>1-800-596-8132</Number>
+            <Type>Telephone</Type>
+      </Phone>
+        <Phone>
+        <Number>301-794-7035</Number>
+            <Type>Fax</Type>
+      </Phone>
+        <Email>MODAPSUSO@lists.nasa.gov</Email>
+    </Contact_Person>
+  </Personnel>
+   <Personnel>
+    <Role>METADATA AUTHOR</Role>
+    <Contact_Person>
+      <First_Name>GANG</First_Name>
+        <Last_Name>YE, PH.D</Last_Name>
+      <!--renamed from Contact_Address to Address-->
+<Address>
+      </Address>
+        <Phone>
+        <Number>301-867-2089</Number>
+            <Type>Telephone</Type>
+      </Phone>
+        <Email>gang.ye-1@nasa.gov</Email>
+    </Contact_Person>
+  </Personnel>
+   <!--renamed from Parameters to Science_Keywords-->
+<Science_Keywords uuid="61c3b720-abc8-4430-866c-f1da35d2cd0b">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>ATMOSPHERE</Topic>
+      <Term>AEROSOLS</Term>
+      <Variable_Level_1>AEROSOL OPTICAL DEPTH/THICKNESS</Variable_Level_1>
+   </Science_Keywords>
+   <ISO_Topic_Category uuid="1ebf71bd-d007-42f8-8f9b-8c44a6b65a28">CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+   <!--renamed from Keyword to Ancillary_Keyword-->
+<Ancillary_Keyword>EOSDIS</Ancillary_Keyword>
+   <!--renamed from Keyword to Ancillary_Keyword-->
+<Ancillary_Keyword>RELATIVE_START_DATE: -10</Ancillary_Keyword>
+   <!--renamed from Sensor_Name to Instrument-->
+
+   <!--renamed from Source_Name to Platform-->
+<Platform>
+    <Type>Not provided</Type>
+    <Short_Name>Not provided</Short_Name>
+    <Instrument uuid="2878f334-35dc-47a7-a3ae-8c5da1adccd3">
+      <Short_Name>MODIS</Short_Name>
+      <Long_Name>Moderate-Resolution Imaging Spectroradiometer</Long_Name>
+   </Instrument>
+  </Platform>
+<Platform uuid="80eca755-c564-4616-b910-a4c4387b7c54">
+    <Type>Not provided</Type>
+      <Short_Name>TERRA</Short_Name>
+      <Long_Name>Earth Observing System, TERRA (AM-1)</Long_Name>
+   <Instrument>
+      <Short_Name>Not provided</Short_Name>
+    </Instrument>
+  </Platform>
+   <Temporal_Coverage>
+    <!--renamed from Temporal_Coverage to Range_DateTime-->
+<Range_DateTime>
+      <!--renamed from Start_Date to Beginning_Date_Time-->
+<Beginning_Date_Time>2015-12-07</Beginning_Date_Time>
+      <!--renamed from Stop_Date to Ending_Date_Time-->
+<Ending_Date_Time>2015-12-17</Ending_Date_Time>
+   </Range_DateTime>
+  </Temporal_Coverage>
+   <!--renamed from Data_Set_Progress to Dataset_Progress-->
+<Dataset_Progress>IN WORK</Dataset_Progress>
+   
+   <Spatial_Coverage>
+    <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+    <Geometry>
+      <Coordinate_System>CARTESIAN</Coordinate_System>
+      <!--renamed from Spatial_Coverage to Bounding_Rectangle-->
+<Bounding_Rectangle>
+      <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+      <Northernmost_Latitude>90.0</Northernmost_Latitude>
+      <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+      <Easternmost_Longitude>180.0</Easternmost_Longitude>
+   </Bounding_Rectangle>
+    </Geometry>
+  </Spatial_Coverage>
+<Location uuid="51e3593f-4b42-4141-972e-96666c479f9c">
+      <Location_Category>GEOGRAPHIC REGION</Location_Category>
+      <Location_Type>GLOBAL</Location_Type>
+   </Location>
+   <Project uuid="3d1847aa-4eba-4c78-b4fc-f4223ca16539">
+      <Short_Name>EOS</Short_Name>
+      <Long_Name>Earth Observing System</Long_Name>
+   </Project>
+   <Project uuid="4dac8541-0c69-4cd5-ae70-eb8819f39715">
+      <Short_Name>EOSDIS</Short_Name>
+      <Long_Name>Earth Observing System Data Information System</Long_Name>
+   </Project>
+   <Project uuid="d32a5f0f-fedf-4368-b4ba-0ac7b77ce9ca">
+      <Short_Name>TERRA</Short_Name>
+      <Long_Name>Earth Observing System (EOS), TERRA</Long_Name>
+   </Project>
+   <!--renamed from Data_Set_Language to Dataset_Language-->
+<Dataset_Language>English</Dataset_Language>
+   <!--renamed from Data_Center to Organization-->
+<Organization>
+    <!--added - assumption-->
+    <Organization_Type>ARCHIVER</Organization_Type>
+      <!--renamed from Data_Center_Name to Organization_Name-->
+<Organization_Name uuid="81a9c373-69da-4743-b088-e16fb9de6f65">
+         <Short_Name>NASA/GSFC/SED/ESD/HBSL/BISB/LAADS</Short_Name>
+         <Long_Name>L1 and Atmosphere Archive and Distribution System,Biospheric Information Systems Branch, Hydrospheric and Biospheric Sciences Laboratory, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+      </Organization_Name>
+   <!--renamed from Data_Center_URL to Organization_URL-->
+<Organization_URL>http://ladsweb.nascom.nasa.gov/</Organization_URL>
+      <!--renamed from Data_Set_ID to Dataset_ID-->
+<Dataset_ID>MYBARS Collection 5</Dataset_ID>
+      <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+        <Contact_Person>
+        <Last_Name>LAADS USER SUPPORT TEAM</Last_Name>
+        <!--renamed from Contact_Address to Address-->
+<Address>
+            <!--renamed from Address to Street_Address-->
+<Street_Address>LAADS User Support Team</Street_Address>
+            <!--renamed from Address to Street_Address-->
+<Street_Address>NASA/GSFC</Street_Address>
+            <!--renamed from Address to Street_Address-->
+<Street_Address>Mail Code: 619</Street_Address>
+            <City>Greenbelt</City>
+            <!--renamed from Province_or_State to State_Province-->
+<State_Province>MD</State_Province>
+            <Postal_Code>20771</Postal_Code>
+            <Country>USA</Country>
+         </Address>
+            <Phone>
+          <Number>1-800-596-8132</Number>
+                <Type>Telephone</Type>
+        </Phone>
+            <Phone>
+          <Number>301-794-7035</Number>
+                <Type>Fax</Type>
+        </Phone>
+            <Email>MODAPSUSO@lists.nasa.gov</Email>
+      </Contact_Person>
+    </Personnel>
+   </Organization>
+   <Distribution>
+      <Distribution_Media>Online (FTP)</Distribution_Media>
+      <Distribution_Format>JPG</Distribution_Format>
+      <Fees>No Fee</Fees>
+   </Distribution>
+   <Summary>
+      <Abstract>This is browse product: "Aerosol Ratio Small MODIS L2" 
+      
+      Data set information: 
+      http://modis-atmos.gsfc.nasa.gov/
+      
+      [placeholder metadata]</Abstract>
+   </Summary>
+   <Related_URL>
+      <URL_Content_Type uuid="0b50c12d-a6ae-4d63-b42b-d99bf7aa2da0">
+     <Type>GET DATA</Type>
+     <Subtype>LAADS</Subtype>
+      </URL_Content_Type>
+      <URL>ftp://ladsftp.nascom.nasa.gov/allData/5/MYBARS/</URL>
+      <Description>
+         Access data set MOBARS from the LAADS FTP server.
+      </Description>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="0b50c12d-a6ae-4d63-b42b-d99bf7aa2da0">
+     <Type>GET DATA</Type>
+     <Subtype>LAADS</Subtype>
+      </URL_Content_Type>
+      <URL>http://ladsweb.nascom.nasa.gov/browse_images/</URL>
+      <Description>
+         Visually browse MODIS level 1 and atmosphere data products.
+      </Description>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="6e72d128-7d28-4bd0-bac0-8c5ffd8b31f1">
+     <Type>VIEW PROJECT HOME PAGE</Type>
+      </URL_Content_Type>
+      <URL>http://modis.gsfc.nasa.gov/sci_team/</URL>
+      <Description>
+         MODIS Science Team
+      </Description>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="6e72d128-7d28-4bd0-bac0-8c5ffd8b31f1">
+     <Type>VIEW PROJECT HOME PAGE</Type>
+      </URL_Content_Type>
+      <URL>http://modis-atmos.gsfc.nasa.gov/</URL>
+      <Description>
+         MODIS Atmosphere Team
+      </Description>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="6e72d128-7d28-4bd0-bac0-8c5ffd8b31f1">
+     <Type>VIEW PROJECT HOME PAGE</Type>
+      </URL_Content_Type>
+      <URL>http://mcst.gsfc.nasa.gov/</URL>
+      <Description>
+         MODIS Characterization Support Team (MCST).
+      </Description>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="5ec1bb9d-0efc-4099-9b31-ec791bbd8145">
+     <Type>VIEW RELATED INFORMATION</Type>
+      </URL_Content_Type>
+      <URL>ftp://ladsftp.nascom.nasa.gov/README</URL>
+      <Description>
+         Readme regarding accessing MODIS data from the LAADS FTP server.
+      </Description>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="5ec1bb9d-0efc-4099-9b31-ec791bbd8145">
+     <Type>VIEW RELATED INFORMATION</Type>
+      </URL_Content_Type>
+      <URL>http://ladsweb.nascom.nasa.gov/data/availability.html</URL>
+      <Description>
+         View MODIS data availability.
+      </Description>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="5ec1bb9d-0efc-4099-9b31-ec791bbd8145">
+     <Type>VIEW RELATED INFORMATION</Type>
+      </URL_Content_Type>
+      <URL>http://ladsweb.nascom.nasa.gov/data/search.html</URL>
+      <Description>
+         Web site for MODIS Collection 5 L1B, Geo and atmosphere data ordering.
+                  Web site for MODIS Collection 4 atmosphere data ordering.
+      </Description>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="5ec1bb9d-0efc-4099-9b31-ec791bbd8145">
+     <Type>VIEW RELATED INFORMATION</Type>
+      </URL_Content_Type>
+      <URL>http://modaps.nascom.nasa.gov</URL>
+      <Description>
+         Web site for MODIS Collection 4 L1B and Geo data ordering.
+      </Description>
+   </Related_URL>
+   <!--Moved IDN_Node=USA/NASA to name-value.-->
+   <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+   <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+   <Metadata_Version>VERSION 10.2</Metadata_Version>
+   
+   
+   <DIF_Revision_History>
+      2006-08-09, S. Ritz added new GET data hierarchy keywords.
+            2006-10-19, S. Ritz updated DIF for MODAPS/LAADS.
+   </DIF_Revision_History>
+   <Metadata_Dates>
+    <Metadata_Creation>2006-06-27</Metadata_Creation>
+    <Metadata_Last_Revision>2012-09-26</Metadata_Last_Revision>
+    <Data_Creation>Not provided</Data_Creation>
+    <Data_Last_Revision>Not provided</Data_Last_Revision>
+  </Metadata_Dates>
+<Extended_Metadata>
+      <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>metadata.extraction_date</Name>
+        <Value>2015-12-17 16:33:24</Value>
+      </Metadata>
+      <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>metadata.keyword_version</Name>
+        <Value>8.1</Value>
+      </Metadata>
+   </Extended_Metadata>
+<Extended_Metadata>
+    <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>DIF9.0-to-DIF10-Converter</Name>
+        <Value>2015-12-18T14:01:00Z</Value>
+        <Value>Version:-3.0</Value>
+        <Value>Target:10.2</Value>
+    </Metadata>
+</Extended_Metadata>
+<Extended_Metadata>
+    <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>IDN_Node.Short_Name</Name>
+        <Value>USA/NASA</Value>
+    </Metadata>
+</Extended_Metadata>
+<Extended_Metadata>
+    <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>IDN_Node.UUID</Name>
+        <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+    </Metadata>
+</Extended_Metadata>
+<Extended_Metadata>
+    <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>Original.Metadata_Version</Name>
+        <Value>VERSION 9.8.3</Value>
+    </Metadata>
+</Extended_Metadata>
+<Extended_Metadata>
+    <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>Original.Dataset_Language</Name>
+        <Value>English</Value>
+    </Metadata>
+</Extended_Metadata>
+<Extended_Metadata>
+    <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>Original.xsi:schemaLocation</Name>
+        <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+    </Metadata>
+</Extended_Metadata>
+</DIF>

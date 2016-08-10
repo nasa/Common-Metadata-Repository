@@ -1,19 +1,28 @@
 (ns cmr.oracle.config
   "Contains functions for retrieving connection configuration from environment variables"
-  (:require [cmr.common.config :as cfg]
+  (:require [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.oracle.connection :as conn]))
 
-(def db-url (cfg/config-value-fn :db-url "thin:@localhost:1521:orcl"))
+(defconfig db-url
+  "db url"
+  {:default "thin:@localhost:1521:orcl"})
 
-(def db-fcf-enabled
+(defconfig db-fcf-enabled
   "Enables or disables fast connection failover in Oracle jdbc."
-  (cfg/config-value-fn :db-fcf-enabled "false" #(= "true" %)))
+  {:default false
+   :type Boolean})
+ 
+(defconfig db-ons-config
+  "db-ons-config"
+  {:default ""})
 
-(def db-ons-config (cfg/config-value-fn :db-ons-config ""))
+(defconfig sys-dba-username
+  "system dba username"
+  {:default "sys as sysdba"})  
 
-(def sys-dba-username (cfg/config-value-fn :sys-dba-username "sys as sysdba"))
-
-(def sys-dba-password (cfg/config-value-fn :sys-dba-password "oracle"))
+(defconfig sys-dba-password
+  "system dba password"
+  {***REMOVED***})
 
 (defn sys-dba-db-spec
   []

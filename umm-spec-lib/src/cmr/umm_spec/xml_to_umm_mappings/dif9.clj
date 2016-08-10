@@ -65,9 +65,8 @@
       (map #(assoc % :Instruments instruments) platforms)
       (if instruments
         (conj platforms {:ShortName su/not-provided
-                         :LongName su/not-provided
                          :Instruments instruments})
-        platforms))))
+        (or (seq platforms) su/not-provided-platforms)))))
 
 (defn- get-short-name
   "Returns the short-name from the given entry-id and version-id, where entry-id is
@@ -116,10 +115,11 @@
                          :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}
      :UseConstraints (value-of doc "/DIF/Use_Constraints")
      :Platforms (parse-platforms doc)
-     :TemporalExtents (when-let [temporals (select doc "/DIF/Temporal_Coverage")]
+     :TemporalExtents (if-let [temporals (select doc "/DIF/Temporal_Coverage")]
                         [{:RangeDateTimes (for [temporal temporals]
                                             {:BeginningDateTime (value-of temporal "Start_Date")
-                                             :EndingDateTime (parse-dif-end-date (value-of temporal "Stop_Date"))})}])
+                                             :EndingDateTime (parse-dif-end-date (value-of temporal "Stop_Date"))})}]
+                        su/not-provided-temporal-extents)
      :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
      :SpatialExtent (merge {:GranuleSpatialRepresentation (or (value-of doc "/DIF/Extended_Metadata/Metadata[Name='GranuleSpatialRepresentation']/Value")
                                                               "NO_SPATIAL")}
@@ -136,7 +136,7 @@
      ;; umm-lib only has ProcessingLevelId and it is from Metadata Name "ProductLevelId"
      ;; Need to double check which implementation is correct.
      :ProcessingLevel {:Id
-                       (value-of doc "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelId']/Value")
+                       (su/with-default (value-of doc "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelId']/Value"))
 
                        :ProcessingLevelDescription
                        (value-of doc "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelDescription']/Value")}

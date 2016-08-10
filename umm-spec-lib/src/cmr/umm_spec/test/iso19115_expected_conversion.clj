@@ -4,6 +4,7 @@
            [clj-time.format :as f]
            [clojure.string :as str]
            [cmr.umm-spec.util :as su]
+           [cmr.umm-spec.json-schema :as js]
            [cmr.common.util :as util :refer [update-in-each]]
            [cmr.umm-spec.models.common :as cmn]
            [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
@@ -57,8 +58,7 @@
                                                         (when-not ends-at-present
                                                           x)))
           (assoc :EndsAtPresentFlag
-                 (when (and rdts ends-at-present)
-                   true))))))
+                 (boolean (and rdts ends-at-present)))))))
 
 (defn- fixup-comma-encoded-values
   [temporal-extents]
@@ -76,7 +76,8 @@
        fixup-iso-ends-at-present
        (split-temporals :RangeDateTimes)
        (split-temporals :SingleDateTimes)
-       sort-by-date-type-iso))
+       sort-by-date-type-iso
+       (#(or (seq %) su/not-provided-temporal-extents))))
 
 (defn- iso-19115-2-publication-reference
   "Returns the expected value of a parsed ISO-19115-2 publication references"
@@ -195,4 +196,5 @@
       (assoc :PaleoTemporalCoverages nil)
       (assoc :DataCenters [su/not-provided-data-center])
       (assoc :ContactGroups nil)
-      (assoc :ContactPersons nil)))
+      (assoc :ContactPersons nil)
+      js/parse-umm-c))

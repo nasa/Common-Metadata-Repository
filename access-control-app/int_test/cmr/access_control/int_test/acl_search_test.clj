@@ -8,11 +8,11 @@
            [cmr.access-control.data.access-control-index :as access-control-index]))
 
 (use-fixtures :each
-  (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"}
+  (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2", "prov3guid" "PROV3",
+                           "prov4guid" "PROV4"}
                           ["user1" "user2" "user3" "user4" "user5"])
   (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 (use-fixtures :once (fixtures/int-test-fixtures))
-
 
 (deftest invalid-search-test
   (testing "Accept header"
@@ -283,7 +283,6 @@
         acl-group1 (ingest-acl token (assoc (system-acl "ARCHIVE_RECORD")
                                             :group_permissions
                                             [{:group_id (:concept_id group1) :permissions ["create"]}]))
-
         acl-registered-2 (ingest-acl token (assoc (provider-acl "OPTION_DEFINITION")
                                                   :group_permissions
                                                   [{:user_type "registered" :permissions ["create"]}]))
@@ -319,7 +318,7 @@
       (are3 [users expected-acls]
         (let [response (ac/search-for-acls (u/conn-context) {:permitted-user users})]
           (is (= (acls->search-response (count expected-acls) expected-acls)
-                (dissoc response :took))))
+                 (dissoc response :took))))
 
         "user3 is not in a group, but gets acls for registered but not guest"
         ["user3"] (concat registered-acls)
@@ -336,28 +335,31 @@
 (deftest acl-search-provider-test
   (let [token (e/login (u/conn-context) "user1")
         acl1 (ingest-acl token (provider-acl "INGEST_MANAGEMENT_ACL"))
-        acl2 (ingest-acl token (catalog-item-acl "Catalog_Item1_PROV1"))
-        acl3 (ingest-acl token (catalog-item-acl "Catalog_Item2_PROV1"))
-        acl4 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item3_PROV2")
-                                         [:catalog_item_identity :provider_id] "PROV2"))
-        acl5 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item4_PROV3")
-                                         [:catalog_item_identity :provider_id] "PROV3"))
-        acl6 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item5_PROV2")
-                                         [:catalog_item_identity :provider_id] "PROV2"))
-        acl7 (ingest-acl token (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
+        acl2 (ingest-acl token (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
                                          [:provider_identity :provider_id] "PROV2"))
-        acl8 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item6_PROV4")
+        acl3 (ingest-acl token (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
+                                         [:provider_identity :provider_id] "PROV3"))
+        acl4 (ingest-acl token (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
+                                         [:provider_identity :provider_id] "PROV4"))
+        acl5 (ingest-acl token (catalog-item-acl "Catalog_Item1_PROV1"))
+        acl6 (ingest-acl token (catalog-item-acl "Catalog_Item2_PROV1"))
+        acl7 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item3_PROV2")
+                                         [:catalog_item_identity :provider_id] "PROV2"))
+        acl8 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item5_PROV2")
+                                         [:catalog_item_identity :provider_id] "PROV2"))
+
+        acl9 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item6_PROV4")
                                          [:catalog_item_identity :provider_id] "PROV4"))
-        prov1-acls [acl1 acl2 acl3]
-        prov1-and-2-acls [acl1 acl2 acl3 acl4 acl6 acl7]
-        prov3-acls [acl5]]
+        prov1-acls [acl1 acl5 acl6]
+        prov1-and-2-acls [acl1 acl2 acl5 acl6 acl7 acl8]
+        prov3-acls [acl3]]
     (u/wait-until-indexed)
     (testing "Search ACLs that grant permissions to objects owned by a single provider
               or by any provider where multiple are specified"
       (are3 [provider-ids acls]
         (let [response (ac/search-for-acls (u/conn-context) {:provider provider-ids})]
-          (= (acls->search-response (count acls) acls)
-             (dissoc response :took)))
+          (is (= (acls->search-response (count acls) acls)
+                 (dissoc response :took))))
 
         "Single provider with multiple results"
         ["PROV1"] prov1-acls
@@ -377,15 +379,15 @@
         "Single provider with single result, case-insensitive"
         ["prov3"] prov3-acls
 
-        "Provider that doens't exist"
+        "Provider that doesn't exist"
         ["NOT_A_PROVIDER"] []))
 
     (testing "Search ACLs by provider with options"
       (are3 [provider-ids options acls]
        (let [response (ac/search-for-acls (u/conn-context)
                                           (merge {:provider provider-ids} options))]
-         (= (acls->search-response (count acls) acls)
-            (dissoc response :took)))
+         (is (= (acls->search-response (count acls) acls)
+                (dissoc response :took))))
 
        "Multiple providers with multiple results using ignore_case=false option"
        ["PROV1"] {"options[provider][ignore_case]" false} prov1-acls
@@ -398,3 +400,71 @@
 
        "Multiple providers with empty results using ignore_case=false option"
        ["prov1"] {"options[provider][ignore_case]" false} []))))
+
+(deftest acl-search-multiple-criteria
+  (let [token (e/login (u/conn-context) "user1")
+        group1 (u/ingest-group token {:name "group1"} ["user1"])
+        group2 (u/ingest-group token {:name "group2"} ["user2"])
+        acl1 (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
+        acl2 (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE")
+                                      :group_permissions
+                                      [{:user_type "registered" :permissions ["create"]}]))
+        acl3 (ingest-acl token (assoc (system-acl "ARCHIVE_RECORD")
+                                      :group_permissions
+                                      [{:group_id (:concept_id group1) :permissions ["create"]}]))
+        acl4 (ingest-acl token (assoc (provider-acl "OPTION_DEFINITION")
+                                      :group_permissions
+                                      [{:user_type "registered" :permissions ["create"]}]))
+        acl5 (ingest-acl token (assoc (provider-acl "OPTION_ASSIGNMENT")
+                                      :group_permissions
+                                      [{:group_id (:concept_id group2) :permissions ["create"]}]))
+        acl6 (ingest-acl token (assoc-in (assoc (provider-acl "OPTION_ASSIGNMENT")
+                                                :group_permissions
+                                                [{:group_id (:concept_id group2) :permissions ["create"]}])
+                                         [:provider_identity :provider_id] "PROV2"))
+        acl7 (ingest-acl token (assoc (catalog-item-acl "All Collection")
+                                      :group_permissions
+                                      [{:group_id (:concept_id group1) :permissions ["create"]}
+                                       {:user_type "registered" :permissions ["create"]}]))
+        acl8 (ingest-acl token (assoc (catalog-item-acl "All Granules")
+                                      :group_permissions
+                                      [{:group_id (:concept_id group1) :permissions ["create"]}]))
+        acl9 (ingest-acl token (assoc-in (assoc (catalog-item-acl "All Granules PROV2")
+                                                :group_permissions
+                                                [{:group_id (:concept_id group2) :permissions ["create"]}])
+                                         [:catalog_item_identity :provider_id] "PROV2"))]
+    (u/wait-until-indexed)
+    (testing "Search with every criteria"
+      (are3 [params acls]
+        (let [response (ac/search-for-acls (u/conn-context) params)]
+          (is (= (acls->search-response (count acls) acls)
+                 (dissoc response :took))))
+        "Multiple search criteria"
+        {:provider "PROV1"
+         :permitted-group "registered"
+         :identity-type "catalog_item"
+         :permitted-user "user1"}
+        [acl7]
+
+        "One criteria changed to get empy result"
+        {:provider "PROV1"
+         :permitted-group "guest"
+         :identity-type "catalog_item"
+         :permitted-user "user1"}
+        []
+
+        ;;To show that when permitted groups are specified, the groups associated with the user but not included in the permitted groups params are not returned
+        "Multiple search criteria with permitted groups being registered and guest but user1 being specified as permitted user"
+        {:provider ["PROV1" "PROV2"]
+         :permitted-group ["guest" "registered"]
+         :identity-type ["catalog_item" "provider"]
+         :permitted-user "user1"}
+        [acl4 acl7]
+
+        ;;Shows when permitted groups are not specified, then all user groups are returned for that user
+        "Multiple search criteria with no permitted group specified and permitted users set to user2"
+        {:provider ["PROV1" "PROV2"]
+         :permitted-group ""
+         :identity-type ["catalog_item" "provider"]
+         :permitted-user "user2"}
+        [acl4 acl5 acl6 acl7 acl9]))))

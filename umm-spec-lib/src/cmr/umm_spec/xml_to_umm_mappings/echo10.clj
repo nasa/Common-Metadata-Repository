@@ -7,7 +7,8 @@
             [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.util :as u]
-            [cmr.umm-spec.location-keywords :as lk]))
+            [cmr.umm-spec.location-keywords :as lk]
+            [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as dc]))
 
 (defn parse-temporal
   "Returns seq of UMM temporal extents from an ECHO10 XML document."
@@ -82,12 +83,22 @@
      :Coordinate1 (fields-from (first (select sys-el "Coordinate1")) :MinimumValue :MaximumValue)
      :Coordinate2 (fields-from (first (select sys-el "Coordinate2")) :MinimumValue :MaximumValue)}))
 
+(defn- parse-platforms
+  "Parses platforms from the ECHO10 collection document."
+  [doc]
+  (for [plat (select doc "/Collection/Platforms/Platform")]
+    {:ShortName (value-of plat "ShortName")
+     :LongName (u/without-default-value-of plat "LongName")
+     :Type (u/without-default-value-of plat "Type")
+     :Characteristics (parse-characteristics plat)
+     :Instruments (map parse-instrument (select plat "Instruments/Instrument"))}))
+
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [context doc]
   {:EntryTitle (value-of doc "/Collection/DataSetId")
    :ShortName  (value-of doc "/Collection/ShortName")
-   :Version    (u/without-default-value-of doc "/Collection/VersionId")
+   :Version    (value-of doc "/Collection/VersionId")
    :DataDates  (parse-data-dates doc)
    :Abstract   (value-of doc "/Collection/Description")
    :CollectionDataType (value-of doc "/Collection/CollectionDataType")
@@ -102,13 +113,8 @@
                       (lk/get-spatial-keywords-maps context)
                       (values-at doc "/Collection/SpatialKeywords/Keyword"))
    :SpatialExtent    (spatial/parse-spatial doc)
-   :TemporalExtents  (parse-temporal doc)
-   :Platforms (for [plat (select doc "/Collection/Platforms/Platform")]
-                {:ShortName (u/without-default-value-of plat "ShortName")
-                 :LongName (u/without-default-value-of plat "LongName")
-                 :Type (u/without-default-value-of plat "Type")
-                 :Characteristics (parse-characteristics plat)
-                 :Instruments (map parse-instrument (select plat "Instruments/Instrument"))})
+   :TemporalExtents  (or (seq (parse-temporal doc)) u/not-provided-temporal-extents)
+   :Platforms (or (seq (parse-platforms doc)) u/not-provided-platforms)
    :ProcessingLevel {:Id (value-of doc "/Collection/ProcessingLevelId")
                      :ProcessingLevelDescription (value-of doc "/Collection/ProcessingLevelDescription")}
    :AdditionalAttributes (for [aa (select doc "/Collection/AdditionalAttributes/AdditionalAttribute")]
@@ -134,9 +140,8 @@
                        :VariableLevel2 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/Value")
                        :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
                        :DetailedVariable (value-of sk "DetailedVariableKeyword")})
-     ;; DataCenters is not implemented but is required in UMM-C
-     ;; Implement with CMR-3158
-     :DataCenters [u/not-provided-data-center]})
+   :DataCenters (dc/parse-data-centers doc)
+   :ContactPersons (dc/parse-data-contact-persons doc)})
 
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document."
