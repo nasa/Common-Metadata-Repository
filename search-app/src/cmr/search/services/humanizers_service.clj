@@ -27,7 +27,8 @@
 (defn- get-all-collections
   "Retrieves all collections from the Metadata cache"
   [context]
-  ;; TODO should this throw an exception if the cache isn't populated
+  ;; Currently not throwing an exception if the cache is empty. May want to change in the future
+  ;; to throw an exception.
   ;; TODO should this use pmap? (Test performance in workload and then look at times if too slow.)
   (map #(rfm->umm-collection context %) (metadata-cache/all-cached-revision-format-maps context)))
 
@@ -62,7 +63,6 @@
 (defn humanizers-report-csv
   "Returns a report on humanizers in use in collections as a CSV."
   [context]
-  ;; TODO add logging of times taken for each step. See Metadata Cache functions for examples of how we do that.
   (let [[t1 collections] (u/time-execution
                           (get-all-collections context))
         [t2 humanized-rows] (u/time-execution
