@@ -6,7 +6,7 @@
             [cmr.common.parameter-parser :as parser]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.common.util :as util]
-            [cmr.common.concepts :as c-ccpts]
+            [cmr.common.concepts :as cc]
             [clojure.string :as s]
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.common.date-time-range-parser :as dtr-parser]
@@ -88,18 +88,12 @@
       (Integer. value))))
 
 (defn concept-id-validation
-  "Validates the concept-id(s) follow the right format"
+  "Validates the concept-id(s)"
   [concept-type params]
-  (when-let [conceptids (:concept-id params)]
-    (if (vector? conceptids)
-      (let [conceptiderr (mapcat c-ccpts/concept-id-validation conceptids)]
-        (if (= conceptiderr ())
-          nil
-          (vector(reduce str conceptiderr))))
-      ;; concept-id-validation is after the multiple-value-validation
-      ;; so it's either a vector or a single value.
-      (c-ccpts/concept-id-validation conceptids))))
-        
+  ;; collection-concept-ids can be either a vector or a single value.
+  (when-let [concept-ids (util/seqify (:concept-id params))]
+    (mapcat cc/concept-id-validation concept-ids)))
+
 (defn page-size-validation
   "Validates that the page-size (if present) is a number in the valid range."
   [concept-type params]
