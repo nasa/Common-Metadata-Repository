@@ -15,7 +15,7 @@
             [cmr.common-app.services.search.query-model :as common-qm]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.transmit.urs :as urs]
-            [cmr.access-control.services.group-service-messages :as msg]
+            [cmr.access-control.services.group-service-messages :as g-msg]
             [cmr.access-control.services.auth-util :as auth]
             [clojure.edn :as edn]
             [clojure.string :as str]
@@ -23,14 +23,15 @@
             [cmr.access-control.data.group-json-results-handler]
             [cmr.access-control.data.acl-json-results-handler]
             [cmr.acl.core :as acl]
-            [cheshire.core :as json]))
+            [cheshire.core :as json]
+            [cmr.access-control.services.messages :as msg]))
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
   [context]
   (if-let [token (:token context)]
     (tokens/get-user-id context (:token context))
-    (errors/throw-service-error :unauthorized msg/token-required-for-group-modification)))
+    (errors/throw-service-error :unauthorized msg/token-required)))
 
 (def SYSTEM_PROVIDER_ID
   "The provider id used when a group is a system provider."
@@ -64,13 +65,13 @@
   [context concept-id]
   (let [{:keys [concept-type provider-id]} (concepts/parse-concept-id concept-id)]
     (when (not= :access-group concept-type)
-      (errors/throw-service-error :bad-request (msg/bad-group-concept-id concept-id))))
+      (errors/throw-service-error :bad-request (g-msg/bad-group-concept-id concept-id))))
 
   (if-let [concept (mdb/get-latest-concept context concept-id false)]
     (if (:deleted concept)
-      (errors/throw-service-error :not-found (msg/group-deleted concept-id))
+      (errors/throw-service-error :not-found (g-msg/group-deleted concept-id))
       concept)
-    (errors/throw-service-error :not-found (msg/group-does-not-exist concept-id))))
+    (errors/throw-service-error :not-found (g-msg/group-does-not-exist concept-id))))
 
 (defn- save-updated-group-concept
   "Saves an updated group concept"
@@ -157,7 +158,7 @@
         (save-updated-group-concept context concept group)
 
         ;; The group exists and was not deleted. Reject this.
-        (errors/throw-service-error :conflict (msg/group-already-exists group concept))))
+        (errors/throw-service-error :conflict (g-msg/group-already-exists group concept))))
 
     ;; The group doesn't exist
     (mdb/save-concept context (group->new-concept context group))))

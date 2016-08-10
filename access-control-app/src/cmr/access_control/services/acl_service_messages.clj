@@ -13,10 +13,3 @@
 (defn acl-deleted
   [concept-id]
   (format "ACL with concept id [%s] was deleted." concept-id))
-
-(defn provider-does-not-exist
-  [provider-id]
-  (format "Provider with provider-id [%s] does not exist." provider-id))
-
-(def token-required-for-acl-modification
-  "ACLs cannot be modified without a valid user token.")

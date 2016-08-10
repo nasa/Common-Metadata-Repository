@@ -88,13 +88,12 @@
                        {:a 1}))))
   (testing "short circuiting validations"
     (is (= {[:a] [{:id 1, :value 1}]}
-           (v/validate {:a (v/seq-of-validations
-                             [always-valid-validation
-                              (identified-validation 1)
-                              always-valid-validation
-                              (identified-validation 2)
-                              always-valid-validation]
-                             true)}
+           (v/validate {:a (v/first-failing
+                             always-valid-validation
+                             (identified-validation 1)
+                             always-valid-validation
+                             (identified-validation 2)
+                             always-valid-validation)}
                        {:a 1})))))
 
 (deftest required-validation-test
