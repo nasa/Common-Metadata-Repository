@@ -6,6 +6,7 @@
             [cmr.common.parameter-parser :as parser]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.common.util :as util]
+            [cmr.common.concepts :as cc]
             [clojure.string :as s]
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.common.date-time-range-parser :as dtr-parser]
@@ -85,6 +86,13 @@
     ; Return null if value is a vector.  Assumes single-value-validation handles vectors.
     (when-not (sequential? value)
       (Integer. value))))
+
+(defn concept-id-validation
+  "Validates the concept-id(s)"
+  [concept-type params]
+  ;; concept-ids can be either a vector or a single value.
+  (when-let [concept-ids (util/seqify (:concept-id params))]
+    (mapcat cc/concept-id-validation concept-ids)))
 
 (defn page-size-validation
   "Validates that the page-size (if present) is a number in the valid range."
@@ -342,6 +350,7 @@
   "A set of validations common to all concept types."
   [single-value-validation
    multiple-value-validation
+   concept-id-validation
    page-size-validation
    page-num-validation
    offset-validation
