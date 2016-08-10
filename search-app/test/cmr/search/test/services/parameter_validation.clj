@@ -333,8 +333,7 @@
              (cpv/validate-all-map-values cpv/validate-map [:root] params))))))
 
 (deftest collection-concept-id-validation-test
-  (is (= () 
-         (pv/collection-concept-id-validation :granule {:collection-concept-id "C1234-Valid"})))
+  (is (empty? (pv/collection-concept-id-validation :granule {:collection-concept-id "C1234-Valid"})))
   (is (= ["Collection-concept-id [C1234-Invalid'] is not valid."] 
          (pv/collection-concept-id-validation :granule {:collection-concept-id "C1234-Invalid'"})))
   (is (= ["Collection-concept-id [C1234-Invalid'] is not valid." 

@@ -90,7 +90,7 @@
 (defn concept-id-validation
   "Validates the concept-id(s)"
   [concept-type params]
-  ;; collection-concept-ids can be either a vector or a single value.
+  ;; concept-ids can be either a vector or a single value.
   (when-let [concept-ids (util/seqify (:concept-id params))]
     (mapcat cc/concept-id-validation concept-ids)))
 
