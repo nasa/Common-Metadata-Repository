@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.search.collection-humanized-search-test
   "Integration test for CMR collection search by humanized fields"
   (:require [clojure.test :refer :all]
+            [clojure.string :as str]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -9,8 +10,6 @@
             [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
-
-(def context (lkt/setup-context-for-test lkt/sample-keyword-map))
 
 ;; Note: These specs rely on data in the indexer's humanizers.json config
 ;;       file. Once humanizers can be set by the ingest service, these
@@ -27,15 +26,35 @@
 ;;  curl http://localhost:3003/humanizers/report
 
 (deftest humanizer-report
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:platforms [(dc/platform {:short-name "TERRA"})]}))
-        coll2 (d/ingest "PROV1" (dc/collection {:platforms [(dc/platform {:short-name "AM-1"})]}))
-        coll3 (d/ingest "PROV1" (dc/collection {:platforms [(dc/platform {:short-name "Aqua"})]}))]
-    (index/wait-until-indexed)
-    ;; Refresh the metadata cache
-    (search/refresh-collection-metadata-cache)
-    (let [report (search/get-humanizers-report)]
-      (println report)
-      (proto-repl.saved-values/save 14))))
+  (d/ingest "PROV1" (dc/collection
+                     {:product {:short-name "A"
+                                :long-name "A"
+                                :version-id "V1"}
+                      :platforms [(dc/platform {:short-name "TERRA"
+                                                              :instruments
+                                                              [(dc/instrument {:short-name "GPS RECEIVERS"})]})]}))
+  (d/ingest "PROV1" (dc/collection
+                     {:product {:short-name "B"
+                                :long-name "B"
+                                :version-id "V2"}
+                      :platforms [(dc/platform {:short-name "AM-1"})]}))
+  (d/ingest "PROV1" (dc/collection
+                     {:product {:short-name "C"
+                                :long-name "C"
+                                :version-id "V3"}
+                      :projects (dc/projects "USGS_SOFIA")}))
+
+  (index/wait-until-indexed)
+  ;; Refresh the metadata cache
+  (search/refresh-collection-metadata-cache)
+  (testing "Humanizer report csv")
+  (let [report (search/get-humanizers-report)]
+    (is (= (str/split report #"\n")
+           ["provider,concept_id,short_name,version,original_value,humanized_value"
+            "PROV1,C1200000000-PROV1,A,V1,GPS RECEIVERS,GPS Receivers"
+            "PROV1,C1200000001-PROV1,B,V2,AM-1,Terra"
+            "PROV1,C1200000002-PROV1,C,V3,USGS_SOFIA,USGS SOFIA"]))))
+
 
 (deftest search-by-platform-humanized
   (let [coll1 (d/ingest "PROV1" (dc/collection {:platforms [(dc/platform {:short-name "TERRA"})]}))
