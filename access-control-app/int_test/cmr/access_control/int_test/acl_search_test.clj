@@ -112,6 +112,15 @@
 
 (deftest acl-search-test
   (let [token (e/login (u/conn-context) "user1")
+        group1 (u/ingest-group token
+                               {:name "group1"}
+                               ["user1"])
+        group2 (u/ingest-group token
+                               {:name "group2"}
+                               ["user1"])
+        wait (u/wait-until-indexed)
+        group1-concept-id (:concept_id group1)
+        group2-concept-id (:concept_id group2)
         acl1 (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
         acl2 (ingest-acl token (system-acl "METRIC_DATA_POINT_SAMPLE"))
         acl3 (ingest-acl token (system-acl "SYSTEM_INITIALIZER"))
@@ -120,9 +129,8 @@
         acl5 (ingest-acl token (provider-acl "AUDIT_REPORT"))
         acl6 (ingest-acl token (provider-acl "OPTION_ASSIGNMENT"))
 
-        ;; Eventually validation will prevent this without creating the group first.
-        acl7 (ingest-acl token (single-instance-acl "AG1234-CMR"))
-        acl8 (ingest-acl token (single-instance-acl "AG1235-CMR"))
+        acl7 (ingest-acl token (single-instance-acl group1-concept-id))
+        acl8 (ingest-acl token (single-instance-acl group2-concept-id))
 
         acl9 (ingest-acl token (catalog-item-acl "All Collections"))
         acl10 (ingest-acl token (catalog-item-acl "All Granules"))
@@ -142,8 +150,8 @@
           ;; We verify the exact expected names here to ensure that they look correct.
           (is (= ["All Collections"
                   "All Granules"
-                  "Group - AG1234-CMR"
-                  "Group - AG1235-CMR"
+                  "Group - AG1200000000-CMR"
+                  "Group - AG1200000001-CMR"
                   "Provider - PROV1 - AUDIT_REPORT"
                   "Provider - PROV1 - OPTION_ASSIGNMENT"
                   "System - ARCHIVE_RECORD"
@@ -229,9 +237,14 @@
 
 (deftest acl-search-by-identity-type-test
   (let [token (e/login (u/conn-context) "user1")
+        group1 (u/ingest-group token
+                               {:name "group1"}
+                               ["user1"])
+        wait (u/wait-until-indexed)
+        group1-concept-id (:concept_id group1)
         acl-system (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
         acl-provider (ingest-acl token (provider-acl "AUDIT_REPORT"))
-        acl-single-instance (ingest-acl token (single-instance-acl "AG1234-CMR"))
+        acl-single-instance (ingest-acl token (single-instance-acl group1-concept-id))
         acl-catalog-item (ingest-acl token (catalog-item-acl "All Collections"))
         all-acls [acl-system acl-provider acl-single-instance acl-catalog-item]]
     (u/wait-until-indexed)

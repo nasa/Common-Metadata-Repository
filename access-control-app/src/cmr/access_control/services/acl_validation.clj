@@ -5,6 +5,7 @@
             [cmr.transmit.metadata-db :as mdb1]
             [cmr.transmit.metadata-db2 :as mdb]
             [cmr.access-control.data.acls :as acls]
+            [cmr.access-control.services.group-service :as groups]
             [cmr.metadata-db.services.messages :as msg]))
 
 (defn- catalog-item-identity-collection-applicable-validation
@@ -67,6 +68,23 @@
   {:access-value (v/when-present access-value-validation)
    :temporal (v/when-present temporal-identifier-validation)})
 
+(defn- get-all-groups
+  [context]
+  (map #(get % :concept_id) (get-in (groups/search-for-groups context {}) [:results :items])))
+
+(defn single-instance-identity-target-validation
+  "Validates that the acl group exists."
+  [context acl]
+  (let [groups (get-all-groups context)]
+    (fn [key-path target-id]
+      (when-not (contains? (set groups) target-id)
+        {key-path [(format "Group with concept-id [%s] does not exist" target-id)]}))))
+
+(defn- make-single-instance-identity-validations
+  "Returns a standard validation for an ACL single_instance_identity field closed over the given context and ACL to be validated."
+  [context acl]
+  [{:target-id (v/when-present (single-instance-identity-target-validation context acl))}])
+
 (defn- make-catalog-item-identity-validations
   "Returns a standard validation for an ACL catalog_item_identity field closed over the given context and ACL to be validated."
   [context acl]
@@ -88,7 +106,8 @@
   "Returns a sequence of validations closed over the given context for validating ACL records."
   [context acl]
   [#(validate-provider-exists context %1 %2)
-   {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl))}])
+   {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl))}
+   {:single-instance-identity (v/when-present (make-single-instance-identity-validations context acl))}])
 
 (defn validate-acl-save!
   "Throws service errors if ACL is invalid."

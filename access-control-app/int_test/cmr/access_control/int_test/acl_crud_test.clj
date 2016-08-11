@@ -35,6 +35,12 @@
                            :provider_id "PROV1"
                            :collection_applicable true}})
 
+(def single-instance-acl
+  "A sample single instance ACL."
+  {:group_permissions [{:user_type "guest" :permissions ["create"]}]
+   :single_instance_identity {:target "GROUP_MANAGEMENT"
+                              :target_id "REPLACEME"}})
+
 (deftest create-acl-test
   (let [token (e/login (u/conn-context) "admin")
         resp (ac/create-acl (u/conn-context) system-acl {:token token})]
@@ -76,7 +82,11 @@
 
           "Provider doesn't exist, catalog-item version"
           #"Provider with provider-id \[WHATEVER\] does not exist"
-          (assoc-in catalog-item-acl [:catalog_item_identity :provider_id] "WHATEVER"))
+          (assoc-in catalog-item-acl [:catalog_item_identity :provider_id] "WHATEVER")
+
+          "Group id doesn't exist for single-instance-identity"
+          #"Group with concept-id \[WHATEVER\] does not exist"
+          (assoc-in single-instance-acl [:single_instance_identity :target_id] "WHATEVER"))
 
     (testing "Acceptance criteria: I receive an error if creating an ACL with invalid JSON"
       (is
@@ -315,7 +325,12 @@
 
           "Provider doesn't exist, catalog-item version"
           #"Provider with provider-id \[WHATEVER\] does not exist"
-          (assoc-in catalog-item-acl [:catalog_item_identity :provider_id] "WHATEVER"))
+          (assoc-in catalog-item-acl [:catalog_item_identity :provider_id] "WHATEVER")
+
+          "Group id doesn't exist for single-instance-identity"
+          #"Group with concept-id \[WHATEVER\] does not exist"
+          (assoc-in single-instance-acl [:single_instance_identity :target_id] "WHATEVER"))
+
 
     (testing "Acceptance criteria: I receive an error if updating an ACL with invalid JSON"
       (is
