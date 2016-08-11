@@ -196,6 +196,5 @@
       (let [conditions (map (fn [[param value]]
                               (parameter->condition context concept-type param value options))
                             params)]
-        (println "CONDTIONS: " conditions)
         (qm/query (assoc query-attribs
                          :condition (gc/and-conds conditions)))))))

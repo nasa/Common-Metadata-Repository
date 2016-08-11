@@ -23,6 +23,7 @@
             [cmr.transmit.metadata-db :as mdb1]
             [cmr.acl.core :as acl]
             [cmr.umm.acl-matchers :as acl-matchers]
+            [cmr.umm.collection.product-specific-attribute :as psa]
             [cmr.common.util :as util]
             [cmr.common.date-time-parser :as dtp]
             [cmr.access-control.data.acls :as acls]))
@@ -168,10 +169,22 @@
       [(format "Parameter permitted_group has invalid values [%s]. Only 'guest', 'registered' or a group concept id can be specified."
                (str/join ", " invalid-groups))])))
 
+(defn- group-permission-parameter-index-validation
+  "Validates that the indices used in group permission parameters are valid numerical indices."
+  [params]
+  (keep (fn [index-key]
+            (let [index-str (name index-key)
+                  index (psa/safe-parse-value :int index-str)]
+             (when (or (nil? index) (< index 0))
+               (format (str "Parameter group_permission has invalid index value [%s]. "
+                            "Only integers greater than or equal to zero may be specified.")
+                       index-str))))
+        (keys (:group-permission params))))
+
 (defn- group-permission-validation
   "Validates group_permission parameters."
-  [context params])
-  ;; TODO Add this
+  [context params]
+  (group-permission-parameter-index-validation params))
 
 (def acl-identity-type->search-value
  "Maps identity type query paremter values to the actual values used in the index."
@@ -208,7 +221,7 @@
     (cpv/validate-parameters
       :acl safe-params
       (concat cpv/common-validations
-              [permitted-group-validation identity-type-validation])
+              [permitted-group-validation identity-type-validation group-permission-validation])
       type-errors))
   params)
 

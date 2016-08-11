@@ -228,7 +228,6 @@
                                           (inc count)])
                                        [{} 0]
                                        (partition 2 group-permissions))
-                 _ (println "QUERY: " query-map)
                  response (ac/search-for-acls (u/conn-context) query-map)]
              (is (= (acls->search-response (count acls) acls)
                     (dissoc response :took))))
@@ -264,7 +263,7 @@
     ;; CMR-3154 acceptance criterium 3
     (testing "Search ACLs by group permission just group or permission"
       (are3 [query-map acls]
-        (let [response (ac/search-for-acls (u/conn-context) {:group-permission query-map})]
+        (let [response (ac/search-for-acls (u/conn-context) {:group-permission {:0 query-map}})]
           (is (= (acls->search-response (count acls) acls)
                  (dissoc response :took))))
         "Just user type"
@@ -279,11 +278,15 @@
         "Just create permission"
         {:permission "create"} create-acls))
 
+    ;; CMR-3154 acceptance criterium 4
+    (testing "Search ACLS by group permission with non integer index is an error"
+      (let [query {:group-permission {:foo {:permitted-group "guest" :permission "read"}}}]
+        (is (= {:status 400
+                :body {:errors ["Parameter group_permission has invalid index value [foo]. Only integers greater than or equal to zero may be specified."]}
+                :content-type :json}
+               (ac/search-for-acls (u/conn-context) query {:raw? true}))))))
 
-
-
-
-    (testing "Search ACLs by permitted group with invalid values"
+  (testing "Search ACLs by permitted group with invalid values"
       (are [permitted-groups invalid-msg]
            (= {:status 400
                :body {:errors [(format "Parameter permitted_group has invalid values [%s]. Only 'guest', 'registered' or a group concept id can be specified."
@@ -292,7 +295,7 @@
               (ac/search-for-acls (u/conn-context) {:permitted-group permitted-groups} {:raw? true}))
 
            ["gust"] "gust"
-           ["GUST" "registered" "AG10000-PROV" "G10000-PROV"] "GUST, G10000-PROV"))))
+           ["GUST" "registered" "AG10000-PROV" "G10000-PROV"] "GUST, G10000-PROV")))
 
 (deftest acl-search-by-identity-type-test
   (let [token (e/login (u/conn-context) "user1")
