@@ -2,7 +2,7 @@
   "Contains integration tests for saving, deleting, force deleting and searching humanizers."
   (:require [clojure.test :refer :all]
             [clj-time.core :as t]
-            [cmr.common.util :refer (are2)]
+            [cmr.common.util :refer (are3)]
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
             [cmr.metadata-db.int-test.concepts.concept-delete-spec :as cd-spec]))
@@ -35,7 +35,7 @@
 
 (deftest save-humanizer-failures-test
   (testing "saving invalid humanizer"
-    (are2 [humanizer exp-status exp-errors]
+    (are3 [humanizer exp-status exp-errors]
           (let [{:keys [status errors]} (util/save-concept humanizer)]
             (is (= exp-status status))
             (is (= (set exp-errors) (set errors))))
@@ -113,7 +113,7 @@
 (deftest find-humanizers
   (let [humanizer (util/create-and-save-humanizer 5)]
     (testing "find latest revsions"
-      (are2 [humanizers params]
+      (are3 [humanizers params]
             (= (set humanizers)
                (set (->> (util/find-latest-concepts :humanizer params)
                          :concepts
