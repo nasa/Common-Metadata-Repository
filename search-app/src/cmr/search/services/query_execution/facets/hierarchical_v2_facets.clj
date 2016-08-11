@@ -6,7 +6,7 @@
   (:require [cmr.common-app.services.kms-fetcher :as kms-fetcher]
             [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
             [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
-            [cmr.search.services.query-execution.facets.links-helper :as lh]
+            [cmr.search.services.query-execution.facets.hierarchical-links-helper :as hlh]
             [cmr.common.util :as util]
             [camel-snake-kebab.core :as csk]
             [clojure.string :as str]))
@@ -88,6 +88,24 @@
         relevant-query-params (filter (fn [[k v]] (re-matches subfield-reg-ex k)) query-params)]
     (some? (seq relevant-query-params))))
 
+(defn- get-indexes-in-params
+  "Returns a list of all of the indexes for the given hierarchical field within the query-params
+  that have the provided value.
+
+  base-field - a snake case string, e.g \"science_keywords\"
+  subfield - a snake case string, e.g. \"variable_level_1\"
+  value - the value for the provided parameter
+  Example: Params of {\"foo[2][bar]\" \"alpha\"} \"foo\" \"bar\" \"alpha\" returns #{2}."
+  [query-params base-field subfield value]
+  (when (and base-field subfield value)
+    (let [value-lowercase (str/lower-case value)
+          subfield-reg-ex (re-pattern (str base-field "\\[(\\d+)\\]\\[" subfield "\\]"))
+          relevant-indexes (keep (fn [[k v]]
+                                   (when (= value-lowercase (str/lower-case v))
+                                     (second (re-matches subfield-reg-ex k))))
+                                 query-params)]
+      (set (map #(Integer/parseInt %) relevant-indexes)))))
+
 (defn- find-applied-children
   "Returns a sequence of tuples for any child facet that is applied in the current search query.
   Searches the children facets recursively. The tuples are of the form [subfield value].
@@ -97,38 +115,68 @@
   include-root? - True if the top level term should be included."
   [facet field-hierarchy include-root?]
   (when (:applied facet)
-    (let [applied-children (remove nil?
-                                   (mapcat #(find-applied-children % (rest field-hierarchy) true)
-                                           (:children facet)))]
+    (let [applied-children (mapcat #(find-applied-children % (rest field-hierarchy) true)
+                                   (:children facet))]
       (if include-root?
         (conj applied-children [(first field-hierarchy) (:title facet)])
         applied-children))))
 
+(defn- has-siblings?
+  "Returns true if the given hierarchical field and value have any applied sibling values in the
+  provided query params. Comparisons to the provided value are made in a case insensitive manner.
+
+  base-field - a snake case string, e.g \"science_keywords\"
+  parent-subfield - a snake case string for the parent, e.g. \"term\"
+  parent-value - the value for the provided parent parameter
+  subfield - a snake case string, e.g. \"variable_level_1\"
+  value - the value for the provided parameter"
+  [query-params base-field parent-subfield parent-value subfield value]
+  (some?
+    (when (and parent-value value)
+      (let [parent-value-lowercase (str/lower-case parent-value)
+            value-lowercase (str/lower-case value)
+            query-params-lowercase (util/map-values str/lower-case query-params)
+            subfield-regex (re-pattern (str base-field "\\[(\\d+)\\]\\[" subfield "\\]"))
+            ;; Find the indexes for all the query parameters that are at the same level in the
+            ;; hierarchy as the provided parameter.
+            same-level-indexes (for [[k v] query-params-lowercase
+                                     :when (not= value-lowercase (str/lower-case v))]
+                                 (second (re-matches subfield-regex k)))]
+        ;; Filter the query-params to just those with the same index, parent-subfield, and
+        ;; parent-value when compared case insensitively
+        (seq (for [idx same-level-indexes
+                   :let [query-param (str base-field "[" idx "][" parent-subfield "]")]
+                   :when (= parent-value-lowercase (get query-params-lowercase query-param))]
+               query-param))))))
+
 (defn- generate-hierarchical-children
   "Generate children nodes for a hierarchical facet v2 response.
   recursive-parse-fn - function to call to recursively generate any children filter nodes.
+  has-siblings-fn - function to call to check whether the given value has any sibling nodes.
   generate-links-fn - function to call to generate the links field in the facets v2 response for
                       the passed in field.
   field - the hierarchical subfield to generate the filter nodes for in the v2 response.
   elastic-aggregations - the portion of the elastic aggregations response to parse to generate
                          the part of the facets v2 response related to the passed in field."
-  [recursive-parse-fn generate-links-fn field field-hierarchy elastic-aggregations]
+  [recursive-parse-fn has-siblings-fn generate-links-fn field field-hierarchy elastic-aggregations]
   ;; Each value for this field has its own bucket in the elastic aggregations response
   (for [bucket (get-in elastic-aggregations [field :buckets])
         :let [value (:key bucket)
               count (get-in bucket [:coll-count :doc_count] (:doc_count bucket))
-              sub-facets (recursive-parse-fn bucket)
+              sub-facets (recursive-parse-fn value bucket)
               ;; Sort alphabetically
               sub-facets (when (seq (:children sub-facets))
                            (update sub-facets :children
                                    #(sort-by :title util/compare-natural-strings %)))
               children-values-to-remove (find-applied-children sub-facets field-hierarchy false)
-              links (generate-links-fn value children-values-to-remove)]]
+              has-siblings? (has-siblings-fn value)
+              links (generate-links-fn value has-siblings? children-values-to-remove)]]
     (v2h/generate-hierarchical-filter-node value count links sub-facets)))
 
 (defn- parse-hierarchical-bucket-v2
   "Recursively parses the elasticsearch aggregations response and generates version 2 facets.
-  parent-field - The top level field name for a hierarchical field - for example :science-keywords
+  base-field - The top level field name for a hierarchical field - for example :science-keywords
+  parent-subfield - Parent subfield (e.g. :topic) if the current field is a child, nil otherwise.
   field-hierarchy - An ordered array of all the unprocessed subfields within the parent field
                     hierarchy. For example the first time the function is called the array may be
                     [:category :topic :term] and on the next recursion it will be [:topic :term]
@@ -136,32 +184,53 @@
   base-url - The root URL to use for the links that are generated in the facet response.
   query-params - the query parameters from the current search as a map with a key for each
                  parameter name and the value as either a single value or a collection of values.
-  elastic-aggregations - the portion of the elastic-aggregations response to parse. As each field
-                         is parsed recursively the aggregations are reduced to just the portion
-                         relevant to that field."
-  [parent-field field-hierarchy base-url query-params elastic-aggregations]
-  ;; Iterate through the next field in the hierarchy. Return nil if there are no more fields in
-  ;; the hierarchy
-  (when-let [field (first field-hierarchy)]
-    (let [snake-parent-field (csk/->snake_case_string parent-field)
-          snake-field (csk/->snake_case_string field)
-          applied? (field-applied? query-params snake-parent-field snake-field)
-          ;; Index in the param name does not matter
-          param-name (format "%s[0][%s]" snake-parent-field snake-field)
-          ;; If no value is applied in the search for the given field we can safely call create
-          ;; apply link. Otherwise we need to determine if an apply or a remove link should be
-          ;; generated.
-          generate-links-fn (if applied?
-                              (partial lh/create-link-for-hierarchical-field base-url query-params
-                                       param-name)
-                              (partial lh/create-apply-link-for-hierarchical-field base-url
-                                       query-params param-name))
-          recursive-parse-fn (partial parse-hierarchical-bucket-v2 parent-field
-                                      (rest field-hierarchy) base-url query-params)
-          children (generate-hierarchical-children recursive-parse-fn generate-links-fn field
-                                                   field-hierarchy elastic-aggregations)]
-      (when (seq children)
-        (v2h/generate-group-node (csk/->snake_case_string field) true children)))))
+  ancestors-map - A map of containing all of the parent terms for this node. The keys are snake
+                  case subfield strings and the keys are the value for that subfield. For example,
+                  {\"topic\" \"Atmosphere\" \"term\" \"Clouds\"}.
+  parent-value - The value of the direct parent (e.g. \"Atmosphere\") if the current field is a
+                 child, nil otherwise.
+  elastic-aggs - the portion of the elastic-aggregations response to parse. As each field is parsed
+                 recursively the aggregations are reduced to just the portion relevant to that
+                 field."
+  ([base-field field-hierarchy base-url query-params elastic-aggs]
+   (parse-hierarchical-bucket-v2 base-field nil field-hierarchy base-url query-params nil nil
+                                 elastic-aggs))
+  ([base-field parent-subfield field-hierarchy base-url query-params ancestors-map parent-value
+    elastic-aggs]
+   (when-let [subfield (first field-hierarchy)]
+     ;; Iterate through the next field in the hierarchy. Return nil if there are no more fields in
+     ;; the hierarchy
+     (let [snake-base-field (csk/->snake_case_string base-field)
+           snake-parent-subfield (when parent-subfield (csk/->snake_case_string parent-subfield))
+           snake-subfield (csk/->snake_case_string subfield)
+           ancestors-map (if (and parent-value
+                                  ;; Special case to not include category for science keywords
+                                  (or (not= :science-keywords-h base-field)
+                                      (not= :category parent-subfield)))
+                           (assoc ancestors-map snake-parent-subfield parent-value)
+                           ancestors-map)
+           applied? (field-applied? query-params snake-base-field snake-subfield)
+           ;; Index in the param name does not matter
+           param-name (format "%s[0][%s]" snake-base-field snake-subfield)
+           parent-indexes (get-indexes-in-params query-params snake-base-field
+                                                 snake-parent-subfield parent-value)
+           ;; Slight performance improvement. If no value is applied in the search for the given
+           ;; field we can safely call create apply link. Otherwise we need to determine if an
+           ;; apply or a remove link should be generated.
+           generate-links-fn (if applied?
+                               (partial hlh/create-link-for-hierarchical-field base-url query-params
+                                        param-name ancestors-map parent-indexes)
+                               (partial hlh/create-apply-link-for-hierarchical-field base-url
+                                        query-params param-name ancestors-map parent-indexes))
+           recursive-parse-fn (partial parse-hierarchical-bucket-v2 base-field subfield
+                                       (rest field-hierarchy) base-url query-params ancestors-map)
+           has-siblings-fn (partial has-siblings? query-params snake-base-field
+                                    snake-parent-subfield parent-value snake-subfield)
+           children (generate-hierarchical-children recursive-parse-fn has-siblings-fn
+                                                    generate-links-fn subfield field-hierarchy
+                                                    elastic-aggs)]
+       (when (seq children)
+         (v2h/generate-group-node (csk/->snake_case_string subfield) true children))))))
 
 (defn- get-search-terms-for-hierarchical-field
   "Returns all of the search terms applied in the passed in query params for the provided
@@ -178,10 +247,10 @@
   the facet terms at the provided depth in the tree. Returns a sequence of the terms."
   [facet depth terms]
   (if (<= depth 0)
-      (concat terms (keep :title (:children facet)))
-      (when (:children facet)
-        (apply concat terms (for [child-facet (:children facet)]
-                              (get-terms-at-depth child-facet (dec depth) terms))))))
+    (concat terms (keep :title (:children facet)))
+    (when (:children facet)
+      (apply concat terms (for [child-facet (:children facet)]
+                            (get-terms-at-depth child-facet (dec depth) terms))))))
 
 (defn- get-terms-for-subfield
   "Returns all of the terms for the provided subfield within a hierarchical facet response."
@@ -201,16 +270,16 @@
                           field-hierarchy)]
     (remove nil?
       (apply concat
-         (keep (fn [subfield]
-                 (when-let [search-terms (seq (get-search-terms-for-hierarchical-field
-                                               field subfield query-params))]
-                   (let [terms-in-facets (map str/lower-case
-                                              (get-terms-for-subfield hierarchical-facet subfield
-                                                                      field-hierarchy))]
-                     (for [term search-terms]
-                       (when-not (some #{(str/lower-case term)} terms-in-facets)
-                         [subfield term])))))
-               field-hierarchy)))))
+        (for [subfield field-hierarchy
+              :let [search-terms (get-search-terms-for-hierarchical-field field subfield
+                                                                          query-params)]
+              :when (seq search-terms)]
+          (let [terms-in-facets (map str/lower-case
+                                     (get-terms-for-subfield hierarchical-facet subfield
+                                                             field-hierarchy))]
+            (for [term search-terms
+                  :when (not (some #{(str/lower-case term)} terms-in-facets))]
+              [subfield term])))))))
 
 (defn- prune-hierarchical-facet
   "Limits a hierarchical facet to a single level below the lowest applied facet. If
@@ -238,8 +307,8 @@
          :let [param-name (format "%s[0][%s]"
                                   (csk/->snake_case_string field)
                                   (csk/->snake_case_string subfield))
-               link (lh/create-link-for-hierarchical-field
-                     base-url query-params param-name search-term nil)]]
+               link (hlh/create-link-for-hierarchical-field base-url query-params param-name
+                                                            search-term)]]
      (v2h/generate-hierarchical-filter-node search-term 0 link nil)))
 
 (def earth-science-category-string
@@ -282,16 +351,16 @@
   "Parses the elastic aggregations and generates the v2 facets for all hierarchical fields."
   [elastic-aggregations base-url query-params]
   (let [hierarchical-fields [:science-keywords-h]]
-    (keep (fn [field]
-              (when-let [sub-facets (hierarchical-bucket-map->facets-v2
-                                      field (field elastic-aggregations)
-                                      base-url
-                                      query-params)]
-                (let [field-reg-ex (re-pattern (str (csk/->snake_case_string field) ".*"))
-                      applied? (some? (seq (filter (fn [[k v]] (re-matches field-reg-ex k))
-                                                   query-params)))]
-                  (merge v2h/sorted-facet-map
-                         (assoc sub-facets
-                                :title (field v2h/fields->human-readable-label)
-                                :applied applied?)))))
-          hierarchical-fields)))
+    (for [field hierarchical-fields
+          :let [sub-facets (hierarchical-bucket-map->facets-v2 field (field elastic-aggregations)
+                                                               base-url query-params)]
+          :when (seq sub-facets)]
+      (let [field-reg-ex (re-pattern (str (csk/->snake_case_string field) ".*"))
+            applied? (->> query-params
+                          (filter (fn [[k v]] (re-matches field-reg-ex k)))
+                          seq
+                          some?)]
+        (merge v2h/sorted-facet-map
+               (assoc sub-facets
+                      :title (field v2h/fields->human-readable-label)
+                      :applied applied?))))))
