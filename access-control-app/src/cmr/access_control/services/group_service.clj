@@ -163,6 +163,16 @@
     ;; The group doesn't exist
     (mdb/save-concept context (group->new-concept context group))))
 
+(defn group-exists?
+  "Returns true if group exists."
+  [context concept-id]
+  (let [{:keys [concept-type provider-id]} (concepts/parse-concept-id concept-id)]
+    (when (not= :access-group concept-type)
+      (errors/throw-service-error :bad-request (g-msg/bad-group-concept-id concept-id))))
+  (if-let [concept (mdb/get-latest-concept context concept-id false)]
+    (not (:deleted concept))
+    false))
+
 (defn get-group
   "Retrieves a group with the given concept id."
   [context concept-id]

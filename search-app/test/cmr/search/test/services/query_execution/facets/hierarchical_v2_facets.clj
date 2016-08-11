@@ -75,3 +75,113 @@
     (testing "Root is not included when include-root is true but applied is false"
       (is (= nil
              (find-applied-children {:applied false :title "A"} field-hierarchy true))))))
+
+(deftest get-indexes-in-params
+  (are3 [query-params expected]
+    (is (= expected (#'hv2/get-indexes-in-params query-params "foo" "alpha" "found")))
+
+    "Single matching param and value"
+    {"foo[0][alpha]" "found"} #{0}
+
+    "Multiple matching params and values"
+    {"foo[0][alpha]" "found"
+     "foo[1][alpha]" "found"} #{0 1}
+
+    "Different base field is not matched"
+    {"bar[0][alpha]" "found"} #{}
+
+    "Different value is not matched"
+    {"foo[0][alpha]" "not-found"} #{}
+
+    "Different subfield is not matched"
+    {"foo[0][beta]" "found"} #{}
+
+    "Values are compared case insensitively"
+    {"foo[0][alpha]" "FoUnD"} #{0}
+
+    "Large index"
+    {"foo[1234567890][alpha]" "found"} #{1234567890}
+
+    "Empty query-params OK"
+    {} #{}
+
+    "Nil query-params OK"
+    nil #{}
+
+    "Combination of scenarios"
+    {"foo[0][alpha]" "found"
+     "foo[1][alpha]" "found"
+     "bar[0][alpha]" "found"
+     "bar[2][alpha]" "found"
+     "foo[3][beta]" "found"
+     "foo[4][alpha]" "not-found"
+     "foo[1234567890][alpha]" "FOUNd"} #{0 1 1234567890}))
+
+(def has-siblings?
+  "Var to call private has-siblings? function in hierarchical facets namespace."
+  #'hv2/has-siblings?)
+
+(deftest has-siblings?-test
+  (are3 [query-params expected]
+    (is (= expected
+           (has-siblings? query-params "foo" "parent-alpha" "parent-found" "alpha" "me")))
+
+    "Single matching sibling"
+    {"foo[0][alpha]" "sibling"
+     "foo[0][parent-alpha]" "parent-found"} true
+
+    "Single matching sibling, index does not matter"
+    {"foo[123][alpha]" "sibling"
+     "foo[123][parent-alpha]" "parent-found"} true
+
+    "Parent value matches are case insensitive"
+    {"foo[0][alpha]" "sibling"
+     "foo[0][parent-alpha]" "PAREnt-FOUnd"} true
+
+    "Current value is in query-params, but no siblings."
+    {"foo[0][alpha]" "me"
+     "foo[0][parent-alpha]" "parent-found"} false
+
+    "Current value is matched case insensitively and finds no siblings"
+    {"foo[0][alpha]" "ME"
+     "foo[0][parent-alpha]" "parent-found"} false
+
+    "Current value is in query-params, and has siblings."
+    {"foo[0][alpha]" "me"
+     "foo[1][alpha]" "sibling"
+     "foo[1][parent-alpha]" "parent-found"
+     "foo[0][parent-alpha]" "parent-found"} true
+
+    "Multiple siblings"
+    {"foo[0][alpha]" "sibling1"
+     "foo[1][alpha]" "sibling2"
+     "foo[1][parent-alpha]" "parent-found"
+     "foo[0][parent-alpha]" "parent-found"} true
+
+    "Different parent value"
+    {"foo[0][alpha]" "not-sibling"
+     "foo[0][parent-alpha]" "different-parent"} false
+
+    "Different parent subfield"
+    {"foo[0][alpha]" "not-sibling"
+     "foo[0][parent-beta]" "parent-found"} false
+
+    "Different parent index."
+    {"foo[1][alpha]" "sibling"
+     "foo[0][parent-alpha]" "parent-found"} false
+
+    "Current value is in query-params, there's another parameter for the same subfield, but no
+    parent."
+    {"foo[0][alpha]" "me"
+     "foo[1][alpha]" "sibling"
+     "foo[0][parent-alpha]" "parent-found"} false
+
+    "Large index"
+    {"foo[1234567890][alpha]" "sibling"
+     "foo[1234567890][parent-alpha]" "parent-found"} true
+
+    "Empty query-params"
+    {} false
+
+    "Nil query-params"
+    nil false))
