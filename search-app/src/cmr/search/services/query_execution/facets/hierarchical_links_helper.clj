@@ -24,8 +24,7 @@
   [query-params base-field]
   ;; Regex to find any query params for the base-field, and extract the index for each matching
   ;; param. e.g. with a base field of "foo" and param name of "foo[11][bar]", the regex will
-  ;; extract 11 as the index. It would not match "notfoo[11][bar]" because of the different base
-  ;; field.
+  ;; extract 11 as the index.
   (let [field-regex (re-pattern (format "%s\\[(\\d+)\\]\\[.*\\]" base-field))]
     (set (keep #(some-> (re-matches field-regex %) second Integer/parseInt)
                (keys query-params)))))
