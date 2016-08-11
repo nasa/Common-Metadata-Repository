@@ -118,7 +118,8 @@
         group2 (u/ingest-group token
                                {:name "group2"}
                                ["user1"])
-        wait (u/wait-until-indexed)
+        ;; This wait is needed so that the groups exist for the single instance acls to be created targeting.
+        _ (u/wait-until-indexed)
         group1-concept-id (:concept_id group1)
         group2-concept-id (:concept_id group2)
         acl1 (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
@@ -240,7 +241,8 @@
         group1 (u/ingest-group token
                                {:name "group1"}
                                ["user1"])
-        wait (u/wait-until-indexed)
+        ;; This wait is needed so that the groups exist for the single instance acls to be created targeting.
+        _ (u/wait-until-indexed)
         group1-concept-id (:concept_id group1)
         acl-system (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
         acl-provider (ingest-acl token (provider-acl "AUDIT_REPORT"))

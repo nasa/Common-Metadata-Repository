@@ -13,7 +13,8 @@
 
 (use-fixtures :each
               (fixtures/int-test-fixtures)
-              (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"})
+              (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"}
+                                      ["user1" "user2" "user3" "user4" "user5"])
               (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 
 (def system-acl
@@ -45,6 +46,16 @@
   (let [token (e/login (u/conn-context) "admin")
         resp (ac/create-acl (u/conn-context) system-acl {:token token})]
     ;; Acceptance criteria: A concept id and revision id of the created ACL should be returned.
+    (is (re-find #"^ACL.*" (:concept_id resp)))
+    (is (= 1 (:revision_id resp)))))
+
+(deftest create-single-instance-acl-test
+  (let [token (e/login (u/conn-context) "user1")
+        group1 (u/ingest-group token {:name "group1"} ["user1"])
+        ;; This wait is needed so that the groups exist for the single instance acls to be created targeting.
+        _ (u/wait-until-indexed)
+        group1-concept-id (:concept_id group1)
+        resp (ac/create-acl (u/conn-context) (assoc-in single-instance-acl [:single_instance_identity :target_id] group1-concept-id) {:token token})]
     (is (re-find #"^ACL.*" (:concept_id resp)))
     (is (= 1 (:revision_id resp)))))
 
@@ -85,8 +96,8 @@
           (assoc-in catalog-item-acl [:catalog_item_identity :provider_id] "WHATEVER")
 
           "Group id doesn't exist for single-instance-identity"
-          #"Group with concept-id \[WHATEVER\] does not exist"
-          (assoc-in single-instance-acl [:single_instance_identity :target_id] "WHATEVER"))
+          #"Group with concept-id \[AG123-CMR\] does not exist"
+          (assoc-in single-instance-acl [:single_instance_identity :target_id] "AG123-CMR"))
 
     (testing "Acceptance criteria: I receive an error if creating an ACL with invalid JSON"
       (is
@@ -286,6 +297,25 @@
     ;; Acceptance criteria: An updated ACL can be found via the search API with any changes.
     (is (= catalog-item-acl (ac/get-acl (u/conn-context) concept-id {:token token})))))
 
+(deftest update-single-instance-acl-test
+  (let [token (e/login (u/conn-context) "user1")
+        group1 (u/ingest-group token
+                               {:name "group1"}
+                               ["user1"])
+        group2 (u/ingest-group token
+                               {:name "group2"}
+                               ["user1"])
+        ;; This wait is needed so that the groups exist for the single instance acls to be created targeting.
+        _ (u/wait-until-indexed)
+        group1-concept-id (:concept_id group1)
+        group2-concept-id (:concept_id group2)
+        {concept-id :concept_id} (ac/create-acl (u/conn-context) (assoc-in single-instance-acl [:single_instance_identity :target_id] group1-concept-id) {:token token})
+        resp (ac/update-acl (u/conn-context) concept-id (assoc-in single-instance-acl [:single_instance_identity :target_id] group2-concept-id) {:token token})]
+    (is (= concept-id (:concept_id resp)))
+    (is (= 2 (:revision_id resp)))
+    (is (= (assoc-in single-instance-acl [:single_instance_identity :target_id] group2-concept-id) (ac/get-acl (u/conn-context) concept-id {:token token})))))
+
+
 (deftest update-acl-errors-test
   (let [token (e/login (u/conn-context) "admin")
         {concept-id :concept_id} (ac/create-acl (u/conn-context) system-acl {:token token})]
@@ -328,8 +358,8 @@
           (assoc-in catalog-item-acl [:catalog_item_identity :provider_id] "WHATEVER")
 
           "Group id doesn't exist for single-instance-identity"
-          #"Group with concept-id \[WHATEVER\] does not exist"
-          (assoc-in single-instance-acl [:single_instance_identity :target_id] "WHATEVER"))
+          #"Group with concept-id \[AG123-CMR\] does not exist"
+          (assoc-in single-instance-acl [:single_instance_identity :target_id] "AG123-CMR"))
 
 
     (testing "Acceptance criteria: I receive an error if updating an ACL with invalid JSON"
