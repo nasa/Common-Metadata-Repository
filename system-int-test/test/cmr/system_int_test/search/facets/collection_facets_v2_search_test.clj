@@ -52,8 +52,7 @@
   ([search-params]
    (index/wait-until-indexed)
    (let [query-params (merge search-params {:page-size 0 :include-facets "v2"})]
-     (get-in (search/find-concepts-json :collection query-params)
-             [:results :facets]))))
+     (get-in (search/find-concepts-json :collection query-params) [:results :facets]))))
 
 (deftest all-facets-v2-test
   (fu/make-coll 1 "PROV1"
@@ -98,17 +97,17 @@
   fields above variable-level-3 have applied set to true."
   {:title "Browse Collections",
    :children
-   [{:title "Keywords", :applied true,
+   [{:title "Keywords" :applied true
      :children
-     [{:title "Topic1", :applied true,
+     [{:title "Topic1" :applied true
        :children
-       [{:title "Term1", :applied true,
+       [{:title "Term1" :applied true
          :children
-         [{:title "Level1-1", :applied true,
+         [{:title "Level1-1" :applied true
            :children
-           [{:title "Level1-2", :applied true,
+           [{:title "Level1-2" :applied true
              :children
-             [{:title "Level1-3", :applied true}]}]}]}]}]}]})
+             [{:title "Level1-3" :applied true}]}]}]}]}]}]})
 
 (defn- verify-nested-facets-ordered-alphabetically
   "Recursively verify that all of the values at each level in a collection of nested facets are in
@@ -148,39 +147,6 @@
             science-keywords (-> (:children response) first :children)]
         (verify-nested-facets-ordered-alphabetically science-keywords)))))
 
-
-(def partial-science-keywords-applied
-  "Facet response with just the title, applied, and children fields. Used to verify that when
-  searching for a nested field (a value of TERM1 for term) all of the fields above term have
-  applied set to true and any fields below have applied set to false. Also only one level below
-  the last applied term is returned. In the case of searching for a term, only variable-level-1
-  should be returned. Both variable-level-2 and variable-level-3 should be omitted from the
-  response."
-  {:title "Browse Collections",
-   :children
-   [{:title "Keywords", :applied true,
-     :children
-     [{:title "Topic1", :applied true,
-       :children
-       [{:title "Term1", :applied true,
-         :children
-         [{:title "Level1-1", :applied false}]}]}]}]})
-
-(deftest hierarchical-applied-test
-  (fu/make-coll 1 "PROV1" (fu/science-keywords sk1))
-  (testing "Children science keywords applied causes parent fields to be marked as applied"
-    (are3 [search-params expected-response]
-      (is (= expected-response (fu/prune-facet-response (search-and-return-v2-facets search-params)
-                                                        [:title :applied])))
-
-      "Lowest level field causes all fields above to be applied."
-      {:science-keywords-h {:0 {:variable-level-3 "Level1-3"}}}
-      science-keywords-all-applied
-
-      "Middle level field causes all fields above to be applied, but not fields below."
-      {:science-keywords-h {:0 {:term "Term1"}}}
-      partial-science-keywords-applied)))
-
 (deftest remove-facets-without-collections
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1) (fu/platforms "ASTER" 1))
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1) (fu/platforms "MODIS" 1))
@@ -206,35 +172,21 @@
            (search-and-return-v2-facets {:platform-h ["moDIS-p0", "ASTER-p0"]
                                          :keyword "MODIS"})))))
 
-(defn- get-lowest-hierarchical-depth
-  "Returns the lowest hierachical depth within the facet response for any hierarchical fields."
-  ([facet]
-   (get-lowest-hierarchical-depth facet -1))
-  ([facet current-depth]
-   (apply max
-          current-depth
-          (map #(get-lowest-hierarchical-depth % (inc current-depth))
-              (:children facet)))))
-
 (deftest appropriate-hierarchical-depth
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2))
   (testing "Default to one level without any search parameters"
-    (is (= 1 (get-lowest-hierarchical-depth (search-and-return-v2-facets {})))))
+    (is (= 1 (fu/get-lowest-hierarchical-depth (search-and-return-v2-facets {})))))
   (are [sk-param expected-depth]
-    (= expected-depth (get-lowest-hierarchical-depth (search-and-return-v2-facets
-                                                      {:science-keywords-h {:0 sk-param}})))
+    (= expected-depth (fu/get-lowest-hierarchical-depth
+                       (search-and-return-v2-facets {:science-keywords-h {:0 sk-param}})))
 
     {:category "Earth Science"} 1
     {:topic "Topic1"} 2
     {:topic "Topic1" :category "Earth Science"} 2
-    {:term "Term1"} 3
-    {:term "Term1" :category "Earth Science"} 3
     {:term "Term1" :category "Earth Science" :topic "Topic1"} 3
-    {:variable-level-1 "Level1-1"} 4
     {:variable-level-1 "Level1-1" :term "Term1" :category "Earth Science" :topic "Topic1"} 4
     {:variable-level-2 "Level1-2" :term "Term1" :category "Earth Science" :topic "Topic1"
      :variable-level-1 "Level1-1"} 5
-    {:variable-level-3 "Level1-3"} 5
     {:variable-level-3 "Level1-3" :variable-level-2 "Level1-2" :term "Term1"
      :category "Earth Science" :topic "Topic1" :variable-level-1 "Level1-1"} 5))
 
@@ -269,6 +221,89 @@
                                [{:title "Topic1"}]}]}]
         (is (= expected-facets (fu/prune-facet-response (search-and-return-v2-facets) [:title])))))))
 
+(def sk-all (dc/science-keyword {:category "Earth science"
+                                 :topic "Topic1"
+                                 :term "Term1"
+                                 :variable-level-1 "Level1-1"
+                                 :variable-level-2 "Level1-2"
+                                 :variable-level-3 "Level1-3"}))
+
+(def sk-same-vl1 (dc/science-keyword {:category "Earth science"
+                                      :topic "Topic1"
+                                      :term "Term2"
+                                      :variable-level-1 "Level1-1"
+                                      :variable-level-2 "Level2-2"
+                                      :variable-level-3 "Level2-3"}))
+
+(def sk-diff-vl1 (dc/science-keyword {:category "Earth science"
+                                      :topic "Topic1"
+                                      :term "Term1"
+                                      :variable-level-1 "Another Level"}))
+
+(deftest link-traversal-test
+  (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all))
+  (testing (str "Traversing a single hierarchical keyword returns the same index for all subfields "
+                "in the remove links")
+    (is (= #{0} (->> (search-and-return-v2-facets)
+                     fu/traverse-hierarchical-links-in-order
+                     fu/get-all-links
+                     (mapcat fu/get-science-keyword-indexes-in-link)
+                     set))))
+  (testing (str "Selecting a field with the same name in another hierarchical field will result in "
+                "only the correct hierarchical field from being applied in the facets.")
+    (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all sk-same-vl1))
+    (let [expected {:title "Browse Collections"
+                    :children
+                    [{:title "Keywords" :applied true
+                      :children
+                      [{:title "Topic1" :applied true
+                        :children
+                        [{:title "Term1" :applied true
+                          :children
+                          [{:title "Level1-1" :applied true
+                            :children [{:title "Level1-2", :applied false}]}]}
+                         {:title "Term2" :applied false}]}]}]}
+          actual (-> (search-and-return-v2-facets)
+                     (fu/traverse-links ["Keywords" "Topic1" "Term1" "Level1-1"])
+                     (fu/prune-facet-response [:title :applied]))]
+      (is (= expected actual))))
+  (testing (str "When there are multiple fields selected at the same level of the hierarchy they "
+                "each have different indexes")
+    (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all sk-same-vl1 sk-diff-vl1))
+    (let [expected #{0 1 2 3}
+          actual (->> (search-and-return-v2-facets)
+                      fu/traverse-hierarchical-links-in-order
+                      fu/get-all-links
+                      (mapcat fu/get-science-keyword-indexes-in-link)
+                      set)]
+      (is (= expected actual))))
+
+  (testing (str "Scenario: Traverse links so that there are multiple children with different "
+                "indexes such that the one with the different index from the parent is a term that "
+                "shows up in two different hierarchies. Stay with me... Then remove the other term "
+                "(the one with the same index as parent) and verify that only the correct "
+                "hierarchical term is applied.")
+    (let [expected {:title "Browse Collections"
+                    :children
+                    [{:title "Keywords" :applied true
+                      :children
+                      [{:title "Topic1" :applied true
+                        :children
+                        [{:title "Term1" :applied true
+                          :children
+                          [{:title "Another Level" :applied false}
+                           {:title "Level1-1" :applied true
+                            :children [{:title "Level1-2" :applied false}]}]}
+                         {:title "Term2" :applied false}]}]}]}
+
+          actual (-> (search-and-return-v2-facets)
+                     (fu/traverse-links ["Keywords" "Topic1" "Term1" "Another Level"])
+                     (fu/traverse-links ["Keywords" "Topic1" "Term1" "Level1-1"])
+                     ;; Click the remove link to remove "Another Level" leaving "Level1-1"
+                     (fu/click-link ["Keywords" "Topic1" "Term1" "Another Level"])
+                     (fu/prune-facet-response [:title :applied]))]
+      (is (= expected actual)))))
+
 (deftest invalid-facets-v2-response-formats
   (testing "invalid xml response formats"
     (are [resp-format]
@@ -290,3 +325,11 @@
               (search/find-concepts-in-format resp-format :collection {:include-facets "v2"})))
          mt/umm-json
          mt/opendata)))
+
+(comment
+ ;; Good for manually testing applying links
+ (do
+   (cmr.system-int-test.utils.ingest-util/create-provider {:provider-id "PROV1" :provider-guid "prov1guid"})
+   (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all))
+   (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all sk-same-vl1))
+   (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all sk-same-vl1 sk-diff-vl1))))
