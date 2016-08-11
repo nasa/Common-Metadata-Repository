@@ -139,9 +139,9 @@
    (granule-with-umm-spec-collection collection collection-concept-id {}))
   ([collection collection-concept-id attribs]
    (let [timestamps {:data-provider-timestamps (data-provider-timestamps attribs)}
-         entry-title (get collection "EntryTitle")
-         short-name (get collection "ShortName")
-         version-id (get collection "Version")
+         entry-title (:EntryTitle collection)
+         short-name (:ShortName collection)
+         version-id (:Version collection)
          coll-ref (g/map->CollectionRef {:entry-title entry-title
                                          :entry-id (eid/entry-id short-name version-id)
                                          :short-name short-name

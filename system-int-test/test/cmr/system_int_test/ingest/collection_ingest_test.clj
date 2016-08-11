@@ -25,6 +25,8 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
+(def test-context (lkt/setup-context-for-test lkt/sample-keyword-map))
+
 ;; tests
 ;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -529,6 +531,68 @@
                        "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
 
        :iso-smap ["Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
+
+(deftest ingest-umm-json
+  (let [json (umm-spec/generate-metadata test-context exc/example-collection-record :umm-json)
+        coll-map {:provider-id "PROV1"
+                  :native-id "umm_json_coll_V1"
+                  :revision-id "1"
+                  :concept-type :collection
+                  ;; assumes the current version
+                  :format "application/vnd.nasa.cmr.umm+json"
+                  :metadata json}
+        response (ingest/ingest-concept coll-map)]
+    (is (= 200 (:status response)))
+    (index/wait-until-indexed)
+    (is (mdb/concept-exists-in-mdb? (:concept-id response) 1))
+    (is (= 1 (:revision-id response)))
+
+    (testing "UMM-JSON collections are searchable after ingest"
+      (is (= 1 (count (:refs (search/find-refs :collection {"entry-title" "The entry title V5"}))))))
+
+    (testing "Updating a UMM-JSON collection"
+      (let [response (ingest/ingest-concept (assoc coll-map :revision-id "2"))]
+        (is (= 200 (:status response)))
+        (index/wait-until-indexed)
+        (is (mdb/concept-exists-in-mdb? (:concept-id response) 2))
+        (is (= 2 (:revision-id response))))))
+
+  (testing "ingesting UMM JSON with parsing errors"
+    (let [json (umm-spec/generate-metadata test-context (assoc exc/example-collection-record
+                                                         :DataDates
+                                                         [{:Date "invalid date"
+                                                           :Type "CREATE"}])
+                                           :umm-json)
+          concept-map {:provider-id "PROV1"
+                       :native-id "umm_json_coll_2"
+                       :revision-id "1"
+                       :concept-type :collection
+                       :format "application/vnd.nasa.cmr.umm+json"
+                       :metadata json}
+          response (ingest/ingest-concept concept-map {:accept-format :json})]
+      (is (= ["/DataDates/0/Date string \"invalid date\" is invalid against requested date format(s) [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.SSSZ]"] (:errors response)))
+      (is (= 400 (:status response))))))
+
+(deftest ingest-old-json-versions
+  (let [json     (umm-spec/generate-metadata test-context exc/example-collection-record "application/vnd.nasa.cmr.umm+json;version=1.0")
+        coll-map {:provider-id  "PROV1"
+                  :native-id    "umm_json_coll_V1"
+                  :concept-type :collection
+                  :format       "application/vnd.nasa.cmr.umm+json;version=1.0"
+                  :metadata     json}
+        response (ingest/ingest-concept coll-map {:accept-format :json})]
+    (is (= 200 (:status response)))))
+
+(deftest ingest-invalid-umm-version
+  (let [coll-map {:provider-id  "PROV1"
+                  :native-id    "umm_json_coll_V1"
+                  :concept-type :collection
+                  :format       "application/vnd.nasa.cmr.umm+json;version=9000.1"
+                  :metadata     "{\"foo\":\"bar\"}"}
+        response (ingest/ingest-concept coll-map {:accept-format :json})]
+    (is (= 400 (:status response)))
+    (is (= ["Unknown UMM JSON schema version: \"9000.1\""]
+           (:errors response)))))
 
 ;; Verify ingest of collection with string larger than 80 characters for project(campaign) long name is successful (CMR-1361)
 (deftest project-long-name-can-be-upto-1024-characters
