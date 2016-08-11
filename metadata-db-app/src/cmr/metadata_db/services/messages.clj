@@ -147,3 +147,8 @@
   (format (str "Tag association could not be associated with provider [%s]. Tag associations are "
                "system level entities.")
           provider-id))
+
+(defn humanizers-only-system-level [provider-id]
+  (format "Humanizer could not be associated with provider [%s]. Humanizer is system level entity."
+          provider-id))
+

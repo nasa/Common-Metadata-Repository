@@ -88,7 +88,7 @@
           [(messages/invalid-revision-id concept-id 2 1)]
           (#'cs/validate-concept-revision-id db {:provider-id "PROV1"} concept previous-concept))))))
 
-(deftest validate-system-level-provider-for-tags-test
+(deftest validate-system-level-concept-test
   (let [tag {:concept-type :tag
              :short-name "TAG1"}
         cmr-provider pv/cmr-provider
@@ -96,11 +96,11 @@
    :short-name "PROV1"
    :cmr-only true
    :small false}]
-    (is (= nil (cs/validate-system-level-provider-for-tags tag cmr-provider)))
+    (is (= nil (cs/validate-system-level-concept tag cmr-provider)))
     (tu/assert-exception-thrown-with-errors
       :invalid-data
       ["Tag could not be associated with provider [PROV1]. Tags are system level entities."]
-      (cs/validate-system-level-provider-for-tags tag prov1))))
+      (cs/validate-system-level-concept tag prov1))))
 
 ;;; Verify that the try-to-save logic is correct.
 (deftest try-to-save-test

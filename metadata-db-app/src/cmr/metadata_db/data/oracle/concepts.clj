@@ -448,7 +448,8 @@
     (j/db-do-commands this "DELETE FROM cmr_tags")
     (j/db-do-commands this "DELETE FROM cmr_tag_associations")
     (j/db-do-commands this "DELETE FROM cmr_groups")
-    (j/db-do-commands this "DELETE FROM cmr_acls"))
+    (j/db-do-commands this "DELETE FROM cmr_acls")
+    (j/db-do-commands this "DELETE FROM cmr_humanizers"))
 
   (get-expired-concepts
     [this provider concept-type]

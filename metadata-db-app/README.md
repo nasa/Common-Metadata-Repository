@@ -111,7 +111,19 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
     }
   }
 
-_Note the absence of provider-id for tags and tag associations. These are system level entities and are always assigned the system level provider, CMR._
+#### Humanizer
+
+  {
+    "concept-type": "humanizer",
+    "native-id" : "humanizer",
+    "concept-type" : "humanizer",
+    "metadata" : "[{\"type\" \"trim_whitespace\", \"field\" \"platform\", \"order\" -100} {\"type\" \"priority\", \"field\" \"platform\", \"source_value\" \"Aqua\", \"order\" 10, \"priority\" 10}]",
+    "user-id" : "user1",
+    "deleted" : false,
+    "format" : "application/edn"
+  }
+
+_Note the absence of provider-id for tags, tag associations and humanizer. These are system level entities and are always assigned the system level provider, CMR._
 
 ### Sample Tombstone (deleted concept) JSON
 
@@ -279,7 +291,7 @@ Supported combinations of concept type and parameters:
   * collections with any combination of concept-id, provider-id, entry-id, entry-title, short-name, version-id and native-id
   * granules with provider-id, granule-ur
   * granules with provider-id, native-id
-  * tags or tag associations with no parameters other than exclude-metadata and latest
+  * tags, tag associations or humanizers with concept-id or native-id
   * tag associations with associated-concept-id, associated-revision-id
 
 ```
