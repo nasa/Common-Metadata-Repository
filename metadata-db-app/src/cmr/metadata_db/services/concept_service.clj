@@ -19,7 +19,7 @@
             cmr.metadata-db.data.oracle.concepts
             (cmr.metadata-db.data.oracle.concepts collection granule
                                                   tag tag-association
-                                                  service group acl)
+                                                  service group acl humanizer)
             (cmr.metadata-db.data.oracle providers search)
 
             [cmr.common.log :refer (debug info warn error)]
