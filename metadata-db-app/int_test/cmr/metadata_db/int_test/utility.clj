@@ -142,8 +142,8 @@
   (pr-str {:name "Some ACL"
            :etc "TBD"}))
 
-(def humanizer-edn
-  (pr-str
+(def humanizer-json
+  (json/generate-string
     [{"type" "trim_whitespace", "field" "platform", "order" -100},
      {"type" "priority", "field" "platform", "source_value" "Aqua", "order" 10, "priority" 10}]))
 
@@ -159,7 +159,7 @@
    :tag-association tag-association-edn
    :access-group group-edn
    :acl acl-edn
-   :humanizer humanizer-edn})
+   :humanizer humanizer-json})
 
 (defn- concept
   "Create a concept map for any concept type. "
@@ -287,7 +287,7 @@
  ([uniq-num attributes]
   (let [native-id "humanizer"
         attributes (merge {:user-id (str "user" uniq-num)
-                           :format "application/edn"
+                           :format "application/json"
                            :native-id native-id}
                           attributes)]
     ;; no provider-id should be specified for humanizers

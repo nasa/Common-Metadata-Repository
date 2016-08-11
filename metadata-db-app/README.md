@@ -117,10 +117,10 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
     "concept-type": "humanizer",
     "native-id" : "humanizer",
     "concept-type" : "humanizer",
-    "metadata" : "[{\"type\" \"trim_whitespace\", \"field\" \"platform\", \"order\" -100} {\"type\" \"priority\", \"field\" \"platform\", \"source_value\" \"Aqua\", \"order\" 10, \"priority\" 10}]",
+    "metadata" : "[{\"type\":\"trim_whitespace\",\"field\":\"platform\",\"order\":-100},{\"type\":\"priority\",\"field\":\"platform\",\"source_value\":\"Aqua\",\"order\":10,\"priority\":10}]",
     "user-id" : "user1",
     "deleted" : false,
-    "format" : "application/edn"
+    "format" : "application/json"
   }
 
 _Note the absence of provider-id for tags, tag associations and humanizer. These are system level entities and are always assigned the system level provider, CMR._
