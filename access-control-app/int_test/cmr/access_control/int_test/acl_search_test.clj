@@ -187,6 +187,8 @@
         registered-acls [acl2 acl5 acl8]
         AG12345-acls [acl3 acl6]
         AG10000-acls [acl8]
+        read-acls [acl2]
+        create-acls [acl1 acl3 acl4 acl5 acl6 acl7 acl8]
         all-acls (concat guest-acls registered-acls AG12345-acls)]
     (u/wait-until-indexed)
 
@@ -206,7 +208,17 @@
            ["AG12345-PROV" "AG10000-PROV"] (concat AG12345-acls AG10000-acls)
            ["guest" "registered" "AG12345-PROV" "AG10000-PROV"] all-acls))
 
-    (testing "Search ACLs by permitted group with specific permission"
+    (testing "Search ACLs by permitted group with options"
+      (are [permitted-groups options acls]
+           (let [response (ac/search-for-acls (u/conn-context)
+                                              (merge {:permitted-group permitted-groups} options))]
+             (= (acls->search-response (count acls) acls)
+                (dissoc response :took)))
+
+           ["GUEST"] {"options[permitted_group][ignore_case]" true} guest-acls
+           ["GUEST"] {"options[permitted_group][ignore_case]" false} []))
+
+    (testing "Search ACLs by group permission"
       (are3 [group-permissions acls]
            (let [[query-map _] (reduce (fn [[m count] [group permission]]
                                          [(assoc-in m
@@ -228,7 +240,7 @@
            ["guest" "read"] []
 
            "Registered read"
-           ["registered" "read"] [acl2]
+           ["registered" "read"] read-acls
 
            "Registered create"
            ["registered" "create"] [acl5 acl8]
@@ -249,15 +261,27 @@
            "Registered read or group AG12345-PROV create"
            ["registered" "read" "AG12345-PROV" "create"] (conj AG12345-acls acl2)))
 
-    (testing "Search ACLs by permitted group with options"
-      (are [permitted-groups options acls]
-           (let [response (ac/search-for-acls (u/conn-context)
-                                              (merge {:permitted-group permitted-groups} options))]
-             (= (acls->search-response (count acls) acls)
-                (dissoc response :took)))
+    ;; CMR-3154 acceptance criterium 3
+    (testing "Search ACLs by group permission just group or permission"
+      (are3 [query-map acls]
+        (let [response (ac/search-for-acls (u/conn-context) {:group-permission query-map})]
+          (is (= (acls->search-response (count acls) acls)
+                 (dissoc response :took))))
+        "Just user type"
+        {:permitted-group "guest"} guest-acls
 
-           ["GUEST"] {"options[permitted_group][ignore_case]" true} guest-acls
-           ["GUEST"] {"options[permitted_group][ignore_case]" false} []))
+        "Just group"
+        {:permitted-group "AG10000-PROV"} AG10000-acls
+
+        "Just read permission"
+        {:permission "read"} read-acls
+
+        "Just create permission"
+        {:permission "create"} create-acls))
+
+
+
+
 
     (testing "Search ACLs by permitted group with invalid values"
       (are [permitted-groups invalid-msg]
