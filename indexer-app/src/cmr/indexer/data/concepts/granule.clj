@@ -5,7 +5,7 @@
             [cmr.elastic-utils.index-util :as index-util]
             [camel-snake-kebab.core :as csk]
             [cmr.indexer.data.elasticsearch :as es]
-            [cmr.umm.core :as umm]
+            [cmr.umm-spec.legacy :as umm-legacy]
             [cmr.umm.related-url-helper :as ru]
             [cmr.umm.echo10.spatial :as umm-spatial]
             [cmr.transmit.metadata-db :as mdb]
@@ -33,7 +33,7 @@
   "Retrieve the parent collection umm from the db"
   [context parent-collection-id]
   (let [concept (mdb/get-latest-concept context parent-collection-id)]
-    (assoc (umm/parse-concept concept) :concept-id parent-collection-id)))
+    (assoc (umm-legacy/parse-concept context concept) :concept-id parent-collection-id)))
 
 (defn- get-parent-collection
   [context parent-collection-id]

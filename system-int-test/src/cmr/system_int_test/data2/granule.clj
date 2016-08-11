@@ -133,3 +133,23 @@
          temporal {:temporal (temporal attribs)}]
      (g/map->UmmGranule (merge minimal-gran timestamps data-granule temporal attribs)))))
 
+(defn granule-with-umm-spec-collection
+  "Creates a granule with the collection coming from UMM spec"
+  ([collection collection-concept-id]
+   (granule-with-umm-spec-collection collection collection-concept-id {}))
+  ([collection collection-concept-id attribs]
+   (let [timestamps {:data-provider-timestamps (data-provider-timestamps attribs)}
+         entry-title (get collection "EntryTitle")
+         short-name (get collection "ShortName")
+         version-id (get collection "Version")
+         coll-ref (g/map->CollectionRef {:entry-title entry-title
+                                         :entry-id (eid/entry-id short-name version-id)
+                                         :short-name short-name
+                                         :version-id version-id})
+         minimal-gran {:granule-ur (d/unique-str "ur")
+                       :collection-ref coll-ref
+                       ;; Including the parent collection concept id so it's available later.
+                       :collection-concept-id collection-concept-id}
+         data-granule {:data-granule (data-granule attribs)}
+         temporal {:temporal (temporal attribs)}]
+     (g/map->UmmGranule (merge minimal-gran timestamps data-granule temporal attribs)))))
