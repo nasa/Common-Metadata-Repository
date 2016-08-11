@@ -164,7 +164,7 @@
         acl1 (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
         acl2 (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE")
                                       :group_permissions
-                                      [{:user_type "registered" :permissions ["create"]}]))
+                                      [{:user_type "registered" :permissions ["read"]}]))
         acl3 (ingest-acl token (assoc (system-acl "ARCHIVE_RECORD")
                                       :group_permissions
                                       [{:group_id "AG12345-PROV" :permissions ["create"]}]))
@@ -205,6 +205,49 @@
            ["GUEST" "AG10000-PROV"] (concat guest-acls AG10000-acls)
            ["AG12345-PROV" "AG10000-PROV"] (concat AG12345-acls AG10000-acls)
            ["guest" "registered" "AG12345-PROV" "AG10000-PROV"] all-acls))
+
+    (testing "Search ACLs by permitted group with specific permission"
+      (are3 [group-permissions acls]
+           (let [[query-map _] (reduce (fn [[m count] [group permission]]
+                                         [(assoc-in m
+                                                    [:group-permission (keyword (str count))]
+                                                    {:permitted-group group
+                                                     :permission permission})
+                                          (inc count)])
+                                       [{} 0]
+                                       (partition 2 group-permissions))
+                 _ (println "QUERY: " query-map)
+                 response (ac/search-for-acls (u/conn-context) query-map)]
+             (is (= (acls->search-response (count acls) acls)
+                    (dissoc response :took))))
+           ;; CMR-3154 acceptance criterium 1
+           "Guests create"
+           ["guest" "create"] guest-acls
+
+           "Guest read"
+           ["guest" "read"] []
+
+           "Registered read"
+           ["registered" "read"] [acl2]
+
+           "Registered create"
+           ["registered" "create"] [acl5 acl8]
+
+           "Group create"
+           ["AG12345-PROV" "create"] AG12345-acls
+
+           "Another group create"
+           ["AG10000-PROV" "create"] AG10000-acls
+
+           "Group read"
+           ["AG12345-PROV" "read"] []
+
+           ;; CMR-3154 acceptance criterium 2
+           "Registered read or registered create"
+           ["registered" "read" "registered" "create"] registered-acls
+
+           "Registered read or group AG12345-PROV create"
+           ["registered" "read" "AG12345-PROV" "create"] (conj AG12345-acls acl2)))
 
     (testing "Search ACLs by permitted group with options"
       (are [permitted-groups options acls]
