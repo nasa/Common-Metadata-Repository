@@ -24,12 +24,17 @@
   (clojure.set/map-invert concept-prefix->concept-type))
 
 (defn concept-id-validation
-  "Validates the concept id and returns errors if it's invalid. Returns nil if valid."
-  [concept-id]
-  (let [valid-prefixes (str/join "|" (keys concept-prefix->concept-type))
-        regex (re-pattern (str "(" valid-prefixes ")\\d+-[A-Za-z0-9_]+"))]
-    (when-not (re-matches regex concept-id)
-      [(format "Concept-id [%s] is not valid." concept-id)])))
+  "Validates both concept-id and collection-concept-id 
+   and returns errors if it's invalid. Returns nil if valid."
+  ([concept-id]
+   ;;validates concept-id  
+   ;;use :collection-concept-id in place of param when validating collection-concept-id
+   (concept-id-validation :concept-id concept-id))
+  ([param concept-id]
+   (let [valid-prefixes (str/join "|" (keys concept-prefix->concept-type))
+         regex (re-pattern (str "(" valid-prefixes ")\\d+-[A-Za-z0-9_]+"))]
+     (when-not (re-matches regex concept-id)
+       [(format "%s [%s] is not valid." (-> param name str/capitalize) concept-id)]))))
 
 (def validate-concept-id
   "Validates a concept-id and throws an error if invalid"
