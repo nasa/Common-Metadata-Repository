@@ -151,8 +151,8 @@
           ;; We verify the exact expected names here to ensure that they look correct.
           (is (= ["All Collections"
                   "All Granules"
-                  "Group - AG1200000000-CMR"
-                  "Group - AG1200000001-CMR"
+                  (str "Group - " group1-concept-id)
+                  (str "Group - " group2-concept-id)
                   "Provider - PROV1 - AUDIT_REPORT"
                   "Provider - PROV1 - OPTION_ASSIGNMENT"
                   "System - ARCHIVE_RECORD"
