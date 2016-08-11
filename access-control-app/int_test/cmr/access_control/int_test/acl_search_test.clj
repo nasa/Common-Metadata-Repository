@@ -286,6 +286,14 @@
                 :content-type :json}
                (ac/search-for-acls (u/conn-context) query {:raw? true}))))))
 
+  ;; CMR-3154 acceptance criterium 5
+  (testing "Search ACLS by group permission with subfield other than permitted_group or permission is an error"
+    (let [query {:group-permission {:0 {:allowed-group "guest" :permission "read"}}}]
+      (is (= {:status 400
+              :body {:errors ["Parameter group_permission has invalid subfield [allowed_group]. Only 'permitted_group' and 'permission' are allowed."]}
+              :content-type :json}
+             (ac/search-for-acls (u/conn-context) query {:raw? true})))))
+
   (testing "Search ACLs by permitted group with invalid values"
       (are [permitted-groups invalid-msg]
            (= {:status 400

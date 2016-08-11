@@ -1,5 +1,6 @@
 (ns cmr.access-control.services.acl-service
   (:require [clojure.string :as str]
+            [camel-snake-kebab.core :as csk]
             [cmr.access-control.services.acl-service-messages :as acl-msg]
             [cmr.access-control.services.messages :as msg]
             [cmr.access-control.services.acl-validation :as v]
@@ -181,10 +182,21 @@
                        index-str))))
         (keys (:group-permission params))))
 
+(defn- group-permission-parameter-subfield-validation
+  "Validates that the subfields for a group-permission query only include 'permitted-group' and 'permision'."
+  [params]
+  (keep (fn [subfield]
+          (when-not (contains? #{:permitted-group :permission} subfield)
+            (format (str "Parameter group_permission has invalid subfield [%s]. "
+                         "Only 'permitted_group' and 'permission' are allowed.")
+                    (csk/->snake_case (name subfield)))))
+        (mapcat keys (vals (:group-permission params)))))
+
 (defn- group-permission-validation
   "Validates group_permission parameters."
   [context params]
-  (group-permission-parameter-index-validation params))
+  (concat (group-permission-parameter-index-validation params)
+          (group-permission-parameter-subfield-validation params)))
 
 (def acl-identity-type->search-value
  "Maps identity type query paremter values to the actual values used in the index."
@@ -262,43 +274,16 @@
   [context concept-type param value options]
   (let [case-sensitive? (cp/case-sensitive-field? concept-type param options)
         pattern? (cp/pattern-field? concept-type param options)
-        group-operation (cp/group-operation param options :or)
         target-field (keyword (name param))]
-
     (if (map? (first (vals value)))
       ;; If multiple group permissions are passed in like the following
       ;;  -> group_permission[0][permitted_group]=guest&group_permission[1][permitted_group]=registered
-      ;; then this recurses back into this same function to handle each separately
+      ;; then this recurses back into this same function to handle each separately.
       (gc/group-conds
         :or
         (map #(cp/parameter->condition context concept-type param % options)(vals value)))
-      ;; Creates the science keyword condition for a group of science keyword fields and values.
+      ;; Creates the group-permission condition.
       (nf/parse-nested-condition target-field value case-sensitive? pattern?))))
-
-; (defmethod cp/parameter->condition :acl-group-permission
-;  [context concept-type param value options]
-;  (let [case-sensitive? (cp/case-sensitive-field? concept-type param options)
-;        pattern? (cp/pattern-field? concept-type param options)
-;        group-operation (cp/group-operation param options :or)
-;        target-field (keyword (name param))]
-;    (println "VALUE: " value)
-;    (if (map? (first (vals value)))
-;      ;; If multiple group permissions are passed in like the following
-;      ;;  -> group_permission[0][permitted_group]=guest&group_permission[1][permitted_group]=registered
-;      ;; then this recurses back into this same function to handle each separately
-;      (gc/group-conds
-;        :or
-;        (map (fn [v]
-;                 (let [{:keys [permitted-group permission]} v]
-;                   (gc/group-conds
-;                     :and
-;                     (remove nil? [(when permitted-group
-;                                         (cp/parameter->condition
-;                                           context concept-type :permitted-group permitted-group options))
-;                                   (when permission
-;                                         (cp/parameter->condition
-;                                           context concept-type :group-permission permission options))]))))
-;           (vals value))))))
 
 (defn search-for-acls
   [context params]
