@@ -12,23 +12,6 @@
             [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import cmr.oracle.connection.OracleStore))
 
-(defn- find-batch-starting-id
-  "Returns the first id that would be returned in a batch."
-  ([conn table params]
-   (find-batch-starting-id conn table params 0))
-  ([conn table params min-id]
-   (let [existing-params (when (seq params) (sh/find-params->sql-clause params))
-         params-clause (if existing-params
-                         `(and (>= :id ~min-id)
-                               ~existing-params)
-                         `(>= :id ~min-id))
-         stmt (select ['(min :id)]
-                      (from table)
-                      (where params-clause))]
-     (-> (su/find-one conn stmt)
-         vals
-         first))))
-
 (def common-columns
   "A set of common columns for all concept types."
   #{:native_id :concept_id :revision_date :metadata :deleted :revision_id :format :transaction_id})
@@ -44,7 +27,8 @@
    :tag-association (into common-columns [:associated_concept_id :associated_revision_id :tag_key :user_id])
    :access-group (into common-columns [:provider_id :user_id])
    :service (into common-columns [:provider_id :entry_title :entry_id :delete_time :user_id])
-   :acl (into common-columns [:provider_id :user_id :acl_identity])})
+   :acl (into common-columns [:provider_id :user_id :acl_identity])
+   :humanizer (into common-columns [:user_id])})
 
 (defn columns-for-find-concept
   "Returns the table columns that should be included in a find-concept sql query"
@@ -78,6 +62,23 @@
                       (from table)
                       (when-not (empty? params)
                         (where (sh/find-params->sql-clause params)))))))
+
+(defn- find-batch-starting-id
+  "Returns the first id that would be returned in a batch."
+  ([conn table params]
+   (find-batch-starting-id conn table params 0))
+  ([conn table params min-id]
+   (let [existing-params (when (seq params) (sh/find-params->sql-clause params))
+         params-clause (if existing-params
+                         `(and (>= :id ~min-id)
+                               ~existing-params)
+                         `(>= :id ~min-id))
+         stmt (select ['(min :id)]
+                      (from table)
+                      (where params-clause))]
+     (-> (su/find-one conn stmt)
+         vals
+         first))))
 
 (defmulti find-concepts-in-table
   "Retrieve concept maps from the given table, handling small providers separately from
