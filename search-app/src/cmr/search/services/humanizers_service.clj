@@ -24,13 +24,22 @@
            :concept-id concept-id
            :provider-id (:provider-id (concepts/parse-concept-id concept-id)))))
 
+(defn- rfms->umm-collections
+  [context rfms]
+  (map #(rfm->umm-collection context %) rfms))
+
 (defn- get-all-collections
   "Retrieves all collections from the Metadata cache"
-  [context]
+  [context n]
+  (let [[t1 rfms] (u/time-execution (metadata-cache/all-cached-revision-format-maps context))
+        [t2 collections] (u/time-execution (u/map-n-all #(rfms->umm-collections context %) n rfms))]
   ;; Currently not throwing an exception if the cache is empty. May want to change in the future
   ;; to throw an exception.
   ;; TODO should this use pmap? (Test performance in workload and then look at times if too slow.)
-  (map #(rfm->umm-collection context %) (metadata-cache/all-cached-revision-format-maps context)))
+  ;(map #(rfm->umm-collection context %) (metadata-cache/all-cached-revision-format-maps context)))
+    (debug "Get rfms" t1
+           "Convert to collections" t2)
+    collections))
 
 (comment
  (do
@@ -60,24 +69,32 @@
                 original-value (get parent field)]]
       [provider-id concept-id short-name version-id original-value humanized-string-value])))
 
+(defn- get-humanized-rows
+  [collections]
+  (pmap (fn [coll]
+          (->> coll
+               humanizer/umm-collection->umm-collection+humanizers
+               humanized-collection->reported-rows))
+    collections))
+
 (defn humanizers-report-csv
   "Returns a report on humanizers in use in collections as a CSV."
-  [context]
+  [context n]
   (let [[t1 collections] (u/time-execution
-                          (get-all-collections context))
-        [t2 humanized-rows] (u/time-execution
-                             (pmap (fn [coll]
-                                     (->> coll
-                                          humanizer/umm-collection->umm-collection+humanizers
-                                          humanized-collection->reported-rows))
-                               collections))
-        [t3 rows] (u/time-execution
-                   (cons CSV_HEADER
-                         (apply concat humanized-rows)))
-        string-writer (StringWriter.)]
-    (csv/write-csv string-writer rows)
-    (debug "Write humanizer report of " (count humanized-rows) " rows for " (count collections)
-           "get-all-collections:" t1
-           "get humanized rows:" t2
-           "concat humanized rows:" t3)
-    (str string-writer)))
+                          (get-all-collections context n))]
+    (debug "get-all-collections:" t1)
+    (let [[t2 humanized-rows] (u/time-execution
+                                (apply concat (map get-humanized-rows collections)))]
+      (debug "get humanized rows" t2)
+      (let [[t3 rows] (u/time-execution
+                       (cons CSV_HEADER
+                             (apply concat humanized-rows)))
+            string-writer (StringWriter.)]
+       (debug "concat humanized rows" t3)
+       (csv/write-csv string-writer rows)
+       (debug "Write humanizer report of " (count humanized-rows) " rows for " (count collections) "collections."
+              "In batches of size " n
+              "get-all-collections:" t1
+              "get humanized rows:" t2
+              "concat humanized rows:" t3)
+       (str string-writer)))))

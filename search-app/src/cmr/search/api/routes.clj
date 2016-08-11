@@ -313,10 +313,10 @@
 
 (defn- humanizers-report
   "Handles a request to get a humanizers report"
-  [context]
+  [context batch-size]
   {:status 200
    :headers {cr/CONTENT_TYPE_HEADER mt/csv}
-   :body (humanizers-service/humanizers-report-csv context)})
+   :body (humanizers-service/humanizers-report-csv context (Integer. batch-size))})
 
 (defn- build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
@@ -342,8 +342,9 @@
         (collection-renderer-routes/resource-routes system)
 
         (context "/humanizers" []
-          (GET "/report" {context :request-context}
-            (humanizers-report context)))
+          (GET "/report/:batch-size" {{:keys [batch-size]} :params
+                                       context :request-context}
+            (humanizers-report context batch-size)))
 
         ;; Retrieve by cmr concept id or concept id and revision id
         ;; Matches URL paths of the form /concepts/:concept-id[/:revision-id][.:format],

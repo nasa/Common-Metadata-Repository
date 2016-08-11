@@ -616,7 +616,10 @@
 
 (defn get-humanizers-report
   []
-  (let [response (client/get (url/humanizers-report-url) {:connection-manager (s/conn-mgr)})]
-    (if (= 200 (:status response))
-      (:body response)
-      response)))
+  (try
+   (let [response (client/get (url/humanizers-report-url) {:connection-manager (s/conn-mgr)})]
+     (if (= 200 (:status response))
+       (:body response)
+       response))
+   (catch Exception e
+     (proto-repl.saved-values/save 2))))
