@@ -5,7 +5,7 @@
             [cmr.transmit.metadata-db :as mdb1]
             [cmr.transmit.metadata-db2 :as mdb]
             [cmr.access-control.data.acls :as acls]
-            [cmr.metadata-db.services.messages :as msg]))
+            [cmr.access-control.services.messages :as msg]))
 
 (defn- catalog-item-identity-collection-applicable-validation
   "Validates the relationship between collection_applicable and collection_identifier."

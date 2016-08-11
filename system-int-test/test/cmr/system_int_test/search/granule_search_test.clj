@@ -379,8 +379,10 @@
               :errors [(cmsg/invalid-opt-for-param :concept-id :ignore-case)]}
              (search/find-refs :granule {:echo_granule_id gran1-cid "options[echo_granule_id]" {:ignore_case true}}))))
     (testing "Search with wildcards in echo_granule_id param not supported."
-      (is (= {:status 400
-              :errors [(cmsg/invalid-opt-for-param :concept-id :pattern)]}
+      (is (= {:errors
+                ["Concept-id [G*] is not valid."
+                 "Option [pattern] is not supported for param [concept_id]"],
+              :status 400}
              (search/find-refs :granule {:echo_granule_id "G*" "options[echo_granule_id]" {:pattern true}}))))
     (testing "search granules by echo collection id"
       (are [items cid options]
@@ -437,12 +439,16 @@
            ;; an non existent granule along with existing granules
            [gran1 gran5] [gran1-cid "G555-PROV1" "G555-NON_EXIST" gran5-cid] {}))
     (testing "Search with wildcards in concept_id param not supported."
-      (is (= {:status 400
-              :errors [(cmsg/invalid-opt-for-param :concept-id :pattern)]}
+      (is (= {:errors
+                ["Concept-id [G*] is not valid."
+                 "Option [pattern] is not supported for param [concept_id]"],
+              :status 400}
              (search/find-refs :granule {:concept_id "G*" "options[concept_id]" {:pattern true}}))))
     (testing "OR option is not supported for anything but attribute, science-keywords"
-      (is (= {:status 400
-              :errors [(cmsg/invalid-opt-for-param :concept-id :or)]}
+      (is (= {:errors
+                ["Concept-id [G] is not valid."
+                 "Option [or] is not supported for param [concept_id]"],
+              :status 400}
              (search/find-refs :granule {:concept-id "G" "options[concept_id]" {:or true}}))))
     (testing "Mixed arity param results in 400 error"
       (is (= {:status 400
