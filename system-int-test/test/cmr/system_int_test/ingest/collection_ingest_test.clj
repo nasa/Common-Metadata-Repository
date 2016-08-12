@@ -23,7 +23,6 @@
             [cmr.umm-spec.test.expected-conversion :as exc]
             [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
-
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (def test-context (lkt/setup-context-for-test lkt/sample-keyword-map))

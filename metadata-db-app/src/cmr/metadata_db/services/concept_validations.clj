@@ -78,7 +78,7 @@
           (let [data (ex-data e)]
             (:errors data)))))))
 
-(defn nil-extra-fields-validation
+(defn- nil-extra-fields-validation
   "Validates that among the extra fields, only delete-time, version-id and associated-revision-id
   can sometimes be nil."
   [concept]
@@ -90,7 +90,7 @@
   (when-let [concept-id (:concept-id concept)]
     (cc/concept-id-validation concept-id)))
 
-(defn max-revision-id-validation
+(defn- max-revision-id-validation
   "Validates that the revision id given (if any) is less than the start of the transaction-id
   sequence start."
   [concept]
@@ -98,7 +98,7 @@
     (when (> revision-id MAX_REVISION_ID)
       [(format "revision-id [%d] exceeds the maximum allowed value of %d." revision-id MAX_REVISION_ID)])))
 
-(defn concept-id-matches-concept-fields-validation-no-provider
+(defn- concept-id-matches-concept-fields-validation-no-provider
   "Validate that the concept-id has the correct form and that values represented in the concept's
   concept-id match the values in the concept's concept map. In particular, that the concept-type
   in the map matches the concept-type parsed from the concpet-id.
@@ -113,7 +113,15 @@
         (when-not (= concept-type (:concept-type concept))
           [(msg/invalid-concept-id concept-id "CMR" (:concept-type concept))])))))
 
-(defn concept-id-match-fields-validation
+(defn- humanizer-native-id-validation
+  "Validate that the native id of humanizer concept is 'humanizer'. We only have one humanizer
+  concept in CMR. This check is to make sure that no more than one humanizer exists in CMR."
+  [concept]
+  (when-not (= cc/humanizer-native-id (:native-id concept))
+    [(format "Humanizer concept native-id can only be [%s], but was [%s]."
+             cc/humanizer-native-id (:native-id concept))]))
+
+(defn- concept-id-match-fields-validation
   [concept]
   (when-let [concept-id (:concept-id concept)]
     (when-not (cc/concept-id-validation concept-id)
@@ -158,6 +166,13 @@
                                   concept-id-match-fields-validation
                                   provider-id-missing-validation)))
 
+(def humanizer-concept-validation
+  "Builds a function that validates a concept map that has no provider and returns a list of errors"
+  (util/compose-validations (conj base-concept-validations
+                                  concept-id-matches-concept-fields-validation-no-provider
+                                  humanizer-native-id-validation)))
+
+
 (def validate-concept-default
   "Validates a concept. Throws an error if invalid."
   (util/build-validator :invalid-data default-concept-validation))
@@ -173,6 +188,10 @@
 (def validate-concept-group
   "Validates a group concept. Throws and error if invalid."
   (util/build-validator :invalid-data group-concept-validation))
+
+(def validate-humanizer-concept
+  "validates a humanizer concept. Throws an error if invalid."
+  (util/build-validator :invalid-data humanizer-concept-validation))
 
 (defmulti validate-concept
   "Validates a concept. Throws an error if invalid."
@@ -190,6 +209,10 @@
 (defmethod validate-concept :access-group
   [concept]
   (validate-concept-group concept))
+
+(defmethod validate-concept :humanizer
+  [concept]
+  (validate-humanizer-concept concept))
 
 (defmethod validate-concept :default
   [concept]

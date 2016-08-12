@@ -36,6 +36,10 @@
   [_ _]
   "cmr_tag_associations")
 
+(defmethod get-table-name :humanizer
+  [_ _]
+  "cmr_humanizers")
+
 (defmethod get-table-name :default
   [provider concept-type]
   ;; Dont' remove the next line - needed to prevent SQL injection

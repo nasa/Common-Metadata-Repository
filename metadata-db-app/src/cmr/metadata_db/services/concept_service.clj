@@ -19,7 +19,7 @@
             cmr.metadata-db.data.oracle.concepts
             (cmr.metadata-db.data.oracle.concepts collection granule
                                                   tag tag-association
-                                                  service group acl)
+                                                  service group acl humanizer)
             (cmr.metadata-db.data.oracle providers search)
 
             [cmr.common.log :refer (debug info warn error)]
@@ -38,7 +38,8 @@
    :service 10
    :tag 10
    :tag-association 10
-   :access-group 10})
+   :access-group 10
+   :humanizer 10})
 
 (defconfig days-to-keep-tombstone
   "Number of days to keep a tombstone before is removed from the database."
@@ -49,19 +50,24 @@
   "Maximum number of concepts to process in each iteration of the delete old concepts job."
   50000)
 
+(def system-level-concept-types
+  "A set of concept types that only exist on system level provider CMR."
+  #{:tag :tag-association :humanizer})
+
 ;;; utility methods
 
-(defn validate-system-level-provider-for-tags
-  "Validates that tags/tag-associations are only created with a system level provider; throws an
-  error otherwise."
+(defn validate-system-level-concept
+  "Validates that system level concepts are only associated with the system level provider,
+  throws an error otherwise."
   [concept provider]
   (let [{concept-type :concept-type} concept
         {provider-id :provider-id} provider]
-    (when (and (contains? #{:tag :tag-association} concept-type)
+    (when (and (contains? system-level-concept-types concept-type)
                (not (:system-level? provider)))
       (let [err-msg (case concept-type
                       :tag (msg/tags-only-system-level provider-id)
-                      :tag-association (msg/tag-associations-only-system-level provider-id))]
+                      :tag-association (msg/tag-associations-only-system-level provider-id)
+                      :humanizer (msg/humanizers-only-system-level provider-id))]
         (errors/throw-service-errors :invalid-data [err-msg])))))
 
 (defn- provider-ids-for-validation
@@ -354,7 +360,7 @@
         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
         db (util/context->db context)
         provider (provider-service/get-provider-by-id context provider-id true)
-        _ (validate-system-level-provider-for-tags concept provider)
+        _ (validate-system-level-concept concept provider)
         previous-revision (c/get-concept db concept-type provider concept-id)]
     (if previous-revision
       ;; For a concept which is already deleted (i.e. previous revision is a tombstone),
@@ -403,12 +409,12 @@
   (cv/validate-concept concept)
   (let [db (util/context->db context)
         provider-id (or (:provider-id concept)
-                        (when (contains? #{:tag :tag-association} (:concept-type concept)) "CMR"))
+                        (when (contains? system-level-concept-types (:concept-type concept)) "CMR"))
         ;; Need this for tags/tag-associations since they don't have a provider-id in their
         ;; concept maps, but later processing requires it.
         concept (assoc concept :provider-id provider-id)
         provider (provider-service/get-provider-by-id context provider-id true)
-        _ (validate-system-level-provider-for-tags concept provider)
+        _ (validate-system-level-concept concept provider)
         concept (set-or-generate-concept-id db provider concept)]
     (validate-concept-revision-id db provider concept)
     (let [concept (->> concept

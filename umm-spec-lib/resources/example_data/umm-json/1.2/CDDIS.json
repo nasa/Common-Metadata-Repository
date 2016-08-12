@@ -1,0 +1,296 @@
+{
+  "DataLanguage" : "eng",
+  "SpatialExtent" : {
+    "HorizontalSpatialDomain" : {
+      "Geometry" : {
+        "CoordinateSystem" : "CARTESIAN",
+        "BoundingRectangles" : [ {
+          "NorthBoundingCoordinate" : 90.0,
+          "WestBoundingCoordinate" : -180.0,
+          "EastBoundingCoordinate" : 180.0,
+          "SouthBoundingCoordinate" : -90.0
+        } ]
+      }
+    },
+    "VerticalSpatialDomains" : [ {
+      "Type" : "None",
+      "Value" : "None"
+    } ],
+    "GranuleSpatialRepresentation" : "NO_SPATIAL"
+  },
+  "CollectionProgress" : "IN WORK",
+  "ScienceKeywords" : [ {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "GEODETICS",
+    "VariableLevel1" : "COORDINATE REFERENCE SYSTEM",
+    "VariableLevel2" : "COUNTRY/REGIONAL COORDINATE REFERENCE SYSTEM"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "GEODETICS",
+    "VariableLevel1" : "COORDINATE REFERENCE SYSTEM",
+    "VariableLevel2" : "GLOBAL COORDINATE REFERENCE SYSTEM"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "GEODETICS",
+    "VariableLevel1" : "ELLIPSOID CHARACTERISTICS"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "GEODETICS",
+    "VariableLevel1" : "GEOID CHARACTERISTICS"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "GRAVITY/GRAVITATIONAL FIELD",
+    "VariableLevel1" : "CONTROL SURVEYS"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "GRAVITY/GRAVITATIONAL FIELD",
+    "VariableLevel1" : "GRAVITY"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "GRAVITY/GRAVITATIONAL FIELD",
+    "VariableLevel1" : "POLAR MOTION",
+    "VariableLevel2" : "ANNUAL ELLIPTICAL COMPONENT"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "GRAVITY/GRAVITATIONAL FIELD",
+    "VariableLevel1" : "POLAR MOTION",
+    "VariableLevel2" : "CHANDLER CIRCULAR COMPONENT"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "GRAVITY/GRAVITATIONAL FIELD",
+    "VariableLevel1" : "ROTATIONAL MOTION/VARIATIONS",
+    "VariableLevel2" : "ROTATIONAL RATE/SPEED"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "GRAVITY/GRAVITATIONAL FIELD",
+    "VariableLevel1" : "SATELLITE ORBITS/REVOLUTION",
+    "VariableLevel2" : "ANGLE OF ELEVATION"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "GRAVITY/GRAVITATIONAL FIELD",
+    "VariableLevel1" : "SATELLITE ORBITS/REVOLUTION",
+    "VariableLevel2" : "ANGLE OF INCLINATION"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "GRAVITY/GRAVITATIONAL FIELD",
+    "VariableLevel1" : "SATELLITE ORBITS/REVOLUTION",
+    "VariableLevel2" : "ORBIT TYPE"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "GRAVITY/GRAVITATIONAL FIELD",
+    "VariableLevel1" : "SATELLITE ORBITS/REVOLUTION",
+    "VariableLevel2" : "ORBIT VELOCITY"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "GRAVITY/GRAVITATIONAL FIELD",
+    "VariableLevel1" : "SATELLITE ORBITS/REVOLUTION",
+    "VariableLevel2" : "ORBITAL POSITION"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "TECTONICS",
+    "VariableLevel1" : "EARTHQUAKES",
+    "VariableLevel2" : "EARTHQUAKE MAGNITUDE/INTENSITY"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "TECTONICS",
+    "VariableLevel1" : "PLATE TECTONICS",
+    "VariableLevel2" : "CRUSTAL MOTION",
+    "VariableLevel3" : "CRUSTAL MOTION DIRECTION"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "TECTONICS",
+    "VariableLevel1" : "PLATE TECTONICS",
+    "VariableLevel2" : "CRUSTAL MOTION",
+    "VariableLevel3" : "CRUSTAL MOTION RATE"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "TECTONICS",
+    "VariableLevel1" : "PLATE TECTONICS",
+    "VariableLevel2" : "FAULT MOVEMENT",
+    "VariableLevel3" : "FAULT MOVEMENT DIRECTION"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "TECTONICS",
+    "VariableLevel1" : "PLATE TECTONICS",
+    "VariableLevel2" : "FAULT MOVEMENT",
+    "VariableLevel3" : "FAULT MOVEMENT RATE"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "TECTONICS",
+    "VariableLevel1" : "PLATE TECTONICS",
+    "VariableLevel2" : "PLATE BOUNDARIES"
+  }, {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "SOLID EARTH",
+    "Term" : "TECTONICS",
+    "VariableLevel1" : "PLATE TECTONICS",
+    "VariableLevel2" : "STRAIN"
+  } ],
+  "TemporalExtents" : [ {
+    "EndsAtPresentFlag" : true,
+    "RangeDateTimes" : [ {
+      "BeginningDateTime" : "1992-01-01T00:00:00.000Z"
+    } ]
+  } ],
+  "ProcessingLevel" : {
+    "Id" : "Level 1"
+  },
+  "ShortName" : "CDDIS_GNSS_daily_data",
+  "EntryTitle" : "Ground-Based Global Navigation Satellite System Data (30-second sampling, 24 hour files) from NASA CDDIS",
+  "MetadataLanguage" : "eng",
+  "RelatedUrls" : [ {
+    "Relation" : [ "GET DATA" ],
+    "URLs" : [ "ftp://cddis.gsfc.nasa.gov/gnss/data/daily" ]
+  } ],
+  "DataDates" : [ {
+    "Type" : "CREATE",
+    "Date" : "1992-01-01T00:00:00.000Z"
+  }, {
+    "Type" : "UPDATE",
+    "Date" : "2016-08-03T00:00:00.000Z"
+  } ],
+  "Abstract" : "Global Navigation Satellite System (GNSS) daily 30-second sampled data available from the Crustal Dynamics Data Information System (CDDIS). Global Navigation Satellite System (GNSS) provide autonomous geo-spatial positioning with global coverage. GNSS data sets from ground receivers at the CDDIS consist primarily of the data from the U.S. Global Positioning System (GPS) and the Russian GLObal NAvigation Satellite System (GLONASS). Other GNSS (Europe’s Galileo, China’s Beidou, Japan’s Quasi-Zenith Satellite System/QZSS, the Indian Regional Navigation Satellite System/IRNSS, and worldwide Satellite Based Augmentation Systems/SBASs) are similar to the U.S. GPS in terms of the satellite constellation, orbits, and signal structure; CDDIS began archiving data from these systems in 2011. These data include daily files of observation (30-second sampling), broadcast ephemeris, meteorological messages in RINEX format as well as observation summary files from a global permanent network of ground-based receivers.",
+  "Purpose" : "The receivers collect the signals from orbiting satellites to determine their location in three dimensions and calculate precise time. GNSS receivers detect, decode, and process both pseudorange (code) and phase transmitted by the GNSS satellites. The satellites transmit the ranging codes on two radio-frequency carriers, allowing the locations of GNSS receivers to be determined with varying degrees of accuracy, depending on the receiver and post-processing of the data. ",
+  "LocationKeywords" : [ {
+    "Category" : "GEOGRAPHIC REGION",
+    "Type" : "GLOBAL"
+  } ],
+  "MetadataDates" : [ {
+    "Type" : "CREATE",
+    "Date" : "2016-08-01T15:35:00.000Z"
+  }, {
+    "Type" : "UPDATE",
+    "Date" : "2016-08-03T18:38:00.000Z"
+  } ],
+  "Version" : "1",
+  "Projects" : [ {
+    "ShortName" : "IGS",
+    "LongName" : "International GNSS Service",
+    "StartDate" : "1992-01-01T00:00:00.000Z"
+  } ],
+  "CollectionDataType" : "SCIENCE_QUALITY",
+  "Organizations" : [ {
+    "Role" : "POINTOFCONTACT",
+    "Party" : {
+      "OrganizationName" : {
+        "ShortName" : "NASA/GSFC/SSED/CDDIS",
+        "LongName" : "Crustal Dynamics Data Information System, Solar System Exploration Division, Goddard Space Flight Center, NASA"
+      },
+      "Contacts" : [ {
+        "Type" : "Email",
+        "Value" : "support-cddis@earthdata.nasa.gov"
+      } ],
+      "Addresses" : [ {
+        "Country" : "United States",
+        "StreetAddresses" : [ "NASA GSFC", "Code 690.1" ],
+        "City" : "Greenbelt",
+        "StateProvince" : "Maryland",
+        "PostalCode" : "20771"
+      } ],
+      "RelatedUrls" : [ {
+        "Title" : "CDDIS Home Page",
+        "Description" : "Home page for the CDDIS website",
+        "URLs" : [ "http://cddis.gsfc.nasa.gov/" ]
+      } ]
+    }
+  } ],
+  "Personnel" : [ {
+    "Role" : "POINTOFCONTACT",
+    "Party" : {
+      "Person" : {
+        "FirstName" : "Carey",
+        "MiddleName" : "E",
+        "LastName" : "Noll"
+      },
+      "Contacts" : [ {
+        "Type" : "Email",
+        "Value" : "Carey.Noll@nasa.gov"
+      } ],
+      "Addresses" : [ {
+        "Country" : "United States",
+        "StreetAddresses" : [ "NASA GSFC", "Code 690" ],
+        "City" : "Greenbelt",
+        "StateProvince" : "Maryland",
+        "PostalCode" : "20771"
+      } ]
+    }
+  } ],
+  "TemporalKeywords" : [ "1 second - < 1 minute" ],
+  "Platforms" : [ {
+    "Type" : "Earth Observation Satellites",
+    "ShortName" : "BEIDOU",
+    "LongName" : "Beidou (Compass) GNSS satellite (China)",
+    "Instruments" : [ {
+      "ShortName" : "BEIDOU ANTENNA",
+      "LongName" : "Beidou Satellite Transmitting Antenna"
+    } ]
+  }, {
+    "Type" : "Earth Observation Satellites",
+    "ShortName" : "GALILEO",
+    "LongName" : "Galileo GNSS satellite (Europe)",
+    "Instruments" : [ {
+      "ShortName" : "GALILEO ANTENNA",
+      "LongName" : "Galileo Satellite broadcasting antenna"
+    } ]
+  }, {
+    "Type" : "Earth Observation Satellites",
+    "ShortName" : "GLONASS",
+    "LongName" : "Global Navigation Satellite System (Russia)",
+    "Instruments" : [ {
+      "ShortName" : "GLONASS ANTENNA",
+      "LongName" : "GLONASS satellite broadcasting antenna"
+    } ]
+  }, {
+    "Type" : "Earth Observation Satellites",
+    "ShortName" : "GPS",
+    "LongName" : "Global Positioning System GNSS Satellite (USA)",
+    "Instruments" : [ {
+      "ShortName" : "GPS ANTENNA",
+      "LongName" : "GPS satellite broadcasting antenna"
+    } ]
+  }, {
+    "Type" : "In Situ Land-based Platforms",
+    "ShortName" : "GROUND STATIONS",
+    "LongName" : "GNSS Ground Stations",
+    "Instruments" : [ {
+      "ShortName" : "GNSS RECEIVER",
+      "LongName" : "GNSS Receiver"
+    } ]
+  }, {
+    "Type" : "Earth Observation Satellites",
+    "ShortName" : "QZSS",
+    "LongName" : "Quasi-Zenith Satellite System GNSS Satellite (Japan)",
+    "Instruments" : [ {
+      "ShortName" : "QZSS ANTENNA",
+      "LongName" : "QZSS satellite broadcasting antenna"
+    } ]
+  }, {
+    "Type" : "Earth Observation Satellites",
+    "ShortName" : "IRNSS",
+    "LongName" : "Indian Regional Satellite System GNSS Satellite (India)",
+    "Instruments" : [ {
+      "ShortName" : "IRNSS ANTENAA",
+      "LongName" : "IRNSS satellite broadcasting antenna"
+    } ]
+  } ]
+}

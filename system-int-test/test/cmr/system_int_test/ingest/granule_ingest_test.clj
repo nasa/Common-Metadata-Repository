@@ -14,7 +14,9 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.indexer.system :as indexer-system]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+            [clojure.java.io :as io]
+            [cheshire.core :as json]))
 
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
@@ -347,3 +349,34 @@
         {:entry-title "correct" :short-name "S2" :version-id "V1"}
         ["Collection with Entry Title [correct], Short Name [S2], Version Id [V1] referenced in granule [Gran1] provider [PROV1] does not exist."]))))
 
+(deftest ingest-granule-with-parent-umm-collection-test
+  (let [cddis-umm (-> "example_data/umm-json/1.2/CDDIS.json" io/resource slurp)
+        metadata-format "application/vnd.nasa.cmr.umm+json;version=1.2"
+        coll-concept-id "C1-PROV1"
+        gran-concept-id "G1-PROV1"
+        coll-map {:provider-id  "PROV1"
+                  :native-id    "umm_json_cddis_V1"
+                  :concept-type :collection
+                  :concept-id   coll-concept-id
+                  :format       metadata-format
+                  :metadata     cddis-umm}
+        ingest-collection-response (ingest/ingest-concept coll-map {:accept-format :json})
+        granule (d/item->concept
+                 (dg/granule-with-umm-spec-collection (json/parse-string cddis-umm true)
+                                                      coll-concept-id
+                                                      {:concept-id gran-concept-id}))
+        ingest-granule-response (ingest/ingest-concept granule)
+        _ (index/wait-until-indexed)
+        coll-content-type (-> (search/retrieve-concept coll-concept-id 1 {:url-extension "native"})
+                              :headers
+                              (get "Content-Type"))
+        granule-search-response (search/find-refs :granule {:concept-id gran-concept-id})]
+    (testing "Collection ingested and indexed successfully as version 1.2 UMM JSON"
+      (is (= 200 (:status ingest-collection-response)))
+      (is (= "application/vnd.nasa.cmr.umm+json;version=1.2; charset=utf-8"
+             coll-content-type)))
+    (testing "Granule ingested successfully"
+      (is (= 200 (:status ingest-granule-response))))
+    (testing "Granule successfully indexed for search"
+      (is (= 1 (:hits granule-search-response)))
+      (is (= gran-concept-id (-> granule-search-response :refs first :id))))))
