@@ -84,21 +84,29 @@
 (defn humanizers-report-csv
   "Returns a report on humanizers in use in collections as a CSV."
   [context n]
-  (let [[t1 collections] (u/time-execution
-                          (get-all-collections context n))]
-    (debug "get-all-collections:" t1)
-    (let [[t2 humanized-rows] (u/time-execution
-                                (apply concat (map get-humanized-rows collections)))]
-      (debug "get humanized rows" t2)
-      (let [[t3 rows] (u/time-execution
-                       (cons CSV_HEADER
-                             (apply concat humanized-rows)))
-            string-writer (StringWriter.)]
-       (debug "concat humanized rows" t3)
-       (csv/write-csv string-writer rows)
-       (debug "Write humanizer report of " (count humanized-rows) " rows for " (count collections) "collections."
-              "In batches of size " n
-              "get-all-collections:" t1
-              "get humanized rows:" t2
-              "concat humanized rows:" t3)
-       (str string-writer)))))
+  (let [[t1 collection-batches] (u/time-execution
+                                 (get-all-collections context n))
+        string-writer (StringWriter.)]
+    (debug "get-all-collections:" t1
+           "processing " (count collection-batches) " batches of size" n)
+    (csv/write-csv string-writer [CSV_HEADER])
+    (doseq [batch collection-batches]
+     (debug "processing batch of size " (count batch))
+     (let [[t2 humanized-rows] (u/time-execution
+                                   (pmap (fn [coll]
+                                           (->> coll
+                                                humanizer/umm-collection->umm-collection+humanizers
+                                                humanized-collection->reported-rows))
+                                         batch))]
+       (debug "get humanized rows" t2
+              (count humanized-rows) " humanized rows")
+       (let [[t3 rows] (u/time-execution
+                         (apply concat humanized-rows))]
+          (debug "write " (count rows) "rows to csv")
+          (csv/write-csv string-writer rows)
+        (debug "Write humanizer report of " (count humanized-rows) " rows"
+               "In batches of size " n
+               "get-all-collections:" t1
+               "get humanized rows:" t2
+               "concat humanized rows:" t3))))
+    (str string-writer)))

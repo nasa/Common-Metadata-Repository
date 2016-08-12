@@ -274,7 +274,7 @@
 (defn humanizers-report-url
   "URL to get the humanizers report"
   []
-  (format "http://localhost:%s/humanizers/report/5" (transmit-config/search-port)))
+  (format "http://localhost:%s/humanizers/report/2" (transmit-config/search-port)))
 
 (defn search-root
   "Returns the search url root"

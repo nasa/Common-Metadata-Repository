@@ -48,13 +48,13 @@
   (index/wait-until-indexed)
   ;; Refresh the metadata cache
   (search/refresh-collection-metadata-cache)
-  (testing "Humanizer report csv"))
-   ; (let [report (search/get-humanizers-report)]
-   ;   (is (= (str/split report #"\n")
-   ;          ["provider,concept_id,short_name,version,original_value,humanized_value"
-   ;           "PROV1,C1200000000-PROV1,A,V1,GPS RECEIVERS,GPS Receivers"
-   ;           "PROV1,C1200000001-PROV1,B,V2,AM-1,Terra"
-   ;           "PROV1,C1200000002-PROV1,C,V3,USGS_SOFIA,USGS SOFIA"])))))
+  (testing "Humanizer report csv"
+   (let [report (search/get-humanizers-report)]
+     (is (= (str/split report #"\n")
+            ["provider,concept_id,short_name,version,original_value,humanized_value"
+             "PROV1,C1200000000-PROV1,A,V1,GPS RECEIVERS,GPS Receivers"
+             "PROV1,C1200000001-PROV1,B,V2,AM-1,Terra"
+             "PROV1,C1200000002-PROV1,C,V3,USGS_SOFIA,USGS SOFIA"])))))
 
 (deftest humanizer-report-batch
   ;; Insert more entries than the batch size to test batches
