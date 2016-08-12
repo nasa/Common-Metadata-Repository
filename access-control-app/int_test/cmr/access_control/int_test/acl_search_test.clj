@@ -292,6 +292,15 @@
         "Just create permission"
         {:permission "create"} create-acls))
 
+    (testing "Search ACLs by group permission with options"
+      (are [group-permission options acls]
+           (let [response (ac/search-for-acls (u/conn-context)
+                                              (merge {:group-permission {:0 group-permission}} options))]
+             (= (acls->search-response (count acls) acls)
+                (dissoc response :took)))
+           {:permitted-group "GUEST"} {"options[group_permission][ignore_case]" true} guest-acls
+           {:permitted-group "GUEST"} {"options[group_permission][ignore_case]" false} []))
+
     ;; CMR-3154 acceptance criterium 4
     (testing "Search ACLS by group permission with non integer index is an error"
       (let [query {:group-permission {:foo {:permitted-group "guest" :permission "read"}}}]

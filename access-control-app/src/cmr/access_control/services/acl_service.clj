@@ -144,7 +144,7 @@
     {:single-value #{}
      :multiple-value #{:permitted-group :identity-type :provider}
      :always-case-sensitive #{}
-     :disallow-pattern #{:identity-type :permitted-user}
+     :disallow-pattern #{:identity-type :permitted-user :group-permission}
      :allow-or #{}}))
 
 (defmethod cpv/valid-parameter-options :acl
@@ -305,7 +305,7 @@
 (defmethod cp/parameter->condition :acl-group-permission
   [context concept-type param value options]
   (let [case-sensitive? (cp/case-sensitive-field? concept-type param options)
-        pattern? (cp/pattern-field? concept-type param options)
+        pattern? false
         target-field (keyword (name param))]
     (if (map? (first (vals value)))
       ;; If multiple group permissions are passed in like the following
