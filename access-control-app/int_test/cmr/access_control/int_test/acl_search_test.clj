@@ -218,6 +218,17 @@
            ["GUEST"] {"options[permitted_group][ignore_case]" true} guest-acls
            ["GUEST"] {"options[permitted_group][ignore_case]" false} []))
 
+    (testing "Search ACLs by permitted group with invalid values"
+      (are [permitted-groups invalid-msg]
+        (= {:status 400
+            :body {:errors [(format "Parameter permitted_group has invalid values [%s]. Only 'guest', 'registered' or a group concept id can be specified."
+                                    invalid-msg)]}
+            :content-type :json}
+           (ac/search-for-acls (u/conn-context) {:permitted-group permitted-groups} {:raw? true}))
+
+        ["gust"] "gust"
+        ["GUST" "registered" "AG10000-PROV" "G10000-PROV"] "GUST, G10000-PROV"))
+
     (testing "Search ACLs by group permission"
       (are3 [group-permissions acls]
            (let [[query-map _] (reduce (fn [[m count] [group permission]]
@@ -253,6 +264,9 @@
            "Group read"
            ["AG12345-PROV" "read"] []
 
+           "Case-insensitive group create"
+           ["AG10000-PROV" "CREATE"] AG10000-acls
+
            ;; CMR-3154 acceptance criterium 2
            "Registered read or registered create"
            ["registered" "read" "registered" "create"] registered-acls
@@ -284,26 +298,29 @@
         (is (= {:status 400
                 :body {:errors ["Parameter group_permission has invalid index value [foo]. Only integers greater than or equal to zero may be specified."]}
                 :content-type :json}
-               (ac/search-for-acls (u/conn-context) query {:raw? true}))))))
+               (ac/search-for-acls (u/conn-context) query {:raw? true})))))
 
-  ;; CMR-3154 acceptance criterium 5
-  (testing "Search ACLS by group permission with subfield other than permitted_group or permission is an error"
-    (let [query {:group-permission {:0 {:allowed-group "guest" :permission "read"}}}]
-      (is (= {:status 400
-              :body {:errors ["Parameter group_permission has invalid subfield [allowed_group]. Only 'permitted_group' and 'permission' are allowed."]}
-              :content-type :json}
-             (ac/search-for-acls (u/conn-context) query {:raw? true})))))
+    ;; CMR-3154 acceptance criterium 5
+    (testing "Search ACLS by group permission with subfield other than permitted_group or permission is an error"
+      (let [query {:group-permission {:0 {:allowed-group "guest" :permission "read"}}}]
+        (is (= {:status 400
+                :body {:errors ["Parameter group_permission has invalid subfield [allowed_group]. Only 'permitted_group' and 'permission' are allowed."]}
+                :content-type :json}
+               (ac/search-for-acls (u/conn-context) query {:raw? true})))))
 
-  (testing "Search ACLs by permitted group with invalid values"
-      (are [permitted-groups invalid-msg]
-           (= {:status 400
-               :body {:errors [(format "Parameter permitted_group has invalid values [%s]. Only 'guest', 'registered' or a group concept id can be specified."
-                                       invalid-msg)]}
-               :content-type :json}
-              (ac/search-for-acls (u/conn-context) {:permitted-group permitted-groups} {:raw? true}))
+    (testing "Search ACLS by group permission with invalid permitted_group"
+      (let [query {:group-permission {:0 {:permitted_group "foo" :permission "read"}}}]
+        (is (= {:status 400
+                :body {:errors ["Sub-parameter permitted_group of parameter group_permissions has invalid values [foo]. Only 'guest', 'registered' or a group concept id may be specified."]}
+                :content-type :json}
+               (ac/search-for-acls (u/conn-context) query {:raw? true})))))
 
-           ["gust"] "gust"
-           ["GUST" "registered" "AG10000-PROV" "G10000-PROV"] "GUST, G10000-PROV")))
+    (testing "Searching ACLS by group permission with permission values other than read, create, update, delete, or order is an error"
+      (let [query {:group-permission {:0 {:permitted_group "guest" :permission "foo"}}}]
+        (is (= {:status 400
+                :body {:errors ["Sub-parameter permission of parameter group_permissions has invalid values [foo]. Only 'read', 'update', 'create', 'delete', or 'order' may be specified."]}
+                :content-type :json}
+               (ac/search-for-acls (u/conn-context) query {:raw? true})))))))
 
 (deftest acl-search-by-identity-type-test
   (let [token (e/login (u/conn-context) "user1")

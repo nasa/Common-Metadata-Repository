@@ -17,7 +17,7 @@
             [cmr.common-app.services.search.params :as common-params]
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.messages.common-messages :as msg]
-            [cmr.search.services.parameters.converters.nested-field :as nf]
+            [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.validation :as sv]
             [inflections.core :as inf]))

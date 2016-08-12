@@ -15,7 +15,7 @@
             [cmr.common-app.services.search.params :as cp]
             [cmr.common-app.services.search.parameter-validation :as cpv]
             [cmr.common-app.services.search.query-model :as common-qm]
-            [cmr.search.services.parameters.converters.nested-field :as nf]
+            [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [clojure.edn :as edn]
             [clojure.set :as set]
@@ -27,7 +27,8 @@
             [cmr.umm.collection.product-specific-attribute :as psa]
             [cmr.common.util :as util]
             [cmr.common.date-time-parser :as dtp]
-            [cmr.access-control.data.acls :as acls]))
+            [cmr.access-control.data.acls :as acls]
+            [cmr.access-control.data.acl-schema :as schema]))
 
 ;;; Misc constants and accessor functions
 
@@ -162,6 +163,11 @@
       (.equalsIgnoreCase "registered" group)
       (some? (re-find #"[Aa][Gg]\d+-.+" group))))
 
+(defn- valid-permission?
+  "Returns true if the given permission is valid."
+  [permission]
+  (contains? (set schema/valid-permissions) (str/lower-case permission)))
+
 (defn- permitted-group-validation
   "Validates permitted group parameters."
   [context params]
@@ -192,11 +198,37 @@
                     (csk/->snake_case (name subfield)))))
         (mapcat keys (vals (:group-permission params)))))
 
+(defn- group-permission-permitted-group-validation
+  "Validates permitted group subfield of group-permission parameters."
+  [params]
+  (let [permitted-groups (->> (:group-permission params)
+                              vals
+                              (map :permitted-group)
+                              (filter identity))]
+    (when-let [invalid-groups (seq (remove valid-permitted-group? permitted-groups))]
+      [(format (str "Sub-parameter permitted_group of parameter group_permissions has invalid values [%s]. "
+                    "Only 'guest', 'registered' or a group concept id may be specified.")
+               (str/join ", " invalid-groups))])))
+
+(defn- group-permission-permission-validation
+  "Validates that the permission subfield of group-permission parameters is one of the permitted values."
+  [params]
+  (let [permissions (->> (:group-permission params)
+                         vals
+                         (map :permission)
+                         (filter identity))]
+    (when-let [invalid-permissions (seq (remove valid-permission? permissions))]
+      [(format (str "Sub-parameter permission of parameter group_permissions has invalid values [%s]. "
+                    "Only 'read', 'update', 'create', 'delete', or 'order' may be specified.")
+               (str/join ", " invalid-permissions))])))
+
 (defn- group-permission-validation
   "Validates group_permission parameters."
   [context params]
   (concat (group-permission-parameter-index-validation params)
-          (group-permission-parameter-subfield-validation params)))
+          (group-permission-parameter-subfield-validation params)
+          (group-permission-permitted-group-validation params)
+          (group-permission-permission-validation params)))
 
 (def acl-identity-type->search-value
  "Maps identity type query paremter values to the actual values used in the index."
