@@ -7,7 +7,7 @@
 
 (def concept-types
   "This is the set of the types of concepts in the CMR."
-  #{:collection :granule :tag :tag-association :service :access-group :acl})
+  #{:collection :granule :tag :tag-association :service :access-group :acl :humanizer})
 
 (def concept-prefix->concept-type
   "Maps a concept id prefix to the concept type"
@@ -17,11 +17,17 @@
    "TA" :tag-association
    "S" :service
    "AG" :access-group
-   "ACL" :acl})
+   "ACL" :acl
+   "H" :humanizer})
 
 (def concept-type->concept-prefix
   "Maps a concept type to the concept id prefix"
   (clojure.set/map-invert concept-prefix->concept-type))
+
+(def humanizer-native-id
+  "The native id of the system level humanizer. There can only be one humanizer in CMR.
+  We use just humanizer native id to enforce it."
+  "humanizer")
 
 (defn concept-id-validation
   "Validates both concept-id and collection-concept-id 
