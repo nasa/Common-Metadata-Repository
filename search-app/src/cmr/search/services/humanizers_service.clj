@@ -13,6 +13,10 @@
 (def CSV_HEADER
   ["provider", "concept_id", "short_name" "version", "original_value", "humanized_value"])
 
+(def report-collection-batch-size
+  "The size of the batches to use to process collections for the humanizer report"
+  100)
+
 (defn- rfm->umm-collection
   "Takes a revision format map and parses it into a UMM lib record."
   [context revision-format-map]
@@ -31,15 +35,15 @@
 (defn- get-all-collections
   "Retrieves all collections from the Metadata cache"
   [context n]
-  (let [[t1 rfms] (u/time-execution (metadata-cache/all-cached-revision-format-maps context))
-        [t2 collections] (u/time-execution (u/map-n-all #(rfms->umm-collections context %) n rfms))]
-  ;; Currently not throwing an exception if the cache is empty. May want to change in the future
-  ;; to throw an exception.
-  ;; TODO should this use pmap? (Test performance in workload and then look at times if too slow.)
-  ;(map #(rfm->umm-collection context %) (metadata-cache/all-cached-revision-format-maps context)))
-    (debug "Get rfms" t1
-           "Convert to collections" t2)
-    collections))
+    ;; Currently not throwing an exception if the cache is empty. May want to change in the future
+    ;; to throw an exception.
+    ;; TODO should this use pmap? (Test performance in workload and then look at times if too slow.)
+    ;(map #(rfm->umm-collection context %) (metadata-cache/all-cached-revision-format-maps context)))
+  (let [[t1 rfms] (u/time-execution (metadata-cache/all-cached-revision-format-maps context))]
+    (debug "Get rfms" t1)
+    (let [[t2 collections] (u/time-execution (u/map-n-all #(rfms->umm-collections context %) n rfms))]
+      (debug "Convert to collections" t2)
+      collections)))
 
 (comment
  (do

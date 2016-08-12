@@ -7,7 +7,8 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
+            [cmr.umm-spec.test.location-keywords-helper :as lkt]
+            [cmr.search.services.humanizers-service :as hs]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -54,6 +55,25 @@
    ;           "PROV1,C1200000000-PROV1,A,V1,GPS RECEIVERS,GPS Receivers"
    ;           "PROV1,C1200000001-PROV1,B,V2,AM-1,Terra"
    ;           "PROV1,C1200000002-PROV1,C,V3,USGS_SOFIA,USGS SOFIA"])))))
+
+(deftest humanizer-report-batch
+  ;; Insert more entries than the batch size to test batches
+  (doseq [n (range (inc hs/report-collection-batch-size))]
+    (d/ingest "PROV1" (dc/collection
+                       {:product {:short-name "B"
+                                  :long-name "B"
+                                  :version-id n}
+                        :platforms [(dc/platform {:short-name "AM-1"})]})))
+  (index/wait-until-indexed)
+  ;; Refresh the metadata cache
+  (search/refresh-collection-metadata-cache)
+  (testing "Humanizer report batches"
+    (let [report-lines (str/split (search/get-humanizers-report) #"\n")]
+      (is (= (count report-lines) (+ 2 hs/report-collection-batch-size)))
+      (for [actual-line (rest report-lines)
+            n (inc hs/report-collection-batch-size)]
+        (is (= actual-line) (str "PROV1,C1200000001-PROV1,B,"n",AM-1,Terra"))))))
+
 
 (deftest search-by-platform-humanized
   (let [coll1 (d/ingest "PROV1" (dc/collection {:platforms [(dc/platform {:short-name "TERRA"})]}))
