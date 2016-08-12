@@ -153,7 +153,7 @@
    :provider cpv/string-param-options
    :identity-type cpv/string-param-options
    :permitted-user #{}
-   :group-permission cpv/string-param-options})
+   :group-permission #{}})
 
 (defn- valid-permitted-group?
   "Returns true if the given permitted group is valid, i.e. guest, registered or conforms to
@@ -309,7 +309,7 @@
 
 (defmethod cp/parameter->condition :acl-group-permission
   [context concept-type param value options]
-  (let [case-sensitive? (cp/case-sensitive-field? concept-type param options)
+  (let [case-sensitive? false
         pattern? false
         target-field (keyword (name param))]
     (if (map? (first (vals value)))

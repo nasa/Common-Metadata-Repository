@@ -110,6 +110,20 @@
      {:hits hits
       :items items})))
 
+(defn- generate-query-map-for-group-permissions
+  "Returns a query map generated from group permission pairs.
+  group-permissions should be a seqeuence of group/user-identifer permission pairs such as
+  [\"guest\" \"read\" \"AG10000-PROV1\" \"create\" \"registered\" \"order\"]"
+  [group-permissions]
+  (first (reduce (fn [[m count] [group permission]]
+                   [(assoc-in m
+                              [:group-permission (keyword (str count))]
+                              {:permitted-group group
+                               :permission permission})
+                    (inc count)])
+                 [{} 0]
+                 (partition 2 group-permissions))))
+
 (deftest acl-search-test
   (let [token (e/login (u/conn-context) "user1")
         acl1 (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
@@ -167,7 +181,7 @@
                                       [{:user_type "registered" :permissions ["read"]}]))
         acl3 (ingest-acl token (assoc (system-acl "ARCHIVE_RECORD")
                                       :group_permissions
-                                      [{:group_id "AG12345-PROV" :permissions ["create"]}]))
+                                      [{:group_id "AG12345-PROV" :permissions ["read" "create"]}]))
 
         acl4 (ingest-acl token (provider-acl "AUDIT_REPORT"))
         acl5 (ingest-acl token (assoc (provider-acl "OPTION_DEFINITION")
@@ -187,7 +201,7 @@
         registered-acls [acl2 acl5 acl8]
         AG12345-acls [acl3 acl6]
         AG10000-acls [acl8]
-        read-acls [acl2 acl8]
+        read-acls [acl2 acl3 acl8]
         create-acls [acl1 acl3 acl4 acl7 acl8]
         all-acls (concat guest-acls registered-acls AG12345-acls)]
     (u/wait-until-indexed)
@@ -231,14 +245,7 @@
 
     (testing "Search ACLs by group permission"
       (are3 [group-permissions acls]
-           (let [[query-map _] (reduce (fn [[m count] [group permission]]
-                                         [(assoc-in m
-                                                    [:group-permission (keyword (str count))]
-                                                    {:permitted-group group
-                                                     :permission permission})
-                                          (inc count)])
-                                       [{} 0]
-                                       (partition 2 group-permissions))
+           (let [query-map (generate-query-map-for-group-permissions group-permissions)
                  response (ac/search-for-acls (u/conn-context) query-map)]
              (is (= (acls->search-response (count acls) acls)
                     (dissoc response :took))))
@@ -250,7 +257,7 @@
            ["guest" "read"] []
 
            "Registered read"
-           ["registered" "read"] read-acls
+           ["registered" "read"] [acl2 acl8]
 
            "Group create"
            ["AG10000-PROV" "create"] [acl8]
@@ -265,7 +272,7 @@
            ["AG10000-PROV" "create"] AG10000-acls
 
            "Group read"
-           ["AG12345-PROV" "read"] []
+           ["AG12345-PROV" "read"] [acl3]
 
            "Group delete"
            ["AG12345-PROV" "delete"] [acl6]
@@ -297,15 +304,6 @@
 
         "Just create permission"
         {:permission "create"} create-acls))
-
-    (testing "Search ACLs by group permission with options"
-      (are [group-permission options acls]
-           (let [response (ac/search-for-acls (u/conn-context)
-                                              (merge {:group-permission {:0 group-permission}} options))]
-             (= (acls->search-response (count acls) acls)
-                (dissoc response :took)))
-           {:permitted-group "GUEST"} {"options[group_permission][ignore_case]" true} guest-acls
-           {:permitted-group "GUEST"} {"options[group_permission][ignore_case]" false} []))
 
     ;; CMR-3154 acceptance criterium 4
     (testing "Search ACLS by group permission with non integer index is an error"

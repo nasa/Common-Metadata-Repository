@@ -402,7 +402,7 @@ The following parameters are supported when searching for ACLs.
 * provider - Matches ACLs which reference a provider through a catalog item identity or a provider identity.
   * options: ignore_case
 * group_permission
-  * options: ignore_case
+  * options: none (always case-insensitive)
   * This is a nested parameter that has subfields 'permitted_group' and 'permission'. It can contain both subfields or just one.
 
 ##### ACL Search Response
