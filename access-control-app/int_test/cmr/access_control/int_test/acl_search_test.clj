@@ -172,23 +172,23 @@
         acl4 (ingest-acl token (provider-acl "AUDIT_REPORT"))
         acl5 (ingest-acl token (assoc (provider-acl "OPTION_DEFINITION")
                                       :group_permissions
-                                      [{:user_type "registered" :permissions ["create"]}]))
+                                      [{:user_type "registered" :permissions ["order"]}]))
         acl6 (ingest-acl token (assoc (provider-acl "OPTION_ASSIGNMENT")
                                       :group_permissions
-                                      [{:group_id "AG12345-PROV" :permissions ["create"]}]))
+                                      [{:group_id "AG12345-PROV" :permissions ["delete"]}]))
 
         acl7 (ingest-acl token (catalog-item-acl "All Collections"))
         acl8 (ingest-acl token (assoc (catalog-item-acl "All Granules")
                                       :group_permissions
-                                      [{:user_type "registered" :permissions ["create"]}
+                                      [{:user_type "registered" :permissions ["read"]}
                                        {:group_id "AG10000-PROV" :permissions ["create"]}]))
 
         guest-acls [acl1 acl4 acl7]
         registered-acls [acl2 acl5 acl8]
         AG12345-acls [acl3 acl6]
         AG10000-acls [acl8]
-        read-acls [acl2]
-        create-acls [acl1 acl3 acl4 acl5 acl6 acl7 acl8]
+        read-acls [acl2 acl8]
+        create-acls [acl1 acl3 acl4 acl7 acl8]
         all-acls (concat guest-acls registered-acls AG12345-acls)]
     (u/wait-until-indexed)
 
@@ -252,11 +252,14 @@
            "Registered read"
            ["registered" "read"] read-acls
 
-           "Registered create"
-           ["registered" "create"] [acl5 acl8]
+           "Group create"
+           ["AG10000-PROV" "create"] [acl8]
+
+           "Registered order"
+           ["registered" "order"] [acl5]
 
            "Group create"
-           ["AG12345-PROV" "create"] AG12345-acls
+           ["AG12345-PROV" "create"] [acl3]
 
            "Another group create"
            ["AG10000-PROV" "create"] AG10000-acls
@@ -264,15 +267,18 @@
            "Group read"
            ["AG12345-PROV" "read"] []
 
+           "Group delete"
+           ["AG12345-PROV" "delete"] [acl6]
+
            "Case-insensitive group create"
            ["AG10000-PROV" "CREATE"] AG10000-acls
 
            ;; CMR-3154 acceptance criterium 2
-           "Registered read or registered create"
-           ["registered" "read" "registered" "create"] registered-acls
+           "Registered read or registered order"
+           ["registered" "read" "registered" "order"] registered-acls
 
-           "Registered read or group AG12345-PROV create"
-           ["registered" "read" "AG12345-PROV" "create"] (conj AG12345-acls acl2)))
+           "Registered read or group AG12345-PROV delete"
+           ["registered" "read" "AG12345-PROV" "delete"] [acl2 acl6 acl8]))
 
     ;; CMR-3154 acceptance criterium 3
     (testing "Search ACLs by group permission just group or permission"
