@@ -401,6 +401,9 @@ The following parameters are supported when searching for ACLs.
   * user is a URS user name corresponding to a member of a group that has access to an ACL.
 * provider - Matches ACLs which reference a provider through a catalog item identity or a provider identity.
   * options: ignore_case
+* group_permission
+  * options: ignore_case
+  * This is a nested parameter that has subfields 'permitted_group' and 'permission'. It can contain both subfields or just one.
 
 ##### ACL Search Response
 
@@ -557,6 +560,35 @@ Server: Jetty(9.2.10.v20150310)
 }
 ```
 
+##### By group_permission
+
+```
+curl -i -g "%CMR-ENDPOINT%/acls?group_permission[0][permitted_group]=guest&group_permission[0][permission]=create&pretty=true"
+
+HTTP/1.1 200 OK
+Date: Fri, 12 Aug 2016 18:42:42 GMT
+Content-Type: application/json; charset=UTF-8
+Access-Control-Expose-Headers: CMR-Hits, CMR-Request-Id
+Access-Control-Allow-Origin: *
+CMR-Hits: 1
+CMR-Took: 5
+CMR-Request-Id: 987912b3-be19-43a2-84b7-0b768da36eec
+Content-Length: 257
+Server: Jetty(9.2.10.v20150310)
+
+{
+  "hits" : 1,
+  "took" : 4,
+  "items" : [ {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000002-CMR",
+    "identity_type" : "System",
+    "name" : "System - SYSTEM_AUDIT_REPORT",
+    "location" : "http://localhost:3011/acls/ACL1200000002-CMR"
+  } ]
+}
+```
+
 ### <a name="retrieve-acl"></a> Retrieve ACL
 
 A single ACL can be retrieved by sending a GET request to `%CMR-ENDPOINT%/acls/<concept-id>` where `concept-id` is the concept id of the ACL returned when it was created.
@@ -645,7 +677,7 @@ Content-Type: application/json;charset=ISO-8859-1
 
 * One of:
 ** `concept_id` - Must be a valid concept id, or else use `concept_id[]=...&concept_id[]=...` to specify multiple concepts.
-** `system_object` - A system object identity target, e.g. "GROUP" 
+** `system_object` - A system object identity target, e.g. "GROUP"
 ** `provider` AND `target` - A provider id and a provider object identity target, e.g. "PROVIDER_HOLDINGS"
 * And one of:
 ** `user_id` - The user whose permissions will be computed.

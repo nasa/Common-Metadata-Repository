@@ -203,8 +203,7 @@
   [params]
   (let [permitted-groups (->> (:group-permission params)
                               vals
-                              (map :permitted-group)
-                              (filter identity))]
+                              (keep :permitted-group))]
     (when-let [invalid-groups (seq (remove valid-permitted-group? permitted-groups))]
       [(format (str "Sub-parameter permitted_group of parameter group_permissions has invalid values [%s]. "
                     "Only 'guest', 'registered' or a group concept id may be specified.")
@@ -215,15 +214,21 @@
   [params]
   (let [permissions (->> (:group-permission params)
                          vals
-                         (map :permission)
-                         (filter identity))]
+                         (keep :permission))]
     (when-let [invalid-permissions (seq (remove valid-permission? permissions))]
       [(format (str "Sub-parameter permission of parameter group_permissions has invalid values [%s]. "
                     "Only 'read', 'update', 'create', 'delete', or 'order' may be specified.")
                (str/join ", " invalid-permissions))])))
 
 (defn- group-permission-validation
-  "Validates group_permission parameters."
+  "Validates group_permission parameters.
+  The group-permission validations operation on the :group-permission field of the parameters
+  which (if present) should take the following form
+
+  {:group-permission {:0 {:permitted-group \"guest\" :permission \"read\"}
+                      :1 {:permission \"order\"}}}
+
+  which corresponds to acls that grant read permission to guests for order permission (to anyone)."
   [context params]
   (concat (group-permission-parameter-index-validation params)
           (group-permission-parameter-subfield-validation params)
