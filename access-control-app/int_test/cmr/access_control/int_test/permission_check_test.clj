@@ -544,6 +544,23 @@
             :registered ["read" "order"]
             "user1" ["read" "order"]))
 
+        (testing "no permissions are granted with granule_applicable = false"
+          (update-acl acl {:group_permissions [{:permissions [:read :order]
+                                                :user_type :registered}]
+                           :catalog_item_identity {:name "prov1 granule read"
+                                                   :granule_applicable false
+                                                   :collection_applicable true
+                                                   :collection_identifier {:entry_titles ["coll1 entry title"]}
+                                                   :provider_id "PROV1"}})
+
+          (are [user permissions]
+            (= {gran1 permissions
+                gran2 []}
+               (get-permissions user gran1 gran2))
+            :guest []
+            :registered []
+            "user1" []))
+
         (testing "permissions granted to a specific group"
           (update-acl acl {:group_permissions [{:permissions [:read]
                                                 :group_id created-group-concept-id}]

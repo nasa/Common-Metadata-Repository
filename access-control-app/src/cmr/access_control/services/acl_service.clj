@@ -349,12 +349,11 @@
 (defn acl-matches-granule?
   "Returns true if the acl matches the concept indicating the concept is permitted."
   [acl granule]
-  (let [{provider-id :provider-id
-         gran-identifier :granule-identifier
-         coll-identifier :collection-identifier} (:catalog-item-identity acl)]
-    (and (= provider-id (:provider-id granule))
-         (granule-identifier-matches-granule? gran-identifier granule)
-         (collection-identifier-matches-granule? coll-identifier granule))))
+  (let [{{:keys [provider-id granule-identifier collection-identifier granule-applicable]} :catalog-item-identity} acl]
+    (and granule-applicable
+         (= provider-id (:provider-id granule))
+         (granule-identifier-matches-granule? granule-identifier granule)
+         (collection-identifier-matches-granule? collection-identifier granule))))
 
 (defn- grants-concept-permission?
   "Returns true if permission keyword is granted on concept to any sids by given acl."
