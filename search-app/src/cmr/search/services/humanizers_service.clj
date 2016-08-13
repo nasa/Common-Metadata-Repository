@@ -86,20 +86,20 @@
   [context n]
   (let [[t1 collection-batches] (u/time-execution
                                  (get-all-collections context n))
-        string-writer (StringWriter.)]
+        string-writer (StringWriter.)
+        idx-atom (atom 0)]
     (debug "get-all-collections:" t1
            "processing " (count collection-batches) " batches of size" n)
     (csv/write-csv string-writer [CSV_HEADER])
     (doseq [batch collection-batches]
-     (debug "processing batch of size " (count batch))
+     (debug "processing batch " (swap! idx-atom inc) " of size " (count batch))
      (let [[t2 humanized-rows] (u/time-execution
                                    (pmap (fn [coll]
                                            (->> coll
                                                 humanizer/umm-collection->umm-collection+humanizers
                                                 humanized-collection->reported-rows))
                                          batch))]
-       (debug "get humanized rows" t2
-              (count humanized-rows) " humanized rows")
+       (debug "get humanized rows" t2)
        (let [[t3 rows] (u/time-execution
                          (apply concat humanized-rows))]
           (debug "write " (count rows) "rows to csv")
@@ -109,4 +109,5 @@
                "get-all-collections:" t1
                "get humanized rows:" t2
                "concat humanized rows:" t3))))
+    (debug "Finished processing batches")
     (str string-writer)))
