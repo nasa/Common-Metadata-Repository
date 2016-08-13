@@ -2,7 +2,7 @@
   "Performs search and indexing of access control data."
   (:require [cmr.access-control.services.acl-service :as acl-service]
             [cmr.access-control.data.acls :as acls]
-            [cmr.elastic-utils.index-util :as m :refer [defmapping]]
+            [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
             [cmr.common.log :refer [info debug]]
             [cmr.common-app.services.search.elastic-search-index :as esi]
             [cmr.common-app.services.search.query-to-elastic :as q2e]
@@ -142,6 +142,13 @@
   "The name of the mapping type within the cubby elasticsearch index."
   "acl")
 
+(defnestedmapping group-permission-field-mapping
+  "Defines mappings for group permission."
+  {:permitted-group m/string-field-mapping
+   :permitted-group.lowercase m/string-field-mapping
+   :permission m/string-field-mapping
+   :permission.lowercase m/string-field-mapping})
+
 (defmapping ^:private acl-mappings acl-type-name
   "Defines the field mappings and type options for indexing acls in elasticsearch."
   {:concept-id (m/stored m/string-field-mapping)
@@ -149,6 +156,8 @@
 
    :permitted-group (m/stored m/string-field-mapping)
    :permitted-group.lowercase m/string-field-mapping
+
+   :group-permission group-permission-field-mapping
 
    ;; target-provider-id indexes the provider id of the provider-identity or
    ;; catalog-item-identity field of an acl, if present
@@ -204,6 +213,17 @@
   [acl]
   (map #(or (:user-type %) (:group-id %)) (:group-permissions acl)))
 
+(defn- acl-group-permission->elastic-doc
+  "Converts a map containing a group permission map to an elasticsearch document to index
+  as a nested document field of an acl."
+  [group-permission]
+  (let [{:keys [group-id user-type permissions]} group-permission
+        gid (or group-id user-type)]
+    {:permitted-group gid
+     :permitted-group.lowercase (str/lower-case gid)
+     :permission permissions
+     :permission.lowercase (map str/lower-case permissions)}))
+
 (defn- acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."
   [concept-map]
@@ -215,6 +235,7 @@
            :identity-type (acl->identity-type acl)
            :permitted-group permitted-groups
            :permitted-group.lowercase (map str/lower-case permitted-groups)
+           :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
            :target-provider-id provider-id
            :target-provider-id.lowercase (safe-lowercase provider-id))))
 

@@ -64,6 +64,10 @@
    "DATA_QUALITY_SUMMARY_ASSIGNMENT"
    "PROVIDER_CALENDAR_EVENT"])
 
+(def valid-permissions
+  "A collection of valid permissions for group permissions"
+  ["create" "read" "update" "delete" "order"])
+
 (def acl-schema
   (js/parse-json-schema
     {:type :object
@@ -85,11 +89,7 @@
                    :GroupPermissionsType {:type :object
                                           :additionalProperties false
                                           :properties {:permissions {:type :array
-                                                                     :items {:enum ["create"
-                                                                                    "read"
-                                                                                    "update"
-                                                                                    "delete"
-                                                                                    "order"]}
+                                                                     :items {:enum valid-permissions}
                                                                      :minLength 1}
                                                        :group_id {:type :string
                                                                   :minLength 1
