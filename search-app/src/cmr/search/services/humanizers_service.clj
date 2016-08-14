@@ -30,7 +30,7 @@
 
 (defn- rfms->umm-collections
   [context rfms]
-  (map #(rfm->umm-collection context %) rfms))
+  (lazy-seq (map #(rfm->umm-collection context %) rfms)))
 
 (defn- get-all-collections
   "Retrieves all collections from the Metadata cache"
@@ -41,7 +41,7 @@
     ;(map #(rfm->umm-collection context %) (metadata-cache/all-cached-revision-format-maps context)))
   (let [[t1 rfms] (u/time-execution (metadata-cache/all-cached-revision-format-maps context))]
     (debug "Get rfms" t1)
-    (let [[t2 collections] (u/time-execution (u/map-n-all #(rfms->umm-collections context %) n rfms))]
+    (let [[t2 collections] (u/time-execution (lazy-seq (u/map-n-all #(rfms->umm-collections context %) n rfms)))]
       (debug "Convert to collections" t2)
       collections)))
 
