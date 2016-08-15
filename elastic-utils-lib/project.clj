@@ -1,7 +1,7 @@
 (defproject nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
   :description "A library containing utilities for dealing with Elasticsearch."
   :url "***REMOVED***projects/CMR/repos/cmr/browse/elastic-utils-lib"
-  :dependencies [[org.clojure/clojure "1.7.0"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.elasticsearch/elasticsearch "1.6.2" :exclusions [commons-codec
                                                                        org.ow2.asm/asm]]

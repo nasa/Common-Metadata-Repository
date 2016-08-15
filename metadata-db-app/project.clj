@@ -2,7 +2,7 @@
   :description "The metadata db is a micro-service that provides
                support for persisting metadata concepts."
   :url "***REMOVED***projects/CMR/repos/cmr/browse/metadata-db-app"
-  :dependencies [[org.clojure/clojure "1.7.0"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
