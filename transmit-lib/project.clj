@@ -3,7 +3,7 @@
                 libraries that invoke services within the CMR projects."
   :url "***REMOVED***projects/CMR/repos/cmr/browse/transmit-lib"
 
-  :dependencies [[org.clojure/clojure "1.7.0"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
                  [clj-http "2.0.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [prismatic/schema "1.0.1"]

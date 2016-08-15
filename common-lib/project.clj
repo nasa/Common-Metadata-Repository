@@ -2,7 +2,7 @@
   :description "Provides common utility code for CMR projects."
   :url "***REMOVED***projects/CMR/repos/cmr/browse/common-lib"
 
-  :dependencies [[org.clojure/clojure "1.7.0"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
 
                  ;; ASM is excluded here because we use the pegdown markdown generator in common app lib which uses a different version
                  [org.clojure/core.async "0.1.346.0-17112a-alpha" :exclusions [org.ow2.asm/asm-all]]
