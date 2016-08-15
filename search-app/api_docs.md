@@ -1419,7 +1419,7 @@ When `has_granules` is set to "true" or "false", results will be restricted to c
 
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 
-Collection results are sorted by ascending entry title by default when a search does not result in a score. If a keyword search is performed then the search results will be sorted by relevance (score descending). One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` can be used to explicitly request ascending.
+Collection results are sorted by ascending entry title by default when a search does not result in a score. If a keyword search is performed then the search results will be sorted by relevance (score descending). One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` (Note: in the url, %2B is used to represent `+`) can be used to explicitly request ascending.
 
 ##### Valid Collection Sort Keys
 
@@ -1440,6 +1440,12 @@ Collection results are sorted by ascending entry title by default when a search 
 Example of sorting by start_date in descending order: (Most recent data first)
 
     curl "%CMR-ENDPOINT%/collections?sort_key\[\]=-start_date
+
+Example of sorting by start_date in ascending order: (Most recent data last)
+
+    curl "%CMR-ENDPOINT%/collections?sort_key\[\]=%2Bstart_date
+
+
 
 
 #### <a name="retrieving-all-revisions-of-a-collection"></a> Retrieving All Revisions of a Collection
@@ -1786,7 +1792,7 @@ Exclude granule by parent concept id
 
 #### <a name="sorting-granule-results"></a> Sorting Granule Results
 
-Granule results are sorted by ascending provider and start date by default. One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` can be used to explicitly request ascending.
+Granule results are sorted by ascending provider and start date by default. One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+`(Note: in the url, %2B is used to represent `+`) can be used to explicitly request ascending.
 
 ##### Valid Granule Sort Keys
 
@@ -1815,6 +1821,11 @@ Granule results are sorted by ascending provider and start date by default. One 
 Example of sorting by start_date in descending order: (Most recent data first)
 
     curl "%CMR-ENDPOINT%/granules/sort_key\[\]=-start_date
+
+Example of sorting by start_date in ascending order: (Most recent data last)
+
+    curl "%CMR-ENDPOINT%/granules/sort_key\[\]=%2Bstart_date
+
 
 
 ### <a name="retrieving-concepts-by-concept-id-and-revision-id"></a> Retrieve concept with a given concept-id or concept-id & revision-id
