@@ -48,27 +48,9 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
-  ;; Due to a stack overflow issue in the latest version of leiningen we can only list the top level
-  ;; libraries in the dependencies. Sub dependencies that are also under another project can't be
-  ;; included
-  ; :dependencies ~(concat '[[org.clojure/clojure "1.7.0"]]
-  ;                        project-dependencies)
-  :dependencies [[org.clojure/clojure "1.7.0"]
-                 [nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-cubby-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-es-spatial-plugin "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-index-set-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-indexer-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [org.clojure/tools.nrepl "0.2.11"]]
-
+  :dependencies ~(concat '[[org.clojure/clojure "1.8.0"]
+                           [org.clojure/tools.nrepl "0.2.11"]]
+                         project-dependencies)
 
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]

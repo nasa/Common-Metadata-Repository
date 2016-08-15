@@ -142,6 +142,11 @@
   (pr-str {:name "Some ACL"
            :etc "TBD"}))
 
+(def humanizer-json
+  (json/generate-string
+    [{"type" "trim_whitespace", "field" "platform", "order" -100},
+     {"type" "priority", "field" "platform", "source_value" "Aqua", "order" 10, "priority" 10}]))
+
 (def concept-dummy-metadata
   "Index events are now created by MDB when concepts are saved. So the Indexer will attempt
   to look up the metadata for the concepts and parse it. So we need to provide valid
@@ -153,7 +158,8 @@
    :tag tag-edn
    :tag-association tag-association-edn
    :access-group group-edn
-   :acl acl-edn})
+   :acl acl-edn
+   :humanizer humanizer-json})
 
 (defn- concept
   "Create a concept map for any concept type. "
@@ -273,6 +279,19 @@
                             :extra-fields extra-fields}
                            (dissoc attributes :extra-fields))]
      (concept provider-id :service uniq-num attributes))))
+
+(defn humanizer-concept
+ "Creates a humanizer concept"
+ ([uniq-num]
+  (humanizer-concept uniq-num {}))
+ ([uniq-num attributes]
+  (let [native-id "humanizer"
+        attributes (merge {:user-id (str "user" uniq-num)
+                           :format "application/json"
+                           :native-id native-id}
+                          attributes)]
+    ;; no provider-id should be specified for humanizers
+    (dissoc (concept nil :humanizer uniq-num attributes) :provider-id))))
 
 (defn assert-no-errors
   [save-result]
@@ -504,6 +523,10 @@
   [concept]
   (assoc concept :provider-id "CMR"))
 
+(defmethod expected-concept :humanizer
+  [concept]
+  (assoc concept :provider-id "CMR"))
+
 (defmethod expected-concept :default
   [concept]
   concept)
@@ -611,6 +634,19 @@
    (create-and-save-acl provider-id uniq-num num-revisions {}))
   ([provider-id uniq-num num-revisions attributes]
    (let [concept (acl-concept provider-id uniq-num attributes)
+         _ (dotimes [n (dec num-revisions)]
+             (assert-no-errors (save-concept concept)))
+         {:keys [concept-id revision-id]} (save-concept concept)]
+     (assoc concept :concept-id concept-id :revision-id revision-id))))
+
+(defn create-and-save-humanizer
+  "Creates, saves, and returns a humanizer concept with its data from metadata-db"
+  ([]
+   (create-and-save-humanizer 1))
+  ([num-revisions]
+   (create-and-save-humanizer num-revisions {}))
+  ([num-revisions attributes]
+   (let [concept (humanizer-concept 1 attributes)
          _ (dotimes [n (dec num-revisions)]
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]

@@ -22,7 +22,8 @@
    :tag-association #{:concept-id :native-id :associated-concept-id :associated-revision-id :tag-key}
    :service default-supported-find-parameters
    :access-group default-supported-find-parameters
-   :acl default-supported-find-parameters})
+   :acl default-supported-find-parameters
+   :humanizer #{:concept-id :native-id}})
 
 (def granule-supported-parameter-combinations
   "Supported search parameter combination sets for granule find. This does not include flags
@@ -107,6 +108,6 @@
   "Find concepts with specific parameters"
   [context params]
   (validate-find-params params)
-  (if (contains? #{:tag :tag-association :acl} (:concept-type params))
+  (if (contains? #{:tag :tag-association :acl :humanizer} (:concept-type params))
     (find-cmr-concepts context params)
     (find-provider-concepts context params)))

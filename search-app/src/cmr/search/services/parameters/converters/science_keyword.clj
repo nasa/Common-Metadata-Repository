@@ -1,7 +1,7 @@
 (ns cmr.search.services.parameters.converters.science-keyword
   "Contains functions for converting science keywords query parameters to conditions"
   (:require [clojure.string :as str]
-            [cmr.search.services.parameters.converters.nested-field :as nf]
+            [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.common-app.services.search.params :as p]))
 

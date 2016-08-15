@@ -61,4 +61,3 @@
       (catch clojure.lang.ExceptionInfo e
         [(.getMessage e)]))
     [(msg/invalid-date-range-msg range-str)]))
-

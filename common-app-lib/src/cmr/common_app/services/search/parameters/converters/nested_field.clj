@@ -1,4 +1,4 @@
-(ns cmr.search.services.parameters.converters.nested-field
+(ns cmr.common-app.services.search.parameters.converters.nested-field
   "Contains functions for converting query parameters to conditions for nested fields."
   (:require [clojure.string :as str]
             [cmr.common-app.services.search.query-model :as qm]

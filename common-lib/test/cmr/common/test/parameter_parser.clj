@@ -46,5 +46,4 @@
          "1,B" [(msg/invalid-msg java.lang.Double "B")]
          "C," [(msg/invalid-msg java.lang.Double "C")]
          ",D" [(msg/invalid-msg java.lang.Double "D")]
-         "," [(msg/invalid-numeric-range-msg range-str)])))
-
+         "," [(msg/invalid-numeric-range-msg ",")])))

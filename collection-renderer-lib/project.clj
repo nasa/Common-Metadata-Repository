@@ -45,7 +45,7 @@
 (defproject nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"
   :description "Renders collections as HTML"
   :url "***REMOVED***projects/CMR/repos/cmr/browse/collection-renderer-lib"
-  :dependencies [[org.clojure/clojure "1.7.0"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [org.jruby/jruby-complete ~jruby-version]]

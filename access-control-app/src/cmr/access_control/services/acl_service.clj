@@ -1,5 +1,6 @@
 (ns cmr.access-control.services.acl-service
   (:require [clojure.string :as str]
+            [camel-snake-kebab.core :as csk]
             [cmr.access-control.services.acl-service-messages :as acl-msg]
             [cmr.access-control.services.messages :as msg]
             [cmr.access-control.services.acl-validation :as v]
@@ -14,6 +15,7 @@
             [cmr.common-app.services.search.params :as cp]
             [cmr.common-app.services.search.parameter-validation :as cpv]
             [cmr.common-app.services.search.query-model :as common-qm]
+            [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [clojure.edn :as edn]
             [clojure.set :as set]
@@ -22,9 +24,11 @@
             [cmr.transmit.metadata-db :as mdb1]
             [cmr.acl.core :as acl]
             [cmr.umm.acl-matchers :as acl-matchers]
+            [cmr.umm.collection.product-specific-attribute :as psa]
             [cmr.common.util :as util]
             [cmr.common.date-time-parser :as dtp]
-            [cmr.access-control.data.acls :as acls]))
+            [cmr.access-control.data.acls :as acls]
+            [cmr.access-control.data.acl-schema :as schema]))
 
 ;;; Misc constants and accessor functions
 
@@ -140,7 +144,7 @@
     {:single-value #{}
      :multiple-value #{:permitted-group :identity-type :provider}
      :always-case-sensitive #{}
-     :disallow-pattern #{:identity-type :permitted-user}
+     :disallow-pattern #{:identity-type :permitted-user :group-permission}
      :allow-or #{}}))
 
 (defmethod cpv/valid-parameter-options :acl
@@ -148,7 +152,8 @@
   {:permitted-group cpv/string-param-options
    :provider cpv/string-param-options
    :identity-type cpv/string-param-options
-   :permitted-user #{}})
+   :permitted-user #{}
+   :group-permission #{}})
 
 (defn- valid-permitted-group?
   "Returns true if the given permitted group is valid, i.e. guest, registered or conforms to
@@ -158,6 +163,11 @@
       (.equalsIgnoreCase "registered" group)
       (some? (re-find #"[Aa][Gg]\d+-.+" group))))
 
+(defn- valid-permission?
+  "Returns true if the given permission is valid."
+  [permission]
+  (contains? (set schema/valid-permissions) (str/lower-case permission)))
+
 (defn- permitted-group-validation
   "Validates permitted group parameters."
   [context params]
@@ -165,6 +175,65 @@
     (when-let [invalid-groups (seq (remove valid-permitted-group? permitted-groups))]
       [(format "Parameter permitted_group has invalid values [%s]. Only 'guest', 'registered' or a group concept id can be specified."
                (str/join ", " invalid-groups))])))
+
+(defn- group-permission-parameter-index-validation
+  "Validates that the indices used in group permission parameters are valid numerical indices."
+  [params]
+  (keep (fn [index-key]
+            (let [index-str (name index-key)
+                  index (psa/safe-parse-value :int index-str)]
+             (when (or (nil? index) (< index 0))
+               (format (str "Parameter group_permission has invalid index value [%s]. "
+                            "Only integers greater than or equal to zero may be specified.")
+                       index-str))))
+        (keys (:group-permission params))))
+
+(defn- group-permission-parameter-subfield-validation
+  "Validates that the subfields for a group-permission query only include 'permitted-group' and 'permision'."
+  [params]
+  (keep (fn [subfield]
+          (when-not (contains? #{:permitted-group :permission} subfield)
+            (format (str "Parameter group_permission has invalid subfield [%s]. "
+                         "Only 'permitted_group' and 'permission' are allowed.")
+                    (csk/->snake_case (name subfield)))))
+        (mapcat keys (vals (:group-permission params)))))
+
+(defn- group-permission-permitted-group-validation
+  "Validates permitted group subfield of group-permission parameters."
+  [params]
+  (let [permitted-groups (->> (:group-permission params)
+                              vals
+                              (keep :permitted-group))]
+    (when-let [invalid-groups (seq (remove valid-permitted-group? permitted-groups))]
+      [(format (str "Sub-parameter permitted_group of parameter group_permissions has invalid values [%s]. "
+                    "Only 'guest', 'registered' or a group concept id may be specified.")
+               (str/join ", " invalid-groups))])))
+
+(defn- group-permission-permission-validation
+  "Validates that the permission subfield of group-permission parameters is one of the permitted values."
+  [params]
+  (let [permissions (->> (:group-permission params)
+                         vals
+                         (keep :permission))]
+    (when-let [invalid-permissions (seq (remove valid-permission? permissions))]
+      [(format (str "Sub-parameter permission of parameter group_permissions has invalid values [%s]. "
+                    "Only 'read', 'update', 'create', 'delete', or 'order' may be specified.")
+               (str/join ", " invalid-permissions))])))
+
+(defn- group-permission-validation
+  "Validates group_permission parameters.
+  The group-permission validations operation on the :group-permission field of the parameters
+  which (if present) should take the following form
+
+  {:group-permission {:0 {:permitted-group \"guest\" :permission \"read\"}
+                      :1 {:permission \"order\"}}}
+
+  which corresponds to acls that grant read permission to guests for order permission (to anyone)."
+  [context params]
+  (concat (group-permission-parameter-index-validation params)
+          (group-permission-parameter-subfield-validation params)
+          (group-permission-permitted-group-validation params)
+          (group-permission-permission-validation params)))
 
 (def acl-identity-type->search-value
  "Maps identity type query paremter values to the actual values used in the index."
@@ -196,11 +265,12 @@
                                      (partial cpv/validate-map [:options :permitted-group])
                                      (partial cpv/validate-map [:options :identity-type])
                                      (partial cpv/validate-map [:options :provider])
-                                     (partial cpv/validate-map [:options :permitted-user])])]
+                                     (partial cpv/validate-map [:options :permitted-user])
+                                     (partial cpv/validate-map [:group_permission])])]
     (cpv/validate-parameters
       :acl safe-params
       (concat cpv/common-validations
-              [permitted-group-validation identity-type-validation])
+              [permitted-group-validation identity-type-validation group-permission-validation])
       type-errors))
   params)
 
@@ -217,7 +287,8 @@
   {:permitted-group :string
    :identity-type :acl-identity-type
    :provider :string
-   :permitted-user :acl-permitted-user})
+   :permitted-user :acl-permitted-user
+   :group-permission :acl-group-permission})
 
 (defmethod cp/parameter->condition :acl-identity-type
  [context concept-type param value options]
@@ -235,6 +306,21 @@
   (let [groups (->> (get-sids context value)
                     (map name))]
     (cp/string-parameter->condition concept-type :permitted-group groups options)))
+
+(defmethod cp/parameter->condition :acl-group-permission
+  [context concept-type param value options]
+  (let [case-sensitive? false
+        pattern? false
+        target-field (keyword (name param))]
+    (if (map? (first (vals value)))
+      ;; If multiple group permissions are passed in like the following
+      ;;  -> group_permission[0][permitted_group]=guest&group_permission[1][permitted_group]=registered
+      ;; then this recurses back into this same function to handle each separately.
+      (gc/group-conds
+        :or
+        (map #(cp/parameter->condition context concept-type param % options)(vals value)))
+      ;; Creates the group-permission condition.
+      (nf/parse-nested-condition target-field value case-sensitive? pattern?))))
 
 (defn search-for-acls
   [context params]

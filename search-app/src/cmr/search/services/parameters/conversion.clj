@@ -9,7 +9,7 @@
             [cmr.common.util :as u]
             [cmr.common-app.services.search.params :as common-params]
             [cmr.search.services.parameters.legacy-parameters :as lp]
-            [cmr.search.services.parameters.converters.nested-field :as nf]
+            [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
             [cmr.common.concepts :as cc]
             [cmr.common.date-time-parser :as parser]))
 
