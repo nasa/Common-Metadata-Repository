@@ -8,7 +8,6 @@
            [cmr.common.util :refer [are2]]
            [cmr.access-control.int-test.fixtures :as fixtures]
            [cmr.access-control.test.util :as u]
-           [cmr.umm-spec.core :as umm-spec]
            [cmr.umm-spec.test.expected-conversion :refer [example-collection-record]]
            [clj-time.core :as t]))
 
@@ -74,6 +73,33 @@
 				    <Orderable>true</Orderable>
 				</Granule>")
 
+(def granule-num
+  "An atom storing the next number used to generate unique granules."
+  (atom 0))
+
+(defn save-granule
+  "Saves a granule with given property map to metadata db and returns concept id."
+  [parent-collection-id]
+  (let [short-name (str "gran" (swap! granule-num inc))
+        version-id "v1"
+        native-id short-name
+        parent-collection (mdb/get-latest-concept (u/conn-context) parent-collection-id)]
+    (:concept-id
+      (mdb/save-concept (u/conn-context)
+                        {:format "application/echo10+xml"
+                         :metadata granule-metadata
+                         :concept-type :granule
+                         :provider-id "PROV1"
+                         :native-id native-id
+                         :revision-id 1
+                         :extra-fields {:short-name short-name
+                                        :entry-title short-name
+                                        :entry-id (str short-name "_" version-id)
+                                        :granule-ur (str short-name "ur")
+                                        :version-id version-id
+                                        :parent-collection-id parent-collection-id
+                                        :parent-entry-title (:entry-title (:extra-fields parent-collection))}}))))
+
 (deftest collection-simple-catalog-item-identity-permission-check-test
   ;; tests ACLs which grant access to collections based on provider id and/or entry title
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
@@ -82,28 +108,14 @@
         ;; then create a group that contains our user, so we can find collections that grant access to this user
         user1-group (create-group {:name "groupwithuser1" :members ["user1"]})
         ;; create some collections
-        ingest-prov1-collection #(u/save-collection {:provider-id "PROV1"
+        save-prov1-collection #(u/save-collection {:provider-id "PROV1"
                                                      :entry-title (str % " entry title")
                                                      :native-id %
                                                      :short-name %})
-        coll1 (ingest-prov1-collection "coll1")
-        coll2 (ingest-prov1-collection "coll2")
-        coll3 (ingest-prov1-collection "coll3")
-        gran1 (:concept-id
-                (mdb/save-concept (u/conn-context)
-                                  {:format "application/echo10+xml"
-                                   :metadata granule-metadata
-                                   :concept-type :granule
-                                   :provider-id "PROV1"
-                                   :native-id "gran1"
-                                   :revision-id 1
-                                   :extra-fields {:short-name "gran1"
-                                                  :entry-title "gran1"
-                                                  :entry-id "gran1"
-                                                  :granule-ur "gran1ur"
-                                                  :version-id "v1"
-                                                  :parent-collection-id coll1
-                                                  :parent-entry-title "coll1"}}))
+        coll1 (save-prov1-collection "coll1")
+        coll2 (save-prov1-collection "coll2")
+        coll3 (save-prov1-collection "coll3")
+        gran1 (save-granule coll1)
         ;; local helpers to make the body of the test cleaner
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
@@ -213,20 +225,20 @@
 (deftest collection-catalog-item-identifier-access-value-test
   ;; tests ACLs which grant access to collections based on their access value
   (let [token (e/login (u/conn-context) "user1" [])
-        ingest-access-value-collection (fn [short-name access-value]
+        save-access-value-collection (fn [short-name access-value]
                                          (u/save-collection {:entry-title (str short-name " entry title")
                                                              :short-name short-name
                                                              :native-id short-name
                                                              :provider-id "PROV1"
                                                              :access-value access-value}))
         ;; one collection with a low access value
-        coll1 (ingest-access-value-collection "coll1" 1)
+        coll1 (save-access-value-collection "coll1" 1)
         ;; one with an intermediate access value
-        coll2 (ingest-access-value-collection "coll2" 4)
+        coll2 (save-access-value-collection "coll2" 4)
         ;; one with a higher access value
-        coll3 (ingest-access-value-collection "coll3" 9)
+        coll3 (save-access-value-collection "coll3" 9)
         ;; and one with no access value
-        coll4 (ingest-access-value-collection "coll4" nil)
+        coll4 (save-access-value-collection "coll4" nil)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
         get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)]
@@ -299,16 +311,16 @@
 (deftest collection-catalog-item-identifier-temporal-test
   ;; tests ACLs that grant access based on a collection's temporal range
   (let [token (e/login (u/conn-context) "user1" [])
-        ingest-temporal-collection (fn [short-name start-year end-year]
+        save-temporal-collection (fn [short-name start-year end-year]
                                      (u/save-collection {:entry-title (str short-name " entry title")
                                                          :short-name short-name
                                                          :native-id short-name
                                                          :provider-id "PROV1"
                                                          :temporal-range {:BeginningDateTime (t/date-time start-year)
                                                                           :EndingDateTime (t/date-time end-year)}}))
-        coll1 (ingest-temporal-collection "coll1" 2001 2002)
-        coll2 (ingest-temporal-collection "coll2" 2004 2005)
-        coll3 (ingest-temporal-collection "coll3" 2007 2009)
+        coll1 (save-temporal-collection "coll1" 2001 2002)
+        coll2 (save-temporal-collection "coll2" 2004 2005)
+        coll3 (save-temporal-collection "coll3" 2007 2009)
         ;; coll4 will have no temporal extent, and should not be granted any permissions by our ACLs in this test
         coll4 (u/save-collection {:entry-id "coll4"
                                   :native-id "coll4"
@@ -381,26 +393,12 @@
         created-group-concept-id (:concept_id (u/create-group token group))
         ;; required for ACLs that will reference this group
         _ (u/wait-until-indexed)
-        ingest-prov1-collection #(u/save-collection {:provider-id "PROV1"
+        save-prov1-collection #(u/save-collection {:provider-id "PROV1"
                                                       :entry-title (str % " entry title")
                                                       :native-id %
                                                       :short-name %})
-        coll1 (ingest-prov1-collection "coll1")
-        gran1 (:concept-id
-                (mdb/save-concept (u/conn-context)
-                                  {:format "application/echo10+xml"
-                                   :metadata granule-metadata
-                                   :concept-type :granule
-                                   :provider-id "PROV1"
-                                   :native-id "gran1"
-                                   :revision-id 1
-                                   :extra-fields {:short-name "gran1"
-                                                  :entry-title "gran1"
-                                                  :entry-id "gran1"
-                                                  :granule-ur "gran1ur"
-                                                  :version-id "v1"
-                                                  :parent-collection-id coll1
-                                                  :parent-entry-title "coll1 entry title"}}))
+        coll1 (save-prov1-collection "coll1")
+        gran1 (save-granule coll1)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})]
 
@@ -460,42 +458,14 @@
         created-group-concept-id (:concept_id (u/create-group token group))
         ;; required for ACLs that will reference this group
         _ (u/wait-until-indexed)
-        ingest-prov1-collection #(u/save-collection {:provider-id "PROV1"
+        save-prov1-collection #(u/save-collection {:provider-id "PROV1"
                                                      :entry-title (str % " entry title")
                                                      :native-id %
                                                      :short-name %})
-        coll1 (ingest-prov1-collection "coll1")
-        coll2 (ingest-prov1-collection "coll2")
-        gran1 (:concept-id
-                (mdb/save-concept (u/conn-context)
-                                  {:format "application/echo10+xml"
-                                   :metadata granule-metadata
-                                   :concept-type :granule
-                                   :provider-id "PROV1"
-                                   :native-id "gran1"
-                                   :revision-id 1
-                                   :extra-fields {:short-name "gran1"
-                                                  :entry-title "gran1"
-                                                  :entry-id "gran1"
-                                                  :granule-ur "gran1ur"
-                                                  :version-id "v1"
-                                                  :parent-collection-id coll1
-                                                  :parent-entry-title "coll1 entry title"}}))
-        gran2 (:concept-id
-                (mdb/save-concept (u/conn-context)
-                                  {:format "application/echo10+xml"
-                                   :metadata granule-metadata
-                                   :concept-type :granule
-                                   :provider-id "PROV1"
-                                   :native-id "gran2"
-                                   :revision-id 1
-                                   :extra-fields {:short-name "gran2"
-                                                  :entry-title "gran2"
-                                                  :entry-id "gran2"
-                                                  :granule-ur "gran2ur"
-                                                  :version-id "v1"
-                                                  :parent-collection-id coll2
-                                                  :parent-entry-title "coll2 entry title"}}))
+        coll1 (save-prov1-collection "coll1")
+        coll2 (save-prov1-collection "coll2")
+        gran1 (save-granule coll1)
+        gran2 (save-granule coll2)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})]
 
@@ -588,8 +558,6 @@
         group (u/make-group {:name "groupwithuser1" :members ["user1"]})
         created-group-concept-id (:concept_id (u/create-group token group))
         ;; create some collections
-        coll1-umm (assoc example-collection-record :EntryTitle "coll1 entry title")
-        coll1-metadata (umm-spec/generate-metadata (u/conn-context) coll1-umm :echo10)
         coll1 (u/save-collection {:provider-id "PROV1"
                                   :entry-title "coll1"
                                   :native-id "coll1"
