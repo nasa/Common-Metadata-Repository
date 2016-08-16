@@ -57,8 +57,9 @@
              "PROV1,C1200000002-PROV1,C,V3,USGS_SOFIA,USGS SOFIA"])))))
 
 (deftest humanizer-report-batch
+  (hs/set-report-collection-batch-size! 10)
   ;; Insert more entries than the batch size to test batches
-  (doseq [n (range (inc hs/report-collection-batch-size))]
+  (doseq [n (range (inc (hs/report-collection-batch-size)))]
     (d/ingest "PROV1" (dc/collection
                        {:product {:short-name "B"
                                   :long-name "B"
@@ -69,7 +70,7 @@
   (search/refresh-collection-metadata-cache)
   (testing "Humanizer report batches"
     (let [report-lines (str/split (search/get-humanizers-report) #"\n")]
-      (is (= (count report-lines) (+ 2 hs/report-collection-batch-size)))
+      (is (= (count report-lines) (+ 2 (hs/report-collection-batch-size))))
       (for [actual-line (rest report-lines)
             n (inc hs/report-collection-batch-size)]
         (is (= actual-line) (str "PROV1,C1200000001-PROV1,B,"n",AM-1,Terra"))))))

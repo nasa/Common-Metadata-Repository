@@ -119,19 +119,6 @@
   (let [field-paths (apply concat (vals humanizer-field->umm-paths))]
     (reduce #(transform-in-all %1 %2 add-humanizer-field) collection field-paths)))
 
-; (defn- simplify-humanizer-field
-;   "Assocs the :value inside of the given key to the parent at key"
-;   [parent key]
-;   (let [humanized-key (humanizer-key key)]
-;     (assoc parent humanized-key (:value (get parent humanized-key)))))
-
-; (defn- simplify-humanizer-fields
-;   "Removes priority fields where appropriate, using the bare string value for non-prioritized fields."
-;   [collection]
-;   (let [non-prioritized-paths (select-keys humanizer-field->umm-paths non-prioritized-fields)
-;         field-paths (apply concat (vals non-prioritized-paths))]
-;     (reduce #(transform-in-all %1 %2 simplify-humanizer-field) collection field-paths)))
-
 (defn umm-collection->umm-collection+humanizers
   "Applies humanizers to a parsed UMM collection"
   ([collection]

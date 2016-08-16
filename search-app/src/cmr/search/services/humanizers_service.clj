@@ -3,6 +3,7 @@
   (require [cmr.common.concepts :as concepts]
            [cmr.common.util :as u]
            [cmr.common-app.humanizer :as humanizer]
+           [cmr.common.config :as config]
            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
            [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
            [cmr.umm-spec.legacy :as umm-legacy]
@@ -13,9 +14,9 @@
 (def CSV_HEADER
   ["provider", "concept_id", "short_name" "version", "original_value", "humanized_value"])
 
-(def report-collection-batch-size
+(config/defconfig report-collection-batch-size
   "The size of the batches to use to process collections for the humanizer report"
-  100)
+  {:default 500 :type Long})
 
 (defn- rfm->umm-collection
   "Takes a revision format map and parses it into a UMM lib record."
@@ -33,17 +34,13 @@
   (map #(rfm->umm-collection context %) rfms))
 
 (defn- get-all-collections
-  "Retrieves all collections from the Metadata cache"
-  [context n]
+  "Retrieves all collections from the Metadata cache, partitions them into batches of size
+  report-collection-batch-size, so the batches can be processed lazily to avoid out of memory errors."
+  [context]
     ;; Currently not throwing an exception if the cache is empty. May want to change in the future
     ;; to throw an exception.
-    ;; TODO should this use pmap? (Test performance in workload and then look at times if too slow.)
-    ;(map #(rfm->umm-collection context %) (metadata-cache/all-cached-revision-format-maps context)))
-  (let [[t1 rfms] (u/time-execution (metadata-cache/all-cached-revision-format-maps context))]
-    (debug "Get rfms" t1)
-    (let [[t2 collections] (u/time-execution (map #(rfms->umm-collections context %) (partition-all n rfms)))]
-      (debug "Convert to collections" t2)
-      collections)))
+  (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
+    (map #(rfms->umm-collections context %) (partition-all (report-collection-batch-size) rfms))))
 
 (comment
  (do
@@ -83,31 +80,29 @@
 
 (defn humanizers-report-csv
   "Returns a report on humanizers in use in collections as a CSV."
-  [context n]
+  [context]
   (let [[t1 collection-batches] (u/time-execution
-                                 (get-all-collections context n))
+                                 (get-all-collections context))
         string-writer (StringWriter.)
         idx-atom (atom 0)]
     (debug "get-all-collections:" t1
-           "processing " (count collection-batches) " batches of size" n)
+           "processing " (count collection-batches) " batches of size" report-collection-batch-size)
     (csv/write-csv string-writer [CSV_HEADER])
-    (doseq [batch collection-batches]
-     (debug "processing batch " (swap! idx-atom inc) " of size " (count batch))
-     (let [[t2 humanized-rows] (u/time-execution
-                                   (pmap (fn [coll]
-                                           (->> coll
-                                                humanizer/umm-collection->umm-collection+humanizers
-                                                humanized-collection->reported-rows))
-                                         batch))]
-       (debug "get humanized rows" t2)
-       (let [[t3 rows] (u/time-execution
-                         (apply concat humanized-rows))]
-          (debug "write " (count rows) "rows to csv")
-          (csv/write-csv string-writer rows)
-        (debug "Write humanizer report of " (count rows) " rows"
-               "In batches of size " n
-               "get-all-collections:" t1
-               "get humanized rows:" t2
-               "concat humanized rows:" t3))))
-    (debug "Finished processing batches")
-    (str string-writer)))
+    (let [[t4 csv-string] (u/time-execution
+                           (doseq [batch collection-batches]
+                            (let [[t2 humanized-rows] (u/time-execution
+                                                        (doall
+                                                          (pmap (fn [coll]
+                                                                  (->> coll
+                                                                       humanizer/umm-collection->umm-collection+humanizers
+                                                                       humanized-collection->reported-rows))
+                                                                batch)))
+                                  [t3 rows] (u/time-execution
+                                                (apply concat humanized-rows))]
+                               (csv/write-csv string-writer rows)
+                               (debug "Batch " (swap! idx-atom inc) " Size " (count batch)
+                                      "Write humanizer report of " (count rows) " rows"
+                                      "get humanized rows:" t2
+                                      "concat humanized rows:" t3))))]
+      (debug "Create report " t4)
+      (str string-writer))))
