@@ -21,7 +21,7 @@
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/data.csv "0.1.3"]
                  [org.clojure/tools.nrepl "0.2.12"]
-                 [net.sf.saxon/Saxon-HE "9.6.0-7"]
+                 [net.sf.saxon/Saxon-HE "9.7.0-7"]
                  [com.github.fge/json-schema-validator "2.2.6"]
 
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is

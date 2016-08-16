@@ -3,12 +3,8 @@
   :url "***REMOVED***projects/CMR/repos/cmr/browse/common-lib"
 
   :dependencies [[org.clojure/clojure "1.8.0"]
-
-                 ;; ASM is excluded here because we use the pegdown markdown generator in common
-                 ;; app lib which uses a different version
-                 [org.clojure/core.async "0.1.346.0-17112a-alpha" :exclusions [org.ow2.asm/asm-all]]
-                 ;; This matches the ASM version used by pegdown at the time of this writing
-                 [org.ow2.asm/asm "5.0.3"]
+                 [org.clojure/core.async "0.2.385"]
+                 [org.ow2.asm/asm "5.1"]
 
                  [com.taoensso/timbre "4.7.3"]
 
@@ -26,9 +22,6 @@
                  ;; Fast compression library
                  [net.jpountz.lz4/lz4 "1.3.0"]
 
-                 ;; Needed for parsing accept header
-                 [ring-middleware-format "0.7.0"]
-                 ;; Could not update to 1.5.0 because GzipHandler stopped working
                  [ring/ring-jetty-adapter "1.5.0"]
                  ;; Needed for GzipHandler
                  ;; Matches the version of Jetty used by ring-jetty-adapter
@@ -42,11 +35,11 @@
                  [compojure "1.5.1"]
                  [ring/ring-json "0.4.0"]
                  ;; Excludes things that are specified with other parts of the CMR
-                 [gorilla-repl "0.3.6"  :exclusions [org.clojure/java.classpath
-                                                     ch.qos.logback/logback-classic
-                                                     javax.servlet/servlet-api
-                                                     compojure
-                                                     ring-json]]]
+                 [gorilla-repl "0.3.6" :exclusions [org.clojure/java.classpath
+                                                    ch.qos.logback/logback-classic
+                                                    javax.servlet/servlet-api
+                                                    compojure
+                                                    ring-json]]]
 
   :plugins [[test2junit "1.2.1"]
             [lein-exec "0.3.2"]]
