@@ -5,7 +5,9 @@
             [cmr.common.lifecycle :as lifecycle]
             [org.httpkit.server :as server]
             [gorilla-repl.nrepl :as nrepl]
-            [clojure.tools.nrepl.server :as clj-nrepl]))
+            [gorilla-repl.handle :as handle]
+            [clojure.tools.nrepl.server :as clj-nrepl]
+            [clojure.java.io :as io]))
 
 
 (defrecord GorillaRepl
@@ -14,8 +16,8 @@
    port
 
    ;; Gorilla REPL server function that will stop it.
-   server-stop-fn
-   ]
+   server-stop-fn]
+
 
   lifecycle/Lifecycle
 
@@ -27,15 +29,15 @@
     (let [project "no project"
           ;; We could include a keymap in the future
           ; keymap (or (:keymap (:gorilla-options conf)) {})
-          keymap {}
+          keymap {}]
           ;; Use this ff we want to exclude scanning certain directories
           ; _ (swap! gc/excludes (fn [x] (set/union x (:load-scan-exclude (:gorilla-options conf)))))
-          ]
+
       ;; build config information for client
-      (gc/set-config :project project)
-      (gc/set-config :keymap keymap)
+      (handle/set-config :project project)
+      (handle/set-config :keymap keymap)
       ;; first startup nREPL.  0 indicates it should pick a port.
-      (nrepl/start-and-connect 0)
+      (nrepl/start-and-connect 0 (io/file ".gorilla-repl-port"))
       ;; and then the webserver
       (let [s (server/run-server #'gc/app-routes {:port port :join? false :ip "127.0.0.1" :max-body 500000000})
             webapp-port (:local-port (meta s))]
@@ -57,5 +59,3 @@
   "Creates an instance of the Gorilla REPL server."
   [port]
   (map->GorillaRepl {:port port}))
-
-

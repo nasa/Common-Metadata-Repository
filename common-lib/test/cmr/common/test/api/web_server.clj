@@ -18,7 +18,6 @@
   "A body short enough that it shouldn't be compressed"
   (str/join (repeat (dec s/MIN_GZIP_SIZE) "0")))
 
-
 (defn routes-fn
   "The routes function to use with the web server. Returns a response long enough that it should be
   compressed."
@@ -43,8 +42,8 @@
   [path accept-encoding]
   (h/with-middleware
     ;; We remove all middleware so we can get the raw input stream body back
-    [clj-http.client/wrap-url
-     clj-http.client/wrap-method]
+    [h/wrap-url
+     h/wrap-method]
     (h/get (str "http://localhost:" PORT path)
            {:headers {"Accept-encoding" accept-encoding}})))
 
@@ -115,5 +114,3 @@
    (with-progress-reporting
     (bench
      (test-fn {:body (java.io.ByteArrayInputStream. small-bytes)})))))
-
-
