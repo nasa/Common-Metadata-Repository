@@ -2,6 +2,7 @@
   "Integration test for CMR collection search by humanized fields"
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
+            [cmr.common-app.test.side-api :as side]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -64,7 +65,7 @@
              "PROV1,C1200000002-PROV1,C,V3,USGS_SOFIA,USGS SOFIA"])))))
 
 (deftest humanizer-report-batch
-  (hs/set-humanizer-report-collection-batch-size! 10)
+  (side/eval-form `(hs/set-humanizer-report-collection-batch-size! 10))
   ;; Insert more entries than the batch size to test batches
   (doseq [n (range (inc (hs/humanizer-report-collection-batch-size)))]
     (d/ingest "PROV1" (dc/collection

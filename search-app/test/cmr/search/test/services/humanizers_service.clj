@@ -99,10 +99,7 @@
                                     {:org-name " LPDAAC "}]}
         humanized-collection (humanizer/umm-collection->umm-collection+humanizers collection)]
    (testing "Organizations humanizer report humanized but not reportable"
-     (println humanized-collection)
-     (is (= (hs/humanized-collection->reported-rows humanized-collection)
-            [])))))
-
+     (is (empty? (hs/humanized-collection->reported-rows humanized-collection))))))
 
 (deftest humanized-collection-reportable
   (let [collection {:provider-id "PROV1"

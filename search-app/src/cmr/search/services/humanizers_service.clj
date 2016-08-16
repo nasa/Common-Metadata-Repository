@@ -3,7 +3,7 @@
   (require [cmr.common.concepts :as concepts]
            [cmr.common.util :as u]
            [cmr.common-app.humanizer :as humanizer]
-           [cmr.common.config :as config]
+           [cmr.common.config :refer [defconfig]]
            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
            [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
            [cmr.umm-spec.legacy :as umm-legacy]
@@ -14,7 +14,7 @@
 (def CSV_HEADER
   ["provider", "concept_id", "short_name" "version", "original_value", "humanized_value"])
 
-(config/defconfig humanizer-report-collection-batch-size
+(defconfig humanizer-report-collection-batch-size
   "The size of the batches to use to process collections for the humanizer report"
   {:default 500 :type Long})
 
@@ -37,19 +37,10 @@
   "Retrieves all collections from the Metadata cache, partitions them into batches of size
   humanizer-report-collection-batch-size, so the batches can be processed lazily to avoid out of memory errors."
   [context]
-    ;; Currently not throwing an exception if the cache is empty. May want to change in the future
-    ;; to throw an exception.
+  ;; Currently not throwing an exception if the cache is empty. May want to change in the future
+  ;; to throw an exception.
   (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
     (map #(rfms->umm-collections context %) (partition-all (humanizer-report-collection-batch-size) rfms))))
-
-(comment
- (do
-   (def context {:system (get-in user/system [:apps :search])})
-   (metadata-cache/refresh-cache context))
-
- (->> (get-all-collections context)
-      (map humanizer/umm-collection->umm-collection+humanizers)
-      (mapcat humanized-collection->reported-fields)))
 
 (defn humanized-collection->reported-rows
   "Takes a humanized collection and returns rows to populate the CSV report."
@@ -59,9 +50,7 @@
     (for [paths (vals humanizer/humanizer-field->umm-paths)
           path paths
           parents (u/get-in-all collection (drop-last path))
-          :let [parents (if (sequential? parents)
-                          parents
-                          [parents])]
+          :let [parents (u/seqify parents)]
           parent parents
           :let [field (last path)
                 humanized-value (get parent (humanizer/humanizer-key field))]
@@ -69,14 +58,6 @@
           :let [humanized-string-value (:value humanized-value)
                 original-value (get parent field)]]
       [provider-id concept-id short-name version-id original-value humanized-string-value])))
-
-(defn- get-humanized-rows
-  [collections]
-  (pmap (fn [coll]
-          (->> coll
-               humanizer/umm-collection->umm-collection+humanizers
-               humanized-collection->reported-rows))
-    collections))
 
 (defn humanizers-report-csv
   "Returns a report on humanizers in use in collections as a CSV."
@@ -86,7 +67,7 @@
         string-writer (StringWriter.)
         idx-atom (atom 0)]
     (debug "get-all-collections:" t1
-           "processing " (count collection-batches) " batches of size" humanizer-report-collection-batch-size)
+           "processing " (count collection-batches) " batches of size" (humanizer-report-collection-batch-size))
     (csv/write-csv string-writer [CSV_HEADER])
     (let [[t4 csv-string] (u/time-execution
                            (doseq [batch collection-batches]
