@@ -2,7 +2,7 @@
   "Contains functions for converting humanizer query parameters to conditions"
   (:require [clojure.string :as str]
             [cmr.common-app.services.search.query-model :as qm]
-            [cmr.search.services.parameters.converters.nested-field :as nf]
+            [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.common-app.services.search.params :as p]
             [cmr.common-app.services.search.query-to-elastic :as q2e]))

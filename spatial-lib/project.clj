@@ -5,7 +5,7 @@
   ;; Required to obtain the Jafama library which isn't in public maven repos
   :repositories [["releases" "http://devrepo1.dev.echo.nasa.gov/data/dist/projects/echo/mavenrepo/"]]
 
-  :dependencies [[org.clojure/clojure "1.7.0"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
 
                  ; Fast math library for atan2, acos, asin, etc

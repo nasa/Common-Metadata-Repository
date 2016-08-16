@@ -110,6 +110,20 @@
      {:hits hits
       :items items})))
 
+(defn- generate-query-map-for-group-permissions
+  "Returns a query map generated from group permission pairs.
+  group-permissions should be a seqeuence of group/user-identifer permission pairs such as
+  [\"guest\" \"read\" \"AG10000-PROV1\" \"create\" \"registered\" \"order\"]"
+  [group-permissions]
+  (first (reduce (fn [[m count] [group permission]]
+                   [(assoc-in m
+                              [:group-permission (keyword (str count))]
+                              {:permitted-group group
+                               :permission permission})
+                    (inc count)])
+                 [{} 0]
+                 (partition 2 group-permissions))))
+
 (deftest acl-search-test
   (let [token (e/login (u/conn-context) "user1")
         group1 (u/ingest-group token
@@ -173,29 +187,31 @@
         acl1 (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
         acl2 (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE")
                                       :group_permissions
-                                      [{:user_type "registered" :permissions ["create"]}]))
+                                      [{:user_type "registered" :permissions ["read"]}]))
         acl3 (ingest-acl token (assoc (system-acl "ARCHIVE_RECORD")
                                       :group_permissions
-                                      [{:group_id "AG12345-PROV" :permissions ["create"]}]))
+                                      [{:group_id "AG12345-PROV" :permissions ["read" "create"]}]))
 
         acl4 (ingest-acl token (provider-acl "AUDIT_REPORT"))
         acl5 (ingest-acl token (assoc (provider-acl "OPTION_DEFINITION")
                                       :group_permissions
-                                      [{:user_type "registered" :permissions ["create"]}]))
+                                      [{:user_type "registered" :permissions ["order"]}]))
         acl6 (ingest-acl token (assoc (provider-acl "OPTION_ASSIGNMENT")
                                       :group_permissions
-                                      [{:group_id "AG12345-PROV" :permissions ["create"]}]))
+                                      [{:group_id "AG12345-PROV" :permissions ["delete"]}]))
 
         acl7 (ingest-acl token (catalog-item-acl "All Collections"))
         acl8 (ingest-acl token (assoc (catalog-item-acl "All Granules")
                                       :group_permissions
-                                      [{:user_type "registered" :permissions ["create"]}
+                                      [{:user_type "registered" :permissions ["read"]}
                                        {:group_id "AG10000-PROV" :permissions ["create"]}]))
 
         guest-acls [acl1 acl4 acl7]
         registered-acls [acl2 acl5 acl8]
         AG12345-acls [acl3 acl6]
         AG10000-acls [acl8]
+        read-acls [acl2 acl3 acl8]
+        create-acls [acl1 acl3 acl4 acl7 acl8]
         all-acls (concat guest-acls registered-acls AG12345-acls)]
     (u/wait-until-indexed)
 
@@ -227,14 +243,106 @@
 
     (testing "Search ACLs by permitted group with invalid values"
       (are [permitted-groups invalid-msg]
-           (= {:status 400
-               :body {:errors [(format "Parameter permitted_group has invalid values [%s]. Only 'guest', 'registered' or a group concept id can be specified."
-                                       invalid-msg)]}
-               :content-type :json}
-              (ac/search-for-acls (u/conn-context) {:permitted-group permitted-groups} {:raw? true}))
+        (= {:status 400
+            :body {:errors [(format "Parameter permitted_group has invalid values [%s]. Only 'guest', 'registered' or a group concept id can be specified."
+                                    invalid-msg)]}
+            :content-type :json}
+           (ac/search-for-acls (u/conn-context) {:permitted-group permitted-groups} {:raw? true}))
 
-           ["gust"] "gust"
-           ["GUST" "registered" "AG10000-PROV" "G10000-PROV"] "GUST, G10000-PROV"))))
+        ["gust"] "gust"
+        ["GUST" "registered" "AG10000-PROV" "G10000-PROV"] "GUST, G10000-PROV"))
+
+    (testing "Search ACLs by group permission"
+      (are3 [group-permissions acls]
+           (let [query-map (generate-query-map-for-group-permissions group-permissions)
+                 response (ac/search-for-acls (u/conn-context) query-map)]
+             (is (= (acls->search-response (count acls) acls)
+                    (dissoc response :took))))
+           ;; CMR-3154 acceptance criterium 1
+           "Guests create"
+           ["guest" "create"] guest-acls
+
+           "Guest read"
+           ["guest" "read"] []
+
+           "Registered read"
+           ["registered" "read"] [acl2 acl8]
+
+           "Group create"
+           ["AG10000-PROV" "create"] [acl8]
+
+           "Registered order"
+           ["registered" "order"] [acl5]
+
+           "Group create"
+           ["AG12345-PROV" "create"] [acl3]
+
+           "Another group create"
+           ["AG10000-PROV" "create"] AG10000-acls
+
+           "Group read"
+           ["AG12345-PROV" "read"] [acl3]
+
+           "Group delete"
+           ["AG12345-PROV" "delete"] [acl6]
+
+           "Case-insensitive group create"
+           ["AG10000-PROV" "CREATE"] AG10000-acls
+
+           ;; CMR-3154 acceptance criterium 2
+           "Registered read or registered order"
+           ["registered" "read" "registered" "order"] registered-acls
+
+           "Registered read or group AG12345-PROV delete"
+           ["registered" "read" "AG12345-PROV" "delete"] [acl2 acl6 acl8]))
+
+    ;; CMR-3154 acceptance criterium 3
+    (testing "Search ACLs by group permission just group or permission"
+      (are3 [query-map acls]
+        (let [response (ac/search-for-acls (u/conn-context) {:group-permission {:0 query-map}})]
+          (is (= (acls->search-response (count acls) acls)
+                 (dissoc response :took))))
+        "Just user type"
+        {:permitted-group "guest"} guest-acls
+
+        "Just group"
+        {:permitted-group "AG10000-PROV"} AG10000-acls
+
+        "Just read permission"
+        {:permission "read"} read-acls
+
+        "Just create permission"
+        {:permission "create"} create-acls))
+
+    ;; CMR-3154 acceptance criterium 4
+    (testing "Search ACLS by group permission with non integer index is an error"
+      (let [query {:group-permission {:foo {:permitted-group "guest" :permission "read"}}}]
+        (is (= {:status 400
+                :body {:errors ["Parameter group_permission has invalid index value [foo]. Only integers greater than or equal to zero may be specified."]}
+                :content-type :json}
+               (ac/search-for-acls (u/conn-context) query {:raw? true})))))
+
+    ;; CMR-3154 acceptance criterium 5
+    (testing "Search ACLS by group permission with subfield other than permitted_group or permission is an error"
+      (let [query {:group-permission {:0 {:allowed-group "guest" :permission "read"}}}]
+        (is (= {:status 400
+                :body {:errors ["Parameter group_permission has invalid subfield [allowed_group]. Only 'permitted_group' and 'permission' are allowed."]}
+                :content-type :json}
+               (ac/search-for-acls (u/conn-context) query {:raw? true})))))
+
+    (testing "Search ACLS by group permission with invalid permitted_group"
+      (let [query {:group-permission {:0 {:permitted_group "foo" :permission "read"}}}]
+        (is (= {:status 400
+                :body {:errors ["Sub-parameter permitted_group of parameter group_permissions has invalid values [foo]. Only 'guest', 'registered' or a group concept id may be specified."]}
+                :content-type :json}
+               (ac/search-for-acls (u/conn-context) query {:raw? true})))))
+
+    (testing "Searching ACLS by group permission with permission values other than read, create, update, delete, or order is an error"
+      (let [query {:group-permission {:0 {:permitted_group "guest" :permission "foo"}}}]
+        (is (= {:status 400
+                :body {:errors ["Sub-parameter permission of parameter group_permissions has invalid values [foo]. Only 'read', 'update', 'create', 'delete', or 'order' may be specified."]}
+                :content-type :json}
+               (ac/search-for-acls (u/conn-context) query {:raw? true})))))))
 
 (deftest acl-search-by-identity-type-test
   (let [token (e/login (u/conn-context) "user1")

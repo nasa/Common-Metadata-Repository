@@ -15,7 +15,7 @@
             [cmr.common-app.services.search.params :as common-params]
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.parameters.converters.attribute :as attrib]
-            [cmr.search.services.parameters.converters.nested-field :as nf]
+            [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
             [cmr.search.services.messages.attribute-messages :as attrib-msg]
             [cmr.search.services.parameters.converters.orbit-number :as on]
             [cmr.search.services.messages.orbit-number-messages :as on-msg]

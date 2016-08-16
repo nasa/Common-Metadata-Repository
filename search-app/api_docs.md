@@ -755,7 +755,7 @@ The JSON response contains meta-metadata of the collection and the UMM fields. T
 This format can be retrieved in a variety of methods:
 
 * A url extension with a version: `%CMR-ENDPOINT%/collections.umm_json_v1_4`
-  * Note extension `.umm_json` still returns the original alpha version of this response to avoid breaking clients. This will change in the future.
+  * Note extension `.umm-json` still returns the original alpha version of this response to avoid breaking clients. This will change in the future.
 * An accept header: `application/vnd.nasa.cmr.umm_results+json; version=1.4`
    * The version is optional but recommended.
 
