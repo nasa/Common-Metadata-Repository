@@ -13,10 +13,6 @@
   '(remove string? ...)' allows us to put comments as string elements in the humanizer list file."
   (remove string? (json/decode (slurp (io/resource "humanizers.json")) true)))
 
-; (def non-prioritized-fields
-;   "A list of fields which cannot be prioritized"
-;   ["science_keyword"])
-
 (def humanizer-field->umm-paths
   "Map of humanizer JSON field names to lists of paths into parsed UMM collections
   corresponding to those fields."
@@ -125,5 +121,4 @@
    (umm-collection->umm-collection+humanizers collection humanizer-cache))
 
   ([collection humanizers]
-   ; (simplify-humanizer-fields)
    (reduce apply-humanizer (add-humanizer-fields collection) (sort-by :order humanizers))))

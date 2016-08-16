@@ -1,5 +1,5 @@
 (ns cmr.search.test.services.humanizers-service
-  "Testing functions used for "
+  "Testing functions used for verifying the humanizer report"
   (:require [clojure.test :refer :all]
             [cmr.common-app.humanizer :as humanizer]
             [cmr.search.services.humanizers-service :as hs]))

@@ -14,7 +14,7 @@
 (def CSV_HEADER
   ["provider", "concept_id", "short_name" "version", "original_value", "humanized_value"])
 
-(config/defconfig report-collection-batch-size
+(config/defconfig humanizer-report-collection-batch-size
   "The size of the batches to use to process collections for the humanizer report"
   {:default 500 :type Long})
 
@@ -35,12 +35,12 @@
 
 (defn- get-all-collections
   "Retrieves all collections from the Metadata cache, partitions them into batches of size
-  report-collection-batch-size, so the batches can be processed lazily to avoid out of memory errors."
+  humanizer-report-collection-batch-size, so the batches can be processed lazily to avoid out of memory errors."
   [context]
     ;; Currently not throwing an exception if the cache is empty. May want to change in the future
     ;; to throw an exception.
   (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
-    (map #(rfms->umm-collections context %) (partition-all (report-collection-batch-size) rfms))))
+    (map #(rfms->umm-collections context %) (partition-all (humanizer-report-collection-batch-size) rfms))))
 
 (comment
  (do
@@ -86,7 +86,7 @@
         string-writer (StringWriter.)
         idx-atom (atom 0)]
     (debug "get-all-collections:" t1
-           "processing " (count collection-batches) " batches of size" report-collection-batch-size)
+           "processing " (count collection-batches) " batches of size" humanizer-report-collection-batch-size)
     (csv/write-csv string-writer [CSV_HEADER])
     (let [[t4 csv-string] (u/time-execution
                            (doseq [batch collection-batches]
