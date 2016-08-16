@@ -13,8 +13,8 @@
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
-                        [pjstadig/humane-test-output "0.7.0"]
-                        [criterium "0.4.3"]
+                        [pjstadig/humane-test-output "0.8.1"]
+                        [criterium "0.4.4"]
                         [proto-repl "0.3.1"]
                         [clj-http "2.0.0"]]
 

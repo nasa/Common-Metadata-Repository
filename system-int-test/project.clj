@@ -26,11 +26,11 @@
                  [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
 
                  ; include ring-core to support encoding of params
-                 [ring/ring-core "1.4.0" :exclusions [clj-time]]
+                 [ring/ring-core "1.5.0"]
 
                  ;; Needed for ring-swagger dependency in search for as long as we provide the
                  ;; swagger-ui as part of search (until the developer portal is available)
-                 [prismatic/schema "1.1.2"]]
+                 [prismatic/schema "1.1.3"]]
 
   :plugins [[test2junit "1.2.1"]]
 
@@ -40,7 +40,7 @@
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [nasa-cmr/cmr-vdd-spatial-viz "0.1.0-SNAPSHOT"]
-                        [pjstadig/humane-test-output "0.7.0"]]
+                        [pjstadig/humane-test-output "0.8.1"]]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]
          :source-paths ["src" "dev"]}}
