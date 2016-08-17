@@ -1,7 +1,7 @@
-(ns cmr.indexer.test.data.concepts.humanizer
+(ns cmr.common-app.test.humanizer
   "Tests for humanizer transforms"
   (:require [clojure.test :refer :all]
-            [cmr.indexer.data.concepts.humanizer :as humanizer]))
+            [cmr.common-app.humanizer :as humanizer]))
 
 (defn- humanizes
   [humanizers source expected]
@@ -38,6 +38,8 @@
   (testing "priority"
     (are [a b] (= {:priority b} (humanizer/to-human {:type "priority" :priority a} {:priority 0}))
       10 10)))
+
+;; TODO add reportable tests. If a humanizer is reportable the output value should be reportable.
 
 (deftest humanize-collection
   (testing "humanize missing values"
@@ -86,19 +88,19 @@
                            {:short-name "proj-B"
                             :cmr.humanized/short-name {:value "proj-B" :priority 0}}]
                 :science-keywords [{:category "sk-A"
-                                    :cmr.humanized/category "sk-A"
+                                    :cmr.humanized/category {:value "sk-A" :priority 0}
                                     :topic "sk-B"
-                                    :cmr.humanized/topic "sk-B"
+                                    :cmr.humanized/topic {:value "sk-B" :priority 0}
                                     :term "sk-C"
-                                    :cmr.humanized/term "sk-C"
+                                    :cmr.humanized/term {:value "sk-C" :priority 0}
                                     :variable-level-1 "sk-D"
-                                    :cmr.humanized/variable-level-1 "sk-D"
+                                    :cmr.humanized/variable-level-1 {:value "sk-D" :priority 0}
                                     :variable-level-2 "sk-E"
-                                    :cmr.humanized/variable-level-2 "sk-E"
+                                    :cmr.humanized/variable-level-2 {:value "sk-E" :priority 0}
                                     :variable-level-3 "sk-F"
-                                    :cmr.humanized/variable-level-3 "sk-F"
+                                    :cmr.humanized/variable-level-3 {:value "sk-F" :priority 0}
                                     :detailed-variable "sk-G"
-                                    :cmr.humanized/detailed-variable "sk-G"}]
+                                    :cmr.humanized/detailed-variable {:value "sk-G" :priority 0}}]
                 :organizations [{:org-name "org-A"
                                  :cmr.humanized/org-name {:value "org-A" :priority 0}},
                                 {:org-name "org-B"
@@ -147,19 +149,19 @@
                            {:short-name "proj-B"
                             :cmr.humanized/short-name {:value "proj-human" :priority 0}}]
                 :science-keywords [{:category "sk-A"
-                                    :cmr.humanized/category "sk-human"
+                                    :cmr.humanized/category {:value "sk-human" :priority 0}
                                     :topic "sk-B"
-                                    :cmr.humanized/topic "sk-human"
+                                    :cmr.humanized/topic {:value "sk-human" :priority 0}
                                     :term "sk-C"
-                                    :cmr.humanized/term "sk-human"
+                                    :cmr.humanized/term {:value "sk-human" :priority 0}
                                     :variable-level-1 "sk-D"
-                                    :cmr.humanized/variable-level-1 "sk-human"
+                                    :cmr.humanized/variable-level-1 {:value "sk-human" :priority 0}
                                     :variable-level-2 "sk-E"
-                                    :cmr.humanized/variable-level-2 "sk-human"
+                                    :cmr.humanized/variable-level-2 {:value "sk-human" :priority 0}
                                     :variable-level-3 "sk-F"
-                                    :cmr.humanized/variable-level-3 "sk-human"
+                                    :cmr.humanized/variable-level-3 {:value "sk-human" :priority 0}
                                     :detailed-variable "sk-G"
-                                    :cmr.humanized/detailed-variable "sk-human"}]
+                                    :cmr.humanized/detailed-variable {:value "sk-human" :priority 0}}]
                 :organizations [{:org-name "org-A"
                                  :cmr.humanized/org-name {:value "org-human" :priority 0}},
                                 {:org-name "org-B"
@@ -208,19 +210,19 @@
                            {:short-name "proj-B"
                             :cmr.humanized/short-name {:value "proj-B" :priority 0}}]
                 :science-keywords [{:category "sk-X"
-                                    :cmr.humanized/category "sk-Y"
+                                    :cmr.humanized/category {:value "sk-Y" :priority 0}
                                     :topic "sk-B"
-                                    :cmr.humanized/topic "sk-B"
+                                    :cmr.humanized/topic {:value "sk-B" :priority 0}
                                     :term "sk-X"
-                                    :cmr.humanized/term "sk-Y"
+                                    :cmr.humanized/term {:value "sk-Y" :priority 0}
                                     :variable-level-1 "sk-D"
-                                    :cmr.humanized/variable-level-1 "sk-D"
+                                    :cmr.humanized/variable-level-1 {:value "sk-D" :priority 0}
                                     :variable-level-2 "sk-X"
-                                    :cmr.humanized/variable-level-2 "sk-Y"
+                                    :cmr.humanized/variable-level-2 {:value "sk-Y" :priority 0}
                                     :variable-level-3 "sk-F"
-                                    :cmr.humanized/variable-level-3 "sk-F"
+                                    :cmr.humanized/variable-level-3 {:value "sk-F" :priority 0}
                                     :detailed-variable "sk-X"
-                                    :cmr.humanized/detailed-variable "sk-Y"}]
+                                    :cmr.humanized/detailed-variable {:value "sk-Y" :priority 0}}]
                 :organizations [{:org-name "org-X"
                                  :cmr.humanized/org-name {:value "org-Y" :priority 0}}
                                 {:org-name "org-X"
