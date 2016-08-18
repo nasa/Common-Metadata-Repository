@@ -1,17 +1,7 @@
 (ns cmr.common-app.humanizer
-  "Implements transforms to 'humanize' faceted fields on UMM collections.
-   See https://wiki.earthdata.nasa.gov/display/CMR/Humanizing+Facets+Design"
-  (require [clojure.java.io :as io]
-           [clojure.string :as str]
-           [cheshire.core :as json]
-           [cmr.common.util :as util]))
-
-(def humanizer-cache
-  "Cache of humanizers in the system. Currently this is just a static resource file. In the
-  future, it'll come from a new concept and change periodically, so it will need to move
-  into the system.
-  '(remove string? ...)' allows us to put comments as string elements in the humanizer list file."
-  (remove string? (json/decode (slurp (io/resource "humanizers.json")) true)))
+  "Implements transforms to 'humanize' faceted fields on UMM collections."
+  (:require [clojure.string :as str]
+            [cmr.common.util :as util]))
 
 (def humanizer-field->umm-paths
   "Map of humanizer JSON field names to lists of paths into parsed UMM collections
@@ -64,7 +54,7 @@
 
 (defn- transform-in-all
   "(Convenience method) Similar to update-in-all but calls fn with the parent of the
-   value at path and the final key of path."
+  value at path and the final key of path."
   [obj path f & args]
   (apply util/update-in-all obj (pop path) f (peek path) args))
 
@@ -117,8 +107,5 @@
 
 (defn umm-collection->umm-collection+humanizers
   "Applies humanizers to a parsed UMM collection"
-  ([collection]
-   (umm-collection->umm-collection+humanizers collection humanizer-cache))
-
-  ([collection humanizers]
-   (reduce apply-humanizer (add-humanizer-fields collection) (sort-by :order humanizers))))
+  [collection humanizers]
+  (reduce apply-humanizer (add-humanizer-fields collection) (sort-by :order humanizers)))

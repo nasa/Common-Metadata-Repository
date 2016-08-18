@@ -6,7 +6,8 @@
             [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
             [cmr.message-queue.services.queue :as queue]
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [cmr.common.concepts :as cc]))
 
 (defmulti handle-ingest-event
   "Handle the various actions that can be requested via the indexing queue"
@@ -15,7 +16,7 @@
 
 (defmethod handle-ingest-event :default
   [_ _ _])
-  ;; Default ignores the ingest event. There may be ingest events we don't care about.
+;; Default ignores the ingest event. There may be ingest events we don't care about.
 
 
 (defmethod handle-ingest-event :provider-collection-reindexing
@@ -25,8 +26,8 @@
   ;; We set the refresh acls flag to false because the ACLs should have been refreshed as part
   ;; of the ingest job that kicks this off.
   (indexer/reindex-provider-collections
-   context [provider-id]
-   {:all-revisions-index? nil :refresh-acls? false :force-version? force-version?}))
+    context [provider-id]
+    {:all-revisions-index? nil :refresh-acls? false :force-version? force-version?}))
 
 (defmethod handle-ingest-event :refresh-collection-granule-aggregation-cache
   [context _ {:keys [granules-updated-in-last-n]}]
@@ -34,25 +35,32 @@
 
 (defmethod handle-ingest-event :concept-update
   [context all-revisions-index? {:keys [concept-id revision-id]}]
-  (indexer/index-concept-by-concept-id-revision-id
-    context concept-id revision-id {:ignore-conflict? true
-                                    :all-revisions-index? all-revisions-index?}))
+  (if (= :humanizer (cc/concept-id->type concept-id))
+    (indexer/update-humanizer context)
+    (indexer/index-concept-by-concept-id-revision-id
+      context concept-id revision-id {:ignore-conflict? true
+                                      :all-revisions-index? all-revisions-index?})))
 
 (defmethod handle-ingest-event :concept-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]
-  (indexer/delete-concept
-    context concept-id revision-id {:ignore-conflict? true
-                                    :all-revisions-index? all-revisions-index?}))
+  (if (= :humanizer (cc/concept-id->type concept-id))
+    (indexer/update-humanizer context)
+    (indexer/delete-concept
+      context concept-id revision-id {:ignore-conflict? true
+                                      :all-revisions-index? all-revisions-index?})))
 
 (defmethod handle-ingest-event :concept-revision-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]
-  ;; We should never receive a message that's not for the all revisions index
-  (when-not all-revisions-index?
-    (errors/internal-error!
-      (format (str "Received :concept-revision-delete event that wasn't for the all revisions "
-                   "index.  concept-id: %s revision-id: %s")
-              concept-id revision-id)))
-  (indexer/force-delete-all-collection-revision context concept-id revision-id))
+  (if (= :humanizer (cc/concept-id->type concept-id))
+    (indexer/update-humanizer context)
+    (do
+      ;; We should never receive a message that's not for the all revisions index
+      (when-not all-revisions-index?
+        (errors/internal-error!
+          (format (str "Received :concept-revision-delete event that wasn't for the all revisions "
+                       "index.  concept-id: %s revision-id: %s")
+                  concept-id revision-id)))
+      (indexer/force-delete-all-collection-revision context concept-id revision-id))))
 
 (defmethod handle-ingest-event :provider-delete
   [context _ {:keys [provider-id]}]

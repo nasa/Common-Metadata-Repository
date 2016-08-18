@@ -6,6 +6,7 @@
            [cmr.common.config :refer [defconfig]]
            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
            [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
+           [cmr.indexer.data.humanizer-cache :as hc]
            [cmr.umm-spec.legacy :as umm-legacy]
            [cmr.common.log :as log :refer (debug info warn error)]
            [clojure.data.csv :as csv])
@@ -23,8 +24,8 @@
   [context revision-format-map]
   (let [concept-id (:concept-id revision-format-map)
         umm (umm-legacy/parse-concept
-             context
-             (rfm/revision-format-map->concept :native revision-format-map))]
+              context
+              (rfm/revision-format-map->concept :native revision-format-map))]
     (assoc umm
            :concept-id concept-id
            :provider-id (:provider-id (concepts/parse-concept-id concept-id)))))
@@ -63,27 +64,28 @@
   "Returns a report on humanizers in use in collections as a CSV."
   [context]
   (let [[t1 collection-batches] (u/time-execution
-                                 (get-all-collections context))
+                                  (get-all-collections context))
         string-writer (StringWriter.)
         idx-atom (atom 0)]
     (debug "get-all-collections:" t1
            "processing " (count collection-batches) " batches of size" (humanizer-report-collection-batch-size))
     (csv/write-csv string-writer [CSV_HEADER])
-    (let [[t4 csv-string] (u/time-execution
-                           (doseq [batch collection-batches]
-                            (let [[t2 humanized-rows] (u/time-execution
-                                                        (doall
-                                                          (pmap (fn [coll]
-                                                                  (->> coll
-                                                                       humanizer/umm-collection->umm-collection+humanizers
-                                                                       humanized-collection->reported-rows))
-                                                                batch)))
-                                  [t3 rows] (u/time-execution
-                                                (apply concat humanized-rows))]
-                               (csv/write-csv string-writer rows)
-                               (debug "Batch " (swap! idx-atom inc) " Size " (count batch)
-                                      "Write humanizer report of " (count rows) " rows"
-                                      "get humanized rows:" t2
-                                      "concat humanized rows:" t3))))]
+    (let [humanizer (hc/get-humanizer context)
+          [t4 csv-string]
+          (u/time-execution
+            (doseq [batch collection-batches]
+              (let [[t2 humanized-rows] (u/time-execution
+                                          (doall
+                                            (pmap (fn [coll]
+                                                    (-> (humanizer/umm-collection->umm-collection+humanizers coll humanizer)
+                                                        humanized-collection->reported-rows))
+                                                  batch)))
+                    [t3 rows] (u/time-execution
+                                (apply concat humanized-rows))]
+                (csv/write-csv string-writer rows)
+                (debug "Batch " (swap! idx-atom inc) " Size " (count batch)
+                       "Write humanizer report of " (count rows) " rows"
+                       "get humanized rows:" t2
+                       "concat humanized rows:" t3))))]
       (debug "Create report " t4)
       (str string-writer))))

@@ -46,7 +46,7 @@
   "The JSON schema used to validate tag association by collections requests"
   (js/parse-json-schema collections-tagging-schema-structure))
 
-(defn- validate-json
+(defn validate-json
   "Validates the JSON string against the given schema. Throws a service error if it is invalid."
   [schema json-str]
   (when-let [errors (seq (js/validate-json schema json-str))]

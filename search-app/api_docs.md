@@ -134,6 +134,9 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Disassociating a Tag from Collections by query](#disassociating-collections-with-a-tag-by-query)
     * [Disassociating a Tag from Collections by collection concept ids](#disassociating-collections-with-a-tag-by-concept-ids)
     * [Searching for Tags](#searching-for-tags)
+  * [Humanizer](#humanizer)
+    * [Updating Humanizer](#updating-humanizer)
+    * [Retrieving Humanizer](#retrieving-humanizer)
   * [Administrative Tasks](#administrative-tasks)
     * [Clear the cache](#clear-the-cache)
     * [Reset the application to the initial state](#reset-the-application-to-the-initial-state)
@@ -2805,6 +2808,41 @@ Content-Length: 292
   "took" : 5,
   "hits" : 1
 }
+```
+
+### <a name="humanizer"></a> Humanizer
+
+Humanizer defines the rules that is used by CMR to provide humanized values for various facet fields. It defines the rules in JSON. Operators with Admin privilege can update humanizer through the update humanizer api.
+
+#### <a name="updating-humanizer"></a> Updating Humanizer
+
+Humanizer can be updated with a JSON representation of the humanizer rules to `%CMR-ENDPOINT%/humanizer` along with a valid ECHO token. The response will contain a concept id identifying the humanizer along with the humanizer revision id.
+
+```
+curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/humanizer -d \
+'[{"type": "trim_whitespace", "field": "platform", "order": -100},
+  {"type": "alias", "field": "platform", "source_value": "AM-1", "replacement_value": "Terra", "reportable": true, "order": 0}]'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 48
+
+{"concept_id":"H1200000000-CMR","revision_id":1}
+```
+
+#### <a name="retrieving-humanizer"></a> Retrieving Humanizer
+
+The humanizer can be retrieved by sending a GET request to `%CMR-ENDPOINT%/humanizer`.
+
+```
+curl -i %CMR-ENDPOINT%/humanizer?pretty=true
+
+HTTP/1.1 200 OK
+Content-Length: 216
+Content-Type: application/json;charset=ISO-8859-1
+
+[{"type": "trim_whitespace", "field": "platform", "order": -100},
+ {"type": "alias", "field": "platform", "source_value": "AM-1", "replacement_value": "Terra", "reportable": true, "order": 0}]
 ```
 
 ### <a name="administrative-tasks"></a> Administrative Tasks

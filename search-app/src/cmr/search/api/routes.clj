@@ -31,6 +31,7 @@
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.services.health-service :as hs]
             [cmr.search.api.tags-api :as tags-api]
+            [cmr.search.api.humanizer :as humanizer-api]
             [cmr.umm-spec.versioning :as umm-version]
             [cmr.acl.core :as acl]
             [cmr.search.api.keyword :as keyword-api]
@@ -325,6 +326,9 @@
 
         ;; Add routes for tagging
         tags-api/tag-api-routes
+
+        ;; Add routes for humanizer
+        humanizer-api/humanizer-routes
 
         ;; Add routes for API documentation
         (api-docs/docs-routes

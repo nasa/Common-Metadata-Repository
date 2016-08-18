@@ -31,7 +31,8 @@
             [clojure.edn :as edn]
             [clj-time.core :as t]
             [clj-time.format :as f]
-            [cmr.indexer.data.concept-parser :as cp]))
+            [cmr.indexer.data.concept-parser :as cp]
+            [cmr.indexer.data.humanizer-cache :as hc]))
 
 (defconfig use-doc-values-fields
   "Indicates whether search fields should use the doc-values fields or not. If false the field data
@@ -384,6 +385,18 @@
         index-name
         (concept-mapping-types :granule)
         {:term {(query-field->elastic-field :provider-id :granule) provider-id}}))))
+
+(defn- reindex-all-collections
+  "Reindex all collections"
+  [context]
+  (let [providers (meta-db2/get-providers context)]
+    (reindex-provider-collections context (map :provider-id providers))))
+
+(defn update-humanizer
+  "Update the humanizer cache and reindex all collections"
+  [context]
+  (hc/refresh-cache context)
+  (reindex-all-collections context))
 
 (defn reset
   "Delegates reset elastic indices operation to index-set app as well as resetting caches"
