@@ -258,6 +258,16 @@
   [context concept-id]
   (edn/read-string (:metadata (fetch-acl-concept context concept-id))))
 
+(defn echo-style-temporal-identifier
+  [t]
+  (when t
+    (-> t
+        (assoc :temporal-field :acquisition)
+        (update-in [:mask] keyword)
+        (update-in [:start-date] dtp/try-parse-datetime)
+        (update-in [:stop-date] dtp/try-parse-datetime)
+        (set/rename-keys {:stop-date :end-date}))))
+
 (defn- echo-style-acl
   "Returns acl with the older ECHO-style keywords for consumption in utility functions from other parts of the CMR."
   [acl]
@@ -267,20 +277,13 @@
                         :group-permissions :aces})
       (util/update-in-each [:aces] update-in [:user-type] keyword)
       (util/update-in-each [:aces] set/rename-keys {:group-id :group-guid})
-      (update-in [:catalog-item-identity :collection-identifier :temporal]
-                 (fn [t]
-                   (when t
-                     (-> t
-                         (assoc :temporal-field :acquisition)
-                         (update-in [:mask] keyword)
-                         (update-in [:start-date] dtp/try-parse-datetime)
-                         (update-in [:stop-date] dtp/try-parse-datetime)
-                         (set/rename-keys {:stop-date :end-date})))))
+      (update-in [:catalog-item-identity :collection-identifier :temporal] echo-style-temporal-identifier)
+      (update-in [:catalog-item-identity :granule-identifier :temporal] echo-style-temporal-identifier)
       (update-in [:catalog-item-identity :collection-identifier :access-value]
-                 (fn [av]
-                   (when av
-                     (set/rename-keys av {:include-undefined-value :include-undefined}))))
-      util/remove-nil-keys))
+                 #(set/rename-keys % {:include-undefined-value :include-undefined}))
+      (update-in [:catalog-item-identity :granule-identifier :access-value]
+                 #(set/rename-keys % {:include-undefined-value :include-undefined}))
+      util/cleanup))
 
 (defn get-all-acl-concepts
   "Returns all ACLs in metadata db."
