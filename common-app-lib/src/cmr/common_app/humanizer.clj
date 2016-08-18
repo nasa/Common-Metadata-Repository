@@ -1,5 +1,6 @@
 (ns cmr.common-app.humanizer
-  "Implements transforms to 'humanize' faceted fields on UMM collections."
+  "Implements transforms to 'humanize' faceted fields on UMM collections.
+  See https://wiki.earthdata.nasa.gov/display/CMR/Humanizing+Facets+Design"
   (:require [clojure.string :as str]
             [cmr.common.util :as util]))
 

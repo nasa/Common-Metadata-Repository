@@ -28,9 +28,9 @@
   (humanizer-response (humanizer-service/update-humanizer context body)))
 
 (defn get-humanizer
-  "Retrieves the humanizer."
+  "Retrieves the humanizer from metadata-db, not the cache."
   [context]
-  (humanizer-response (humanizer-service/get-humanizer context)))
+  (humanizer-response (humanizer-service/get-humanizer-json context)))
 
 (def humanizer-routes
   (context "/humanizer" []

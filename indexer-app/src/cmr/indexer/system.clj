@@ -13,7 +13,7 @@
             [cmr.common.cache.in-memory-cache :as mem-cache]
             [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
             [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
-            [cmr.indexer.data.humanizer-cache :as hc]
+            [cmr.common-app.services.humanizer-fetcher :as hf]
             [cmr.acl.acl-fetcher :as af]
             [cmr.common.jobs :as jobs]
             [cmr.indexer.api.routes :as routes]
@@ -54,7 +54,7 @@
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
                       cgac/coll-gran-aggregate-cache-key (cgac/create-cache)
-                      hc/humanizer-cache-key (hc/create-cache)}
+                      hf/humanizer-cache-key (hf/create-cache)}
              :scheduler (jobs/create-scheduler
                           `system-holder
                           [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")

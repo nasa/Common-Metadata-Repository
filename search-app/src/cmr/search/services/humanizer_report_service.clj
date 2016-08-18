@@ -1,12 +1,13 @@
-(ns cmr.search.services.humanizers-service
+(ns cmr.search.services.humanizer-report-service
   "Provides functions for reporting on humanizers"
   (require [cmr.common.concepts :as concepts]
            [cmr.common.util :as u]
-           [cmr.common-app.humanizer :as humanizer]
+           [cmr.common-app.humanizer :as h]
            [cmr.common.config :refer [defconfig]]
            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
            [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
-           [cmr.indexer.data.humanizer-cache :as hc]
+           [cmr.search.services.humanizer-service]
+           [cmr.common-app.services.humanizer-fetcher :as hf]
            [cmr.umm-spec.legacy :as umm-legacy]
            [cmr.common.log :as log :refer (debug info warn error)]
            [clojure.data.csv :as csv])
@@ -48,13 +49,13 @@
   [collection]
   (let [{:keys [provider-id concept-id product]} collection
         {:keys [short-name version-id]} product]
-    (for [paths (vals humanizer/humanizer-field->umm-paths)
+    (for [paths (vals h/humanizer-field->umm-paths)
           path paths
           parents (u/get-in-all collection (drop-last path))
           :let [parents (u/seqify parents)]
           parent parents
           :let [field (last path)
-                humanized-value (get parent (humanizer/humanizer-key field))]
+                humanized-value (get parent (h/humanizer-key field))]
           :when (and (some? humanized-value) (:reportable humanized-value))
           :let [humanized-string-value (:value humanized-value)
                 original-value (get parent field)]]
@@ -68,18 +69,20 @@
         string-writer (StringWriter.)
         idx-atom (atom 0)]
     (debug "get-all-collections:" t1
-           "processing " (count collection-batches) " batches of size" (humanizer-report-collection-batch-size))
+           "processing " (count collection-batches)
+           " batches of size" (humanizer-report-collection-batch-size))
     (csv/write-csv string-writer [CSV_HEADER])
-    (let [humanizer (hc/get-humanizer context)
+    (let [humanizer (hf/get-humanizer (assoc context :app :search-app))
           [t4 csv-string]
           (u/time-execution
             (doseq [batch collection-batches]
-              (let [[t2 humanized-rows] (u/time-execution
-                                          (doall
-                                            (pmap (fn [coll]
-                                                    (-> (humanizer/umm-collection->umm-collection+humanizers coll humanizer)
-                                                        humanized-collection->reported-rows))
-                                                  batch)))
+              (let [[t2 humanized-rows]
+                    (u/time-execution
+                      (doall
+                        (pmap (fn [coll]
+                                (-> (h/umm-collection->umm-collection+humanizers coll humanizer)
+                                    humanized-collection->reported-rows))
+                              batch)))
                     [t3 rows] (u/time-execution
                                 (apply concat humanized-rows))]
                 (csv/write-csv string-writer rows)

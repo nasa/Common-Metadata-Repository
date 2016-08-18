@@ -32,7 +32,7 @@
             [clj-time.core :as t]
             [clj-time.format :as f]
             [cmr.indexer.data.concept-parser :as cp]
-            [cmr.indexer.data.humanizer-cache :as hc]))
+            [cmr.common-app.services.humanizer-fetcher :as hf]))
 
 (defconfig use-doc-values-fields
   "Indicates whether search fields should use the doc-values fields or not. If false the field data
@@ -125,8 +125,8 @@
   * true - only all revisions will be indexed
   * false - only the latest revisions will be indexed"
   ([context provider-ids]
-   (reindex-provider-collections context provider-ids
-                                 {:all-revisions-index? nil :refresh-acls? true :force-version? false}))
+   (reindex-provider-collections
+     context provider-ids {:all-revisions-index? nil :refresh-acls? true :force-version? false}))
   ([context provider-ids {:keys [all-revisions-index? refresh-acls? force-version?]}]
 
    (when refresh-acls?
@@ -243,12 +243,12 @@
           (let [tag-associations (get-tag-associations context concept)
                 elastic-version (get-elastic-version-with-tag-associations
                                   context concept tag-associations)
-                tag-associations (map #(cp/parse-concept context %) (filter #(not (:deleted %)) tag-associations))
+                tag-associations (map #(cp/parse-concept context %)
+                                      (filter #(not (:deleted %)) tag-associations))
                 concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
                                                                  options concept)
-                es-doc (es/parsed-concept->elastic-doc context
-                                                       (assoc concept :tag-associations tag-associations)
-                                                       parsed-concept)
+                es-doc (es/parsed-concept->elastic-doc
+                         context (assoc concept :tag-associations tag-associations) parsed-concept)
                 elastic-options (-> options
                                     (select-keys [:all-revisions-index? :ignore-conflict?])
                                     (assoc :ttl (when delete-time
@@ -395,7 +395,7 @@
 (defn update-humanizer
   "Update the humanizer cache and reindex all collections"
   [context]
-  (hc/refresh-cache context)
+  (hf/refresh-cache context)
   (reindex-all-collections context))
 
 (defn reset

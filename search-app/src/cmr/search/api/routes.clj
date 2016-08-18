@@ -24,7 +24,7 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.xml :as cx]
             [cmr.search.services.query-service :as query-svc]
-            [cmr.search.services.humanizers-service :as humanizers-service]
+            [cmr.search.services.humanizer-report-service :as hrs]
             [cmr.common.api.context :as context]
             [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
             [cmr.search.services.parameters.legacy-parameters :as lp]
@@ -317,7 +317,7 @@
   [context]
   {:status 200
    :headers {cr/CONTENT_TYPE_HEADER mt/csv}
-   :body (humanizers-service/humanizers-report-csv context)})
+   :body (hrs/humanizers-report-csv context)})
 
 (defn- build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]

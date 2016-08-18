@@ -12,6 +12,7 @@
             [cmr.common.concepts :as concepts]
             [cmr.search.services.json-parameters.conversion :as jp]
             [cmr.common-app.services.search.query-execution :as qe]
+            [cmr.common-app.services.humanizer-fetcher :as hf]
             [cmr.search.services.query-service :as query-service]
             [cmr.metadata-db.services.concept-service :as mdb-cs]
             [cmr.metadata-db.services.search-service :as mdb-ss]
@@ -41,14 +42,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public API
 
-(defn update-humanizer
-  "Create/Update the humanizer saving it as a revision in metadata db.
-  Returns the concept id and revision id of the saved humanizer."
-  [context humanizer-json-str]
-  (hv/validate-humanizer-json humanizer-json-str)
-  (let [humanizer-concept (humanizer-concept context humanizer-json-str)]
-    (mdb/save-concept context humanizer-concept)))
-
 (defn- fetch-humanizer-concept
   "Fetches the latest version of a humanizer concept by humanizer-key"
   [context]
@@ -61,8 +54,23 @@
       concept)
     (errors/throw-service-error :not-found "Humanizer does not exist.")))
 
-(defn get-humanizer
-  "Retrieves the humanizer."
+(defn get-humanizer-json
+  "Retrieves the humanizer json from metadata-db."
   [context]
-  (json/parse-string (:metadata (fetch-humanizer-concept context))))
+  (json/decode (:metadata (fetch-humanizer-concept context)) true))
+
+(defmethod hf/retrieve-humanizer :search-app
+  [context]
+  (get-humanizer-json context))
+
+(defn update-humanizer
+  "Create/Update the humanizer saving it as a revision in metadata db.
+  Returns the concept id and revision id of the saved humanizer."
+  [context humanizer-json-str]
+  (hv/validate-humanizer-json humanizer-json-str)
+  (let [humanizer-concept (humanizer-concept context humanizer-json-str)
+        response (mdb/save-concept context humanizer-concept)]
+    ;; refresh humanizer cache
+    (hf/refresh-cache (assoc context :app :search-app))
+    response))
 

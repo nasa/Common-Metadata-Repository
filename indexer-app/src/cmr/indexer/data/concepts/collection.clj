@@ -30,7 +30,7 @@
             [cmr.umm.collection :as umm-c]
             [cmr.umm.collection.entry-id :as eid]
             [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
-            [cmr.indexer.data.humanizer-cache :as hc]
+            [cmr.common-app.services.humanizer-fetcher :as hf]
             [cmr.common-app.services.kms-fetcher :as kf]
             [cmr.acl.acl-fetcher :as acl-fetcher]
             [cmr.umm.acl-matchers :as umm-matchers])
@@ -117,7 +117,7 @@
   "Given a collection, returns humanized elastic search fields"
   [context collection]
   (let [humanized (humanizer/umm-collection->umm-collection+humanizers
-                    collection (hc/get-humanizer context))
+                    collection (hf/get-humanizer context))
         extract-fields (partial extract-humanized-elastic-fields humanized)]
     (merge
      {:science-keywords.humanized (map sk/humanized-science-keyword->elastic-doc
