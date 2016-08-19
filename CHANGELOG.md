@@ -91,3 +91,9 @@ Items to include in each issue
 * CMR-3225 - Entry ID field indexed for collection keyword searches
   * Deployment Impacts
     * Requires reindexing of collections
+
+## 1.58
+
+* CMR-2493 and CMR-2674 - Update to Clojure 1.8 and use direct linking
+  * Deployment Impacts
+    * The Elasticsearch Spatial Plugin needs to be deployed.
