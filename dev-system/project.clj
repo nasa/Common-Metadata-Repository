@@ -49,7 +49,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies ~(concat '[[org.clojure/clojure "1.8.0"]
-                           [org.clojure/tools.nrepl "0.2.11"]]
+                           [org.clojure/tools.nrepl "0.2.12"]]
                          project-dependencies)
 
   :plugins [[lein-shell "0.4.0"]
@@ -75,12 +75,12 @@
   {:dev {:dependencies [[ring-mock "0.1.5"]
                         [org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
-                        [pjstadig/humane-test-output "0.7.0"]
-                        [debugger "0.1.7"]
-                        [criterium "0.4.3"]
+                        [pjstadig/humane-test-output "0.8.1"]
+                        [debugger "0.2.0"]
+                        [criterium "0.4.4"]
                         ;; Must be listed here as metadata db depends on it.
                         [drift "1.5.3"]
-                        [proto-repl-charts "0.3.0"]
+                        [proto-repl-charts "0.3.1"]
                         [proto-repl "0.3.1"]]
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
