@@ -5,8 +5,8 @@
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.elasticsearch/elasticsearch "1.6.2" :exclusions [commons-codec
                                                                        org.ow2.asm/asm]]
-                 [clojurewerkz/elastisch "2.2.0-beta2" :exclusions [commons-codec
-                                                                    org.ow2.asm/asm]]
+                 [clojurewerkz/elastisch "2.2.2" :exclusions [commons-codec
+                                                              org.ow2.asm/asm]]
 
                  ;; Log4j needed to configure logging in elasticsearch.
                  ;; Version set to match elastic search numbers. Look in elasticsearch pom.xml

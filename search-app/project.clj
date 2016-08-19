@@ -16,19 +16,19 @@
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"]
                  [nasa-echo/echo-orbits-java "0.1.11"]
-                 [ring/ring-core "1.4.0" :exclusions [clj-time]]
+                 [ring/ring-core "1.5.0"]
                  [ring/ring-json "0.4.0"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/data.csv "0.1.3"]
-                 [org.clojure/tools.nrepl "0.2.11"]
-                 [net.sf.saxon/Saxon-HE "9.6.0-7"]
+                 [org.clojure/tools.nrepl "0.2.12"]
+                 [net.sf.saxon/Saxon-HE "9.7.0-7"]
                  [com.github.fge/json-schema-validator "2.2.6"]
 
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
                  ;; done.
                  [metosin/ring-swagger-ui "2.1.4-0"]
                  [metosin/ring-swagger "0.22.9"]
-                 [prismatic/schema "1.1.2"]]
+                 [prismatic/schema "1.1.3"]]
 
   :plugins [[test2junit "1.2.1"]
             [lein-exec "0.3.4"]]
@@ -40,8 +40,8 @@
   {:dev {:dependencies [[ring-mock "0.1.5"]
                         [org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
-                        [criterium "0.4.3"]
-                        [pjstadig/humane-test-output "0.7.0"]
+                        [criterium "0.4.4"]
+                        [pjstadig/humane-test-output "0.8.1"]
                         ;; Must be listed here as metadata db depends on it.
                         [drift "1.5.3"]]
          :jvm-opts ^:replace ["-server"]

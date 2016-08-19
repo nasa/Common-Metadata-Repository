@@ -6,9 +6,9 @@
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-                 [org.clojure/tools.nrepl "0.2.11"]
-                 [compojure "1.4.0"]
-                 [ring/ring-core "1.4.0" :exclusions [clj-time]]
+                 [org.clojure/tools.nrepl "0.2.12"]
+                 [compojure "1.5.1"]
+                 [ring/ring-core "1.5.0"]
                  [ring/ring-json "0.4.0"]]
   :plugins [[test2junit "1.2.1"]]
   :repl-options {:init-ns user}
@@ -17,7 +17,7 @@
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
-                        [pjstadig/humane-test-output "0.7.0"]
+                        [pjstadig/humane-test-output "0.8.1"]
                         [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
                         [proto-repl "0.3.1"]
                         [clj-http "2.0.0"]]
