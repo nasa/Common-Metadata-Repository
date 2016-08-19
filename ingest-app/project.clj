@@ -25,11 +25,13 @@
   :plugins [[test2junit "1.2.1"]
             [drift "1.5.3"]
             [lein-exec "0.3.4"]]
-
   :repl-options {:init-ns user}
+  :jvm-opts ^:replace ["-server"
+                       "-Dclojure.compiler.direct-linking=true"]
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
+         :jvm-opts ^:replace ["-server"]
          :source-paths ["src" "dev" "test"]}
 
    ;; This profile specifically here for generating documentation. It's faster than using the regular
@@ -37,10 +39,8 @@
    ;; 60 seconds before allowing the JVM to shutdown since no call to shutdown-agents is made.
    ;; Generate docs with: lein with-profile docs generate-docs
    :docs {}
-
    :uberjar {:main cmr.ingest.runner
              :aot :all}}
-
 
   :aliases {"generate-docs" ["exec" "-ep" (pr-str '(do
                                                     (use 'cmr.common-app.api-docs)

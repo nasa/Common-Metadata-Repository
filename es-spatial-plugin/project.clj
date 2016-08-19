@@ -27,6 +27,9 @@
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
 
+  :jvm-opts ^:replace ["-server"
+                       "-Dclojure.compiler.direct-linking=true"]
+
   ;; This is the minimum that must be AOT'd for running in an embeded elastic. AOT :all for installing
   ;; in an elastic vm.
   :aot [cmr.es-spatial-plugin.SpatialScript
@@ -44,7 +47,8 @@
 
          ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
          ;; See https://github.com/technomancy/leiningen/wiki/Faster
-         ; :jvm-opts ^:replace [;; important to allow logging to standard out
+         :jvm-opts ^:replace ["-server"]
+                                ;; important to allow logging to standard out
          ;                      "-Des.foreground=true"
          ;                      ;; Use the following to enable JMX profiling with visualvm
          ;                      "-Dcom.sun.management.jmxremote"

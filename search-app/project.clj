@@ -34,7 +34,8 @@
             [lein-exec "0.3.4"]]
   :repl-options {:init-ns user
                  :timeout 120000}
-  :jvm-opts []
+  :jvm-opts ^:replace ["-server"
+                       "-Dclojure.compiler.direct-linking=true"]
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]
                         [org.clojure/tools.namespace "0.2.11"]
@@ -43,6 +44,7 @@
                         [pjstadig/humane-test-output "0.8.1"]
                         ;; Must be listed here as metadata db depends on it.
                         [drift "1.5.3"]]
+         :jvm-opts ^:replace ["-server"]
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}

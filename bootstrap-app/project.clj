@@ -18,10 +18,12 @@
             [lein-exec "0.3.2"]]
 
   :repl-options {:init-ns user}
-  :jvm-opts []
+  :jvm-opts ^:replace ["-server"
+                       "-Dclojure.compiler.direct-linking=true"]
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
+         :jvm-opts ^:replace ["-server"]
          :source-paths ["src" "dev" "test"]}
    :uberjar {:main cmr.bootstrap.runner
              :aot :all}}
