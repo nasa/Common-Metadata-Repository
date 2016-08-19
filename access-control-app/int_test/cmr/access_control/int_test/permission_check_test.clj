@@ -8,9 +8,11 @@
            [cmr.common.util :refer [are2]]
            [cmr.access-control.int-test.fixtures :as fixtures]
            [cmr.access-control.test.util :as u]
-           [cmr.umm-spec.core :as umm-spec]
+           [cmr.umm.core :as umm-core]
+           [cmr.umm.granule :as umm-g]
            [cmr.umm-spec.test.expected-conversion :refer [example-collection-record]]
-           [clj-time.core :as t]))
+           [clj-time.core :as t]
+           [cmr.common.util :as util]))
 
 (use-fixtures :once (fixtures/int-test-fixtures))
 
@@ -54,27 +56,45 @@
                {:user_type (name user)}
                {:user_id user})))))
 
-(def granule-metadata
-  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-				<Granule>
-				    <GranuleUR>GLDAS_NOAH10_3H.2.0:GLDAS_NOAH10_3H.A19480101.0300.020.nc4</GranuleUR>
-				    <InsertTime>2012-01-11T10:00:00.000Z</InsertTime>
-				    <LastUpdate>2012-01-19T18:00:00.000Z</LastUpdate>
-				    <Collection>
-				        <DataSetId>coll1 entry title</DataSetId>
-				    </Collection>
-              		<OnlineResources>
-                      <OnlineResource>
-                        <URL>http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5/GLDAS_NOAH10_3H.2.0:GLDAS_NOAH10_3H.A19480101.0300.020.nc4</URL>
-                        <Description>OpenDAP URL</Description>
-                        <Type>GET DATA : OPENDAP DATA (DODS)</Type>
-              		    <MimeType>application/x-netcdf</MimeType>
-                      </OnlineResource>
-            		</OnlineResources>
-				    <Orderable>true</Orderable>
-				</Granule>")
+(def granule-num
+  "An atom storing the next number used to generate unique granules."
+  (atom 0))
 
-;; Commented out. See CMR-3224
+(defn save-granule
+  "Saves a granule with given property map to metadata db and returns concept id."
+  ([parent-collection-id]
+    (save-granule parent-collection-id {}))
+  ([parent-collection-id attrs]
+   (let [short-name (str "gran" (swap! granule-num inc))
+         version-id "v1"
+         native-id short-name
+         entry-id (str short-name "_" version-id)
+         granule-ur (str short-name "ur")
+         parent-collection (mdb/get-latest-concept (u/conn-context) parent-collection-id)
+         parent-entry-title (:entry-title (:extra-fields parent-collection))
+         timestamps (umm-g/map->DataProviderTimestamps
+                      {:insert-time "2012-01-11T10:00:00.000Z"})
+         granule-umm (umm-g/map->UmmGranule
+                       {:granule-ur granule-ur
+                        :data-provider-timestamps timestamps
+                        :collection-ref (umm-g/map->CollectionRef
+                                          {:entry-title parent-entry-title})})
+         granule-umm (merge granule-umm attrs)]
+     (:concept-id
+       (mdb/save-concept (u/conn-context)
+                         {:format "application/echo10+xml"
+                          :metadata (umm-core/umm->xml granule-umm :echo10)
+                          :concept-type :granule
+                          :provider-id "PROV1"
+                          :native-id native-id
+                          :revision-id 1
+                          :extra-fields {:short-name short-name
+                                         :entry-title short-name
+                                         :entry-id entry-id
+                                         :granule-ur granule-ur
+                                         :version-id version-id
+                                         :parent-collection-id parent-collection-id
+                                         :parent-entry-title parent-entry-title}})))))
 
 (deftest collection-simple-catalog-item-identity-permission-check-test
   ;; tests ACLs which grant access to collections based on provider id and/or entry title
@@ -84,28 +104,14 @@
         ;; then create a group that contains our user, so we can find collections that grant access to this user
         user1-group (create-group {:name "groupwithuser1" :members ["user1"]})
         ;; create some collections
-        ingest-prov1-collection #(u/save-collection {:provider-id "PROV1"
+        save-prov1-collection #(u/save-collection {:provider-id "PROV1"
                                                      :entry-title (str % " entry title")
                                                      :native-id %
                                                      :short-name %})
-        coll1 (ingest-prov1-collection "coll1")
-        coll2 (ingest-prov1-collection "coll2")
-        coll3 (ingest-prov1-collection "coll3")
-        gran1 (:concept-id
-                (mdb/save-concept (u/conn-context)
-                                  {:format "application/echo10+xml"
-                                   :metadata granule-metadata
-                                   :concept-type :granule
-                                   :provider-id "PROV1"
-                                   :native-id "gran1"
-                                   :revision-id 1
-                                   :extra-fields {:short-name "gran1"
-                                                  :entry-title "gran1"
-                                                  :entry-id "gran1"
-                                                  :granule-ur "gran1ur"
-                                                  :version-id "v1"
-                                                  :parent-collection-id coll1
-                                                  :parent-entry-title "coll1"}}))
+        coll1 (save-prov1-collection "coll1")
+        coll2 (save-prov1-collection "coll2")
+        coll3 (save-prov1-collection "coll3")
+        gran1 (save-granule coll1)
         ;; local helpers to make the body of the test cleaner
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
@@ -215,20 +221,20 @@
 (deftest collection-catalog-item-identifier-access-value-test
   ;; tests ACLs which grant access to collections based on their access value
   (let [token (e/login (u/conn-context) "user1" [])
-        ingest-access-value-collection (fn [short-name access-value]
+        save-access-value-collection (fn [short-name access-value]
                                          (u/save-collection {:entry-title (str short-name " entry title")
                                                              :short-name short-name
                                                              :native-id short-name
                                                              :provider-id "PROV1"
                                                              :access-value access-value}))
         ;; one collection with a low access value
-        coll1 (ingest-access-value-collection "coll1" 1)
+        coll1 (save-access-value-collection "coll1" 1)
         ;; one with an intermediate access value
-        coll2 (ingest-access-value-collection "coll2" 4)
+        coll2 (save-access-value-collection "coll2" 4)
         ;; one with a higher access value
-        coll3 (ingest-access-value-collection "coll3" 9)
+        coll3 (save-access-value-collection "coll3" 9)
         ;; and one with no access value
-        coll4 (ingest-access-value-collection "coll4" nil)
+        coll4 (save-access-value-collection "coll4" nil)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
         get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)]
@@ -301,16 +307,16 @@
 (deftest collection-catalog-item-identifier-temporal-test
   ;; tests ACLs that grant access based on a collection's temporal range
   (let [token (e/login (u/conn-context) "user1" [])
-        ingest-temporal-collection (fn [short-name start-year end-year]
+        save-temporal-collection (fn [short-name start-year end-year]
                                      (u/save-collection {:entry-title (str short-name " entry title")
                                                          :short-name short-name
                                                          :native-id short-name
                                                          :provider-id "PROV1"
                                                          :temporal-range {:BeginningDateTime (t/date-time start-year)
                                                                           :EndingDateTime (t/date-time end-year)}}))
-        coll1 (ingest-temporal-collection "coll1" 2001 2002)
-        coll2 (ingest-temporal-collection "coll2" 2004 2005)
-        coll3 (ingest-temporal-collection "coll3" 2007 2009)
+        coll1 (save-temporal-collection "coll1" 2001 2002)
+        coll2 (save-temporal-collection "coll2" 2004 2005)
+        coll3 (save-temporal-collection "coll3" 2007 2009)
         ;; coll4 will have no temporal extent, and should not be granted any permissions by our ACLs in this test
         coll4 (u/save-collection {:entry-id "coll4"
                                   :native-id "coll4"
@@ -376,11 +382,264 @@
                (get-coll-permissions)))))))
 
 ;; For CMR-3210:
-;; * granule provider permissions (read/order) for guest, registered, and groups
-;; * granule specific permissions (update/delete) for guest, registered, and groups
-;; * granule permissions based on access value
-;; * granule permissions based on temporal
-;; * granule permissions applied for collection applicable false??? <-- ask Jason
+
+(deftest granule-permissions-test
+  (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
+        group (u/make-group {:name "groupwithuser1" :members ["user1"]})
+        created-group-concept-id (:concept_id (u/create-group token group))
+        ;; required for ACLs that will reference this group
+        _ (u/wait-until-indexed)
+        save-prov1-collection #(u/save-collection {:provider-id "PROV1"
+                                                      :entry-title (str % " entry title")
+                                                      :native-id %
+                                                      :short-name %})
+        coll1 (save-prov1-collection "coll1")
+        gran1 (save-granule coll1)
+        create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
+        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})]
+
+    (testing "no permissions granted"
+      (are [user permissions]
+        (= {gran1 permissions}
+           (get-permissions user gran1))
+        :guest []
+        :registered []
+        "user1" []))
+
+    (testing "permissions granted to guests"
+      (let [acl (create-acl
+                  {:group_permissions [{:permissions [:read]
+                                        :user_type :guest}]
+                   :catalog_item_identity {:name "prov1 granule read"
+                                           :granule_applicable true
+                                           :provider_id "PROV1"}})]
+        (are [user permissions]
+          (= {gran1 permissions}
+             (get-permissions user gran1))
+          :guest ["read"]
+          :registered []
+          "user1" [])
+
+        (testing "permissions granted to registered users"
+          (update-acl acl {:group_permissions [{:permissions [:read :order]
+                                                :user_type :registered}]
+                           :catalog_item_identity {:name "prov1 granule read"
+                                                   :granule_applicable true
+                                                   :provider_id "PROV1"}})
+
+          (are [user permissions]
+            (= {gran1 permissions}
+               (get-permissions user gran1))
+            :guest []
+            :registered ["read" "order"]
+            "user1" ["read" "order"]))
+
+        (testing "permissions granted to a specific group"
+          (update-acl acl {:group_permissions [{:permissions [:read]
+                                                :group_id created-group-concept-id}]
+                           :catalog_item_identity {:name "prov1 granule read"
+                                                   :granule_applicable true
+                                                   :provider_id "PROV1"}})
+
+          (are [user permissions]
+            (= {gran1 permissions}
+               (get-permissions user gran1))
+            :guest []
+            :registered []
+            "user1" ["read"]))))))
+
+(deftest granule-permissions-with-collection-identifier-test
+  (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
+        group (u/make-group {:name "groupwithuser1" :members ["user1"]})
+        created-group-concept-id (:concept_id (u/create-group token group))
+        ;; required for ACLs that will reference this group
+        _ (u/wait-until-indexed)
+        save-prov1-collection #(u/save-collection {:provider-id "PROV1"
+                                                     :entry-title (str % " entry title")
+                                                     :native-id %
+                                                     :short-name %})
+        coll1 (save-prov1-collection "coll1")
+        coll2 (save-prov1-collection "coll2")
+        gran1 (save-granule coll1)
+        gran2 (save-granule coll2)
+        create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
+        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})]
+
+    (u/wait-until-indexed)
+
+    (testing "no permissions granted"
+      (are [user permissions]
+        (= {gran1 permissions}
+           (get-permissions user gran1))
+        :guest []
+        :registered []
+        "user1" []))
+
+    (testing "permissions granted to guests"
+      (let [acl (create-acl
+                  {:group_permissions [{:permissions [:read]
+                                        :user_type :guest}]
+                   :catalog_item_identity {:name "prov1 granule read"
+                                           :granule_applicable true
+                                           :collection_applicable true
+                                           :collection_identifier {:entry_titles ["coll1 entry title"]}
+                                           :provider_id "PROV1"}})]
+        (are [user permissions]
+          (= {gran1 permissions
+              ;; also ensure that the other granule under coll2 doesn't get any permissions from this ACL
+              gran2 []}
+             (get-permissions user gran1 gran2))
+          :guest ["read"]
+          :registered []
+          "user1" [])
+
+        (testing "permissions granted to registered users"
+          (update-acl acl {:group_permissions [{:permissions [:read :order]
+                                                :user_type :registered}]
+                           :catalog_item_identity {:name "prov1 granule read"
+                                                   :granule_applicable true
+                                                   :collection_applicable true
+                                                   :collection_identifier {:entry_titles ["coll1 entry title"]}
+                                                   :provider_id "PROV1"}})
+
+          (are [user permissions]
+            (= {gran1 permissions
+                gran2 []}
+               (get-permissions user gran1 gran2))
+            :guest []
+            :registered ["read" "order"]
+            "user1" ["read" "order"]))
+
+        (testing "no permissions are granted with granule_applicable = false"
+          (update-acl acl {:group_permissions [{:permissions [:read :order]
+                                                :user_type :registered}]
+                           :catalog_item_identity {:name "prov1 granule read"
+                                                   :granule_applicable false
+                                                   :collection_applicable true
+                                                   :collection_identifier {:entry_titles ["coll1 entry title"]}
+                                                   :provider_id "PROV1"}})
+
+          (are [user permissions]
+            (= {gran1 permissions
+                gran2 []}
+               (get-permissions user gran1 gran2))
+            :guest []
+            :registered []
+            "user1" []))
+
+        (testing "permissions granted to a specific group"
+          (update-acl acl {:group_permissions [{:permissions [:read]
+                                                :group_id created-group-concept-id}]
+                           :catalog_item_identity {:name "prov1 granule read"
+                                                   :granule_applicable true
+                                                   :collection_applicable true
+                                                   :collection_identifier {:entry_titles ["coll1 entry title"]}
+                                                   :provider_id "PROV1"}})
+
+          (are [user permissions]
+            (= {gran1 permissions
+                gran2 []}
+               (get-permissions user gran1 gran2))
+            :guest []
+            :registered []
+            "user1" ["read"]))))))
+
+(deftest granule-permissions-with-access-value-test
+  (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
+        group (u/make-group {:name "groupwithuser1" :members ["user1"]})
+        created-group-concept-id (:concept_id (u/create-group token group))
+        ;; required for ACLs that will reference this group
+        _ (u/wait-until-indexed)
+        save-prov1-collection #(u/save-collection {:provider-id "PROV1"
+                                                   :entry-title (str % " entry title")
+                                                   :native-id %
+                                                   :short-name %})
+        coll1 (save-prov1-collection "coll1")
+        ;; no access value
+        gran1 (save-granule coll1)
+        ;; mid access value
+        gran2 (save-granule coll1 {:access-value 5})
+        ;; high access value
+        gran3 (save-granule coll1 {:access-value 10})
+        create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
+        ;; guest read coll1 granules with undefined access value
+        acl1 (create-acl {:group_permissions [{:permissions [:read]
+                                               :user_type :guest}]
+                          :catalog_item_identity {:name "prov1 granules w/ undefined access value"
+                                                  :granule_applicable true
+                                                  :granule_identifier {:access_value {:include_undefined_value true}}
+                                                  :provider_id "PROV1"}})
+        ;; registered read granules with access value up to 7
+        acl2 (create-acl {:group_permissions [{:permissions [:read]
+                                               :user_type :registered}]
+                          :catalog_item_identity {:name "prov1 granules w/ max access value"
+                                                  :granule_applicable true
+                                                  :granule_identifier {:access_value {:max_value 7}}
+                                                  :provider_id "PROV1"}})
+        ;; specific group read granules with access value 7 or higher
+        acl3 (create-acl {:group_permissions [{:permissions [:read]
+                                               :user_type :registered}]
+                          :catalog_item_identity {:name "prov1 granules w/ min access value"
+                                                  :granule_applicable true
+                                                  :granule_identifier {:access_value {:min_value 7}}
+                                                  :provider_id "PROV1"}})]
+    (u/wait-until-indexed)
+    (are [user result]
+      (= result (get-permissions user gran1 gran2 gran3))
+      :guest {gran1 ["read"]
+              gran2 []
+              gran3 []}
+      :registered {gran1 []
+                   gran2 ["read"]
+                   gran3 ["read"]})))
+
+(deftest granule-permissions-with-temporal-value-test
+  (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
+        group (u/make-group {:name "groupwithuser1" :members ["user1"]})
+        created-group-concept-id (:concept_id (u/create-group token group))
+        ;; required for ACLs that will reference this group
+        _ (u/wait-until-indexed)
+        save-prov1-collection #(u/save-collection {:provider-id "PROV1"
+                                                   :entry-title (str % " entry title")
+                                                   :native-id %
+                                                   :short-name %})
+        coll1 (save-prov1-collection "coll1")
+        ;; no temporal
+        gran1 (save-granule coll1)
+        ;; temporal range
+        gran2 (save-granule coll1 {:temporal {:range-date-time {:beginning-date-time "2002-01-01T00:00:00Z"
+                                                                :ending-date-time "2005-01-01T00:00:00Z"}}})
+        ;; single date-time
+        gran3 (save-granule coll1 {:temporal {:single-date-time "1999-01-01T00:00:00Z"}})
+
+        create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
+
+        acl1 (create-acl {:group_permissions [{:permissions [:read]
+                                               :user_type :guest}]
+                          :catalog_item_identity {:name "prov1 granules between 2000 and 2011"
+                                                  :granule_applicable true
+                                                  :granule_identifier {:temporal {:start_date "2000-01-01T00:00:00Z"
+                                                                                  :stop_date "2011-01-01T00:00:00Z"
+                                                                                  :mask "contains"}}
+                                                  :provider_id "PROV1"}})
+
+        acl2 (create-acl {:group_permissions [{:permissions [:read]
+                                               :user_type :registered}]
+                          :catalog_item_identity {:name "prov1 granules before 2000"
+                                                  :granule_applicable true
+                                                  :granule_identifier {:temporal {:start_date "1900-01-01T00:00:00Z"
+                                                                                  :stop_date "2000-01-01T00:00:00Z"
+                                                                                  :mask "contains"}}
+                                                  :provider_id "PROV1"}})]
+    (u/wait-until-indexed)
+    (are [user result]
+      (= result (get-permissions user gran1 gran2 gran3))
+      :guest {gran1 []
+              gran2 ["read"]
+              gran3 []}
+      :registered {gran1 []
+                   gran2 []
+                   gran3 ["read"]})))
 
 (deftest collection-provider-level-permission-check-test
   ;; Tests ACLs which grant the provider-level update/delete permissions to collections
@@ -389,8 +648,6 @@
         group (u/make-group {:name "groupwithuser1" :members ["user1"]})
         created-group-concept-id (:concept_id (u/create-group token group))
         ;; create some collections
-        coll1-umm (assoc example-collection-record :EntryTitle "coll1 entry title")
-        coll1-metadata (umm-spec/generate-metadata (u/conn-context) coll1-umm :echo10)
         coll1 (u/save-collection {:provider-id "PROV1"
                                   :entry-title "coll1"
                                   :native-id "coll1"
