@@ -12,6 +12,8 @@
                  [ring/ring-json "0.4.0"]]
   :plugins [[test2junit "1.2.1"]]
   :repl-options {:init-ns user}
+  :jvm-opts ^:replace ["-server"
+                       "-Dclojure.compiler.direct-linking=true"]
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
@@ -19,6 +21,7 @@
                         [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
                         [proto-repl "0.3.1"]
                         [clj-http "2.0.0"]]
+         :jvm-opts ^:replace ["-server"]
          :source-paths ["src" "dev" "test" "int_test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}

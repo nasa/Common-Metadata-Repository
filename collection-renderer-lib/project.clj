@@ -52,10 +52,13 @@
   :plugins [[test2junit "1.2.1"]
             [lein-shell "0.4.0"]]
   :resource-paths ["resources" ~gem-install-path]
+  :jvm-opts ^:replace ["-server"
+                       "-Dclojure.compiler.direct-linking=true"]
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [proto-repl "0.3.1"]
                         [pjstadig/humane-test-output "0.7.0"]]
+         :jvm-opts ^:replace ["-server"]
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}}

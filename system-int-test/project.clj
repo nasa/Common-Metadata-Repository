@@ -34,7 +34,9 @@
 
   :plugins [[test2junit "1.2.1"]]
 
-  :jvm-opts ["-XX:-OmitStackTraceInFastThrow"]
+  :jvm-opts ^:replace ["-server"
+                       "-XX:-OmitStackTraceInFastThrow"
+                       "-Dclojure.compiler.direct-linking=true"]
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
@@ -43,6 +45,8 @@
                         [pjstadig/humane-test-output "0.7.0"]]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]
+         :jvm-opts ^:replace ["-server"
+                              "-XX:-OmitStackTraceInFastThrow"]
          :source-paths ["src" "dev"]}}
   :aliases { ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]})

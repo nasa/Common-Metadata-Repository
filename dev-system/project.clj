@@ -47,30 +47,15 @@
   :url "***REMOVED***projects/CMR/repos/cmr/browse/dev-system"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-
   :dependencies ~(concat '[[org.clojure/clojure "1.8.0"]
                            [org.clojure/tools.nrepl "0.2.11"]]
                          project-dependencies)
-
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
-
   :repl-options {:init-ns user
                  :timeout 180000}
-
-
-  :jvm-opts ["-XX:-OmitStackTraceInFastThrow"]
-
-  ;; Uncomment this for performance testing or profiling
-  ; :jvm-opts ^:replace ["-server"
-  ;                      ;; Use the following to enable JMX profiling with visualvm
-  ;                      "-Dcom.sun.management.jmxremote"
-  ;                      "-Dcom.sun.management.jmxremote.ssl=false"
-  ;                      "-Dcom.sun.management.jmxremote.authenticate=false"
-  ;                      "-Dcom.sun.management.jmxremote.port=1098"
-  ;                      ]
-
-
+  :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
+             "-Dclojure.compiler.direct-linking=true"]
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]
                         [org.clojure/tools.namespace "0.2.11"]
@@ -82,6 +67,12 @@
                         [drift "1.5.3"]
                         [proto-repl-charts "0.3.0"]
                         [proto-repl "0.3.1"]]
+         :jvm-opts ^:replace ["-server"]
+                              ;; Use the following to enable JMX profiling with visualvm
+                              ;"-Dcom.sun.management.jmxremote"
+                              ;"-Dcom.sun.management.jmxremote.ssl=false"
+                              ;"-Dcom.sun.management.jmxremote.authenticate=false"
+                              ;"-Dcom.sun.management.jmxremote.port=1098"
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}
