@@ -9,7 +9,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
             [cmr.umm-spec.test.location-keywords-helper :as lkt]
-            [cmr.search.services.humanizers-service :as hs]
+            [cmr.search.services.humanizer-report-service :as hrs]
             [cmr.system-int-test.utils.humanizer-util :as hu]))
 
 (use-fixtures :each (join-fixtures
@@ -66,9 +66,9 @@
 
 (deftest humanizer-report-batch
   (hu/register-humanizer)
-  (side/eval-form `(hs/set-humanizer-report-collection-batch-size! 10))
+  (side/eval-form `(hrs/set-humanizer-report-collection-batch-size! 10))
   ;; Insert more entries than the batch size to test batches
-  (doseq [n (range (inc (hs/humanizer-report-collection-batch-size)))]
+  (doseq [n (range (inc (hrs/humanizer-report-collection-batch-size)))]
     (d/ingest "PROV1" (dc/collection
                         {:product {:short-name "B"
                                    :long-name "B"
@@ -79,9 +79,9 @@
   (search/refresh-collection-metadata-cache)
   (testing "Humanizer report batches"
     (let [report-lines (str/split (search/get-humanizers-report) #"\n")]
-      (is (= (count report-lines) (+ 2 (hs/humanizer-report-collection-batch-size))))
+      (is (= (count report-lines) (+ 2 (hrs/humanizer-report-collection-batch-size))))
       (for [actual-line (rest report-lines)
-            n (inc hs/humanizer-report-collection-batch-size)]
+            n (inc hrs/humanizer-report-collection-batch-size)]
         (is (= actual-line) (str "PROV1,C1200000001-PROV1,B,"n",AM-1,Terra"))))))
 
 (deftest search-by-platform-humanized
