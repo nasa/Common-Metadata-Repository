@@ -230,14 +230,14 @@
           m
           m))
 
-(defn cleanup
+(defn remove-empty-maps
   "Recursively removes maps with only nil values."
   [x]
   (cond
-    (map? x) (let [clean-map (remove-nil-keys (zipmap (keys x) (map cleanup (vals x))))]
+    (map? x) (let [clean-map (remove-nil-keys (zipmap (keys x) (map remove-empty-maps (vals x))))]
                (when (seq clean-map)
                  clean-map))
-    (sequential? x) (keep cleanup x)
+    (sequential? x) (keep remove-empty-maps x)
     :else x))
 
 (defn map-keys

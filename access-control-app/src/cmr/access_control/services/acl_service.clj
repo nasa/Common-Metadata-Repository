@@ -283,7 +283,7 @@
                  #(set/rename-keys % {:include-undefined-value :include-undefined}))
       (update-in [:catalog-item-identity :granule-identifier :access-value]
                  #(set/rename-keys % {:include-undefined-value :include-undefined}))
-      util/cleanup))
+      util/remove-empty-maps))
 
 (defn get-all-acl-concepts
   "Returns all ACLs in metadata db."
