@@ -14,11 +14,11 @@
             [cmr.common.date-time-parser :as p]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.polygon :as poly]
-            [cmr.umm.spatial :as spatial]
+            [cmr.umm.umm-spatial :as spatial]
             [cmr.umm.iso-smap.granule :as g]
-            [cmr.umm.iso-smap.core :as iso]
-            [cmr.umm.collection :as umm-c]
-            [cmr.umm.granule :as umm-g]))
+            [cmr.umm.iso-smap.iso-smap-core :as iso]
+            [cmr.umm.umm-collection :as umm-c]
+            [cmr.umm.umm-granule :as umm-g]))
 
 (defn- data-granule->expected-parsed
   "Returns the expected parsed data-granule for the given data-granule"

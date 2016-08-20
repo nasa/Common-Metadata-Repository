@@ -9,7 +9,7 @@
             [cmr.virtual-product.data.source-to-virtual-mapping :as svm]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
-            [cmr.umm.granule :as umm-g]
+            [cmr.umm.umm-granule :as umm-g]
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.mime-types :as mt]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))

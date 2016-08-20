@@ -1,7 +1,7 @@
 (ns cmr.umm.echo10.collection.product-specific-attribute
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [cmr.umm.generator-util :as gu]
             [cmr.umm.collection.product-specific-attribute :as psa]))
 

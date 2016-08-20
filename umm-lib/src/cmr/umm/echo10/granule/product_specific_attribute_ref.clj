@@ -2,7 +2,7 @@
   "Contains functions for parsing and generating the ECHO10 dialect for product specific attribute refs"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.granule :as g]))
+            [cmr.umm.umm-granule :as g]))
 
 
 (defn xml-elem->ProductSpecificAttributeRef

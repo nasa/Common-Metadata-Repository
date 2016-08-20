@@ -3,7 +3,7 @@
   (:require [clojure.test :refer :all]
             [cmr.umm-spec.models.common :as c]
             [cmr.umm-spec.models.collection :as coll]
-            [cmr.umm-spec.test.validation.helpers :as h]))
+            [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as h]))
 
 (deftest collection-platforms-validation
   (let [s1 (c/map->SensorType {:ShortName "S1"})

@@ -1,6 +1,6 @@
 (ns cmr.system-int-test.data2.collection
   "Contains data generators for example based testing in system integration tests."
-  (:require [cmr.umm.collection :as c]
+  (:require [cmr.umm.umm-collection :as c]
             [cmr.common.util :as util]
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.date-time-parser :as p]
@@ -8,8 +8,8 @@
             [cmr.umm.collection.product-specific-attribute :as psa]
             [clj-time.format :as f]
             [cmr.umm.collection.entry-id :as eid]
-            [cmr.umm.spatial :as umm-s])
-  (:import [cmr.umm.collection
+            [cmr.umm.umm-spatial :as umm-s])
+  (:import [cmr.umm.umm_collection
             Product
             DataProviderTimestamps
             ScienceKeyword

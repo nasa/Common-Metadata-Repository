@@ -22,7 +22,7 @@
             [cmr.spatial.serialize :as srl]
             [cmr.common.dev.util :as dev-util]
             [cmr.spatial.lr-binary-search :as lbs]
-            [cmr.umm.spatial :as umm-s]
+            [cmr.umm.umm-spatial :as umm-s]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))

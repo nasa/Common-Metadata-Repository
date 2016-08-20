@@ -15,7 +15,7 @@
             [cheshire.core :as json]
             [cmr.common.util :as util]
             [cmr.umm.echo10.granule :as g]
-            [cmr.umm.collection :as umm-c]
+            [cmr.umm.umm-collection :as umm-c]
             [cmr.common.mime-types :as mt]))
 
 (use-fixtures :each (ingest/reset-fixture (into {"PROV_guid" "PROV"

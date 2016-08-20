@@ -2,7 +2,7 @@
   "Tests parsing product specific attribute components"
   (:require [clojure.test :refer :all]
             [cmr.umm.collection.product-specific-attribute :as psa]
-            [cmr.umm.collection :as umm-c]
+            [cmr.umm.umm-collection :as umm-c]
             [clj-time.core :as t]))
 
 

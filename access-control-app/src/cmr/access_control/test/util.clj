@@ -9,7 +9,7 @@
             [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
             [cmr.common.util :as util]
             [clojure.string :as str]
-            [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm-spec.umm-spec-core :as umm-spec]
             [cmr.umm-spec.test.expected-conversion :refer [example-collection-record]]))
 
 (def conn-context-atom

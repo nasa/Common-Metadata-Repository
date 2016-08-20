@@ -8,7 +8,7 @@
            [cmr.common.util :refer [are2]]
            [cmr.access-control.int-test.fixtures :as fixtures]
            [cmr.access-control.test.util :as u]
-           [cmr.umm-spec.core :as umm-spec]
+           [cmr.umm-spec.umm-spec-core :as umm-spec]
            [cmr.umm-spec.test.expected-conversion :refer [example-collection-record]]
            [clj-time.core :as t]))
 

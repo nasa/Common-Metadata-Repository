@@ -4,7 +4,7 @@
             [clj-time.core :as t]
             [clj-time.format :as f]
             [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [cmr.umm.collection.product-specific-attribute :as psa]))
 
 (def names

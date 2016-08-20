@@ -1,10 +1,10 @@
 (ns cmr.umm-spec.test.validation.science-keywords
   "This has tests for UMM-C Science Keywords validations."
   (:require [clojure.test :refer :all]
-            [cmr.umm-spec.validation.core :as v]
+            [cmr.umm-spec.validation.umm-spec-validation-core :as v]
             [cmr.umm-spec.models.common :as c]
             [cmr.umm-spec.models.collection :as coll]
-            [cmr.umm-spec.test.validation.helpers :as h]
+            [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as h]
             [cmr.common.services.errors :as e]))
 
 (deftest collection-science-keywords-validation

@@ -1,6 +1,6 @@
 (ns cmr.ingest.test.validation.additional-attribute-validation
   (:require [clojure.test :refer :all]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [cmr.common.util :as util]
             [cmr.ingest.validation.additional-attribute-validation :as v]))
 

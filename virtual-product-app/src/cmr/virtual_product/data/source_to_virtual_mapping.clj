@@ -1,7 +1,7 @@
 (ns cmr.virtual-product.data.source-to-virtual-mapping
   "Defines source to vritual granule mapping rules."
-  (:require [cmr.umm.granule :as umm-g]
-            [cmr.umm.collection :as umm-c]
+  (:require [cmr.umm.umm-granule :as umm-g]
+            [cmr.umm.umm-collection :as umm-c]
             [cmr.umm.related-url-helper :as ruh]
             [clojure.string :as str]
             [cmr.common.mime-types :as mt]

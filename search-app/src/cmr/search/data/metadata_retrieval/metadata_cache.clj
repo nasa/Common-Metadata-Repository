@@ -25,7 +25,7 @@
            [cmr.common-app.services.search.query-model :as q]
            [cmr.common-app.services.search.query-execution :as qe]
            [cmr.metadata-db.services.concept-service :as metadata-db]
-           [cmr.umm-spec.core :as umm-spec]))
+           [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
 (def cache-key
   "Identifies the key used when the cache is stored in the system."

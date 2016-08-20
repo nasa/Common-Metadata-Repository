@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.validation.platform
   "Defines validations for UMM collection platform."
   (:require [cmr.common.validations.core :as v]
-            [cmr.umm-spec.validation.utils :as vu]))
+            [cmr.umm-spec.validation.umm-spec-validation-utils :as vu]))
 
 (def ^:private sensor-validations
   "Defines the sensor validations for collections"

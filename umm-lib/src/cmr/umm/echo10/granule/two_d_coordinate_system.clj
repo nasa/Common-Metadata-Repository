@@ -2,7 +2,7 @@
   "Contains functions for parsing and generating the ECHO10 granule two-d-coordinate-system element."
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.granule :as g]))
+            [cmr.umm.umm-granule :as g]))
 
 (defn xml-elem->TwoDCoordinateSystem
   "Returns a UMM TwoDCoordinateSystem from a parsed Granule Content XML structure"

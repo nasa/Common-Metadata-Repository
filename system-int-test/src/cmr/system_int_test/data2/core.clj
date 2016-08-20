@@ -3,8 +3,8 @@
   integration tests."
   (:require [clojure.test :refer [is]]
             [clojure.java.io :as io]
-            [cmr.umm.core :as umm]
-            [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm.umm-core :as umm]
+            [cmr.umm-spec.umm-spec-core :as umm-spec]
             [cmr.umm-spec.legacy :as umm-legacy]
             [cmr.common.mime-types :as mime-types]
             [cmr.system-int-test.utils.ingest-util :as ingest]

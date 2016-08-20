@@ -10,11 +10,11 @@
             [cmr.common-app.services.search.query-model :as qm]
 
             ;; UMM library
-            [cmr.umm.core :as umm-lib-core]
+            [cmr.umm.umm-core :as umm-lib-core]
 
             ;; UMM Spec
             [cmr.umm-spec.versioning :as ver]
-            [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm-spec.umm-spec-core :as umm-spec]
             [cmr.umm-spec.umm-json :as umm-json]
             [cmr.common.services.errors :as errors]
 

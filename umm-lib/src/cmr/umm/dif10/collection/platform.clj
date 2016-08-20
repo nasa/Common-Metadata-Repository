@@ -2,8 +2,8 @@
   "Functions to parse and generate DIF10 Platform elements"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]
-            [cmr.umm.dif.core :as dif]
+            [cmr.umm.umm-collection :as c]
+            [cmr.umm.dif.dif-core :as dif]
             [cmr.umm.dif10.collection.instrument :as inst]
             [cmr.umm.dif10.collection.characteristic :as char]))
 

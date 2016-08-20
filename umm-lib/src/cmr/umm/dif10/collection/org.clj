@@ -5,8 +5,8 @@
             [clojure.set :as set]
             [cmr.common.xml :as cx]
             [camel-snake-kebab.core :as csk]
-            [cmr.umm.dif.core :as dif]
-            [cmr.umm.collection :as c]))
+            [cmr.umm.dif.dif-core :as dif]
+            [cmr.umm.umm-collection :as c]))
 
 (def dif10-umm-org-type-mapping
   "Mapping of organization types between DIF10 and UMM. The keys are DIF10 organization

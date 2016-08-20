@@ -1,5 +1,5 @@
 (ns cmr.umm.dif.collection.product-specific-attribute
-  (:require [cmr.umm.collection :as c]
+  (:require [cmr.umm.umm-collection :as c]
             [cmr.umm.collection.product-specific-attribute :as psa]
             [cmr.umm.dif.collection.extended-metadata :as em]
             [cmr.common.util :as util]))
