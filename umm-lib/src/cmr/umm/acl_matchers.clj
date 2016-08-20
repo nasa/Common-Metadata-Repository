@@ -31,7 +31,7 @@
                  (>= access-value ^double min-value))
              (or (nil? max-value)
                  (<= access-value ^double max-value))))
-      ;; umm item's without a value will only be included if include-undefined is true
+      ;; umm items without a value will only be included if include-undefined is true
       include-undefined)))
 
 (defn- time-range1-contains-range2?

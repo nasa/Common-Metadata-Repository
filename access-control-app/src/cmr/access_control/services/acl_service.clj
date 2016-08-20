@@ -344,6 +344,16 @@
   [context concept-id]
   (edn/read-string (:metadata (fetch-acl-concept context concept-id))))
 
+(defn echo-style-temporal-identifier
+  [t]
+  (when t
+    (-> t
+        (assoc :temporal-field :acquisition)
+        (update-in [:mask] keyword)
+        (update-in [:start-date] dtp/try-parse-datetime)
+        (update-in [:stop-date] dtp/try-parse-datetime)
+        (set/rename-keys {:stop-date :end-date}))))
+
 (defn- echo-style-acl
   "Returns acl with the older ECHO-style keywords for consumption in utility functions from other parts of the CMR."
   [acl]
@@ -353,20 +363,13 @@
                         :group-permissions :aces})
       (util/update-in-each [:aces] update-in [:user-type] keyword)
       (util/update-in-each [:aces] set/rename-keys {:group-id :group-guid})
-      (update-in [:catalog-item-identity :collection-identifier :temporal]
-                 (fn [t]
-                   (when t
-                     (-> t
-                         (assoc :temporal-field :acquisition)
-                         (update-in [:mask] keyword)
-                         (update-in [:start-date] dtp/try-parse-datetime)
-                         (update-in [:stop-date] dtp/try-parse-datetime)
-                         (set/rename-keys {:stop-date :end-date})))))
+      (update-in [:catalog-item-identity :collection-identifier :temporal] echo-style-temporal-identifier)
+      (update-in [:catalog-item-identity :granule-identifier :temporal] echo-style-temporal-identifier)
       (update-in [:catalog-item-identity :collection-identifier :access-value]
-                 (fn [av]
-                   (when av
-                     (set/rename-keys av {:include-undefined-value :include-undefined}))))
-      util/remove-nil-keys))
+                 #(set/rename-keys % {:include-undefined-value :include-undefined}))
+      (update-in [:catalog-item-identity :granule-identifier :access-value]
+                 #(set/rename-keys % {:include-undefined-value :include-undefined}))
+      util/remove-empty-maps))
 
 (defn get-all-acl-concepts
   "Returns all ACLs in metadata db."
@@ -412,6 +415,35 @@
           #{}
           acls))
 
+(defn granule-identifier-matches-granule?
+  "Returns true if granule identifier portion of ACL matches granule concept."
+  [gran-identifier granule]
+  (let [{:keys [access-value temporal]} gran-identifier]
+    (and (if access-value
+           (acl-matchers/matches-access-value-filter? granule access-value)
+           true)
+         (if temporal
+           (when-let [umm-temporal (u/lazy-get granule :temporal)]
+             (acl-matchers/matches-temporal-filter? :granule umm-temporal temporal))
+           true))))
+
+(defn collection-identifier-matches-granule?
+  "Returns true if the collection identifier (a field in catalog item identities in ACLs) is nil or
+  it matches the granule concept."
+  [collection-identifier granule]
+  (if collection-identifier
+    (acl-matchers/coll-matches-collection-identifier? (:parent-collection granule) collection-identifier)
+    true))
+
+(defn acl-matches-granule?
+  "Returns true if the acl matches the concept indicating the concept is permitted."
+  [acl granule]
+  (let [{{:keys [provider-id granule-identifier collection-identifier granule-applicable]} :catalog-item-identity} acl]
+    (and granule-applicable
+         (= provider-id (:provider-id granule))
+         (granule-identifier-matches-granule? granule-identifier granule)
+         (collection-identifier-matches-granule? collection-identifier granule))))
+
 (defn- grants-concept-permission?
   "Returns true if permission keyword is granted on concept to any sids by given acl."
   [acl permission concept sids]
@@ -420,10 +452,9 @@
          (when-let [acl-provider-id (-> acl :provider-object-identity :provider-id)]
            (= acl-provider-id (:provider-id concept)))
          ;; else check that the concept matches
-         (condp = (:concept-type concept)
+         (case (:concept-type concept)
            :collection (acl-matchers/coll-applicable-acl? (:provider-id concept) concept acl)
-           ;; part of CMR-2900 to be implemented in a future pull request
-           :granule false))))
+           :granule (acl-matches-granule? acl concept)))))
 
 (defn- concept-permissions-granted-by-acls
   "Returns the set of permission keywords (:read, :update, :order, or :delete) granted on concept
@@ -432,16 +463,26 @@
   (collect-permissions #(grants-concept-permission? %1 %2 concept sids)
                        acls))
 
+(defn- add-acl-enforcement-fields
+  "Adds all fields necessary for comparing concept map against ACLs."
+  [context concept]
+  (let [concept (acl-matchers/add-acl-enforcement-fields-to-concept concept)]
+    (if-let [parent-id (:collection-concept-id concept)]
+      (assoc concept :parent-collection
+                     (acl-matchers/add-acl-enforcement-fields-to-concept
+                       (mdb/get-latest-concept context parent-id)))
+      concept)))
+
 (defn get-concept-permissions
   "Returns a map of concept ids to seqs of permissions granted on that concept for the given username."
   [context username-or-type concept-ids]
-  (let [concepts (acl-matchers/add-acl-enforcement-fields
-                   (mdb1/get-latest-concepts context concept-ids))
-        sids (get-sids context username-or-type)
+  (let [sids (get-sids context username-or-type)
         acls (get-echo-style-acls context)]
     (into {}
-          (for [concept concepts]
-            [(:concept-id concept) (concept-permissions-granted-by-acls concept sids acls)]))))
+          (for [concept (mdb1/get-latest-concepts context concept-ids)
+                :let [concept-with-acl-fields (add-acl-enforcement-fields context concept)]]
+            [(:concept-id concept)
+             (concept-permissions-granted-by-acls concept-with-acl-fields sids acls)]))))
 
 (defn- system-permissions-granted-by-acls
   "Returns a set of permission keywords granted on the system target to the given sids by the given acls."

@@ -223,7 +223,22 @@
 (defn remove-nil-keys
   "Removes keys mapping to nil values in a map."
   [m]
-  (remove-map-keys #(nil? %) m))
+  (reduce (fn [m kv]
+            (if (nil? (val kv))
+              (dissoc m (key kv))
+              m))
+          m
+          m))
+
+(defn remove-empty-maps
+  "Recursively removes maps with only nil values."
+  [x]
+  (cond
+    (map? x) (let [clean-map (remove-nil-keys (zipmap (keys x) (map remove-empty-maps (vals x))))]
+               (when (seq clean-map)
+                 clean-map))
+    (sequential? x) (keep remove-empty-maps x)
+    :else x))
 
 (defn map-keys
   "Maps f over the keys in map m and updates all keys with the result of f.

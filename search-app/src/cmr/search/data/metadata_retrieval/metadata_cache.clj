@@ -156,6 +156,13 @@
     (info "Metadata cache refresh complete. Cache Size:" (cache-size cache))
     nil))
 
+(defn all-cached-revision-format-maps
+  "Returns a sequence of all revision format maps in the cache sorted by concept id"
+  [context]
+  (let [cache (deref (:cache-atom (c/context->cache context cache-key)))]
+    (for [concept-id (sort (keys cache))]
+      (get cache concept-id))))
+
 (defconfig refresh-collection-metadata-cache-interval
   "The number of seconds between refreshes of the collection metadata cache"
   {:default (* 3600 8)

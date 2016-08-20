@@ -8,10 +8,10 @@
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
-                 [compojure "1.4.0"]
-                 [ring/ring-core "1.4.0" :exclusions [clj-time]]
+                 [compojure "1.5.1"]
+                 [ring/ring-core "1.5.0"]
                  [ring/ring-json "0.4.0"]
-                 [org.clojure/tools.nrepl "0.2.11"]
+                 [org.clojure/tools.nrepl "0.2.12"]
                  [drift "1.5.3"]
                  [inflections "0.9.14"]
                  [org.quartz-scheduler/quartz "2.2.2"]]
@@ -21,13 +21,15 @@
             [lein-exec "0.3.2"]]
 
   :repl-options {:init-ns user}
-
+  :jvm-opts ^:replace ["-server"
+                       "-Dclojure.compiler.direct-linking=true"]
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
-                        [pjstadig/humane-test-output "0.7.0"]
+                        [pjstadig/humane-test-output "0.8.1"]
                         [clj-http "2.0.0"]
                         [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]]
+         :jvm-opts ^:replace ["-server"]
          :source-paths ["src" "dev" "test" "int_test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}

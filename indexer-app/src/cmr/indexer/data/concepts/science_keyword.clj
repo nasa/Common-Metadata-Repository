@@ -64,7 +64,8 @@
   the same shape/keys as science-keyword->elastic-doc."
   [science-keyword]
   (let [humanized-fields (filter #(-> % key namespace (= "cmr.humanized")) science-keyword)
-        ns-stripped-fields (util/map-keys #(keyword (name %)) humanized-fields)]
+        humanized-fields-with-raw-values (util/map-values :value humanized-fields)
+        ns-stripped-fields (util/map-keys #(keyword (name %)) humanized-fields-with-raw-values)]
     (merge
      ns-stripped-fields
      ;; Create "*.lowercase" versions of the fields

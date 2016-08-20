@@ -24,6 +24,7 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.xml :as cx]
             [cmr.search.services.query-service :as query-svc]
+            [cmr.search.services.humanizers-service :as humanizers-service]
             [cmr.common.api.context :as context]
             [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
             [cmr.search.services.parameters.legacy-parameters :as lp]
@@ -310,6 +311,13 @@
      :headers {cr/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)}
      :body results}))
 
+(defn- humanizers-report
+  "Handles a request to get a humanizers report"
+  [context]
+  {:status 200
+   :headers {cr/CONTENT_TYPE_HEADER mt/csv}
+   :body (humanizers-service/humanizers-report-csv context)})
+
 (defn- build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
     (routes
@@ -332,6 +340,10 @@
 
         ;; Routes for collection html resources
         (collection-renderer-routes/resource-routes system)
+
+        (context "/humanizers" []
+          (GET "/report" {context :request-context}
+            (humanizers-report context)))
 
         ;; Retrieve by cmr concept id or concept id and revision id
         ;; Matches URL paths of the form /concepts/:concept-id[/:revision-id][.:format],

@@ -112,6 +112,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * [Document Scoring](#document-scoring)
   * [Facets](#facets)
     * [Version 2 Facets Response Format](#facets-v2-response-format)
+        * [Humanizers Report](#facets-humanizers-report)
     * [Facets in XML Responses](#facets-in-xml-responses)
         * [Flat XML Facets](#flat-xml-facets)
         * [Hierarchical XML Facets](#hierarchical-xml-facets)
@@ -2097,6 +2098,12 @@ The following example is a sample response for a query using the query parameter
   }
 };
 ```
+#### <a name="facets-humanizers-report"</a> Humanizers Report
+
+The humanizers report provides a list of fields that have been humanized in CSV format. The
+report format is: provider, concept id, product short name, product version, original field value, humanized field value.
+
+curl "%CMR-ENDPOINT/humanizers/report"
 
 #### <a name="facets-in-xml-responses"></a> Facets in XML Responses
 
