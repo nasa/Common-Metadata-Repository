@@ -4,15 +4,15 @@
             [clojure.java.io :as io]
             [cmr.common.xml :as cx]
             [clj-time.format :as f]
-            [cmr.umm.granule :as g]
-            [cmr.umm.iso-smap.collection :as c]
+            [cmr.umm.umm-granule :as g]
+            [cmr.umm.iso-smap.iso-smap-collection :as c]
             [cmr.umm.iso-smap.granule.spatial :as s]
             [cmr.umm.iso-smap.granule.temporal :as gt]
             [cmr.umm.iso-smap.granule.related-url :as ru]
             [cmr.common.xml :as v]
-            [cmr.umm.echo10.core]
+            [cmr.umm.echo10.echo10-core]
             [cmr.umm.iso-smap.helper :as h])
-  (:import cmr.umm.granule.UmmGranule))
+  (:import cmr.umm.umm_granule.UmmGranule))
 
 (defn- xml-elem->CollectionRef
   "Returns a UMM ref element from a parsed Granule XML structure"
@@ -215,7 +215,7 @@
                 (x/element :gmd:dateTime {}
                            (x/element :gco:DateTime {} (str production-date-time)))))))))))
 
-(extend-protocol cmr.umm.iso-smap.core/UmmToIsoSmapXml
+(extend-protocol cmr.umm.iso-smap.iso-smap-core/UmmToIsoSmapXml
   UmmGranule
   (umm->iso-smap-xml
     ([granule]

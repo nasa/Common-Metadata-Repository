@@ -13,8 +13,8 @@
             [clojure.test]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.common.util :as util])
-  (:import cmr.umm.collection.UmmCollection
-           cmr.umm.granule.UmmGranule
+  (:import cmr.umm.umm_collection.UmmCollection
+           cmr.umm.umm_granule.UmmGranule
            cmr.spatial.mbr.Mbr))
 
 (defn coordinates-container-elem->points

@@ -8,8 +8,8 @@
            [cmr.common.util :refer [are2]]
            [cmr.access-control.int-test.fixtures :as fixtures]
            [cmr.access-control.test.util :as u]
-           [cmr.umm.core :as umm-core]
-           [cmr.umm.granule :as umm-g]
+           [cmr.umm.umm-core :as umm-core]
+           [cmr.umm.umm-granule :as umm-g]
            [cmr.umm-spec.test.expected-conversion :refer [example-collection-record]]
            [clj-time.core :as t]
            [cmr.common.util :as util]))

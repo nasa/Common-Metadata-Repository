@@ -3,7 +3,7 @@
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.common.util :as util]
-            [cmr.umm.collection :as c]))
+            [cmr.umm.umm-collection :as c]))
 
 (defn- xml-elem->Coordinate
   "Returns a UMM Coordinate from a parsed Coordinate XML structure"

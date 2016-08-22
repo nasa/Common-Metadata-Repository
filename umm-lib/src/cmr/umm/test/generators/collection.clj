@@ -2,7 +2,7 @@
   "Provides clojure.test.check generators for use in testing other projects."
   (:require [clojure.test.check.generators :as gen]
             [cmr.common.test.test-check-ext :as ext-gen]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [cmr.umm.test.generators.collection.temporal :as t]
             [cmr.umm.test.generators.collection.science-keyword :as sk]
             [cmr.umm.test.generators.collection.product-specific-attribute :as psa]

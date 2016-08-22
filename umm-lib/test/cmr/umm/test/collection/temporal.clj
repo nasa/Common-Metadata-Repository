@@ -1,7 +1,7 @@
 (ns cmr.umm.test.collection.temporal
   "Test construction of temporal coverage"
   (:require [clojure.test :refer :all]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [cmr.umm.collection.temporal :as tc]
             [cmr.common.date-time-parser :as p]))
 

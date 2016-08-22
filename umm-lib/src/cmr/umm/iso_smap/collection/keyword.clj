@@ -7,11 +7,11 @@
   (:require [clojure.data.xml :as x]
             [clojure.string :as s]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [cmr.umm.iso-smap.helper :as h])
-  (:import cmr.umm.collection.Platform
-           cmr.umm.collection.Instrument
-           cmr.umm.collection.ScienceKeyword))
+  (:import cmr.umm.umm_collection.Platform
+           cmr.umm.umm_collection.Instrument
+           cmr.umm.umm_collection.ScienceKeyword))
 
 (def KEYWORD_SEPARATOR
   "Separator used to separator keyword into keyword fields"

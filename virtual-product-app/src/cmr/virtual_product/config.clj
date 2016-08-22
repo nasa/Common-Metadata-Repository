@@ -2,7 +2,7 @@
   "Defines configuration for virtual product app."
   (:require [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.message-queue.config :as mq-conf]
-            [cmr.umm.granule :as umm-g]
+            [cmr.umm.umm-granule :as umm-g]
             [clojure.string :as str]
             [cmr.common.mime-types :as mt])
   (:import java.util.regex.Pattern))

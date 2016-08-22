@@ -7,7 +7,7 @@
             [cmr.umm.start-end-date :as sed]
             [cmr.common.time-keeper :as tk]
             [cmr.common.util :as u]
-            [cmr.umm.core :as ummc]))
+            [cmr.umm.umm-core :as ummc]))
 
 (def ^:private supported-collection-identifier-keys
   #{:entry-titles :access-value :temporal})

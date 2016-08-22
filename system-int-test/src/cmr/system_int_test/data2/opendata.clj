@@ -9,7 +9,7 @@
             [clojure.string :as str]
             [cmr.spatial.relations :as r]
             [camel-snake-kebab.core :as csk]
-            [cmr.umm.spatial :as umm-s]
+            [cmr.umm.umm-spatial :as umm-s]
             [cmr.umm.echo10.spatial :as echo-s]
             [clojure.test]
             [cheshire.core :as json]
@@ -20,7 +20,7 @@
             [cmr.umm.related-url-helper :as ru]
             [cmr.umm.start-end-date :as sed]
             [clojure.test :refer [is]])
-  (:import cmr.umm.collection.UmmCollection
+  (:import cmr.umm.umm_collection.UmmCollection
            cmr.spatial.mbr.Mbr))
 
 (defn parse-opendata-result

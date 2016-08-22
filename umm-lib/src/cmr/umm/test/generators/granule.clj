@@ -5,7 +5,7 @@
             [cmr.umm.test.generators.collection :as c]
             [cmr.umm.test.generators.granule.temporal :as gt]
             [cmr.umm.test.generators.collection.product-specific-attribute :as psa]
-            [cmr.umm.granule :as g]
+            [cmr.umm.umm-granule :as g]
             [cmr.umm.test.generators.spatial :as spatial-gen]))
 
 ;;; granule related

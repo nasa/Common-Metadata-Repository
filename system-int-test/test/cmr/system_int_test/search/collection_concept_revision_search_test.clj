@@ -8,7 +8,7 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.mime-types :as mt]
             [cmr.common.util :refer [are2] :as util]
-            [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm-spec.umm-spec-core :as umm-spec]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]
             [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 

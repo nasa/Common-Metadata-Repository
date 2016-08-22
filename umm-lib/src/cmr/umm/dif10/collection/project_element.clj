@@ -2,8 +2,8 @@
   "Provide functions to parse and generate DIF10 Project elements."
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.dif.core :as dif]
-            [cmr.umm.collection :as c]))
+            [cmr.umm.dif.dif-core :as dif]
+            [cmr.umm.umm-collection :as c]))
 
 (defn xml-elem->Project
   [project-elem]

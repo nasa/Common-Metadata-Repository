@@ -2,7 +2,7 @@
   "Provides clojure.test.check generators for use in testing other science-keywords"
   (:require [clojure.test.check.generators :as gen]
             [cmr.common.test.test-check-ext :as ext-gen]
-            [cmr.umm.collection :as c]))
+            [cmr.umm.umm-collection :as c]))
 
 (def categories
   "SMAP ISO requires the category be one of 'EARTH SCIENCE' or 'EARTH SCIENCE SERVICES',

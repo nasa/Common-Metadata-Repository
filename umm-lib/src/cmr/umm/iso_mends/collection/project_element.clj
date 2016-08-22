@@ -2,7 +2,7 @@
   "Contains functions for parsing and generating the ISO MENDS elements related to UMM project"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [clojure.string :as s]
             [cmr.umm.iso-mends.collection.keyword :as k]
             [cmr.umm.iso-mends.collection.helper :as h]))

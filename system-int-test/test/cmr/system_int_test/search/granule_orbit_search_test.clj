@@ -16,7 +16,7 @@
             [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.derived :as derived]
             [cmr.spatial.codec :as codec]
-            [cmr.umm.spatial :as umm-s]
+            [cmr.umm.umm-spatial :as umm-s]
             [cmr.common.util :as u]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 

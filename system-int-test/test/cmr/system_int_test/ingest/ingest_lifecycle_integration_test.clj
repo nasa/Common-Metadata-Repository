@@ -10,7 +10,7 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.util :refer [are2]]
-            [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm-spec.umm-spec-core :as umm-spec]
             [cmr.umm.collection.entry-id :as eid]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]
             [cmr.umm-spec.versioning :as ver]
@@ -114,7 +114,7 @@
 (comment
   ;; for REPL testing purposes
   (def example-collection-record expected-conversion/example-collection-record)
-  (cmr.umm.core/parse-concept {:metadata (cmr.umm-spec.core/generate-metadata
+  (cmr.umm.umm-core/parse-concept {:metadata (cmr.umm-spec.umm-spec-core/generate-metadata
                                           example-collection-record :echo10)
                                :concept-type :collection
                                :format "application/echo10+xml"}))

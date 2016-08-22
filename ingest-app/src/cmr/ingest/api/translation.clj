@@ -2,7 +2,7 @@
   "Defines an API for translating metadata between formats."
   (:require [compojure.core :refer :all]
             [cmr.common.mime-types :as mt]
-            [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm-spec.umm-spec-core :as umm-spec]
             [cmr.common.services.errors :as errors]
             [cmr.umm-spec.versioning :as umm-versions]
 

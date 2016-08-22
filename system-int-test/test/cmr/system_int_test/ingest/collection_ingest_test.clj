@@ -19,7 +19,7 @@
             [cmr.system-int-test.system :as s]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-            [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm-spec.umm-spec-core :as umm-spec]
             [cmr.umm-spec.test.expected-conversion :as exc]
             [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
