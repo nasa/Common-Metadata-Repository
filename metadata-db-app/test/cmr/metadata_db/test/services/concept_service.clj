@@ -144,7 +144,7 @@
                         (reset! saved true))
                       (apply orig-save args))]
       ;; replace cs/try-to-save with our overridden function for this test
-      (with-redefs [cs/try-to-save fake-save]
+      (with-bindings {#'cs/try-to-save fake-save}
         (cs/delete-expired-concepts {:system {:db db}} {:provider-id "PROV1"} :collection)
         (is @saved)
 
