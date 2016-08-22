@@ -148,14 +148,92 @@
                             {:PaleoTemporalCoverages [paleo-coverage-1 paleo-coverage-2]}))))))
 
 (deftest migrate-1_3-up-to-1_4
-  (let [result (vm/migrate-umm {} :collection "1.3" "1.4"
-                               {:Organizations [vm/not-provided-organization]
-                                :Personnel "placeholder"})]
-    (is (= [u/not-provided-data-center] (:DataCenters result)))
-    (is (nil? (:ContactGroups result)))
-    (is (nil? (:ContactPersons result)))
-    (is (nil? (:Organizations result)))
-    (is (nil? (:Personnel result)))))
+  (testing "Organizations to Data Centers"
+    (let [organizations [{:Role "ARCHIVER"
+                          :Party {:OrganizationName {:ShortName "NASA/GSFC/SSED/CDDIS",
+                                                     :LongName "Crustal Dynamics Data Information System, Solar System Exploration Division, Goddard Space Flight Center, NASA"}
+                                  :Contacts [{:Type "Email"
+                                              :Value "support-cddis@earthdata.nasa.gov"}]
+                                  :Addresses [{:Country "United States"
+                                               :StreetAddresses ["NASA GSFC" "Code 690.1"]
+                                               :City "Greenbelt"
+                                               :StateProvince "Maryland"
+                                               :PostalCode "20771"}]
+                                  :RelatedUrls [{:Title "CDDIS Home Page"
+                                                 :Description "Home page for the CDDIS website",
+                                                 :URLs ["http://cddis.gsfc.nasa.gov/"]}]
+                                  :ServiceHours "M-F 9-5"
+                                  :ContactInstructions "Email"}}
+                         {:Role "DISTRIBUTOR"
+                          :Party {:OrganizationName {:ShortName "NSIDC"}
+                                  :Person {:FirstName "John"
+                                           :MiddleName "D"
+                                           :LastName "Smith"
+                                           :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"}}}]
+          result (vm/migrate-umm {} :collection "1.3" "1.4"
+                                 {:Organizations organizations
+                                  :Personnel "placeholder"})]
+      (is (= [{:Roles ["ARCHIVER"]
+               :ShortName "NASA/GSFC/SSED/CDDIS"
+               :LongName "Crustal Dynamics Data Information System, Solar System Exploration Division, Goddard Space Flight Center, NASA"
+               :ContactInformation [{:ServiceHours "M-F 9-5"
+                                     :ContactInstruction "Email"
+                                     :RelatedUrls [{:Title "CDDIS Home Page"
+                                                    :Description "Home page for the CDDIS website"
+                                                    :URLs ["http://cddis.gsfc.nasa.gov/"]}]
+                                     :Addresses [{:Country "United States"
+                                                  :StreetAddresses ["NASA GSFC" "Code 690.1"]
+                                                  :City "Greenbelt"
+                                                  :StateProvince "Maryland"
+                                                  :PostalCode "20771"}]
+                                     :ContactMechanisms [{:Type "Email"
+                                                          :Value "support-cddis@earthdata.nasa.gov"}]}]
+               :ContactPersons nil}
+              {:Roles ["DISTRIBUTOR"]
+               :ShortName "NSIDC"
+               :LongName nil
+               :ContactInformation nil
+               :ContactPersons [{:FirstName "John",
+                                 :MiddleName "D",
+                                 :LastName "Smith",
+                                 :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f",
+                                 :Roles ["Technical Contact"]}]}]
+             (:DataCenters result)))
+      (is (nil? (:ContactGroups result)))
+      (is (nil? (:Organizations result)))
+      (is (nil? (:Personnel result)))))
+  (testing "Personnel to Contact Persons"
+    (let [personnel [{:Role "Technical Contact"
+                      :Party {:Person {:FirstName "Carey"
+                                       :MiddleName "E"
+                                       :LastName "Noll"}
+                              :Contacts [{:Type "Email"
+                                          :Value "Carey.Noll@nasa.gov"}]
+                              :Addresses [{:Country "United States"
+                                           :StreetAddresses ["NASA GSFC" "Code 690.1"]
+                                           :City "Greenbelt"
+                                           :StateProvince "Maryland"
+                                           :PostalCode "20771"}]}}]
+          result (vm/migrate-umm {} :collection "1.3" "1.4"
+                                 {:Personnel personnel})]
+        (is (nil? (:ContactGroups result)))
+        (is (nil? (:Organizations result)))
+        (is (nil? (:Personnel result)))
+        (is (= [{:Roles ["Technical Contact"]
+                 :FirstName "Carey"
+                 :MiddleName "E"
+                 :LastName "Noll"
+                 :Uuid nil
+                 :ContactInformation [{:ServiceHours nil
+                                       :ContactInstruction nil
+                                       :RelatedUrls nil
+                                       :Addresses [{:Country "United States"
+                                                    :StreetAddresses ["NASA GSFC" "Code 690.1"]
+                                                    :City "Greenbelt"
+                                                    :StateProvince "Maryland"
+                                                    :PostalCode "20771"}]
+                                       :ContactMechanisms [{:Type "Email" :Value "Carey.Noll@nasa.gov"}]}]}]
+               (:ContactPersons result))))))
 
 (deftest migrate-1_4-down-to-1_3
   (let [result (vm/migrate-umm {} :collection "1.4" "1.3"

@@ -2,6 +2,7 @@
   "Contains functions for migrating between versions of UMM schema."
   (:require [clojure.set :as set]
             [cmr.common.mime-types :as mt]
+            [cmr.common.util :as util]
             [cmr.umm-spec.versioning :refer [versions current-version]]
             [cmr.umm-spec.location-keywords :as lk]
             [cmr.umm-spec.util :as u]))
@@ -88,12 +89,66 @@
       (update-in [:PaleoTemporalCoverages] first)
       (set/rename-keys {:PaleoTemporalCoverages :PaleoTemporalCoverage})))
 
+(defn map-data-center-role
+  [role]
+  (if (contains? #{"ARCHIVER" "DISTRIBUTOR" "PROCESSOR" "ORIGINATOR"} role)
+    role
+    "ARCHIVER"))
+
+(defn party->contact-information
+  [party]
+  (let [contact-information
+        {:ServiceHours (:ServiceHours party)
+         :ContactInstruction (:ContactInstructions party)
+         :RelatedUrls (:RelatedUrls party)
+         :Addresses (:Addresses party)
+         :ContactMechanisms (:Contacts party)}]
+    (when (seq (util/remove-nil-keys contact-information))
+      [contact-information])))
+
+(defn person->contact-persons
+  [person]
+  (when (seq person)
+   (if (empty? (:Roles person))
+     [(assoc person :Roles [u/not-provided-contact-person-role])]
+     [person])))
+
+(defn organization->data-center
+  [organization]
+  (let [party (:Party organization)]
+    {:Roles [(map-data-center-role (:Role organization))]
+     :ShortName (:ShortName (:OrganizationName party))
+     :LongName (:LongName (:OrganizationName party))
+     :ContactInformation (party->contact-information party)
+     :ContactPersons (person->contact-persons (:Person party))}))
+
+(defn organizations->data-centers
+  [organizations]
+  (if (seq organizations)
+    (mapv organization->data-center organizations)
+    [u/not-provided-data-center]))
+
+(defn personnel->contact-person
+  [personnel]
+  (let [party (:Party personnel)
+        person (:Person party)]
+    {:Roles [(:Role personnel)]
+     :FirstName (:FirstName person)
+     :MiddleName (:MiddleName person)
+     :LastName (:LastName person)
+     :Uuid (:Uuid person)
+     :ContactInformation (party->contact-information party)}))
+
+(defn personnel->contact-persons
+  [personnel]
+  (mapv personnel->contact-person personnel))
+
 (defmethod migrate-umm-version [:collection "1.3" "1.4"]
   [context c & _]
   (-> c
-      ;; This is a lossy migration. Organizations and Personnel fields in the original UMM JSON are dropped.
-      (dissoc :Organizations :Personnel)
-      (assoc :DataCenters [u/not-provided-data-center])))
+      (assoc :DataCenters (organizations->data-centers (:Organizations c)))
+      (assoc :ContactPersons (personnel->contact-persons (:Personnel c)))
+      (dissoc :Organizations :Personnel)))
 
 (defmethod migrate-umm-version [:collection "1.4" "1.3"]
   [context c & _]
