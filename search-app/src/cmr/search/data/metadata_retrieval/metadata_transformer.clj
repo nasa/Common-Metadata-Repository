@@ -55,7 +55,7 @@
                      context :collection (:format concept) (:metadata concept))]
     (collection-renderer/render-collection context collection)))
 
-(defn transform-strategy
+(defn ^:dynamic transform-strategy
   "Determines which transformation strategy should be used to convert the given concept to the target
    format"
   [concept target-format]

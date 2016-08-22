@@ -13,7 +13,7 @@
                                    (if (= (swap! num-calls inc) 2)
                                      :weird-transform-strategy
                                      (apply original-transform-strategy args)))]
-      (with-redefs [mt/transform-strategy bad-transform-strategy]
+      (with-bindings {#'mt/transform-strategy bad-transform-strategy}
         (is (= {:echo10 (:metadata tm/echo10-concept)
                 :iso19115 (:metadata tm/iso19115-concept)}
                (mt/transform-to-multiple-formats
