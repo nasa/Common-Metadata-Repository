@@ -1,4 +1,4 @@
-(ns cmr.search.services.humanizer-report-service
+(ns cmr.search.services.humanizers.humanizer-report-service
   "Provides functions for reporting on humanizers"
   (require [cmr.common.concepts :as concepts]
            [cmr.common.util :as u]
@@ -6,8 +6,7 @@
            [cmr.common.config :refer [defconfig]]
            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
            [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
-           [cmr.search.services.humanizer-service]
-           [cmr.common-app.services.humanizer-fetcher :as hf]
+           [cmr.search.services.humanizers.humanizer-service :as hs]
            [cmr.umm-spec.legacy :as umm-legacy]
            [cmr.common.log :as log :refer (debug info warn error)]
            [clojure.data.csv :as csv])
@@ -72,7 +71,7 @@
            "processing " (count collection-batches)
            " batches of size" (humanizer-report-collection-batch-size))
     (csv/write-csv string-writer [CSV_HEADER])
-    (let [humanizer (hf/get-humanizer (assoc context :app :search-app))
+    (let [humanizers (hs/get-humanizers context)
           [t4 csv-string]
           (u/time-execution
             (doseq [batch collection-batches]
@@ -80,7 +79,7 @@
                     (u/time-execution
                       (doall
                         (pmap (fn [coll]
-                                (-> (h/umm-collection->umm-collection+humanizers coll humanizer)
+                                (-> (h/umm-collection->umm-collection+humanizers coll humanizers)
                                     humanized-collection->reported-rows))
                               batch)))
                     [t3 rows] (u/time-execution

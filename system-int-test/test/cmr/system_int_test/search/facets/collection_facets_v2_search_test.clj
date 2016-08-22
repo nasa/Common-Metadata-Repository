@@ -14,7 +14,8 @@
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
-                       hu/grant-all-humanizer-fixture]))
+                       hu/grant-all-humanizers-fixture
+                       hu/save-sample-humanizers-fixture]))
 
 (def sk1 (dc/science-keyword {:category "Earth science"
                               :topic "Topic1"
@@ -58,7 +59,6 @@
      (get-in (search/find-concepts-json :collection query-params) [:results :facets]))))
 
 (deftest all-facets-v2-test
-  (hu/register-humanizer)
   (fu/make-coll 1 "PROV1"
                 (fu/science-keywords sk1 sk2)
                 (fu/projects "proj1" "PROJ2")
@@ -121,7 +121,6 @@
   (mapv #(when (:children %) (verify-nested-facets-ordered-alphabetically (:children %))) facets))
 
 (deftest facet-v2-sorting
-  (hu/register-humanizer)
   ;; 55 platforms all with the same count (2) and default priority
   (fu/make-coll 1 "PROV1" (fu/platforms "default" 55)
                           (fu/science-keywords sk1 sk2 sk3 sk4 sk5 sk6))
@@ -153,7 +152,6 @@
         (verify-nested-facets-ordered-alphabetically science-keywords)))))
 
 (deftest remove-facets-without-collections
-  (hu/register-humanizer)
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1) (fu/platforms "ASTER" 1))
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1) (fu/platforms "MODIS" 1))
   (testing (str "When searching against faceted fields which do not match any matching collections,"
@@ -179,7 +177,6 @@
                                          :keyword "MODIS"})))))
 
 (deftest appropriate-hierarchical-depth
-  (hu/register-humanizer)
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2))
   (testing "Default to one level without any search parameters"
     (is (= 1 (fu/get-lowest-hierarchical-depth (search-and-return-v2-facets {})))))
@@ -204,18 +201,15 @@
    :has_children false})
 
 (deftest empty-v2-facets-test
-  (hu/register-humanizer)
   (is (= empty-v2-facets (search-and-return-v2-facets))))
 
 (deftest some-facets-missing-test
-  (hu/register-humanizer)
   (fu/make-coll 1 "PROV1"
                 (fu/science-keywords sk3 sk2)
                 (fu/processing-level-id "PL1"))
   (is (= fr/partial-v2-facets (search-and-return-v2-facets))))
 
 (deftest only-earth-science-category-test
-  (hu/register-humanizer)
   (let [non-earth-science-keyword (dc/science-keyword {:category "Cat1"
                                                        :topic "OtherTopic"
                                                        :term "OtherTerm"})]
@@ -251,7 +245,6 @@
                                       :variable-level-1 "Another Level"}))
 
 (deftest link-traversal-test
-  (hu/register-humanizer)
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all))
   (testing (str "Traversing a single hierarchical keyword returns the same index for all subfields "
                 "in the remove links")
@@ -316,7 +309,6 @@
       (is (= expected actual)))))
 
 (deftest invalid-facets-v2-response-formats
-  (hu/register-humanizer)
   (testing "invalid xml response formats"
     (are [resp-format]
          (= {:status 400 :errors ["V2 facets are only supported in the JSON format."]}

@@ -13,7 +13,7 @@
             [cmr.common.cache.in-memory-cache :as mem-cache]
             [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
             [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
-            [cmr.common-app.services.humanizer-fetcher :as hf]
+            [cmr.indexer.data.humanizer-fetcher :as hf]
             [cmr.acl.acl-fetcher :as af]
             [cmr.common.jobs :as jobs]
             [cmr.indexer.api.routes :as routes]

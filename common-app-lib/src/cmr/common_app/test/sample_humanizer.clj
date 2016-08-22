@@ -3,6 +3,6 @@
   (:require [cheshire.core :as json]
             [clojure.java.io :as io]))
 
-(def sample-humanizer
+(def sample-humanizers
   "A sample humanizer for testing. It is referenced in system-int-test and search-app."
   (remove string? (json/decode (slurp (io/resource "humanizers.json")) true)))

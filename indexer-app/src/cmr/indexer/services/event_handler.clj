@@ -20,14 +20,13 @@
 
 
 (defmethod handle-ingest-event :provider-collection-reindexing
-  [context _ {:keys [provider-id force-version?]}]
-  ;; We want to reindex all revisions and latest so we pass in nil for the all-revisions-index?
-  ;; flag. This is a provider event which always applies to all the indexes.
+  [context _ {:keys [provider-id force-version? all-revisions-index?]}]
   ;; We set the refresh acls flag to false because the ACLs should have been refreshed as part
   ;; of the ingest job that kicks this off.
   (indexer/reindex-provider-collections
-    context [provider-id]
-    {:all-revisions-index? nil :refresh-acls? false :force-version? force-version?}))
+    context [provider-id] {:all-revisions-index? all-revisions-index?
+                           :refresh-acls? false
+                           :force-version? force-version?}))
 
 (defmethod handle-ingest-event :refresh-collection-granule-aggregation-cache
   [context _ {:keys [granules-updated-in-last-n]}]
@@ -36,23 +35,21 @@
 (defmethod handle-ingest-event :concept-update
   [context all-revisions-index? {:keys [concept-id revision-id]}]
   (if (= :humanizer (cc/concept-id->type concept-id))
-    (indexer/update-humanizer context)
+    (indexer/update-humanizers context)
     (indexer/index-concept-by-concept-id-revision-id
       context concept-id revision-id {:ignore-conflict? true
                                       :all-revisions-index? all-revisions-index?})))
 
 (defmethod handle-ingest-event :concept-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]
-  (if (= :humanizer (cc/concept-id->type concept-id))
-    (indexer/update-humanizer context)
+  (when-not (= :humanizer (cc/concept-id->type concept-id))
     (indexer/delete-concept
       context concept-id revision-id {:ignore-conflict? true
                                       :all-revisions-index? all-revisions-index?})))
 
 (defmethod handle-ingest-event :concept-revision-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]
-  (if (= :humanizer (cc/concept-id->type concept-id))
-    (indexer/update-humanizer context)
+  (when-not (= :humanizer (cc/concept-id->type concept-id))
     (do
       ;; We should never receive a message that's not for the all revisions index
       (when-not all-revisions-index?

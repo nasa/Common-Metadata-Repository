@@ -1,4 +1,4 @@
-(ns cmr.common-app.services.humanizer-fetcher
+(ns cmr.indexer.data.humanizer-fetcher
   "Stores the latest humanizer json in a consistent cache."
   (require [cmr.common.jobs :refer [def-stateful-job]]
            ;; cache dependencies
@@ -6,7 +6,7 @@
            [cmr.common-app.cache.consistent-cache :as consistent-cache]
            [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
 
-           [cmr.transmit.search :as search]))
+           [cmr.transmit.humanizer :as humanizer]))
 
 (def humanizer-cache-key
   "The cache key to use when storing with caches in the system."
@@ -18,30 +18,23 @@
   (stl-cache/create-single-thread-lookup-cache
     (consistent-cache/create-consistent-cache)))
 
-(defmulti retrieve-humanizer
-  "Returns the humanizer json by retrieving it from metadata-db.
-  indexer-app and search-app make different calls to retrieve the humanizer json.
-  indexer-app uses the default implementation."
-  (fn [context]
-    (:app context)))
-
-(defmethod retrieve-humanizer :default
+(defn- retrieve-humanizers
   [context]
-  (search/get-humanizer context))
+  (humanizer/get-humanizers context))
 
 (defn refresh-cache
-  "Refreshes the humanizer in the cache."
+  "Refreshes the humanizers in the cache."
   [context]
   (let [cache (c/context->cache context humanizer-cache-key)]
     (c/set-value cache humanizer-cache-key
-                 (retrieve-humanizer context))))
+                 (retrieve-humanizers context))))
 
-(defn get-humanizer
-  "Returns the humanizer."
+(defn get-humanizer-instructions
+  "Returns the humanizer instructions."
   [context]
   (let [cache (c/context->cache context humanizer-cache-key)]
     (c/get-value cache
                  humanizer-cache-key
-                 #(retrieve-humanizer context))))
+                 #(retrieve-humanizers context))))
 
 

@@ -4,7 +4,9 @@
             [compojure.core :refer :all]
             [cheshire.core :as json]
             [cmr.common.mime-types :as mt]
-            [cmr.search.services.humanizer-service :as humanizer-service]
+            [cmr.common-app.api.routes :as cr]
+            [cmr.search.services.humanizers.humanizer-service :as humanizer-service]
+            [cmr.search.services.humanizers.humanizer-report-service :as hrs]
             [cmr.common.services.errors :as errors]
             [cmr.acl.core :as acl]))
 
@@ -18,27 +20,33 @@
   [data]
   {:status 200
    :body (json/generate-string data)
-   :headers {"Content-Type" mt/json}})
+   :headers {cr/CONTENT_TYPE_HEADER mt/json}})
 
-(defn update-humanizer
+(defn- update-humanizers
   "Processes a humanizer update request."
   [context headers body]
   (acl/verify-ingest-management-permission context :update)
   (validate-humanizer-content-type headers)
-  (humanizer-response (humanizer-service/update-humanizer context body)))
+  (humanizer-response (humanizer-service/update-humanizers context body)))
 
-(defn get-humanizer
-  "Retrieves the humanizer from metadata-db, not the cache."
+(defn- humanizers-report
+  "Handles a request to get a humanizers report"
   [context]
-  (humanizer-response (humanizer-service/get-humanizer-json context)))
+  {:status 200
+   :headers {cr/CONTENT_TYPE_HEADER mt/csv}
+   :body (hrs/humanizers-report-csv context)})
 
-(def humanizer-routes
-  (context "/humanizer" []
+(def humanizers-routes
+  (context "/humanizers" []
 
-    ;; create/update humanizer
+    ;; create/update humanizers
     (PUT "/" {:keys [request-context headers body]}
-      (update-humanizer request-context headers (slurp body)))
+      (update-humanizers request-context headers (slurp body)))
 
-    ;; retrieve humanizer
+    ;; retrieve humanizers
     (GET "/" {:keys [request-context]}
-      (get-humanizer request-context))))
+      (humanizer-response (humanizer-service/get-humanizers request-context)))
+
+    ;; retrive the humanizers report
+    (GET "/report" {context :request-context}
+            (humanizers-report context))))

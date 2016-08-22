@@ -15,10 +15,6 @@
             [cmr.common.xml :as cx]
             [cmr.common.util :as util :refer [defn-timed]]))
 
-(defn- humanizer-url
-  [conn]
-  (format "%s/humanizer" (conn/root-url conn)))
-
 (defn-timed find-granule-hits
   "Returns granule hits that match the given search parameters."
   [context params]
@@ -66,25 +62,5 @@
       (parse-granule-response body)
       (errors/internal-error!
         (format "Granule search failed. status: %s body: %s" status body)))))
-
-(defn get-humanizer
-  "Returns the humanizer configured in the metadata db. Valid options are
-  * :raw? - set to true to indicate the raw response should be returned. See
-  cmr.transmit.http-helper for more info. Default false.
-  * token - the user token to use. If not set the token in the context will
-  be used.
-  * http-options - Other http-options to be sent to clj-http."
-  ([context]
-   (get-humanizer context nil))
-  ([context {:keys [raw? http-options token]}]
-   (let [token (or token (:token context))
-         headers (when token {config/token-header token})]
-     (h/request context :search
-                {:url-fn humanizer-url
-                 :method :get
-                 :raw? raw?
-                 :http-options (merge {:accept :json
-                                       :headers headers}
-                                      http-options)}))))
 
 

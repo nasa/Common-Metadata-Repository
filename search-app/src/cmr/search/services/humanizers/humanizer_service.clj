@@ -1,24 +1,13 @@
-(ns cmr.search.services.humanizer-service
+(ns cmr.search.services.humanizers.humanizer-service
   "Provides functions for storing and retrieving humanizers"
   (:require [cmr.transmit.metadata-db :as mdb]
             [cmr.common.mime-types :as mt]
-            [cmr.common.util :as util]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.concepts :as cc]
             [cmr.transmit.echo.tokens :as tokens]
             [cmr.common.services.errors :as errors]
-            [cmr.common.services.messages :as cmsg]
-            [cmr.search.services.humanizer.humanizer-json-schema-validation :as hv]
-            [cmr.common.concepts :as concepts]
-            [cmr.search.services.json-parameters.conversion :as jp]
-            [cmr.common-app.services.search.query-execution :as qe]
-            [cmr.common-app.services.humanizer-fetcher :as hf]
-            [cmr.search.services.query-service :as query-service]
-            [cmr.metadata-db.services.concept-service :as mdb-cs]
-            [cmr.metadata-db.services.search-service :as mdb-ss]
-            [clojure.string :as str]
-            [cheshire.core :as json]
-            [clojure.edn :as edn]))
+            [cmr.search.services.humanizers.humanizer-json-schema-validation :as hv]
+            [cheshire.core :as json]))
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
@@ -31,7 +20,7 @@
 ;; Metadata DB Concept Map Manipulation
 
 (defn- humanizer-concept
-  "Returns the humanizer that can be persisted in metadata db."
+  "Returns the set of humanizer instructions that can be persisted in metadata db."
   [context humanizer-json-str]
   {:concept-type :humanizer
    :native-id cc/humanizer-native-id
@@ -54,23 +43,17 @@
       concept)
     (errors/throw-service-error :not-found "Humanizer does not exist.")))
 
-(defn get-humanizer-json
-  "Retrieves the humanizer json from metadata-db."
+(defn get-humanizers
+  "Retrieves the set of humanizer instructions from metadata-db."
   [context]
   (json/decode (:metadata (fetch-humanizer-concept context)) true))
 
-(defmethod hf/retrieve-humanizer :search-app
-  [context]
-  (get-humanizer-json context))
-
-(defn update-humanizer
-  "Create/Update the humanizer saving it as a revision in metadata db.
+(defn update-humanizers
+  "Create/Update the humanizer instructions saving them as a humanizer revision in metadata db.
   Returns the concept id and revision id of the saved humanizer."
   [context humanizer-json-str]
   (hv/validate-humanizer-json humanizer-json-str)
-  (let [humanizer-concept (humanizer-concept context humanizer-json-str)
-        response (mdb/save-concept context humanizer-concept)]
-    ;; refresh humanizer cache
-    (hf/refresh-cache (assoc context :app :search-app))
-    response))
+  (let [humanizer-concept (humanizer-concept context humanizer-json-str)]
+      (mdb/save-concept context humanizer-concept)))
+
 

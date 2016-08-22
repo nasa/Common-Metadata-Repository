@@ -32,7 +32,7 @@
             [clj-time.core :as t]
             [clj-time.format :as f]
             [cmr.indexer.data.concept-parser :as cp]
-            [cmr.common-app.services.humanizer-fetcher :as hf]))
+            [cmr.indexer.data.humanizer-fetcher :as hf]))
 
 (defconfig use-doc-values-fields
   "Indicates whether search fields should use the doc-values fields or not. If false the field data
@@ -386,13 +386,28 @@
         (concept-mapping-types :granule)
         {:term {(query-field->elastic-field :provider-id :granule) provider-id}}))))
 
-(defn- reindex-all-collections
-  "Reindex all collections"
-  [context]
-  (let [providers (meta-db2/get-providers context)]
-    (reindex-provider-collections context (map :provider-id providers))))
+(defn publish-provider-event
+  "Put a provider event on the message queue."
+  [context msg]
+  (let [queue-broker (get-in context [:system :queue-broker])
+        exchange-name (config/provider-exchange-name)]
+    (queue/publish-message queue-broker exchange-name msg)))
 
-(defn update-humanizer
+(defn reindex-all-collections
+  "Reindexes all collections in all providers. This is only called in the indexer when humanizers
+  are updated and we only index the latest collection revision."
+  [context]
+  (let [providers (map :provider-id (meta-db2/get-providers context))]
+    (info "Sending events to reindex collections in all providers:" (pr-str providers))
+    (doseq [provider-id providers]
+      (publish-provider-event
+        context
+        {:action :provider-collection-reindexing
+         :provider-id provider-id
+         :all-revisions-index? false}))
+    (debug "Reindexing all collection events submitted.")))
+
+(defn update-humanizers
   "Update the humanizer cache and reindex all collections"
   [context]
   (hf/refresh-cache context)

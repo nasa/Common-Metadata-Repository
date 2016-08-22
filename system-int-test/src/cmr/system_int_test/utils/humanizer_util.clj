@@ -8,20 +8,21 @@
             [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.common.mime-types :as mt]
             [cmr.common.concepts :as cc]
-            [cmr.common-app.test.sample-humanizer :as sh]))
+            [cmr.common-app.test.sample-humanizer :as sh]
+            [cmr.system-int-test.utils.index-util :as index]))
 
-(defn grant-all-humanizer-fixture
-  "A test fixture that grants all users the ability to create and modify humanizer"
+(defn grant-all-humanizers-fixture
+  "A test fixture that grants all users the ability to create and modify humanizers"
   [f]
   (e/grant-all-admin (s/context))
   (f))
 
-(defn make-humanizer
+(defn make-humanizers
   "Makes a valid humanizer"
   ([]
-   (make-humanizer nil))
-  ([humanizer]
-   (or humanizer sh/sample-humanizer)))
+   (make-humanizers nil))
+  ([humanizers]
+   (or humanizers sh/sample-humanizers)))
 
 (defn- process-response
   "Returns the response in a map for easy testing"
@@ -31,39 +32,42 @@
     {:status status
      :body body}))
 
-(defn update-humanizer
-  "Updates a humanizer."
-  ([token humanizer]
-   (update-humanizer token humanizer nil))
-  ([token humanizer options]
+(defn update-humanizers
+  "Updates the humanizers."
+  ([token humanizers]
+   (update-humanizers token humanizers nil))
+  ([token humanizers options]
    (let [options (merge {:raw? true :token token} options)]
-     (process-response (h/update-humanizer (s/context) humanizer options)))))
+     (process-response (h/update-humanizers (s/context) humanizers options)))))
 
-(defn register-humanizer
-  "Register the humanizer in CMR for testing"
-  ([]
-   (register-humanizer sh/sample-humanizer))
-  ([humanizer]
-   (let [token (e/login (s/context) "user2")]
-     (update-humanizer token humanizer))))
+(defn save-humanizers
+  "Save the given humanizers in CMR for testing"
+  [humanizers]
+  (let [token (e/login (s/context) "user2")]
+    (update-humanizers token humanizers)))
 
-(defn get-humanizer
-  "Retrieves a humanizer by humanizer-key"
+(defn save-sample-humanizers-fixture
+  "A test fixture that saves sample humanizers in CMR for testing"
+  [f]
+  (save-humanizers sh/sample-humanizers)
+  (f))
+
+(defn get-humanizers
+  "Retrieves the humanizers"
   []
-  (process-response (h/get-humanizer (s/context) {:raw? true})))
+  (process-response (h/get-humanizers (s/context) {:raw? true})))
 
-(defn assert-humanizer-saved
-  "Checks that a humanizer was persisted correctly in metadata db."
-  [humanizer user-id concept-id revision-id]
+(defn assert-humanizers-saved
+  "Checks that the humanizer instructions are persisted correctly as a humanizer concept in metadata db."
+  [humanizers user-id concept-id revision-id]
   (let [concept (mdb/get-concept concept-id revision-id)]
     (is (= {:concept-type :humanizer
             :native-id cc/humanizer-native-id
             :provider-id "CMR"
             :format mt/json
-            :metadata (json/generate-string humanizer)
+            :metadata (json/generate-string humanizers)
             :user-id user-id
             :deleted false
             :concept-id concept-id
             :revision-id revision-id}
            (dissoc concept :revision-date :transaction-id)))))
-

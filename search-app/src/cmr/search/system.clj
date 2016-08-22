@@ -22,7 +22,6 @@
             [cmr.search.services.acls.collections-cache :as coll-cache]
             [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
             [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.common-app.services.humanizer-fetcher :as hf]
             [cmr.common-app.system :as common-sys]
             [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
             [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]))
@@ -95,8 +94,7 @@
                       ;; already refreshes the cache. Since we use a consistent cache, the search
                       ;; application will also pick up the updated KMS keywords.
                       kf/kms-cache-key (kf/create-kms-cache)
-                      metadata-cache/cache-key (metadata-cache/create-cache)
-                      hf/humanizer-cache-key (hf/create-cache)}
+                      metadata-cache/cache-key (metadata-cache/create-cache)}
              :public-conf search-public-conf
              collection-renderer/system-key (collection-renderer/create-collection-renderer)
              :scheduler (jobs/create-scheduler
