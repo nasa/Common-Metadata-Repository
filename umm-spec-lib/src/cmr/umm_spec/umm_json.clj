@@ -5,7 +5,7 @@
             [cmr.umm-spec.record-generator :as record-gen]
             [cmr.common.date-time-parser :as dtp]
             [cmr.umm-spec.versioning :as ver]
-            [cmr.umm-spec.version-migration :as vm]
+            [cmr.umm-spec.migration.version-migration :as vm]
 
     ;; To get ability to convert joda time to json
             [cmr.common.joda-time]

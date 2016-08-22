@@ -1,9 +1,9 @@
-(ns cmr.umm-spec.test.version-migration
+(ns cmr.umm-spec.test.migration.version-migration
   (:require [clojure.test :refer :all]
             [cmr.common.mime-types :as mt]
             [cmr.common.test.test-check-ext :as ext :refer [defspec]]
             [cmr.umm-spec.versioning :as v]
-            [cmr.umm-spec.version-migration :as vm]
+            [cmr.umm-spec.migration.version-migration :as vm]
             [cmr.umm-spec.test.umm-generators :as umm-gen]
             [clojure.test.check.generators :as gen]
             [com.gfredericks.test.chuck.clojure-test :refer [for-all]]
