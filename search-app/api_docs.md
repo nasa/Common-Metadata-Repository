@@ -2147,7 +2147,7 @@ Content-Type: application/json; charset=UTF-8
 } ]
 ```
 
-#### <a name="facets-humanizers-report"</a> Humanizers Report
+#### <a name="facets-humanizers-report"></a> Humanizers Report
 
 The humanizers report provides a list of fields that have been humanized in CSV format. The
 report format is: provider, concept id, product short name, product version, original field value, humanized field value.
