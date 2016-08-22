@@ -3,7 +3,7 @@
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.generator-util :as gu]
-            [cmr.umm.collection :as c]))
+            [cmr.umm.umm-collection :as c]))
 
 (def personnel-roles
   "DIF 10 schema allows the following strings for personnel roles"

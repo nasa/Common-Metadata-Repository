@@ -7,7 +7,7 @@
   "Replaces the override config values that are used when testing to avoid the test conflicting with
   other things in the system that may be modifying the config values."
   [f]
-  (with-redefs [c/runtime-config-values (atom {})]
+  (with-bindings {#'c/runtime-config-values (atom {})}
     (f)))
 
 (use-fixtures :each redefined-override-config-values-fixture)
@@ -56,7 +56,7 @@
   "Overrides the environment variables the config values will see within the block. Accepts a map
   of environment variables to values."
   [env-var-values & body]
-  `(with-redefs [c/env-var-value ~env-var-values]
+  `(with-bindings {#'c/env-var-value ~env-var-values}
      ~@body))
 
 
@@ -143,7 +143,7 @@
   (is (= 99 (c/maybe-long "99")))
   (is (nil? (c/maybe-long nil))))
 
-;;define two sample configs to be used by test-check-env-vars 
+;;define two sample configs to be used by test-check-env-vars
 (defconfig test-health-check-timeout-seconds
   "Timeout in seconds for health check operation."
   {:default 10 :type Long})

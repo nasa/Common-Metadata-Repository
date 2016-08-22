@@ -9,7 +9,7 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.relations :as r]
             [cmr.spatial.ring-relations :as rr]
-            [cmr.umm.spatial :as umm-s]
+            [cmr.umm.umm-spatial :as umm-s]
             [cmr.common.util :as util]))
 
 (defn spatial-point

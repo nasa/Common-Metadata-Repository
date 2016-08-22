@@ -1,7 +1,7 @@
 (ns cmr.umm.start-end-date
   "Contains functions to convert UMM temporal structure to start and end dates."
   (:require [clj-time.core :as t]
-            [cmr.umm.collection :as c]))
+            [cmr.umm.umm-collection :as c]))
 
 (defn- single-date-times->range-date-times
   "Convert a list of single date times to a list of range date times"

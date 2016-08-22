@@ -1,9 +1,9 @@
 (ns cmr.umm.dif10.collection.product-specific-attribute
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [cmr.umm.generator-util :as gu]
-            [cmr.umm.dif.core :as dif]
+            [cmr.umm.dif.dif-core :as dif]
             [cmr.umm.collection.product-specific-attribute :as psa]
             [cmr.umm.dif.collection.product-specific-attribute :as d9-psa]))
 

@@ -3,7 +3,7 @@
   (:require [clojure.test.check.generators :as gen]
             [clj-time.core :as t]
             [cmr.common.test.test-check-ext :as ext-gen]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [cmr.umm.collection.temporal :as tc]))
 
 ;; temporal attributes

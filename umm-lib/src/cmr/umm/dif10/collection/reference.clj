@@ -3,7 +3,7 @@
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [camel-snake-kebab.core :as csk]
-            [cmr.umm.collection :as c]))
+            [cmr.umm.umm-collection :as c]))
 
 (def umm-dif-publication-reference-mappings
   "A seq of [umm-key dif-tag-name] which maps between the UMM

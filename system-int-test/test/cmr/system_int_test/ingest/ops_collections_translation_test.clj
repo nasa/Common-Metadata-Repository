@@ -11,7 +11,7 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.system :as s]
-            [cmr.umm-spec.core :as umm]))
+            [cmr.umm-spec.umm-spec-core :as umm]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 

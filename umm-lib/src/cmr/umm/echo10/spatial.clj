@@ -8,8 +8,8 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.cartesian-ring :as cr]
-            [cmr.umm.spatial :as umm-s]
-            [cmr.umm.granule :as g]
+            [cmr.umm.umm-spatial :as umm-s]
+            [cmr.umm.umm-granule :as g]
             [cmr.common.util :as util]))
 
 (defmulti parse-geometry
@@ -144,7 +144,7 @@
     [ring]
     (ring-to-xml ring))
 
-  cmr.umm.spatial.GenericRing
+  cmr.umm.umm_spatial.GenericRing
   (shape-to-xml
     [ring]
     (ring-to-xml ring))

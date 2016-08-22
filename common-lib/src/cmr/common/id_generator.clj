@@ -24,9 +24,9 @@
 
   (clojure.pprint/pprint (take 7
                                (map id-from-state
-                                    (iterate next-id-state (new-id-state 1)))))
+                                    (iterate next-id-state (new-id-state 1))))))
 
-)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Constants
@@ -94,7 +94,7 @@
        (valid-sequence? (:sequence id-state))
        (valid-time? (:time id-state))))
 
-(defn current-time-millis
+(defn ^:dynamic current-time-millis
   "Gets the current time in milliseconds. Written to make code easier to test."
   []
   (System/currentTimeMillis))

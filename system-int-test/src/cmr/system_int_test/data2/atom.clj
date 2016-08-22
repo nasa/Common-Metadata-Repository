@@ -14,7 +14,7 @@
             [cheshire.core :as json]
             [clj-time.format :as f]
             [camel-snake-kebab.core :as csk]
-            [cmr.umm.spatial :as umm-s]
+            [cmr.umm.umm-spatial :as umm-s]
             [cmr.umm.echo10.spatial :as echo-s]
             [cmr.umm.start-end-date :as sed]
             [cmr.umm.collection.entry-id :as eid]

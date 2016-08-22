@@ -27,7 +27,7 @@
             [cmr.common-app.humanizer :as humanizer]
             [cmr.acl.core :as acl]
             [cmr.common.concepts :as concepts]
-            [cmr.umm.collection :as umm-c]
+            [cmr.umm.umm-collection :as umm-c]
             [cmr.umm.collection.entry-id :as eid]
             [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
             [cmr.common-app.services.kms-fetcher :as kf]

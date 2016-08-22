@@ -2,7 +2,7 @@
   "Contains functions for parsing and generating the ISO MENDS personnel"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]))
+            [cmr.umm.umm-collection :as c]))
 
 (defn- xml-elem->PersonnelRecord
   "Returns a Personnel record from a parsed xml structure"

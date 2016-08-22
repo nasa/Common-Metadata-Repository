@@ -3,7 +3,7 @@
   (:require [clojure.data.xml :as x]
             [cmr.common.util :as util]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]))
+            [cmr.umm.umm-collection :as c]))
 
 (def DEFAULT_FIRST_NAME
   "ECHO10 requires a FirstName tag, but the UMM does not. This is the default if it is

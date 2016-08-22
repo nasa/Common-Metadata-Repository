@@ -12,10 +12,10 @@
             [cmr.umm.test.generators.granule :as gran-gen]
             [cmr.common.date-time-parser :as p]
             [cmr.umm.echo10.granule :as g]
-            [cmr.umm.echo10.core :as echo10]
-            [cmr.umm.collection :as umm-c]
-            [cmr.umm.granule :as umm-g]
-            [cmr.umm.test.echo10.collection :as tc]))
+            [cmr.umm.echo10.echo10-core :as echo10]
+            [cmr.umm.umm-collection :as umm-c]
+            [cmr.umm.umm-granule :as umm-g]
+            [cmr.umm.test.echo10.echo10-collection-tests :as tc]))
 
 (defn umm->expected-parsed-echo10
   "Modifies the UMM record for testing ECHO10. ECHO10 contains a subset of the total UMM fields so certain

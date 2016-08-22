@@ -12,7 +12,7 @@
             [cmr.elastic-utils.index-util :as esi]
             [cmr.transmit.index-set :as index-set]
             [cmr.indexer.data.index-set :as idx-set]
-            [cmr.umm.core :as umm]
+            [cmr.umm.umm-core :as umm]
             [clj-time.core :as t]
             [clj-time.format :as f]
             [cmr.common.time-keeper :as tk]

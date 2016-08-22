@@ -1,7 +1,7 @@
 (ns cmr.umm.dif.collection.spatial-coverage
   "Provide functions to parse and generate DIF spatial-coverage info, it is mapped to an
   Extended_Metadata element."
-  (:require [cmr.umm.collection :as c]
+  (:require [cmr.umm.umm-collection :as c]
             [cmr.umm.dif.collection.extended-metadata :as em]
             [cmr.spatial.mbr :as m]
             [clojure.data.xml :as x]

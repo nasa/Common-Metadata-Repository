@@ -1,7 +1,7 @@
 (ns cmr.umm.granule.temporal
   "Provides functions for granule temporal coverage construction"
   (:require [cmr.common.services.errors :as errors]
-            [cmr.umm.granule :as g]))
+            [cmr.umm.umm-granule :as g]))
 
 ;; default temporal date times map
 (def temporal-date-times {:range-date-time nil

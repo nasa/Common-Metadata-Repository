@@ -4,7 +4,7 @@
   (:require [clojure.string :as s]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [cmr.umm.related-url-helper :as h]))
 
 (def resource-type->related-url-types

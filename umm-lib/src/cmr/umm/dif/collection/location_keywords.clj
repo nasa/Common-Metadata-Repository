@@ -2,8 +2,8 @@
   "Provide functions to parse and generate DIF location / spatial keyword elements."
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]
-            [cmr.umm.dif.core :as dif]
+            [cmr.umm.umm-collection :as c]
+            [cmr.umm.dif.dif-core :as dif]
             [cmr.umm.generator-util :as gu]
             [cmr.common-app.services.kms-fetcher :as kf]
             [clojure.string :as str]

@@ -2,12 +2,12 @@
   "Contains functions for convert spatial to and parsing from DIF10 XML."
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.line-string :as l]
             [cmr.spatial.polygon :as poly]
-            [cmr.umm.spatial :as umm-s]
+            [cmr.umm.umm-spatial :as umm-s]
             [camel-snake-kebab.core :as csk]
             [cmr.common.util :as util]
             [cmr.umm.dif10.collection.two-d-coordinate-system :as two-d]))
@@ -133,7 +133,7 @@
     [ring]
     (ring-to-xml ring))
 
-  cmr.umm.spatial.GenericRing
+  cmr.umm.umm_spatial.GenericRing
   (shape-to-xml
     [ring]
     (ring-to-xml ring))
