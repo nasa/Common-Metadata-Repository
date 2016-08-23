@@ -47,6 +47,6 @@
     (GET "/" {:keys [request-context]}
       (humanizer-response (humanizer-service/get-humanizers request-context)))
 
-    ;; retrive the humanizers report
+    ;; retrieve the humanizers report
     (GET "/report" {context :request-context}
             (humanizers-report context))))

@@ -91,3 +91,9 @@ Items to include in each issue
 * CMR-3225 - Entry ID field indexed for collection keyword searches
   * Deployment Impacts
     * Requires reindexing of collections
+
+## 1.58
+
+* CMR-3260 - Allow dynamic update of humanizers
+  * Deployment Impacts
+    * Requires ingest of humanizer concept with existing humanizer instructions
