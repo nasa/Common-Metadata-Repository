@@ -7,13 +7,8 @@
             [cmr.umm-spec.test.umm-generators :as umm-gen]
             [clojure.test.check.generators :as gen]
             [com.gfredericks.test.chuck.clojure-test :refer [for-all]]
-<<<<<<< HEAD
-            [cmr.umm-spec.core :as core]
-            [cmr.umm-spec.models.umm-collection-models :as umm-c]
-=======
             [cmr.umm-spec.umm-spec-core :as core]
-            [cmr.umm-spec.models.collection :as umm-c]
->>>>>>> d83bb7804f5d7181084f743a80af098cbc03eff3
+            [cmr.umm-spec.models.umm-collection-models :as umm-c]
             [cmr.umm-spec.test.location-keywords-helper :as lkt]
             [cmr.umm-spec.models.umm-common-models :as umm-cmn]
             [cmr.umm-spec.util :as u]))

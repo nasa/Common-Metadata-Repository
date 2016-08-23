@@ -1,17 +1,10 @@
 (ns cmr.umm-spec.test.validation.additional-attribute
   "This has tests for UMM validations."
   (:require [clojure.test :refer :all]
-<<<<<<< HEAD
-            [cmr.umm-spec.validation.core :as v]
+            [cmr.umm-spec.validation.umm-spec-validation-core :as v]
             [cmr.umm-spec.models.umm-common-models :as c]
             [cmr.umm-spec.models.umm-collection-models :as coll]
-            [cmr.umm-spec.test.validation.helpers :as h]
-=======
-            [cmr.umm-spec.validation.umm-spec-validation-core :as v]
-            [cmr.umm-spec.models.common :as c]
-            [cmr.umm-spec.models.collection :as coll]
             [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as h]
->>>>>>> d83bb7804f5d7181084f743a80af098cbc03eff3
             [cmr.umm-spec.additional-attribute :as aa]
             [cmr.common.services.errors :as e]))
 

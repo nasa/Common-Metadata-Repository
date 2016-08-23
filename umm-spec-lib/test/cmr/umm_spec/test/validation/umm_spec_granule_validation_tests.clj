@@ -1,19 +1,11 @@
 (ns cmr.umm-spec.test.validation.umm-spec-granule-validation-tests
   "This has tests for UMM validations."
   (:require [clojure.test :refer :all]
-<<<<<<< HEAD:umm-spec-lib/test/cmr/umm_spec/test/validation/granule.clj
-            [cmr.umm-spec.validation.core :as v]
+            [cmr.umm-spec.validation.umm-spec-validation-core :as v]
             [cmr.umm-spec.models.umm-collection-models :as c]
             [cmr.umm-spec.models.umm-common-models :as cmn]
-            [cmr.umm.granule :as g]
-            [cmr.umm-spec.test.validation.helpers :as helpers]
-=======
-            [cmr.umm-spec.validation.umm-spec-validation-core :as v]
-            [cmr.umm-spec.models.collection :as c]
-            [cmr.umm-spec.models.common :as cmn]
             [cmr.umm.umm-granule :as g]
             [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as helpers]
->>>>>>> d83bb7804f5d7181084f743a80af098cbc03eff3:umm-spec-lib/test/cmr/umm_spec/test/validation/umm_spec_granule_validation_tests.clj
             [cmr.spatial.mbr :as m]
             [cmr.spatial.point :as p]
             [cmr.common.date-time-parser :as dtp]
