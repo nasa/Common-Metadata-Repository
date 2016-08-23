@@ -100,9 +100,9 @@
 (defmethod migrate-umm-version [:collection "1.4" "1.3"]
   [context c & _]
   (-> c
-      ;; This is a lossy migration. DataCenters, ContactGroups and ContactPersons fields in the original UMM JSON are dropped.
-      (dissoc :DataCenters :ContactGroups :ContactPersons)
-      (assoc :Organizations [not-provided-organization])))
+      (assoc :Organizations (op/data-centers->organizations (:DataCenters c)))
+      (assoc :Personnel (op/contact-persons->personnel (:ContactPersons c)))
+      (dissoc :DataCenters :ContactGroups :ContactPersons)))
 
 (defn- update-attribute-description
   "If description is nil, set to default of 'Not provided'"

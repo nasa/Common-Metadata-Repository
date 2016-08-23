@@ -236,12 +236,141 @@
                (:ContactPersons result))))))
 
 (deftest migrate-1_4-down-to-1_3
-  (let [result (vm/migrate-umm {} :collection "1.4" "1.3"
-                               {:DataCenters [u/not-provided-data-center]
-                                :ContactGroups "placeholder"
-                                :ContactPersons "placeholder"})]
-    (is (= [vm/not-provided-organization] (:Organizations result)))
-    (is (nil? (:Personnel result)))
+  (testing "Data Centers to Organizations"
+    (let [data-centers [{:Roles ["ORIGINATOR"]
+                         :ShortName "LPDAAC"
+                         :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
+                                           :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+                                           :FirstName "John"
+                                           :MiddleName "D"
+                                           :LastName "Smith"}]
+                         :ContactInformation [{:RelatedUrls [{:Description "Contact related url description"
+                                                              :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                              :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                              :Title "contact related url title"
+                                                              :MimeType "application/html"}]
+                                               :ServiceHours "Weekdays 9AM - 5PM"
+                                               :ContactInstruction "sample contact instruction"
+                                               :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                                   {:Type "Email" :Value "cmr@nasa.gov"}]
+                                               :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                            :City "Greenbelt"
+                                                            :StateProvince "MD"
+                                                            :PostalCode "20771"
+                                                            :Country "U.S.A."}]}]}]
+          result (vm/migrate-umm {} :collection "1.4" "1.3"
+                                 {:DataCenters data-centers})]
+      (is (nil? (:DataCenters result)))
+      (is (nil? (:ContactGroups result)))
+      (is (nil? (:ContactPersons result)))
+      (is (= [{:Role "ORIGINATOR"
+               :Party {:OrganizationName {:ShortName "LPDAAC" :LongName nil}
+                       :Person {:Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+                                :FirstName "John"
+                                :MiddleName "D"
+                                :LastName "Smith"}
+                       :ServiceHours "Weekdays 9AM - 5PM"
+                       :ContactInstructions "sample contact instruction"
+                       :Contacts [{:Type "Telephone", :Value "301-851-1234"}
+                                  {:Type "Email", :Value "cmr@nasa.gov"}]
+                       :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                    :City "Greenbelt"
+                                    :StateProvince "MD"
+                                    :PostalCode "20771"
+                                    :Country "U.S.A."}]
+                       :RelatedUrls [{:Description "Contact related url description"
+                                      :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                      :URLs ["www.contact.foo.com" "www.contact.shoo.com"]
+                                      :Title "contact related url title"
+                                      :MimeType "application/html"}]}}]
+           (:Organizations result)))))
+  (testing "Contact Persons to Personnel"
+    (let [contact-persons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
+                            :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+                            :ContactInformation [{:RelatedUrls [{:Description "Contact related url description"
+                                                                 :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                 :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                                 :Title "contact related url title"
+                                                                 :MimeType "application/html"}]
+                                                  :ServiceHours "Weekdays 9AM - 5PM"
+                                                  :ContactInstruction "sample contact instruction"
+                                                  :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                                      {:Type "Email" :Value "cmr@nasa.gov"}]
+                                                  :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                               :City "Greenbelt"
+                                                               :StateProvince "MD"
+                                                               :PostalCode "20771"
+                                                               :Country "U.S.A."}]}]
+                            :FirstName "John"
+                            :MiddleName "D"
+                            :LastName "Smith"}]
+            result (vm/migrate-umm {} :collection "1.4" "1.3"
+                                   {:ContactPersons contact-persons})]
+      (is (nil? (:DataCenters result)))
+      (is (nil? (:ContactGroups result)))
+      (is (nil? (:ContactPersons result)))
+      (is (= [{:Role "Data Center Contact"
+               :Party {:Person {:Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+                                :FirstName "John"
+                                :MiddleName "D"
+                                :LastName "Smith"}
+                       :ServiceHours "Weekdays 9AM - 5PM"
+                       :ContactInstructions "sample contact instruction"
+                       :Contacts [{:Type "Telephone", :Value "301-851-1234"}
+                                  {:Type "Email", :Value "cmr@nasa.gov"}]
+                       :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                    :City "Greenbelt"
+                                    :StateProvince "MD"
+                                    :PostalCode "20771"
+                                    :Country "U.S.A."}]
+                       :RelatedUrls [{:Description "Contact related url description"
+                                      :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                      :URLs ["www.contact.foo.com" "www.contact.shoo.com"]
+                                      :Title "contact related url title"
+                                      :MimeType "application/html"}]}}]
+           (:Personnel result))))))
+
+(deftest migrate-roundtrip-1_3-to-1_4
+  (let [organizations [{:Role "ARCHIVER"
+                        :Party {:OrganizationName {:ShortName "NASA/GSFC/SSED/CDDIS",
+                                                   :LongName "Crustal Dynamics Data Information System, Solar System Exploration Division, Goddard Space Flight Center, NASA"}
+                                :Contacts [{:Type "Email"
+                                            :Value "support-cddis@earthdata.nasa.gov"}]
+                                :Addresses [{:Country "United States"
+                                             :StreetAddresses ["NASA GSFC" "Code 690.1"]
+                                             :City "Greenbelt"
+                                             :StateProvince "Maryland"
+                                             :PostalCode "20771"}]
+                                :RelatedUrls [{:Title "CDDIS Home Page"
+                                               :Description "Home page for the CDDIS website",
+                                               :URLs ["http://cddis.gsfc.nasa.gov/"]}]
+                                :ServiceHours "M-F 9-5"
+                                :ContactInstructions "Email"
+                                :Person {:FirstName "John"
+                                         :MiddleName "D"
+                                         :LastName "Smith"
+                                         :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"}}}]
+        personnel [{:Role "Technical Contact"
+                    :Party {:Person {:FirstName "Carey"
+                                     :MiddleName "E"
+                                     :LastName "Noll"
+                                     :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"}
+                            :Contacts [{:Type "Email"
+                                        :Value "Carey.Noll@nasa.gov"}]
+                            :Addresses [{:Country "United States"
+                                         :StreetAddresses ["NASA GSFC" "Code 690.1"]
+                                         :City "Greenbelt"
+                                         :StateProvince "Maryland"
+                                         :PostalCode "20771"}]
+                            :ServiceHours nil
+                            :ContactInstructions nil
+                            :RelatedUrls nil}}]
+        result-migrate-up (vm/migrate-umm {} :collection "1.3" "1.4"
+                                          {:Organizations organizations
+                                           :Personnel personnel})
+        result (vm/migrate-umm {} :collection "1.4" "1.3" result-migrate-up)]
+    (is (= organizations (:Organizations result)))
+    (is (= personnel (:Personnel result)))
     (is (nil? (:DataCenters result)))
     (is (nil? (:ContactGroups result)))
     (is (nil? (:ContactPersons result)))))

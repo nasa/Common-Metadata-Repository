@@ -6,12 +6,25 @@
   (:require [cmr.common.util :as util]
             [cmr.umm-spec.util :as u]))
 
+(def not-provided-personnel
+  [{:Role "ORIGINATOR"
+    :Party {:Person {:LastName u/not-provided}}}])
+
 (defn- map-data-center-role
-  "TO DO: Evaluate if this is needed or fix up"
+  "Check if the data center role is a valid UMM role. Otherwise default to ARCHIVER"
   [role]
   (if (contains? #{"ARCHIVER" "DISTRIBUTOR" "PROCESSOR" "ORIGINATOR"} role)
     role
-    "ARCHIVER"))
+    "ORIGINATOR"))
+
+(defn- map-contact-role
+  "Check if the contact role is a valid UMM role. Otherwise default to Technical Contact"
+  [role]
+  (if (contains?
+       #{"Data Center Contact", "Technical Contact", "Science Contact", "Investigator", "Metadata Author", "User Services", "Science Software Development"}
+       role)
+    role
+    "Technical Contact"))
 
 (defn- party->contact-information
   "Convert contact information fields from a party to a vector of contact information"
@@ -44,17 +57,52 @@
      :ContactInformation (party->contact-information party)
      :ContactPersons (person->contact-persons (:Person party))}))
 
+(defn- contact-person->person
+  "Convert a contact person record to a person record. A contact person record
+  is the same as a person record, but with some extra fields"
+  [contact-person]
+  (-> contact-person
+      (dissoc :Roles)
+      (dissoc :NonDataCenterAffiliation)
+      (dissoc :ContactInformation)))
+
+(defn- contact-information->party-contact-info
+  "Convert contact information to contact info part of a party object"
+  [contact-info]
+  {:ServiceHours (:ServiceHours contact-info)
+   :ContactInstructions (:ContactInstruction contact-info)
+   :Contacts (:ContactMechanisms contact-info)
+   :Addresses (:Addresses contact-info)
+   :RelatedUrls (:RelatedUrls contact-info)})
+
+(defn- data-center->organization
+  "Convert a data center to an organization"
+  [data-center]
+  {:Role (first (:Roles data-center))
+   :Party (merge {:OrganizationName {:ShortName (:ShortName data-center)
+                                     :LongName (:LongName data-center)}
+                  :Person (contact-person->person (first (:ContactPersons data-center)))}
+                 (contact-information->party-contact-info (first (:ContactInformation data-center))))})
+
+
 (defn- personnel->contact-person
   "Convert a personnel record to a contact person record"
   [personnel]
   (let [party (:Party personnel)
         person (:Person party)]
-    {:Roles [(:Role personnel)]
+    {:Roles [(map-contact-role (:Role personnel))]
      :FirstName (:FirstName person)
      :MiddleName (:MiddleName person)
      :LastName (:LastName person)
      :Uuid (:Uuid person)
      :ContactInformation (party->contact-information party)}))
+
+(defn- contact-person->personnel
+  "Convert a contact person to a personnel record"
+  [contact-person]
+  {:Role (first (:Roles contact-person))
+   :Party (merge {:Person (contact-person->person contact-person)}
+                 (contact-information->party-contact-info (first (:ContactInformation contact-person))))})
 
 (defn organizations->data-centers
   "Convert a list of organizations to a list of data centers. If no organizations are provided
@@ -64,7 +112,20 @@
     (mapv organization->data-center organizations)
     [u/not-provided-data-center]))
 
+(defn data-centers->organizations
+  "Convert a list of data centers to organizations."
+  [data-centers]
+  (mapv data-center->organization data-centers))
+
 (defn personnel->contact-persons
   "Convert a list of personnel records to a list of contact persons"
   [personnel]
   (mapv personnel->contact-person personnel))
+
+(defn contact-persons->personnel
+  "Convert a list of contact person records to a list of personnel records. Personnel is required
+  so if no contact persons, return default personnel"
+  [contact-persons]
+  (if (seq contact-persons)
+   (mapv contact-person->personnel contact-persons)
+   not-provided-personnel))
