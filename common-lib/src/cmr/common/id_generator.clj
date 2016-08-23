@@ -94,6 +94,7 @@
        (valid-sequence? (:sequence id-state))
        (valid-time? (:time id-state))))
 
+;; dynamic is here only for testing purposes to test failure cases.
 (defn ^:dynamic current-time-millis
   "Gets the current time in milliseconds. Written to make code easier to test."
   []

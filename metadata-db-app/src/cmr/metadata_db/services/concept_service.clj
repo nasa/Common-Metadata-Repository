@@ -172,6 +172,7 @@
     ;; else
     (errors/internal-error! (:error-message result) (:throwable result))))
 
+;; dynamic is here only for testing purposes to test failure cases.
 (defn ^:dynamic try-to-save
   "Try to save a concept. The concept must include a revision-id. Ensures that revision-id and
   concept-id constraints are enforced as well as post commit uniqueness constraints. Returns the

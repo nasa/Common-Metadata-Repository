@@ -9,6 +9,7 @@
 
 (defonce ^{:private true
            :doc "An atom containing a map of explicitly set config values."
+           ;; dynamic is here only for testing purposes
            :dynamic true}
   runtime-config-values
   (atom {}))
@@ -31,6 +32,7 @@
   [config-name]
   (str "CMR_" (csk/->SCREAMING_SNAKE_CASE_STRING config-name)))
 
+;; dynamic is here only for testing purposes
 (defn- ^:dynamic env-var-value
   "Returns the value of the environment variable. Here specifically to enable testing of this
   namespace."

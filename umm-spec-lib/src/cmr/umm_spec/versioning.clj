@@ -5,6 +5,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Important Constants
 
+;; dynamic is here only for testing purposes
 (def ^:dynamic versions
   "A sequence of valid UMM Schema versions, with the newest one last. This sequence must be updated
    when new schema versions are added to the CMR."
