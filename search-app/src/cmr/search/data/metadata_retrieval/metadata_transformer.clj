@@ -55,6 +55,7 @@
                      context :collection (:format concept) (:metadata concept))]
     (collection-renderer/render-collection context collection)))
 
+;; dynamic is here only for testing purposes to test failure cases.
 (defn ^:dynamic transform-strategy
   "Determines which transformation strategy should be used to convert the given concept to the target
    format"

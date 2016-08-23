@@ -27,7 +27,7 @@
             "required": false,
             "type": "string",
             "default": ".xml",
-            "enum": [".xml", ".json", ".atom", ".native", ".umm-json", ".echo10", ".dif10", ".dif",
+            "enum": [".xml", ".json", ".atom", ".native", ".umm_json", ".echo10", ".dif10", ".dif",
                      ".iso", ".iso19115", ".opendata", ".kml", ".csv"]
           },
           {
@@ -498,7 +498,7 @@
           "application/echo10+xml",
           "application/json",
           "*/*",
-          "application/vnd.nasa.cmr.umm+json",
+          "application/vnd.nasa.cmr.umm_results+json",
           "application/metadata+xml",
           "application/iso19115+xml",
           "application/dif+xml",
