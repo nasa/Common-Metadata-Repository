@@ -1,11 +1,7 @@
 (ns migrations.044-setup-humanizers-table
   (:require [clojure.java.jdbc :as j]
             [config.migrate-config :as config]
-            [config.mdb-migrate-helper :as h]
-            [cmr.metadata-db.data.oracle.concepts]
-            [cmr.metadata-db.data.concepts :as c]
-            [cheshire.core :as json]
-            [cmr.common-app.test.sample-humanizer :as sh]))
+            [config.mdb-migrate-helper :as h]))
 
 (def ^:private humanizers-column-sql
   "id NUMBER,
@@ -42,37 +38,17 @@
   []
   (h/sql "CREATE SEQUENCE cmr_humanizers_seq"))
 
-(defn- insert-humanizer
-  []
-  (let [provider {:provider-id "CMR"
-                  :short-name "CMR"
-                  :system-level? true
-                  :cmr-only true
-                  :small false}
-        concept {:concept-type :humanizer
-                 :native-id "humanizer"
-                 :metadata (json/generate-string sh/sample-humanizers)
-                 :user-id "migration"
-                 :format "application/json"
-                 :provider-id "CMR"
-                 :concept-id "H12345-CMR"
-                 :revision-id 1
-                 :deleted false}]
-    (c/save-concept (config/db) provider concept)))
-
 (defn up
   "Migrates the database up to version 44."
   []
   (println "migrations.044-setup-humanizers-table up...")
   (create-humanizers-table)
   (create-humanizers-indices)
-  (create-humanizers-sequence)
-  (insert-humanizer))
+  (create-humanizers-sequence))
 
 (defn down
   "Migrates the database down from version 44."
   []
   (println "migrations.044-setup-humanizers-table down...")
-  (h/sql "DELETE cmr_humanizers")
   (h/sql "DROP SEQUENCE METADATA_DB.cmr_humanizers_seq")
   (h/sql "DROP TABLE METADATA_DB.cmr_humanizers"))
