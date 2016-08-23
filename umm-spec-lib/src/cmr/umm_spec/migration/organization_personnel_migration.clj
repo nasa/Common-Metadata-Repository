@@ -7,7 +7,7 @@
             [cmr.umm-spec.util :as u]))
 
 (def not-provided-personnel
-  [{:Role "ORIGINATOR"
+  [{:Role "POINTOFCONTACT"
     :Party {:Person {:LastName u/not-provided}}}])
 
 (defn- map-data-center-role
@@ -15,7 +15,7 @@
   [role]
   (if (contains? #{"ARCHIVER" "DISTRIBUTOR" "PROCESSOR" "ORIGINATOR"} role)
     role
-    "ORIGINATOR"))
+    "ARCHIVER"))
 
 (defn- map-contact-role
   "Check if the contact role is a valid UMM role. Otherwise default to Technical Contact"
@@ -25,6 +25,18 @@
        role)
     role
     "Technical Contact"))
+
+(defn- map-responsibility-type-role
+  "Organization and Personnel are both a Responsibility Type, so share the same roles. Check if the
+  role is a valid Responsibility Type role. If not, default to POINTOFCONTACT"
+  [role]
+  (if (contains?
+        #{"RESOURCEPROVIDER", "CUSTODIAN", "OWNER", "USER", "DISTRIBUTOR", "ORIGINATOR", "POINTOFCONTACT",
+          "PRINCIPALINVESTIGATOR", "PROCESSOR", "PUBLISHER", "AUTHOR", "SPONSOR", "COAUTHOR",
+          "COLLABORATOR", "EDITOR", "MEDIATOR", "RIGHTSHOLDER", "CONTRIBUTOR", "FUNDER", "STAKEHOLDER"}
+        role)
+    role
+    "POINTOFCONTACT"))
 
 (defn- party->contact-information
   "Convert contact information fields from a party to a vector of contact information"
@@ -54,8 +66,7 @@
     {:Roles [(map-data-center-role (:Role organization))]
      :ShortName (:ShortName (:OrganizationName party))
      :LongName (:LongName (:OrganizationName party))
-     :ContactInformation (party->contact-information party)
-     :ContactPersons (person->contact-persons (:Person party))}))
+     :ContactInformation (party->contact-information party)}))
 
 (defn- contact-person->person
   "Convert a contact person record to a person record. A contact person record
@@ -78,10 +89,9 @@
 (defn- data-center->organization
   "Convert a data center to an organization"
   [data-center]
-  {:Role (first (:Roles data-center))
+  {:Role (map-responsibility-type-role (first (:Roles data-center)))
    :Party (merge {:OrganizationName {:ShortName (:ShortName data-center)
-                                     :LongName (:LongName data-center)}
-                  :Person (contact-person->person (first (:ContactPersons data-center)))}
+                                     :LongName (:LongName data-center)}}
                  (contact-information->party-contact-info (first (:ContactInformation data-center))))})
 
 
@@ -100,7 +110,7 @@
 (defn- contact-person->personnel
   "Convert a contact person to a personnel record"
   [contact-person]
-  {:Role (first (:Roles contact-person))
+  {:Role (map-responsibility-type-role (first (:Roles contact-person)))
    :Party (merge {:Person (contact-person->person contact-person)}
                  (contact-information->party-contact-info (first (:ContactInformation contact-person))))})
 

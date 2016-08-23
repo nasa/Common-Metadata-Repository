@@ -99,7 +99,8 @@
 
 (defmethod parse-json "array"
   [schema type-name-path type-name schema-type js-data]
-  (mapv #(parse-json schema type-name-path type-name (:items schema-type) %) js-data))
+  (when (seq js-data)
+    (mapv #(parse-json schema type-name-path type-name (:items schema-type) %) js-data)))
 
 (defn json->umm
   "Parses the JSON string and returns Clojure UMM records."

@@ -149,7 +149,7 @@
 
 (deftest migrate-1_3-up-to-1_4
   (testing "Organizations to Data Centers"
-    (let [organizations [{:Role "ARCHIVER"
+    (let [organizations [{:Role "POINTOFCONTACT"
                           :Party {:OrganizationName {:ShortName "NASA/GSFC/SSED/CDDIS",
                                                      :LongName "Crustal Dynamics Data Information System, Solar System Exploration Division, Goddard Space Flight Center, NASA"}
                                   :Contacts [{:Type "Email"
@@ -165,11 +165,7 @@
                                   :ServiceHours "M-F 9-5"
                                   :ContactInstructions "Email"}}
                          {:Role "DISTRIBUTOR"
-                          :Party {:OrganizationName {:ShortName "NSIDC"}
-                                  :Person {:FirstName "John"
-                                           :MiddleName "D"
-                                           :LastName "Smith"
-                                           :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"}}}]
+                          :Party {:OrganizationName {:ShortName "NSIDC"}}}]
           result (vm/migrate-umm {} :collection "1.3" "1.4"
                                  {:Organizations organizations
                                   :Personnel "placeholder"})]
@@ -187,17 +183,11 @@
                                                   :StateProvince "Maryland"
                                                   :PostalCode "20771"}]
                                      :ContactMechanisms [{:Type "Email"
-                                                          :Value "support-cddis@earthdata.nasa.gov"}]}]
-               :ContactPersons nil}
+                                                          :Value "support-cddis@earthdata.nasa.gov"}]}]}
               {:Roles ["DISTRIBUTOR"]
                :ShortName "NSIDC"
                :LongName nil
-               :ContactInformation nil
-               :ContactPersons [{:FirstName "John",
-                                 :MiddleName "D",
-                                 :LastName "Smith",
-                                 :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f",
-                                 :Roles ["Technical Contact"]}]}]
+               :ContactInformation nil}]
              (:DataCenters result)))
       (is (nil? (:ContactGroups result)))
       (is (nil? (:Organizations result)))
@@ -265,10 +255,6 @@
       (is (nil? (:ContactPersons result)))
       (is (= [{:Role "ORIGINATOR"
                :Party {:OrganizationName {:ShortName "LPDAAC" :LongName nil}
-                       :Person {:Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
-                                :FirstName "John"
-                                :MiddleName "D"
-                                :LastName "Smith"}
                        :ServiceHours "Weekdays 9AM - 5PM"
                        :ContactInstructions "sample contact instruction"
                        :Contacts [{:Type "Telephone", :Value "301-851-1234"}
@@ -309,7 +295,7 @@
       (is (nil? (:DataCenters result)))
       (is (nil? (:ContactGroups result)))
       (is (nil? (:ContactPersons result)))
-      (is (= [{:Role "Data Center Contact"
+      (is (= [{:Role "POINTOFCONTACT"
                :Party {:Person {:Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                                 :FirstName "John"
                                 :MiddleName "D"
@@ -331,7 +317,7 @@
            (:Personnel result))))))
 
 (deftest migrate-roundtrip-1_3-to-1_4
-  (let [organizations [{:Role "ARCHIVER"
+  (let [organizations [{:Role "POINTOFCONTACT"
                         :Party {:OrganizationName {:ShortName "NASA/GSFC/SSED/CDDIS",
                                                    :LongName "Crustal Dynamics Data Information System, Solar System Exploration Division, Goddard Space Flight Center, NASA"}
                                 :Contacts [{:Type "Email"
@@ -345,12 +331,8 @@
                                                :Description "Home page for the CDDIS website",
                                                :URLs ["http://cddis.gsfc.nasa.gov/"]}]
                                 :ServiceHours "M-F 9-5"
-                                :ContactInstructions "Email"
-                                :Person {:FirstName "John"
-                                         :MiddleName "D"
-                                         :LastName "Smith"
-                                         :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"}}}]
-        personnel [{:Role "Technical Contact"
+                                :ContactInstructions "Email"}}]
+        personnel [{:Role "POINTOFCONTACT"
                     :Party {:Person {:FirstName "Carey"
                                      :MiddleName "E"
                                      :LastName "Noll"
