@@ -228,13 +228,6 @@
                                 {:org-name "org-X"
                                  :cmr.humanized/org-name {:value "org-Y" :priority 0}}]}))
 
-  (testing "humanize from json definitions"
-    ;; Small sanity check to ensure humanizers are pulled from the resource json by default.
-    ;; Assumes that trimming whitespace is done in the humanizer
-    (is (=
-         {:organizations [{:org-name " TEST\t" :cmr.humanized/org-name {:value "TEST" :priority 0}}]}
-         (humanizer/umm-collection->umm-collection+humanizers {:organizations [{:org-name " TEST\t"}]}))))
-
   (testing "humanize with sort order"
     (humanizes [{:type "alias" :field "organization" :source_value "A" :replacement_value "X" :order 0}
                 {:type "alias" :field "organization" :source_value "X" :replacement_value "Y" :order 1}]

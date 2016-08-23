@@ -3,7 +3,7 @@
   (:require [clojure.string :as str]
             [cmr.common.util :as util]
             [cmr.umm-spec.date-util :as du]
-            [cmr.umm-spec.models.common :as cmn]
+            [cmr.umm-spec.models.umm-common-models :as cmn]
             [clj-time.format :as f]
             [cmr.common.xml.parse :as p]
             [cmr.common.xml.simple-xpath :refer [select]]))

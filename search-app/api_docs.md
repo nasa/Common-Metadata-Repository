@@ -112,6 +112,9 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * [Document Scoring](#document-scoring)
   * [Facets](#facets)
     * [Version 2 Facets Response Format](#facets-v2-response-format)
+        * [Humanizers](#humanizers)
+          * [Updating Humanizers](#updating-humanizers)
+          * [Retrieving Humanizers](#retrieving-humanizers)
         * [Humanizers Report](#facets-humanizers-report)
     * [Facets in XML Responses](#facets-in-xml-responses)
         * [Flat XML Facets](#flat-xml-facets)
@@ -2098,7 +2101,53 @@ The following example is a sample response for a query using the query parameter
   }
 };
 ```
-#### <a name="facets-humanizers-report"</a> Humanizers Report
+
+#### <a name="humanizers"></a> Humanizers
+
+Humanizers define the rules that are used by CMR to provide humanized values for various facet fields and also support other features like improved relevancy of facetted terms. The rules are defined in JSON. Operators with Admin privilege can update the humanizer instructions through the update humanizer api.
+
+##### <a name="updating-humanizers"></a> Updating Humanizers
+
+Humanizers can be updated with a JSON representation of the humanizer rules to %CMR-ENDPOINT%/humanizers along with a valid ECHO token. The response will contain a concept id and revision id identifying the set of humanizer instructions.
+
+```
+curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/humanizers -d \
+'[{"type": "trim_whitespace", "field": "platform", "order": -100},
+  {"type": "alias", "field": "platform", "source_value": "AM-1", "replacement_value": "Terra", "reportable": true, "order": 0}]'
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 48
+
+{"concept_id":"H1200000000-CMR","revision_id":1}
+```
+
+##### <a name="retrieving-humanizers"></a> Retrieving Humanizers
+
+The humanizers can be retrieved by sending a GET request to `%CMR-ENDPOINT%/humanizers`.
+
+```
+curl -i %CMR-ENDPOINT%/humanizers?pretty=true
+
+HTTP/1.1 200 OK
+Content-Length: 224
+Content-Type: application/json; charset=UTF-8
+
+[ {
+  "type" : "trim_whitespace",
+  "field" : "platform",
+  "order" : -100
+}, {
+  "type" : "alias",
+  "field" : "platform",
+  "source_value" : "AM-1",
+  "replacement_value" : "Terra",
+  "reportable" : true,
+  "order" : 0
+} ]
+```
+
+#### <a name="facets-humanizers-report"></a> Humanizers Report
 
 The humanizers report provides a list of fields that have been humanized in CSV format. The
 report format is: provider, concept id, product short name, product version, original field value, humanized field value.

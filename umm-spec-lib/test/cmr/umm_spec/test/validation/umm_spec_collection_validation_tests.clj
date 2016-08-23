@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.test.validation.umm-spec-collection-validation-tests
   "This has tests for UMM validations."
   (:require [clojure.test :refer :all]
-            [cmr.umm-spec.models.common :as c]
-            [cmr.umm-spec.models.collection :as coll]
+            [cmr.umm-spec.models.umm-common-models :as c]
+            [cmr.umm-spec.models.umm-collection-models :as coll]
             [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as h]))
 
 (deftest collection-temporal-validation

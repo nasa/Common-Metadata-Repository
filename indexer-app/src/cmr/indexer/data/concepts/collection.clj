@@ -30,6 +30,7 @@
             [cmr.umm.umm-collection :as umm-c]
             [cmr.umm.collection.entry-id :as eid]
             [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
+            [cmr.indexer.data.humanizer-fetcher :as hf]
             [cmr.common-app.services.kms-fetcher :as kf]
             [cmr.acl.acl-fetcher :as acl-fetcher]
             [cmr.umm.acl-matchers :as umm-matchers])
@@ -114,8 +115,9 @@
 
 (defn- collection-humanizers-elastic
   "Given a collection, returns humanized elastic search fields"
-  [collection]
-  (let [humanized (humanizer/umm-collection->umm-collection+humanizers collection)
+  [context collection]
+  (let [humanized (humanizer/umm-collection->umm-collection+humanizers
+                    collection (hf/get-humanizer-instructions context))
         extract-fields (partial extract-humanized-elastic-fields humanized)]
     (merge
      {:science-keywords.humanized (map sk/humanized-science-keyword->elastic-doc
@@ -301,7 +303,7 @@
            (get-in collection [:spatial-coverage :orbit-parameters])
            (spatial->elastic collection)
            (sk/science-keywords->facet-fields collection)
-           (collection-humanizers-elastic collection))))
+           (collection-humanizers-elastic context collection))))
 
 (defn- get-elastic-doc-for-tombstone-collection
   "Get the subset of elastic field values that apply to a tombstone index operation."

@@ -5,7 +5,7 @@
             [camel-snake-kebab.core :as csk]
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.models.common :as cmn]
+            [cmr.umm-spec.models.umm-common-models :as cmn]
             [cmr.umm.dif.date-util :refer [parse-dif-end-date]]
             [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
             [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as aa]
