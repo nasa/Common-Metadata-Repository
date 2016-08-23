@@ -3,11 +3,8 @@
   (:require [clj-http.client :as client]
             [cmr.common.services.errors :as errors]
             [cmr.transmit.config :as config]
-            [cheshire.core :as cheshire]
             [cmr.common.api.context :as ch]
             [cmr.transmit.connection :as conn]
-            [cheshire.core :as json]
-            [clojure.string :as str]
             [ring.util.codec :as codec]
             [cmr.common.mime-types :as mt]
             [clojure.data.xml :as x]
@@ -19,13 +16,14 @@
   [context params]
   (let [conn (config/context->app-connection context :search)
         request-url (str (conn/root-url conn) "/granules")
-        response (client/get request-url (merge
-                                           (config/conn-params conn)
-                                           {:accept :xml
-                                            :query-params (assoc params :page-size 0)
-                                            :headers (assoc (ch/context->http-headers context)
-                                                            config/token-header (config/echo-system-token))
-                                            :throw-exceptions false}))
+        response (client/get request-url
+                             (merge
+                               (config/conn-params conn)
+                               {:accept :xml
+                                :query-params (assoc params :page-size 0)
+                                :headers (assoc (ch/context->http-headers context)
+                                                config/token-header (config/echo-system-token))
+                                :throw-exceptions false}))
         {:keys [status headers body]} response]
     (case status
       200 (Integer/parseInt (get headers "CMR-Hits"))
@@ -61,4 +59,5 @@
       (parse-granule-response body)
       (errors/internal-error!
         (format "Granule search failed. status: %s body: %s" status body)))))
+
 
