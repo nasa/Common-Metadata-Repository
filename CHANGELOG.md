@@ -98,7 +98,5 @@ Items to include in each issue
   * Deployment Impacts
     * The Elasticsearch Spatial Plugin needs to be deployed.
 * CMR-3260 - Allow dynamic update of humanizers
-  * Deployment Impacts
-    * Requires ingest of humanizer concept with existing humanizer instructions
-      * curl -XPUT -i -H "Echo-Token: xxx" -H "Content-Type: application/json" %CMR-SEARCH-ENDPOINT%/humanizers -d  @<file_path_to_humanizers_json_file>
+
 
