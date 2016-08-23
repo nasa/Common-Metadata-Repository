@@ -2,8 +2,8 @@
   "This has tests for UMM-C Science Keywords validations."
   (:require [clojure.test :refer :all]
             [cmr.umm-spec.validation.umm-spec-validation-core :as v]
-            [cmr.umm-spec.models.common :as c]
-            [cmr.umm-spec.models.collection :as coll]
+            [cmr.umm-spec.models.umm-common-models :as c]
+            [cmr.umm-spec.models.umm-collection-models :as coll]
             [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as h]
             [cmr.common.services.errors :as e]))
 

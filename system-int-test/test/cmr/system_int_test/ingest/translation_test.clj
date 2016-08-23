@@ -1,8 +1,8 @@
 (ns cmr.system-int-test.ingest.translation-test
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.umm-spec.models.collection :as umm-c]
-            [cmr.umm-spec.models.common :as umm-cmn]
+            [cmr.umm-spec.models.umm-collection-models :as umm-c]
+            [cmr.umm-spec.models.umm-common-models :as umm-cmn]
             [clj-time.core :as t]
             [cmr.umm-spec.umm-spec-core :as umm-spec]
             [cmr.common.mime-types :as mt]

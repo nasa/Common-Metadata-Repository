@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.test.time-test
   (:require [clj-time.core :as t]
             [clojure.test :refer :all]
-            [cmr.umm-spec.models.collection :as umm-c]
-            [cmr.umm-spec.models.common :as umm-cmn]
+            [cmr.umm-spec.models.umm-collection-models :as umm-c]
+            [cmr.umm-spec.models.umm-common-models :as umm-cmn]
             [cmr.umm-spec.time :refer :all]))
 
 (def temporal

@@ -2,7 +2,7 @@
   (:require [clj-time.core :as t]
             [clojure.test :refer :all]
             [cmr.umm-spec.additional-attribute :as umm-aa]
-            [cmr.umm-spec.models.common :as cmn]
+            [cmr.umm-spec.models.umm-common-models :as cmn]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]))
 
 

@@ -26,8 +26,8 @@
             [cmr.umm-spec.versioning :as ver]
             [cmr.umm-spec.version-migration :as vm]
             [cmr.common.mime-types :as mt])
-  (:import (cmr.umm_spec.models.collection UMM-C)
-           (cmr.umm_spec.models.service UMM-S)))
+  (:import (cmr.umm_spec.models.umm_collection_models UMM-C)
+           (cmr.umm_spec.models.umm_service_models UMM-S)))
 
 (defn concept-type
   "Returns a concept type keyword from a UMM Clojure record (i.e. defrecord)."
