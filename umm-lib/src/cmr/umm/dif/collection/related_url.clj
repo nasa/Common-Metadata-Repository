@@ -2,7 +2,7 @@
   "Provide functions to parse and generate DIF Related_URL elements."
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]))
+            [cmr.umm.umm-collection :as c]))
 
 ;; There is no required element in Multimedia_Sample according to the schema
 ;; We only deal with DIF Related_URL for now

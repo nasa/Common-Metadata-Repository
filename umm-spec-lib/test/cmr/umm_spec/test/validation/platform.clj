@@ -1,9 +1,15 @@
 (ns cmr.umm-spec.test.validation.platform
   "This has tests for UMM collection platform validations."
   (:require [clojure.test :refer :all]
+<<<<<<< HEAD
             [cmr.umm-spec.models.umm-common-models :as c]
             [cmr.umm-spec.models.umm-collection-models :as coll]
             [cmr.umm-spec.test.validation.helpers :as h]))
+=======
+            [cmr.umm-spec.models.common :as c]
+            [cmr.umm-spec.models.collection :as coll]
+            [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as h]))
+>>>>>>> d83bb7804f5d7181084f743a80af098cbc03eff3
 
 (deftest collection-platforms-validation
   (let [s1 (c/map->SensorType {:ShortName "S1"})

@@ -4,7 +4,7 @@
   (:require [cmr.bootstrap.embedded-system-helper :as helper]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.indexer.services.index-service :as index-service]
-            [cmr.umm.core :as umm]
+            [cmr.umm.umm-core :as umm]
             [cmr.metadata-db.services.concept-service :as concept-service]
             [cmr.metadata-db.services.provider-service :as provider-service]))
 

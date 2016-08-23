@@ -21,7 +21,7 @@
             [cmr.common.cache :as cache]
             [cmr.common.services.errors :as errors]
             [cmr.umm.collection.entry-id :as eid]
-            [cmr.umm-spec.core :as spec]
+            [cmr.umm-spec.umm-spec-core :as spec]
             [cmr.umm-spec.versioning :as ver]))
 
 (defn add-extra-fields-for-collection

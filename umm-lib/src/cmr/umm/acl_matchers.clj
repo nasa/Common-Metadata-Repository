@@ -7,7 +7,7 @@
             [cmr.umm.start-end-date :as sed]
             [cmr.common.time-keeper :as tk]
             [cmr.common.util :as u]
-            [cmr.umm.core :as ummc]))
+            [cmr.umm.umm-core :as ummc]))
 
 (def ^:private supported-collection-identifier-keys
   #{:entry-titles :access-value :temporal})
@@ -31,7 +31,7 @@
                  (>= access-value ^double min-value))
              (or (nil? max-value)
                  (<= access-value ^double max-value))))
-      ;; umm item's without a value will only be included if include-undefined is true
+      ;; umm items without a value will only be included if include-undefined is true
       include-undefined)))
 
 (defn- time-range1-contains-range2?

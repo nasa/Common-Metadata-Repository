@@ -29,15 +29,15 @@
   [val & args]
   "A macro that will override the current time in milliseconds call in id-generator to always return
   the given value."
-  `(with-redefs [id-generator/current-time-millis (constantly ~val)]
-                ~@args))
+  `(with-bindings {#'id-generator/current-time-millis (constantly ~val)}
+     ~@args))
 
 (defmacro with-curr-times
   [vals & args]
   "A macro that will override the current time in milliseconds call in id-generator so that repeated
   calls return each of the values in the list."
-  `(with-redefs [id-generator/current-time-millis (util/sequence->fn ~vals)]
-                ~@args))
+  `(with-bindings {#'id-generator/current-time-millis (util/sequence->fn ~vals)}
+     ~@args))
 
 (deftest test-new-id-state
   (testing "success"

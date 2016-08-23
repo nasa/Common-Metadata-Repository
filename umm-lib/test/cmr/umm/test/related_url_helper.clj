@@ -2,7 +2,7 @@
   "Tests functions that categorize related urls."
   (:require [clojure.test :refer :all]
             [cmr.umm.related-url-helper :as ru]
-            [cmr.umm.collection :as umm-c]))
+            [cmr.umm.umm-collection :as umm-c]))
 
 (deftest categorize-related-urls
   (testing "categorize related urls"

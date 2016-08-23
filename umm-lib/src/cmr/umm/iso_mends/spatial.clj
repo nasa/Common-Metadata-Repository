@@ -13,9 +13,9 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.relations :as r]
-            [cmr.umm.collection :as c]
-            [cmr.umm.iso-mends.core :as core]
-            [cmr.umm.spatial :as umm-s]
+            [cmr.umm.umm-collection :as c]
+            [cmr.umm.iso-mends.iso-mends-core :as core]
+            [cmr.umm.umm-spatial :as umm-s]
             [cmr.umm.iso-mends.collection.helper :as h]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

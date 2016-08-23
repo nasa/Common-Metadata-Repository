@@ -4,7 +4,7 @@
             [cmr.umm-spec.models.umm-collection-models :as umm-c]
             [cmr.umm-spec.models.umm-common-models :as umm-cmn]
             [clj-time.core :as t]
-            [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm-spec.umm-spec-core :as umm-spec]
             [cmr.common.mime-types :as mt]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]
             [cmr.umm-spec.test.location-keywords-helper :as lkt]))

@@ -15,19 +15,22 @@
   :description "Implements the CMR access control application."
   :url "***REMOVED***projects/CMR/repos/cmr/browse/access-control-app"
   :dependencies ~(concat '[[org.clojure/clojure "1.8.0"]
-                           [compojure "1.4.0"]
-                           [ring/ring-core "1.4.0" :exclusions [clj-time]]
+                           [compojure "1.5.1"]
+                           [ring/ring-core "1.5.0"]
                            [ring/ring-json "0.4.0"]]
                    cmr-deps)
   :plugins [[test2junit "1.2.1"]
             [lein-shell "0.4.0"]
             [lein-exec "0.3.4"]]
   :repl-options {:init-ns user}
+  :jvm-opts ^:replace ["-server"
+                       "-Dclojure.compiler.direct-linking=true"]
   :profiles
   {:dev {:dependencies ~(into '[[org.clojure/tools.namespace "0.2.11"]
-                                [pjstadig/humane-test-output "0.7.0"]
+                                [pjstadig/humane-test-output "0.8.1"]
                                 [proto-repl "0.3.1"]]
                           dev-cmr-deps)
+         :jvm-opts ^:replace ["-server"]
          :source-paths ["src" "dev" "test" "int_test"]
          :test-paths ["test" "int_test"]
          :injections [(require 'pjstadig.humane-test-output)

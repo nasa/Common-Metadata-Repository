@@ -8,7 +8,9 @@
             [cmr.common.log :as log :refer (debug info warn error)]))
 
 (defonce ^{:private true
-           :doc "An atom containing a map of explicitly set config values."}
+           :doc "An atom containing a map of explicitly set config values."
+           ;; dynamic is here only for testing purposes
+           :dynamic true}
   runtime-config-values
   (atom {}))
 
@@ -30,7 +32,8 @@
   [config-name]
   (str "CMR_" (csk/->SCREAMING_SNAKE_CASE_STRING config-name)))
 
-(defn- env-var-value
+;; dynamic is here only for testing purposes
+(defn- ^:dynamic env-var-value
   "Returns the value of the environment variable. Here specifically to enable testing of this
   namespace."
   [env-name]
@@ -218,9 +221,9 @@
                               (keys env-var-map))
          unknown-vars (set/difference (set cmr-env-vars) (set known-env-vars))]
      (if (seq unknown-vars)
-       (do 
+       (do
          (warn "POTENTIAL CONFIGURATION ERROR: The following CMR Environment variables were configured but were not recognized:"
-               (pr-str unknown-vars)) 
+               (pr-str unknown-vars))
          true)
        false))))
 

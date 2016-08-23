@@ -37,7 +37,7 @@
 
 (defmacro qc-and-report-exception
   [name final-reports tests bindings & body]
-  `(chuck/report-exception
+  `(chuck/report-exception-or-shrunk
     (test-check/quick-check
       ~tests
       (prop/for-all ~bindings

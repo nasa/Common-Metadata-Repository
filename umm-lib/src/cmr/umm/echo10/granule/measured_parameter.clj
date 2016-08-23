@@ -3,7 +3,7 @@
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.common.util :as util]
-            [cmr.umm.granule :as g]
+            [cmr.umm.umm-granule :as g]
             [cmr.umm.generator-util :as gu]))
 
 (defn- xml-elem->QAStats

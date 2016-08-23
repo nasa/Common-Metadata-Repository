@@ -1,7 +1,7 @@
 (ns cmr.umm.echo10.collection.platform
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [cmr.umm.echo10.collection.instrument :as inst]
             [cmr.umm.echo10.collection.characteristic :as char]))
 

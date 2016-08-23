@@ -9,7 +9,7 @@
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.serialize :as srl]
             [cmr.common.services.errors :as errors]
-            [cmr.umm.spatial :as umm-s]))
+            [cmr.umm.umm-spatial :as umm-s]))
 
 (defn mbr->elastic-attribs
   [prefix {:keys [west north east south]} crosses-antimeridian?]

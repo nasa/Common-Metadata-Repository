@@ -10,13 +10,13 @@
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-                 [compojure "1.4.0"]
-                 [ring/ring-core "1.4.0" :exclusions [clj-time]]
+                 [compojure "1.5.1"]
+                 [ring/ring-core "1.5.0"]
                  [ring/ring-json "0.4.0"]
                  [clj-http "2.0.0"]
                  [drift "1.5.3"]
 
-                 [org.clojure/tools.nrepl "0.2.11"]
+                 [org.clojure/tools.nrepl "0.2.12"]
 
                  ;; Database related
                  [org.quartz-scheduler/quartz "2.2.2"]
@@ -25,11 +25,13 @@
   :plugins [[test2junit "1.2.1"]
             [drift "1.5.3"]
             [lein-exec "0.3.4"]]
-
   :repl-options {:init-ns user}
+  :jvm-opts ^:replace ["-server"
+                       "-Dclojure.compiler.direct-linking=true"]
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
+         :jvm-opts ^:replace ["-server"]
          :source-paths ["src" "dev" "test"]}
 
    ;; This profile specifically here for generating documentation. It's faster than using the regular
@@ -37,10 +39,8 @@
    ;; 60 seconds before allowing the JVM to shutdown since no call to shutdown-agents is made.
    ;; Generate docs with: lein with-profile docs generate-docs
    :docs {}
-
    :uberjar {:main cmr.ingest.runner
              :aot :all}}
-
 
   :aliases {"generate-docs" ["exec" "-ep" (pr-str '(do
                                                     (use 'cmr.common-app.api-docs)

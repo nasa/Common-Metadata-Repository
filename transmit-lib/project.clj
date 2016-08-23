@@ -6,15 +6,16 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [clj-http "2.0.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [prismatic/schema "1.0.1"]
+                 [prismatic/schema "1.1.3"]
                  [org.clojure/data.csv "0.1.3"]]
 
   :plugins [[test2junit "1.2.1"]]
-
+  :jvm-opts ^:replace ["-server"
+                       "-Dclojure.compiler.direct-linking=true"]
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
-
+         :jvm-opts ^:replace ["-server"]
          :source-paths ["src" "dev" "test"]}}
 
   :aliases { ;; Alias to test2junit for consistency with lein-test-out

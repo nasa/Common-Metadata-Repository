@@ -20,9 +20,9 @@
             [clojure.data.xml :as x]
             [cmr.system-int-test.utils.fast-xml :as fx]
             [cmr.common.xml :as cx]
-            [cmr.umm.dif.collection]
-            [cmr.umm.iso-mends.collection]
-            [cmr.umm.iso-smap.collection]
+            [cmr.umm.dif.dif-collection]
+            [cmr.umm.iso-mends.iso-mends-collection]
+            [cmr.umm.iso-smap.iso-smap-collection]
             [cmr.system-int-test.data2.atom :as da]
             [cmr.system-int-test.data2.atom-json :as dj]
             [cmr.system-int-test.data2.kml :as dk]
@@ -614,4 +614,9 @@
          :results (json/decode body)}
         response))))
 
-
+(defn get-humanizers-report
+  []
+  (let [response (client/get (url/humanizers-report-url ) {:connection-manager (s/conn-mgr)})]
+   (if (= 200 (:status response))
+     (:body response)
+     response)))

@@ -1,7 +1,7 @@
 (ns cmr.umm.test.start-end-date
   "Tests for temporal to start-date/end-date conversion"
   (:require [clojure.test :refer :all]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [clj-time.core :as t]
             [cmr.umm.start-end-date :as sed]))
 

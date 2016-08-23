@@ -2,7 +2,7 @@
   "Contains functions for parsing and generating the ISO SMAP Archive and Processing Center"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [cmr.umm.iso-smap.helper :as h]))
 
 (defn- xml-elem->archive-center

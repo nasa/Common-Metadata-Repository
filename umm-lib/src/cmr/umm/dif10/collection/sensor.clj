@@ -2,7 +2,7 @@
   "Functions to parse and generate DIF10 sensor elements which are part of instrument elements"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [cmr.umm.dif10.collection.characteristic :as ch]))
 
 (defn xml-elem->Sensor

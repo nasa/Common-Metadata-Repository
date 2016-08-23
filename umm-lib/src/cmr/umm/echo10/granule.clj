@@ -3,9 +3,9 @@
   (:require [clojure.data.xml :as x]
             [clojure.java.io :as io]
             [cmr.common.xml :as cx]
-            [cmr.umm.granule :as g]
-            [cmr.umm.collection :as umm-c]
-            [cmr.umm.echo10.collection :as c]
+            [cmr.umm.umm-granule :as g]
+            [cmr.umm.umm-collection :as umm-c]
+            [cmr.umm.echo10.echo10-collection :as c]
             [cmr.umm.echo10.spatial :as s]
             [cmr.umm.echo10.granule.temporal :as gt]
             [cmr.umm.echo10.granule.platform-ref :as p-ref]
@@ -16,8 +16,8 @@
             [cmr.umm.echo10.granule.measured-parameter :as mp]
             [cmr.common.xml :as v]
             [cmr.common.util :as util]
-            [cmr.umm.echo10.core])
-  (:import cmr.umm.granule.UmmGranule))
+            [cmr.umm.echo10.echo10-core])
+  (:import cmr.umm.umm_granule.UmmGranule))
 
 (defn xml-elem->project-refs
   "Parses an ECHO10 Campaigns element of a Granule XML document and returns the short names."
@@ -146,7 +146,7 @@
   (when-let [value (util/extract-between-strings xml "<RestrictionFlag>" "</RestrictionFlag>" false)]
     (Double/parseDouble value)))
 
-(extend-protocol cmr.umm.echo10.core/UmmToEcho10Xml
+(extend-protocol cmr.umm.echo10.echo10-core/UmmToEcho10Xml
   UmmGranule
   (umm->echo10-xml
     ([granule]

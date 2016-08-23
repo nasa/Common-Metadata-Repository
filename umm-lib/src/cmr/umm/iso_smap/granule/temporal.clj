@@ -2,8 +2,8 @@
   "Contains functions for parsing and generating the ISO SMAP granule temporal"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]
-            [cmr.umm.granule :as g]))
+            [cmr.umm.umm-collection :as c]
+            [cmr.umm.umm-granule :as g]))
 
 (defn- xml-elem->RangeDateTime
   "Returns a UMM RangeDateTime from a parsed XML structure"

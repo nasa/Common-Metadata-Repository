@@ -1,7 +1,7 @@
 (ns cmr.umm.iso-smap.granule.spatial
   "Contains functions for parsing and generating the ISO SMAP granule spatial"
   (:require [cmr.common.xml :as cx]
-            [cmr.umm.granule :as g]
+            [cmr.umm.umm-granule :as g]
             [cmr.umm.iso-smap.spatial :as spatial]))
 
 (def extent-path

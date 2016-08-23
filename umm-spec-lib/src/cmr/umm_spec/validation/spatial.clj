@@ -7,7 +7,7 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.validation :as sv]
-            [cmr.umm-spec.validation.utils :as vu]
+            [cmr.umm-spec.validation.umm-spec-validation-utils :as vu]
             [cmr.common.util :as util]
             [cmr.umm-spec.models.umm-common-models :as common]
             [clojure.string :as string]

@@ -24,10 +24,10 @@
             [cmr.indexer.data.concepts.organization :as org]
             [cmr.indexer.data.concepts.tag :as tag]
             [cmr.indexer.data.concepts.location-keyword :as lk]
-            [cmr.indexer.data.concepts.humanizer :as humanizer]
+            [cmr.common-app.humanizer :as humanizer]
             [cmr.acl.core :as acl]
             [cmr.common.concepts :as concepts]
-            [cmr.umm.collection :as umm-c]
+            [cmr.umm.umm-collection :as umm-c]
             [cmr.umm.collection.entry-id :as eid]
             [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
             [cmr.common-app.services.kms-fetcher :as kf]
@@ -90,6 +90,11 @@
   [obj]
   (assoc obj :value.lowercase (str/lower-case (:value obj))))
 
+(defn- select-indexable-humanizer-fields
+  "Selects the fields from humanizers that can be indexed."
+  [value]
+  (select-keys value [:value :priority]))
+
 (defn- extract-humanized-elastic-fields
   "Descends into the humanized collection extracting values at the given humanized
   field path and returns a map of humanized and lowercase humanized elastic fields
@@ -98,8 +103,12 @@
   (let [prefix (subs (str base-es-field) 1)
         field (keyword (str prefix ".humanized2"))
         value-with-priorities (util/get-in-all humanized-collection path)
+        value-with-priorities (if (sequential? value-with-priorities)
+                                (map select-indexable-humanizer-fields value-with-priorities)
+                                (select-indexable-humanizer-fields value-with-priorities))
         value-with-lowercases (if (sequential? value-with-priorities)
-                                (map add-humanized-lowercase (distinct (filter :value value-with-priorities)))
+                                (map add-humanized-lowercase
+                                     (distinct (filter :value value-with-priorities)))
                                 (add-humanized-lowercase value-with-priorities))]
     {field value-with-lowercases}))
 

@@ -7,7 +7,7 @@
             [cmr.system-int-test.utils.search-util :as search]
             [clojure.string :as str]
             [cmr.common.mime-types :as mt]
-            [cmr.umm.granule :as umm-g]
+            [cmr.umm.umm-granule :as umm-g]
             [cmr.common.util :as u :refer [are3]]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.data2.collection :as dc]

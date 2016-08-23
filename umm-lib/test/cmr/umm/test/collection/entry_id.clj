@@ -1,7 +1,7 @@
 (ns cmr.umm.test.collection.entry-id
   "Test construction of entry-id and normalizing version-id"
   (:require [clojure.test :refer :all]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [cmr.umm.collection.entry-id :as eid]))
 
 (deftest entry-id

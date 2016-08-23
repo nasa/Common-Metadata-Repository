@@ -8,7 +8,7 @@
             [cmr.common.util :as util]
             [clojure.string :as str]
             [camel-snake-kebab.core :as csk]
-            [cmr.umm.spatial :as umm-s]
+            [cmr.umm.umm-spatial :as umm-s]
             [cmr.umm.echo10.spatial :as echo-s]
             [cmr.system-int-test.data2.atom :as atom]
             [cmr.system-int-test.data2.facets :as f]
