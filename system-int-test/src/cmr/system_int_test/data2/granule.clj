@@ -1,16 +1,16 @@
 (ns cmr.system-int-test.data2.granule
   "Contains data generators for example based testing in system integration tests."
-  (:require [cmr.umm.granule :as g]
-            [cmr.umm.collection :as c]
+  (:require [cmr.umm.umm-granule :as g]
+            [cmr.umm.umm-collection :as c]
             [cmr.umm.granule.temporal :as gt]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.common.date-time-parser :as p]
-            [cmr.umm.spatial :as umm-s]
+            [cmr.umm.umm-spatial :as umm-s]
             [cmr.common.util :as util]
             [cmr.umm.collection.entry-id :as eid]
             [cmr.spatial.orbits.swath-geometry :as swath])
-  (:import [cmr.umm.granule
+  (:import [cmr.umm.umm_granule
             Orbit
             DataProviderTimestamps]))
 

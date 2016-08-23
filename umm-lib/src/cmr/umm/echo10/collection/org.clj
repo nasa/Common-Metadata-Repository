@@ -2,7 +2,7 @@
   "Archive and Processing Center elements of echo10 are mapped umm organization elements."
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [camel-snake-kebab.core :as csk]))
 
 (defn xml-elem->Organizations
@@ -42,14 +42,14 @@
 
 (comment
   ;;;;;;;;;
-  (x/parse-str cmr.umm.test.echo10.collection/all-fields-collection-xml)
-  (parse-collection cmr.umm.test.echo10.collection/all-fields-collection-xml)
-  (xml-elem->Campaigns (x/parse-str cmr.umm.test.echo10.collection/all-fields-collection-xml))
+  (x/parse-str cmr.umm.test.echo10.echo10-collection-tests/all-fields-collection-xml)
+  (parse-collection cmr.umm.test.echo10.echo10-collection-tests/all-fields-collection-xml)
+  (xml-elem->Campaigns (x/parse-str cmr.umm.test.echo10.echo10-collection-tests/all-fields-collection-xml))
   (cx/elements-at-path
-    (x/parse-str cmr.umm.test.echo10.collection/all-fields-collection-xml)
+    (x/parse-str cmr.umm.test.echo10.echo10-collection-tests/all-fields-collection-xml)
     [:ArchiveCenter])
 
-  (xml-elem->Organizations (x/parse-str cmr.umm.test.echo10.collection/all-fields-collection-xml))
+  (xml-elem->Organizations (x/parse-str cmr.umm.test.echo10.echo10-collection-tests/all-fields-collection-xml))
   (let [orgs (vector (c/map->Organization {:type :archive-center :org-name "ac se"})
                      (c/map->Organization {:type :processing-center :org-name "pro se"}))
         arctr (generate-archive-center orgs)

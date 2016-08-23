@@ -7,7 +7,7 @@
   (:require [cmr.common.date-time-parser :as dtp]
             [clojure.string :as str]
             [cmr.common.util :as u]
-            [cmr.umm.core :as ummc]))
+            [cmr.umm.umm-core :as ummc]))
 
 (def collection-elastic-fields
   "These are the fields that must be retrieved from Elasticsearch to enforce ACLs"

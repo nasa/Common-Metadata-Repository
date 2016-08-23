@@ -3,13 +3,13 @@
   (:require [clojure.data.xml :as x]
             [clojure.java.io :as io]
             [cmr.common.xml :as cx]
-            [cmr.umm.iso-mends.core :as core]
-            [cmr.umm.granule :as c]
+            [cmr.umm.iso-mends.iso-mends-core :as core]
+            [cmr.umm.umm-granule :as c]
             [cmr.common.xml :as v])
-  (:import cmr.umm.granule.UmmGranule))
+  (:import cmr.umm.umm_granule.UmmGranule))
 
 
-(extend-protocol cmr.umm.iso-mends.core/UmmToIsoMendsXml
+(extend-protocol cmr.umm.iso-mends.iso-mends-core/UmmToIsoMendsXml
   UmmGranule
   (umm->iso-mends-xml
     ([granule]

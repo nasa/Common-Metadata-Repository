@@ -7,9 +7,9 @@ pom.xml.asc
 *.class
 /.lein-*
 /.nrepl-port
+.gorilla-repl-port
 /config
 /log
-/.nrepl-port
 /es_data
 /results_compare
 /scratch

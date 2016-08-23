@@ -4,7 +4,7 @@
             [clojure.set :as set]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [cmr.umm.iso-smap.helper :as h]))
 
 (def resource-type->related-url-type

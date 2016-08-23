@@ -17,9 +17,9 @@
             [cmr.spatial.serialize :as srl]
             [cmr.common.dev.util :as dev-util]
             [cmr.spatial.lr-binary-search :as lbs]
-            [cmr.umm.spatial :as umm-s]
-            [cmr.umm.collection :as c]
-            [cmr.umm.echo10.collection :as ec]
+            [cmr.umm.umm-spatial :as umm-s]
+            [cmr.umm.umm-collection :as c]
+            [cmr.umm.echo10.echo10-collection :as ec]
             [cmr.common.util :as u]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 

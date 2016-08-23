@@ -7,14 +7,14 @@
             [cmr.umm-spec.test.umm-generators :as umm-gen]
             [clojure.test.check.generators :as gen]
             [com.gfredericks.test.chuck.clojure-test :refer [for-all]]
-            [cmr.umm-spec.core :as core]
+            [cmr.umm-spec.umm-spec-core :as core]
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.test.location-keywords-helper :as lkt]
             [cmr.umm-spec.models.common :as umm-cmn]
             [cmr.umm-spec.util :as u]))
 
 (deftest test-version-steps
-  (with-redefs [cmr.umm-spec.versioning/versions ["1.0" "1.1" "1.2" "1.3"]]
+  (with-bindings {#'cmr.umm-spec.versioning/versions ["1.0" "1.1" "1.2" "1.3"]}
     (is (= [] (#'vm/version-steps "1.2" "1.2")))
     (is (= [["1.1" "1.2"] ["1.2" "1.3"]] (#'vm/version-steps "1.1" "1.3")))
     (is (= [["1.2" "1.1"] ["1.1" "1.0"]] (#'vm/version-steps "1.2" "1.0")))))

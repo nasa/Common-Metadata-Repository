@@ -1,7 +1,7 @@
 (ns cmr.umm.validation.validation-helper
   "Contains helper functions for validation."
   (:require [cmr.common.validations.core :as v]
-            [cmr.umm.validation.utils :as vu]
+            [cmr.umm.validation.validation-utils :as vu]
             [cmr.umm.related-url-helper :as ruh]))
 
 (def online-access-urls-validation

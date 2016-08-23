@@ -11,7 +11,7 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.virtual-product-util :as vp]
             [cmr.system-int-test.system :as s]
-            [cmr.umm.granule :as umm-g]
+            [cmr.umm.umm-granule :as umm-g]
             [cmr.virtual-product.config]
             [cmr.virtual-product.data.source-to-virtual-mapping :as svm]
             [cmr.common.util :refer [are2]]))

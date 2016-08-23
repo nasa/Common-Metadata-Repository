@@ -6,7 +6,7 @@
             [cmr.common.util :as cutil]
             [cmr.metadata-db.services.messages :as msg]
             [cmr.common.services.messages :as cmsg]
-            [cmr.common.config :as cfg :refer [defconfig] ]
+            [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.metadata-db.services.util :as util]
             [cmr.metadata-db.services.concept-validations :as cv]
             [cmr.metadata-db.services.provider-service :as provider-service]
@@ -172,7 +172,8 @@
     ;; else
     (errors/internal-error! (:error-message result) (:throwable result))))
 
-(defn try-to-save
+;; dynamic is here only for testing purposes to test failure cases.
+(defn ^:dynamic try-to-save
   "Try to save a concept. The concept must include a revision-id. Ensures that revision-id and
   concept-id constraints are enforced as well as post commit uniqueness constraints. Returns the
   concept if successful, otherwise throws an exception."

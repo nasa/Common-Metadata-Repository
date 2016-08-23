@@ -104,12 +104,12 @@
 (defn create-gzip-handler
   "Setup gzip compression for responses.  Compression will be used for any response larger than
   the configured minimum size."
-  [existing-handler min_gzip_size]
+  [existing-handler min-gzip-size]
   (doto (GzipHandler.)
     (.setHandler existing-handler)
     ;; All the mime types that we want to support compression with must be specified here.
     (.setMimeTypes ^java.util.Set (set mt/all-supported-mime-types))
-    (.setMinGzipSize min_gzip_size)))
+    (.setMinGzipSize min-gzip-size)))
 
 (defrecord WebServer
   [

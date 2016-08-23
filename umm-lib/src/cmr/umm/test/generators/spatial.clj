@@ -4,8 +4,8 @@
             [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.line-string :as l]
-            [cmr.umm.granule :as g]
-            [cmr.umm.spatial :as umm-s]))
+            [cmr.umm.umm-granule :as g]
+            [cmr.umm.umm-spatial :as umm-s]))
 
 
 (def longitude

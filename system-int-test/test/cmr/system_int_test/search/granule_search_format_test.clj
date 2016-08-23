@@ -21,8 +21,8 @@
             [cmr.common.concepts :as cu]
             [cmr.common.mime-types :as mt]
             [cmr.common.util :as util]
-            [cmr.umm.core :as umm]
-            [cmr.umm.spatial :as umm-s]
+            [cmr.umm.umm-core :as umm]
+            [cmr.umm.umm-spatial :as umm-s]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))

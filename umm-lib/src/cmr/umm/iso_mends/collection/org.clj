@@ -2,7 +2,7 @@
   "Archive and Processing Center elements of ISO are mapped umm organization elements."
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [cmr.umm.iso-mends.collection.keyword :as k]
             [cmr.umm.iso-mends.collection.helper :as h]))
 

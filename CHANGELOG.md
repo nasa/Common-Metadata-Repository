@@ -94,6 +94,11 @@ Items to include in each issue
 
 ## 1.58
 
+* CMR-2493 and CMR-2674 - Update to Clojure 1.8 and use direct linking
+  * Deployment Impacts
+    * The Elasticsearch Spatial Plugin needs to be deployed.
 * CMR-3260 - Allow dynamic update of humanizers
   * Deployment Impacts
     * Requires ingest of humanizer concept with existing humanizer instructions
+      * curl -XPUT -i -H "Echo-Token: xxx" -H "Content-Type: application/json" %CMR-SEARCH-ENDPOINT%/humanizers -d  @<file_path_to_humanizers_json_file>
+

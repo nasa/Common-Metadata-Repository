@@ -17,7 +17,7 @@
             [cmr.transmit.cubby :as cubby]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.elastic-utils.connect :as es-util]
-            [cmr.umm.core :as umm]
+            [cmr.umm.umm-core :as umm]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.message-queue.services.queue :as queue]
             [cheshire.core :as cheshire]

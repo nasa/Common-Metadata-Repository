@@ -135,6 +135,13 @@
            (fn [v] (or (nil? v) (and (string? v) (str/blank? v))))
            {:a true :b nil :c "value" :d false :e "" :f " "}))))
 
+(deftest remove-empty-maps-test
+  (are [x y]
+    (= x (util/remove-empty-maps y))
+    nil {:x {:y {:z nil :foo nil}}}
+    {:x {:y {:z 1}}} {:x {:y {:z 1 :a {:b nil}}}}
+    [{:x 1} {:y 2}] [{} {:x 1} {:a nil :b {:c nil}} {:y 2}]))
+
 (deftest rename-keys-with-test
   (testing "basic rename key tests"
     (let [params {:k [1 2]}

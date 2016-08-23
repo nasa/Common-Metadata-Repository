@@ -14,10 +14,12 @@
                  [sqlingvo "0.7.15"]]
 
   :plugins [[test2junit "1.2.1"]]
-
+  :jvm-opts ^:replace ["-server"
+                       "-Dclojure.compiler.direct-linking=true"]
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
+         :jvm-opts ^:replace ["-server"]
          :source-paths ["src" "dev" "test"]}}
 
   :aliases { ;; Alias to test2junit for consistency with lein-test-out

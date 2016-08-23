@@ -4,7 +4,7 @@
             [clojure.java.io :as io]
             [cmr.common.util :as util]
             [cmr.common.mime-types :as mt]
-            [cmr.umm.granule :as umm-g]
+            [cmr.umm.umm-granule :as umm-g]
             [cmr.umm.echo10.granule :as g]
             [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
 

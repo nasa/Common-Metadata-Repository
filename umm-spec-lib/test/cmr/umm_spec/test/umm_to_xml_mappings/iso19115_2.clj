@@ -10,7 +10,7 @@
             [cmr.common.util :refer [are3]]
             [cmr.common.xml :as xml]
             [cmr.common.xml.xslt :as xslt]
-            [cmr.umm-spec.core :as core]
+            [cmr.umm-spec.umm-spec-core :as core]
             [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
 (def iso-no-use-constraints "<?xml version=\"1.0\" encoding=\"UTF-8\"?>

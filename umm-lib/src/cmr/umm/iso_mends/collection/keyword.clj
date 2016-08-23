@@ -3,7 +3,7 @@
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [clojure.string :as s]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [cmr.umm.iso-mends.collection.helper :as h]))
 
 (defn- xml-elem->keywords

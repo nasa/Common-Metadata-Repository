@@ -3,7 +3,7 @@
   (:require [clj-time.core :as t]
             [cmr.common.validations.core :as v]
             [cmr.common.util :as util]
-            [cmr.umm.collection :as c]
+            [cmr.umm.umm-collection :as c]
             [cmr.umm.collection.product-specific-attribute :as psa]))
 
 (def no-range-data-types
