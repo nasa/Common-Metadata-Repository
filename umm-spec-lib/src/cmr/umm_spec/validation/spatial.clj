@@ -9,7 +9,7 @@
             [cmr.spatial.validation :as sv]
             [cmr.umm-spec.validation.utils :as vu]
             [cmr.common.util :as util]
-            [cmr.umm-spec.models.common :as common]
+            [cmr.umm-spec.models.umm-common-models :as common]
             [clojure.string :as string]
             [camel-snake-kebab.core :as csk]))
 

@@ -3,7 +3,7 @@
   (:require [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as parser]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
-            [cmr.umm-spec.models.collection :as coll]
+            [cmr.umm-spec.models.umm-collection-models :as coll]
             [clojure.test :refer :all]
             [clojure.data.xml :as x]
             [clojure.java.io :as io]

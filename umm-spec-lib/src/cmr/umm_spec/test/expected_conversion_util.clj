@@ -6,7 +6,7 @@
            [cmr.common.util :as util :refer [update-in-each]]
            [cmr.umm-spec.location-keywords :as lk]
            [cmr.umm-spec.test.location-keywords-helper :as lkt]
-           [cmr.umm-spec.models.collection :as umm-c]))
+           [cmr.umm-spec.models.umm-collection-models :as umm-c]))
 
 
 (def relation-set #{"GET DATA"

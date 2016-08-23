@@ -4,7 +4,7 @@
             [cmr.common.validations.core :as v]
             [cmr.umm-spec.validation.utils :as vu]
             [cmr.common.util :as util]
-            [cmr.umm-spec.models.common :as common]
+            [cmr.umm-spec.models.umm-common-models :as common]
             [cmr.umm-spec.additional-attribute :as aa]))
 
 (def no-range-data-types

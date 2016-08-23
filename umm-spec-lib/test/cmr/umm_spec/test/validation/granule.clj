@@ -2,8 +2,8 @@
   "This has tests for UMM validations."
   (:require [clojure.test :refer :all]
             [cmr.umm-spec.validation.core :as v]
-            [cmr.umm-spec.models.collection :as c]
-            [cmr.umm-spec.models.common :as cmn]
+            [cmr.umm-spec.models.umm-collection-models :as c]
+            [cmr.umm-spec.models.umm-common-models :as cmn]
             [cmr.umm.granule :as g]
             [cmr.umm-spec.test.validation.helpers :as helpers]
             [cmr.spatial.mbr :as m]

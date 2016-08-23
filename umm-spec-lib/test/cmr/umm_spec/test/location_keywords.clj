@@ -7,7 +7,7 @@
             [cmr.common.cache :as cache]
             [cmr.common.cache.in-memory-cache :as imc]
             [cmr.umm-spec.test.location-keywords-helper :as lkt]
-            [cmr.umm-spec.models.collection :as umm-c]))
+            [cmr.umm-spec.models.umm-collection-models :as umm-c]))
 
 (deftest test-location-keyword-lookup
   (testing "Looking up a root keyword returns the top hierarchy result."
