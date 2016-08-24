@@ -45,7 +45,7 @@
 
 (defn- parse-data-dates
   "Returns seq of UMM-CMN DataDates parsed from SERF document."
-  [doc apply-default?]
+  [doc]
   (let [[md-dates-el] (select doc "/SERF")
         tag-types [["SERF_Creation_Date"      "CREATE"]
                    ["Last_SERF_Revision_Date" "UPDATE"]
@@ -53,7 +53,7 @@
     (filter :Date
             (for [[tag date-type] tag-types]
               {:Type date-type
-               :Date (date/without-default (value-of md-dates-el tag) apply-default?)}))))
+               :Date (date/without-default (value-of md-dates-el tag))}))))
 
 (def serf-roles->umm-roles
   "Maps SERF roles to UMM roles"
@@ -141,13 +141,13 @@
 
 (defn- parse-additional-attributes
   "Parse a SERF document for Extended Metadata Elements and returns a UMM-S Additional Attrib elem"
-  [doc apply-default?]
+  [doc]
   (concat (for [aa (select doc "/SERF/Extended_Metadata/Metadata")]
             {:Group (value-of aa "Group")
              :Name (value-of aa "Name")
              :DataType (value-of aa "Type")
-             :Description (without-default-value-of aa "Description" apply-default?)
-             :UpdateDate (date/without-default (value-of aa "Update_Date") apply-default?)
+             :Description (without-default-value-of aa "Description")
+             :UpdateDate (date/without-default (value-of aa "Update_Date"))
              :Value (value-of aa "Value")})
           [{:Name "Metadata_Name"
             :Description "Root SERF Metadata_Name Object"
@@ -202,10 +202,10 @@
    :ISOTopicCategories (values-at doc "/SERF/ISO_Topic_Category")
    :Platforms (parse-platforms doc apply-default?)
    :Distributions (parse-distributions doc)
-   :AdditionalAttributes (parse-additional-attributes doc apply-default?)
+   :AdditionalAttributes (parse-additional-attributes doc)
    :AncillaryKeywords (values-at doc "/SERF/Keyword")
    :Projects (parse-projects doc)
-   :MetadataDates (parse-data-dates doc apply-default?)
+   :MetadataDates (parse-data-dates doc)
    :ServiceKeywords (parse-service-keywords doc)
    :ScienceKeywords (parse-science-keywords doc)})
 

@@ -11,33 +11,32 @@
 
 (defn- parse-instrument-sensors
   "Returns the parsed instrument sensors from the instrument element."
-  [instrument apply-default?]
+  [instrument]
   (for [sensor (select instrument "eos:sensor/eos:EOS_Sensor")]
     {:ShortName (char-string-value sensor "eos:identifier/gmd:MD_Identifier/gmd:code")
      :LongName (char-string-value sensor "eos:identifier/gmd:MD_Identifier/gmd:description")
-     :Technique (without-default-value-of sensor "eos:type/gco:CharacterString" apply-default?)
+     :Technique (without-default-value-of sensor "eos:type/gco:CharacterString")
      :Characteristics (ch/parse-characteristics sensor)}))
 
 (defn- xml-elem->instrument
-  [instrument-elem apply-default?]
+  [instrument-elem]
   {:ShortName (value-of instrument-elem iso/short-name-xpath)
    :LongName (value-of instrument-elem iso/long-name-xpath)
-   :Technique (without-default-value-of
-                instrument-elem "gmi:type/gco:CharacterString" apply-default?)
+   :Technique (without-default-value-of instrument-elem "gmi:type/gco:CharacterString")
    :Characteristics (ch/parse-characteristics instrument-elem)
-   :Sensors (parse-instrument-sensors instrument-elem apply-default?)})
+   :Sensors (parse-instrument-sensors instrument-elem)})
 
 (defn- xml-elem->instrument-mapping
-  [instrument-elem apply-default?]
+  [instrument-elem]
   ;; the instrument element could be under tag of either :EOS_Instrument or :MI_Instrument
   ;; here we just parse the :content to avoid using two different xpaths.
   (let [instrument-elem (first (:content instrument-elem))
         id (get-in instrument-elem [:attrs :id])
-        instrument (xml-elem->instrument instrument-elem apply-default?)]
+        instrument (xml-elem->instrument instrument-elem)]
     [(str "#" id) instrument]))
 
 (defn xml-elem->instruments-mapping
   "Returns the instrument id to Instrument mapping by parsing the given xml element"
-  [doc apply-default?]
+  [doc]
   (into {}
-        (map #(xml-elem->instrument-mapping % apply-default?) (select doc instruments-xpath))))
+        (map xml-elem->instrument-mapping (select doc instruments-xpath))))

@@ -50,47 +50,47 @@
 
 (defn parse-metadata-association
   "Returns a UMM MetadataAssocation from an ECHO10 CollectionAsscociation element."
-  [element apply-default?]
+  [element]
   (let [version-id (value-of element "VersionId")
         assoc-type (value-of element "CollectionType")]
     {:EntryId (value-of element "ShortName")
-     :Version (u/without-default version-id apply-default?)
-     :Type (u/without-default assoc-type apply-default?)
+     :Version (u/without-default version-id)
+     :Type (u/without-default assoc-type)
      :Description (value-of element "CollectionUse")}))
 
 (defn parse-metadata-associations
   "Returns a seq of UMM MetadataAssocations from an ECHO10 document."
-  [doc apply-default?]
-  (map #(parse-metadata-association % apply-default?)
+  [doc]
+  (map parse-metadata-association
        (select doc "/Collection/CollectionAssociations/CollectionAssociation")))
 
 (defn parse-data-dates
   "Returns UMM DataDates seq from ECHO 10 XML document."
-  [doc apply-default?]
+  [doc]
   (for [[date-type xpath] [["CREATE" "InsertTime"]
                            ["UPDATE" "LastUpdate"]
                            ["DELETE" "DeleteTime"]]
-        :let [date-val (date/without-default (value-of doc (str "/Collection/" xpath)) apply-default?)]
+        :let [date-val (date/without-default (value-of doc (str "/Collection/" xpath)))]
         :when date-val]
     {:Type date-type
      :Date date-val}))
 
 (defn parse-tiling
   "Returns a UMM TilingIdentificationSystem map from the given ECHO10 XML document."
-  [doc apply-default?]
+  [doc]
   (for [sys-el (select doc "/Collection/TwoDCoordinateSystems/TwoDCoordinateSystem")]
     {:TilingIdentificationSystemName (u/without-default
-                                       (value-of sys-el "TwoDCoordinateSystemName") apply-default?)
+                                       (value-of sys-el "TwoDCoordinateSystemName"))
      :Coordinate1 (fields-from (first (select sys-el "Coordinate1")) :MinimumValue :MaximumValue)
      :Coordinate2 (fields-from (first (select sys-el "Coordinate2")) :MinimumValue :MaximumValue)}))
 
 (defn- parse-platforms
   "Parses platforms from the ECHO10 collection document."
-  [doc apply-default?]
+  [doc]
   (for [plat (select doc "/Collection/Platforms/Platform")]
     {:ShortName (value-of plat "ShortName")
-     :LongName (u/without-default-value-of plat "LongName" apply-default?)
-     :Type (u/without-default-value-of plat "Type" apply-default?)
+     :LongName (u/without-default-value-of plat "LongName")
+     :Type (u/without-default-value-of plat "Type")
      :Characteristics (parse-characteristics plat)
      :Instruments (map parse-instrument (select plat "Instruments/Instrument"))}))
 
@@ -100,7 +100,7 @@
   {:EntryTitle (value-of doc "/Collection/DataSetId")
    :ShortName  (value-of doc "/Collection/ShortName")
    :Version    (value-of doc "/Collection/VersionId")
-   :DataDates  (parse-data-dates doc apply-default?)
+   :DataDates  (parse-data-dates doc)
    :Abstract   (value-of doc "/Collection/Description")
    :CollectionDataType (value-of doc "/Collection/CollectionDataType")
    :Purpose    (value-of doc "/Collection/SuggestedUsage")
@@ -116,7 +116,7 @@
    :SpatialExtent    (spatial/parse-spatial doc)
    :TemporalExtents  (or (seq (parse-temporal doc))
                          (when apply-default? u/not-provided-temporal-extents))
-   :Platforms (or (seq (parse-platforms doc apply-default?))
+   :Platforms (or (seq (parse-platforms doc))
                   (when apply-default? u/not-provided-platforms))
    :ProcessingLevel {:Id (value-of doc "/Collection/ProcessingLevelId")
                      :ProcessingLevelDescription (value-of doc "/Collection/ProcessingLevelDescription")}
@@ -127,13 +127,13 @@
                             :ParameterRangeBegin (value-of aa "ParameterRangeBegin")
                             :ParameterRangeEnd (value-of aa "ParameterRangeEnd")
                             :Value (value-of aa "Value")})
-   :MetadataAssociations (parse-metadata-associations doc apply-default?)
+   :MetadataAssociations (parse-metadata-associations doc)
    :Projects (for [proj (select doc "/Collection/Campaigns/Campaign")]
                {:ShortName (value-of proj "ShortName")
                 :LongName (value-of proj "LongName")
                 :StartDate (value-of proj "StartDate")
                 :EndDate (value-of proj "EndDate")})
-   :TilingIdentificationSystems (parse-tiling doc apply-default?)
+   :TilingIdentificationSystems (parse-tiling doc)
    :RelatedUrls (ru/parse-related-urls doc)
    :ScienceKeywords (for [sk (select doc "/Collection/ScienceKeywords/ScienceKeyword")]
                       {:Category (value-of sk "CategoryKeyword")

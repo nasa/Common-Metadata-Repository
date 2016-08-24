@@ -168,7 +168,7 @@
                         md-data-id-el
                         "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
      :Distributions (dru/parse-distributions doc)
-     :Platforms (platform/parse-platforms doc apply-default?)
+     :Platforms (platform/parse-platforms doc)
      :Projects (parse-projects doc)
 
      :PublicationReferences (for [publication (select md-data-id-el publication-xpath)

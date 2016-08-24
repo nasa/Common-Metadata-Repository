@@ -80,25 +80,18 @@
 
 (defn without-default
   "DEPRECATED: We will no longer remove default values.
-  Returns nil if x is the not-provided placeholder value, else returns x when apply defalut
-  is truned on; otherwise always returns the value."
-  ([x]
-   (without-default x (:apply-default? default-parsing-options)))
-  ([x apply-default?]
-   (if apply-default?
-     (when-not (= x not-provided)
-       x)
-     x)))
+  Returns nil if x is the not-provided placeholder value, else returns x."
+  [x]
+  (when-not (= x not-provided)
+    x))
 
 (defn without-default-value-of
   "DEPRECATED: We will no longer remove default values.
   Returns the parsed value of the given doc on the given xpath and converting the 'Not provided'
-  default value to nil when apply default is turned on; otherwise always returns the value."
-  ([doc xpath]
-   (without-default-value-of doc xpath (:apply-default? default-parsing-options)))
-  ([doc xpath apply-default?]
-   (let [value (p/value-of doc xpath)]
-     (without-default value apply-default?))))
+  default value to nil."
+  [doc xpath]
+  (let [value (p/value-of doc xpath)]
+    (without-default value)))
 
 (defn nil-to-empty-string
   "Returns the string itself or empty string if it is nil."

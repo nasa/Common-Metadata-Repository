@@ -63,7 +63,7 @@
 
 (defn parse-data-dates
   "Returns seq of UMM-C DataDates parsed from DIF 10 XML document."
-  [doc apply-default?]
+  [doc]
   (let [[md-dates-el] (select doc "/DIF/Metadata_Dates")
         tag-types [["Data_Creation"      "CREATE"]
                    ["Data_Last_Revision" "UPDATE"]
@@ -73,7 +73,7 @@
             (for [[tag date-type] tag-types
                   :let [date-value (-> md-dates-el
                                        (value-of tag)
-                                       (date/without-default apply-default?)
+                                       date/without-default
                                        ;; Since the DIF 10 date elements are actually just a string
                                        ;; type, they may contain anything, and so we need to try to
                                        ;; parse them here and return nil if they do not actually
@@ -93,7 +93,7 @@
    :CollectionDataType (value-of doc "/DIF/Collection_Data_Type")
    :Purpose (value-of doc "/DIF/Summary/Purpose")
    :DataLanguage (value-of doc "/DIF/Dataset_Language")
-   :DataDates (parse-data-dates doc apply-default?)
+   :DataDates (parse-data-dates doc)
    :ISOTopicCategories (values-at doc "DIF/ISO_Topic_Category")
    :TemporalKeywords (values-at doc "/DIF/Temporal_Coverage/Temporal_Info/Ancillary_Temporal_Keyword")
    :CollectionProgress (value-of doc "/DIF/Dataset_Progress")
@@ -112,7 +112,7 @@
    :Platforms (for [platform (select doc "/DIF/Platform")]
                 {:ShortName (value-of platform "Short_Name")
                  :LongName (value-of platform "Long_Name")
-                 :Type (without-default-value-of platform "Type" apply-default?)
+                 :Type (without-default-value-of platform "Type")
                  :Characteristics (parse-characteristics platform)
                  :Instruments (parse-instruments platform apply-default?)})
    :TemporalExtents (for [temporal (select doc "/DIF/Temporal_Coverage")]
@@ -168,10 +168,9 @@
    :RelatedUrls (ru/parse-related-urls doc)
    :MetadataAssociations (for [ma (select doc "/DIF/Metadata_Association")]
                            {:EntryId (value-of ma "Entry_ID/Short_Name")
-                            :Version (without-default-value-of ma "Entry_ID/Version" apply-default?)
-                            :Description (without-default-value-of ma "Description" apply-default?)
-                            :Type (string/upper-case
-                                    (without-default-value-of ma "Type" apply-default?))})
+                            :Version (without-default-value-of ma "Entry_ID/Version")
+                            :Description (without-default-value-of ma "Description")
+                            :Type (string/upper-case (without-default-value-of ma "Type"))})
    :ScienceKeywords (for [sk (select doc "/DIF/Science_Keywords")]
                       {:Category (value-of sk "Category")
                        :Topic (value-of sk "Topic")

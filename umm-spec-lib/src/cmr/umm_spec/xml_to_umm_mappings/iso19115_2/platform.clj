@@ -12,19 +12,18 @@
        "/eos:EOS_Platform"))
 
 (defn xml-elem->platform
-  [instruments-mapping platform-elem apply-default?]
+  [instruments-mapping platform-elem]
   (let [instrument-ids (keep #(get-in % [:attrs :xlink/href]) (select platform-elem "gmi:instrument"))
         instruments (seq (map (partial get instruments-mapping) instrument-ids))]
     {:ShortName (value-of platform-elem iso/short-name-xpath)
      :LongName (value-of platform-elem iso/long-name-xpath)
-     :Type (without-default-value-of
-             platform-elem "gmi:description/gco:CharacterString" apply-default?)
+     :Type (without-default-value-of platform-elem "gmi:description/gco:CharacterString")
      :Characteristics (ch/parse-characteristics platform-elem)
      :Instruments instruments}))
 
 (defn parse-platforms
   "Returns the platforms parsed from the given xml document."
-  [doc apply-default?]
-  (let [instruments-mapping (inst/xml-elem->instruments-mapping doc apply-default?)]
-    (seq (map #(xml-elem->platform instruments-mapping % apply-default?)
+  [doc]
+  (let [instruments-mapping (inst/xml-elem->instruments-mapping doc)]
+    (seq (map #(xml-elem->platform instruments-mapping %)
               (select doc platforms-xpath)))))
