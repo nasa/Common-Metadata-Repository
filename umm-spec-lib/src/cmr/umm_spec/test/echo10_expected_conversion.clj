@@ -177,4 +177,5 @@
       (update-in [:LocationKeywords] conversion-util/fix-location-keyword-conversion)
       ;; CMR 2716 Getting rid of SpatialKeywords but keeping them for legacy purposes.
       (assoc :SpatialKeywords nil)
-      (assoc :PaleoTemporalCoverages nil)))
+      (assoc :PaleoTemporalCoverages nil)
+      (assoc :MetadataDates nil)))

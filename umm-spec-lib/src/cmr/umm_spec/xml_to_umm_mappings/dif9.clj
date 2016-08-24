@@ -2,6 +2,7 @@
   "Defines mappings from DIF9 XML into UMM records"
   (:require [cmr.common.xml.simple-xpath :refer [select text]]
             [cmr.common.xml.parse :refer :all]
+            [clj-time.format :as f]
             [camel-snake-kebab.core :as csk]
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.json-schema :as js]
@@ -80,6 +81,14 @@
       (subs entry-id 0 short-name-length)
       entry-id)))
 
+(defn- get-metadata-dates
+  "Returns a list of metadata dates"
+  [doc]
+  (let [last-revision-date (value-of doc "DIF/Last_DIF_Revision_Date")]
+    (when (some? last-revision-date)
+      [{:Date (f/parse (f/formatters :date) last-revision-date)
+        :Type "UPDATE"}])))
+
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
   [doc]
@@ -96,6 +105,7 @@
      ;; Data Dates is required
      ;; Implement as part of CMR-2867
      :DataDates [su/not-provided-data-date]
+     :MetadataDates (get-metadata-dates doc)
      :ISOTopicCategories (values-at doc "DIF/ISO_Topic_Category")
      :TemporalKeywords (values-at doc "/DIF/Data_Resolution/Temporal_Resolution")
      :Projects (for [proj (select doc "/DIF/Project")]

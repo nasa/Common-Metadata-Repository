@@ -215,6 +215,13 @@
       (assoc :ValueAccuracyExplanation nil)
       (assoc :Description (su/with-default (:Description attribute)))))
 
+(defn- expected-metadata-dates
+  [metadata-dates]
+  (let [last-update-date (su/get-latest-metadata-update-date metadata-dates)]
+    (when (some? last-update-date)
+      [{:Date (f/unparse (f/formatters :date) last-update-date)
+        :Type "UPDATE"}])))
+
 (defn umm-expected-conversion-dif9
   [umm-coll]
   (let [expected-contact-persons (expected-dif-contact-persons umm-coll)]
@@ -243,4 +250,5 @@
         (update-in [:RelatedUrls] conversion-util/expected-related-urls-for-dif-serf)
         ;;CMR-2716 SpatialKeywords are being replaced by LocationKeywords.
         (assoc :SpatialKeywords nil)
+        (update :MetadataDates expected-metadata-dates)
         js/parse-umm-c)))

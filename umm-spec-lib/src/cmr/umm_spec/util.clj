@@ -169,3 +169,10 @@
   "Returns an ISO gco:CharacterString with contents taken from the given xpath."
   [context xpath]
   (char-string (select context xpath)))
+
+(defn get-latest-metadata-update-date
+  [metadata-dates]
+  (def metadata-dates metadata-dates)
+  (let [update-dates (filter #(= "UPDATE" (:Type %)) metadata-dates)
+        dates (sort (mapv #(:Date %) update-dates))]
+    (last dates)))

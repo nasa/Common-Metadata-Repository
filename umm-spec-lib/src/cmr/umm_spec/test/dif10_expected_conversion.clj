@@ -217,4 +217,5 @@
       (update-in [:Abstract] #(or % su/not-provided))
       ;; CMR-2716 SpatialKeywords are replaced by LocationKeywords
       (assoc :SpatialKeywords nil)
+      (assoc :MetadataDates nil)
       js/parse-umm-c))
