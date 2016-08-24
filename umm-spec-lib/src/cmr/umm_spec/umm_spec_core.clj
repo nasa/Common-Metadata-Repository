@@ -25,6 +25,7 @@
             [cmr.umm-spec.umm-json :as umm-json]
             [cmr.umm-spec.versioning :as ver]
             [cmr.umm-spec.version-migration :as vm]
+            [cmr.umm-spec.util :as u]
             [cmr.common.mime-types :as mt])
   (:import (cmr.umm_spec.models.umm_collection_models UMM-C)
            (cmr.umm_spec.models.umm_service_models UMM-S)))
@@ -73,17 +74,22 @@
       (validate-xml concept-type format-key metadata))))
 
 (defn parse-metadata
-  "Parses metadata of the specific concept type and format into UMM records"
-  [context concept-type fmt metadata]
-  (condp = [concept-type (mt/format-key fmt)]
-    [:collection :umm-json] (umm-json/json->umm context :collection metadata (umm-json-version fmt))
-    [:collection :echo10]   (echo10-to-umm/echo10-xml-to-umm-c context (xpath/context metadata))
-    [:collection :dif]      (dif9-to-umm/dif9-xml-to-umm-c (xpath/context metadata))
-    [:collection :dif10]    (dif10-to-umm/dif10-xml-to-umm-c (xpath/context metadata))
-    [:collection :iso19115] (iso19115-2-to-umm/iso19115-2-xml-to-umm-c context
-                                                                       (xpath/context metadata))
-    [:collection :iso-smap] (iso-smap-to-umm/iso-smap-xml-to-umm-c (xpath/context metadata))
-    [:service :serf]        (serf-to-umm/serf-xml-to-umm-s (xpath/context metadata))))
+  "Parses metadata of the specific concept type and format into UMM records.
+  The :apply-default? option tells the parsing code to apply the default values for fields
+  when parsing the metadata into umm. It defaults to true."
+  ([context concept-type fmt metadata]
+   (parse-metadata context concept-type fmt metadata u/default-parsing-options))
+  ([context concept-type fmt metadata options]
+   (condp = [concept-type (mt/format-key fmt)]
+     [:collection :umm-json] (umm-json/json->umm context :collection metadata (umm-json-version fmt))
+     [:collection :echo10]   (echo10-to-umm/echo10-xml-to-umm-c
+                               context (xpath/context metadata) options)
+     [:collection :dif]      (dif9-to-umm/dif9-xml-to-umm-c (xpath/context metadata) options)
+     [:collection :dif10]    (dif10-to-umm/dif10-xml-to-umm-c (xpath/context metadata) options)
+     [:collection :iso19115] (iso19115-2-to-umm/iso19115-2-xml-to-umm-c
+                               context (xpath/context metadata) options)
+     [:collection :iso-smap] (iso-smap-to-umm/iso-smap-xml-to-umm-c (xpath/context metadata) options)
+     [:service :serf]        (serf-to-umm/serf-xml-to-umm-s (xpath/context metadata) options))))
 
 (defn generate-metadata
   "Returns the generated metadata for the given metadata format and umm record.

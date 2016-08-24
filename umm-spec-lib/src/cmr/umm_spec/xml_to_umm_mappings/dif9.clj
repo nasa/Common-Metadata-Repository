@@ -82,7 +82,7 @@
 
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
-  [doc]
+  [doc {:keys [apply-default?]}]
   (let [entry-id (value-of doc "/DIF/Entry_ID")
         version-id (value-of doc "/DIF/Data_Set_Citation/Version")
         short-name (get-short-name entry-id version-id)]
@@ -136,12 +136,15 @@
      ;; umm-lib only has ProcessingLevelId and it is from Metadata Name "ProductLevelId"
      ;; Need to double check which implementation is correct.
      :ProcessingLevel {:Id
-                       (su/with-default (value-of doc "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelId']/Value"))
+                       (su/with-default
+                         (value-of doc
+                                   "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelId']/Value")
+                                   apply-default?)
 
                        :ProcessingLevelDescription
                        (value-of doc "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelDescription']/Value")}
 
-     :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc)
+     :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc apply-default?)
      :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
                               (into {} (map (fn [x]
                                               (if (keyword? x)
@@ -186,6 +189,7 @@
                           (center/parse-data-centers doc))}))
 
 (defn dif9-xml-to-umm-c
-  "Returns UMM-C collection record from DIF9 collection XML document."
-  [metadata]
-  (js/parse-umm-c (parse-dif9-xml metadata)))
+  "Returns UMM-C collection record from DIF9 collection XML document. The :apply-default? option
+  tells the parsing code to set the default values for fields when parsing the metadata into umm."
+  [metadata options]
+  (js/parse-umm-c (parse-dif9-xml metadata options)))

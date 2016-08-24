@@ -69,7 +69,9 @@
      :EndsAtPresentFlag (some? (seq (select temporal "gml:TimePeriod/gml:endPosition[@indeterminatePosition='now']")))}))
 
 (defn iso-smap-xml-to-umm-c
-  [doc]
+  "Returns UMM-C collection record from ISO-SMAP collection XML document. The :apply-default? option
+  tells the parsing code to set the default values for fields when parsing the metadata into umm."
+  [doc {:keys [apply-default?]}]
   (let [data-id-el (first (select doc md-identification-base-xpath))
         short-name-el (first (select doc short-name-identification-xpath))]
     (js/parse-umm-c
@@ -88,13 +90,13 @@
        :Platforms (let [smap-keywords (values-at data-id-el keywords-xpath-str)]
                     (kws/parse-platforms smap-keywords))
        :TemporalExtents (or (seq (parse-temporal-extents data-id-el))
-                            u/not-provided-temporal-extents)
+                            (when apply-default? u/not-provided-temporal-extents))
        :ScienceKeywords (parse-science-keywords data-id-el)
        :SpatialExtent (spatial/parse-spatial data-id-el)
        :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)
        ;; Required by UMM-C
-       :RelatedUrls [u/not-provided-related-url]
+       :RelatedUrls (when apply-default? [u/not-provided-related-url])
        ;; Required by UMM-C
-       :ProcessingLevel {:Id u/not-provided}
+       :ProcessingLevel (when apply-default? {:Id u/not-provided})
        ;; DataCenters is not implemented but is required in UMM-C
-       :DataCenters [u/not-provided-data-center]})))
+       :DataCenters (when apply-default? [u/not-provided-data-center])})))

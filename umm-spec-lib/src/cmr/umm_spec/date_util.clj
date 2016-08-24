@@ -13,9 +13,12 @@
   (or x default-date-value))
 
 (defn not-default
-  "Returns x if it is not the default date value string."
-  [x]
-  (when (not= x default-date-value)
+  "Returns x if it is not the default date value string when apply default is turned on;
+  Otherwise always returns the value."
+  [x apply-default?]
+  (if apply-default?
+    (when (not= x default-date-value)
+      x)
     x))
 
 (defn latest-date-of-type

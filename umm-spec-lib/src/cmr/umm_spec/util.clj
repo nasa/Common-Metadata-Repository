@@ -8,6 +8,10 @@
             [cmr.common.xml.parse :as p]
             [cmr.common.xml.simple-xpath :refer [select]]))
 
+(def default-parsing-options
+  "Defines the default options for parsing metadata into umm"
+  {:apply-default? true})
+
 (def not-provided
   "place holder string value for not provided string field"
   "Not provided")
@@ -55,32 +59,42 @@
        seq))
 
 (defn country-with-default
- "The default of 'Not provided' is too long so specify an alternative default for country."
- [country]
- (or country "Unknown"))
+  "The default of 'Not provided' is too long so specify an alternative default for country."
+  [country]
+  (or country "Unknown"))
 
 (defn with-default
   "Returns the value if it exists or returns the default value 'Not provided'."
-  [value]
-  (if (some? value)
-    value
-    not-provided))
+  ([value]
+   (with-default value (:apply-default? default-parsing-options)))
+  ([value apply-default?]
+   (if apply-default?
+     (if (some? value)
+       value
+       not-provided)
+     value)))
 
 (defn without-default
   "DEPRECATED: We will no longer remove default values.
-   Returns nil if x is the not-provided placeholder value, else returns x."
-  [x]
-  (when (not= x not-provided)
-    x))
+  Returns nil if x is the not-provided placeholder value, else returns x when apply defalut
+  is truned on; otherwise always returns the value."
+  ([x]
+   (without-default x (:apply-default? default-parsing-options)))
+  ([x apply-default?]
+   (if apply-default?
+     (when-not (= x not-provided)
+       x)
+     x)))
 
 (defn without-default-value-of
   "DEPRECATED: We will no longer remove default values.
-   Returns the parsed value of the given doc on the given xpath and converting the 'Not provided'
-  default value to nil."
-  [doc xpath]
-  (let [value (p/value-of doc xpath)]
-    (when-not (= value not-provided)
-      value)))
+  Returns the parsed value of the given doc on the given xpath and converting the 'Not provided'
+  default value to nil when apply default is turned on; otherwise always returns the value."
+  ([doc xpath]
+   (without-default-value-of doc xpath (:apply-default? default-parsing-options)))
+  ([doc xpath apply-default?]
+   (let [value (p/value-of doc xpath)]
+     (without-default value apply-default?))))
 
 (defn nil-to-empty-string
   "Returns the string itself or empty string if it is nil."

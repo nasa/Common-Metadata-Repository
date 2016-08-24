@@ -22,7 +22,7 @@
 
 (defn- elements->additional-attributes
   "Returns the additional attributes parsed from the given additional attributes elements."
-  [aas]
+  [aas apply-default?]
   (when aas
     (for [aa aas]
       {:Group (char-string-value
@@ -31,7 +31,9 @@
        :DataType (value-of aa (str additional-attribute-xpath
                                    "/eos:dataType/eos:EOS_AdditionalAttributeDataTypeCode"))
        :Value (char-string-value aa "eos:value")
-       :Description (su/with-default (char-string-value aa (str additional-attribute-xpath "/eos:description")))
+       :Description (su/with-default
+                      (char-string-value aa (str additional-attribute-xpath "/eos:description"))
+                      apply-default?)
        :MeasurementResolution (char-string-value aa (str additional-attribute-xpath
                                                          "/eos:measurementResolution"))
        :ParameterRangeBegin (char-string-value aa (str additional-attribute-xpath
@@ -47,16 +49,16 @@
 
 (defn- parse-content-info-additional-attributes
   "Returns the additional attributes parsed from contentInfo path of the given xml document."
-  [doc]
-  (elements->additional-attributes (select doc content-info-base-xpath)))
+  [doc apply-default?]
+  (elements->additional-attributes (select doc content-info-base-xpath) apply-default?))
 
 (defn- parse-data-quality-info-additional-attributes
   "Returns the additional attributes parsed from dataQualityInfo path of the given xml document."
-  [doc]
-  (elements->additional-attributes (select doc data-quality-info-base-xpath)))
+  [doc apply-default?]
+  (elements->additional-attributes (select doc data-quality-info-base-xpath) apply-default?))
 
 (defn parse-additional-attributes
   "Returns the parsed additional attributes from the given xml document."
-  [doc]
-  (concat (parse-content-info-additional-attributes doc)
-          (parse-data-quality-info-additional-attributes doc)))
+  [doc apply-default?]
+  (concat (parse-content-info-additional-attributes doc apply-default?)
+          (parse-data-quality-info-additional-attributes doc apply-default?)))

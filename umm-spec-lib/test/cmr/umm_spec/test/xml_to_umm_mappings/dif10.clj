@@ -12,7 +12,8 @@
                                         <Data_Creation>obsequious lettuces</Data_Creation>
                                         <Data_Last_Revision>2015-01-01</Data_Last_Revision>
                                       </Metadata_Dates>
-                                    </DIF>"))))
+                                    </DIF>"
+                                    true))))
 
   (testing "valid dates return DataDates records"
     (is (= [{:Type "CREATE",
@@ -21,7 +22,27 @@
                                       <Metadata_Dates>
                                         <Data_Creation>2014-05-01T02:30:24</Data_Creation>
                                       </Metadata_Dates>
-                                    </DIF>")))))
+                                    </DIF>"
+                                    true))))
+
+  (testing "default date is skipped when apply-default? is true"
+    (is (= []
+           (parse/parse-data-dates "<DIF>
+                                      <Metadata_Dates>
+                                        <Data_Creation>1970-01-01T00:00:00</Data_Creation>
+                                      </Metadata_Dates>
+                                    </DIF>"
+                                    true))))
+
+  (testing "default date is not skipped when apply-default? is false"
+    (is (= [{:Type "CREATE",
+             :Date (t/date-time 1970 1 1)}]
+           (parse/parse-data-dates "<DIF>
+                                      <Metadata_Dates>
+                                        <Data_Creation>1970-01-01T00:00:00</Data_Creation>
+                                      </Metadata_Dates>
+                                    </DIF>"
+                                    false)))))
 
 (deftest dif10-temporal-end-dates
   (is (= (t/date-time 2015 1 1 23 59 59 999)
@@ -31,7 +52,8 @@
                                            <Ending_Date_Time>2015-01-01</Ending_Date_Time>
                                          </Range_DateTime>
                                        </Temporal_Coverage>
-                                     </DIF>")
+                                     </DIF>"
+                                     true)
              :TemporalExtents
              first
              :RangeDateTimes
@@ -44,7 +66,8 @@
                                            <Ending_Date_Time>2015-01-01T04:30:12</Ending_Date_Time>
                                          </Range_DateTime>
                                        </Temporal_Coverage>
-                                     </DIF>")
+                                     </DIF>"
+                                     true)
              :TemporalExtents
              first
              :RangeDateTimes

@@ -45,7 +45,7 @@
 
 (defn- parse-data-dates
   "Returns seq of UMM-CMN DataDates parsed from SERF document."
-  [doc]
+  [doc apply-default?]
   (let [[md-dates-el] (select doc "/SERF")
         tag-types [["SERF_Creation_Date"      "CREATE"]
                    ["Last_SERF_Revision_Date" "UPDATE"]
@@ -53,7 +53,7 @@
     (filter :Date
             (for [[tag date-type] tag-types]
               {:Type date-type
-               :Date (date/not-default (value-of md-dates-el tag))}))))
+               :Date (date/not-default (value-of md-dates-el tag) apply-default?)}))))
 
 (def serf-roles->umm-roles
   "Maps SERF roles to UMM roles"
@@ -141,13 +141,13 @@
 
 (defn- parse-additional-attributes
   "Parse a SERF document for Extended Metadata Elements and returns a UMM-S Additional Attrib elem"
-  [doc]
+  [doc apply-default?]
   (concat (for [aa (select doc "/SERF/Extended_Metadata/Metadata")]
             {:Group (value-of aa "Group")
              :Name (value-of aa "Name")
              :DataType (value-of aa "Type")
-             :Description (without-default-value-of aa "Description")
-             :UpdateDate (date/not-default (value-of aa "Update_Date"))
+             :Description (without-default-value-of aa "Description" apply-default?)
+             :UpdateDate (date/not-default (value-of aa "Update_Date") apply-default?)
              :Value (value-of aa "Value")})
           [{:Name "Metadata_Name"
             :Description "Root SERF Metadata_Name Object"
@@ -186,7 +186,7 @@
 
 (defn parse-serf-xml
   "Returns collection map from a SERF XML document."
-  [doc]
+  [doc {:keys [apply-default?]}]
   {:EntryId (value-of doc "/SERF/Entry_ID")
    :EntryTitle (value-of doc "/SERF/Entry_Title")
    :Abstract (value-of doc "/SERF/Summary/Abstract")
@@ -202,14 +202,15 @@
    :ISOTopicCategories (values-at doc "/SERF/ISO_Topic_Category")
    :Platforms (parse-platforms doc)
    :Distributions (parse-distributions doc)
-   :AdditionalAttributes (parse-additional-attributes doc)
+   :AdditionalAttributes (parse-additional-attributes doc apply-default?)
    :AncillaryKeywords (values-at doc "/SERF/Keyword")
    :Projects (parse-projects doc)
-   :MetadataDates (parse-data-dates doc)
+   :MetadataDates (parse-data-dates doc apply-default?)
    :ServiceKeywords (parse-service-keywords doc)
    :ScienceKeywords (parse-science-keywords doc)})
 
 (defn serf-xml-to-umm-s
-  "Returns UMM-S service record from a SERF XML document."
-  [metadata]
-  (js/coerce js/umm-s-schema (parse-serf-xml metadata)))
+  "Returns UMM-S service record from a SERF XML document. The :apply-default? option
+  tells the parsing code to set the default values for fields when parsing the metadata into umm."
+  [metadata options]
+  (js/coerce js/umm-s-schema (parse-serf-xml metadata options)))
