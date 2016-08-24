@@ -153,4 +153,4 @@
                       (parse-additional-center doc data-centers "ProcessingCenter" "PROCESSOR"))]
     (if (seq (remove nil? data-centers))
       data-centers
-      [u/not-provided-data-center])))
+      (when apply-default? [u/not-provided-data-center]))))
