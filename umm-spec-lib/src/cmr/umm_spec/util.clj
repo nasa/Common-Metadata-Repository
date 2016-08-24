@@ -171,8 +171,14 @@
   (char-string (select context xpath)))
 
 (defn get-latest-metadata-update-date
+  "Get the latest revision date from the metadata dates - filter by type UPDATE
+  and sort by date (asc) and take the last date"
   [metadata-dates]
-  (def metadata-dates metadata-dates)
   (let [update-dates (filter #(= "UPDATE" (:Type %)) metadata-dates)
         dates (sort (mapv #(:Date %) update-dates))]
     (last dates)))
+
+(defn get-metadata-creation-date
+  "Get the metadata creation date"
+  [metadata-dates]
+  (:Date (first (filter #(= "CREATE" (:Type %)) metadata-dates))))

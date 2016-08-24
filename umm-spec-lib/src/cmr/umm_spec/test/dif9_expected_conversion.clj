@@ -216,11 +216,11 @@
       (assoc :Description (su/with-default (:Description attribute)))))
 
 (defn- expected-metadata-dates
+  "When converting, the creation date and last revision date will be persisted"
   [metadata-dates]
-  (let [last-update-date (su/get-latest-metadata-update-date metadata-dates)]
-    (when (some? last-update-date)
-      [{:Date (f/unparse (f/formatters :date) last-update-date)
-        :Type "UPDATE"}])))
+  (remove nil? (vector
+                 (conversion-util/create-date-type (su/get-metadata-creation-date metadata-dates) "CREATE")
+                 (conversion-util/create-date-type (su/get-latest-metadata-update-date metadata-dates) "UPDATE"))))
 
 (defn umm-expected-conversion-dif9
   [umm-coll]

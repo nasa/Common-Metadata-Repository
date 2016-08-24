@@ -81,13 +81,20 @@
       (subs entry-id 0 short-name-length)
       entry-id)))
 
+(defn- parse-date
+  "Get the date (YY-mm-dd) at the location in the doc and parse it into a UMM DateType"
+  [doc date-location type]
+  (let [date (value-of doc date-location)]
+    (when (some? date)
+      {:Date (f/parse (f/formatters :date) date)
+       :Type type})))
+
 (defn- get-metadata-dates
   "Returns a list of metadata dates"
   [doc]
-  (let [last-revision-date (value-of doc "DIF/Last_DIF_Revision_Date")]
-    (when (some? last-revision-date)
-      [{:Date (f/parse (f/formatters :date) last-revision-date)
-        :Type "UPDATE"}])))
+  (remove nil? (vector
+                 (parse-date doc "DIF/DIF_Creation_Date" "CREATE")
+                 (parse-date doc "DIF/Last_DIF_Revision_Date" "UPDATE"))))
 
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
