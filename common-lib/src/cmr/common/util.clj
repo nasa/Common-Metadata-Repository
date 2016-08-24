@@ -341,6 +341,11 @@
   [f values]
   (doall (pmap f values)))
 
+(defn doall-recursive
+  "Recursively forces evaluation of any nested sequences."
+  [v]
+  (w/postwalk identity v))
+
 (defmacro while-let
   "A macro that's similar to when let. It will continually evaluate the bindings and execute the body
   until the binding results in a nil value."
