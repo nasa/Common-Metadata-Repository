@@ -27,14 +27,14 @@
 
 (defn- parse-platforms
   "Parses a SERF Platform element into a UMM-S Platform"
-  [doc]
+  [doc apply-default?]
   (let [platforms (parse-just-platforms doc)
         instruments (parse-instruments doc)]
     (if (= 1 (count platforms))
       (map #(assoc % :Instruments instruments) platforms)
       (if instruments
-        (conj platforms {:ShortName not-provided
-                         :LongName not-provided
+        (conj platforms {:ShortName (when apply-default? not-provided)
+                         :LongName (when apply-default? not-provided)
                          :Instruments instruments})
         platforms))))
 
@@ -53,7 +53,7 @@
     (filter :Date
             (for [[tag date-type] tag-types]
               {:Type date-type
-               :Date (date/not-default (value-of md-dates-el tag) apply-default?)}))))
+               :Date (date/without-default (value-of md-dates-el tag) apply-default?)}))))
 
 (def serf-roles->umm-roles
   "Maps SERF roles to UMM roles"
@@ -147,7 +147,7 @@
              :Name (value-of aa "Name")
              :DataType (value-of aa "Type")
              :Description (without-default-value-of aa "Description" apply-default?)
-             :UpdateDate (date/not-default (value-of aa "Update_Date") apply-default?)
+             :UpdateDate (date/without-default (value-of aa "Update_Date") apply-default?)
              :Value (value-of aa "Value")})
           [{:Name "Metadata_Name"
             :Description "Root SERF Metadata_Name Object"
@@ -200,7 +200,7 @@
    :MetadataAssociations (parse-metadata-associations doc)
    :PublicationReferences (parse-publication-references doc)
    :ISOTopicCategories (values-at doc "/SERF/ISO_Topic_Category")
-   :Platforms (parse-platforms doc)
+   :Platforms (parse-platforms doc apply-default?)
    :Distributions (parse-distributions doc)
    :AdditionalAttributes (parse-additional-attributes doc apply-default?)
    :AncillaryKeywords (values-at doc "/SERF/Keyword")

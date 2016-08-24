@@ -56,7 +56,7 @@
 
 (defn- parse-platforms
   "Returns the parsed platforms with instruments added for the given xml doc."
-  [doc]
+  [doc apply-default?]
   (let [platforms (parse-just-platforms doc)
         instruments (parse-instruments doc)]
     ;; When there is only one platform in the collection, associate the instruments on that platform.
@@ -64,9 +64,9 @@
     (if (= 1 (count platforms))
       (map #(assoc % :Instruments instruments) platforms)
       (if instruments
-        (conj platforms {:ShortName su/not-provided
+        (conj platforms {:ShortName (when apply-default? su/not-provided)
                          :Instruments instruments})
-        (or (seq platforms) su/not-provided-platforms)))))
+        (or (seq platforms) (when apply-default? su/not-provided-platforms))))))
 
 (defn- get-short-name
   "Returns the short-name from the given entry-id and version-id, where entry-id is
@@ -88,14 +88,14 @@
         short-name (get-short-name entry-id version-id)]
     {:EntryTitle (value-of doc "/DIF/Entry_Title")
      :ShortName short-name
-     :Version (or version-id su/not-provided)
+     :Version (or version-id (when apply-default? su/not-provided))
      :Abstract (value-of doc "/DIF/Summary/Abstract")
      :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
      :Purpose (value-of doc "/DIF/Summary/Purpose")
      :DataLanguage (value-of doc "/DIF/Data_Set_Language")
      ;; Data Dates is required
      ;; Implement as part of CMR-2867
-     :DataDates [su/not-provided-data-date]
+     :DataDates (when apply-default? [su/not-provided-data-date])
      :ISOTopicCategories (values-at doc "DIF/ISO_Topic_Category")
      :TemporalKeywords (values-at doc "/DIF/Data_Resolution/Temporal_Resolution")
      :Projects (for [proj (select doc "/DIF/Project")]
@@ -114,12 +114,12 @@
      :AccessConstraints {:Description (value-of doc "/DIF/Access_Constraints")
                          :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}
      :UseConstraints (value-of doc "/DIF/Use_Constraints")
-     :Platforms (parse-platforms doc)
+     :Platforms (parse-platforms doc apply-default?)
      :TemporalExtents (if-let [temporals (select doc "/DIF/Temporal_Coverage")]
                         [{:RangeDateTimes (for [temporal temporals]
                                             {:BeginningDateTime (value-of temporal "Start_Date")
                                              :EndingDateTime (parse-dif-end-date (value-of temporal "Stop_Date"))})}]
-                        su/not-provided-temporal-extents)
+                        (when apply-default? su/not-provided-temporal-extents))
      :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
      :SpatialExtent (merge {:GranuleSpatialRepresentation (or (value-of doc "/DIF/Extended_Metadata/Metadata[Name='GranuleSpatialRepresentation']/Value")
                                                               "NO_SPATIAL")}
@@ -137,9 +137,9 @@
      ;; Need to double check which implementation is correct.
      :ProcessingLevel {:Id
                        (su/with-default
-                         (value-of doc
-                                   "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelId']/Value")
-                                   apply-default?)
+                        (value-of doc
+                                  "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelId']/Value")
+                        apply-default?)
 
                        :ProcessingLevelDescription
                        (value-of doc "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelDescription']/Value")}
@@ -148,8 +148,8 @@
      :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
                               (into {} (map (fn [x]
                                               (if (keyword? x)
-                                                [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
-                                                x))
+                                                  [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
+                                                  x))
                                             [:Author
                                              :Publication_Date
                                              :Title
@@ -165,7 +165,7 @@
                                              [:DOI {:DOI (value-of pub-ref "DOI")}]
                                              [:RelatedUrl
                                               {:URLs (seq
-                                                       (remove nil? [(value-of pub-ref "Online_Resource")]))}]
+                                                      (remove nil? [(value-of pub-ref "Online_Resource")]))}]
                                              :Other_Reference_Details])))
      :AncillaryKeywords (values-at doc "/DIF/Keyword")
      :ScienceKeywords (for [sk (select doc "/DIF/Parameters")]

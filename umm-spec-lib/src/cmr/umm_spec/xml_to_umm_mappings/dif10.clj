@@ -33,6 +33,7 @@
 (defn- parse-projects
   [doc apply-default?]
   (if apply-default?
+    ;; We shouldn't remove not provided during parsing
     (when-not (= u/not-provided (value-of doc "/DIF/Project[1]/Short_Name"))
       (parse-projects-impl doc))
     (parse-projects-impl doc)))
@@ -55,6 +56,7 @@
 (defn- parse-instruments
   [platform-el apply-default?]
   (if apply-default?
+    ;; We shouldn't remove not provided during parsing
     (when-not (= u/not-provided (value-of platform-el "Instrument[1]/Short_Name"))
       (parse-instruments-impl platform-el))
     (parse-instruments-impl platform-el)))
@@ -71,7 +73,7 @@
             (for [[tag date-type] tag-types
                   :let [date-value (-> md-dates-el
                                        (value-of tag)
-                                       (date/not-default apply-default?)
+                                       (date/without-default apply-default?)
                                        ;; Since the DIF 10 date elements are actually just a string
                                        ;; type, they may contain anything, and so we need to try to
                                        ;; parse them here and return nil if they do not actually

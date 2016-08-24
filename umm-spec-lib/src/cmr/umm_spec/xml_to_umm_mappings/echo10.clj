@@ -70,7 +70,7 @@
   (for [[date-type xpath] [["CREATE" "InsertTime"]
                            ["UPDATE" "LastUpdate"]
                            ["DELETE" "DeleteTime"]]
-        :let [date-val (date/not-default (value-of doc (str "/Collection/" xpath)) apply-default?)]
+        :let [date-val (date/without-default (value-of doc (str "/Collection/" xpath)) apply-default?)]
         :when date-val]
     {:Type date-type
      :Date date-val}))
