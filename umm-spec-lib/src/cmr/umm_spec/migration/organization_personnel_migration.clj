@@ -10,33 +10,33 @@
   [{:Role "POINTOFCONTACT"
     :Party {:Person {:LastName u/not-provided}}}])
 
+(def valid-data-center-roles
+  #{"ARCHIVER" "DISTRIBUTOR" "PROCESSOR" "ORIGINATOR"})
+
+(def valid-contact-roles
+  #{"Data Center Contact", "Technical Contact", "Science Contact", "Investigator", "Metadata Author",
+    "User Services", "Science Software Development"})
+
+(def valid-responsibility-roles
+  #{"RESOURCEPROVIDER", "CUSTODIAN", "OWNER", "USER", "DISTRIBUTOR", "ORIGINATOR", "POINTOFCONTACT",
+    "PRINCIPALINVESTIGATOR", "PROCESSOR", "PUBLISHER", "AUTHOR", "SPONSOR", "COAUTHOR",
+    "COLLABORATOR", "EDITOR", "MEDIATOR", "RIGHTSHOLDER", "CONTRIBUTOR", "FUNDER", "STAKEHOLDER"})
+
 (defn- map-data-center-role
   "Check if the data center role is a valid UMM role. Otherwise default to ARCHIVER"
   [role]
-  (if (contains? #{"ARCHIVER" "DISTRIBUTOR" "PROCESSOR" "ORIGINATOR"} role)
-    role
-    "ARCHIVER"))
+  (get valid-data-center-roles role "ARCHIVER"))
 
 (defn- map-contact-role
   "Check if the contact role is a valid UMM role. Otherwise default to Technical Contact"
   [role]
-  (if (contains?
-       #{"Data Center Contact", "Technical Contact", "Science Contact", "Investigator", "Metadata Author", "User Services", "Science Software Development"}
-       role)
-    role
-    "Technical Contact"))
+  (get valid-contact-roles role "Technical Contact"))
 
 (defn- map-responsibility-type-role
   "Organization and Personnel are both a Responsibility Type, so share the same roles. Check if the
   role is a valid Responsibility Type role. If not, default to POINTOFCONTACT"
   [role]
-  (if (contains?
-        #{"RESOURCEPROVIDER", "CUSTODIAN", "OWNER", "USER", "DISTRIBUTOR", "ORIGINATOR", "POINTOFCONTACT",
-          "PRINCIPALINVESTIGATOR", "PROCESSOR", "PUBLISHER", "AUTHOR", "SPONSOR", "COAUTHOR",
-          "COLLABORATOR", "EDITOR", "MEDIATOR", "RIGHTSHOLDER", "CONTRIBUTOR", "FUNDER", "STAKEHOLDER"}
-        role)
-    role
-    "POINTOFCONTACT"))
+  (get valid-responsibility-roles role "POINTOFCONTACT"))
 
 (defn- party->contact-information
   "Convert contact information fields from a party to a vector of contact information"

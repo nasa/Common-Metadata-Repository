@@ -409,11 +409,21 @@
                                     :ContactInstruction "Call"}
                                    {:ServiceHours "M-W 6-9"}]}]})]
 
-    (is (not (vector? (:ContactInformation (first (:DataCenters result))))))
-    (is (not (vector? (:ContactInformation (first (:ContactPersons (first (:DataCenters result))))))))
-    (is (not (vector? (:ContactInformation (first (:ContactGroups (first (:DataCenters result))))))))
-    (is (not (vector? (:ContactInformation (first (:ContactPersons result))))))
-    (is (not (vector? (:ContactInformation (first (:ContactGroups result))))))))
+    (is (= {:ServiceHours "M-F 9-5"
+            :ContactInstruction "Call"}
+         (:ContactInformation (first (:DataCenters result)))))
+    (is (= {:ServiceHours "M-F 9-5"
+            :ContactInstruction "Call"}
+         (:ContactInformation (first (:ContactPersons (first (:DataCenters result)))))))
+    (is (= {:ServiceHours "M-F 9-5"
+            :ContactInstruction "Call"}
+         (:ContactInformation (first (:ContactGroups (first (:DataCenters result)))))))
+    (is (= {:ServiceHours "M-F 9-5"
+            :ContactInstruction "Call"}
+         (:ContactInformation (first (:ContactPersons result)))))
+    (is (= {:ServiceHours "M-F 9-5"
+            :ContactInstruction "Call"}
+         (:ContactInformation (first (:ContactGroups result)))))))
 
 (deftest migrate-1_6-down-to-1_5
   (let [result (vm/migrate-umm {} :collection "1.6" "1.5"
@@ -443,8 +453,18 @@
                                   {:ServiceHours "M-F 9-5"
                                    :ContactInstruction "Call"}}]})]
 
-    (is (vector? (:ContactInformation (first (:DataCenters result)))))
-    (is (vector? (:ContactInformation (first (:ContactPersons (first (:DataCenters result)))))))
-    (is (vector? (:ContactInformation (first (:ContactGroups (first (:DataCenters result)))))))
-    (is (vector? (:ContactInformation (first (:ContactPersons result)))))
-    (is (vector? (:ContactInformation (first (:ContactGroups result)))))))
+    (is (= [{:ServiceHours "M-F 9-5"
+             :ContactInstruction "Call"}]
+         (:ContactInformation (first (:DataCenters result)))))
+    (is (= [{:ServiceHours "M-F 9-5"
+             :ContactInstruction "Call"}]
+         (:ContactInformation (first (:ContactPersons (first (:DataCenters result)))))))
+    (is (= [{:ServiceHours "M-F 9-5"
+             :ContactInstruction "Call"}]
+         (:ContactInformation (first (:ContactGroups (first (:DataCenters result)))))))
+    (is (= [{:ServiceHours "M-F 9-5"
+             :ContactInstruction "Call"}]
+         (:ContactInformation (first (:ContactPersons result)))))
+    (is (= [{:ServiceHours "M-F 9-5"
+             :ContactInstruction "Call"}]
+         (:ContactInformation (first (:ContactGroups result)))))))
