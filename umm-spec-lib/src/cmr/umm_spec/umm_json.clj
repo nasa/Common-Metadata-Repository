@@ -5,7 +5,7 @@
             [cmr.umm-spec.record-generator :as record-gen]
             [cmr.common.date-time-parser :as dtp]
             [cmr.umm-spec.versioning :as ver]
-            [cmr.umm-spec.version-migration :as vm]
+            [cmr.umm-spec.migration.version-migration :as vm]
 
     ;; To get ability to convert joda time to json
             [cmr.common.joda-time]
@@ -99,7 +99,8 @@
 
 (defmethod parse-json "array"
   [schema type-name-path type-name schema-type js-data]
-  (mapv #(parse-json schema type-name-path type-name (:items schema-type) %) js-data))
+  (when (seq js-data)
+    (mapv #(parse-json schema type-name-path type-name (:items schema-type) %) js-data)))
 
 (defn json->umm
   "Parses the JSON string and returns Clojure UMM records."

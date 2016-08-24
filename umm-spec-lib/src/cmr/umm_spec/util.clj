@@ -44,6 +44,10 @@
   "Default platforms to use if none is provided"
   [{:ShortName not-provided}])
 
+(def not-provided-contact-person-role
+  "Default role for a Contact Person to use if none is provided"
+  "Technical Contact")
+
 (defn convert-empty-record-to-nil
   "Converts empty record to nil."
   [record]

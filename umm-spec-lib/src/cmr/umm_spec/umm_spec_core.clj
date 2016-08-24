@@ -24,8 +24,8 @@
             ;; UMM and JSON
             [cmr.umm-spec.umm-json :as umm-json]
             [cmr.umm-spec.versioning :as ver]
-            [cmr.umm-spec.version-migration :as vm]
             [cmr.umm-spec.util :as u]
+            [cmr.umm-spec.migration.version-migration :as vm]
             [cmr.common.mime-types :as mt])
   (:import (cmr.umm_spec.models.umm_collection_models UMM-C)
            (cmr.umm_spec.models.umm_service_models UMM-S)))
@@ -105,10 +105,10 @@
          source-version (or source-version ver/current-version)]
      (condp = [concept-type (mt/format-key fmt)]
        [:collection :umm-json] (umm-json/umm->json (vm/migrate-umm context
-                                                                    concept-type
-                                                                    source-version
-                                                                    (umm-json-version fmt)
-                                                                    umm))
+                                                                   concept-type
+                                                                   source-version
+                                                                   (umm-json-version fmt)
+                                                                   umm))
        [:collection :echo10]   (umm-to-echo10/umm-c-to-echo10-xml umm)
        [:collection :dif]      (umm-to-dif9/umm-c-to-dif9-xml umm)
        [:collection :dif10]    (umm-to-dif10/umm-c-to-dif10-xml umm)
