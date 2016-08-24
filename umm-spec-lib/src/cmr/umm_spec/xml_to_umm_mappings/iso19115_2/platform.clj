@@ -25,5 +25,5 @@
   "Returns the platforms parsed from the given xml document."
   [doc]
   (let [instruments-mapping (inst/xml-elem->instruments-mapping doc)]
-    (seq (map (partial xml-elem->platform instruments-mapping)
+    (seq (map #(xml-elem->platform instruments-mapping %)
               (select doc platforms-xpath)))))
