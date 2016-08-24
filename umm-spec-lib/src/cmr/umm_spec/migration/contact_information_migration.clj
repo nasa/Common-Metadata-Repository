@@ -5,7 +5,7 @@
 (defn first-contact-info
   "Update the array of contact infos to be a single instance using the first contact info in the list"
   [c]
-  (update-in c [:ContactInformation] first))
+  (update c :ContactInformation first))
 
 (defn contact-info-to-array
   "Update the contact info field to be an array. If contact info is nil, leave it as nil."
@@ -20,8 +20,8 @@
   [data-center]
   (-> data-center
       (contact-info-to-array)
-      (update-in [:ContactPersons] #(mapv contact-info-to-array %))
-      (update-in [:ContactGroups] #(mapv contact-info-to-array %))))
+      (update :ContactPersons #(mapv contact-info-to-array %))
+      (update :ContactGroups #(mapv contact-info-to-array %))))
 
 (defn update-data-center-contact-info
   "Update data center contact infos to be a single instance - this includes the contact info on the
@@ -29,5 +29,5 @@
   [data-center]
   (-> data-center
       first-contact-info
-      (update-in [:ContactPersons] #(mapv first-contact-info %))
-      (update-in [:ContactGroups] #(mapv first-contact-info %))))
+      (update :ContactPersons #(mapv first-contact-info %))
+      (update :ContactGroups #(mapv first-contact-info %))))
