@@ -1382,8 +1382,8 @@
     "KeywordStringType": {
       "type": "string",
       "minLength": 1,
-      "maxLength": 80,
-      "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{1,79}"
+      "maxLength": 120,
+      "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{1,119}"
     },
     "DataTypeEnum": {
       "description": "This entity contains the additional attribute data types.",
