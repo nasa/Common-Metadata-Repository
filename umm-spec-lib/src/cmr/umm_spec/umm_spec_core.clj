@@ -24,7 +24,7 @@
             ;; UMM and JSON
             [cmr.umm-spec.umm-json :as umm-json]
             [cmr.umm-spec.versioning :as ver]
-            [cmr.umm-spec.version-migration :as vm]
+            [cmr.umm-spec.migration.version-migration :as vm]
             [cmr.common.mime-types :as mt])
   (:import (cmr.umm_spec.models.umm_collection_models UMM-C)
            (cmr.umm_spec.models.umm_service_models UMM-S)))
