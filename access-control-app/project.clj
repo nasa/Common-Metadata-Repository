@@ -5,11 +5,11 @@
     [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
     [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-    [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]])
+    [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]])
 
 (def dev-cmr-deps
-  '[[nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
-    [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]])
+  '[[nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]])
 
 (defproject nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"
   :description "Implements the CMR access control application."
