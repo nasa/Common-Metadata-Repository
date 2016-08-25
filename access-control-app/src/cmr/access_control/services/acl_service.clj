@@ -141,11 +141,15 @@
   [_]
   (cpv/merge-params-config
     cpv/basic-params-config
-    {:single-value #{}
+    {:single-value #{:include-full-acl}
      :multiple-value #{:permitted-group :identity-type :provider}
      :always-case-sensitive #{}
      :disallow-pattern #{:identity-type :permitted-user :group-permission}
      :allow-or #{}}))
+
+(defmethod cpv/valid-query-level-params :acl
+  [_]
+  #{:include-full-acl})
 
 (defmethod cpv/valid-parameter-options :acl
   [_]
@@ -256,6 +260,17 @@
                     "Only 'provider', 'system', 'single_instance', or 'catalog_item' can be specified.")
                (str/join ", " invalid-types))])))
 
+(defn boolean-value-validation
+  "Validates that all of the boolean parameters have values of true or false."
+  [concept-type params]
+  (let [bool-params (select-keys params [:include-full-acl])]
+    (mapcat
+      (fn [[param value]]
+        (when-not (contains? #{"true" "false"} (when value (str/lower-case value)))
+          [(format "Parameter %s must take value of true or false but was [%s]"
+                   (csk/->snake_case_string param) value)]))
+      bool-params)))
+
 (defn validate-acl-search-params
   "Validates the parameters for an ACL search. Returns the parameters or throws an error if invalid."
   [context params]
@@ -270,7 +285,10 @@
     (cpv/validate-parameters
       :acl safe-params
       (concat cpv/common-validations
-              [permitted-group-validation identity-type-validation group-permission-validation])
+              [permitted-group-validation
+               identity-type-validation
+               group-permission-validation
+               boolean-value-validation])
       type-errors))
   params)
 
@@ -289,6 +307,16 @@
    :provider :string
    :permitted-user :acl-permitted-user
    :group-permission :acl-group-permission})
+
+(defmethod cp/parse-query-level-params :acl
+  [concept-type params]
+  (let [[params query-attribs] (cp/default-parse-query-level-params :acl params)
+        result-features (when (= (:include-full-acl params) "true"
+                                 [:include-full-acl]))]
+    [(dissoc params :include-full-acl)
+     (merge query-attribs
+            (when (= (:include-full-acl params) "true")
+              {:result-features [:include-full-acl]}))]))
 
 (defmethod cp/parameter->condition :acl-identity-type
  [context concept-type param value options]
