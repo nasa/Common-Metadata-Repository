@@ -5,6 +5,7 @@
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [clojure.test :refer (run-all-tests)]
             [clojure.repl :refer :all]
+            [compojure.core :as compojure]
             [cmr.access-control.system :as system]
             [cmr.access-control.int-test.fixtures :as int-test-util]
             [cmr.elastic-utils.embedded-elastic-server :as es]
@@ -75,7 +76,10 @@
     (alter-var-root
      #'side-api-server
      (constantly (-> (side-api/create-side-server
-                       (fn [_] (queue-broker-side-api/build-routes queue-broker)))
+                      (fn [_]
+                        (compojure/routes
+                         side-api/eval-routes
+                         (queue-broker-side-api/build-routes queue-broker))))
                      (l/start nil))))
 
     ;; Start mock echo

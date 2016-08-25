@@ -63,7 +63,7 @@
 (defn save-granule
   "Saves a granule with given property map to metadata db and returns concept id."
   ([parent-collection-id]
-    (save-granule parent-collection-id {}))
+   (save-granule parent-collection-id {}))
   ([parent-collection-id attrs]
    (let [short-name (str "gran" (swap! granule-num inc))
          version-id "v1"
@@ -73,14 +73,15 @@
          parent-collection (mdb/get-latest-concept (u/conn-context) parent-collection-id)
          parent-entry-title (:entry-title (:extra-fields parent-collection))
          timestamps (umm-g/map->DataProviderTimestamps
-                      {:insert-time "2012-01-11T10:00:00.000Z"})
+                     {:insert-time "2012-01-11T10:00:00.000Z"})
          granule-umm (umm-g/map->UmmGranule
-                       {:granule-ur granule-ur
-                        :data-provider-timestamps timestamps
-                        :collection-ref (umm-g/map->CollectionRef
-                                          {:entry-title parent-entry-title})})
+                      {:granule-ur granule-ur
+                       :data-provider-timestamps timestamps
+                       :collection-ref (umm-g/map->CollectionRef
+                                        {:entry-title parent-entry-title})})
          granule-umm (merge granule-umm attrs)]
-     (:concept-id
+     (u/without-publishing-messages
+      (:concept-id
        (mdb/save-concept (u/conn-context)
                          {:format "application/echo10+xml"
                           :metadata (umm-core/umm->xml granule-umm :echo10)
@@ -94,7 +95,7 @@
                                          :granule-ur granule-ur
                                          :version-id version-id
                                          :parent-collection-id parent-collection-id
-                                         :parent-entry-title parent-entry-title}})))))
+                                         :parent-entry-title parent-entry-title}}))))))
 
 (deftest collection-simple-catalog-item-identity-permission-check-test
   ;; tests ACLs which grant access to collections based on provider id and/or entry title
