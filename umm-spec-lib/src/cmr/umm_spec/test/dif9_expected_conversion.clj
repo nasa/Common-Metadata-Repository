@@ -182,6 +182,10 @@
                               [(cmn/map->DataCenterType
                                  {:Roles ["ORIGINATOR"]
                                   :ShortName (:ShortName originating-center)})])
+        processing-centers (for [center (filter #(.contains (:Roles %) "PROCESSOR") centers)]
+                             (cmn/map->DataCenterType
+                               {:Roles ["PROCESSOR"]
+                                :ShortName (:ShortName center)}))
         data-centers (for [center centers
                            :when (or (.contains (:Roles center) "ARCHIVER")
                                      (.contains (:Roles center) "DISTRIBUTOR"))
@@ -202,7 +206,7 @@
                            :ContactPersons [(cmn/map->ContactPersonType
                                               {:Roles ["Data Center Contact"]
                                                :LastName su/not-provided})]})])]
-    (seq (concat originating-centers data-centers))))
+    (seq (concat originating-centers data-centers processing-centers))))
 
 (defn- expected-dif-additional-attribute
   [attribute]

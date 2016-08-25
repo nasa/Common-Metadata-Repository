@@ -20,6 +20,14 @@
     [{:Roles ["ORIGINATOR"]
       :ShortName originating-center}]))
 
+(defn parse-processing-centers
+  "Returns the UMM data centers from parsing DIF9 Extended_Metadata for Metadata with name
+  'Processor'"
+  [doc]
+  (for [center (select doc "/DIF/Extended_Metadata/Metadata[Name='Processor']")]
+    {:Roles ["PROCESSOR"]
+     :ShortName (value-of center "Value")}))
+
 (defn parse-data-centers
   "Returns UMM-C data centers from DIF 9 XML document."
   [doc]

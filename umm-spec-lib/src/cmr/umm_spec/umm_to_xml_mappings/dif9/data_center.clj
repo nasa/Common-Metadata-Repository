@@ -8,12 +8,26 @@
   do not map to DATA CENTER CONTACT which is our default."
   {"Investigator" "INVESTIGATOR"})
 
+(def dif9-processor-group
+  "Value to use as the Group for the Metadata entry for a processing center"
+  "gov.nasa.esdis.cmr.processor")
+
 (defn generate-originating-center
   "Returns the DIF9 originating center element from the given umm collection"
   [c]
   (when-let [originating-center (first (filter #(.contains (:Roles %) "ORIGINATOR")
                                                (:DataCenters c)))]
     [:Originating_Center (:ShortName originating-center)]))
+
+(defn generate-processing-centers
+  "Returns the dif9 processing centers as extended metadata elements. Can have multiple processing
+  centers."
+  [c]
+  (for [processing-center (filter #(.contains (:Roles %) "PROCESSOR") (:DataCenters c))]
+    [:Metadata
+     [:Group dif9-processor-group]
+     [:Name "Processor"]
+     [:Value (:ShortName processing-center)]]))
 
 (defn generate-data-centers
   "Returns the DIF9 data center elements from the given umm collection. We generate a DIF9 data
