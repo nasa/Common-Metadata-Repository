@@ -22,7 +22,6 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:acl :json]
   [concept-type query]
-  (proto-repl.saved-values/save 2)
   (if (some #{:include-full-acl} (:result-features query))
     fields-with-full-acl
     base-fields))
