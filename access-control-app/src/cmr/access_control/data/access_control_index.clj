@@ -233,7 +233,6 @@
   (let [acl (edn/read-string (:metadata concept-map))
         permitted-groups (acl->permitted-groups acl)
         provider-id (acls/acl->provider-id acl)]
-    (proto-repl.saved-values/save 3)
     (assoc (select-keys concept-map [:concept-id :revision-id])
            :display-name (acl->display-name acl)
            :identity-type (acl->identity-type acl)
