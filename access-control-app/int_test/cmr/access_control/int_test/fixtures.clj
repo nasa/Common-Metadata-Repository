@@ -42,7 +42,6 @@
             (when-not use-external-db
               {:db (memory/create-db)})))))
 
-
 (defn int-test-fixtures
   "Returns test fixtures for starting the access control application and its external dependencies.
    The test fixtures only start up applications and side APIs if it detects the applications are not

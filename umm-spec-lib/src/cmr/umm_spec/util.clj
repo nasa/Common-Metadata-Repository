@@ -3,10 +3,14 @@
   (:require [clojure.string :as str]
             [cmr.common.util :as util]
             [cmr.umm-spec.date-util :as du]
-            [cmr.umm-spec.models.common :as cmn]
+            [cmr.umm-spec.models.umm-common-models :as cmn]
             [clj-time.format :as f]
             [cmr.common.xml.parse :as p]
             [cmr.common.xml.simple-xpath :refer [select]]))
+
+(def default-parsing-options
+  "Defines the default options for parsing metadata into umm"
+  {:apply-default? true})
 
 (def not-provided
   "place holder string value for not provided string field"
@@ -40,6 +44,10 @@
   "Default platforms to use if none is provided"
   [{:ShortName not-provided}])
 
+(def not-provided-contact-person-role
+  "Default role for a Contact Person to use if none is provided"
+  "Technical Contact")
+
 (defn convert-empty-record-to-nil
   "Converts empty record to nil."
   [record]
@@ -55,32 +63,35 @@
        seq))
 
 (defn country-with-default
- "The default of 'Not provided' is too long so specify an alternative default for country."
- [country]
- (or country "Unknown"))
+  "The default of 'Not provided' is too long so specify an alternative default for country."
+  [country]
+  (or country "Unknown"))
 
 (defn with-default
   "Returns the value if it exists or returns the default value 'Not provided'."
-  [value]
-  (if (some? value)
-    value
-    not-provided))
+  ([value]
+   (with-default value (:apply-default? default-parsing-options)))
+  ([value apply-default?]
+   (if apply-default?
+     (if (some? value)
+       value
+       not-provided)
+     value)))
 
 (defn without-default
   "DEPRECATED: We will no longer remove default values.
-   Returns nil if x is the not-provided placeholder value, else returns x."
+  Returns nil if x is the not-provided placeholder value, else returns x."
   [x]
-  (when (not= x not-provided)
+  (when-not (= x not-provided)
     x))
 
 (defn without-default-value-of
   "DEPRECATED: We will no longer remove default values.
-   Returns the parsed value of the given doc on the given xpath and converting the 'Not provided'
+  Returns the parsed value of the given doc on the given xpath and converting the 'Not provided'
   default value to nil."
   [doc xpath]
   (let [value (p/value-of doc xpath)]
-    (when-not (= value not-provided)
-      value)))
+    (without-default value)))
 
 (defn nil-to-empty-string
   "Returns the string itself or empty string if it is nil."

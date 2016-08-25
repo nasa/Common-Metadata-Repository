@@ -5,6 +5,8 @@
             [cmr.transmit.config :as config]
             [cmr.transmit.metadata-db2 :as mdb]
             [cmr.elastic-utils.config :as es-config]
+            [cmr.metadata-db.config :as mdb-config]
+            [cmr.common-app.test.side-api :as side]
             [cmr.common.mime-types :as mt]
             [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
             [cmr.common.util :as util]
@@ -141,6 +143,16 @@
           :concept_id concept_id
           :revision_id revision_id)))
 
+(defmacro without-publishing-messages
+  "Temporarily configures metadata db not to publish messages while executing the body."
+  [& body]
+  `(do
+     (side/eval-form (quote (mdb-config/set-publish-messages! false)))
+     (try
+       ~@body
+       (finally
+         (side/eval-form (quote (mdb-config/set-publish-messages! true)))))))
+
 (defn save-collection
   "Test helper. Saves collection to Metadata DB and returns its concept id."
   [options]
@@ -153,18 +165,21 @@
               (contains? options :access-value) (assoc-in [:AccessConstraints :Value] access-value)
               no-temporal (assoc :TemporalExtents nil)
               temporal-range (assoc-in [:TemporalExtents 0 :RangeDateTimes] [temporal-range]))]
-    (:concept-id
-      (mdb/save-concept (conn-context)
-                        {:format "application/echo10+xml"
-                         :metadata (umm-spec/generate-metadata (conn-context) umm :echo10)
-                         :concept-type :collection
-                         :provider-id provider-id
-                         :native-id native-id
-                         :revision-id 1
-                         :extra-fields {:short-name short-name
-                                        :entry-title entry-title
-                                        :entry-id short-name
-                                        :version-id "v1"}}))))
+    ;; We don't want to publish messages in metadata db since different envs may or may not be running
+    ;; the indexer when we run this test.
+    (without-publishing-messages
+     (:concept-id
+       (mdb/save-concept (conn-context)
+                         {:format "application/echo10+xml"
+                          :metadata (umm-spec/generate-metadata (conn-context) umm :echo10)
+                          :concept-type :collection
+                          :provider-id provider-id
+                          :native-id native-id
+                          :revision-id 1
+                          :extra-fields {:short-name short-name
+                                         :entry-title entry-title
+                                         :entry-id short-name
+                                         :version-id "v1"}})))))
 
 (defn assert-group-saved
   "Checks that a group was persisted correctly in metadata db. The user-id indicates which user

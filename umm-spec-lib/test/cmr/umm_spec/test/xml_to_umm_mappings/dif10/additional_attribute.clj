@@ -1,8 +1,9 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.dif10.additional-attribute
   (:require [clj-time.core :as t]
             [clojure.test :refer :all]
+            [cmr.umm-spec.util :as u]
             [cmr.umm-spec.additional-attribute :as umm-aa]
-            [cmr.umm-spec.models.common :as cmn]
+            [cmr.umm-spec.models.umm-common-models :as cmn]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]))
 
 
@@ -176,9 +177,10 @@
 (deftest dif10-metadata-additional-attributes-test
   (testing "parse additional attributes from Extended_Metadata"
     (is (= expected-parsed-additional-attributes1
-           (aa/xml-elem->AdditionalAttributes example-dif1))))
+           (aa/xml-elem->AdditionalAttributes
+             example-dif1 (:apply-default? u/default-parsing-options)))))
 
   (testing "parse additional attributes from Additional_Attributes and Extended_Metadata together"
     (is (= expected-parsed-additional-attributes2
            (aa/xml-elem->AdditionalAttributes
-            example-dif2)))))
+            example-dif2 (:apply-default? u/default-parsing-options))))))

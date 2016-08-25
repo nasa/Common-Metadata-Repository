@@ -16,8 +16,8 @@
             [cmr.umm-spec.versioning :as ver]
             [cmr.umm-spec.test.location-keywords-helper :as lkt]
             [clj-time.core :as t]
-            [cmr.umm-spec.models.common :as umm-cmn]
-            [cmr.umm-spec.models.collection :as umm-c]
+            [cmr.umm-spec.models.umm-common-models :as umm-cmn]
+            [cmr.umm-spec.models.umm-collection-models :as umm-c]
             [cmr.common.mime-types :as mt]
             [cheshire.core :as json]))
 

@@ -13,6 +13,7 @@
             [cmr.common.cache.in-memory-cache :as mem-cache]
             [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
             [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
+            [cmr.indexer.data.humanizer-fetcher :as hf]
             [cmr.acl.acl-fetcher :as af]
             [cmr.common.jobs :as jobs]
             [cmr.indexer.api.routes :as routes]
@@ -52,14 +53,15 @@
                       index-set/index-set-cache-key (consistent-cache/create-consistent-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
-                      cgac/coll-gran-aggregate-cache-key (cgac/create-cache)}
+                      cgac/coll-gran-aggregate-cache-key (cgac/create-cache)
+                      hf/humanizer-cache-key (hf/create-cache)}
              :scheduler (jobs/create-scheduler
                           `system-holder
                           [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
                            (kf/refresh-kms-cache-job "indexer-kms-cache-refresh")])
              :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
 
-    (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby :kms])))
+    (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby :kms :search])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

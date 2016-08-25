@@ -116,6 +116,5 @@
 (defn translate
   [context json-str]
   ;; Checks the json-str for validity as well as well-formedness
-  (when-let [errors (seq (js/validate-json granule-entries-schema json-str))]
-    (errors/throw-service-errors :bad-request errors))
+  (js/validate-json! granule-entries-schema json-str)
   (translate-granule-entries context (json/parse-string json-str true)))

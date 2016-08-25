@@ -122,7 +122,7 @@
 
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
-  [context doc]
+  [context doc {:keys [apply-default?]}]
   (let [md-data-id-el (first (select doc md-data-id-base-xpath))
         citation-el (first (select doc citation-base-xpath))
         id-el (first (select doc identifier-base-xpath))
@@ -157,7 +157,7 @@
      :SpatialExtent (spatial/parse-spatial doc extent-info)
      :TilingIdentificationSystems (tiling/parse-tiling-system md-data-id-el)
      :TemporalExtents (or (seq (parse-temporal-extents doc extent-info md-data-id-el))
-                          u/not-provided-temporal-extents)
+                          (when apply-default? u/not-provided-temporal-extents))
      :ProcessingLevel {:Id
                        (char-string-value
                         md-data-id-el
@@ -195,12 +195,13 @@
                          ["place" "temporal" "project" "platform" "instrument" "theme"])
      :ScienceKeywords (kws/parse-science-keywords md-data-id-el)
      :RelatedUrls (dru/parse-related-urls doc)
-     :AdditionalAttributes (aa/parse-additional-attributes doc)
+     :AdditionalAttributes (aa/parse-additional-attributes doc apply-default?)
      ;; DataCenters is not implemented but is required in UMM-C
      ;; Implement with CMR-3161
-     :DataCenters [u/not-provided-data-center]}))
+     :DataCenters (when apply-default? [u/not-provided-data-center])}))
 
 (defn iso19115-2-xml-to-umm-c
-  "Returns UMM-C collection record from ISO19115-2 collection XML document."
-  [context metadata]
-  (js/parse-umm-c (parse-iso19115-xml context metadata)))
+  "Returns UMM-C collection record from ISO19115-2 collection XML document. The :apply-default? option
+  tells the parsing code to set the default values for fields when parsing the metadata into umm."
+  [context metadata options]
+  (js/parse-umm-c (parse-iso19115-xml context metadata options)))
