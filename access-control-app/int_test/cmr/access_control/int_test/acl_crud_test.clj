@@ -25,7 +25,7 @@
 (def provider-acl
   {:legacy_guid "ABCD-EFG-HIJK-LMNOP"
    :group_permissions [{:group_id "admins"
-                        :permissions ["read" "create"]}]
+                        :permissions ["read" "update"]}]
    :provider_identity {:provider_id "PROV1"
                        :target "INGEST_MANAGEMENT_ACL"}})
 
@@ -38,7 +38,7 @@
 
 (def single-instance-acl
   "A sample single instance ACL."
-  {:group_permissions [{:user_type "guest" :permissions ["create"]}]
+  {:group_permissions [{:user_type "guest" :permissions ["update" "delete"]}]
    :single_instance_identity {:target "GROUP_MANAGEMENT"
                               :target_id "REPLACEME"}})
 
@@ -60,7 +60,11 @@
     (is (= 1 (:revision_id resp)))))
 
 (deftest create-acl-errors-test
-  (let [token (e/login (u/conn-context) "admin")]
+  (let [token (e/login (u/conn-context) "admin")
+        group1 (u/ingest-group token {:name "group1"} ["user1"])
+        ;; This wait is needed so that the groups exist for the single instance acls to be created targeting.
+        _ (u/wait-until-indexed)
+        group1-concept-id (:concept_id group1)]
     (are3 [re acl]
           (is (thrown-with-msg? Exception re (ac/create-acl (u/conn-context) acl {:token token})))
 
@@ -97,7 +101,22 @@
 
           "Group id doesn't exist for single-instance-identity"
           #"Group with concept-id \[AG123-CMR\] does not exist"
-          (assoc-in single-instance-acl [:single_instance_identity :target_id] "AG123-CMR"))
+          (assoc-in single-instance-acl [:single_instance_identity :target_id] "AG123-CMR")
+
+          "Single instance identity target grantable permission check"
+          #"\[single-instance-identity\] ACL cannot have \[\(\\\"read\\\" \\\"create\\\"\)\] permission for target \[GROUP_MANAGEMENT\]"
+          (assoc-in
+            (assoc-in single-instance-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"])
+            [:single_instance_identity :target_id] group1-concept-id)
+
+          "Provider identity target grantable permission check"
+          #"\[provider-identity\] ACL cannot have \[\(\\\"delete\\\" \\\"create\\\"\)\] permission for target \[INGEST_MANAGEMENT_ACL\]"
+          (assoc-in provider-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"])
+
+          "System identity target grantable permission check"
+          #"\[system-identity\] ACL cannot have \[\(\\\"read\\\"\)\] permission for target \[TAG_GROUP\]"
+          (assoc-in system-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"]))
+
 
     (testing "Acceptance criteria: I receive an error if creating an ACL with invalid JSON"
       (is
@@ -315,52 +334,82 @@
     (is (= 2 (:revision_id resp)))
     (is (= (assoc-in single-instance-acl [:single_instance_identity :target_id] group2-concept-id) (ac/get-acl (u/conn-context) concept-id {:token token})))))
 
-
 (deftest update-acl-errors-test
   (let [token (e/login (u/conn-context) "admin")
-        {concept-id :concept_id} (ac/create-acl (u/conn-context) system-acl {:token token})]
-    (are3 [re acl]
+        {system-concept-id :concept_id} (ac/create-acl (u/conn-context) system-acl {:token token})
+        group1 (u/ingest-group token {:name "group1"} ["user1"])
+        ;; This wait is needed so that the groups exist for the single instance acls to be created targeting.
+        _ (u/wait-until-indexed)
+        group1-concept-id (:concept_id group1)
+        {provider-concept-id :concept_id} (ac/create-acl (u/conn-context) provider-acl {:token token})
+        {catalog-concept-id :concept_id} (ac/create-acl (u/conn-context) catalog-item-acl {:token token})
+        {single-instance-concept-id :concept_id} (ac/create-acl (u/conn-context) (assoc-in single-instance-acl [:single_instance_identity :target_id] group1-concept-id) {:token token})]
+    (are3 [re acl concept-id]
           (is (thrown-with-msg? Exception re (ac/update-acl (u/conn-context) concept-id acl {:token token})))
-
           ;; Acceptance criteria: I receive an error if creating an ACL missing required fields.
           ;; Note: this tests a few fields, and is not exhaustive. The JSON schema handles this check.
           "Nil field value"
           #"object has missing required properties"
           (dissoc system-acl :group_permissions)
+          system-concept-id
 
           "Empty field value"
           #"group_permissions.* object has missing required properties"
           (assoc system-acl :group_permissions [{}])
+          system-concept-id
 
           "Missing target"
           #"system_identity object has missing required properties"
           (update-in system-acl [:system_identity] dissoc :target)
+          system-concept-id
 
           "Acceptance criteria: I receive an error if updating an ACL with an invalid combination of fields. (Only one of system, provider, single instance, or catalog item identities)"
           #"instance failed to match exactly one schema"
           (assoc system-acl :provider_identity {:provider_id "PROV1"
                                                 :target "INGEST_MANAGEMENT_ACL"})
+          system-concept-id
 
           "Acceptance criteria: I receive an error if updating an ACL with a non-existent system identity, provider identity, or single instance identity target."
           #"instance value .* not found in enum"
           (update-in system-acl [:system_identity] assoc :target "WHATEVER")
+          system-concept-id
 
           "Value not found in enum"
           #"instance value .* not found in enum"
           (update-in provider-acl [:provider_identity] assoc :target "WHATEVER")
+          provider-concept-id
 
           "Provider doesn't exist, provider version"
           #"Provider with provider-id \[WHATEVER\] does not exist"
           (assoc-in provider-acl [:provider_identity :provider_id] "WHATEVER")
+          provider-concept-id
 
           "Provider doesn't exist, catalog-item version"
           #"Provider with provider-id \[WHATEVER\] does not exist"
           (assoc-in catalog-item-acl [:catalog_item_identity :provider_id] "WHATEVER")
+          catalog-concept-id
 
           "Group id doesn't exist for single-instance-identity"
           #"Group with concept-id \[AG123-CMR\] does not exist"
-          (assoc-in single-instance-acl [:single_instance_identity :target_id] "AG123-CMR"))
+          (assoc-in single-instance-acl [:single_instance_identity :target_id] "AG123-CMR")
+          single-instance-concept-id
 
+          "Single instance identity target grantable permission check"
+          #"\[single-instance-identity\] ACL cannot have \[\(\\\"read\\\" \\\"create\\\"\)\] permission for target \[GROUP_MANAGEMENT\]"
+          (assoc-in
+            (assoc-in single-instance-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"])
+            [:single_instance_identity :target_id] group1-concept-id)
+          single-instance-concept-id
+
+          "Provider identity target grantable permission check"
+          #"\[provider-identity\] ACL cannot have \[\(\\\"delete\\\" \\\"create\\\"\)\] permission for target \[INGEST_MANAGEMENT_ACL\]"
+          (assoc-in provider-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"])
+          provider-concept-id
+
+          "System identity target grantable permission check"
+          #"\[system-identity\] ACL cannot have \[\(\\\"read\\\"\)\] permission for target \[TAG_GROUP\]"
+          (assoc-in system-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"])
+          system-concept-id)
 
     (testing "Acceptance criteria: I receive an error if updating an ACL with invalid JSON"
       (is
@@ -369,7 +418,7 @@
                    (client/put
                      (ac/acl-concept-id-url
                        (transmit-config/context->app-connection (u/conn-context) :access-control)
-                       concept-id)
+                       system-concept-id)
                      {:body "{\"bad-json:"
                       :headers {"Content-Type" "application/json"
                                 "ECHO-Token" token}
@@ -382,7 +431,7 @@
                    (client/put
                      (ac/acl-concept-id-url
                        (transmit-config/context->app-connection (u/conn-context) :access-control)
-                       concept-id)
+                       system-concept-id)
                      {:body (json/generate-string system-acl)
                       :headers {"Content-Type" "application/xml"
                                 "ECHO-Token" token}

@@ -68,7 +68,71 @@
   {:access-value (v/when-present access-value-validation)
    :temporal (v/when-present temporal-identifier-validation)})
 
-(defn make-single-instance-identity-target-validation
+(def ^:private c "create")
+(def ^:private r "read")
+(def ^:private u "update")
+(def ^:private d "delete")
+(def ^:private grantable-permission-mapping
+  {:single-instance-identity {"GROUP_MANAGEMENT"                [u d]}
+   :provider-identity        {"AUDIT_REPORT"                    [r]
+                              "OPTION_ASSIGNMENT"               [c r d]
+                              "OPTION_DEFINITION"               [c d]
+                              "OPTION_DEFINITION_DEPRECATION"   [c]
+                              "DATASET_INFORMATION"             [r]
+                              "PROVIDER_HOLDINGS"               [r]
+                              "EXTENDED_SERVICE"                [c u d]
+                              "PROVIDER_ORDER"                  [r]
+                              "PROVIDER_ORDER_RESUBMISSION"     [c]
+                              "PROVIDER_ORDER_ACCEPTANCE"       [c]
+                              "PROVIDER_ORDER_REJECTION"        [c]
+                              "PROVIDER_ORDER_CLOSURE"          [c]
+                              "PROVIDER_ORDER_TRACKING_ID"      [u]
+                              "PROVIDER_INFORMATION"            [u]
+                              "PROVIDER_CONTEXT"                [r]
+                              "AUTHENTICATOR_DEFINITION"        [c d]
+                              "PROVIDER_POLICIES"               [r u d]
+                              "USER"                            [r]
+                              "GROUP"                           [c r]
+                              "PROVIDER_OBJECT_ACL"             [c r u d]
+                              "CATALOG_ITEM_ACL"                [c r u d]
+                              "INGEST_MANAGEMENT_ACL"           [r u]
+                              "DATA_QUALITY_SUMMARY_DEFINITION" [c u d]
+                              "DATA_QUALITY_SUMMARY_ASSIGNMENT" [c d]
+                              "PROVIDER_CALENDAR_EVENT"         [c u d]}
+   :system-identity          {"SYSTEM_AUDIT_REPORT"             [r]
+                              "METRIC_DATA_POINT_SAMPLE"        [r]
+                              "SYSTEM_INITIALIZER"              [c]
+                              "ARCHIVE_RECORD"                  [d]
+                              "ERROR_MESSAGE"                   [u]
+                              "TOKEN"                           [r d]
+                              "TOKEN_REVOCATION"                [c]
+                              "EXTENDED_SERVICE_ACTIVATION"     [c]
+                              "ORDER_AND_ORDER_ITEMS"           [r d]
+                              "PROVIDER"                        [c d]
+                              "TAG_GROUP"                       [c u d]
+                              "TAXONOMY"                        [c]
+                              "TAXONOMY_ENTRY"                  [c]
+                              "USER_CONTEXT"                    [r]
+                              "USER"                            [r u d]
+                              "GROUP"                           [c r]
+                              "ANY_ACL"                         [c r u d]
+                              "EVENT_NOTIFICATION"              [d]
+                              "EXTENDED_SERVICE"                [d]
+                              "SYSTEM_OPTION_DEFINITION"        [c d]
+                              "SYSTEM_OPTION_DEFINITION_DEPRECATION" [c]
+                              "INGEST_MANAGEMENT_ACL"                [r u]
+                              "SYSTEM_CALENDAR_EVENT"                [c u d]}})
+
+(defn- get-identity-type
+  [acl]
+  (cond
+    (not (nil? (:single-instance-identity acl))) :single-instance-identity
+    (not (nil? (:provider-identity acl)))        :provider-identity
+    (not (nil? (:system-identity acl)))          :system-identity
+    (not (nil? (:catalog-item-identity acl)))    :catalog-item-identity
+    :else nil))
+
+(defn make-single-instance-identity-target-id-validation
   "Validates that the acl group exists."
   [context]
   (fn [key-path target-id]
@@ -78,7 +142,7 @@
 (defn- make-single-instance-identity-validations
   "Returns a standard validation for an ACL single_instance_identity field closed over the given context and ACL to be validated."
   [context]
-  {:target-id (v/when-present (make-single-instance-identity-target-validation context))})
+  {:target-id (v/when-present (make-single-instance-identity-target-id-validation context))})
 
 (defn- make-catalog-item-identity-validations
   "Returns a standard validation for an ACL catalog_item_identity field closed over the given context and ACL to be validated."
@@ -91,18 +155,31 @@
 
 (defn validate-provider-exists
   "Validates that the acl provider exists."
-  [context fieldpath acl]
+  [context key-path acl]
   (let [provider-id (acls/acl->provider-id acl)]
     (when (and provider-id
                (not (some #{provider-id} (map :provider-id (mdb/get-providers context)))))
-      {fieldpath [(msg/provider-does-not-exist provider-id)]})))
+      {key-path [(msg/provider-does-not-exist provider-id)]})))
+
+(defn validate-grantable-permissions
+  "Validates that the permissions requested are valid for given target."
+  [key-path acl]
+  (let [identity-type (get-identity-type acl)
+        target (:target (get acl identity-type))
+        permissions-requested (mapcat :permissions (:group-permissions acl))
+        grantable-permissions (set (get-in grantable-permission-mapping [identity-type target]))
+        ungrantable-permissions (remove grantable-permissions (set permissions-requested))]
+    (when (and (not (empty? ungrantable-permissions)) (not (empty? grantable-permissions)))
+      {key-path [(format "[%s] ACL cannot have [%s] permission for target [%s]"
+                         (name identity-type) (pr-str ungrantable-permissions) target)]})))
 
 (defn- make-acl-validations
   "Returns a sequence of validations closed over the given context for validating ACL records."
   [context acl]
   [#(validate-provider-exists context %1 %2)
    {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl))
-    :single-instance-identity (v/when-present (make-single-instance-identity-validations context))}])
+    :single-instance-identity (v/when-present (make-single-instance-identity-validations context))}
+   #(validate-grantable-permissions %1 %2)])
 
 (defn validate-acl-save!
   "Throws service errors if ACL is invalid."
