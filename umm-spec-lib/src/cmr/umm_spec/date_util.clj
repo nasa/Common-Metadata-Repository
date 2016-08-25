@@ -7,12 +7,12 @@
 (def parsed-default-date
   (p/parse-datetime default-date-value))
 
-(defn or-default
+(defn with-default
   "Returns x if not nil, or else the default date placeholder value."
   [x]
   (or x default-date-value))
 
-(defn not-default
+(defn without-default
   "Returns x if it is not the default date value string."
   [x]
   (when (not= x default-date-value)

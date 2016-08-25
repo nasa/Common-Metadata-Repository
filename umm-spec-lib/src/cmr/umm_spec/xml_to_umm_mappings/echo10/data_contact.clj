@@ -106,14 +106,14 @@
   used to hold a list of ContactPersons not associated with a data center, remove the contacts
   that have the default role and empty organization name. The ContactPersons on that Contact
   should be associated with the collection but not the data center."
-  [doc]
+  [doc apply-default?]
   (let [all-contacts (select doc "/Collection/Contacts/Contact")
         contacts (remove #(and (= (value-of % "Role") dc/default-echo10-contact-role)
                                (empty? (value-of % "OrganizationName")))
                          all-contacts)]
     (for [contact contacts]
       {:Roles (map echo10-contact-role->umm-data-center-role [(value-of contact "Role")])
-       :ShortName (u/with-default (value-of contact "OrganizationName"))
+       :ShortName (u/with-default (value-of contact "OrganizationName") apply-default?)
        :ContactInformation (parse-contact-information contact)
        :ContactPersons (parse-contact-persons contact)})))
 
@@ -145,12 +145,12 @@
 (defn parse-data-centers
   "Parse data centers from ECHO10 XML. Data center information comes from Contacts/Contact,
   ArchiveCenter, and ProcessingCenter."
-  [doc]
-  (let [data-centers (parse-data-centers-from-contacts doc)
+  [doc apply-default?]
+  (let [data-centers (parse-data-centers-from-contacts doc apply-default?)
         data-centers (conj
                       data-centers
                       (parse-additional-center doc data-centers "ArchiveCenter" "ARCHIVER")
                       (parse-additional-center doc data-centers "ProcessingCenter" "PROCESSOR"))]
     (if (seq (remove nil? data-centers))
       data-centers
-      [u/not-provided-data-center])))
+      (when apply-default? [u/not-provided-data-center]))))

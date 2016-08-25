@@ -8,6 +8,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.concepts :as cs]
             [cmr.common.mime-types :as mt]
+            [cmr.common.util :as util]
             [cmr.elastic-utils.connect :as es]
             [cmr.elastic-utils.index-util :as esi]
             [cmr.transmit.index-set :as index-set]
@@ -239,7 +240,7 @@
                                   :_version elastic-version
                                   :_version_type version-type})]
           ;; Return one elastic document for each index we're writing to.
-          (mapv #(assoc elastic-doc :_index %) index-names))))
+          (util/doall-recursive (mapv #(assoc elastic-doc :_index %) index-names)))))
 
     (catch Throwable e
       (error e (str "Skipping failed catalog item. Exception trying to convert concept to elastic doc:"

@@ -21,6 +21,14 @@
                                       <Metadata_Dates>
                                         <Data_Creation>2014-05-01T02:30:24</Data_Creation>
                                       </Metadata_Dates>
+                                    </DIF>"))))
+
+  (testing "default date is skipped"
+    (is (= []
+           (parse/parse-data-dates "<DIF>
+                                      <Metadata_Dates>
+                                        <Data_Creation>1970-01-01T00:00:00</Data_Creation>
+                                      </Metadata_Dates>
                                     </DIF>")))))
 
 (deftest dif10-temporal-end-dates
@@ -31,7 +39,8 @@
                                            <Ending_Date_Time>2015-01-01</Ending_Date_Time>
                                          </Range_DateTime>
                                        </Temporal_Coverage>
-                                     </DIF>")
+                                     </DIF>"
+                                     true)
              :TemporalExtents
              first
              :RangeDateTimes
@@ -44,7 +53,8 @@
                                            <Ending_Date_Time>2015-01-01T04:30:12</Ending_Date_Time>
                                          </Range_DateTime>
                                        </Temporal_Coverage>
-                                     </DIF>")
+                                     </DIF>"
+                                     true)
              :TemporalExtents
              first
              :RangeDateTimes
