@@ -143,7 +143,7 @@
       (is (empty? (generate-and-validate-xml :collection :umm-json umm-c-record))))))
 
 (deftest roundtrip-generated-collection-records
-  (checking "collection round tripping" 1000
+  (checking "collection round tripping" 100
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
      metadata-format (gen/elements tested-collection-formats)]
     (is (= (expected-conversion/convert umm-record metadata-format)
