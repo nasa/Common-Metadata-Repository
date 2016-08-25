@@ -167,12 +167,10 @@
        [:Parent_DIF (:EntryId ma)])
      [:Metadata_Name "CEOS IDN DIF"]
      [:Metadata_Version "VERSION 9.9.3"]
-     (let [creation-date (date/metadata-create-date c)]
-       (when (some? creation-date)
-         [:DIF_Creation_Date (f/unparse (f/formatters :date) creation-date)]))
-     (let [last-revision-date (date/metadata-update-date c)]
-       (when (some? last-revision-date)
-         [:Last_DIF_Revision_Date (f/unparse (f/formatters :date) last-revision-date)]))
+     (when-let [creation-date (date/metadata-create-date c)]
+       [:DIF_Creation_Date (f/unparse (f/formatters :date) creation-date)])
+     (when-let [last-revision-date (date/metadata-update-date c)]
+       [:Last_DIF_Revision_Date (f/unparse (f/formatters :date) last-revision-date)])
      [:Extended_Metadata
       (for [{:keys [Group Name Description DataType Value ParamRangeBegin ParamRangeEnd UpdateDate]}
             (:AdditionalAttributes c)

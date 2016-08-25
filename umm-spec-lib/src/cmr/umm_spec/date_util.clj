@@ -22,18 +22,17 @@
   (when (not= x default-date-value)
     x))
 
-(defn or-default-date
+(defn with-default-date
   "Returns x if not nil, or else the default date placeholder date value"
   [x]
   (or x (f/parse (f/formatters :date-hour-minute-second) default-date-value)))
 
 (defn parse-date-type-from-xml
-  "Get the date (yyyy-MM-dd) at the location in the doc and parse it into a UMM DateType"
+  "Get the date at the location in the doc and parse it into a UMM DateType"
   [doc date-location type]
-  (let [date (value-of doc date-location)]
-    (when (some? date)
-      (cmn/map->DateType {:Date (f/parse date)
-                          :Type type}))))
+  (when-let [date (value-of doc date-location)]
+    (cmn/map->DateType {:Date (f/parse date)
+                        :Type type})))
 
 (defn latest-date-of-type
   "Returns :Date value of the most recent UMM DateType map in date-coll with the given type."

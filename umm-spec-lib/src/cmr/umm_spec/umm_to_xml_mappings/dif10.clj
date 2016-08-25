@@ -159,13 +159,14 @@
 
 
 (defn- generate-metadata-dates
-  "Returns DIF 10 elements for UMM-C collection c's DataDates."
+  "Returns DIF 10 elements for UMM-C collection c's MetadataDates. Creation and Last Revision
+  are required in DIF10 so use defaults if not present"
   [c]
   (list
    [:Metadata_Creation (f/unparse (f/formatters :date)
-                         (date/or-default-date (date/metadata-create-date c)))]
+                         (date/with-default-date (date/metadata-create-date c)))]
    [:Metadata_Last_Revision (f/unparse (f/formatters :date)
-                              (date/or-default-date (date/metadata-update-date c)))]))
+                              (date/with-default-date (date/metadata-update-date c)))]))
 
 (defn- generate-related-urls
   "Returns DIF10 Related_URLs for the provided UMM-C collection record. Even though UMM RelatedUrls
