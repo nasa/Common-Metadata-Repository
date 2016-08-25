@@ -82,7 +82,7 @@
 (def formats-to-skip
   "A set of formats to skip in the roundtrip example metadata test. These will be fixed as part of
    separate issues. The issues CMR-3252, CMR-3253, CMR-3254, and CMR-3255 are filed to fix this."
-  #{:dif :dif10 :iso19115 :iso-smap})
+  #{:dif10 :iso19115 :iso-smap})
 
 
 (deftest roundtrip-example-metadata
@@ -95,7 +95,6 @@
             :when (not @failed-atom)
             :let [metadata (slurp example-file)
                   umm (core/parse-metadata test-context :collection metadata-format metadata)]]
-
       ;; input file is valid
       (check-failure
        (is (empty? (core/validate-xml :collection metadata-format metadata))
