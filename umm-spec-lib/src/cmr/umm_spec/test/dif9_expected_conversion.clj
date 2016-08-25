@@ -3,6 +3,7 @@
  (:require [clj-time.core :as t]
            [clj-time.format :as f]
            [cmr.umm-spec.util :as su]
+           [cmr.umm-spec.date-util :as date]
            [cmr.umm-spec.json-schema :as js]
            [cmr.common.util :as util :refer [update-in-each]]
            [cmr.umm-spec.models.umm-common-models :as cmn]
@@ -217,10 +218,10 @@
 
 (defn- expected-metadata-dates
   "When converting, the creation date and last revision date will be persisted"
-  [metadata-dates]
+  [umm-coll]
   (remove nil? (vector
-                 (conversion-util/create-date-type (su/get-metadata-creation-date metadata-dates) "CREATE")
-                 (conversion-util/create-date-type (su/get-latest-metadata-update-date metadata-dates) "UPDATE"))))
+                 (conversion-util/create-date-type (date/metadata-create-date umm-coll) "CREATE")
+                 (conversion-util/create-date-type (date/metadata-update-date umm-coll) "UPDATE"))))
 
 (defn umm-expected-conversion-dif9
   [umm-coll]
@@ -250,5 +251,5 @@
         (update-in [:RelatedUrls] conversion-util/expected-related-urls-for-dif-serf)
         ;;CMR-2716 SpatialKeywords are being replaced by LocationKeywords.
         (assoc :SpatialKeywords nil)
-        (update :MetadataDates expected-metadata-dates)
+        (assoc :MetadataDates (expected-metadata-dates umm-coll))
         js/parse-umm-c)))

@@ -5,6 +5,7 @@
             [clj-time.format :as f]
             [clojure.set :as set]
             [camel-snake-kebab.core :as csk]
+            [cmr.umm-spec.date-util :as date]
             [cmr.umm-spec.xml-to-umm-mappings.dif9 :as xtu]
             [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]
             [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]))
@@ -166,10 +167,10 @@
        [:Parent_DIF (:EntryId ma)])
      [:Metadata_Name "CEOS IDN DIF"]
      [:Metadata_Version "VERSION 9.9.3"]
-     (let [creation-date (u/get-metadata-creation-date (:MetadataDates c))]
+     (let [creation-date (date/metadata-create-date c)]
        (when (some? creation-date)
          [:DIF_Creation_Date (f/unparse (f/formatters :date) creation-date)]))
-     (let [last-revision-date (u/get-latest-metadata-update-date (:MetadataDates c))]
+     (let [last-revision-date (date/metadata-update-date c)]
        (when (some? last-revision-date)
          [:Last_DIF_Revision_Date (f/unparse (f/formatters :date) last-revision-date)]))
      [:Extended_Metadata

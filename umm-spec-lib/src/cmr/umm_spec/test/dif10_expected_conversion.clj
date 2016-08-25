@@ -5,6 +5,7 @@
            [cmr.umm-spec.util :as su]
            [cmr.umm-spec.json-schema :as js]
            [cmr.common.util :as util :refer [update-in-each]]
+           [cmr.umm-spec.date-util :as date]
            [cmr.umm-spec.models.umm-common-models :as cmn]
            [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
            [cmr.umm-spec.related-url :as ru-gen]
@@ -194,6 +195,15 @@
       (assoc :ValueAccuracyExplanation nil)
       (assoc :Description (su/with-default (:Description attribute)))))
 
+(defn- expected-metadata-dates
+  "When converting, the creation date and last revision date will be persisted"
+  [umm-coll]
+  (remove nil? (vector
+                 (conversion-util/create-date-type
+                   (date/or-default-date (date/metadata-create-date umm-coll)) "CREATE")
+                 (conversion-util/create-date-type
+                   (date/or-default-date (date/metadata-update-date umm-coll)) "UPDATE"))))
+
 (defn umm-expected-conversion-dif10
   [umm-coll]
   (-> umm-coll
@@ -217,5 +227,5 @@
       (update-in [:Abstract] #(or % su/not-provided))
       ;; CMR-2716 SpatialKeywords are replaced by LocationKeywords
       (assoc :SpatialKeywords nil)
-      (assoc :MetadataDates nil)
+      (assoc :MetadataDates (expected-metadata-dates umm-coll))
       js/parse-umm-c))
