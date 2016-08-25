@@ -10,6 +10,7 @@
             [cmr.common.util :refer [are3]]
             [cmr.common.xml :as xml]
             [cmr.common.xml.xslt :as xslt]
+            [cmr.umm-spec.util :as u]
             [cmr.umm-spec.umm-spec-core :as core]
             [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
@@ -416,12 +417,13 @@
 (deftest data-quality-info-additional-attributes
   (testing "additional attributes that should go to dataQualityInfo section are written out correctly"
     (let [parsed (#'parser/parse-iso19115-xml (lkt/setup-context-for-test lkt/sample-keyword-map)
-                                              iso-with-use-constraints)
+                                              iso-with-use-constraints u/default-parsing-options)
           ;; all the parsed additional attributes are from dataQualityInfo and we use it as the expected value
           expected-additional-attributes (:AdditionalAttributes parsed)
           generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
           ;; parse out the dataQualtiyInfo additional attributes
-          parsed-additional-attributes (#'aa/parse-data-quality-info-additional-attributes generated-iso)]
+          parsed-additional-attributes (#'aa/parse-data-quality-info-additional-attributes
+                                         generated-iso (:apply-default? u/default-parsing-options))]
       ;; validate against xml schema
       (is (empty? (core/validate-xml :collection :iso19115 generated-iso)))
       (is (not (empty? parsed-additional-attributes)))
@@ -430,6 +432,6 @@
 (deftest granule-spatial-representation
   (testing "granule spatial representation is parsed correctly"
     (let [parsed (#'parser/parse-iso19115-xml (lkt/setup-context-for-test lkt/sample-keyword-map)
-                                              iso-with-use-constraints)
+                                              iso-with-use-constraints u/default-parsing-options)
           gran-spatial-representation (get-in parsed [:SpatialExtent :GranuleSpatialRepresentation])]
       (is (= "CARTESIAN" gran-spatial-representation)))))

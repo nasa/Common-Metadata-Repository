@@ -54,8 +54,8 @@
   (let [version-id (value-of element "VersionId")
         assoc-type (value-of element "CollectionType")]
     {:EntryId (value-of element "ShortName")
-     :Version (when (not= u/not-provided version-id) version-id)
-     :Type (when (not= u/not-provided assoc-type) assoc-type)
+     :Version (u/without-default version-id)
+     :Type (u/without-default assoc-type)
      :Description (value-of element "CollectionUse")}))
 
 (defn parse-metadata-associations
@@ -70,7 +70,7 @@
   (for [[date-type xpath] [["CREATE" "InsertTime"]
                            ["UPDATE" "LastUpdate"]
                            ["DELETE" "DeleteTime"]]
-        :let [date-val (date/not-default (value-of doc (str "/Collection/" xpath)))]
+        :let [date-val (date/without-default (value-of doc (str "/Collection/" xpath)))]
         :when date-val]
     {:Type date-type
      :Date date-val}))
@@ -79,7 +79,8 @@
   "Returns a UMM TilingIdentificationSystem map from the given ECHO10 XML document."
   [doc]
   (for [sys-el (select doc "/Collection/TwoDCoordinateSystems/TwoDCoordinateSystem")]
-    {:TilingIdentificationSystemName (u/without-default (value-of sys-el "TwoDCoordinateSystemName"))
+    {:TilingIdentificationSystemName (u/without-default
+                                       (value-of sys-el "TwoDCoordinateSystemName"))
      :Coordinate1 (fields-from (first (select sys-el "Coordinate1")) :MinimumValue :MaximumValue)
      :Coordinate2 (fields-from (first (select sys-el "Coordinate2")) :MinimumValue :MaximumValue)}))
 
@@ -95,7 +96,7 @@
 
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
-  [context doc]
+  [context doc {:keys [apply-default?]}]
   {:EntryTitle (value-of doc "/Collection/DataSetId")
    :ShortName  (value-of doc "/Collection/ShortName")
    :Version    (value-of doc "/Collection/VersionId")
@@ -113,14 +114,16 @@
                       (lk/get-spatial-keywords-maps context)
                       (values-at doc "/Collection/SpatialKeywords/Keyword"))
    :SpatialExtent    (spatial/parse-spatial doc)
-   :TemporalExtents  (or (seq (parse-temporal doc)) u/not-provided-temporal-extents)
-   :Platforms (or (seq (parse-platforms doc)) u/not-provided-platforms)
+   :TemporalExtents  (or (seq (parse-temporal doc))
+                         (when apply-default? u/not-provided-temporal-extents))
+   :Platforms (or (seq (parse-platforms doc))
+                  (when apply-default? u/not-provided-platforms))
    :ProcessingLevel {:Id (value-of doc "/Collection/ProcessingLevelId")
                      :ProcessingLevelDescription (value-of doc "/Collection/ProcessingLevelDescription")}
    :AdditionalAttributes (for [aa (select doc "/Collection/AdditionalAttributes/AdditionalAttribute")]
                            {:Name (value-of aa "Name")
                             :DataType (value-of aa "DataType")
-                            :Description (u/with-default (value-of aa "Description"))
+                            :Description (u/with-default (value-of aa "Description") apply-default?)
                             :ParameterRangeBegin (value-of aa "ParameterRangeBegin")
                             :ParameterRangeEnd (value-of aa "ParameterRangeEnd")
                             :Value (value-of aa "Value")})
@@ -140,10 +143,11 @@
                        :VariableLevel2 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/Value")
                        :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
                        :DetailedVariable (value-of sk "DetailedVariableKeyword")})
-   :DataCenters (dc/parse-data-centers doc)
+   :DataCenters (dc/parse-data-centers doc apply-default?)
    :ContactPersons (dc/parse-data-contact-persons doc)})
 
 (defn echo10-xml-to-umm-c
-  "Returns UMM-C collection record from ECHO10 collection XML document."
-  [context metadata]
-  (js/parse-umm-c (parse-echo10-xml context metadata)))
+  "Returns UMM-C collection record from ECHO10 collection XML document. The :apply-default? option
+  tells the parsing code to set the default values for fields when parsing the metadata into umm."
+  [context metadata options]
+  (js/parse-umm-c (parse-echo10-xml context metadata options)))

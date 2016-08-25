@@ -21,31 +21,45 @@
   (for [characteristic (select el "Characteristics")]
     (fields-from characteristic :Name :Description :DataType :Unit :Value)))
 
-(defn- parse-projects
+(defn- parse-projects-impl
   [doc]
-  (when-not (= u/not-provided (value-of doc "/DIF/Project[1]/Short_Name"))
-    (for [proj (select doc "/DIF/Project")]
-      {:ShortName (value-of proj "Short_Name")
-       :LongName (value-of proj "Long_Name")
-       :Campaigns (values-at proj "Campaign")
-       :StartDate (date-at proj "Start_Date")
-       :EndDate (date-at proj "End_Date")})))
+  (for [proj (select doc "/DIF/Project")]
+    {:ShortName (value-of proj "Short_Name")
+     :LongName (value-of proj "Long_Name")
+     :Campaigns (values-at proj "Campaign")
+     :StartDate (date-at proj "Start_Date")
+     :EndDate (date-at proj "End_Date")}))
+
+(defn- parse-projects
+  [doc apply-default?]
+  (if apply-default?
+    ;; We shouldn't remove not provided during parsing
+    (when-not (= u/not-provided (value-of doc "/DIF/Project[1]/Short_Name"))
+      (parse-projects-impl doc))
+    (parse-projects-impl doc)))
+
+(defn- parse-instruments-impl
+  [platform-el]
+  (for [inst (select platform-el "Instrument")]
+    {:ShortName (value-of inst "Short_Name")
+     :LongName (value-of inst "Long_Name")
+     :Technique (value-of inst "Technique")
+     :NumberOfSensors (value-of inst "NumberOfSensors")
+     :Characteristics (parse-characteristics inst)
+     :OperationalModes (values-at inst "OperationalMode")
+     :Sensors (for [sensor (select inst "Sensor")]
+                {:ShortName (value-of sensor "Short_Name")
+                 :LongName (value-of sensor "Long_Name")
+                 :Technique (value-of sensor "Technique")
+                 :Characteristics (parse-characteristics sensor)})}))
 
 (defn- parse-instruments
-  [platform-el]
-  (when-not (= u/not-provided (value-of platform-el "Instrument[1]/Short_Name"))
-    (for [inst (select platform-el "Instrument")]
-      {:ShortName (value-of inst "Short_Name")
-       :LongName (value-of inst "Long_Name")
-       :Technique (value-of inst "Technique")
-       :NumberOfSensors (value-of inst "NumberOfSensors")
-       :Characteristics (parse-characteristics inst)
-       :OperationalModes (values-at inst "OperationalMode")
-       :Sensors (for [sensor (select inst "Sensor")]
-                  {:ShortName (value-of sensor "Short_Name")
-                   :LongName (value-of sensor "Long_Name")
-                   :Technique (value-of sensor "Technique")
-                   :Characteristics (parse-characteristics sensor)})})))
+  [platform-el apply-default?]
+  (if apply-default?
+    ;; We shouldn't remove not provided during parsing
+    (when-not (= u/not-provided (value-of platform-el "Instrument[1]/Short_Name"))
+      (parse-instruments-impl platform-el))
+    (parse-instruments-impl platform-el)))
 
 (defn parse-data-dates
   "Returns seq of UMM-C DataDates parsed from DIF 10 XML document."
@@ -59,7 +73,7 @@
             (for [[tag date-type] tag-types
                   :let [date-value (-> md-dates-el
                                        (value-of tag)
-                                       date/not-default
+                                       date/without-default
                                        ;; Since the DIF 10 date elements are actually just a string
                                        ;; type, they may contain anything, and so we need to try to
                                        ;; parse them here and return nil if they do not actually
@@ -78,7 +92,7 @@
 
 (defn parse-dif10-xml
   "Returns collection map from DIF10 collection XML document."
-  [doc]
+  [doc {:keys [apply-default?]}]
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
    :ShortName (value-of doc "/DIF/Entry_ID/Short_Name")
    :Version (value-of doc "/DIF/Entry_ID/Version")
@@ -98,7 +112,7 @@
                         :Subregion2 (value-of lk "Location_Subregion2")
                         :Subregion3 (value-of lk "Location_Subregion3")
                         :DetailedLocation (value-of lk "Detailed_Location")})
-   :Projects (parse-projects doc)
+   :Projects (parse-projects doc apply-default?)
    :Quality (value-of doc "/DIF/Quality")
    :AccessConstraints {:Description (value-of doc "/DIF/Access_Constraints")
                        :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}
@@ -108,7 +122,7 @@
                  :LongName (value-of platform "Long_Name")
                  :Type (without-default-value-of platform "Type")
                  :Characteristics (parse-characteristics platform)
-                 :Instruments (parse-instruments platform)})
+                 :Instruments (parse-instruments platform apply-default?)})
    :TemporalExtents (for [temporal (select doc "/DIF/Temporal_Coverage")]
                       {:TemporalRangeType (value-of temporal "Temporal_Range_Type")
                        :PrecisionOfSeconds (value-of temporal "Precision_Of_Seconds")
@@ -134,7 +148,7 @@
                      :DistributionFormat (value-of dist "Distribution_Format")
                      :Fees (value-of dist "Fees")})
    :ProcessingLevel {:Id (value-of doc "/DIF/Product_Level_Id")}
-   :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc)
+   :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc apply-default?)
    :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
                             (into {} (map (fn [x]
                                             (if (keyword? x)
@@ -178,6 +192,7 @@
    :ContactGroups (contact/parse-contact-groups (select doc "DIF/Personnel"))})
 
 (defn dif10-xml-to-umm-c
-  "Returns UMM-C collection record from DIF10 collection XML document."
-  [metadata]
-  (js/parse-umm-c (parse-dif10-xml metadata)))
+  "Returns UMM-C collection record from DIF10 collection XML document. The :apply-default? option
+  tells the parsing code to set the default values for fields when parsing the metadata into umm."
+  [metadata options]
+  (js/parse-umm-c (parse-dif10-xml metadata options)))

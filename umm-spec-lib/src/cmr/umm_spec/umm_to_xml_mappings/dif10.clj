@@ -152,8 +152,8 @@
   "Returns DIF 10 elements for UMM-C collection c's DataDates."
   [c]
   (list
-    [:Data_Creation (date/or-default (date/data-create-date c))]
-    [:Data_Last_Revision (date/or-default (date/data-update-date c))]
+    [:Data_Creation (date/with-default (date/data-create-date c))]
+    [:Data_Last_Revision (date/with-default (date/data-update-date c))]
     [:Data_Future_Review (date/data-review-date c)]
     [:Data_Delete (date/data-delete-date c)]))
 
