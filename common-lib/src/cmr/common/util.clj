@@ -342,7 +342,9 @@
   (doall (pmap f values)))
 
 (defn doall-recursive
-  "Recursively forces evaluation of any nested sequences."
+  "Recursively forces evaluation of any nested sequences. The regular doall will force evaluation
+   of a sequence but if elements of those sequences are things like maps which also contain lazy
+   sequences they would not be realized. This function will force all of them to be realized."
   [v]
   (w/postwalk identity v))
 

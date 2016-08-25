@@ -691,6 +691,7 @@
         v (map
            (mark-realized marker1)
            [1
+            ;; The contents of the map would not be realized by a regular doall.
             {:a (map (mark-realized marker2) [1 2])
              :b {:foo [(map (mark-realized marker3) [1 2 3])]}}
             3])]
