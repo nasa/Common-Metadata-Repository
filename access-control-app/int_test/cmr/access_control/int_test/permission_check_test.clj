@@ -80,6 +80,8 @@
                        :collection-ref (umm-g/map->CollectionRef
                                         {:entry-title parent-entry-title})})
          granule-umm (merge granule-umm attrs)]
+     ;; We don't want to publish messages in metadata db since different envs may or may not be running
+     ;; the indexer when we run this test.
      (u/without-publishing-messages
       (:concept-id
        (mdb/save-concept (u/conn-context)
