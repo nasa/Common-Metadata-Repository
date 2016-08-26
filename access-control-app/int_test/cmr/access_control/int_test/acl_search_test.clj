@@ -83,24 +83,31 @@
 
 (defn acl->search-response-item
   "Returns the expected search response item for an ACL."
-  [acl]
+  [include-full-acl? acl]
   (let [acl (util/map-keys->kebab-case acl)
         {:keys [protocol host port context]} (get-in (u/conn-context) [:system :access-control-connection])
         expected-location (format "%s://%s:%s%s/acls/%s"
                                   protocol host port context (:concept-id acl))]
-    {:name (access-control-index/acl->display-name acl)
-     :revision_id (:revision-id acl),
-     :concept_id (:concept-id acl)
-     :identity_type (access-control-index/acl->identity-type acl)
-     :location expected-location}))
+    (util/remove-nil-keys
+     {:name (access-control-index/acl->display-name acl)
+      :revision_id (:revision-id acl),
+      :concept_id (:concept-id acl)
+      :identity_type (access-control-index/acl->identity-type acl)
+      :location expected-location
+      :acl (when include-full-acl?
+             (-> acl
+                 (dissoc :concept-id :revision-id)
+                 util/map-keys->snake_case))})))
 
 (defn acls->search-response
   "Returns the expected search response for a given number of hits and the acls."
   ([hits acls]
-   (acls->search-response hits acls 10 1))
-  ([hits acls page-size page-num]
-   (let [all-items (->> acls
-                        (map acl->search-response-item)
+   (acls->search-response hits acls nil))
+  ([hits acls options]
+   (let [{:keys [page-size page-num include-full-acl]} (merge {:page-size 10 :page-num 1}
+                                                              options)
+         all-items (->> acls
+                        (map #(acl->search-response-item include-full-acl %))
                         (sort-by :name)
                         vec)
          start (* (dec page-num) page-size)
@@ -182,12 +189,16 @@
                   "System - SYSTEM_AUDIT_REPORT"
                   "System - SYSTEM_INITIALIZER"]
                  (map :name (:items response)))))))
+    (testing "Find acls with full search response"
+      (let [response (ac/search-for-acls (u/conn-context) {:include_full_acl true})]
+        (is (= (acls->search-response (count all-acls) all-acls {:include-full-acl true})
+               (dissoc response :took)))))
     (testing "ACL Search Paging"
       (testing "Page Size"
-        (is (= (acls->search-response (count all-acls) all-acls 4 1)
+        (is (= (acls->search-response (count all-acls) all-acls {:page-size 4 :page-num 1})
                (dissoc (ac/search-for-acls (u/conn-context) {:page_size 4}) :took))))
       (testing "Page Number"
-        (is (= (acls->search-response (count all-acls) all-acls 4 2)
+        (is (= (acls->search-response (count all-acls) all-acls {:page-size 4 :page-num 2})
                (dissoc (ac/search-for-acls (u/conn-context) {:page_size 4 :page_num 2}) :took)))))))
 
 (deftest acl-search-permitted-group-test

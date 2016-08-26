@@ -7,6 +7,7 @@
             [cmr.common-app.services.search.elastic-search-index :as esi]
             [cmr.common-app.services.search.query-to-elastic :as q2e]
             [cmr.common.lifecycle :as l]
+            [cmr.common.util :as util]
             [cmr.common.services.errors :as errors]
             [cmr.transmit.metadata-db2 :as mdb]
             [clojure.string :as str]
@@ -19,9 +20,9 @@
     (:concept-type concept-map)))
 
 (defmethod index-concept :default
-  [context concept-map]
+  [context concept-map])
   ;; Do nothing
-  )
+
 
 (defmulti delete-concept
   "Deletes the concept map in elastic search."
@@ -29,9 +30,9 @@
     (:concept-type concept-map)))
 
 (defmethod delete-concept :default
-  [context concept-map]
+  [context concept-map])
   ;; Do nothing
-  )
+
 
 (defn- safe-lowercase
   [v]
@@ -168,7 +169,9 @@
    ;; This will be the catalog item identity name or a string containing
    ;; "<identity type> - <target>". For example "System - PROVIDER"
    :display-name (m/stored m/string-field-mapping)
-   :identity-type (m/stored m/string-field-mapping)})
+   :identity-type (m/stored m/string-field-mapping)
+   ;; Store the full ACL metadata for quick retrieval.
+   :acl-gzip-b64 (m/stored (m/not-indexed m/string-field-mapping))})
 
 (def ^:private acl-index-settings
   "Defines the elasticsearch index settings."
@@ -237,7 +240,8 @@
            :permitted-group.lowercase (map str/lower-case permitted-groups)
            :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
            :target-provider-id provider-id
-           :target-provider-id.lowercase (safe-lowercase provider-id))))
+           :target-provider-id.lowercase (safe-lowercase provider-id)
+           :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map)))))
 
 (defmethod index-concept :acl
   [context concept-map]

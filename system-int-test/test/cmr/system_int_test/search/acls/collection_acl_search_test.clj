@@ -192,6 +192,12 @@
           :echo10 guest-permitted-collections
           (search/find-metadata :collection :echo10 {:token guest-token
                                                      :concept-id (map :concept-id all-colls)})))
+      (testing "Empty token matches guest access"
+        (d/assert-metadata-results-match
+          :echo10 guest-permitted-collections
+          (search/find-metadata :collection :echo10 {:token ""
+                                                     :concept-id (map :concept-id all-colls)})))
+
       (testing "user in groups"
         (d/assert-metadata-results-match
           :echo10 [coll4 coll6 coll3 coll8 coll2]
