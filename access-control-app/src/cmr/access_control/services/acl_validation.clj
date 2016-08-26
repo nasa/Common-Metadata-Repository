@@ -127,10 +127,10 @@
 (defn- get-identity-type
   [acl]
   (cond
-    (not (nil? (:single-instance-identity acl))) :single-instance-identity
-    (not (nil? (:provider-identity acl)))        :provider-identity
-    (not (nil? (:system-identity acl)))          :system-identity
-    (not (nil? (:catalog-item-identity acl)))    :catalog-item-identity
+    (:single-instance-identity acl) :single-instance-identity
+    (:provider-identity acl)        :provider-identity
+    (:system-identity acl)          :system-identity
+    (:catalog-item-identity acl)    :catalog-item-identity
     :else nil))
 
 (defn make-single-instance-identity-target-id-validation
@@ -169,7 +169,7 @@
         target (:target (get acl identity-type))
         permissions-requested (mapcat :permissions (:group-permissions acl))
         grantable-permissions (get-in grantable-permission-mapping [identity-type target])
-        ungrantable-permissions (remove (set grantable-permissions) (set permissions-requested))]
+        ungrantable-permissions (remove (set grantable-permissions) permissions-requested)]
     (when (and (not (empty? ungrantable-permissions)) (not (empty? (set grantable-permissions))))
       {key-path [(format "[%s] ACL cannot have [%s] permission for target [%s], only [%s] are grantable"
                          (name identity-type) (clojure.string/join ", " ungrantable-permissions) target (clojure.string/join ", " grantable-permissions))]})))
@@ -180,7 +180,7 @@
   [#(validate-provider-exists context %1 %2)
    {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl))
     :single-instance-identity (v/when-present (make-single-instance-identity-validations context))}
-   #(validate-grantable-permissions %1 %2)])
+   validate-grantable-permissions])
 
 (defn validate-acl-save!
   "Throws service errors if ACL is invalid."

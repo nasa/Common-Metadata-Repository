@@ -107,13 +107,13 @@
           (assoc-in single-instance-acl [:single_instance_identity :target_id] "AG123-CMR")
 
           "Single instance identity target grantable permission check"
-          #"\[single-instance-identity\] ACL cannot have \[read, create\] permission for target \[GROUP_MANAGEMENT\], only \[update, delete\] are grantable"
+          #"\[single-instance-identity\] ACL cannot have \[create, read] permission for target \[GROUP_MANAGEMENT\], only \[update, delete\] are grantable"
           (assoc-in
             (assoc-in single-instance-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"])
             [:single_instance_identity :target_id] group1-concept-id)
 
           "Provider identity target grantable permission check"
-          #"\[provider-identity\] ACL cannot have \[delete, create\] permission for target \[INGEST_MANAGEMENT_ACL\], only \[read, update\] are grantable"
+          #"\[provider-identity\] ACL cannot have \[create, delete\] permission for target \[INGEST_MANAGEMENT_ACL\], only \[read, update\] are grantable"
           (assoc-in provider-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"])
 
           "System identity target grantable permission check"
@@ -398,14 +398,14 @@
           single-instance-concept-id
 
           "Single instance identity target grantable permission check"
-          #"\[single-instance-identity\] ACL cannot have \[read, create\] permission for target \[GROUP_MANAGEMENT\], only \[update, delete\] are grantable"
+          #"\[single-instance-identity\] ACL cannot have \[create, read\] permission for target \[GROUP_MANAGEMENT\], only \[update, delete\] are grantable"
           (assoc-in
             (assoc-in single-instance-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"])
             [:single_instance_identity :target_id] group1-concept-id)
           single-instance-concept-id
 
           "Provider identity target grantable permission check"
-          #"\[provider-identity\] ACL cannot have \[delete, create\] permission for target \[INGEST_MANAGEMENT_ACL\], only \[read, update\] are grantable"
+          #"\[provider-identity\] ACL cannot have \[create, delete\] permission for target \[INGEST_MANAGEMENT_ACL\], only \[read, update\] are grantable"
           (assoc-in provider-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"])
           provider-concept-id
 
