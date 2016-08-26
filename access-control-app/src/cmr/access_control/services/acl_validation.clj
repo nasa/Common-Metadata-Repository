@@ -163,16 +163,16 @@
       {key-path [(msg/provider-does-not-exist provider-id)]})))
 
 (defn validate-grantable-permissions
-  "Validates that the permissions requested are valid for given target."
+  "Checks if permissions requested are grantable for given target."
   [key-path acl]
   (let [identity-type (get-identity-type acl)
         target (:target (get acl identity-type))
         permissions-requested (mapcat :permissions (:group-permissions acl))
-        grantable-permissions (set (get-in grantable-permission-mapping [identity-type target]))
-        ungrantable-permissions (remove grantable-permissions (set permissions-requested))]
-    (when (and (not (empty? ungrantable-permissions)) (not (empty? grantable-permissions)))
-      {key-path [(format "[%s] ACL cannot have [%s] permission for target [%s]"
-                         (name identity-type) (pr-str ungrantable-permissions) target)]})))
+        grantable-permissions (get-in grantable-permission-mapping [identity-type target])
+        ungrantable-permissions (remove (set grantable-permissions) (set permissions-requested))]
+    (when (and (not (empty? ungrantable-permissions)) (not (empty? (set grantable-permissions))))
+      {key-path [(format "[%s] ACL cannot have [%s] permission for target [%s], only [%s] are grantable"
+                         (name identity-type) (clojure.string/join ", " ungrantable-permissions) target (clojure.string/join ", " grantable-permissions))]})))
 
 (defn- make-acl-validations
   "Returns a sequence of validations closed over the given context for validating ACL records."
