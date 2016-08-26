@@ -287,7 +287,10 @@
                                                                       :StateProvince "MD"
                                                                       :PostalCode "20774"
                                                                       :Country "U.S.A."}]}
-                                    :GroupName "NSIDC_IceBridge"}]}]}))
+                                    :GroupName "NSIDC_IceBridge"}]}
+                  {:Roles ["PROCESSOR"]
+                   :ShortName "Processing Center"
+                   :LongName "processor.processor"}]}))
 
 (def example-service-record
   "An example record with fields supported by most formats."

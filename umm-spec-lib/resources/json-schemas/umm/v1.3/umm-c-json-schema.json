@@ -433,7 +433,7 @@
       "description": "Allows authors to provide words or phrases outside of the controlled Science Keyword vocabulary, to further describe the collection.",
       "type": "array",
       "items": {
-        "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
+        "$ref": "umm-cmn-json-schema.json#/definitions/AncillaryKeywordStringType"
       },
       "minItems": 0
     },

@@ -172,6 +172,7 @@
      (when-let [last-revision-date (date/metadata-update-date c)]
        [:Last_DIF_Revision_Date (f/unparse (f/formatters :date) last-revision-date)])
      [:Extended_Metadata
+      (center/generate-processing-centers c)
       (for [{:keys [Group Name Description DataType Value ParamRangeBegin ParamRangeEnd UpdateDate]}
             (:AdditionalAttributes c)
             ;; DIF9 does not support ranges in Extended_Metadata - Order of preference for the value

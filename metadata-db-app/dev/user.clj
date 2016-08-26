@@ -22,13 +22,18 @@
 
 (def use-external-db?
   "Set to true to use the Oracle DB"
-  true)
-  ; false)
+  ; true)
+  false)
 
 (def use-external-mq?
   "Set to true to use Rabbit MQ"
   ; true
   false)
+
+(defn disable-access-log
+  "Disables use of the access log in the given system"
+  [system]
+  (assoc-in system [:web :use-access-log?] false))
 
 (defn start
   "Starts the current development system."
@@ -44,9 +49,11 @@
 
   (alter-var-root #'mock-echo
                   (constantly
-                    (mock-echo/start (mock-echo/create-system))))
+                   (disable-access-log
+                    (mock-echo/start (mock-echo/create-system)))))
 
   (let [s (-> (system/create-system)
+              disable-access-log
               (update-in [:db] #(if use-external-db?
                                   %
                                   (memory/create-db)))
@@ -65,6 +72,7 @@
 (defn stop
   "Shuts down and destroys the current development system."
   []
+  (alter-var-root #'side-api-server #(when % (l/stop % nil)))
   (alter-var-root #'mock-echo
                   (fn [s] (when s (mock-echo/stop s))))
   (alter-var-root #'system

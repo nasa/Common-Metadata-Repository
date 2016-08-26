@@ -6,6 +6,7 @@
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.transmit.echo.tokens :as echo-tokens]
             [cmr.common.cache :as cache]
+            [clojure.string :as str]
             [cmr.common.cache.in-memory-cache :as mem-cache]
             [clojure.core.cache :as clj-cache]))
 
@@ -16,7 +17,9 @@
 (defn- get-token
   "Returns the token the user passed in the headers or parameters"
   [params headers]
-  (or (:token params) (get headers tc/token-header)))
+  (let [non-empty-string #(when-not (str/blank? %) %)]
+    (or (non-empty-string (:token params))
+        (non-empty-string (get headers tc/token-header)))))
 
 (defn- get-client-id
   "Gets the client id passed by the client or tries to determine it from other headers"
