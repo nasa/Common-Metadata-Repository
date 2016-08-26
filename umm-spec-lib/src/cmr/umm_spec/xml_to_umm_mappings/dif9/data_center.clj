@@ -26,7 +26,8 @@
   [doc]
   (for [center (select doc "/DIF/Extended_Metadata/Metadata[Name='Processor']")]
     {:Roles ["PROCESSOR"]
-     :ShortName (value-of center "Value")}))
+     :ShortName (value-of center "Value")
+     :LongName (value-of center "Group")}))
 
 (defn parse-data-centers
   "Returns UMM-C data centers from DIF 9 XML document."

@@ -25,7 +25,7 @@
   [c]
   (for [processing-center (filter #(.contains (:Roles %) "PROCESSOR") (:DataCenters c))]
     [:Metadata
-     [:Group dif9-processor-group]
+     [:Group (or (:LongName processing-center) dif9-processor-group)]
      [:Name "Processor"]
      [:Value (:ShortName processing-center)]]))
 
