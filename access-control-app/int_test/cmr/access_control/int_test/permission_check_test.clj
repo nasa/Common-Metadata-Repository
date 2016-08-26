@@ -669,6 +669,7 @@
         "user1" []))
 
     (testing "provider level permissions"
+      ;; update in the IMA grants update AND delete
       (let [acl {:group_permissions [{:permissions [:update]
                                       :user_type :guest}]
                  :provider_identity {:provider_id "PROV1"
@@ -679,7 +680,7 @@
         (are [user permissions]
           (= {coll1 permissions}
              (get-coll1-permissions user))
-          :guest ["update"]
+          :guest ["update" "delete"]
           :registered []
           "user1" [])
 
@@ -694,8 +695,8 @@
             (= {coll1 permissions}
                (get-coll1-permissions user))
             :guest []
-            :registered ["update"]
-            "user1" ["update"]))
+            :registered ["update" "delete"]
+            "user1" ["update" "delete"]))
 
         (testing "granted to specific groups"
           (update-acl acl-concept-id
@@ -709,7 +710,7 @@
                (get-coll1-permissions user))
             :guest []
             :registered []
-            "user1" ["update"]
+            "user1" ["update" "delete"]
             "user2" []))))))
 
 (deftest system-level-permission-check
