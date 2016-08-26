@@ -166,6 +166,7 @@
      [:Metadata_Name "CEOS IDN DIF"]
      [:Metadata_Version "VERSION 9.9.3"]
      [:Extended_Metadata
+      (center/generate-processing-centers c)
       (for [{:keys [Group Name Description DataType Value ParamRangeBegin ParamRangeEnd UpdateDate]}
             (:AdditionalAttributes c)
             ;; DIF9 does not support ranges in Extended_Metadata - Order of preference for the value

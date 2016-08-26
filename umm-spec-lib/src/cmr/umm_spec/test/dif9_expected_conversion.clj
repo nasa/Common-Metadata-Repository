@@ -11,7 +11,8 @@
            [cmr.umm-spec.location-keywords :as lk]
            [cmr.umm-spec.test.location-keywords-helper :as lkt]
            [cmr.umm-spec.models.umm-collection-models :as umm-c]
-           [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]))
+           [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]
+           [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]))
 
 (defn- single-date->range
   "Returns a RangeDateTimeType for a single date."
@@ -182,6 +183,14 @@
                               [(cmn/map->DataCenterType
                                  {:Roles ["ORIGINATOR"]
                                   :ShortName (:ShortName originating-center)})])
+        processing-centers (for [center centers
+                                 :let [long-name (:LongName center)]
+                                 :when (and (.contains (:Roles center) "PROCESSOR")
+                                            (or (nil? long-name) (.endsWith ".processor" long-name)))]
+                             (cmn/map->DataCenterType
+                               {:Roles ["PROCESSOR"]
+                                :ShortName (:ShortName center)
+                                :LongName (or (:LongName center) center/dif9-processor-group)}))
         data-centers (for [center centers
                            :when (or (.contains (:Roles center) "ARCHIVER")
                                      (.contains (:Roles center) "DISTRIBUTOR"))
@@ -202,7 +211,7 @@
                            :ContactPersons [(cmn/map->ContactPersonType
                                               {:Roles ["Data Center Contact"]
                                                :LastName su/not-provided})]})])]
-    (seq (concat originating-centers data-centers))))
+    (seq (concat originating-centers data-centers processing-centers))))
 
 (defn- expected-dif-additional-attribute
   [attribute]
