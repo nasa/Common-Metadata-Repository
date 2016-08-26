@@ -184,7 +184,9 @@
                                  {:Roles ["ORIGINATOR"]
                                   :ShortName (:ShortName originating-center)})])
         processing-centers (for [center centers
-                                 :when (.contains (:Roles center) "PROCESSOR")]
+                                 :let [long-name (:LongName center)]
+                                 :when (and (.contains (:Roles center) "PROCESSOR")
+                                            (or (nil? long-name) (.endsWith ".processor" long-name)))]
                              (cmn/map->DataCenterType
                                {:Roles ["PROCESSOR"]
                                 :ShortName (:ShortName center)

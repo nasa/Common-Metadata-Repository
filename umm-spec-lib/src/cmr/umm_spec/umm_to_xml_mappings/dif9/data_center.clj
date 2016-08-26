@@ -23,7 +23,10 @@
   "Returns the dif9 processing centers as extended metadata elements. Can have multiple processing
   centers."
   [c]
-  (for [processing-center (filter #(.contains (:Roles %) "PROCESSOR") (:DataCenters c))]
+  (for [processing-center (:DataCenters c)
+        :let [long-name (:LongName processing-center)]
+        :when (and (.contains (:Roles processing-center) "PROCESSOR")
+                   (or (nil? long-name) (.endsWith ".processor" long-name)))]
     [:Metadata
      [:Group (or (:LongName processing-center) dif9-processor-group)]
      [:Name "Processor"]
