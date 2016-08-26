@@ -199,11 +199,11 @@
   "When converting, the creation date and last revision date will be persisted. Both dates are
   required in DIF10, so use a default date if not present."
   [umm-coll]
-  (remove nil? (vector
-                 (conversion-util/create-date-type
-                   (date/with-default-date (date/metadata-create-date umm-coll)) "CREATE")
-                 (conversion-util/create-date-type
-                   (date/with-default-date (date/metadata-update-date umm-coll)) "UPDATE"))))
+  (list
+   (conversion-util/create-date-type
+    (date/with-default-date (date/metadata-create-date umm-coll)) "CREATE")
+   (conversion-util/create-date-type
+    (date/with-default-date (date/metadata-update-date umm-coll)) "UPDATE")))
 
 (defn umm-expected-conversion-dif10
   [umm-coll]

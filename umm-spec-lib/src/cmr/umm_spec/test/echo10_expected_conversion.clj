@@ -154,6 +154,8 @@
     [su/not-provided-data-center]))
 
 (defn- expected-metadata-dates
+  "Return the update date since that's the only date persisted in ECHO10. Update date is
+  represented as a date-time."
   [umm-coll]
   (when-let [update-date (date/metadata-update-date umm-coll)]
     [(cmn/map->DateType {:Date update-date

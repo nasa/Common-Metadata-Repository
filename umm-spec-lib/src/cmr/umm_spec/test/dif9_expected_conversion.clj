@@ -228,9 +228,10 @@
 (defn- expected-metadata-dates
   "When converting, the creation date and last revision date will be persisted"
   [umm-coll]
-  (remove nil? (vector
+  (seq
+   (remove nil? (vector
                  (conversion-util/create-date-type (date/metadata-create-date umm-coll) "CREATE")
-                 (conversion-util/create-date-type (date/metadata-update-date umm-coll) "UPDATE"))))
+                 (conversion-util/create-date-type (date/metadata-update-date umm-coll) "UPDATE")))))
 
 (defn umm-expected-conversion-dif9
   [umm-coll]
