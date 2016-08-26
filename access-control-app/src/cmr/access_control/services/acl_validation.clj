@@ -143,8 +143,7 @@
     (:single-instance-identity acl) :single-instance-identity
     (:provider-identity acl)        :provider-identity
     (:system-identity acl)          :system-identity
-    (:catalog-item-identity acl)    :catalog-item-identity
-    :else nil))
+    (:catalog-item-identity acl)    :catalog-item-identity))
 
 (defn make-single-instance-identity-target-id-validation
   "Validates that the acl group exists."
@@ -183,9 +182,10 @@
         permissions-requested (mapcat :permissions (:group-permissions acl))
         grantable-permissions (get-in grantable-permission-mapping [identity-type target])
         ungrantable-permissions (remove (set grantable-permissions) permissions-requested)]
-    (when (and (not (empty? ungrantable-permissions)) (not (empty? (set grantable-permissions))))
+    (when (and (seq ungrantable-permissions) (seq (set grantable-permissions)))
       {key-path [(format "[%s] ACL cannot have [%s] permission for target [%s], only [%s] are grantable"
-                         (name identity-type) (clojure.string/join ", " ungrantable-permissions) target (clojure.string/join ", " grantable-permissions))]})))
+                         (name identity-type) (clojure.string/join ", " ungrantable-permissions)
+                         target (clojure.string/join ", " grantable-permissions))]})))
 
 (defn- make-acl-validations
   "Returns a sequence of validations closed over the given context for validating ACL records."

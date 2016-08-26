@@ -371,6 +371,117 @@ Content-Type: application/json;charset=ISO-8859-1
 {"revision_id":1,"concept_id":"ACL1200000000-CMR"}
 ```
 
+### Grantable Permissions
+
+For system, provider, and single instance identities, the grantable permissions are limited by the target of the ACL.
+
+#### System Identity
+
+* SYSTEM_AUDIT_REPORT
+    * read
+* METRIC_DATA_POINT_SAMPLE      
+    * read
+* SYSTEM_INITIALIZER            
+    * create
+* ARCHIVE_RECORD                
+    * delete
+* ERROR_MESSAGE                 
+    * update
+* TOKEN                         
+    * read, delete
+* TOKEN_REVOCATION              
+    * create
+* EXTENDED_SERVICE_ACTIVATION   
+    * create
+* ORDER_AND_ORDER_ITEMS         
+    * read, delete
+* PROVIDER                      
+    * create, delete
+* TAG_GROUP                     
+    * create, update, delete
+* TAXONOMY                      
+    * create
+* TAXONOMY_ENTRY                
+    * create
+* USER_CONTEXT                  
+    * read
+* USER                          
+    * read, update, delete
+* GROUP                         
+    * create, read
+* ANY_ACL                       
+    * create, read, update, delete
+* EVENT_NOTIFICATION            
+    * delete
+* EXTENDED_SERVICE               
+    * delete
+* SYSTEM_OPTION_DEFINITION
+    * create, delete
+* SYSTEM_OPTION_DEFINITION_DEPRECATION
+    * create
+* INGEST_MANAGEMENT_ACL
+    * read, update
+* SYSTEM_CALENDAR_EVENT
+    * create, update, delete
+
+#### Provider Identity
+
+* AUDIT_REPORT                  
+    * read
+* OPTION_ASSIGNMENT             
+    * create, read, delete
+* OPTION_DEFINITION             
+    * create, delete
+* OPTION_DEFINITION_DEPRECATION
+    * create
+* DATASET_INFORMATION           
+    * read
+* PROVIDER_HOLDINGS            
+     * read
+* EXTENDED_SERVICE              
+    * create, update, delete
+* PROVIDER_ORDER                
+    * read
+* PROVIDER_ORDER_RESUBMISSION   
+    * create
+* PROVIDER_ORDER_ACCEPTANCE     
+    * create
+* PROVIDER_ORDER_REJECTION      
+    * create
+* PROVIDER_ORDER_CLOSURE        
+    * create
+* PROVIDER_ORDER_TRACKING_ID    
+    * update
+* PROVIDER_INFORMATION          
+    * update
+* PROVIDER_CONTEXT              
+    * read
+* AUTHENTICATOR_DEFINITION      
+    * create, delete
+* PROVIDER_POLICIES             
+    * read, update, delete
+* USER                          
+    * read
+* GROUP                         
+    * create, read
+* PROVIDER_OBJECT_ACL           
+    * create, read, update, delete
+* CATALOG_ITEM_ACL              
+    * create, read, update, delete
+* INGEST_MANAGEMENT_ACL         
+    * read, update
+* DATA_QUALITY_SUMMARY_DEFINITION
+    * create, update, delete
+* DATA_QUALITY_SUMMARY_ASSIGNMENT
+    * create, delete
+* PROVIDER_CALENDAR_EVENT       
+    * create, update, delete
+
+#### Single Instance Identity
+
+* GROUP_MANAGEMENT
+    * update, delete
+
 ### <a name="search-acls"></a> Search ACLs
 
 ACLs can be searched for by sending a GET request to `%CMR-ENDPOINT%/acls`
