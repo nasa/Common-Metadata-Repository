@@ -669,7 +669,7 @@
         "user1" []))
 
     (testing "provider level permissions"
-      (let [acl {:group_permissions [{:permissions [:update :delete]
+      (let [acl {:group_permissions [{:permissions [:update]
                                       :user_type :guest}]
                  :provider_identity {:provider_id "PROV1"
                                      :target "INGEST_MANAGEMENT_ACL"}}
@@ -679,13 +679,13 @@
         (are [user permissions]
           (= {coll1 permissions}
              (get-coll1-permissions user))
-          :guest ["update" "delete"]
+          :guest ["update"]
           :registered []
           "user1" [])
 
         (testing "granted to registered users"
           (update-acl acl-concept-id
-                      {:group_permissions [{:permissions [:update :delete]
+                      {:group_permissions [{:permissions [:update]
                                             :user_type :registered}]
                        :provider_identity {:provider_id "PROV1"
                                            :target "INGEST_MANAGEMENT_ACL"}})
@@ -694,12 +694,12 @@
             (= {coll1 permissions}
                (get-coll1-permissions user))
             :guest []
-            :registered ["update" "delete"]
-            "user1" ["update" "delete"]))
+            :registered ["update"]
+            "user1" ["update"]))
 
         (testing "granted to specific groups"
           (update-acl acl-concept-id
-                      {:group_permissions [{:permissions [:update :delete]
+                      {:group_permissions [{:permissions [:update]
                                             :group_id created-group-concept-id}]
                        :provider_identity {:provider_id "PROV1"
                                            :target "INGEST_MANAGEMENT_ACL"}})
@@ -709,7 +709,7 @@
                (get-coll1-permissions user))
             :guest []
             :registered []
-            "user1" ["update" "delete"]
+            "user1" ["update"]
             "user2" []))))))
 
 (deftest system-level-permission-check
@@ -737,7 +737,7 @@
         :registered []
         "user1" []))
 
-    (let [acl {:group_permissions [{:permissions [:update :delete]
+    (let [acl {:group_permissions [{:permissions [:read]
                                     :user_type :guest}]
                :system_identity {:target "GROUP"}}
           acl-concept-id (:concept_id (create-acl acl))]
@@ -745,7 +745,7 @@
 
       (testing "granted to registered users"
         (update-acl acl-concept-id
-                    {:group_permissions [{:permissions [:update :delete]
+                    {:group_permissions [{:permissions [:read]
                                           :user_type :registered}]
                      :system_identity {:target "GROUP"}})
 
@@ -753,23 +753,23 @@
           (= {"GROUP" permissions}
              (get-system-permissions user "GROUP"))
           :guest []
-          :registered ["update" "delete"]
-          "user1" ["update" "delete"]))
+          :registered ["read"]
+          "user1" ["read"]))
 
       (testing "other ACLs are not matched when searching other targets"
-        (create-acl {:group_permissions [{:permissions [:read]
+        (create-acl {:group_permissions [{:permissions [:create]
                                           :user_type :registered}]
                      :system_identity {:target "PROVIDER"}})
         (are [user permissions]
           (= {"PROVIDER" permissions}
              (get-system-permissions user "PROVIDER"))
           :guest []
-          :registered ["read"]
-          "user1" ["read"]))
+          :registered ["create"]
+          "user1" ["create"]))
 
       (testing "granted to specific groups"
         (update-acl acl-concept-id
-                    {:group_permissions [{:permissions [:update :delete]
+                    {:group_permissions [{:permissions [:read]
                                           :group_id created-group-concept-id}]
                      :system_identity {:target "GROUP"}})
 
@@ -778,7 +778,7 @@
              (get-system-permissions user "GROUP"))
           :guest []
           :registered []
-          "user1" ["update" "delete"]
+          "user1" ["read"]
           "user2" [])))))
 
 (deftest provider-object-permission-check
@@ -805,7 +805,7 @@
         :registered []
         "user1" []))
 
-    (let [acl {:group_permissions [{:permissions [:update :delete]
+    (let [acl {:group_permissions [{:permissions [:read]
                                     :user_type :guest}]
                :provider_identity {:provider_id "PROV1"
                                    :target "PROVIDER_HOLDINGS"}}
@@ -814,7 +814,7 @@
 
       (testing "granted to registered users"
         (update-acl acl-concept-id
-                    {:group_permissions [{:permissions [:update :delete]
+                    {:group_permissions [{:permissions [:read]
                                           :user_type :registered}]
                      :provider_identity {:provider_id "PROV1"
                                          :target "PROVIDER_HOLDINGS"}})
@@ -823,11 +823,11 @@
           (= {"PROVIDER_HOLDINGS" permissions}
              (get-provider-permissions user "PROV1" "PROVIDER_HOLDINGS"))
           :guest []
-          :registered ["update" "delete"]
-          "user1" ["update" "delete"]))
+          :registered ["read"]
+          "user1" ["read"]))
 
       (testing "other ACLs are not matched when searching other targets"
-        (create-acl {:group_permissions [{:permissions [:read]
+        (create-acl {:group_permissions [{:permissions [:update]
                                           :user_type :registered}]
                      :provider_identity {:provider_id "PROV1"
                                          :target "EXTENDED_SERVICE"}})
@@ -835,12 +835,12 @@
           (= {"EXTENDED_SERVICE" permissions}
              (get-provider-permissions user "PROV1" "EXTENDED_SERVICE"))
           :guest []
-          :registered ["read"]
-          "user1" ["read"]))
+          :registered ["update"]
+          "user1" ["update"]))
 
       (testing "granted to specific groups"
         (update-acl acl-concept-id
-                    {:group_permissions [{:permissions [:update :delete]
+                    {:group_permissions [{:permissions [:read]
                                           :group_id created-group-concept-id}]
                      :provider_identity {:provider_id "PROV1"
                                          :target "PROVIDER_HOLDINGS"}})
@@ -850,5 +850,5 @@
              (get-provider-permissions user "PROV1" "PROVIDER_HOLDINGS"))
           :guest []
           :registered []
-          "user1" ["update" "delete"]
+          "user1" ["read"]
           "user2" [])))))

@@ -72,6 +72,7 @@
 (def ^:private r "read")
 (def ^:private u "update")
 (def ^:private d "delete")
+
 (def ^:private grantable-permission-mapping
   {:single-instance-identity {"GROUP_MANAGEMENT"                [u d]}
    :provider-identity        {"AUDIT_REPORT"                    [r]
