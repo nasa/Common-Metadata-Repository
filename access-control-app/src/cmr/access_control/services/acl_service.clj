@@ -493,10 +493,11 @@
    to the seq of group guids by seq of acls."
   [concept sids acls]
   (let [provider-acls (filter #(provider-acl? (:provider-id concept) %) acls)
-        ingest-management-acls (filter ingest-management-acl? provider-acls)
-        ;; A user has UPDATE permission on all collections and granules in a provider when
-        ;; they have UPDATE on the provider's INGEST_MANAGEMENT_ACL target.
-        has-update (some #(acl/acl-matches-sids-and-permission? sids "update" %) ingest-management-acls)
+        ;; When a user has UPDATE on the provider's INGEST_MANAGEMENT_ACL target, then they have UPDATE and
+        ;; DELETE permission on all of the provider's catalog items.
+        ingest-management-permissions (when (some #(acl/acl-matches-sids-and-permission? sids "update" %)
+                                                  (filter ingest-management-acl? provider-acls))
+                                        [:update :delete])
         ;; The remaining catalog item ACLs can only grant READ or ORDER permission.
         catalog-item-acls (filter :catalog-item-identity provider-acls)
         catalog-item-permissions (for [permission [:read :order]
@@ -505,7 +506,7 @@
                                    permission)]
     (set
       (concat catalog-item-permissions
-              (when has-update [:update])))))
+              ingest-management-permissions))))
 
 (defn- add-acl-enforcement-fields
   "Adds all fields necessary for comparing concept map against ACLs."

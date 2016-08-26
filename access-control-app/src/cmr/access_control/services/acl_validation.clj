@@ -124,6 +124,19 @@
                               "INGEST_MANAGEMENT_ACL"                [r u]
                               "SYSTEM_CALENDAR_EVENT"                [c u d]}})
 
+(comment
+  ;; evaluate the following expression to generate Markdown for the API docs
+  (doseq [[identity-type targets-permissions] (sort-by key grantable-permission-mapping)]
+    (println "####" identity-type)
+    (println)
+    (println "| Target | Allowed Permissions |")
+    (println "| ------ | ------------------- |")
+    (doseq [[target permissions] (sort-by key targets-permissions)]
+      (println "|" target "|" (clojure.string/join ", " permissions) "|"))
+    (println))
+  )
+
+
 (defn- get-identity-type
   [acl]
   (cond
