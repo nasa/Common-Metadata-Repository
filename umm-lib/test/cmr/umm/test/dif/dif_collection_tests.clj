@@ -124,7 +124,8 @@
                                              :collection-data-type collection-data-type}))
         ;; There is no delete-time in DIF
         (assoc-in [:data-provider-timestamps :delete-time] nil)
-        (assoc-in [:data-provider-timestamps :revision-date-time] nil)
+        (assoc-in [:data-provider-timestamps :revision-date-time]
+                  (get-in coll [:data-provider-timestamps :update-time]))
         ;; DIF only has range-date-times
         (assoc :temporal temporal)
         ;; DIF only has distribution centers as Organization
@@ -177,6 +178,7 @@
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-dif collection)]
       (= expected-parsed parsed))))
+
 
 (defspec generate-and-parse-collection-between-formats-test 100
   (for-all [collection coll-gen/collections]
@@ -503,7 +505,8 @@
                  :collection-data-type "NEAR_REAL_TIME"})
      :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                  {:insert-time (p/parse-datetime "2013-02-21")
-                                  :update-time (p/parse-datetime "2013-10-22")})
+                                  :update-time (p/parse-datetime "2013-10-22")
+                                  :revision-date-time (p/parse-datetime "2013-10-22")})
      :publication-references [(umm-c/map->PublicationReference
                                 {:author "author"
                                  :publication-date "2015"

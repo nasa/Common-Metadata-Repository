@@ -62,7 +62,8 @@
     (when (or insert-time update-time)
       (c/map->DataProviderTimestamps
         {:insert-time (dtp/try-parse-datetime insert-time)
-         :update-time (dtp/try-parse-datetime update-time)}))))
+         :update-time (dtp/try-parse-datetime update-time)
+         :revision-date-time (dtp/try-parse-datetime update-time)}))))
 
 (def umm-dif-publication-reference-mappings
   "A seq of [umm-key dif-tag-name] which maps between the UMM
