@@ -1,5 +1,6 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif10.related-url
-  (:require [cmr.common.xml.simple-xpath :refer [select]]
+  (:require [clojure.string :as str]
+            [cmr.common.xml.simple-xpath :refer [select]]
             [cmr.common.xml.parse :refer :all]))
 
 (defn multimedia->RelatedUrl
@@ -15,8 +16,7 @@
   [doc]
   (let [multimedia-urls (mapv multimedia->RelatedUrl (select doc "/DIF/Multimedia_Sample"))
         related-urls (for [related-url (select doc "/DIF/Related_URL")]
-                       ;; CMR 3253 remove the spaces in the urls
-                       {:URLs (url-values-at related-url "URL")
+                       {:URLs (map str/trim (values-at related-url "URL"))
                         :Description (value-of related-url "Description")
                         :Relation [(value-of related-url "URL_Content_Type/Type")
                                    (value-of related-url "URL_Content_Type/Subtype")]

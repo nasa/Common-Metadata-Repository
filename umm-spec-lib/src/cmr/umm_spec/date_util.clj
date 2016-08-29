@@ -20,8 +20,8 @@
 
  (defn use-default-when-not-provided
    "Returns default date value string if x = 'Not provided'"
-   [x]
-   (if (= x "Not provided")
+   [x util-not-provided]
+   (if (= x util-not-provided)
      default-date-value
      x))
 
