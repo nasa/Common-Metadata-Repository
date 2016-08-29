@@ -183,26 +183,26 @@
   [umm-coll]
   (-> umm-coll
       fix-bounding-rectangles
-      (update-in [:SpatialExtent] update-iso-spatial)
+      (update :SpatialExtent update-iso-spatial)
       ;; ISO only supports a single tiling identification system
-      (update-in [:TilingIdentificationSystems] #(seq (take 1 %)))
-      (update-in [:TemporalExtents] expected-iso-19115-2-temporal)
+      (update :TilingIdentificationSystems #(seq (take 1 %)))
+      (update :TemporalExtents expected-iso-19115-2-temporal)
       ;; The following platform instrument properties are not supported in ISO 19115-2
       (update-in-each [:Platforms] update-in-each [:Instruments] assoc
                       :NumberOfSensors nil
                       :OperationalModes nil)
-      (update-in [:DataDates] expected-iso19115-data-dates)
+      (update :DataDates expected-iso19115-data-dates)
       (assoc :CollectionDataType nil)
-      (update-in [:DataLanguage] #(or % "eng"))
-      (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
-      (update-in [:Distributions] expected-iso-19115-2-distributions)
+      (update :DataLanguage #(or % "eng"))
+      (update :ProcessingLevel su/convert-empty-record-to-nil)
+      (update :Distributions expected-iso-19115-2-distributions)
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
-      (update-in [:PublicationReferences] iso-19115-2-publication-reference)
-      (update-in [:RelatedUrls] expected-iso-19115-2-related-urls)
+      (update :PublicationReferences iso-19115-2-publication-reference)
+      (update :RelatedUrls expected-iso-19115-2-related-urls)
       (update-in-each [:AdditionalAttributes] expected-iso19115-additional-attribute)
-      (update-in [:MetadataAssociations] group-metadata-assocations)
-      (update-in [:ISOTopicCategories] update-iso-topic-categories)
-      (update-in [:LocationKeywords] conversion-util/fix-location-keyword-conversion)
+      (update :MetadataAssociations group-metadata-assocations)
+      (update :ISOTopicCategories update-iso-topic-categories)
+      (update :LocationKeywords conversion-util/fix-location-keyword-conversion)
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)
       (assoc :DataCenters [su/not-provided-data-center])
