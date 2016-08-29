@@ -85,9 +85,8 @@
 (defn- parse-metadata-dates
   "Returns a list of metadata dates"
   [doc]
-  (remove nil? (vector
-                 (date/parse-date-type-from-xml doc "DIF/DIF_Creation_Date" "CREATE")
-                 (date/parse-date-type-from-xml doc "DIF/Last_DIF_Revision_Date" "UPDATE"))))
+  (remove nil? [(date/parse-date-type-from-xml doc "DIF/DIF_Creation_Date" "CREATE")
+                (date/parse-date-type-from-xml doc "DIF/Last_DIF_Revision_Date" "UPDATE")]))
 
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
