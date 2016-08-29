@@ -767,7 +767,6 @@
                                     :entries
                                     first
                                     :organizations)]
-
               (= expected-orgs organizations))
 
             "ECHO10 only has archive-center and processing-center"
@@ -782,5 +781,5 @@
             "ISO-SMAP only has archive-center and processing-center"
             "S-ISO-SMAP" ["archive-org" "processing-org"]
 
-            "UMM-JSON has an archive center"
-            "S-UMM-JSON" ["TNRIS"]))))
+            "UMM-JSON has an archive center and processing center"
+            "S-UMM-JSON" ["TNRIS" "Processing Center"]))))

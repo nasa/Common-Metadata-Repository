@@ -155,6 +155,10 @@
                             :Version nil}
                            {:Type "INPUT"
                             :EntryId "AssocEntryId4"}]
+    :MetadataDates [{:Date "2009-12-03T00:00:00.000Z"
+                     :Type "CREATE"},
+                    {:Date "2009-12-04T00:00:00.000Z"
+                     :Type "UPDATE"}]
     :AdditionalAttributes [{:Group "Accuracy"
                             :Name "PercentGroundHit"
                             :DataType "FLOAT"
@@ -283,7 +287,10 @@
                                                                       :StateProvince "MD"
                                                                       :PostalCode "20774"
                                                                       :Country "U.S.A."}]}
-                                    :GroupName "NSIDC_IceBridge"}]}]}))
+                                    :GroupName "NSIDC_IceBridge"}]}
+                  {:Roles ["PROCESSOR"]
+                   :ShortName "Processing Center"
+                   :LongName "processor.processor"}]}))
 
 (def example-service-record
   "An example record with fields supported by most formats."
@@ -432,7 +439,7 @@
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:CollectionCitations :MetadataDates :MetadataLanguage
+  #{:CollectionCitations :MetadataLanguage
     :DirectoryNames :SpatialInformation})
 
 (defn- dissoc-not-implemented-fields

@@ -197,4 +197,5 @@
       (assoc :DataCenters [su/not-provided-data-center])
       (assoc :ContactGroups nil)
       (assoc :ContactPersons nil)
+      (assoc :MetadataDates nil)
       js/parse-umm-c))
