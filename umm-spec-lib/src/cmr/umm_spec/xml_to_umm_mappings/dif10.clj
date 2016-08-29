@@ -83,6 +83,12 @@
               {:Type date-type
                :Date date-value}))))
 
+(defn- parse-metadata-dates
+  "Returns a list of metadata dates"
+  [doc]
+  (seq (remove nil? [(date/parse-date-type-from-xml doc "DIF/Metadata_Dates/Metadata_Creation" "CREATE")
+                     (date/parse-date-type-from-xml doc "DIF/Metadata_Dates/Metadata_Last_Revision" "UPDATE")])))
+
 (defn parse-dif10-xml
   "Returns collection map from DIF10 collection XML document."
   [doc {:keys [apply-default?]}]
@@ -94,6 +100,7 @@
    :Purpose (value-of doc "/DIF/Summary/Purpose")
    :DataLanguage (value-of doc "/DIF/Dataset_Language")
    :DataDates (parse-data-dates doc)
+   :MetadataDates (parse-metadata-dates doc)
    :ISOTopicCategories (values-at doc "DIF/ISO_Topic_Category")
    :TemporalKeywords (values-at doc "/DIF/Temporal_Coverage/Temporal_Info/Ancillary_Temporal_Keyword")
    :CollectionProgress (value-of doc "/DIF/Dataset_Progress")

@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif10
   "Defines mappings from a UMM record into DIF10 XML"
   (:require [cmr.common.xml.gen :refer :all]
+            [cmr.umm-spec.date-util :as date]
             [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as spatial]
             [cmr.umm-spec.date-util :as date]
             [camel-snake-kebab.core :as csk]
@@ -155,6 +156,17 @@
     [:Data_Last_Revision (date/with-default (date/data-update-date c))]
     [:Data_Future_Review (date/data-review-date c)]
     [:Data_Delete (date/data-delete-date c)]))
+
+
+(defn- generate-metadata-dates
+  "Returns DIF 10 elements for UMM-C collection c's MetadataDates. Creation and Last Revision
+  are required in DIF10 so use defaults if not present"
+  [c]
+  (list
+   [:Metadata_Creation (f/unparse (f/formatters :date)
+                         (date/with-default-date (date/metadata-create-date c)))]
+   [:Metadata_Last_Revision (f/unparse (f/formatters :date)
+                              (date/with-default-date (date/metadata-update-date c)))]))
 
 (defn- generate-related-urls
   "Returns DIF10 Related_URLs for the provided UMM-C collection record. Even though UMM RelatedUrls
@@ -392,8 +404,7 @@
     [:Metadata_Name "CEOS IDN DIF"]
     [:Metadata_Version "VERSION 10.2"]
     [:Metadata_Dates
-     [:Metadata_Creation "2000-03-24T22:20:41-05:00"]
-     [:Metadata_Last_Revision "2000-03-24T22:20:41-05:00"]
+     (generate-metadata-dates c)
      (generate-data-dates c)]
     (generate-additional-attributes (:AdditionalAttributes c))
     [:Product_Level_Id (dif10-product-level-id (-> c :ProcessingLevel :Id))]

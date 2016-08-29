@@ -2,8 +2,10 @@
   "Defines mappings from a UMM record into DIF9 XML"
   (:require [cmr.umm-spec.util :as u]
             [cmr.common.xml.gen :refer :all]
+            [clj-time.format :as f]
             [clojure.set :as set]
             [camel-snake-kebab.core :as csk]
+            [cmr.umm-spec.date-util :as date]
             [cmr.umm-spec.xml-to-umm-mappings.dif9 :as xtu]
             [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]
             [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]))
@@ -165,6 +167,10 @@
        [:Parent_DIF (:EntryId ma)])
      [:Metadata_Name "CEOS IDN DIF"]
      [:Metadata_Version "VERSION 9.9.3"]
+     (when-let [creation-date (date/metadata-create-date c)]
+       [:DIF_Creation_Date (f/unparse (f/formatters :date) creation-date)])
+     (when-let [last-revision-date (date/metadata-update-date c)]
+       [:Last_DIF_Revision_Date (f/unparse (f/formatters :date) last-revision-date)])
      [:Extended_Metadata
       (center/generate-processing-centers c)
       (for [{:keys [Group Name Description DataType Value ParamRangeBegin ParamRangeEnd UpdateDate]}

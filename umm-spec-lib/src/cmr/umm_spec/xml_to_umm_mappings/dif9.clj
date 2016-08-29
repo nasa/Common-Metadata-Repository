@@ -2,9 +2,11 @@
   "Defines mappings from DIF9 XML into UMM records"
   (:require [cmr.common.xml.simple-xpath :refer [select text]]
             [cmr.common.xml.parse :refer :all]
+            [clj-time.format :as f]
             [camel-snake-kebab.core :as csk]
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.json-schema :as js]
+            [cmr.umm-spec.date-util :as date]
             [cmr.umm-spec.models.umm-common-models :as cmn]
             [cmr.umm.dif.date-util :refer [parse-dif-end-date]]
             [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
@@ -80,6 +82,12 @@
       (subs entry-id 0 short-name-length)
       entry-id)))
 
+(defn- parse-metadata-dates
+  "Returns a list of metadata dates"
+  [doc]
+  (remove nil? [(date/parse-date-type-from-xml doc "DIF/DIF_Creation_Date" "CREATE")
+                (date/parse-date-type-from-xml doc "DIF/Last_DIF_Revision_Date" "UPDATE")]))
+
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
   [doc {:keys [apply-default?]}]
@@ -96,6 +104,7 @@
      ;; Data Dates is required
      ;; Implement as part of CMR-2867
      :DataDates (when apply-default? [su/not-provided-data-date])
+     :MetadataDates (parse-metadata-dates doc)
      :ISOTopicCategories (values-at doc "DIF/ISO_Topic_Category")
      :TemporalKeywords (values-at doc "/DIF/Data_Resolution/Temporal_Resolution")
      :Projects (for [proj (select doc "/DIF/Project")]
