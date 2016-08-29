@@ -8,7 +8,7 @@
             [cmr.umm-spec.util :as u :refer [without-default-value-of]]
             [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]
-            [cmr.umm-spec.iso19115-2-util :refer [umm-date-type-codes char-string-value]]))
+            [cmr.umm-spec.iso19115-2-util :as iu :refer [char-string-value]]))
 
 (def md-identification-base-xpath
   (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata"
@@ -84,8 +84,8 @@
        :Quality (char-string-value doc quality-xpath)
        :DataDates (distinct (for [date-el (select doc data-dates-xpath)]
                               {:Date (value-of date-el "gmd:date/gco:DateTime")
-                               :Type (get umm-date-type-codes
-                                          (value-of date-el "gmd:dateType/gmd:CI_DateTypeCode"))}))
+                               :Type (iu/umm-date-type-codes
+                                       (value-of date-el "gmd:dateType/gmd:CI_DateTypeCode"))}))
        :DataLanguage (value-of short-name-el "gmd:language/gco:CharacterString")
        :Platforms (let [smap-keywords (values-at data-id-el keywords-xpath-str)]
                     (kws/parse-platforms smap-keywords))

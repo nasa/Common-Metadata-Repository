@@ -82,7 +82,7 @@
 (def formats-to-skip
   "A set of formats to skip in the roundtrip example metadata test. These will be fixed as part of
    separate issues. The issues CMR-3252, CMR-3253, CMR-3254, and CMR-3255 are filed to fix this."
-  #{:dif10 :iso19115 :iso-smap})
+  #{:dif10 :iso-smap})
 
 
 (deftest roundtrip-example-metadata
