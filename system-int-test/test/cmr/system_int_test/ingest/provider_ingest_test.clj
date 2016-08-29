@@ -129,7 +129,7 @@
                                                                      :provider_id "PROV1"}}))
           acl2 (u/map-keys->kebab-case
                  (access-control/create-acl (transmit-config/echo-system-token)
-                                           {:group_permissions [{:permissions [:read :order]
+                                           {:group_permissions [{:permissions [:update]
                                                                  :user_type "guest"}]
                                             :provider_identity {:provider_id "PROV1"
                                                                 :target "INGEST_MANAGEMENT_ACL"}}))]
