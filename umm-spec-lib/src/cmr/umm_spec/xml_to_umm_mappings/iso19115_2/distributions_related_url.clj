@@ -64,8 +64,12 @@
 (defn- parse-browse-graphics
   "Parse browse graphic urls"
   [doc]
-  (for [url (select doc browse-graphic-xpath)]
-    {:URLs [(value-of url "gmd:fileName/gmx:FileName/@src")]
+  (for [url (select doc browse-graphic-xpath)
+        ;; We retrieve browse url from two different places. This might change depending on the
+        ;; outcome of ECSE-129.
+        :let [browse-url (or (value-of url "gmd:fileName/gmx:FileName/@src")
+                             (value-of url "gmd:fileName/gco:CharacterString"))]]
+    {:URLs [(when browse-url (str/trim browse-url))]
      :Description (char-string-value url "gmd:fileDescription")
      :Relation (when-let [rel (resource-name->types (char-string-value url "gmd:fileType"))]
                  [rel])}))

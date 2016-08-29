@@ -136,7 +136,7 @@ Temperature profile and pressure data collected using CTD casts from the POLAR S
         <gmd:MD_Identifier>
             <gmd:code>
                 <gco:CharacterString>gov.noaa.nodc:0000782</gco:CharacterString>
-            </gmd:code>
+            </gmd:code>							
         </gmd:MD_Identifier>
     </gmd:identifier>
 <gmd:identifier>
@@ -472,15 +472,17 @@ Main NCEI website providing links to access data and data services.
 </gmd:resourceMaintenance>
 <gmd:graphicOverview>
 <gmd:MD_BrowseGraphic>
-  <gmd:fileName>
-    <gmx:FileName src="http://data.nodc.noaa.gov/cgi-bin/gfx?id=gov.noaa.nodc:0000782">http://data.nodc.noaa.gov/cgi-bin/gfx?id=gov.noaa.nodc:0000782</gmx:FileName>
-  </gmd:fileName>
-  <gmd:fileDescription>
-    <gco:CharacterString>Preview graphic</gco:CharacterString>
-  </gmd:fileDescription>
-  <gmd:fileType>
-    <gco:CharacterString>PNG</gco:CharacterString>
-  </gmd:fileType>
+<gmd:fileName>
+<gco:CharacterString>
+http://data.nodc.noaa.gov/cgi-bin/gfx?id=gov.noaa.nodc:0000782
+</gco:CharacterString>
+</gmd:fileName>
+<gmd:fileDescription>
+<gco:CharacterString>Preview graphic</gco:CharacterString>
+</gmd:fileDescription>
+<gmd:fileType>
+<gco:CharacterString>PNG</gco:CharacterString>
+</gmd:fileType>
 </gmd:MD_BrowseGraphic>
 </gmd:graphicOverview>
 <gmd:descriptiveKeywords>
