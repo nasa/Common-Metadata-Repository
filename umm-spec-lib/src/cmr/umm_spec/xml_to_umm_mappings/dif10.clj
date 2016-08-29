@@ -46,11 +46,8 @@
   (let [access-constraints-record
         {:Description (value-of doc "/DIF/Access_Constraints")
          :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}]
-    (if (seq (util/remove-nil-keys access-constraints-record))
-      (assoc access-constraints-record 
-             :Description 
-             (u/with-default (:Description access-constraints-record) apply-default?))      
-      nil)))
+    (when (seq (util/remove-nil-keys access-constraints-record))
+      (update access-constraints-record :Description #(u/with-default % apply-default?)))))
 
 (defn- parse-instruments-impl
   [platform-el]
