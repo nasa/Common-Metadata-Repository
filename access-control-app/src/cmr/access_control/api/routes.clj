@@ -271,7 +271,7 @@
           result (cond
                    system_object (acl-service/get-system-permissions request-context username-or-type system_object)
                    target (acl-service/get-provider-permissions request-context username-or-type provider target)
-                   :else (acl-service/get-concept-permissions request-context username-or-type concept_id))]
+                   :else (acl-service/get-catalog-item-permissions request-context username-or-type concept_id))]
       {:status 200
        :body (json/generate-string result)})))
 

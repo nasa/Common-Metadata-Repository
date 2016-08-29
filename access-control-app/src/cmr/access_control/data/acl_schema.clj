@@ -36,6 +36,8 @@
    "INGEST_MANAGEMENT_ACL"
    "SYSTEM_CALENDAR_EVENT"])
 
+(def ingest-management-acl-target "INGEST_MANAGEMENT_ACL")
+
 (def provider-object-targets
   "A collection of valid provider_object.target values."
   ["AUDIT_REPORT"
@@ -59,7 +61,7 @@
    "GROUP"
    "PROVIDER_OBJECT_ACL"
    "CATALOG_ITEM_ACL"
-   "INGEST_MANAGEMENT_ACL"
+   ingest-management-acl-target
    "DATA_QUALITY_SUMMARY_DEFINITION"
    "DATA_QUALITY_SUMMARY_ASSIGNMENT"
    "PROVIDER_CALENDAR_EVENT"])

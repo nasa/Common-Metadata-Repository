@@ -89,7 +89,7 @@
   [doc]
   (for [plat (select doc "/Collection/Platforms/Platform")]
     {:ShortName (value-of plat "ShortName")
-     :LongName (u/without-default-value-of plat "LongName")
+     :LongName (value-of plat "LongName")
      :Type (u/without-default-value-of plat "Type")
      :Characteristics (parse-characteristics plat)
      :Instruments (map parse-instrument (select plat "Instruments/Instrument"))}))
