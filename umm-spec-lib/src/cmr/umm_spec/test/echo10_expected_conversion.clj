@@ -3,8 +3,10 @@
  (:require [clj-time.core :as t]
            [clj-time.format :as f]
            [clojure.string :as str]
+           [cmr.umm-spec.date-util :as date]
            [cmr.umm-spec.util :as su]
            [cmr.common.util :as util :refer [update-in-each]]
+           [cmr.umm-spec.models.umm-common-models :as cmn]
            [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
            [cmr.umm-spec.related-url :as ru-gen]
            [cmr.umm-spec.location-keywords :as lk]
@@ -164,6 +166,14 @@
     (flatten (mapv expected-echo10-data-center data-centers))
     [su/not-provided-data-center]))
 
+(defn- expected-metadata-dates
+  "Return the update date since that's the only date persisted in ECHO10. Update date is
+  represented as a date-time."
+  [umm-coll]
+  (when-let [update-date (date/metadata-update-date umm-coll)]
+    [(cmn/map->DateType {:Date update-date
+                         :Type "UPDATE"})]))
+
 (defn umm-expected-conversion-echo10
   [umm-coll]
   (-> umm-coll
@@ -197,4 +207,5 @@
       (update-in-each [:Platforms] expected-echo10-platform-longname-with-default-value) 
       ;; CMR 2716 Getting rid of SpatialKeywords but keeping them for legacy purposes.
       (assoc :SpatialKeywords nil)
-      (assoc :PaleoTemporalCoverages nil)))
+      (assoc :PaleoTemporalCoverages nil)
+      (assoc :MetadataDates (expected-metadata-dates umm-coll))))

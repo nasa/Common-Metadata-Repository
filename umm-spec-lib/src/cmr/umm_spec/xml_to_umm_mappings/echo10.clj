@@ -94,6 +94,12 @@
      :Characteristics (parse-characteristics plat)
      :Instruments (map parse-instrument (select plat "Instruments/Instrument"))}))
 
+(defn- parse-metadata-dates
+  "ECHO10 only has a revision date (UPDATE), so get that if applicable"
+  [doc]
+  (when-let [revision-date (date/parse-date-type-from-xml doc "Collection/RevisionDate" "UPDATE")]
+    [revision-date]))
+
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [context doc {:keys [apply-default?]}]
@@ -101,6 +107,7 @@
    :ShortName  (value-of doc "/Collection/ShortName")
    :Version    (value-of doc "/Collection/VersionId")
    :DataDates  (parse-data-dates doc)
+   :MetadataDates (parse-metadata-dates doc)
    :Abstract   (value-of doc "/Collection/Description")
    :CollectionDataType (value-of doc "/Collection/CollectionDataType")
    :Purpose    (value-of doc "/Collection/SuggestedUsage")

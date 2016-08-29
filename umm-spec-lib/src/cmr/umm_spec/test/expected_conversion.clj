@@ -155,6 +155,10 @@
                             :Version nil}
                            {:Type "INPUT"
                             :EntryId "AssocEntryId4"}]
+    :MetadataDates [{:Date "2009-12-03T00:00:00.000Z"
+                     :Type "CREATE"},
+                    {:Date "2009-12-04T00:00:00.000Z"
+                     :Type "UPDATE"}]
     :AdditionalAttributes [{:Group "Accuracy"
                             :Name "PercentGroundHit"
                             :DataType "FLOAT"
@@ -435,7 +439,7 @@
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:CollectionCitations :MetadataDates :MetadataLanguage
+  #{:CollectionCitations :MetadataLanguage
     :DirectoryNames :SpatialInformation})
 
 (defn- dissoc-not-implemented-fields
