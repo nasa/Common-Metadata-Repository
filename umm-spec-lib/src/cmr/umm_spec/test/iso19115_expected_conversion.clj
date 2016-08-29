@@ -1,21 +1,23 @@
 (ns cmr.umm-spec.test.iso19115-expected-conversion
- "ISO 19115 specific expected conversion functionality"
- (:require [clj-time.core :as t]
-           [clj-time.format :as f]
-           [clojure.string :as str]
-           [cmr.umm-spec.util :as su]
-           [cmr.umm-spec.json-schema :as js]
-           [cmr.common.util :as util :refer [update-in-each]]
-           [cmr.umm-spec.models.umm-common-models :as cmn]
-           [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
-           [cmr.umm-spec.related-url :as ru-gen]
-           [cmr.umm-spec.location-keywords :as lk]
-           [cmr.umm-spec.test.location-keywords-helper :as lkt]
-           [cmr.umm-spec.models.umm-collection-models :as umm-c]
-           [cmr.umm-spec.iso19115-2-util :as iso-util]
-           [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]
-           [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
-           [cmr.spatial.mbr :as m]))
+  "ISO 19115 specific expected conversion functionality"
+  (:require
+    [clj-time.core :as t]
+    [clj-time.format :as f]
+    [clojure.string :as str]
+    [cmr.common.util :as util :refer [update-in-each]]
+    [cmr.spatial.mbr :as m]
+    [cmr.umm-spec.date-util :as date-util]
+    [cmr.umm-spec.iso19115-2-util :as iso-util]
+    [cmr.umm-spec.json-schema :as js]
+    [cmr.umm-spec.location-keywords :as lk]
+    [cmr.umm-spec.models.umm-collection-models :as umm-c]
+    [cmr.umm-spec.models.umm-common-models :as cmn]
+    [cmr.umm-spec.related-url :as ru-gen]
+    [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
+    [cmr.umm-spec.test.location-keywords-helper :as lkt]
+    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]
+    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
+    [cmr.umm-spec.util :as su]))
 
 (defn split-temporals
   "Returns a seq of temporal extents with a new extent for each value under key
@@ -169,6 +171,14 @@
       (assoc :UpdateDate nil)
       (assoc :Description (su/with-default (:Description attribute)))))
 
+(defn- expected-iso19115-data-dates
+  "Returns the expected ISO19115 DataDates"
+  [data-dates]
+  (if data-dates
+    data-dates
+    [(cmn/map->DateType {:Date (f/parse date-util/default-date-value)
+                         :Type "CREATE"})]))
+
 (defn umm-expected-conversion-iso19115
   [umm-coll]
   (-> umm-coll
@@ -181,6 +191,7 @@
       (update-in-each [:Platforms] update-in-each [:Instruments] assoc
                       :NumberOfSensors nil
                       :OperationalModes nil)
+      (update-in [:DataDates] expected-iso19115-data-dates)
       (assoc :CollectionDataType nil)
       (update-in [:DataLanguage] #(or % "eng"))
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
