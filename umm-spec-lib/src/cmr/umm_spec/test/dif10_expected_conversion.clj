@@ -55,6 +55,7 @@
       su/convert-empty-record-to-nil))
 
 (defn- dif10-collection-progress
+  "converts collection progress values to values supported for DIF10 Dataset_Progress."
   [collection-progress-value]
   (when-let [c-progress (when-let [coll-progress collection-progress-value]
                           (str/upper-case coll-progress))]
