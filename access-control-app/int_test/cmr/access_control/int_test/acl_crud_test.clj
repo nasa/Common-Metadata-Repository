@@ -52,8 +52,6 @@
 (deftest create-single-instance-acl-test
   (let [token (e/login (u/conn-context) "user1")
         group1 (u/ingest-group token {:name "group1"} ["user1"])
-        ;; This wait is needed so that the groups exist for the single instance acls to be created targeting.
-        _ (u/wait-until-indexed)
         group1-concept-id (:concept_id group1)
         resp (ac/create-acl (u/conn-context) (assoc-in single-instance-acl
                                                        [:single_instance_identity :target_id]
@@ -65,8 +63,6 @@
 (deftest create-acl-errors-test
   (let [token (e/login (u/conn-context) "admin")
         group1 (u/ingest-group token {:name "group1"} ["user1"])
-        ;; This wait is needed so that the groups exist for the single instance acls to be created targeting.
-        _ (u/wait-until-indexed)
         group1-concept-id (:concept_id group1)]
     (are3 [re acl]
           (is (thrown-with-msg? Exception re (ac/create-acl (u/conn-context) acl {:token token})))
@@ -327,8 +323,6 @@
         group2 (u/ingest-group token
                                {:name "group2"}
                                ["user1"])
-        ;; This wait is needed so that the groups exist for the single instance acls to be created targeting.
-        _ (u/wait-until-indexed)
         group1-concept-id (:concept_id group1)
         group2-concept-id (:concept_id group2)
         {concept-id :concept_id} (ac/create-acl (u/conn-context) (assoc-in single-instance-acl [:single_instance_identity :target_id] group1-concept-id) {:token token})
@@ -341,8 +335,6 @@
   (let [token (e/login (u/conn-context) "admin")
         {system-concept-id :concept_id} (ac/create-acl (u/conn-context) system-acl {:token token})
         group1 (u/ingest-group token {:name "group1"} ["user1"])
-        ;; This wait is needed so that the groups exist for the single instance acls to be created targeting.
-        _ (u/wait-until-indexed)
         group1-concept-id (:concept_id group1)
         {provider-concept-id :concept_id} (ac/create-acl (u/conn-context) provider-acl {:token token})
         {catalog-concept-id :concept_id} (ac/create-acl (u/conn-context) catalog-item-acl {:token token})
