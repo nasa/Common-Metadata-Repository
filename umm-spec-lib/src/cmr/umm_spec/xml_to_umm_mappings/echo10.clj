@@ -89,7 +89,12 @@
   [doc]
   (for [plat (select doc "/Collection/Platforms/Platform")]
     {:ShortName (value-of plat "ShortName")
-     :LongName (u/without-default-value-of plat "LongName")
+     ;; CMR 3253 DIF10UMM happens to contain values for LongName that's the same as our default value.
+     ;; during round trip from that umm to echo10, then back to umm, the without-default-value-of 
+     ;; reverses that value to nil, not it's original value which is wrong. will remove it here.
+     ;; then change the umm echo10 expected to use with-default, to match the umm to echo10 part,
+     ;; which uses the default value.
+     :LongName (value-of plat "LongName")
      :Type (u/without-default-value-of plat "Type")
      :Characteristics (parse-characteristics plat)
      :Instruments (map parse-instrument (select plat "Instruments/Instrument"))}))

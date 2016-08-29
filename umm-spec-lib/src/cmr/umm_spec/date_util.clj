@@ -18,6 +18,13 @@
   (when (not= x default-date-value)
     x))
 
+ (defn use-default-when-not-provided
+   "Returns default date value string if x = 'Not provided'"
+   [x]
+   (if (= x "Not provided")
+     default-date-value
+     x))
+
 (defn latest-date-of-type
   "Returns :Date value of the most recent UMM DateType map in date-coll with the given type."
   [date-coll date-type]

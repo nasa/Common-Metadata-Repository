@@ -5,6 +5,7 @@
            [cmr.umm-spec.util :as su]
            [cmr.umm-spec.json-schema :as js]
            [cmr.common.util :as util :refer [update-in-each]]
+           [clojure.string :as str]
            [cmr.umm-spec.models.umm-common-models :as cmn]
            [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
            [cmr.umm-spec.related-url :as ru-gen]
@@ -31,12 +32,35 @@
   ;; Only a limited subset of platform types are supported by DIF 10.
   (assoc platform :Type (get dif10/platform-types (:Type platform))))
 
+(defn- dif10-get-processing-level-id
+  "When processing-level-id is nil, or when after stripping off the Level part of it,
+   it's still not part of the dif10/product-levels, return su/not-provided. Otherwise
+   return the part of the processing-level-id with Level removed."
+  [processing-level-id]
+  (if (nil? processing-level-id)
+    su/not-provided 
+    (let [id-without-level (str/replace processing-level-id #"Level " "")]
+      (get dif10/product-levels id-without-level su/not-provided))))
+ 
 (defn- dif10-processing-level
   [processing-level]
   (-> processing-level
       (assoc :ProcessingLevelDescription nil)
-      (assoc :Id (get dif10/product-levels (:Id processing-level)))
+      ;; CMR 3253 It needs to strip off the "Level " part of the Id first because
+      ;; UMM-to-DIF10 strips off the "Level " part. After that
+      ;; if still not part of the product-levels, use "Not provided" because otherwise
+      ;; the ProcessingLevel will be nil,making the umm invalid, which can't be used to match.
+      (assoc :Id (dif10-get-processing-level-id (:Id processing-level)))
       su/convert-empty-record-to-nil))
+
+(defn- dif10-collection-progress
+  [collection-progress-value]
+  (when-let [c-progress (when-let [coll-progress collection-progress-value]
+                          (str/upper-case coll-progress))]
+    (if (dif10/dif10-dataset-progress-values c-progress)
+      c-progress
+      (get dif10/collection-progress->dif10-dataset-progress c-progress "IN WORK"))))
+      
 
 (defn- dif10-project
   [proj]
@@ -208,6 +232,9 @@
       (update-in-each [:Platforms] dif10-platform)
       (update-in-each [:AdditionalAttributes] expected-dif10-additional-attribute)
       (update-in [:ProcessingLevel] dif10-processing-level)
+      ;; CMR 3253 DIF10 maps CollectionProgress values to DIF10 supported values.
+      ;; So the umm-dif10-expected needs to be modified.
+      (update-in [:CollectionProgress] dif10-collection-progress)
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] conversion-util/prune-empty-maps)
       (update-in-each [:PublicationReferences] conversion-util/dif-publication-reference)

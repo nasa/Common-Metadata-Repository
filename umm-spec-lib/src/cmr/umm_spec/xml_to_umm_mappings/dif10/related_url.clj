@@ -15,7 +15,8 @@
   [doc]
   (let [multimedia-urls (mapv multimedia->RelatedUrl (select doc "/DIF/Multimedia_Sample"))
         related-urls (for [related-url (select doc "/DIF/Related_URL")]
-                       {:URLs (values-at related-url "URL")
+                       ;; CMR 3253 remove the spaces in the urls
+                       {:URLs (url-values-at related-url "URL")
                         :Description (value-of related-url "Description")
                         :Relation [(value-of related-url "URL_Content_Type/Type")
                                    (value-of related-url "URL_Content_Type/Subtype")]

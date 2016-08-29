@@ -20,6 +20,12 @@
   (let [values (map text (select element xpath))]
     (map blank-to-nil values)))
 
+(defn url-values-at
+  "remove all the spaces in the urls"
+  [element xpath]
+  (let [values (map text (select element xpath))]
+    (map blank-to-nil (map #(str/replace % #" " "") values))))
+
 (defn boolean-at
   [element xpath]
   (= "true" (value-of element xpath)))

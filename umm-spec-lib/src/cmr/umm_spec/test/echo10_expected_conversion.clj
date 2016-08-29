@@ -55,6 +55,13 @@
                                       (when (conversion-util/relation-set rel)
                                         [rel])))))))
 
+(defn- expected-echo10-reorder-related-urls
+  "returns the RelatedUrls reordered - based on the order when echo10 is generated from umm."
+  [umm-coll]
+  (seq (concat (ru-gen/downloadable-urls (:RelatedUrls umm-coll))
+               (ru-gen/resource-urls (:RelatedUrls umm-coll))
+               (ru-gen/browse-urls (:RelatedUrls umm-coll)))))
+
 (defn- expected-echo10-spatial-extent
   "Returns the expected ECHO10 SpatialExtent for comparison with the umm model."
   [spatial-extent]
@@ -64,6 +71,12 @@
                  [:HorizontalSpatialDomain :Geometry]
                  conversion-util/geometry-with-coordinate-system)
       spatial-extent)))
+
+(defn- expected-echo10-platform-longname-with-default-value
+  "Returns the expected ECHO10 LongName with default value."
+  [platform]
+  (-> platform
+      (assoc :LongName (su/with-default (:LongName platform)))))
 
 (defn- expected-echo10-additional-attribute
   [attribute]
@@ -154,6 +167,10 @@
 (defn umm-expected-conversion-echo10
   [umm-coll]
   (-> umm-coll
+      ;; CMR 3523. DIF10 data makes the order inside the :RelatedUrls important:
+      ;; access urls first, resource urls second, browse urls last - which is
+      ;; the order used when umm is converted to echo10.
+      (assoc :RelatedUrls (expected-echo10-reorder-related-urls umm-coll))  
       (update-in [:TemporalExtents] (comp seq (partial take 1)))
       (update-in [:DataDates] fixup-echo10-data-dates)
       (assoc :DataLanguage nil)
@@ -175,6 +192,9 @@
       (update-in [:RelatedUrls] expected-echo10-related-urls)
       ;; We can't restore Detailed Location because it doesn't exist in the hierarchy.
       (update-in [:LocationKeywords] conversion-util/fix-location-keyword-conversion)
+      ;; CMR 3253 This is added because it needs to support DIF10 umm. when it does roundtrip,
+      ;; dif10umm-echo10(with default)-umm(without default needs to be removed)
+      (update-in-each [:Platforms] expected-echo10-platform-longname-with-default-value) 
       ;; CMR 2716 Getting rid of SpatialKeywords but keeping them for legacy purposes.
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)))

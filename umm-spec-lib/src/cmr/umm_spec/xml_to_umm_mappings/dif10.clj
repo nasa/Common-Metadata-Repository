@@ -6,6 +6,7 @@
             [camel-snake-kebab.core :as csk]
             [clojure.string :as string]
             [cmr.common.xml.parse :refer :all]
+            [cmr.common.util :as util]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.paleo-temporal :as pt]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]
@@ -38,6 +39,19 @@
       (parse-projects-impl doc))
     (parse-projects-impl doc)))
 
+(defn- parse-access-constraints
+  "if both value and Description are nil, return nil. 
+   Otherwise, if Description is nil, assoc it with u/not-provided"
+  [doc] 
+  (let [access-constraints-record 
+        {:Description (value-of doc "/DIF/Access_Constraints")
+         :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}]
+    (if (seq (util/remove-nil-keys access-constraints-record))
+      (if (nil? (:Description access-constraints-record))
+        (assoc access-constraints-record :Description u/not-provided)
+        access-constraints-record)      
+      nil))) 
+          
 (defn- parse-instruments-impl
   [platform-el]
   (for [inst (select platform-el "Instrument")]
@@ -74,6 +88,10 @@
                   :let [date-value (-> md-dates-el
                                        (value-of tag)
                                        date/without-default
+                                       ;; CMR 3253 DataDates fields are present in DIF10,
+                                       ;; they could contain the value of "Not provided" 
+                                       ;; which needs to be converted to default date value. 
+                                       date/use-default-when-not-provided
                                        ;; Since the DIF 10 date elements are actually just a string
                                        ;; type, they may contain anything, and so we need to try to
                                        ;; parse them here and return nil if they do not actually
@@ -106,8 +124,9 @@
                         :DetailedLocation (value-of lk "Detailed_Location")})
    :Projects (parse-projects doc apply-default?)
    :Quality (value-of doc "/DIF/Quality")
-   :AccessConstraints {:Description (value-of doc "/DIF/Access_Constraints")
-                       :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}
+   ;; CMR 3253 Need to provide default value for :Description when :Value is not nil
+   ;; and also return nil when both are nil.    
+   :AccessConstraints (parse-access-constraints doc) 
    :UseConstraints (value-of doc "/DIF/Use_Constraints")
    :Platforms (for [platform (select doc "/DIF/Platform")]
                 {:ShortName (value-of platform "Short_Name")
@@ -139,7 +158,11 @@
                      :Sizes (u/parse-data-sizes (value-of dist "Distribution_Size"))
                      :DistributionFormat (value-of dist "Distribution_Format")
                      :Fees (value-of dist "Fees")})
-   :ProcessingLevel {:Id (value-of doc "/DIF/Product_Level_Id")}
+   ;; CMR 3253 ProcessingLevel can not be nil when DIF10UMM validates against UMM Json schema
+   :ProcessingLevel {:Id (let [processing-level-id (value-of doc "/DIF/Product_Level_Id")]
+                           (if (nil? processing-level-id)
+                            u/not-provided
+                            processing-level-id))}
    :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc apply-default?)
    :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
                             (into {} (map (fn [x]
