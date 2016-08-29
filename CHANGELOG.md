@@ -98,5 +98,7 @@ Items to include in each issue
   * Deployment Impacts
     * The Elasticsearch Spatial Plugin needs to be deployed.
 * CMR-3260 - Allow dynamic update of humanizers
+* CMR-2905 - The full acl data is indexed now.
+  * No operator steps are required. The index will automatically be updated during database migrations
 
 

@@ -186,7 +186,8 @@
                              {:EntryId parent-dif})
      :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel"))
      :DataCenters (concat (center/parse-originating-centers doc)
-                          (center/parse-data-centers doc))}))
+                          (center/parse-data-centers doc)
+                          (center/parse-processing-centers doc))}))
 
 (defn dif9-xml-to-umm-c
   "Returns UMM-C collection record from DIF9 collection XML document. The :apply-default? option

@@ -384,6 +384,7 @@ The following parameters are supported when searching for ACLs.
 * page_size
 * page_num
 * pretty
+* include_full_acl - boolean parameter that indicates if the full acl details should be included in the search response.
 
 ##### ACL Matching Parameters
 
@@ -417,6 +418,7 @@ The response is always returned in JSON and includes the following parts.
   * name - This will be the catalog item identity name or a string containing "<identity type> - <target>". For example "System - PROVIDER"
   * identity_type - String of "provider", "system", "single_instance", or "catalog_item"
   * location - A URL to retrieve the ACL
+  * acl - full JSON of the ACL. Included if `include_full_acl=true` parameter is set.
 
 ##### ACL Search Examples
 
@@ -543,19 +545,19 @@ Server: Jetty(9.2.10.v20150310)
     "concept_id" : "ACL1200000001-CMR",
     "identity_type" : "Catalog Item",
     "name" : "Catalog_Item1_PROV1",
-    "location" : "http://localhost:3011/acls/ACL1200000001-CMR"
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000001-CMR"
   }, {
     "revision_id" : 1,
     "concept_id" : "ACL1200000002-CMR",
     "identity_type" : "Catalog Item",
     "name" : "Catalog_Item2_PROV1",
-    "location" : "http://localhost:3011/acls/ACL1200000002-CMR"
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000002-CMR"
   }, {
     "revision_id" : 1,
     "concept_id" : "ACL1200000000-CMR",
     "identity_type" : "Provider",
     "name" : "Provider - PROV1 - INGEST_MANAGEMENT_ACL",
-    "location" : "http://localhost:3011/acls/ACL1200000000-CMR"
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000000-CMR"
   } ]
 }
 ```
@@ -584,9 +586,61 @@ Server: Jetty(9.2.10.v20150310)
     "concept_id" : "ACL1200000002-CMR",
     "identity_type" : "System",
     "name" : "System - SYSTEM_AUDIT_REPORT",
-    "location" : "http://localhost:3011/acls/ACL1200000002-CMR"
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000002-CMR"
   } ]
 }
+```
+
+###### With include_full_acl
+
+```
+curl -i "%CMR-ENDPOINT%/acls?include_full_acl=true&pretty=true"
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+CMR-Hits: 2
+CMR-Took: 27
+CMR-Request-Id: b3e38b33-eaf3-46ac-9f04-fa62eabb2c11
+
+{
+  "hits" : 2,
+  "took" : 27,
+  "items" : [ {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000000-CMR",
+    "identity_type" : "Provider",
+    "acl" : {
+      "group_permissions" : [ {
+        "group_id" : "AG1200000003-PROV1",
+        "permissions" : [ "delete", "update" ]
+      } ],
+      "provider_identity" : {
+        "provider_id" : "PROV1",
+        "target" : "INGEST_MANAGEMENT_ACL"
+      }
+    },
+    "name" : "Provider - PROV1 - INGEST_MANAGEMENT_ACL",
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000000-CMR"
+  }, {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000002-CMR",
+    "identity_type" : "Catalog Item",
+    "acl" : {
+      "group_permissions" : [ {
+        "user_type" : "guest",
+        "permissions" : [ "read" ]
+      } ],
+      "catalog_item_identity" : {
+        "name" : "guest read acl",
+        "provider_id" : "PROV1",
+        "collection_applicable" : true
+      }
+    },
+    "name" : "guest read acl",
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000002-CMR"
+  } ]
+}
+
 ```
 
 ### <a name="retrieve-acl"></a> Retrieve ACL

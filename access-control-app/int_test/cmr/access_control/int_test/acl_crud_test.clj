@@ -55,7 +55,10 @@
         ;; This wait is needed so that the groups exist for the single instance acls to be created targeting.
         _ (u/wait-until-indexed)
         group1-concept-id (:concept_id group1)
-        resp (ac/create-acl (u/conn-context) (assoc-in single-instance-acl [:single_instance_identity :target_id] group1-concept-id) {:token token})]
+        resp (ac/create-acl (u/conn-context) (assoc-in single-instance-acl
+                                                       [:single_instance_identity :target_id]
+                                                       group1-concept-id)
+                            {:token token})]
     (is (re-find #"^ACL.*" (:concept_id resp)))
     (is (= 1 (:revision_id resp)))))
 

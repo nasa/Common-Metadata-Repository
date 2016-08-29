@@ -5,6 +5,7 @@
             [cmr.common-app.services.search :as qs]
             [cmr.common.util :as util]
             [cmr.transmit.config :as tconfig]
+            [clojure.edn :as edn]
             [clojure.set :as set]
             [cheshire.core :as json]))
 
@@ -13,18 +14,33 @@
   [context]
   (str (tconfig/application-public-root-url context) "acls/"))
 
+(def base-fields
+  ["concept-id" "revision-id" "display-name" "identity-type"])
+
+(def fields-with-full-acl
+  (conj base-fields "acl-gzip-b64"))
+
 (defmethod elastic-search-index/concept-type+result-format->fields [:acl :json]
   [concept-type query]
-  ["concept-id" "revision-id" "display-name" "identity-type"])
+  (if (some #{:include-full-acl} (:result-features query))
+    fields-with-full-acl
+    base-fields))
+
 
 (defmethod elastic-results/elastic-result->query-result-item [:acl :json]
   [context query elastic-result]
   (let [item (->> elastic-result
                   :fields
-                  (util/map-values first))]
+                  (util/map-values first))
+        item (if-let [acl-gzip (:acl-gzip-b64 item)]
+               (-> item
+                   (assoc :acl (edn/read-string (util/gzip-base64->string acl-gzip)))
+                   (dissoc :acl-gzip-b64))
+               item)]
     (-> item
         (set/rename-keys {:display-name :name})
-        (assoc :location (str (reference-root context) (:concept-id item))))))
+        (assoc :location (str (reference-root context) (:concept-id item)))
+        util/remove-nil-keys)))
 
 (defmethod qs/search-results->response [:acl :json]
   [context query results]
