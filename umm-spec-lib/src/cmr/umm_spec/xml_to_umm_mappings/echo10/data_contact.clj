@@ -21,6 +21,9 @@
     "PROCESSOR" "PROCESSOR"
     "Producer" "PROCESSOR"})
 
+(def default-data-center-role
+  "ARCHIVER")
+
 (def echo10-job-position->umm-contact-person-role
  {"DATA CENTER CONTACT" "Data Center Contact"
   "Primary Contact" "Data Center Contact"
@@ -41,6 +44,9 @@
   "Deputy Science Software Development Manager" "Science Software"
   "Sea Ice Algorithms" "Science Software"
   "Snow Algorithms" "Science Software"})
+
+(def default-contact-person-role
+  "Technical Contact")
 
 (defn- parse-contact-mechanisms
   "Parse ECHO10 contact mechanisms to UMM."
@@ -78,9 +84,12 @@
 
 (defn- parse-contact-persons
   "Parse ECHO10 Contact Persons to UMM"
-  [contact]
+  [contact apply-default?]
   (for [person (select contact "ContactPersons/ContactPerson")]
-    {:Roles (map #(echo10-job-position->umm-contact-person-role % "Technical Contact") [(value-of person "JobPosition")])
+    {:Roles (u/mapping-with-default echo10-job-position->umm-contact-person-role
+                                    [(value-of person "JobPosition")]
+                                    default-contact-person-role
+                                    apply-default?)
      :FirstName (value-of person "FirstName")
      :MiddleName (value-of person "MiddleName")
      :LastName (value-of person "LastName")}))
@@ -92,12 +101,12 @@
   used to hold a list of ContactPersons not associated with a data center, get the contacts
   that have the default role and empty organization name. The ContactPersons on that Contact
   should be associated with the collection but not the data center."
-  [doc]
+  [doc apply-default?]
   (let [all-contacts (select doc "/Collection/Contacts/Contact")
         contacts (filter #(and (= (value-of % "Role") dc/default-echo10-contact-role)
                                (empty? (value-of % "OrganizationName")))
                          all-contacts)]
-    (mapcat parse-contact-persons contacts)))
+    (mapcat #(parse-contact-persons % apply-default?) contacts)))
 
 (defn- parse-data-centers-from-contacts
   "Parse ECHO10 contacts to UMM data center contact persons.
@@ -112,10 +121,13 @@
                                (empty? (value-of % "OrganizationName")))
                          all-contacts)]
     (for [contact contacts]
-      {:Roles (map echo10-contact-role->umm-data-center-role [(value-of contact "Role")])
+      {:Roles (u/mapping-with-default echo10-contact-role->umm-data-center-role
+                                      [(value-of contact "Role")]
+                                      default-data-center-role
+                                      apply-default?)
        :ShortName (u/with-default (value-of contact "OrganizationName") apply-default?)
        :ContactInformation (parse-contact-information contact)
-       :ContactPersons (parse-contact-persons contact)})))
+       :ContactPersons (parse-contact-persons contact apply-default?)})))
 
 (defn- parse-additional-center
   "ECHO10 has both ArchiveCenter and ProcessingCenter fields which can each hold an additional
@@ -150,7 +162,8 @@
         data-centers (conj
                       data-centers
                       (parse-additional-center doc data-centers "ArchiveCenter" "ARCHIVER")
-                      (parse-additional-center doc data-centers "ProcessingCenter" "PROCESSOR"))]
-    (if (seq (remove nil? data-centers))
+                      (parse-additional-center doc data-centers "ProcessingCenter" "PROCESSOR"))
+        data-centers (remove nil? data-centers)]
+    (if (seq data-centers)
       data-centers
       (when apply-default? [u/not-provided-data-center]))))

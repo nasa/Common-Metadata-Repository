@@ -62,6 +62,19 @@
   [country]
   (or country "Unknown"))
 
+(defn mapping-with-default
+  "Given a map and a value, returns the result of mapping the value. If apply-default? is true,
+  specify a default value when mapping, otherwise no default value
+
+  map-list - map from x->y
+  value - the value to map
+  value-default - the default to use if value is not present in the map
+  apply-default? - true if the default valye should be used"
+  [map-list value value-default apply-default?]
+  (if apply-default?
+    (map #(map-list % value-default) value)
+    (map map-list value)))
+
 (defn with-default
   "Returns the value if it exists or returns the default value 'Not provided'."
   ([value]
