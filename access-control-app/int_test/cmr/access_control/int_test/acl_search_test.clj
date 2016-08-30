@@ -44,7 +44,7 @@
 
 (def sample-single-instance-acl
   "A sample single instance ACL."
-  {:group_permissions [{:user_type "guest" :permissions ["create"]}]
+  {:group_permissions [{:user_type "guest" :permissions ["update"]}]
    :single_instance_identity {:target "GROUP_MANAGEMENT"
                               :target_id "REPLACEME"}})
 
@@ -139,16 +139,22 @@
         group2 (u/ingest-group token
                                {:name "group2"}
                                ["user1"])
-        ;; This wait is needed so that the groups exist for the single instance acls to be created targeting.
-        _ (u/wait-until-indexed)
         group1-concept-id (:concept_id group1)
         group2-concept-id (:concept_id group2)
-        acl1 (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
-        acl2 (ingest-acl token (system-acl "METRIC_DATA_POINT_SAMPLE"))
+        acl1 (ingest-acl token (assoc (system-acl "SYSTEM_AUDIT_REPORT")
+                                      :group_permissions
+                                      [{:user_type "guest" :permissions ["read"]}]))
+        acl2 (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE")
+                                      :group_permissions
+                                      [{:user_type "guest" :permissions ["read"]}]))
         acl3 (ingest-acl token (system-acl "SYSTEM_INITIALIZER"))
-        acl4 (ingest-acl token (system-acl "ARCHIVE_RECORD"))
+        acl4 (ingest-acl token (assoc (system-acl "ARCHIVE_RECORD")
+                                      :group_permissions
+                                      [{:user_type "guest" :permissions ["delete"]}]))
 
-        acl5 (ingest-acl token (provider-acl "AUDIT_REPORT"))
+        acl5 (ingest-acl token (assoc (provider-acl "AUDIT_REPORT")
+                                      :group_permissions
+                                      [{:user_type "guest" :permissions ["read"]}]))
         acl6 (ingest-acl token (provider-acl "OPTION_ASSIGNMENT"))
 
         acl7 (ingest-acl token (single-instance-acl group1-concept-id))
@@ -195,18 +201,21 @@
 
 (deftest acl-search-permitted-group-test
   (let [token (e/login (u/conn-context) "user1")
-        acl1 (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
+        acl1 (ingest-acl token (assoc (system-acl "SYSTEM_AUDIT_REPORT")
+                                      :group_permissions
+                                      [{:user_type "guest" :permissions ["read"]}]))
         acl2 (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE")
                                       :group_permissions
                                       [{:user_type "registered" :permissions ["read"]}]))
-        acl3 (ingest-acl token (assoc (system-acl "ARCHIVE_RECORD")
+        acl3 (ingest-acl token (assoc (system-acl "ANY_ACL")
                                       :group_permissions
-                                      [{:group_id "AG12345-PROV" :permissions ["read" "create"]}]))
-
-        acl4 (ingest-acl token (provider-acl "AUDIT_REPORT"))
+                                      [{:group_id "AG12345-PROV" :permissions ["read" "create" "delete"]}]))
+        acl4 (ingest-acl token (assoc (provider-acl "AUDIT_REPORT")
+                                      :group_permissions
+                                      [{:user_type "guest" :permissions ["read"]}]))
         acl5 (ingest-acl token (assoc (provider-acl "OPTION_DEFINITION")
                                       :group_permissions
-                                      [{:user_type "registered" :permissions ["order"]}]))
+                                      [{:user_type "registered" :permissions ["create"]}]))
         acl6 (ingest-acl token (assoc (provider-acl "OPTION_ASSIGNMENT")
                                       :group_permissions
                                       [{:group_id "AG12345-PROV" :permissions ["delete"]}]))
@@ -214,15 +223,15 @@
         acl7 (ingest-acl token (catalog-item-acl "All Collections"))
         acl8 (ingest-acl token (assoc (catalog-item-acl "All Granules")
                                       :group_permissions
-                                      [{:user_type "registered" :permissions ["read"]}
+                                      [{:user_type "registered" :permissions ["read" "order"]}
                                        {:group_id "AG10000-PROV" :permissions ["create"]}]))
 
         guest-acls [acl1 acl4 acl7]
         registered-acls [acl2 acl5 acl8]
         AG12345-acls [acl3 acl6]
         AG10000-acls [acl8]
-        read-acls [acl2 acl3 acl8]
-        create-acls [acl1 acl3 acl4 acl7 acl8]
+        read-acls [acl1 acl2 acl3 acl4 acl8]
+        create-acls [acl3 acl5 acl7 acl8]
         all-acls (concat guest-acls registered-acls AG12345-acls)]
     (u/wait-until-indexed)
 
@@ -271,10 +280,10 @@
                     (dissoc response :took))))
            ;; CMR-3154 acceptance criterium 1
            "Guests create"
-           ["guest" "create"] guest-acls
+           ["guest" "create"] [acl7]
 
            "Guest read"
-           ["guest" "read"] []
+           ["guest" "read"] [acl1 acl4]
 
            "Registered read"
            ["registered" "read"] [acl2 acl8]
@@ -283,7 +292,7 @@
            ["AG10000-PROV" "create"] [acl8]
 
            "Registered order"
-           ["registered" "order"] [acl5]
+           ["registered" "order"] [acl8]
 
            "Group create"
            ["AG12345-PROV" "create"] [acl3]
@@ -295,17 +304,17 @@
            ["AG12345-PROV" "read"] [acl3]
 
            "Group delete"
-           ["AG12345-PROV" "delete"] [acl6]
+           ["AG12345-PROV" "delete"] [acl6 acl3]
 
            "Case-insensitive group create"
            ["AG10000-PROV" "CREATE"] AG10000-acls
 
            ;; CMR-3154 acceptance criterium 2
-           "Registered read or registered order"
-           ["registered" "read" "registered" "order"] registered-acls
+           "Registered read or registered create"
+           ["registered" "read" "registered" "create"] registered-acls
 
            "Registered read or group AG12345-PROV delete"
-           ["registered" "read" "AG12345-PROV" "delete"] [acl2 acl6 acl8]))
+           ["registered" "read" "AG12345-PROV" "delete"] [acl2 acl3 acl6 acl8]))
 
     ;; CMR-3154 acceptance criterium 3
     (testing "Search ACLs by group permission just group or permission"
@@ -360,11 +369,13 @@
         group1 (u/ingest-group token
                                {:name "group1"}
                                ["user1"])
-        ;; This wait is needed so that the groups exist for the single instance acls to be created targeting.
-        _ (u/wait-until-indexed)
         group1-concept-id (:concept_id group1)
-        acl-system (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
-        acl-provider (ingest-acl token (provider-acl "AUDIT_REPORT"))
+        acl-system (ingest-acl token (assoc (system-acl "SYSTEM_AUDIT_REPORT")
+                                            :group_permissions
+                                            [{:user_type "guest" :permissions ["read"]}]))
+        acl-provider (ingest-acl token (assoc (provider-acl "AUDIT_REPORT")
+                                              :group_permissions
+                                              [{:user_type "guest" :permissions ["read"]}]))
         acl-single-instance (ingest-acl token (single-instance-acl group1-concept-id))
         acl-catalog-item (ingest-acl token (catalog-item-acl "All Collections"))
         all-acls [acl-system acl-provider acl-single-instance acl-catalog-item]]
@@ -410,13 +421,15 @@
         group2 (u/ingest-group token {:name "group2"} ["USER1" "user2"])
         group3 (u/ingest-group token {:name "group3"} nil)
         ;; No user should match this since all users are registered
-        acl-guest (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
+        acl-guest (ingest-acl token (assoc (system-acl "SYSTEM_AUDIT_REPORT")
+                                           :group_permissions
+                                           [{:user_type "guest" :permissions ["read"]}]))
         acl-registered-1 (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE")
                                                   :group_permissions
-                                                  [{:user_type "registered" :permissions ["create"]}]))
+                                                  [{:user_type "registered" :permissions ["read"]}]))
         acl-group1 (ingest-acl token (assoc (system-acl "ARCHIVE_RECORD")
                                             :group_permissions
-                                            [{:group_id (:concept_id group1) :permissions ["create"]}]))
+                                            [{:group_id (:concept_id group1) :permissions ["delete"]}]))
         acl-registered-2 (ingest-acl token (assoc (provider-acl "OPTION_DEFINITION")
                                                   :group_permissions
                                                   [{:user_type "registered" :permissions ["create"]}]))
@@ -468,13 +481,21 @@
 
 (deftest acl-search-provider-test
   (let [token (e/login (u/conn-context) "user1")
-        acl1 (ingest-acl token (provider-acl "INGEST_MANAGEMENT_ACL"))
-        acl2 (ingest-acl token (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
-                                         [:provider_identity :provider_id] "PROV2"))
-        acl3 (ingest-acl token (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
-                                         [:provider_identity :provider_id] "PROV3"))
-        acl4 (ingest-acl token (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
-                                         [:provider_identity :provider_id] "PROV4"))
+        acl1 (ingest-acl token (assoc (provider-acl "INGEST_MANAGEMENT_ACL")
+                                      :group_permissions
+                                      [{:user_type "guest" :permissions ["read"]}]))
+        acl2 (ingest-acl token (assoc (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
+                                                [:provider_identity :provider_id] "PROV2")
+                                      :group_permissions
+                                      [{:user_type "guest" :permissions ["read"]}]))
+        acl3 (ingest-acl token (assoc (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
+                                                [:provider_identity :provider_id] "PROV3")
+                                      :group_permissions
+                                      [{:user_type "guest" :permissions ["read"]}]))
+        acl4 (ingest-acl token (assoc (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
+                                                [:provider_identity :provider_id] "PROV4")
+                                      :group_permissions
+                                      [{:user_type "guest" :permissions ["read"]}]))
         acl5 (ingest-acl token (catalog-item-acl "Catalog_Item1_PROV1"))
         acl6 (ingest-acl token (catalog-item-acl "Catalog_Item2_PROV1"))
         acl7 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item3_PROV2")
@@ -539,13 +560,15 @@
   (let [token (e/login (u/conn-context) "user1")
         group1 (u/ingest-group token {:name "group1"} ["user1"])
         group2 (u/ingest-group token {:name "group2"} ["user2"])
-        acl1 (ingest-acl token (system-acl "SYSTEM_AUDIT_REPORT"))
+        acl1 (ingest-acl token (assoc (system-acl "SYSTEM_AUDIT_REPORT")
+                                      :group_permissions
+                                      [{:user_type "guest" :permissions ["read"]}]))
         acl2 (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE")
                                       :group_permissions
-                                      [{:user_type "registered" :permissions ["create"]}]))
+                                      [{:user_type "registered" :permissions ["read"]}]))
         acl3 (ingest-acl token (assoc (system-acl "ARCHIVE_RECORD")
                                       :group_permissions
-                                      [{:group_id (:concept_id group1) :permissions ["create"]}]))
+                                      [{:group_id (:concept_id group1) :permissions ["delete"]}]))
         acl4 (ingest-acl token (assoc (provider-acl "OPTION_DEFINITION")
                                       :group_permissions
                                       [{:user_type "registered" :permissions ["create"]}]))
