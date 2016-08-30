@@ -27,11 +27,6 @@
   (cmn/map->RelatedUrlType
     {:URLs ["Not%20provided"]}))
 
-(def not-provided-data-date
-  "Place holder to use when a data date is not provided."
-  (cmn/map->DateType {:Date (f/parse "2000-01-01T00:00:00Z")
-                      :Type "REVIEW"}))
-
 (def default-granule-spatial-representation
   "Default value for GranuleSpatialRepresentation"
   "CARTESIAN")
