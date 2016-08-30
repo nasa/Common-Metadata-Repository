@@ -1,6 +1,5 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.echo10
   (:require
-   [clj-time.core :as t]
    [clojure.test :refer :all]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as contact]))
 
