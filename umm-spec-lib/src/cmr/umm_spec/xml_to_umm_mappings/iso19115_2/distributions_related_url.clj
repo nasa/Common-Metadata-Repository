@@ -69,7 +69,7 @@
         ;; outcome of ECSE-129.
         :let [browse-url (or (value-of url "gmd:fileName/gmx:FileName/@src")
                              (value-of url "gmd:fileName/gco:CharacterString"))]]
-    {:URLs [(when browse-url (str/trim browse-url))]
+    {:URLs (when browse-url [(str/trim browse-url)])
      :Description (char-string-value url "gmd:fileDescription")
      :Relation (when-let [rel (resource-name->types (char-string-value url "gmd:fileType"))]
                  [rel])}))
