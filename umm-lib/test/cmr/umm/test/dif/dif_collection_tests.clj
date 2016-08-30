@@ -97,12 +97,14 @@
     science-keywords))
 
 (defn- expected-organizations
-  "Re-order the organizations by distribution center, then processing center"
+  "Re-order the organizations by distribution centers, add an archive center for each
+  distribution center, then processing centers"
   [organizations]
-  (remove nil?
-   (concat
-    (filter #(= :distribution-center (:type %)) organizations)
-    (filter #(= :processing-center (:type %)) organizations))))
+  (let [distribution-centers (filter #(= :distribution-center (:type %)) organizations)]
+    (concat
+     distribution-centers
+     (map #(assoc % :type :archive-center) distribution-centers)
+     (filter #(= :processing-center (:type %)) organizations))))
 
 (defn- umm->expected-parsed-dif
   "Modifies the UMM record for testing DIF. DIF contains a subset of the total UMM fields so certain
@@ -197,6 +199,17 @@
           expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-dif collection))]
       (and (= expected-parsed parsed-echo10)
            (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
+
+(deftest generate-and-parse-collection-between-formats-test
+  (checking "dif parse between formats" 100
+    [collection coll-gen/collections]
+    (let [xml (dif/umm->dif-xml collection)
+          parsed-dif (c/parse-collection xml)
+          echo10-xml (echo10/umm->echo10-xml parsed-dif)
+          parsed-echo10 (echo10-c/parse-collection echo10-xml)
+          expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-dif collection))]
+      (is (= expected-parsed parsed-echo10))
+      (is (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
 
 ;; This is a made-up include all fields collection xml sample for the parse collection test
 (def all-fields-collection-xml
@@ -666,6 +679,12 @@
       (umm-c/map->Organization
         {:type :distribution-center
          :org-name "UNEP/DEWA/GRID-EUROPE"})
+      (umm-c/map->Organization
+         {:type :archive-center
+          :org-name "EU/JRC/IES"})
+      (umm-c/map->Organization
+         {:type :archive-center
+          :org-name "UNEP/DEWA/GRID-EUROPE"})
       (umm-c/map->Organization
         {:type :processing-center
          :org-name "LPDAAC"})]

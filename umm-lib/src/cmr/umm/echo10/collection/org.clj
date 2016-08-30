@@ -19,16 +19,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generators
 
-(defn generate-center
-  "Return archive or processing center based on org type"
+(defn- generate-center
+  "Return archive or processing center based on org type. ECHO10 only has 1 of each
+  archive or processing center so return the first"
   [center-type orgs]
-  (for [org orgs
-        :when (= center-type (:type org))]
+  (when-let [center (first (filter #(= center-type (:type %)) orgs))]
     (let [elem-name (-> center-type
                         name
                         csk/->PascalCase
                         keyword)]
-      (x/element elem-name {} (:org-name org)))))
+      (x/element elem-name {} (:org-name center)))))
 
 (defn generate-archive-center
   "Return archive center ignoring other type of organization like processing center"
@@ -60,5 +60,3 @@
 
   ;;;;;;;;;;;;
   )
-
-

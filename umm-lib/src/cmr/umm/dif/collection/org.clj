@@ -5,11 +5,15 @@
             [cmr.umm.umm-collection :as c]))
 
 (defn- data-centers->organizations
-  "Returns a list of organzitions from the Data_Center XML elements"
+  "Returns a list of organzitions from the Data_Center XML elements. For each Data_Center,
+  create a distribution-center and archive-center organization"
   [xml-struct]
   (when-let [centers (seq (cx/strings-at-path xml-struct [:Data_Center :Data_Center_Name :Short_Name]))]
-    (map #(c/map->Organization {:type :distribution-center :org-name %})
-         centers)))
+    (concat
+     (map #(c/map->Organization {:type :distribution-center :org-name %})
+          centers)
+     (map #(c/map->Organization {:type :archive-center :org-name %})
+          centers))))
 
 (defn- extended-metadata->organizations
   "Returns a list of processing center organizations from extended-metadata XML"
