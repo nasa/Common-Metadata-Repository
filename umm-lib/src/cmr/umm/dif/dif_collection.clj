@@ -203,14 +203,16 @@
                       (x/element :Last_DIF_Revision_Date {} (str update-time)))
 
                     ;; There should be a single extended metadata element encompassing
-                    ;; spatial-coverage, processing-level-id, collection-data-type, and additional
-                    ;; attributes
+                    ;; spatial-coverage, processing-level-id, collection-data-type, additional
+                    ;; attributes, and processing centers
                     (when (or spatial-coverage processing-level-id collection-data-type
-                              product-specific-attributes access-value)
+                              product-specific-attributes access-value
+                              (seq (filter #(= :processing-center (:type %)) organizations)))
                       (x/element :Extended_Metadata {}
                                  (psa/generate-product-specific-attributes
                                    product-specific-attributes)
                                  (sc/generate-spatial-coverage-extended-metadata spatial-coverage)
+                                 (org/generate-metadata organizations)
                                  (when processing-level-id
                                    (em/generate-metadata-elements
                                      [{:name em/product_level_id_external_meta_name

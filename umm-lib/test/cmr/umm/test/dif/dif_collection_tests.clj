@@ -20,7 +20,8 @@
             [cmr.umm.dif.dif-core :as dif]
             [cmr.spatial.mbr :as m]
             [cmr.umm.test.echo10.echo10-collection-tests :as test-echo10]
-            [cmr.umm.validation.validation-core :as v])
+            [cmr.umm.validation.validation-core :as v]
+            [cmr.common.test.test-check-ext :as ext :refer [checking]])
   (:import cmr.spatial.mbr.Mbr))
 
 (defn- spatial-coverage->expected-parsed
@@ -95,6 +96,14 @@
                                  :term     umm-c/not-provided})]
     science-keywords))
 
+(defn- expected-organizations
+  "Re-order the organizations by distribution center, then processing center"
+  [organizations]
+  (remove nil?
+   (concat
+    (filter #(= :distribution-center (:type %)) organizations)
+    (filter #(= :processing-center (:type %)) organizations))))
+
 (defn- umm->expected-parsed-dif
   "Modifies the UMM record for testing DIF. DIF contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
@@ -107,7 +116,6 @@
                                          :single-date-times []
                                          :periodic-date-times []})
                    nil)
-        organizations (filter #(= :distribution-center (:type %)) (:organizations coll))
         personnel (not-empty (->> personnel
                                   ;; only support email right now
                                   (map filter-contacts)
@@ -129,7 +137,7 @@
         ;; DIF only has range-date-times
         (assoc :temporal temporal)
         ;; DIF only has distribution centers as Organization
-        (assoc :organizations organizations)
+        (update :organizations expected-organizations)
         (assoc :personnel personnel)
         ;; DIF only support some portion of the spatial
         (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
@@ -172,13 +180,13 @@
         (seq xml)
         (empty? (c/validate-xml xml))))))
 
-(defspec generate-and-parse-collection-test 100
-  (for-all [collection coll-gen/collections]
+(deftest generate-and-parse-collection-test
+  (checking "dif collection round tripping" 100
+    [collection coll-gen/collections]
     (let [xml (dif/umm->dif-xml collection)
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-dif collection)]
-      (= expected-parsed parsed))))
-
+      (is (= expected-parsed parsed)))))
 
 (defspec generate-and-parse-collection-between-formats-test 100
   (for-all [collection coll-gen/collections]
@@ -435,6 +443,10 @@
         <Name>Restriction</Name>
         <Value>1</Value>
       </Metadata>
+      <Metadata>
+        <Name>Processor</Name>
+        <Value>LPDAAC</Value>
+      </Metadata>
     </Extended_Metadata>
   </DIF>")
 
@@ -653,7 +665,10 @@
          :org-name "EU/JRC/IES"})
       (umm-c/map->Organization
         {:type :distribution-center
-         :org-name "UNEP/DEWA/GRID-EUROPE"})]
+         :org-name "UNEP/DEWA/GRID-EUROPE"})
+      (umm-c/map->Organization
+        {:type :processing-center
+         :org-name "LPDAAC"})]
      :personnel [(umm-c/map->Personnel
                    {:first-name "ANDREA"
                     :last-name "DE BONO"
