@@ -2,9 +2,7 @@
   (:require
    [clj-time.core :as t]
    [clojure.test :refer :all]
-   [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as contact]
-   [cmr.common.xml.parse :refer :all]
-   [cmr.common.xml.simple-xpath :refer [select text]]))
+   [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as contact]))
 
 (deftest echo10-contact-role-test
   (testing "ECHO10 Contact with invalid role and default applied"
