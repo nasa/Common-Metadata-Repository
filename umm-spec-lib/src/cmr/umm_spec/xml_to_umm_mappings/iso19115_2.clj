@@ -107,9 +107,9 @@
       seq
       some?))
 
-(defn parse-temporal-extents
+(defn- parse-temporal-extents
   "Parses the collection temporal extents from the the collection document, the extent information,
-   and the data identification element."
+  and the data identification element."
   [doc extent-info md-data-id-el]
   (for [temporal (select md-data-id-el temporal-xpath)]
     {:PrecisionOfSeconds (value-of doc precision-xpath)
@@ -119,6 +119,18 @@
                        {:BeginningDateTime (value-of period "gml:beginPosition")
                         :EndingDateTime    (value-of period "gml:endPosition")})
      :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")}))
+
+(defn- parse-data-dates
+  "Parses the collection DataDates from the the collection document."
+  [doc]
+  (for [date-el (select doc data-dates-xpath)
+        :let [date (or (value-of date-el "gmd:date/gco:DateTime")
+                       (value-of date-el "gmd:date/gco:Date"))
+              date-type (umm-date-type-codes
+                          (value-of date-el "gmd:dateType/gmd:CI_DateTypeCode"))]
+        :when date-type]
+    {:Date date
+     :Type date-type}))
 
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
@@ -130,13 +142,12 @@
     {:ShortName (char-string-value id-el "gmd:code")
      :EntryTitle (char-string-value citation-el "gmd:title")
      :Version (char-string-value citation-el "gmd:edition")
-     :Abstract (char-string-value md-data-id-el "gmd:abstract")
+     :Abstract (or (char-string-value md-data-id-el "gmd:abstract")
+                   (when apply-default? su/not-provided))
      :Purpose (char-string-value md-data-id-el "gmd:purpose")
      :CollectionProgress (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode")
      :Quality (char-string-value doc quality-xpath)
-     :DataDates (for [date-el (select doc data-dates-xpath)]
-                  {:Date (value-of date-el "gmd:date/gco:DateTime")
-                   :Type (get umm-date-type-codes (value-of date-el "gmd:dateType/gmd:CI_DateTypeCode"))})
+     :DataDates (parse-data-dates doc)
      :AccessConstraints {:Description
                          (regex-value doc (str constraints-xpath
                                                "/gmd:useLimitation/gco:CharacterString")
@@ -150,25 +161,24 @@
      (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
                   #"(?s)^(?!Restriction Comment:).+")
      :LocationKeywords (lk/translate-spatial-keywords
-                        context (kws/descriptive-keywords md-data-id-el "place"))
+                         context (kws/descriptive-keywords md-data-id-el "place"))
      :TemporalKeywords (kws/descriptive-keywords md-data-id-el "temporal")
      :DataLanguage (char-string-value md-data-id-el "gmd:language")
      :ISOTopicCategories (values-at doc topic-categories-xpath)
-     :SpatialExtent (spatial/parse-spatial doc extent-info)
+     :SpatialExtent (spatial/parse-spatial doc extent-info apply-default?)
      :TilingIdentificationSystems (tiling/parse-tiling-system md-data-id-el)
      :TemporalExtents (or (seq (parse-temporal-extents doc extent-info md-data-id-el))
                           (when apply-default? u/not-provided-temporal-extents))
      :ProcessingLevel {:Id
-                       (char-string-value
-                        md-data-id-el
-                        "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
-
+                       (su/with-default
+                         (char-string-value
+                           md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
+                         apply-default?)
                        :ProcessingLevelDescription
                        (char-string-value
-                        md-data-id-el
-                        "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
-     :Distributions (dru/parse-distributions doc)
-     :Platforms (platform/parse-platforms doc)
+                         md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
+     :Distributions (dru/parse-distributions doc apply-default?)
+     :Platforms (platform/parse-platforms doc apply-default?)
      :Projects (parse-projects doc)
 
      :PublicationReferences (for [publication (select md-data-id-el publication-xpath)
@@ -191,8 +201,8 @@
                                :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})
      :MetadataAssociations (ma/xml-elem->metadata-associations doc)
      :AncillaryKeywords (descriptive-keywords-type-not-equal
-                         md-data-id-el
-                         ["place" "temporal" "project" "platform" "instrument" "theme"])
+                          md-data-id-el
+                          ["place" "temporal" "project" "platform" "instrument" "theme"])
      :ScienceKeywords (kws/parse-science-keywords md-data-id-el)
      :RelatedUrls (dru/parse-related-urls doc)
      :AdditionalAttributes (aa/parse-additional-attributes doc apply-default?)

@@ -82,8 +82,7 @@
 (def formats-to-skip
   "A set of formats to skip in the roundtrip example metadata test. These will be fixed as part of
    separate issues. The issues CMR-3252, CMR-3253, CMR-3254, and CMR-3255 are filed to fix this."
-  #{:iso19115 :iso-smap})
-
+  #{:iso-smap})
 
 (deftest roundtrip-example-metadata
   (let [failed-atom (atom false)
@@ -116,7 +115,11 @@
               :when (not (formats-to-skip target-format))
               :when (not @failed-atom)
               :let [expected (expected-conversion/convert umm target-format)
-                    actual (xml-round-trip :collection target-format umm)]]
+                    actual (xml-round-trip :collection target-format umm)
+                    ;; The RelatedUrls field get reshuffled during the conversions,
+                    ;; so we compare RelatedUrls as a set.
+                    expected (update expected :RelatedUrls set)
+                    actual (update actual :RelatedUrls set)]]
 
         ;; Taking the parsed UMM and converting it to another format produces the expected UMM
         (check-failure

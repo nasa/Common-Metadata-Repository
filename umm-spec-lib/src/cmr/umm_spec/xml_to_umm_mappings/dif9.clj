@@ -101,9 +101,6 @@
      :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
      :Purpose (value-of doc "/DIF/Summary/Purpose")
      :DataLanguage (value-of doc "/DIF/Data_Set_Language")
-     ;; Data Dates is required
-     ;; Implement as part of CMR-2867
-     :DataDates (when apply-default? [su/not-provided-data-date])
      :MetadataDates (parse-metadata-dates doc)
      :ISOTopicCategories (values-at doc "DIF/ISO_Topic_Category")
      :TemporalKeywords (values-at doc "/DIF/Data_Resolution/Temporal_Resolution")

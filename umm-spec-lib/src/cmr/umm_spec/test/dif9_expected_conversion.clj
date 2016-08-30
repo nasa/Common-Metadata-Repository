@@ -244,7 +244,7 @@
         (assoc :ContactGroups nil)
         (assoc :ContactPersons expected-contact-persons)
         ;; DIF 9 does not support DataDates
-        (assoc :DataDates [su/not-provided-data-date])
+        (assoc :DataDates nil)
         ;; DIF 9 sets the UMM Version to 'Not provided' if it is not present in the DIF 9 XML
         (assoc :Version (or (:Version umm-coll) su/not-provided))
         (update-in [:TemporalExtents] dif9-temporal)
