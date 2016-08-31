@@ -1,29 +1,31 @@
 (ns cmr.system-int-test.data2.opendata
   "Contains functions for parsing opendata results."
-  (:require [clojure.data.xml :as x]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.line-string :as l]
-            [clojure.string :as str]
-            [cmr.spatial.relations :as r]
-            [camel-snake-kebab.core :as csk]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.umm.echo10.spatial :as echo-s]
-            [clojure.test]
-            [cheshire.core :as json]
-            [cmr.common.util :as util]
-            [cmr.search.results-handlers.opendata-results-handler :as odrh]
-            [cmr.indexer.data.concepts.science-keyword :as sk]
-            [cmr.indexer.data.concepts.collection :as c]
-            [cmr.umm.related-url-helper :as ru]
-            [cmr.umm.start-end-date :as sed]
-            [clojure.test :refer [is]]
-            [cmr.umm-spec.legacy :as umm-legacy]
-            [cmr.umm-spec.test.location-keywords-helper :as lkt])
-  (:import cmr.umm.umm_collection.UmmCollection
-           cmr.spatial.mbr.Mbr))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [cheshire.core :as json]
+   [clojure.data.xml :as x]
+   [clojure.string :as str]
+   [clojure.test :refer [is]]
+   [clojure.test]
+   [cmr.common.util :as util]
+   [cmr.indexer.data.concepts.collection :as c]
+   [cmr.indexer.data.concepts.science-keyword :as sk]
+   [cmr.search.results-handlers.opendata-results-handler :as odrh]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.relations :as r]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.umm-spec.legacy :as umm-legacy]
+   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm.echo10.spatial :as echo-s]
+   [cmr.umm.related-url-helper :as ru]
+   [cmr.umm.start-end-date :as sed]
+   [cmr.umm.umm-spatial :as umm-s])
+  (:import
+   cmr.spatial.mbr.Mbr
+   cmr.umm.umm_collection.UmmCollection))
 
 (def context (lkt/setup-context-for-test lkt/sample-keyword-map))
 
@@ -49,12 +51,17 @@
    :hasEmail (str "mailto:" (personnel->contact-email personnel))})
 
 (defn collection->expected-opendata
+  "Convert to expcted opendata. First convert to native format metadata then back to UMM to mimic
+  ingest. If umm-json leave as is since parse-concept will convert to echo10."
   [collection]
   (let [{:keys [format-key concept-id data-format provider-id]} collection
-        original-metadata (umm-legacy/generate-metadata context collection format-key)
-        collection (umm-legacy/parse-concept context {:metadata original-metadata
-                                                      :concept-type (umm-legacy/item->concept-type collection)
-                                                      :format (cmr.common.mime-types/format->mime-type format-key)})
+        original-metadata (when (not= format-key :umm-json)
+                            (umm-legacy/generate-metadata context collection format-key))
+        collection (if (= format-key :umm-json)
+                     collection
+                     (umm-legacy/parse-concept context {:metadata original-metadata
+                                                        :concept-type (umm-legacy/item->concept-type collection)
+                                                        :format (cmr.common.mime-types/format->mime-type format-key)}))
         {:keys [short-name keywords projects related-urls summary entry-title organizations
                 access-value personnel]} collection
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
@@ -95,7 +102,6 @@
 
 (defn collections->expected-opendata
   [collections]
-  (def collections collections)
   {:status 200
    :results {:conformsTo odrh/OPENDATA_SCHEMA
              :dataset (map collection->expected-opendata collections)}})

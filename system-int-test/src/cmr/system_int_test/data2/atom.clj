@@ -259,10 +259,13 @@
   [collection]
   (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
          :keys [concept-id format-key]} collection
-        original-metadata (umm-legacy/generate-metadata context collection format-key)
-        collection (umm-legacy/parse-concept context {:metadata original-metadata
-                                                      :concept-type (umm-legacy/item->concept-type collection)
-                                                      :format (cmr.common.mime-types/format->mime-type format-key)})
+        original-metadata (when (not= format-key :umm-json)
+                            (umm-legacy/generate-metadata context collection format-key))
+        collection (if (= format-key :umm-json)
+                    collection
+                    (umm-legacy/parse-concept context {:metadata original-metadata
+                                                       :concept-type (umm-legacy/item->concept-type collection)
+                                                       :format (cmr.common.mime-types/format->mime-type format-key)}))
         {:keys [summary entry-title related-urls associated-difs organizations]} collection
         update-time (get-in collection [:data-provider-timestamps :update-time])
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])

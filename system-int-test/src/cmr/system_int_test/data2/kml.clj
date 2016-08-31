@@ -118,7 +118,6 @@
 
 (defn collections->expected-kml
   [collections]
-  (def collections collections)
   {:status 200
    :results (set (mapcat collection->expected-kml collections))})
 

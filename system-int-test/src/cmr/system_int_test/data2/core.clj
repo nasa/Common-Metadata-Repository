@@ -134,6 +134,8 @@
         original-format (:format-key item)
         ;; Remove test core added fields so they don't end up in the expected UMM JSON
         item (remove-ingest-associated-keys item)
+        ;; Translate to native format metadata and back to mimic ingest. Do not translate
+        ;; when umm-json since that will translate to echo10
         original-metadata (when (not= original-format :umm-json)
                            (umm-legacy/generate-metadata context item original-format))
         parsed-item (if (= original-format :umm-json)
@@ -149,17 +151,14 @@
        :collection-concept-id collection-concept-id
        :metadata (umm-legacy/generate-metadata context parsed-item format-key)})))
 
-(comment
- (def original-format (:format-key item))
- (def original-metadata (umm-legacy/generate-metadata context item original-format)))
-
-
 (defmethod item->metadata-result true
   [_ format-key item]
   (let [{:keys [concept-id revision-id collection-concept-id]} item
         original-format (:format-key item)
         ;; Remove test core added fields so they don't end up in the expected UMM JSON
         item (remove-ingest-associated-keys item)
+        ;; Translate to native format metadata and back to mimic ingest. Do not translate
+        ;; when umm-json since that will translate to echo10
         original-metadata (when (not= original-format :umm-json)
                             (umm-legacy/generate-metadata context item original-format))
         parsed-item (if (= original-format :umm-json)
