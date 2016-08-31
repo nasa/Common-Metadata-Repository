@@ -2,42 +2,36 @@
   "Implements index-queue functionality using Amazon SQS.
   Note: the terms 'exchange' and 'topic' are used interchangeably in
   comments here. Topics in SNS are (mostly) equivalent to exchanges in RabbitMQ."
-  (:gen-class)
-  (:require [cheshire.core :as json]
-            [clj-http.client :as client]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
-            [clojure.core.async :as a]
-            [clojure.string :as str]
-            [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
-            [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.services.health-helper :as hh]
-            [cmr.common.util :as u]
-            [cmr.message-queue.config :as config]
-            [cmr.message-queue.services.queue :as queue])
-  (:import com.amazonaws.auth.policy.actions.SQSActions
-           com.amazonaws.auth.policy.Condition
-           com.amazonaws.auth.policy.conditions.ConditionFactory
-           com.amazonaws.auth.policy.Policy
-           com.amazonaws.auth.policy.Principal
-           com.amazonaws.auth.policy.Statement
-           com.amazonaws.auth.policy.Statement$Effect
-           com.amazonaws.services.sqs.AmazonSQSClient
-           com.amazonaws.services.sns.AmazonSNSClient
-           com.amazonaws.services.sqs.model.CreateQueueRequest
-           com.amazonaws.services.sqs.model.GetQueueUrlResult
-           com.amazonaws.services.sqs.model.PurgeQueueRequest
-           com.amazonaws.services.sqs.model.ReceiveMessageRequest
-           com.amazonaws.services.sqs.model.SendMessageResult
-           com.amazonaws.services.sqs.model.SetQueueAttributesRequest
-           com.amazonaws.ClientConfiguration
-           java.util.ArrayList
-           java.util.HashMap
-           java.io.IOException))
+  (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clj-time.core :as t]
+   [clj-time.format :as f]
+   [clojure.core.async :as a]
+   [clojure.string :as str]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.services.health-helper :as hh]
+   [cmr.common.util :as u]
+   [cmr.message-queue.config :as config]
+   [cmr.message-queue.services.queue :as queue])
+  (:import
+   (com.amazonaws ClientConfiguration)
+   (com.amazonaws.auth.policy Condition Policy Principal Statement Statement$Effect)
+   (com.amazonaws.auth.policy.actions SQSActions)
+   (com.amazonaws.auth.policy.conditions ConditionFactory)
+   (com.amazonaws.services.sns AmazonSNSClient)
+   (com.amazonaws.services.sqs AmazonSQSClient)
+   (com.amazonaws.services.sqs.model CreateQueueRequest GetQueueUrlResult PurgeQueueRequest
+                                     ReceiveMessageRequest SendMessageResult
+                                     SetQueueAttributesRequest)
+   (java.io IOException)
+   (java.util ArrayList)
+   (java.util HashMap)))
 
 (defconfig queue-polling-timeout
  "Number of seconds SQS should wait before giving up on an attempt to read data from a queue."
@@ -61,11 +55,15 @@
   (str/replace arn #".*:" ""))
 
 (defn- normalize-queue-name
-  "Replace dots with underscores. This is needed because SQS only allows
-  alpha-numeric chars plus dashes and underscores in queue names, while
+  "Ensure all queues start with gsfc-eosdis-cmr since the permissions in NGAP specify that CMR
+  can only create queues with that prefix. Also replaces dots with underscores. This is needed
+  because SQS only allows alpha-numeric chars plus dashes and underscores in queue names, while
   CMR has dots (periods) in queue names."
   [queue-name]
-  (str/replace queue-name "." "_"))
+  (-> queue-name
+      (str/replace "." "_")
+      (str/replace "cmr_" "")
+      (str/replace #"^(gsfc-eosdis-cmr-)*" "gsfc-eosdis-cmr-")))
 
 (defn- -get-topic
   "Returns the Topic with the given display name."
@@ -128,7 +126,8 @@
  [sqs-client queue-name]
  (let [q-name (normalize-queue-name queue-name)
        dlq-name (dead-letter-queue q-name)
-       ;; Create thde dead-letter-queue first and get its url
+
+       ;; Create the dead-letter-queue first and get its url
        dlq-url (.getQueueUrl (.createQueue sqs-client dlq-name))
        dlq-arn (get-queue-arn sqs-client dlq-name)
        create-queue-request (CreateQueueRequest. q-name)
@@ -332,7 +331,15 @@
   (queue/get-queues-bound-to-exchange broker "cmr_ingest_exchange")
   ;; create a test queue
   (create-queue (:sqs-client broker) "cmr-test.queue")
+  ;; create a test exchange
+  (create-exchange (:sns-client broker) "cmr_test_exchange")
+  ;; list the queues for the cmr_test_exchange
+  (queue/get-queues-bound-to-exchange broker "cmr_test_exchange")
+  ;; Bind the queue to the new exchange
+  (bind-queue-to-exchanges (:sns-client broker) (:sqs-client broker) ["cmr_test_exchange"] "cmr-test.queue")
   ;; subscribe to test queue with a simple handler that prints received messages
   (queue/subscribe broker "cmr-test.queue" (fn [msg] (println "Got Message: " msg)))
   ;; publish a message to the queue to verify our subscribe worked
-  (queue/publish-to-queue broker "cmr-test.queue" "{\"body\": \"ABC\"}"))
+  (queue/publish-to-queue broker "cmr-test.queue" "{\"body\": \"ABC\"}")
+  ;; publish a message to the exchange to verify the message is sent to the queue
+  (queue/publish-to-exchange broker "cmr_test_exchange" "{\"body\": \"ABC-exchange\"}"))
