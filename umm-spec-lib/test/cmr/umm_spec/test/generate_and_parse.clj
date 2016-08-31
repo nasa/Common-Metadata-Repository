@@ -89,7 +89,6 @@
         check-failure (fn [result]
                         (when-not result (reset! failed-atom true)))]
     (doseq [metadata-format tested-collection-formats
-            :when (not (formats-to-skip metadata-format))
             example-file (example-files metadata-format)
             :when (not @failed-atom)
             :let [metadata (slurp example-file)
@@ -112,7 +111,6 @@
                    example-file metadata-format)))
 
       (doseq [target-format tested-collection-formats
-              :when (not (formats-to-skip target-format))
               :when (not @failed-atom)
               :let [expected (expected-conversion/convert umm target-format)
                     actual (xml-round-trip :collection target-format umm)
