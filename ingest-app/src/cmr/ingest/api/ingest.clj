@@ -18,6 +18,7 @@
   (:import clojure.lang.ExceptionInfo))
 
 (def VALIDATE_KEYWORDS_HEADER "cmr-validate-keywords")
+(def ENABLE_VALIDATION_RETURN_ERRORS "cmr-enable-validation-return-errors")
 
 (defn verify-provider-exists
   "Verifies the given provider exists."
@@ -184,11 +185,15 @@
   [provider-id native-id request]
   (let [{:keys [body content-type params headers request-context]} request
         concept (body->concept :collection provider-id native-id body content-type headers)
-        validate-keywords (= "true" (get headers VALIDATE_KEYWORDS_HEADER))]
+        validate-keywords (= "true" (get headers VALIDATE_KEYWORDS_HEADER))
+        enable-validation-return-errors (= "true" (get headers ENABLE_VALIDATION_RETURN_ERRORS))]
     (verify-provider-exists request-context provider-id)
     (info (format "Validating Collection %s from client %s"
                   (concept->loggable-string concept) (:client-id request-context)))
-    (ingest/validate-and-prepare-collection request-context concept validate-keywords)
+    (ingest/validate-and-prepare-collection request-context 
+                                            concept 
+                                            validate-keywords
+                                            enable-validation-return-errors)
     {:status 200}))
 
 (defn ingest-collection
@@ -197,13 +202,15 @@
     (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (let [concept (body->concept :collection provider-id native-id body content-type headers)
-          validate-keywords (= "true" (get headers VALIDATE_KEYWORDS_HEADER))]
+          validate-keywords (= "true" (get headers VALIDATE_KEYWORDS_HEADER))
+          enable-validation-return-errors (= "true" (get headers ENABLE_VALIDATION_RETURN_ERRORS))]
       (info (format "Ingesting collection %s from client %s"
                     (concept->loggable-string concept) (:client-id request-context)))
       (generate-ingest-response headers (ingest/save-collection
                                           request-context
                                           (set-user-id concept request-context headers)
-                                          validate-keywords)))))
+                                          validate-keywords
+                                          enable-validation-return-errors)))))
 
 (defn delete-collection
   [provider-id native-id request]
