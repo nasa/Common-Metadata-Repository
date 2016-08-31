@@ -70,6 +70,7 @@
                             :granule
                             (merge {:bounding-box
                                     (codec/url-encode (apply m/mbr wnes))
+                                    :provider "PROV1"
                                     :page-size 50} params))
                     matches? (d/refs-match? items found)]
                 (when-not matches?
@@ -98,6 +99,7 @@
                             :granule
                             (merge {:polygon
                                     (apply st/search-poly coords)
+                                    :provider "PROV1"
                                     :page-size 50} params))
                     matches? (d/refs-match? items found)]
                 (when-not matches?
@@ -173,6 +175,7 @@
                             :granule
                             (merge {:bounding-box
                                     (codec/url-encode (apply m/mbr wnes))
+                                    :provider "PROV1"
                                     :page-size 50} params))
                     matches? (d/refs-match? items found)]
                 (when-not matches?
@@ -194,6 +197,7 @@
     (testing "point searches"
       (are [items lon_lat params]
            (let [found (search/find-refs :granule {:point (codec/url-encode (apply p/point lon_lat))
+                                                   :provider "PROV1"
                                                    :page-size 50})
                  matches? (d/refs-match? items found)]
              (when-not matches?
@@ -211,6 +215,7 @@
            (let [found (search/find-refs
                          :granule
                          {:line (codec/url-encode (l/ords->line-string :geodetic coords))
+                          :provider "PROV1"
                           :page-size 50})
                  matches? (d/refs-match? items found)]
              (when-not matches?
@@ -232,6 +237,7 @@
                             :granule
                             (merge {:polygon
                                     (apply st/search-poly coords)
+                                    :provider "PROV1"
                                     :page-size 50} params))
                     matches? (d/refs-match? items found)]
                 (when-not matches?
@@ -278,6 +284,7 @@
                             :granule
                             (merge {:bounding-box
                                     (codec/url-encode (apply m/mbr wnes))
+                                    :provider "PROV1"
                                     :page-size 50} params))
                     matches? (d/refs-match? items found)]
                 (when-not matches?
