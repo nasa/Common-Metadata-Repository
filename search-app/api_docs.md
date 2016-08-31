@@ -1555,21 +1555,23 @@ For granule additional attributes search, the default is searching for the attri
 #### <a name="g-spatial"></a> Find granules by Spatial
 The parameters used for searching granules by spatial are the same as the spatial parameters used in collections searches. (See under "Find collections by Spatial" for more details.)
 
+*Note:* The CMR does not permit spatial queries across all granules in all collections in order to provide fast search responses. Spatial granule queries must target a subset of the collections in the CMR using a condition like provider, concept_id, short_name, or version.
+
 ##### <a name="g-polygon"></a> Polygon
 
-    curl "%CMR-ENDPOINT%/granules?polygon=10,10,30,10,30,20,10,20,10,10"
+    curl "%CMR-ENDPOINT%/granules?provider=PROV1&polygon=10,10,30,10,30,20,10,20,10,10"
 
 ##### <a name="g-bounding-box"></a> Bounding Box
 
-    curl "%CMR-ENDPOINT%/granules?bounding_box=-10,-5,10,5
+    curl "%CMR-ENDPOINT%/granules?provider=PROV1&bounding_box=-10,-5,10,5
 
 ##### <a name="g-point"></a> Point
 
-    curl "%CMR-ENDPOINT%/granules?point=100,20"
+    curl "%CMR-ENDPOINT%/granules?provider=PROV1&point=100,20"
 
 ##### <a name="g-line"></a> Line
 
-    curl "%CMR-ENDPOINT%/granules?line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
+    curl "%CMR-ENDPOINT%/granules?provider=PROV1&line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
 
 #### <a name="g-orbit-number"></a> Find granules by orbit number
 
