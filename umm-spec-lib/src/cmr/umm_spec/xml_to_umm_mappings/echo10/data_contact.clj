@@ -86,7 +86,7 @@
   "Parse ECHO10 Contact Persons to UMM"
   [contact apply-default?]
   (for [person (select contact "ContactPersons/ContactPerson")]
-    {:Roles (u/mapping-with-default echo10-job-position->umm-contact-person-role
+    {:Roles (u/map-with-default echo10-job-position->umm-contact-person-role
                                     [(value-of person "JobPosition")]
                                     default-contact-person-role
                                     apply-default?)
@@ -121,7 +121,7 @@
                                (empty? (value-of % "OrganizationName")))
                          all-contacts)]
     (for [contact contacts]
-      {:Roles (u/mapping-with-default echo10-contact-role->umm-data-center-role
+      {:Roles (u/map-with-default echo10-contact-role->umm-data-center-role
                                       [(value-of contact "Role")]
                                       default-data-center-role
                                       apply-default?)

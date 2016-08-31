@@ -26,4 +26,4 @@
                  </Contacts>
                 </Collection>"
            data-centers (contact/parse-data-centers xml false)]
-       (is (= [nil] (:Roles (first data-centers))))))))
+       (is (= [] (:Roles (first data-centers))))))))
