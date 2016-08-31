@@ -1,15 +1,17 @@
 (ns cmr.search.validators.validation
   "Defines protocols and functions to validate conditions"
-  (:require [cmr.search.models.query :as qm]
-            [cmr.common-app.services.search.query-validation :as cqv]
-            [cmr.common-app.services.search.query-model :as cqm]
-            [cmr.spatial.validation :as spatial-validation]
-            [cmr.search.validators.leading-wildcard-validation :as lwv]
-            [cmr.umm-spec.versioning :as umm-version]
-            [clojure.set]
-            [cmr.common.mime-types :as mt]
-            ;; Must be required to be available.
-            [cmr.spatial.ring-validations]))
+  (:require
+   [cmr.common-app.services.search.query-model :as cqm]
+   [cmr.common-app.services.search.query-validation :as cqv]
+   [cmr.common.mime-types :as mt]
+   [cmr.search.models.query :as qm]
+   [cmr.search.validators.all-granule-spatial-validation :as agsv]
+   [cmr.search.validators.leading-wildcard-validation :as lwv]
+   [cmr.spatial.validation :as spatial-validation]
+   [cmr.umm-spec.versioning :as umm-version])
+  ;; Must be required to be available.
+  (:require
+   cmr.spatial.ring-validations))
 
 (def umm-versioned-result-formats
   (for [format-key [:umm-json :umm-json-results]
@@ -64,7 +66,8 @@
 
 (defmethod cqv/query-validations :granule
   [_]
-  [lwv/limit-number-of-leading-wildcard-patterns])
+  [lwv/limit-number-of-leading-wildcard-patterns
+   agsv/no-all-granules-with-spatial])
 
 (extend-protocol cqv/Validator
   cmr.search.models.query.SpatialCondition
