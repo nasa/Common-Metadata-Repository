@@ -48,7 +48,7 @@
   [& ords]
   (codec/url-encode (umm-s/set-coordinate-system :geodetic (apply polygon ords))))
 
-;; Tests that invalid spatial areas are detected and error messages are returned.
+;; Tests search failure conditions
 (deftest spatial-search-validation-test
   (testing "All granules spatial"
     (testing "Success"
