@@ -61,6 +61,16 @@
       (go (>! channel {:provider-id provider-id
                        :start-index start-index})))))
 
+(defn index-data-later-than-date-time
+  "Bulk index all the concepts with a revision date later than the give date-time."
+  [context date-time synchronous start-index]
+  (if synchronous
+    (bulk/index-data-later-than-date-time (:system context) date-time start-index)
+    (let [channel (get-in context [:sytem :data-index-channel])]
+      (info "Adding date-time to data index channel.")
+      (go (>! channel {:date-time date-time
+                       :start-index start-index})))))
+
 (defn index-collection
   "Bulk index all the granules in a collection"
   ([context provider-id collection-id synchronous]

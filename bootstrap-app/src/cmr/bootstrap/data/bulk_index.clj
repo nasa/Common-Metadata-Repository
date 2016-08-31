@@ -113,6 +113,58 @@
             gran-count
             provider-id)))
 
+(defn index-data-later-than-date-time
+  "Index all concept revisions created later than the diven date-time."
+  [system date-time start-index]
+  (info "Indexing concepts.")
+  (let [db (helper/get-metadata-db-db system)
+        providers (p/get-providers db)
+        ;; helper function to get and index batches of concepts
+        index-fn (fn [provider concept-type]
+                   (let [provider-id (:provider-id provider)
+                         params {:concept-type concept-type
+                                 :provider-id provider-id
+                                 :revision-date date-time}
+                         concept-batches (db/find-concepts-in-batches
+                                           db provider params (:db-batch-size system))
+                         num-concepts (index/bulk-index {:system (helper/get-indexer system)}
+                                                        concept-batches
+                                                        {})]
+                     (info "Indexed" num-concepts (str (name concept-type) "(s) for provider") provider-id)
+                     num-concepts))]
+
+    (let [non-system-concept-count (reduce + (for [provider providers
+                                                   concept-type [:collection :granule :service]]
+                                               (index-fn provider concept-type)))
+          system-concept-count (reduce + (for [concept-type [:acl :access-group :tag :tag-association]]
+                                           (index-fn {:provider-id "CMR"} concept-type)))]
+      (info "Indexing concepts with revision-date later than" date-time "completed.")
+      (format "Indexed %d provider concepts and %d system concepts."
+              non-system-concept-count
+              system-concept-count))))
+
+
+    ;
+    ; ;; Index collections, granules, and services for all non-system providers.
+    ; (doseq [provider providers
+    ;         concept-type [:collection :granule :service]
+    ;         :let [provider-id (:provider-id provider)
+    ;               params {:concept-type concept-type
+    ;                       :provider-id provider-id
+    ;                       :revision-date date-time}
+    ;               concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system))
+    ;               num-concepts (index/bulk-index {:system (helper/get-indexer system)} concept-batches {})]]
+    ;   (info "Indexed" num-concepts (str (name concept-type) "(s)") "for provider" provider-id))
+    ; ;; Index all tags, tag-associations, groups, and acls.
+    ; (doseq [concept-type [:acl :access-group :tag :tag-association]
+    ;         :let [params {:concept-type concept-type
+    ;                       :provider-id "CMR"
+    ;                       :revision-date date-time}
+    ;               concept-batches (db/find-concepts-in-batches
+    ;                                 db {:provider-id "CMR"} params (:db-batch-size system))
+    ;               num-concepts (index/bulk-index {:system (helper/get-indexer system)} concept-batches {})]]
+    ;   (info "Indexed" num-concepts (str (name concept-type) "(s)")))))
+
 ;; Background task to handle provider bulk index requests
 (defn handle-bulk-index-requests
   "Handle any requests for indexing providers."
