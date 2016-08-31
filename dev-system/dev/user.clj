@@ -1,22 +1,23 @@
 (ns user
-  (:require [cmr.common.dev.capture-reveal]
-            [clojure.main]
-            [debugger.core]
-            [proto-repl.saved-values] ;; For Proto REPL lib capabilities
-            [clojure.pprint :refer (pprint pp)]
-            [clojure.tools.namespace.repl :refer (refresh refresh-all)]
-            [cmr.dev-system.system :as system]
-            [cmr.dev-system.tests :as tests]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.dev.util :as d]
-            [cmr.common.util :as u]
-            [cmr.system-int-test.system :as sit-sys]
-            [cmr.common.jobs :as jobs]
-            [cmr.common.config :as config]
-            [refresh-persistent-settings :as settings])
-  (:use [clojure.test :only [run-all-tests]]
-        [clojure.repl]
-        [alex-and-georges.debug-repl]))
+  (:require
+   [alex-and-georges.debug-repl]
+   [clojure.main]
+   [clojure.pprint :refer [pp pprint]]
+   [clojure.repl]
+   [clojure.test :only [run-all-tests]]
+   [clojure.tools.namespace.repl :refer [refresh refresh-all]]
+   [cmr.common.config :as config]
+   [cmr.common.dev.capture-reveal]
+   [cmr.common.dev.util :as d]
+   [cmr.common.jobs :as jobs]
+   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common.util :as u]
+   [cmr.dev-system.system :as system]
+   [cmr.dev-system.tests :as tests]
+   [cmr.system-int-test.system :as sit-sys]
+   [debugger.core]
+   [proto-repl.saved-values] ;; For Proto REPL lib capabilities
+   [refresh-persistent-settings :as settings]))
 
 (defonce system nil)
 

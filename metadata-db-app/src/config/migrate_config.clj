@@ -46,5 +46,4 @@
    :init maybe-create-schema-table
    :finished shutdown-agents
    :current-version current-db-version
-   :update-version update-db-version })
-
+   :update-version update-db-version})
