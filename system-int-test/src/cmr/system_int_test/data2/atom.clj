@@ -1,27 +1,32 @@
 (ns cmr.system-int-test.data2.atom
   "Contains helper functions for converting granules into the expected map of parsed atom results."
-  (:require [cmr.common.concepts :as cu]
-            [cmr.umm.related-url-helper :as ru]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.line-string :as l]
-            [cmr.spatial.mbr :as m]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [clojure.data.xml :as x]
-            [cmr.system-int-test.utils.fast-xml :as fx]
-            [cmr.common.xml :as cx]
-            [clojure.string :as str]
-            [cheshire.core :as json]
-            [clj-time.format :as f]
-            [camel-snake-kebab.core :as csk]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.umm.echo10.spatial :as echo-s]
-            [cmr.umm.start-end-date :as sed]
-            [cmr.umm.collection.entry-id :as eid]
-            [cmr.common.util :as util]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.facets :as facets]
-            [cmr.search.results-handlers.atom-results-handler :as atom-results-handler]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [cheshire.core :as json]
+   [clj-time.format :as f]
+   [clojure.data.xml :as x]
+   [clojure.string :as str]
+   [cmr.common.concepts :as cu]
+   [cmr.common.util :as util]
+   [cmr.common.xml :as cx]
+   [cmr.search.results-handlers.atom-results-handler :as atom-results-handler]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.polygon :as poly]
+   [cmr.system-int-test.data2.facets :as facets]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.utils.fast-xml :as fx]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.umm-spec.legacy :as umm-legacy]
+   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm.collection.entry-id :as eid]
+   [cmr.umm.echo10.spatial :as echo-s]
+   [cmr.umm.related-url-helper :as ru]
+   [cmr.umm.start-end-date :as sed]
+   [cmr.umm.umm-spatial :as umm-s]))
+
+(def context (lkt/setup-context-for-test lkt/sample-keyword-map))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parsing the ATOM results
@@ -248,11 +253,17 @@
     (concat related-urls (map #(assoc % :inherited "true") non-browse-coll-links))))
 
 (defn collection->expected-atom
-  "Returns the atom map of the collection"
+  "Returns the atom map of the collection. Convert collection to native format metadata and back
+  to accurately mimic what ingest does. Do not do the conversion if already umm-json since
+  that will do a conversion to echo10"
   [collection]
   (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
-         :keys [concept-id summary entry-title format-key
-                related-urls associated-difs organizations]} collection
+         :keys [concept-id format-key]} collection
+        original-metadata (umm-legacy/generate-metadata context collection format-key)
+        collection (umm-legacy/parse-concept context {:metadata original-metadata
+                                                      :concept-type (umm-legacy/item->concept-type collection)
+                                                      :format (cmr.common.mime-types/format->mime-type format-key)})
+        {:keys [summary entry-title related-urls associated-difs organizations]} collection
         update-time (get-in collection [:data-provider-timestamps :update-time])
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         coordinate-system (when spatial-representation
@@ -267,7 +278,9 @@
                     (get-in collection [:spatial-coverage :geometries]))
         version-id (or version-id eid/DEFAULT_VERSION)
         entry-id (eid/entry-id short-name version-id)
-        associated-difs (if (#{:dif :dif10} format-key) [entry-id] associated-difs)]
+        associated-difs (if (#{:dif :dif10} format-key) [entry-id] associated-difs)
+        ;; Remove duplicate archive/distribution center from an echo10 conversion - only need one
+        organizations (remove #(and (= archive-center (:org-name %)) (= :distribution-center (:type %))) organizations)]
     (util/remove-nil-keys
       {:id concept-id
        :title entry-title

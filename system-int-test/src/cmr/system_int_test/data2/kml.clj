@@ -118,6 +118,7 @@
 
 (defn collections->expected-kml
   [collections]
+  (def collections collections)
   {:status 200
    :results (set (mapcat collection->expected-kml collections))})
 
@@ -159,5 +160,3 @@
   (some-> (cx/element-at-path p [:MultiGeometry]))
 
   (-> p :content))
-
-

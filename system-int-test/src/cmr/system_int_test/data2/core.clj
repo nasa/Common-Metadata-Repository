@@ -1,21 +1,22 @@
 (ns cmr.system-int-test.data2.core
   "Contains helper functions for data generation and ingest for example based testing in system
   integration tests."
-  (:require [clojure.test :refer [is]]
-            [clojure.java.io :as io]
-            [cmr.umm.umm-core :as umm]
-            [cmr.umm-spec.umm-spec-core :as umm-spec]
-            [cmr.umm-spec.legacy :as umm-legacy]
-            [cmr.common.mime-types :as mime-types]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.common.util :as util]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
-            [cheshire.core :as json]
-            [cmr.system-int-test.system :as s]
-            [clojure.string :as str]
-            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
+  (:require
+   [cheshire.core :as json]
+   [clj-time.core :as t]
+   [clj-time.format :as f]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [clojure.test :refer [is]]
+   [cmr.common.mime-types :as mime-types]
+   [cmr.common.util :as util]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.umm-spec.legacy :as umm-legacy]
+   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm.umm-core :as umm]))
 
 (defn- item->native-id
   "Returns the native id of a UMM record."
@@ -130,30 +131,52 @@
 (defmethod item->metadata-result false
   [_ format-key item]
   (let [{:keys [concept-id revision-id collection-concept-id]} item
+        original-format (:format-key item)
         ;; Remove test core added fields so they don't end up in the expected UMM JSON
-        item (remove-ingest-associated-keys item)]
+        item (remove-ingest-associated-keys item)
+        original-metadata (when (not= original-format :umm-json)
+                           (umm-legacy/generate-metadata context item original-format))
+        parsed-item (if (= original-format :umm-json)
+                     item
+                     (umm-legacy/parse-concept context {:metadata original-metadata
+                                                        :concept-type (umm-legacy/item->concept-type item)
+                                                        :format (cmr.common.mime-types/format->mime-type original-format)}))]
+    (def parsed-item parsed-item)
     (util/remove-nil-keys
-      {:concept-id concept-id
-       :revision-id revision-id
+      {:revision-id revision-id
+       :concept-id concept-id
        :format format-key
        :collection-concept-id collection-concept-id
-       :metadata (umm-legacy/generate-metadata context item format-key)})))
+       :metadata (umm-legacy/generate-metadata context parsed-item format-key)})))
+
+(comment
+ (def original-format (:format-key item))
+ (def original-metadata (umm-legacy/generate-metadata context item original-format)))
+
 
 (defmethod item->metadata-result true
   [_ format-key item]
   (let [{:keys [concept-id revision-id collection-concept-id]} item
+        original-format (:format-key item)
         ;; Remove test core added fields so they don't end up in the expected UMM JSON
-        item (remove-ingest-associated-keys item)]
+        item (remove-ingest-associated-keys item)
+        original-metadata (when (not= original-format :umm-json)
+                            (umm-legacy/generate-metadata context item original-format))
+        parsed-item (if (= original-format :umm-json)
+                      item
+                      (umm-legacy/parse-concept context {:metadata original-metadata
+                                                         :concept-type (umm-legacy/item->concept-type item)
+                                                         :format (cmr.common.mime-types/format->mime-type original-format)}))]
     (if collection-concept-id
       (util/remove-nil-keys
-        {:echo_granule_id concept-id
-         :echo_dataset_id collection-concept-id
-         :format format-key
-         :metadata (umm-legacy/generate-metadata context item format-key)})
+       {:echo_granule_id concept-id
+        :echo_dataset_id collection-concept-id
+        :format format-key
+        :metadata (umm-legacy/generate-metadata context parsed-item format-key)})
       (util/remove-nil-keys
-        {:echo_dataset_id concept-id
-         :format format-key
-         :metadata (umm-legacy/generate-metadata context item format-key)}))))
+       {:echo_dataset_id concept-id
+        :format format-key
+        :metadata (umm-legacy/generate-metadata context parsed-item format-key)}))))
 
 (defn- items-match?
   "Returns true if the search result items match the expected items. The argument echo-compatible?

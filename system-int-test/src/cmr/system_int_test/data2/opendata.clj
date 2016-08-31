@@ -19,9 +19,13 @@
             [cmr.indexer.data.concepts.collection :as c]
             [cmr.umm.related-url-helper :as ru]
             [cmr.umm.start-end-date :as sed]
-            [clojure.test :refer [is]])
+            [clojure.test :refer [is]]
+            [cmr.umm-spec.legacy :as umm-legacy]
+            [cmr.umm-spec.test.location-keywords-helper :as lkt])
   (:import cmr.umm.umm_collection.UmmCollection
            cmr.spatial.mbr.Mbr))
+
+(def context (lkt/setup-context-for-test lkt/sample-keyword-map))
 
 (defn parse-opendata-result
   "Returns the opendata result from a json string"
@@ -46,8 +50,13 @@
 
 (defn collection->expected-opendata
   [collection]
-  (let [{:keys [short-name keywords projects summary entry-title organizations
-                access-value concept-id related-urls personnel data-format provider-id]} collection
+  (let [{:keys [format-key concept-id data-format provider-id]} collection
+        original-metadata (umm-legacy/generate-metadata context collection format-key)
+        collection (umm-legacy/parse-concept context {:metadata original-metadata
+                                                      :concept-type (umm-legacy/item->concept-type collection)
+                                                      :format (cmr.common.mime-types/format->mime-type format-key)})
+        {:keys [short-name keywords projects related-urls summary entry-title organizations
+                access-value personnel]} collection
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         update-time (get-in collection [:data-provider-timestamps :update-time])
         insert-time (get-in collection [:data-provider-timestamps :insert-time])
@@ -86,6 +95,7 @@
 
 (defn collections->expected-opendata
   [collections]
+  (def collections collections)
   {:status 200
    :results {:conformsTo odrh/OPENDATA_SCHEMA
              :dataset (map collection->expected-opendata collections)}})
