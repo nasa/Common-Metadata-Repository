@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url
   "Functions for parsing UMM related-url records out of ISO 19115-2 XML documents."
   (:require [cmr.umm-spec.util :as su]
+            [clojure.string :as str]
             [cmr.common.xml.parse :refer :all]
             [cmr.common.xml.simple-xpath :refer [select]]
             [cmr.umm-spec.iso19115-2-util :refer :all]
@@ -29,12 +30,14 @@
 
 (defn parse-distributions
   "Returns the distributions parsed from the given xml document."
-  [doc]
+  [doc apply-default?]
   (for [distributor-element (select doc distributor-xpath)]
     {:DistributionMedia (value-of distributor-element distributor-media-xpath)
-     :Sizes (for [transfer-el (select distributor-element distributor-transfer-options-xpath)]
-              {:Size (value-of transfer-el "gmd:transferSize/gco:Real")
-               :Unit (value-of transfer-el "gmd:unitsOfDistribution/gco:CharacterString")})
+     :Sizes (for [transfer-el (select distributor-element distributor-transfer-options-xpath)
+                  :let [size (value-of transfer-el "gmd:transferSize/gco:Real")]]
+              {:Size size
+               :Unit (or (value-of transfer-el "gmd:unitsOfDistribution/gco:CharacterString")
+                         (when (and apply-default? size) "MB"))})
      :DistributionFormat (value-of distributor-element distributor-format-xpath)
      :Fees (value-of distributor-element distributor-fees-xpath)}))
 
@@ -52,16 +55,21 @@
               code (value-of url "gmd:function/gmd:CI_OnlineFunctionCode")
               type (if (= "download" code)
                      "GET DATA"
-                     (when name (resource-name->types name)))]]
-    {:URLs [(value-of url "gmd:linkage/gmd:URL")]
+                     (when name (resource-name->types name)))
+              url-link (value-of url "gmd:linkage/gmd:URL")]]
+    {:URLs (when url-link [(str/trim url-link)])
      :Description (char-string-value url "gmd:description")
      :Relation (when type [type])}))
 
 (defn- parse-browse-graphics
   "Parse browse graphic urls"
   [doc]
-  (for [url (select doc browse-graphic-xpath)]
-    {:URLs [(value-of url "gmd:fileName/gmx:FileName/@src")]
+  (for [url (select doc browse-graphic-xpath)
+        ;; We retrieve browse url from two different places. This might change depending on the
+        ;; outcome of ECSE-129.
+        :let [browse-url (or (value-of url "gmd:fileName/gmx:FileName/@src")
+                             (value-of url "gmd:fileName/gco:CharacterString"))]]
+    {:URLs (when browse-url [(str/trim browse-url)])
      :Description (char-string-value url "gmd:fileDescription")
      :Relation (when-let [rel (resource-name->types (char-string-value url "gmd:fileType"))]
                  [rel])}))

@@ -676,3 +676,31 @@
   (is (true? (util/xor true false)))
   (is (true? (util/xor nil nil 1 nil)))
   (is (true? (util/xor false true false))))
+
+(deftest doall-recursive-test
+  (let [marker1 (atom false)
+        marker2 (atom false)
+        marker3 (atom false)
+        ;; Takes an atom and returns a function that when called will set the marker to true.
+        mark-realized (fn [marker]
+                        (fn [v]
+                          (reset! marker true)
+                          v))
+        ;; The map calls here are all lazy. The recursive doall should force them all to evaluate
+        ;; and trigger all of our atoms to be set to true
+        v (map
+           (mark-realized marker1)
+           [1
+            ;; The contents of the map would not be realized by a regular doall.
+            {:a (map (mark-realized marker2) [1 2])
+             :b {:foo [(map (mark-realized marker3) [1 2 3])]}}
+            3])]
+    (is (not @marker1))
+    (is (not @marker2))
+    (is (not @marker3))
+    (let [result (util/doall-recursive v)]
+      (is @marker1)
+      (is @marker2)
+      (is @marker3)
+      (is (= [1 {:a [1 2] :b {:foo [[1 2 3]]}} 3]
+             result)))))

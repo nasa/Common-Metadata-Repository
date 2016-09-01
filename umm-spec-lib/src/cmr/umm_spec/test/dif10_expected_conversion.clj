@@ -5,12 +5,14 @@
            [cmr.umm-spec.util :as su]
            [cmr.umm-spec.json-schema :as js]
            [cmr.common.util :as util :refer [update-in-each]]
-           [cmr.umm-spec.models.common :as cmn]
+           [clojure.string :as str]
+           [cmr.umm-spec.date-util :as date]
+           [cmr.umm-spec.models.umm-common-models :as cmn]
            [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
            [cmr.umm-spec.related-url :as ru-gen]
            [cmr.umm-spec.location-keywords :as lk]
            [cmr.umm-spec.test.location-keywords-helper :as lkt]
-           [cmr.umm-spec.models.collection :as umm-c]
+           [cmr.umm-spec.models.umm-collection-models :as umm-c]
            [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
            [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]))
 
@@ -31,12 +33,35 @@
   ;; Only a limited subset of platform types are supported by DIF 10.
   (assoc platform :Type (get dif10/platform-types (:Type platform))))
 
+(defn- dif10-get-processing-level-id
+  "When processing-level-id is nil, or when after stripping off the Level part of it,
+   it's still not part of the dif10/product-levels, return su/not-provided. Otherwise
+   return the part of the processing-level-id with Level removed."
+  [processing-level-id]
+  (if (nil? processing-level-id)
+    su/not-provided
+    (let [id-without-level (str/replace processing-level-id #"Level " "")]
+      (get dif10/product-levels id-without-level su/not-provided))))
+
 (defn- dif10-processing-level
   [processing-level]
   (-> processing-level
       (assoc :ProcessingLevelDescription nil)
-      (assoc :Id (get dif10/product-levels (:Id processing-level)))
+      ;; CMR 3253 It needs to strip off the "Level " part of the Id first because
+      ;; UMM-to-DIF10 strips off the "Level " part. After that
+      ;; if still not part of the product-levels, use "Not provided" because otherwise
+      ;; the ProcessingLevel will be nil,making the umm invalid, which can't be used to match.
+      (assoc :Id (dif10-get-processing-level-id (:Id processing-level)))
       su/convert-empty-record-to-nil))
+
+(defn- dif10-collection-progress
+  "converts collection progress values to values supported for DIF10 Dataset_Progress."
+  [collection-progress-value]
+  (when-let [c-progress (when-let [coll-progress collection-progress-value]
+                          (str/upper-case coll-progress))]
+    (if (dif10/dif10-dataset-progress-values c-progress)
+      c-progress
+      (get dif10/collection-progress->dif10-dataset-progress c-progress "IN WORK"))))
 
 (defn- dif10-project
   [proj]
@@ -194,6 +219,15 @@
       (assoc :ValueAccuracyExplanation nil)
       (assoc :Description (su/with-default (:Description attribute)))))
 
+(defn- expected-metadata-dates
+  "When converting, the creation date and last revision date will be persisted. Both dates are
+  required in DIF10, so use a default date if not present."
+  [umm-coll]
+  [(conversion-util/create-date-type
+    (date/with-default-date (date/metadata-create-date umm-coll)) "CREATE")
+   (conversion-util/create-date-type
+    (date/with-default-date (date/metadata-update-date umm-coll)) "UPDATE")])
+
 (defn umm-expected-conversion-dif10
   [umm-coll]
   (-> umm-coll
@@ -208,13 +242,16 @@
       (update-in-each [:Platforms] dif10-platform)
       (update-in-each [:AdditionalAttributes] expected-dif10-additional-attribute)
       (update-in [:ProcessingLevel] dif10-processing-level)
+      ;; CMR 3253 DIF10 maps CollectionProgress values to DIF10 supported values.
+      ;; So the umm-dif10-expected needs to be modified.
+      (update-in [:CollectionProgress] dif10-collection-progress)
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] conversion-util/prune-empty-maps)
       (update-in-each [:PublicationReferences] conversion-util/dif-publication-reference)
       (update-in [:RelatedUrls] conversion-util/expected-related-urls-for-dif-serf)
-      (update :DataLanguage su/capitalize-words)
       ;; DIF 10 required element
       (update-in [:Abstract] #(or % su/not-provided))
       ;; CMR-2716 SpatialKeywords are replaced by LocationKeywords
       (assoc :SpatialKeywords nil)
+      (assoc :MetadataDates (expected-metadata-dates umm-coll))
       js/parse-umm-c))

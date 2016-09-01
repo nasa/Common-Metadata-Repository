@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10
   "Defines mappings from a UMM record into ECHO10 XML"
-  (:require [cmr.common.xml.gen :refer :all]
+  (:require [clj-time.format :as f]
+            [cmr.common.xml.gen :refer :all]
             [cmr.umm-spec.related-url :as ru]
             [cmr.umm-spec.util :refer [with-default]]
             [cmr.umm-spec.util :as spec-util]
@@ -8,7 +9,8 @@
             [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as spatial]
             [cmr.common.util :as util]
             [cmr.umm-spec.location-keywords :as lk]
-            [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]))
+            [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]
+            [cmr.umm-spec.date-util :as date]))
 
 (defn characteristic-mapping
   [data]
@@ -119,8 +121,8 @@
     [:Collection
      [:ShortName (:ShortName c)]
      [:VersionId (:Version c)]
-     [:InsertTime (dates/or-default (dates/data-create-date c))]
-     [:LastUpdate (dates/or-default (dates/data-update-date c))]
+     [:InsertTime (dates/with-default (dates/data-create-date c))]
+     [:LastUpdate (dates/with-default (dates/data-update-date c))]
      [:DeleteTime (dates/data-delete-date c)]
      [:LongName "dummy-long-name"]
      [:DataSetId (:EntryTitle c)]
@@ -130,6 +132,8 @@
      [:CollectionDataType (:CollectionDataType c)]
      [:Orderable "true"]
      [:Visible "true"]
+     (when-let [revision-date (date/metadata-update-date c)]
+       [:RevisionDate (f/unparse (f/formatters :date-time) revision-date)])
      [:SuggestedUsage (util/trunc (:Purpose c) 4000)]
      (dc/generate-processing-centers c)
      [:ProcessingLevelId (-> c :ProcessingLevel :Id)]

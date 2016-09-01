@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.test.validation.umm-spec-validation-test-helpers
   (:require [clojure.test :refer :all]
             [cmr.common.date-time-parser :as dtp]
-            [cmr.umm-spec.models.common :as c]
-            [cmr.umm-spec.models.collection :as coll]
+            [cmr.umm-spec.models.umm-common-models :as c]
+            [cmr.umm-spec.models.umm-collection-models :as coll]
             [cmr.common.services.errors :as e]
             [cmr.umm-spec.validation.umm-spec-validation-core :as v]))
 

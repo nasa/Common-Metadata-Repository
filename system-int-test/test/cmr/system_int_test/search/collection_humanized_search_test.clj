@@ -9,80 +9,78 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
             [cmr.umm-spec.test.location-keywords-helper :as lkt]
-            [cmr.search.services.humanizers-service :as hs]))
+            [cmr.search.services.humanizers.humanizer-report-service :as hrs]
+            [cmr.system-int-test.utils.humanizer-util :as hu]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
-
-;; Note: These specs rely on data in the indexer's humanizers.json config
-;;       file. Once humanizers can be set by the ingest service, these
-;;       should be updated to ingest the humanizers they use.
-
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1"})
+                       hu/grant-all-humanizers-fixture
+                       hu/save-sample-humanizers-fixture]))
 
 ;; Trying out the humanizers report
 ;; 1. Run a test
 ;; 2. Refresh the metadata cache.
 (comment
- (cmr.search.data.metadata-retrieval.metadata-cache/refresh-cache
-  {:system (get-in user/system [:apps :search])}))
+  (cmr.search.data.metadata-retrieval.metadata-cache/refresh-cache
+    {:system (get-in user/system [:apps :search])}))
 ;;3. Retrieve the reporting
 ;;  curl http://localhost:3003/humanizers/report
 
 (deftest humanizer-report
   (d/ingest "PROV1" (dc/collection
-                     {:product {:short-name "A"
-                                :long-name "A"
-                                :version-id "V1"}
-                      :platforms [(dc/platform {:short-name "TERRA"
-                                                :instruments
-                                                [(dc/instrument {:short-name "GPS RECEIVERS"})]})]}))
+                      {:product {:short-name "A"
+                                 :long-name "A"
+                                 :version-id "V1"}
+                       :platforms [(dc/platform {:short-name "TERRA"
+                                                 :instruments
+                                                 [(dc/instrument {:short-name "GPS RECEIVERS"})]})]}))
   (d/ingest "PROV1" (dc/collection
-                     {:product {:short-name "B"
-                                :long-name "B"
-                                :version-id "V2"}
-                      :platforms [(dc/platform {:short-name "AM-1"})]}))
+                      {:product {:short-name "B"
+                                 :long-name "B"
+                                 :version-id "V2"}
+                       :platforms [(dc/platform {:short-name "AM-1"})]}))
   (d/ingest "PROV1" (dc/collection
-                     {:product {:short-name "C"
-                                :long-name "C"
-                                :version-id "V3"}
-                      :projects (dc/projects "USGS_SOFIA")
-                      :science-keywords [{:category "Bioosphere"
-                                          :topic "Topic1"
-                                          :term "Term1"}
-                                         {:category "Bio sphere"
-                                          :topic "Topic2"
-                                          :term "Term2"}]}))
+                      {:product {:short-name "C"
+                                 :long-name "C"
+                                 :version-id "V3"}
+                       :projects (dc/projects "USGS_SOFIA")
+                       :science-keywords [{:category "Bioosphere"
+                                           :topic "Topic1"
+                                           :term "Term1"}
+                                          {:category "Bio sphere"
+                                           :topic "Topic2"
+                                           :term "Term2"}]}))
 
   (index/wait-until-indexed)
   ;; Refresh the metadata cache
   (search/refresh-collection-metadata-cache)
   (testing "Humanizer report csv"
-   (let [report (search/get-humanizers-report)]
-     (is (= (str/split report #"\n")
-            ["provider,concept_id,short_name,version,original_value,humanized_value"
-             "PROV1,C1200000000-PROV1,A,V1,GPS RECEIVERS,GPS Receivers"
-             "PROV1,C1200000001-PROV1,B,V2,AM-1,Terra"
-             "PROV1,C1200000002-PROV1,C,V3,Bioosphere,Biosphere"
-             "PROV1,C1200000002-PROV1,C,V3,USGS_SOFIA,USGS SOFIA"])))))
+    (let [report (search/get-humanizers-report)]
+      (is (= (str/split report #"\n")
+             ["provider,concept_id,short_name,version,original_value,humanized_value"
+              "PROV1,C1200000001-PROV1,A,V1,GPS RECEIVERS,GPS Receivers"
+              "PROV1,C1200000002-PROV1,B,V2,AM-1,Terra"
+              "PROV1,C1200000003-PROV1,C,V3,Bioosphere,Biosphere"
+              "PROV1,C1200000003-PROV1,C,V3,USGS_SOFIA,USGS SOFIA"])))))
 
 (deftest humanizer-report-batch
-  (side/eval-form `(hs/set-humanizer-report-collection-batch-size! 10))
+  (side/eval-form `(hrs/set-humanizer-report-collection-batch-size! 10))
   ;; Insert more entries than the batch size to test batches
-  (doseq [n (range (inc (hs/humanizer-report-collection-batch-size)))]
+  (doseq [n (range (inc (hrs/humanizer-report-collection-batch-size)))]
     (d/ingest "PROV1" (dc/collection
-                       {:product {:short-name "B"
-                                  :long-name "B"
-                                  :version-id n}
-                        :platforms [(dc/platform {:short-name "AM-1"})]})))
+                        {:product {:short-name "B"
+                                   :long-name "B"
+                                   :version-id n}
+                         :platforms [(dc/platform {:short-name "AM-1"})]})))
   (index/wait-until-indexed)
   ;; Refresh the metadata cache
   (search/refresh-collection-metadata-cache)
   (testing "Humanizer report batches"
     (let [report-lines (str/split (search/get-humanizers-report) #"\n")]
-      (is (= (count report-lines) (+ 2 (hs/humanizer-report-collection-batch-size))))
+      (is (= (count report-lines) (+ 2 (hrs/humanizer-report-collection-batch-size))))
       (for [actual-line (rest report-lines)
-            n (inc hs/humanizer-report-collection-batch-size)]
+            n (inc hrs/humanizer-report-collection-batch-size)]
         (is (= actual-line) (str "PROV1,C1200000001-PROV1,B,"n",AM-1,Terra"))))))
-
 
 (deftest search-by-platform-humanized
   (let [coll1 (d/ingest "PROV1" (dc/collection {:platforms [(dc/platform {:short-name "TERRA"})]}))
@@ -91,6 +89,12 @@
     (index/wait-until-indexed)
     (testing "search collections by humanized platform"
       (is (d/refs-match? [coll1 coll2]
+                         (search/find-refs :collection {:platform-h "Terra"}))))
+    (testing "After humanizer is updated, collection search reflect the updates"
+      (hu/save-humanizers
+        [{:type "capitalize", :field "platform", :source_value "TERRA", :order 0}])
+      (index/wait-until-indexed)
+      (is (d/refs-match? [coll1]
                          (search/find-refs :collection {:platform-h "Terra"}))))))
 
 (deftest search-by-instrument-humanized
@@ -162,13 +166,13 @@
     (testing "search collections by humanized science keyword"
       (is (d/refs-match? [coll1 coll3]
                          (search/find-refs
-                          :collection
-                          {:science-keywords-h {:0 {:category "biosphere"}}})))
+                           :collection
+                           {:science-keywords-h {:0 {:category "biosphere"}}})))
       (is (d/refs-match? [coll2 coll4]
                          (search/find-refs
-                          :collection
-                          {:science-keywords-h {:0 {:topic "biosphere"}}})))
+                           :collection
+                           {:science-keywords-h {:0 {:topic "biosphere"}}})))
       (is (d/refs-match? [coll1 coll2 coll3 coll4]
                          (search/find-refs
-                          :collection
-                          {:science-keywords-h {:0 {:any "biosphere"}}}))))))
+                           :collection
+                           {:science-keywords-h {:0 {:any "biosphere"}}}))))))

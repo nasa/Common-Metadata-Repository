@@ -9,7 +9,7 @@
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.json-schema :as js]
             ;; Required for loading service models for testing
-            [cmr.umm-spec.models.service]
+            [cmr.umm-spec.models.umm-service-models]
             [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
             [cmr.umm-spec.test.echo10-expected-conversion :as echo10]
             [cmr.umm-spec.test.dif9-expected-conversion :as dif9]
@@ -17,7 +17,7 @@
             [cmr.umm-spec.test.serf-expected-conversion :as serf]
             [cmr.umm-spec.test.iso19115-expected-conversion :as iso19115]
             [cmr.umm-spec.test.iso-smap-expected-conversion :as iso-smap]
-            [cmr.umm-spec.models.common :as cmn]
+            [cmr.umm-spec.models.umm-common-models :as cmn]
             [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]))
 
 (def example-collection-record
@@ -104,7 +104,7 @@
     :DataDates [{:Date (t/date-time 2012)
                  :Type "CREATE"}]
     :Abstract "A very abstract collection"
-    :DataLanguage "English"
+    :DataLanguage "eng"
     :CollectionDataType "SCIENCE_QUALITY"
     :Projects [{:ShortName "project short_name"}]
     :Quality "Pretty good quality"
@@ -155,6 +155,10 @@
                             :Version nil}
                            {:Type "INPUT"
                             :EntryId "AssocEntryId4"}]
+    :MetadataDates [{:Date "2009-12-03T00:00:00.000Z"
+                     :Type "CREATE"},
+                    {:Date "2009-12-04T00:00:00.000Z"
+                     :Type "UPDATE"}]
     :AdditionalAttributes [{:Group "Accuracy"
                             :Name "PercentGroundHit"
                             :DataType "FLOAT"
@@ -283,7 +287,10 @@
                                                                       :StateProvince "MD"
                                                                       :PostalCode "20774"
                                                                       :Country "U.S.A."}]}
-                                    :GroupName "NSIDC_IceBridge"}]}]}))
+                                    :GroupName "NSIDC_IceBridge"}]}
+                  {:Roles ["PROCESSOR"]
+                   :ShortName "Processing Center"
+                   :LongName "processor.processor"}]}))
 
 (def example-service-record
   "An example record with fields supported by most formats."
@@ -432,7 +439,7 @@
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:CollectionCitations :MetadataDates :MetadataLanguage
+  #{:CollectionCitations :MetadataLanguage
     :DirectoryNames :SpatialInformation})
 
 (defn- dissoc-not-implemented-fields

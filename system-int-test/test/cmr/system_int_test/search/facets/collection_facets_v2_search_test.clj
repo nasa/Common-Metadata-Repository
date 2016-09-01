@@ -9,9 +9,13 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.search.services.query-execution.facets.facets-v2-results-feature :as frf2]
             [cmr.common.mime-types :as mt]
-            [cmr.common.util :refer [are3]]))
+            [cmr.common.util :refer [are3]]
+            [cmr.system-int-test.utils.humanizer-util :as hu]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1"})
+                       hu/grant-all-humanizers-fixture
+                       hu/save-sample-humanizers-fixture]))
 
 (def sk1 (dc/science-keyword {:category "Earth science"
                               :topic "Topic1"

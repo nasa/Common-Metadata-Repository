@@ -6,7 +6,7 @@
 (def non-additional-attributes
   "Set of extended metadata names which do not map to additional attributes"
   #{"ProcessingLevelId" "ProcessingLevelDescription""CollectionDataType"
-    "GranuleSpatialRepresentation""Restriction"})
+    "GranuleSpatialRepresentation""Restriction" "Processor"})
 
 (defn- xml-elem->additional-attribute
   "Translates extended metadata element to a UMM additional attribute. DIF 9 extended metadata does
@@ -33,4 +33,3 @@
   [doc]
   (remove #(contains? non-additional-attributes (:Name %))
           (xml-elem->potential-additional-attributes doc)))
-

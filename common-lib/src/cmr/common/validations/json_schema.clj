@@ -81,3 +81,9 @@
   (let [validation-report (.validate json-schema (json-string->JsonNode json-to-validate))]
     (parse-validation-report validation-report)))
 
+(defn validate-json!
+  "Validates the JSON string against the given schema. Throws a service error if it is invalid."
+  [schema json-str]
+  (when-let [errors (seq (validate-json schema json-str))]
+    (errors/throw-service-errors :bad-request errors)))
+

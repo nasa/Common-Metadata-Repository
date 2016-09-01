@@ -56,12 +56,6 @@
   [headers]
   (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
 
-(defn- validate-json
-  "Throws :bad-request service error if json-str fails to validate against given schema."
-  [schema json-str]
-  (when-let [errors (seq (js/validate-json schema json-str))]
-    (errors/throw-service-errors :bad-request errors)))
-
 ;;; Group Schema and Params Utils
 
 (def ^:private group-schema-structure
@@ -95,12 +89,12 @@
 (defn- validate-group-json
   "Validates the group JSON string against the schema. Throws a service error if it is invalid."
   [json-str]
-  (validate-json group-schema json-str))
+  (js/validate-json! group-schema json-str))
 
 (defn- validate-group-members-json
   "Validates the group mebers JSON string against the schema. Throws a service error if it is invalid."
   [json-str]
-  (validate-json group-members-schema json-str))
+  (js/validate-json! group-members-schema json-str))
 
 ;; Misc route validations
 
@@ -227,7 +221,7 @@
   "Returns a Ring response with the result of trying to create the ACL with the given request body."
   [request-context headers body]
   (validate-content-type headers)
-  (validate-json acl-schema/acl-schema body)
+  (js/validate-json! acl-schema/acl-schema body)
   (->> (json/parse-string body)
        util/map-keys->kebab-case
        (acl-service/create-acl request-context)
@@ -239,7 +233,7 @@
   and request body."
   [request-context concept-id headers body]
   (validate-content-type headers)
-  (validate-json acl-schema/acl-schema body)
+  (js/validate-json! acl-schema/acl-schema body)
   (->> (json/parse-string body)
        util/map-keys->kebab-case
        (acl-service/update-acl request-context concept-id)
@@ -277,7 +271,7 @@
           result (cond
                    system_object (acl-service/get-system-permissions request-context username-or-type system_object)
                    target (acl-service/get-provider-permissions request-context username-or-type provider target)
-                   :else (acl-service/get-concept-permissions request-context username-or-type concept_id))]
+                   :else (acl-service/get-catalog-item-permissions request-context username-or-type concept_id))]
       {:status 200
        :body (json/generate-string result)})))
 

@@ -4,9 +4,10 @@
            [clj-time.format :as f]
            [cmr.umm-spec.util :as su]
            [cmr.common.util :as util :refer [update-in-each]]
+           [cmr.umm-spec.models.umm-common-models :as cmn]
            [cmr.umm-spec.location-keywords :as lk]
            [cmr.umm-spec.test.location-keywords-helper :as lkt]
-           [cmr.umm-spec.models.collection :as umm-c]))
+           [cmr.umm-spec.models.umm-collection-models :as umm-c]))
 
 
 (def relation-set #{"GET DATA"
@@ -38,6 +39,13 @@
       (filter some?
               (for [date-type ["CREATE" "UPDATE" "REVIEW" "DELETE"]]
                 (last (sort-by :Date (get date-types date-type))))))))
+
+(defn create-date-type
+  "Create a DateType from a date-time. Note that time will dropped"
+  [date-time type]
+  (when (some? date-time)
+    (cmn/map->DateType {:Date (f/unparse (f/formatters :date) date-time)
+                        :Type type})))
 
 (defn date-time->date
   "Returns the given datetime to a date."

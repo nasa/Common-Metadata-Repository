@@ -3,9 +3,9 @@
             [com.gfredericks.test.chuck.clojure-test :refer [for-all]]
             [cmr.common.test.test-check-ext :as ext :refer [defspec]]
             [cmr.umm-spec.umm-json :as uj]
-            [cmr.umm-spec.models.collection :as umm-c]
-            [cmr.umm-spec.models.service :as umm-s]
-            [cmr.umm-spec.models.common :as umm-cmn]
+            [cmr.umm-spec.models.umm-collection-models :as umm-c]
+            [cmr.umm-spec.models.umm-service-models :as umm-s]
+            [cmr.umm-spec.models.umm-common-models :as umm-cmn]
             [clj-time.core :as t]
             [cmr.umm-spec.util :as u]
             [cmr.umm-spec.json-schema :as js]
@@ -111,7 +111,7 @@
   (is (= (js/parse-umm-c
           {:EntryTitle "an entry title"
            :Abstract "A very abstract collection"
-           :DataLanguage "English"
+           :DataLanguage "eng"
            :TemporalExtents [{:TemporalRangeType "temp range"
                               :PrecisionOfSeconds "3"
                               :EndsAtPresentFlag "false"
@@ -122,7 +122,7 @@
          (umm-c/map->UMM-C
           {:EntryTitle "an entry title"
            :Abstract "A very abstract collection"
-           :DataLanguage "English"
+           :DataLanguage "eng"
            :TemporalExtents [(umm-cmn/map->TemporalExtentType
                               {:TemporalRangeType "temp range"
                                :PrecisionOfSeconds 3

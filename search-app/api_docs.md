@@ -112,6 +112,9 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * [Document Scoring](#document-scoring)
   * [Facets](#facets)
     * [Version 2 Facets Response Format](#facets-v2-response-format)
+        * [Humanizers](#humanizers)
+          * [Updating Humanizers](#updating-humanizers)
+          * [Retrieving Humanizers](#retrieving-humanizers)
         * [Humanizers Report](#facets-humanizers-report)
     * [Facets in XML Responses](#facets-in-xml-responses)
         * [Flat XML Facets](#flat-xml-facets)
@@ -1552,21 +1555,23 @@ For granule additional attributes search, the default is searching for the attri
 #### <a name="g-spatial"></a> Find granules by Spatial
 The parameters used for searching granules by spatial are the same as the spatial parameters used in collections searches. (See under "Find collections by Spatial" for more details.)
 
+**Note:** The CMR does not permit spatial queries across all granules in all collections in order to provide fast search responses. Spatial granule queries must target a subset of the collections in the CMR using a condition like provider, concept_id (referencing one collection), short_name, or entry_title.
+
 ##### <a name="g-polygon"></a> Polygon
 
-    curl "%CMR-ENDPOINT%/granules?polygon=10,10,30,10,30,20,10,20,10,10"
+    curl "%CMR-ENDPOINT%/granules?provider=PROV1&polygon=10,10,30,10,30,20,10,20,10,10"
 
 ##### <a name="g-bounding-box"></a> Bounding Box
 
-    curl "%CMR-ENDPOINT%/granules?bounding_box=-10,-5,10,5
+    curl "%CMR-ENDPOINT%/granules?provider=PROV1&bounding_box=-10,-5,10,5
 
 ##### <a name="g-point"></a> Point
 
-    curl "%CMR-ENDPOINT%/granules?point=100,20"
+    curl "%CMR-ENDPOINT%/granules?provider=PROV1&point=100,20"
 
 ##### <a name="g-line"></a> Line
 
-    curl "%CMR-ENDPOINT%/granules?line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
+    curl "%CMR-ENDPOINT%/granules?provider=PROV1&line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
 
 #### <a name="g-orbit-number"></a> Find granules by orbit number
 
@@ -2098,7 +2103,53 @@ The following example is a sample response for a query using the query parameter
   }
 };
 ```
-#### <a name="facets-humanizers-report"</a> Humanizers Report
+
+#### <a name="humanizers"></a> Humanizers
+
+Humanizers define the rules that are used by CMR to provide humanized values for various facet fields and also support other features like improved relevancy of facetted terms. The rules are defined in JSON. Operators with Admin privilege can update the humanizer instructions through the update humanizer api.
+
+##### <a name="updating-humanizers"></a> Updating Humanizers
+
+Humanizers can be updated with a JSON representation of the humanizer rules to %CMR-ENDPOINT%/humanizers along with a valid ECHO token. The response will contain a concept id and revision id identifying the set of humanizer instructions.
+
+```
+curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/humanizers -d \
+'[{"type": "trim_whitespace", "field": "platform", "order": -100},
+  {"type": "alias", "field": "platform", "source_value": "AM-1", "replacement_value": "Terra", "reportable": true, "order": 0}]'
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 48
+
+{"concept_id":"H1200000000-CMR","revision_id":1}
+```
+
+##### <a name="retrieving-humanizers"></a> Retrieving Humanizers
+
+The humanizers can be retrieved by sending a GET request to `%CMR-ENDPOINT%/humanizers`.
+
+```
+curl -i %CMR-ENDPOINT%/humanizers?pretty=true
+
+HTTP/1.1 200 OK
+Content-Length: 224
+Content-Type: application/json; charset=UTF-8
+
+[ {
+  "type" : "trim_whitespace",
+  "field" : "platform",
+  "order" : -100
+}, {
+  "type" : "alias",
+  "field" : "platform",
+  "source_value" : "AM-1",
+  "replacement_value" : "Terra",
+  "reportable" : true,
+  "order" : 0
+} ]
+```
+
+#### <a name="facets-humanizers-report"></a> Humanizers Report
 
 The humanizers report provides a list of fields that have been humanized in CSV format. The
 report format is: provider, concept id, product short name, product version, original field value, humanized field value.

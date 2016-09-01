@@ -1,16 +1,20 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif9
   "Defines mappings from DIF9 XML into UMM records"
-  (:require [cmr.common.xml.simple-xpath :refer [select text]]
-            [cmr.common.xml.parse :refer :all]
-            [camel-snake-kebab.core :as csk]
-            [cmr.umm-spec.util :as su]
-            [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.models.common :as cmn]
-            [cmr.umm.dif.date-util :refer [parse-dif-end-date]]
-            [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
-            [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as aa]
-            [cmr.umm-spec.xml-to-umm-mappings.dif9.data-contact :as contact]
-            [cmr.umm-spec.xml-to-umm-mappings.dif9.data-center :as center]))
+  (:require
+    [camel-snake-kebab.core :as csk]
+    [clj-time.format :as f]
+    [cmr.common.xml.simple-xpath :refer [select text]]
+    [cmr.common.xml.parse :refer :all]
+    [cmr.umm.dif.date-util :refer [parse-dif-end-date]]
+    [cmr.umm-spec.date-util :as date]
+    [cmr.umm-spec.dif-util :as dif-util]
+    [cmr.umm-spec.json-schema :as js]
+    [cmr.umm-spec.models.umm-common-models :as cmn]
+    [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as aa]
+    [cmr.umm-spec.xml-to-umm-mappings.dif9.data-center :as center]
+    [cmr.umm-spec.xml-to-umm-mappings.dif9.data-contact :as contact]
+    [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
+    [cmr.umm-spec.util :as su]))
 
 (def dif-iso-topic-category->umm-iso-topic-category
   "DIF ISOTopicCategory to UMM ISOTopicCategory mapping. Some of the DIF ISOTopicCategory are made
@@ -56,7 +60,7 @@
 
 (defn- parse-platforms
   "Returns the parsed platforms with instruments added for the given xml doc."
-  [doc]
+  [doc apply-default?]
   (let [platforms (parse-just-platforms doc)
         instruments (parse-instruments doc)]
     ;; When there is only one platform in the collection, associate the instruments on that platform.
@@ -64,9 +68,9 @@
     (if (= 1 (count platforms))
       (map #(assoc % :Instruments instruments) platforms)
       (if instruments
-        (conj platforms {:ShortName su/not-provided
+        (conj platforms {:ShortName (when apply-default? su/not-provided)
                          :Instruments instruments})
-        (or (seq platforms) su/not-provided-platforms)))))
+        (or (seq platforms) (when apply-default? su/not-provided-platforms))))))
 
 (defn- get-short-name
   "Returns the short-name from the given entry-id and version-id, where entry-id is
@@ -80,22 +84,26 @@
       (subs entry-id 0 short-name-length)
       entry-id)))
 
+(defn- parse-metadata-dates
+  "Returns a list of metadata dates"
+  [doc]
+  (remove nil? [(date/parse-date-type-from-xml doc "DIF/DIF_Creation_Date" "CREATE")
+                (date/parse-date-type-from-xml doc "DIF/Last_DIF_Revision_Date" "UPDATE")]))
+
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
-  [doc]
+  [doc {:keys [apply-default?]}]
   (let [entry-id (value-of doc "/DIF/Entry_ID")
         version-id (value-of doc "/DIF/Data_Set_Citation/Version")
         short-name (get-short-name entry-id version-id)]
     {:EntryTitle (value-of doc "/DIF/Entry_Title")
      :ShortName short-name
-     :Version (or version-id su/not-provided)
+     :Version (or version-id (when apply-default? su/not-provided))
      :Abstract (value-of doc "/DIF/Summary/Abstract")
      :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
      :Purpose (value-of doc "/DIF/Summary/Purpose")
-     :DataLanguage (value-of doc "/DIF/Data_Set_Language")
-     ;; Data Dates is required
-     ;; Implement as part of CMR-2867
-     :DataDates [su/not-provided-data-date]
+     :DataLanguage (dif-util/dif-language->umm-langage (value-of doc "/DIF/Data_Set_Language"))
+     :MetadataDates (parse-metadata-dates doc)
      :ISOTopicCategories (values-at doc "DIF/ISO_Topic_Category")
      :TemporalKeywords (values-at doc "/DIF/Data_Resolution/Temporal_Resolution")
      :Projects (for [proj (select doc "/DIF/Project")]
@@ -114,12 +122,12 @@
      :AccessConstraints {:Description (value-of doc "/DIF/Access_Constraints")
                          :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}
      :UseConstraints (value-of doc "/DIF/Use_Constraints")
-     :Platforms (parse-platforms doc)
+     :Platforms (parse-platforms doc apply-default?)
      :TemporalExtents (if-let [temporals (select doc "/DIF/Temporal_Coverage")]
                         [{:RangeDateTimes (for [temporal temporals]
                                             {:BeginningDateTime (value-of temporal "Start_Date")
                                              :EndingDateTime (parse-dif-end-date (value-of temporal "Stop_Date"))})}]
-                        su/not-provided-temporal-extents)
+                        (when apply-default? su/not-provided-temporal-extents))
      :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
      :SpatialExtent (merge {:GranuleSpatialRepresentation (or (value-of doc "/DIF/Extended_Metadata/Metadata[Name='GranuleSpatialRepresentation']/Value")
                                                               "NO_SPATIAL")}
@@ -136,12 +144,15 @@
      ;; umm-lib only has ProcessingLevelId and it is from Metadata Name "ProductLevelId"
      ;; Need to double check which implementation is correct.
      :ProcessingLevel {:Id
-                       (su/with-default (value-of doc "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelId']/Value"))
+                       (su/with-default
+                         (value-of doc
+                                   "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelId']/Value")
+                         apply-default?)
 
                        :ProcessingLevelDescription
                        (value-of doc "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelDescription']/Value")}
 
-     :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc)
+     :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc apply-default?)
      :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
                               (into {} (map (fn [x]
                                               (if (keyword? x)
@@ -183,9 +194,11 @@
                              {:EntryId parent-dif})
      :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel"))
      :DataCenters (concat (center/parse-originating-centers doc)
-                          (center/parse-data-centers doc))}))
+                          (center/parse-data-centers doc)
+                          (center/parse-processing-centers doc))}))
 
 (defn dif9-xml-to-umm-c
-  "Returns UMM-C collection record from DIF9 collection XML document."
-  [metadata]
-  (js/parse-umm-c (parse-dif9-xml metadata)))
+  "Returns UMM-C collection record from DIF9 collection XML document. The :apply-default? option
+  tells the parsing code to set the default values for fields when parsing the metadata into umm."
+  [metadata options]
+  (js/parse-umm-c (parse-dif9-xml metadata options)))

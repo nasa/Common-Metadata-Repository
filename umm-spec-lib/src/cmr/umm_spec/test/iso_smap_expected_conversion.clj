@@ -4,12 +4,12 @@
            [clj-time.format :as f]
            [cmr.umm-spec.util :as su]
            [cmr.common.util :as util :refer [update-in-each]]
-           [cmr.umm-spec.models.common :as cmn]
+           [cmr.umm-spec.models.umm-common-models :as cmn]
            [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
            [cmr.umm-spec.related-url :as ru-gen]
            [cmr.umm-spec.location-keywords :as lk]
            [cmr.umm-spec.test.location-keywords-helper :as lkt]
-           [cmr.umm-spec.models.collection :as umm-c]
+           [cmr.umm-spec.models.umm-collection-models :as umm-c]
            [cmr.umm-spec.date-util :as du]
            [cmr.umm-spec.iso-keywords :as kws]))
 
@@ -87,4 +87,5 @@
                        (filter #(.contains kws/science-keyword-categories (:Category %)) sks))))
         (update-in [:Platforms] normalize-smap-instruments)
         (assoc :LocationKeywords nil)
-        (assoc :PaleoTemporalCoverages nil)))
+        (assoc :PaleoTemporalCoverages nil)
+        (assoc :MetadataDates nil)))

@@ -6,9 +6,9 @@
             [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as d9-aa]))
 
 (defn xml-elem->AdditionalAttribute
-  [aa-elem]
+  [aa-elem apply-default?]
   (let [attribs {:Name (value-of aa-elem "Name")
-                 :Description (su/with-default (value-of aa-elem "Description"))
+                 :Description (su/with-default (value-of aa-elem "Description") apply-default?)
                  :DataType (value-of aa-elem "DataType")
                  :ParameterRangeBegin (value-of aa-elem "ParameterRangeBegin")
                  :ParameterRangeEnd (value-of aa-elem "ParameterRangeEnd")
@@ -18,8 +18,8 @@
 (defn xml-elem->AdditionalAttributes
   "Extracts Additional_Attributes and Extended_Metadata from DIF10 XML and includes both
   concatenated together as UMM AdditionalAttributes"
-  [doc]
-  (let [additional-attributes (mapv xml-elem->AdditionalAttribute
+  [doc apply-default?]
+  (let [additional-attributes (mapv #(xml-elem->AdditionalAttribute % apply-default?)
                                     (select doc "/DIF/Additional_Attributes"))
-        extended-metadata (d9-aa/xml-elem->AdditionalAttributes doc)]
+        extended-metadata (d9-aa/xml-elem->AdditionalAttributes doc apply-default?)]
     (seq (into additional-attributes extended-metadata))))

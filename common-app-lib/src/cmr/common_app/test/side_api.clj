@@ -51,7 +51,7 @@
   (client/post (side-api-url)
                {:body (str form)
                 :headers {"Content-Type" "text"}
-                :throw-exceptions false}))
+                :throw-exceptions true}))
 
 (defn make-api-fn [routes-fn]
   "Returns a function that can be used to create the side routes API."

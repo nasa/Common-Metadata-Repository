@@ -8,7 +8,7 @@
   (:require [clojure.data.xml :as x]
             [clojure.string :as str]
             [cmr.common.xml :as cx]
-            [cmr.umm-spec.models.common :as c]
+            [cmr.umm-spec.models.umm-common-models :as c]
             [cmr.common.xml.parse :refer :all]
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.iso19115-2-util :as iso]))
@@ -108,7 +108,7 @@
   (fn [record]
     (type record)))
 
-(defmethod smap-keyword-str cmr.umm_spec.models.common.PlatformType
+(defmethod smap-keyword-str cmr.umm_spec.models.umm_common_models.PlatformType
   [platform]
   (format "Aircraft > Not provided > %s > %s"
           (:ShortName platform)
@@ -116,7 +116,7 @@
           ;; here to prevent problems when parsing.
           (str (:LongName platform))))
 
-(defmethod smap-keyword-str cmr.umm_spec.models.common.InstrumentType
+(defmethod smap-keyword-str cmr.umm_spec.models.umm_common_models.InstrumentType
   [instrument]
   (format "Instruments > Not provided > Not provided  > Not provided  > %s > %s"
           (:ShortName instrument)

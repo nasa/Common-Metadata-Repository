@@ -8,7 +8,7 @@
             [cmr.umm-spec.util :as u :refer [without-default-value-of]]
             [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]
-            [cmr.umm-spec.iso19115-2-util :refer [umm-date-type-codes char-string-value]]))
+            [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value]]))
 
 (def md-identification-base-xpath
   (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata"
@@ -69,7 +69,9 @@
      :EndsAtPresentFlag (some? (seq (select temporal "gml:TimePeriod/gml:endPosition[@indeterminatePosition='now']")))}))
 
 (defn iso-smap-xml-to-umm-c
-  [doc]
+  "Returns UMM-C collection record from ISO-SMAP collection XML document. The :apply-default? option
+  tells the parsing code to set the default values for fields when parsing the metadata into umm."
+  [doc {:keys [apply-default?]}]
   (let [data-id-el (first (select doc md-identification-base-xpath))
         short-name-el (first (select doc short-name-identification-xpath))]
     (js/parse-umm-c
@@ -80,21 +82,18 @@
        :Purpose (value-of short-name-el "gmd:purpose/gco:CharacterString")
        :CollectionProgress (value-of data-id-el "gmd:status/gmd:MD_ProgressCode")
        :Quality (char-string-value doc quality-xpath)
-       :DataDates (distinct (for [date-el (select doc data-dates-xpath)]
-                              {:Date (value-of date-el "gmd:date/gco:DateTime")
-                               :Type (get umm-date-type-codes
-                                          (value-of date-el "gmd:dateType/gmd:CI_DateTypeCode"))}))
+       :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
        :DataLanguage (value-of short-name-el "gmd:language/gco:CharacterString")
        :Platforms (let [smap-keywords (values-at data-id-el keywords-xpath-str)]
                     (kws/parse-platforms smap-keywords))
        :TemporalExtents (or (seq (parse-temporal-extents data-id-el))
-                            u/not-provided-temporal-extents)
+                            (when apply-default? u/not-provided-temporal-extents))
        :ScienceKeywords (parse-science-keywords data-id-el)
        :SpatialExtent (spatial/parse-spatial data-id-el)
        :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)
        ;; Required by UMM-C
-       :RelatedUrls [u/not-provided-related-url]
+       :RelatedUrls (when apply-default? [u/not-provided-related-url])
        ;; Required by UMM-C
-       :ProcessingLevel {:Id u/not-provided}
+       :ProcessingLevel (when apply-default? {:Id u/not-provided})
        ;; DataCenters is not implemented but is required in UMM-C
-       :DataCenters [u/not-provided-data-center]})))
+       :DataCenters (when apply-default? [u/not-provided-data-center])})))

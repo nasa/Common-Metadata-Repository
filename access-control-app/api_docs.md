@@ -371,6 +371,73 @@ Content-Type: application/json;charset=ISO-8859-1
 {"revision_id":1,"concept_id":"ACL1200000000-CMR"}
 ```
 
+### Grantable Permissions
+
+For system, provider, and single instance identities, the grantable permissions are limited by the target of the ACL.
+
+#### System Identity
+
+| Target                               | Grantable Permissions        |
+|--------------------------------------|------------------------------|
+| SYSTEM_AUDIT_REPORT                  | read                         |
+| METRIC_DATA_POINT_SAMPLE             | read                         |
+| SYSTEM_INITIALIZER                   | create                       |
+| ARCHIVE_RECORD                       | delete                       |
+| ERROR_MESSAGE                        | update                       |
+| TOKEN                                | read, delete                 |
+| TOKEN_REVOCATION                     | create                       |
+| EXTENDED_SERVICE_ACTIVATION          | create                       |
+| ORDER_AND_ORDER_ITEMS                | read, delete                 |
+| PROVIDER                             | create, delete               |
+| TAG_GROUP                            | create, update, delete       |
+| TAXONOMY                             | create                       |
+| TAXONOMY_ENTRY                       | create                       |
+| USER_CONTEXT                         | read                         |
+| USER                                 | read, update, delete         |
+| GROUP                                | create, read                 |
+| ANY_ACL                              | create, read, update, delete |
+| EVENT_NOTIFICATION                   | delete                       |
+| EXTENDED_SERVICE                     | delete                       |
+| SYSTEM_OPTION_DEFINITION             | create, delete               |
+| SYSTEM_OPTION_DEFINITION_DEPRECATION | create                       |
+| INGEST_MANAGEMENT_ACL                | read, update                 |
+| SYSTEM_CALENDAR_EVENT                | create, update, delete       |
+
+#### Provider Identity
+| Target                          | Grantable Permissions        |
+|---------------------------------|------------------------------|
+| AUDIT_REPORT                    | read                         |
+| OPTION_ASSIGNMENT               | create, read, delete         |
+| OPTION_DEFINITION               | create, delete               |
+| OPTION_DEFINITION_DEPRECATION   | create                       |
+| DATASET_INFORMATION             | read                         |
+| PROVIDER_HOLDINGS               | read                         |
+| EXTENDED_SERVICE                | create, update, delete       |
+| PROVIDER_ORDER                  | read                         |
+| PROVIDER_ORDER_RESUBMISSION     | create                       |
+| PROVIDER_ORDER_ACCEPTANCE       | create                       |
+| PROVIDER_ORDER_REJECTION        | create                       |
+| PROVIDER_ORDER_CLOSURE          | create                       |
+| PROVIDER_ORDER_TRACKING_ID      | update                       |
+| PROVIDER_INFORMATION            | update                       |
+| PROVIDER_CONTEXT                | read                         |
+| AUTHENTICATOR_DEFINITION        | create, delete               |
+| PROVIDER_POLICIES               | read, update, delete         |
+| USER                            | read                         |
+| GROUP                           | create, read                 |
+| PROVIDER_OBJECT_ACL             | create, read, update, delete |
+| CATALOG_ITEM_ACL                | create, read, update, delete |
+| INGEST_MANAGEMENT_ACL           | read, update                 |
+| DATA_QUALITY_SUMMARY_DEFINITION | create, update, delete       |
+| DATA_QUALITY_SUMMARY_ASSIGNMENT | create, delete               |
+| PROVIDER_CALENDAR_EVENT         | create, update, delete       |
+
+#### Single Instance Identity
+
+| Target           | Grantable Permissions |
+|------------------|-----------------------|
+| GROUP_MANAGEMENT | update, delete        |
+
 ### <a name="search-acls"></a> Search ACLs
 
 ACLs can be searched for by sending a GET request to `%CMR-ENDPOINT%/acls`
@@ -384,6 +451,7 @@ The following parameters are supported when searching for ACLs.
 * page_size
 * page_num
 * pretty
+* include_full_acl - boolean parameter that indicates if the full acl details should be included in the search response.
 
 ##### ACL Matching Parameters
 
@@ -417,6 +485,7 @@ The response is always returned in JSON and includes the following parts.
   * name - This will be the catalog item identity name or a string containing "<identity type> - <target>". For example "System - PROVIDER"
   * identity_type - String of "provider", "system", "single_instance", or "catalog_item"
   * location - A URL to retrieve the ACL
+  * acl - full JSON of the ACL. Included if `include_full_acl=true` parameter is set.
 
 ##### ACL Search Examples
 
@@ -543,19 +612,19 @@ Server: Jetty(9.2.10.v20150310)
     "concept_id" : "ACL1200000001-CMR",
     "identity_type" : "Catalog Item",
     "name" : "Catalog_Item1_PROV1",
-    "location" : "http://localhost:3011/acls/ACL1200000001-CMR"
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000001-CMR"
   }, {
     "revision_id" : 1,
     "concept_id" : "ACL1200000002-CMR",
     "identity_type" : "Catalog Item",
     "name" : "Catalog_Item2_PROV1",
-    "location" : "http://localhost:3011/acls/ACL1200000002-CMR"
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000002-CMR"
   }, {
     "revision_id" : 1,
     "concept_id" : "ACL1200000000-CMR",
     "identity_type" : "Provider",
     "name" : "Provider - PROV1 - INGEST_MANAGEMENT_ACL",
-    "location" : "http://localhost:3011/acls/ACL1200000000-CMR"
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000000-CMR"
   } ]
 }
 ```
@@ -584,9 +653,61 @@ Server: Jetty(9.2.10.v20150310)
     "concept_id" : "ACL1200000002-CMR",
     "identity_type" : "System",
     "name" : "System - SYSTEM_AUDIT_REPORT",
-    "location" : "http://localhost:3011/acls/ACL1200000002-CMR"
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000002-CMR"
   } ]
 }
+```
+
+###### With include_full_acl
+
+```
+curl -i "%CMR-ENDPOINT%/acls?include_full_acl=true&pretty=true"
+
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+CMR-Hits: 2
+CMR-Took: 27
+CMR-Request-Id: b3e38b33-eaf3-46ac-9f04-fa62eabb2c11
+
+{
+  "hits" : 2,
+  "took" : 27,
+  "items" : [ {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000000-CMR",
+    "identity_type" : "Provider",
+    "acl" : {
+      "group_permissions" : [ {
+        "group_id" : "AG1200000003-PROV1",
+        "permissions" : [ "delete", "update" ]
+      } ],
+      "provider_identity" : {
+        "provider_id" : "PROV1",
+        "target" : "INGEST_MANAGEMENT_ACL"
+      }
+    },
+    "name" : "Provider - PROV1 - INGEST_MANAGEMENT_ACL",
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000000-CMR"
+  }, {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000002-CMR",
+    "identity_type" : "Catalog Item",
+    "acl" : {
+      "group_permissions" : [ {
+        "user_type" : "guest",
+        "permissions" : [ "read" ]
+      } ],
+      "catalog_item_identity" : {
+        "name" : "guest read acl",
+        "provider_id" : "PROV1",
+        "collection_applicable" : true
+      }
+    },
+    "name" : "guest read acl",
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000002-CMR"
+  } ]
+}
+
 ```
 
 ### <a name="retrieve-acl"></a> Retrieve ACL

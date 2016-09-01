@@ -439,7 +439,8 @@
 
     (testing "spatial search for granules in dif collections"
       (are [wnes items]
-           (let [found (search/find-refs :granule {:bounding-box (codec/url-encode (apply m/mbr wnes))})
+           (let [found (search/find-refs :granule {:bounding-box (codec/url-encode (apply m/mbr wnes))
+                                                   :provider "PROV1"})
                  matches? (d/refs-match? items found)]
              (when-not matches?
                (println "Expected:" (pr-str (map :entry-title items)))
@@ -767,7 +768,6 @@
                                     :entries
                                     first
                                     :organizations)]
-
               (= expected-orgs organizations))
 
             "ECHO10 only has archive-center and processing-center"
@@ -782,5 +782,5 @@
             "ISO-SMAP only has archive-center and processing-center"
             "S-ISO-SMAP" ["archive-org" "processing-org"]
 
-            "UMM-JSON has an archive center"
-            "S-UMM-JSON" ["TNRIS"]))))
+            "UMM-JSON has an archive center and processing center"
+            "S-UMM-JSON" ["TNRIS" "Processing Center"]))))

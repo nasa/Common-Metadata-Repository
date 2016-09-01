@@ -46,16 +46,10 @@
   "The JSON schema used to validate tag association by collections requests"
   (js/parse-json-schema collections-tagging-schema-structure))
 
-(defn- validate-json
-  "Validates the JSON string against the given schema. Throws a service error if it is invalid."
-  [schema json-str]
-  (when-let [errors (seq (js/validate-json schema json-str))]
-    (errors/throw-service-errors :bad-request errors)))
-
 (defn validate-json-structure
   "Validates the given JSON string is a valid json structural wise. Throws a service error if it is invalid."
   [json-str]
-  (validate-json
+  (js/validate-json!
     (js/parse-json-schema {:anyOf [{:type :string}
                                    {:type :boolean}
                                    {:type :integer}
@@ -67,15 +61,15 @@
 (defn validate-create-tag-json
   "Validates the create tag JSON string against the schema. Throws a service error if it is invalid."
   [json-str]
-  (validate-json create-tag-schema json-str))
+  (js/validate-json! create-tag-schema json-str))
 
 (defn validate-update-tag-json
   "Validates the update tag JSON string against the schema. Throws a service error if it is invalid."
   [json-str]
-  (validate-json update-tag-schema json-str))
+  (js/validate-json! update-tag-schema json-str))
 
 (defn validate-tag-associations-json
   "Validates the tag associations JSON string against the schema. Throws a service error if it is invalid."
   [json-str]
-  (validate-json collections-tagging-schema json-str))
+  (js/validate-json! collections-tagging-schema json-str))
 

@@ -27,14 +27,14 @@
 
 (defn- parse-platforms
   "Parses a SERF Platform element into a UMM-S Platform"
-  [doc]
+  [doc apply-default?]
   (let [platforms (parse-just-platforms doc)
         instruments (parse-instruments doc)]
     (if (= 1 (count platforms))
       (map #(assoc % :Instruments instruments) platforms)
       (if instruments
-        (conj platforms {:ShortName not-provided
-                         :LongName not-provided
+        (conj platforms {:ShortName (when apply-default? not-provided)
+                         :LongName (when apply-default? not-provided)
                          :Instruments instruments})
         platforms))))
 
@@ -53,7 +53,7 @@
     (filter :Date
             (for [[tag date-type] tag-types]
               {:Type date-type
-               :Date (date/not-default (value-of md-dates-el tag))}))))
+               :Date (date/without-default (value-of md-dates-el tag))}))))
 
 (def serf-roles->umm-roles
   "Maps SERF roles to UMM roles"
@@ -147,7 +147,7 @@
              :Name (value-of aa "Name")
              :DataType (value-of aa "Type")
              :Description (without-default-value-of aa "Description")
-             :UpdateDate (date/not-default (value-of aa "Update_Date"))
+             :UpdateDate (date/without-default (value-of aa "Update_Date"))
              :Value (value-of aa "Value")})
           [{:Name "Metadata_Name"
             :Description "Root SERF Metadata_Name Object"
@@ -186,7 +186,7 @@
 
 (defn parse-serf-xml
   "Returns collection map from a SERF XML document."
-  [doc]
+  [doc {:keys [apply-default?]}]
   {:EntryId (value-of doc "/SERF/Entry_ID")
    :EntryTitle (value-of doc "/SERF/Entry_Title")
    :Abstract (value-of doc "/SERF/Summary/Abstract")
@@ -200,7 +200,7 @@
    :MetadataAssociations (parse-metadata-associations doc)
    :PublicationReferences (parse-publication-references doc)
    :ISOTopicCategories (values-at doc "/SERF/ISO_Topic_Category")
-   :Platforms (parse-platforms doc)
+   :Platforms (parse-platforms doc apply-default?)
    :Distributions (parse-distributions doc)
    :AdditionalAttributes (parse-additional-attributes doc)
    :AncillaryKeywords (values-at doc "/SERF/Keyword")
@@ -210,6 +210,7 @@
    :ScienceKeywords (parse-science-keywords doc)})
 
 (defn serf-xml-to-umm-s
-  "Returns UMM-S service record from a SERF XML document."
-  [metadata]
-  (js/coerce js/umm-s-schema (parse-serf-xml metadata)))
+  "Returns UMM-S service record from a SERF XML document. The :apply-default? option
+  tells the parsing code to set the default values for fields when parsing the metadata into umm."
+  [metadata options]
+  (js/coerce js/umm-s-schema (parse-serf-xml metadata options)))

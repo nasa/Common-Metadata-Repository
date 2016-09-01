@@ -23,7 +23,7 @@
 
 (defmulti item->concept-type (fn [item] (type item)))
 
-(defmethod item->concept-type cmr.umm_spec.models.collection.UMM-C
+(defmethod item->concept-type cmr.umm_spec.models.umm_collection_models.UMM-C
   [_]
   :collection)
 
@@ -35,7 +35,7 @@
   "Returns metadata string from UMM record (old or new)."
   (fn [context umm format-key] (type umm)))
 
-(defmethod generate-metadata cmr.umm_spec.models.collection.UMM-C
+(defmethod generate-metadata cmr.umm_spec.models.umm_collection_models.UMM-C
   [context umm format-key]
   (umm-spec/generate-metadata context umm format-key))
 

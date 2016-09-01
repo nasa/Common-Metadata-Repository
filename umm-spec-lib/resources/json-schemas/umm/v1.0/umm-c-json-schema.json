@@ -395,7 +395,7 @@
       "description": "Allows authors to provide words or phrases outside of the controlled Science Keyword vocabulary, to further describe the collection.",
       "type": "array",
       "items": {
-        "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
+        "$ref": "umm-cmn-json-schema.json#/definitions/AncillaryKeywordStringType"
       },
       "minItems": 0
     },
@@ -487,5 +487,5 @@
       "$ref": "umm-cmn-json-schema.json#/definitions/VersionType"
     }
   },
-  "required": ["ShortName", "Version", "EntryTitle", "Abstract", "DataDates", "Organizations", "RelatedUrls", "ProcessingLevel", "ScienceKeywords", "TemporalExtents", "SpatialExtent", "Platforms"]
+  "required": ["ShortName", "Version", "EntryTitle", "Abstract", "Organizations", "RelatedUrls", "ProcessingLevel", "ScienceKeywords", "TemporalExtents", "SpatialExtent", "Platforms"]
 }

@@ -26,12 +26,12 @@
 
 (defn- update-additional-atttribute
   "Update the additional attribute to be valid UMM"
-  [attr]
+  [attr apply-default?]
   (-> attr
       (normalize-data-type)
-      (update :Description su/with-default)))
+      (update :Description #(su/with-default % apply-default?))))
 
 (defn xml-elem->AdditionalAttributes
-  [doc]
+  [doc apply-default?]
   (when-let [aas (em/xml-elem->additional-attributes doc)]
-    (seq (map update-additional-atttribute aas))))
+    (seq (map #(update-additional-atttribute % apply-default?) aas))))
