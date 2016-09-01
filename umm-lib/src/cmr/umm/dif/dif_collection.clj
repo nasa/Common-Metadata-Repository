@@ -207,7 +207,7 @@
                     ;; attributes, and processing centers
                     (when (or spatial-coverage processing-level-id collection-data-type
                               product-specific-attributes access-value
-                              (seq (filter #(= :processing-center (:type %)) organizations)))
+                              (some #(= :processing-center (:type %)) organizations))
                       (x/element :Extended_Metadata {}
                                  (psa/generate-product-specific-attributes
                                    product-specific-attributes)

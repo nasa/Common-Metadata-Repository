@@ -14,19 +14,16 @@
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
+   [cmr.system-int-test.data2.data_util :as data-util]
    [cmr.system-int-test.data2.facets :as facets]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.utils.fast-xml :as fx]
    [cmr.system-int-test.utils.url-helper :as url]
-   [cmr.umm-spec.legacy :as umm-legacy]
-   [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm.collection.entry-id :as eid]
    [cmr.umm.echo10.spatial :as echo-s]
    [cmr.umm.related-url-helper :as ru]
    [cmr.umm.start-end-date :as sed]
    [cmr.umm.umm-spatial :as umm-s]))
-
-(def context (lkt/setup-context-for-test lkt/sample-keyword-map))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parsing the ATOM results
@@ -259,13 +256,7 @@
   [collection]
   (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
          :keys [concept-id format-key]} collection
-        original-metadata (when (not= format-key :umm-json)
-                            (umm-legacy/generate-metadata context collection format-key))
-        collection (if (= format-key :umm-json)
-                    collection
-                    (umm-legacy/parse-concept context {:metadata original-metadata
-                                                       :concept-type (umm-legacy/item->concept-type collection)
-                                                       :format (cmr.common.mime-types/format->mime-type format-key)}))
+        collection (data-util/mimic-ingest-retrieve-metadata-conversion collection)
         {:keys [summary entry-title related-urls associated-difs organizations]} collection
         update-time (get-in collection [:data-provider-timestamps :update-time])
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])

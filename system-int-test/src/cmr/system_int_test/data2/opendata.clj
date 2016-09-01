@@ -17,17 +17,14 @@
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.relations :as r]
    [cmr.spatial.ring-relations :as rr]
-   [cmr.umm-spec.legacy :as umm-legacy]
-   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.system-int-test.data2.data_util :as data-util]
    [cmr.umm.echo10.spatial :as echo-s]
    [cmr.umm.related-url-helper :as ru]
    [cmr.umm.start-end-date :as sed]
    [cmr.umm.umm-spatial :as umm-s])
   (:import
-   cmr.spatial.mbr.Mbr
-   cmr.umm.umm_collection.UmmCollection))
-
-(def context (lkt/setup-context-for-test lkt/sample-keyword-map))
+   (cmr.spatial.mbr Mbr)
+   (cmr.umm.umm_collection UmmCollection)))
 
 (defn parse-opendata-result
   "Returns the opendata result from a json string"
@@ -55,13 +52,7 @@
   ingest. If umm-json leave as is since parse-concept will convert to echo10."
   [collection]
   (let [{:keys [format-key concept-id data-format provider-id]} collection
-        original-metadata (when (not= format-key :umm-json)
-                            (umm-legacy/generate-metadata context collection format-key))
-        collection (if (= format-key :umm-json)
-                     collection
-                     (umm-legacy/parse-concept context {:metadata original-metadata
-                                                        :concept-type (umm-legacy/item->concept-type collection)
-                                                        :format (cmr.common.mime-types/format->mime-type format-key)}))
+        collection (data-util/mimic-ingest-retrieve-metadata-conversion collection)
         {:keys [short-name keywords projects related-urls summary entry-title organizations
                 access-value personnel]} collection
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])

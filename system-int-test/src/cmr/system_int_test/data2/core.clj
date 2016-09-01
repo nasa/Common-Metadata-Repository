@@ -10,6 +10,7 @@
    [clojure.test :refer [is]]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :as util]
+   [cmr.system-int-test.data2.data_util :as data-util]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.url-helper :as url]
@@ -136,14 +137,7 @@
         item (remove-ingest-associated-keys item)
         ;; Translate to native format metadata and back to mimic ingest. Do not translate
         ;; when umm-json since that will translate to echo10
-        original-metadata (when (not= original-format :umm-json)
-                           (umm-legacy/generate-metadata context item original-format))
-        parsed-item (if (= original-format :umm-json)
-                     item
-                     (umm-legacy/parse-concept context {:metadata original-metadata
-                                                        :concept-type (umm-legacy/item->concept-type item)
-                                                        :format (cmr.common.mime-types/format->mime-type original-format)}))]
-    (def parsed-item parsed-item)
+        parsed-item (data-util/mimic-ingest-retrieve-metadata-conversion item original-format)]
     (util/remove-nil-keys
       {:revision-id revision-id
        :concept-id concept-id
@@ -159,13 +153,7 @@
         item (remove-ingest-associated-keys item)
         ;; Translate to native format metadata and back to mimic ingest. Do not translate
         ;; when umm-json since that will translate to echo10
-        original-metadata (when (not= original-format :umm-json)
-                            (umm-legacy/generate-metadata context item original-format))
-        parsed-item (if (= original-format :umm-json)
-                      item
-                      (umm-legacy/parse-concept context {:metadata original-metadata
-                                                         :concept-type (umm-legacy/item->concept-type item)
-                                                         :format (cmr.common.mime-types/format->mime-type original-format)}))]
+        parsed-item (data-util/mimic-ingest-retrieve-metadata-conversion item original-format)]
     (if collection-concept-id
       (util/remove-nil-keys
        {:echo_granule_id concept-id
