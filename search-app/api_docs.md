@@ -1555,7 +1555,7 @@ For granule additional attributes search, the default is searching for the attri
 #### <a name="g-spatial"></a> Find granules by Spatial
 The parameters used for searching granules by spatial are the same as the spatial parameters used in collections searches. (See under "Find collections by Spatial" for more details.)
 
-*Note:* The CMR does not permit spatial queries across all granules in all collections in order to provide fast search responses. Spatial granule queries must target a subset of the collections in the CMR using a condition like provider, concept_id, short_name, or version.
+**Note:** The CMR does not permit spatial queries across all granules in all collections in order to provide fast search responses. Spatial granule queries must target a subset of the collections in the CMR using a condition like provider, concept_id (referencing one collection), short_name, or entry_title.
 
 ##### <a name="g-polygon"></a> Polygon
 

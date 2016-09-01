@@ -8,8 +8,7 @@
    (cmr.search.models.query SpatialCondition)))
 
 (def granule-limiting-search-fields
-  #{:concept-id :provider :provider-id :short-name :version :entry-title :entry-id
-    :collection-concept-id})
+  #{:concept-id :provider :provider-id :short-name :entry-title :entry-id :collection-concept-id})
 
 (defn- granule-limiting-condition?
   "Returns true if the condition limits the query to granules within a set of collections."
@@ -35,4 +34,4 @@
   (when (and (all-granules-query? query) (spatial-query? query))
     [(str "The CMR does not allow querying across granules in all collections with a spatial"
           " condition. You should limit your query using conditions that identify one or more"
-          " collections such as provider, concept_id, short_name, and version.")]))
+          " collections such as provider, concept_id, short_name, or entry_title.")]))

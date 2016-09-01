@@ -56,6 +56,8 @@
         (let [response (search/find-refs :granule params)]
           (is (= 0 (:hits response))
               (pr-str response)))
+        "All granules no spatial is allowed"
+        {}
         "Point with provider"
         {:point "0,0" :provider "PROV1"}
         "Box with provider"
@@ -77,8 +79,8 @@
         {:point "0,0" :concept-id "C4-P1"}
         "Short name"
         {:point "0,0" :short-name "C4-P1"}
-        "Version"
-        {:point "0,0" :version "C4-P1"}))
+        "Entry Title"
+        {:point "0,0" :entry-title "foo"}))
     (testing "Rejected"
       (are3 [params]
         (is (re-find #"The CMR does not allow querying across granules in all collections with a spatial condition"
