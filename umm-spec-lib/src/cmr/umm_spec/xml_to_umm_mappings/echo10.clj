@@ -151,7 +151,7 @@
                        :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
                        :DetailedVariable (value-of sk "DetailedVariableKeyword")})
    :DataCenters (dc/parse-data-centers doc apply-default?)
-   :ContactPersons (dc/parse-data-contact-persons doc)})
+   :ContactPersons (dc/parse-data-contact-persons doc apply-default?)})
 
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document. The :apply-default? option
