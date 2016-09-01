@@ -63,19 +63,18 @@
   (or country "Unknown"))
 
 (defn map-with-default
-  "Given a map function and a value, returns the result of mapping the value. If apply-default? is
-  true, specify a default value when mapping, otherwise no default value
+  "Returns the result of applying the given map function to a list of values. Use the default value
+  when the mapped value is nil and apply-default? is true.
 
   map-function - function to use for mapping
   values - the values to map
   value-default - the default to use if value is not present in the map
   apply-default? - true if the default valye should be used"
   [map-function values value-default apply-default?]
-  (if apply-default?
-    (map
-      #(let [result (map-function %)] (if (some? result) result value-default))
-      values)
-    (remove nil? (map map-function values))))
+  (let [results (map map-function values)]
+   (if apply-default?
+     (map #(if (some? %) % value-default) results)
+     (remove nil? results))))
 
 (defn with-default
   "Returns the value if it exists or returns the default value 'Not provided'."
