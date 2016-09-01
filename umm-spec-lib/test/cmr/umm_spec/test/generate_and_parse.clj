@@ -68,22 +68,6 @@
   [metadata-format]
   (seq (.listFiles (io/file (io/resource (str "example_data/" (name metadata-format)))))))
 
-;; Remove this test after formats-to-skip is done.
-;; Also remove the example files that it's using in resources. They are dif.xml, echo10.xml, etc.
-(deftest roundrobin-collection-example-record
-  (doseq [[origin-format filename] collection-format-examples
-          :let [metadata (slurp (io/resource (str "example_data/" filename)))
-                umm-c-record (core/parse-metadata test-context :collection origin-format metadata)]
-          dest-format collection-destination-formats
-          :when (not= origin-format dest-format)]
-    (testing (str origin-format " to " dest-format)
-      (is (empty? (generate-and-validate-xml :collection dest-format umm-c-record))))))
-
-(def formats-to-skip
-  "A set of formats to skip in the roundtrip example metadata test. These will be fixed as part of
-   separate issues. The issues CMR-3252, CMR-3253, CMR-3254, and CMR-3255 are filed to fix this."
-  #{:iso-smap})
-
 (deftest roundtrip-example-metadata
   (let [failed-atom (atom false)
         check-failure (fn [result]
