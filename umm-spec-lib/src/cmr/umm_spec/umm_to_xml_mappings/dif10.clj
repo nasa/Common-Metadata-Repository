@@ -5,9 +5,9 @@
    [clj-time.format :as f]
    [clojure.set :as set]
    [clojure.string :as str]
-   [cmr.common.xml.gen :refer :all]
+   [cmr.common.xml.gen :as gen]
    [cmr.umm-spec.date-util :as date]
-   [cmr.umm-spec.dif-util :as du]
+   [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.umm-to-xml-mappings.dif10.data-center :as center]
    [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]
    [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as spatial]
@@ -56,7 +56,7 @@
 
    (for [pdt (:PeriodicDateTimes extent)]
      [:Periodic_DateTime
-      (elements-from pdt :Name)
+      (gen/elements-from pdt :Name)
       [:Start_Date (:StartDate pdt)]
       [:End_Date (:EndDate pdt)]
       [:Duration_Unit (:DurationUnit pdt)]
@@ -86,7 +86,7 @@
   [obj]
   (for [characteristic (:Characteristics obj)]
     [:Characteristics
-     (elements-from characteristic
+     (gen/elements-from characteristic
                     :Name
                     :Description
                     :DataType
@@ -221,7 +221,7 @@
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
   [c]
-  (xml
+  (gen/xml
    [:DIF
     dif10-xml-namespaces
     [:Entry_ID
@@ -294,7 +294,7 @@
     [:Quality (:Quality c)]
     [:Access_Constraints (-> c :AccessConstraints :Description)]
     [:Use_Constraints (:UseConstraints c)]
-    (du/generate-dataset-language :Dataset_Language (:DataLanguage c))
+    (dif-util/generate-dataset-language :Dataset_Language (:DataLanguage c))
     (center/generate-organizations c)
     (for [dist (:Distributions c)]
       [:Distribution

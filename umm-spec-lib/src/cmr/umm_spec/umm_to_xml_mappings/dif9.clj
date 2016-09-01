@@ -1,15 +1,16 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif9
   "Defines mappings from a UMM record into DIF9 XML"
-  (:require [cmr.umm-spec.util :as u]
-            [cmr.common.xml.gen :refer :all]
-            [clj-time.format :as f]
-            [clojure.set :as set]
-            [camel-snake-kebab.core :as csk]
-            [cmr.umm-spec.date-util :as date]
-            [cmr.umm-spec.dif-util :as du]
-            [cmr.umm-spec.xml-to-umm-mappings.dif9 :as xtu]
-            [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]
-            [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]))
+  (:require
+    [camel-snake-kebab.core :as csk]
+    [clj-time.format :as f]
+    [clojure.set :as set]
+    [cmr.common.xml.gen :refer :all]
+    [cmr.umm-spec.date-util :as date]
+    [cmr.umm-spec.dif-util :as dif-util]
+    [cmr.umm-spec.xml-to-umm-mappings.dif9 :as xtu]
+    [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]
+    [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]
+    [cmr.umm-spec.util :as u]))
 
 (def dif9-xml-namespaces
   {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
@@ -123,7 +124,7 @@
      [:Quality (:Quality c)]
      [:Access_Constraints (-> c :AccessConstraints :Description)]
      [:Use_Constraints (:UseConstraints c)]
-     (du/generate-dataset-language :Data_Set_Language (:DataLanguage c))
+     (dif-util/generate-dataset-language :Data_Set_Language (:DataLanguage c))
      (center/generate-originating-center c)
      (center/generate-data-centers c)
      (for [distribution (:Distributions c)]
