@@ -36,8 +36,8 @@
   [record]
   (-> record
       ;; DataLanguage should be from a list of enumerations which are not defined in UMM JSON schema
-      ;; so here we just replace the generated value to English to make it through the validation.
-      (set-if-exist :DataLanguage "English")
+      ;; so here we just replace the generated value to eng to make it through the validation.
+      (set-if-exist :DataLanguage "eng")
       (set-if-exist :CollectionProgress "COMPLETE")
 
       ;; Figure out if we can define this in the schema

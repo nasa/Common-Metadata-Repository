@@ -39,10 +39,10 @@
    return the part of the processing-level-id with Level removed."
   [processing-level-id]
   (if (nil? processing-level-id)
-    su/not-provided 
+    su/not-provided
     (let [id-without-level (str/replace processing-level-id #"Level " "")]
       (get dif10/product-levels id-without-level su/not-provided))))
- 
+
 (defn- dif10-processing-level
   [processing-level]
   (-> processing-level
@@ -62,7 +62,6 @@
     (if (dif10/dif10-dataset-progress-values c-progress)
       c-progress
       (get dif10/collection-progress->dif10-dataset-progress c-progress "IN WORK"))))
-      
 
 (defn- dif10-project
   [proj]
@@ -250,7 +249,6 @@
       (update-in [:PublicationReferences] conversion-util/prune-empty-maps)
       (update-in-each [:PublicationReferences] conversion-util/dif-publication-reference)
       (update-in [:RelatedUrls] conversion-util/expected-related-urls-for-dif-serf)
-      (update :DataLanguage su/capitalize-words)
       ;; DIF 10 required element
       (update-in [:Abstract] #(or % su/not-provided))
       ;; CMR-2716 SpatialKeywords are replaced by LocationKeywords
