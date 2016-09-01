@@ -6,6 +6,7 @@
             [clojure.set :as set]
             [camel-snake-kebab.core :as csk]
             [cmr.umm-spec.date-util :as date]
+            [cmr.umm-spec.dif-util :as du]
             [cmr.umm-spec.xml-to-umm-mappings.dif9 :as xtu]
             [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]
             [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]))
@@ -122,7 +123,7 @@
      [:Quality (:Quality c)]
      [:Access_Constraints (-> c :AccessConstraints :Description)]
      [:Use_Constraints (:UseConstraints c)]
-     [:Data_Set_Language (:DataLanguage c)]
+     (du/generate-dataset-language :Data_Set_Language (:DataLanguage c))
      (center/generate-originating-center c)
      (center/generate-data-centers c)
      (for [distribution (:Distributions c)]

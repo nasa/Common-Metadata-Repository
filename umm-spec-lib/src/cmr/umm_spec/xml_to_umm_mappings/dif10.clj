@@ -13,6 +13,7 @@
             [cmr.umm-spec.xml-to-umm-mappings.dif10.related-url :as ru]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.data-center :as center]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]
+            [cmr.umm-spec.dif-util :as du]
             [cmr.umm-spec.util :as u :refer [without-default-value-of]]
             [cmr.umm-spec.date-util :as date]
             [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
@@ -110,7 +111,7 @@
    :Abstract (value-of doc "/DIF/Summary/Abstract")
    :CollectionDataType (value-of doc "/DIF/Collection_Data_Type")
    :Purpose (value-of doc "/DIF/Summary/Purpose")
-   :DataLanguage (value-of doc "/DIF/Dataset_Language")
+   :DataLanguage (du/dif-language->umm-langage (value-of doc "/DIF/Dataset_Language"))
    :DataDates (parse-data-dates doc)
    :MetadataDates (parse-metadata-dates doc)
    :ISOTopicCategories (values-at doc "DIF/ISO_Topic_Category")
@@ -125,7 +126,7 @@
                         :DetailedLocation (value-of lk "Detailed_Location")})
    :Projects (parse-projects doc apply-default?)
    :Quality (value-of doc "/DIF/Quality")
-   :AccessConstraints (parse-access-constraints doc apply-default?) 
+   :AccessConstraints (parse-access-constraints doc apply-default?)
    :UseConstraints (value-of doc "/DIF/Use_Constraints")
    :Platforms (for [platform (select doc "/DIF/Platform")]
                 {:ShortName (value-of platform "Short_Name")

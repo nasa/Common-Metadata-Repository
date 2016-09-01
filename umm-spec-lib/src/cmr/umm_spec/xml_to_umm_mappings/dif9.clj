@@ -8,6 +8,7 @@
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.date-util :as date]
             [cmr.umm-spec.models.umm-common-models :as cmn]
+            [cmr.umm-spec.dif-util :as du]
             [cmr.umm.dif.date-util :refer [parse-dif-end-date]]
             [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
             [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as aa]
@@ -100,7 +101,7 @@
      :Abstract (value-of doc "/DIF/Summary/Abstract")
      :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
      :Purpose (value-of doc "/DIF/Summary/Purpose")
-     :DataLanguage (value-of doc "/DIF/Data_Set_Language")
+     :DataLanguage (du/dif-language->umm-langage (value-of doc "/DIF/Data_Set_Language"))
      :MetadataDates (parse-metadata-dates doc)
      :ISOTopicCategories (values-at doc "DIF/ISO_Topic_Category")
      :TemporalKeywords (values-at doc "/DIF/Data_Resolution/Temporal_Resolution")
