@@ -39,19 +39,19 @@
             (is (= expected-message (as/acl-log-message (merge (u/conn-context) {:token token}) new-acl existing-acl action)))
 
             "Create ACL log message"
-            "new-acl"
+            {:group-permissions [{:user-type "guest", :permissions ["create" "delete"]}], :system-identity {:target "TAG_GROUP"}}
             nil
             :create
-            "User: [admin] Created ACL [new-acl]"
+            "User: [admin] Created ACL [{:group-permissions [{:user-type \"guest\", :permissions [\"create\" \"delete\"]}], :system-identity {:target \"TAG_GROUP\"}}]"
 
             "Update ACL log message"
-            "new-acl"
-            "existing-acl"
+            {:group-permissions [{:user-type "guest", :permissions ["create" "delete"]}], :system-identity {:target "TAG_GROUP"}}
+            {:group-permissions [{:user-type "guest", :permissions ["create"]}], :system-identity {:target "TAG_GROUP"}}
             :update
-            "User: [admin] Updated ACL,\n before: [existing-acl]\n after: [new-acl]"
+            "User: [admin] Updated ACL,\n before: [{:group-permissions [{:user-type \"guest\", :permissions [\"create\"]}], :system-identity {:target \"TAG_GROUP\"}}]\n after: [{:group-permissions [{:user-type \"guest\", :permissions [\"create\" \"delete\"]}], :system-identity {:target \"TAG_GROUP\"}}]"
 
             "Delete ACL log message"
             "new-acl"
-            "existing-acl"
+            {:group-permissions [{:user-type "guest", :permissions ["create" "delete"]}], :system-identity {:target "TAG_GROUP"}}
             :delete
-            "User: [admin] Deleted ACL,\n before: [existing-acl]\n after: [new-acl]"))))
+            "User: [admin] Deleted ACL [{:group-permissions [{:user-type \"guest\", :permissions [\"create\" \"delete\"]}], :system-identity {:target \"TAG_GROUP\"}}]"))))

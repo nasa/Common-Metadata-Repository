@@ -103,15 +103,16 @@
     (errors/throw-service-error :unauthorized msg/token-required)))
 
 (defn acl-log-message
-  "Logs appropriate message for given action. Actions include :create, :update and :delete."
+  "Creates appropriate message for given action. Actions include :create, :update and :delete."
   ([context acl action]
    (acl-log-message context acl nil action))
   ([context new-acl existing-acl action]
    (let [user (tokens/get-user-id context (:token context))]
-     (cond
-       (= action :create) (format "User: [%s] Created ACL [%s]" user new-acl)
-       (= action :update) (format "User: [%s] Updated ACL,\n before: [%s]\n after: [%s]" user existing-acl new-acl)
-       (= action :delete) (format "User: [%s] Deleted ACL,\n before: [%s]\n after: [%s]" user existing-acl new-acl)))))
+     (case action
+           :create (format "User: [%s] Created ACL [%s]" user (pr-str new-acl))
+           :update (format "User: [%s] Updated ACL,\n before: [%s]\n after: [%s]"
+                           user (pr-str existing-acl) (pr-str new-acl))
+           :delete (format "User: [%s] Deleted ACL [%s]" user (pr-str existing-acl))))))
 
 (defn create-acl
   "Save a new ACL to Metadata DB. Returns map with concept and revision id of created acl."
@@ -120,7 +121,7 @@
   (let [resp (mdb/save-concept context (merge (acl->base-concept context acl)
                                             {:revision-id 1
                                              :native-id (str (java.util.UUID/randomUUID))}))]
-       (info (acl-log-message context acl :create))
+       (info (acl-log-message context (merge acl {:concept-id (:concept-id resp)}) :create))
        resp))
 
 (defn update-acl
