@@ -190,16 +190,6 @@
           expected-parsed (umm->expected-parsed-dif collection)]
       (is (= expected-parsed parsed)))))
 
-(defspec generate-and-parse-collection-between-formats-test 100
-  (for-all [collection coll-gen/collections]
-    (let [xml (dif/umm->dif-xml collection)
-          parsed-dif (c/parse-collection xml)
-          echo10-xml (echo10/umm->echo10-xml parsed-dif)
-          parsed-echo10 (echo10-c/parse-collection echo10-xml)
-          expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-dif collection))]
-      (and (= expected-parsed parsed-echo10)
-           (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
-
 (deftest generate-and-parse-collection-between-formats-test
   (checking "dif parse between formats" 100
     [collection coll-gen/collections]
