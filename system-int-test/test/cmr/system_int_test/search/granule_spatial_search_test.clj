@@ -80,7 +80,9 @@
         "Short name"
         {:point "0,0" :short-name "C4-P1"}
         "Entry Title"
-        {:point "0,0" :entry-title "foo"}))
+        {:point "0,0" :entry-title "foo"}
+        "Version"
+        {:point "0,0" :version "foo"}))
     (testing "Rejected"
       (are3 [params]
         (is (re-find #"The CMR does not allow querying across granules in all collections with a spatial condition"
