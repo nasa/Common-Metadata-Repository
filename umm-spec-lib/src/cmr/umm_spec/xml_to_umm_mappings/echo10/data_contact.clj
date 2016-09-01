@@ -86,10 +86,10 @@
   "Parse ECHO10 Contact Persons to UMM"
   [contact apply-default?]
   (for [person (select contact "ContactPersons/ContactPerson")]
-    {:Roles (u/map-with-default echo10-job-position->umm-contact-person-role
-                                    [(value-of person "JobPosition")]
-                                    default-contact-person-role
-                                    apply-default?)
+    {:Roles (remove nil? (u/map-with-default echo10-job-position->umm-contact-person-role
+                                             [(value-of person "JobPosition")]
+                                             default-contact-person-role
+                                             apply-default?))
      :FirstName (value-of person "FirstName")
      :MiddleName (value-of person "MiddleName")
      :LastName (value-of person "LastName")}))
@@ -121,10 +121,10 @@
                                (empty? (value-of % "OrganizationName")))
                          all-contacts)]
     (for [contact contacts]
-      {:Roles (u/map-with-default echo10-contact-role->umm-data-center-role
-                                      [(value-of contact "Role")]
-                                      default-data-center-role
-                                      apply-default?)
+      {:Roles (remove nil? (u/map-with-default echo10-contact-role->umm-data-center-role
+                                               [(value-of contact "Role")]
+                                               default-data-center-role
+                                               apply-default?))
        :ShortName (u/with-default (value-of contact "OrganizationName") apply-default?)
        :ContactInformation (parse-contact-information contact)
        :ContactPersons (parse-contact-persons contact apply-default?)})))
