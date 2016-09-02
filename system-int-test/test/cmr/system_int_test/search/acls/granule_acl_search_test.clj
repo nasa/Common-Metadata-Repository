@@ -108,12 +108,12 @@
 
   (let [coll1 (make-coll 1 "PROV1")
         coll2 (make-coll 2 "PROV1")
-        coll3 (make-coll 3 "PROV2" {:access-value 2})
-        coll4 (make-coll 4 "PROV2" {:access-value 5})
+        coll3 (make-coll 3 "PROV2" {:access-value 2.0})
+        coll4 (make-coll 4 "PROV2" {:access-value 5.0})
         coll5 (make-coll 5 "PROV3")
         coll6 (make-coll 6 "PROV4")
         coll7 (make-coll 7 "PROV2")
-        coll8 (make-coll 8 "PROV2" {:access-value 30})
+        coll8 (make-coll 8 "PROV2" {:access-value 30.0})
         coll51 (make-coll 51 "PROV5")
         coll52 (make-coll 52 "PROV5")
         coll53 (make-coll 53 "PROV5")
@@ -121,14 +121,14 @@
 
         ;; - PROV1 -
         gran1 (make-gran 1 coll1)
-        gran2 (make-gran 2 coll1 {:access-value 1000})
+        gran2 (make-gran 2 coll1 {:access-value 1000.0})
 
         ;; Permitted through undefined access value
         gran3 (make-gran 3 coll2)
         ; Not permitted at all (outside of access value range)
-        gran4 (make-gran 4 coll2 {:access-value 9})
+        gran4 (make-gran 4 coll2 {:access-value 9.0})
         ;; Permitted through access value range
-        gran5 (make-gran 5 coll2 {:access-value 10})
+        gran5 (make-gran 5 coll2 {:access-value 10.0})
 
         ;; - PROV2 -
         ;; Permitted by collection id and coll access value
@@ -139,7 +139,7 @@
         ;; Not permitted from granule access value
         gran10 (make-gran 10 coll7)
         ;; Permitted by access value
-        gran11 (make-gran 11 coll7 {:access-value 31})
+        gran11 (make-gran 11 coll7 {:access-value 31.0})
 
         ;; Not permitted. The collection has an access value that matches an acl with a non-existent
         ;; collection
@@ -148,30 +148,30 @@
         ;; - PROV3 -
         ;; All granules in prov 3 are permitted
         gran8 (make-gran 8 coll5)
-        gran9 (make-gran 9 coll5 {:access-value 0})
+        gran9 (make-gran 9 coll5 {:access-value 0.0})
 
         ;; - PROV4 - no permitted access
         gran13 (make-gran 13 coll6)
 
         ;; - PROV5 -
         ;; Not permitted because it has an access value
-        gran51 (make-gran 51 coll51 {:access-value 0})
+        gran51 (make-gran 51 coll51 {:access-value 0.0})
         ;; Permitted because it doesn't have an access value
         gran52 (make-gran 52 coll51 {:access-value nil})
 
         ;; permitted because it is above min
-        gran53 (make-gran 53 coll52 {:access-value 11})
+        gran53 (make-gran 53 coll52 {:access-value 11.0})
         ;; permitted because it is equal to min
-        gran54 (make-gran 54 coll52 {:access-value 10})
+        gran54 (make-gran 54 coll52 {:access-value 10.0})
         ;; not permitted below min
-        gran55 (make-gran 55 coll52 {:access-value 9})
+        gran55 (make-gran 55 coll52 {:access-value 9.0})
 
         ;; permitted below max
-        gran56 (make-gran 56 coll53 {:access-value 9})
+        gran56 (make-gran 56 coll53 {:access-value 9.0})
         ;; permitted equal to max
-        gran57 (make-gran 57 coll53 {:access-value 10})
+        gran57 (make-gran 57 coll53 {:access-value 10.0})
         ;; not permitted above max
-        gran58 (make-gran 58 coll53 {:access-value 11})
+        gran58 (make-gran 58 coll53 {:access-value 11.0})
 
         all-grans [gran1 gran2 gran3 gran4 gran5 gran6 gran7 gran8 gran9 gran10 gran11 gran12
                    gran13 gran51 gran52 gran54 gran53 gran55 gran56 gran57 gran58]

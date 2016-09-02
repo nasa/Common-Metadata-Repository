@@ -20,7 +20,8 @@
             [cmr.umm.dif.dif-core :as dif]
             [cmr.spatial.mbr :as m]
             [cmr.umm.test.echo10.echo10-collection-tests :as test-echo10]
-            [cmr.umm.validation.validation-core :as v])
+            [cmr.umm.validation.validation-core :as v]
+            [cmr.common.test.test-check-ext :as ext :refer [checking]])
   (:import cmr.spatial.mbr.Mbr))
 
 (defn- spatial-coverage->expected-parsed
@@ -95,6 +96,16 @@
                                  :term     umm-c/not-provided})]
     science-keywords))
 
+(defn- expected-organizations
+  "Re-order the organizations by distribution centers, add an archive center for each
+  distribution center, then processing centers"
+  [organizations]
+  (let [distribution-centers (filter #(= :distribution-center (:type %)) organizations)]
+    (concat
+     distribution-centers
+     (map #(assoc % :type :archive-center) distribution-centers)
+     (filter #(= :processing-center (:type %)) organizations))))
+
 (defn- umm->expected-parsed-dif
   "Modifies the UMM record for testing DIF. DIF contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
@@ -107,7 +118,6 @@
                                          :single-date-times []
                                          :periodic-date-times []})
                    nil)
-        organizations (filter #(= :distribution-center (:type %)) (:organizations coll))
         personnel (not-empty (->> personnel
                                   ;; only support email right now
                                   (map filter-contacts)
@@ -124,11 +134,12 @@
                                              :collection-data-type collection-data-type}))
         ;; There is no delete-time in DIF
         (assoc-in [:data-provider-timestamps :delete-time] nil)
-        (assoc-in [:data-provider-timestamps :revision-date-time] nil)
+        (assoc-in [:data-provider-timestamps :revision-date-time]
+                  (get-in coll [:data-provider-timestamps :update-time]))
         ;; DIF only has range-date-times
         (assoc :temporal temporal)
         ;; DIF only has distribution centers as Organization
-        (assoc :organizations organizations)
+        (update :organizations expected-organizations)
         (assoc :personnel personnel)
         ;; DIF only support some portion of the spatial
         (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
@@ -171,22 +182,24 @@
         (seq xml)
         (empty? (c/validate-xml xml))))))
 
-(defspec generate-and-parse-collection-test 100
-  (for-all [collection coll-gen/collections]
+(deftest generate-and-parse-collection-test
+  (checking "dif collection round tripping" 100
+    [collection coll-gen/collections]
     (let [xml (dif/umm->dif-xml collection)
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-dif collection)]
-      (= expected-parsed parsed))))
+      (is (= expected-parsed parsed)))))
 
-(defspec generate-and-parse-collection-between-formats-test 100
-  (for-all [collection coll-gen/collections]
+(deftest generate-and-parse-collection-between-formats-test
+  (checking "dif parse between formats" 100
+    [collection coll-gen/collections]
     (let [xml (dif/umm->dif-xml collection)
           parsed-dif (c/parse-collection xml)
           echo10-xml (echo10/umm->echo10-xml parsed-dif)
           parsed-echo10 (echo10-c/parse-collection echo10-xml)
           expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-dif collection))]
-      (and (= expected-parsed parsed-echo10)
-           (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
+      (is (= expected-parsed parsed-echo10))
+      (is (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
 
 ;; This is a made-up include all fields collection xml sample for the parse collection test
 (def all-fields-collection-xml
@@ -433,6 +446,10 @@
         <Name>Restriction</Name>
         <Value>1</Value>
       </Metadata>
+      <Metadata>
+        <Name>Processor</Name>
+        <Value>LPDAAC</Value>
+      </Metadata>
     </Extended_Metadata>
   </DIF>")
 
@@ -503,7 +520,8 @@
                  :collection-data-type "NEAR_REAL_TIME"})
      :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                  {:insert-time (p/parse-datetime "2013-02-21")
-                                  :update-time (p/parse-datetime "2013-10-22")})
+                                  :update-time (p/parse-datetime "2013-10-22")
+                                  :revision-date-time (p/parse-datetime "2013-10-22")})
      :publication-references [(umm-c/map->PublicationReference
                                 {:author "author"
                                  :publication-date "2015"
@@ -650,7 +668,16 @@
          :org-name "EU/JRC/IES"})
       (umm-c/map->Organization
         {:type :distribution-center
-         :org-name "UNEP/DEWA/GRID-EUROPE"})]
+         :org-name "UNEP/DEWA/GRID-EUROPE"})
+      (umm-c/map->Organization
+         {:type :archive-center
+          :org-name "EU/JRC/IES"})
+      (umm-c/map->Organization
+         {:type :archive-center
+          :org-name "UNEP/DEWA/GRID-EUROPE"})
+      (umm-c/map->Organization
+        {:type :processing-center
+         :org-name "LPDAAC"})]
      :personnel [(umm-c/map->Personnel
                    {:first-name "ANDREA"
                     :last-name "DE BONO"

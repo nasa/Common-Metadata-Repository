@@ -1,21 +1,22 @@
 (ns cmr.system-int-test.data2.core
   "Contains helper functions for data generation and ingest for example based testing in system
   integration tests."
-  (:require [clojure.test :refer [is]]
-            [clojure.java.io :as io]
-            [cmr.umm.umm-core :as umm]
-            [cmr.umm-spec.umm-spec-core :as umm-spec]
-            [cmr.umm-spec.legacy :as umm-legacy]
-            [cmr.common.mime-types :as mime-types]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.common.util :as util]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
-            [cheshire.core :as json]
-            [cmr.system-int-test.system :as s]
-            [clojure.string :as str]
-            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
+  (:require
+   [cheshire.core :as json]
+   [clj-time.core :as t]
+   [clj-time.format :as f]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [clojure.test :refer [is]]
+   [cmr.common.mime-types :as mime-types]
+   [cmr.common.util :as util]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.umm-spec.legacy :as umm-legacy]
+   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm.umm-core :as umm]))
 
 (defn- item->native-id
   "Returns the native id of a UMM record."
@@ -115,6 +116,20 @@
   (let [metadata (slurp (io/resource metadata-filename))]
     (ingest-concept-with-metadata (assoc ingest-params :metadata metadata))))
 
+(defn mimic-ingest-retrieve-metadata-conversion
+  "To mimic ingest, convert a collection to metadata in its native format then back to UMM. If
+  native format is umm-json, do not do conversion since that will convert to echo10 in the
+  parse-concept."
+  ([collection]
+   (mimic-ingest-retrieve-metadata-conversion collection (:format-key collection)))
+  ([collection format-key]
+   (if (= format-key :umm-json)
+     collection
+     (let [original-metadata (umm-legacy/generate-metadata context collection format-key)]
+       (umm-legacy/parse-concept context {:metadata original-metadata
+                                          :concept-type (umm-legacy/item->concept-type collection)
+                                          :format (mime-types/format->mime-type format-key)})))))
+
 (defn item->ref
   "Converts an item into the expected reference"
   [item]
@@ -137,30 +152,38 @@
 (defmethod item->metadata-result false
   [_ format-key item]
   (let [{:keys [concept-id revision-id collection-concept-id]} item
+        original-format (:format-key item)
         ;; Remove test core added fields so they don't end up in the expected UMM JSON
-        item (remove-ingest-associated-keys item)]
+        item (remove-ingest-associated-keys item)
+        ;; Translate to native format metadata and back to mimic ingest. Do not translate
+        ;; when umm-json since that will translate to echo10
+        parsed-item (mimic-ingest-retrieve-metadata-conversion item original-format)]
     (util/remove-nil-keys
-      {:concept-id concept-id
-       :revision-id revision-id
+      {:revision-id revision-id
+       :concept-id concept-id
        :format format-key
        :collection-concept-id collection-concept-id
-       :metadata (umm-legacy/generate-metadata context item format-key)})))
+       :metadata (umm-legacy/generate-metadata context parsed-item format-key)})))
 
 (defmethod item->metadata-result true
   [_ format-key item]
   (let [{:keys [concept-id revision-id collection-concept-id]} item
+        original-format (:format-key item)
         ;; Remove test core added fields so they don't end up in the expected UMM JSON
-        item (remove-ingest-associated-keys item)]
+        item (remove-ingest-associated-keys item)
+        ;; Translate to native format metadata and back to mimic ingest. Do not translate
+        ;; when umm-json since that will translate to echo10
+        parsed-item (mimic-ingest-retrieve-metadata-conversion item original-format)]
     (if collection-concept-id
       (util/remove-nil-keys
-        {:echo_granule_id concept-id
-         :echo_dataset_id collection-concept-id
-         :format format-key
-         :metadata (umm-legacy/generate-metadata context item format-key)})
+       {:echo_granule_id concept-id
+        :echo_dataset_id collection-concept-id
+        :format format-key
+        :metadata (umm-legacy/generate-metadata context parsed-item format-key)})
       (util/remove-nil-keys
-        {:echo_dataset_id concept-id
-         :format format-key
-         :metadata (umm-legacy/generate-metadata context item format-key)}))))
+       {:echo_dataset_id concept-id
+        :format format-key
+        :metadata (umm-legacy/generate-metadata context parsed-item format-key)}))))
 
 (defn- items-match?
   "Returns true if the search result items match the expected items. The argument echo-compatible?

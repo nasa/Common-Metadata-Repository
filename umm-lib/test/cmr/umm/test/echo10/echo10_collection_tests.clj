@@ -51,18 +51,24 @@
              (update-in [:roles] (partial take 1))))
        personnel))
 
+(defn- expected-organizations
+   "Take only one archive center and one processing center"
+   [organizations]
+   (seq (remove nil?
+         [(first (filter #(= :processing-center (:type %)) organizations))
+          (first (filter #(= :archive-center (:type %)) organizations))])))
+
 (defn umm->expected-parsed-echo10
   "Modifies the UMM record for testing ECHO10. ECHO10 contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
   [coll]
   (let [{{:keys [short-name long-name version-id]} :product} coll
-        organizations (seq (filter #(not= :distribution-center (:type %)) (:organizations coll)))
         related-urls (umm-related-urls->expected-related-urls (:related-urls coll))
         personnel (not-empty (umm-personnedl->expected-personnel (:personnel coll)))]
     (-> coll
         ;; ECHO10 does not support Organizations of distribution-center which only exists in DIF.
         ;; UMMC-72 is proposing to change this.
-        (assoc :organizations organizations)
+        (update :organizations expected-organizations)
         (update :collection-citations #(seq (take 1 %)))
         ;; ECHO10 OnlineResources' title is built as description plus resource-type
         (assoc :related-urls related-urls)
