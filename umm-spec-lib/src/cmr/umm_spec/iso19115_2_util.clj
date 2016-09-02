@@ -94,3 +94,15 @@
   [doc]
   (let [[extent-el] (select doc extent-xpath)]
     (parse-key-val-str (value-of extent-el "gmd:description/gco:CharacterString"))))
+
+(defn parse-data-dates
+  "Parses the collection DataDates from the the collection document."
+  [doc data-dates-xpath]
+  (distinct (for [date-el (select doc data-dates-xpath)
+                  :let [date (or (value-of date-el "gmd:date/gco:DateTime")
+                                 (value-of date-el "gmd:date/gco:Date"))
+                        date-type (umm-date-type-codes
+                                   (value-of date-el "gmd:dateType/gmd:CI_DateTypeCode"))]
+                  :when date-type]
+              {:Date date
+               :Type date-type})))

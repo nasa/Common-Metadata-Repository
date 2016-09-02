@@ -102,13 +102,27 @@
     (tokens/get-user-id context (:token context))
     (errors/throw-service-error :unauthorized msg/token-required)))
 
+(defn acl-log-message
+  "Creates appropriate message for given action. Actions include :create, :update and :delete."
+  ([context acl action]
+   (acl-log-message context acl nil action))
+  ([context new-acl existing-acl action]
+   (let [user (tokens/get-user-id context (:token context))]
+     (case action
+           :create (format "User: [%s] Created ACL [%s]" user (pr-str new-acl))
+           :update (format "User: [%s] Updated ACL,\n before: [%s]\n after: [%s]"
+                           user (pr-str existing-acl) (pr-str new-acl))
+           :delete (format "User: [%s] Deleted ACL [%s]" user (pr-str existing-acl))))))
+
 (defn create-acl
   "Save a new ACL to Metadata DB. Returns map with concept and revision id of created acl."
   [context acl]
   (v/validate-acl-save! context acl)
-  (mdb/save-concept context (merge (acl->base-concept context acl)
-                                 {:revision-id 1
-                                  :native-id (str (java.util.UUID/randomUUID))})))
+  (let [resp (mdb/save-concept context (merge (acl->base-concept context acl)
+                                            {:revision-id 1
+                                             :native-id (str (java.util.UUID/randomUUID))}))]
+       (info (acl-log-message context (merge acl {:concept-id (:concept-id resp)}) :create))
+       resp))
 
 (defn update-acl
   "Update the ACL with the given concept-id in Metadata DB. Returns map with concept and revision id of updated acl."
@@ -122,17 +136,23 @@
       (errors/throw-service-error
         :invalid-data (format "ACL legacy guid cannot be updated, was [%s] and now [%s]"
                               existing-legacy-guid legacy-guid)))
-    (mdb/save-concept context (merge (acl->base-concept context acl)
-                                     {:concept-id concept-id
-                                      :native-id (:native-id existing-concept)}))))
+    (let [new-concept (merge (acl->base-concept context acl)
+                           {:concept-id concept-id
+                            :native-id (:native-id existing-concept)})
+          resp (mdb/save-concept context new-concept)]
+         (info (acl-log-message context new-concept existing-concept :update))
+         resp)))
 
 (defn delete-acl
   "Saves a tombstone for the ACL with the given concept id."
   [context concept-id]
   (let [acl-concept (fetch-acl-concept context concept-id)]
-    (mdb/save-concept context {:concept-id (:concept-id acl-concept)
-                               :revision-id (inc (:revision-id acl-concept))
-                               :deleted true})))
+    (let [tombstone {:concept-id (:concept-id acl-concept)
+                       :revision-id (inc (:revision-id acl-concept))
+                       :deleted true}
+          resp (mdb/save-concept context tombstone)]
+         (info (acl-log-message context tombstone acl-concept :delete))
+         resp)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search functions

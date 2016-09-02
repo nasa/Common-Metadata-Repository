@@ -58,14 +58,21 @@
   for some reason. This is useful when you expect ingest to succeed but don't want to check the results.
   Setting it to true will skip this check. Set it true when testing ingest failure cases.
   * :validate-keywords - true or false to indicate if the validate keywords header should be sent
-  to enable keyword validation. Defaults to false."
+  to enable keyword validation. Defaults to false.
+  * :validate-umm-c  - true to enable the return of the UMM-C validation errors. Otherwise, the config values
+  of return-umm-json-validation-errors and return-umm-spec-validation-errors will be used"
   ([provider-id item]
    (ingest provider-id item nil))
   ([provider-id item options]
    (let [format-key (get options :format :echo10)
          response (ingest/ingest-concept
                     (item->concept (assoc item :provider-id provider-id) format-key)
-                    (select-keys options [:token :client-id :user-id :validate-keywords :accept-format]))
+                    (select-keys options [:token 
+                                          :client-id 
+                                          :user-id 
+                                          :validate-keywords 
+                                          :validate-umm-c 
+                                          :accept-format]))
          status (:status response)]
 
      ;; This allows this to be used from many places where we don't expect a failure but if there is

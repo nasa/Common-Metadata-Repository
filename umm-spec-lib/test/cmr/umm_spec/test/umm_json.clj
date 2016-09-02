@@ -111,7 +111,7 @@
   (is (= (js/parse-umm-c
           {:EntryTitle "an entry title"
            :Abstract "A very abstract collection"
-           :DataLanguage "English"
+           :DataLanguage "eng"
            :TemporalExtents [{:TemporalRangeType "temp range"
                               :PrecisionOfSeconds "3"
                               :EndsAtPresentFlag "false"
@@ -122,7 +122,7 @@
          (umm-c/map->UMM-C
           {:EntryTitle "an entry title"
            :Abstract "A very abstract collection"
-           :DataLanguage "English"
+           :DataLanguage "eng"
            :TemporalExtents [(umm-cmn/map->TemporalExtentType
                               {:TemporalRangeType "temp range"
                                :PrecisionOfSeconds 3

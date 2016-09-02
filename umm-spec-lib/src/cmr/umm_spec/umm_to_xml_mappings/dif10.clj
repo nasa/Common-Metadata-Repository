@@ -1,15 +1,17 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif10
   "Defines mappings from a UMM record into DIF10 XML"
-  (:require [cmr.common.xml.gen :refer :all]
-            [cmr.umm-spec.date-util :as date]
-            [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as spatial]
-            [cmr.umm-spec.date-util :as date]
-            [camel-snake-kebab.core :as csk]
-            [clj-time.format :as f]
-            [cmr.umm-spec.util :as u :refer [with-default]]
-            [clojure.string :as str]
-            [cmr.umm-spec.umm-to-xml-mappings.dif10.data-center :as center]
-            [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clj-time.format :as f]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [cmr.common.xml.gen :as gen]
+   [cmr.umm-spec.date-util :as date]
+   [cmr.umm-spec.dif-util :as dif-util]
+   [cmr.umm-spec.umm-to-xml-mappings.dif10.data-center :as center]
+   [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]
+   [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as spatial]
+   [cmr.umm-spec.util :as u :refer [with-default]]))
 
 (def platform-types
   "The set of values that DIF 10 defines for platform types as enumerations in its schema"
@@ -54,7 +56,7 @@
 
    (for [pdt (:PeriodicDateTimes extent)]
      [:Periodic_DateTime
-      (elements-from pdt :Name)
+      (gen/elements-from pdt :Name)
       [:Start_Date (:StartDate pdt)]
       [:End_Date (:EndDate pdt)]
       [:Duration_Unit (:DurationUnit pdt)]
@@ -84,7 +86,7 @@
   [obj]
   (for [characteristic (:Characteristics obj)]
     [:Characteristics
-     (elements-from characteristic
+     (gen/elements-from characteristic
                     :Name
                     :Description
                     :DataType
@@ -187,70 +189,6 @@
     [:Related_URL
      [:URL "http://example.com"]]))
 
-(def iso-639-2->dif10-dataset-language
-  "Mapping from ISO 639-2 to the enumeration supported for dataset languages in DIF10."
-  {"eng" "English"
-   "afr" "Afrikaans"
-   "ara" "Arabic"
-   "bos" "Bosnian"
-   "bul" "Bulgarian"
-   "chi" "Chinese"
-   "zho" "Chinese"
-   "hrv" "Croatian"
-   "cze" "Czech"
-   "ces" "Czech"
-   "dan" "Danish"
-   "dum" "Dutch"
-   "dut" "Dutch"
-   "nld" "Dutch"
-   "est" "Estonian"
-   "fin" "Finnish"
-   "fre" "French"
-   "fra" "French"
-   "gem" "German"
-   "ger" "German"
-   "deu" "German"
-   "gmh" "German"
-   "goh" "German"
-   "gsw" "German"
-   "nds" "German"
-   "heb" "Hebrew"
-   "hun" "Hungarian"
-   "ind" "Indonesian"
-   "ita" "Italian"
-   "jpn" "Japanese"
-   "kor" "Korean"
-   "lav" "Latvian"
-   "lit" "Lithuanian"
-   "nno" "Norwegian"
-   "nob" "Norwegian"
-   "nor" "Norwegian"
-   "pol" "Polish"
-   "por" "Portuguese"
-   "rum" "Romanian"
-   "ron" "Romanian"
-   "rup" "Romanian"
-   "rus" "Russian"
-   "slo" "Slovak"
-   "slk" "Slovak"
-   "spa" "Spanish"
-   "ukr" "Ukrainian"
-   "vie" "Vietnamese"})
-
-(def dif10-dataset-languages
-  "Set of Dataset_Languages supported in DIF10"
-  (set (vals iso-639-2->dif10-dataset-language)))
-
-(defn- generate-metadata-language
-  "Return Dataset_Language attribute by translating from the UMM DataLanguage to one of the DIF10
-  enumerations. Defaults to generating a Dataset_Language of English if translation cannot be
-  determined."
-  [c]
-  (when-let [data-language (u/capitalize-words (:DataLanguage c))]
-    [:Dataset_Language (if (dif10-dataset-languages data-language)
-                         data-language
-                         (get iso-639-2->dif10-dataset-language data-language "English"))]))
-
 (def collection-progress->dif10-dataset-progress
   "Mapping from known collection progress values to values supported for DIF10 Dataset_Progress."
   {"PLANNED" "PLANNED"
@@ -283,7 +221,7 @@
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
   [c]
-  (xml
+  (gen/xml
    [:DIF
     dif10-xml-namespaces
     [:Entry_ID
@@ -356,7 +294,7 @@
     [:Quality (:Quality c)]
     [:Access_Constraints (-> c :AccessConstraints :Description)]
     [:Use_Constraints (:UseConstraints c)]
-    (generate-metadata-language c)
+    (dif-util/generate-dataset-language :Dataset_Language (:DataLanguage c))
     (center/generate-organizations c)
     (for [dist (:Distributions c)]
       [:Distribution
