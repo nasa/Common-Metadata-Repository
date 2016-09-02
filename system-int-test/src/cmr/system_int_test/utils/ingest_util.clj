@@ -230,11 +230,12 @@
    (ingest-concept concept {}))
   ([concept options]
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
-         {:keys [token client-id user-id validate-keywords cmr-request-id]} options
+         {:keys [token client-id user-id validate-keywords validate-umm-c cmr-request-id]} options
          accept-format (:accept-format options)
          headers (util/remove-nil-keys {"Cmr-Concept-id" concept-id
                                         "Cmr-Revision-id" revision-id
                                         "Cmr-Validate-Keywords" validate-keywords
+                                        "Cmr-Validate-Umm-C" validate-umm-c
                                         "Echo-Token" token
                                         "User-Id" user-id
                                         "Client-Id" client-id
