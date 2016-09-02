@@ -346,6 +346,18 @@
     (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
                                                  (dc/psa {:name "bool2" :data-type :boolean :value true})]}))
 
+  (testing "Enabling UMM-C JSON-Schema validation through Cmr-Validate-Umm-C header"
+    ;; create collection valid against echo10 but invalid against schema
+    (let [response (d/ingest "PROV1" (dc/collection {:product-specific-attributes
+                                                     [(dc/psa {:name "bool1" :data-type :boolean :value true})
+                                                      (dc/psa {:name "bool2" :data-type :boolean :value true})]})
+                             {:allow-failure? true :validate-umm-c true})]
+      (is (= {:status 422
+              :errors ["object has missing required properties ([\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\"])"]}
+             (select-keys response [:status :errors]))))
+    (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
+                                                 (dc/psa {:name "bool2" :data-type :boolean :value true})]}))
+
   (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
 
   (testing "Additional Attribute validation"

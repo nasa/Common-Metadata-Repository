@@ -18,7 +18,7 @@
   (:import clojure.lang.ExceptionInfo))
 
 (def VALIDATE_KEYWORDS_HEADER "cmr-validate-keywords")
-(def ENABLE_UMM_C_VALIDATION_HEADER "cmr-validate-umm")
+(def ENABLE_UMM_C_VALIDATION_HEADER "cmr-validate-umm-c")
 
 (defn verify-provider-exists
   "Verifies the given provider exists."
@@ -179,7 +179,7 @@
                            :default-format default-response-format})))))))
 
 (defn- get-validation-options
-  "returns a map of validation options with boolean values"
+  "Returns a map of validation options with boolean values"
   [headers]
   {:validate-keywords? (= "true" (get headers VALIDATE_KEYWORDS_HEADER))
    :validate-umm? (= "true" (get headers ENABLE_UMM_C_VALIDATION_HEADER))})  

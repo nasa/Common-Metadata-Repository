@@ -77,6 +77,13 @@ If this header is set to true then ingest will validate that collection keywords
 
 Note that when multiple fields are present the combination of keywords are validated to match a known combination.
 
+#### <a name="validate-umm-c-header"></a> Cmr-Validate-Umm-C Header
+
+If this header is set to true, it's equivalent to turning both of the following config parameters on:
+ return-umm-json-validation-errors: UMM-JSON validation errors should be returned for collections.
+ return-umm-spec-validation-errors: UMM Spec validation errors should be returned for collections.
+
+
 #### <a name="user-id"></a> User-Id Header
 
 The user id header allows specifying the user-id to use when saving or deleting a collection concept. This header is currently ignored for granule concepts. If user-id header is not specified, user id is retrieved using the token supplied during the ingest.
