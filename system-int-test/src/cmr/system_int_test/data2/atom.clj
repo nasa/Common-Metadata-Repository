@@ -14,7 +14,7 @@
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
-   [cmr.system-int-test.data2.data_util :as data-util]
+   [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.facets :as facets]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.utils.fast-xml :as fx]
@@ -256,7 +256,7 @@
   [collection]
   (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
          :keys [concept-id format-key]} collection
-        collection (data-util/mimic-ingest-retrieve-metadata-conversion collection)
+        collection (data-core/mimic-ingest-retrieve-metadata-conversion collection)
         {:keys [summary entry-title related-urls associated-difs organizations]} collection
         update-time (get-in collection [:data-provider-timestamps :update-time])
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])

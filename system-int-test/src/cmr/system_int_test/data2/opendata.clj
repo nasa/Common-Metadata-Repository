@@ -17,7 +17,7 @@
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.relations :as r]
    [cmr.spatial.ring-relations :as rr]
-   [cmr.system-int-test.data2.data_util :as data-util]
+   [cmr.system-int-test.data2.core :as data-core]
    [cmr.umm.echo10.spatial :as echo-s]
    [cmr.umm.related-url-helper :as ru]
    [cmr.umm.start-end-date :as sed]
@@ -52,7 +52,7 @@
   ingest. If umm-json leave as is since parse-concept will convert to echo10."
   [collection]
   (let [{:keys [format-key concept-id data-format provider-id]} collection
-        collection (data-util/mimic-ingest-retrieve-metadata-conversion collection)
+        collection (data-core/mimic-ingest-retrieve-metadata-conversion collection)
         {:keys [short-name keywords projects related-urls summary entry-title organizations
                 access-value personnel]} collection
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])

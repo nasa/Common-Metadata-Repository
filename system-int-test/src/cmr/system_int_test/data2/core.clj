@@ -10,7 +10,6 @@
    [clojure.test :refer [is]]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :as util]
-   [cmr.system-int-test.data2.data_util :as data-util]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.url-helper :as url]
@@ -110,6 +109,20 @@
   (let [metadata (slurp (io/resource metadata-filename))]
     (ingest-concept-with-metadata (assoc ingest-params :metadata metadata))))
 
+(defn mimic-ingest-retrieve-metadata-conversion
+  "To mimic ingest, convert a collection to metadata in its native format then back to UMM. If
+  native format is umm-json, do not do conversion since that will convert to echo10 in the
+  parse-concept."
+  ([collection]
+   (mimic-ingest-retrieve-metadata-conversion collection (:format-key collection)))
+  ([collection format-key]
+   (if (= format-key :umm-json)
+     collection
+     (let [original-metadata (umm-legacy/generate-metadata context collection format-key)]
+       (umm-legacy/parse-concept context {:metadata original-metadata
+                                          :concept-type (umm-legacy/item->concept-type collection)
+                                          :format (mime-types/format->mime-type format-key)})))))
+
 (defn item->ref
   "Converts an item into the expected reference"
   [item]
@@ -137,7 +150,7 @@
         item (remove-ingest-associated-keys item)
         ;; Translate to native format metadata and back to mimic ingest. Do not translate
         ;; when umm-json since that will translate to echo10
-        parsed-item (data-util/mimic-ingest-retrieve-metadata-conversion item original-format)]
+        parsed-item (mimic-ingest-retrieve-metadata-conversion item original-format)]
     (util/remove-nil-keys
       {:revision-id revision-id
        :concept-id concept-id
@@ -153,7 +166,7 @@
         item (remove-ingest-associated-keys item)
         ;; Translate to native format metadata and back to mimic ingest. Do not translate
         ;; when umm-json since that will translate to echo10
-        parsed-item (data-util/mimic-ingest-retrieve-metadata-conversion item original-format)]
+        parsed-item (mimic-ingest-retrieve-metadata-conversion item original-format)]
     (if collection-concept-id
       (util/remove-nil-keys
        {:echo_granule_id concept-id
