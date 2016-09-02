@@ -89,10 +89,16 @@
   [doc]
   (for [plat (select doc "/Collection/Platforms/Platform")]
     {:ShortName (value-of plat "ShortName")
-     :LongName (u/without-default-value-of plat "LongName")
+     :LongName (value-of plat "LongName")
      :Type (u/without-default-value-of plat "Type")
      :Characteristics (parse-characteristics plat)
      :Instruments (map parse-instrument (select plat "Instruments/Instrument"))}))
+
+(defn- parse-metadata-dates
+  "ECHO10 only has a revision date (UPDATE), so get that if applicable"
+  [doc]
+  (when-let [revision-date (date/parse-date-type-from-xml doc "Collection/RevisionDate" "UPDATE")]
+    [revision-date]))
 
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
@@ -101,6 +107,7 @@
    :ShortName  (value-of doc "/Collection/ShortName")
    :Version    (value-of doc "/Collection/VersionId")
    :DataDates  (parse-data-dates doc)
+   :MetadataDates (parse-metadata-dates doc)
    :Abstract   (value-of doc "/Collection/Description")
    :CollectionDataType (value-of doc "/Collection/CollectionDataType")
    :Purpose    (value-of doc "/Collection/SuggestedUsage")
@@ -144,7 +151,7 @@
                        :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
                        :DetailedVariable (value-of sk "DetailedVariableKeyword")})
    :DataCenters (dc/parse-data-centers doc apply-default?)
-   :ContactPersons (dc/parse-data-contact-persons doc)})
+   :ContactPersons (dc/parse-data-contact-persons doc apply-default?)})
 
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document. The :apply-default? option

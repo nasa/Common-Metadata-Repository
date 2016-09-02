@@ -1,20 +1,23 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif10
   "Defines mappings from DIF10 XML into UMM records"
-  (:require [cmr.common.date-time-parser :as dtp]
-            [cmr.umm-spec.json-schema :as js]
-            [cmr.common.xml.simple-xpath :refer [select]]
-            [camel-snake-kebab.core :as csk]
-            [clojure.string :as string]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
-            [cmr.umm-spec.xml-to-umm-mappings.dif10.paleo-temporal :as pt]
-            [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]
-            [cmr.umm-spec.xml-to-umm-mappings.dif10.related-url :as ru]
-            [cmr.umm-spec.xml-to-umm-mappings.dif10.data-center :as center]
-            [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]
-            [cmr.umm-spec.util :as u :refer [without-default-value-of]]
-            [cmr.umm-spec.date-util :as date]
-            [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
+  (:require
+    [camel-snake-kebab.core :as csk]
+    [clojure.string :as string]
+    [cmr.common.date-time-parser :as dtp]
+    [cmr.common.xml.parse :refer :all]
+    [cmr.common.xml.simple-xpath :refer [select]]
+    [cmr.common.util :as util]
+    [cmr.umm.dif.date-util :refer [parse-dif-end-date]]
+    [cmr.umm-spec.date-util :as date]
+    [cmr.umm-spec.dif-util :as dif-util]
+    [cmr.umm-spec.json-schema :as js]
+    [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]
+    [cmr.umm-spec.xml-to-umm-mappings.dif10.data-center :as center]
+    [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]
+    [cmr.umm-spec.xml-to-umm-mappings.dif10.paleo-temporal :as pt]
+    [cmr.umm-spec.xml-to-umm-mappings.dif10.related-url :as ru]
+    [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
+    [cmr.umm-spec.util :as u :refer [without-default-value-of]]))
 
 (defn- parse-characteristics
   [el]
@@ -37,6 +40,16 @@
     (when-not (= u/not-provided (value-of doc "/DIF/Project[1]/Short_Name"))
       (parse-projects-impl doc))
     (parse-projects-impl doc)))
+
+(defn- parse-access-constraints
+  "if both value and Description are nil, return nil.
+  Otherwise, if Description is nil, assoc it with u/not-provided"
+  [doc apply-default?]
+  (let [access-constraints-record
+        {:Description (value-of doc "/DIF/Access_Constraints")
+         :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}]
+    (when (seq (util/remove-nil-keys access-constraints-record))
+      (update access-constraints-record :Description #(u/with-default % apply-default?)))))
 
 (defn- parse-instruments-impl
   [platform-el]
@@ -74,6 +87,7 @@
                   :let [date-value (-> md-dates-el
                                        (value-of tag)
                                        date/without-default
+                                       (date/use-default-when-not-provided u/not-provided)
                                        ;; Since the DIF 10 date elements are actually just a string
                                        ;; type, they may contain anything, and so we need to try to
                                        ;; parse them here and return nil if they do not actually
@@ -82,6 +96,12 @@
                   :when date-value]
               {:Type date-type
                :Date date-value}))))
+
+(defn- parse-metadata-dates
+  "Returns a list of metadata dates"
+  [doc]
+  (seq (remove nil? [(date/parse-date-type-from-xml doc "DIF/Metadata_Dates/Metadata_Creation" "CREATE")
+                     (date/parse-date-type-from-xml doc "DIF/Metadata_Dates/Metadata_Last_Revision" "UPDATE")])))
 
 (defn parse-dif10-xml
   "Returns collection map from DIF10 collection XML document."
@@ -92,8 +112,9 @@
    :Abstract (value-of doc "/DIF/Summary/Abstract")
    :CollectionDataType (value-of doc "/DIF/Collection_Data_Type")
    :Purpose (value-of doc "/DIF/Summary/Purpose")
-   :DataLanguage (value-of doc "/DIF/Dataset_Language")
+   :DataLanguage (dif-util/dif-language->umm-langage (value-of doc "/DIF/Dataset_Language"))
    :DataDates (parse-data-dates doc)
+   :MetadataDates (parse-metadata-dates doc)
    :ISOTopicCategories (values-at doc "DIF/ISO_Topic_Category")
    :TemporalKeywords (values-at doc "/DIF/Temporal_Coverage/Temporal_Info/Ancillary_Temporal_Keyword")
    :CollectionProgress (value-of doc "/DIF/Dataset_Progress")
@@ -106,8 +127,7 @@
                         :DetailedLocation (value-of lk "Detailed_Location")})
    :Projects (parse-projects doc apply-default?)
    :Quality (value-of doc "/DIF/Quality")
-   :AccessConstraints {:Description (value-of doc "/DIF/Access_Constraints")
-                       :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}
+   :AccessConstraints (parse-access-constraints doc apply-default?)
    :UseConstraints (value-of doc "/DIF/Use_Constraints")
    :Platforms (for [platform (select doc "/DIF/Platform")]
                 {:ShortName (value-of platform "Short_Name")
@@ -139,7 +159,7 @@
                      :Sizes (u/parse-data-sizes (value-of dist "Distribution_Size"))
                      :DistributionFormat (value-of dist "Distribution_Format")
                      :Fees (value-of dist "Fees")})
-   :ProcessingLevel {:Id (value-of doc "/DIF/Product_Level_Id")}
+   :ProcessingLevel {:Id (u/with-default (value-of doc "/DIF/Product_Level_Id") apply-default?)}
    :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc apply-default?)
    :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
                             (into {} (map (fn [x]

@@ -686,7 +686,7 @@
           "description": "The fee for ordering the collection data.  The fee is entered as a number, in US Dollars.",
           "type": "string",
           "minLength": 1,
-          "maxLength": 80
+          "maxLength": 255
         }
       }
     },
@@ -1377,7 +1377,7 @@
       "minLength": 1,
       "maxLength": 255,
       "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{1,254}"
-    }, 
+    },
     "DataTypeEnum": {
       "description": "This entity contains the additional attribute data types.",
       "type": "string",

@@ -537,5 +537,5 @@
       "$ref": "umm-cmn-json-schema.json#/definitions/VersionType"
     }
   },
-  "required": ["ShortName", "Version", "EntryTitle", "Abstract", "DataDates", "DataCenters", "RelatedUrls", "ProcessingLevel", "ScienceKeywords", "TemporalExtents", "SpatialExtent", "Platforms"]
+  "required": ["ShortName", "Version", "EntryTitle", "Abstract", "DataCenters", "RelatedUrls", "ProcessingLevel", "ScienceKeywords", "TemporalExtents", "SpatialExtent", "Platforms"]
 }

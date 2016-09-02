@@ -27,11 +27,6 @@
   (cmn/map->RelatedUrlType
     {:URLs ["Not%20provided"]}))
 
-(def not-provided-data-date
-  "Place holder to use when a data date is not provided."
-  (cmn/map->DateType {:Date (f/parse "2000-01-01T00:00:00Z")
-                      :Type "REVIEW"}))
-
 (def default-granule-spatial-representation
   "Default value for GranuleSpatialRepresentation"
   "CARTESIAN")
@@ -66,6 +61,20 @@
   "The default of 'Not provided' is too long so specify an alternative default for country."
   [country]
   (or country "Unknown"))
+
+(defn map-with-default
+  "Returns the result of applying the given map function to a list of values. Use the default value
+  when the mapped value is nil and apply-default? is true.
+
+  map-function - function to use for mapping
+  values - the values to map
+  value-default - the default to use if value is not present in the map
+  apply-default? - true if the default value should be used"
+  [map-function values value-default apply-default?]
+  (let [results (map map-function values)]
+   (if apply-default?
+     (map #(if (some? %) % value-default) results)
+     results)))
 
 (defn with-default
   "Returns the value if it exists or returns the default value 'Not provided'."

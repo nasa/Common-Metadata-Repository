@@ -439,7 +439,8 @@
 
     (testing "spatial search for granules in dif collections"
       (are [wnes items]
-           (let [found (search/find-refs :granule {:bounding-box (codec/url-encode (apply m/mbr wnes))})
+           (let [found (search/find-refs :granule {:bounding-box (codec/url-encode (apply m/mbr wnes))
+                                                   :provider "PROV1"})
                  matches? (d/refs-match? items found)]
              (when-not matches?
                (println "Expected:" (pr-str (map :entry-title items)))

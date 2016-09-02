@@ -420,10 +420,6 @@
   "The set of all permissions checked and returned by the functions below."
   #{:read :order :update :delete})
 
-(def provider-level-permissions
-  "The set of permissions that are checked at the provider level."
-  #{:update :delete})
-
 (defn- collect-permissions
   "Returns seq of any permissions where (grants-permission? acl permission) returns true for any acl in acls."
   [grants-permission? acls]
@@ -476,20 +472,41 @@
   "Returns true if permission keyword is granted on concept to any sids by given acl."
   [acl permission concept sids]
   (and (acl/acl-matches-sids-and-permission? sids (name permission) acl)
-       (if (contains? provider-level-permissions permission)
-         (when-let [acl-provider-id (-> acl :provider-object-identity :provider-id)]
-           (= acl-provider-id (:provider-id concept)))
-         ;; else check that the concept matches
-         (case (:concept-type concept)
-           :collection (acl-matchers/coll-applicable-acl? (:provider-id concept) concept acl)
-           :granule (acl-matches-granule? acl concept)))))
+       (case (:concept-type concept)
+         :collection (acl-matchers/coll-applicable-acl? (:provider-id concept) concept acl)
+         :granule (acl-matches-granule? acl concept))))
+
+(defn- provider-acl?
+  "Returns true if the ECHO-style acl specifically identifies the given provider id."
+  [provider-id acl]
+  (or
+    (-> acl :provider-object-identity :provider-id (= provider-id))
+    (-> acl :catalog-item-identity :provider-id (= provider-id))))
+
+(defn- ingest-management-acl?
+  "Returns true if the ACL targets a provider INGEST_MANAGEMENT_ACL."
+  [acl]
+  (-> acl :provider-object-identity :target (= schema/ingest-management-acl-target)))
 
 (defn- concept-permissions-granted-by-acls
-  "Returns the set of permission keywords (:read, :update, :order, or :delete) granted on concept
+  "Returns the set of permission keywords (:read, :order, and :update) granted on concept
    to the seq of group guids by seq of acls."
   [concept sids acls]
-  (collect-permissions #(grants-concept-permission? %1 %2 concept sids)
-                       acls))
+  (let [provider-acls (filter #(provider-acl? (:provider-id concept) %) acls)
+        ;; When a user has UPDATE on the provider's INGEST_MANAGEMENT_ACL target, then they have UPDATE and
+        ;; DELETE permission on all of the provider's catalog items.
+        ingest-management-permissions (when (some #(acl/acl-matches-sids-and-permission? sids "update" %)
+                                                  (filter ingest-management-acl? provider-acls))
+                                        [:update :delete])
+        ;; The remaining catalog item ACLs can only grant READ or ORDER permission.
+        catalog-item-acls (filter :catalog-item-identity provider-acls)
+        catalog-item-permissions (for [permission [:read :order]
+                                       :when (some #(grants-concept-permission? % permission concept sids)
+                                                   catalog-item-acls)]
+                                   permission)]
+    (set
+      (concat catalog-item-permissions
+              ingest-management-permissions))))
 
 (defn- add-acl-enforcement-fields
   "Adds all fields necessary for comparing concept map against ACLs."
@@ -501,7 +518,7 @@
                        (mdb/get-latest-concept context parent-id)))
       concept)))
 
-(defn get-concept-permissions
+(defn get-catalog-item-permissions
   "Returns a map of concept ids to seqs of permissions granted on that concept for the given username."
   [context username-or-type concept-ids]
   (let [sids (get-sids context username-or-type)
@@ -515,10 +532,13 @@
 (defn- system-permissions-granted-by-acls
   "Returns a set of permission keywords granted on the system target to the given sids by the given acls."
   [system-object-target sids acls]
-  (collect-permissions (fn [acl permission]
-                         (and (= system-object-target (:target (:system-object-identity acl)))
-                              (acl/acl-matches-sids-and-permission? sids (name permission) acl)))
-                       acls))
+  (let [relevant-acls (filter #(-> % :system-object-identity :target (= system-object-target))
+                              acls)]
+    (set
+      (for [permission [:create :read :update :delete]
+            :when (some #(acl/acl-matches-sids-and-permission? sids (name permission) %)
+                        relevant-acls)]
+        permission))))
 
 (defn get-system-permissions
   "Returns a map of the system object type to the set of permissions granted to the given username or user type."

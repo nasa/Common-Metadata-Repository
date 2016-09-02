@@ -87,4 +87,5 @@
                        (filter #(.contains kws/science-keyword-categories (:Category %)) sks))))
         (update-in [:Platforms] normalize-smap-instruments)
         (assoc :LocationKeywords nil)
-        (assoc :PaleoTemporalCoverages nil)))
+        (assoc :PaleoTemporalCoverages nil)
+        (assoc :MetadataDates nil)))

@@ -1,16 +1,20 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif9
   "Defines mappings from DIF9 XML into UMM records"
-  (:require [cmr.common.xml.simple-xpath :refer [select text]]
-            [cmr.common.xml.parse :refer :all]
-            [camel-snake-kebab.core :as csk]
-            [cmr.umm-spec.util :as su]
-            [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.models.umm-common-models :as cmn]
-            [cmr.umm.dif.date-util :refer [parse-dif-end-date]]
-            [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
-            [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as aa]
-            [cmr.umm-spec.xml-to-umm-mappings.dif9.data-contact :as contact]
-            [cmr.umm-spec.xml-to-umm-mappings.dif9.data-center :as center]))
+  (:require
+    [camel-snake-kebab.core :as csk]
+    [clj-time.format :as f]
+    [cmr.common.xml.simple-xpath :refer [select text]]
+    [cmr.common.xml.parse :refer :all]
+    [cmr.umm.dif.date-util :refer [parse-dif-end-date]]
+    [cmr.umm-spec.date-util :as date]
+    [cmr.umm-spec.dif-util :as dif-util]
+    [cmr.umm-spec.json-schema :as js]
+    [cmr.umm-spec.models.umm-common-models :as cmn]
+    [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as aa]
+    [cmr.umm-spec.xml-to-umm-mappings.dif9.data-center :as center]
+    [cmr.umm-spec.xml-to-umm-mappings.dif9.data-contact :as contact]
+    [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
+    [cmr.umm-spec.util :as su]))
 
 (def dif-iso-topic-category->umm-iso-topic-category
   "DIF ISOTopicCategory to UMM ISOTopicCategory mapping. Some of the DIF ISOTopicCategory are made
@@ -80,6 +84,12 @@
       (subs entry-id 0 short-name-length)
       entry-id)))
 
+(defn- parse-metadata-dates
+  "Returns a list of metadata dates"
+  [doc]
+  (remove nil? [(date/parse-date-type-from-xml doc "DIF/DIF_Creation_Date" "CREATE")
+                (date/parse-date-type-from-xml doc "DIF/Last_DIF_Revision_Date" "UPDATE")]))
+
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
   [doc {:keys [apply-default?]}]
@@ -92,10 +102,8 @@
      :Abstract (value-of doc "/DIF/Summary/Abstract")
      :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
      :Purpose (value-of doc "/DIF/Summary/Purpose")
-     :DataLanguage (value-of doc "/DIF/Data_Set_Language")
-     ;; Data Dates is required
-     ;; Implement as part of CMR-2867
-     :DataDates (when apply-default? [su/not-provided-data-date])
+     :DataLanguage (dif-util/dif-language->umm-langage (value-of doc "/DIF/Data_Set_Language"))
+     :MetadataDates (parse-metadata-dates doc)
      :ISOTopicCategories (values-at doc "DIF/ISO_Topic_Category")
      :TemporalKeywords (values-at doc "/DIF/Data_Resolution/Temporal_Resolution")
      :Projects (for [proj (select doc "/DIF/Project")]
@@ -137,9 +145,9 @@
      ;; Need to double check which implementation is correct.
      :ProcessingLevel {:Id
                        (su/with-default
-                        (value-of doc
-                                  "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelId']/Value")
-                        apply-default?)
+                         (value-of doc
+                                   "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelId']/Value")
+                         apply-default?)
 
                        :ProcessingLevelDescription
                        (value-of doc "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelDescription']/Value")}
@@ -148,8 +156,8 @@
      :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
                               (into {} (map (fn [x]
                                               (if (keyword? x)
-                                                  [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
-                                                  x))
+                                                [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
+                                                x))
                                             [:Author
                                              :Publication_Date
                                              :Title
@@ -165,7 +173,7 @@
                                              [:DOI {:DOI (value-of pub-ref "DOI")}]
                                              [:RelatedUrl
                                               {:URLs (seq
-                                                      (remove nil? [(value-of pub-ref "Online_Resource")]))}]
+                                                       (remove nil? [(value-of pub-ref "Online_Resource")]))}]
                                              :Other_Reference_Details])))
      :AncillaryKeywords (values-at doc "/DIF/Keyword")
      :ScienceKeywords (for [sk (select doc "/DIF/Parameters")]
