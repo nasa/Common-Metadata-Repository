@@ -14,7 +14,7 @@
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.metadata-association :as ma]
-            [cmr.umm-spec.iso19115-2-util :refer :all]
+            [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value]]
             [cmr.umm-spec.util :as u]
             [cmr.umm-spec.location-keywords :as lk]))
 
@@ -92,11 +92,11 @@
   "Returns the projects parsed from the given xml document."
   [doc]
   (for [proj (select doc projects-xpath)]
-    (let [short-name (value-of proj short-name-xpath)
+    (let [short-name (value-of proj iso-util/short-name-xpath)
           description (char-string-value proj "gmi:description")
           ;; ISO description is built as "short-name > long-name", so here we extract the long-name out
           long-name (when-not (= short-name description)
-                      (str/replace description (str short-name keyword-separator-join) ""))]
+                      (str/replace description (str short-name iso-util/keyword-separator-join) ""))]
       {:ShortName short-name
        :LongName long-name})))
 
@@ -120,25 +120,13 @@
                         :EndingDateTime    (value-of period "gml:endPosition")})
      :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")}))
 
-(defn- parse-data-dates
-  "Parses the collection DataDates from the the collection document."
-  [doc]
-  (for [date-el (select doc data-dates-xpath)
-        :let [date (or (value-of date-el "gmd:date/gco:DateTime")
-                       (value-of date-el "gmd:date/gco:Date"))
-              date-type (umm-date-type-codes
-                          (value-of date-el "gmd:dateType/gmd:CI_DateTypeCode"))]
-        :when date-type]
-    {:Date date
-     :Type date-type}))
-
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
   [context doc {:keys [apply-default?]}]
   (let [md-data-id-el (first (select doc md-data-id-base-xpath))
         citation-el (first (select doc citation-base-xpath))
         id-el (first (select doc identifier-base-xpath))
-        extent-info (get-extent-info-map doc)]
+        extent-info (iso-util/get-extent-info-map doc)]
     {:ShortName (char-string-value id-el "gmd:code")
      :EntryTitle (char-string-value citation-el "gmd:title")
      :Version (char-string-value citation-el "gmd:edition")
@@ -147,7 +135,7 @@
      :Purpose (char-string-value md-data-id-el "gmd:purpose")
      :CollectionProgress (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode")
      :Quality (char-string-value doc quality-xpath)
-     :DataDates (parse-data-dates doc)
+     :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
      :AccessConstraints {:Description
                          (regex-value doc (str constraints-xpath
                                                "/gmd:useLimitation/gco:CharacterString")
