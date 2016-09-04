@@ -1,0 +1,13 @@
+{:transforms
+ [[:head]
+  [:append
+   [:link {:rel "stylesheet", :type "text/css" :href "css/default.css"}]
+   [:link {:rel "stylesheet", :type "text/css" :href "css/solarized-light.css"}]
+   [:script {:type "text/javascript", :src "js/jquery.min.js"}]
+   [:script {:type "text/javascript", :src "js/page_effects.js"}]]
+
+  [:#header :h2]
+  [:append
+   " with "
+   [:a {:href "https://github.com/xsc/codox-theme-rdash"} "RDash UI"]
+   " theme"]]}
