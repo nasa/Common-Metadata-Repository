@@ -104,7 +104,7 @@
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
         coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3"}))
         coll4 (d/ingest "PROV1" (dc/collection {:entry-title "coll4"
-                                                :access-value 5}))
+                                                :access-value 5.0}))
         ;; no permission granted on coll5
         coll5 (d/ingest "PROV1" (dc/collection {:entry-title "coll5"}))
 
@@ -124,7 +124,7 @@
         ;; PROV3
         coll9 (d/ingest "PROV3" (dc/collection {:entry-title "coll9"}))
         coll10 (d/ingest "PROV3" (dc/collection {:entry-title "coll10"
-                                                 :access-value 12}))
+                                                 :access-value 12.0}))
         ;; PROV4
         ;; group3 has permission to read this collection revision
         coll11-1 (d/ingest "PROV4" (dc/collection {:entry-title "coll11-entry-title"
@@ -374,5 +374,3 @@
     (e/logout (s/context) user1-token)
     ;; The token should be cached
     (is (d/refs-match? [coll1] (search/find-refs :collection {:token user1-token})))))
-
-

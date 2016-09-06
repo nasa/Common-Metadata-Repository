@@ -104,7 +104,7 @@
     :DataDates [{:Date (t/date-time 2012)
                  :Type "CREATE"}]
     :Abstract "A very abstract collection"
-    :DataLanguage "English"
+    :DataLanguage "eng"
     :CollectionDataType "SCIENCE_QUALITY"
     :Projects [{:ShortName "project short_name"}]
     :Quality "Pretty good quality"

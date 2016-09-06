@@ -19,7 +19,8 @@
             [cmr.umm.dif10.collection.platform :as platform]
             [cmr.umm.dif10.collection.personnel :as personnel]
             [cmr.umm.test.echo10.echo10-collection-tests :as test-echo10]
-            [cmr.umm.collection.product-specific-attribute :as psa])
+            [cmr.umm.collection.product-specific-attribute :as psa]
+            [cmr.common.test.test-check-ext :as ext :refer [checking]])
   (:import cmr.spatial.mbr.Mbr))
 
 (defspec generate-collection-is-valid-xml-test 100
@@ -117,7 +118,6 @@
       (dissoc :spatial-keywords :associated-difs :metadata-language
               :temporal-keywords)
       (assoc-in  [:product :processing-level-id] nil)
-      (assoc-in [:data-provider-timestamps :revision-date-time] nil)
       (assoc-in [:product :version-description] nil)
       (update-in [:publication-references] remove-field-from-records :doi)
       (update-in [:related-urls] remove-field-from-records :size)
@@ -132,7 +132,9 @@
       (update-in [:personnel] personnel->expected-parsed)
       (update-in [:projects] projects->expected-parsed)
       (update-in [:related-urls] related-urls->expected-parsed)
-      (update-in [:spatial-coverage] spatial-coverage->expected-parsed)))
+      (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
+      (assoc-in [:data-provider-timestamps :revision-date-time]
+                (get-in coll [:data-provider-timestamps :update-time]))))
 
 (defn- umm->expected-parsed-dif10
   "Modifies the UMM record for testing DIF. Unsupported fields are removed for comparison of the parsed record and
@@ -146,12 +148,13 @@
         (update-in [:product] (product->expected-parsed short-name version-id long-name))
         umm-c/map->UmmCollection)))
 
-(defspec generate-and-parse-collection-test 100
-  (for-all [collection coll-gen/collections]
-           (let [expected (umm->expected-parsed-dif10 collection)
-                 xml (dif10/umm->dif10-xml collection)
-                 actual (c/parse-collection xml)]
-             (= expected actual))))
+(deftest generate-and-parse-collection-test
+  (checking "dif10 collection round tripping" 100
+            [collection coll-gen/collections]
+            (let [expected (umm->expected-parsed-dif10 collection)
+                  xml (dif10/umm->dif10-xml collection)
+                  actual (c/parse-collection xml)]
+              (is (= expected actual)))))
 
 (defn- remove-not-provided
   [values sub-key]
@@ -215,7 +218,9 @@
         (update-in [:platforms] revert-platform-type platforms)
         (update-in [:spatial-coverage] revert-spatial-coverage spatial-coverage)
         (update-in [:product] revert-product product)
-        (update-in [:personnel] revert-personnel personnel))))
+        (update-in [:personnel] revert-personnel personnel)
+        (assoc-in [:data-provider-timestamps :revision-date-time]
+                  (get-in original-coll [:data-provider-timestamps :revision-date-time])))))
 
 (defn restore-modified-fields
   "Some of the UMM fields which are lost/modified/added during translation from UMM to DIF 10 XML
@@ -227,7 +232,6 @@
 
 (defspec generate-and-parse-collection-between-formats-test 100
   (for-all [collection coll-gen/collections]
-
     (let [xml (dif10/umm->dif10-xml collection)
           parsed-dif10 (restore-modified-fields (c/parse-collection xml) collection)
           echo10-xml (echo10/umm->echo10-xml parsed-dif10)
@@ -506,7 +510,8 @@
     :collection-citations ["Some Citation Details"]
     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                {:insert-time (p/parse-datetime "2000-03-24T22:20:41-05:00")
-                                :update-time (p/parse-datetime "2000-03-24T22:20:41-05:00")})
+                                :update-time (p/parse-datetime "2000-03-24T22:20:41-05:00")
+                                :revision-date-time (p/parse-datetime "2000-03-24T22:20:41-05:00")})
     :publication-references [(umm-c/map->PublicationReference
                               {:author "author"
                                :publication-date "2015"
