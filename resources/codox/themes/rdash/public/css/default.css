@@ -592,6 +592,13 @@ pre.deps {
     background-color: #f6f6f6;
 }
 
+blockquote {
+    opacity: 0.6;
+    border-left: solid 2px #ddd;
+    margin-left: 0;
+    padding-left: 1em;
+}
+
 /* Responsivene Theme */
 
 @media (max-width: 860px) {
