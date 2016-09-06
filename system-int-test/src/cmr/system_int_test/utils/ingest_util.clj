@@ -189,7 +189,9 @@
       (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
         {:concept-id (cx/string-at-path xml-elem [:concept-id])
-         :revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))}))
+         :revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))
+         :warnings (cx/string-at-path xml-elem [:warnings])}))
+
     (catch Exception e
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
 
@@ -203,6 +205,7 @@
 (defn parse-ingest-response
   "Parse an ingest response (if required) and append a status"
   [response options]
+  (proto-repl.saved-values/save 2)
   (if (get options :raw? false)
     response
     (assoc (parse-ingest-body (or (:accept-format options) :xml) response)

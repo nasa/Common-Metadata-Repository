@@ -67,12 +67,13 @@
    (let [format-key (get options :format :echo10)
          response (ingest/ingest-concept
                     (item->concept (assoc item :provider-id provider-id) format-key)
-                    (select-keys options [:token 
-                                          :client-id 
-                                          :user-id 
-                                          :validate-keywords 
-                                          :validate-umm-c 
-                                          :accept-format]))
+                    (select-keys options [:token
+                                          :client-id
+                                          :user-id
+                                          :validate-keywords
+                                          :validate-umm-c
+                                          :accept-format
+                                          :warnings]))
          status (:status response)]
 
      ;; This allows this to be used from many places where we don't expect a failure but if there is
@@ -88,7 +89,8 @@
               :user-id (:user-id options)
               :concept-id (:concept-id response)
               :revision-id (:revision-id response)
-              :format-key format-key)
+              :format-key format-key
+              :warnings (:warnings response))
        response))))
 
 (defn remove-ingest-associated-keys
