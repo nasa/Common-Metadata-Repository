@@ -76,19 +76,11 @@
   ([coll-attributes field-path errors]
    (assert-invalid coll-attributes field-path errors nil))
   ([coll-attributes field-path errors options]
-   (let [response (d/ingest "PROV1" (dc/collection coll-attributes)
-                            (merge {:allow-failure? true} options))]
-     (is (= {:status 422
-             :errors [{:path field-path
-                       :errors errors}]}
-            (select-keys response [:status :errors]))))))
-
-(defn assert-invalid-dif10
-  ([coll-attributes field-path errors]
-   (assert-invalid coll-attributes field-path errors nil))
-  ([coll-attributes field-path errors options]
-   (let [response (d/ingest "PROV1" (dc/collection-dif10 coll-attributes)
-                            (merge {:allow-failure? true} options))]
+   (let [response (if (= "dif10" (:format options))
+                    (d/ingest "PROV1" (dc/collection-dif10 coll-attributes)
+                              (merge {:allow-failure? true} (dissoc options :format)))
+                    (d/ingest "PROV1" (dc/collection coll-attributes)
+                              (merge {:allow-failure? true} (dissoc options :format))))]
      (is (= {:status 422
              :errors [{:path field-path
                        :errors errors}]}
@@ -370,7 +362,7 @@
                                                  (dc/psa {:name "bool2" :data-type :boolean :value true})]}))
   (testing "Enabling UMM-Spec validation through Cmr-Validate-Umm-C header"
     ;; create an old umm collection using dif10, valid against schema, but invalid against umm-spec validation
-    (assert-invalid-dif10
+    (assert-invalid
       {:processing-level-id
        "1"
        :product-specific-attributes
@@ -378,7 +370,7 @@
         (dc/psa {:name "bool" :data-type :boolean :value true})]}
       ["AdditionalAttributes"]
       ["Additional Attributes must be unique. This contains duplicates named [bool]."]
-      {:validate-umm-c true}))
+      {:validate-umm-c true :format "dif10"}))
 
   (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
 
