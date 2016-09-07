@@ -8,6 +8,7 @@
            [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
            [cmr.search.services.humanizers.humanizer-service :as hs]
            [cmr.umm-spec.legacy :as umm-legacy]
+           [cmr.umm.umm-core :as umm-core]
            [cmr.common.log :as log :refer (debug info warn error)]
            [clojure.data.csv :as csv])
   (:import java.io.StringWriter))
@@ -21,18 +22,17 @@
 
 (defn- rfm->umm-collection
   "Takes a revision format map and parses it into a UMM lib record."
-  [context revision-format-map]
+  [revision-format-map]
   (let [concept-id (:concept-id revision-format-map)
-        umm (umm-legacy/parse-concept
-              context
+        umm (umm-core/parse-concept
               (rfm/revision-format-map->concept :native revision-format-map))]
     (assoc umm
            :concept-id concept-id
            :provider-id (:provider-id (concepts/parse-concept-id concept-id)))))
 
 (defn- rfms->umm-collections
-  [context rfms]
-  (map #(rfm->umm-collection context %) rfms))
+  [rfms]
+  (map #(rfm->umm-collection %) rfms))
 
 (defn- get-all-collections
   "Retrieves all collections from the Metadata cache, partitions them into batches of size
@@ -41,7 +41,7 @@
   ;; Currently not throwing an exception if the cache is empty. May want to change in the future
   ;; to throw an exception.
   (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
-    (map #(rfms->umm-collections context %) (partition-all (humanizer-report-collection-batch-size) rfms))))
+    (map #(rfms->umm-collections %) (partition-all (humanizer-report-collection-batch-size) rfms))))
 
 (defn humanized-collection->reported-rows
   "Takes a humanized collection and returns rows to populate the CSV report."

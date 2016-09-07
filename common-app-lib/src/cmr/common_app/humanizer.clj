@@ -7,18 +7,18 @@
 (def humanizer-field->umm-paths
   "Map of humanizer JSON field names to lists of paths into parsed UMM collections
   corresponding to those fields."
-  {"platform" [[:platforms :short-name]]
-   "instrument" [[:platforms :instruments :short-name]]
-   "science_keyword" [[:science-keywords :category]
-                      [:science-keywords :topic]
-                      [:science-keywords :term]
-                      [:science-keywords :variable-level-1]
-                      [:science-keywords :variable-level-2]
-                      [:science-keywords :variable-level-3]
-                      [:science-keywords :detailed-variable]]
-   "project" [[:projects :short-name]]
-   "processing_level" [[:product :processing-level-id]]
-   "organization" [[:organizations :org-name]]})
+  {"platform" [[:PlatformType :ShortName]]
+   "instrument" [[:PlatformType :InstrumentType :ShortName]]
+   "science_keyword" [[:ScienceKeywordType :Category]
+                      [:ScienceKeywordType :Topic]
+                      [:ScienceKeywordType :Term]
+                      [:ScienceKeywordType :VariableLevel1]
+                      [:ScienceKeywordType :VariableLevel2]
+                      [:ScienceKeywordType :VariableLevel3]
+                      [:ScienceKeywordType :DetailedVariable]]
+   "project" [[:ProjectType :ShortName]]
+   "processing_level" [[:ProcessingLevel :ProcessingLevelId]]
+   "organization" [[:DataCenterType :ShortName]]})
 
 (defmulti to-human
   "Map of humanizer JSON type values to functions which take a field value and
