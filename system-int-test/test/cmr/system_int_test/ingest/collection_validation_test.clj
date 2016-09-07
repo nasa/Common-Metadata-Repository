@@ -83,6 +83,17 @@
                        :errors errors}]}
             (select-keys response [:status :errors]))))))
 
+(defn assert-invalid-with-valid-schema
+  ([coll-attributes field-path errors]
+   (assert-invalid coll-attributes field-path errors nil))
+  ([coll-attributes field-path errors options]
+   (let [response (d/ingest "PROV1" (dc/collection-dif10 coll-attributes)
+                            (merge {:allow-failure? true} options))]
+     (is (= {:status 422
+             :errors [{:path field-path
+                       :errors errors}]}
+            (select-keys response [:status :errors]))))))
+
 (defn assert-invalid-keywords
   [coll-attributes field-path errors]
   (assert-invalid coll-attributes field-path errors {:validate-keywords true}))
@@ -357,6 +368,17 @@
              (select-keys response [:status :errors]))))
     (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
                                                  (dc/psa {:name "bool2" :data-type :boolean :value true})]}))
+  (testing "Enabling UMM-Spec validation through Cmr-Validate-Umm-C header"
+    ;; create a dif10 collection valid against schema, but invalid against umm-spec validation
+    (assert-invalid-with-valid-schema
+      {:processing-level-id
+       "1"
+       :product-specific-attributes
+       [(dc/psa {:name "bool" :data-type :boolean :value true})
+        (dc/psa {:name "bool" :data-type :boolean :value true})]}
+      ["AdditionalAttributes"]
+      ["Additional Attributes must be unique. This contains duplicates named [bool]."]
+      {:validate-umm-c true}))
 
   (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
 
