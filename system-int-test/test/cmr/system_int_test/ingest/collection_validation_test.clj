@@ -83,7 +83,7 @@
                        :errors errors}]}
             (select-keys response [:status :errors]))))))
 
-(defn assert-invalid-with-valid-schema
+(defn assert-invalid-dif10
   ([coll-attributes field-path errors]
    (assert-invalid coll-attributes field-path errors nil))
   ([coll-attributes field-path errors options]
@@ -369,8 +369,8 @@
     (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
                                                  (dc/psa {:name "bool2" :data-type :boolean :value true})]}))
   (testing "Enabling UMM-Spec validation through Cmr-Validate-Umm-C header"
-    ;; create a dif10 collection valid against schema, but invalid against umm-spec validation
-    (assert-invalid-with-valid-schema
+    ;; create an old umm collection using dif10, valid against schema, but invalid against umm-spec validation
+    (assert-invalid-dif10
       {:processing-level-id
        "1"
        :product-specific-attributes
