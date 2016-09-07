@@ -76,11 +76,8 @@
   ([coll-attributes field-path errors]
    (assert-invalid coll-attributes field-path errors nil))
   ([coll-attributes field-path errors options]
-   (let [response (if (= "dif10" (:format options))
-                    (d/ingest "PROV1" (dc/collection-dif10 coll-attributes)
-                              (merge {:allow-failure? true} (dissoc options :format)))
-                    (d/ingest "PROV1" (dc/collection coll-attributes)
-                              (merge {:allow-failure? true} (dissoc options :format))))]
+   (let [response (d/ingest "PROV1" (dc/collection coll-attributes)
+                            (merge {:allow-failure? true} options))]
      (is (= {:status 422
              :errors [{:path field-path
                        :errors errors}]}
@@ -361,16 +358,20 @@
     (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
                                                  (dc/psa {:name "bool2" :data-type :boolean :value true})]}))
   (testing "Enabling UMM-Spec validation through Cmr-Validate-Umm-C header"
-    ;; create an old umm collection using dif10, valid against schema, but invalid against umm-spec validation
+    ;; create a collection that's  valid against schema validation, but invalid against umm-spec validation
     (assert-invalid
-      {:processing-level-id
-       "1"
+      {:processing-level-id "1"
+       :science-keywords [(dc/science-keyword {:category "upcase"
+                                            :topic "Cool"
+                                            :term "Mild"})]
+       :spatial-coverage (dc/spatial {:gsr :cartesian})
+       :related-urls [(dc/related-url {:type "type" :url "htt://www.foo.com"})]
        :product-specific-attributes
        [(dc/psa {:name "bool" :data-type :boolean :value true})
         (dc/psa {:name "bool" :data-type :boolean :value true})]}
       ["AdditionalAttributes"]
       ["Additional Attributes must be unique. This contains duplicates named [bool]."]
-      {:validate-umm-c true :format "dif10"}))
+      {:validate-umm-c true}))
 
   (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
 
