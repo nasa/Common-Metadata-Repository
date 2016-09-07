@@ -65,6 +65,7 @@
    ;; Search results containing the original alpha version of UMM JSON search results.
    :legacy-umm-json "application/vnd.nasa.cmr.legacy_umm_results+json"
 
+   :timeline         "application/vnd.nasa.cmr.granule_timeline+json"
    :xml              "application/xml"
    :form-url-encoded "application/x-www-form-urlencoded"
    :echo10           "application/echo10+xml"

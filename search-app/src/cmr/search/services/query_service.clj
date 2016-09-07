@@ -11,84 +11,67 @@
   - Convert Query into Elastic Query Model
   - Send query to Elasticsearch
   - Convert query results into requested format"
-  (:require [cmr.search.data.elastic-search-index :as idx]
-            [cmr.common-app.services.search.query-model :as qm]
-            [cmr.search.services.result-format-helper :as rfh]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.concepts :as concepts]
-            [cmr.common-app.services.search :as common-search]
-            [cmr.common-app.services.search.params :as common-params]
-
-            ;; parameter-converters
-            ;; These must be required here to make multimethod implementations available.
-            [cmr.search.services.parameters.conversion :as p]
-            [cmr.search.services.parameters.converters.collection-query]
-            [cmr.search.services.parameters.converters.temporal]
-            [cmr.search.services.parameters.converters.attribute]
-            [cmr.search.services.parameters.converters.orbit-number]
-            [cmr.search.services.parameters.converters.equator-crossing-longitude]
-            [cmr.search.services.parameters.converters.equator-crossing-date]
-            [cmr.search.services.parameters.converters.spatial]
-            [cmr.search.services.parameters.converters.science-keyword]
-            [cmr.search.services.parameters.converters.two-d-coordinate-system]
-            [cmr.search.services.parameters.converters.humanizer]
-
-            ;; json converters
-            [cmr.search.services.json-parameters.conversion :as jp]
-            [cmr.search.services.json-parameters.converters.attribute]
-
-            ;; aql
-            [cmr.search.services.aql.conversion :as a]
-            [cmr.search.services.aql.converters.temporal]
-            [cmr.search.services.aql.converters.spatial]
-            [cmr.search.services.aql.converters.science-keywords]
-            [cmr.search.services.aql.converters.attribute]
-            [cmr.search.services.aql.converters.attribute-name]
-            [cmr.search.services.aql.converters.two-d-coordinate-system]
-
-            ;; Validation
-            [cmr.search.validators.validation]
-            [cmr.search.validators.temporal]
-            [cmr.search.validators.attribute]
-            [cmr.search.validators.orbit-number]
-            [cmr.search.validators.equator-crossing-longitude]
-            [cmr.search.validators.equator-crossing-date]
-
-            ;; Complex to simple converters
-            [cmr.search.data.complex-to-simple-converters.attribute]
-            [cmr.search.data.complex-to-simple-converters.orbit]
-            [cmr.search.data.complex-to-simple-converters.temporal]
-            [cmr.search.data.complex-to-simple-converters.spatial]
-            [cmr.search.data.complex-to-simple-converters.two-d-coordinate-system]
-            cmr.search.data.complex-to-simple-converters.has-granules
-
-            ;; Query Results Features
-            [cmr.search.services.query-execution]
-            [cmr.search.services.query-execution.granule-counts-results-feature]
-            [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
-            [cmr.search.services.query-execution.facets.facets-results-feature]
-            [cmr.search.services.query-execution.facets.facets-v2-results-feature]
-            [cmr.search.services.query-execution.highlight-results-feature]
-            [cmr.search.services.query-execution.tags-results-feature]
-
-            [cmr.search.services.parameters.legacy-parameters :as lp]
-            [cmr.search.services.parameters.provider-short-name :as psn]
-            [cmr.search.services.parameters.parameter-validation :as pv]
-            [cmr.common-app.services.search.query-execution :as qe]
-            [cmr.search.results-handlers.provider-holdings :as ph]
-            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
-            [cmr.metadata-db.services.search-service :as mdb-search]
-            [cmr.metadata-db.services.concept-service :as concept-service]
-            [cmr.metadata-db.api.route-helpers :as rh]
-            [cmr.common.concepts :as cc]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.util :as u]
-            [camel-snake-kebab.core :as csk]
-            [cheshire.core :as json]
-            [clojure.string :as s]
-            [cmr.spatial.tile :as tile]
-            [cmr.spatial.codec :as spatial-codec]
-            [cmr.common.log :refer (debug info warn error)]))
+  (:require
+   [cheshire.core :as json]
+   [cmr.common-app.services.search :as common-search]
+   [cmr.common-app.services.search.params :as common-params]
+   [cmr.common-app.services.search.query-execution :as qe]
+   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.common.concepts :as cc]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as u]
+   [cmr.search.data.elastic-search-index :as idx]
+   [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
+   [cmr.search.results-handlers.provider-holdings :as ph]
+   [cmr.search.services.aql.conversion :as a]
+   [cmr.search.services.json-parameters.conversion :as jp]
+   [cmr.search.services.parameters.conversion :as p]
+   [cmr.search.services.parameters.legacy-parameters :as lp]
+   [cmr.search.services.parameters.parameter-validation :as pv]
+   [cmr.search.services.parameters.provider-short-name :as psn]
+   [cmr.search.services.result-format-helper :as rfh]
+   [cmr.spatial.codec :as spatial-codec]
+   [cmr.spatial.tile :as tile])
+  ;; These must be required here to make multimethod implementations available.
+  (:require
+    cmr.search.data.complex-to-simple-converters.attribute
+    cmr.search.data.complex-to-simple-converters.has-granules
+    cmr.search.data.complex-to-simple-converters.orbit
+    cmr.search.data.complex-to-simple-converters.spatial
+    cmr.search.data.complex-to-simple-converters.temporal
+    cmr.search.data.complex-to-simple-converters.two-d-coordinate-system
+    cmr.search.services.aql.converters.attribute-name
+    cmr.search.services.aql.converters.attribute
+    cmr.search.services.aql.converters.science-keywords
+    cmr.search.services.aql.converters.spatial
+    cmr.search.services.aql.converters.temporal
+    cmr.search.services.aql.converters.two-d-coordinate-system
+    cmr.search.services.json-parameters.converters.attribute
+    cmr.search.services.parameters.converters.attribute
+    cmr.search.services.parameters.converters.collection-query
+    cmr.search.services.parameters.converters.equator-crossing-date
+    cmr.search.services.parameters.converters.equator-crossing-longitude
+    cmr.search.services.parameters.converters.humanizer
+    cmr.search.services.parameters.converters.orbit-number
+    cmr.search.services.parameters.converters.science-keyword
+    cmr.search.services.parameters.converters.spatial
+    cmr.search.services.parameters.converters.temporal
+    cmr.search.services.parameters.converters.two-d-coordinate-system
+    cmr.search.services.query-execution.facets.facets-results-feature
+    cmr.search.services.query-execution.facets.facets-v2-results-feature
+    cmr.search.services.query-execution.granule-counts-results-feature
+    cmr.search.services.query-execution.has-granules-results-feature
+    cmr.search.services.query-execution.highlight-results-feature
+    cmr.search.services.query-execution.tags-results-feature
+    cmr.search.services.query-execution
+    cmr.search.validators.attribute
+    cmr.search.validators.equator-crossing-date
+    cmr.search.validators.equator-crossing-longitude
+    cmr.search.validators.orbit-number
+    cmr.search.validators.temporal
+    cmr.search.validators.validation))
 
 
 (defn- sanitize-aql-params
@@ -253,7 +236,8 @@
                    (lp/process-legacy-multi-params-conditions :granule)
                    (lp/replace-science-keywords-or-option :granule)
                    pv/validate-timeline-parameters
-                   (p/timeline-parameters->query context))
+                   (p/timeline-parameters->query context)
+                   (common-search/validate-query context))
         results (qe/execute-query context query)]
     (common-search/search-results->response context query results)))
 

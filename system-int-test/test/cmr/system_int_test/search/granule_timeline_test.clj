@@ -78,6 +78,15 @@
                            "interval is a required parameter for timeline searches"]}
                  (search/get-granule-timeline {:foo 5}))))
 
+        (testing "query validation is run"
+          (is (= {:status 400
+                  :errors ["The shape contained duplicate points. Points 1 [lon=1 lat=2], 2 [lon=1 lat=2] and 3 [lon=1 lat=2] were considered equivalent or very close."]}
+                 (search/get-granule-timeline {:start-date "1994-01-01T00:00:00Z"
+                                               :end-date "2001-05-01T00:00:00Z"
+                                               :interval :year
+                                               :provider "PROV1"
+                                               :polygon "1,2,1,2,1,2,1,2"}))))
+
         (testing "invalid start-date"
           (is (= {:status 400
                   :errors ["Timeline parameter start_date datetime is invalid: [foo] is not a valid datetime."]}
