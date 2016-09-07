@@ -17,7 +17,8 @@
             [cmr.umm.umm-spatial :as umm-s]
             [cmr.umm.iso-smap.iso-smap-core :as iso]
             [clj-time.format :as f]
-            [cmr.umm.test.echo10.echo10-collection-tests :as test-echo10]))
+            [cmr.umm.test.echo10.echo10-collection-tests :as test-echo10]
+            [cmr.common.test.test-check-ext :as ext :refer [checking]]))
 
 (defn- spatial-coverage->expected-parsed
   "Returns the expected parsed spatial-coverage for the given spatial-coverage"
@@ -153,15 +154,16 @@
           expected-parsed (umm->expected-parsed-smap-iso collection)]
       (= parsed expected-parsed))))
 
-(defspec generate-and-parse-collection-between-formats-test 100
-  (for-all [collection coll-gen/collections]
+(deftest generate-and-parse-collection-between-formats-test
+  (checking "iso smap parse between formats" 100
+    [collection coll-gen/collections]
     (let [xml (iso/umm->iso-smap-xml collection)
           parsed-iso (c/parse-collection xml)
           echo10-xml (echo10/umm->echo10-xml parsed-iso)
           parsed-echo10 (echo10-c/parse-collection echo10-xml)
           expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-smap-iso collection))]
-      (and (= parsed-echo10 expected-parsed)
-           (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
+      (is (= parsed-echo10 expected-parsed))
+      (is (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
 
 (def sample-collection-xml
   (slurp (io/file (io/resource "data/iso_smap/sample_smap_iso_collection.xml"))))

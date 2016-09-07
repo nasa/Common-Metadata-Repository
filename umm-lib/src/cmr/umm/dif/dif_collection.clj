@@ -62,7 +62,8 @@
     (when (or insert-time update-time)
       (c/map->DataProviderTimestamps
         {:insert-time (dtp/try-parse-datetime insert-time)
-         :update-time (dtp/try-parse-datetime update-time)}))))
+         :update-time (dtp/try-parse-datetime update-time)
+         :revision-date-time (dtp/try-parse-datetime update-time)}))))
 
 (def umm-dif-publication-reference-mappings
   "A seq of [umm-key dif-tag-name] which maps between the UMM
@@ -202,14 +203,16 @@
                       (x/element :Last_DIF_Revision_Date {} (str update-time)))
 
                     ;; There should be a single extended metadata element encompassing
-                    ;; spatial-coverage, processing-level-id, collection-data-type, and additional
-                    ;; attributes
+                    ;; spatial-coverage, processing-level-id, collection-data-type, additional
+                    ;; attributes, and processing centers
                     (when (or spatial-coverage processing-level-id collection-data-type
-                              product-specific-attributes access-value)
+                              product-specific-attributes access-value
+                              (some #(= :processing-center (:type %)) organizations))
                       (x/element :Extended_Metadata {}
                                  (psa/generate-product-specific-attributes
                                    product-specific-attributes)
                                  (sc/generate-spatial-coverage-extended-metadata spatial-coverage)
+                                 (org/generate-metadata organizations)
                                  (when processing-level-id
                                    (em/generate-metadata-elements
                                      [{:name em/product_level_id_external_meta_name

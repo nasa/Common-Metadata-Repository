@@ -191,7 +191,7 @@
                                                                          :term "Mild"})]
                                     :organizations [(org :distribution-center "Larc")]}
          attribs (merge required-extra-dif-fields {:version-id eid/DEFAULT_VERSION} attribs)]
-     (assoc-in (collection attribs) [:data-provider-timestamps :revision-date-time] nil))))
+     (collection attribs))))
 
 (defn collection-dif10
   "Creates a dif collection"
@@ -212,7 +212,7 @@
                                       :beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                       :ending-date-time "1967-12-12T07:00:00.000-05:00"}
          attribs (merge required-extra-dif10-fields attribs)]
-     (assoc-in (collection attribs) [:data-provider-timestamps :revision-date-time] nil))))
+     (collection attribs))))
 
 (defn collection-smap
   "Creates an smap collection"

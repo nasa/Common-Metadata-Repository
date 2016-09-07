@@ -295,7 +295,7 @@
       (let [expected-facets [{:field "data_center"
                               :value-counts [["Larc" 3] ["Dist" 1] ["GSFC" 1] ["Proc" 1]]}
                              {:field "archive_center"
-                              :value-counts [["Larc" 3] ["GSFC" 1]]}
+                              :value-counts [["Larc" 3] ["Dist" 1] ["GSFC" 1]]}
                              {:field "project"
                               :value-counts [["PROJ2" 2] ["proj1" 1] ["proj3" 1]]}
                              {:field "platform"

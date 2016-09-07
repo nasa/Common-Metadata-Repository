@@ -48,6 +48,7 @@
       (c/map->DataProviderTimestamps
         {:insert-time (dtp/try-parse-datetime insert-time)
          :update-time (dtp/try-parse-datetime update-time)
+         :revision-date-time (dtp/try-parse-datetime update-time)
          :delete-time (dtp/try-parse-datetime delete-time)}))))
 
 (defn- xml-elem->Collection
