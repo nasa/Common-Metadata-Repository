@@ -205,7 +205,6 @@
 (defn parse-ingest-response
   "Parse an ingest response (if required) and append a status"
   [response options]
-  (proto-repl.saved-values/save 2)
   (if (get options :raw? false)
     response
     (assoc (parse-ingest-body (or (:accept-format options) :xml) response)

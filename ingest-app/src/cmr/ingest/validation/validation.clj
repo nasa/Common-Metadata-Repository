@@ -116,23 +116,23 @@
   [context collection validation-options]
   ;; Add keyword validations from validate-collection-umm here when validate-collection-umm is removed
 
-  (concat
-    (if-let [err-messages (seq (json-schema/validate-umm-json
-                                (umm-json/umm->json collection)
-                                :collection))]
-      (if (or (:validate-umm? validation-options) (config/return-umm-json-validation-errors))
-        (errors/throw-service-errors :invalid-data err-messages)
-        (do
-         (warn "UMM-C JSON-Schema Validation Errors: " (pr-str (vec err-messages)))
-         (str (vec err-messages)))))
+  (seq (concat
+        (if-let [err-messages (seq (json-schema/validate-umm-json
+                                    (umm-json/umm->json collection)
+                                    :collection))]
+          (if (or (:validate-umm? validation-options) (config/return-umm-json-validation-errors))
+            (errors/throw-service-errors :invalid-data err-messages)
+            (do
+              (warn "UMM-C JSON-Schema Validation Errors: " (pr-str (vec err-messages)))
+              err-messages)))
 
-    (when-let [err-messages (seq (umm-spec-validation/validate-collection
-                                  collection
-                                  (when (:validate-keywords? validation-options)
-                                    [(keyword-validations context)])))]
-      (if (or (:validate-umm? validation-options) (config/return-umm-spec-validation-errors))
-        (errors/throw-service-errors :invalid-data err-messages)
-        (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))))))
+        (when-let [err-messages (seq (umm-spec-validation/validate-collection
+                                      collection
+                                      (when (:validate-keywords? validation-options)
+                                        [(keyword-validations context)])))]
+          (if (or (:validate-umm? validation-options) (config/return-umm-spec-validation-errors))
+            (errors/throw-service-errors :invalid-data err-messages)
+            (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages))))))))
 
 (defn validate-granule-umm-spec
   "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record"

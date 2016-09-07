@@ -339,7 +339,7 @@
                                                       (dc/psa {:name "bool2" :data-type :boolean :value true})]})
                              {:allow-failure? true})]
       (is (= {:status 422
-              :errors ["object has missing required properties ([\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\"])"]}
+              :errors ["object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
              (select-keys response [:status :errors]))))
     ;; disable return of schema validation errors from API
     (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
@@ -353,7 +353,7 @@
                                                       (dc/psa {:name "bool2" :data-type :boolean :value true})]})
                              {:allow-failure? true :validate-umm-c true})]
       (is (= {:status 422
-              :errors ["object has missing required properties ([\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\"])"]}
+              :errors ["object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
              (select-keys response [:status :errors]))))
     (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
                                                  (dc/psa {:name "bool2" :data-type :boolean :value true})]}))

@@ -266,7 +266,7 @@
   (= (set (map item->ref items))
      ;; need to remove score etc. because it won't be available in collections
      ;; to which we are comparing
-     (set (map #(dissoc % :score :granule-count) (:refs search-result)))))
+     (set (map #(dissoc % :score :granule-count :warnings) (:refs search-result)))))
 
 (defn assert-refs-match
   "Asserts that the references match the results returned. Use this in place of refs-match? to
