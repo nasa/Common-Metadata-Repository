@@ -77,6 +77,9 @@
   "Parses metadata of the specific concept type and format into UMM records.
   The :apply-default? option tells the parsing code to apply the default values for fields
   when parsing the metadata into umm. It defaults to true."
+  ([context concept]
+   (let [{:keys [concept-type format metadata]} concept]
+     (parse-metadata context concept-type format metadata)))
   ([context concept-type fmt metadata]
    (parse-metadata context concept-type fmt metadata u/default-parsing-options))
   ([context concept-type fmt metadata options]
