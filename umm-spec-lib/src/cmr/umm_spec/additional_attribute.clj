@@ -101,7 +101,7 @@
     (assoc aa dest-field v)
     aa))
 
-(defn- attribute-with-parsed-value
+(defn attribute-with-parsed-value
   "Adds a parsed-value keyword to the additional attribute based on the data type and value in the map."
   [aa]
   (-> aa
