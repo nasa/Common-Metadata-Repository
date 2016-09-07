@@ -74,7 +74,7 @@
      context (assoc coll-concept :umm-concept collection))
 
     ;; Validate ingest business rule through umm-lib
-    ;; Remove this as part of CMR-3345
+    ;; TO DO this will be removed at the end of this issue CMR-2881.
     (v/validate-business-rules
      context (assoc coll-concept :umm-concept umm-lib-collection))
     coll-concept))
