@@ -346,7 +346,7 @@
     (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
                                                  (dc/psa {:name "bool2" :data-type :boolean :value true})]}))
 
-  (testing "Enabling UMM-C JSON-Schema validation through Cmr-Validate-Umm-C header"
+  (testing "Enabling UMM-C JSON-Schema validation through Cmr-Validate-Umm-C header being true"
     ;; create collection valid against echo10 but invalid against schema
     (let [response (d/ingest "PROV1" (dc/collection {:product-specific-attributes
                                                      [(dc/psa {:name "bool1" :data-type :boolean :value true})
@@ -357,21 +357,71 @@
              (select-keys response [:status :errors]))))
     (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
                                                  (dc/psa {:name "bool2" :data-type :boolean :value true})]}))
-  (testing "Enabling UMM-Spec validation through Cmr-Validate-Umm-C header"
+  (testing "Enabling UMM-C JSON-Schema validation through Cmr-Validate-Umm-C header being false"
+    ;; create collection valid against echo10 but invalid against schema
+    (let [response (d/ingest "PROV1" (dc/collection {:product-specific-attributes
+                                                     [(dc/psa {:name "bool1" :data-type :boolean :value true})
+                                                      (dc/psa {:name "bool2" :data-type :boolean :value true})]})
+                             {:allow-failure? true :validate-umm-c false})]
+      (is (= {:status 200}
+             (select-keys response [:status :errors]))))
+    (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
+                                                 (dc/psa {:name "bool2" :data-type :boolean :value true})]}))
+  (testing "Enabling UMM-C JSON-Schema validation through Cmr-Validate-Umm-C header being absent"
+    ;; create collection valid against echo10 but invalid against schema
+    (let [response (d/ingest "PROV1" (dc/collection {:product-specific-attributes
+                                                     [(dc/psa {:name "bool1" :data-type :boolean :value true})
+                                                      (dc/psa {:name "bool2" :data-type :boolean :value true})]})
+                             {:allow-failure? true})]
+      (is (= {:status 200} 
+             (select-keys response [:status :errors]))))
+    (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
+                                                 (dc/psa {:name "bool2" :data-type :boolean :value true})]})) 
+  
+  (testing "Enabling UMM-Spec validation through Cmr-Validate-Umm-C header being true"
     ;; create a collection that's  valid against schema validation, but invalid against umm-spec validation
     (assert-invalid
       {:processing-level-id "1"
        :science-keywords [(dc/science-keyword {:category "upcase"
-                                            :topic "Cool"
-                                            :term "Mild"})]
+                                               :topic "Cool"
+                                               :term "Mild"})]
        :spatial-coverage (dc/spatial {:gsr :cartesian})
-       :related-urls [(dc/related-url {:type "type" :url "htt://www.foo.com"})]
+       :related-urls [(dc/related-url {:type "type" :url "http://www.foo.com"})]
        :product-specific-attributes
        [(dc/psa {:name "bool" :data-type :boolean :value true})
         (dc/psa {:name "bool" :data-type :boolean :value true})]}
       ["AdditionalAttributes"]
       ["Additional Attributes must be unique. This contains duplicates named [bool]."]
       {:validate-umm-c true}))
+  (testing "Enabling UMM-Spec validation through Cmr-Validate-Umm-C header being false"
+    ;; create a collection that's  valid against schema validation, but invalid against umm-spec validation
+    (assert-invalid
+      {:processing-level-id "1"
+       :science-keywords [(dc/science-keyword {:category "upcase"
+                                               :topic "Cool"
+                                               :term "Mild"})]
+       :spatial-coverage (dc/spatial {:gsr :cartesian})
+       :related-urls [(dc/related-url {:type "type" :url "http://www.foo.com"})]
+       :product-specific-attributes
+       [(dc/psa {:name "bool" :data-type :boolean :value true})
+        (dc/psa {:name "bool" :data-type :boolean :value true})]}
+      ["ProductSpecificAttributes"]
+      ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]
+      {:validate-umm-c false}))
+  (testing "Enabling UMM-Spec validation through Cmr-Validate-Umm-C header being absent"
+    ;; create a collection that's  valid against schema validation, but invalid against umm-spec validation
+    (assert-invalid
+      {:processing-level-id "1"
+       :science-keywords [(dc/science-keyword {:category "upcase"
+                                               :topic "Cool"
+                                               :term "Mild"})]
+       :spatial-coverage (dc/spatial {:gsr :cartesian})
+       :related-urls [(dc/related-url {:type "type" :url "http://www.foo.com"})]
+       :product-specific-attributes
+       [(dc/psa {:name "bool" :data-type :boolean :value true})
+        (dc/psa {:name "bool" :data-type :boolean :value true})]}
+      ["ProductSpecificAttributes"]
+      ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]))
 
   (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
 
