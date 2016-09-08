@@ -606,56 +606,30 @@
   ;; By default the config return-umm-spec-validation-errors is false, so warnings are returned
   ;; with the collection. If return-umm-spec-validation-errors was true, errors would be thrown. tests
   ;; for the errors if return-umm-spec-validation-errors is true are in this file.
-  (testing "ECHO10 Ingest Validation Warnings"
-    (let [response (d/ingest "PROV1" (dc/collection {}))]
-      (is (= 200 (:status response)))
-      (is (= "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
-             (:warnings response)))))
-  (testing "ECHO10 Validation Warnings"
-    (let [response (ingest/validate-concept (dc/collection-concept {}))]
-      (is (= 200 (:status response)))
-      (is (= "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
-             (:warnings response)))))
-  (testing "DIF10 Ingest Validation Warnings"
-    (let [response (d/ingest "PROV1" (dc/collection-dif10 {}) {:format :dif10})]
-      (is (= 200 (:status response)))
-      (is (= "object has missing required properties ([\"ProcessingLevel\"])"
-             (:warnings response)))))
-  (testing "DIF10 Validation Warnings"
-    (let [response (ingest/validate-concept (dc/collection-concept (dc/collection-dif10 {}) :dif10))]
-      (is (= 200 (:status response)))
-      (is (= "object has missing required properties ([\"ProcessingLevel\"])"
-             (:warnings response)))))
-  (testing "DIF9 Ingest Validation Warnings"
-    (let [response (d/ingest "PROV1" (dc/collection-dif {}) {:format :dif})]
-      (is (= 200 (:status response)))
-      (is (= "object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"TemporalExtents\"])"
-             (:warnings response)))))
-  (testing "DIF9 Validation Warnings"
-    (let [response (ingest/validate-concept (dc/collection-concept (dc/collection-dif {}) :dif))]
-      (is (= 200 (:status response)))
-      (is (= "object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"TemporalExtents\"])"
-             (:warnings response)))))
-  (testing "ISO19115 Ingest Validation Warnings"
-    (let [response (d/ingest "PROV1" (dc/collection {}) {:format :iso19115})]
-      (is (= 200 (:status response)))
-      (is (= "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
-             (:warnings response)))))
-  (testing "ISO19115 Validation Warnings"
-    (let [response (ingest/validate-concept (dc/collection-concept {} :iso19115))]
-      (is (= 200 (:status response)))
-      (is (= "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
-             (:warnings response)))))
-  (testing "ISO SMAP Ingest Validation Warnings"
-    (let [response (d/ingest "PROV1" (dc/collection-smap {}) {:format :iso-smap})]
-      (is (= 200 (:status response)))
-      (is (= "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
-             (:warnings response)))))
-  (testing "ISO SMAP Validation Warnings"
-    (let [response (ingest/validate-concept (dc/collection-concept (dc/collection-smap {}) :iso-smap))]
-      (is (= 200 (:status response)))
-      (is (= "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
-             (:warnings response))))))
+  (testing "Ingest and Ingest Validation"
+    (are3 [format collection warning-message]
+          (do
+            (let [response (d/ingest "PROV1" collection {:format format})]
+              (is (= 200 (:status response)))
+              (is (= warning-message (:warnings response))))
+            (let [response (ingest/validate-concept (dc/collection-concept collection format))]
+              (is (= 200 (:status response)))
+              (is (= warning-message (:warnings response)))))
+
+          "ECHO10 Ingest and Ingest Validation"
+          :echo10 (dc/collection {}) "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+
+          "DIF10 Ingest and Ingest Validation"
+          :dif10 (dc/collection-dif10 {}) "object has missing required properties ([\"ProcessingLevel\"])"
+
+          "DIF9 Ingest and Ingest Validation"
+          :dif (dc/collection-dif {}) "object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"TemporalExtents\"])"
+
+          "ISO19115 Ingest and Ingest Validation"
+          :iso19115 (dc/collection {}) "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+
+          "ISO SMAP Ingest and Ingest Validation"
+          :iso-smap (dc/collection-smap {}) "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])")))
 
 
 (comment

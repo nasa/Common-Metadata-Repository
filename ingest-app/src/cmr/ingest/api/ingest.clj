@@ -18,7 +18,7 @@
    [cmr.transmit.echo.tokens :as tokens]
    [compojure.core :refer :all])
   (:import
-   clojure.lang.ExceptionInfo))
+   (clojure.lang ExceptionInfo)))
 
 (def VALIDATE_KEYWORDS_HEADER "cmr-validate-keywords")
 (def ENABLE_UMM_C_VALIDATION_HEADER "cmr-validate-umm-c")

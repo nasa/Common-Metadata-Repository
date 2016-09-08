@@ -112,7 +112,8 @@
                                      [(keyword-validations context)]))))
 
 (defn validate-collection-umm-spec
-  "Validate UMM-C record"
+  "Validate UMM-C record and return warnings if warnings are turned on (:validate-umm? or
+  return-umm-json-validation-errors are true)"
   [context collection validation-options]
   ;; Add keyword validations from validate-collection-umm here when validate-collection-umm is removed
 
