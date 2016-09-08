@@ -50,8 +50,8 @@
    ;;  cui/entry-title-searches
    ;;  cui/short-name-version-id-searches
    ; aa/additional-attribute-searches
-   pv/deleted-project-searches
-   tv/out-of-range-temporal-searches
+   ; pv/deleted-project-searches
+   ; tv/out-of-range-temporal-searches
    ; sv/spatial-param-change-searches
    ])
 

@@ -6,10 +6,10 @@
     [cmr.common.date-time-parser :as p]
     [cmr.ingest.services.helper :as h]
     [cmr.ingest.spec-validation.additional-attribute-validation :as aa]
-    ; [cmr.ingest.spec-validation.collection-unique-ids-validation :as cui]
-    ; [cmr.ingest.spec-validation.project-validation :as pv]
+    [cmr.ingest.spec-validation.collection-unique-ids-validation :as cui]
+    [cmr.ingest.spec-validation.project-validation :as pv]
     [cmr.ingest.spec-validation.spatial-validation :as sv]
-    ; [cmr.ingest.spec-validation.temporal-validation :as tv]
+    [cmr.ingest.spec-validation.temporal-validation :as tv]
     [cmr.umm-spec.umm-spec-core :as spec]
     [cmr.transmit.metadata-db :as mdb]
     [cmr.transmit.search :as search]))
@@ -51,10 +51,9 @@
    ;;  cui/entry-title-searches
    ;;  cui/short-name-version-id-searches
    aa/additional-attribute-searches
-   ; pv/deleted-project-searches
-   ; tv/out-of-range-temporal-searches
-   sv/spatial-param-change-searches
-   ])
+   pv/deleted-project-searches
+   tv/out-of-range-temporal-searches
+   sv/spatial-param-change-searches])
 
 (defn- has-granule-search-error
   "Execute the given has-granule search, returns the error message if there are granules found
