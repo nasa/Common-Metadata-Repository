@@ -359,30 +359,30 @@
                                                  (dc/psa {:name "bool2" :data-type :boolean :value true})]}))
 
   ;; testing enabling umm json schema validation through Cmr-Validation-Umm-C header
+  (testing "Enabling UMM-C JSON-Schema validation through Cmr-Validate-Umm-C header being true"
+    ;; create collection valid against echo10 but invalid against schema
+    (let [response (d/ingest "PROV1" (dc/collection {:product-specific-attributes
+                                                     [(dc/psa {:name "bool1" :data-type :boolean :value true})
+                                                      (dc/psa {:name "bool2" :data-type :boolean :value true})]})
+                             {:allow-failure? true :validate-umm-c true})]
+      (is (= {:status 422
+              :errors ["object has missing required properties ([\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\"])"]}
+             (select-keys response [:status :errors])))))
+
   (let [coll-attr {:product-specific-attributes
                    [(dc/psa {:name "bool1" :data-type :boolean :value true})
                     (dc/psa {:name "bool2" :data-type :boolean :value true})]}]
     (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
-    (do (are3 [coll-attributes error options]
-              (do (assert-invalid-schema coll-attributes error options)
-                  (assert-valid coll-attributes))
-             
-              "Set Cmr-Validate-Umm-C header to true - schema validation error is returned"
-              coll-attr
-              "object has missing required properties ([\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\"])"
-              {:validate-umm-c true})
+    (are3 [coll-attributes options] 
+          (assert-valid coll-attributes options)
 
-        (are3 [coll-attributes options] 
-              (do (assert-valid coll-attributes options)
-                  (assert-valid coll-attributes))
+          "Set Cmr-Validate-Umm-C header to false - schema validation error is not returned"  
+          coll-attr
+          {:allow-failure? true :validate-umm-c false} 
 
-              "Set Cmr-Validate-Umm-C header to false - schema validation error is not returned"  
-              coll-attr
-              {:allow-failure? true :validate-umm-c false} 
-
-              "Do not set Cmr-Validate-Umm-C header - schema validation error is not returned"
-              coll-attr
-              {:allow-failure? true})))     
+          "Do not set Cmr-Validate-Umm-C header - schema validation error is not returned"
+          coll-attr
+          {:allow-failure? true}))     
 
   ;; testing enabling umm-spec validation through Cmr-Validation-Umm-C header
   (let [coll-attr {:processing-level-id "1"
