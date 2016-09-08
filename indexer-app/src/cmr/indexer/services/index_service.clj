@@ -80,7 +80,8 @@
   ;; Get the tag associations as well.
   (let [batch (map (fn [concept]
                      (let [tag-associations (mdb/get-tag-associations-for-collection
-                                              context concept)]
+                                              context concept)
+                           _ (println "TAG ASSOC: " tag-associations)]
                        (assoc concept :tag-associations tag-associations)))
                    batch)]
     (es/prepare-batch context (filter-expired-concepts batch) options)))

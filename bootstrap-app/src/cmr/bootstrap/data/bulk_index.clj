@@ -121,6 +121,7 @@
         providers (p/get-providers db)
         ;; helper function to get and index batches of concepts
         index-fn (fn [provider concept-type]
+                   (println "PROVIDER: " (:provider-id provider) " CONCEPT_TYPE: " concept-type)
                    (let [provider-id (:provider-id provider)
                          params {:concept-type concept-type
                                  :provider-id provider-id
@@ -136,7 +137,7 @@
     (let [non-system-concept-count (reduce + (for [provider providers
                                                    concept-type [:collection :granule :service]]
                                                (index-fn provider concept-type)))
-          system-concept-count (reduce + (for [concept-type [:acl :access-group :tag :tag-association]]
+          system-concept-count (reduce + (for [concept-type [:acl :access-group :tag]]
                                            (index-fn {:provider-id "CMR"} concept-type)))]
       (info "Indexing concepts with revision-date later than" date-time "completed.")
       (format "Indexed %d provider concepts and %d system concepts."

@@ -14,6 +14,20 @@
             [clj-time.format :as f]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
+(defn bulk-index-after-date-time
+  "Call the bootstrap app to bulk index concepts with revision dates later than the given datetime."
+  [date-time]
+  (let [response (client/request
+                   {:method :post
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-after-date-time-url date-time)
+                    :content-type :json
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
 (defn bulk-index-provider
   "Call the bootstrap app to bulk index a provider."
   [provider-id]

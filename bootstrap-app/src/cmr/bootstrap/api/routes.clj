@@ -55,7 +55,9 @@
 (defn- bulk-index-data-later-than-date-time
   "Index all the data later than a given date-time."
   [context params]
-  (let [{:keys [date-time synchronous]} params]
+  (println "PARAMS: " params)
+  (let [synchronous (:synchronous params)
+        date-time (:date_time params)]
     (if-let [date-time-value (date-time-parser/try-parse-datetime date-time)]
       (let [start-index (Long/parseLong (get params :start_index "0"))
             result (bs/index-data-later-than-date-time context date-time-value synchronous start-index)
@@ -63,9 +65,9 @@
                     result
                     (str "Processing data after " date-time " for bulk indexing from start index " start-index))]
         {:status 202
-         :body {:message msg}}))
-    ;; Can't parse date-time.
-    (srv-errors/throw-service-error :invalid-data (str date-time " is not a valid date-time."))))
+         :body {:message msg}})
+      ;; Can't parse date-time.
+      (srv-errors/throw-service-error :invalid-data (str date-time " is not a valid date-time.")))))
 
 (defn- bulk-index-collection
   "Index all the granules in a collection"
@@ -137,7 +139,7 @@
         (POST "/collections" {:keys [request-context body params]}
           (bulk-index-collection request-context body params))
 
-        (POST "/after-date-time" {:keys [request-context params]}
+        (POST "/after_date_time" {:keys [request-context params]}
           (bulk-index-data-later-than-date-time request-context params)))
 
       (context "/rebalancing_collections/:concept-id" [concept-id]

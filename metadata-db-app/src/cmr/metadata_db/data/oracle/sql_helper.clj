@@ -14,21 +14,28 @@
   [date-time]
   (let [formatter (time-format/formatter "yyyy-MM-dd hh:mm:ss")
         date-time-str (time-format/unparse formatter date-time)]
-    (format "revision_date > TIMESTAMP '%s'" date-time-str)))
+    `(> "revision_date" ~(str "TIMESTAMP " date-time-str))))
 
 (defn find-params->sql-clause
   "Converts a parameter map for finding concept types into a sql clause for inclusion in a query."
   [params]
+  (println "SQL PARAMS: " params)
   ;; Validate parameter names as a sanity check to prevent sql injection
   (let [valid-param-name #"^[a-zA-Z][a-zA-Z0-9_\-]*$"]
     (when-let [invalid-names (seq (filter #(not (re-matches valid-param-name (name %))) (keys params)))]
       (errors/internal-error! (format "Attempting to search with invalid parameter names [%s]"
                                       (str/join ", " invalid-names)))))
-  (let [comparisons (for [[k v] params]
+  (let [revision-date (:revision-date params)
+        params (dissoc params :revision-date)
+        comparisons (for [[k v] params]
                       (if (sequential? v)
                         (let [val (seq v)]
                           `(in ~k ~val))
-                        `(= ~k ~v)))]
+                        `(= ~k ~v)))
+        comparisons (if revision-date
+                        (conj comparisons (date-time->revision-date-sql-clause revision-date))
+                        comparisons)]
+    (println "COMPARISIONS: " comparisons)
     (if (> (count comparisons) 1)
       (cons `and comparisons)
       (first comparisons))))

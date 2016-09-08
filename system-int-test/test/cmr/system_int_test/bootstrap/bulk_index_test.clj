@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.bootstrap.bulk-index-test
   "Integration test for CMR bulk indexing."
   (:require [clojure.test :refer :all]
+            [cmr.common.util :as util :refer [are3]]
             [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.umm.echo10.echo10-core :as echo10]
@@ -19,6 +20,84 @@
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
                        tags/grant-all-tag-fixture]))
+
+(deftest bulk-index-after-date-time-url
+  (s/only-with-real-database
+    (let [;; saved but not indexed
+          _ (dev-sys-util/freeze-time! "2000-01-01T10:00:00Z")
+          umm1 (dc/collection {:short-name "coll1" :entry-title "coll1"})
+          xml1 (echo10/umm->echo10-xml umm1)
+          coll1 (mdb/save-concept {:concept-type :collection
+                                   :format "application/echo10+xml"
+                                   :metadata xml1
+                                   :extra-fields {:short-name "coll1"
+                                                  :entry-title "coll1"
+                                                  :entry-id "coll1"
+                                                  :version-id "v1"}
+                                   :provider-id "PROV1"
+                                   :native-id "coll1"
+                                   :short-name "coll1"})
+          umm1 (merge umm1 (select-keys coll1 [:concept-id :revision-id]))
+
+          ;; granule
+          ummg1 (dg/granule coll1 {:granule-ur "gran1"})
+          xmlg1 (echo10/umm->echo10-xml ummg1)
+          gran1 (mdb/save-concept {:concept-type :granule
+                                   :provider-id "PROV1"
+                                   :native-id "gran1"
+                                   :format "application/echo10+xml"
+                                   :metadata xmlg1
+                                   :extra-fields {:parent-collection-id (:concept-id umm1)
+                                                  :parent-entry-title "coll1"
+                                                  :granule-ur "ur1"}})
+          ummg1 (merge ummg1 (select-keys gran1 [:concept-id :revision-id]))
+
+          ;; collection
+          _ (dev-sys-util/freeze-time! "2016-09-01T10:00:00Z")
+          umm2 (dc/collection {:short-name "coll2" :entry-title "coll2"})
+          xml2 (echo10/umm->echo10-xml umm2)
+          coll2 (mdb/save-concept {:concept-type :collection
+                                   :format "application/echo10+xml"
+                                   :metadata xml2
+                                   :extra-fields {:short-name "coll2"
+                                                  :entry-title "coll2"
+                                                  :entry-id "coll2"
+                                                  :version-id "v1"}
+                                   :provider-id "PROV1"
+                                   :native-id "coll2"
+                                   :short-name "coll2"})
+           umm2 (merge umm2 (select-keys coll2 [:concept-id :revision-id]))
+
+
+           ; granule
+           ummg2 (dg/granule coll2 {:granule-ur "gran2"})
+           xmlg2 (echo10/umm->echo10-xml ummg2)
+           gran2 (mdb/save-concept {:concept-type :granule
+                                    :provider-id "PROV1"
+                                    :native-id "gran2"
+                                    :format "application/echo10+xml"
+                                    :metadata xmlg2
+                                    :extra-fields {:parent-collection-id (:concept-id umm2)
+                                                   :parent-entry-title "coll2"
+                                                   :granule-ur "ur2"}})
+          ummg2 (merge ummg2 (select-keys gran2 [:concept-id :revision-id]))]
+
+      (dev-sys-util/clear-current-time!)
+
+      ;; Verify that all of the ingest requests completed successfully
+      (doseq [concept [coll1 coll2 gran1 gran2]] (is (= 201 (:status concept))))
+
+      (bootstrap/bulk-index-after-date-time "2020-01-01T12:00:00Z")
+      (index/wait-until-indexed)
+
+      (testing "Only concepts after date are indexed."
+               (are3 [search concept-type expected]
+                     (d/refs-match? expected (search/find-refs concept-type search))
+                     "Collections"
+                     {} :collection [umm2]
+                     "Granules"
+                     {} :granule [ummg2])))))
+
 
 ;; This test runs bulk index with some concepts in mdb that are good, and some that are
 ;; deleted, and some that have not yet been deleted, but have an expired deletion date.
@@ -253,5 +332,3 @@
       (testing "All tag parameters with XML references"
         (is (d/refs-match? [coll1]
                            (search/find-refs :collection {:tag-key "tag1"})))))))
-
-

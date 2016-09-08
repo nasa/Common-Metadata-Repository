@@ -67,11 +67,11 @@
    (let [format-key (get options :format :echo10)
          response (ingest/ingest-concept
                     (item->concept (assoc item :provider-id provider-id) format-key)
-                    (select-keys options [:token 
-                                          :client-id 
-                                          :user-id 
-                                          :validate-keywords 
-                                          :validate-umm-c 
+                    (select-keys options [:token
+                                          :client-id
+                                          :user-id
+                                          :validate-keywords
+                                          :validate-umm-c
                                           :accept-format]))
          status (:status response)]
 
@@ -261,10 +261,10 @@
 (defn refs-match?
   "Returns true if the references match the expected items"
   [items search-result]
-  (= (set (map item->ref items))
-     ;; need to remove score etc. because it won't be available in collections
-     ;; to which we are comparing
-     (set (map #(dissoc % :score :granule-count) (:refs search-result)))))
+  (is (= (set (map item->ref items))
+         ;; need to remove score etc. because it won't be available in collections
+         ;; to which we are comparing
+         (set (map #(dissoc % :score :granule-count) (:refs search-result))))))
 
 (defn assert-refs-match
   "Asserts that the references match the results returned. Use this in place of refs-match? to
