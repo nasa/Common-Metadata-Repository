@@ -210,6 +210,38 @@
     (assoc (parse-ingest-body (or (:accept-format options) :xml) response)
            :status (:status response))))
 
+(defmulti parse-validate-body
+  "Parse the validate response body as a given format"
+  (fn [response-format body]
+    response-format))
+
+(defmethod parse-validate-body :xml
+  [response-format response]
+  (when (not-empty (:body response))
+    (try
+      (let [xml-elem (x/parse-str (:body response))]
+        (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
+          (parse-xml-error-response-elem xml-elem)
+          {:warnings (cx/string-at-path xml-elem [:warnings])}))
+
+      (catch Exception e
+        (throw (Exception. (str "Error parsing validate-format body: " (pr-str (:body response)) e)))))))
+
+(defmethod parse-validate-body :json
+  [response-format response]
+  (try
+    (json/decode (:body response) true)
+    (catch Exception e
+      (throw (Exception. (str "Error parsing validate body: " (pr-str (:body response))) e)))))
+
+(defn parse-validate-response
+  "Parse a validate response (if required) and append a status"
+  [response options]
+  (if (get options :raw? false)
+    response
+    (assoc (parse-validate-body (or (:accept-format options) :xml) response)
+           :status (:status response))))
+
 (defn exec-ingest-http-request
   "Execute the http request defined by the given params map and returns the parsed ingest response."
   [params]
@@ -318,10 +350,11 @@
          status (:status response)]
      (if raw?
        response
-       (if (not= status 200)
-         ;; Validation only returns a response body if there are errors.
-         (parse-ingest-response response options)
-         {:status 200})))))
+       (let [parsed-response (parse-validate-response response options)]
+         (if (not= status 200)
+           ;; Validation only returns a response body if there are errors.
+           parsed-response
+           (select-keys parsed-response [:status :warnings])))))))
 
 (defn validate-granule
   "Validates a granule concept by sending it and optionally its parent collection to the validation

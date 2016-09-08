@@ -1,21 +1,24 @@
 (ns cmr.ingest.api.ingest
   "Defines the HTTP URL routes for validating and ingesting concepts."
-  (:require [compojure.core :refer :all]
-            [clojure.string :as str]
-            [clojure.data.xml :as x]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.services.errors :as srvc-errors]
-            [cmr.common.mime-types :as mt]
-            [cmr.transmit.echo.tokens :as tokens]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.acl.core :as acl]
-            [cmr.ingest.services.ingest-service :as ingest]
-            [cmr.ingest.services.messages :as msg]
-            [cmr.common.cache.in-memory-cache :as mem-cache]
-            [cmr.common.cache :as cache]
-            [cmr.ingest.services.providers-cache :as pc])
-  (:import clojure.lang.ExceptionInfo))
+  (:require
+   [clojure.data.xml :as x]
+   [clojure.string :as str]
+   [cmr.acl.core :as acl]
+   [cmr.common.cache :as cache]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as srvc-errors]
+   [cmr.common.util :as util]
+   [cmr.ingest.services.ingest-service :as ingest]
+   [cmr.ingest.services.messages :as msg]
+   [cmr.ingest.services.providers-cache :as pc]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.echo.tokens :as tokens]
+   [compojure.core :refer :all])
+  (:import
+   clojure.lang.ExceptionInfo))
 
 (def VALIDATE_KEYWORDS_HEADER "cmr-validate-keywords")
 (def ENABLE_UMM_C_VALIDATION_HEADER "cmr-validate-umm-c")
@@ -90,6 +93,28 @@
   {:status 200
    :headers {"Content-Type" (mt/format->mime-type :xml)}
    :body (result-map->xml result)})
+
+(defmulti generate-validate-response
+  "Convert a result to a proper response format"
+  (fn [headers result]
+    (get-ingest-result-format headers :xml)))
+
+(defmethod generate-validate-response :json
+  [headers result]
+  ;; ring-json middleware will handle converting the body to json
+  (if (not-empty result)
+    {:status 200
+     :headers {"Content-Type" (mt/format->mime-type :json)}
+     :body result}
+    {:status 200}))
+
+(defmethod generate-validate-response :xml
+  [headers result]
+  (if (not-empty result)
+   {:status 200
+    :headers {"Content-Type" (mt/format->mime-type :xml)}
+    :body (result-map->xml result)}
+   {:status 200}))
 
 (defn- invalid-revision-id-error
   "Throw an error saying that revision is invalid"
@@ -182,7 +207,7 @@
   "Returns a map of validation options with boolean values"
   [headers]
   {:validate-keywords? (= "true" (get headers VALIDATE_KEYWORDS_HEADER))
-   :validate-umm? (= "true" (get headers ENABLE_UMM_C_VALIDATION_HEADER))})  
+   :validate-umm? (= "true" (get headers ENABLE_UMM_C_VALIDATION_HEADER))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Collection API Functions
@@ -195,10 +220,10 @@
     (verify-provider-exists request-context provider-id)
     (info (format "Validating Collection %s from client %s"
                   (concept->loggable-string concept) (:client-id request-context)))
-    (ingest/validate-and-prepare-collection request-context 
-                                            concept
-                                            validation-options)
-    {:status 200}))
+    (let [validate-response (ingest/validate-and-prepare-collection request-context
+                                                                    concept
+                                                                    validation-options)]
+      (generate-validate-response headers (util/remove-nil-keys (select-keys validate-response [:warnings]))))))
 
 (defn ingest-collection
   [provider-id native-id request]
@@ -326,5 +351,3 @@
           (ingest-granule provider-id native-id request))
         (DELETE "/" request
           (delete-granule provider-id native-id request))))))
-
-

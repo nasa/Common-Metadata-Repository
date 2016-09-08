@@ -54,7 +54,8 @@
 ;; Verify that successful validation requests do not get an xml or json response body
 (deftest successful-validation-with-accept-header-test
   (are [accept]
-       (let [concept (dc/collection-concept {})
+       (let [collection (dc/collection-dif10 {:processing-level-id "Level 1"})
+             concept (dc/collection-concept collection :dif10)
              response-map (select-keys (ingest/validate-concept concept {:accept-format accept :raw? true})
                                        [:status :body])]
          (= {:status 200 :body ""} response-map))
@@ -542,8 +543,24 @@
                      :concept-type :collection
                      :provider-id "PROV1"
                      :native-id "new collection"}
-        {:keys [status body]} (ingest/validate-concept concept-map {:accept-format mt/echo10 :raw? true})]
-    (is (= [200 ""] [status body]))))
+        {:keys [status body]} (ingest/validate-concept concept-map {:raw? true})]
+    (is (= 200 status))))
+
+(deftest umm-spec-validation-warnings
+  ;; By default the config return-umm-spec-validation-errors is false, so warnings are returned
+  ;; with the collection. If return-umm-spec-validation-errors was true, errors would be thrown. tests
+  ;; for the errors if return-umm-spec-validation-errors is true are in this file.
+  (testing "ECHO10 Ingest Validation Warnings"
+    (let [response (d/ingest "PROV1" (dc/collection {}))]
+      (is (= 200 (:status response)))
+      (is (= "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+             (:warnings response)))))
+  (testing "ECHO10 Validation Warnings"
+    (let [response (ingest/validate-concept (dc/collection-concept {}))]
+      (is (= 200 (:status response)))
+      (is (= "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+             (:warnings response))))))
+
 
 (comment
   (ingest/delete-provider "PROV1")
