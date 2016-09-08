@@ -114,7 +114,11 @@ This header returns the unique id assigned to the request. This can be used to h
 
 Successful ingest responses will return an HTTP Status code of 200 and a body containing the [CMR Concept Id](#concept-id) of the item that was updated or deleted along with the [revision id](#revision-id).
 
-    {"concept-id":"C12345-PROV","revision-id":1}
+If the Cmr-Validate-Umm-C header is not provided or false, any errors encountered during validation
+will come back as warnings. Warnings would be returned if the ingested record passes native XML schema
+validation, but not UMM-C validation.
+
+    {"concept-id":"C12345-PROV","revision-id":1,"warnings":"object has missing required properties ([\"ProcessingLevel\"])"}
 
 #### <a name="error-response"></a> Error Responses
 
@@ -219,7 +223,8 @@ An example concept id is C179460405-LPDAAC_ECS. The letter identifies the concep
 
 ### <a name="validate-collection"></a> Validate Collection
 
-Collection metadata can be validated without having to ingest it. The validation performed is schema validation, UMM validation, and inventory specific validations. Keyword validation can be enabled with the [keyword validation header](#validate-keywords-header). It returns status code 200 on successful validation, status code 400 with a list of validation errors on failed validation.
+Collection metadata can be validated without having to ingest it. The validation performed is schema validation, UMM validation, and inventory specific validations. Keyword validation can be enabled with the [keyword validation header](#validate-keywords-header). It returns status code 200 with a list of any warnings on successful validation, status code 400 with a list of validation errors on failed validation. Warnings would be returned if the ingested record passes native XML schema
+validation, but not UMM-C validation.
 
 ```
 curl -i -XPOST -H "Content-type: application/echo10+xml" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/validate/collection/sampleNativeId15 -d \
