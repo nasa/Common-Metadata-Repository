@@ -85,16 +85,6 @@
                        :errors errors}]}
             (select-keys response [:status :errors]))))))
 
-(defn assert-invalid-schema
-  ([coll-attributes errors]
-   (assert-invalid coll-attributes errors nil))
-  ([coll-attributes errors options]
-   (let [response (d/ingest "PROV1" (dc/collection coll-attributes)
-                            (merge {:allow-failure? true} options))]
-     (is (= {:status 422
-             :errors [errors]}
-            (select-keys response [:status :errors]))))))
-
 (defn assert-invalid-keywords
   [coll-attributes field-path errors]
   (assert-invalid coll-attributes field-path errors {:validate-keywords true}))
