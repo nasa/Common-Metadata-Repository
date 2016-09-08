@@ -358,9 +358,7 @@
                              {:allow-failure? true :validate-umm-c true})]
       (is (= {:status 422
               :errors ["object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
-             (select-keys response [:status :errors]))))
-    (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
-                                                 (dc/psa {:name "bool2" :data-type :boolean :value true})]}))
+             (select-keys response [:status :errors])))))
 
   (let [coll-attr {:product-specific-attributes
                    [(dc/psa {:name "bool1" :data-type :boolean :value true})

@@ -33,7 +33,6 @@
   ([item]
    (item->concept item :echo10))
   ([item format-key]
-   ;(proto-repl.saved-values/save 32)
    (let [format (mime-types/format->mime-type format-key)]
      (merge {:concept-type (umm-legacy/item->concept-type item)
              :provider-id (or (:provider-id item) "PROV1")
