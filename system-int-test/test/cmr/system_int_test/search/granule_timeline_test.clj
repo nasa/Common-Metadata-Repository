@@ -78,6 +78,15 @@
                            "interval is a required parameter for timeline searches"]}
                  (search/get-granule-timeline {:foo 5}))))
 
+        (testing "query validation is run"
+          (is (= {:status 400
+                  :errors ["The shape contained duplicate points. Points 1 [lon=1 lat=2], 2 [lon=1 lat=2] and 3 [lon=1 lat=2] were considered equivalent or very close."]}
+                 (search/get-granule-timeline {:start-date "1994-01-01T00:00:00Z"
+                                               :end-date "2001-05-01T00:00:00Z"
+                                               :interval :year
+                                               :provider "PROV1"
+                                               :polygon "1,2,1,2,1,2,1,2"}))))
+
         (testing "invalid start-date"
           (is (= {:status 400
                   :errors ["Timeline parameter start_date datetime is invalid: [foo] is not a valid datetime."]}
@@ -219,6 +228,19 @@
                                              :start-date "2000-01-01T00:00:00Z"
                                              :end-date "2002-02-01T00:00:00Z"
                                              :interval :second}))))
+      (testing "Using URL extension .json"
+        (is (= {:status 200
+                :results [{:concept-id (:concept-id coll1)
+                           :intervals [["2000-02-01T00:00:00.000Z" "2000-07-01T00:00:01.000Z" 4]
+                                       ["2000-09-01T00:00:00.000Z" "2000-09-01T00:00:01.000Z" 1]
+                                       ["2000-11-01T00:00:00.000Z" "2001-03-01T00:00:01.000Z" 3]
+                                       ["2001-06-01T00:00:00.000Z" "2001-08-01T00:00:01.000Z" 2]
+                                       ["2001-09-01T00:00:00.000Z" "2002-02-01T00:00:00.000Z" 1]]}]}
+               (search/get-granule-timeline {:concept-id (:concept-id coll1)
+                                             :start-date "2000-01-01T00:00:00Z"
+                                             :end-date "2002-02-01T00:00:00Z"
+                                             :interval :second}
+                                            {:url-extension "json"}))))
 
       (testing "get and post matches"
         (are [search-params]
