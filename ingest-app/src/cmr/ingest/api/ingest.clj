@@ -102,7 +102,7 @@
 (defmethod generate-validate-response :json
   [headers result]
   ;; ring-json middleware will handle converting the body to json
-  (if (not-empty result)
+  (if (seq result)
     {:status 200
      :headers {"Content-Type" (mt/format->mime-type :json)}
      :body result}
@@ -110,7 +110,7 @@
 
 (defmethod generate-validate-response :xml
   [headers result]
-  (if (not-empty result)
+  (if (seq result)
    {:status 200
     :headers {"Content-Type" (mt/format->mime-type :xml)}
     :body (result-map->xml result)}

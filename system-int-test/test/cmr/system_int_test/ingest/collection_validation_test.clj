@@ -635,27 +635,27 @@
     (let [response (ingest/validate-concept (dc/collection-concept (dc/collection-dif {}) :dif))]
       (is (= 200 (:status response)))
       (is (= "object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"TemporalExtents\"])"
-             (:warnings response))))
-    (testing "ISO19115 Ingest Validation Warnings"
-      (let [response (d/ingest "PROV1" (dc/collection {}) {:format :iso19115})]
-        (is (= 200 (:status response)))
-        (is (= "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
-               (:warnings response)))))
-    (testing "ISO19115 Validation Warnings"
-      (let [response (ingest/validate-concept (dc/collection-concept {} :iso19115))]
-        (is (= 200 (:status response)))
-        (is (= "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
-               (:warnings response)))))
-    (testing "ISO SMAP Ingest Validation Warnings"
-      (let [response (d/ingest "PROV1" (dc/collection-smap {}) {:format :iso-smap})]
-        (is (= 200 (:status response)))
-        (is (= "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
-               (:warnings response)))))
-    (testing "ISO SMAP Validation Warnings"
-      (let [response (ingest/validate-concept (dc/collection-concept (dc/collection-smap {}) :iso-smap))]
-        (is (= 200 (:status response)))
-        (is (= "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
-               (:warnings response)))))))
+             (:warnings response)))))
+  (testing "ISO19115 Ingest Validation Warnings"
+    (let [response (d/ingest "PROV1" (dc/collection {}) {:format :iso19115})]
+      (is (= 200 (:status response)))
+      (is (= "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+             (:warnings response)))))
+  (testing "ISO19115 Validation Warnings"
+    (let [response (ingest/validate-concept (dc/collection-concept {} :iso19115))]
+      (is (= 200 (:status response)))
+      (is (= "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+             (:warnings response)))))
+  (testing "ISO SMAP Ingest Validation Warnings"
+    (let [response (d/ingest "PROV1" (dc/collection-smap {}) {:format :iso-smap})]
+      (is (= 200 (:status response)))
+      (is (= "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+             (:warnings response)))))
+  (testing "ISO SMAP Validation Warnings"
+    (let [response (ingest/validate-concept (dc/collection-concept (dc/collection-smap {}) :iso-smap))]
+      (is (= 200 (:status response)))
+      (is (= "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+             (:warnings response))))))
 
 
 (comment

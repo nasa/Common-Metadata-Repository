@@ -41,7 +41,8 @@
                                   :delete-time (when delete-time (str delete-time))})))
 
 (defn- validate-and-parse-collection-concept
-  "Validates a collection concept and parses it. Returns the UMM record."
+  "Validates a collection concept and parses it. Returns the UMM record and any warnings from
+  validation."
   [context collection-concept validation-options]
   (v/validate-concept-request collection-concept)
   (v/validate-concept-metadata collection-concept)
@@ -60,7 +61,7 @@
 
 (defn-timed validate-and-prepare-collection
   "Validates the collection and adds extra fields needed for metadata db. Throws a service error
-  if any validation issues are found."
+  if any validation issues are found and errors are enabled, otherwise returns errors as warnings."
   [context concept validation-options]
   (let [concept (update-in concept [:format] ver/fix-concept-format)
         {:keys [collection warnings]} (validate-and-parse-collection-concept context
@@ -173,7 +174,7 @@
     {:concept-id concept-id, :revision-id revision-id}))
 
 (defn-timed save-collection
-  "Store a concept in mdb and indexer and return concept-id and revision-id."
+  "Store a concept in mdb and indexer and return concept-id, revision-id, and warnings."
   [context concept validation-options]
   (let [{:keys [concept warnings]} (validate-and-prepare-collection context
                                                                     concept
