@@ -1,9 +1,10 @@
 (ns cmr.ingest.test.validation.additional-attribute-validation
-  (:require [clojure.test :refer :all]
-            [cmr.umm.umm-collection :as c]
-            [cmr.common.util :as util]
-            [cmr.ingest.validation.additional-attribute-validation :as v]
-            [cmr.umm-spec.additional-attribute :as aa]))
+  (:require
+    [clojure.test :refer :all]
+    [cmr.common.util :as util]
+    [cmr.ingest.validation.additional-attribute-validation :as v]
+    [cmr.umm-spec.additional-attribute :as aa]
+    [cmr.umm.umm-collection :as c]))
 
 (deftest aa-range-reduced-test
   (util/are2
