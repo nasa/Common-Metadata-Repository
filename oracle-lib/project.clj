@@ -8,9 +8,9 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/java.jdbc "0.4.2"]
-                 [com.oracle/ojdbc6 "11.2.0.3"]
-                 [com.oracle/ons "11.2.0.3"]
-                 [com.oracle/ucp "11.2.0.3"]
+                 [com.oracle/ojdbc6 "11.2.0.4"]
+                 [com.oracle/ons "11.2.0.4"]
+                 [com.oracle/ucp "11.2.0.4"]
                  [sqlingvo "0.7.15"]]
 
   :plugins [[test2junit "1.2.1"]]

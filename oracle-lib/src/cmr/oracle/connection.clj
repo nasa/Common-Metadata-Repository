@@ -1,15 +1,20 @@
 (ns cmr.oracle.connection
   "Contains a record definition that implements the ConcpetStore and Lifecycle protocols
   backed by an Oracle database."
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.log :refer (debug info warn error)]
-            [clojure.java.jdbc :as j]
-            [clj-time.format :as f]
-            [clj-time.coerce :as cr]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.services.health-helper :as hh])
-  (:import oracle.ucp.jdbc.PoolDataSourceFactory
-           oracle.ucp.admin.UniversalConnectionPoolManagerImpl))
+  (:require
+   [clj-time.coerce :as cr]
+   [clj-time.format :as f]
+   [clojure.java.jdbc :as j]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.services.health-helper :as hh])
+  (:import
+   ;; This is required as an attempt to avoid NoClassDefFoundError occasionally during startup.
+   ;; See CMR-3156
+   (oracle.security.o5logon O5Logon)
+   (oracle.ucp.admin UniversalConnectionPoolManagerImpl)
+   (oracle.ucp.jdbc PoolDataSourceFactory)))
 
 
 (defn db-spec
