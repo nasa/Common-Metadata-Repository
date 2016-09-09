@@ -1,39 +1,41 @@
 (ns cmr.indexer.data.concepts.collection
   "Contains functions to parse and convert collection concept"
-  (:require [clojure.string :as str]
-            [clj-time.format :as f]
-            [cheshire.core :as json]
-            [clj-time.core :as t]
-            [cmr.common.time-keeper :as tk]
-            [camel-snake-kebab.core :as csk]
-            [cmr.indexer.services.index-service :as idx]
-            [cmr.indexer.data.elasticsearch :as es]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.util :as util]
-            [cmr.umm.related-url-helper :as ru]
-            [cmr.umm.start-end-date :as sed]
-            [cmr.elastic-utils.index-util :as index-util]
-            [cmr.indexer.data.concepts.attribute :as attrib]
-            [cmr.indexer.data.concepts.science-keyword :as sk]
-            [cmr.indexer.data.concepts.platform :as platform]
-            [cmr.indexer.data.concepts.instrument :as instrument]
-            [cmr.indexer.data.concepts.spatial :as spatial]
-            [cmr.indexer.data.concepts.keyword :as k]
-            [cmr.indexer.data.concepts.organization :as org]
-            [cmr.indexer.data.concepts.tag :as tag]
-            [cmr.indexer.data.concepts.location-keyword :as lk]
-            [cmr.common-app.humanizer :as humanizer]
-            [cmr.acl.core :as acl]
-            [cmr.common.concepts :as concepts]
-            [cmr.umm.umm-collection :as umm-c]
-            [cmr.umm.collection.entry-id :as eid]
-            [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
-            [cmr.indexer.data.humanizer-fetcher :as hf]
-            [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.acl.acl-fetcher :as acl-fetcher]
-            [cmr.umm.acl-matchers :as umm-matchers])
+  (:require 
+    [clojure.string :as str]
+    [clj-time.format :as f]
+    [cheshire.core :as json]
+    [clj-time.core :as t]
+    [cmr.common.time-keeper :as tk]
+    [camel-snake-kebab.core :as csk]
+    [cmr.indexer.services.index-service :as idx]
+    [cmr.indexer.data.elasticsearch :as es]
+    [cmr.common.mime-types :as mt]
+    [cmr.common.log :refer (debug info warn error)]
+    [cmr.common.services.errors :as errors]
+    [cmr.common.util :as util]
+    [cmr.umm.related-url-helper :as ru]
+    [cmr.umm.start-end-date :as sed]
+    [cmr.umm-spec.umm-spec-core :as umm-spec]
+    [cmr.elastic-utils.index-util :as index-util]
+    [cmr.indexer.data.concepts.attribute :as attrib]
+    [cmr.indexer.data.concepts.science-keyword :as sk]
+    [cmr.indexer.data.concepts.platform :as platform]
+    [cmr.indexer.data.concepts.instrument :as instrument]
+    [cmr.indexer.data.concepts.spatial :as spatial]
+    [cmr.indexer.data.concepts.keyword :as k]
+    [cmr.indexer.data.concepts.organization :as org]
+    [cmr.indexer.data.concepts.tag :as tag]
+    [cmr.indexer.data.concepts.location-keyword :as lk]
+    [cmr.common-app.humanizer :as humanizer]
+    [cmr.acl.core :as acl]
+    [cmr.common.concepts :as concepts]
+    [cmr.umm.umm-collection :as umm-c]
+    [cmr.umm.collection.entry-id :as eid]
+    [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
+    [cmr.indexer.data.humanizer-fetcher :as hf]
+    [cmr.common-app.services.kms-fetcher :as kf]
+    [cmr.acl.acl-fetcher :as acl-fetcher]
+    [cmr.umm.acl-matchers :as umm-matchers])
   (:import cmr.spatial.mbr.Mbr))
 
 (defn spatial->elastic
@@ -145,7 +147,7 @@
 
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
-  [context concept collection]
+  [context concept collection umm-spec-collection]
   (let [{:keys [concept-id revision-id provider-id user-id
                 native-id revision-date deleted format extra-fields tag-associations]} concept
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
@@ -252,7 +254,7 @@
             :two-d-coord-name.lowercase  (map str/lower-case two-d-coord-names)
             :spatial-keyword spatial-keywords
             :spatial-keyword.lowercase  (map str/lower-case spatial-keywords)
-            :attributes (attrib/psas->elastic-docs collection)
+            :attributes (attrib/aas->elastic-docs umm-spec-collection)
             :science-keywords-flat (sk/flatten-science-keywords collection)
             :personnel (json/generate-string personnel)
             :archive-center archive-center-names
@@ -339,7 +341,11 @@
      :access-value access-value}))
 
 (defmethod es/parsed-concept->elastic-doc :collection
-  [context concept collection]
+  [context concept umm-legacy-collection]
   (if (:deleted concept)
     (get-elastic-doc-for-tombstone-collection context concept)
-    (get-elastic-doc-for-full-collection context concept collection)))
+    (let [umm-spec-collection (umm-spec/parse-metadata context concept)]
+      (get-elastic-doc-for-full-collection context 
+                                           concept 
+                                           umm-legacy-collection 
+                                           umm-spec-collection))))
