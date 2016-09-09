@@ -3,6 +3,7 @@
   <Entry_Title>DIF_DATASET_WITH_EXTENDED_METADATA</Entry_Title>
   <Data_Set_Citation>
     <Dataset_Title>dataset_title</Dataset_Title>
+    <Version>1</Version>
   </Data_Set_Citation>
   <Parameters>
     <Category>category</Category>

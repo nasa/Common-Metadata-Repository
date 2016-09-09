@@ -40,35 +40,40 @@
                                   :delete-time (when delete-time (str delete-time))})))
 
 (defn- validate-and-parse-collection-concept
-  "Validates a collection concept and parses it. Returns the UMM record."
+  "Validates a collection concept and parses it. Returns the UMM record and any warnings from
+  validation."
   [context collection-concept validation-options]
   (v/validate-concept-request collection-concept)
   (v/validate-concept-metadata collection-concept)
   (let [{:keys [format metadata]} collection-concept
-        collection (spec/parse-metadata context :collection format metadata)]
+        collection (spec/parse-metadata context :collection format metadata {:apply-default? false})
 
     ;; Validate against the UMM Spec validation rules
-    (v/validate-collection-umm-spec context collection validation-options)
+        warnings (v/validate-collection-umm-spec context collection validation-options)]
     ;; Using the legacy UMM validation rules (for now)
     (v/validate-collection-umm context
                                (umm-legacy/parse-concept context collection-concept)
                                (:validate-keywords? validation-options))
     ;; The UMM Spec collection is returned
-    collection))
+    {:collection collection
+     :warnings warnings}))
 
 (defn-timed validate-and-prepare-collection
   "Validates the collection and adds extra fields needed for metadata db. Throws a service error
-  if any validation issues are found."
+  if any validation issues are found and errors are enabled, otherwise returns errors as warnings."
   [context concept validation-options]
   (let [concept (update-in concept [:format] ver/fix-concept-format)
-        collection (validate-and-parse-collection-concept context concept validation-options)
+        {:keys [collection warnings]} (validate-and-parse-collection-concept context
+                                                                             concept
+                                                                             validation-options)
         ;; Add extra fields for the collection
         coll-concept (add-extra-fields-for-collection context concept collection)]
 
     ;; Validate ingest business rule through umm-spec-lib
     (v/validate-business-rules
      context (assoc coll-concept :umm-concept collection))
-    coll-concept))
+    {:concept coll-concept
+     :warnings warnings}))
 
 (defn- validate-granule-collection-ref
   "Throws bad request exception when collection-ref is missing required fields."
@@ -161,11 +166,13 @@
     {:concept-id concept-id, :revision-id revision-id}))
 
 (defn-timed save-collection
-  "Store a concept in mdb and indexer and return concept-id and revision-id."
+  "Store a concept in mdb and indexer and return concept-id, revision-id, and warnings."
   [context concept validation-options]
-  (let [concept (validate-and-prepare-collection context concept validation-options)]
+  (let [{:keys [concept warnings]} (validate-and-prepare-collection context
+                                                                    concept
+                                                                    validation-options)]
     (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
-      {:concept-id concept-id, :revision-id revision-id})))
+      {:concept-id concept-id, :revision-id revision-id :warnings warnings})))
 
 (defn-timed delete-concept
   "Delete a concept from mdb and indexer. Throws a 404 error if the concept does not exist or
