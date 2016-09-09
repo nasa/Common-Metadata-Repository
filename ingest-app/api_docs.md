@@ -114,7 +114,7 @@ This header returns the unique id assigned to the request. This can be used to h
 
 Successful ingest responses will return an HTTP Status code of 200 and a body containing the [CMR Concept Id](#concept-id) of the item that was updated or deleted along with the [revision id](#revision-id).
 
-If the Cmr-Validate-Umm-C header is not provided or false, any errors encountered during validation will come back as warnings. Warnings would be returned if the ingested record passes native XML schema validation, but not UMM-C validation.
+UMM-C validation errors are returned as warnings in the response by default. When Cmr-Validate-Umm-C request header is set to true, the ingest request will fail when there are any UMM-C validation errors.
 
     {"concept-id":"C12345-PROV","revision-id":1,"warnings":"object has missing required properties ([\"ProcessingLevel\"])"}
 
