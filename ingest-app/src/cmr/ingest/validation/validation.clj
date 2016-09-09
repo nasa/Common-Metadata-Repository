@@ -111,18 +111,23 @@
                                    (when validate-keywords?
                                      [(keyword-validations context)]))))
 
-(defn validate-collection-umm-spec
-  "Validate UMM-C record"
-  [context collection validation-options]
-  ;; Add keyword validations from validate-collection-umm here when validate-collection-umm is removed
-
+(defn- validate-collection-umm-spec-schema
+  "Validate the collection against the JSON schema and throw errors if configured or return
+  a list of warnings"
+  [collection validation-options]
   (if-let [err-messages (seq (json-schema/validate-umm-json
                               (umm-json/umm->json collection)
                               :collection))]
     (if (or (:validate-umm? validation-options) (config/return-umm-json-validation-errors))
       (errors/throw-service-errors :invalid-data err-messages)
-      (warn "UMM-C JSON-Schema Validation Errors: " (pr-str (vec err-messages)))))
+      (do
+        (warn "UMM-C JSON-Schema Validation Errors: " (pr-str (vec err-messages)))
+        err-messages))))
 
+(defn- umm-spec-validate-collection
+  "Validate collection through umm-spec validation functions and throw errors if configured or return
+  a list of warnings"
+  [collection validation-options context]
   (when-let [err-messages (seq (umm-spec-validation/validate-collection
                                 collection
                                 (when (:validate-keywords? validation-options)
@@ -130,6 +135,16 @@
     (if (or (:validate-umm? validation-options) (config/return-umm-spec-validation-errors))
       (errors/throw-service-errors :invalid-data err-messages)
       (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages))))))
+
+(defn validate-collection-umm-spec
+  "Validate UMM-C record and return list of warnings if warnings are turned on (:validate-umm? or
+  return-umm-json-validation-errors are true)"
+  [context collection validation-options]
+  ;; Add keyword validations from validate-collection-umm here when validate-collection-umm is removed
+
+  (seq (concat (validate-collection-umm-spec-schema collection validation-options)
+               (umm-spec-validate-collection collection validation-options context))))
+
 
 (defn validate-granule-umm-spec
   "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record"

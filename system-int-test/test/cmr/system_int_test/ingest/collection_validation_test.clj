@@ -1,6 +1,6 @@
 (ns cmr.system-int-test.ingest.collection-validation-test
   "CMR Ingest validation integration tests"
-  (:require 
+  (:require
     [clojure.test :refer :all]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.data2.collection :as dc]
@@ -56,7 +56,8 @@
 ;; Verify that successful validation requests do not get an xml or json response body
 (deftest successful-validation-with-accept-header-test
   (are [accept]
-       (let [concept (dc/collection-concept {})
+       (let [collection (dc/collection-dif10 {:processing-level-id "Level 1"})
+             concept (dc/collection-concept collection :dif10)
              response-map (select-keys (ingest/validate-concept concept {:accept-format accept :raw? true})
                                        [:status :body])]
          (= {:status 200 :body ""} response-map))
@@ -341,7 +342,7 @@
                                                       (dc/psa {:name "bool2" :data-type :boolean :value true})]})
                              {:allow-failure? true})]
       (is (= {:status 422
-              :errors ["object has missing required properties ([\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\"])"]}
+              :errors ["object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
              (select-keys response [:status :errors]))))
     ;; disable return of schema validation errors from API
     (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
@@ -356,23 +357,23 @@
                                                       (dc/psa {:name "bool2" :data-type :boolean :value true})]})
                              {:allow-failure? true :validate-umm-c true})]
       (is (= {:status 422
-              :errors ["object has missing required properties ([\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\"])"]}
+              :errors ["object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
              (select-keys response [:status :errors])))))
 
   (let [coll-attr {:product-specific-attributes
                    [(dc/psa {:name "bool1" :data-type :boolean :value true})
                     (dc/psa {:name "bool2" :data-type :boolean :value true})]}]
     (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
-    (are3 [coll-attributes options] 
+    (are3 [coll-attributes options]
           (assert-valid coll-attributes options)
 
-          "Set Cmr-Validate-Umm-C header to false - schema validation error is not returned"  
+          "Set Cmr-Validate-Umm-C header to false - schema validation error is not returned"
           coll-attr
-          {:allow-failure? true :validate-umm-c false} 
+          {:allow-failure? true :validate-umm-c false}
 
           "Do not set Cmr-Validate-Umm-C header - schema validation error is not returned"
           coll-attr
-          {:allow-failure? true}))     
+          {:allow-failure? true}))
 
   ;; testing enabling umm-spec validation through Cmr-Validation-Umm-C header
   (let [coll-attr {:processing-level-id "1"
@@ -381,6 +382,13 @@
                                                            :term "Mild"})]
                    :spatial-coverage (dc/spatial {:gsr :cartesian})
                    :related-urls [(dc/related-url {:type "type" :url "http://www.foo.com"})]
+                   :organizations [{:type :archive-center :org-name "Larc"}]
+                   :platforms [{:short-name "plat"
+                                :long-name "plat"
+                                :type "Aircraft"
+                                :instruments [{:short-name "inst"}]}]
+                   :beginning-date-time "1965-12-12T07:00:00.000-05:00"
+                   :ending-date-time "1967-12-12T07:00:00.000-05:00"
                    :product-specific-attributes
                    [(dc/psa {:name "bool" :data-type :boolean :value true})
                     (dc/psa {:name "bool" :data-type :boolean :value true})]}]
@@ -400,11 +408,11 @@
           ["ProductSpecificAttributes"]
           ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]
           {:validate-umm-c false}
-           
+
           "Do not set Cmr-Validate-Umm-C header - schema validation passed, umm-spec validation error is not returned"
           coll-attr
           ["ProductSpecificAttributes"]
-          ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]       
+          ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]
           nil))
 
   (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
@@ -415,7 +423,7 @@
        [(dc/psa {:name "bool" :data-type :boolean :value true})
         (dc/psa {:name "bool" :data-type :boolean :value true})]}
       ["AdditionalAttributes"]
-      ["Additional Attributes must be unique. This contains duplicates named [bool]."])) 
+      ["Additional Attributes must be unique. This contains duplicates named [bool]."]))
   (testing "Nested Path Validation"
     (assert-invalid
       {:platforms [(dc/platform {:instruments [(dc/instrument {:short-name "I1"})
@@ -591,8 +599,47 @@
                      :concept-type :collection
                      :provider-id "PROV1"
                      :native-id "new collection"}
-        {:keys [status body]} (ingest/validate-concept concept-map {:accept-format mt/echo10 :raw? true})]
-    (is (= [200 ""] [status body]))))
+        {:keys [status body]} (ingest/validate-concept concept-map {:raw? true})]
+    (is (= 200 status))))
+
+(deftest umm-spec-validation-warnings
+  ;; By default the config return-umm-spec-validation-errors is false, so warnings are returned
+  ;; with the collection. If return-umm-spec-validation-errors was true, errors would be thrown. tests
+  ;; for the errors if return-umm-spec-validation-errors is true are in this file.
+  (testing "Ingest and Ingest Validation"
+    (are3 [format collection warning-message]
+          (do
+            (let [response (d/ingest "PROV1" collection {:format format})]
+              (is (= 200 (:status response)))
+              (is (= warning-message (:warnings response))))
+            (let [response (ingest/validate-concept (dc/collection-concept collection format))]
+              (is (= 200 (:status response)))
+              (is (= warning-message (:warnings response)))))
+
+          "ECHO10 Ingest and Ingest Validation"
+          :echo10 (dc/collection {}) "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+
+          "DIF10 Ingest and Ingest Validation"
+          :dif10 (dc/collection-dif10 {}) "object has missing required properties ([\"ProcessingLevel\"])"
+
+          "DIF9 Ingest and Ingest Validation"
+          :dif (dc/collection-dif {}) "object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"TemporalExtents\"])"
+
+          "ISO19115 Ingest and Ingest Validation"
+          :iso19115 (dc/collection {}) "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+
+          "ISO SMAP Ingest and Ingest Validation"
+          :iso-smap (dc/collection-smap {}) "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+
+          "Multiple Warnings"
+          :dif10 (dc/collection-dif10 {:product (dc/product {:short-name (apply str (repeat 81 "x"))
+                                                             :processing-level-id "1"})
+                                       :platforms [(dc/platform {:short-name (apply str (repeat 81 "x"))})]})
+              "/Platforms/0/ShortName string \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" is too long (length: 81, maximum allowed: 80)/ShortName string \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" is too long (length: 81, maximum allowed: 80)")
+   (testing "Warnings returned in JSON format"
+     (let [response (d/ingest "PROV1" (dc/collection-dif10 {}) {:format :dif10 :accept-format :json})]
+       (is (= 200 (:status response)))
+       (is (= ["object has missing required properties ([\"ProcessingLevel\"])"] (:warnings response)))))))
 
 (comment
   (ingest/delete-provider "PROV1")

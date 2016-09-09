@@ -115,13 +115,13 @@
             response (ingest/ingest-concept granule {:accept-format :json :raw? true})]
         (index/wait-until-indexed)
         (is (= {:concept-id "G1200000001-PROV1" :revision-id 1}
-               (ingest/parse-ingest-body :json response)))))
+               (select-keys (ingest/parse-ingest-body :json response) [:concept-id :revision-id])))))
     (testing "xml response"
       (let [granule (d/item->concept (dg/granule collection))
             response (ingest/ingest-concept granule {:accept-format :xml :raw? true})]
         (index/wait-until-indexed)
         (is (= {:concept-id "G1200000002-PROV1" :revision-id 1}
-               (ingest/parse-ingest-body :xml response)))))))
+               (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id])))))))
 
 ;; Verify that the accept header works with returned errors
 (deftest granule-ingest-with-errors-accept-header-test
@@ -154,14 +154,14 @@
             response (ingest/delete-concept granule {:accept-format :json :raw? true})]
         (index/wait-until-indexed)
         (is (= {:concept-id "G1-PROV1" :revision-id 2}
-             (ingest/parse-ingest-body :json response)))))
+             (select-keys (ingest/parse-ingest-body :json response) [:concept-id :revision-id])))))
     (testing "xml response"
       (let [granule (d/item->concept (dg/granule collection {:concept-id "G2-PROV1"}))
             _ (ingest/ingest-concept granule)
             response (ingest/delete-concept granule {:accept-format :xml :raw? true})]
         (index/wait-until-indexed)
         (is (= {:concept-id "G2-PROV1" :revision-id 2}
-             (ingest/parse-ingest-body :xml response)))))))
+             (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id])))))))
 
 (deftest delete-granule-test
   (testing "It should be possible to delete existing concept and the operation without revision id should
