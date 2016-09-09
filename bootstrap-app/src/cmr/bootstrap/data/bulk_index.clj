@@ -144,28 +144,6 @@
               non-system-concept-count
               system-concept-count))))
 
-
-    ;
-    ; ;; Index collections, granules, and services for all non-system providers.
-    ; (doseq [provider providers
-    ;         concept-type [:collection :granule :service]
-    ;         :let [provider-id (:provider-id provider)
-    ;               params {:concept-type concept-type
-    ;                       :provider-id provider-id
-    ;                       :revision-date date-time}
-    ;               concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system))
-    ;               num-concepts (index/bulk-index {:system (helper/get-indexer system)} concept-batches {})]]
-    ;   (info "Indexed" num-concepts (str (name concept-type) "(s)") "for provider" provider-id))
-    ; ;; Index all tags, tag-associations, groups, and acls.
-    ; (doseq [concept-type [:acl :access-group :tag :tag-association]
-    ;         :let [params {:concept-type concept-type
-    ;                       :provider-id "CMR"
-    ;                       :revision-date date-time}
-    ;               concept-batches (db/find-concepts-in-batches
-    ;                                 db {:provider-id "CMR"} params (:db-batch-size system))
-    ;               num-concepts (index/bulk-index {:system (helper/get-indexer system)} concept-batches {})]]
-    ;   (info "Indexed" num-concepts (str (name concept-type) "(s)")))))
-
 ;; Background task to handle provider bulk index requests
 (defn handle-bulk-index-requests
   "Handle any requests for indexing providers."

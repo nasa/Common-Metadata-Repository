@@ -2,6 +2,7 @@
   "Contains helper functions that are shared by providers and concepts."
   (:require [cmr.common.services.errors :as errors]
             [clj-time.format :as time-format]
+            [clj-time.coerce :as time-coerce]
             [clojure.string :as str]
             [clojure.java.jdbc :as j]
             [cmr.metadata-db.data.oracle.concept-tables :as ct]
@@ -12,14 +13,12 @@
   "Converts a datetime into a sql clause that will select rows with a revision_date greater than
   the given date-time. date-time parameter should be a valid clj-time/Joda time object."
   [date-time]
-  (let [formatter (time-format/formatter "yyyy-MM-dd hh:mm:ss")
-        date-time-str (time-format/unparse formatter date-time)]
-    `(> "revision_date" ~(str "TIMESTAMP " date-time-str))))
+  (let [sql-time (time-coerce/to-sql-time date-time)]
+    `(> :revision-date ~sql-time)))
 
 (defn find-params->sql-clause
   "Converts a parameter map for finding concept types into a sql clause for inclusion in a query."
   [params]
-  (println "SQL PARAMS: " params)
   ;; Validate parameter names as a sanity check to prevent sql injection
   (let [valid-param-name #"^[a-zA-Z][a-zA-Z0-9_\-]*$"]
     (when-let [invalid-names (seq (filter #(not (re-matches valid-param-name (name %))) (keys params)))]
@@ -35,7 +34,6 @@
         comparisons (if revision-date
                         (conj comparisons (date-time->revision-date-sql-clause revision-date))
                         comparisons)]
-    (println "COMPARISIONS: " comparisons)
     (if (> (count comparisons) 1)
       (cons `and comparisons)
       (first comparisons))))

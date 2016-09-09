@@ -41,6 +41,7 @@
 (defn create-tag
   "Processes a create tag request."
   [context headers body]
+  (println "CREATING TAG: " body)
   (verify-tag-modification-permission context :create)
   (validate-tag-content-type headers)
   (tag-api-response (tagging-service/create-tag context body)))

@@ -145,9 +145,11 @@
                          conditions (if (empty? params)
                                       conditions
                                       (cons (sh/find-params->sql-clause params) conditions))
+                         _ (debug "SQL CONDS: " conditions)
                          stmt (su/build (select [:*]
                                                 (from table)
                                                 (where (cons `and conditions))))
+                         _ (println "SQL STMT: " stmt)
                          batch-result (su/query db stmt)]
                      (mapv (partial oc/db-result->concept-map concept-type conn provider-id)
                            batch-result))))

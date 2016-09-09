@@ -139,7 +139,7 @@
   :concept-id it saves it. If the tag has a :concept-id it updates the tag. Returns the saved tag
   along with :concept-id, :revision-id, :errors, and :status"
   ([token tag]
-   (let [tag-to-save (select-keys tag [:tag-key :description])
+   (let [tag-to-save (select-keys tag [:tag-key :description :revision-date])
          response (if-let [concept-id (:concept-id tag)]
                     (update-tag token (:tag-key tag) tag-to-save)
                     (create-tag token tag-to-save))
@@ -279,4 +279,3 @@
                                {:all-revisions true})]
     (is (nil? (:errors refs)))
     (is (d/refs-match? expected-colls refs))))
-
