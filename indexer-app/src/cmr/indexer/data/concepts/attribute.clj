@@ -1,9 +1,12 @@
 (ns cmr.indexer.data.concepts.attribute
   "Contains functions for converting attributes into a elastic documents"
-  (:require [clj-time.format :as f]
-            [clojure.string :as str]
-            [cmr.umm.collection.product-specific-attribute :as coll-psa]
-            [cmr.common.services.errors :as errors]))
+  (:require
+    [camel-snake-kebab.core :as csk] 
+    [clj-time.format :as f]
+    [clojure.string :as str]
+    [cmr.common.services.errors :as errors]
+    [cmr.umm-spec.additional-attribute :as aa]
+    [cmr.umm.collection.product-specific-attribute :as coll-psa]))
 
 (defmulti value->elastic-value
   "Converts a attribute value into the elastic value that should be transmitted"
@@ -79,23 +82,25 @@
                 (psa-ref->nested-docs type psa-ref)))
             (:product-specific-attributes granule))))
 
-(defn psa->nested-docs
-  "Converts a PSA into the portion going in an elastic document"
-  [psa]
-  (let [{:keys [name group data-type parsed-value]} psa
+(defn- aa->nested-docs
+  "Converts an AdditionalAttribute into the portion going in an elastic document"
+  [aa]
+  (let [{Group :Group Name :Name DataType :DataType parsed-value ::aa/parsed-value} 
+        (aa/attribute-with-parsed-value aa)
+        data-type (csk/->kebab-case-keyword (str/lower-case DataType))
         field-name (type->field-name data-type)
-        psa-map {:name name :group group}]
+        aa-map {:name Name :group Group}]
     (if (some #{data-type} [:string :boolean :time-string :date-string :datetime-string])
-      [(assoc psa-map field-name (value->elastic-value data-type parsed-value))
-       (assoc psa-map
+      [(assoc aa-map field-name (value->elastic-value data-type parsed-value))
+       (assoc aa-map
               (str field-name ".lowercase")
               (str/lower-case (value->elastic-value data-type parsed-value)))]
-      [(assoc psa-map field-name (value->elastic-value data-type parsed-value))])))
+      [(assoc aa-map field-name (value->elastic-value data-type parsed-value))])))
 
-(defn psas->elastic-docs
-  "Converts the psa into a list of elastic documents"
+(defn aas->elastic-docs
+  "Converts the AdditionalAttributes into a list of elastic documents"
   [collection]
-  (mapcat psa->nested-docs (:product-specific-attributes collection)))
+  (mapcat aa->nested-docs (:AdditionalAttributes collection)))
 
 (defn psa->keywords
   "Converts a PSA into a vector of terms to be used in keyword searches"
