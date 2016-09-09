@@ -1,13 +1,17 @@
 (ns cmr.ingest.validation.additional-attribute-validation
   "Provides functions to validate the additional attributes during collection update"
-  (:require [cmr.common.util :as util]
-            [cmr.umm.collection.product-specific-attribute :as psa]))
+  (:require
+   [clojure.string :as str]
+   [cmr.common.util :as util]
+   [cmr.umm-spec.additional-attribute :as aa]))
 
 (defn- aa-range-reduced?
   "Returns true if the range of additional attribute is smaller than the range of the previous one."
   [aa prev-aa]
-  (let [{aa-begin :parsed-parameter-range-begin aa-end :parsed-parameter-range-end} aa
-        {prev-aa-begin :parsed-parameter-range-begin prev-aa-end :parsed-parameter-range-end} prev-aa]
+  (let [{aa-begin ::aa/parsed-parameter-range-begin aa-end ::aa/parsed-parameter-range-end}
+        (aa/attribute-with-parsed-value aa)
+        {prev-aa-begin ::aa/parsed-parameter-range-begin prev-aa-end ::aa/parsed-parameter-range-end}
+        (aa/attribute-with-parsed-value prev-aa)]
     (boolean (or (and aa-begin (util/greater-than? aa-begin prev-aa-begin))
                  (and aa-end prev-aa-end (util/less-than? aa-end prev-aa-end))
                  (and aa-end (nil? prev-aa-end))))))
@@ -17,13 +21,14 @@
   If there are any existing granules outside of the additional attribute range,
   then this additional attribute would be invalid."
   [aa]
-  (let [{aa-name :name aa-type :data-type aa-begin :parameter-range-begin
-         aa-end :parameter-range-end} aa
-        type (name aa-type)
+  (let [{aa-name :Name aa-type :DataType aa-begin :ParameterRangeBegin
+         aa-end :ParameterRangeEnd} aa
+        type (str/lower-case aa-type)
         params (concat (when aa-begin
                          [(format "%s,%s,,%s" type aa-name aa-begin)])
                        (when aa-end
                          [(format "%s,%s,%s," type aa-name aa-end)]))]
+
     {:params {"attribute[]" params
               "options[attribute][or]" true}
      :error-msg (format "Collection additional attribute [%s] cannot be changed since there are existing granules outside of the new value range."
@@ -34,18 +39,18 @@
   attributes that are still referenced by existing granules. This function build the search parameters
   for identifying such invalid deletions."
   [aas prev-aas]
-  (let [aa-names (set (map :name aas))
-        deleted-aas (remove #(aa-names (:name %)) prev-aas)]
-    (map #(hash-map :params {"attribute[]" [(:name %)]}
+  (let [aa-names (set (map :Name aas))
+        deleted-aas (remove #(aa-names (:Name %)) prev-aas)]
+    (map #(hash-map :params {"attribute[]" [(:Name %)]}
                     :error-msg (format "Collection additional attribute [%s] is referenced by existing granules, cannot be removed."
-                                       (:name %)))
+                                       (:Name %)))
          deleted-aas)))
 
 (defn- single-aa-type-range-search
   "Returns the granule search for the given additional attribute and its previous version"
   [[aa prev-aa]]
-  (let [{aa-name :name aa-type :data-type} aa
-        {prev-aa-type :data-type} prev-aa]
+  (let [{aa-name :Name aa-type :DataType} aa
+        {prev-aa-type :DataType} prev-aa]
     (if (= aa-type prev-aa-type)
       ;; type does not change, check for range change
       (when (aa-range-reduced? aa prev-aa)
@@ -53,7 +58,7 @@
       ;; additional attribute type is changed, we need to search that no granules reference this additional attribute
       {:params {"attribute[]" [aa-name]}
        :error-msg (format "Collection additional attribute [%s] was of DataType [%s], cannot be changed to [%s]."
-                          aa-name (psa/gen-data-type prev-aa-type) (psa/gen-data-type aa-type))})))
+                          aa-name (aa/gen-data-type prev-aa-type) (aa/gen-data-type aa-type))})))
 
 (defn- build-aa-type-range-searches
   "Add granule searches for finding invalid additional attribute type and range changes to the given
@@ -62,9 +67,9 @@
   changed or range changed to a reduced range that needs to verify that no granules will become
   invalidated due to the changes."
   [aas prev-aas]
-  (let [prev-aas-map (group-by :name prev-aas)
+  (let [prev-aas-map (group-by :Name prev-aas)
         link-fn (fn [aa]
-                  (when-let [prev-aa (first (prev-aas-map (:name aa)))]
+                  (when-let [prev-aa (first (prev-aas-map (:Name aa)))]
                     [aa prev-aa]))]
     (->> (map link-fn aas)
          (map single-aa-type-range-search)
@@ -86,9 +91,8 @@
   - additional attribute type changed but has existing granules referencing it
   - additional attribute range changed but has existing granules outside of the new range"
   [concept-id concept prev-concept]
-  (let [{aas :product-specific-attributes} concept
-        {prev-aas :product-specific-attributes} prev-concept]
+  (let [{aas :AdditionalAttributes} concept
+        {prev-aas :AdditionalAttributes} prev-concept]
     (->> (concat (build-aa-deleted-searches aas prev-aas)
                  (build-aa-type-range-searches aas prev-aas))
          (map (partial append-common-params concept-id)))))
-

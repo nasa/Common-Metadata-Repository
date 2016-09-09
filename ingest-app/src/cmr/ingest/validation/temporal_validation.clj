@@ -1,8 +1,8 @@
 (ns cmr.ingest.validation.temporal-validation
   "Provides functions to validate the temporal attributes of a collection during its update"
-  (:require [cmr.common.util :as util]
-            [clj-time.core :as t]
-            [cmr.umm.start-end-date :as sed]))
+  (:require
+   [clj-time.core :as t]
+   [cmr.umm-spec.time :as spec-time]))
 
 (defn- covers-temporal-range?
   "Checks if the temporal range defined by the first pair of arguments covers the temporal range
@@ -37,10 +37,13 @@
   "Returns the search parameters for identifying granules which fall outside
   the temporal range defined for the collection"
   [concept-id concept prev-concept]
-  (let [updated-start-time (sed/start-date :collection (:temporal concept))
-        updated-end-time (sed/end-date :collection (:temporal concept))
-        prev-start-time (sed/start-date :collection (:temporal prev-concept))
-        prev-end-time (sed/end-date :collection (:temporal prev-concept))]
+  (let [updated-start-time (spec-time/collection-start-date concept)
+        updated-end-time (spec-time/collection-end-date concept)
+        prev-start-time (spec-time/collection-start-date prev-concept)
+        prev-end-time (spec-time/collection-end-date prev-concept)
+        ;; convert :present end dates to nil
+        updated-end-time (when-not (= :present updated-end-time) updated-end-time)
+        prev-end-time (when-not (= :present prev-end-time) prev-end-time)]
     (when-not (covers-temporal-range? updated-start-time updated-end-time
                                      prev-start-time prev-end-time)
       (remove nil?

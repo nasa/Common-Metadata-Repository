@@ -11,7 +11,6 @@
     [cmr.ingest.data.provider-acl-hash :as pah]
     [cmr.ingest.services.messages :as msg]
     [cmr.ingest.services.helper :as h]
-    [cmr.ingest.spec-validation.validation :as spec-v]
     [cmr.ingest.validation.validation :as v]
     [cmr.message-queue.services.queue :as queue]
     [cmr.oracle.connection :as conn]
@@ -68,18 +67,11 @@
                                                                              concept
                                                                              validation-options)
         ;; Add extra fields for the collection
-        coll-concept (add-extra-fields-for-collection context concept collection)
-        ;; We're still using the UMM Lib collection when validating Ingest business rules for now.
-        ;; Fix as part of CMR-2881
-        umm-lib-collection (umm-legacy/parse-concept context concept)]
+        coll-concept (add-extra-fields-for-collection context concept collection)]
 
     ;; Validate ingest business rule through umm-spec-lib
-    (spec-v/validate-umm-spec-business-rules
+    (v/validate-business-rules
      context (assoc coll-concept :umm-concept collection))
-
-    ;; Validate ingest business rule through umm-lib
-    ;; TO DO this will be removed at the end of this issue CMR-2881.
-    (v/validate-business-rules context (assoc coll-concept :umm-concept umm-lib-collection))
     {:concept coll-concept
      :warnings warnings}))
 

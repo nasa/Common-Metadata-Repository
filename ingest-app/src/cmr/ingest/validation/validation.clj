@@ -162,5 +162,6 @@
 (defn validate-business-rules
   "Validates the concept against CMR ingest rules."
   [context concept]
-  (if-errors-throw :invalid-data (mapcat #(% context concept)
-                                         (bv/business-rule-validations (:concept-type concept)))))
+  (if-errors-throw :invalid-data
+                   (mapcat #(% context concept)
+                           (bv/business-rule-validations (:concept-type concept)))))
