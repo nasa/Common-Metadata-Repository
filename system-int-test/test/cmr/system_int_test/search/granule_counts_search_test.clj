@@ -1,18 +1,19 @@
 (ns cmr.system-int-test.search.granule-counts-search-test
   "This tests the granule counts search feature which allows retrieving counts of granules per collection."
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.granule-counts :as gran-counts]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.spatial.codec :as codec]
-            [cmr.spatial.point :as p]
-            [cmr.common.util :as util]
-            [cmr.spatial.mbr :as m]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+  (:require
+    [clojure.test :refer :all]
+    [cmr.common.util :as util]
+    [cmr.spatial.codec :as codec]
+    [cmr.spatial.mbr :as m]
+    [cmr.spatial.point :as p]
+    [cmr.system-int-test.data2.collection :as dc]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.granule-counts :as gran-counts]
+    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -64,12 +65,15 @@
                                        other-attribs))))))
 
 (deftest granule-related-collection-query-results-features-test
-  (let [;; Create collections
-        ;; whole world, no temporal, and science keywords
-        coll1 (make-coll 1 m/whole-world nil {:science-keywords
-                                              [(dc/science-keyword {:category "Tornado"
-                                                                    :topic "Wind"
-                                                                    :term "Speed"})]})
+  (let [no-match-temporal {:beginning-date-time "1990-01-01T00:00:00"
+                           :ending-date-time "1991-01-01T00:00:00"}
+        ;; Create collections
+        ;; whole world, temporal not match search range, and science keywords
+        coll1 (make-coll 1 m/whole-world no-match-temporal
+                         {:science-keywords
+                          [(dc/science-keyword {:category "Tornado"
+                                                :topic "Wind"
+                                                :term "Speed"})]})
         ;; western hemisphere
         coll2 (make-coll 2 (m/mbr -180 90 0 -90) (temporal-range 1 3))
         ;; eastern hemisphere
@@ -89,12 +93,14 @@
 
         orbit-coll (d/ingest "PROV1"
                              (dc/collection
-                              {:entry-id "orbit-coll"
-                               :entry-title "orbit-coll"
-                               :spatial-coverage (dc/spatial {:sr :geodetic
-                                                              :geometries [m/whole-world]
-                                                              :gsr :orbit
-                                                              :orbit orbit-parameters})}))
+                              (merge
+                               {:entry-id "orbit-coll"
+                                :entry-title "orbit-coll"
+                                :spatial-coverage (dc/spatial {:sr :geodetic
+                                                               :geometries [m/whole-world]
+                                                               :gsr :orbit
+                                                               :orbit orbit-parameters})}
+                               no-match-temporal)))
 
         all-colls [coll1 coll2 coll3 coll4 coll5 coll6 orbit-coll]]
 

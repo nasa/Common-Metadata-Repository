@@ -1,7 +1,9 @@
 (ns cmr.umm-spec.time
   "Functions for working with the variety of temporal extent
   structures in the UMM model."
-  (:require [clj-time.core :as t]))
+  (:require
+    [clj-time.core :as t]
+    [cmr.umm-spec.date-util :as date-util]))
 
 (defn temporal-all-dates
   "Returns the set of all dates contained in the given TemporalExtent record. :present is used to
@@ -39,4 +41,9 @@
         :present
         (t/latest date-set)))))
 
-
+(defn normailized-end-date
+  "Returns the normalized end date of the collection by changing the :present end date to nil
+   to facilitate the handling of :present end date during ingest and indexing."
+  [umm-coll]
+  (let [end-date (collection-end-date umm-coll)]
+    (when-not (= :present end-date) end-date)))

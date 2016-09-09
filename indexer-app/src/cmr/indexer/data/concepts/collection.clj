@@ -1,6 +1,6 @@
 (ns cmr.indexer.data.concepts.collection
   "Contains functions to parse and convert collection concept"
-  (:require 
+  (:require
     [camel-snake-kebab.core :as csk]
     [cheshire.core :as json]
     [clj-time.core :as t]
@@ -30,13 +30,15 @@
     [cmr.indexer.data.elasticsearch :as es]
     [cmr.indexer.data.humanizer-fetcher :as hf]
     [cmr.indexer.services.index-service :as idx]
+    [cmr.umm-spec.time :as spec-time]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
     [cmr.umm.acl-matchers :as umm-matchers]
     [cmr.umm.collection.entry-id :as eid]
     [cmr.umm.related-url-helper :as ru]
     [cmr.umm.start-end-date :as sed]
     [cmr.umm.umm-collection :as umm-c])
-  (:import cmr.spatial.mbr.Mbr))
+  (:import
+    (cmr.spatial.mbr Mbr)))
 
 (defn spatial->elastic
   [collection]
@@ -66,9 +68,8 @@
 (defn- collection-temporal-elastic
   "Returns a map of collection temporal fields for indexing in Elasticsearch."
   [context concept-id collection]
-  (let [temporal (:temporal collection)
-        start-date (sed/start-date :collection temporal)
-        end-date (sed/end-date :collection temporal)
+  (let [start-date (spec-time/collection-start-date collection)
+        end-date (spec-time/normailized-end-date collection)
         {:keys [granule-start-date granule-end-date]} (cgac/get-coll-gran-aggregates context concept-id)
         last-3-days (t/interval (t/minus (tk/now) (t/days 3)) (tk/now))
         granule-end-date (if (and granule-end-date (t/within? last-3-days granule-end-date))
@@ -301,7 +302,7 @@
                                  (into {} (for [ta tag-associations]
                                             [(:tag-key ta) (util/remove-nil-keys
                                                              {:data (:data ta)})])))))}
-           (collection-temporal-elastic context concept-id collection)
+           (collection-temporal-elastic context concept-id umm-spec-collection)
            (get-in collection [:spatial-coverage :orbit-parameters])
            (spatial->elastic collection)
            (sk/science-keywords->facet-fields collection)
@@ -316,8 +317,7 @@
         ;; only used to get default ACLs for tombstones
         tombstone-umm (umm-c/map->UmmCollection {:entry-title entry-title})
         tombstone-permitted-group-ids (get-coll-permitted-group-ids context
-                                                                    provider-id tombstone-umm)
-        {:keys [access-value]} tombstone-umm]
+                                                                    provider-id tombstone-umm)]
     {:concept-id concept-id
      :revision-id revision-id
      :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
@@ -337,15 +337,14 @@
      :provider-id.lowercase (str/lower-case provider-id)
      :revision-date2 revision-date
      :metadata-format (name (mt/format-key format))
-     :permitted-group-ids tombstone-permitted-group-ids
-     :access-value access-value}))
+     :permitted-group-ids tombstone-permitted-group-ids}))
 
 (defmethod es/parsed-concept->elastic-doc :collection
   [context concept umm-legacy-collection]
   (if (:deleted concept)
     (get-elastic-doc-for-tombstone-collection context concept)
     (let [umm-spec-collection (umm-spec/parse-metadata context concept)]
-      (get-elastic-doc-for-full-collection context 
-                                           concept 
-                                           umm-legacy-collection 
+      (get-elastic-doc-for-full-collection context
+                                           concept
+                                           umm-legacy-collection
                                            umm-spec-collection))))
