@@ -1,6 +1,7 @@
 (ns cmr.ingest.validation.project-validation
   "Provides functions to validate the projects during collection update"
-  (:require [clojure.set :as s]))
+  (:require
+   [clojure.set :as s]))
 
 (defn deleted-project-searches
   "Returns granule searches for deleted projects. We should not delete projects in a collection
@@ -8,8 +9,8 @@
   for identifying such invalid deletions."
   [concept-id concept prev-concept]
   (let [deleted-project-names (s/difference
-                                (set (map :short-name (:projects prev-concept)))
-                                (set (map :short-name (:projects concept))))]
+                                (set (map :ShortName (:Projects prev-concept)))
+                                (set (map :ShortName (:Projects concept))))]
     (for [name deleted-project-names]
       {:params {"project[]" name
                 :collection-concept-id concept-id}

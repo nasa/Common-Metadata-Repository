@@ -1,18 +1,18 @@
 (ns cmr.ingest.test.validation.additional-attribute-validation
-  (:require [clojure.test :refer :all]
-            [cmr.umm.umm-collection :as c]
-            [cmr.common.util :as util]
-            [cmr.ingest.validation.additional-attribute-validation :as v]))
+  (:require
+    [clojure.test :refer :all]
+    [cmr.common.util :as util]
+    [cmr.ingest.validation.additional-attribute-validation :as v]
+    [cmr.umm-spec.additional-attribute :as aa]
+    [cmr.umm.umm-collection :as c]))
 
 (deftest aa-range-reduced-test
   (util/are2
     [prev-params params reduced?]
-    (let [aa (c/map->ProductSpecificAttribute
-               {:parsed-parameter-range-begin (first params)
-                :parsed-parameter-range-end (last params)})
-          prev-aa (c/map->ProductSpecificAttribute
-                    {:parsed-parameter-range-begin (first prev-params)
-                     :parsed-parameter-range-end (last prev-params)})]
+    (let [aa {::aa/parsed-parameter-range-begin (first params)
+              ::aa/parsed-parameter-range-end (last params)}
+          prev-aa {::aa/parsed-parameter-range-begin (first prev-params)
+                   ::aa/parsed-parameter-range-end (last prev-params)}]
       (= reduced? (#'v/aa-range-reduced? aa prev-aa)))
 
     "reduced on both ends" [3 9] [4 8] true
@@ -36,14 +36,13 @@
           expected {:params {"attribute[]" expected-search
                              "options[attribute][or]" true}
                     :error-msg msg}
-          aa (c/map->ProductSpecificAttribute
-               {:name name
-                :data-type type
-                :parameter-range-begin begin
-                :parameter-range-end end})]
+          aa {:Name name
+              :DataType type
+              :ParameterRangeBegin begin
+              :ParameterRangeEnd end}]
       (= expected (#'v/out-of-range-searches aa)))
 
-    ["alpha" :int 1 5] ["int,alpha,,1" "int,alpha,5,"]
-    ["alpha" :int 1 nil] ["int,alpha,,1"]
-    ["alpha" :int nil 5] ["int,alpha,5,"]
-    ["alpha" :float nil 1.23] ["float,alpha,1.23,"]))
+    ["alpha" "INT" 1 5] ["int,alpha,,1" "int,alpha,5,"]
+    ["alpha" "INT" 1 nil] ["int,alpha,,1"]
+    ["alpha" "INT" nil 5] ["int,alpha,5,"]
+    ["alpha" "FLOAT" nil 1.23] ["float,alpha,1.23,"]))
