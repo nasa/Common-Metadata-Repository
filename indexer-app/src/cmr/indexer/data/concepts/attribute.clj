@@ -87,7 +87,7 @@
   [aa]
   (let [{Group :Group Name :Name DataType :DataType parsed-value ::aa/parsed-value} 
         (aa/attribute-with-parsed-value aa)
-        data-type (csk/->kebab-case-keyword (str/lower-case DataType))
+        data-type (csk/->kebab-case-keyword DataType)
         field-name (type->field-name data-type)
         aa-map {:name Name :group Group}]
     (if (some #{data-type} [:string :boolean :time-string :date-string :datetime-string])

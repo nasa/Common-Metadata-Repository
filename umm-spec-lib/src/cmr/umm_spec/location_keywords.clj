@@ -1,9 +1,11 @@
 (ns cmr.umm-spec.location-keywords
   "Helper utilities for converting Spatial or Location Keywords to UMM LocationKeywords."
-  (:require [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.umm-spec.models.umm-collection-models :as umm-c]
-            [clojure.string :as str]
-            [clojure.set :as set]))
+  (:require
+    [clojure.set :as set]
+    [clojure.string :as str] 
+    [cmr.common-app.services.kms-fetcher :as kf]
+    [cmr.common.util :as util]
+    [cmr.umm-spec.models.umm-collection-models :as umm-c]))
 
 (def duplicate-keywords
   "Lookup table to account for any duplicate keywords. Will choose the preferred value.
@@ -55,6 +57,34 @@
     (first (find-spatial-keywords-in-map keyword-map-list (:uuid (get duplicate-keywords (str/upper-case keyword)))))
     (let [result (first (sort-by count (find-spatial-keywords-in-map keyword-map-list keyword)))]
       (or result {:category "OTHER" :type keyword}))))
+
+(defn find-all-spatial-keyword-map
+  "Finds all occurrences of a keyword-map in the values of keyword-map-list.
+  Takes a keyword-map as a parameter, e.g. {:category CONTINENT, :type ASIA} 
+  and a list of spatial keyword maps, with the following values, for example:
+  ({:category CONTINENT, :type ASIA, :subregion-1 WESTERN ASIA, :subregion-2 MIDDLE EAST, :subregion-3 GAZA STRIP, 
+    :uuid 302ab5f2-5fa2-482d-9d22-8a7a1546a62d}, {:category OCEAN, :uuid ff03e9fc-9882-4a5e-ad0b-830d8f1186cb}, 
+   {:category OCEAN, :type ATLANTIC OCEAN, :subregion-1 NORTH ATLANTIC OCEAN, 
+    :uuid a4202721-0cba-4fa1-853f-890f146b04f9});
+  returns a list of maps of hierarchies which contain the keyword-map."
+  [keyword-map-list keyword-map]
+  (filter (fn [keyword-map-value]
+            (set/subset? (set (util/map-values str/upper-case keyword-map)) 
+              (set (util/map-values str/upper-case keyword-map-value))))
+          (vals keyword-map-list)))
+
+(defn find-shortest-spatial-keyword-map
+  "Finds spatial keyword-map in the hierarchy and pick the one with the fewest keys (e.g. shortest
+  hierarchical depth.) Takes a keyword-map as a parameter{:category CONTINENT, :type ASIA} 
+  a list of keyword maps and returns the map of hierarichies which contain the keyword map (case insensitive).
+  You can also pass :uuid as a keyword argument e.g. 'afbc0a01-742e-49da-939e-3eaa3cf431b0' for
+  'BLACK SEA'. If any upper-case value in keyword-map is a duplicate, it will substitute with the correct one."
+  [keyword-map-list keyword-map]
+  (let [duplicate (some #{(keys duplicate-keywords)} (str/upper-case (vals keyword-map)))]
+    (if duplicate
+      (first (find-spatial-keywords-in-map keyword-map-list (:uuid (get duplicate-keywords duplicate))))
+      (let [result (first (sort-by count (find-all-spatial-keyword-map keyword-map-list keyword-map)))]
+        (or result keyword-map)))))
 
 (defn spatial-keywords->location-keywords
   "Takes a keyword map list and a list of Spatial Keywords and returns a list of location keyword maps

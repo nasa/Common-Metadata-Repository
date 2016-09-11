@@ -17,6 +17,13 @@
           actual (lk/find-spatial-keyword (:spatial-keywords lkt/sample-keyword-map) keyword)]
       (is (= expected actual))))
 
+  (testing "Looking up a root keyword-map returns the top hierarchy result."
+    (let [keyword-map {:category "CONTINENT", :type "AFRICA"}
+          context lkt/setup-context-for-test
+          expected {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :uuid "f2ffbe58-8792-413b-805b-3e1c8de1c6ff"}
+          actual (lk/find-shortest-spatial-keyword-map (:spatial-keywords lkt/sample-keyword-map) keyword-map)]
+      (is (= expected actual))))
+
   (testing "Looking up a uuid returns a valid result"
     (let [uuid "a028edce-a3d9-4a16-a8c7-d2cb12d3a318"
           context lkt/setup-context-for-test
@@ -29,6 +36,13 @@
           expected "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
           context lkt/setup-context-for-test
           actual (:uuid (lk/find-spatial-keyword (:spatial-keywords lkt/sample-keyword-map) keyword))]
+         (is (= expected actual))))
+
+  (testing "Searching for a duplicate in keyword-map retrieves the correct result"
+    (let [keyword-map {:category "SPACE" :type "EARTH MAGNETIC FIELD"} 
+          expected "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+          context lkt/setup-context-for-test
+          actual (:uuid (lk/find-shortest-spatial-keyword-map (:spatial-keywords lkt/sample-keyword-map) keyword-map))]
          (is (= expected actual))))
 
   (testing "Passing in a list of keywords returns a list of Location Keyword maps"
