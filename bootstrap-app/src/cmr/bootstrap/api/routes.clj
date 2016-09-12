@@ -10,6 +10,7 @@
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.date-time-parser :as date-time-parser]
    [cmr.common.jobs :as jobs]
+   [cmr.common.log :refer (info)]
    [cmr.common.services.errors :as srv-errors]
    [cmr.common.util :as util]
    [cmr.virtual-product.data.source-to-virtual-mapping :as svm]
@@ -52,16 +53,15 @@
      :body {:message msg}}))
 
 (defn- bulk-index-data-later-than-date-time
-  "Index all the data later than a given date-time."
+  "Index all the data with a revision-date later than a given date-time."
   [context params]
   (let [synchronous (:synchronous params)
         date-time (:date_time params)]
     (if-let [date-time-value (date-time-parser/try-parse-datetime date-time)]
-      (let [start-index (Long/parseLong (get params :start_index "0"))
-            result (bs/index-data-later-than-date-time context date-time-value synchronous start-index)
+      (let [result (bs/index-data-later-than-date-time context date-time-value synchronous)
             msg (if synchronous
                     result
-                    (str "Processing data after " date-time " for bulk indexing from start index " start-index))]
+                    (str "Processing data after " date-time " for bulk indexing"))]
         {:status 202
          :body {:message msg}})
       ;; Can't parse date-time.

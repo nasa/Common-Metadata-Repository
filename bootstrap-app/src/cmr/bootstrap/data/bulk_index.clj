@@ -116,8 +116,8 @@
             provider-id)))
 
 (defn index-data-later-than-date-time
-  "Index all concept revisions created later than the diven date-time."
-  [system date-time start-index]
+  "Index all concept revisions created later than the given date-time."
+  [system date-time]
   (info "Indexing concepts.")
   (let [db (helper/get-metadata-db-db system)
         providers (p/get-providers db)
@@ -150,6 +150,13 @@
   "Handle any requests for indexing providers."
   [system]
   (info "Starting background task for monitoring bulk provider indexing channels.")
+  (let [channel (:data-index-channel system)]
+    (ca/thread (while true
+                 (try ; catch any errors and log them, but don't let the thread die
+                   (let [{:keys [date-time]} (<!! channel)]
+                     (index-data-later-than-date-time system date-time))
+                   (catch Throwable e
+                     (error e (.getMessage e)))))))
   (let [channel (:provider-index-channel system)]
     (ca/thread (while true
                  (try ; catch any errors and log them, but don't let the thread die
