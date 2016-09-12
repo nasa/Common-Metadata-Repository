@@ -53,7 +53,6 @@
   "Creates the tag saving it as a revision in metadata db. Returns the concept id and revision id of
   the saved tag."
   [context tag-json-str]
-  (println "TAG JSON: " tag-json-str)
   (let [user-id (context->user-id context)
         tag (-> (tv/create-tag-json->tag tag-json-str)
                 (assoc :originator-id user-id))]

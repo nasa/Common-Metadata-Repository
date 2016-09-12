@@ -55,7 +55,6 @@
 (defn- bulk-index-data-later-than-date-time
   "Index all the data later than a given date-time."
   [context params]
-  (println "PARAMS: " params)
   (let [synchronous (:synchronous params)
         date-time (:date_time params)]
     (if-let [date-time-value (date-time-parser/try-parse-datetime date-time)]

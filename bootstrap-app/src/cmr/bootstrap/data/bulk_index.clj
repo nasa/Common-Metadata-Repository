@@ -121,7 +121,6 @@
         providers (p/get-providers db)
         ;; helper function to get and index batches of concepts
         index-fn (fn [provider concept-type]
-                   (println "PROVIDER: " (:provider-id provider) " CONCEPT_TYPE: " concept-type)
                    (let [provider-id (:provider-id provider)
                          params {:concept-type concept-type
                                  :provider-id provider-id

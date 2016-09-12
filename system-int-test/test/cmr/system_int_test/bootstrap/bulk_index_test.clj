@@ -122,9 +122,9 @@
 
                (are3 [query expected-tags]
                      (let [result-tags (tags/search query)
-                           {:keys [status hits items]} result-tags
+                           {:keys [status hits items took]} result-tags
                            items (map #(select-keys % [:concept-id :revision-id]) items)
-                           results {:status status :hits hits :items items}]
+                           results {:status status :hits hits :items items :took took}]
                        (tags/assert-tag-search expected-tags results))
 
                      "Tags"
