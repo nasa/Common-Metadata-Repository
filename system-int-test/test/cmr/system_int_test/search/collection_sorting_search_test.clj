@@ -1,14 +1,15 @@
 (ns cmr.system-int-test.search.collection-sorting-search-test
   "Tests searching for collections using basic collection identifiers"
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.umm.collection.entry-id :as eid]
-            [cmr.common-app.services.search.messages :as msg]))
+  (:require
+    [clojure.string :as str]
+    [clojure.test :refer :all]
+    [cmr.common-app.services.search.messages :as msg]
+    [cmr.system-int-test.data2.collection :as dc]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]
+    [cmr.umm.collection.entry-id :as eid]))
 
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
@@ -184,8 +185,8 @@
           "-revision_date" (reverse all-revisions)
           "entry_id" (sort-revisions-by-field :entry-id false all-revisions true)
           "-entry_id" (sort-revisions-by-field :entry-id true all-revisions true)
-          "start_date" [c5 c1-2 c1-1 c11 c2 c6 c3 c7 c4 c8 c9-3 c9-2 c9-1 c10 c12-2 c12-1]
-          "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1-2 c1-1 c5 c9-3 c9-2 c9-1 c10 c12-2 c12-1]
+          "start_date" [c9-3 c9-2 c9-1 c10 c12-1 c5 c1-2 c1-1 c11 c2 c6 c3 c7 c4 c8 c12-2]
+          "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1-2 c1-1 c5 c9-3 c9-2 c9-1 c10 c12-1 c12-2]
           "end_date" [c5 c1-2 c1-1 c2 c6 c7 c3 c4 c8 c9-3 c9-2 c9-1 c10 c11 c12-2 c12-1]
           "-end_date" [c8 c4 c3 c7 c6 c2 c1-2 c1-1 c5 c9-3 c9-2 c9-1 c10 c11 c12-2 c12-1])))
 
@@ -207,7 +208,7 @@
           "-revision_date" (reverse all-colls)
           "entry_id" (sort-revisions-by-field :entry-id false all-colls)
           "-entry_id" (sort-revisions-by-field :entry-id true all-colls)
-          "start_date" [c5 c1-2 c11 c2 c6 c3 c7 c4 c8 c10 c9-3]
+          "start_date" [c10 c9-3 c5 c1-2 c11 c2 c6 c3 c7 c4 c8]
           "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1-2 c5 c10 c9-3]
           "end_date" [c5 c1-2 c2 c6 c7 c3 c4 c8 c10 c9-3 c11]
           "-end_date" [c8 c4 c3 c7 c6 c2 c1-2 c5 c10 c9-3 c11])))))

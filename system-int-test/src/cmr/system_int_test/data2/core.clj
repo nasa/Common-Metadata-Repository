@@ -72,7 +72,8 @@
                                           :user-id
                                           :validate-keywords
                                           :validate-umm-c
-                                          :accept-format]))
+                                          :accept-format
+                                          :warnings]))
          status (:status response)]
 
      ;; This allows this to be used from many places where we don't expect a failure but if there is
@@ -88,7 +89,8 @@
               :user-id (:user-id options)
               :concept-id (:concept-id response)
               :revision-id (:revision-id response)
-              :format-key format-key)
+              :format-key format-key
+              :warnings (:warnings response))
        response))))
 
 (defn remove-ingest-associated-keys
@@ -264,7 +266,7 @@
   (is (= (set (map item->ref items))
          ;; need to remove score etc. because it won't be available in collections
          ;; to which we are comparing
-         (set (map #(dissoc % :score :granule-count) (:refs search-result))))))
+         (set (map #(dissoc % :score :granule-count :warnings) (:refs search-result))))))
 
 (defn assert-refs-match
   "Asserts that the references match the results returned. Use this in place of refs-match? to

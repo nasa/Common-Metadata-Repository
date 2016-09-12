@@ -1,17 +1,18 @@
 (ns cmr.ingest.validation.business-rule-validation
   "Provides functions to validate the ingest business rules"
-  (:require [clj-time.core :as t]
-            [cmr.common.time-keeper :as tk]
-            [cmr.common.date-time-parser :as p]
-            [cmr.transmit.metadata-db :as mdb]
-            [cmr.transmit.search :as search]
-            [cmr.ingest.services.helper :as h]
-            [cmr.ingest.validation.additional-attribute-validation :as aa]
-            [cmr.ingest.validation.project-validation :as pv]
-            [cmr.ingest.validation.temporal-validation :as tv]
-            [cmr.ingest.validation.spatial-validation :as sv]
-            [cmr.ingest.validation.collection-unique-ids-validation :as cui]
-            [cmr.umm-spec.legacy :as umm-legacy]))
+  (:require
+    [clj-time.core :as t]
+    [cmr.common.time-keeper :as tk]
+    [cmr.common.date-time-parser :as p]
+    [cmr.ingest.services.helper :as h]
+    [cmr.ingest.validation.additional-attribute-validation :as aa]
+    [cmr.ingest.validation.collection-unique-ids-validation :as cui]
+    [cmr.ingest.validation.project-validation :as pv]
+    [cmr.ingest.validation.spatial-validation :as sv]
+    [cmr.ingest.validation.temporal-validation :as tv]
+    [cmr.umm-spec.umm-spec-core :as spec]
+    [cmr.transmit.metadata-db :as mdb]
+    [cmr.transmit.search :as search]))
 
 (defn- version-is-not-nil-validation
   "Validates that the version is not nil"
@@ -71,7 +72,7 @@
         prev-concept (first (h/find-visible-collections context {:provider-id provider-id
                                                                  :native-id native-id}))]
     (when prev-concept
-      (let [prev-umm-concept (umm-legacy/parse-concept context prev-concept)
+      (let [prev-umm-concept (spec/parse-metadata context prev-concept)
             has-granule-searches (mapcat #(% (:concept-id prev-concept) umm-concept prev-umm-concept)
                                          collection-update-searches)
             search-errors (->> has-granule-searches

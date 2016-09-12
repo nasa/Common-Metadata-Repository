@@ -7,8 +7,8 @@
   This function builds the granule search parameters for identifying if there are granules for this
   collection and the error message when validation fails."
   [concept-id concept prev-concept]
-  (let [{:keys [entry-title]} concept
-        prev-entry-title (:entry-title prev-concept)]
+  (let [entry-title (:EntryTitle concept)
+        prev-entry-title (:EntryTitle prev-concept)]
     (when-not (= entry-title prev-entry-title)
       [{:params {:collection-concept-id concept-id}
         :error-msg (format (str "Collection with entry-title [%s] is referenced by existing"
@@ -20,9 +20,8 @@
   if there are granules for this collection. This function builds the granule search parameters for
   identifying if there are granules for this collection and the error message when validation fails."
   [concept-id concept prev-concept]
-  (let [{{:keys [short-name version-id]} :product} concept
-        prev-short-name (get-in prev-concept [:product :short-name])
-        prev-version-id (get-in prev-concept [:product :version-id])]
+  (let [{short-name :ShortName version-id :Version} concept
+        {prev-short-name :ShortName prev-version-id :Version} prev-concept]
     (when-not (and (= short-name prev-short-name)
                    (= version-id prev-version-id))
       [{:params {:collection-concept-id concept-id}
