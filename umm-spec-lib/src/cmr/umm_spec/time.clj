@@ -41,7 +41,7 @@
         :present
         (t/latest date-set)))))
 
-(defn normailized-end-date
+(defn normalized-end-date
   "Returns the normalized end date of the collection by changing the :present end date to nil
    to facilitate the handling of :present end date during ingest and indexing."
   [umm-coll]

@@ -69,7 +69,7 @@
   "Returns a map of collection temporal fields for indexing in Elasticsearch."
   [context concept-id collection]
   (let [start-date (spec-time/collection-start-date collection)
-        end-date (spec-time/normailized-end-date collection)
+        end-date (spec-time/normalized-end-date collection)
         {:keys [granule-start-date granule-end-date]} (cgac/get-coll-gran-aggregates context concept-id)
         last-3-days (t/interval (t/minus (tk/now) (t/days 3)) (tk/now))
         granule-end-date (if (and granule-end-date (t/within? last-3-days granule-end-date))
