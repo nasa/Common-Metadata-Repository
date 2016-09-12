@@ -1,19 +1,27 @@
 (ns cmr.system-int-test.ingest.ops-collections-translation-test
   "Translate OPS collections into various supported metadata formats."
-  (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
-            [cmr.common.xml :as cx]
-            [cmr.system-int-test.utils.fast-xml :as fx]
-            [clojure.string :as str]
-            [cmr.common.log :refer [error info]]
-            [cmr.common.mime-types :as mt]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.system-int-test.system :as s]
-            [cmr.umm-spec.umm-spec-core :as umm]))
+  (:require
+    [clj-http.client :as client]
+    [clojure.string :as str]
+    [clojure.test :refer :all]
+    [cmr.common.concepts :as concepts]
+    [cmr.common.log :refer [error info]]
+    [cmr.common.mime-types :as mt]
+    [cmr.common.xml :as cx]
+    [cmr.system-int-test.system :as s]
+    [cmr.system-int-test.utils.fast-xml :as fx]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]
+    [cmr.system-int-test.utils.url-helper :as url]
+    [cmr.umm-spec.json-schema :as json-schema]
+    [cmr.umm-spec.test.location-keywords-helper :as lkt]
+    [cmr.umm-spec.umm-json :as umm-json]
+    [cmr.umm-spec.umm-spec-core :as umm]
+    [cmr.umm-spec.validation.umm-spec-validation-core :as umm-validation]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+
+(def context (lkt/setup-context-for-test lkt/sample-keyword-map))
 
 (def starting-page-num
   "The starting page-num to retrieve collections for the translation test."
@@ -64,7 +72,7 @@
     "C1214604063-SCIOPS" ;;Line 291 - cvc-datatype-valid.1.2.1: '<http://pubs.usgs.gov/of/2014/1040/data/undersea_features.zip>' is not a valid value for 'anyURI'.
     "C1214595389-SCIOPS" ;;Line 108 - cvc-datatype-valid.1.2.1: 'IPY  http://ipy.antarcticanz.govt.nz/projects/southern-victoria-land-geology/' is not a valid value for 'anyURI'.
     "C1214608487-SCIOPS" ;;Line 303 - cvc-datatype-valid.1.2.1: 'Scanned images: http://atlas.gc.ca/site/english/maps/archives' is not a valid value for 'anyURI'.
-    "C1214603723-SCIOPS" ;;Line 132 - cvc-datatype-valid.1.2.1: '<http://sofia.usgs.gov/projects/workplans12/jem.html>' is not a valid value for 'anyURI'.
+    "C1214603723-SCIOPS"}) ;;Line 132 - cvc-datatype-valid.1.2.1: '<http://sofia.usgs.gov/projects/workplans12/jem.html>' is not a valid value for 'anyURI'.
 
     ;; The following collections failed ingest validation, but not xml schema validation.
     ;; I have changed the validation from ingest validation to xml validation, so we don't
@@ -91,7 +99,7 @@
     ; "C5862870-LARC_ASDC"
     ; "C5784310-LARC_ASDC"
 
-    })
+
 
 (def valid-formats
   "Valid metadata formats that is supported by CMR."
@@ -136,6 +144,40 @@
                 (format "Failed xml schema validation when translating %s to %s for collection %s. %s"
                         (name metadata-format) (name output-format) concept-id validation-errs))))))))
 
+
+(defn- translate-record-to-umm
+  "Translate collection from native format to UMM-C"
+  [record]
+  (let [{:keys [metadata-format metadata concept-id]} record]
+    (umm/parse-metadata context :collection metadata-format metadata {:apply-default? true})))
+
+(defn- get-collection-validation-errors
+  "Perform the following collection validations:
+   * Validate metadata against the XML schema
+   * Validation the UMM collection record against the current UMM JSON schema
+   * Valiadte the UMM collection against UMM collection rules
+  Return a list of validation errors."
+  [record]
+  (remove empty?
+   (concat
+     (umm/validate-xml :collection (:metadata-format record) (:metadata record))
+     (json-schema/validate-umm-json (umm-json/umm->json (:collection record)) :collection)
+     (umm-validation/validate-collection record))))
+
+(defn- translate-and-validation-collection
+  "For a search result record, translate the metadata to UMM, validate the metadata and UMM record
+  and return a validation result record including the concept id, provider id, entry title, and
+  all validation errors for the record."
+  [record]
+  (let [record (assoc record :collection (translate-record-to-umm record))
+        validation-errors (get-collection-validation-errors record)
+        concept-id (:concept-id record)]
+    (when (seq validation-errors)
+      {:concept-id concept-id
+       :provider-id (:provider-id (concepts/parse-concept-id concept-id))
+       :entry-title (get-in record [:collection :EntryTitle])
+       :errors validation-errors})))
+
 (defn get-collections
   "Returns the collections as a list of maps with concept-id, revision-id, metadata-format and metadata."
   [page-size page-num]
@@ -158,16 +200,44 @@
            (cx/elements-at-path parsed [:result])
            metadatas))))
 
+(defn- get-ops-collections-umm-validation-errors
+  "Loops through the collections in ops with a paged search. For each collection, validate the
+  metadata against the XML schema, validate the collection translated to UMM against the current
+  UMM JSON schema, and validate the UMM collection against the validation rules.
+  Return a list of all validation errors across all collections."
+  []
+  (loop [page-num starting-page-num results []]
+    (let [collections (get-collections search-page-size page-num)
+          error-results (map translate-and-validation-collection collections)
+          all-results (concat results (remove nil? error-results))]
+      (if (and (>= (count collections) search-page-size))
+        (recur (+ page-num 1) all-results)
+        all-results))))
+
+(defn- get-ops-collections-umm-validation-errors-debug
+  []
+  (let [colls (get-collections search-page-size 1)
+        error-results (map translate-and-validation-collection colls)
+        all-results (remove nil? error-results)]
+    (if (and (>= (count colls) search-page-size) (<= 200 (count colls)))
+      all-results
+      all-results)))
+
 ;; Comment out this test so that it will not be run as part of the build.
-#_(deftest ops-collections-translation)
-  (testing "Translate OPS collections into various supported metadata formats and make sure they pass validation."
-    (loop [page-num starting-page-num]
-      (let [colls (get-collections search-page-size page-num)]
-        (info "Translating collections on page-num: " page-num)
-        (doseq [coll colls]
-          (verify-translation-via-schema-validation coll))
-        ;; We will turn on ingest validation later when ingest is backed by umm-spec-lib
-        ; (verify-translation-via-ingest-validation coll))
-        (when (>= (count colls) search-page-size)
-          (recur (+ page-num 1)))))
-    (info "Finished OPS collections translation."))
+#_(deftest ops-collections-translation
+   (testing "Translate OPS collections into various supported metadata formats and make sure they pass validation."
+     (loop [page-num starting-page-num]
+       (let [colls (get-collections search-page-size page-num)]
+         (info "Translating collections on page-num: " page-num)
+         (doseq [coll colls]
+           (verify-translation-via-schema-validation coll))
+         ;; We will turn on ingest validation later when ingest is backed by umm-spec-lib
+         ; (verify-translation-via-ingest-validation coll))
+         (when (>= (count colls) search-page-size)
+           (recur (+ page-num 1)))))
+     (info "Finished OPS collections translation.")))
+
+(deftest ops-collections-validation
+   (testing "get-collections the current collections in ops against the current UMM schema"
+     (def results (get-ops-collections-umm-validation-errors-debug))
+    (info "Finished OPS collections translation.")))
