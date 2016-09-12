@@ -1,19 +1,21 @@
 (ns cmr.bootstrap.data.bulk-index
   "Functions to support concurrent bulk indexing."
-  (:require [cmr.common.log :refer (debug info warn error)]
-            [cmr.indexer.services.index-service :as index]
-            [cmr.metadata-db.data.concepts :as db]
-            [cmr.metadata-db.data.providers :as p]
-            [cmr.metadata-db.services.provider-service :as provider-service]
-            [clojure.java.jdbc :as j]
-            [clj-http.client :as client]
-            [clojure.string :as str]
-            [cheshire.core :as json]
-            [clojure.core.async :as ca :refer [go go-loop alts!! <!! >!]]
-            [cmr.oracle.connection :as oc]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.bootstrap.data.bulk-migration :as bm]
-            [cmr.bootstrap.embedded-system-helper :as helper]))
+  (:require
+    [cheshire.core :as json]
+    [clj-http.client :as client]
+    [clojure.core.async :as ca :refer [go go-loop alts!! <!! >!]]
+    [clojure.java.jdbc :as j]
+    [clojure.string :as str]
+    [cmr.bootstrap.data.bulk-migration :as bm]
+    [cmr.bootstrap.embedded-system-helper :as helper]
+    [cmr.common.log :refer (debug info warn error)]
+    [cmr.indexer.services.index-service :as index]
+    [cmr.metadata-db.data.concepts :as db]
+    [cmr.metadata-db.data.providers :as p]
+    [cmr.metadata-db.services.provider-service :as provider-service]
+    [cmr.oracle.connection :as oc]
+    [cmr.transmit.config :as transmit-config]))
+
 
 (def ^:private elastic-http-try-count->wait-before-retry-time
   "A map of of the previous number of tries to communicate with Elasticsearch over http to the amount

@@ -1,18 +1,19 @@
 (ns cmr.system-int-test.utils.bootstrap-util
   "Contains utilities for working with the bootstrap application."
-  (:require [cheshire.core :as json]
-            [clojure.test :refer [is]]
-            [clj-http.client :as client]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.metadata-db.config :as mdb-config]
-            [cmr.bootstrap.test.catalog-rest :as cat-rest]
-            [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.util :as util]
-            [cmr.system-int-test.system :as s]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+  (:require
+    [cheshire.core :as json]
+    [clj-http.client :as client]
+    [clj-time.core :as t]
+    [clj-time.format :as f]
+    [clojure.test :refer [is]]
+    [cmr.bootstrap.test.catalog-rest :as cat-rest]
+    [cmr.common.lifecycle :as lifecycle]
+    [cmr.common.util :as util]
+    [cmr.metadata-db.config :as mdb-config]
+    [cmr.system-int-test.system :as s]
+    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.url-helper :as url]))
 
 (defn bulk-index-after-date-time
   "Call the bootstrap app to bulk index concepts with revision dates later than the given datetime."

@@ -1,17 +1,18 @@
 (ns cmr.bootstrap.services.bootstrap-service
   "Provides methods to insert migration requets on the approriate channels."
-  (:require [clojure.core.async :as async :refer [go >!]]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.concepts :as concepts]
-            [cmr.bootstrap.config :as cfg]
-            [cmr.bootstrap.data.bulk-index :as bulk]
-            [cmr.bootstrap.data.bulk-migration :as bm]
-            [cmr.bootstrap.data.virtual-products :as vp]
-            [cmr.transmit.index-set :as index-set]
-            [cmr.transmit.indexer :as indexer]
-            [cmr.indexer.data.index-set :as indexer-index-set]
-            [cmr.bootstrap.data.rebalance-util :as rebalance-util]))
+  (:require
+    [clojure.core.async :as async :refer [go >!]]
+    [cmr.bootstrap.config :as cfg]
+    [cmr.bootstrap.data.bulk-index :as bulk]
+    [cmr.bootstrap.data.bulk-migration :as bm]
+    [cmr.bootstrap.data.rebalance-util :as rebalance-util]
+    [cmr.bootstrap.data.virtual-products :as vp]
+    [cmr.common.concepts :as concepts]
+    [cmr.common.log :refer (debug info warn error)]
+    [cmr.common.services.errors :as errors]
+    [cmr.indexer.data.index-set :as indexer-index-set]
+    [cmr.transmit.index-set :as index-set]
+    [cmr.transmit.indexer :as indexer]))
 
 (defn migrate-provider
   "Copy all the data for a provider (including collections and graunules) from catalog rest

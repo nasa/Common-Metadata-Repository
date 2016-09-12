@@ -1,12 +1,13 @@
 (ns cmr.metadata-db.data.oracle.sql-helper
   "Contains helper functions that are shared by providers and concepts."
-  (:require [cmr.common.services.errors :as errors]
-            [clj-time.format :as time-format]
-            [clj-time.coerce :as time-coerce]
-            [clojure.string :as str]
-            [clojure.java.jdbc :as j]
-            [cmr.metadata-db.data.oracle.concept-tables :as ct]
-            [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
+  (:require
+    [clj-time.format :as time-format]
+    [clj-time.coerce :as time-coerce]
+    [clojure.java.jdbc :as j]
+    [clojure.string :as str]
+    [cmr.common.services.errors :as errors]
+    [cmr.metadata-db.data.oracle.concept-tables :as ct]
+    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import cmr.oracle.connection.OracleStore))
 
 (defn date-time->revision-date-sql-clause

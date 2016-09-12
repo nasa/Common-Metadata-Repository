@@ -1,21 +1,22 @@
 (ns cmr.system-int-test.bootstrap.bulk-index-test
   "Integration test for CMR bulk indexing."
-  (:require [clojure.test :refer :all]
-            [cmr.common.util :as util :refer [are3]]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.umm.echo10.echo10-core :as echo10]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.system :as s]
-            [clj-time.core :as t]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.utils.tag-util :as tags]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+  (:require
+    [clj-time.core :as t]
+    [clojure.test :refer :all]
+    [cmr.mock-echo.client.echo-util :as e]
+    [cmr.common.util :as util :refer [are3]]
+    [cmr.system-int-test.data2.collection :as dc]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.system :as s]
+    [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
+    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.metadata-db-util :as mdb]
+    [cmr.system-int-test.utils.search-util :as search]
+    [cmr.system-int-test.utils.tag-util :as tags]
+    [cmr.umm.echo10.echo10-core :as echo10]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})

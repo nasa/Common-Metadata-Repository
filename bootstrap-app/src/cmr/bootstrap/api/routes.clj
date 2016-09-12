@@ -1,25 +1,24 @@
 (ns cmr.bootstrap.api.routes
   "Defines the HTTP URL routes for the application."
   (:require
+   [cheshire.core :as json]
+   [cmr.acl.core :as acl]
+   [cmr.bootstrap.services.bootstrap-service :as bs]
+   [cmr.bootstrap.services.health-service :as hs]
+   [cmr.common.api.context :as context]
+   [cmr.common.api.errors :as errors]
+   [cmr.common-app.api.routes :as common-routes]
+   [cmr.common.date-time-parser :as date-time-parser]
+   [cmr.common.jobs :as jobs]
+   [cmr.common.services.errors :as srv-errors]
+   [cmr.common.util :as util]
+   [cmr.virtual-product.data.source-to-virtual-mapping :as svm]
    [compojure.route :as route]
    [compojure.core :refer :all]
    [ring.middleware.json :as ring-json]
-   [ring.middleware.params :as params]
-   [ring.middleware.nested-params :as nested-params]
    [ring.middleware.keyword-params :as keyword-params]
-   [cheshire.core :as json]
-   [cmr.common.log :refer (debug error info warn)]
-   [cmr.common.api.errors :as errors]
-   [cmr.common.util :as util]
-   [cmr.common.jobs :as jobs]
-   [cmr.common.services.errors :as srv-errors]
-   [cmr.acl.core :as acl]
-   [cmr.common.api.context :as context]
-   [cmr.bootstrap.services.bootstrap-service :as bs]
-   [cmr.bootstrap.services.health-service :as hs]
-   [cmr.common.date-time-parser :as date-time-parser]
-   [cmr.common-app.api.routes :as common-routes]
-   [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
+   [ring.middleware.nested-params :as nested-params]
+   [ring.middleware.params :as params]))
 
 (defn- migrate-collection
   "Copy collections data from catalog-rest to metadata db (including granules)"
