@@ -12,7 +12,7 @@
           (repeat kf/FIELD_NOT_PRESENT)))
 
 (defn location-keyword->elastic-doc
-  "Converts a single location keyword string into an elastic document with the full nested hierarchy
+  "Converts a single location-keyword map into an elastic document with the full nested hierarchy
   for the best match from the GCMD KMS keywords. If a field is not present in the KMS hierarchy, we
   use a dummy value to indicate the field was not present."
   [gcmd-keywords-map location-keyword]

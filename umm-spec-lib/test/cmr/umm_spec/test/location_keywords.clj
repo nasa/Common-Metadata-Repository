@@ -18,10 +18,17 @@
           actual (lk/find-spatial-keyword (:spatial-keywords lkt/sample-keyword-map) keyword)]
       (is (= expected actual))))
 
-  (testing "Looking up a root keyword-map returns the top hierarchy result."
+  (testing "Looking up a existing root keyword-map returns the top hierarchy result."
     (let [keyword-map {:category "CONTINENT", :type "AFRICA"}
           context lkt/setup-context-for-test
           expected {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :uuid "f2ffbe58-8792-413b-805b-3e1c8de1c6ff"}
+          actual (lk/find-shortest-spatial-keyword-map (:spatial-keywords lkt/sample-keyword-map) keyword-map)]
+      (is (= expected actual))))
+
+  (testing "Looking up a non-existing root keyword-map returns the top hierarchy result."
+    (let [keyword-map {:category "CONTINENT", :type "UNKNOWN"}
+          context lkt/setup-context-for-test
+          expected {:category "CONTINENT", :type "UNKNOWN"}
           actual (lk/find-shortest-spatial-keyword-map (:spatial-keywords lkt/sample-keyword-map) keyword-map)]
       (is (= expected actual))))
 

@@ -58,7 +58,7 @@
     (let [result (first (sort-by count (find-spatial-keywords-in-map keyword-map-list keyword)))]
       (or result {:category "OTHER" :type keyword}))))
 
-(defn find-all-spatial-keyword-map
+(defn- find-all-spatial-keyword-map
   "Finds all occurrences of a keyword-map in the values of keyword-map-list.
   Takes a keyword-map as a parameter, e.g. {:category CONTINENT, :type ASIA} 
   and a list of spatial keyword maps, with the following values, for example:
@@ -68,23 +68,18 @@
     :uuid a4202721-0cba-4fa1-853f-890f146b04f9});
   returns a list of maps of hierarchies which contain the keyword-map."
   [keyword-map-list keyword-map]
-  (filter (fn [keyword-map-value]
-            (set/subset? (set (util/map-values str/upper-case keyword-map)) 
-              (set (util/map-values str/upper-case keyword-map-value))))
-          (vals keyword-map-list)))
+  (let [keyword-map-set (set (util/map-values str/upper-case keyword-map))]
+    (filter (fn [keyword-map-value]
+              (set/subset? keyword-map-set (set (util/map-values str/upper-case keyword-map-value))))
+            (vals keyword-map-list))))
 
 (defn find-shortest-spatial-keyword-map
-  "Finds spatial keyword-map in the hierarchy and pick the one with the fewest keys (e.g. shortest
-  hierarchical depth.) Takes a keyword-map as a parameter{:category CONTINENT, :type ASIA} 
-  a list of keyword maps and returns the map of hierarichies which contain the keyword map (case insensitive).
-  You can also pass :uuid as a keyword argument e.g. 'afbc0a01-742e-49da-939e-3eaa3cf431b0' for
-  'BLACK SEA'. If any upper-case value in keyword-map is a duplicate, it will substitute with the correct one."
+  "Finds spatial keyword-map in the hierarchy and pick the one with the fewest keys
+  or, if the keyword-map doesn't exist in keyword-map-list, returns keyword-map"
   [keyword-map-list keyword-map]
-  (let [duplicate (some #{(keys duplicate-keywords)} (str/upper-case (vals keyword-map)))]
-    (if duplicate
-      (first (find-spatial-keywords-in-map keyword-map-list (:uuid (get duplicate-keywords duplicate))))
-      (let [result (first (sort-by count (find-all-spatial-keyword-map keyword-map-list keyword-map)))]
-        (or result keyword-map)))))
+  (let [all-spatial-keyword-map (find-all-spatial-keyword-map keyword-map-list keyword-map)]
+    (let [result (first (sort-by count all-spatial-keyword-map))]
+      (or result keyword-map))))
 
 (defn spatial-keywords->location-keywords
   "Takes a keyword map list and a list of Spatial Keywords and returns a list of location keyword maps
