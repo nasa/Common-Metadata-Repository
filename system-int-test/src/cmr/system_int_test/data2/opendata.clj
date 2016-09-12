@@ -18,6 +18,7 @@
    [cmr.spatial.relations :as r]
    [cmr.spatial.ring-relations :as rr]
    [cmr.system-int-test.data2.core :as data-core]
+   [cmr.umm-spec.date-util :as date-util]
    [cmr.umm.echo10.spatial :as echo-s]
    [cmr.umm.related-url-helper :as ru]
    [cmr.umm.start-end-date :as sed]
@@ -59,7 +60,10 @@
         update-time (get-in collection [:data-provider-timestamps :update-time])
         insert-time (get-in collection [:data-provider-timestamps :insert-time])
         temporal (:temporal collection)
-        start-date (sed/start-date :collection temporal)
+        start-date  (if temporal
+                      (sed/start-date :collection temporal)
+                      ;; no temporal in collection will be treated as start date 1970-01-01T00:00:00 by CMR
+                      date-util/parsed-default-date)
         end-date (sed/end-date :collection temporal)
         start-date (when start-date (str/replace (str start-date) #"\.000Z" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\.000Z" "Z"))

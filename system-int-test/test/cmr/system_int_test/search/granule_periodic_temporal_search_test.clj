@@ -1,13 +1,15 @@
-(ns ^{:doc "Integration test for CMR granule periodic temporal search"}
-  cmr.system-int-test.search.granule-periodic-temporal-search-test
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.common.util :refer [are2]]))
+(ns cmr.system-int-test.search.granule-periodic-temporal-search-test
+  "Integration test for CMR granule periodic temporal search"
+  (:require
+    [clojure.test :refer :all]
+    [cmr.common.util :refer [are2]]
+    [cmr.system-int-test.data2.collection :as dc]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]))
+
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -245,4 +247,3 @@
             where end-date not intersect start-day and end-day will not find anything in that year."
             []
             "2000-02-01T00:00:00Z, 2012-01-15T00:00:00Z, 48, 48"))))
-

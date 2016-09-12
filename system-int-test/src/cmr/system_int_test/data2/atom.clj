@@ -14,6 +14,7 @@
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
+   [cmr.umm-spec.date-util :as date-util]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.facets :as facets]
    [cmr.system-int-test.data2.granule :as dg]
@@ -274,31 +275,35 @@
         entry-id (eid/entry-id short-name version-id)
         associated-difs (if (#{:dif :dif10} format-key) [entry-id] associated-difs)
         ;; Remove duplicate archive/distribution center from an echo10 conversion - only need one
-        organizations (remove #(and (= archive-center (:org-name %)) (= :distribution-center (:type %))) organizations)]
+        organizations (remove #(and (= archive-center (:org-name %)) (= :distribution-center (:type %))) organizations)
+        temporal (:temporal collection)]
     (util/remove-nil-keys
-      {:id concept-id
-       :title entry-title
-       :summary summary
-       :updated (str update-time)
-       :dataset-id entry-title
-       :short-name short-name
-       :version-id version-id
-       :original-format (atom-results-handler/metadata-format->atom-original-format (name format-key))
-       :collection-data-type collection-data-type
-       :data-center (:provider-id (cu/parse-concept-id concept-id))
-       :archive-center archive-center
-       :organizations (seq (map :org-name organizations))
-       :processing-level-id processing-level-id
-       :start (some->> (:temporal collection) (sed/start-date :collection))
-       :end (some->> (:temporal collection) (sed/end-date :collection))
-       :links (seq (related-urls->links related-urls))
-       :coordinate-system coordinate-system
-       ;; Need to create UMM OrbitParameters record into map so test comparisons don't fail
-       :orbit-parameters (when orbit-parameters (into {} orbit-parameters))
-       :shapes (seq shapes)
-       :associated-difs associated-difs
-       :online-access-flag (not (empty? (ru/downloadable-urls related-urls)))
-       :browse-flag (not (empty? (ru/browse-urls related-urls)))})))
+     {:id concept-id
+      :title entry-title
+      :summary summary
+      :updated (str update-time)
+      :dataset-id entry-title
+      :short-name short-name
+      :version-id version-id
+      :original-format (atom-results-handler/metadata-format->atom-original-format (name format-key))
+      :collection-data-type collection-data-type
+      :data-center (:provider-id (cu/parse-concept-id concept-id))
+      :archive-center archive-center
+      :organizations (seq (map :org-name organizations))
+      :processing-level-id processing-level-id
+      :start (if temporal
+               (sed/start-date :collection temporal)
+               ;; no temporal in collection will be treated as start date 1970-01-01T00:00:00 by CMR
+               date-util/parsed-default-date)
+      :end (some->> temporal (sed/end-date :collection))
+      :links (seq (related-urls->links related-urls))
+      :coordinate-system coordinate-system
+      ;; Need to create UMM OrbitParameters record into map so test comparisons don't fail
+      :orbit-parameters (when orbit-parameters (into {} orbit-parameters))
+      :shapes (seq shapes)
+      :associated-difs associated-difs
+      :online-access-flag (not (empty? (ru/downloadable-urls related-urls)))
+      :browse-flag (not (empty? (ru/browse-urls related-urls)))})))
 
 (defn collections->expected-atom
   "Returns the atom map of the collections"
