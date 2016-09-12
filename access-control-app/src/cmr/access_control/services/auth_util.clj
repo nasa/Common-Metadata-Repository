@@ -5,15 +5,26 @@
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.common-app.services.search.query-execution :as qe]))
 
+
+(defn- put-sids-in-context
+  "Gets the current SIDs of the user in the context from the Access control application."
+  [context]
+  (if-let [token (:token context)]
+    ;; TODO Fix this
+    [:user]
+    (assoc context :sids [:guest])))
+
 (defn- get-system-acls
   "Returns ACLs which grant the given permission to the context user for system-level groups."
   [context permission]
-  (seq (acl/get-permitting-acls context :system-object "GROUP" permission)))
+  (let [context (put-sids-in-context context)]
+    (seq (acl/get-permitting-acls context :system-object "GROUP" permission))))
 
 (defn- get-all-provider-acls
   "Returns all ACLs that grant given permission to context user for any provider-level groups."
   [context permission]
-  (acl/get-permitting-acls context :provider-object "GROUP" permission))
+  (let [context (put-sids-in-context context)]
+    (acl/get-permitting-acls context :provider-object "GROUP" permission)))
 
 (defn- get-provider-acls
   "Returns any ACLs that grant the given permission to the context user for the specified group object."
@@ -30,7 +41,8 @@
   (when-let [target-guid (:legacy-guid group)]
     (seq
       (filter #(= target-guid (-> % :single-instance-object-identity :target-guid))
-              (acl/get-permitting-acls context :single-instance-object "GROUP" permission)))))
+              (acl/get-permitting-acls (put-sids-in-context context)
+                                       :single-instance-object "GROUP" permission)))))
 
 (defn- describe-group
   [group]

@@ -52,10 +52,11 @@
   "Returns the security identifiers (group guids and :guest or :registered) of the user identified
   by the token in the context."
   [context]
-  (let [{:keys [token]} context]
-    (if token
-      (echo-tokens/get-current-sids context token)
-      [:guest])))
+  (or (:sids context)
+      (let [{:keys [token]} context]
+        (if token
+          (echo-tokens/get-current-sids context token)
+          [:guest]))))
 
 (defn- ace-matches-sid?
   "Returns true if the ACE is applicable to the SID."
