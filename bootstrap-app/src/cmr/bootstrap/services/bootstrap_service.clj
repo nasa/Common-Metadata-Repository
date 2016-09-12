@@ -67,7 +67,7 @@
   [context date-time synchronous]
   (if synchronous
     (bulk/index-data-later-than-date-time (:system context) date-time)
-    (let [channel (get-in context [:sytem :data-index-channel])]
+    (let [channel (get-in context [:system :data-index-channel])]
       (info "Adding date-time to data index channel.")
       (go (>! channel {:date-time date-time})))))
 
