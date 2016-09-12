@@ -2,8 +2,7 @@
   "Functions for working with the variety of temporal extent
   structures in the UMM model."
   (:require
-    [clj-time.core :as t]
-    [cmr.umm-spec.date-util :as date-util]))
+    [clj-time.core :as t]))
 
 (defn temporal-all-dates
   "Returns the set of all dates contained in the given TemporalExtent record. :present is used to
