@@ -11,7 +11,7 @@
   [context]
   (if-let [token (:token context)]
     ;; TODO Fix this
-    [:user]
+    [:registered]
     (assoc context :sids [:guest])))
 
 (defn- get-system-acls
