@@ -1,7 +1,9 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10.related-url
-  (:require [cmr.common.xml.parse :refer :all]
-            [cmr.common.xml.simple-xpath :refer [select text]]
-            [clojure.string :as str]))
+  (:require
+   [clojure.string :as str]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.umm-spec.util :as su]))
 
 (def resource-type->related-url-types
   "A mapping of ECHO10 OnlineResource's type to UMM RelatedURL's type and sub-type.
@@ -99,8 +101,10 @@
 
 (defn parse-related-urls
   "Returns related-urls elements from a parsed XML structure"
-  [doc]
-  (seq (map cleanup-urls
-            (concat (parse-online-access-urls doc)
-                    (parse-online-resource-urls doc)
-                    (parse-browse-urls doc)))))
+  [doc apply-default?]
+  (if-let [related-urls (concat (parse-online-access-urls doc)
+                                (parse-online-resource-urls doc)
+                                (parse-browse-urls doc))]
+    (seq (map cleanup-urls related-urls))
+    (when apply-default?
+      [su/not-provided-related-url])))

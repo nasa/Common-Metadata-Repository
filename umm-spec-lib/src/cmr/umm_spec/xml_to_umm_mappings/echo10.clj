@@ -141,7 +141,7 @@
                 :StartDate (value-of proj "StartDate")
                 :EndDate (value-of proj "EndDate")})
    :TilingIdentificationSystems (parse-tiling doc)
-   :RelatedUrls (ru/parse-related-urls doc)
+   :RelatedUrls (ru/parse-related-urls doc apply-default?)
    :ScienceKeywords (for [sk (select doc "/Collection/ScienceKeywords/ScienceKeyword")]
                       {:Category (value-of sk "CategoryKeyword")
                        :Topic (value-of sk "TopicKeyword")

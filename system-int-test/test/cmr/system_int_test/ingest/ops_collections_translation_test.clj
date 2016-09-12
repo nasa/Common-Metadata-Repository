@@ -152,7 +152,8 @@
     (umm/parse-metadata context :collection metadata-format metadata {:apply-default? true})))
 
 (defn- get-collection-validation-errors
-  "Perform the following collection validations:
+  "Collect the following collection validations:
+   * Errors from translating from native XML to UMM-C
    * Validate metadata against the XML schema
    * Validation the UMM collection record against the current UMM JSON schema
    * Valiadte the UMM collection against UMM collection rules
@@ -160,6 +161,7 @@
   [record]
   (remove empty?
    (concat
+     [(str (get-in record [:collection :_errors]))] ; Errors from translating to UMM
      (umm/validate-xml :collection (:metadata-format record) (:metadata record))
      (json-schema/validate-umm-json (umm-json/umm->json (:collection record)) :collection)
      (umm-validation/validate-collection record))))
@@ -237,7 +239,7 @@
            (recur (+ page-num 1)))))
      (info "Finished OPS collections translation.")))
 
-(deftest ops-collections-validation
+#_(deftest ops-collections-validation
    (testing "get-collections the current collections in ops against the current UMM schema"
      (def results (get-ops-collections-umm-validation-errors-debug))
     (info "Finished OPS collections translation.")))

@@ -1,14 +1,14 @@
 (ns cmr.umm-spec.test.expected-conversion-util
  "Common functionality for expected conversions"
- (:require [clj-time.core :as t]
-           [clj-time.format :as f]
-           [cmr.umm-spec.util :as su]
-           [cmr.common.util :as util :refer [update-in-each]]
-           [cmr.umm-spec.models.umm-common-models :as cmn]
-           [cmr.umm-spec.location-keywords :as lk]
-           [cmr.umm-spec.test.location-keywords-helper :as lkt]
-           [cmr.umm-spec.models.umm-collection-models :as umm-c]))
-
+ (:require
+  [clj-time.core :as t]
+  [clj-time.format :as f]
+  [cmr.common.util :as util :refer [update-in-each]]
+  [cmr.umm-spec.location-keywords :as lk]
+  [cmr.umm-spec.models.umm-collection-models :as umm-c]
+  [cmr.umm-spec.models.umm-common-models :as cmn]
+  [cmr.umm-spec.test.location-keywords-helper :as lkt]
+  [cmr.umm-spec.util :as su]))
 
 (def relation-set #{"GET DATA"
                     "GET RELATED VISUALIZATION"
@@ -107,8 +107,10 @@
 (defn expected-related-urls-for-dif-serf
   "Expected Related URLs for DIF and SERF concepts"
   [related-urls]
-  (seq (for [related-url related-urls]
-         (assoc related-url :Title nil :FileSize nil :MimeType nil))))
+  (if (seq related-urls)
+    (seq (for [related-url related-urls]
+           (assoc related-url :Title nil :FileSize nil :MimeType nil)))
+    [su/not-provided-related-url]))
 
 (def bounding-rectangles-path
   "The path in UMM to bounding rectangles."

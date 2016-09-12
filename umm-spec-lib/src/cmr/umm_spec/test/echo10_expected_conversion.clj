@@ -1,19 +1,19 @@
 (ns cmr.umm-spec.test.echo10-expected-conversion
  "ECHO 10 specific expected conversion functionality"
- (:require [clj-time.core :as t]
-           [clj-time.format :as f]
-           [clojure.string :as str]
-           [cmr.umm-spec.date-util :as date]
-           [cmr.umm-spec.util :as su]
-           [cmr.common.util :as util :refer [update-in-each]]
-           [cmr.umm-spec.models.umm-common-models :as cmn]
-           [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
-           [cmr.umm-spec.related-url :as ru-gen]
-           [cmr.umm-spec.location-keywords :as lk]
-           [cmr.umm-spec.test.location-keywords-helper :as lkt]
-           [cmr.umm-spec.models.umm-collection-models :as umm-c]
-           [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]))
-
+ (:require
+  [clj-time.core :as t]
+  [clj-time.format :as f]
+  [clojure.string :as str]
+  [cmr.common.util :as util :refer [update-in-each]]
+  [cmr.umm-spec.date-util :as date]
+  [cmr.umm-spec.location-keywords :as lk]
+  [cmr.umm-spec.models.umm-collection-models :as umm-c]
+  [cmr.umm-spec.models.umm-common-models :as cmn]
+  [cmr.umm-spec.related-url :as ru-gen]
+  [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
+  [cmr.umm-spec.test.location-keywords-helper :as lkt]
+  [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]
+  [cmr.umm-spec.util :as su]))
 
 (defn- fixup-echo10-data-dates
   [data-dates]
@@ -42,20 +42,22 @@
 
 (defn- expected-echo10-related-urls
   [related-urls]
-  (seq (for [related-url related-urls
-             :let [[rel] (:Relation related-url)]
-             url (:URLs related-url)]
-         (-> related-url
-             (assoc :Title nil :URLs [url])
-             (update-in [:FileSize] (fn [file-size]
-                                      (when (and file-size
-                                                 (= rel "GET RELATED VISUALIZATION"))
-                                        (when-let [byte-size (ru-gen/convert-to-bytes
-                                                               (:Size file-size) (:Unit file-size))]
-                                          (assoc file-size :Size (/ (int byte-size) 1024) :Unit "KB")))))
-             (update-in [:Relation] (fn [[rel]]
-                                      (when (conversion-util/relation-set rel)
-                                        [rel])))))))
+  (if (seq related-urls)
+    (seq (for [related-url related-urls
+               :let [[rel] (:Relation related-url)]
+               url (:URLs related-url)]
+           (-> related-url
+               (assoc :Title nil :URLs [url])
+               (update-in [:FileSize] (fn [file-size]
+                                        (when (and file-size
+                                                   (= rel "GET RELATED VISUALIZATION"))
+                                          (when-let [byte-size (ru-gen/convert-to-bytes
+                                                                (:Size file-size) (:Unit file-size))]
+                                            (assoc file-size :Size (/ (int byte-size) 1024) :Unit "KB")))))
+               (update-in [:Relation] (fn [[rel]]
+                                        (when (conversion-util/relation-set rel)
+                                          [rel]))))))
+    [su/not-provided-related-url]))
 
 (defn- expected-echo10-reorder-related-urls
   "returns the RelatedUrls reordered - based on the order when echo10 is generated from umm."
@@ -180,7 +182,7 @@
       ;; CMR 3523. DIF10 data makes the order inside the :RelatedUrls important:
       ;; access urls first, resource urls second, browse urls last - which is
       ;; the order used when umm is converted to echo10.
-      (assoc :RelatedUrls (expected-echo10-reorder-related-urls umm-coll))  
+      (assoc :RelatedUrls (expected-echo10-reorder-related-urls umm-coll))
       (update-in [:TemporalExtents] (comp seq (partial take 1)))
       (update-in [:DataDates] fixup-echo10-data-dates)
       (assoc :DataLanguage nil)
@@ -199,12 +201,12 @@
       (update-in [:SpatialExtent] expected-echo10-spatial-extent)
       (update-in-each [:AdditionalAttributes] expected-echo10-additional-attribute)
       (update-in-each [:Projects] assoc :Campaigns nil)
-      (update-in [:RelatedUrls] expected-echo10-related-urls)
+      (update :RelatedUrls expected-echo10-related-urls)
       ;; We can't restore Detailed Location because it doesn't exist in the hierarchy.
       (update-in [:LocationKeywords] conversion-util/fix-location-keyword-conversion)
       ;; CMR 3253 This is added because it needs to support DIF10 umm. when it does roundtrip,
       ;; dif10umm-echo10(with default)-umm(without default needs to be removed)
-      (update-in-each [:Platforms] expected-echo10-platform-longname-with-default-value) 
+      (update-in-each [:Platforms] expected-echo10-platform-longname-with-default-value)
       ;; CMR 2716 Getting rid of SpatialKeywords but keeping them for legacy purposes.
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)

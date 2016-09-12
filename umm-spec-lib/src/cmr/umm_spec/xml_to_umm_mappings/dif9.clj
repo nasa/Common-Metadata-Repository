@@ -90,6 +90,20 @@
   (remove nil? [(date/parse-date-type-from-xml doc "DIF/DIF_Creation_Date" "CREATE")
                 (date/parse-date-type-from-xml doc "DIF/Last_DIF_Revision_Date" "UPDATE")]))
 
+(defn- parse-related-urls
+  "Returns a list of related urls"
+  [doc apply-default?]
+  (let [related-urls (select doc "/DIF/Related_URL")]
+    (if (seq related-urls)
+      (for [related-url related-urls
+            :let [description (value-of related-url "Description")]]
+        {:URLs (values-at related-url "URL")
+         :Description description
+         :Relation [(value-of related-url "URL_Content_Type/Type")
+                    (value-of related-url "URL_Content_Type/Subtype")]})
+      (when apply-default?
+        [su/not-provided-related-url]))))
+
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
   [doc {:keys [apply-default?]}]
@@ -184,12 +198,7 @@
                          :VariableLevel2 (value-of sk "Variable_Level_2")
                          :VariableLevel3 (value-of sk "Variable_Level_3")
                          :DetailedVariable (value-of sk "Detailed_Variable")})
-     :RelatedUrls (for [related-url (select doc "/DIF/Related_URL")
-                        :let [description (value-of related-url "Description")]]
-                    {:URLs (values-at related-url "URL")
-                     :Description description
-                     :Relation [(value-of related-url "URL_Content_Type/Type")
-                                (value-of related-url "URL_Content_Type/Subtype")]})
+     :RelatedUrls (parse-related-urls doc apply-default?)
      :MetadataAssociations (for [parent-dif (values-at doc "/DIF/Parent_DIF")]
                              {:EntryId parent-dif})
      :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel"))

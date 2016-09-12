@@ -100,14 +100,16 @@
 
 (defn- expected-iso-19115-2-related-urls
   [related-urls]
-  (seq (for [related-url related-urls
-             url (:URLs related-url)]
-         (-> related-url
-             (assoc :Title nil :MimeType nil :FileSize nil :URLs [url])
-             (update-in [:Relation]
-                        (fn [[rel]]
-                          (when (conversion-util/relation-set rel)
-                            [rel])))))))
+  (if (seq related-urls)
+    (seq (for [related-url related-urls
+               url (:URLs related-url)]
+           (-> related-url
+               (assoc :Title nil :MimeType nil :FileSize nil :URLs [url])
+               (update-in [:Relation]
+                          (fn [[rel]]
+                            (when (conversion-util/relation-set rel)
+                              [rel]))))))
+    [su/not-provided-related-url]))
 
 (defn- fix-iso-vertical-spatial-domain-values
   [vsd]

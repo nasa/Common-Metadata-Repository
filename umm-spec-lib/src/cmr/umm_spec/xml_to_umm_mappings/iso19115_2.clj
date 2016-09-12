@@ -192,7 +192,7 @@
                           md-data-id-el
                           ["place" "temporal" "project" "platform" "instrument" "theme"])
      :ScienceKeywords (kws/parse-science-keywords md-data-id-el)
-     :RelatedUrls (dru/parse-related-urls doc)
+     :RelatedUrls (dru/parse-related-urls doc apply-default?)
      :AdditionalAttributes (aa/parse-additional-attributes doc apply-default?)
      ;; DataCenters is not implemented but is required in UMM-C
      ;; Implement with CMR-3161
