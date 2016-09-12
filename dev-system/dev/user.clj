@@ -45,10 +45,22 @@
   (println "Logging level set to" level)
   nil)
 
+(defn configure-for-soap-services
+  []
+  (config/set-config-value! :echo-rest-host "localhost")
+  (config/set-config-value! :echo-rest-port 3012)
+  (config/set-config-value! :echo-rest-context "/soap-services/rest")
+  (config/set-config-value! :echo-system-token "mock-echo-system-token")
+  (config/set-config-value! :dev-system-echo-type "external")
+  (config/set-config-value! :dev-system-db-type "in-memory"))
+
 (defn start
   "Starts the current development system."
   []
   (config/reset-config-values)
+
+  ;; Uncomment this to force CMR to use SOAP Services
+  ; (configure-for-soap-services)
 
   (jobs/set-default-job-start-delay! (* 3 3600))
 
