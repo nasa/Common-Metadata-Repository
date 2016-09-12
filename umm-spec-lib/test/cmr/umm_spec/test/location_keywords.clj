@@ -25,7 +25,7 @@
           actual (lk/find-shortest-spatial-keyword-map (:spatial-keywords lkt/sample-keyword-map) keyword-map)]
       (is (= expected actual))))
 
-  (testing "Looking up a non-existing root keyword-map returns the top hierarchy result."
+  (testing "Looking up a non-existing root keyword-map returns the keyword-map" 
     (let [keyword-map {:category "CONTINENT", :type "UNKNOWN"}
           context lkt/setup-context-for-test
           expected {:category "CONTINENT", :type "UNKNOWN"}
