@@ -191,7 +191,7 @@
      :AncillaryKeywords (descriptive-keywords-type-not-equal
                           md-data-id-el
                           ["place" "temporal" "project" "platform" "instrument" "theme"])
-     :ScienceKeywords (kws/parse-science-keywords md-data-id-el)
+     :ScienceKeywords (kws/parse-science-keywords md-data-id-el apply-default?)
      :RelatedUrls (dru/parse-related-urls doc apply-default?)
      :AdditionalAttributes (aa/parse-additional-attributes doc apply-default?)
      ;; DataCenters is not implemented but is required in UMM-C

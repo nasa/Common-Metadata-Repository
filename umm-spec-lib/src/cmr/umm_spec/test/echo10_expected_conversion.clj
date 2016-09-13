@@ -176,6 +176,13 @@
     [(cmn/map->DateType {:Date update-date
                          :Type "UPDATE"})]))
 
+(defn- expected-science-keywords
+  "Return science keywords if not null, otherwise the default science keywords"
+  [science-keywords]
+  (if (seq science-keywords)
+    science-keywords
+    su/not-provided-science-keywords))
+
 (defn umm-expected-conversion-echo10
   [umm-coll]
   (-> umm-coll
@@ -210,4 +217,5 @@
       ;; CMR 2716 Getting rid of SpatialKeywords but keeping them for legacy purposes.
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)
-      (assoc :MetadataDates (expected-metadata-dates umm-coll))))
+      (assoc :MetadataDates (expected-metadata-dates umm-coll))
+      (update :ScienceKeywords expected-science-keywords)))

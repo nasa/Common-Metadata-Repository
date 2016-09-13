@@ -100,6 +100,21 @@
   (when-let [revision-date (date/parse-date-type-from-xml doc "Collection/RevisionDate" "UPDATE")]
     [revision-date]))
 
+(defn- parse-science-keywords
+  "Parse ECHO10 science keywords or use default if applicable"
+  [doc apply-default?]
+  (if-let [science-keywords (seq (select doc "/Collection/ScienceKeywords/ScienceKeyword"))]
+    (for [sk science-keywords]
+      {:Category (value-of sk "CategoryKeyword")
+       :Topic (value-of sk "TopicKeyword")
+       :Term (value-of sk "TermKeyword")
+       :VariableLevel1 (value-of sk "VariableLevel1Keyword/Value")
+       :VariableLevel2 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/Value")
+       :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
+       :DetailedVariable (value-of sk "DetailedVariableKeyword")})
+    (when apply-default?
+      u/not-provided-science-keywords)))
+
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [context doc {:keys [apply-default?]}]
@@ -142,14 +157,7 @@
                 :EndDate (value-of proj "EndDate")})
    :TilingIdentificationSystems (parse-tiling doc)
    :RelatedUrls (ru/parse-related-urls doc apply-default?)
-   :ScienceKeywords (for [sk (select doc "/Collection/ScienceKeywords/ScienceKeyword")]
-                      {:Category (value-of sk "CategoryKeyword")
-                       :Topic (value-of sk "TopicKeyword")
-                       :Term (value-of sk "TermKeyword")
-                       :VariableLevel1 (value-of sk "VariableLevel1Keyword/Value")
-                       :VariableLevel2 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/Value")
-                       :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
-                       :DetailedVariable (value-of sk "DetailedVariableKeyword")})
+   :ScienceKeywords (parse-science-keywords doc apply-default?)
    :DataCenters (dc/parse-data-centers doc apply-default?)
    :ContactPersons (dc/parse-data-contact-persons doc apply-default?)})
 

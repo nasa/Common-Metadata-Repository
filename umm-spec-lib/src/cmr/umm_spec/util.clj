@@ -43,6 +43,13 @@
   "Default role for a Contact Person to use if none is provided"
   "Technical Contact")
 
+(def not-provided-science-keywords
+  "Default science keywords to use if none is provided. Use 'EARTH SCIENCE' as the
+  category so ISO-SMAP picks it up as a science keyword"
+  [(cmn/map->ScienceKeywordType {:Category "EARTH SCIENCE"
+                                 :Term not-provided
+                                 :Topic not-provided})])
+
 (defn convert-empty-record-to-nil
   "Converts empty record to nil."
   [record]

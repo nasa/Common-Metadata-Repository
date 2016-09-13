@@ -181,6 +181,13 @@
     [(cmn/map->DateType {:Date (f/parse date-util/default-date-value)
                          :Type "CREATE"})]))
 
+(defn- expected-science-keywords
+  "Returns science keywords if not nil, otherwise default"
+  [science-keywords]
+  (if (seq science-keywords)
+    science-keywords
+    su/not-provided-science-keywords))
+
 (defn umm-expected-conversion-iso19115
   [umm-coll]
   (-> umm-coll
@@ -211,4 +218,5 @@
       (assoc :ContactGroups nil)
       (assoc :ContactPersons nil)
       (assoc :MetadataDates nil)
+      (update :ScienceKeywords expected-science-keywords)
       js/parse-umm-c))

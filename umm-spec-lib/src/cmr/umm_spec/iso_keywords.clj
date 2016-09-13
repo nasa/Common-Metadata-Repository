@@ -5,13 +5,14 @@
   identify the type of the keywords. But currently it is always set to 'theme'. We will propose to
   get this changed, but in the mean time, we will have to parse the keyword string to determine the
   type of the keyword."
-  (:require [clojure.data.xml :as x]
-            [clojure.string :as str]
-            [cmr.common.xml :as cx]
-            [cmr.umm-spec.models.umm-common-models :as c]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.umm-spec.util :as su]
-            [cmr.umm-spec.iso19115-2-util :as iso]))
+  (:require
+   [clojure.data.xml :as x]
+   [clojure.string :as str]
+   [cmr.common.xml :as cx]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.umm-spec.iso19115-2-util :as iso]
+   [cmr.umm-spec.models.umm-common-models :as c]
+   [cmr.umm-spec.util :as su]))
 
 (def nil-science-keyword-field
   "String used in ISO19115-2 to indicate that a given science keyword field is not present."
@@ -90,18 +91,21 @@
 
 (defn parse-science-keywords
   "Returns the science keywords parsed from the given xml document."
-  [md-data-id-el]
-  (for [sk (descriptive-keywords md-data-id-el "theme")
-        :let [[category topic term variable-level-1 variable-level-2 variable-level-3
-               detailed-variable] (map #(if (= nil-science-keyword-field %) nil %)
-                                       (str/split sk iso/keyword-separator-split))]]
-    {:Category category
-     :Topic (su/with-default topic)
-     :Term (su/with-default term)
-     :VariableLevel1 variable-level-1
-     :VariableLevel2 variable-level-2
-     :VariableLevel3 variable-level-3
-     :DetailedVariable detailed-variable}))
+  [md-data-id-el apply-default?]
+  (if-let [science-keywords (seq (descriptive-keywords md-data-id-el "theme"))]
+    (for [sk science-keywords
+          :let [[category topic term variable-level-1 variable-level-2 variable-level-3
+                 detailed-variable] (map #(if (= nil-science-keyword-field %) nil %)
+                                         (str/split sk iso/keyword-separator-split))]]
+      {:Category category
+       :Topic (su/with-default topic)
+       :Term (su/with-default term)
+       :VariableLevel1 variable-level-1
+       :VariableLevel2 variable-level-2
+       :VariableLevel3 variable-level-3
+       :DetailedVariable detailed-variable})
+    (when apply-default?
+      su/not-provided-science-keywords)))
 
 (defmulti smap-keyword-str
   "Returns a SMAP keyword string for a given UMM record."

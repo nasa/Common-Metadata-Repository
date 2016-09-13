@@ -102,9 +102,9 @@
 (defn parse-related-urls
   "Returns related-urls elements from a parsed XML structure"
   [doc apply-default?]
-  (if-let [related-urls (concat (parse-online-access-urls doc)
-                                (parse-online-resource-urls doc)
-                                (parse-browse-urls doc))]
+  (if-let [related-urls (seq (concat (parse-online-access-urls doc)
+                                     (parse-online-resource-urls doc)
+                                     (parse-browse-urls doc)))]
     (seq (map cleanup-urls related-urls))
     (when apply-default?
       [su/not-provided-related-url])))
