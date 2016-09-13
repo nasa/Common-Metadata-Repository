@@ -28,7 +28,7 @@
 
 (defmethod cqv/supported-result-formats :granule
   [_]
-  #{:xml, :json, :echo10, :atom, :iso19115, :csv, :kml, :native})
+  #{:xml, :json, :echo10, :atom, :iso19115, :csv, :kml, :native :timeline})
 
 (def all-revisions-supported-result-formats
   "Supported search result format when all-revisions? is true."

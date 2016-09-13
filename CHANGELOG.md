@@ -101,4 +101,9 @@ Items to include in each issue
 * CMR-2905 - The full acl data is indexed now.
   * No operator steps are required. The index will automatically be updated during database migrations
 
+## 1.59
+
+* CMR-3097 - Changed collection temporal indexing to use umm-spec-lib
+  * Client Impacts
+    * Collections without temporal info will be indexed with a default temporal start date of "1970-01-01T00:00:00". This will cause collections without temporal info being returned from a temporal search. This comes from the UMM directive that all collections should have temporal info. We will default the start date to "1970-01-01T00:00:00" if one is not provided.
 

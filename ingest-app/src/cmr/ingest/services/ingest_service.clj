@@ -1,28 +1,28 @@
 (ns cmr.ingest.services.ingest-service
-  (:require [cmr.oracle.connection :as conn]
-            [cmr.transmit.metadata-db :as mdb]
-            [cmr.transmit.metadata-db2 :as mdb2]
-            [cmr.transmit.echo.rest :as rest]
-            [cmr.transmit.cubby :as cubby]
-            [cmr.transmit.indexer :as indexer]
-            [cmr.ingest.data.ingest-events :as ingest-events]
-            [cmr.ingest.data.provider-acl-hash :as pah]
-            [cmr.ingest.services.messages :as msg]
-            [cmr.umm-spec.legacy :as umm-legacy]
-            [cmr.ingest.validation.validation :as v]
-            [cmr.ingest.services.helper :as h]
-            [cmr.ingest.config :as config]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.services.messages :as cmsg]
-            [cmr.common.util :as util :refer [defn-timed]]
-            [cmr.common.config :as cfg :refer [defconfig]]
-            [clojure.string :as string]
-            [cmr.message-queue.services.queue :as queue]
-            [cmr.common.cache :as cache]
-            [cmr.common.services.errors :as errors]
-            [cmr.umm.collection.entry-id :as eid]
-            [cmr.umm-spec.umm-spec-core :as spec]
-            [cmr.umm-spec.versioning :as ver]))
+  (:require
+    [cmr.common.cache :as cache]
+    [cmr.common.config :as cfg :refer [defconfig]]
+    [cmr.common.log :refer (debug info warn error)]
+    [cmr.common.services.messages :as cmsg]
+    [cmr.common.services.errors :as errors]
+    [cmr.common.util :as util :refer [defn-timed]]
+    [cmr.ingest.config :as config]
+    [cmr.ingest.data.ingest-events :as ingest-events]
+    [cmr.ingest.data.provider-acl-hash :as pah]
+    [cmr.ingest.services.messages :as msg]
+    [cmr.ingest.services.helper :as h]
+    [cmr.ingest.validation.validation :as v]
+    [cmr.message-queue.services.queue :as queue]
+    [cmr.oracle.connection :as conn]
+    [cmr.transmit.cubby :as cubby]
+    [cmr.transmit.echo.rest :as rest]
+    [cmr.transmit.indexer :as indexer]
+    [cmr.transmit.metadata-db :as mdb]
+    [cmr.transmit.metadata-db2 :as mdb2]
+    [cmr.umm.collection.entry-id :as eid]
+    [cmr.umm-spec.legacy :as umm-legacy]
+    [cmr.umm-spec.umm-spec-core :as spec]
+    [cmr.umm-spec.versioning :as ver]))
 
 (defn add-extra-fields-for-collection
   "Returns collection concept with fields necessary for ingest into metadata db
@@ -40,41 +40,40 @@
                                   :delete-time (when delete-time (str delete-time))})))
 
 (defn- validate-and-parse-collection-concept
-  "Validates a collection concept and parses it. Returns the UMM record."
+  "Validates a collection concept and parses it. Returns the UMM record and any warnings from
+  validation."
   [context collection-concept validation-options]
   (v/validate-concept-request collection-concept)
   (v/validate-concept-metadata collection-concept)
   (let [{:keys [format metadata]} collection-concept
-        collection (spec/parse-metadata context :collection format metadata)]
+        collection (spec/parse-metadata context :collection format metadata {:apply-default? false})
 
     ;; Validate against the UMM Spec validation rules
-    (v/validate-collection-umm-spec context 
-                                    collection 
-                                    validation-options)
+        warnings (v/validate-collection-umm-spec context collection validation-options)]
     ;; Using the legacy UMM validation rules (for now)
     (v/validate-collection-umm context
                                (umm-legacy/parse-concept context collection-concept)
                                (:validate-keywords? validation-options))
     ;; The UMM Spec collection is returned
-    collection))
+    {:collection collection
+     :warnings warnings}))
 
 (defn-timed validate-and-prepare-collection
   "Validates the collection and adds extra fields needed for metadata db. Throws a service error
-  if any validation issues are found."
+  if any validation issues are found and errors are enabled, otherwise returns errors as warnings."
   [context concept validation-options]
   (let [concept (update-in concept [:format] ver/fix-concept-format)
-        collection (validate-and-parse-collection-concept context 
-                                                          concept 
-                                                          validation-options)
+        {:keys [collection warnings]} (validate-and-parse-collection-concept context
+                                                                             concept
+                                                                             validation-options)
         ;; Add extra fields for the collection
-        coll-concept (add-extra-fields-for-collection context concept collection)
-        ;; We're still using the UMM Lib collection when validating Ingest business rules for now.
-        ;; Fix as part of CMR-2881
-        umm-lib-collection (umm-legacy/parse-concept context concept)]
+        coll-concept (add-extra-fields-for-collection context concept collection)]
+
+    ;; Validate ingest business rule through umm-spec-lib
     (v/validate-business-rules
-      context
-      (assoc coll-concept :umm-concept umm-lib-collection))
-    coll-concept))
+     context (assoc coll-concept :umm-concept collection))
+    {:concept coll-concept
+     :warnings warnings}))
 
 (defn- validate-granule-collection-ref
   "Throws bad request exception when collection-ref is missing required fields."
@@ -167,13 +166,13 @@
     {:concept-id concept-id, :revision-id revision-id}))
 
 (defn-timed save-collection
-  "Store a concept in mdb and indexer and return concept-id and revision-id."
+  "Store a concept in mdb and indexer and return concept-id, revision-id, and warnings."
   [context concept validation-options]
-  (let [concept (validate-and-prepare-collection context 
-                                                 concept 
-                                                 validation-options)]
+  (let [{:keys [concept warnings]} (validate-and-prepare-collection context
+                                                                    concept
+                                                                    validation-options)]
     (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
-      {:concept-id concept-id, :revision-id revision-id})))
+      {:concept-id concept-id, :revision-id revision-id :warnings warnings})))
 
 (defn-timed delete-concept
   "Delete a concept from mdb and indexer. Throws a 404 error if the concept does not exist or

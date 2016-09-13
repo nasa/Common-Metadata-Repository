@@ -142,12 +142,12 @@
     (let [concept (dc/collection-concept {:concept-id "C1200000000-PROV1"})
           response (ingest/ingest-concept concept {:accept-format :json :raw? true})]
       (is (= {:concept-id (:concept-id concept) :revision-id 1}
-             (ingest/parse-ingest-body :json response)))))
+             (select-keys (ingest/parse-ingest-body :json response) [:concept-id :revision-id])))))
   (testing "xml response"
     (let [concept (dc/collection-concept {:concept-id "C1200000001-PROV1"})
           response (ingest/ingest-concept concept {:accept-format :xml :raw? true})]
       (is (= {:concept-id (:concept-id concept) :revision-id 1}
-             (ingest/parse-ingest-body :xml response))))))
+             (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id]))))))
 
 ;; Verify that the accept header works with returned errors
 (deftest collection-ingest-with-errors-accept-header-test
@@ -180,14 +180,14 @@
           response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :json
                                                                            :raw? true})]
       (is (= {:concept-id (:concept-id coll1) :revision-id 2}
-             (ingest/parse-ingest-body :json response)))))
+             (select-keys (ingest/parse-ingest-body :json response) [:concept-id :revision-id])))))
   (testing "xml response"
     (let [coll1 (d/ingest "PROV1" (dc/collection))
           _ (index/wait-until-indexed)
           response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :xml
                                                                            :raw? true})]
       (is (= {:concept-id (:concept-id coll1) :revision-id 2}
-             (ingest/parse-ingest-body :xml response))))))
+             (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id]))))))
 
 ;; Verify that XML is returned for deletion errros when the accept header isn't set
 (deftest collection-deletion-with-errors-no-accept-header-test
@@ -204,18 +204,18 @@
     (let [concept (dc/collection-concept {:concept-id "C1-PROV1"} :echo10)
           response (ingest/ingest-concept concept {:raw? true})]
       (is (= {:concept-id "C1-PROV1" :revision-id 1}
-             (ingest/parse-ingest-body :xml response)))))
+             (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id])))))
   (testing "dif"
     (let [concept (d/item->concept (assoc (dc/collection-dif {:concept-id "C2-PROV1"})
                                           :provider-id "PROV1") :dif)
           response (ingest/ingest-concept concept {:raw? true})]
       (is (= {:concept-id "C2-PROV1" :revision-id 1}
-             (ingest/parse-ingest-body :xml response)))))
+             (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id])))))
   (testing "iso"
     (let [concept (dc/collection-concept {:concept-id "C3-PROV1"} :iso-smap)
           response (ingest/ingest-concept concept {:raw? true})]
       (is (= {:concept-id "C3-PROV1" :revision-id 1}
-             (ingest/parse-ingest-body :xml response))))))
+             (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id]))))))
 
 ;; Note entry-id only exists in the DIF format.  For other formats we set the entry ID to be a
 ;; a concatenation of short name and version ID.

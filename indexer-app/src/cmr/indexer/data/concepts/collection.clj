@@ -1,40 +1,44 @@
 (ns cmr.indexer.data.concepts.collection
   "Contains functions to parse and convert collection concept"
-  (:require [clojure.string :as str]
-            [clj-time.format :as f]
-            [cheshire.core :as json]
-            [clj-time.core :as t]
-            [cmr.common.time-keeper :as tk]
-            [camel-snake-kebab.core :as csk]
-            [cmr.indexer.services.index-service :as idx]
-            [cmr.indexer.data.elasticsearch :as es]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.util :as util]
-            [cmr.umm.related-url-helper :as ru]
-            [cmr.umm.start-end-date :as sed]
-            [cmr.elastic-utils.index-util :as index-util]
-            [cmr.indexer.data.concepts.attribute :as attrib]
-            [cmr.indexer.data.concepts.science-keyword :as sk]
-            [cmr.indexer.data.concepts.platform :as platform]
-            [cmr.indexer.data.concepts.instrument :as instrument]
-            [cmr.indexer.data.concepts.spatial :as spatial]
-            [cmr.indexer.data.concepts.keyword :as k]
-            [cmr.indexer.data.concepts.organization :as org]
-            [cmr.indexer.data.concepts.tag :as tag]
-            [cmr.indexer.data.concepts.location-keyword :as lk]
-            [cmr.common-app.humanizer :as humanizer]
-            [cmr.acl.core :as acl]
-            [cmr.common.concepts :as concepts]
-            [cmr.umm.umm-collection :as umm-c]
-            [cmr.umm.collection.entry-id :as eid]
-            [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
-            [cmr.indexer.data.humanizer-fetcher :as hf]
-            [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.acl.acl-fetcher :as acl-fetcher]
-            [cmr.umm.acl-matchers :as umm-matchers])
-  (:import cmr.spatial.mbr.Mbr))
+  (:require
+    [camel-snake-kebab.core :as csk]
+    [cheshire.core :as json]
+    [clj-time.core :as t]
+    [clj-time.format :as f]
+    [clojure.string :as str]
+    [cmr.acl.acl-fetcher :as acl-fetcher]
+    [cmr.acl.core :as acl]
+    [cmr.common-app.humanizer :as humanizer]
+    [cmr.common-app.services.kms-fetcher :as kf]
+    [cmr.common.concepts :as concepts]
+    [cmr.common.log :refer (debug info warn error)]
+    [cmr.common.mime-types :as mt]
+    [cmr.common.services.errors :as errors]
+    [cmr.common.time-keeper :as tk]
+    [cmr.common.util :as util]
+    [cmr.elastic-utils.index-util :as index-util]
+    [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
+    [cmr.indexer.data.concepts.attribute :as attrib]
+    [cmr.indexer.data.concepts.instrument :as instrument]
+    [cmr.indexer.data.concepts.keyword :as k]
+    [cmr.indexer.data.concepts.location-keyword :as lk]
+    [cmr.indexer.data.concepts.organization :as org]
+    [cmr.indexer.data.concepts.platform :as platform]
+    [cmr.indexer.data.concepts.science-keyword :as sk]
+    [cmr.indexer.data.concepts.spatial :as spatial]
+    [cmr.indexer.data.concepts.tag :as tag]
+    [cmr.indexer.data.elasticsearch :as es]
+    [cmr.indexer.data.humanizer-fetcher :as hf]
+    [cmr.indexer.services.index-service :as idx]
+    [cmr.umm-spec.time :as spec-time]
+    [cmr.umm-spec.umm-spec-core :as umm-spec]
+    [cmr.umm.acl-matchers :as umm-matchers]
+    [cmr.umm.collection.entry-id :as eid]
+    [cmr.umm.related-url-helper :as ru]
+    [cmr.umm.start-end-date :as sed]
+    [cmr.umm.umm-collection :as umm-c])
+  (:import
+    (cmr.spatial.mbr Mbr)))
 
 (defn spatial->elastic
   [collection]
@@ -64,9 +68,8 @@
 (defn- collection-temporal-elastic
   "Returns a map of collection temporal fields for indexing in Elasticsearch."
   [context concept-id collection]
-  (let [temporal (:temporal collection)
-        start-date (sed/start-date :collection temporal)
-        end-date (sed/end-date :collection temporal)
+  (let [start-date (spec-time/collection-start-date collection)
+        end-date (spec-time/normalized-end-date collection)
         {:keys [granule-start-date granule-end-date]} (cgac/get-coll-gran-aggregates context concept-id)
         last-3-days (t/interval (t/minus (tk/now) (t/days 3)) (tk/now))
         granule-end-date (if (and granule-end-date (t/within? last-3-days granule-end-date))
@@ -145,7 +148,7 @@
 
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
-  [context concept collection]
+  [context concept collection umm-spec-collection]
   (let [{:keys [concept-id revision-id provider-id user-id
                 native-id revision-date deleted format extra-fields tag-associations]} concept
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
@@ -252,7 +255,7 @@
             :two-d-coord-name.lowercase  (map str/lower-case two-d-coord-names)
             :spatial-keyword spatial-keywords
             :spatial-keyword.lowercase  (map str/lower-case spatial-keywords)
-            :attributes (attrib/psas->elastic-docs collection)
+            :attributes (attrib/aas->elastic-docs umm-spec-collection)
             :science-keywords-flat (sk/flatten-science-keywords collection)
             :personnel (json/generate-string personnel)
             :archive-center archive-center-names
@@ -299,7 +302,7 @@
                                  (into {} (for [ta tag-associations]
                                             [(:tag-key ta) (util/remove-nil-keys
                                                              {:data (:data ta)})])))))}
-           (collection-temporal-elastic context concept-id collection)
+           (collection-temporal-elastic context concept-id umm-spec-collection)
            (get-in collection [:spatial-coverage :orbit-parameters])
            (spatial->elastic collection)
            (sk/science-keywords->facet-fields collection)
@@ -314,8 +317,7 @@
         ;; only used to get default ACLs for tombstones
         tombstone-umm (umm-c/map->UmmCollection {:entry-title entry-title})
         tombstone-permitted-group-ids (get-coll-permitted-group-ids context
-                                                                    provider-id tombstone-umm)
-        {:keys [access-value]} tombstone-umm]
+                                                                    provider-id tombstone-umm)]
     {:concept-id concept-id
      :revision-id revision-id
      :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
@@ -335,11 +337,14 @@
      :provider-id.lowercase (str/lower-case provider-id)
      :revision-date2 revision-date
      :metadata-format (name (mt/format-key format))
-     :permitted-group-ids tombstone-permitted-group-ids
-     :access-value access-value}))
+     :permitted-group-ids tombstone-permitted-group-ids}))
 
 (defmethod es/parsed-concept->elastic-doc :collection
-  [context concept collection]
+  [context concept umm-legacy-collection]
   (if (:deleted concept)
     (get-elastic-doc-for-tombstone-collection context concept)
-    (get-elastic-doc-for-full-collection context concept collection)))
+    (let [umm-spec-collection (umm-spec/parse-metadata context concept)]
+      (get-elastic-doc-for-full-collection context
+                                           concept
+                                           umm-legacy-collection
+                                           umm-spec-collection))))
