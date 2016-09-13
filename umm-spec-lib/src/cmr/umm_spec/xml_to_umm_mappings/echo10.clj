@@ -1,14 +1,16 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10
   "Defines mappings from ECHO10 XML into UMM records"
-  (:require [cmr.common.xml.simple-xpath :refer [select text]]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.umm-spec.date-util :as date]
-            [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
-            [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
-            [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.util :as u]
-            [cmr.umm-spec.location-keywords :as lk]
-            [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as dc]))
+  (:require
+   [cmr.common.util :as util]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.umm-spec.date-util :as date]
+   [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as dc]
+   [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
+   [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]))
 
 (defn parse-temporal
   "Returns seq of UMM temporal extents from an ECHO10 XML document."
@@ -115,6 +117,16 @@
     (when apply-default?
       u/not-provided-science-keywords)))
 
+(defn- parse-access-constraints
+  "If both value and Description are nil, return nil.
+  Otherwise, if Description is nil, assoc it with u/not-provided"
+  [doc apply-default?]
+  (let [access-constraints-record
+        {:Description (value-of doc "/Collection/RestrictionComment")
+         :Value (value-of doc "/Collection/RestrictionFlag")}]
+    (when (seq (util/remove-nil-keys access-constraints-record))
+      (update access-constraints-record :Description #(u/with-default % apply-default?)))))
+
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [context doc {:keys [apply-default?]}]
@@ -127,8 +139,7 @@
    :CollectionDataType (value-of doc "/Collection/CollectionDataType")
    :Purpose    (value-of doc "/Collection/SuggestedUsage")
    :CollectionProgress (value-of doc "/Collection/CollectionState")
-   :AccessConstraints {:Description (value-of doc "/Collection/RestrictionComment")
-                       :Value (value-of doc "/Collection/RestrictionFlag")}
+   :AccessConstraints (parse-access-constraints doc apply-default?)
    :Distributions [{:DistributionFormat (value-of doc "/Collection/DataFormat")
                     :Fees (value-of doc "/Collection/Price")}]
    :TemporalKeywords (values-at doc "/Collection/TemporalKeywords/Keyword")

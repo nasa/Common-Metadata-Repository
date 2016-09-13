@@ -2,6 +2,8 @@
   "Contains common definitions and functions for DIF9 and DIF10 metadata parsing and generation."
   (:require
    [clojure.set :as set]
+   [cmr.common.util :as common-util]
+   [cmr.common.xml.parse :refer :all]
    [cmr.umm-spec.util :as util]))
 
 (def iso-639-2->dif10-dataset-language
@@ -84,3 +86,13 @@
   [element-key data-language]
   (when data-language
     [element-key (umm-langage->dif-language data-language)]))
+
+(defn parse-access-constraints
+  "if both value and Description are nil, return nil.
+  Otherwise, if Description is nil, assoc it with u/not-provided"
+  [doc apply-default?]
+  (let [access-constraints-record
+        {:Description (value-of doc "/DIF/Access_Constraints")
+         :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}]
+    (when (seq (common-util/remove-nil-keys access-constraints-record))
+      (update access-constraints-record :Description #(util/with-default % apply-default?)))))

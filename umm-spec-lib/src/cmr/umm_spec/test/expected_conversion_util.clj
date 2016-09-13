@@ -115,3 +115,9 @@
 (def bounding-rectangles-path
   "The path in UMM to bounding rectangles."
   [:SpatialExtent :HorizontalSpatialDomain :Geometry :BoundingRectangles])
+
+(defn expected-access-constraints
+  "Return access constraints with default Description if applicable"
+  [access-constraints]
+  (when (some? access-constraints)
+    (update access-constraints :Description su/with-default)))

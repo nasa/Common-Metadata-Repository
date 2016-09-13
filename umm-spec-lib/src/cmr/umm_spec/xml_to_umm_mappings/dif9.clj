@@ -133,8 +133,7 @@
                              :Subregion3 (value-of lk "Location_Subregion3")
                              :DetailedLocation (value-of lk "Detailed_Location")}))
      :Quality (value-of doc "/DIF/Quality")
-     :AccessConstraints {:Description (value-of doc "/DIF/Access_Constraints")
-                         :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}
+     :AccessConstraints (dif-util/parse-access-constraints doc apply-default?)
      :UseConstraints (value-of doc "/DIF/Use_Constraints")
      :Platforms (parse-platforms doc apply-default?)
      :TemporalExtents (if-let [temporals (select doc "/DIF/Temporal_Coverage")]

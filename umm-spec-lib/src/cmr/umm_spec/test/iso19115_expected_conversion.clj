@@ -219,4 +219,5 @@
       (assoc :ContactPersons nil)
       (assoc :MetadataDates nil)
       (update :ScienceKeywords expected-science-keywords)
+      (update :AccessConstraints conversion-util/expected-access-constraints)
       js/parse-umm-c))
