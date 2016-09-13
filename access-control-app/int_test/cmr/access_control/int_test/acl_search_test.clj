@@ -146,7 +146,8 @@
                                          {:permissions ["read"] :group_id group1-concept-id}))
         acl2 (ingest-acl token (assoc-in (system-acl "ARCHIVE_RECORD")
                                          [:group_permissions 0]
-                                         {:permissions ["delete"] :group_id group2-concept-id}))]
+                                         {:permissions ["delete"] :group_id group2-concept-id}))
+        acl3 (ingest-acl token (system-acl "SYSTEM_OPTION_DEFINITION_DEPRECATION"))]
     (u/wait-until-indexed)
     (testing "Guest search permission"
       (are3 [acls]
@@ -155,8 +156,8 @@
           (is (= (acls->search-response (count acls) acls)
                  (dissoc response :took))))
 
-        "System level ACL search check where the guest doesn't have permission to search any ACLs"
-        []))
+        "System level ACL search check on guest user-type"
+        [acl3]))
     (testing "Search permission user"
       (are3 [acls]
         (let [token (e/login (u/conn-context) "user1")
@@ -165,7 +166,7 @@
                  (dissoc response :took))))
 
         "System level ACL search check where the user has ANY_ACL read permissions"
-        [acl1 acl2]))
+        [acl1 acl2 acl3]))
     (testing "Search permission without ANY_ACL read"
       (are3 [acls]
         (let [token (e/login (u/conn-context) "user2")

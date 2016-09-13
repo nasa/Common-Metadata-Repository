@@ -570,12 +570,12 @@
     (hash-map target (provider-permissions-granted-by-acls provider-id target sids acls))))
 
 (defn has-any-read?
-  "Returns true if user has read permission on any ACL."
+  "Returns true if has read permission is present system level ACL with targt ANY_ACL for the given sids"
   [sids acls]
   (some #(= :read %) (system-permissions-granted-by-acls "ANY_ACL" sids (map echo-style-acl (map get-parsed-acl acls)))))
 
 (defn get-searchable-acls
-  "Returns a lazy sequence of concept-ids for ACLs that are searchable by user"
+  "Returns a lazy sequence of concept-ids for ACLs that are searchable for the given sids"
   [sids acls]
   (let [all-acls (map #(select-keys % [:concept-id :metadata]) acls)
         grants-search-permission? (fn [s a t] (some (set (map #(name %) s)) (map t (:group-permissions a))))
@@ -591,7 +591,7 @@
         sids (get-sids context (if (= user "guest") :guest user))
         acls (get-all-acl-concepts context)
         concept-ids (get-searchable-acls sids acls)
-        acl-cond (if (seq concept-ids)
+        acl-cond (when (seq concept-ids)
                    (common-qm/string-conditions :concept-id concept-ids true))]
     (if (has-any-read? sids acls)
       query
