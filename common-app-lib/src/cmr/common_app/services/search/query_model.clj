@@ -1,9 +1,10 @@
 (ns cmr.common-app.services.search.query-model
   "Defines various query models and conditions."
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.common.parameter-parser :as pp]
-            [clojure.string :as s]
-            [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
+  (:require
+    [clojure.string :as s]
+    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
+    [cmr.common.parameter-parser :as pp]
+    [cmr.common.services.errors :as errors]))
 
 (def default-page-size 10)
 

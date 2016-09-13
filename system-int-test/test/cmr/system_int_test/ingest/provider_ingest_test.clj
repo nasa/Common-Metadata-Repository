@@ -1,21 +1,22 @@
 (ns cmr.system-int-test.ingest.provider-ingest-test
   "CMR provider ingest integration test"
-  (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
-            [cmr.common.util :as u]
-            [cmr.common.mime-types :as mt]
-            [cmr.access-control.test.util :as access-control]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.system :as s]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.mock-echo.client.echo-util :as e]))
+  (:require
+    [clj-http.client :as client]
+    [clojure.test :refer :all]
+    [cmr.access-control.test.util :as access-control]
+    [cmr.common.mime-types :as mt]
+    [cmr.common.util :as u]
+    [cmr.mock-echo.client.echo-util :as e]
+    [cmr.system-int-test.data2.collection :as dc]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.system :as s]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.metadata-db-util :as mdb]
+    [cmr.system-int-test.utils.search-util :as search]
+    [cmr.system-int-test.utils.url-helper :as url]
+    [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
