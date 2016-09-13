@@ -7,5 +7,10 @@
 if [ -d es_data ] ; then
   rm -fr es_data
 fi
-lein do clean, uberjar
+date && echo "Building dev-system" &&
+dev-system/support/build.sh
+if [ $? -ne 0 ] ; then
+  echo "Failed to build dev system" >&2
+  exit 1
+fi
 nohup java -classpath ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar cmr.dev_system.runner&
