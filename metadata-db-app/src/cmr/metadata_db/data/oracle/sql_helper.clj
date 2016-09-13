@@ -2,20 +2,12 @@
   "Contains helper functions that are shared by providers and concepts."
   (:require
     [clj-time.format :as time-format]
-    [clj-time.coerce :as time-coerce]
     [clojure.java.jdbc :as j]
     [clojure.string :as str]
     [cmr.common.services.errors :as errors]
     [cmr.metadata-db.data.oracle.concept-tables :as ct]
     [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import cmr.oracle.connection.OracleStore))
-
-(defn date-time->revision-date-sql-clause
-  "Converts a datetime into a sql clause that will select rows with a revision_date greater than
-  the given date-time. date-time parameter should be a valid clj-time/Joda time object."
-  [date-time]
-  (let [sql-time (time-coerce/to-sql-time date-time)]
-    `(> :revision-date ~sql-time)))
 
 (defn find-params->sql-clause
   "Converts a parameter map for finding concept types into a sql clause for inclusion in a query."
@@ -25,16 +17,13 @@
     (when-let [invalid-names (seq (filter #(not (re-matches valid-param-name (name %))) (keys params)))]
       (errors/internal-error! (format "Attempting to search with invalid parameter names [%s]"
                                       (str/join ", " invalid-names)))))
-  (let [revision-date (:revision-date params)
-        params (dissoc params :revision-date)
-        comparisons (for [[k v] params]
-                      (if (sequential? v)
-                        (let [val (seq v)]
-                          `(in ~k ~val))
-                        `(= ~k ~v)))
-        comparisons (if revision-date
-                        (conj comparisons (date-time->revision-date-sql-clause revision-date))
-                        comparisons)]
+  (let [comparisons (for [[k v] params]
+                      (cond
+                        (sequential? v) (let [val (seq v)]
+                                          `(in ~k ~val))
+                        (map? v) (let [{:keys [value comparator]} v]
+                                   `(~comparator ~k ~value))
+                        :else `(= ~k ~v)))]
     (if (> (count comparisons) 1)
       (cons `and comparisons)
       (first comparisons))))

@@ -24,6 +24,7 @@
 
 (deftest bulk-index-after-date-time
   (s/only-with-real-database
+    ;; Disable message publishing so items are not indexed.
     (dev-sys-util/eval-in-dev-sys
         `(cmr.metadata-db.config/set-publish-messages! false))
     (let [;; saved but not indexed
@@ -101,7 +102,7 @@
                                   :format "application/edn"
                                   :metadata "{:tag-key \"tag2\" :description \"A good tag\" :originator-id \"user1\"}"
                                   :revision-date "2016-01-01T10:00:00Z"})]
-
+      ;; Re-enable message publishing.
       (dev-sys-util/eval-in-dev-sys
         `(cmr.metadata-db.config/set-publish-messages! true))
 
@@ -112,26 +113,26 @@
       (index/wait-until-indexed)
 
       (testing "Only concepts after date are indexed."
-               (are3 [search concept-type expected]
-                     (d/refs-match? expected (search/find-refs concept-type search))
+        (are3 [concept-type expected]
+          (d/refs-match? expected (search/find-refs concept-type {}))
 
-                     "Collections"
-                     {} :collection [umm2]
+          "Collections"
+          :collection [umm2]
 
-                     "Granules"
-                     {} :granule [ummg2])
+          "Granules"
+          :granule [ummg2])
 
-               (are3 [query expected-tags]
-                     (let [result-tags (tags/search query)
-                           {:keys [status hits items took]} result-tags
-                           items (map #(select-keys % [:concept-id :revision-id]) items)
-                           results {:status status :hits hits :items items :took took}]
-                       (tags/assert-tag-search expected-tags results))
+        (are3 [expected-tags]
+          (let [result-tags (update
+                              (tags/search {})
+                              :items
+                              (fn [items]
+                                (map #(select-keys % [:concept-id :revision-id]) items)))]
+            (println "RESULT-TAGS " result-tags)
+            (tags/assert-tag-search expected-tags result-tags))
 
-                     "Tags"
-                     {} [tag2])))))
-
-
+          "Tags"
+          [tag2])))))
 
 ;; This test runs bulk index with some concepts in mdb that are good, and some that are
 ;; deleted, and some that have not yet been deleted, but have an expired deletion date.

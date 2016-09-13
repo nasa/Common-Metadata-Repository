@@ -67,8 +67,8 @@
     (if-let [date-time-value (date-time-parser/try-parse-datetime date-time)]
       (let [result (bs/index-data-later-than-date-time context date-time-value synchronous)
             msg (if synchronous
-                    result
-                    (str "Processing data after " date-time " for bulk indexing"))]
+                  result
+                  (str "Processing data after " date-time " for bulk indexing"))]
         {:status 202
          :body {:message msg}})
       ;; Can't parse date-time.

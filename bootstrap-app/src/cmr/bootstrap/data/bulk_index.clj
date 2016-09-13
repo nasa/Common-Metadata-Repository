@@ -3,6 +3,7 @@
   (:require
     [cheshire.core :as json]
     [clj-http.client :as client]
+    [clj-time.coerce :as time-coerce]
     [clojure.core.async :as ca :refer [go go-loop alts!! <!! >!]]
     [clojure.java.jdbc :as j]
     [clojure.string :as str]
@@ -115,39 +116,51 @@
             gran-count
             provider-id)))
 
+(defn- fetch-and-index-new-concepts
+  "Get batches of concepts for a given provider/concept type that have a revision-date
+  newer than the given date time and then index them."
+  [system provider concept-type date-time]
+  (let [db (helper/get-metadata-db-db system)
+        provider-id (:provider-id provider)
+        params {:concept-type concept-type
+                :provider-id provider-id
+                :revision-date {:comparator `> :value (time-coerce/to-sql-time date-time)}}
+        concept-batches (db/find-concepts-in-batches
+                          db provider params (:db-batch-size system))
+        num-concepts (index/bulk-index
+                      {:system (helper/get-indexer system)}
+                      concept-batches
+                      {})]
+    (info "Indexed" num-concepts (str (name concept-type) "(s) for provider") provider-id
+     "with revision-date later than " date-time)
+    num-concepts))
+
 (defn index-data-later-than-date-time
   "Index all concept revisions created later than the given date-time."
   [system date-time]
   (info "Indexing concepts.")
   (let [db (helper/get-metadata-db-db system)
-        providers (p/get-providers db)
-        ;; helper function to get and index batches of concepts
-        index-fn (fn [provider concept-type]
-                   (let [provider-id (:provider-id provider)
-                         params {:concept-type concept-type
-                                 :provider-id provider-id
-                                 :revision-date date-time}
-                         concept-batches (db/find-concepts-in-batches
-                                           db provider params (:db-batch-size system))
-                         num-concepts (index/bulk-index {:system (helper/get-indexer system)}
-                                                        concept-batches
-                                                        {})]
-                     (info "Indexed" num-concepts (str (name concept-type) "(s) for provider") provider-id)
-                     num-concepts))]
+        providers (p/get-providers db)]
 
     (let [non-system-concept-count (reduce + (for [provider providers
                                                    concept-type [:collection :granule :service]]
-                                               (index-fn provider concept-type)))
-          system-concept-count (reduce + (for [concept-type [:acl :access-group :tag]]
-                                           (index-fn {:provider-id "CMR"} concept-type)))]
+                                               (fetch-and-index-new-concepts
+                                                 system provider concept-type date-time)))
+          system-concept-count (reduce + (for [concept-type [:tag]]
+                                           (fetch-and-index-new-concepts
+                                             system {:provider-id "CMR"} concept-type date-time)))]
       (info "Indexing concepts with revision-date later than" date-time "completed.")
       (format "Indexed %d provider concepts and %d system concepts."
               non-system-concept-count
               system-concept-count))))
 
-;; Background task to handle provider bulk index requests
+;; Background task to handle bulk index requests
 (defn handle-bulk-index-requests
-  "Handle any requests for indexing providers."
+  "Handle any requests for bulk indexing. We use separate channels for each type of
+  indexing request instead of a single channel to simplify the dispatch logic.
+  Since we know at the time a request is made what function should be used, there
+  is no point in implementing separate code to determine what funciton to
+  when an item comes off the channel."
   [system]
   (info "Starting background task for monitoring bulk provider indexing channels.")
   (let [channel (:data-index-channel system)]
