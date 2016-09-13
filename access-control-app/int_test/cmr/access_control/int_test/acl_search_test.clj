@@ -131,6 +131,51 @@
                  [{} 0]
                  (partition 2 group-permissions))))
 
+(deftest acl-search-permission-test
+  (let [token (e/login (u/conn-context) "user1")
+        group1 (u/ingest-group token
+                               {:name "any acl read"}
+                               ["user1"])
+        group2 (u/ingest-group token
+                               {:name "without any acl read"}
+                               ["user2"])
+        group1-concept-id (:concept_id group1)
+        group2-concept-id (:concept_id group2)
+        acl1 (ingest-acl token (assoc-in (system-acl "ANY_ACL")
+                                         [:group_permissions 0]
+                                         {:permissions ["read"] :group_id group1-concept-id}))
+        acl2 (ingest-acl token (assoc-in (system-acl "ARCHIVE_RECORD")
+                                         [:group_permissions 0]
+                                         {:permissions ["delete"] :group_id group2-concept-id}))]
+    (u/wait-until-indexed)
+    (testing "Guest search permission"
+      (are3 [acls]
+        (let [token (e/login-guest (u/conn-context))
+              response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
+          (is (= (acls->search-response (count acls) acls)
+                 (dissoc response :took))))
+
+        "System level ACL search check where the guest doesn't have permission to search any ACLs"
+        []))
+    (testing "Search permission user"
+      (are3 [acls]
+        (let [token (e/login (u/conn-context) "user1")
+              response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
+          (is (= (acls->search-response (count acls) acls)
+                 (dissoc response :took))))
+
+        "System level ACL search check where the user has ANY_ACL read permissions"
+        [acl1 acl2]))
+    (testing "Search permission without ANY_ACL read"
+      (are3 [acls]
+        (let [token (e/login (u/conn-context) "user2")
+              response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
+          (is (= (acls->search-response (count acls) acls)
+                 (dissoc response :took))))
+
+        "System level ACL search check where the user does not have ANY_ACL read permissions"
+        [acl2]))))
+
 (deftest acl-search-test
   (let [token (e/login (u/conn-context) "user1")
         group1 (u/ingest-group token
@@ -209,7 +254,8 @@
                                       [{:user_type "registered" :permissions ["read"]}]))
         acl3 (ingest-acl token (assoc (system-acl "ANY_ACL")
                                       :group_permissions
-                                      [{:group_id "AG12345-PROV" :permissions ["read" "create" "delete"]}]))
+                                      [{:group_id "AG12345-PROV" :permissions ["read" "create" "delete"]}
+                                       {:user_type "guest" :permissions ["read"]}]))
         acl4 (ingest-acl token (assoc (provider-acl "AUDIT_REPORT")
                                       :group_permissions
                                       [{:user_type "guest" :permissions ["read"]}]))
@@ -226,13 +272,13 @@
                                       [{:user_type "registered" :permissions ["read" "order"]}
                                        {:group_id "AG10000-PROV" :permissions ["create"]}]))
 
-        guest-acls [acl1 acl4 acl7]
+        guest-acls [acl1 acl3 acl4 acl7]
         registered-acls [acl2 acl5 acl8]
         AG12345-acls [acl3 acl6]
         AG10000-acls [acl8]
         read-acls [acl1 acl2 acl3 acl4 acl8]
         create-acls [acl3 acl5 acl7 acl8]
-        all-acls (concat guest-acls registered-acls AG12345-acls)]
+        all-acls [acl1 acl2 acl3 acl4 acl5 acl6 acl7 acl8]]
     (u/wait-until-indexed)
 
     (testing "Search ACLs by permitted group"
@@ -283,7 +329,7 @@
            ["guest" "create"] [acl7]
 
            "Guest read"
-           ["guest" "read"] [acl1 acl4]
+           ["guest" "read"] [acl1 acl3 acl4]
 
            "Registered read"
            ["registered" "read"] [acl2 acl8]
@@ -421,7 +467,7 @@
         group2 (u/ingest-group token {:name "group2"} ["USER1" "user2"])
         group3 (u/ingest-group token {:name "group3"} nil)
         ;; No user should match this since all users are registered
-        acl-guest (ingest-acl token (assoc (system-acl "SYSTEM_AUDIT_REPORT")
+        acl-guest (ingest-acl token (assoc (system-acl "ANY_ACL")
                                            :group_permissions
                                            [{:user_type "guest" :permissions ["read"]}]))
         acl-registered-1 (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE")
@@ -560,7 +606,7 @@
   (let [token (e/login (u/conn-context) "user1")
         group1 (u/ingest-group token {:name "group1"} ["user1"])
         group2 (u/ingest-group token {:name "group2"} ["user2"])
-        acl1 (ingest-acl token (assoc (system-acl "SYSTEM_AUDIT_REPORT")
+        acl1 (ingest-acl token (assoc (system-acl "ANY_ACL")
                                       :group_permissions
                                       [{:user_type "guest" :permissions ["read"]}]))
         acl2 (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE")

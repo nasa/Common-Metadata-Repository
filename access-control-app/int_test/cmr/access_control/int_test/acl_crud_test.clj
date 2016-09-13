@@ -20,7 +20,7 @@
 (def system-acl
   {:group_permissions [{:user_type "guest"
                         :permissions ["create" "delete"]}]
-   :system_identity {:target "TAG_GROUP"}})
+   :system_identity {:target "ANY_ACL"}})
 
 (def provider-acl
   {:legacy_guid "ABCD-EFG-HIJK-LMNOP"
@@ -114,8 +114,8 @@
 
           "System identity target grantable permission check"
           #"\[system-identity\] ACL cannot have \[read\] permission for target \[TAG_GROUP\], only \[create, update, delete\] are grantable"
-          (assoc-in system-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"]))
-
+          (assoc-in (assoc-in system-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"])
+                    [:system_identity :target] "TAG_GROUP"))
 
     (testing "Acceptance criteria: I receive an error if creating an ACL with invalid JSON"
       (is
@@ -403,7 +403,8 @@
 
           "System identity target grantable permission check"
           #"\[system-identity\] ACL cannot have \[read\] permission for target \[TAG_GROUP\], only \[create, update, delete\] are grantable"
-          (assoc-in system-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"])
+          (assoc-in (assoc-in system-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"])
+                    [:system_identity :target] "TAG_GROUP")
           system-concept-id)
 
     (testing "Acceptance criteria: I receive an error if updating an ACL with invalid JSON"

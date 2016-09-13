@@ -1,6 +1,7 @@
 (ns cmr.access-control.services.acl-service
   (:require [clojure.string :as str]
             [camel-snake-kebab.core :as csk]
+            [cheshire.core :as json]
             [cmr.access-control.services.acl-service-messages :as acl-msg]
             [cmr.access-control.services.messages :as msg]
             [cmr.access-control.services.acl-validation :as v]
@@ -370,20 +371,6 @@
       ;; Creates the group-permission condition.
       (nf/parse-nested-condition target-field value case-sensitive? pattern?))))
 
-(defn search-for-acls
-  [context params]
-  (let [[query-creation-time query] (u/time-execution
-                                      (->> params
-                                           cp/sanitize-params
-                                           (validate-acl-search-params :acl)
-                                           (cp/parse-parameter-query context :acl)))
-        [find-concepts-time results] (u/time-execution
-                                       (cs/find-concepts context :acl query))
-        total-took (+ query-creation-time find-concepts-time)]
-    (info (format "Found %d acls in %d ms in format %s with params %s."
-                  (:hits results) total-took (common-qm/base-result-format query) (pr-str params)))
-    (assoc results :took total-took)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Member functions
 
@@ -581,3 +568,49 @@
   (let [sids (get-sids context username-or-type)
         acls (get-echo-style-acls context)]
     (hash-map target (provider-permissions-granted-by-acls provider-id target sids acls))))
+
+(defn has-any-read?
+  "Returns true if user has read permission on any ACL."
+  [sids acls]
+  (some #(= :read %) (system-permissions-granted-by-acls "ANY_ACL" sids (map echo-style-acl (map get-parsed-acl acls)))))
+
+(defn get-searchable-acls
+  "Returns a lazy sequence of concept-ids for ACLs that are searchable by user"
+  [sids acls]
+  (let [all-acls (map #(select-keys % [:concept-id :metadata]) acls)
+        grants-search-permission? (fn [s a t] (some (set (map #(name %) s)) (map t (:group-permissions a))))
+        acls-by-group-id (filter #(grants-search-permission? sids (get-parsed-acl %) :group-id) all-acls)
+        acls-by-user-type (filter #(grants-search-permission? sids (get-parsed-acl %) :user-type) all-acls)]
+    (map :concept-id (concat acls-by-user-type acls-by-group-id))))
+
+(defn add-acl-condition
+  "Creates elastic condition to filter out ACLs that are not visible to the user"
+  [context query]
+  (let [token (:token context)
+        user (if token (tokens/get-user-id context token) "guest")
+        sids (get-sids context (if (= user "guest") :guest user))
+        acls (get-all-acl-concepts context)
+        concept-ids (get-searchable-acls sids acls)
+        acl-cond (if (seq concept-ids)
+                   (common-qm/string-conditions :concept-id concept-ids true))]
+    (if (has-any-read? sids acls)
+      query
+      (if (seq acl-cond)
+        (update-in query [:condition] #(gc/and-conds [acl-cond %]))
+        (assoc query :condition common-qm/match-none)))))
+
+(defn search-for-acls
+  [context params]
+  (let [[query-creation-time query] (u/time-execution
+                                      (->> params
+                                           cp/sanitize-params
+                                           (validate-acl-search-params :acl)
+                                           (cp/parse-parameter-query context :acl)))
+        query (add-acl-condition context query)
+        [find-concepts-time results] (u/time-execution
+                                       (cs/find-concepts context :acl query))
+
+        total-took (+ query-creation-time find-concepts-time)]
+    (info (format "Found %d acls in %d ms in format %s with params %s."
+                  (:hits results) total-took (common-qm/base-result-format query) (pr-str params)))
+    (assoc results :took total-took)))

@@ -106,7 +106,8 @@
 
 (deftest delete-provider-test
   (testing "delete provider"
-    (let [coll1 (d/ingest "PROV1" (dc/collection))
+    (let [token (e/login-guest (access-control/conn-context))
+          coll1 (d/ingest "PROV1" (dc/collection))
           gran1 (d/ingest "PROV1" (dg/granule coll1))
           gran2 (d/ingest "PROV1" (dg/granule coll1))
           coll2 (d/ingest "PROV1" (dc/collection))
@@ -144,13 +145,11 @@
                   (:items
                     (access-control/search-for-groups (transmit-config/echo-system-token)
                                                       {:provider "PROV1"})))))
-
       ;; PROV1 ACLs are indexed
       (is (= [(:concept-id acl1) (:concept-id acl2)]
              (map :concept_id
                   (:items
-                    (access-control/search-for-acls (transmit-config/echo-system-token)
-                                                    {:provider "PROV1"})))))
+                    (access-control/search-for-acls token {:provider "PROV1"})))))
 
       ;; delete provider PROV1
       (let [{:keys [status content-length]} (ingest/delete-ingest-provider "PROV1")]
@@ -177,9 +176,7 @@
 
       ;; PROV1 ACLs are no longer indexed
       (is (= 0 (:hits
-                 (access-control/search-for-acls (transmit-config/echo-system-token)
-                                                 {:provider "PROV1"}))))
-
+                 (access-control/search-for-acls token {:provider "PROV1"}))))
       ;; PROV2 concepts are in metadata-db
       (are [concept]
         (mdb/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept))
