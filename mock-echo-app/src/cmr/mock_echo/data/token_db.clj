@@ -1,10 +1,13 @@
-(ns cmr.mock-echo.data.token-db)
+(ns cmr.mock-echo.data.token-db
+  (:require
+   [cmr.transmit.config :as transmit-config]))
 
 (def initial-db-state
   {:last-id 0
    ;; a map of token ids to maps containing username and group_guids
-   :token-map {"mock-echo-system-token" {:username "mock-admin"
-                                         :group_guids ["mock-admin-group-guid"]}}})
+   :token-map {transmit-config/mock-echo-system-token
+               {:username transmit-config/mock-echo-system-user
+                :group_guids [transmit-config/mock-echo-system-group-guid]}}})
 
 (defn create-db
   "Creates a new empty token database"
@@ -57,7 +60,6 @@
 
   (fetch {:system user/system} "ABC-1")
 
-  (delete {:system user/system} "ABC-1")
+  (delete {:system user/system} "ABC-1"))
 
 
-)

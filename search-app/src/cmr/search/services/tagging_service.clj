@@ -242,7 +242,7 @@
         query (-> (jp/parse-json-query :collection {} json-query)
                   (assoc :page-size :unlimited
                          :result-format :query-specified
-                         :fields [:concept-id]
+                         :result-fields [:concept-id]
                          :skip-acls? false))
         coll-concept-ids (->> (qe/execute-query context query)
                               :items

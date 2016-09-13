@@ -31,17 +31,17 @@
            (u/search-for-groups token {:foo "bar"})))
     (is (= {:status 400 :errors ["Parameter [options[provider]] must include a nested key, options[provider][...]=value."]}
            (u/search-for-groups token {:provider "foo"
-                            "options[provider]" "foo"})))
+                                       "options[provider]" "foo"})))
     (is (= {:status 400 :errors ["Parameter [options] must include a nested key, options[...]=value."]}
            (u/search-for-groups token {"options" "bar"})))
     (is (= {:status 400 :errors ["Option [foo] is not supported for param [provider]"]}
            (u/search-for-groups token {:provider "PROV1"
-                            "options[provider][foo]" "bar"})))
+                                       "options[provider][foo]" "bar"})))
 
     ;; Members search is always case insensitive
     (is (= {:status 400 :errors ["Option [ignore_case] is not supported for param [member]"]}
            (u/search-for-groups token {:member "foo"
-                            "options[member][ignore_case]" true})))))
+                                       "options[member][ignore_case]" true})))))
 
 (deftest group-search-test
   (let [token (e/login (u/conn-context) "user1")

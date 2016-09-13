@@ -50,7 +50,6 @@
   (config/set-config-value! :echo-rest-host "localhost")
   (config/set-config-value! :echo-rest-port 3012)
   (config/set-config-value! :echo-rest-context "/soap-services/rest")
-  (config/set-config-value! :echo-system-token "mock-echo-system-token")
   (config/set-config-value! :dev-system-echo-type "external")
   (config/set-config-value! :dev-system-db-type "in-memory"))
 

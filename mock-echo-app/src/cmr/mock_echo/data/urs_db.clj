@@ -1,10 +1,12 @@
 (ns cmr.mock-echo.data.urs-db
   "This is an in memory database for mocking URS."
-  (:require [clojure.string :as str]))
+  (:require
+   [clojure.string :as str]
+   [cmr.transmit.config :as transmit-config]))
 
 (def initial-db-state
   "Initial database state which is a map of usernames to passwords"
-  {})
+  {:users {transmit-config/mock-echo-system-user "never login as this user"}})
 
 (defn create-db
   []

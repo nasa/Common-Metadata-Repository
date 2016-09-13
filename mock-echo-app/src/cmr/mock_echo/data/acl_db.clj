@@ -1,4 +1,6 @@
-(ns cmr.mock-echo.data.acl-db)
+(ns cmr.mock-echo.data.acl-db
+  (:require
+   [cmr.transmit.config :as transmit-config]))
 
 (def initial-db-state
   {:last-id 0
@@ -8,7 +10,7 @@
           {:acl
            {:id "mock-admin-acl-guid",
             :access_control_entries
-            [{:sid {:group_sid {:group_guid "mock-admin-group-guid"}},
+            [{:sid {:group_sid {:group_guid transmit-config/mock-echo-system-group-guid}},
               :permissions ["READ" "UPDATE"]}],
             :system_object_identity {:target "INGEST_MANAGEMENT_ACL"}}}}})
 

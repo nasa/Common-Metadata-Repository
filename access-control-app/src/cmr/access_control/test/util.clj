@@ -124,6 +124,8 @@
    (create-group-with-members token group members nil))
   ([token group members options]
    (let [group (create-group token group options)]
+     (when-not (= (:status group) 200)
+       (throw (Exception. (format "Unexpected status [%s] when creating group" (pr-str group)))))
      (if (seq members)
        (let [{:keys [revision_id status] :as resp} (add-members token (:concept_id group) members options)]
          (when-not (= status 200)

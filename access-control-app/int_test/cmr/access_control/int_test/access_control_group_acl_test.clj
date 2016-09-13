@@ -1,12 +1,18 @@
 (ns cmr.access-control.int-test.access-control-group-acl-test
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.access-control.int-test.fixtures :as fixtures]
-            [cmr.access-control.test.util :as u]))
+  (:require
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.access-control.int-test.fixtures :as fixtures]
+   [cmr.access-control.test.util :as u]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.transmit.access-control :as access-control]))
 
 (use-fixtures :once (fixtures/int-test-fixtures))
 (use-fixtures :each (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"} ["user1" "user2" "user3" "user4" "user5"]))
+
+(comment
+ ((fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"} ["user1" "user2" "user3" "user4" "user5"])
+  (constantly true)))
 
 (deftest create-system-group-test
 
@@ -30,7 +36,24 @@
 
 (deftest create-provider-group-test
 
-  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group-create-group" "prov1guid" :create)
+  ;; TODO once this is working we'll need to extract this somehow to be used in other tests.
+
+
+  (e/grant-provider-group-permissions-to-group (u/conn-context)
+                                               cmr.transmit.config/mock-echo-system-group-guid
+                                               "prov1guid" :create)
+  (let [group (u/create-group-with-members
+               "mock-echo-system-token"
+               (u/make-group {:name "prov1-group-create-group"
+                              :provider_id "PROV1"})
+               ["user1"])]
+    (e/grant-provider-group-permissions-to-group (u/conn-context) (:concept_id group) "prov1guid" :create))
+
+  (u/wait-until-indexed)
+  (access-control/clear-cache (u/conn-context))
+
+  ;; TODO the current problem is that the caches need to be cleared here. We've already fetched acls and cached them.
+  ;; subsequent requests will use the already cached acls.
 
   (testing "with permission"
     (let [group (u/make-group {:provider_id "PROV1"})

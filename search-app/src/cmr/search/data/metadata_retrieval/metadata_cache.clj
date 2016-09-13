@@ -90,7 +90,7 @@
                         :skip-acls? true
                         :page-size :unlimited
                         :result-format :query-specified
-                        :fields [:concept-id :revision-id]})]
+                        :result-fields [:concept-id :revision-id]})]
     (mapv #(vector (:concept-id %) (:revision-id %))
           (:items (qe/execute-query context query)))))
 

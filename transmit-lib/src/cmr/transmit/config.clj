@@ -4,6 +4,22 @@
             [cmr.transmit.connection :as conn]
             [camel-snake-kebab.core :as csk]))
 
+(def mock-echo-system-user
+  "TODO"
+  "mock-admin")
+
+(def mock-echo-system-group
+  "TODO"
+  "mock-admin-group")
+
+(def mock-echo-system-group-guid
+  "TODO"
+  "mock-admin-group-guid")
+
+(def mock-echo-system-token
+  "TODO"
+  "mock-echo-system-token")
+
 (def token-header
   "echo-token")
 
@@ -98,7 +114,7 @@
 
 (defconfig echo-system-token
   "The ECHO system token to use for request to ECHO."
-  {:default "mock-echo-system-token"})
+  {:default mock-echo-system-token})
 
 (def default-conn-info
   "The default values for connections."

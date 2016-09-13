@@ -1,31 +1,33 @@
 (ns cmr.access-control.api.routes
   "Defines the HTTP URL routes for the application."
-  (:require [compojure.handler :as handler]
-            [compojure.route :as route]
-            [compojure.core :refer :all]
-            [ring.middleware.params :as params]
-            [ring.middleware.nested-params :as nested-params]
-            [ring.middleware.keyword-params :as keyword-params]
-            [ring.middleware.json :as ring-json]
-            [cheshire.core :as json]
-            [cmr.common.concepts :as cc]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.cache :as cache]
-            [cmr.common.api.errors :as api-errors]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.api.context :as context]
-            [cmr.common.validations.core :as validation]
-            [cmr.common.validations.json-schema :as js]
-            [cmr.common.mime-types :as mt]
-            [cmr.acl.core :as acl]
-            [cmr.common-app.api.routes :as cr]
-            [cmr.common-app.api-docs :as api-docs]
-            [cmr.access-control.data.access-control-index :as index]
-            [cmr.access-control.data.acl-schema :as acl-schema]
-            [cmr.access-control.services.acl-service :as acl-service]
-            [cmr.access-control.services.group-service :as group-service]
-            [cmr.common.util :as util]
-            [clojure.string :as str]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.string :as str]
+   [cmr.access-control.data.access-control-index :as index]
+   [cmr.access-control.data.acl-schema :as acl-schema]
+   [cmr.access-control.services.acl-service :as acl-service]
+   [cmr.access-control.services.group-service :as group-service]
+   [cmr.access-control.test.bootstrap :as bootstrap]
+   [cmr.acl.core :as acl]
+   [cmr.common-app.api-docs :as api-docs]
+   [cmr.common-app.api.routes :as cr]
+   [cmr.common.api.context :as context]
+   [cmr.common.api.errors :as api-errors]
+   [cmr.common.cache :as cache]
+   [cmr.common.concepts :as cc]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.common.validations.core :as validation]
+   [cmr.common.validations.json-schema :as js]
+   [compojure.core :refer :all]
+   [compojure.handler :as handler]
+   [compojure.route :as route]
+   [ring.middleware.json :as ring-json]
+   [ring.middleware.keyword-params :as keyword-params]
+   [ring.middleware.nested-params :as nested-params]
+   [ring.middleware.params :as params]))
 
 ;;; Utility Functions
 
@@ -279,16 +281,20 @@
 
 (defn reset
   "Resets the app state. Compatible with cmr.dev-system.control."
-  [context]
-  (cache/reset-caches context)
-  (index/reset (-> context :system :search-index)))
+  ([context]
+   (reset context true))
+  ([context bootstrap-data]
+   (cache/reset-caches context)
+   (index/reset (-> context :system :search-index))
+   (when bootstrap-data
+     (bootstrap/bootstrap (:system context)))))
 
 (def admin-api-routes
   "The administrative control routes."
   (routes
     (POST "/reset" {:keys [request-context params headers]}
       (acl/verify-ingest-management-permission request-context :update)
-      (reset request-context)
+      (reset request-context (= (:bootstrap_data params) "true"))
       {:status 204})))
 
 ;;; Handler

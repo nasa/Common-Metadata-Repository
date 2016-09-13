@@ -1,17 +1,40 @@
 (ns cmr.access-control.services.auth-util
   (:require [cmr.common.services.errors :as errors]
             [cmr.acl.core :as acl]
+            [cmr.transmit.echo.tokens :as echo-tokens]
             [cmr.common-app.services.search.query-model :as qm]
+            [cmr.common-app.services.search :as cs]
+            [cmr.common-app.services.search.query-model :as q]
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.common-app.services.search.query-execution :as qe]))
 
+;; TODO ask John if after synchronization do all groups get written to elasticsearch?
 
+(comment
+ (echo-tokens/get-user-id {:system (get-in user/system [:apps :access-control])}
+                          "ABC-1")
+ (->
+  (put-sids-in-context {:system (get-in user/system [:apps :access-control])
+                        :token "ABC-1"})
+  :sids))
+
+
+;; TODO test using an unknown token
 (defn- put-sids-in-context
   "Gets the current SIDs of the user in the context from the Access control application."
   [context]
   (if-let [token (:token context)]
-    ;; TODO Fix this
-    [:registered]
+    (let [user-id (echo-tokens/get-user-id context token)
+          query (q/query {:concept-type :access-group
+                          :condition (q/string-condition :member user-id)
+                          :skip-acls? true
+                          :page-size :unlimited
+                          :result-format :query-specified
+                          :result-fields [:concept-id :legacy-guid]})
+          response (qe/execute-query context query)
+          sids (cons :registered (map #(or (:legacy-guid %) (:concept-id %)) (:items response)))]
+      (println "!!!!!!!!!!!!!! sids:" (pr-str sids))
+      (assoc context :sids sids))
     (assoc context :sids [:guest])))
 
 (defn- get-system-acls
@@ -63,6 +86,7 @@
   "Throws a permission service error if no ACLs exist that grant the desired permission to the
   context user on group."
   [context action-description permission group]
+  ; (proto-repl.saved-values/save 12)
   (when-not (or (get-instance-acls context permission group)
                 (get-provider-acls context permission group)
                 (get-system-acls context permission))

@@ -7,7 +7,28 @@
 (defmulti elastic-result->query-result-item
   "Converts the Elasticsearch result into the result expected from execute-query for the given format."
   (fn [context query elastic-result]
-    [(:concept-type query) (common-qm/base-result-format query)]))
+    (let [result-format (common-qm/base-result-format query)]
+      (if (= :query-specified result-format)
+        ;; The same result reader is used for every concept type when query specified
+        result-format
+        [(:concept-type query) result-format]))))
+
+;; TODO add helper function for creating query specified query
+
+(defn- default-query-specified-elastic-result-item-processor
+  "The default function that will be used to process an elastic result into a result for the caller."
+  [context query elastic-result]
+  (let [{concept-id :_id
+         field-values :fields} elastic-result]
+    (reduce #(assoc %1 %2 (-> field-values %2 first))
+            {:concept-id concept-id}
+            (:result-fields query))))
+
+(defmethod elastic-result->query-result-item :query-specified
+  [context query elastic-result]
+  (let [processor (get-in query [:result-features :query-specified :result-processor]
+                          default-query-specified-elastic-result-item-processor)]
+    (processor context query elastic-result)))
 
 (defmulti elastic-results->query-results
   "Converts elastic search results to query results"
@@ -19,8 +40,10 @@
   [context query elastic-results]
   (let [hits (get-in elastic-results [:hits :total])
         elastic-matches (get-in elastic-results [:hits :hits])
-        items (mapv (partial elastic-result->query-result-item context query) elastic-matches)]
-    (results/map->Results {:hits hits :items items :result-format (:result-format query)})))
+        items (mapv #(elastic-result->query-result-item context query %) elastic-matches)]
+    (results/map->Results
+     {:hits hits :items items :result-format (:result-format query)
+      :aggregations (:aggregations elastic-results)})))
 
 (defmethod elastic-results->query-results :default
   [context query elastic-results]

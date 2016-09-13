@@ -42,7 +42,7 @@
                     :condition condition
                     :page-size :unlimited
                     :result-format :query-specified
-                    :fields result-fields})
+                    :result-fields result-fields})
          (c2s/reduce-query context)
          (idx/execute-query context)
          results-to-condition-fn))
