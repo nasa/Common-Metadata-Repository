@@ -58,27 +58,21 @@
     (let [result (first (sort-by count (find-spatial-keywords-in-map keyword-map-list keyword)))]
       (or result {:category "OTHER" :type keyword}))))
 
-(defn- find-all-spatial-keyword-map
-  "Finds all occurrences of a keyword-map in the values of keyword-map-list.
-  Takes a keyword-map as a parameter, e.g. {:category CONTINENT, :type ASIA} 
-  and a list of spatial keyword maps, with the following values, for example:
-  ({:category CONTINENT, :type ASIA, :subregion-1 WESTERN ASIA, :subregion-2 MIDDLE EAST, :subregion-3 GAZA STRIP, 
-    :uuid 302ab5f2-5fa2-482d-9d22-8a7a1546a62d}, {:category OCEAN, :uuid ff03e9fc-9882-4a5e-ad0b-830d8f1186cb}, 
-   {:category OCEAN, :type ATLANTIC OCEAN, :subregion-1 NORTH ATLANTIC OCEAN, 
-    :uuid a4202721-0cba-4fa1-853f-890f146b04f9});
-  returns a list of maps of hierarchies which contain the keyword-map."
+(defn find-location-keyword-map
+  "Finds location keyword-map in the hierarchy, if not found, returns keyword-map.
+   Note: the keyword-map is one record of (:LocationKeywords umm-spec-collection)
+   with the nil fields removed, and the detailed-location field removed(not defined in KMS)
+   During the parsing in umm-spec lib, it's already making use of the logic to match 
+   the duplicate-keywords, finding the shortest match etr. The only thing is that the 
+   uuid is not included in the keyword-map.  
+   So, all we need to do here is to find the match for all the fields except for uuid
+   in the keyword-map-list.  if not found, return the keyword-map." 
   [keyword-map-list keyword-map]
-  (let [keyword-map-set (set (util/map-values str/upper-case keyword-map))]
-    (filter (fn [keyword-map-value]
-              (set/subset? keyword-map-set (set (util/map-values str/upper-case keyword-map-value))))
-            (vals keyword-map-list))))
-
-(defn find-shortest-spatial-keyword-map
-  "Finds spatial keyword-map in the hierarchy and pick the one with the fewest keys
-  or, if the keyword-map doesn't exist in keyword-map-list, returns keyword-map"
-  [keyword-map-list keyword-map]
-  (let [all-spatial-keyword-map (find-all-spatial-keyword-map keyword-map-list keyword-map)]
-    (let [result (first (sort-by count all-spatial-keyword-map))]
+  ;; create a list of the same keyword-map, with each of the uuid in (vals keyword-map-list) appended in the end.
+  ;; i.e. ({keyword-map-content :uuid uuid1} {keyword-map-content :uuid uuid2}...{keyword-map-content :uuid uuidn})
+  (let [keyword-map-list-vals (vals keyword-map-list)
+        keyword-map-uuid-list (map #(assoc keyword-map :uuid %) (map :uuid keyword-map-list-vals))] 
+    (let [result (some (set keyword-map-uuid-list) keyword-map-list-vals)]
       (or result keyword-map))))
 
 (defn spatial-keywords->location-keywords
