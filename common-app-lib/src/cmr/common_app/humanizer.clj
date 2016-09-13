@@ -7,18 +7,18 @@
 (def humanizer-field->umm-paths
   "Map of humanizer JSON field names to lists of paths into parsed UMM collections
   corresponding to those fields."
-  {"platform" [[:PlatformType :ShortName]]
-   "instrument" [[:PlatformType :InstrumentType :ShortName]]
-   "science_keyword" [[:ScienceKeywordType :Category]
-                      [:ScienceKeywordType :Topic]
-                      [:ScienceKeywordType :Term]
-                      [:ScienceKeywordType :VariableLevel1]
-                      [:ScienceKeywordType :VariableLevel2]
-                      [:ScienceKeywordType :VariableLevel3]
-                      [:ScienceKeywordType :DetailedVariable]]
-   "project" [[:ProjectType :ShortName]]
-   "processing_level" [[:ProcessingLevel :ProcessingLevelId]]
-   "organization" [[:DataCenterType :ShortName]]})
+  {"platform" [[:Platforms :ShortName]]
+   "instrument" [[:Platforms :Instruments :ShortName]]
+   "science_keyword" [[:ScienceKeywords :Category]
+                      [:ScienceKeywords :Topic]
+                      [:ScienceKeywords :Term]
+                      [:ScienceKeywords :VariableLevel1]
+                      [:ScienceKeywords :VariableLevel2]
+                      [:ScienceKeywords :VariableLevel3]
+                      [:ScienceKeywords :DetailedVariable]]
+   "project" [[:Projects :ShortName]]
+   "processing_level" [[:Product :ProcessingLevelId]]
+   "organization" [[:DataCenters :ShortName]]})
 
 (defmulti to-human
   "Map of humanizer JSON type values to functions which take a field value and
@@ -107,6 +107,6 @@
     (reduce #(transform-in-all %1 %2 add-humanizer-field) collection field-paths)))
 
 (defn umm-collection->umm-collection+humanizers
-  "Applies humanizers to a parsed UMM collection"
+  "Applies humanizers to a parsed UMM-spec collection"
   [collection humanizers]
   (reduce apply-humanizer (add-humanizer-fields collection) (sort-by :order humanizers)))
