@@ -78,6 +78,7 @@
 (defn parse-related-urls
   "Parse related-urls present in the document"
   [doc apply-default?]
-  (if-let [related-urls (concat (parse-online-urls doc) (parse-browse-graphics doc))]
+  (if-let [related-urls (seq (concat (parse-online-urls doc) (parse-browse-graphics doc)))]
     related-urls
-    [su/not-provided-related-url]))
+    (when apply-default?
+     [su/not-provided-related-url])))

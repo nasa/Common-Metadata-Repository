@@ -88,7 +88,7 @@
     [element-key (umm-langage->dif-language data-language)]))
 
 (defn parse-access-constraints
-  "if both value and Description are nil, return nil.
+  "If both Value and Description are nil, return nil.
   Otherwise, if Description is nil, assoc it with u/not-provided"
   [doc apply-default?]
   (let [access-constraints-record

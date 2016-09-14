@@ -27,7 +27,11 @@
   "The starting page-num to retrieve collections for the translation test."
   1)
 
-(def search-page-size
+(def translation-search-page-size
+  "The page-size used to retrieve collections for the translation test."
+  100)
+
+(def validation-search-page-size
   "The page-size used to retrieve collections for the translation test."
   1000)
 
@@ -149,7 +153,6 @@
   "Translate collection from native format to UMM-C"
   [record]
   (let [{:keys [metadata-format metadata concept-id]} record]
-    (proto-repl.saved-values/save 3)
     (umm/parse-metadata context :collection metadata-format metadata {:apply-default? true})))
 
 (defn- get-collection-validation-errors
@@ -170,7 +173,7 @@
 (defn- translate-and-validation-collection
   "For a search result record, translate the metadata to UMM, validate the metadata and UMM record
   and return a validation result record including the concept id, provider id, entry title, and
-  all validation errors for the record."
+  all validation errors for the record. If an exception occurs, report that."
   [record]
   (try
     (let [record (assoc record :collection (translate-record-to-umm record))
@@ -239,11 +242,11 @@
   and make error analysis more manageable."
   []
   (loop [page-num starting-page-num results []]
-    (let [collections (get-collections search-page-size page-num)
+    (let [collections (get-collections validation-search-page-size page-num)
           error-results (remove nil? (map translate-and-validation-collection collections))
           all-results (conj results error-results)]
       (info "Processed Page " page-num " " (count error-results) " errors")
-      (if (>= (count collections) search-page-size)
+      (if (>= (count collections) validation-search-page-size)
         (recur (+ page-num 1) all-results)
         all-results))))
 
@@ -251,13 +254,13 @@
 #_(deftest ops-collections-translation
    (testing "Translate OPS collections into various supported metadata formats and make sure they pass validation."
      (loop [page-num starting-page-num]
-       (let [colls (get-collections search-page-size page-num)]
+       (let [colls (get-collections translation-search-page-size page-num)]
          (info "Translating collections on page-num: " page-num)
          (doseq [coll colls]
            (verify-translation-via-schema-validation coll))
          ;; We will turn on ingest validation later when ingest is backed by umm-spec-lib
          ; (verify-translation-via-ingest-validation coll))
-         (when (>= (count colls) search-page-size)
+         (when (>= (count colls) translation-search-page-size)
            (recur (+ page-num 1)))))
      (info "Finished OPS collections translation.")))
 
