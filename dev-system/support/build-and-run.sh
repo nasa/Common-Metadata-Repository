@@ -8,7 +8,7 @@ if [ -d es_data ] ; then
   rm -fr es_data
 fi
 date && echo "Building dev-system" &&
-dev-system/support/build.sh
+support/build.sh
 if [ $? -ne 0 ] ; then
   echo "Failed to build dev system" >&2
   exit 1

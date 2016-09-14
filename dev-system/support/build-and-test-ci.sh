@@ -1,3 +1,4 @@
+#!/bin/sh
 # This script is used to manage building and testing the CMR applications within the continuous
 # integration (CI) environment. The intent is to never need to modify the configuration of the CI
 # server. Instead the CI server will simply call this script. The script should be run from the cmr
@@ -10,7 +11,7 @@
 # should also set CMR_DB_URL to the URL to connect to the external database.
 
 date && echo "Building and starting dev-system" &&
-dev-system/support/build-and-run.sh
+(cd dev-system && support/build-and-run.sh)
 if [ $? -ne 0 ] ; then
   echo "Failed to build and start up dev system" >&2
   exit 1

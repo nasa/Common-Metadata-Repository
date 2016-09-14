@@ -9,37 +9,37 @@
 
 pwd
 date && echo "Installing all apps" &&
-lein modules do clean, install
+(cd .. && lein modules do clean, install)
 if [ $? -ne 0 ] ; then
   echo "Failed to install apps" >&2
   exit 1
 fi
 # The library is reinstalled after installing gems so that it will contain the gem code.
 date && echo "Installing collection renderer gems and reinstalling library" &&
-(cd collection-renderer-lib && lein do install-gems, install, clean)
+(cd ../collection-renderer-lib && lein do install-gems, install, clean)
 if [ $? -ne 0 ] ; then
   echo "Failed to install gems" >&2
   exit 1
 fi
-(cd search-app && lein with-profile docs generate-docs)
+(cd ../search-app && lein with-profile docs generate-docs)
 if [ $? -ne 0 ] ; then
   echo "Failed to generate search docs" >&2
   exit 1
 fi
 date && echo "Generating Ingest API documentation" &&
-(cd ingest-app && lein with-profile docs generate-docs)
+(cd ../ingest-app && lein with-profile docs generate-docs)
 if [ $? -ne 0 ] ; then
   echo "Failed to generate ingest docs" >&2
   exit 1
 fi
 date && echo "Generating Access Control API documentation" &&
-(cd access-control-app && lein with-profile docs generate-docs)
+(cd ../access-control-app && lein with-profile docs generate-docs)
 if [ $? -ne 0 ] ; then
   echo "Failed to generate access control docs" >&2
   exit 1
 fi
 if [ "$CMR_DEV_SYSTEM_DB_TYPE" = "external" ] ; then
-  dev-system/support/setup-oracle.sh
+  support/setup-oracle.sh
   if [$? -ne 0 ] ; then
     echo "Failed to setup Oracle" >&2
     exit 1
@@ -47,7 +47,7 @@ if [ "$CMR_DEV_SYSTEM_DB_TYPE" = "external" ] ; then
 fi
 if [ "$CMR_BUILD_UBERJARS" = "true" ] ; then
   date && echo "Building uberjars" &&
-  lein with-profile uberjar modules uberjar
+  (cd .. && lein with-profile uberjar modules uberjar)
   if [ $? -ne 0 ] ; then
     echo "Failed to generate uberjars" >&2
     exit 1
@@ -55,7 +55,7 @@ if [ "$CMR_BUILD_UBERJARS" = "true" ] ; then
 fi
 
 date && echo "Building dev system uberjar" &&
-(cd dev-system && lein do clean, uberjar)
+lein do clean, uberjar
 if [ $? -ne 0 ] ; then
   echo "Failed to generate dev system uberjar" >&2
   exit 1
