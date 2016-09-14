@@ -29,6 +29,13 @@
    :provider_identity {:provider_id "PROV1"
                        :target "INGEST_MANAGEMENT_ACL"}})
 
+(def provider-acl-for-catalog-item
+  {:legacy_guid "ABCD-EFG-HIJK-LMNOP"
+   :group_permissions [{:group_id "admins"
+                        :permissions ["read" "update" "create" "delete"]}]
+   :provider_identity {:provider_id "PROV1"
+                       :target "CATALOG_ITEM_ACL"}})
+
 (def catalog-item-acl
   {:group_permissions [{:user_type "guest"
                         :permissions ["create" "delete"]}]
@@ -60,10 +67,24 @@
     (is (re-find #"^ACL.*" (:concept_id resp)))
     (is (= 1 (:revision_id resp)))))
 
+(deftest create-catalog-item-acl-test
+  (let [token (e/login (u/conn-context) "user1")
+        group1 (u/ingest-group token {:name "group1"} ["user1"])
+        group1-concept-id (:concept_id group1)
+        _ (proto-repl.saved-values/save 3)
+        _ (ac/create-acl (u/conn-context) (assoc-in provider-acl-for-catalog-item
+                                                    [:group_permissions 0 :group_id]
+                                                    group1-concept-id))
+        _ (u/wait-until-indexed)
+        resp (ac/create-acl (merge {:token token} (u/conn-context)) catalog-item-acl)]
+    (is (re-find #"^ACL.*" (:concept_id resp)))
+    (is (= 1 (:revision_id resp)))))
+
 (deftest create-acl-errors-test
   (let [token (e/login (u/conn-context) "admin")
         group1 (u/ingest-group token {:name "group1"} ["user1"])
-        group1-concept-id (:concept_id group1)]
+        group1-concept-id (:concept_id group1)
+        provider-id (:provider_id (:provider_identity (ac/create-acl (u/conn-context) provider-acl {:token token})))]
     (are3 [re acl]
           (is (thrown-with-msg? Exception re (ac/create-acl (u/conn-context) acl {:token token})))
 
@@ -115,7 +136,11 @@
           "System identity target grantable permission check"
           #"\[system-identity\] ACL cannot have \[read\] permission for target \[TAG_GROUP\], only \[create, update, delete\] are grantable"
           (assoc-in (assoc-in system-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"])
-                    [:system_identity :target] "TAG_GROUP"))
+                    [:system_identity :target] "TAG_GROUP")
+
+          "User lacks create permission from catalog items target provider"
+          #"User \[admin\] does not have permission to create catalog item targeting provider-id \[PROV1\]"
+          catalog-item-acl)
 
     (testing "Acceptance criteria: I receive an error if creating an ACL with invalid JSON"
       (is
