@@ -9,10 +9,13 @@
    [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :once (fixtures/int-test-fixtures))
-(use-fixtures :each (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"} ["user1" "user2" "user3" "user4" "user5"]))
+(use-fixtures :each (fixtures/reset-fixture
+                     {"prov1guid" "PROV1" "prov2guid" "PROV2"}
+                     ["user1" "user2" "user3" "user4" "user5" "prov1-user" "sys-user"]))
 
 (comment
- ((fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"} ["user1" "user2" "user3" "user4" "user5"])
+ ((fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"}
+                          ["user1" "user2" "user3" "user4" "user5" "prov1-user" "sys-user"])
   (constantly true)))
 
 (defn create-group-with-members
@@ -29,6 +32,9 @@
        transmit-config/mock-echo-system-token
        (u/make-group group)
        users)))))
+
+;; TODO remove users from groups during login. Access control will determine group membership from
+;; the groups it has. Tests should still pass.
 
 (deftest create-system-group-test
   (let [group-id (create-group-with-members "group-create-group" ["user1"])]
@@ -50,7 +56,7 @@
   (testing "without permission"
     (let [group (u/make-group)
           token (e/login (u/conn-context) "user2")
-          response (u/create-group token group)]
+          response (u/create-group token group {:allow-failure? true})]
       (is (= {:status 401
               :errors ["You do not have permission to create system-level access control group [Administrators]."]}
              response)))))
@@ -77,7 +83,7 @@
   (testing "without permission"
     (let [token (e/login (u/conn-context) "user2")
           group (u/make-group {:provider_id "PROV1"})
-          response (u/create-group token group)]
+          response (u/create-group token group {:allow-failure? true})]
       (is (= {:status 401
               :errors ["You do not have permission to create access control group [Administrators] in provider [PROV1]."]}
              response)))))
@@ -91,7 +97,6 @@
 
   (let [group-id (create-group-with-members "sys-group-readers" ["user1"])]
     (e/grant-system-group-permissions-to-group (u/conn-context) group-id :read :create))
-
 
   ;; Wait until groups are indexed.
   (u/wait-until-indexed)
@@ -134,8 +139,17 @@
                (u/get-group prov1-only-token prov2-group-concept-id)))))))
 
 (deftest group-search-acl-test
-  (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group" :create :read)
-  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group" "prov1guid" :create :read)
+  (let [group-id (create-group-with-members "prov1-group" "PROV1" ["prov1-user"])]
+    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "prov1guid" :read :create))
+
+  (let [group-id (create-group-with-members "sys-group" ["sys-user"])]
+    (e/grant-system-group-permissions-to-group (u/conn-context) group-id :read :create))
+
+  ;; Wait until groups are indexed.
+  (u/wait-until-indexed)
+  ;; ACLS would have already been cached in Access Control Service
+  (access-control/clear-cache (u/conn-context))
+
   (let [sys-token (e/login (u/conn-context) "sys-user" ["sys-group"])
         sys-group (u/make-group)
         sys-group-concept-id (:concept_id (u/create-group sys-token sys-group))
@@ -150,20 +164,29 @@
     (is (= 0 (:hits (u/search-for-groups (e/login (u/conn-context) "non-permitted-user") {:name "Administrators"}))))))
 
 (deftest delete-group-acl-test
+  (let [group-id (create-group-with-members "prov1-group-delete" "PROV1" ["user2"])]
+    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "prov1guid" :create))
+
+  (let [group-id (create-group-with-members "prov2-group-creator" "PROV2" ["user3"])]
+    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "prov2guid" :create))
+
+  (let [group-id (create-group-with-members "sys-group-delete" ["user1"])]
+    (e/grant-system-group-permissions-to-group (u/conn-context) group-id :create))
 
   ;; Note: the following comment is temporarily inaccurate due to CMR-2585
   ;; Members of "sys-group-delete" can create system-level groups and delete the (to-be-created) group with
   ;; guid "system-group-guid". Members of "prov*-" groups can do the same with their respective
   ;; "prov*-group-guid" groups.
 
-  (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group-delete" :create)
-  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group-delete" "prov1guid" :create)
-  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov2-group-creator" "prov2guid" :create)
-
   ;; Note: temporarily disabled for CMR-2585
   ;; (e/grant-group-instance-permissions-to-group (u/conn-context) "sys-group-delete" "system-group-guid" :delete)
   ;; (e/grant-group-instance-permissions-to-group (u/conn-context) "prov1-group-delete" "prov1-group-guid" :delete)
   ;; (e/grant-group-instance-permissions-to-group (u/conn-context) "prov2-group-creator" "prov2-group-guid" :delete)
+
+  ;; Wait until groups are indexed.
+  (u/wait-until-indexed)
+  ;; ACLS would have already been cached in Access Control Service
+  (access-control/clear-cache (u/conn-context))
 
   (let [sys-token (e/login (u/conn-context) "user1" ["sys-group-delete"])
         prov-token (e/login (u/conn-context) "user2" ["prov1-group-delete"])
@@ -177,7 +200,6 @@
 
         prov2-group-id (:concept_id (u/create-group prov2-token
                                                     (u/make-group {:provider_id "PROV2"})))]
-
     (testing "deleting system groups"
       (testing "without permission"
         (is (= {:status 401
@@ -201,18 +223,27 @@
         (u/assert-group-deleted prov-group "user2" prov-group-id 2)))))
 
 (deftest update-group-acl-test
+  ;; members of "prov1-group" can create (and temporarily update for CMR-2585) groups for PROV1
+  ;; but can only update the group with guid "prov1-group-guid"
+  (let [group-id (create-group-with-members "prov1-group" "PROV1" ["user2"])]
+    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "prov1guid" :create))
+
+  (let [group-id (create-group-with-members "prov2-group" "PROV2" ["user3"])]
+    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "prov2guid" :create))
+
   ;; members of "sys-group" can create system-level groups and delete the group with the guid "sys-group-guid"
   ;; Note: :update permission is here temporarily as part of CMR-2585
-  (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group" :create :update)
+  (let [group-id (create-group-with-members "sys-group" ["user1"])]
+    (e/grant-system-group-permissions-to-group (u/conn-context) group-id :create :update))
 
   ;; Note: temporarily disabled for CMR-2585
   ;; (e/grant-group-instance-permissions-to-group (u/conn-context) "sys-group" "sys-group-guid" :update)
   ;; (e/grant-group-instance-permissions-to-group (u/conn-context) "prov1-group" "prov1-group-guid" :update)
 
-  ;; members of "prov1-group" can create (and temporarily update for CMR-2585) groups for PROV1
-  ;; but can only update the group with guid "prov1-group-guid"
-  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group" "prov1guid" :create)
-  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov2-group" "prov2guid" :create)
+  ;; Wait until groups are indexed.
+  (u/wait-until-indexed)
+  ;; ACLS would have already been cached in Access Control Service
+  (access-control/clear-cache (u/conn-context))
 
   (let [sys-token (e/login (u/conn-context) "user1" ["sys-group"])
         prov-token (e/login (u/conn-context) "user2" ["prov1-group"])
@@ -249,16 +280,21 @@
                (u/update-group prov-token prov-group-id (assoc prov-group :description "Updated name"))))))))
 
 (deftest group-members-acl-test
+  ;; members of "prov1-group" can create and update groups for PROV1
+  (let [group-id (create-group-with-members "prov1-group" "PROV1" ["prov1-user"])]
+    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "prov1guid" :create :read))
 
   ;; members of "sys-group" can create and update system-level groups
-  (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group" :create :read)
-
-  ;; members of "prov1-group" can create and update groups for PROV1
-  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group" "prov1guid" :create :read)
+  (let [group-id (create-group-with-members "sys-group" ["sys-user"])]
+    (e/grant-system-group-permissions-to-group (u/conn-context) group-id :create :read))
 
   ;; Note: these are temporarily disabled for CMR-2585
   ;; (e/grant-group-instance-permissions-to-group (u/conn-context) "sys-group" "sys-group-guid" :update)
   ;; (e/grant-group-instance-permissions-to-group (u/conn-context) "prov1-group" "prov1-group-guid" :update)
+  ;; Wait until groups are indexed.
+  (u/wait-until-indexed)
+  ;; ACLS would have already been cached in Access Control Service
+  (access-control/clear-cache (u/conn-context))
 
   (let [sys-token (e/login (u/conn-context) "sys-user" ["sys-group"])
         sys-group (u/make-group {:legacy_guid "sys-group-guid"})

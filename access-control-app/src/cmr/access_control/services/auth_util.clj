@@ -33,7 +33,6 @@
                           :result-fields [:concept-id :legacy-guid]})
           response (qe/execute-query context query)
           sids (cons :registered (map #(or (:legacy-guid %) (:concept-id %)) (:items response)))]
-      (println "!!!!!!!!!!!!!! sids:" (pr-str sids))
       (assoc context :sids sids))
     (assoc context :sids [:guest])))
 

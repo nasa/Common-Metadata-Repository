@@ -59,9 +59,13 @@
   "Creates a group."
   ([token group]
    (create-group token group nil))
-  ([token group options]
-   (let [options (merge {:raw? true :token token} options)]
-     (process-response (ac/create-group (conn-context) group options)))))
+  ([token group {:keys [allow-failure?] :as options}]
+   (let [options (merge {:raw? true :token token} options)
+         {:keys [status] :as response} (process-response (ac/create-group (conn-context) group options))]
+     (when (and (not allow-failure?)
+                (or (> status 299) (< status 200)))
+       (throw (Exception. (format "Unexpected status [%s] when creating group" (pr-str response)))))
+     response)))
 
 (defn get-group
   "Retrieves a group by concept id"
@@ -124,8 +128,6 @@
    (create-group-with-members token group members nil))
   ([token group members options]
    (let [group (create-group token group options)]
-     (when-not (= (:status group) 200)
-       (throw (Exception. (format "Unexpected status [%s] when creating group" (pr-str group)))))
      (if (seq members)
        (let [{:keys [revision_id status] :as resp} (add-members token (:concept_id group) members options)]
          (when-not (= status 200)
