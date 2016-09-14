@@ -8,4 +8,4 @@
 
 (def logging-level
   "The logging level to use locally"
-  (atom :debug))
+  (atom :error))
