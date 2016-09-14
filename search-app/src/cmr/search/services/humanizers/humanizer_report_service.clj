@@ -1,16 +1,17 @@
 (ns cmr.search.services.humanizers.humanizer-report-service
   "Provides functions for reporting on humanizers"
-  (require [cmr.common.concepts :as concepts]
-           [cmr.common.util :as u]
-           [cmr.common-app.humanizer :as h]
-           [cmr.common.config :refer [defconfig]]
-           [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
-           [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
-           [cmr.search.services.humanizers.humanizer-service :as hs]
-           [cmr.umm-spec.legacy :as umm-legacy]
-           [cmr.umm.umm-core :as umm-core]
-           [cmr.common.log :as log :refer (debug info warn error)]
-           [clojure.data.csv :as csv])
+  (require
+   [clojure.data.csv :as csv]
+   [cmr.common-app.humanizer :as h]
+   [cmr.common.concepts :as concepts]
+   [cmr.common.config :refer [defconfig]]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.util :as u]
+   [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
+   [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
+   [cmr.search.services.humanizers.humanizer-service :as hs]
+   [cmr.umm-spec.legacy :as umm-legacy]
+   [cmr.umm.umm-core :as umm-core])
   (:import java.io.StringWriter))
 
 (def CSV_HEADER
@@ -21,7 +22,7 @@
   {:default 500 :type Long})
 
 (defn- rfm->umm-collection
-  "Takes a revision format map and parses it into a UMM lib record."
+  "Takes a revision format map and parses it into a UMM-spec record."
   [revision-format-map]
   (let [concept-id (:concept-id revision-format-map)
         umm (umm-core/parse-concept
@@ -30,10 +31,6 @@
            :concept-id concept-id
            :provider-id (:provider-id (concepts/parse-concept-id concept-id)))))
 
-(defn- rfms->umm-collections
-  [rfms]
-  (map #(rfm->umm-collection %) rfms))
-
 (defn- get-all-collections
   "Retrieves all collections from the Metadata cache, partitions them into batches of size
   humanizer-report-collection-batch-size, so the batches can be processed lazily to avoid out of memory errors."
@@ -41,13 +38,17 @@
   ;; Currently not throwing an exception if the cache is empty. May want to change in the future
   ;; to throw an exception.
   (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
-    (map #(rfms->umm-collections %) (partition-all (humanizer-report-collection-batch-size) rfms))))
+    (map
+     #(map
+       rfm->umm-collection
+       (partition-all (humanizer-report-collection-batch-size) %))
+     rfms)))
 
 (defn humanized-collection->reported-rows
   "Takes a humanized collection and returns rows to populate the CSV report."
   [collection]
-  (let [{:keys [provider-id concept-id product]} collection
-        {:keys [short-name version-id]} product]
+  (let [{:keys [provider-id concept-id Product]} collection
+        {:keys [ShortName VersionId]} Product]
     (for [paths (vals h/humanizer-field->umm-paths)
           path paths
           parents (u/get-in-all collection (drop-last path))
@@ -58,7 +59,7 @@
           :when (and (some? humanized-value) (:reportable humanized-value))
           :let [humanized-string-value (:value humanized-value)
                 original-value (get parent field)]]
-      [provider-id concept-id short-name version-id original-value humanized-string-value])))
+      [provider-id concept-id ShortName VersionId original-value humanized-string-value])))
 
 (defn humanizers-report-csv
   "Returns a report on humanizers in use in collections as a CSV."
