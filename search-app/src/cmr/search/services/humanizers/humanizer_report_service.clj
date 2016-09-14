@@ -11,7 +11,7 @@
    [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
    [cmr.search.services.humanizers.humanizer-service :as hs]
    [cmr.umm-spec.legacy :as umm-legacy]
-   [cmr.umm.umm-core :as umm-core])
+   [cmr.umm-spec.umm-spec-core :as umm-spec-core])
   (:import java.io.StringWriter))
 
 (def CSV_HEADER
@@ -25,7 +25,7 @@
   "Takes a revision format map and parses it into a UMM-spec record."
   [revision-format-map]
   (let [concept-id (:concept-id revision-format-map)
-        umm (umm-core/parse-concept
+        umm (umm-spec-core/parse-metadata
               (rfm/revision-format-map->concept :native revision-format-map))]
     (assoc umm
            :concept-id concept-id
