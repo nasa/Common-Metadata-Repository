@@ -161,8 +161,7 @@
 (defn permissions-granted-by-provider-to-user
   "Returns true if acl grants permission on sids"
   [sids acl]
-  (let [group-permissions (:group-permissions (read-string (:metadata acl)))
-        _ (proto-repl.saved-values/save 4)]
+  (let [group-permissions (:group-permissions (read-string (:metadata acl)))]
     (for [x sids
           y group-permissions
           :when (= x (if (contains? y :group-id) (:group-id y) (:user-type y)))]
@@ -180,10 +179,7 @@
                                                           :items
                                                           (map :concept_id))))
         provider-id (:provider-id acl)
-        provider (mdb1/find-latest-concept context
-                                           {:provider-id provider-id}
-                                           :acl)
-        _ (proto-repl.saved-values/save 1)]
+        provider-catalog-item-acls (search-util/search-for-acls context {:display-name (format "Provider - %s - CATALOG_ITEM_ACL" provider-id)})]
     (when-not (contains? (set (flatten (permissions-granted-by-provider-to-user sids provider))) "create")
       {key-path [(format "User [%s] does not have permission to create catalog item targeting provider-id [%s]"
                           user provider-id)]})))
