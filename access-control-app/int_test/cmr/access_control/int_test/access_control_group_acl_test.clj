@@ -5,7 +5,8 @@
    [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.test.util :as u]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.transmit.access-control :as access-control]))
+   [cmr.transmit.access-control :as access-control]
+   [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :once (fixtures/int-test-fixtures))
 (use-fixtures :each (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"} ["user1" "user2" "user3" "user4" "user5"]))
@@ -14,9 +15,29 @@
  ((fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"} ["user1" "user2" "user3" "user4" "user5"])
   (constantly true)))
 
-(deftest create-system-group-test
+(defn create-group-with-members
+  "Creates a group with the given members. Returns the concept-id"
+  ([name users]
+   (create-group-with-members name nil users))
+  ([name provider-id users]
+   (let [group (if provider-id
+                 {:name name
+                  :provider_id provider-id}
+                 {:name name})]
+     (:concept_id
+      (u/create-group-with-members
+       transmit-config/mock-echo-system-token
+       (u/make-group group)
+       users)))))
 
-  (e/grant-system-group-permissions-to-group (u/conn-context) "group-create-group" :create)
+(deftest create-system-group-test
+  (let [group-id (create-group-with-members "group-create-group" ["user1"])]
+    (e/grant-system-group-permissions-to-group (u/conn-context) group-id :create))
+
+  ;; Wait until groups are indexed.
+  (u/wait-until-indexed)
+  ;; ACLS would have already been cached in Access Control Service
+  (access-control/clear-cache (u/conn-context))
 
   (testing "with permission"
     (let [group (u/make-group)
@@ -36,24 +57,14 @@
 
 (deftest create-provider-group-test
 
-  ;; TODO once this is working we'll need to extract this somehow to be used in other tests.
+  ;; Put user1 in new group prov1-group-create-group and give permission to create prov1 groups
+  (let [group-id (create-group-with-members "prov1-group-create-group" "PROV1" ["user1"])]
+    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "prov1guid" :create))
 
-
-  (e/grant-provider-group-permissions-to-group (u/conn-context)
-                                               cmr.transmit.config/mock-echo-system-group-guid
-                                               "prov1guid" :create)
-  (let [group (u/create-group-with-members
-               "mock-echo-system-token"
-               (u/make-group {:name "prov1-group-create-group"
-                              :provider_id "PROV1"})
-               ["user1"])]
-    (e/grant-provider-group-permissions-to-group (u/conn-context) (:concept_id group) "prov1guid" :create))
-
+  ;; Wait until groups are indexed.
   (u/wait-until-indexed)
+  ;; ACLS would have already been cached in Access Control Service
   (access-control/clear-cache (u/conn-context))
-
-  ;; TODO the current problem is that the caches need to be cleared here. We've already fetched acls and cached them.
-  ;; subsequent requests will use the already cached acls.
 
   (testing "with permission"
     (let [group (u/make-group {:provider_id "PROV1"})
@@ -72,10 +83,20 @@
              response)))))
 
 (deftest get-group-acl-test
+  (let [group-id (create-group-with-members "prov1-group-readers" "PROV1" ["user1" "user3"])]
+    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "prov1guid" :read :create))
 
-  (e/grant-system-group-permissions-to-group (u/conn-context) "sys-group-readers" :read :create)
-  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov1-group-readers" "prov1guid" :read :create)
-  (e/grant-provider-group-permissions-to-group (u/conn-context) "prov2-group-creator" "prov2guid" :create)
+  (let [group-id (create-group-with-members "prov2-group-creator" "PROV2" ["user3"])]
+    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "prov2guid" :create))
+
+  (let [group-id (create-group-with-members "sys-group-readers" ["user1"])]
+    (e/grant-system-group-permissions-to-group (u/conn-context) group-id :read :create))
+
+
+  ;; Wait until groups are indexed.
+  (u/wait-until-indexed)
+  ;; ACLS would have already been cached in Access Control Service
+  (access-control/clear-cache (u/conn-context))
 
   (let [token (e/login (u/conn-context) "user1" ["sys-group-readers" "prov1-group-readers"])
         no-group-token (e/login (u/conn-context) "user2")

@@ -93,9 +93,13 @@
      (mock-echo-client/reset (conn-context))
      (mdb/reset (conn-context))
      (ac/reset (conn-context) {:bootstrap-data? true})
+     (e/grant-system-group-permissions-to-admin-group (conn-context) :create :read :update :delete)
      (doseq [[provider-guid provider-id] provider-map]
        (mdb/create-provider (assoc (conn-context) :token (config/echo-system-token))
-                            {:provider-id provider-id}))
+                            {:provider-id provider-id})
+       ;; Give full permission to the mock admin user to modify groups for the provider
+       (e/grant-provider-group-permissions-to-admin-group
+        (conn-context) provider-guid :create :read :update :delete))
      (e/create-providers (conn-context) provider-map)
 
      (when (seq usernames)

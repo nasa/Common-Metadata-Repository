@@ -1,9 +1,11 @@
 (ns cmr.mock-echo.client.echo-util
   "Contains helper functions for working with the echo mock"
-  (:require [cmr.mock-echo.client.mock-echo-client :as echo-client]
-            [cmr.transmit.echo.tokens :as tokens]
-            [cmr.transmit.access-control :as ac]
-            [cmr.common.util :as util]))
+  (:require
+   [cmr.common.util :as util]
+   [cmr.mock-echo.client.mock-echo-client :as echo-client]
+   [cmr.transmit.access-control :as ac]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.echo.tokens :as tokens]))
 
 (defn reset
   "Resets the mock echo."
@@ -260,6 +262,12 @@
          :system-object-identity
          {:target "GROUP"}))
 
+(defn grant-system-group-permissions-to-admin-group
+  "Grants system-level access-control group management permissions for the admin group"
+  [context & permission-types]
+  (apply grant-system-group-permissions-to-group
+   context config/mock-echo-system-group-guid permission-types))
+
 (defn grant-group-instance-permissions-to-group
   [context group-guid target-group-guid & permission-types]
   (grant context [(group-ace group-guid (seq permission-types))]
@@ -282,6 +290,12 @@
          :provider-object-identity
          {:target "GROUP"
           :provider-guid provider-guid}))
+
+(defn grant-provider-group-permissions-to-admin-group
+  "Grants provider-level access-control group management permissions for the admin group"
+  [context provider-guid & permission-types]
+  (apply grant-provider-group-permissions-to-group
+   context config/mock-echo-system-group-guid provider-guid permission-types))
 
 (defn grant-provider-group-permissions-to-all
   "Grants provider-level access-control group management to all users for all providers."
