@@ -1,7 +1,8 @@
 (ns cmr.search.services.url-helper
   "Defines functions to construct search urls"
-  (:require [cmr.common.config :as cfg]
-            [cmr.transmit.config :as tconfig]))
+  (:require
+    [cmr.common.config :as cfg]
+    [cmr.transmit.config :as tconfig]))
 
 (defn reference-root
   "Returns the url root for reference location"

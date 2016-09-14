@@ -102,11 +102,11 @@
   (let [queue-name (normalize-queue-name queue-name)
         sqs-client (get queue-broker :sqs-client)
         queue-url (.getQueueUrl (.getQueueUrl sqs-client queue-name))
-        rec-req (ReceiveMessageRequest. queue-url)]
-    ;; Only take one message at a time from the queue.
-    (.setMaxNumberOfMessages rec-req (Integer. 1))
-    ;; Tell SQS how long to wait before returning with no data (long polling).
-    (.setWaitTimeSeconds rec-req (Integer. (queue-polling-timeout)))
+        rec-req (doto (ReceiveMessageRequest. queue-url)
+                      ;; Only take one message at a time from the queue.
+                      (.setMaxNumberOfMessages (Integer. 1))
+                      ;; Tell SQS how long to wait before returning with no data (long polling).
+                      (.setWaitTimeSeconds (Integer. (queue-polling-timeout))))]
     (a/thread
       (try
         (u/while-let [rec-result (.receiveMessage sqs-client rec-req)]

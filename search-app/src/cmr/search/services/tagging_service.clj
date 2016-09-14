@@ -1,24 +1,25 @@
 (ns cmr.search.services.tagging-service
   "Provides functions for storing and manipulating tags"
-  (:require [cmr.transmit.metadata-db :as mdb]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.util :as util]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.transmit.echo.tokens :as tokens]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.services.messages :as cmsg]
-            [cmr.search.services.tagging.tag-validation :as tv]
-            [cmr.search.services.tagging.tag-association-validation :as av]
-            [cmr.common.concepts :as concepts]
-            [cmr.search.services.tagging.tagging-service-messages :as msg]
-            [cmr.search.services.json-parameters.conversion :as jp]
-            [cmr.common-app.services.search.query-execution :as qe]
-            [cmr.search.services.query-service :as query-service]
-            [cmr.metadata-db.services.concept-service :as mdb-cs]
-            [cmr.metadata-db.services.search-service :as mdb-ss]
-            [clojure.string :as str]
-            [cheshire.core :as json]
-            [clojure.edn :as edn]))
+  (:require
+    [cheshire.core :as json]
+    [clojure.edn :as edn]
+    [clojure.string :as str]
+    [cmr.common-app.services.search.query-execution :as qe]
+    [cmr.common.concepts :as concepts]
+    [cmr.common.log :as log :refer (debug info warn error)]
+    [cmr.common.mime-types :as mt]
+    [cmr.common.services.errors :as errors]
+    [cmr.common.services.messages :as cmsg]
+    [cmr.common.util :as util]
+    [cmr.metadata-db.services.concept-service :as mdb-cs]
+    [cmr.metadata-db.services.search-service :as mdb-ss]
+    [cmr.search.services.json-parameters.conversion :as jp]
+    [cmr.search.services.tagging.tag-association-validation :as av]
+    [cmr.search.services.tagging.tag-validation :as tv]
+    [cmr.search.services.tagging.tagging-service-messages :as msg]
+    [cmr.search.services.query-service :as query-service]
+    [cmr.transmit.echo.tokens :as tokens]
+    [cmr.transmit.metadata-db :as mdb]))
 
 (def ^:private native-id-separator-character
   "This is the separator character used when creating the native id for a tag."
@@ -290,4 +291,3 @@
                             context :tag (assoc params :result-format :json)))]
     (-> (json/parse-string results true)
         util/map-keys->snake_case)))
-
