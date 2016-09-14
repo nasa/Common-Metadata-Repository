@@ -1,5 +1,5 @@
 #!/bin/sh
-# This script is used to manage building the CMR applications #
+# This script is used to manage building the CMR applications
 #
 # The script uses two environment variables:
 # CMR_BUILD_UBERJARS: If set to true, the script will create the application uberjars.
@@ -7,7 +7,6 @@
 # run the database migrations to setup an Oracle database for use with CMR. Note that the caller
 # should also set CMR_DB_URL to the URL to connect to the external database.
 
-pwd
 date && echo "Installing all apps" &&
 (cd .. && lein modules do clean, install)
 if [ $? -ne 0 ] ; then
