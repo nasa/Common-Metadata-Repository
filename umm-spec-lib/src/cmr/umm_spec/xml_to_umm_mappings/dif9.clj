@@ -90,6 +90,19 @@
   (remove nil? [(date/parse-date-type-from-xml doc "DIF/DIF_Creation_Date" "CREATE")
                 (date/parse-date-type-from-xml doc "DIF/Last_DIF_Revision_Date" "UPDATE")]))
 
+(defn- parse-related-urls
+  "Returns a list of related urls"
+  [doc apply-default?]
+  (if-let [related-urls (seq (select doc "/DIF/Related_URL"))]
+    (for [related-url related-urls
+          :let [description (value-of related-url "Description")]]
+      {:URLs (values-at related-url "URL")
+       :Description description
+       :Relation [(value-of related-url "URL_Content_Type/Type")
+                  (value-of related-url "URL_Content_Type/Subtype")]})
+    (when apply-default?
+      [su/not-provided-related-url])))
+
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
   [doc {:keys [apply-default?]}]
@@ -119,8 +132,7 @@
                              :Subregion3 (value-of lk "Location_Subregion3")
                              :DetailedLocation (value-of lk "Detailed_Location")}))
      :Quality (value-of doc "/DIF/Quality")
-     :AccessConstraints {:Description (value-of doc "/DIF/Access_Constraints")
-                         :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}
+     :AccessConstraints (dif-util/parse-access-constraints doc apply-default?)
      :UseConstraints (value-of doc "/DIF/Use_Constraints")
      :Platforms (parse-platforms doc apply-default?)
      :TemporalExtents (if-let [temporals (select doc "/DIF/Temporal_Coverage")]
@@ -184,12 +196,7 @@
                          :VariableLevel2 (value-of sk "Variable_Level_2")
                          :VariableLevel3 (value-of sk "Variable_Level_3")
                          :DetailedVariable (value-of sk "Detailed_Variable")})
-     :RelatedUrls (for [related-url (select doc "/DIF/Related_URL")
-                        :let [description (value-of related-url "Description")]]
-                    {:URLs (values-at related-url "URL")
-                     :Description description
-                     :Relation [(value-of related-url "URL_Content_Type/Type")
-                                (value-of related-url "URL_Content_Type/Subtype")]})
+     :RelatedUrls (parse-related-urls doc apply-default?)
      :MetadataAssociations (for [parent-dif (values-at doc "/DIF/Parent_DIF")]
                              {:EntryId parent-dif})
      :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel"))

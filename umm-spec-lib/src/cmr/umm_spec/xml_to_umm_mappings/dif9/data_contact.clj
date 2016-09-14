@@ -1,9 +1,10 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif9.data-contact
   "Defines mappings and parsing from DIF 9 elements into UMM records data contact fields."
-  (:require [clojure.set :as set]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.common.xml.simple-xpath :refer [select text]]
-            [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as dc]))
+  (:require
+   [clojure.set :as set]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as dc]))
 
 (def dif9-role->umm-contact-role
   "DIF9 role to UMM data contact role mapping."

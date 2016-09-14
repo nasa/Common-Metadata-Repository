@@ -1,19 +1,20 @@
 (ns cmr.umm-spec.test.dif9-expected-conversion
  "DIF 9 specific expected conversion functionality"
- (:require [clj-time.core :as t]
-           [clj-time.format :as f]
-           [cmr.umm-spec.util :as su]
-           [cmr.umm-spec.date-util :as date]
-           [cmr.umm-spec.json-schema :as js]
-           [cmr.common.util :as util :refer [update-in-each]]
-           [cmr.umm-spec.models.umm-common-models :as cmn]
-           [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
-           [cmr.umm-spec.related-url :as ru-gen]
-           [cmr.umm-spec.location-keywords :as lk]
-           [cmr.umm-spec.test.location-keywords-helper :as lkt]
-           [cmr.umm-spec.models.umm-collection-models :as umm-c]
-           [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]
-           [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]))
+ (:require
+  [clj-time.core :as t]
+  [clj-time.format :as f]
+  [cmr.common.util :as util :refer [update-in-each]]
+  [cmr.umm-spec.date-util :as date]
+  [cmr.umm-spec.json-schema :as js]
+  [cmr.umm-spec.location-keywords :as lk]
+  [cmr.umm-spec.models.umm-collection-models :as umm-c]
+  [cmr.umm-spec.models.umm-common-models :as cmn]
+  [cmr.umm-spec.related-url :as ru-gen]
+  [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
+  [cmr.umm-spec.test.location-keywords-helper :as lkt]
+  [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]
+  [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]
+  [cmr.umm-spec.util :as su]))
 
 (defn- single-date->range
   "Returns a RangeDateTimeType for a single date."
@@ -257,8 +258,9 @@
         (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
         (update-in-each [:AdditionalAttributes] expected-dif-additional-attribute)
         (update-in-each [:PublicationReferences] conversion-util/dif-publication-reference)
-        (update-in [:RelatedUrls] conversion-util/expected-related-urls-for-dif-serf)
+        (update :RelatedUrls conversion-util/expected-related-urls-for-dif-serf)
         ;;CMR-2716 SpatialKeywords are being replaced by LocationKeywords.
         (assoc :SpatialKeywords nil)
         (assoc :MetadataDates (expected-metadata-dates umm-coll))
+        (update :AccessConstraints conversion-util/expected-access-constraints)
         js/parse-umm-c)))
