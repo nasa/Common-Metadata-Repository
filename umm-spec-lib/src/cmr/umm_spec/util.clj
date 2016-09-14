@@ -8,6 +8,10 @@
             [cmr.common.xml.parse :as p]
             [cmr.common.xml.simple-xpath :refer [select]]))
 
+(def ^:private umm-contact-mechanism-correction-map
+  {"phone" "Telephone"
+   "Phone" "Telephone"})
+
 (def default-parsing-options
   "Defines the default options for parsing metadata into umm"
   {:apply-default? true})
@@ -192,3 +196,8 @@
   "Returns an ISO gco:CharacterString with contents taken from the given xpath."
   [context xpath]
   (char-string (select context xpath)))
+
+(defn correct-contact-mechanism
+  "Correct the contact mechanism if a correction exists, otherwise return the original"
+  [contact-mechanism]
+  (get umm-contact-mechanism-correction-map contact-mechanism contact-mechanism))

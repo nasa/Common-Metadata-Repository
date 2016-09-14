@@ -29,7 +29,7 @@
 
 (def search-page-size
   "The page-size used to retrieve collections for the translation test."
-  100)
+  1000)
 
 (def collection-search-url
   "https://cmr.earthdata.nasa.gov/search/collections.native")
@@ -149,6 +149,7 @@
   "Translate collection from native format to UMM-C"
   [record]
   (let [{:keys [metadata-format metadata concept-id]} record]
+    (proto-repl.saved-values/save 3)
     (umm/parse-metadata context :collection metadata-format metadata {:apply-default? true})))
 
 (defn- get-collection-validation-errors
@@ -171,14 +172,42 @@
   and return a validation result record including the concept id, provider id, entry title, and
   all validation errors for the record."
   [record]
-  (let [record (assoc record :collection (translate-record-to-umm record))
-        validation-errors (get-collection-validation-errors record)
-        concept-id (:concept-id record)]
-    (when (seq validation-errors)
-      {:concept-id concept-id
-       :provider-id (:provider-id (concepts/parse-concept-id concept-id))
-       :entry-title (get-in record [:collection :EntryTitle])
-       :errors validation-errors})))
+  (try
+    (let [record (assoc record :collection (translate-record-to-umm record))
+          validation-errors (get-collection-validation-errors record)
+          concept-id (:concept-id record)]
+      (when (seq validation-errors)
+        {:concept-id concept-id
+         :provider-id (:provider-id (concepts/parse-concept-id concept-id))
+         :entry-title (get-in record [:collection :EntryTitle])
+         :errors validation-errors}))
+    (catch Exception e
+      (let [concept-id (:concept-id record)]
+        {:concept-id concept-id
+         :provider-id (:provider-id (concepts/parse-concept-id concept-id))
+         :entry-title (get-in record [:collection :EntryTitle])
+         :errors [e]}))))
+
+(defn get-collection
+  "Get a collection by concept-id for debugging purposes"
+  [concept-id]
+  (search/get-search-failure-xml-data
+    (let [response (client/get collection-search-url
+                               {:query-params {:concept-id concept-id}
+                                :connection-manager (s/conn-mgr)})
+          body (:body response)
+          parsed (fx/parse-str body)
+          metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
+                      (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))]
+      (first (map (fn [result metadata]
+                    (let [{{:keys [concept-id revision-id format]} :attrs} result
+                          metadata-format (mt/mime-type->format format)]
+                      {:concept-id concept-id
+                       :revision-id (when revision-id (Long. ^String revision-id))
+                       :metadata-format metadata-format
+                       :metadata metadata}))
+                  (cx/elements-at-path parsed [:result])
+                  metadatas)))))
 
 (defn get-collections
   "Returns the collections as a list of maps with concept-id, revision-id, metadata-format and metadata."
@@ -206,24 +235,17 @@
   "Loops through the collections in ops with a paged search. For each collection, validate the
   metadata against the XML schema, validate the collection translated to UMM against the current
   UMM JSON schema, and validate the UMM collection against the validation rules.
-  Return a list of all validation errors across all collections."
+  Return a list of a list of validation errors for each page processed to view by page
+  and make error analysis more manageable."
   []
   (loop [page-num starting-page-num results []]
     (let [collections (get-collections search-page-size page-num)
-          error-results (map translate-and-validation-collection collections)
-          all-results (concat results (remove nil? error-results))]
-      (if (and (>= (count collections) search-page-size))
+          error-results (remove nil? (map translate-and-validation-collection collections))
+          all-results (conj results error-results)]
+      (info "Processed Page " page-num " " (count error-results) " errors")
+      (if (>= (count collections) search-page-size)
         (recur (+ page-num 1) all-results)
         all-results))))
-
-(defn- get-ops-collections-umm-validation-errors-debug
-  []
-  (let [colls (get-collections search-page-size 1)
-        error-results (map translate-and-validation-collection colls)
-        all-results (remove nil? error-results)]
-    (if (and (>= (count colls) search-page-size) (<= 200 (count colls)))
-      all-results
-      all-results)))
 
 ;; Comment out this test so that it will not be run as part of the build.
 #_(deftest ops-collections-translation
@@ -241,5 +263,12 @@
 
 #_(deftest ops-collections-validation
    (testing "get-collections the current collections in ops against the current UMM schema"
-     (def results (get-ops-collections-umm-validation-errors-debug))
+     (def results (get-ops-collections-umm-validation-errors))
     (info "Finished OPS collections translation.")))
+
+(comment
+  ;; Translate and validate a specific collection by concept-id
+  (def record (get-collection "C1236224182-GES_DISC"))
+  (translate-and-validation-collection record)
+  (translate-record-to-umm record)
+  (:metadata-format record))
