@@ -1,17 +1,18 @@
 (ns cmr.system-int-test.utils.tag-util
   "This contains utilities for testing tagging"
-  (:require [cmr.transmit.tag :as tt]
-            [clojure.test :refer [is]]
-            [clojure.string :as str]
-            [cmr.transmit.echo.tokens :as tokens]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.util :as util]))
+  (:require
+    [clojure.string :as str]
+    [clojure.test :refer [is]]
+    [cmr.common.mime-types :as mt]
+    [cmr.common.util :as util]
+    [cmr.mock-echo.client.echo-util :as e]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.system :as s]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.metadata-db-util :as mdb]
+    [cmr.system-int-test.utils.search-util :as search]
+    [cmr.transmit.echo.tokens :as tokens]
+    [cmr.transmit.tag :as tt]))
 
 (defn grant-all-tag-fixture
   "A test fixture that grants all users the ability to create and modify tags"
@@ -139,7 +140,7 @@
   :concept-id it saves it. If the tag has a :concept-id it updates the tag. Returns the saved tag
   along with :concept-id, :revision-id, :errors, and :status"
   ([token tag]
-   (let [tag-to-save (select-keys tag [:tag-key :description])
+   (let [tag-to-save (select-keys tag [:tag-key :description :revision-date])
          response (if-let [concept-id (:concept-id tag)]
                     (update-tag token (:tag-key tag) tag-to-save)
                     (create-tag token tag-to-save))
@@ -279,4 +280,3 @@
                                {:all-revisions true})]
     (is (nil? (:errors refs)))
     (is (d/refs-match? expected-colls refs))))
-

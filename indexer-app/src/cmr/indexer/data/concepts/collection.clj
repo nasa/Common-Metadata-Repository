@@ -153,7 +153,8 @@
                 native-id revision-date deleted format extra-fields tag-associations]} concept
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-title summary related-urls spatial-keywords associated-difs
-                temporal-keywords access-value personnel distribution]} collection
+                access-value personnel distribution]} collection
+        temporal-keywords (:TemporalKeywords umm-spec-collection) 
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
                                (concat [collection-data-type] k/nrt-aliases)
@@ -241,9 +242,9 @@
             :archive-centers archive-centers
             :data-centers data-centers
             :science-keywords (map #(sk/science-keyword->elastic-doc gcmd-keywords-map %)
-                                   (:science-keywords collection))
-            :location-keywords (map #(lk/spatial-keyword->elastic-doc gcmd-keywords-map %)
-                                   (:spatial-keywords collection))
+                                   (:ScienceKeywords umm-spec-collection))
+            :location-keywords (map #(lk/location-keyword->elastic-doc gcmd-keywords-map %)
+                                   (:LocationKeywords umm-spec-collection))
 
             :instrument-sn instrument-short-names
             :instrument-sn.lowercase  (map str/lower-case instrument-short-names)
