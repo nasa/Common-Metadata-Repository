@@ -151,20 +151,20 @@
         acl3 (ingest-acl token (system-acl "SYSTEM_OPTION_DEFINITION_DEPRECATION"))]
     (u/wait-until-indexed)
     (testing "Guest search permission"
-        (let [token (e/login-guest (u/conn-context))
-              response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-          (is (= (acls->search-response 1 [acl3])
-                 (dissoc response :took)))))
+      (let [token (e/login-guest (u/conn-context))
+            response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
+        (is (= (acls->search-response 1 [acl3])
+               (dissoc response :took)))))
     (testing "User search permission"
-        (let [token (e/login (u/conn-context) "user1")
-              response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-          (is (= (acls->search-response 3 [acl1 acl2 acl3])
-                 (dissoc response :took)))))
+      (let [token (e/login (u/conn-context) "user1")
+            response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
+        (is (= (acls->search-response 3 [acl1 acl2 acl3])
+               (dissoc response :took)))))
     (testing "Search permission without ANY_ACL read"
-        (let [token (e/login (u/conn-context) "user2")
-              response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-          (is (= (acls->search-response 1 [acl2])
-                 (dissoc response :took)))))))
+      (let [token (e/login (u/conn-context) "user2")
+            response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
+        (is (= (acls->search-response 1 [acl2])
+               (dissoc response :took)))))))
 
 (deftest acl-search-test
   (let [token (e/login (u/conn-context) "user1")

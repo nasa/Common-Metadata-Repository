@@ -107,7 +107,7 @@
 
 (deftest delete-provider-test
   (testing "delete provider"
-    (let [token (e/login-guest (access-control/conn-context))
+    (let [token (e/login-guest (cmr.system-int-test.system/context))
           coll1 (d/ingest "PROV1" (dc/collection))
           gran1 (d/ingest "PROV1" (dg/granule coll1))
           gran2 (d/ingest "PROV1" (dg/granule coll1))

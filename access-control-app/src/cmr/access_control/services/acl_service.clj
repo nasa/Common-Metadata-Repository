@@ -17,13 +17,13 @@
     [cmr.common-app.services.search.parameter-validation :as cpv]
     [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
     [cmr.common-app.services.search.params :as cp]
+    [cmr.common-app.services.search.query-execution :as qe]
     [cmr.common-app.services.search.query-model :as common-qm]
     [cmr.common.concepts :as concepts]
     [cmr.common.date-time-parser :as dtp]
     [cmr.common.log :refer [info debug]]
     [cmr.common.mime-types :as mt]
     [cmr.common.services.errors :as errors]
-    [cmr.common.util :as u]
     [cmr.common.util :as util]
     [cmr.transmit.echo.tokens :as tokens]
     [cmr.transmit.metadata-db :as mdb1]
@@ -197,7 +197,7 @@
 (defn- permitted-group-validation
   "Validates permitted group parameters."
   [context params]
-  (let [permitted-groups (u/seqify (:permitted-group params))]
+  (let [permitted-groups (util/seqify (:permitted-group params))]
     (when-let [invalid-groups (seq (remove valid-permitted-group? permitted-groups))]
       [(format "Parameter permitted_group has invalid values [%s]. Only 'guest', 'registered' or a group concept id can be specified."
                (str/join ", " invalid-groups))])))
@@ -276,7 +276,7 @@
 (defn- identity-type-validation
   "Validates identity-type parameters."
   [context params]
-  (let [identity-types (u/seqify (:identity-type params))]
+  (let [identity-types (util/seqify (:identity-type params))]
     (when-let [invalid-types (seq (remove valid-identity-type? identity-types))]
       [(format (str "Parameter identity_type has invalid values [%s]. "
                     "Only 'provider', 'system', 'single_instance', or 'catalog_item' can be specified.")
@@ -455,7 +455,7 @@
            (acl-matchers/matches-access-value-filter? granule access-value)
            true)
          (if temporal
-           (when-let [umm-temporal (u/lazy-get granule :temporal)]
+           (when-let [umm-temporal (util/lazy-get granule :temporal)]
              (acl-matchers/matches-temporal-filter? :granule umm-temporal temporal))
            true))))
 
@@ -571,44 +571,53 @@
     (hash-map target (provider-permissions-granted-by-acls provider-id target sids acls))))
 
 (defn has-any-read?
-  "Returns true if has read permission is present system level ACL with targt ANY_ACL for the given sids"
+  "Returns true if user has permssion to read any ACL."
   [sids acls]
-  (some #(= :read %) (system-permissions-granted-by-acls "ANY_ACL" sids (map echo-style-acl (map get-parsed-acl acls)))))
+  (some #{:read} (system-permissions-granted-by-acls "ANY_ACL" sids (map echo-style-acl acls))))
+
+(defn grants-search-permission?
+  "Returns true if ACL is searchable for given sids for a given key (:group-id or :user-type)"
+  [sids acl key]
+  (some (set (map #(name %) sids)) (map key (:group-permissions acl))))
 
 (defn get-searchable-acls
-  "Returns a lazy sequence of concept-ids for ACLs that are searchable for the given sids"
-  [sids acls]
-  (let [all-acls (map #(select-keys % [:concept-id :metadata]) acls)
-        grants-search-permission? (fn [s a t] (some (set (map #(name %) s)) (map t (:group-permissions a))))
-        acls-by-group-id (filter #(grants-search-permission? sids (get-parsed-acl %) :group-id) all-acls)
-        acls-by-user-type (filter #(grants-search-permission? sids (get-parsed-acl %) :user-type) all-acls)]
-    (map :concept-id (concat acls-by-user-type acls-by-group-id))))
+  "Returns a lazy sequence of concept-ids for ACLs that are searchable for the given sids."
+  [sids acls-with-concept-id]
+  (for [acl acls-with-concept-id
+        :when (or (grants-search-permission? sids acl :group-id)
+                  (grants-search-permission? sids acl :user-type))]
+    (:concept-id acl)))
 
-(defn add-acl-condition
-  "Creates elastic condition to filter out ACLs that are not visible to the user"
+(defn make-acl-condition
+  "Returns elastic condition to filter out ACLs that are not visible to the user."
+  [sids acls]
+  (let [concept-ids (get-searchable-acls sids acls)]
+    (when (seq concept-ids)
+      (common-qm/string-conditions :concept-id concept-ids true))))
+
+(defmethod qe/add-acl-conditions-to-query :acl
   [context query]
   (let [token (:token context)
         user (if token (tokens/get-user-id context token) "guest")
         sids (get-sids context (if (= user "guest") :guest user))
-        acls (get-all-acl-concepts context)
-        concept-ids (get-searchable-acls sids acls)
-        acl-cond (when (seq concept-ids)
-                   (common-qm/string-conditions :concept-id concept-ids true))]
-    (if (has-any-read? sids acls)
+        acl-concepts (get-all-acl-concepts context)
+        acls-with-concept-id (map #(assoc (get-parsed-acl %) :concept-id (:concept-id %)) acl-concepts)]
+    (if (has-any-read? sids acls-with-concept-id)
       query
-      (if (seq acl-cond)
+      (if-let [acl-cond (make-acl-condition sids acls-with-concept-id)]
         (update-in query [:condition] #(gc/and-conds [acl-cond %]))
         (assoc query :condition common-qm/match-none)))))
 
 (defn search-for-acls
+  "Searches for ACLs using given parameters. Returns result map from find-concepts
+   including total time taken."
   [context params]
-  (let [[query-creation-time query] (u/time-execution
+  (let [[query-creation-time query] (util/time-execution
                                       (->> params
                                            cp/sanitize-params
                                            (validate-acl-search-params :acl)
                                            (cp/parse-parameter-query context :acl)))
-        query (add-acl-condition context query)
-        [find-concepts-time results] (u/time-execution
+        [find-concepts-time results] (util/time-execution
                                        (cs/find-concepts context :acl query))
 
         total-took (+ query-creation-time find-concepts-time)]

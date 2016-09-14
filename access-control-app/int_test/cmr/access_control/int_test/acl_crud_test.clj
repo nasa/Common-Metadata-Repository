@@ -19,8 +19,9 @@
               (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 
 (def system-acl
+  "A system acl that grants create, read, update, delete to guest on any acl"
   {:group_permissions [{:user_type "guest"
-                        :permissions ["create" "delete"]}]
+                        :permissions ["create" "read" "update" "delete"]}]
    :system_identity {:target "ANY_ACL"}})
 
 (def provider-acl
