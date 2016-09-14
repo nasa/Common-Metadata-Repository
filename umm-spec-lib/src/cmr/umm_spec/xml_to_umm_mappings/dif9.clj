@@ -93,16 +93,15 @@
 (defn- parse-related-urls
   "Returns a list of related urls"
   [doc apply-default?]
-  (let [related-urls (select doc "/DIF/Related_URL")]
-    (if (seq related-urls)
-      (for [related-url related-urls
-            :let [description (value-of related-url "Description")]]
-        {:URLs (values-at related-url "URL")
-         :Description description
-         :Relation [(value-of related-url "URL_Content_Type/Type")
-                    (value-of related-url "URL_Content_Type/Subtype")]})
-      (when apply-default?
-        [su/not-provided-related-url]))))
+  (if-let [related-urls (seq (select doc "/DIF/Related_URL"))]
+    (for [related-url related-urls
+          :let [description (value-of related-url "Description")]]
+      {:URLs (values-at related-url "URL")
+       :Description description
+       :Relation [(value-of related-url "URL_Content_Type/Type")
+                  (value-of related-url "URL_Content_Type/Subtype")]})
+    (when apply-default?
+      [su/not-provided-related-url])))
 
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."

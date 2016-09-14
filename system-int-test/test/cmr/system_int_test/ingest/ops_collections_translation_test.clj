@@ -195,22 +195,21 @@
   "Get a collection by concept-id for debugging purposes"
   [concept-id]
   (search/get-search-failure-xml-data
-    (let [response (client/get collection-search-url
-                               {:query-params {:concept-id concept-id}
-                                :connection-manager (s/conn-mgr)})
-          body (:body response)
-          parsed (fx/parse-str body)
-          metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
-                      (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))]
-      (first (map (fn [result metadata]
-                    (let [{{:keys [concept-id revision-id format]} :attrs} result
-                          metadata-format (mt/mime-type->format format)]
-                      {:concept-id concept-id
-                       :revision-id (when revision-id (Long. ^String revision-id))
-                       :metadata-format metadata-format
-                       :metadata metadata}))
-                  (cx/elements-at-path parsed [:result])
-                  metadatas)))))
+   (let [response (client/get collection-search-url
+                              {:query-params {:concept-id concept-id}
+                               :connection-manager (s/conn-mgr)})
+         body (:body response)
+         parsed (fx/parse-str body)
+         metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
+                     (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
+         result (first (cx/elements-at-path parsed [:result]))
+         metadata (first metadatas)
+         {{:keys [concept-id revision-id format]} :attrs} result
+         metadata-format (mt/mime-type->format format)]
+     {:concept-id concept-id
+      :revision-id (when revision-id (Long. ^String revision-id))
+      :metadata-format metadata-format
+      :metadata metadata})))
 
 (defn get-collections
   "Returns the collections as a list of maps with concept-id, revision-id, metadata-format and metadata."
@@ -271,7 +270,7 @@
 
 (comment
   ;; Translate and validate a specific collection by concept-id
-  (def record (get-collection "C1236224182-GES_DISC"))
+  (def record (get-collection "C1279109560-SCIOPS"))
   (translate-and-validation-collection record)
   (translate-record-to-umm record)
   (:metadata-format record))

@@ -10,7 +10,8 @@
 
 (def ^:private umm-contact-mechanism-correction-map
   {"phone" "Telephone"
-   "Phone" "Telephone"})
+   "Phone" "Telephone"
+   "fax" "Fax"})
 
 (def default-parsing-options
   "Defines the default options for parsing metadata into umm"
