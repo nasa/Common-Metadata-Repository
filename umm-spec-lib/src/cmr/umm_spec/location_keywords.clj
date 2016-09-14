@@ -1,9 +1,11 @@
 (ns cmr.umm-spec.location-keywords
   "Helper utilities for converting Spatial or Location Keywords to UMM LocationKeywords."
-  (:require [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.umm-spec.models.umm-collection-models :as umm-c]
-            [clojure.string :as str]
-            [clojure.set :as set]))
+  (:require
+    [clojure.set :as set]
+    [clojure.string :as str]
+    [cmr.common-app.services.kms-fetcher :as kf]
+    [cmr.common.util :as util]
+    [cmr.umm-spec.models.umm-collection-models :as umm-c]))
 
 (def duplicate-keywords
   "Lookup table to account for any duplicate keywords. Will choose the preferred value.
