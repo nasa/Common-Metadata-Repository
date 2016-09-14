@@ -2,7 +2,7 @@
   "Helper utilities for converting Spatial or Location Keywords to UMM LocationKeywords."
   (:require
     [clojure.set :as set]
-    [clojure.string :as str] 
+    [clojure.string :as str]
     [cmr.common-app.services.kms-fetcher :as kf]
     [cmr.common.util :as util]
     [cmr.umm-spec.models.umm-collection-models :as umm-c]))
@@ -57,23 +57,6 @@
     (first (find-spatial-keywords-in-map keyword-map-list (:uuid (get duplicate-keywords (str/upper-case keyword)))))
     (let [result (first (sort-by count (find-spatial-keywords-in-map keyword-map-list keyword)))]
       (or result {:category "OTHER" :type keyword}))))
-
-(defn find-location-keyword-map
-  "Finds location keyword-map in the hierarchy, if not found, returns keyword-map.
-   Note: the keyword-map is one record of (:LocationKeywords umm-spec-collection)
-   with the nil fields removed, and the detailed-location field removed(not defined in KMS)
-   During the parsing in umm-spec lib, it's already making use of the logic to match 
-   the duplicate-keywords, finding the shortest match etr. The only thing is that the 
-   uuid is not included in the keyword-map.  
-   So, all we need to do here is to find the match for all the fields except for uuid
-   in the keyword-map-list.  if not found, return the keyword-map." 
-  [keyword-map-list keyword-map]
-  ;; create a list of the same keyword-map, with each of the uuid in (vals keyword-map-list) appended in the end.
-  ;; i.e. ({keyword-map-content :uuid uuid1} {keyword-map-content :uuid uuid2}...{keyword-map-content :uuid uuidn})
-  (let [keyword-map-list-vals (vals keyword-map-list)
-        keyword-map-uuid-list (map #(assoc keyword-map :uuid %) (map :uuid keyword-map-list-vals))] 
-    (let [result (some (set keyword-map-uuid-list) keyword-map-list-vals)]
-      (or result keyword-map))))
 
 (defn spatial-keywords->location-keywords
   "Takes a keyword map list and a list of Spatial Keywords and returns a list of location keyword maps

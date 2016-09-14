@@ -1,12 +1,12 @@
 (ns cmr.umm-spec.test.location-keywords
   "Unit tests for GCMD Spatial Keywords -> LocationKeywords translation"
-  (:require 
+  (:require
     [clojure.test :refer :all]
     [cmr.common-app.services.kms-fetcher :as kf]
     [cmr.common.cache :as cache]
     [cmr.common.cache.in-memory-cache :as imc]
     [cmr.transmit.config :as transmit-config]
-    [cmr.umm-spec.location-keywords :as lk] 
+    [cmr.umm-spec.location-keywords :as lk]
     [cmr.umm-spec.models.umm-collection-models :as umm-c]
     [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
@@ -16,20 +16,6 @@
           context lkt/setup-context-for-test
           expected {:category "CONTINENT", :uuid "0a672f19-dad5-4114-819a-2eb55bdbb56a"}
           actual (lk/find-spatial-keyword (:spatial-keywords lkt/sample-keyword-map) keyword)]
-      (is (= expected actual))))
-
-  (testing "Looking up a existing root keyword-map returns the top hierarchy result."
-    (let [keyword-map {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA"}
-          context lkt/setup-context-for-test
-          expected {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :uuid "f2ffbe58-8792-413b-805b-3e1c8de1c6ff"}
-          actual (lk/find-location-keyword-map (:spatial-keywords lkt/sample-keyword-map) keyword-map)]
-      (is (= expected actual))))
-
-  (testing "Looking up a non-existing root keyword-map returns the keyword-map" 
-    (let [keyword-map {:category "CONTINENT", :type "UNKNOWN"}
-          context lkt/setup-context-for-test
-          expected {:category "CONTINENT", :type "UNKNOWN"}
-          actual (lk/find-location-keyword-map (:spatial-keywords lkt/sample-keyword-map) keyword-map)]
       (is (= expected actual))))
 
   (testing "Looking up a uuid returns a valid result"

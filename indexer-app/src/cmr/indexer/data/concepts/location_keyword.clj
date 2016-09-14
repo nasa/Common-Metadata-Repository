@@ -1,6 +1,6 @@
 (ns cmr.indexer.data.concepts.location-keyword
   "Contains functions for converting location keyword hierarchies into elastic documents"
-  (:require 
+  (:require
     [clojure.string :as str]
     [cmr.common-app.services.kms-fetcher :as kf]
     [cmr.common.util :as util]
@@ -14,16 +14,17 @@
 (defn location-keyword->elastic-doc
   "Converts a single location-keyword map into an elastic document with the full nested hierarchy
   for the match from the GCMD KMS keywords. Note: :detailed-location is removed because it's not
-  defined in KMS and won't be used for the matching. If a field is not present in the KMS hierarchy, 
+  defined in KMS and won't be used for the matching. If a field is not present in the KMS hierarchy,
   we use a dummy value to indicate the field was not present, except for uuid which will be nil."
   [gcmd-keywords-map location-keyword]
-  (let [location-keyword-kebab-key (dissoc 
-                                     (util/remove-nil-keys 
+  (let [location-keyword-kebab-key (dissoc
+                                     (util/remove-nil-keys
                                        (util/map-keys->kebab-case location-keyword))
-                                     :detailed-location) 
+                                     :detailed-location)
         hierarchical-location (merge default-location
-                                     (lk/find-location-keyword-map
-                                       (:spatial-keywords gcmd-keywords-map) 
+                                     location-keyword-kebab-key
+                                     (kf/get-full-hierarchy-for-location-keywords
+                                       gcmd-keywords-map
                                        location-keyword-kebab-key))
         {:keys [category type subregion-1 subregion-2 subregion-3 uuid]} hierarchical-location]
     {:category category
