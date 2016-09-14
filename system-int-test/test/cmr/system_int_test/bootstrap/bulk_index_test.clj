@@ -1,24 +1,138 @@
 (ns cmr.system-int-test.bootstrap.bulk-index-test
   "Integration test for CMR bulk indexing."
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.umm.echo10.echo10-core :as echo10]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.system :as s]
-            [clj-time.core :as t]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.utils.tag-util :as tags]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+  (:require
+    [clj-time.core :as t]
+    [clojure.test :refer :all]
+    [cmr.mock-echo.client.echo-util :as e]
+    [cmr.common.util :as util :refer [are3]]
+    [cmr.system-int-test.data2.collection :as dc]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.system :as s]
+    [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
+    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.metadata-db-util :as mdb]
+    [cmr.system-int-test.utils.search-util :as search]
+    [cmr.system-int-test.utils.tag-util :as tags]
+    [cmr.umm.echo10.echo10-core :as echo10]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
                        tags/grant-all-tag-fixture]))
+
+(deftest bulk-index-after-date-time
+  (s/only-with-real-database
+    ;; Disable message publishing so items are not indexed.
+    (dev-sys-util/eval-in-dev-sys
+        `(cmr.metadata-db.config/set-publish-messages! false))
+    (let [;; saved but not indexed
+          umm1 (dc/collection {:short-name "coll1" :entry-title "coll1"})
+          xml1 (echo10/umm->echo10-xml umm1)
+          coll1 (mdb/save-concept {:concept-type :collection
+                                   :format "application/echo10+xml"
+                                   :metadata xml1
+                                   :extra-fields {:short-name "coll1"
+                                                  :entry-title "coll1"
+                                                  :entry-id "coll1"
+                                                  :version-id "v1"}
+                                   :revision-date "2000-01-01T10:00:00Z"
+                                   :provider-id "PROV1"
+                                   :native-id "coll1"
+                                   :short-name "coll1"})
+          umm1 (merge umm1 (select-keys coll1 [:concept-id :revision-id]))
+
+          ;; granule
+          ummg1 (dg/granule coll1 {:granule-ur "gran1"})
+          xmlg1 (echo10/umm->echo10-xml ummg1)
+          gran1 (mdb/save-concept {:concept-type :granule
+                                   :provider-id "PROV1"
+                                   :native-id "gran1"
+                                   :format "application/echo10+xml"
+                                   :metadata xmlg1
+                                   :revision-date "2000-01-01T10:00:00Z"
+                                   :extra-fields {:parent-collection-id (:concept-id umm1)
+                                                  :parent-entry-title "coll1"
+                                                  :granule-ur "ur1"}})
+          ummg1 (merge ummg1 (select-keys gran1 [:concept-id :revision-id]))
+
+          user1-token (e/login (s/context) "user1")
+
+          tag1 (mdb/save-concept {:concept-type :tag
+                                  :native-id "tag1"
+                                  :user-id "user1"
+                                  :format "application/edn"
+                                  :metadata "{:tag-key \"tag1\" :description \"A good tag\" :originator-id \"user1\"}"
+                                  :revision-date "2000-01-01T10:00:00Z"})
+
+          umm2 (dc/collection {:short-name "coll2" :entry-title "coll2"})
+          xml2 (echo10/umm->echo10-xml umm2)
+          coll2 (mdb/save-concept {:concept-type :collection
+                                   :format "application/echo10+xml"
+                                   :metadata xml2
+                                   :extra-fields {:short-name "coll2"
+                                                  :entry-title "coll2"
+                                                  :entry-id "coll2"
+                                                  :version-id "v1"}
+                                   :revision-date "2016-01-01T10:00:00Z"
+                                   :provider-id "PROV1"
+                                   :native-id "coll2"
+                                   :short-name "coll2"})
+           umm2 (merge umm2 (select-keys coll2 [:concept-id :revision-id]))
+
+
+           ; granule
+           ummg2 (dg/granule coll2 {:granule-ur "gran2"})
+           xmlg2 (echo10/umm->echo10-xml ummg2)
+           gran2 (mdb/save-concept {:concept-type :granule
+                                    :provider-id "PROV1"
+                                    :native-id "gran2"
+                                    :format "application/echo10+xml"
+                                    :metadata xmlg2
+                                    :revision-date "2016-01-01T10:00:00Z"
+                                    :extra-fields {:parent-collection-id (:concept-id umm2)
+                                                   :parent-entry-title "coll2"
+                                                   :granule-ur "ur2"}})
+          ummg2 (merge ummg2 (select-keys gran2 [:concept-id :revision-id]))
+
+          tag2 (mdb/save-concept {:concept-type :tag
+                                  :native-id "tag2"
+                                  :user-id "user1"
+                                  :format "application/edn"
+                                  :metadata "{:tag-key \"tag2\" :description \"A good tag\" :originator-id \"user1\"}"
+                                  :revision-date "2016-01-01T10:00:00Z"})]
+      ;; Re-enable message publishing.
+      (dev-sys-util/eval-in-dev-sys
+        `(cmr.metadata-db.config/set-publish-messages! true))
+
+      ;; Verify that all of the ingest requests completed successfully
+      (doseq [concept [coll1 coll2 gran1 gran2]] (is (= 201 (:status concept))))
+
+      (bootstrap/bulk-index-after-date-time "2015-01-01T12:00:00Z")
+      (index/wait-until-indexed)
+
+      (testing "Only concepts after date are indexed."
+        (are3 [concept-type expected]
+          (d/refs-match? expected (search/find-refs concept-type {}))
+
+          "Collections"
+          :collection [umm2]
+
+          "Granules"
+          :granule [ummg2])
+
+        (are3 [expected-tags]
+          (let [result-tags (update
+                              (tags/search {})
+                              :items
+                              (fn [items]
+                                (map #(select-keys % [:concept-id :revision-id]) items)))]
+            (println "RESULT-TAGS " result-tags)
+            (tags/assert-tag-search expected-tags result-tags))
+
+          "Tags"
+          [tag2])))))
 
 ;; This test runs bulk index with some concepts in mdb that are good, and some that are
 ;; deleted, and some that have not yet been deleted, but have an expired deletion date.
@@ -253,5 +367,3 @@
       (testing "All tag parameters with XML references"
         (is (d/refs-match? [coll1]
                            (search/find-refs :collection {:tag-key "tag1"})))))))
-
-

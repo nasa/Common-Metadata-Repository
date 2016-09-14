@@ -65,6 +65,9 @@
              ;; Channel for processing collections to index.
              :collection-index-channel (chan 100)
 
+             ;; Channel for processing data newer than a given date-time.
+             :data-index-channel (chan 10)
+
              ;; Channel for bootstrapping virtual products
              vp/channel-name (chan)
 
