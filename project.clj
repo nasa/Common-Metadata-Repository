@@ -1,4 +1,4 @@
-(defproject codox-theme-rdash "0.1.0-SNAPSHOT"
+(defproject codox-theme-rdash "0.1.0"
   :description "A modern and responsive Codox theme"
   :url "https://github.com/xsc/codox-theme-rdash"
   :license {:name "Eclipse Public License 1.0"
