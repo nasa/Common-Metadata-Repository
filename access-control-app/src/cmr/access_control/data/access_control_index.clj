@@ -1,18 +1,20 @@
 (ns cmr.access-control.data.access-control-index
   "Performs search and indexing of access control data."
-  (:require [cmr.access-control.services.acl-service :as acl-service]
-            [cmr.access-control.data.acls :as acls]
-            [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
-            [cmr.common.log :refer [info debug]]
-            [cmr.common-app.services.search.elastic-search-index :as esi]
-            [cmr.common-app.services.search.query-to-elastic :as q2e]
-            [cmr.common.lifecycle :as l]
-            [cmr.common.util :as util]
-            [cmr.common.services.errors :as errors]
-            [cmr.transmit.metadata-db2 :as mdb]
-            [clojure.string :as str]
-            [clojure.edn :as edn]
-            [cmr.umm.acl-matchers :as acl-matchers]))
+  (:require
+    [clojure.edn :as edn]
+    [clojure.string :as str]
+    [cmr.access-control.data.acls :as acls]
+    [cmr.access-control.services.acl-service :as acl-service]
+    [cmr.access-control.services.acl-service-util :as acl-util]
+    [cmr.common-app.services.search.elastic-search-index :as esi]
+    [cmr.common-app.services.search.query-to-elastic :as q2e]
+    [cmr.common.lifecycle :as l]
+    [cmr.common.log :refer [info debug]]
+    [cmr.common.services.errors :as errors]
+    [cmr.common.util :as util]
+    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
+    [cmr.transmit.metadata-db2 :as mdb]
+    [cmr.umm.acl-matchers :as acl-matchers]))
 
 (defmulti index-concept
   "Indexes the concept map in elastic search."
@@ -289,8 +291,8 @@
   [context concept-map]
   (let [collection-concept (acl-matchers/add-acl-enforcement-fields-to-concept concept-map)
         entry-title (:entry-title collection-concept)]
-    (doseq [acl-concept (acl-service/get-all-acl-concepts context)
-            :let [parsed-acl (acl-service/get-parsed-acl acl-concept)
+    (doseq [acl-concept (acl-util/get-all-acl-concepts context)
+            :let [parsed-acl (acl-util/get-parsed-acl acl-concept)
                   catalog-item-id (:catalog-item-identity parsed-acl)
                   acl-entry-titles (:entry-titles (:collection-identifier catalog-item-id))]
             :when (and (= (:provider-id collection-concept) (:provider-id catalog-item-id))

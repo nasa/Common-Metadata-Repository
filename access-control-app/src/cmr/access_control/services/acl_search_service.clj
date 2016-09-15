@@ -6,8 +6,8 @@
     [clojure.edn :as edn]
     [clojure.string :as str]
     [cmr.access-control.data.acl-schema :as schema]
-    [cmr.access-control.services.acl-service :as acl-service]
     [cmr.access-control.services.group-service :as groups]
+    [cmr.access-control.services.acl-service-util :as acl-util]
     [cmr.common-app.services.search :as cs]
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.parameter-validation :as cpv]
@@ -154,27 +154,6 @@
                    (csk/->snake_case_string param) value)]))
       bool-params)))
 
-(defn validate-acl-search-params
-  "Validates the parameters for an ACL search. Returns the parameters or throws an error if invalid."
-  [context params]
-  (let [[safe-params type-errors] (cpv/apply-type-validations
-                                    params
-                                    [(partial cpv/validate-map [:options])
-                                     (partial cpv/validate-map [:options :permitted-group])
-                                     (partial cpv/validate-map [:options :identity-type])
-                                     (partial cpv/validate-map [:options :provider])
-                                     (partial cpv/validate-map [:options :permitted-user])
-                                     (partial cpv/validate-map [:group_permission])])]
-    (cpv/validate-parameters
-      :acl safe-params
-      (concat cpv/common-validations
-              [permitted-group-validation
-               identity-type-validation
-               group-permission-validation
-               boolean-value-validation])
-      type-errors))
-  params)
-
 (defmethod cp/always-case-sensitive-fields :acl
   [_]
   #{:concept-id :identity-type})
@@ -214,7 +193,7 @@
   ;; reject non-existent users
   (groups/validate-members-exist context [value])
 
-  (let [groups (->> (acl-service/get-sids context value)
+  (let [groups (->> (acl-util/get-sids context value)
                     (map name))]
     (cp/string-parameter->condition concept-type :permitted-group groups options)))
 
@@ -257,7 +236,7 @@
 (defn has-any-read?
   "Returns true if user has permssion to read any ACL."
   [sids acls]
-  (some #{:read} (acl-service/system-permissions-granted-by-acls "ANY_ACL" sids (map acl-service/echo-style-acl acls))))
+  (some #{:read} (acl-util/system-permissions-granted-by-acls "ANY_ACL" sids (map acl-util/echo-style-acl acls))))
 
 (defn grants-search-permission?
   "Returns true if ACL is searchable for given sids for a given key (:group-id or :user-type)"
@@ -283,9 +262,9 @@
   [context query]
   (let [token (:token context)
         user (if token (tokens/get-user-id context token) "guest")
-        sids (acl-service/get-sids context (if (= user "guest") :guest user))
-        acl-concepts (acl-service/get-all-acl-concepts context)
-        acls-with-concept-id (map #(assoc (acl-service/get-parsed-acl %) :concept-id (:concept-id %)) acl-concepts)]
+        sids (acl-util/get-sids context (if (= user "guest") :guest user))
+        acl-concepts (acl-util/get-all-acl-concepts context)
+        acls-with-concept-id (map #(assoc (acl-util/get-parsed-acl %) :concept-id (:concept-id %)) acl-concepts)]
     (if (has-any-read? sids acls-with-concept-id)
       query
       (if-let [acl-cond (make-acl-condition sids acls-with-concept-id)]

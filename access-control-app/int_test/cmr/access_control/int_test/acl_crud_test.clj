@@ -73,7 +73,6 @@
   (let [token (e/login (u/conn-context) "user1")
         group1 (u/ingest-group token {:name "group1"} ["user1"])
         group1-concept-id (:concept_id group1)
-        _ (proto-repl.saved-values/save 3)
         _ (ac/create-acl (u/conn-context) (assoc-in provider-acl-for-catalog-item
                                                     [:group_permissions 0 :group_id]
                                                     group1-concept-id))

@@ -2,6 +2,8 @@
   (:require
     [cheshire.core :as json]
     [clj-time.core :as t]
+    [cmr.access-control.services.acl-search-service :as acl-search]
+    [cmr.access-control.services.acl-service-util :as acl-util]
     [cmr.access-control.data.acls :as acls]
     [cmr.access-control.services.group-service :as groups]
     [cmr.access-control.services.messages :as msg]
@@ -159,13 +161,16 @@
   {:target-id (v/when-present (make-single-instance-identity-target-id-validation context))})
 
 (defn permissions-granted-by-provider-to-user
-  "Returns true if acl grants permission on sids"
-  [sids acl]
-  (let [group-permissions (:group-permissions (read-string (:metadata acl)))]
-    (for [x sids
-          y group-permissions
-          :when (= x (if (contains? y :group-id) (:group-id y) (:user-type y)))]
-      (:permissions y))))
+  "Returns true if acls grant permission on sids for target"
+  [sids acls target]
+  (for [x sids
+        y acls
+        :let [group-permissions (filter #(or
+                                           (and (contains? % :user-type) (= x (:user-type %)))
+                                           (and (contains? % :group-id) (= x (:group-id %))))
+                                        (:group-permissions y))]
+        :when (= (get-in y [:provider-identity :target]) target)]
+    (map :permissions group-permissions)))
 
 (defn validate-target-provider-grants-create
   "Checks if provider ACL grants permission for user to create given catalog item ACL"
@@ -179,8 +184,9 @@
                                                           :items
                                                           (map :concept_id))))
         provider-id (:provider-id acl)
-        provider-catalog-item-acls (search-util/search-for-acls context {:display-name (format "Provider - %s - CATALOG_ITEM_ACL" provider-id)})]
-    (when-not (contains? (set (flatten (permissions-granted-by-provider-to-user sids provider))) "create")
+        provider-acls (map #(acl-util/get-acl context %)
+                           (map #(get % "concept_id") (get (json/parse-string (:results (acl-search/search-for-acls context {:provider provider-id}))) "items")))]
+    (when-not (contains? (set (flatten (permissions-granted-by-provider-to-user sids provider-acls "CATALOG_ITEM_ACL"))) "create")
       {key-path [(format "User [%s] does not have permission to create catalog item targeting provider-id [%s]"
                           user provider-id)]})))
 
