@@ -3,7 +3,7 @@
 This is a modern and responsive [codox][codox] theme, partially inspired by the
 styling of [RDash UI][rdash].
 
-Note that this needs codox ≥ 0.9.7.
+Note that this needs codox ≥ 0.10.0.
 
 [codox]: https://github.com/weavejester/codox
 [rdash]: http://rdash.github.io/
