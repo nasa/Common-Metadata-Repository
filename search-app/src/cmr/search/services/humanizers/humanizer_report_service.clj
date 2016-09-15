@@ -1,6 +1,6 @@
 (ns cmr.search.services.humanizers.humanizer-report-service
   "Provides functions for reporting on humanizers"
-  (require
+  (:require
    [clojure.data.csv :as csv]
    [cmr.common-app.humanizer :as h]
    [cmr.common.concepts :as concepts]
@@ -38,7 +38,7 @@
   ;; Currently not throwing an exception if the cache is empty. May want to change in the future
   ;; to throw an exception.
   (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
-    (map 
+    (map
      #(map rfm->umm-collection %)
      (partition-all (humanizer-report-collection-batch-size) rfms))))
 

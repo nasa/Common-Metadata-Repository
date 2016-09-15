@@ -123,13 +123,13 @@
                     collection (hf/get-humanizer-instructions context))
         extract-fields (partial extract-humanized-elastic-fields humanized)]
     (merge
-     {:ScienceKeywords.humanized (map sk/humanized-science-keyword->elastic-doc
-                                   (:ScienceKeywords humanized))}
-     (extract-fields [:Platforms :cmr.humanized/ShortName] :ShortName)
-     (extract-fields [:Platforms :Instruments :cmr.humanized/ShortName] :ShortName)
-     (extract-fields [:Projects :cmr.humanized/ShortName] :ShortName)
-     (extract-fields [:Product :cmr.humanized/ProcessingLevelId] :ProcessingLevelId)
-     (extract-fields [:DataCenters :cmr.humanized/ShortName] :ShortName))))
+     {:science-keywords.humanized (map sk/humanized-science-keyword->elastic-doc
+                                   (:science-keywords humanized))}
+     (extract-fields [:platforms :cmr.humanized/short-name] :short-name)
+     (extract-fields [:platforms :instruments :cmr.humanized/short-name] :short-name)
+     (extract-fields [:projects :cmr.humanized/short-name] :short-name)
+     (extract-fields [:product :cmr.humanized/processing-level-id] :processing-level-id)
+     (extract-fields [:organizations :cmr.humanized/short-name] :short-name))))
 
 (defn- get-coll-permitted-group-ids
   "Returns the groups ids (group guids, 'guest', 'registered') that have permission to read
