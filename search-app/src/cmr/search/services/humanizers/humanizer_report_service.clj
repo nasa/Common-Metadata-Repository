@@ -38,11 +38,9 @@
   ;; Currently not throwing an exception if the cache is empty. May want to change in the future
   ;; to throw an exception.
   (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
-    (map
-     #(map
-       rfm->umm-collection
-       (partition-all (humanizer-report-collection-batch-size) %))
-     rfms)))
+    (map 
+     #(map rfm->umm-collection %)
+     (partition-all (humanizer-report-collection-batch-size) rfms))))
 
 (defn humanized-collection->reported-rows
   "Takes a humanized collection and returns rows to populate the CSV report."
