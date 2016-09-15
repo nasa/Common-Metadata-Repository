@@ -440,7 +440,7 @@ For system, provider, and single instance identities, the grantable permissions 
 
 ### <a name="search-acls"></a> Search ACLs
 
-ACLs can be searched for by sending a GET request to `%CMR-ENDPOINT%/acls`
+ACLs can be searched for by sending a GET request to `%CMR-ENDPOINT%/acls`. A valid Echo token is required to search ACLs.  If no token is supplied then guest permissions are used.
 
 ##### ACL Search Parameters
 

@@ -1,27 +1,28 @@
 (ns cmr.system-int-test.ingest.collection-ingest-test
   "CMR collection ingest integration tests"
-  (:require [clojure.test :refer :all]
-            [cmr.access-control.test.util :as ac]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.index-util :as index]
-            [ring.util.io :as io]
-            [clj-http.client :as client]
-            [clojure.string :as string]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.mock-echo.client.echo-util :as e]
-            [clj-time.core :as t]
-            [cmr.common.util :as util]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-            [cmr.umm-spec.umm-spec-core :as umm-spec]
-            [cmr.umm-spec.test.expected-conversion :as exc]
-            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
+  (:require
+    [clj-http.client :as client]
+    [clj-time.core :as t]
+    [clojure.string :as string]
+    [clojure.test :refer :all]
+    [cmr.access-control.test.util :as ac]
+    [cmr.common.log :as log :refer (debug info warn error)]
+    [cmr.common.mime-types :as mt]
+    [cmr.common.util :as util]
+    [cmr.mock-echo.client.echo-util :as e]
+    [cmr.system-int-test.data2.collection :as dc]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.system :as s]
+    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.metadata-db-util :as mdb]
+    [cmr.system-int-test.utils.search-util :as search]
+    [cmr.umm-spec.test.expected-conversion :as exc]
+    [cmr.umm-spec.test.location-keywords-helper :as lkt]
+    [cmr.umm-spec.umm-spec-core :as umm-spec]
+    [ring.util.io :as io]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -391,11 +392,11 @@
   ;; Ingest a collection under PROV1.
   (let [coll1 (d/ingest "PROV1" (dc/collection))
         coll2 (d/ingest "PROV1" (dc/collection))
-        token (e/login (s/context) "user1")]
+        token (e/login-guest (s/context))]
     ;; wait for the collections to be indexed so that ACLs will be valid
     (index/wait-until-indexed)
     ;; Ingest some ACLs that reference the collection by concept id.
-    (ac/create-acl token {:group_permissions [{:user_type "registered"
+    (ac/create-acl token {:group_permissions [{:user_type "guest"
                                                :permissions ["read" "order"]}]
                           :catalog_item_identity {:name "coll1 ACL"
                                                   :provider_id "PROV1"

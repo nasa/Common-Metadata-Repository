@@ -1,15 +1,16 @@
 (ns cmr.access-control.int-test.acl-crud-test
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.access-control.int-test.fixtures :as fixtures]
-            [clj-http.client :as client]
-            [cmr.access-control.test.util :as u]
-            [cmr.transmit.access-control :as ac]
-            [cmr.transmit.metadata-db2 :as mdb]
-            [cheshire.core :as json]
-            [cmr.common.util :as util :refer [are3]]
-            [cmr.transmit.config :as transmit-config]))
+  (:require
+    [cheshire.core :as json]
+    [clj-http.client :as client]
+    [clojure.string :as str]
+    [clojure.test :refer :all]
+    [cmr.access-control.int-test.fixtures :as fixtures]
+    [cmr.access-control.test.util :as u]
+    [cmr.common.util :as util :refer [are3]]
+    [cmr.mock-echo.client.echo-util :as e]
+    [cmr.transmit.access-control :as ac]
+    [cmr.transmit.config :as transmit-config]
+    [cmr.transmit.metadata-db2 :as mdb]))
 
 (use-fixtures :each
               (fixtures/int-test-fixtures)
@@ -18,9 +19,10 @@
               (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 
 (def system-acl
+  "A system acl that grants create, read, update, delete to guest on any acl"
   {:group_permissions [{:user_type "guest"
-                        :permissions ["create" "delete"]}]
-   :system_identity {:target "TAG_GROUP"}})
+                        :permissions ["create" "read" "update" "delete"]}]
+   :system_identity {:target "ANY_ACL"}})
 
 (def provider-acl
   {:legacy_guid "ABCD-EFG-HIJK-LMNOP"
@@ -114,8 +116,8 @@
 
           "System identity target grantable permission check"
           #"\[system-identity\] ACL cannot have \[read\] permission for target \[TAG_GROUP\], only \[create, update, delete\] are grantable"
-          (assoc-in system-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"]))
-
+          (assoc-in (assoc-in system-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"])
+                    [:system_identity :target] "TAG_GROUP"))
 
     (testing "Acceptance criteria: I receive an error if creating an ACL with invalid JSON"
       (is
@@ -403,7 +405,8 @@
 
           "System identity target grantable permission check"
           #"\[system-identity\] ACL cannot have \[read\] permission for target \[TAG_GROUP\], only \[create, update, delete\] are grantable"
-          (assoc-in system-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"])
+          (assoc-in (assoc-in system-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"])
+                    [:system_identity :target] "TAG_GROUP")
           system-concept-id)
 
     (testing "Acceptance criteria: I receive an error if updating an ACL with invalid JSON"
