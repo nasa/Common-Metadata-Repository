@@ -146,7 +146,7 @@
    :LocationKeywords (lk/spatial-keywords->location-keywords
                       (lk/get-spatial-keywords-maps context)
                       (values-at doc "/Collection/SpatialKeywords/Keyword"))
-   :SpatialExtent    (spatial/parse-spatial doc)
+   :SpatialExtent    (spatial/parse-spatial doc apply-default?)
    :TemporalExtents  (or (seq (parse-temporal doc))
                          (when apply-default? u/not-provided-temporal-extents))
    :Platforms (or (seq (parse-platforms doc))

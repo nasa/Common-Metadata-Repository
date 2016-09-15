@@ -93,21 +93,7 @@
 
       (testing "bad json"
         (assert-translate-failure #"object has missing required properties"
-                                  :collection :umm-json "{}" :echo10))
-
-      (testing "Good XML, invalid UMM"
-        (assert-invalid-data #"object has missing required properties"
-                             :collection :echo10 minimal-valid-echo-xml :dif10))
-
-      (testing "Good XML, invalid UMM, skip validation"
-        (let [input-format :echo10
-              output-format :dif10
-              {:keys [status headers body]} (ingest/translate-metadata :collection input-format minimal-valid-echo-xml output-format
-                                                                       {:query-params {"skip_umm_validation" "true"}})
-              content-type (first (mt/extract-mime-types (:content-type headers)))]
-          (is (= 200 status))
-          (is (= (mt/format->mime-type output-format) content-type))
-          (is (re-find #"<Short_Name>ShortName_Larc</Short_Name>" body)))))))
+                                  :collection :umm-json "{}" :echo10)))))
 
 (deftest translate-metadata-handles-date-string
   (testing "CMR-2257: date-string in DIF9 causes InternalServerError"

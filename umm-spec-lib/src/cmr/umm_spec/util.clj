@@ -54,6 +54,10 @@
   [(cmn/map->ScienceKeywordType {:Category "EARTH SCIENCE"
                                  :Term not-provided
                                  :Topic not-provided})])
+(def not-provided-spatial-extent
+  "Default spatial extent to use if none is provided"
+  {:GranuleSpatialRepresentation "NO_SPATIAL"})
+
 
 (defn convert-empty-record-to-nil
   "Converts empty record to nil."
