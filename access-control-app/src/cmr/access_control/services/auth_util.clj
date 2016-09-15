@@ -27,14 +27,12 @@
 (defn- get-system-acls
   "Returns ACLs which grant the given permission to the context user for system-level groups."
   [context permission]
-  (let [context (put-sids-in-context context)]
-    (seq (acl/get-permitting-acls context :system-object "GROUP" permission))))
+  (seq (acl/get-permitting-acls context :system-object "GROUP" permission)))
 
 (defn- get-all-provider-acls
   "Returns all ACLs that grant given permission to context user for any provider-level groups."
   [context permission]
-  (let [context (put-sids-in-context context)]
-    (acl/get-permitting-acls context :provider-object "GROUP" permission)))
+  (acl/get-permitting-acls context :provider-object "GROUP" permission))
 
 (defn- get-provider-acls
   "Returns any ACLs that grant the given permission to the context user for the specified group object."
@@ -51,7 +49,7 @@
   (when-let [target-guid (:legacy-guid group)]
     (seq
       (filter #(= target-guid (-> % :single-instance-object-identity :target-guid))
-              (acl/get-permitting-acls (put-sids-in-context context)
+              (acl/get-permitting-acls context
                                        :single-instance-object "GROUP" permission)))))
 
 (defn- describe-group
@@ -73,11 +71,11 @@
   "Throws a permission service error if no ACLs exist that grant the desired permission to the
   context user on group."
   [context action-description permission group]
-  ; (proto-repl.saved-values/save 12)
-  (when-not (or (get-instance-acls context permission group)
-                (get-provider-acls context permission group)
-                (get-system-acls context permission))
-    (throw-group-permission-error action-description group)))
+  (let [context (put-sids-in-context context)]
+    (when-not (or (get-instance-acls context permission group)
+                  (get-provider-acls context permission group)
+                  (get-system-acls context permission))
+      (throw-group-permission-error action-description group))))
 
 (defn verify-can-create-group
   "Throws a service error if the context user cannot create a group under provider-id."
@@ -109,7 +107,8 @@
 
 (defmethod qe/add-acl-conditions-to-query :access-group
   [context query]
-  (let [system-condition (when (get-system-acls context :read)
+  (let [context (put-sids-in-context context)
+        system-condition (when (get-system-acls context :read)
                            (qm/negated-condition (qm/exist-condition :provider-id)))
         provider-ids (map #(-> % :provider-object-identity :provider-id)
                           (get-all-provider-acls context :read))
