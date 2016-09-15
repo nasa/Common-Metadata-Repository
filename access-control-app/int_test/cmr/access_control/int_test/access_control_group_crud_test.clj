@@ -1,9 +1,11 @@
 (ns cmr.access-control.int-test.access-control-group-crud-test
-    (:require [clojure.test :refer :all]
-              [clojure.string :as str]
-              [cmr.mock-echo.client.echo-util :as e]
-              [cmr.access-control.int-test.fixtures :as fixtures]
-              [cmr.access-control.test.util :as u]))
+  (:require
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.access-control.int-test.fixtures :as fixtures]
+   [cmr.access-control.test.util :as u]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :once (fixtures/int-test-fixtures))
 
@@ -32,19 +34,21 @@
       (is (= {:status 400,
               :errors
               ["The mime types specified in the content-type header [application/xml] are not supported."]}
-             (u/create-group valid-user-token valid-group {:http-options {:content-type :xml}}))))
+             (u/create-group valid-user-token valid-group {:http-options {:content-type :xml}
+                                                           :allow-failure? true}))))
 
     (testing "Create group with invalid JSON"
       (is (= {:status 400,
               :errors
               ["Invalid JSON: Unexpected character ('{' (code 123)): was expecting double-quote to start field name\n at  line: 1, column: 3]"]}
-             (u/create-group valid-user-token valid-group {:http-options {:body "{{{"}}))))
+             (u/create-group valid-user-token valid-group {:http-options {:body "{{{"}
+                                                           :allow-failure? true}))))
 
     (testing "Missing field validations"
       (are [field]
         (= {:status 400
             :errors [(format "object has missing required properties ([\"%s\"])" (name field))]}
-           (u/create-group valid-user-token (dissoc valid-group field)))
+           (u/create-group valid-user-token (dissoc valid-group field) {:allow-failure? true}))
 
         :name :description))
 
@@ -53,7 +57,7 @@
         (= {:status 400
             :errors [(format "/%s string \"\" is too short (length: 0, required minimum: 1)"
                              (name field))]}
-           (u/create-group valid-user-token (assoc valid-group field "")))
+           (u/create-group valid-user-token (assoc valid-group field "") {:allow-failure? true}))
 
         :name :description :provider_id :legacy_guid))
 
@@ -65,7 +69,8 @@
                                    (name field) long-value (inc max-length) max-length)]}
                  (u/create-group
                   valid-user-token
-                  (assoc valid-group field long-value)))))))))
+                  (assoc valid-group field long-value)
+                  {:allow-failure? true}))))))))
 
 (deftest create-system-group-test
   (testing "Successful creation"
@@ -82,7 +87,7 @@
           (is (= {:status 409
                   :errors [(format "A system group with name [%s] already exists with concept id [%s]."
                                    (:name group) concept_id)]}
-                 (u/create-group token group))))
+                 (u/create-group token group {:allow-failure? true}))))
 
         (testing "Works for a different provider"
           (is (= 200 (:status (u/create-group token (assoc group :provider_id "PROV1")))))))
@@ -125,13 +130,13 @@
                   :errors [(format
                             "A provider group with name [%s] already exists with concept id [%s] for provider [PROV1]."
                             (:name group) concept_id)]}
-                 (u/create-group token group))))
+                 (u/create-group token group {:allow-failure? true}))))
         (testing "Is rejected for the same provider if case insensitive"
           (is (= {:status 409
                   :errors [(format
                             "A provider group with name [%s] already exists with concept id [%s] for provider [PROV1]."
                             (:name group) concept_id)]}
-                 (u/create-group token lowercase-group))))
+                 (u/create-group token lowercase-group {:allow-failure? true}))))
 
         (testing "Works for a different provider"
           (is (= 200 (:status (u/create-group token (assoc group :provider_id "PROV2")))))))))
@@ -140,7 +145,8 @@
     (is (= {:status 400
             :errors ["Provider with provider-id [NOT_EXIST] does not exist."]}
            (u/create-group (e/login (u/conn-context) "user1")
-                           (u/make-group {:provider_id "NOT_EXIST"}))))))
+                           (u/make-group {:provider_id "NOT_EXIST"})
+                           {:allow-failure? true})))))
 
 (deftest create-group-with-members-test
   (let [token (e/login (u/conn-context) "user1")
@@ -196,12 +202,14 @@
              (u/delete-group nil concept_id))))
 
     (testing "Delete success"
-      (is (= 2 (:hits (u/search-for-groups token nil))))
+      (is (= 3 (:hits (u/search-for-groups token nil))))
       (is (= {:status 200 :concept_id concept_id :revision_id 2}
              (u/delete-group token concept_id)))
       (u/wait-until-indexed)
       (u/assert-group-deleted group1 "user1" concept_id 2)
-      (is (= [group2-concept-id] (map :concept_id (:items (u/search-for-groups token nil))))))
+      ;; The first group that was created is the mock admin group.
+      (is (= [group2-concept-id "AG1200000000-CMR"]
+             (map :concept_id (:items (u/search-for-groups token nil))))))
 
     (testing "Delete group that was already deleted"
       (is (= {:status 404

@@ -1,10 +1,13 @@
 (ns cmr.access-control.int-test.access-control-group-search-test
   "Tests searching for access control groups"
-    (:require [clojure.test :refer :all]
-              [cmr.mock-echo.client.echo-util :as e]
-              [cmr.common.util :as util :refer [are2]]
-              [cmr.access-control.int-test.fixtures :as fixtures]
-              [cmr.access-control.test.util :as u]))
+    (:require
+     [clojure.set :as set]
+     [clojure.test :refer :all]
+     [cmr.access-control.int-test.fixtures :as fixtures]
+     [cmr.access-control.test.bootstrap :as bootstrap]
+     [cmr.access-control.test.util :as u]
+     [cmr.common.util :as util :refer [are3]]
+     [cmr.mock-echo.client.echo-util :as e]))
 
 (use-fixtures :each
               (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"}
@@ -52,7 +55,12 @@
         prov1-group2 (u/ingest-group token {:name "group2" :provider_id "PROV1"} ["user1" "user3"])
         prov2-group1 (u/ingest-group token {:name "group1" :provider_id "PROV2"} ["user2"])
         prov2-group2 (u/ingest-group token {:name "group2" :provider_id "PROV2"} ["user2" "user3"])
-        cmr-groups [cmr-group1 cmr-group2 cmr-group3]
+        existing-admin-group (-> bootstrap/administrators-group
+                                 (assoc :concept_id "AG1200000000-CMR"
+                                        :revision_id 2
+                                        :member_count 1)
+                                 (set/rename-keys {:legacy-guid :legacy_guid}))
+        cmr-groups [existing-admin-group cmr-group1 cmr-group2 cmr-group3]
         prov1-groups [prov1-group1 prov1-group2]
         prov2-groups [prov2-group1 prov2-group2]
         prov-groups (concat prov1-groups prov2-groups)
@@ -60,7 +68,7 @@
     (u/wait-until-indexed)
 
     (testing "Search by member"
-      (are2 [expected-groups params]
+      (are3 [expected-groups params]
         (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
                (select-keys (u/search-for-groups token params) [:status :items :hits :errors])))
 
@@ -81,10 +89,8 @@
         "Multiple members - AND'd"
         [prov2-group2] {:member ["user3" "user2"] "options[member][and]" true}))
 
-
-
     (testing "Search by name"
-      (are2 [expected-groups params]
+      (are3 [expected-groups params]
         (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
                (select-keys (u/search-for-groups token params) [:status :items :hits])))
 
@@ -97,17 +103,16 @@
         [cmr-group1 prov1-group1 prov2-group1] {:name "group1" "options[name][ignore_case]" false}
 
         "Pattern - no match"
-        [] {:name "*oup" "options[name][pattern]" true}
+        [] {:name "*oupx" "options[name][pattern]" true}
         "Pattern - matches"
-        all-groups {:name "Gr?up*" "options[name][pattern]" true}
+        all-groups {:name "*Gr?up*" "options[name][pattern]" true}
 
         "Multiple matches"
         [cmr-group1 prov1-group1 prov2-group1
          cmr-group2 prov1-group2 prov2-group2] {:name ["group1" "group2"]}))
 
-
     (testing "Search by provider"
-      (are2 [expected-groups params]
+      (are3 [expected-groups params]
         (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
                (select-keys (u/search-for-groups token params) [:status :items :hits])))
 
