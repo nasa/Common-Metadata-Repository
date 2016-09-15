@@ -1,8 +1,10 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact
   "Defines mappings and parsing from DIF10 elements into UMM records data contact fields."
-  (:require [clojure.set :as set]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.common.xml.simple-xpath :refer [select text]]))
+  (:require
+   [clojure.set :as set]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.umm-spec.util :as su]))
 
 (def dif10-role->umm-personnel-contact-role
    {"TECHNICAL CONTACT" "Technical Contact"
@@ -26,7 +28,7 @@
          (for [email (values-at contact "Email")]
            {:Type "Email" :Value email})
          (for [phone (select contact "Phone")]
-           {:Type (value-of phone "Type") :Value (value-of phone "Number")}))))
+           {:Type (su/correct-contact-mechanism (value-of phone "Type")) :Value (value-of phone "Number")}))))
 
 (defn- parse-address
   "Returns UMM-C contact address from DIF10 Personnel Contact Person or Contact Group element."

@@ -1,8 +1,9 @@
 (ns cmr.indexer.data.concepts.science-keyword
   "Contains functions for converting science keyword domains into elastic documents"
-  (:require [clojure.string :as str]
-            [cmr.common.util :as util]
-            [cmr.common-app.services.kms-fetcher :as kf]))
+  (:require 
+    [clojure.string :as str]
+    [cmr.common-app.services.kms-fetcher :as kf]
+    [cmr.common.util :as util]))
 
 (defn flatten-science-keywords
   "Convert the science keywords into a flat list composed of the category, topic, and term values."
@@ -38,10 +39,13 @@
   index in lowercase so that science keywords are not treated as a special case in parts of the
   code that use lowercase mappings."
   [gcmd-keywords-map science-keyword]
-  (let [science-keyword-upper-case (util/map-values normalize-sk-field-value science-keyword)
+  (let [science-keyword-kebab-key (util/map-keys->kebab-case science-keyword)
+        science-keyword-upper-case (util/map-values normalize-sk-field-value 
+                                                    science-keyword-kebab-key)
         {:keys [category topic term variable-level-1 variable-level-2 variable-level-3
                 detailed-variable]} science-keyword-upper-case
-        {:keys [uuid]} (kf/get-full-hierarchy-for-science-keyword gcmd-keywords-map science-keyword)]
+        {:keys [uuid]} (kf/get-full-hierarchy-for-science-keyword gcmd-keywords-map 
+                                                                  science-keyword-kebab-key)]
     {:category category
      :category.lowercase (str/lower-case category)
      :topic topic

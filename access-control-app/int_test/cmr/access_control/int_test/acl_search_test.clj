@@ -1,11 +1,12 @@
 (ns cmr.access-control.int-test.acl-search-test
-  (require [clojure.test :refer :all]
-           [cmr.transmit.access-control :as ac]
-           [cmr.mock-echo.client.echo-util :as e]
-           [cmr.common.util :as util :refer [are3]]
-           [cmr.access-control.int-test.fixtures :as fixtures]
-           [cmr.access-control.test.util :as u]
-           [cmr.access-control.data.access-control-index :as access-control-index]))
+  (:require
+    [clojure.test :refer :all]
+    [cmr.access-control.data.access-control-index :as access-control-index]
+    [cmr.access-control.int-test.fixtures :as fixtures]
+    [cmr.access-control.test.util :as u]
+    [cmr.common.util :as util :refer [are3]]
+    [cmr.mock-echo.client.echo-util :as e]
+    [cmr.transmit.access-control :as ac]))
 
 (use-fixtures :each
   (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2", "prov3guid" "PROV3",
@@ -150,32 +151,20 @@
         acl3 (ingest-acl token (system-acl "SYSTEM_OPTION_DEFINITION_DEPRECATION"))]
     (u/wait-until-indexed)
     (testing "Guest search permission"
-      (are3 [acls]
-        (let [token (e/login-guest (u/conn-context))
-              response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-          (is (= (acls->search-response (count acls) acls)
-                 (dissoc response :took))))
-
-        "System level ACL search check on guest user-type"
-        [acl3]))
-    (testing "Search permission user"
-      (are3 [acls]
-        (let [token (e/login (u/conn-context) "user1")
-              response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-          (is (= (acls->search-response (count acls) acls)
-                 (dissoc response :took))))
-
-        "System level ACL search check where the user has ANY_ACL read permissions"
-        [acl1 acl2 acl3]))
+      (let [token (e/login-guest (u/conn-context))
+            response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
+        (is (= (acls->search-response 1 [acl3])
+               (dissoc response :took)))))
+    (testing "User search permission"
+      (let [token (e/login (u/conn-context) "user1")
+            response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
+        (is (= (acls->search-response 3 [acl1 acl2 acl3])
+               (dissoc response :took)))))
     (testing "Search permission without ANY_ACL read"
-      (are3 [acls]
-        (let [token (e/login (u/conn-context) "user2")
-              response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-          (is (= (acls->search-response (count acls) acls)
-                 (dissoc response :took))))
-
-        "System level ACL search check where the user does not have ANY_ACL read permissions"
-        [acl2]))))
+      (let [token (e/login (u/conn-context) "user2")
+            response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
+        (is (= (acls->search-response 1 [acl2])
+               (dissoc response :took)))))))
 
 (deftest acl-search-test
   (let [token (e/login (u/conn-context) "user1")

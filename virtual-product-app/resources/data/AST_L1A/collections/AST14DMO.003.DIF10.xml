@@ -87,7 +87,7 @@
   </Temporal_Coverage>
   <Dataset_Progress>IN WORK</Dataset_Progress>
   <Spatial_Coverage>
-    <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+    <Granule_Spatial_Representation>GEODETIC</Granule_Spatial_Representation>
     <Geometry>
       <Coordinate_System>CARTESIAN</Coordinate_System>
       <Bounding_Rectangle>

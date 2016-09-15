@@ -100,14 +100,16 @@
 
 (defn- expected-iso-19115-2-related-urls
   [related-urls]
-  (seq (for [related-url related-urls
-             url (:URLs related-url)]
-         (-> related-url
-             (assoc :Title nil :MimeType nil :FileSize nil :URLs [url])
-             (update-in [:Relation]
-                        (fn [[rel]]
-                          (when (conversion-util/relation-set rel)
-                            [rel])))))))
+  (if (seq related-urls)
+    (seq (for [related-url related-urls
+               url (:URLs related-url)]
+           (-> related-url
+               (assoc :Title nil :MimeType nil :FileSize nil :URLs [url])
+               (update-in [:Relation]
+                          (fn [[rel]]
+                            (when (conversion-util/relation-set rel)
+                              [rel]))))))
+    [su/not-provided-related-url]))
 
 (defn- fix-iso-vertical-spatial-domain-values
   [vsd]
@@ -179,6 +181,13 @@
     [(cmn/map->DateType {:Date (f/parse date-util/default-date-value)
                          :Type "CREATE"})]))
 
+(defn- expected-science-keywords
+  "Returns science keywords if not nil, otherwise default"
+  [science-keywords]
+  (if (seq science-keywords)
+    science-keywords
+    su/not-provided-science-keywords))
+
 (defn umm-expected-conversion-iso19115
   [umm-coll]
   (-> umm-coll
@@ -209,4 +218,6 @@
       (assoc :ContactGroups nil)
       (assoc :ContactPersons nil)
       (assoc :MetadataDates nil)
+      (update :ScienceKeywords expected-science-keywords)
+      (update :AccessConstraints conversion-util/expected-access-constraints)
       js/parse-umm-c))

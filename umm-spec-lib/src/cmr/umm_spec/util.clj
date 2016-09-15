@@ -8,6 +8,11 @@
             [cmr.common.xml.parse :as p]
             [cmr.common.xml.simple-xpath :refer [select]]))
 
+(def ^:private umm-contact-mechanism-correction-map
+  {"phone" "Telephone"
+   "Phone" "Telephone"
+   "fax" "Fax"})
+
 (def default-parsing-options
   "Defines the default options for parsing metadata into umm"
   {:apply-default? true})
@@ -42,6 +47,13 @@
 (def not-provided-contact-person-role
   "Default role for a Contact Person to use if none is provided"
   "Technical Contact")
+
+(def not-provided-science-keywords
+  "Default science keywords to use if none is provided. Use 'EARTH SCIENCE' as the
+  category so ISO-SMAP picks it up as a science keyword"
+  [(cmn/map->ScienceKeywordType {:Category "EARTH SCIENCE"
+                                 :Term not-provided
+                                 :Topic not-provided})])
 
 (defn convert-empty-record-to-nil
   "Converts empty record to nil."
@@ -185,3 +197,8 @@
   "Returns an ISO gco:CharacterString with contents taken from the given xpath."
   [context xpath]
   (char-string (select context xpath)))
+
+(defn correct-contact-mechanism
+  "Correct the contact mechanism if a correction exists, otherwise return the original"
+  [contact-mechanism]
+  (get umm-contact-mechanism-correction-map contact-mechanism contact-mechanism))

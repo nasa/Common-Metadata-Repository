@@ -1,13 +1,14 @@
 (ns cmr.umm-spec.test.location-keywords
   "Unit tests for GCMD Spatial Keywords -> LocationKeywords translation"
-  (:require [clojure.test :refer :all]
-            [cmr.umm-spec.location-keywords :as lk]
-            [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.common.cache :as cache]
-            [cmr.common.cache.in-memory-cache :as imc]
-            [cmr.umm-spec.test.location-keywords-helper :as lkt]
-            [cmr.umm-spec.models.umm-collection-models :as umm-c]))
+  (:require
+    [clojure.test :refer :all]
+    [cmr.common-app.services.kms-fetcher :as kf]
+    [cmr.common.cache :as cache]
+    [cmr.common.cache.in-memory-cache :as imc]
+    [cmr.transmit.config :as transmit-config]
+    [cmr.umm-spec.location-keywords :as lk]
+    [cmr.umm-spec.models.umm-collection-models :as umm-c]
+    [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
 (deftest test-location-keyword-lookup
   (testing "Looking up a root keyword returns the top hierarchy result."
@@ -29,7 +30,7 @@
           expected "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
           context lkt/setup-context-for-test
           actual (:uuid (lk/find-spatial-keyword (:spatial-keywords lkt/sample-keyword-map) keyword))]
-         (is (= expected actual))))
+      (is (= expected actual))))
 
   (testing "Passing in a list of keywords returns a list of Location Keyword maps"
     (let [keywords ["SPACE" "ANGOLA" "CENTRAL AFRICA"]
@@ -54,4 +55,4 @@
           location-keyword-list (map #(umm-c/map->LocationKeywordType %) location-keyword-maps)
           actual (lk/location-keywords->spatial-keywords location-keyword-list)
           expected ["SPACE" "ANGOLA" "CENTRAL AFRICA"]]
-         (is (= expected actual)))))
+      (is (= expected actual)))))

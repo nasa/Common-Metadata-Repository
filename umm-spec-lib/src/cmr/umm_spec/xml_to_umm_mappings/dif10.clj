@@ -41,16 +41,6 @@
       (parse-projects-impl doc))
     (parse-projects-impl doc)))
 
-(defn- parse-access-constraints
-  "if both value and Description are nil, return nil.
-  Otherwise, if Description is nil, assoc it with u/not-provided"
-  [doc apply-default?]
-  (let [access-constraints-record
-        {:Description (value-of doc "/DIF/Access_Constraints")
-         :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}]
-    (when (seq (util/remove-nil-keys access-constraints-record))
-      (update access-constraints-record :Description #(u/with-default % apply-default?)))))
-
 (defn- parse-instruments-impl
   [platform-el]
   (for [inst (select platform-el "Instrument")]
@@ -127,7 +117,7 @@
                         :DetailedLocation (value-of lk "Detailed_Location")})
    :Projects (parse-projects doc apply-default?)
    :Quality (value-of doc "/DIF/Quality")
-   :AccessConstraints (parse-access-constraints doc apply-default?)
+   :AccessConstraints (dif-util/parse-access-constraints doc apply-default?)
    :UseConstraints (value-of doc "/DIF/Use_Constraints")
    :Platforms (for [platform (select doc "/DIF/Platform")]
                 {:ShortName (value-of platform "Short_Name")
