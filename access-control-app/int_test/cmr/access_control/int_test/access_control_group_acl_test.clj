@@ -33,9 +33,6 @@
        (u/make-group group)
        users)))))
 
-;; TODO remove users from groups during login. Access control will determine group membership from
-;; the groups it has. Tests should still pass.
-
 (deftest create-system-group-test
   (let [group-id (create-group-with-members "group-create-group" ["user1"])]
     (e/grant-system-group-permissions-to-group (u/conn-context) group-id :create))
@@ -47,7 +44,7 @@
 
   (testing "with permission"
     (let [group (u/make-group)
-          token (e/login (u/conn-context) "user1" ["group-create-group"])
+          token (e/login (u/conn-context) "user1")
           {:keys [status concept_id revision_id]} (u/create-group token group)]
       (is (= 200 status))
       (is (some? concept_id))
@@ -59,6 +56,12 @@
           response (u/create-group token group {:allow-failure? true})]
       (is (= {:status 401
               :errors ["You do not have permission to create system-level access control group [Administrators]."]}
+             response))))
+  (testing "with unknown token"
+    (let [group (u/make-group)
+          response (u/create-group "nonexist-token" group {:allow-failure? true})]
+      (is (= {:status 401
+              :errors ["Token nonexist-token does not exist"]}
              response)))))
 
 (deftest create-provider-group-test
@@ -74,7 +77,7 @@
 
   (testing "with permission"
     (let [group (u/make-group {:provider_id "PROV1"})
-          token (e/login (u/conn-context) "user1" ["prov1-group-create-group"])
+          token (e/login (u/conn-context) "user1")
           {:keys [status concept_id revision_id]} (u/create-group token group)]
       (is (= 200 status))
       (is (re-matches #"AG\d+-PROV1" concept_id) "Incorrect concept id for a provider group")
@@ -103,15 +106,15 @@
   ;; ACLS would have already been cached in Access Control Service
   (access-control/clear-cache (u/conn-context))
 
-  (let [token (e/login (u/conn-context) "user1" ["sys-group-readers" "prov1-group-readers"])
+  (let [token (e/login (u/conn-context) "user1")
         no-group-token (e/login (u/conn-context) "user2")
-        prov1-only-token (e/login (u/conn-context) "user3" ["prov1-group-readers"])
+        prov1-only-token (e/login (u/conn-context) "user3")
         system-group (u/make-group)
         system-group-concept-id (:concept_id (u/create-group token system-group))
         prov-group (u/make-group {:provider_id "PROV1"})
         prov-group-concept-id (:concept_id (u/create-group token prov-group))
         prov2-group (u/make-group {:provider_id "PROV2"})
-        prov2-creator-token (e/login (u/conn-context) "user3" ["prov2-group-creator"])
+        prov2-creator-token (e/login (u/conn-context) "user3")
         prov2-group-concept-id (:concept_id (u/create-group prov2-creator-token prov2-group))]
 
     (testing "reading system groups"
@@ -150,10 +153,10 @@
   ;; ACLS would have already been cached in Access Control Service
   (access-control/clear-cache (u/conn-context))
 
-  (let [sys-token (e/login (u/conn-context) "sys-user" ["sys-group"])
+  (let [sys-token (e/login (u/conn-context) "sys-user")
         sys-group (u/make-group)
         sys-group-concept-id (:concept_id (u/create-group sys-token sys-group))
-        prov1-token (e/login (u/conn-context) "prov1-user" ["prov1-group"])
+        prov1-token (e/login (u/conn-context) "prov1-user")
         prov1-group (u/make-group {:provider_id "PROV1"})
         prov1-group-concept-id (:concept_id (u/create-group prov1-token prov1-group))]
     (u/wait-until-indexed)
@@ -188,9 +191,9 @@
   ;; ACLS would have already been cached in Access Control Service
   (access-control/clear-cache (u/conn-context))
 
-  (let [sys-token (e/login (u/conn-context) "user1" ["sys-group-delete"])
-        prov-token (e/login (u/conn-context) "user2" ["prov1-group-delete"])
-        prov2-token (e/login (u/conn-context) "user3" ["prov2-group-creator"])
+  (let [sys-token (e/login (u/conn-context) "user1")
+        prov-token (e/login (u/conn-context) "user2")
+        prov2-token (e/login (u/conn-context) "user3")
 
         sys-group (u/make-group {:legacy_guid "system-group-guid"})
         sys-group-id (:concept_id (u/create-group sys-token sys-group))
@@ -245,9 +248,9 @@
   ;; ACLS would have already been cached in Access Control Service
   (access-control/clear-cache (u/conn-context))
 
-  (let [sys-token (e/login (u/conn-context) "user1" ["sys-group"])
-        prov-token (e/login (u/conn-context) "user2" ["prov1-group"])
-        prov2-token (e/login (u/conn-context) "user3" ["prov2-group"])
+  (let [sys-token (e/login (u/conn-context) "user1")
+        prov-token (e/login (u/conn-context) "user2")
+        prov2-token (e/login (u/conn-context) "user3")
 
         sys-group (u/make-group {:legacy_guid "sys-group-guid"})
         sys-group-id (:concept_id (u/create-group sys-token sys-group))
@@ -296,10 +299,10 @@
   ;; ACLS would have already been cached in Access Control Service
   (access-control/clear-cache (u/conn-context))
 
-  (let [sys-token (e/login (u/conn-context) "sys-user" ["sys-group"])
+  (let [sys-token (e/login (u/conn-context) "sys-user")
         sys-group (u/make-group {:legacy_guid "sys-group-guid"})
         sys-group-concept-id (:concept_id (u/create-group sys-token sys-group))
-        prov1-token (e/login (u/conn-context) "prov1-user" ["prov1-group"])
+        prov1-token (e/login (u/conn-context) "prov1-user")
         prov1-group (u/make-group {:legacy_guid "prov1-group-guid" :provider_id "PROV1"})
         prov1-group-concept-id (:concept_id (u/create-group prov1-token prov1-group))]
 

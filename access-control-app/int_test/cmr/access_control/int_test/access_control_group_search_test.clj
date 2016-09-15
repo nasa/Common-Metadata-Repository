@@ -48,6 +48,7 @@
 
 (deftest group-search-test
   (let [token (e/login (u/conn-context) "user1")
+        existing-admin-group (-> (u/search-for-groups token {}) :items first)
         cmr-group1 (u/ingest-group token {:name "group1"} ["user1"])
         cmr-group2 (u/ingest-group token {:name "group2"} ["USER1" "user2"])
         cmr-group3 (u/ingest-group token {:name "group3"} nil)
@@ -55,13 +56,6 @@
         prov1-group2 (u/ingest-group token {:name "group2" :provider_id "PROV1"} ["user1" "user3"])
         prov2-group1 (u/ingest-group token {:name "group1" :provider_id "PROV2"} ["user2"])
         prov2-group2 (u/ingest-group token {:name "group2" :provider_id "PROV2"} ["user2" "user3"])
-        ;; TODO figure out another way to do this. Maybe an atom in the system?
-        ;; Or search just for this group? May need to wait until indexed to find it.
-        existing-admin-group (-> bootstrap/administrators-group
-                                 (assoc :concept_id "AG1200000000-CMR"
-                                        :revision_id 2
-                                        :member_count 1)
-                                 (set/rename-keys {:legacy-guid :legacy_guid}))
         cmr-groups [existing-admin-group cmr-group1 cmr-group2 cmr-group3]
         prov1-groups [prov1-group1 prov1-group2]
         prov2-groups [prov2-group1 prov2-group2]

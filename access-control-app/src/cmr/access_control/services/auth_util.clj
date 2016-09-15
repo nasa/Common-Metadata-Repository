@@ -8,18 +8,6 @@
             [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.common-app.services.search.query-execution :as qe]))
 
-;; TODO ask John if after synchronization do all groups get written to elasticsearch?
-
-(comment
- (echo-tokens/get-user-id {:system (get-in user/system [:apps :access-control])}
-                          "ABC-1")
- (->
-  (put-sids-in-context {:system (get-in user/system [:apps :access-control])
-                        :token "ABC-1"})
-  :sids))
-
-
-;; TODO test using an unknown token
 (defn- put-sids-in-context
   "Gets the current SIDs of the user in the context from the Access control application."
   [context]

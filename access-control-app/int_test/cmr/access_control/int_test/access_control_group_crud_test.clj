@@ -190,7 +190,7 @@
              (u/get-group token concept_id))))))
 
 (deftest delete-group-test
-  (let [group1 (u/make-group)
+  (let [group1 (u/make-group {:name "other group"})
         group2 (u/make-group {:name "Some other group"})
         token (e/login (u/conn-context) "user1")
         {:keys [concept_id revision_id]} (u/create-group token group1)
@@ -207,10 +207,9 @@
              (u/delete-group token concept_id)))
       (u/wait-until-indexed)
       (u/assert-group-deleted group1 "user1" concept_id 2)
-      ;; The first group that was created is the mock admin group.
-      ;; TODO update this so it's not reliant on this group. Add params
-      (is (= [group2-concept-id "AG1200000000-CMR"]
-             (map :concept_id (:items (u/search-for-groups token nil))))))
+      (is (= [group2-concept-id]
+             (map :concept_id (:items (u/search-for-groups token {:name "*other*"
+                                                                  "options[name][pattern]" true}))))))
 
     (testing "Delete group that was already deleted"
       (is (= {:status 404
