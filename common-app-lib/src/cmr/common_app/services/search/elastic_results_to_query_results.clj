@@ -13,8 +13,6 @@
         result-format
         [(:concept-type query) result-format]))))
 
-;; TODO add helper function for creating query specified query
-
 (defn- default-query-specified-elastic-result-item-processor
   "The default function that will be used to process an elastic result into a result for the caller."
   [context query elastic-result]

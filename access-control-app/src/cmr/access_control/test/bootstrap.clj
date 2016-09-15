@@ -11,7 +11,7 @@
    :legacy-guid transmit-config/mock-echo-system-group-guid})
 
 (defn bootstrap
-  "TODO"
+  "Bootstraps data necessary for testing access control."
   [system]
   (info "Bootstrapping development data in access control")
   (let [context {:system system :token (transmit-config/echo-system-token)}
@@ -19,6 +19,3 @@
     (group-service/add-members context concept-id
                                [transmit-config/mock-echo-system-user]
                                {:skip-acls? true})))
-
-(comment
- (bootstrap (get-in user/system [:apps :access-control])))

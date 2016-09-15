@@ -4,21 +4,26 @@
             [cmr.transmit.connection :as conn]
             [camel-snake-kebab.core :as csk]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Constants for help in testing.
+
 (def mock-echo-system-user
-  "TODO"
+  "The name of a mock admin user for testing"
   "mock-admin")
 
 (def mock-echo-system-group
-  "TODO"
+  "The name of the mock admin group."
   "mock-admin-group")
 
 (def mock-echo-system-group-guid
-  "TODO"
+  "The guid of the mock admin group."
   "mock-admin-group-guid")
 
 (def mock-echo-system-token
-  "TODO"
+  "A token for the mock system/admin user."
   "mock-echo-system-token")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def token-header
   "echo-token")

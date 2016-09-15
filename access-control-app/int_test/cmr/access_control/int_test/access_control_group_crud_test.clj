@@ -208,6 +208,7 @@
       (u/wait-until-indexed)
       (u/assert-group-deleted group1 "user1" concept_id 2)
       ;; The first group that was created is the mock admin group.
+      ;; TODO update this so it's not reliant on this group. Add params
       (is (= [group2-concept-id "AG1200000000-CMR"]
              (map :concept_id (:items (u/search-for-groups token nil))))))
 

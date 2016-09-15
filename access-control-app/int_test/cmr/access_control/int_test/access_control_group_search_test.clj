@@ -55,6 +55,8 @@
         prov1-group2 (u/ingest-group token {:name "group2" :provider_id "PROV1"} ["user1" "user3"])
         prov2-group1 (u/ingest-group token {:name "group1" :provider_id "PROV2"} ["user2"])
         prov2-group2 (u/ingest-group token {:name "group2" :provider_id "PROV2"} ["user2" "user3"])
+        ;; TODO figure out another way to do this. Maybe an atom in the system?
+        ;; Or search just for this group? May need to wait until indexed to find it.
         existing-admin-group (-> bootstrap/administrators-group
                                  (assoc :concept_id "AG1200000000-CMR"
                                         :revision_id 2
