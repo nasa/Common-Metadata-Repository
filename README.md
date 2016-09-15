@@ -22,10 +22,16 @@ Add the following dependency to your `project.clj`:
 Then set the following:
 
 ```clojure
-:codox {:theme :rdash}
+:codox {:themes [:rdash]}
 ```
 
-This theme will enable Markdown rendering for docstrings by default.
+For syntax highlighting capabilities, you'll need to activate Markdown rendering
+via:
+
+```clojure
+:codox {:metadata {:doc/format :markdown}
+        :themes [:rdash]}
+```
 
 ## License
 
