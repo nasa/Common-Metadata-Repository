@@ -1,31 +1,33 @@
 (ns cmr.access-control.api.routes
   "Defines the HTTP URL routes for the application."
-  (:require [compojure.handler :as handler]
-            [compojure.route :as route]
-            [compojure.core :refer :all]
-            [ring.middleware.params :as params]
-            [ring.middleware.nested-params :as nested-params]
-            [ring.middleware.keyword-params :as keyword-params]
-            [ring.middleware.json :as ring-json]
-            [cheshire.core :as json]
-            [cmr.common.concepts :as cc]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.cache :as cache]
-            [cmr.common.api.errors :as api-errors]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.api.context :as context]
-            [cmr.common.validations.core :as validation]
-            [cmr.common.validations.json-schema :as js]
-            [cmr.common.mime-types :as mt]
-            [cmr.acl.core :as acl]
-            [cmr.common-app.api.routes :as cr]
-            [cmr.common-app.api-docs :as api-docs]
-            [cmr.access-control.data.access-control-index :as index]
-            [cmr.access-control.data.acl-schema :as acl-schema]
-            [cmr.access-control.services.acl-service :as acl-service]
-            [cmr.access-control.services.group-service :as group-service]
-            [cmr.common.util :as util]
-            [clojure.string :as str]))
+  (:require
+    [cheshire.core :as json]
+    [clojure.string :as str]
+    [cmr.access-control.data.access-control-index :as index]
+    [cmr.access-control.data.acl-schema :as acl-schema]
+    [cmr.access-control.services.acl-search-service :as acl-search]
+    [cmr.access-control.services.acl-service :as acl-service]
+    [cmr.access-control.services.group-service :as group-service]
+    [cmr.acl.core :as acl]
+    [cmr.common-app.api-docs :as api-docs]
+    [cmr.common-app.api.routes :as cr]
+    [cmr.common.api.context :as context]
+    [cmr.common.api.errors :as api-errors]
+    [cmr.common.cache :as cache]
+    [cmr.common.concepts :as cc]
+    [cmr.common.log :refer (debug info warn error)]
+    [cmr.common.mime-types :as mt]
+    [cmr.common.services.errors :as errors]
+    [cmr.common.util :as util]
+    [cmr.common.validations.core :as validation]
+    [cmr.common.validations.json-schema :as js]
+    [compojure.core :refer :all]
+    [compojure.handler :as handler]
+    [compojure.route :as route]
+    [ring.middleware.json :as ring-json]
+    [ring.middleware.keyword-params :as keyword-params]
+    [ring.middleware.nested-params :as nested-params]
+    [ring.middleware.params :as params]))
 
 ;;; Utility Functions
 
@@ -256,7 +258,7 @@
   "Returns a Ring response with ACL search results for the given params."
   [context headers params]
   (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
-  (-> (acl-service/search-for-acls context params)
+  (-> (acl-search/search-for-acls context params)
       cr/search-response))
 
 (defn get-permissions
