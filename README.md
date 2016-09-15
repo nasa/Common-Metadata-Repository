@@ -17,7 +17,7 @@ Note that this needs codox ≥ 0.10.0.
 
 Add the following dependency to your `project.clj`:
 
-TODO
+[![Clojars Project](https://img.shields.io/clojars/v/codox-theme-rdash.svg)](https://clojars.org/codox-theme-rdash)
 
 Then set the following:
 
