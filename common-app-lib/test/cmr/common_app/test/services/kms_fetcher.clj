@@ -14,12 +14,12 @@
     { "some_guid1" {:category "category1" :topic "topic1" :term "term1" :variable-level-1 "v11" :uuid "1f2c3b1f-acae-4af0-a759-f0d57ccfc83f"} 
       "some-guid2" {:category "category2" :topic "topic2" :term "term2" :variable-level-1 "v12" :variable-level-2 "v21" :uuid "2f2c3b1f-acae-4af0-a759-f0d57ccfc83f"}}
    :providers 
-    {"a-short-name" {:level-0 "l01"  :short-name "test-short-name-1" :long-name "test-long-name-1" :uuid "3f2c3b1f-acae-4af0-a759-f0d57ccfc83f"}}})
+    {"a-short-name" {:level-0 "l01"  :short-name "A-SHORT-NAME" :long-name "test-long-name-1" :uuid "3f2c3b1f-acae-4af0-a759-f0d57ccfc83f"}}})
 
 (deftest test-shortname-lookup
   (testing "Looking up an existing short-name returns the right result."
-   (let [expected {:level-0 "l01"  :short-name "test-short-name-1" :long-name "test-long-name-1" :uuid "3f2c3b1f-acae-4af0-a759-f0d57ccfc83f"} 
-         actual (kf/get-full-hierarchy-for-short-name sample-keyword-map :providers "A-SHORT-NAME")]
+   (let [expected {:level-0 "l01"  :short-name "A-SHORT-NAME" :long-name "test-long-name-1" :uuid "3f2c3b1f-acae-4af0-a759-f0d57ccfc83f"} 
+         actual (kf/get-full-hierarchy-for-short-name sample-keyword-map :providers "a-ShORT-NAME")]
      (is (= expected actual))))
 
   (testing "Looking up an non-existing short-name returns nil."
