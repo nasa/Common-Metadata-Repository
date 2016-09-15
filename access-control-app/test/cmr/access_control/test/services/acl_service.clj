@@ -1,38 +1,10 @@
 (ns cmr.access-control.test.services.acl-service
   (:require
     [clojure.test :refer :all]
-    [cmr.access-control.services.acl-search-service :as acl-search]
     [cmr.access-control.services.acl-service :as acl-service]
     [cmr.access-control.test.util :as u]
     [cmr.common.util :as util :refer [are3]]
     [cmr.mock-echo.client.echo-util :as e]))
-
-(deftest valid-permitted-group?
-  (testing "Valid permitted groups"
-    (are [group]
-         (#'acl-search/valid-permitted-group? group)
-
-         "guest"
-         "registered"
-         "GUEST"
-         "Registered"
-         "AG1234-CMR"
-         "ag1234-CMR"
-         "Ag1234-CMR"
-         "aG1234-CMR"
-         "AG1234-PROV1"))
-
-  (testing "Invalid permitted groups"
-    (are [group]
-         (not (#'acl-search/valid-permitted-group? group))
-
-         ""
-         "gust"
-         "A1234-PROV1"
-         "G1234-PROV1"
-         "AG1234PROV1"
-         "AG*-PROV1"
-         "AG123?-PROV1")))
 
 (deftest acl-log-message
   (let [token (e/login (u/conn-context) "admin")]

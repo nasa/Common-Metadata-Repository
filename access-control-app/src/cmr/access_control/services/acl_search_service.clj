@@ -1,4 +1,6 @@
 (ns cmr.access-control.services.acl-search-service
+  "Contains ACL search functions, including parameter
+   validation and user visibility permission checks"
   (:require
     [camel-snake-kebab.core :as csk]
     [clojure.edn :as edn]
