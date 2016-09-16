@@ -19,7 +19,7 @@
               (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 
 (def system-acl
-  "A system acl that grants create, read, update, delete to guest on any acl"
+  "A system ACL that grants create, read, update, delete to guest on any ACL"
   {:group_permissions [{:user_type "guest"
                         :permissions ["create" "read" "update" "delete"]}]
    :system_identity {:target "ANY_ACL"}})
@@ -32,6 +32,7 @@
                        :target "INGEST_MANAGEMENT_ACL"}})
 
 (def provider-acl-for-catalog-item
+  "A provider ACL that grants create to guest to facilitate catalog-item creation"
   {:legacy_guid "ABCD-EFG-HIJK-LMNOP"
    :group_permissions [{:group_id "REPLACEME"
                         :permissions ["read" "update" "create" "delete"],}
@@ -72,6 +73,7 @@
     (is (= 1 (:revision_id resp)))))
 
 (deftest create-catalog-item-acl-test
+  "Tests creation validation of catalog item acls"
   (let [token (e/login (u/conn-context) "user1")
         guest-token (e/login-guest (u/conn-context))
         group1 (u/ingest-group token {:name "group1"} ["user1"])

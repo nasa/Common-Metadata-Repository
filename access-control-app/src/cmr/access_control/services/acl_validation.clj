@@ -161,7 +161,7 @@
   {:target-id (v/when-present (make-single-instance-identity-target-id-validation context))})
 
 (defn permissions-granted-by-provider-to-user
-  "Returns true if acls grant permission on sids for target"
+  "Returns permissions granted for sids by ACLs"
   [sids acls target]
   (for [x sids
         y acls
@@ -177,13 +177,7 @@
   [context key-path acl]
   (let [token (:token context)
         user (if token (tokens/get-user-id context token) "guest")
-        sids (cond
-               (contains? #{"guest" "registered"} user) [user]
-               (string? user) (concat ["registered"] (->> (groups/search-for-groups context {:member user})
-                                                          :results
-                                                          :items
-                                                          (map :concept_id))))
-        provider-id (:provider-id acl)
+        sids (acl-util/get-sids context user)
         provider-acls (map #(acl-util/get-acl context %)
                            (map #(get % "concept_id") (get (json/parse-string (:results (acl-search/search-for-acls context {:provider provider-id} true))) "items")))]
     (when-not (contains? (set (flatten (permissions-granted-by-provider-to-user sids provider-acls "CATALOG_ITEM_ACL"))) "create")
