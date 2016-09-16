@@ -23,6 +23,16 @@
                 (f))
               (fixtures/grant-all-group-fixture ["prov1guid"]))
 
+(def provider-acl-for-catalog-item
+  "A provider ACL that grants create to guest to facilitate catalog-item creation"
+  {:legacy_guid "ABCD-EFG-HIJK-LMNOP"
+   :group_permissions [{:group_id "REPLACEME"
+                        :permissions ["read" "update" "create" "delete"],}
+                       {:user_type "guest"
+                        :permissions ["read" "update" "create" "delete"]}]
+   :provider_identity {:provider_id "PROV1"
+                       :target "CATALOG_ITEM_ACL"}})
+
 (deftest invalid-params-test
   (are [params errors]
     (= {:status 400 :body {:errors errors} :content-type :json}
@@ -119,7 +129,10 @@
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
         get-collection-permissions #(get-permissions %1 coll1)
-        get-granule-permissions #(get-permissions %1 gran1)]
+        get-granule-permissions #(get-permissions %1 gran1)
+        ;; required to create catalog item acl
+        _ (create-acl (assoc-in provider-acl-for-catalog-item [:group_permissions 0 :group_id] user1-group))
+        _ (u/wait-until-indexed)]
 
     (testing "no permissions granted"
       (are [user permissions]
@@ -223,7 +236,7 @@
 
 (deftest collection-catalog-item-identifier-access-value-test
   ;; tests ACLs which grant access to collections based on their access value
-  (let [token (e/login (u/conn-context) "user1" [])
+  (let [token (e/login-guest (u/conn-context))
         save-access-value-collection (fn [short-name access-value]
                                          (u/save-collection {:entry-title (str short-name " entry title")
                                                              :short-name short-name
@@ -240,7 +253,9 @@
         coll4 (save-access-value-collection "coll4" nil)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
-        get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)]
+        get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)
+        ;; required to create catalog item acl
+        _ (create-acl provider-acl-for-catalog-item)]
     (u/wait-until-indexed)
 
     (testing "no permissions granted"
@@ -309,7 +324,7 @@
 
 (deftest collection-catalog-item-identifier-temporal-test
   ;; tests ACLs that grant access based on a collection's temporal range
-  (let [token (e/login (u/conn-context) "user1" [])
+  (let [token (e/login-guest (u/conn-context))
         save-temporal-collection (fn [short-name start-year end-year]
                                      (u/save-collection {:entry-title (str short-name " entry title")
                                                          :short-name short-name
@@ -329,7 +344,9 @@
                                   :no-temporal true})
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
-        get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)]
+        get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)
+        ;; required to create catalog item acl
+        _ (create-acl provider-acl-for-catalog-item)]
     (u/wait-until-indexed)
     (is (= {coll1 []
             coll2 []
@@ -399,7 +416,10 @@
         coll1 (save-prov1-collection "coll1")
         gran1 (save-granule coll1)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
-        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})]
+        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
+        ;; required to create catalog item acl
+        _ (create-acl (assoc-in provider-acl-for-catalog-item [:group_permissions 0 :group_id] created-group-concept-id))
+        _ (u/wait-until-indexed)]
 
     (testing "no permissions granted"
       (are [user permissions]
@@ -466,7 +486,9 @@
         gran1 (save-granule coll1)
         gran2 (save-granule coll2)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
-        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})]
+        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
+        ;; required to create catalog item acl
+        _ (create-acl (assoc-in provider-acl-for-catalog-item [:group_permissions 0 :group_id] created-group-concept-id))]
 
     (u/wait-until-indexed)
 
@@ -565,6 +587,9 @@
         ;; high access value
         gran3 (save-granule coll1 {:access-value 10})
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
+        ;; required to create catalog item acl
+        _ (create-acl (assoc-in provider-acl-for-catalog-item [:group_permissions 0 :group_id] created-group-concept-id))
+        _ (u/wait-until-indexed)
         ;; guest read coll1 granules with undefined access value
         acl1 (create-acl {:group_permissions [{:permissions [:read]
                                                :user_type :guest}]
@@ -616,7 +641,9 @@
         gran3 (save-granule coll1 {:temporal {:single-date-time "1999-01-01T00:00:00Z"}})
 
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
-
+        ;; required to create catalog item acl
+        _ (create-acl (assoc-in provider-acl-for-catalog-item [:group_permissions 0 :group_id] created-group-concept-id))
+        _ (u/wait-until-indexed)
         acl1 (create-acl {:group_permissions [{:permissions [:read]
                                                :user_type :guest}]
                           :catalog_item_identity {:name "prov1 granules between 2000 and 2011"
