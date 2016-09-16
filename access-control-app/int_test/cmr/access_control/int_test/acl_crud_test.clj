@@ -152,7 +152,7 @@
                     [:system_identity :target] "TAG_GROUP")
 
           "User lacks create permission from catalog items target provider"
-          #"User \[admin\] does not have permission to create catalog item targeting provider-id \[PROV1\]"
+          #"User \[admin\] does not have permission to create a catalog item for provider-id \[PROV1\]"
           catalog-item-acl)
 
     (testing "Acceptance criteria: I receive an error if creating an ACL with invalid JSON"

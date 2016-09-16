@@ -178,10 +178,11 @@
   (let [token (:token context)
         user (if token (tokens/get-user-id context token) "guest")
         sids (acl-util/get-sids context user)
+        provider-id (:provider-id acl)
         provider-acls (map #(acl-util/get-acl context %)
                            (map #(get % "concept_id") (get (json/parse-string (:results (acl-search/search-for-acls context {:provider provider-id} true))) "items")))]
     (when-not (contains? (set (flatten (permissions-granted-by-provider-to-user sids provider-acls "CATALOG_ITEM_ACL"))) "create")
-      {key-path [(format "User [%s] does not have permission to create catalog item targeting provider-id [%s]"
+      {key-path [(format "User [%s] does not have permission to create a catalog item for provider-id [%s]"
                           user provider-id)]})))
 
 (defn- make-catalog-item-identity-validations

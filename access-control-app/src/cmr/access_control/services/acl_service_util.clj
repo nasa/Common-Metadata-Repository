@@ -29,7 +29,7 @@
    for use in checking permissions against acls."
   [context username-or-type]
   (cond
-    (contains? #{:guest :registered} username-or-type) [username-or-type]
+    (contains? #{"guest" "registered"} (name username-or-type)) [username-or-type]
     (string? username-or-type) (concat [:registered]
                                        (->> (groups/search-for-groups context {:member username-or-type})
                                             :results
