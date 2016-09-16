@@ -55,6 +55,15 @@
    :catalog_item_identity {:name "REPLACEME"
                            :provider_id "PROV1"
                            :collection_applicable true}})
+(def provider-acl-for-catalog-item
+  "A provider ACL that grants create to guest to facilitate catalog-item creation"
+  {:legacy_guid "ABCD-EFG-HIJK-LMNOP"
+   :group_permissions [{:group_id "REPLACEME"
+                        :permissions ["read" "update" "create" "delete"],}
+                       {:user_type "guest"
+                        :permissions ["read" "update" "create" "delete"]}]
+   :provider_identity {:provider_id "PROV1"
+                       :target "CATALOG_ITEM_ACL"}})
 
 (defn system-acl
   "Creates a system acl for testing with the given target."
@@ -176,6 +185,10 @@
                                ["user1"])
         group1-concept-id (:concept_id group1)
         group2-concept-id (:concept_id group2)
+        acl-provider-for-catalog-item-acl (ingest-acl token (assoc-in provider-acl-for-catalog-item
+                                                                      [:group_permissions 0 :group_id] group1-concept-id))
+        ;; required to create catalog item acls
+        _ (u/wait-until-indexed)
         acl1 (ingest-acl token (assoc (system-acl "SYSTEM_AUDIT_REPORT")
                                       :group_permissions
                                       [{:user_type "guest" :permissions ["read"]}]))
@@ -190,7 +203,6 @@
         acl5 (ingest-acl token (assoc (provider-acl "AUDIT_REPORT")
                                       :group_permissions
                                       [{:user_type "guest" :permissions ["read"]}]))
-        acl6 (ingest-acl token (provider-acl "OPTION_ASSIGNMENT"))
 
         acl7 (ingest-acl token (single-instance-acl group1-concept-id))
         acl8 (ingest-acl token (single-instance-acl group2-concept-id))
@@ -199,14 +211,14 @@
         acl10 (ingest-acl token (catalog-item-acl "All Granules"))
 
         system-acls [acl1 acl2 acl3 acl4]
-        provider-acls [acl5 acl6]
+        provider-acls [acl-provider-for-catalog-item-acl acl5]
         single-instance-acls [acl7 acl8]
         catalog-item-acls [acl9 acl10]
         all-acls (concat system-acls provider-acls single-instance-acls catalog-item-acls)]
     (u/wait-until-indexed)
 
     (testing "Find all ACLs"
-      (let [response (ac/search-for-acls (u/conn-context) {})]
+      (let [response (ac/search-for-acls (u/conn-context) {:page_size 20})]
         (is (= (acls->search-response (count all-acls) all-acls)
                (dissoc response :took)))
         (testing "Expected Names"
@@ -216,7 +228,7 @@
                   (str "Group - " group1-concept-id)
                   (str "Group - " group2-concept-id)
                   "Provider - PROV1 - AUDIT_REPORT"
-                  "Provider - PROV1 - OPTION_ASSIGNMENT"
+                  "Provider - PROV1 - CATALOG_ITEM_ACL"
                   "System - ARCHIVE_RECORD"
                   "System - METRIC_DATA_POINT_SAMPLE"
                   "System - SYSTEM_AUDIT_REPORT"
@@ -236,6 +248,11 @@
 
 (deftest acl-search-permitted-group-test
   (let [token (e/login (u/conn-context) "user1")
+        group1 (u/ingest-group token {:name "group1"} ["user1"])
+        acl-provider-for-catalog-item-acl (ingest-acl token (assoc-in provider-acl-for-catalog-item
+                                                                      [:group_permissions 0 :group_id] (:concept_id group1)))
+        ;; required to create catalog item acls
+        _ (u/wait-until-indexed)
         acl1 (ingest-acl token (assoc (system-acl "SYSTEM_AUDIT_REPORT")
                                       :group_permissions
                                       [{:user_type "guest" :permissions ["read"]}]))
@@ -262,13 +279,13 @@
                                       [{:user_type "registered" :permissions ["read" "order"]}
                                        {:group_id "AG10000-PROV" :permissions ["create"]}]))
 
-        guest-acls [acl1 acl3 acl4 acl7]
+        guest-acls [acl-provider-for-catalog-item-acl acl1 acl3 acl4 acl7]
         registered-acls [acl2 acl5 acl8]
         AG12345-acls [acl3 acl6]
         AG10000-acls [acl8]
-        read-acls [acl1 acl2 acl3 acl4 acl8]
-        create-acls [acl3 acl5 acl7 acl8]
-        all-acls [acl1 acl2 acl3 acl4 acl5 acl6 acl7 acl8]]
+        read-acls [acl-provider-for-catalog-item-acl acl1 acl2 acl3 acl4 acl8]
+        create-acls [acl-provider-for-catalog-item-acl acl3 acl5 acl7 acl8]
+        all-acls [acl-provider-for-catalog-item-acl acl1 acl2 acl3 acl4 acl5 acl6 acl7 acl8]]
     (u/wait-until-indexed)
 
     (testing "Search ACLs by permitted group"
@@ -316,10 +333,10 @@
                     (dissoc response :took))))
            ;; CMR-3154 acceptance criterium 1
            "Guests create"
-           ["guest" "create"] [acl7]
+           ["guest" "create"] [acl-provider-for-catalog-item-acl acl7]
 
            "Guest read"
-           ["guest" "read"] [acl1 acl3 acl4]
+           ["guest" "read"] [acl-provider-for-catalog-item-acl acl1 acl3 acl4]
 
            "Registered read"
            ["registered" "read"] [acl2 acl8]
@@ -409,9 +426,10 @@
         acl-system (ingest-acl token (assoc (system-acl "SYSTEM_AUDIT_REPORT")
                                             :group_permissions
                                             [{:user_type "guest" :permissions ["read"]}]))
-        acl-provider (ingest-acl token (assoc (provider-acl "AUDIT_REPORT")
-                                              :group_permissions
-                                              [{:user_type "guest" :permissions ["read"]}]))
+
+        acl-provider (ingest-acl token (assoc-in provider-acl-for-catalog-item [:group_permissions 0 :group_id] group1-concept-id))
+        ;; required to create catalog item acls
+        _ (u/wait-until-indexed)
         acl-single-instance (ingest-acl token (single-instance-acl group1-concept-id))
         acl-catalog-item (ingest-acl token (catalog-item-acl "All Collections"))
         all-acls [acl-system acl-provider acl-single-instance acl-catalog-item]]
@@ -456,6 +474,10 @@
         group1 (u/ingest-group token {:name "group1"} ["user1"])
         group2 (u/ingest-group token {:name "group2"} ["USER1" "user2"])
         group3 (u/ingest-group token {:name "group3"} nil)
+        acl-provider-for-catalog-item-acl (ingest-acl token (assoc-in provider-acl-for-catalog-item
+                                                                      [:group_permissions 0 :group_id] (:concept_id group1)))
+        ;; required to create catalog item acls
+        _ (u/wait-until-indexed)
         ;; No user should match this since all users are registered
         acl-guest (ingest-acl token (assoc (system-acl "ANY_ACL")
                                            :group_permissions
@@ -507,31 +529,30 @@
         ["user3"] (concat registered-acls)
 
         "user1 gets acls for registered, group1, and group2"
-        ["user1"] [acl-registered-1 acl-registered-2 acl-group1 acl-group2]
+        ["user1"] [acl-provider-for-catalog-item-acl acl-registered-1 acl-registered-2 acl-group1 acl-group2]
 
         "user2 gets acls for guest, registred, and group2"
         ["user2"] [acl-registered-1 acl-registered-2 acl-group2]
 
         "User names are case-insensitive"
-        ["USER1"] [acl-registered-1 acl-registered-2 acl-group1 acl-group2]))))
+        ["USER1"] [acl-provider-for-catalog-item-acl acl-registered-1 acl-registered-2 acl-group1 acl-group2]))))
 
 (deftest acl-search-provider-test
   (let [token (e/login (u/conn-context) "user1")
-        acl1 (ingest-acl token (assoc (provider-acl "INGEST_MANAGEMENT_ACL")
-                                      :group_permissions
-                                      [{:user_type "guest" :permissions ["read"]}]))
-        acl2 (ingest-acl token (assoc (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
-                                                [:provider_identity :provider_id] "PROV2")
-                                      :group_permissions
-                                      [{:user_type "guest" :permissions ["read"]}]))
-        acl3 (ingest-acl token (assoc (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
-                                                [:provider_identity :provider_id] "PROV3")
-                                      :group_permissions
-                                      [{:user_type "guest" :permissions ["read"]}]))
-        acl4 (ingest-acl token (assoc (assoc-in (provider-acl "INGEST_MANAGEMENT_ACL")
-                                                [:provider_identity :provider_id] "PROV4")
-                                      :group_permissions
-                                      [{:user_type "guest" :permissions ["read"]}]))
+        group1 (u/ingest-group token {:name "group1"} ["user1"])
+        acl1 (ingest-acl token (assoc-in provider-acl-for-catalog-item
+                                         [:group_permissions 0 :group_id] (:concept_id group1)))
+        acl2 (ingest-acl token (assoc-in (assoc-in provider-acl-for-catalog-item
+                                                   [:group_permissions 0 :group_id] (:concept_id group1))
+                                         [:provider_identity :provider_id] "PROV2"))
+        acl3 (ingest-acl token (assoc-in (assoc-in provider-acl-for-catalog-item
+                                                   [:group_permissions 0 :group_id] (:concept_id group1))
+                                         [:provider_identity :provider_id] "PROV3"))
+        acl4 (ingest-acl token (assoc-in (assoc-in provider-acl-for-catalog-item
+                                                   [:group_permissions 0 :group_id] (:concept_id group1))
+                                         [:provider_identity :provider_id] "PROV4"))
+        ;; required to create catalog item acls
+        _ (u/wait-until-indexed)
         acl5 (ingest-acl token (catalog-item-acl "Catalog_Item1_PROV1"))
         acl6 (ingest-acl token (catalog-item-acl "Catalog_Item2_PROV1"))
         acl7 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item3_PROV2")
@@ -608,13 +629,13 @@
         acl4 (ingest-acl token (assoc (provider-acl "OPTION_DEFINITION")
                                       :group_permissions
                                       [{:user_type "registered" :permissions ["create"]}]))
-        acl5 (ingest-acl token (assoc (provider-acl "OPTION_ASSIGNMENT")
-                                      :group_permissions
-                                      [{:group_id (:concept_id group2) :permissions ["create"]}]))
-        acl6 (ingest-acl token (assoc-in (assoc (provider-acl "OPTION_ASSIGNMENT")
-                                                :group_permissions
-                                                [{:group_id (:concept_id group2) :permissions ["create"]}])
+        acl5 (ingest-acl token (assoc-in provider-acl-for-catalog-item
+                                         [:group_permissions 0 :group_id] (:concept_id group1)))
+        acl6 (ingest-acl token (assoc-in (assoc-in provider-acl-for-catalog-item
+                                                   [:group_permissions 0 :group_id] (:concept_id group1))
                                          [:provider_identity :provider_id] "PROV2"))
+        ;; required to create catalog item acls
+        _ (u/wait-until-indexed)
         acl7 (ingest-acl token (assoc (catalog-item-acl "All Collection")
                                       :group_permissions
                                       [{:group_id (:concept_id group1) :permissions ["create"]}
@@ -639,7 +660,7 @@
          :permitted-user "user1"}
         [acl7]
 
-        "One criteria changed to get empy result"
+        "One criteria changed to get empty result"
         {:provider "PROV1"
          :permitted-group "guest"
          :identity-type "catalog_item"
@@ -652,7 +673,7 @@
          :permitted-group ["guest" "registered"]
          :identity-type ["catalog_item" "provider"]
          :permitted-user "user1"}
-        [acl4 acl7]
+        [acl4 acl5 acl6 acl7]
 
         ;;Shows when permitted groups are not specified, then all user groups are returned for that user
         "Multiple search criteria with no permitted group specified and permitted users set to user2"
@@ -660,4 +681,4 @@
          :permitted-group ""
          :identity-type ["catalog_item" "provider"]
          :permitted-user "user2"}
-        [acl4 acl5 acl6 acl7 acl9]))))
+        [acl4 acl7 acl9]))))
