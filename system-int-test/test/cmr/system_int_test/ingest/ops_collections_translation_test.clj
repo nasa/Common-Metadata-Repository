@@ -159,12 +159,11 @@
   "Validate a record against the XML schema if applicable and UMM JSON schema. For records in umm-json
   validate the json schema against the collection's schema version"
   [record]
-  (let [format (:metadata-format record)
-        metadata (:metadata record)]
+  (let [{:keys [metadata-format metadata]} record]
     (if (= :umm-json (:format format))
-      (json-schema/validate-umm-json metadata :collection (:version format))
+      (json-schema/validate-umm-json metadata :collection (:version metadata-format))
       (do
-        (umm/validate-xml :collection format metadata)
+        (umm/validate-xml :collection metadata-format metadata)
         (json-schema/validate-umm-json (umm-json/umm->json (:collection record)) :collection)))))
 
 
@@ -282,7 +281,7 @@
 
 (comment
   ;; Translate and validate a specific collection by concept-id
-  (def record (get-collection "C1214604828-SCIOPS"))
+  (def record (get-collection "C1282835544-SCIOPS"))
   (translate-and-validation-collection record)
   (translate-record-to-umm record)
   (:metadata-format record)
