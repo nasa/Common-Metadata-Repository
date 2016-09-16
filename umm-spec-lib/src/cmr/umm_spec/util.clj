@@ -1,12 +1,13 @@
 (ns cmr.umm-spec.util
   "This contains utilities for the UMM Spec code."
-  (:require [clojure.string :as str]
-            [cmr.common.util :as util]
-            [cmr.umm-spec.date-util :as du]
-            [cmr.umm-spec.models.umm-common-models :as cmn]
-            [clj-time.format :as f]
-            [cmr.common.xml.parse :as p]
-            [cmr.common.xml.simple-xpath :refer [select]]))
+  (:require
+   [clj-time.format :as f]
+   [clojure.string :as str]
+   [cmr.common.util :as util]
+   [cmr.common.xml.parse :as p]
+   [cmr.common.xml.simple-xpath :refer [select]]
+   [cmr.umm-spec.date-util :as du]
+   [cmr.umm-spec.models.umm-common-models :as cmn]))
 
 (def ^:private umm-contact-mechanism-correction-map
   {"phone" "Telephone"
@@ -54,6 +55,10 @@
   [(cmn/map->ScienceKeywordType {:Category "EARTH SCIENCE"
                                  :Term not-provided
                                  :Topic not-provided})])
+
+(def not-provided-spatial-extent
+  "Default spatial extent to use if none is provided"
+  {:GranuleSpatialRepresentation "NO_SPATIAL"})
 
 (defn convert-empty-record-to-nil
   "Converts empty record to nil."

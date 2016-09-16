@@ -62,7 +62,7 @@
 
 (defn parse-contact-persons
   "Returns UMM-C contact persons map for the given DIF10 Personnel elements."
-  [personnels]
+  [personnels apply-default?]
   (seq
    (for [personnel personnels
          :let [roles (collection-personnel-roles (values-at personnel "Role"))
@@ -71,7 +71,7 @@
      {:Roles roles
       :FirstName (value-of contact-person "First_Name")
       :MiddleName (value-of contact-person "Middle_Name")
-      :LastName (value-of contact-person "Last_Name")
+      :LastName (su/with-default (value-of contact-person "Last_Name") apply-default?)
       :Uuid (:uuid (:attrs (first (filter #(= :Contact_Person (:tag %)) (:content personnel)))))
       :ContactInformation {:ContactMechanisms (parse-contact-mechanisms contact-person)
                            :Addresses (parse-address contact-person)}})))

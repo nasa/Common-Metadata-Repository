@@ -155,6 +155,18 @@
   (let [{:keys [metadata-format metadata concept-id]} record]
     (umm/parse-metadata context :collection metadata-format metadata {:apply-default? true})))
 
+(defn- validate-record-schemas
+  "Validate a record against the XML schema if applicable and UMM JSON schema. For records in umm-json
+  validate the json schema against the collection's schema version"
+  [record]
+  (let [{:keys [metadata-format metadata]} record]
+    (if (= :umm-json (:format format))
+      (json-schema/validate-umm-json metadata :collection (:version metadata-format))
+      (do
+        (umm/validate-xml :collection metadata-format metadata)
+        (json-schema/validate-umm-json (umm-json/umm->json (:collection record)) :collection)))))
+
+
 (defn- get-collection-validation-errors
   "Collect the following collection validations:
    * Errors from translating from native XML to UMM-C
@@ -166,8 +178,7 @@
   (remove empty?
    (concat
      [(str (get-in record [:collection :_errors]))] ; Errors from translating to UMM
-     (umm/validate-xml :collection (:metadata-format record) (:metadata record))
-     (json-schema/validate-umm-json (umm-json/umm->json (:collection record)) :collection)
+     (validate-record-schemas record)
      (umm-validation/validate-collection record))))
 
 (defn- translate-and-validation-collection
@@ -270,7 +281,8 @@
 
 (comment
   ;; Translate and validate a specific collection by concept-id
-  (def record (get-collection "C1279109560-SCIOPS"))
+  (def record (get-collection "C1282835544-SCIOPS"))
   (translate-and-validation-collection record)
   (translate-record-to-umm record)
-  (:metadata-format record))
+  (:metadata-format record)
+  (:metadata record))

@@ -146,12 +146,12 @@
    :LocationKeywords (lk/spatial-keywords->location-keywords
                       (lk/get-spatial-keywords-maps context)
                       (values-at doc "/Collection/SpatialKeywords/Keyword"))
-   :SpatialExtent    (spatial/parse-spatial doc)
+   :SpatialExtent    (spatial/parse-spatial doc apply-default?)
    :TemporalExtents  (or (seq (parse-temporal doc))
                          (when apply-default? u/not-provided-temporal-extents))
    :Platforms (or (seq (parse-platforms doc))
                   (when apply-default? u/not-provided-platforms))
-   :ProcessingLevel {:Id (value-of doc "/Collection/ProcessingLevelId")
+   :ProcessingLevel {:Id (u/with-default (value-of doc "/Collection/ProcessingLevelId") apply-default?)
                      :ProcessingLevelDescription (value-of doc "/Collection/ProcessingLevelDescription")}
    :AdditionalAttributes (for [aa (select doc "/Collection/AdditionalAttributes/AdditionalAttribute")]
                            {:Name (value-of aa "Name")

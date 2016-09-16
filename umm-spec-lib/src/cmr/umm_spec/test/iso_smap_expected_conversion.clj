@@ -25,7 +25,7 @@
 (defn- expected-smap-iso-spatial-extent
   "Returns the expected SMAP ISO spatial extent"
   [spatial-extent]
-  (when (get-in spatial-extent [:HorizontalSpatialDomain :Geometry :BoundingRectangles])
+  (if (get-in spatial-extent [:HorizontalSpatialDomain :Geometry :BoundingRectangles])
     (-> spatial-extent
         (assoc :SpatialCoverageType "HORIZONTAL" :GranuleSpatialRepresentation "GEODETIC")
         (assoc :VerticalSpatialDomains nil :OrbitParameters nil)
@@ -33,7 +33,8 @@
         (update-in [:HorizontalSpatialDomain :Geometry]
                    assoc :CoordinateSystem "GEODETIC" :Points nil :GPolygons nil :Lines nil)
         (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc :CenterPoint nil)
-        conversion-util/prune-empty-maps)))
+        conversion-util/prune-empty-maps)
+    (cmn/map->SpatialExtentType su/not-provided-spatial-extent)))
 
 (defn- expected-smap-data-dates
   "Returns the expected ISO SMAP DataDates."

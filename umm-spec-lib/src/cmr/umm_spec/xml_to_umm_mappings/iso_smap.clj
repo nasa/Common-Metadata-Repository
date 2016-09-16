@@ -93,7 +93,7 @@
        :TemporalExtents (or (seq (parse-temporal-extents data-id-el))
                             (when apply-default? u/not-provided-temporal-extents))
        :ScienceKeywords (parse-science-keywords data-id-el apply-default?)
-       :SpatialExtent (spatial/parse-spatial data-id-el)
+       :SpatialExtent (spatial/parse-spatial data-id-el apply-default?)
        :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)
        ;; Required by UMM-C
        :RelatedUrls (when apply-default? [u/not-provided-related-url])
