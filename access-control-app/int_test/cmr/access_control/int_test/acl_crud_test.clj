@@ -85,7 +85,7 @@
         _ (u/wait-until-indexed)
         resp1 (ac/create-acl (merge {:token token} (u/conn-context)) catalog-item-acl)
         resp2 (ac/create-acl (merge {:token guest-token} (u/conn-context)) (assoc-in catalog-item-acl
-                                                                                     [:catalog_item_identity :target] "PROV1"))]
+                                                                                     [:catalog_item_identity :provider_id] "PROV2"))]
     (is (re-find #"^ACL.*" (:concept_id resp1)))
     (is (= 1 (:revision_id resp1)))
     (is (re-find #"^ACL.*" (:concept_id resp2)))
@@ -175,7 +175,9 @@
                       :throw-exceptions false})))))))
 
 (deftest acl-catalog-item-identity-validation-test
-  (let [token (e/login (u/conn-context) "admin")]
+  (let [token (e/login-guest (u/conn-context))
+        _ (ac/create-acl (u/conn-context) provider-acl-for-catalog-item)]
+    (u/wait-until-indexed)
     (are3 [errors acl] (is (= errors (:errors (u/create-acl token acl {:raw? true}))))
 
           "An error is returned if creating a catalog item identity that does not grant permission
@@ -301,7 +303,6 @@
                           :short-name "coll1"
                           :version "v1"
                           :provider-id "PROV1"})
-      (u/wait-until-indexed)
       (is (= {:revision_id 1 :status 200}
              (select-keys
                (u/create-acl token {:group_permissions [{:user_type "guest" :permissions ["read"]}]
@@ -312,19 +313,20 @@
                [:revision_id :status]))))))
 
 (deftest create-duplicate-acl-test
-  (let [token (e/login (u/conn-context) "admin")]
+  (let [token (e/login-guest (u/conn-context))]
     (testing "system ACL"
       (is (= 1 (:revision_id (ac/create-acl (u/conn-context) system-acl {:token token}))))
       (is (thrown-with-msg? Exception #"concepts with the same acl identity were found"
                             (ac/create-acl (u/conn-context) system-acl {:token token}))))
     (testing "provider ACL"
-      (is (= 1 (:revision_id (ac/create-acl (u/conn-context) provider-acl {:token token}))))
+      (is (= 1 (:revision_id (ac/create-acl (u/conn-context) provider-acl-for-catalog-item {:token token}))))
       (is (thrown-with-msg? Exception #"concepts with the same acl identity were found"
-                            (ac/create-acl (u/conn-context) provider-acl {:token token}))))
+                            (ac/create-acl (u/conn-context) provider-acl-for-catalog-item {:token token}))))
+    (u/wait-until-indexed)
     (testing "catalog item ACL"
-      (is (= 1 (:revision_id (ac/create-acl (u/conn-context) catalog-item-acl {:token token}))))
+      (is (= 1 (:revision_id (ac/create-acl (u/conn-context) catalog-item-acl){:token token})))
       (is (thrown-with-msg? Exception #"concepts with the same acl identity were found"
-                            (ac/create-acl (u/conn-context) catalog-item-acl {:token token}))))))
+                            (ac/create-acl (u/conn-context) catalog-item-acl){:token token})))))
 
 (deftest get-acl-test
   (let [token (e/login (u/conn-context) "admin")
@@ -368,11 +370,12 @@
     (is (= (assoc-in single-instance-acl [:single_instance_identity :target_id] group2-concept-id) (ac/get-acl (u/conn-context) concept-id {:token token})))))
 
 (deftest update-acl-errors-test
-  (let [token (e/login (u/conn-context) "admin")
+  (let [token (e/login-guest (u/conn-context))
         {system-concept-id :concept_id} (ac/create-acl (u/conn-context) system-acl {:token token})
         group1 (u/ingest-group token {:name "group1"} ["user1"])
         group1-concept-id (:concept_id group1)
-        {provider-concept-id :concept_id} (ac/create-acl (u/conn-context) provider-acl {:token token})
+        {provider-concept-id :concept_id} (ac/create-acl (u/conn-context) provider-acl-for-catalog-item {:token token})
+        _ (u/wait-until-indexed)
         {catalog-concept-id :concept_id} (ac/create-acl (u/conn-context) catalog-item-acl {:token token})
         {single-instance-concept-id :concept_id} (ac/create-acl (u/conn-context) (assoc-in single-instance-acl [:single_instance_identity :target_id] group1-concept-id) {:token token})]
     (are3 [re acl concept-id]
@@ -480,7 +483,9 @@
                            (assoc provider-acl :legacy_guid "XYZ-EFG-HIJK-LMNOP") {:token token}))))))
 
 (deftest delete-acl-test
-  (let [token (e/login (u/conn-context) "admin")
+  (let [token (e/login-guest (u/conn-context))
+        _ (ac/create-acl (u/conn-context) provider-acl-for-catalog-item)
+        _ (u/wait-until-indexed)
         acl-concept-id (:concept_id
                          (ac/create-acl (u/conn-context)
                                         {:group_permissions [{:permissions [:read]
@@ -508,12 +513,12 @@
     (testing "200 status, concept id and revision id of tombstone is returned on successful deletion."
       (is (= {:status 200
               :body {:revision-id 2
-                     :concept-id "ACL1200000000-CMR"}
+                     :concept-id acl-concept-id}
               :content-type :json}
              (ac/delete-acl (u/conn-context) acl-concept-id {:token token :raw? true}))))
     (testing "404 is returned when trying to delete an ACL again"
       (is (= {:status 404
-              :body {:errors ["ACL with concept id [ACL1200000000-CMR] was deleted."]}
+              :body {:errors ["ACL with concept id [ACL1200000001-CMR] was deleted."]}
               :content-type :json}
              (ac/delete-acl (u/conn-context) acl-concept-id {:token token :raw? true}))))
     (testing "concept can no longer be retrieved through access control service"

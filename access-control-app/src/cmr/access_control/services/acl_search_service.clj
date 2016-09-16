@@ -260,7 +260,6 @@
 
 (defmethod qe/add-acl-conditions-to-query :acl
   [context query]
-  (proto-repl.saved-values/save 6)
   (let [token (:token context)
         user (if token (tokens/get-user-id context token) "guest")
         sids (acl-util/get-sids context (if (= user "guest") :guest user))
@@ -287,8 +286,7 @@
          [find-concepts-time results] (util/time-execution
                                         (cs/find-concepts context :acl query))
 
-         total-took (+ query-creation-time find-concepts-time)
-         _ (proto-repl.saved-values/save 5)]
+         total-took (+ query-creation-time find-concepts-time)]
      (info (format "Found %d acls in %d ms in format %s with params %s."
                    (:hits results) total-took (common-qm/base-result-format query) (pr-str params)))
      (assoc results :took total-took))))

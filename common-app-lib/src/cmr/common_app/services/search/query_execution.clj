@@ -82,7 +82,6 @@
   (let [pre-processed-query (pre-process-query-result-features context query)
         [context processed-query] (concept-type-specific-query-processing
                                     context pre-processed-query)
-        _ (proto-repl.saved-values/save 4)
         elastic-results (->> processed-query
                              (#(if (:skip-acls? %)
                                  %

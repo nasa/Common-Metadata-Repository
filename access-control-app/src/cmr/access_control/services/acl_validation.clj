@@ -185,19 +185,19 @@
                                                           (map :concept_id))))
         provider-id (:provider-id acl)
         provider-acls (map #(acl-util/get-acl context %)
-                           (map #(get % "concept_id") (get (json/parse-string (:results (acl-search/search-for-acls context {:provider provider-id} true))) "items")))
-        _ (proto-repl.saved-values/save 2)]
+                           (map #(get % "concept_id") (get (json/parse-string (:results (acl-search/search-for-acls context {:provider provider-id} true))) "items")))]
     (when-not (contains? (set (flatten (permissions-granted-by-provider-to-user sids provider-acls "CATALOG_ITEM_ACL"))) "create")
       {key-path [(format "User [%s] does not have permission to create catalog item targeting provider-id [%s]"
                           user provider-id)]})))
 
 (defn- make-catalog-item-identity-validations
   "Returns a standard validation for an ACL catalog_item_identity field closed over the given context and ACL to be validated."
-  [context acl]
+  [context acl save-flag]
   [catalog-item-identity-collection-or-granule-validation
    catalog-item-identity-collection-applicable-validation
    catalog-item-identity-granule-applicable-validation
-   #(validate-target-provider-grants-create context %1 %2)
+   (when (= :create save-flag)
+     #(validate-target-provider-grants-create context %1 %2))
    {:collection-identifier (v/when-present (make-collection-identifier-validation context acl))
     :granule-identifier (v/when-present granule-identifier-validation)}])
 
@@ -224,13 +224,13 @@
 
 (defn- make-acl-validations
   "Returns a sequence of validations closed over the given context for validating ACL records."
-  [context acl]
+  [context acl save-flag]
   [#(validate-provider-exists context %1 %2)
-   {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl))
+   {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl save-flag))
     :single-instance-identity (v/when-present (make-single-instance-identity-validations context))}
    validate-grantable-permissions])
 
 (defn validate-acl-save!
   "Throws service errors if ACL is invalid."
-  [context acl]
-  (v/validate! (make-acl-validations context acl) acl))
+  [context acl save-flag]
+  (v/validate! (make-acl-validations context acl save-flag) acl))
