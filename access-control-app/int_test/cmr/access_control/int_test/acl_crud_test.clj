@@ -33,7 +33,9 @@
 
 (def provider-acl-for-catalog-item
   {:legacy_guid "ABCD-EFG-HIJK-LMNOP"
-   :group_permissions [{:group_id "admins"
+   :group_permissions [{:group_id "REPLACEME"
+                        :permissions ["read" "update" "create" "delete"],}
+                       {:user_type "guest"
                         :permissions ["read" "update" "create" "delete"]}]
    :provider_identity {:provider_id "PROV1"
                        :target "CATALOG_ITEM_ACL"}})
@@ -71,15 +73,23 @@
 
 (deftest create-catalog-item-acl-test
   (let [token (e/login (u/conn-context) "user1")
+        guest-token (e/login-guest (u/conn-context))
         group1 (u/ingest-group token {:name "group1"} ["user1"])
         group1-concept-id (:concept_id group1)
         _ (ac/create-acl (u/conn-context) (assoc-in provider-acl-for-catalog-item
                                                     [:group_permissions 0 :group_id]
                                                     group1-concept-id))
+        _ (ac/create-acl (u/conn-context) (assoc-in provider-acl-for-catalog-item
+                                                    [:provider_identity :provider_id]
+                                                    "PROV2"))
         _ (u/wait-until-indexed)
-        resp (ac/create-acl (merge {:token token} (u/conn-context)) catalog-item-acl)]
-    (is (re-find #"^ACL.*" (:concept_id resp)))
-    (is (= 1 (:revision_id resp)))))
+        resp1 (ac/create-acl (merge {:token token} (u/conn-context)) catalog-item-acl)
+        resp2 (ac/create-acl (merge {:token guest-token} (u/conn-context)) (assoc-in catalog-item-acl
+                                                                                     [:catalog_item_identity :target] "PROV1"))]
+    (is (re-find #"^ACL.*" (:concept_id resp1)))
+    (is (= 1 (:revision_id resp1)))
+    (is (re-find #"^ACL.*" (:concept_id resp2)))
+    (is (= 1 (:revision_id resp2)))))
 
 (deftest create-acl-errors-test
   (let [token (e/login (u/conn-context) "admin")

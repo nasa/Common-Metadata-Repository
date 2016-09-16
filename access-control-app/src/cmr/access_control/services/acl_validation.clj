@@ -185,7 +185,8 @@
                                                           (map :concept_id))))
         provider-id (:provider-id acl)
         provider-acls (map #(acl-util/get-acl context %)
-                           (map #(get % "concept_id") (get (json/parse-string (:results (acl-search/search-for-acls context {:provider provider-id}))) "items")))]
+                           (map #(get % "concept_id") (get (json/parse-string (:results (acl-search/search-for-acls context {:provider provider-id} true))) "items")))
+        _ (proto-repl.saved-values/save 2)]
     (when-not (contains? (set (flatten (permissions-granted-by-provider-to-user sids provider-acls "CATALOG_ITEM_ACL"))) "create")
       {key-path [(format "User [%s] does not have permission to create catalog item targeting provider-id [%s]"
                           user provider-id)]})))

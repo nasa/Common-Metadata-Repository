@@ -260,6 +260,7 @@
 
 (defmethod qe/add-acl-conditions-to-query :acl
   [context query]
+  (proto-repl.saved-values/save 6)
   (let [token (:token context)
         user (if token (tokens/get-user-id context token) "guest")
         sids (acl-util/get-sids context (if (= user "guest") :guest user))
@@ -274,16 +275,20 @@
 (defn search-for-acls
   "Searches for ACLs using given parameters. Returns result map from find-concepts
    including total time taken."
-  [context params]
-  (let [[query-creation-time query] (util/time-execution
-                                      (->> params
-                                           cp/sanitize-params
-                                           (validate-acl-search-params :acl)
-                                           (cp/parse-parameter-query context :acl)))
-        [find-concepts-time results] (util/time-execution
-                                       (cs/find-concepts context :acl query))
+  ([context params]
+   (search-for-acls context params false))
+  ([context params skip-acls]
+   (let [[query-creation-time query] (util/time-execution
+                                       (->> params
+                                            cp/sanitize-params
+                                            (validate-acl-search-params :acl)
+                                            (cp/parse-parameter-query context :acl)))
+         query (assoc query :skip-acls? skip-acls)
+         [find-concepts-time results] (util/time-execution
+                                        (cs/find-concepts context :acl query))
 
-        total-took (+ query-creation-time find-concepts-time)]
-    (info (format "Found %d acls in %d ms in format %s with params %s."
-                  (:hits results) total-took (common-qm/base-result-format query) (pr-str params)))
-    (assoc results :took total-took)))
+         total-took (+ query-creation-time find-concepts-time)
+         _ (proto-repl.saved-values/save 5)]
+     (info (format "Found %d acls in %d ms in format %s with params %s."
+                   (:hits results) total-took (common-qm/base-result-format query) (pr-str params)))
+     (assoc results :took total-took))))
