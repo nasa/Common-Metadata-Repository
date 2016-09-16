@@ -207,3 +207,13 @@
   "Correct the contact mechanism if a correction exists, otherwise return the original"
   [contact-mechanism]
   (get umm-contact-mechanism-correction-map contact-mechanism contact-mechanism))
+
+(defn format-isbn
+  "Format the ISBN to make it compliant with UMM"
+  [isbn]
+  (when (some? isbn)
+    (-> isbn
+        str/trim
+        (str/replace "-" "")
+        (str/replace "ISBN" "")
+        (str/replace "ISSN" ""))))

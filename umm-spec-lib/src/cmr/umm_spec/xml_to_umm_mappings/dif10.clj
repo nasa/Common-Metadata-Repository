@@ -185,7 +185,7 @@
                                            :Publication_Place
                                            :Publisher
                                            :Pages
-                                           [:ISBN (value-of pub-ref "ISBN")]
+                                           [:ISBN (u/format-isbn (value-of pub-ref "ISBN"))]
                                            (when (= (value-of pub-ref "Persistent_Identifier/Type") "DOI")
                                              [:DOI {:DOI (value-of pub-ref "Persistent_Identifier/Identifier")}])
                                            [:RelatedUrl

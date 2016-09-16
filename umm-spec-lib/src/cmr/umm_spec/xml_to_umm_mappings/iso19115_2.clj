@@ -191,7 +191,7 @@
                                :Issue (char-string-value publication "gmd:series/gmd:CI_Series/gmd:issueIdentification")
                                :Pages (char-string-value publication "gmd:series/gmd:CI_Series/gmd:page")
                                :Publisher (select-party "publisher" "/gmd:organisationName")
-                               :ISBN (char-string-value publication "gmd:ISBN")
+                               :ISBN (su/format-isbn (char-string-value publication "gmd:ISBN"))
                                :DOI {:DOI (char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
                                :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})
      :MetadataAssociations (ma/xml-elem->metadata-associations doc)
