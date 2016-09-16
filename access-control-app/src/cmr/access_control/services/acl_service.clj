@@ -53,7 +53,7 @@
   ([context acl action]
    (acl-log-message context acl nil action))
   ([context new-acl existing-acl action]
-   (let [user (tokens/get-user-id context (:token context))]
+   (let [user (if (:token context) (tokens/get-user-id context (:token context)) "guest")]
      (case action
            :create (format "User: [%s] Created ACL [%s]" user (pr-str new-acl))
            :update (format "User: [%s] Updated ACL,\n before: [%s]\n after: [%s]"
