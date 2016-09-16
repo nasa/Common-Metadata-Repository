@@ -17,7 +17,7 @@
   [tag-associations-json]
   (jv/validate-tag-associations-json (tv/sanitized-json tag-associations-json))
   (->> (json/parse-string tag-associations-json true)
-       (map util/map-keys->kebab-case)))
+       (map #(set/rename-keys % {:concept_id :concept-id :revision_id :revision-id}))))
 
 (defn- get-inaccessible-concept-ids
   "Returns the collection concept-ids within the given list that are invalid,
@@ -210,4 +210,3 @@
     (->> tag-associations
          (map #(validate-collection-identifier
                  context inaccessible-concept-ids tombstones inaccessibles %)))))
-
