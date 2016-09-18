@@ -4,13 +4,14 @@
    [clojure.string :as str]
    [cmr.transmit.config :as transmit-config]))
 
-(def initial-db-state
+(defn initial-db-state
   "Initial database state which is a map of usernames to passwords"
-  {:users {transmit-config/mock-echo-system-user "never login as this user"}})
+  []
+  {:users {(transmit-config/echo-system-username) "never login as this user"}})
 
 (defn create-db
   []
-  (atom initial-db-state))
+  (atom (initial-db-state)))
 
 (defn- context->urs-db
   [context]
@@ -18,7 +19,7 @@
 
 (defn reset
   [context]
-  (reset! (context->urs-db context) initial-db-state))
+  (reset! (context->urs-db context) (initial-db-state)))
 
 (defn create-users
   "Creates the list of users in the user db"

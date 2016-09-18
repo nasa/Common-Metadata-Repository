@@ -105,18 +105,6 @@
                           (context->sids context)
                           permission-type))
          seq)))
-(comment
-
- (deref (get-in user/system [:apps :mock-echo :acl-db]))
-
- (->> (acl-fetcher/get-acls context [object-identity-type])
-      ;; Find acls on INGEST_MANAGEMENT
-      (filter #(= target (get-in % [acl-oit-key :target])))
-      ;; Find acls for this user and permission type
-      (filter (partial acl-matches-sids-and-permission?
-                       (context->sids context)
-                       permission-type))))
-
 
 (defn- has-ingest-management-permission?
   "Returns true if the user identified by the token in the cache has been granted

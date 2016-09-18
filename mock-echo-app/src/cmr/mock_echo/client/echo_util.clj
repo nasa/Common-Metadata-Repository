@@ -266,7 +266,7 @@
   "Grants system-level access-control group management permissions for the admin group"
   [context & permission-types]
   (apply grant-system-group-permissions-to-group
-   context config/mock-echo-system-group-guid permission-types))
+   context (config/administrators-group-legacy-guid) permission-types))
 
 (defn grant-group-instance-permissions-to-group
   [context group-guid target-group-guid & permission-types]
@@ -295,7 +295,7 @@
   "Grants provider-level access-control group management permissions for the admin group"
   [context provider-guid & permission-types]
   (apply grant-provider-group-permissions-to-group
-   context config/mock-echo-system-group-guid provider-guid permission-types))
+   context (config/administrators-group-legacy-guid) provider-guid permission-types))
 
 (defn grant-provider-group-permissions-to-all
   "Grants provider-level access-control group management to all users for all providers."

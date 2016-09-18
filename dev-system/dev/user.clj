@@ -59,7 +59,7 @@
   (config/reset-config-values)
 
   ;; Uncomment this to force CMR to use SOAP Services
-  ; (configure-for-soap-services)
+  (configure-for-soap-services)
 
   (jobs/set-default-job-start-delay! (* 3 3600))
 

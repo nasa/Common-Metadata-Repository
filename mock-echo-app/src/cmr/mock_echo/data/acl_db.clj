@@ -2,7 +2,8 @@
   (:require
    [cmr.transmit.config :as transmit-config]))
 
-(def initial-db-state
+(defn initial-db-state
+  []
   {:last-id 0
    ;; A map of guids to acls
    ;; Contains an initial guid that grants the mock admin user ingest management permission.
@@ -10,13 +11,13 @@
           {:acl
            {:id "mock-admin-acl-guid",
             :access_control_entries
-            [{:sid {:group_sid {:group_guid transmit-config/mock-echo-system-group-guid}},
+            [{:sid {:group_sid {:group_guid (transmit-config/administrators-group-legacy-guid)}},
               :permissions ["READ" "UPDATE"]}],
             :system_object_identity {:target "INGEST_MANAGEMENT_ACL"}}}}})
 
 (defn create-db
   []
-  (atom initial-db-state))
+  (atom (initial-db-state)))
 
 (defn- context->acl-db
   [context]
@@ -24,7 +25,7 @@
 
 (defn reset
   [context]
-  (reset! (context->acl-db context) initial-db-state))
+  (reset! (context->acl-db context) (initial-db-state)))
 
 (defn- next-guid
   [context]

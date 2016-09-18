@@ -97,7 +97,7 @@
   (let [started-system (start system)]
     (try
       (access-control-index/create-index-or-update-mappings (:search-index started-system))
-      (bootstrap/bootstrap started-system)
+      ; (bootstrap/bootstrap started-system)
       (catch Exception e
         (common-sys/stop started-system component-order)
         (throw e)))

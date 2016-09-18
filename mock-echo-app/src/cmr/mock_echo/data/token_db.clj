@@ -2,17 +2,18 @@
   (:require
    [cmr.transmit.config :as transmit-config]))
 
-(def initial-db-state
+(defn initial-db-state
+  []
   {:last-id 0
    ;; a map of token ids to maps containing username and group_guids
-   :token-map {transmit-config/mock-echo-system-token
-               {:username transmit-config/mock-echo-system-user
-                :group_guids [transmit-config/mock-echo-system-group-guid]}}})
+   :token-map {(transmit-config/echo-system-token)
+               {:username (transmit-config/echo-system-username)
+                :group_guids [(transmit-config/administrators-group-legacy-guid)]}}})
 
 (defn create-db
   "Creates a new empty token database"
   []
-  (atom initial-db-state))
+  (atom (initial-db-state)))
 
 (defn- context->token-db
   [context]
@@ -50,7 +51,7 @@
 
 (defn reset
   [context]
-  (reset! (context->token-db context) initial-db-state))
+  (reset! (context->token-db context) (initial-db-state)))
 
 (comment
 

@@ -1,24 +1,27 @@
 (ns cmr.access-control.services.auth-util
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.acl.core :as acl]
-            [cmr.transmit.echo.tokens :as echo-tokens]
-            [cmr.common-app.services.search.query-model :as qm]
-            [cmr.common-app.services.search :as cs]
-            [cmr.common-app.services.search.query-model :as q]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.common-app.services.search.query-execution :as qe]))
+  (:require
+   [cmr.acl.core :as acl]
+   [cmr.common-app.services.search :as cs]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.query-execution :as qe]
+   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.common.services.errors :as errors]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.echo.tokens :as echo-tokens]))
+
 
 (defn- put-sids-in-context
   "Gets the current SIDs of the user in the context from the Access control application."
   [context]
   (if-let [token (:token context)]
+    ;; TODO we need to cache token->sids cache like in search
     (let [user-id (echo-tokens/get-user-id context token)
-          query (q/query {:concept-type :access-group
-                          :condition (q/string-condition :member user-id)
-                          :skip-acls? true
-                          :page-size :unlimited
-                          :result-format :query-specified
-                          :result-fields [:concept-id :legacy-guid]})
+          query (qm/query {:concept-type :access-group
+                           :condition (qm/string-condition :member user-id)
+                           :skip-acls? true
+                           :page-size :unlimited
+                           :result-format :query-specified
+                           :result-fields [:concept-id :legacy-guid]})
           response (qe/execute-query context query)
           sids (cons :registered (map #(or (:legacy-guid %) (:concept-id %)) (:items response)))]
       (assoc context :sids sids))
@@ -107,14 +110,19 @@
 
 (defmethod qe/add-acl-conditions-to-query :access-group
   [context query]
-  (let [context (put-sids-in-context context)
-        system-condition (when (get-system-acls context :read)
-                           (qm/negated-condition (qm/exist-condition :provider-id)))
-        provider-ids (map #(-> % :provider-object-identity :provider-id)
-                          (get-all-provider-acls context :read))
-        provider-condition (when (seq provider-ids)
-                             (qm/string-conditions :provider-id provider-ids))
-        all-conditions (remove nil? [system-condition provider-condition])]
-    (if (seq all-conditions)
-      (update-in query [:condition] #(gc/and-conds [(gc/or-conds all-conditions) %]))
-      (assoc query :condition qm/match-none))))
+  ;; We want to avoid a circular dependency here. Any call to the kernel will result in a search
+  ;; for groups. We assume that the system read token has full permission here. The kernel will use
+  ;; that to call the access control group.
+  (if (= (transmit-config/echo-system-token) (:token context))
+    query
+    (let [context (put-sids-in-context context)
+           system-condition (when (get-system-acls context :read)
+                              (qm/negated-condition (qm/exist-condition :provider-id)))
+           provider-ids (map #(-> % :provider-object-identity :provider-id)
+                             (get-all-provider-acls context :read))
+           provider-condition (when (seq provider-ids)
+                                (qm/string-conditions :provider-id provider-ids))
+           all-conditions (remove nil? [system-condition provider-condition])]
+      (if (seq all-conditions)
+        (update-in query [:condition] #(gc/and-conds [(gc/or-conds all-conditions) %]))
+        (assoc query :condition qm/match-none)))))

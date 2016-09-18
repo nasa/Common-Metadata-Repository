@@ -7,14 +7,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Constants for help in testing.
 
-(def mock-echo-system-user
-  "The name of a mock admin user for testing"
-  "mock-admin")
-
-(def mock-echo-system-group
-  "The name of the mock admin group."
-  "mock-admin-group")
-
 (def mock-echo-system-group-guid
   "The guid of the mock admin group."
   "mock-admin-group-guid")
@@ -120,6 +112,23 @@
 (defconfig echo-system-token
   "The ECHO system token to use for request to ECHO."
   {:default mock-echo-system-token})
+
+;; TODO add all these to hiera in every environment.
+
+;; TODO is this the same in every environment? If not we need to set via hiera.;
+;; I think it's probably ECHO_SYS in which case we should change this and then change the
+;; soap services settings in dev sys user to set this property to match.
+(defconfig echo-system-username
+  "The ECHO system token to use for request to ECHO."
+  {:default "User101"})
+
+(defconfig administrators-group-name
+  "The name of the Administrators group which the echo system user belongs to."
+  {:default "Administrators"})
+
+(defconfig administrators-group-legacy-guid
+  "The legacy guid of the administrators guid."
+  {:default mock-echo-system-group-guid})
 
 (def default-conn-info
   "The default values for connections."
