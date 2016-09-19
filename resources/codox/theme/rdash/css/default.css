@@ -285,6 +285,10 @@ h3 > a:hover {
     font-weight: bold;
     margin-bottom: 0;
     letter-spacing: 0.05em;
+    border-bottom: solid 1px #ddd;
+    max-width: 680px;
+    background-color: #fafafa;
+    padding: 0.5em;
 }
 
 .namespace-index .topics {
