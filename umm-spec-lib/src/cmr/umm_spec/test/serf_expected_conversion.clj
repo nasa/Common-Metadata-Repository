@@ -137,4 +137,5 @@
       (update-in-each [:PublicationReferences] fix-serf-doi)
       (update-in-each [:PublicationReferences] update-in [:RelatedUrl] fix-publication-reference-url)
       (assoc :Platforms nil)
-      (dissoc :DataCenters)))
+      (dissoc :DataCenters)
+      (update-in-each [:PublicationReferences] #(update % :ISBN su/format-isbn))))
