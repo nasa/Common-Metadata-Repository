@@ -12,7 +12,7 @@
   []
   {:name (transmit-config/administrators-group-name)
    :description "CMR Administrators"
-   :legacy_guid (transmit-config/administrators-group-legacy-guid)})
+   :legacy-guid (transmit-config/administrators-group-legacy-guid)})
 
 (comment
  (def context {:system (get-in user/system [:apps :access-control])}))
@@ -63,3 +63,6 @@
     (group-service/add-members context concept-id
                                [(transmit-config/echo-system-username)]
                                {:skip-acls? true})))
+
+(comment
+ (bootstrap (get-in user/system [:apps :access-control])))

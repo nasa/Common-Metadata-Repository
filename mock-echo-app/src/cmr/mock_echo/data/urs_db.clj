@@ -7,7 +7,7 @@
 (defn initial-db-state
   "Initial database state which is a map of usernames to passwords"
   []
-  {:users {(transmit-config/echo-system-username) "never login as this user"}})
+  {:users {(str/lower-case (transmit-config/echo-system-username)) "never login as this user"}})
 
 (defn create-db
   []
