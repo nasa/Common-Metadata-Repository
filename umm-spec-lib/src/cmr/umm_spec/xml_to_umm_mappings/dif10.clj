@@ -41,16 +41,6 @@
       (parse-projects-impl doc))
     (parse-projects-impl doc)))
 
-(defn- parse-access-constraints
-  "if both value and Description are nil, return nil.
-  Otherwise, if Description is nil, assoc it with u/not-provided"
-  [doc apply-default?]
-  (let [access-constraints-record
-        {:Description (value-of doc "/DIF/Access_Constraints")
-         :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}]
-    (when (seq (util/remove-nil-keys access-constraints-record))
-      (update access-constraints-record :Description #(u/with-default % apply-default?)))))
-
 (defn- parse-instruments-impl
   [platform-el]
   (for [inst (select platform-el "Instrument")]
@@ -103,6 +93,39 @@
   (seq (remove nil? [(date/parse-date-type-from-xml doc "DIF/Metadata_Dates/Metadata_Creation" "CREATE")
                      (date/parse-date-type-from-xml doc "DIF/Metadata_Dates/Metadata_Last_Revision" "UPDATE")])))
 
+(defn- parse-temporal-extent
+  "Return a temporal extent from a DIF10 Temporal_Coverage. Remove empty maps which could occur
+  if only a Paleo Date Time is present."
+  [temporal]
+  (let [temporal-extent
+        (util/remove-map-keys empty?
+                              {:TemporalRangeType (value-of temporal "Temporal_Range_Type")
+                               :PrecisionOfSeconds (value-of temporal "Precision_Of_Seconds")
+                               :EndsAtPresentFlag (value-of temporal "Ends_At_Present_Flag")
+                               :RangeDateTimes (for [rdt (select temporal "Range_DateTime")]
+                                                 {:BeginningDateTime (value-of rdt "Beginning_Date_Time")
+                                                  :EndingDateTime (parse-dif-end-date (value-of rdt "Ending_Date_Time"))})
+                               :SingleDateTimes (values-at temporal "Single_DateTime")
+                               :PeriodicDateTimes (for [pdt (select temporal "Periodic_DateTime")]
+                                                    {:Name (value-of pdt "Name")
+                                                     :StartDate (value-of pdt "Start_Date")
+                                                     :EndDate (parse-dif-end-date (value-of pdt "End_Date"))
+                                                     :DurationUnit (value-of pdt "Duration_Unit")
+                                                     :DurationValue (value-of pdt "Duration_Value")
+                                                     :PeriodCycleDurationUnit (value-of pdt "Period_Cycle_Duration_Unit")
+                                                     :PeriodCycleDurationValue (value-of pdt "Period_Cycle_Duration_Value")})})]
+    (when (seq temporal-extent)
+      temporal-extent)))
+
+(defn- parse-temporal-extents
+  "Returns a list of temportal extents"
+  [doc apply-default?]
+  (if-let [temporal-extents
+           (seq (remove nil? (map parse-temporal-extent (select doc "/DIF/Temporal_Coverage"))))]
+    temporal-extents
+    (when apply-default?
+      u/not-provided-temporal-extents)))
+
 (defn parse-dif10-xml
   "Returns collection map from DIF10 collection XML document."
   [doc {:keys [apply-default?]}]
@@ -127,7 +150,7 @@
                         :DetailedLocation (value-of lk "Detailed_Location")})
    :Projects (parse-projects doc apply-default?)
    :Quality (value-of doc "/DIF/Quality")
-   :AccessConstraints (parse-access-constraints doc apply-default?)
+   :AccessConstraints (dif-util/parse-access-constraints doc apply-default?)
    :UseConstraints (value-of doc "/DIF/Use_Constraints")
    :Platforms (for [platform (select doc "/DIF/Platform")]
                 {:ShortName (value-of platform "Short_Name")
@@ -135,22 +158,7 @@
                  :Type (without-default-value-of platform "Type")
                  :Characteristics (parse-characteristics platform)
                  :Instruments (parse-instruments platform apply-default?)})
-   :TemporalExtents (for [temporal (select doc "/DIF/Temporal_Coverage")]
-                      {:TemporalRangeType (value-of temporal "Temporal_Range_Type")
-                       :PrecisionOfSeconds (value-of temporal "Precision_Of_Seconds")
-                       :EndsAtPresentFlag (value-of temporal "Ends_At_Present_Flag")
-                       :RangeDateTimes (for [rdt (select temporal "Range_DateTime")]
-                                         {:BeginningDateTime (value-of rdt "Beginning_Date_Time")
-                                          :EndingDateTime (parse-dif-end-date (value-of rdt "Ending_Date_Time"))})
-                       :SingleDateTimes (values-at temporal "Single_DateTime")
-                       :PeriodicDateTimes (for [pdt (select temporal "Periodic_DateTime")]
-                                            {:Name (value-of pdt "Name")
-                                             :StartDate (value-of pdt "Start_Date")
-                                             :EndDate (parse-dif-end-date (value-of pdt "End_Date"))
-                                             :DurationUnit (value-of pdt "Duration_Unit")
-                                             :DurationValue (value-of pdt "Duration_Value")
-                                             :PeriodCycleDurationUnit (value-of pdt "Period_Cycle_Duration_Unit")
-                                             :PeriodCycleDurationValue (value-of pdt "Period_Cycle_Duration_Value")})})
+   :TemporalExtents (parse-temporal-extents doc apply-default?)
    :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
    :SpatialExtent (spatial/parse-spatial doc)
    :TilingIdentificationSystems (spatial/parse-tiling doc)
@@ -199,8 +207,8 @@
                        :VariableLevel2 (value-of sk "Variable_Level_2")
                        :VariableLevel3 (value-of sk "Variable_Level_3")
                        :DetailedVariable (value-of sk "Detailed_Variable")})
-   :DataCenters (center/parse-data-centers doc)
-   :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel"))
+   :DataCenters (center/parse-data-centers doc apply-default?)
+   :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel") apply-default?)
    :ContactGroups (contact/parse-contact-groups (select doc "DIF/Personnel"))})
 
 (defn dif10-xml-to-umm-c

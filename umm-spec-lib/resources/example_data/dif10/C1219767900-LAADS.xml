@@ -1,0 +1,154 @@
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+     xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>MER_FRS_1P</Short_Name>
+        <Version>1</Version>
+    </Entry_ID>
+    <Entry_Title>Full Resolution Full Swath Geolocated and Calibrated TOA Radiance V1</Entry_Title>
+    <Personnel>
+        <Role>TECHNICAL CONTACT</Role>
+        <Contact_Person>
+            <Last_Name/>
+            <Email>modapsuso@sigmaspace.com</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords uuid="78f5a84f-1b5b-44a9-97e7-4a1996cd2e36">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>OCEANS</Topic>
+        <Term>OCEAN OPTICS</Term>
+        <Variable_Level_1>OCEAN COLOR</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords uuid="69f475b6-42af-4822-ae57-6c8fd8ebad4a">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>SPECTRAL ENGINEERING</Topic>
+        <Term>INFRARED WAVELENGTHS</Term>
+        <Variable_Level_1>INFRARED RADIANCE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords uuid="ca87e2c2-9087-42f7-a88a-93ace50ebe39">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>SPECTRAL ENGINEERING</Topic>
+        <Term>ULTRAVIOLET WAVELENGTHS</Term>
+        <Variable_Level_1>ULTRAVIOLET RADIANCE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords uuid="b590bfda-a053-4439-8f86-a2811e67ce46">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>SPECTRAL ENGINEERING</Topic>
+        <Term>VISIBLE WAVELENGTHS</Term>
+        <Variable_Level_1>VISIBLE RADIANCE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords uuid="e77c0096-05a7-47ff-8629-55d12c46bb6b">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>LAND SURFACE</Topic>
+        <Term>LANDSCAPE</Term>
+        <Variable_Level_1>LANDSCAPE ECOLOGY</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords uuid="88dc0be1-7427-4a82-9fee-3b2bf84d002a">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>CLOUDS</Term>
+        <Variable_Level_1>CLOUD CEILING</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords uuid="c3a4eb4a-4619-43cd-b890-b567d01324ea">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>CLOUDS</Term>
+        <Variable_Level_1>CLOUD MICROPHYSICS</Variable_Level_1>
+        <Variable_Level_2>CLOUD PRECIPITABLE WATER</Variable_Level_2>
+    </Science_Keywords>
+    <Platform uuid="a1498dff-002d-4d67-9091-16822c608221">
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>ENVISAT</Short_Name>
+        <Long_Name>Environmental Satellite</Long_Name>
+        <Instrument uuid="fc3f3ca6-1578-47b2-9d99-bc35ca85e0ba">
+            <Short_Name>MERIS</Short_Name>
+            <Long_Name>Medium Resolution Imaging Spectrometer</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Time_Type>UTC</Time_Type>
+        <Date_Type>Gregorian</Date_Type>
+        <Temporal_Range_Type>Continuous Range</Temporal_Range_Type>
+        <Range_DateTime>
+            <Beginning_Date_Time>2002-03-01T00:00:00.000Z</Beginning_Date_Time>
+            <Ending_Date_Time>2012-04-09T00:00:00.000Z</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Spatial_Coverage_Type>Horizontal</Spatial_Coverage_Type>
+        <Granule_Spatial_Representation>GEODETIC</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90</Southernmost_Latitude>
+                <Northernmost_Latitude>90</Northernmost_Latitude>
+                <Westernmost_Longitude>-180</Westernmost_Longitude>
+                <Easternmost_Longitude>180</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location uuid="204270d9-8039-4768-851e-63635af5fb65">
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    </Location>
+    <Project>
+        <Short_Name>Not provided</Short_Name>
+    </Project>
+    <Quality/>
+    <Use_Constraints/>
+    <Organization>
+        <Organization_Type>PROCESSOR</Organization_Type>
+        <Organization_Name>
+            <Short_Name>MODAPS</Short_Name>
+        </Organization_Name>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>Not provided</Last_Name>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>LAADS</Short_Name>
+        </Organization_Name>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>Not provided</Last_Name>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Format>Envisat N1</Distribution_Format>
+    </Distribution>
+    <Summary>
+        <Abstract>Full Resolution Full Swath Geolocated and Calibrated TOA Radiance</Abstract>
+        <Purpose/>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>http://ladsweb.nascom.nasa.gov</URL>
+        <Description>Level 1 and Atmosphere and Archive Distribution System</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>https://earth.esa.int/web/guest/missions/esa-operational-eo-missions/envisat/instruments/meris</URL>
+        <Description>ESA MERIS description website</Description>
+    </Related_URL>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <Metadata_Dates>
+        <Metadata_Creation>2012-05-15T10:00:00.000Z</Metadata_Creation>
+        <Metadata_Last_Revision>2012-05-15T12:00:00.000Z</Metadata_Last_Revision>
+        <Data_Creation>Not provided</Data_Creation>
+        <Data_Last_Revision>Not provided</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>1B</Product_Level_Id>
+</DIF>

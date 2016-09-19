@@ -317,6 +317,12 @@
   [concept-id]
   (format "%s/finalize" (rebalance-collection-url concept-id)))
 
+(defn bulk-index-after-date-time-url
+  [date-time]
+  (format "http://localhost:%s/bulk_index/after_date_time?date_time=%s"
+          (transmit-config/bootstrap-port)
+          date-time))
+
 (defn bulk-index-provider-url
   []
   (format "http://localhost:%s/bulk_index/providers" (transmit-config/bootstrap-port)))

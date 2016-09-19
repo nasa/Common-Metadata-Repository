@@ -1,18 +1,18 @@
 (ns cmr.umm-spec.test.iso-smap-expected-conversion
  "ISO SMAP specific expected conversion functionality"
- (:require [clj-time.core :as t]
-           [clj-time.format :as f]
-           [cmr.umm-spec.util :as su]
-           [cmr.common.util :as util :refer [update-in-each]]
-           [cmr.umm-spec.models.umm-common-models :as cmn]
-           [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
-           [cmr.umm-spec.related-url :as ru-gen]
-           [cmr.umm-spec.location-keywords :as lk]
-           [cmr.umm-spec.test.location-keywords-helper :as lkt]
-           [cmr.umm-spec.models.umm-collection-models :as umm-c]
-           [cmr.umm-spec.date-util :as du]
-           [cmr.umm-spec.iso-keywords :as kws]))
-
+ (:require
+  [clj-time.core :as t]
+  [clj-time.format :as f]
+  [cmr.common.util :as util :refer [update-in-each]]
+  [cmr.umm-spec.date-util :as du]
+  [cmr.umm-spec.iso-keywords :as kws]
+  [cmr.umm-spec.location-keywords :as lk]
+  [cmr.umm-spec.models.umm-collection-models :as umm-c]
+  [cmr.umm-spec.models.umm-common-models :as cmn]
+  [cmr.umm-spec.related-url :as ru-gen]
+  [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
+  [cmr.umm-spec.test.location-keywords-helper :as lkt]
+  [cmr.umm-spec.util :as su]))
 
 (defn- normalize-smap-instruments
   "Collects all instruments across given platforms and returns a seq of platforms with all
@@ -25,7 +25,7 @@
 (defn- expected-smap-iso-spatial-extent
   "Returns the expected SMAP ISO spatial extent"
   [spatial-extent]
-  (when (get-in spatial-extent [:HorizontalSpatialDomain :Geometry :BoundingRectangles])
+  (if (get-in spatial-extent [:HorizontalSpatialDomain :Geometry :BoundingRectangles])
     (-> spatial-extent
         (assoc :SpatialCoverageType "HORIZONTAL" :GranuleSpatialRepresentation "GEODETIC")
         (assoc :VerticalSpatialDomains nil :OrbitParameters nil)
@@ -33,7 +33,8 @@
         (update-in [:HorizontalSpatialDomain :Geometry]
                    assoc :CoordinateSystem "GEODETIC" :Points nil :GPolygons nil :Lines nil)
         (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc :CenterPoint nil)
-        conversion-util/prune-empty-maps)))
+        conversion-util/prune-empty-maps)
+    (cmn/map->SpatialExtentType su/not-provided-spatial-extent)))
 
 (defn- expected-smap-data-dates
   "Returns the expected ISO SMAP DataDates."
@@ -41,6 +42,15 @@
   (if data-dates
     data-dates
     [(cmn/map->DateType {:Type "CREATE" :Date du/parsed-default-date})]))
+
+(defn- expected-science-keywords
+  "Returns the expected science keywords, default if none. ISO-SMAP checks on the Category of
+  theme descriptive keywords to determine if it is a science keyword."
+  [science-keywords]
+  (if-let [science-keywords
+           (seq (filter #(.contains kws/science-keyword-categories (:Category %)) science-keywords))]
+    science-keywords
+    su/not-provided-science-keywords))
 
 (defn umm-expected-conversion-iso-smap
   [umm-coll original-brs]
@@ -79,12 +89,7 @@
                         :NumberOfSensors nil
                         :Sensors nil
                         :Technique nil)
-        ;; ISO-SMAP checks on the Category of theme descriptive keywords to determine if it is
-        ;; science keyword.
-        (update-in [:ScienceKeywords]
-                   (fn [sks]
-                     (seq
-                       (filter #(.contains kws/science-keyword-categories (:Category %)) sks))))
+        (update :ScienceKeywords expected-science-keywords)
         (update-in [:Platforms] normalize-smap-instruments)
         (assoc :LocationKeywords nil)
         (assoc :PaleoTemporalCoverages nil)

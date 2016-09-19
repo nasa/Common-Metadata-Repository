@@ -1,9 +1,10 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10.spatial
   "Defines mappings from ECHO10 XML spatial elements into UMM records"
-  (:require [clojure.string :as str]
-            [cmr.common.xml.simple-xpath :refer [select text]]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.umm-spec.util :as u]))
+  (:require
+   [clojure.string :as str]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.umm-spec.util :as u]))
 
 (defn- parse-point
   [el]
@@ -43,8 +44,8 @@
 
 (defn parse-spatial
   "Returns UMM-C spatial map from ECHO10 XML document."
-  [doc]
-  (let [[spatial] (select doc "/Collection/Spatial")]
+  [doc apply-default?]
+  (if-let [[spatial] (select doc "/Collection/Spatial")]
     {:SpatialCoverageType          (when-let [sct (value-of spatial "SpatialCoverageType")]
                                      (str/upper-case sct))
      :GranuleSpatialRepresentation (value-of spatial "GranuleSpatialRepresentation")
@@ -58,4 +59,6 @@
                                                 :Period
                                                 :InclinationAngle
                                                 :NumberOfOrbits
-                                                :StartCircularLatitude)}))
+                                                :StartCircularLatitude)}
+    (when apply-default?
+      u/not-provided-spatial-extent)))

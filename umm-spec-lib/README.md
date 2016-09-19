@@ -91,6 +91,39 @@ See the DSL documentation and existing formats for examples.
 
 Update the EMFD project with the new directory. The repo can be located here: ***REMOVED***projects/EMFD/repos/unified-metadata-model/
 
+## Adding a new schema version
+
+Depending on the changes to the UMM JSON schema, a new schema version may be required.
+### 1. Add schema files
+
+Create a new folder for the schema version in `resources/json_schemas/umm` and copy the files from the previous schema version into that folder. Make schema changes to the files in that folder.
+
+### 2. Make model and code changes to go with the new version
+
+Update the files in `src/cmr/umm_spec/models` with any UMM model changes then make the code changes needed in each format.
+
+### 3. Update the UMM latest version
+
+In `src/cmr/umm_spec/versioning.clj`, update the versions vector to include the newest version. This will automatically change the latest version.
+
+### 4. Update migrations
+
+Update the `src/cmr/umm_spec/migration/version_migration.clj` file. Add new functions for going from the last version to the new version and for going backwards from the new version to the last version.
+
+### 5. Update Tests
+
+Add tests for the new migrations in `test/cmr/umm_spec/migration/version_migration.clj`
+
+Create or update any other tests needed and update the collection in `src/cmr/umm_spec/test/expected_conversion.clj` to make sure the collection tests your changes.
+
+Update any tests that use umm-spec.
+
+### 6. Add the schema to the EMFD project
+
+Update the EMFD project with the new directory. The repo can be located here: ***REMOVED***projects/EMFD/repos/unified-metadata-model/
+
+Create a pull request that includes the systems engineering team.
+
 ### Rules for Implementing Mappings
 
 #### When to Use Default Values

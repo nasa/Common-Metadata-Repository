@@ -1,14 +1,15 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-smap
   "Defines mappings from ISO-SMAP XML to UMM records"
-  (:require [cmr.umm-spec.json-schema :as js]
-            [cmr.common.xml.simple-xpath :refer [select]]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.umm-spec.util :as u]
-            [cmr.umm-spec.iso-keywords :as kws]
-            [cmr.umm-spec.util :as u :refer [without-default-value-of]]
-            [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
-            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]
-            [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value]]))
+  (:require
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select]]
+   [cmr.umm-spec.iso-keywords :as kws]
+   [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value]]
+   [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.util :as u :refer [without-default-value-of]]
+   [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]))
 
 (def md-identification-base-xpath
   (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata"
@@ -53,10 +54,13 @@
 (defn- parse-science-keywords
   "Returns the parsed science keywords for the given ISO SMAP xml element. ISO-SMAP checks on the
   Category of each theme descriptive keyword to determine if it is a science keyword."
-  [data-id-el]
-  (->> data-id-el
-       kws/parse-science-keywords
-       (filter #(.contains kws/science-keyword-categories (:Category %)))))
+  [data-id-el apply-default?]
+  (if-let [science-keywords (seq
+                              (->> (kws/parse-science-keywords data-id-el apply-default?)
+                                   (filter #(.contains kws/science-keyword-categories (:Category %)))))]
+    science-keywords
+    (when apply-default?
+      u/not-provided-science-keywords)))
 
 (defn parse-temporal-extents
   "Parses the collection temporal extents from the data identification element"
@@ -88,8 +92,8 @@
                     (kws/parse-platforms smap-keywords))
        :TemporalExtents (or (seq (parse-temporal-extents data-id-el))
                             (when apply-default? u/not-provided-temporal-extents))
-       :ScienceKeywords (parse-science-keywords data-id-el)
-       :SpatialExtent (spatial/parse-spatial data-id-el)
+       :ScienceKeywords (parse-science-keywords data-id-el apply-default?)
+       :SpatialExtent (spatial/parse-spatial data-id-el apply-default?)
        :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)
        ;; Required by UMM-C
        :RelatedUrls (when apply-default? [u/not-provided-related-url])
