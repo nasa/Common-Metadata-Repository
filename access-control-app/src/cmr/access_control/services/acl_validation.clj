@@ -161,7 +161,7 @@
   {:target-id (v/when-present (make-single-instance-identity-target-id-validation context))})
 
 (defn permissions-granted-by-provider-to-user
-  "Returns permissions granted for sids by ACLs"
+  "Returns permissions granted for sids by the list of ACLs"
   [sids acls target]
   (for [x sids
         y acls
@@ -180,13 +180,25 @@
         sids (acl-util/get-sids context user)
         provider-id (:provider-id acl)
         provider-acls (map #(acl-util/get-acl context %)
-                           (map #(get % "concept_id") (get (json/parse-string (:results (acl-search/search-for-acls context {:provider provider-id} true))) "items")))]
-    (when-not (contains? (set (flatten (permissions-granted-by-provider-to-user sids provider-acls "CATALOG_ITEM_ACL"))) "create")
+                           (map #(get % "concept_id")
+                                (get (json/parse-string
+                                       (:results
+                                         (acl-search/search-for-acls context
+                                                                     {:provider provider-id}
+                                                                     true)))
+                                     "items")))]
+    (when-not (contains? (set
+                           (flatten
+                             (permissions-granted-by-provider-to-user sids
+                                                                      provider-acls
+                                                                      "CATALOG_ITEM_ACL")))
+                         "create")
       {key-path [(format "User [%s] does not have permission to create a catalog item for provider-id [%s]"
                           user provider-id)]})))
 
 (defn- make-catalog-item-identity-validations
-  "Returns a standard validation for an ACL catalog_item_identity field closed over the given context and ACL to be validated."
+  "Returns a standard validation for an ACL catalog_item_identity field
+   closed over the given context and ACL to be validated."
   [context acl save-flag]
   [catalog-item-identity-collection-or-granule-validation
    catalog-item-identity-collection-applicable-validation
