@@ -183,17 +183,16 @@
   so they can be reported."
   [collection]
   (remove empty?
-          (flatten
-           (concat
-            [(:_errors collection)]
-            (for [key (keys collection)
-                  :let [coll (get collection key)]
-                  result (cond
-                           (map? coll) (extract-errors-from-collection coll)
-                           (coll? coll) (for [entry coll
-                                              :when (map? entry)]
-                                          (extract-errors-from-collection entry)))]
-               result)))))
+          (apply concat
+                 [(:_errors collection)]
+                 (for [key (keys collection)
+                       :let [coll (get collection key)]
+                       result (cond
+                                (map? coll) (extract-errors-from-collection coll)
+                                (coll? coll) (for [entry coll
+                                                   :when (map? entry)]
+                                               (extract-errors-from-collection entry)))]
+                   result))))
 
 (defn- reformat-error-message
   "For a 'string too long' error, just print out what string it is and the size so that
@@ -334,9 +333,9 @@
     (info "Finished OPS collections translation.")))
 
 (comment
-  ;; Translate and validate a specific collection by concept-id
-  (def record (get-collection "C1214598113-SCIOPS"))
-  (translate-and-validation-collection record)
-  (translate-record-to-umm record)
-  (:metadata-format record)
-  (:metadata record))
+ ;; Translate and validate a specific collection by concept-id
+ (def record (get-collection "C1214598113-SCIOPS"))
+ (translate-and-validation-collection record)
+ (translate-record-to-umm record)
+ (:metadata-format record)
+ (:metadata record))
