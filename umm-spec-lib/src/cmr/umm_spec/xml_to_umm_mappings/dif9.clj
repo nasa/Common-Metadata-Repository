@@ -142,7 +142,8 @@
                         (when apply-default? su/not-provided-temporal-extents))
      :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
      :SpatialExtent (merge {:GranuleSpatialRepresentation (or (value-of doc "/DIF/Extended_Metadata/Metadata[Name='GranuleSpatialRepresentation']/Value")
-                                                              "NO_SPATIAL")}
+                                                              (when apply-default?
+                                                                "NO_SPATIAL"))}
                            (when-let [brs (seq (parse-mbrs doc))]
                              {:SpatialCoverageType "HORIZONTAL"
                               :HorizontalSpatialDomain
@@ -181,7 +182,7 @@
                                              :Publication_Place
                                              :Publisher
                                              :Pages
-                                             [:ISBN (value-of pub-ref "ISBN")]
+                                             [:ISBN (su/format-isbn (value-of pub-ref "ISBN"))]
                                              [:DOI {:DOI (value-of pub-ref "DOI")}]
                                              [:RelatedUrl
                                               {:URLs (seq

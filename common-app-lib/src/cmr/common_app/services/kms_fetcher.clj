@@ -13,17 +13,18 @@
                      \"sn-2\" {...}
                     ]}
          :providers [...]}"
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.common.jobs :refer [def-stateful-job]]
-            [cmr.transmit.kms :as kms]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.cache :as cache]
-            [cmr.common.cache.fallback-cache :as fallback-cache]
-            [cmr.common-app.cache.cubby-cache :as cubby-cache]
-            [cmr.common-app.cache.consistent-cache :as consistent-cache]
-            [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
-            [clojure.string :as str]
-            [cmr.common.util :as util]))
+  (:require
+    [clojure.string :as str] 
+    [cmr.common-app.cache.consistent-cache :as consistent-cache]
+    [cmr.common-app.cache.cubby-cache :as cubby-cache]
+    [cmr.common.cache :as cache]
+    [cmr.common.cache.fallback-cache :as fallback-cache]
+    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+    [cmr.common.jobs :refer [def-stateful-job]]
+    [cmr.common.log :as log :refer (debug info warn error)]
+    [cmr.common.services.errors :as errors]
+    [cmr.common.util :as util]
+    [cmr.transmit.kms :as kms]))
 
 (def nested-fields-mappings
   "Mapping from field name to the list of subfield names in order from the top of the hierarchy to

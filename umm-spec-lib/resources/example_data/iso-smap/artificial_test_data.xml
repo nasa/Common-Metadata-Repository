@@ -309,26 +309,6 @@
                                     4) The SMAP spacecraft downlinks sub-band data whenever the instrument is acquiring cold sky data.
                                     5) The SMAP spacecraft always downlinks full-band data.</gco:CharacterString>
 </gmd:description>
-<gmd:geographicElement>
-<!-- This defines the bounding box for all SMAP Level 1A_Radiometer data products. -->
-<gmd:EX_GeographicBoundingBox id="swathBoundingBox">
-<gmd:extentTypeCode>
-<gco:Boolean>1</gco:Boolean>
-</gmd:extentTypeCode>
-<gmd:westBoundLongitude>
-<gco:Decimal>-180.00</gco:Decimal>
-</gmd:westBoundLongitude>
-<gmd:eastBoundLongitude>
-<gco:Decimal>180.00</gco:Decimal>
-</gmd:eastBoundLongitude>
-<gmd:southBoundLatitude>
-<gco:Decimal>-87.00</gco:Decimal>
-</gmd:southBoundLatitude>
-<gmd:northBoundLatitude>
-<gco:Decimal>87.00</gco:Decimal>
-</gmd:northBoundLatitude>
-</gmd:EX_GeographicBoundingBox>
-</gmd:geographicElement>
 <gmd:temporalElement>
 <gmd:EX_TemporalExtent>
 <!-- Mimics use in GHRSST. See no evidence of conformance to standard -->

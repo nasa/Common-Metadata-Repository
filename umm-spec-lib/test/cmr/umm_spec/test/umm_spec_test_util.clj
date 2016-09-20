@@ -1,7 +1,10 @@
 (ns cmr.umm-spec.test.umm-spec-test-util
   "Tests for cmr.umm-spec.util functions"
-  (:require [clojure.test :refer :all]
-            [cmr.umm-spec.util :as util]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.util :refer [are3]]
+   [cmr.umm-spec.util :as util]))
+
 
 (deftest test-parse-data-size
   (are [s expected] (= expected
@@ -14,7 +17,7 @@
     "79 MB compressed; 214 MB uncompressed" [{:Size 79.0 :Unit "MB"} {:Size 214.0 :Unit "MB"}]
     "Total Volume: 40 Mbytes for XBT data; 10 Mbytes for TSG data" [{:Size 40.0 :Unit "MB"} {:Size 10.0 :Unit "MB"}]
     "1010 files; Total size: 2351.98 MB" [{:Size 2351.98 :Unit "MB"}]
-    
+
     "Single layer, raster format, 13.2 megabytes; vector format, 1.2 megabytes"
     [{:Size 13.2 :Unit "MB"} {:Size 1.2 :Unit "MB"}]
 
@@ -27,3 +30,19 @@
          "92.4 MB, 0.4 GB"))
   (is (= [{:Size 92.4 :Unit "MB"} {:Size 0.4 :Unit "GB"}]
          (util/parse-data-sizes (util/data-size-str [{:Size 92.4 :Unit "MB"} {:Size 0.4 :Unit "GB"}])))))
+
+(deftest format-isbn
+  (are3 [original-isbn formatted-isbn]
+    (is (= formatted-isbn (util/format-isbn original-isbn)))
+
+    "Remove dashes"
+    "123-456-789-1" "1234567891"
+
+    "No changes"
+    "1234567891" "1234567891"
+
+    "Remove ISBN"
+    "ISBN-12345678" "12345678"
+
+    "Remove ISSN"
+    "ISSN-12345678" "12345678"))

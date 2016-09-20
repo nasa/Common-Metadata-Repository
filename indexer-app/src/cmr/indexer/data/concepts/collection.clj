@@ -185,7 +185,8 @@
                                  (map str/trim))
         project-long-names (->> (keep :long-name (:projects collection))
                                 (map str/trim))
-        two-d-coord-names (map :name (:two-d-coordinate-systems collection))
+        two-d-coord-names (map :TilingIdentificationSystemName 
+                               (:TilingIdentificationSystems umm-spec-collection))
         archive-centers (map #(org/data-center-short-name->elastic-doc gcmd-keywords-map %)
                              (map str/trim
                                   (org/extract-data-center-names collection :archive-center)))

@@ -2154,7 +2154,7 @@ Content-Type: application/json; charset=UTF-8
 The humanizers report provides a list of fields that have been humanized in CSV format. The
 report format is: provider, concept id, product short name, product version, original field value, humanized field value.
 
-curl "%CMR-ENDPOINT/humanizers/report"
+curl "%CMR-ENDPOINT%/humanizers/report"
 
 #### <a name="facets-in-xml-responses"></a> Facets in XML Responses
 
