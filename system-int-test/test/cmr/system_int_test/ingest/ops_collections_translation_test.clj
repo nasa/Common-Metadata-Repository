@@ -166,6 +166,35 @@
         (umm/validate-xml :collection metadata-format metadata)
         (json-schema/validate-umm-json (umm-json/umm->json (:collection record)) :collection)))))
 
+(defn- extract-errors-from-collection
+  "During collection translation from native XML to UMM, errors are put directly on the fields that
+  cannot be translated with the :_errors key. Walk through the collection and pull out the errors
+  so they can be reported."
+  [collection]
+  (remove empty?
+          (flatten
+           (concat
+            [(:_errors collection)]
+            (for [key (keys collection)
+                  :let [coll (get collection key)]]
+              (cond
+                (map? coll) (extract-errors-from-collection coll)
+                (coll? coll) (for [entry coll]
+                               (when (map? entry)
+                                 (extract-errors-from-collection entry)))))))))
+
+(defn- reformat-error-messages
+  "For each 'string too long' error, just print out what string it is and the size so that
+  the test output does not get bloated with the full string"
+  [errors]
+  (map
+   (fn [error]
+     (if-let [result (re-find #"\w+ string .*is too long \(length: \d+, maximum allowed: \d+\)" (str/replace error "\n" ""))]
+       (let [string-index (str/index-of result "string")
+             length-index (str/index-of result "is too long (length:")]
+         (str (subs result 0 (+ 6 string-index)) " " (subs result length-index)))
+       error))
+   errors))
 
 (defn- get-collection-validation-errors
   "Collect the following collection validations:
@@ -177,8 +206,8 @@
   [record]
   (remove empty?
    (concat
-     [(str (get-in record [:collection :_errors]))] ; Errors from translating to UMM
-     (validate-record-schemas record)
+     (extract-errors-from-collection (:collection record)) ; Errors from translating to UMM
+     (reformat-error-messages (validate-record-schemas record))
      (umm-validation/validate-collection record))))
 
 (defn- translate-and-validation-collection
@@ -255,7 +284,7 @@
     (let [collections (get-collections validation-search-page-size page-num)
           error-results (remove nil? (map translate-and-validation-collection collections))
           all-results (conj results error-results)]
-      (info "Processed Page " page-num " " (count error-results) " errors")
+      (println "Processed Page " page-num " " (count error-results) " errors")
       (if (>= (count collections) validation-search-page-size)
         (recur (+ page-num 1) all-results)
         all-results))))
@@ -281,7 +310,7 @@
 
 (comment
   ;; Translate and validate a specific collection by concept-id
-  (def record (get-collection "C1214311756-AU_AADC"))
+  (def record (get-collection "C1214604828-SCIOPS"))
   (translate-and-validation-collection record)
   (translate-record-to-umm record)
   (:metadata-format record)
