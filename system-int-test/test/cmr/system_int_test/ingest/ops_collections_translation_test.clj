@@ -187,25 +187,23 @@
            (concat
             [(:_errors collection)]
             (for [key (keys collection)
-                  :let [coll (get collection key)]]
-              (cond
-                (map? coll) (extract-errors-from-collection coll)
-                (coll? coll) (for [entry coll]
-                               (when (map? entry)
-                                 (extract-errors-from-collection entry)))))))))
+                  :let [coll (get collection key)]
+                  result (cond
+                           (map? coll) (extract-errors-from-collection coll)
+                           (coll? coll) (for [entry coll
+                                              :when (map? entry)]
+                                          (extract-errors-from-collection entry)))]
+               result)))))
 
-(defn- reformat-error-messages
-  "For each 'string too long' error, just print out what string it is and the size so that
+(defn- reformat-error-message
+  "For a 'string too long' error, just print out what string it is and the size so that
   the test output does not get bloated with the full string"
-  [errors]
-  (map
-   (fn [error]
-     (if-let [result (re-find #"\w+ string .*is too long \(length: \d+, maximum allowed: \d+\)" (str/replace error "\n" ""))]
-       (let [string-index (str/index-of result "string")
-             length-index (str/index-of result "is too long (length:")]
-         (str (subs result 0 (+ 6 string-index)) " " (subs result length-index)))
-       error))
-   errors))
+  [error]
+  (if-let [result (re-find #"\w+ string .*is too long \(length: \d+, maximum allowed: \d+\)" (str/replace error "\n" ""))]
+    (let [string-index (str/index-of result "string")
+          length-index (str/index-of result "is too long (length:")]
+      (str (subs result 0 (+ 6 string-index)) " " (subs result length-index)))
+    error))
 
 (defn- get-collection-validation-errors
   "Collect the following collection validations:
@@ -218,7 +216,7 @@
   (remove empty?
    (concat
      (extract-errors-from-collection (:collection record)) ; Errors from translating to UMM
-     (reformat-error-messages (validate-record-schemas record))
+     (map reformat-error-message (validate-record-schemas record))
      (umm-validation/validate-collection record))))
 
 (defn- translate-and-validation-collection
@@ -337,7 +335,7 @@
 
 (comment
   ;; Translate and validate a specific collection by concept-id
-  (def record (get-collection "C1214604828-SCIOPS"))
+  (def record (get-collection "C1214598113-SCIOPS"))
   (translate-and-validation-collection record)
   (translate-record-to-umm record)
   (:metadata-format record)
