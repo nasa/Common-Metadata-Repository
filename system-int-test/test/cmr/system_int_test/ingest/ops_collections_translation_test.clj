@@ -2,6 +2,8 @@
   "Translate OPS collections into various supported metadata formats."
   (:require
     [clj-http.client :as client]
+    [clojure.data.csv :as csv]
+    [clojure.java.io :as io]
     [clojure.string :as str]
     [clojure.test :refer :all]
     [cmr.common.concepts :as concepts]
@@ -22,6 +24,15 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (def context (lkt/setup-context-for-test lkt/sample-keyword-map))
+
+(def write-errors-to-file
+  false)
+
+(def CSV_FILENAME
+  "Ops_Umm_Translation_Errors.csv")
+
+(def CSV_HEADER
+  ["Provider Id" "Concept Id" "Entry Title" "Errors"])
 
 (def starting-page-num
   "The starting page-num to retrieve collections for the translation test."
@@ -284,7 +295,7 @@
     (let [collections (get-collections validation-search-page-size page-num)
           error-results (remove nil? (map translate-and-validation-collection collections))
           all-results (conj results error-results)]
-      (println "Processed Page " page-num " " (count error-results) " errors")
+      (info "Processed Page " page-num " " (count error-results) " errors")
       (if (>= (count collections) validation-search-page-size)
         (recur (+ page-num 1) all-results)
         all-results))))
@@ -303,9 +314,25 @@
            (recur (+ page-num 1)))))
      (info "Finished OPS collections translation.")))
 
+(defn- validation-result->row
+  "Take a validation result and return a row formatted for CSV"
+  [result]
+  (let [{:keys [provider-id concept-id entry-title errors]} result
+        error-string (str/join "; " errors)]
+    [provider-id concept-id entry-title error-string]))
+
 #_(deftest ops-collections-validation
    (testing "get-collections the current collections in ops against the current UMM schema"
      (def results (get-ops-collections-umm-validation-errors))
+     (let [rows (cons CSV_HEADER
+                      (map validation-result->row (flatten results)))
+           string-writer (StringWriter.)]
+       (if write-errors-to-file
+         (with-open [out-file (io/writer CSV_FILENAME)]
+           (csv/write-csv out-file rows))
+         (do
+           (csv/write-csv string-writer rows)
+           (def error-csv (str string-writer)))))
     (info "Finished OPS collections translation.")))
 
 (comment
