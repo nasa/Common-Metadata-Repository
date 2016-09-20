@@ -9,6 +9,7 @@
             [cmr.common.api.web-server :as web]
             [cmr.index-set.data.elasticsearch :as es]
             [cmr.elastic-utils.config :as es-config]
+            [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
             [cmr.transmit.config :as transmit-config]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.acl.core :as acl]
@@ -22,12 +23,20 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :index :web :nrepl])
+  component-order [:log :elastic-server :index :web :nrepl])
+
+(defn create-elastic
+  []
+  (let [http-port (es-config/elastic-port)]
+    (elastic-server/create-server http-port
+                                  (+ http-port 10)
+                                  "es_data/dev_system")))
 
 (defn create-system
   "Returns a new instance of the whole application."
   []
   (let [sys {:log (log/create-logger)
+             :elastic-server (create-elastic)
              :index (es/create-elasticsearch-store (es-config/elastic-config))
              :web (web/create-web-server (transmit-config/index-set-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (index-set-nrepl-port))

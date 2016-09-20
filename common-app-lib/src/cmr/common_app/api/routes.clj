@@ -219,3 +219,14 @@
       (-> (f request)
           (assoc-in [:headers RESPONSE_REQUEST_ID_HEADER] request-id))
       ((ring-json/wrap-json-response f) request))))
+
+(defn temp-lockdown-access-to-app
+  "This is a ring handler that adds the authentication token and client id to the request context.
+  It expects the request context is already associated with the request."
+  [f]
+  (fn [request]
+    (let [{:keys [request-context]} request]
+      ;; NGAP needs access to "/" for health check
+      (when-not (= "/" (:uri request))
+        (acl/verify-ingest-management-permission request-context :update))
+      (f request))))

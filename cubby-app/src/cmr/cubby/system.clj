@@ -9,6 +9,7 @@
             [cmr.common.api.web-server :as web]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.elastic-utils.config :as es-config]
+            [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
             [cmr.cubby.data.elastic-cache-store :as elastic-cache-store]
             [cmr.transmit.config :as transmit-config]
             [cmr.common-app.system :as common-sys]))
@@ -20,13 +21,21 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :db :web :nrepl])
+  [:log :elastic-server :db :web :nrepl])
+
+(defn create-elastic
+  []
+  (let [http-port (es-config/elastic-port)]
+    (elastic-server/create-server http-port
+                                  (+ http-port 10)
+                                  "es_data/dev_system")))
 
 (defn create-system
   "Returns a new instance of the whole application."
   []
   (let [sys {:log (log/create-logger)
              :db (elastic-cache-store/create-elastic-cache-store (es-config/elastic-config))
+             :elastic-server (create-elastic)
              :web (web/create-web-server (transmit-config/cubby-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (cubby-nrepl-port))
              :relative-root-url (transmit-config/cubby-relative-root-url)}]

@@ -6,6 +6,7 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.nrepl :as nrepl]
             [cmr.common.api.web-server :as web]
+            [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
             [cmr.elastic-utils.index-util :as esi]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.indexer.config :as config]
@@ -32,7 +33,14 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :caches :db :scheduler :queue-broker :web :nrepl])
+  component-order [:log :elastic-server :caches :db :scheduler :queue-broker :web :nrepl])
+
+(defn create-elastic
+  []
+  (let [http-port (es-config/elastic-port)]
+    (elastic-server/create-server http-port
+                                  (+ http-port 10)
+                                  "es_data/dev_system")))
 
 (def system-holder
   "Required for jobs"
@@ -43,6 +51,7 @@
   []
   (let [sys {:log (log/create-logger)
              :db (es/create-elasticsearch-store (es-config/elastic-config))
+             :elastic-server (create-elastic)
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (config/indexer-nrepl-port))
              :relative-root-url (transmit-config/indexer-relative-root-url)
