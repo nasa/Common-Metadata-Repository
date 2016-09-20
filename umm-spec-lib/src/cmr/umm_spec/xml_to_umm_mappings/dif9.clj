@@ -137,7 +137,7 @@
      :Platforms (parse-platforms doc apply-default?)
      :TemporalExtents (if-let [temporals (select doc "/DIF/Temporal_Coverage")]
                         [{:RangeDateTimes (for [temporal temporals]
-                                            {:BeginningDateTime (value-of temporal "Start_Date")
+                                            {:BeginningDateTime (date/with-default (value-of temporal "Start_Date") apply-default?)
                                              :EndingDateTime (parse-dif-end-date (value-of temporal "Stop_Date"))})}]
                         (when apply-default? su/not-provided-temporal-extents))
      :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
@@ -182,7 +182,7 @@
                                              :Publication_Place
                                              :Publisher
                                              :Pages
-                                             [:ISBN (su/format-isbn (value-of pub-ref "ISBN"))]
+                                             [:ISBN (value-of pub-ref "ISBN")]
                                              [:DOI {:DOI (value-of pub-ref "DOI")}]
                                              [:RelatedUrl
                                               {:URLs (seq

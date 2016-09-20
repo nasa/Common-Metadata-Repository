@@ -337,7 +337,7 @@
 
 (comment
   ;; Translate and validate a specific collection by concept-id
-  (def record (get-collection "C1214604828-SCIOPS"))
+  (def record (get-collection "C1214568020-NOAA_NCEI"))
   (translate-and-validation-collection record)
   (translate-record-to-umm record)
   (:metadata-format record)
