@@ -1,22 +1,23 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2
   "Defines mappings from ISO19115-2 XML to UMM records"
-  (:require [clojure.string :as str]
-            [cmr.common.util :as util]
-            [cmr.common.xml.simple-xpath :refer [select text]]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as spatial]
-            [clojure.data :as data]
-            [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.util :as su :refer [char-string]]
-            [cmr.umm-spec.iso-keywords :as kws]
-            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.platform :as platform]
-            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
-            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]
-            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
-            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.metadata-association :as ma]
-            [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value]]
-            [cmr.umm-spec.util :as u]
-            [cmr.umm-spec.location-keywords :as lk]))
+  (:require
+   [clojure.data :as data]
+   [clojure.string :as str]
+   [cmr.common.util :as util]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.umm-spec.iso-keywords :as kws]
+   [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value]]
+   [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.util :as su :refer [char-string]]
+   [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.metadata-association :as ma]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.platform :as platform]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as spatial]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]))
 
 (def md-data-id-base-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification")
@@ -120,6 +121,20 @@
                         :EndingDateTime    (value-of period "gml:endPosition")})
      :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")}))
 
+(defn- parse-access-constraints
+  "If both value and Description are nil, return nil.
+  Otherwise, if Description is nil, assoc it with u/not-provided"
+  [doc apply-default?]
+  (let [access-constraints-record
+        {:Description (regex-value doc (str constraints-xpath
+                                         "/gmd:useLimitation/gco:CharacterString")
+                         #"(?s)Restriction Comment: (.+)")
+         :Value (regex-value doc (str constraints-xpath
+                                   "/gmd:otherConstraints/gco:CharacterString")
+                   #"(?s)Restriction Flag:(.+)")}]
+    (when (seq (util/remove-nil-keys access-constraints-record))
+      (update access-constraints-record :Description #(u/with-default % apply-default?)))))
+
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
   [context doc {:keys [apply-default?]}]
@@ -136,15 +151,7 @@
      :CollectionProgress (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode")
      :Quality (char-string-value doc quality-xpath)
      :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
-     :AccessConstraints {:Description
-                         (regex-value doc (str constraints-xpath
-                                               "/gmd:useLimitation/gco:CharacterString")
-                                      #"(?s)Restriction Comment: (.+)")
-
-                         :Value
-                         (regex-value doc (str constraints-xpath
-                                               "/gmd:otherConstraints/gco:CharacterString")
-                                      #"(?s)Restriction Flag:(.+)")}
+     :AccessConstraints (parse-access-constraints doc apply-default?)
      :UseConstraints
      (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
                   #"(?s)^(?!Restriction Comment:).+")
@@ -184,15 +191,15 @@
                                :Issue (char-string-value publication "gmd:series/gmd:CI_Series/gmd:issueIdentification")
                                :Pages (char-string-value publication "gmd:series/gmd:CI_Series/gmd:page")
                                :Publisher (select-party "publisher" "/gmd:organisationName")
-                               :ISBN (char-string-value publication "gmd:ISBN")
+                               :ISBN (su/format-isbn (char-string-value publication "gmd:ISBN"))
                                :DOI {:DOI (char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
                                :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})
      :MetadataAssociations (ma/xml-elem->metadata-associations doc)
      :AncillaryKeywords (descriptive-keywords-type-not-equal
                           md-data-id-el
                           ["place" "temporal" "project" "platform" "instrument" "theme"])
-     :ScienceKeywords (kws/parse-science-keywords md-data-id-el)
-     :RelatedUrls (dru/parse-related-urls doc)
+     :ScienceKeywords (kws/parse-science-keywords md-data-id-el apply-default?)
+     :RelatedUrls (dru/parse-related-urls doc apply-default?)
      :AdditionalAttributes (aa/parse-additional-attributes doc apply-default?)
      ;; DataCenters is not implemented but is required in UMM-C
      ;; Implement with CMR-3161

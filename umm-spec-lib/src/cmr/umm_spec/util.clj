@@ -1,12 +1,18 @@
 (ns cmr.umm-spec.util
   "This contains utilities for the UMM Spec code."
-  (:require [clojure.string :as str]
-            [cmr.common.util :as util]
-            [cmr.umm-spec.date-util :as du]
-            [cmr.umm-spec.models.umm-common-models :as cmn]
-            [clj-time.format :as f]
-            [cmr.common.xml.parse :as p]
-            [cmr.common.xml.simple-xpath :refer [select]]))
+  (:require
+   [clj-time.format :as f]
+   [clojure.string :as str]
+   [cmr.common.util :as util]
+   [cmr.common.xml.parse :as p]
+   [cmr.common.xml.simple-xpath :refer [select]]
+   [cmr.umm-spec.date-util :as du]
+   [cmr.umm-spec.models.umm-common-models :as cmn]))
+
+(def ^:private umm-contact-mechanism-correction-map
+  {"phone" "Telephone"
+   "Phone" "Telephone"
+   "fax" "Fax"})
 
 (def default-parsing-options
   "Defines the default options for parsing metadata into umm"
@@ -42,6 +48,17 @@
 (def not-provided-contact-person-role
   "Default role for a Contact Person to use if none is provided"
   "Technical Contact")
+
+(def not-provided-science-keywords
+  "Default science keywords to use if none is provided. Use 'EARTH SCIENCE' as the
+  category so ISO-SMAP picks it up as a science keyword"
+  [(cmn/map->ScienceKeywordType {:Category "EARTH SCIENCE"
+                                 :Term not-provided
+                                 :Topic not-provided})])
+
+(def not-provided-spatial-extent
+  "Default spatial extent to use if none is provided"
+  {:GranuleSpatialRepresentation "NO_SPATIAL"})
 
 (defn convert-empty-record-to-nil
   "Converts empty record to nil."
@@ -185,3 +202,18 @@
   "Returns an ISO gco:CharacterString with contents taken from the given xpath."
   [context xpath]
   (char-string (select context xpath)))
+
+(defn correct-contact-mechanism
+  "Correct the contact mechanism if a correction exists, otherwise return the original"
+  [contact-mechanism]
+  (get umm-contact-mechanism-correction-map contact-mechanism contact-mechanism))
+
+(defn format-isbn
+  "Format the ISBN to make it compliant with UMM"
+  [isbn]
+  (when (some? isbn)
+    (-> isbn
+        str/trim
+        (str/replace "-" "")
+        (str/replace "ISBN" "")
+        (str/replace "ISSN" ""))))

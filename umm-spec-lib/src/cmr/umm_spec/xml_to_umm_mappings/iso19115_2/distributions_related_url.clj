@@ -1,11 +1,12 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url
   "Functions for parsing UMM related-url records out of ISO 19115-2 XML documents."
-  (:require [cmr.umm-spec.util :as su]
-            [clojure.string :as str]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.common.xml.simple-xpath :refer [select]]
-            [cmr.umm-spec.iso19115-2-util :refer :all]
-            [cmr.common.util :as util]))
+  (:require
+   [clojure.string :as str]
+   [cmr.common.util :as util]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select]]
+   [cmr.umm-spec.iso19115-2-util :refer :all]
+   [cmr.umm-spec.util :as su]))
 
 (def distributor-xpath
   "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor")
@@ -76,5 +77,8 @@
 
 (defn parse-related-urls
   "Parse related-urls present in the document"
-  [doc]
-  (concat (parse-online-urls doc) (parse-browse-graphics doc)))
+  [doc apply-default?]
+  (if-let [related-urls (seq (concat (parse-online-urls doc) (parse-browse-graphics doc)))]
+    related-urls
+    (when apply-default?
+     [su/not-provided-related-url])))

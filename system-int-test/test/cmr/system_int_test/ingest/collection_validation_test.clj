@@ -623,7 +623,7 @@
           :dif10 (dc/collection-dif10 {}) "object has missing required properties ([\"ProcessingLevel\"])"
 
           "DIF9 Ingest and Ingest Validation"
-          :dif (dc/collection-dif {}) "object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"TemporalExtents\"])"
+          :dif (dc/collection-dif {}) "object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"SpatialExtent\",\"TemporalExtents\"])"
 
           "ISO19115 Ingest and Ingest Validation"
           :iso19115 (dc/collection {}) "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"

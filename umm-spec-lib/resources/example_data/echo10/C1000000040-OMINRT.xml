@@ -1,0 +1,55 @@
+<Collection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:/Users/kbaynes/work/echo/echo-ingest2/support/bindings/Collection.xsd">
+    <ShortName>OMICOL3NRT</ShortName>
+    <VersionId>3</VersionId>
+    <InsertTime>2013-12-04T13:00:00Z</InsertTime>
+    <LastUpdate>2013-12-05T15:00:00Z</LastUpdate>
+    <LongName>Ozone Monitoring Instrument Near Real Time Data for v3</LongName>
+    <DataSetId>Ozone Monitoring Instrument Near Real Time Data for v3</DataSetId>
+    <Description>This collection contains Near Real Time Data from the Ozone Monitoring Instrument(OMI).The OMI instrument employs hyperspectral imaging in a push-broom mode to observe solar backscatter radiation in the visible and ultraviolet.</Description>
+    <CollectionDataType>NEAR_REAL_TIME</CollectionDataType>
+    <Orderable>true</Orderable>
+    <Visible>true</Visible>
+    <Platforms>
+        <Platform>
+            <ShortName>Aura</ShortName>
+            <LongName>EOS Aura Mission Satellite</LongName>
+            <Type>Spacecraft</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>OMI</ShortName>
+                    <LongName>Ozone Monitoring Instrument</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>CCD Ultra Violet</ShortName>
+                        </Sensor>
+                        <Sensor>
+                            <ShortName>CCD Visible</ShortName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+    </Platforms>
+    <AdditionalAttributes>
+        <AdditionalAttribute>
+            <Name>ProcessingLevel</Name>
+            <DataType>STRING</DataType>
+            <Description>ProcessingLevel</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>StartTime</Name>
+            <DataType>DATETIME</DataType>
+            <Description>StartTime</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>EndTime</Name>
+            <DataType>DATETIME</DataType>
+            <Description>EndTime</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>ArchiveSet</Name>
+            <DataType>STRING</DataType>
+            <Description>ArchiveSet</Description>
+        </AdditionalAttribute>
+    </AdditionalAttributes>
+</Collection>

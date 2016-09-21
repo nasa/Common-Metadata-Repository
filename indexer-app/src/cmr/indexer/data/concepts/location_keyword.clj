@@ -1,22 +1,31 @@
 (ns cmr.indexer.data.concepts.location-keyword
   "Contains functions for converting location keyword hierarchies into elastic documents"
-  (:require [clojure.string :as str]
-            [cmr.umm-spec.location-keywords :as lk]
-            [cmr.common-app.services.kms-fetcher :as kf]))
+  (:require
+    [clojure.string :as str]
+    [cmr.common-app.services.kms-fetcher :as kf]
+    [cmr.common.util :as util]
+    [cmr.umm-spec.location-keywords :as lk]))
 
 (def default-location
-  "Default values to use for any platform fields which are nil."
+  "Default values to use for any location fields which are nil."
   (zipmap [:category :type :subregion-1 :subregion-2 :subregion-3]
           (repeat kf/FIELD_NOT_PRESENT)))
 
-(defn spatial-keyword->elastic-doc
-  "Converts a single spatial keyword string into an elastic document with the full nested hierarchy
-  for the best match from the GCMD KMS keywords. If a field is not present in the KMS hierarchy, we
-  use a dummy value to indicate the field was not present."
-  [gcmd-keywords-map spatial-keyword]
-  (let [hierarchical-location (merge default-location
-                                     (lk/find-spatial-keyword
-                                      (:spatial-keywords gcmd-keywords-map) spatial-keyword))
+(defn location-keyword->elastic-doc
+  "Converts a single location-keyword map into an elastic document with the full nested hierarchy
+  for the match from the GCMD KMS keywords. Note: :detailed-location is removed because it's not
+  defined in KMS and won't be used for the matching. If a field is not present in the KMS hierarchy,
+  we use a dummy value to indicate the field was not present, except for uuid which will be nil."
+  [gcmd-keywords-map location-keyword]
+  (let [location-keyword-kebab-key (dissoc
+                                     (util/remove-nil-keys
+                                       (util/map-keys->kebab-case location-keyword))
+                                     :detailed-location)
+        hierarchical-location (merge default-location
+                                     location-keyword-kebab-key
+                                     (kf/get-full-hierarchy-for-location-keywords
+                                       gcmd-keywords-map
+                                       location-keyword-kebab-key))
         {:keys [category type subregion-1 subregion-2 subregion-3 uuid]} hierarchical-location]
     {:category category
      :category.lowercase (str/lower-case category)

@@ -120,7 +120,7 @@
                              :Volume "volume"
                              :Publisher "publisher"
                              :RelatedUrl {:URLs ["www.foo.com" "www.shoo.com"]}
-                             :ISBN "ISBN"
+                             :ISBN "1234567789"
                              :Author "author"
                              :Issue "issue"
                              :PublicationPlace "publication place"}

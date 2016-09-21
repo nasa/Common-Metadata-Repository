@@ -1,30 +1,38 @@
 (ns cmr.bootstrap.api.routes
   "Defines the HTTP URL routes for the application."
-  (:require [compojure.route :as route]
-            [compojure.core :refer :all]
-            [ring.middleware.json :as ring-json]
-            [ring.middleware.params :as params]
-            [ring.middleware.nested-params :as nested-params]
-            [ring.middleware.keyword-params :as keyword-params]
-            [cheshire.core :as json]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.api.errors :as errors]
-            [cmr.common.util :as util]
-            [cmr.common.jobs :as jobs]
-            [cmr.common.services.errors :as srv-errors]
-            [cmr.acl.core :as acl]
-            [cmr.common.api.context :as context]
-            [cmr.bootstrap.services.bootstrap-service :as bs]
-            [cmr.bootstrap.services.health-service :as hs]
-            [cmr.common.date-time-parser :as date-time-parser]
-            [cmr.common-app.api.routes :as common-routes]
-            [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.string :as str]
+   [cmr.acl.core :as acl]
+   [cmr.bootstrap.services.bootstrap-service :as bs]
+   [cmr.bootstrap.services.health-service :as hs]
+   [cmr.common.api.context :as context]
+   [cmr.common.api.errors :as errors]
+   [cmr.common-app.api.routes :as common-routes]
+   [cmr.common.date-time-parser :as date-time-parser]
+   [cmr.common.jobs :as jobs]
+   [cmr.common.log :refer (info)]
+   [cmr.common.services.errors :as srv-errors]
+   [cmr.common.util :as util]
+   [cmr.virtual-product.data.source-to-virtual-mapping :as svm]
+   [compojure.route :as route]
+   [compojure.core :refer :all]
+   [ring.middleware.json :as ring-json]
+   [ring.middleware.keyword-params :as keyword-params]
+   [ring.middleware.nested-params :as nested-params]
+   [ring.middleware.params :as params]))
+
+(defn- synchronous?
+  "Returns true if the params contains the :synchronous key and it's
+  value converted to lower case equals the string 'true'."
+  [params]
+  (= "true" (str/lower-case (:synchronous params))))
 
 (defn- migrate-collection
   "Copy collections data from catalog-rest to metadata db (including granules)"
   [context provider-id-collection-map params]
   (let [provider-id (get provider-id-collection-map "provider_id")
-        synchronous (:synchronous params)
+        synchronous (synchronous? params)
         collection-id (get provider-id-collection-map "collection_id")]
     (bs/migrate-collection context provider-id collection-id synchronous)
     {:status 202
@@ -34,7 +42,7 @@
   "Copy a single provider's data from catalog-rest to metadata db (including collections and granules)"
   [context provider-id-map params]
   (let [provider-id (get provider-id-map "provider_id")
-        synchronous (:synchronous params)]
+        synchronous (synchronous? params)]
     (bs/migrate-provider context provider-id synchronous)
     {:status 202 :body {:message (str "Processing provider " provider-id)}}))
 
@@ -42,7 +50,7 @@
   "Index all the collections and granules for a given provider."
   [context provider-id-map params]
   (let [provider-id (get provider-id-map "provider_id")
-        synchronous (:synchronous params)
+        synchronous (synchronous? params)
         start-index (Long/parseLong (get params :start_index "0"))
         result (bs/index-provider context provider-id synchronous start-index)
         msg (if synchronous
@@ -51,12 +59,27 @@
     {:status 202
      :body {:message msg}}))
 
+(defn- bulk-index-data-later-than-date-time
+  "Index all the data with a revision-date later than a given date-time."
+  [context params]
+  (let [synchronous (synchronous? params)
+        date-time (:date_time params)]
+    (if-let [date-time-value (date-time-parser/try-parse-datetime date-time)]
+      (let [result (bs/index-data-later-than-date-time context date-time-value synchronous)
+            msg (if synchronous
+                  result
+                  (str "Processing data after " date-time " for bulk indexing"))]
+        {:status 202
+         :body {:message msg}})
+      ;; Can't parse date-time.
+      (srv-errors/throw-service-error :invalid-data (str date-time " is not a valid date-time.")))))
+
 (defn- bulk-index-collection
   "Index all the granules in a collection"
   [context provider-id-collection-map params]
   (let [provider-id (get provider-id-collection-map "provider_id")
         collection-id (get provider-id-collection-map "collection_id")
-        synchronous (:synchronous params)
+        synchronous (synchronous? params)
         result (bs/index-collection context provider-id collection-id synchronous)
         msg (if synchronous
               result
@@ -88,7 +111,7 @@
 (defn start-rebalance-collection
   "Kicks off rebalancing the granules in the collection into their own index."
   [context concept-id params]
-  (bs/start-rebalance-collection context concept-id (= "true" (:synchronous params)))
+  (bs/start-rebalance-collection context concept-id (synchronous? params))
   {:status 200
    :body {:message (str "Rebalancing started for collection " concept-id)}})
 
@@ -119,7 +142,10 @@
           (bulk-index-provider request-context body params))
 
         (POST "/collections" {:keys [request-context body params]}
-          (bulk-index-collection request-context body params)))
+          (bulk-index-collection request-context body params))
+
+        (POST "/after_date_time" {:keys [request-context params]}
+          (bulk-index-data-later-than-date-time request-context params)))
 
       (context "/rebalancing_collections/:concept-id" [concept-id]
 

@@ -1,15 +1,16 @@
 (ns cmr.umm-spec.test.serf-expected-conversion
   "SERF specific expected conversion functionality"
-  (:require [clj-time.core :as t]
-            [clj-time.format :as f]
-            [cmr.umm-spec.util :as su]
-            [cmr.common.util :as util :refer [update-in-each]]
-            [cmr.umm-spec.models.umm-common-models :as cmn]
-            [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
-            [cmr.umm-spec.related-url :as ru-gen]
-            [cmr.umm-spec.location-keywords :as lk]
-            [cmr.umm-spec.test.location-keywords-helper :as lkt]
-            [cmr.umm-spec.models.umm-collection-models :as umm-c]))
+  (:require
+   [clj-time.core :as t]
+   [clj-time.format :as f]
+   [cmr.common.util :as util :refer [update-in-each]]
+   [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]
+   [cmr.umm-spec.models.umm-common-models :as cmn]
+   [cmr.umm-spec.related-url :as ru-gen]
+   [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
+   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm-spec.util :as su]))
 
 (def serf-organization-role
   "UMM-S Role that corresponds to SERVICE PROVIDER CONTACT role in SERF"
@@ -124,7 +125,7 @@
   [umm-service]
   (-> umm-service
       (update-in [:AdditionalAttributes] convert-serf-additional-attributes)
-      (update-in [:RelatedUrls] conversion-util/expected-related-urls-for-dif-serf)
+      (update :RelatedUrls conversion-util/expected-related-urls-for-dif-serf)
       (update-in [:MetadataDates] expected-metadata-dates-for-serf)
       (update-in-each [:ServiceCitation] expected-serf-service-citation)
       (update-in [:ServiceCitation] remove-empty-objects)
@@ -136,4 +137,5 @@
       (update-in-each [:PublicationReferences] fix-serf-doi)
       (update-in-each [:PublicationReferences] update-in [:RelatedUrl] fix-publication-reference-url)
       (assoc :Platforms nil)
-      (dissoc :DataCenters)))
+      (dissoc :DataCenters)
+      (update-in-each [:PublicationReferences] #(update % :ISBN su/format-isbn))))

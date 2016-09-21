@@ -254,4 +254,6 @@
       ;; CMR-2716 SpatialKeywords are replaced by LocationKeywords
       (assoc :SpatialKeywords nil)
       (assoc :MetadataDates (expected-metadata-dates umm-coll))
+      (update :AccessConstraints conversion-util/expected-access-constraints)
+      (update-in-each [:PublicationReferences] #(update % :ISBN su/format-isbn))
       js/parse-umm-c))

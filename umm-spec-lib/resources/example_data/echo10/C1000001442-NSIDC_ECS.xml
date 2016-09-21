@@ -1,0 +1,218 @@
+<Collection>
+    <ShortName>CL07SM</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>2015-06-16T14:27:10.024Z</InsertTime>
+    <LastUpdate>2015-06-16T15:11:52.337Z</LastUpdate>
+    <LongName>CLASIC07 In Situ Soil Moisture Data</LongName>
+    <DataSetId>CLASIC07 In Situ Soil Moisture Data V001</DataSetId>
+    <Description>This data set is comprised of several parameters from in situ measurements collected for the Cloud and Land Surface Interaction Campaign 2007 (CLASIC07).</Description>
+    <Orderable>false</Orderable>
+    <Visible>true</Visible>
+    <RevisionDate>2015-06-16T00:00:00Z</RevisionDate>
+    <ProcessingCenter>USDA</ProcessingCenter>
+    <ArchiveCenter>NSIDC</ArchiveCenter>
+    <VersionDescription>Initial Version</VersionDescription>
+    <CitationForExternalPublication>Cosh, M. 2015. CLASIC07 In Situ Soil Moisture Data. [indicate subset used]. Boulder, Colorado USA: NASA National Snow and Ice Data Center Distributed Active Archive Center. http://dx.doi.org/10.5067/W2WMLRUQOCA8.</CitationForExternalPublication>
+    <CollectionState>Completed</CollectionState>
+    <MaintenanceAndUpdateFrequency>As Needed</MaintenanceAndUpdateFrequency>
+    <RestrictionComment>These data are offered free of charge. You may use these data freely, provided that you cite NSIDC DAAC as the source, and provide an acknowledgment in any published papers.</RestrictionComment>
+    <Temporal>
+        <TimeType>UTC</TimeType>
+        <DateType>Gregorian</DateType>
+        <TemporalRangeType>Continuous Range</TemporalRangeType>
+        <PrecisionOfSeconds>0</PrecisionOfSeconds>
+        <EndsAtPresentFlag>false</EndsAtPresentFlag>
+        <RangeDateTime>
+            <BeginningDateTime>2007-06-07T00:00:00Z</BeginningDateTime>
+            <EndingDateTime>2007-07-07T23:59:59Z</EndingDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>Investigator</Role>
+            <OrganizationAddresses>
+                <Address>
+                    <StreetAddress>USDA-ARS Hydrology and Remote Sensing Laboratory, 10300 Baltimore Avenue, Bldg. 007, Rm. 104, BARC-West</StreetAddress>
+                    <City>Beltsville</City>
+                    <StateProvince>Maryland</StateProvince>
+                    <PostalCode>20705</PostalCode>
+                    <Country>USA</Country>
+                </Address>
+            </OrganizationAddresses>
+            <OrganizationEmails>
+                <Email>Michael.Cosh@ars.usda.gov</Email>
+            </OrganizationEmails>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>Michael</FirstName>
+                    <LastName>Cosh</LastName>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+        <Contact>
+            <Role>User Services</Role>
+            <HoursOfService>9:00 A.M. to 5:00 P.M., U.S. Mountain Time, Monday through Friday, excluding U.S. holidays.</HoursOfService>
+            <Instructions>Contact by e-mail first</Instructions>
+            <OrganizationName>National Snow and Ice Data Center</OrganizationName>
+            <OrganizationAddresses>
+                <Address>
+                    <StreetAddress>1540 30th St Campus Box 449</StreetAddress>
+                    <City>Boulder</City>
+                    <StateProvince>Colorado</StateProvince>
+                    <PostalCode>80309-0449</PostalCode>
+                    <Country>USA</Country>
+                </Address>
+            </OrganizationAddresses>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>303-492-6199</Number>
+                    <Type>phone</Type>
+                </Phone>
+                <Phone>
+                    <Number>303-492-2468</Number>
+                    <Type>fax</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>nsidc@nsidc.org</Email>
+            </OrganizationEmails>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>SOILS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ELECTRICAL CONDUCTIVITY</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>SOILS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>SOIL BULK DENSITY</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>SOILS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>SOIL MOISTURE/WATER CONTENT</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>VOLUMETRIC SOIL MOISTURE (FRACTION)</DetailedVariableKeyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>SOILS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>SOIL TEMPERATURE</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>LAND SURFACE TEMPERATURE</DetailedVariableKeyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>SOILS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>SOIL TEMPERATURE</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+            <ShortName>Field Surveys</ShortName>
+            <LongName>Field Surveys</LongName>
+            <Type>In Situ Land-based Platforms</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>Soil Sampler</ShortName>
+                    <LongName>Soil Sampler</LongName>
+                    <Technique>Manual Collection</Technique>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>Soil Sampler</ShortName>
+                            <LongName>Soil Sampler</LongName>
+                            <Technique>Manual Collection</Technique>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+                <Instrument>
+                    <ShortName>Soil Temperature Probe</ShortName>
+                    <LongName>Soil Temperature Probe</LongName>
+                    <Technique>Electrical Impedance</Technique>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>Soil Temperature Probe</ShortName>
+                            <LongName>Soil Temperature Probe</LongName>
+                            <Technique>Electrical Impedance</Technique>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+    </Platforms>
+    <AdditionalAttributes>
+        <AdditionalAttribute>
+            <Name>identifier_product_doi</Name>
+            <DataType>STRING</DataType>
+            <Description>Digital object identifier that uniquely identifies this data product</Description>
+            <Value>10.5067/W2WMLRUQOCA8</Value>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>identifier_product_doi_authority</Name>
+            <DataType>STRING</DataType>
+            <Description>URL of the digital object identifier resolving authority</Description>
+            <Value>http://dx.doi.org</Value>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+            <Name>SIPSMetGenVersion</Name>
+            <DataType>STRING</DataType>
+            <Description>The version of the SIPSMetGen software used to produce the metadata file for this granule</Description>
+        </AdditionalAttribute>
+    </AdditionalAttributes>
+    <CSDTDescriptions>
+        <CSDTDescription>
+            <PrimaryCSDT>Standard Science Data Table</PrimaryCSDT>
+            <Implementation>ASCII</Implementation>
+        </CSDTDescription>
+    </CSDTDescriptions>
+    <Campaigns>
+        <Campaign>
+            <ShortName>CLASIC07</ShortName>
+            <LongName>Cloud and Land Surface Interaction Campaign 2007</LongName>
+            <StartDate>2007-04-01T00:00:00Z</StartDate>
+            <EndDate>2007-08-31T00:00:00Z</EndDate>
+        </Campaign>
+    </Campaigns>
+    <OnlineResources>
+        <OnlineResource>
+            <URL>http://nsidc.org/data/docs/daac/smap/clasic07/cl07sm/</URL>
+            <Description>Data set documentation at the NASA NSIDC DAAC</Description>
+            <Type>ECSCollGuide</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://nsidc.org/data/cl07sm/versions/1</URL>
+            <Description>Data set landing page at the NASA NSIDC DAAC</Description>
+            <Type>MiscInformation</Type>
+        </OnlineResource>
+    </OnlineResources>
+    <Spatial>
+        <SpatialCoverageType>Horizontal</SpatialCoverageType>
+        <HorizontalSpatialDomain>
+            <Geometry>
+                <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                <BoundingRectangle>
+                    <WestBoundingCoordinate>-98.59</WestBoundingCoordinate>
+                    <NorthBoundingCoordinate>35.21</NorthBoundingCoordinate>
+                    <EastBoundingCoordinate>-97.95</EastBoundingCoordinate>
+                    <SouthBoundingCoordinate>34.91</SouthBoundingCoordinate>
+                </BoundingRectangle>
+            </Geometry>
+        </HorizontalSpatialDomain>
+        <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>
