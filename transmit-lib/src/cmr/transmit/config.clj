@@ -113,11 +113,8 @@
   "The ECHO system token to use for request to ECHO."
   {:default mock-echo-system-token})
 
-;; TODO add all these to hiera in every environment.
+;; TODO add all these to hiera in every environment based on current values
 
-;; TODO is this the same in every environment? If not we need to set via hiera.;
-;; I think it's probably ECHO_SYS in which case we should change this and then change the
-;; soap services settings in dev sys user to set this property to match.
 (defconfig echo-system-username
   "The ECHO system token to use for request to ECHO."
   {:default "User101"})

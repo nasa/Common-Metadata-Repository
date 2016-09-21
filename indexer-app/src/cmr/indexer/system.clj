@@ -82,9 +82,13 @@
   (let [started-system (start system)
         context {:system started-system}]
     ;; The indexes/alias will not be created if they already exist.
-    (es/create-indexes context)
-    (when (es/requires-update? context)
-      (es/update-indexes context))
+    (try
+      (es/create-indexes context)
+      (when (es/requires-update? context)
+        (es/update-indexes context))
+      (catch Exception e
+        (common-sys/stop started-system component-order)
+        (throw e)))
     started-system))
 
 (def stop
