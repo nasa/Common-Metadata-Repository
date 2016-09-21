@@ -60,7 +60,7 @@
 
 (defn- parse-platforms
   "Returns the parsed platforms with instruments added for the given xml doc."
-  [doc apply-default?]
+  [doc sanitize?]
   (let [platforms (parse-just-platforms doc)
         instruments (parse-instruments doc)]
     ;; When there is only one platform in the collection, associate the instruments on that platform.
@@ -68,9 +68,9 @@
     (if (= 1 (count platforms))
       (map #(assoc % :Instruments instruments) platforms)
       (if instruments
-        (conj platforms {:ShortName (when apply-default? su/not-provided)
+        (conj platforms {:ShortName (when sanitize? su/not-provided)
                          :Instruments instruments})
-        (or (seq platforms) (when apply-default? su/not-provided-platforms))))))
+        (or (seq platforms) (when sanitize? su/not-provided-platforms))))))
 
 (defn- get-short-name
   "Returns the short-name from the given entry-id and version-id, where entry-id is
@@ -92,7 +92,7 @@
 
 (defn- parse-related-urls
   "Returns a list of related urls"
-  [doc apply-default?]
+  [doc sanitize?]
   (if-let [related-urls (seq (select doc "/DIF/Related_URL"))]
     (for [related-url related-urls
           :let [description (value-of related-url "Description")]]
@@ -100,19 +100,19 @@
        :Description description
        :Relation [(value-of related-url "URL_Content_Type/Type")
                   (value-of related-url "URL_Content_Type/Subtype")]})
-    (when apply-default?
+    (when sanitize?
       [su/not-provided-related-url])))
 
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
-  [doc {:keys [apply-default?]}]
+  [doc {:keys [sanitize?]}]
   (let [entry-id (value-of doc "/DIF/Entry_ID")
         version-id (value-of doc "/DIF/Data_Set_Citation/Version")
         short-name (get-short-name entry-id version-id)]
     {:EntryTitle (value-of doc "/DIF/Entry_Title")
      :ShortName short-name
-     :Version (or version-id (when apply-default? su/not-provided))
-     :Abstract (su/with-default (value-of doc "/DIF/Summary/Abstract") apply-default?)
+     :Version (or version-id (when sanitize? su/not-provided))
+     :Abstract (su/with-default (value-of doc "/DIF/Summary/Abstract") sanitize?)
      :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
      :Purpose (value-of doc "/DIF/Summary/Purpose")
      :DataLanguage (dif-util/dif-language->umm-langage (value-of doc "/DIF/Data_Set_Language"))
@@ -132,17 +132,17 @@
                              :Subregion3 (value-of lk "Location_Subregion3")
                              :DetailedLocation (value-of lk "Detailed_Location")}))
      :Quality (value-of doc "/DIF/Quality")
-     :AccessConstraints (dif-util/parse-access-constraints doc apply-default?)
+     :AccessConstraints (dif-util/parse-access-constraints doc sanitize?)
      :UseConstraints (value-of doc "/DIF/Use_Constraints")
-     :Platforms (parse-platforms doc apply-default?)
+     :Platforms (parse-platforms doc sanitize?)
      :TemporalExtents (if-let [temporals (select doc "/DIF/Temporal_Coverage")]
                         [{:RangeDateTimes (for [temporal temporals]
-                                            {:BeginningDateTime (date/with-default (value-of temporal "Start_Date") apply-default?)
+                                            {:BeginningDateTime (date/with-default (value-of temporal "Start_Date") sanitize?)
                                              :EndingDateTime (parse-dif-end-date (value-of temporal "Stop_Date"))})}]
-                        (when apply-default? su/not-provided-temporal-extents))
+                        (when sanitize? su/not-provided-temporal-extents))
      :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
      :SpatialExtent (merge {:GranuleSpatialRepresentation (or (value-of doc "/DIF/Extended_Metadata/Metadata[Name='GranuleSpatialRepresentation']/Value")
-                                                              (when apply-default?
+                                                              (when sanitize?
                                                                 "NO_SPATIAL"))}
                            (when-let [brs (seq (parse-mbrs doc))]
                              {:SpatialCoverageType "HORIZONTAL"
@@ -160,12 +160,12 @@
                        (su/with-default
                          (value-of doc
                                    "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelId']/Value")
-                         apply-default?)
+                         sanitize?)
 
                        :ProcessingLevelDescription
                        (value-of doc "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelDescription']/Value")}
 
-     :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc apply-default?)
+     :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc sanitize?)
      :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
                               (into {} (map (fn [x]
                                               (if (keyword? x)
@@ -197,7 +197,7 @@
                          :VariableLevel2 (value-of sk "Variable_Level_2")
                          :VariableLevel3 (value-of sk "Variable_Level_3")
                          :DetailedVariable (value-of sk "Detailed_Variable")})
-     :RelatedUrls (parse-related-urls doc apply-default?)
+     :RelatedUrls (parse-related-urls doc sanitize?)
      :MetadataAssociations (for [parent-dif (values-at doc "/DIF/Parent_DIF")]
                              {:EntryId parent-dif})
      :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel"))
@@ -206,7 +206,7 @@
                           (center/parse-processing-centers doc))}))
 
 (defn dif9-xml-to-umm-c
-  "Returns UMM-C collection record from DIF9 collection XML document. The :apply-default? option
+  "Returns UMM-C collection record from DIF9 collection XML document. The :sanitize? option
   tells the parsing code to set the default values for fields when parsing the metadata into umm."
   [metadata options]
   (js/parse-umm-c (parse-dif9-xml metadata options)))

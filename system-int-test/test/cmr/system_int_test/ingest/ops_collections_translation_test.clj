@@ -166,7 +166,7 @@
   "Translate collection from native format to UMM-C"
   [record]
   (let [{:keys [metadata-format metadata concept-id]} record]
-    (umm/parse-metadata context :collection metadata-format metadata {:apply-default? true})))
+    (umm/parse-metadata context :collection metadata-format metadata {:sanitize? true})))
 
 (defn- validate-record-schemas
   "Validate a record against the XML schema if applicable and UMM JSON schema. For records in umm-json

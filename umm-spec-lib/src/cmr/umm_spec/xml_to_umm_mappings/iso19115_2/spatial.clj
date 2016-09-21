@@ -68,7 +68,7 @@
 
 (defn parse-geometry
   "Returns UMM GeometryType map from ISO XML document."
-  [doc apply-default?]
+  [doc sanitize?]
   (let [shape-elems    (spatial-elems doc)
         shapes         (keep gmd/decode shape-elems)
         shapes-by-type (group-by #(.getName (class %)) shapes)
@@ -80,7 +80,7 @@
         polygons (get-shapes "cmr.spatial.polygon.Polygon")
         has-shapes? (or (seq points) (seq bounding-rectangles) (seq lines) (seq polygons))]
     {:CoordinateSystem   (or (value-of doc coordinate-system-xpath)
-                             (when (and has-shapes? apply-default?) "CARTESIAN"))
+                             (when (and has-shapes? sanitize?) "CARTESIAN"))
      :Points             points
      :BoundingRectangles bounding-rectangles
      :Lines              lines
@@ -98,11 +98,11 @@
 
 (defn parse-spatial
   "Returns UMM SpatialExtentType map from ISO XML document."
-  [doc extent-info apply-default?]
+  [doc extent-info sanitize?]
   {:SpatialCoverageType (get extent-info "SpatialCoverageType")
    :GranuleSpatialRepresentation (or (get extent-info "SpatialGranuleSpatialRepresentation")
-                                     (when apply-default? "NO_SPATIAL"))
-   :HorizontalSpatialDomain {:Geometry (parse-geometry doc apply-default?)}
+                                     (when sanitize? "NO_SPATIAL"))
+   :HorizontalSpatialDomain {:Geometry (parse-geometry doc sanitize?)}
    :VerticalSpatialDomains (let [vsd-type  (get extent-info "VerticalSpatialDomainType")
                                  vsd-value (get extent-info "VerticalSpatialDomainValue")]
                              (when (or vsd-type vsd-value)
