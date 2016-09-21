@@ -132,7 +132,7 @@
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
    :ShortName (value-of doc "/DIF/Entry_ID/Short_Name")
    :Version (value-of doc "/DIF/Entry_ID/Version")
-   :Abstract (value-of doc "/DIF/Summary/Abstract")
+   :Abstract (u/with-default (value-of doc "/DIF/Summary/Abstract") apply-default?)
    :CollectionDataType (value-of doc "/DIF/Collection_Data_Type")
    :Purpose (value-of doc "/DIF/Summary/Purpose")
    :DataLanguage (dif-util/dif-language->umm-langage (value-of doc "/DIF/Dataset_Language"))

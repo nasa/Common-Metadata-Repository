@@ -112,7 +112,7 @@
     {:EntryTitle (value-of doc "/DIF/Entry_Title")
      :ShortName short-name
      :Version (or version-id (when apply-default? su/not-provided))
-     :Abstract (value-of doc "/DIF/Summary/Abstract")
+     :Abstract (su/with-default (value-of doc "/DIF/Summary/Abstract") apply-default?)
      :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
      :Purpose (value-of doc "/DIF/Summary/Purpose")
      :DataLanguage (dif-util/dif-language->umm-langage (value-of doc "/DIF/Data_Set_Language"))
