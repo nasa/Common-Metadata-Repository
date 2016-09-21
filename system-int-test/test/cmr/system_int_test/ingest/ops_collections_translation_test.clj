@@ -29,7 +29,7 @@
   false)
 
 (def CSV_FILENAME
-  "Ops_Umm_Translation_Errors.csv")
+  "ops_umm_translation_errors.csv")
 
 (def CSV_HEADER
   ["Provider Id" "Concept Id" "Entry Title" "Errors"])
