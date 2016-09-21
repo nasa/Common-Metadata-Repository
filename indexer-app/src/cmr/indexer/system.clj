@@ -28,6 +28,7 @@
             [cmr.common-app.services.kms-fetcher :as kf]
             [cmr.indexer.services.event-handler :as event-handler]
             [cmr.indexer.data.index-set :as index-set]
+            [cmr.message-queue.queue.sqs :as sqs]
             [cmr.common-app.system :as common-sys]))
 
 (def
@@ -68,7 +69,7 @@
                           `system-holder
                           [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
                            (kf/refresh-kms-cache-job "indexer-kms-cache-refresh")])
-             :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
+             :queue-broker (sqs/create-queue-broker (config/rabbit-mq-config))}]
 
     (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby :kms :search])))
 

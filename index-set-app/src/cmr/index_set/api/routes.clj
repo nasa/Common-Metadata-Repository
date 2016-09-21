@@ -21,6 +21,9 @@
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
+       ;; for NGAP deployment health check
+      (GET "/" {} {:status 200})
+      
       (context "/index-sets" []
         (POST "/" {body :body request-context :request-context params :params headers :headers}
           (let [index-set (walk/keywordize-keys body)]

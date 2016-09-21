@@ -88,6 +88,9 @@
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
+       ;; for NGAP deployment health check
+      (GET "/" {} {:status 200})
+
       admin-routes
       (common-routes/health-api-routes health)
       key-routes)
@@ -95,6 +98,7 @@
 
 (defn make-api [system]
   (-> (build-routes system)
+      common-routes/temp-lockdown-access-to-app
       acl/add-authentication-handler
       (context/build-request-context-handler system)
       errors/invalid-url-encoding-handler
