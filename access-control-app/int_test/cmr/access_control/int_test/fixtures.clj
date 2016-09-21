@@ -24,7 +24,7 @@
 
 (defn queue-config
   []
-  (rmq-conf/merge-configs (mdb-config/rabbit-mq-config)
+  (rmq-conf/merge-configs (mdb-config/queue-config)
                           (access-control-config/rabbit-mq-config)))
 
 (defn create-memory-queue-broker
