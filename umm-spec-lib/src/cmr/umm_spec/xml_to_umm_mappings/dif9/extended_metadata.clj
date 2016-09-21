@@ -1,7 +1,9 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif9.extended-metadata
   "Provide functions to parse and generate DIF Extended_Metadata elements."
-  (:require [cmr.common.xml.simple-xpath :refer [select text]]
-            [cmr.common.xml.parse :refer :all]))
+  (:require
+   [clj-time.format :as f]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select text]]))
 
 (def non-additional-attributes
   "Set of extended metadata names which do not map to additional attributes"
@@ -16,7 +18,7 @@
    :Name (value-of extended-elem "Name")
    :Description (value-of extended-elem "Description")
    :DataType (value-of extended-elem "Type")
-   :UpdateDate (value-of extended-elem "Update_Date")
+   :UpdateDate (f/parse (value-of extended-elem "Update_Date"))
    :Value (value-of extended-elem "Value")})
 
 (defn- xml-elem->potential-additional-attributes

@@ -74,7 +74,6 @@
 (defn generate-content-info-additional-attributes
   "Returns the content generator instructions for generating ISO19115 additional attributes."
   [additional-attributes]
-  (proto-repl.saved-values/save 5)
   (when-let [aas (content-info-additional-attributes additional-attributes)]
     [:gmd:contentInfo
      [:gmd:MD_CoverageDescription
@@ -93,7 +92,6 @@
   "Returns the content generator instructions for generating ISO19115 additional attributes.
   It does not generate the whole dataQualityInfo stack, it starts at gmd:processStep."
   [additional-attributes]
-  (proto-repl.saved-values/save 6)
   (if-let [aas (data-quality-info-additional-attributes additional-attributes)]
     [:gmd:processStep
      [:gmi:LE_ProcessStep

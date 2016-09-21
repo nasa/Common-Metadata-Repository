@@ -19,7 +19,9 @@
     [cmr.umm-spec.test.location-keywords-helper :as lkt]
     [cmr.umm-spec.umm-json :as umm-json]
     [cmr.umm-spec.umm-spec-core :as umm]
-    [cmr.umm-spec.validation.umm-spec-validation-core :as umm-validation]))
+    [cmr.umm-spec.validation.umm-spec-validation-core :as umm-validation])
+  (:import
+   (java.io StringWriter)))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -334,7 +336,7 @@
 
 (comment
  ;; Translate and validate a specific collection by concept-id
- (def record (get-collection "C61468243-NSIDC_ECS"))
+ (def record (get-collection "C1221629175-NOAA_NCEI"))
  (translate-and-validation-collection record)
  (translate-record-to-umm record)
  (:metadata-format record)
