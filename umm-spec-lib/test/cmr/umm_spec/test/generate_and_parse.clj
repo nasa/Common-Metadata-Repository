@@ -78,7 +78,6 @@
             :let [metadata (slurp example-file)
                   umm (core/parse-metadata test-context :collection metadata-format metadata)]]
 
-      (def umm umm)
       ;; input file is valid
       (check-failure
        (is (empty? (core/validate-xml :collection metadata-format metadata))
