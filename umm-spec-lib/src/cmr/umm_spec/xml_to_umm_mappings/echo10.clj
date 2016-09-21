@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10
   "Defines mappings from ECHO10 XML into UMM records"
   (:require
+   [clojure.string :as str]
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select text]]
@@ -57,7 +58,8 @@
         assoc-type (value-of element "CollectionType")]
     {:EntryId (value-of element "ShortName")
      :Version (u/without-default version-id)
-     :Type (u/without-default assoc-type)
+     :Type (some-> (u/without-default assoc-type)
+                   str/upper-case)
      :Description (value-of element "CollectionUse")}))
 
 (defn parse-metadata-associations

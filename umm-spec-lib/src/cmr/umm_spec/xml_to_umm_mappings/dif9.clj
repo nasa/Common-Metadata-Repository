@@ -182,7 +182,7 @@
                                              :Publication_Place
                                              :Publisher
                                              :Pages
-                                             [:ISBN (value-of pub-ref "ISBN")]
+                                             [:ISBN (su/format-isbn (value-of pub-ref "ISBN"))]
                                              [:DOI {:DOI (value-of pub-ref "DOI")}]
                                              [:RelatedUrl
                                               {:URLs (seq

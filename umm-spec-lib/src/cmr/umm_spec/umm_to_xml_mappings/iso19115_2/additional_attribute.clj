@@ -1,10 +1,11 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute
   "Functions for generating ISO19115-2 XML elements from UMM additional attribute records."
-  (:require [cmr.common.xml.gen :refer :all]
-            [cmr.umm-spec.util :refer [char-string]]
-            [cmr.umm-spec.iso19115-2-util :as iso]))
+  (:require
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.iso19115-2-util :as iso]
+   [cmr.umm-spec.util :refer [char-string]]))
 
-(def ^:private data-quality-info-attributes
+(def data-quality-info-attributes
   "Defines the additional attributes that should go to dataQualityInfo section of the ISO xml"
   #{ "AquisitionQuality" "Band10_Available" "Band11_Available" "Band12_Available" "Band13_Available"
     "Band14_Available" "Band1_Available" "Band2_Available" "Band3B_Available" "Band3N_Available"
@@ -73,6 +74,7 @@
 (defn generate-content-info-additional-attributes
   "Returns the content generator instructions for generating ISO19115 additional attributes."
   [additional-attributes]
+  (proto-repl.saved-values/save 5)
   (when-let [aas (content-info-additional-attributes additional-attributes)]
     [:gmd:contentInfo
      [:gmd:MD_CoverageDescription
@@ -91,6 +93,7 @@
   "Returns the content generator instructions for generating ISO19115 additional attributes.
   It does not generate the whole dataQualityInfo stack, it starts at gmd:processStep."
   [additional-attributes]
+  (proto-repl.saved-values/save 6)
   (if-let [aas (data-quality-info-additional-attributes additional-attributes)]
     [:gmd:processStep
      [:gmi:LE_ProcessStep
@@ -104,6 +107,3 @@
     [:gmd:processStep
      [:gmi:LE_ProcessStep
       [:gmd:description {:gco:nilReason "unknown"}]]]))
-
-
-
