@@ -151,7 +151,7 @@
                                           :BoundingRectangles brs}}}))
      :Distributions (for [distribution (select doc "/DIF/:Distribution")]
                       {:DistributionMedia (value-of distribution "Distribution_Media")
-                       :Sizes (su/parse-data-sizes (value-of distribution "Distribution_Size"))
+                       :Sizes (su/parse-data-sizes (value-of distribution "Distribution_Size") sanitize?)
                        :DistributionFormat (value-of distribution "Distribution_Format")
                        :Fees (value-of distribution "Fees")})
      ;; umm-lib only has ProcessingLevelId and it is from Metadata Name "ProductLevelId"

@@ -151,14 +151,18 @@
 
 (defn parse-data-sizes
   "Parses the data size and units from the provided string. Returns a sequence of maps with the Size
-  and the Unit. Returns nil if the string cannot be parsed into file sizes with units."
-  [s]
+  and the Unit. Returns nil if the string cannot be parsed into file sizes with units.
+  If data sanitization is enabled convert bytes to KB since bytes is not a UMM valid unit."
+  [s sanitize?]
   (seq
     (for [[_ num-str unit-str :as results] (re-seq data-size-re
                                                    (-> s str .toLowerCase))
           :when (and num-str (not (str/blank? unit-str)))]
-      {:Size (Double. (.replace num-str "," ""))
-       :Unit (-> unit-str str .trim .toUpperCase first (str "B"))})))
+      (if (and sanitize? (= (str/lower-case unit-str) "bytes"))
+        {:Size (/ (Double. (.replace num-str "," "")) 1000.0)
+         :Unit "KB"}
+        {:Size (Double. (.replace num-str "," ""))
+         :Unit (-> unit-str str .trim .toUpperCase first (str "B"))}))))
 
 (defn data-size-str
   "Takes a collection of FileSizeType records which have a Size and a Unit and converts them to a
