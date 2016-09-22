@@ -62,7 +62,7 @@
   []
   (config/reset-config-values)
 
-  ;; Uncomment this to force CMR to use SOAP Services
+  ;; Uncomment this to force CMR to use Legacy Services
   ; (configure-for-legacy-services)
 
   (jobs/set-default-job-start-delay! (* 3 3600))
