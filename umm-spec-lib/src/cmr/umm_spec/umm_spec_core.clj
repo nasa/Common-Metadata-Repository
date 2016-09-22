@@ -75,7 +75,7 @@
 
 (defn parse-metadata
   "Parses metadata of the specific concept type and format into UMM records.
-  The :apply-default? option tells the parsing code to apply the default values for fields
+  The :sanitize? option tells the parsing code to apply the default values for fields
   when parsing the metadata into umm. It defaults to true."
   ([context concept]
    (let [{:keys [concept-type format metadata]} concept]

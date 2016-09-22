@@ -16,7 +16,7 @@
 
 (def default-parsing-options
   "Defines the default options for parsing metadata into umm"
-  {:apply-default? true})
+  {:sanitize? true})
 
 (def not-provided
   "place holder string value for not provided string field"
@@ -81,24 +81,24 @@
 
 (defn map-with-default
   "Returns the result of applying the given map function to a list of values. Use the default value
-  when the mapped value is nil and apply-default? is true.
+  when the mapped value is nil and sanitize? is true.
 
   map-function - function to use for mapping
   values - the values to map
   value-default - the default to use if value is not present in the map
-  apply-default? - true if the default value should be used"
-  [map-function values value-default apply-default?]
+  sanitize? - true if the default value should be used"
+  [map-function values value-default sanitize?]
   (let [results (map map-function values)]
-   (if apply-default?
+   (if sanitize?
      (map #(if (some? %) % value-default) results)
      results)))
 
 (defn with-default
   "Returns the value if it exists or returns the default value 'Not provided'."
   ([value]
-   (with-default value (:apply-default? default-parsing-options)))
-  ([value apply-default?]
-   (if apply-default?
+   (with-default value (:sanitize? default-parsing-options)))
+  ([value sanitize?]
+   (if sanitize?
      (if (some? value)
        value
        not-provided)

@@ -16,8 +16,8 @@
   "Returns x if not nil, or else the default date placeholder value."
   ([x]
    (or x default-date-value))
-  ([x apply-default?]
-   (if apply-default?
+  ([x sanitize?]
+   (if sanitize?
      (or x default-date-value)
      x)))
 

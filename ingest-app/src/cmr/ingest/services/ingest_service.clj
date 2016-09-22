@@ -46,7 +46,7 @@
   (v/validate-concept-request collection-concept)
   (v/validate-concept-metadata collection-concept)
   (let [{:keys [format metadata]} collection-concept
-        collection (spec/parse-metadata context :collection format metadata {:apply-default? false})
+        collection (spec/parse-metadata context :collection format metadata {:sanitize? false})
 
     ;; Validate against the UMM Spec validation rules
         warnings (v/validate-collection-umm-spec context collection validation-options)]

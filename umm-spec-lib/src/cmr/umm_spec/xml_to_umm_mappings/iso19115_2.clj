@@ -124,7 +124,7 @@
 (defn- parse-access-constraints
   "If both value and Description are nil, return nil.
   Otherwise, if Description is nil, assoc it with u/not-provided"
-  [doc apply-default?]
+  [doc sanitize?]
   (let [access-constraints-record
         {:Description (regex-value doc (str constraints-xpath
                                          "/gmd:useLimitation/gco:CharacterString")
@@ -133,11 +133,11 @@
                                    "/gmd:otherConstraints/gco:CharacterString")
                    #"(?s)Restriction Flag:(.+)")}]
     (when (seq (util/remove-nil-keys access-constraints-record))
-      (update access-constraints-record :Description #(u/with-default % apply-default?)))))
+      (update access-constraints-record :Description #(u/with-default % sanitize?)))))
 
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
-  [context doc {:keys [apply-default?]}]
+  [context doc {:keys [sanitize?]}]
   (let [md-data-id-el (first (select doc md-data-id-base-xpath))
         citation-el (first (select doc citation-base-xpath))
         id-el (first (select doc identifier-base-xpath))
@@ -146,12 +146,12 @@
      :EntryTitle (char-string-value citation-el "gmd:title")
      :Version (char-string-value citation-el "gmd:edition")
      :Abstract (or (char-string-value md-data-id-el "gmd:abstract")
-                   (when apply-default? su/not-provided))
+                   (when sanitize? su/not-provided))
      :Purpose (char-string-value md-data-id-el "gmd:purpose")
      :CollectionProgress (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode")
      :Quality (char-string-value doc quality-xpath)
      :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
-     :AccessConstraints (parse-access-constraints doc apply-default?)
+     :AccessConstraints (parse-access-constraints doc sanitize?)
      :UseConstraints
      (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
                   #"(?s)^(?!Restriction Comment:).+")
@@ -160,20 +160,20 @@
      :TemporalKeywords (kws/descriptive-keywords md-data-id-el "temporal")
      :DataLanguage (char-string-value md-data-id-el "gmd:language")
      :ISOTopicCategories (values-at doc topic-categories-xpath)
-     :SpatialExtent (spatial/parse-spatial doc extent-info apply-default?)
+     :SpatialExtent (spatial/parse-spatial doc extent-info sanitize?)
      :TilingIdentificationSystems (tiling/parse-tiling-system md-data-id-el)
      :TemporalExtents (or (seq (parse-temporal-extents doc extent-info md-data-id-el))
-                          (when apply-default? u/not-provided-temporal-extents))
+                          (when sanitize? u/not-provided-temporal-extents))
      :ProcessingLevel {:Id
                        (su/with-default
                          (char-string-value
                            md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
-                         apply-default?)
+                         sanitize?)
                        :ProcessingLevelDescription
                        (char-string-value
                          md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
-     :Distributions (dru/parse-distributions doc apply-default?)
-     :Platforms (platform/parse-platforms doc apply-default?)
+     :Distributions (dru/parse-distributions doc sanitize?)
+     :Platforms (platform/parse-platforms doc sanitize?)
      :Projects (parse-projects doc)
 
      :PublicationReferences (for [publication (select md-data-id-el publication-xpath)
@@ -198,15 +198,15 @@
      :AncillaryKeywords (descriptive-keywords-type-not-equal
                           md-data-id-el
                           ["place" "temporal" "project" "platform" "instrument" "theme"])
-     :ScienceKeywords (kws/parse-science-keywords md-data-id-el apply-default?)
-     :RelatedUrls (dru/parse-related-urls doc apply-default?)
-     :AdditionalAttributes (aa/parse-additional-attributes doc apply-default?)
+     :ScienceKeywords (kws/parse-science-keywords md-data-id-el sanitize?)
+     :RelatedUrls (dru/parse-related-urls doc sanitize?)
+     :AdditionalAttributes (aa/parse-additional-attributes doc sanitize?)
      ;; DataCenters is not implemented but is required in UMM-C
      ;; Implement with CMR-3161
-     :DataCenters (when apply-default? [u/not-provided-data-center])}))
+     :DataCenters (when sanitize? [u/not-provided-data-center])}))
 
 (defn iso19115-2-xml-to-umm-c
-  "Returns UMM-C collection record from ISO19115-2 collection XML document. The :apply-default? option
+  "Returns UMM-C collection record from ISO19115-2 collection XML document. The :sanitize? option
   tells the parsing code to set the default values for fields when parsing the metadata into umm."
   [context metadata options]
   (js/parse-umm-c (parse-iso19115-xml context metadata options)))

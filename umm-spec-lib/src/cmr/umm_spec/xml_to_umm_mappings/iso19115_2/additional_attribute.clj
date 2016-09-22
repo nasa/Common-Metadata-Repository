@@ -22,7 +22,7 @@
 
 (defn- elements->additional-attributes
   "Returns the additional attributes parsed from the given additional attributes elements."
-  [aas apply-default?]
+  [aas sanitize?]
   (when aas
     (for [aa aas]
       {:Group (char-string-value
@@ -33,7 +33,7 @@
        :Value (char-string-value aa "eos:value")
        :Description (su/with-default
                       (char-string-value aa (str additional-attribute-xpath "/eos:description"))
-                      apply-default?)
+                      sanitize?)
        :MeasurementResolution (char-string-value aa (str additional-attribute-xpath
                                                          "/eos:measurementResolution"))
        :ParameterRangeBegin (char-string-value aa (str additional-attribute-xpath
@@ -49,16 +49,16 @@
 
 (defn- parse-content-info-additional-attributes
   "Returns the additional attributes parsed from contentInfo path of the given xml document."
-  [doc apply-default?]
-  (elements->additional-attributes (select doc content-info-base-xpath) apply-default?))
+  [doc sanitize?]
+  (elements->additional-attributes (select doc content-info-base-xpath) sanitize?))
 
 (defn- parse-data-quality-info-additional-attributes
   "Returns the additional attributes parsed from dataQualityInfo path of the given xml document."
-  [doc apply-default?]
-  (elements->additional-attributes (select doc data-quality-info-base-xpath) apply-default?))
+  [doc sanitize?]
+  (elements->additional-attributes (select doc data-quality-info-base-xpath) sanitize?))
 
 (defn parse-additional-attributes
   "Returns the parsed additional attributes from the given xml document."
-  [doc apply-default?]
-  (concat (parse-content-info-additional-attributes doc apply-default?)
-          (parse-data-quality-info-additional-attributes doc apply-default?)))
+  [doc sanitize?]
+  (concat (parse-content-info-additional-attributes doc sanitize?)
+          (parse-data-quality-info-additional-attributes doc sanitize?)))
