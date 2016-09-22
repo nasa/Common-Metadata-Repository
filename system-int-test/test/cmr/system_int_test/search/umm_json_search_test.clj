@@ -157,15 +157,15 @@
 
         "concept-id all-revisions false"
         [coll1-3]
-        {:concept-id "C1200000000-PROV1" :all-revisions false}
+        {:concept-id "C1200000001-PROV1" :all-revisions false}
 
         "concept-id all-revisions unspecified"
         [coll1-3]
-        {:concept-id "C1200000000-PROV1"}
+        {:concept-id "C1200000001-PROV1"}
 
         "concept-id all-revisions true"
         [coll1-1 coll1-2-tombstone coll1-3]
-        {:concept-id "C1200000000-PROV1" :all-revisions true}
+        {:concept-id "C1200000001-PROV1" :all-revisions true}
 
         "all-revisions true"
         [coll1-1 coll1-2-tombstone coll1-3 coll2-1 coll2-2 coll2-3-tombstone coll3]

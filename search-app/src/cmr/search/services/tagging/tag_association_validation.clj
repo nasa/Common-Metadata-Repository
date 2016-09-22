@@ -28,7 +28,7 @@
                             :condition (cqm/string-conditions :concept-id coll-concept-ids true)
                             :page-size :unlimited
                             :result-format :query-specified
-                            :fields [:concept-id]
+                            :result-fields [:concept-id]
                             :skip-acls? false})
           concept-ids (->> (qe/execute-query context query)
                            :items
@@ -45,7 +45,7 @@
                                          :concept-id (map :concept-id tag-associations) true)
                             :page-size :unlimited
                             :result-format :query-specified
-                            :fields [:concept-id :revision-id :deleted]
+                            :result-fields [:concept-id :revision-id :deleted]
                             :all-revisions? true
                             :skip-acls? false})
           collections (->> (qe/execute-query context query)

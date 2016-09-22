@@ -40,7 +40,7 @@
                                       (search/retrieve-concept
                                         (:concept-id del-gran) nil {:throw-exceptions true}))]
         (is (= 404 status))
-        (is (= ["Concept with concept-id [G1200000002-PROV1] could not be found."] errors))))
+        (is (= ["Concept with concept-id [G1200000003-PROV1] could not be found."] errors))))
     (testing "retrieval by granule cmr-concept-id, not found."
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                       (search/retrieve-concept

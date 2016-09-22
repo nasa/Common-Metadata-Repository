@@ -1,11 +1,13 @@
 (ns cmr.transmit.echo.tokens
   "Contains functions for working with tokens using the echo-rest api."
-  (:require [cmr.transmit.echo.rest :as r]
-            [cmr.transmit.echo.conversion :as c]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.mime-types :as mt]
-            [clojure.string :as s]
-            [cheshire.core :as json]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.string :as s]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.echo.conversion :as c]
+   [cmr.transmit.echo.rest :as r]))
 
 (defn login
   "Logs into ECHO and returns the token"
@@ -38,7 +40,7 @@
   [context token]
   (let [[status parsed body] (r/rest-get context (format "/tokens/%s/token_info",token)
                                          {:headers {"Accept" mt/json
-                                                    "Echo-Token" token}})]
+                                                    "Echo-Token" (transmit-config/echo-system-token)}})]
     (case status
       200 (get-in parsed [:token_info :user_name])
       401 (errors/throw-service-error
