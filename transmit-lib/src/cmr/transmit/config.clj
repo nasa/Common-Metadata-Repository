@@ -117,7 +117,7 @@
 
 (defconfig echo-system-username
   "The ECHO system token to use for request to ECHO."
-  {:default "User101"})
+  {:default "ECHO_SYS"})
 
 (defconfig administrators-group-name
   "The name of the Administrators group which the echo system user belongs to."
