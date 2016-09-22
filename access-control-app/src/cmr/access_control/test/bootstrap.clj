@@ -41,7 +41,8 @@
         ;; Add the echo system user to the group. Add members properly handles adding duplicate members
         ;; so there shouldn't be a problem.
         {:keys [concept-id revision-id]} (group-service/add-members context concept-id
-                                                                    [(transmit-config/echo-system-username)]
+                                                                    [(transmit-config/echo-system-username)
+                                                                     transmit-config/local-system-test-user]
                                                                     {:skip-acls? true})]
     ;; Manually index the concept. We want the data to be available as soon as this function returns.
     (ac-index/index-concept-by-concept-id-revision-id context concept-id revision-id)

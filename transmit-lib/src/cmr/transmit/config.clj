@@ -15,6 +15,14 @@
   "A token for the mock system/admin user."
   "mock-echo-system-token")
 
+(def local-system-test-user
+  "A test user expected by ECHO in integration tests"
+  "User101")
+
+(def local-system-test-password
+  "The test user's password"
+  "Password101")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def token-header

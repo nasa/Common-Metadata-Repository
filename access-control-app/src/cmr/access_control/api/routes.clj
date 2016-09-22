@@ -214,7 +214,7 @@
 (defn search-for-groups
   [context headers params]
   (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
-  (-> (group-service/search-for-groups context params)
+  (-> (group-service/search-for-groups context (dissoc params :token))
       cr/search-response))
 
 ;;; ACL Route Functions
