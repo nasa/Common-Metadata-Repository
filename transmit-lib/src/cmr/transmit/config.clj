@@ -121,6 +121,12 @@
   "The ECHO system token to use for request to ECHO."
   {:default mock-echo-system-token})
 
+(defn echo-system-token?
+  "Returns true if the token passed in (or config map) is the echo system user's token"
+  [token-or-context]
+  (or (= (echo-system-token) token-or-context)
+      (= (echo-system-token) (:token token-or-context))))
+
 ;; TODO add all these to hiera in every environment based on current values
 
 (defconfig echo-system-username
