@@ -1,7 +1,9 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial
   "Functions for parsing UMM spatial records out of ISO SMAP XML documents."
-  (:require [cmr.common.xml.simple-xpath :refer [select]]
-            [cmr.common.xml.parse :refer :all]))
+  (:require
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select]]
+   [cmr.umm-spec.util :as su]))
 
 (def bounding-rectangles-xpath-str
   "gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox")
@@ -25,9 +27,11 @@
 
 (defn parse-spatial
   "Returns UMM SpatialExtentType map from SMAP ISO data identifier XML document."
-  [data-id-el]
-  (when-let [bounding-rectangles (parse-bounding-rectangles data-id-el)]
+  [data-id-el apply-default?]
+  (if-let [bounding-rectangles (parse-bounding-rectangles data-id-el)]
     {:SpatialCoverageType "HORIZONTAL"
      :GranuleSpatialRepresentation "GEODETIC"
      :HorizontalSpatialDomain {:Geometry {:CoordinateSystem "GEODETIC"
-                                          :BoundingRectangles bounding-rectangles}}}))
+                                          :BoundingRectangles bounding-rectangles}}}
+    (when apply-default?
+      su/not-provided-spatial-extent)))

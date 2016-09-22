@@ -1,11 +1,13 @@
+
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact
   "Defines mappings and parsing from ECHO10 contact elements into UMM records
    data center and contact person fields."
-  (:require [clojure.set :as set]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.common.xml.simple-xpath :refer [select text]]
-            [cmr.umm-spec.util :as u]
-            [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]))
+  (:require
+   [clojure.set :as set]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]
+   [cmr.umm-spec.util :as u]))
 
 (def echo10-contact-role->umm-data-center-role
    {"ARCHIVER" "ARCHIVER"
@@ -41,9 +43,9 @@
   "User Services" "User Services"
   "GHRC USER SERVICES" "User Services"
   "Science Software Development Manager" "Science Software Development"
-  "Deputy Science Software Development Manager" "Science Software"
-  "Sea Ice Algorithms" "Science Software"
-  "Snow Algorithms" "Science Software"})
+  "Deputy Science Software Development Manager" "Science Software Development"
+  "Sea Ice Algorithms" "Science Software Development"
+  "Snow Algorithms" "Science Software Development"})
 
 (def default-contact-person-role
   "Technical Contact")
@@ -53,7 +55,7 @@
   [contact]
   (seq (concat
         (for [phone (select contact "OrganizationPhones/Phone")]
-          {:Type (value-of phone "Type")
+          {:Type (u/correct-contact-mechanism (value-of phone "Type"))
            :Value (value-of phone "Number")})
         (for [email (values-at contact "OrganizationEmails/Email")]
           {:Type "Email"

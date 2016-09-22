@@ -1,12 +1,13 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.serf
   "Defines mappings from SERF XML into UMM records"
-  (:require [cmr.umm-spec.json-schema :as js]
-            [cmr.common.xml.simple-xpath :refer [select]]
-            [camel-snake-kebab.core :as csk]
-            [clojure.string :as string]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.umm-spec.util :refer [without-default-value-of not-provided]]
-            [cmr.umm-spec.date-util :as date]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.string :as string]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select]]
+   [cmr.umm-spec.date-util :as date]
+   [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.util :as su :refer [without-default-value-of not-provided]]))
 
 (defn- parse-short-name-long-name
   "Parses a common mapping for UMM-CMN data structures"
@@ -95,7 +96,7 @@
                    :Publication_Place
                    :Publisher
                    :Pages
-                   [:ISBN (value-of pub-ref "ISBN")]
+                   [:ISBN (su/format-isbn (value-of pub-ref "ISBN"))]
                    [:DOI {:DOI (value-of pub-ref "DOI")}]
                    [:RelatedUrl
                     {:URLs (values-at pub-ref "Online_Resource")}]
@@ -120,10 +121,12 @@
 
 (defn- parse-related-urls
   "Parse SERF Related URLs and Multimedia Samples into a UMM RelatedUrls object"
-  [doc]
+  [doc apply-default?]
   (let [actual-urls (parse-actual-related-urls doc)
         multimedia-urls (parse-multimedia-samples doc)]
-    (concat actual-urls multimedia-urls)))
+    (if-let [related-urls (seq (concat actual-urls multimedia-urls))]
+      related-urls
+      [su/not-provided-related-url])))
 
 (defn- parse-metadata-associations
   "Parse a SERF document and return a UMM-S Metadata Associations element"
@@ -189,10 +192,10 @@
   [doc {:keys [apply-default?]}]
   {:EntryId (value-of doc "/SERF/Entry_ID")
    :EntryTitle (value-of doc "/SERF/Entry_Title")
-   :Abstract (value-of doc "/SERF/Summary/Abstract")
+   :Abstract (su/with-default (value-of doc "/SERF/Summary/Abstract") apply-default?)
    :Purpose (value-of doc "/SERF/Summary/Purpose")
    :ServiceLanguage (value-of doc "/SERF/Service_Language")
-   :RelatedUrls (parse-related-urls doc)
+   :RelatedUrls (parse-related-urls doc apply-default?)
    :ServiceCitation (parse-service-citations doc)
    :Quality (value-of doc "/SERF/Quality")
    :UseConstraints (value-of doc "/SERF/Use_Constraints")

@@ -1,8 +1,10 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact
   "Defines mappings and parsing from DIF10 elements into UMM records data contact fields."
-  (:require [clojure.set :as set]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.common.xml.simple-xpath :refer [select text]]))
+  (:require
+   [clojure.set :as set]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.umm-spec.util :as su]))
 
 (def dif10-role->umm-personnel-contact-role
    {"TECHNICAL CONTACT" "Technical Contact"
@@ -26,7 +28,7 @@
          (for [email (values-at contact "Email")]
            {:Type "Email" :Value email})
          (for [phone (select contact "Phone")]
-           {:Type (value-of phone "Type") :Value (value-of phone "Number")}))))
+           {:Type (su/correct-contact-mechanism (value-of phone "Type")) :Value (value-of phone "Number")}))))
 
 (defn- parse-address
   "Returns UMM-C contact address from DIF10 Personnel Contact Person or Contact Group element."
@@ -60,7 +62,7 @@
 
 (defn parse-contact-persons
   "Returns UMM-C contact persons map for the given DIF10 Personnel elements."
-  [personnels]
+  [personnels apply-default?]
   (seq
    (for [personnel personnels
          :let [roles (collection-personnel-roles (values-at personnel "Role"))
@@ -69,7 +71,7 @@
      {:Roles roles
       :FirstName (value-of contact-person "First_Name")
       :MiddleName (value-of contact-person "Middle_Name")
-      :LastName (value-of contact-person "Last_Name")
+      :LastName (su/with-default (value-of contact-person "Last_Name") apply-default?)
       :Uuid (:uuid (:attrs (first (filter #(= :Contact_Person (:tag %)) (:content personnel)))))
       :ContactInformation {:ContactMechanisms (parse-contact-mechanisms contact-person)
                            :Addresses (parse-address contact-person)}})))

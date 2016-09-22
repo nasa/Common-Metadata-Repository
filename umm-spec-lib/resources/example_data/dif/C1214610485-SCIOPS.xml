@@ -1,0 +1,95 @@
+<DIF
+    xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd">
+    <Entry_ID>GSI_JARE_GEOMAGNETIC</Entry_ID>
+    <Entry_Title>Geomagnetic survey</Entry_Title>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Last_Name>DEPUTY HEAD OF PHYSICAL GEODESY DIVISION</Last_Name>
+        <Email>antarctic@gsi.go.jp</Email>
+        <Phone>+81-29-864-4332</Phone>
+        <Fax>+81-29-864-1802</Fax>
+        <Contact_Address>
+            <Address>GEODETIC DEPT.</Address>
+            <Address>Kitasato-1</Address>
+            <City>Tsukuba</City>
+            <Province_or_State>Ibaraki</Province_or_State>
+            <Postal_Code>305-0811</Postal_Code>
+            <Country>Japan</Country>
+        </Contact_Address></Personnel>
+    <Parameters>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>SOLID EARTH</Topic>
+        <Term>GEOMAGNETISM</Term>
+        <Variable_Level_1>MAGNETIC FIELD</Variable_Level_1>
+    </Parameters>
+    <ISO_Topic_Category>GEOSCIENTIFIC INFORMATION</ISO_Topic_Category>
+    <Keyword>NIPR</Keyword>
+    <Sensor_Name>
+        <Short_Name>FLUXGATE MAGNETOMETERS</Short_Name>
+    </Sensor_Name>
+    <Sensor_Name>
+        <Short_Name>PROTON MAGNETOMETER</Short_Name>
+    </Sensor_Name>
+    <Sensor_Name>
+        <Short_Name>MAGNETOMETERS</Short_Name>
+    </Sensor_Name>
+    <Source_Name>
+        <Short_Name>FIXED OBSERVATION STATIONS</Short_Name>
+    </Source_Name>
+    <Temporal_Coverage>
+        <Start_Date>1957-01-01</Start_Date>
+    </Temporal_Coverage>
+    <Spatial_Coverage>
+        <Southernmost_Latitude>-73.0</Southernmost_Latitude>
+        <Northernmost_Latitude>-67.0</Northernmost_Latitude>
+        <Westernmost_Longitude>22.0</Westernmost_Longitude>
+        <Easternmost_Longitude>45.0</Easternmost_Longitude>
+    </Spatial_Coverage>
+    <Project>
+        <Short_Name>JARE</Short_Name>
+        <Long_Name>Japanese Antarctic Research Expedition</Long_Name>
+    </Project>
+    <Use_Constraints>PICCCBY</Use_Constraints>
+    <Data_Set_Language>English</Data_Set_Language>
+    <Data_Set_Language>Japanese</Data_Set_Language>
+    <Data_Center>
+        <Data_Center_Name>
+            <Short_Name>JP/GSI</Short_Name>
+            <Long_Name>Geographical Survey Institute, Japan</Long_Name>
+        </Data_Center_Name>
+        <Data_Center_URL>http://www.gsi.go.jp/</Data_Center_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Last_Name>DEPUTY HEAD OF PHYSICAL GEODESY DIVISION</Last_Name>
+            <Email>gsi-antarctic-seika@ml.mlit.go.jp</Email>
+        </Personnel>
+    </Data_Center>
+    <Multimedia_Sample>
+        <URL>http://scidbase.nipr.ac.jp/uploads/metadata/obs_photo1_0_Geomagnetic_survey_image001.jpg</URL>
+    </Multimedia_Sample>
+    <Summary>
+        <Abstract>As of the 47th JARE (2005), we have accumulated a total of 1,757 geomagnetic observation data items excluding aeromagnetic survey information on geographical positions by virtue of research on exposed rocks and inland research.</Abstract>As of the 47th JARE (2005), we have accumulated a total of 1,757 geomagnetic observation data items excluding aeromagnetic survey information on geographical positions by virtue of research on exposed rocks and inland research.</Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+        </URL_Content_Type>
+        <URL>http://scidbase.nipr.ac.jp/?ml_lang=en</URL>
+        <Description>NIPR Science Database</Description>
+    </Related_URL>
+    <IDN_Node>
+        <Short_Name>AMD</Short_Name>
+    </IDN_Node>
+    <IDN_Node>
+        <Short_Name>AMD/JP</Short_Name>
+    </IDN_Node>
+    <IDN_Node>
+        <Short_Name>CEOS</Short_Name>
+    </IDN_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 9.7.1</Metadata_Version>
+    <DIF_Creation_Date>2000-06-27
+    </DIF_Creation_Date>
+    <Last_DIF_Revision_Date>2016-08-16</Last_DIF_Revision_Date></DIF>

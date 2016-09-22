@@ -90,6 +90,19 @@
   (remove nil? [(date/parse-date-type-from-xml doc "DIF/DIF_Creation_Date" "CREATE")
                 (date/parse-date-type-from-xml doc "DIF/Last_DIF_Revision_Date" "UPDATE")]))
 
+(defn- parse-related-urls
+  "Returns a list of related urls"
+  [doc apply-default?]
+  (if-let [related-urls (seq (select doc "/DIF/Related_URL"))]
+    (for [related-url related-urls
+          :let [description (value-of related-url "Description")]]
+      {:URLs (values-at related-url "URL")
+       :Description description
+       :Relation [(value-of related-url "URL_Content_Type/Type")
+                  (value-of related-url "URL_Content_Type/Subtype")]})
+    (when apply-default?
+      [su/not-provided-related-url])))
+
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
   [doc {:keys [apply-default?]}]
@@ -99,7 +112,7 @@
     {:EntryTitle (value-of doc "/DIF/Entry_Title")
      :ShortName short-name
      :Version (or version-id (when apply-default? su/not-provided))
-     :Abstract (value-of doc "/DIF/Summary/Abstract")
+     :Abstract (su/with-default (value-of doc "/DIF/Summary/Abstract") apply-default?)
      :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
      :Purpose (value-of doc "/DIF/Summary/Purpose")
      :DataLanguage (dif-util/dif-language->umm-langage (value-of doc "/DIF/Data_Set_Language"))
@@ -119,18 +132,18 @@
                              :Subregion3 (value-of lk "Location_Subregion3")
                              :DetailedLocation (value-of lk "Detailed_Location")}))
      :Quality (value-of doc "/DIF/Quality")
-     :AccessConstraints {:Description (value-of doc "/DIF/Access_Constraints")
-                         :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}
+     :AccessConstraints (dif-util/parse-access-constraints doc apply-default?)
      :UseConstraints (value-of doc "/DIF/Use_Constraints")
      :Platforms (parse-platforms doc apply-default?)
      :TemporalExtents (if-let [temporals (select doc "/DIF/Temporal_Coverage")]
                         [{:RangeDateTimes (for [temporal temporals]
-                                            {:BeginningDateTime (value-of temporal "Start_Date")
+                                            {:BeginningDateTime (date/with-default (value-of temporal "Start_Date") apply-default?)
                                              :EndingDateTime (parse-dif-end-date (value-of temporal "Stop_Date"))})}]
                         (when apply-default? su/not-provided-temporal-extents))
      :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
      :SpatialExtent (merge {:GranuleSpatialRepresentation (or (value-of doc "/DIF/Extended_Metadata/Metadata[Name='GranuleSpatialRepresentation']/Value")
-                                                              "NO_SPATIAL")}
+                                                              (when apply-default?
+                                                                "NO_SPATIAL"))}
                            (when-let [brs (seq (parse-mbrs doc))]
                              {:SpatialCoverageType "HORIZONTAL"
                               :HorizontalSpatialDomain
@@ -169,7 +182,7 @@
                                              :Publication_Place
                                              :Publisher
                                              :Pages
-                                             [:ISBN (value-of pub-ref "ISBN")]
+                                             [:ISBN (su/format-isbn (value-of pub-ref "ISBN"))]
                                              [:DOI {:DOI (value-of pub-ref "DOI")}]
                                              [:RelatedUrl
                                               {:URLs (seq
@@ -184,12 +197,7 @@
                          :VariableLevel2 (value-of sk "Variable_Level_2")
                          :VariableLevel3 (value-of sk "Variable_Level_3")
                          :DetailedVariable (value-of sk "Detailed_Variable")})
-     :RelatedUrls (for [related-url (select doc "/DIF/Related_URL")
-                        :let [description (value-of related-url "Description")]]
-                    {:URLs (values-at related-url "URL")
-                     :Description description
-                     :Relation [(value-of related-url "URL_Content_Type/Type")
-                                (value-of related-url "URL_Content_Type/Subtype")]})
+     :RelatedUrls (parse-related-urls doc apply-default?)
      :MetadataAssociations (for [parent-dif (values-at doc "/DIF/Parent_DIF")]
                              {:EntryId parent-dif})
      :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel"))

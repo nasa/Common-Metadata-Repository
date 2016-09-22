@@ -133,9 +133,7 @@
     (println "| ------ | ------------------- |")
     (doseq [[target permissions] (sort-by key targets-permissions)]
       (println "|" target "|" (clojure.string/join ", " permissions) "|"))
-    (println))
-  )
-
+    (println)))
 
 (defn- get-identity-type
   [acl]

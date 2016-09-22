@@ -376,8 +376,8 @@
                                                        {:concept-id (:concept-id coll2)
                                                         :data ["coll2 tag1 association" true]}
                                                        {:concept-id (:concept-id coll3)
-                                                        :data {:status "reviewed"
-                                                               :score 85}}])
+                                                        :data {:review_status "reviewed"
+                                                               :review-score 85}}])
     (tags/associate-by-concept-ids user1-token "tag2" [{:concept-id (:concept-id coll1)
                                                         :data {:description "coll1 tag2 association"}}
                                                        {:concept-id (:concept-id coll2)
@@ -389,8 +389,8 @@
                                     "tag2" {"data" {"description" "coll1 tag2 association"}}}
                            "coll2" {"tag1" {"data" ["coll2 tag1 association" true]}
                                     "tag2" {"data" 100}}
-                           "coll3" {"tag1" {"data" {"status" "reviewed"
-                                                    "score" 85}}
+                           "coll3" {"tag1" {"data" {"review_status" "reviewed"
+                                                    "review-score" 85}}
                                     "tag3" {"data" "tag 3 rocks"}}}
           expected-result
           (fn [response-format]
@@ -494,4 +494,3 @@
 
            "and"
            "ignore_case"))))
-

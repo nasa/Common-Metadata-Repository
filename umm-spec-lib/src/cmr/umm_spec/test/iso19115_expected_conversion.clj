@@ -100,14 +100,16 @@
 
 (defn- expected-iso-19115-2-related-urls
   [related-urls]
-  (seq (for [related-url related-urls
-             url (:URLs related-url)]
-         (-> related-url
-             (assoc :Title nil :MimeType nil :FileSize nil :URLs [url])
-             (update-in [:Relation]
-                        (fn [[rel]]
-                          (when (conversion-util/relation-set rel)
-                            [rel])))))))
+  (if (seq related-urls)
+    (seq (for [related-url related-urls
+               url (:URLs related-url)]
+           (-> related-url
+               (assoc :Title nil :MimeType nil :FileSize nil :URLs [url])
+               (update-in [:Relation]
+                          (fn [[rel]]
+                            (when (conversion-util/relation-set rel)
+                              [rel]))))))
+    [su/not-provided-related-url]))
 
 (defn- fix-iso-vertical-spatial-domain-values
   [vsd]
@@ -171,6 +173,15 @@
       (assoc :UpdateDate nil)
       (assoc :Description (su/with-default (:Description attribute)))))
 
+(defn- expected-iso19115-additional-attributes
+  "Update each additional attribute and re-order the additional attributes to be non data Quality
+  then data quality additional attributes"
+  [additional-attributes]
+  (let [aas (map expected-iso19115-additional-attribute additional-attributes)]
+    (concat
+      (seq (remove #(iso-aa/data-quality-info-attributes (:Name %)) aas))
+      (seq (filter #(iso-aa/data-quality-info-attributes (:Name %)) aas)))))
+
 (defn- expected-iso19115-data-dates
   "Returns the expected ISO19115 DataDates"
   [data-dates]
@@ -178,6 +189,13 @@
     data-dates
     [(cmn/map->DateType {:Date (f/parse date-util/default-date-value)
                          :Type "CREATE"})]))
+
+(defn- expected-science-keywords
+  "Returns science keywords if not nil, otherwise default"
+  [science-keywords]
+  (if (seq science-keywords)
+    science-keywords
+    su/not-provided-science-keywords))
 
 (defn umm-expected-conversion-iso19115
   [umm-coll]
@@ -199,7 +217,7 @@
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
       (update :PublicationReferences iso-19115-2-publication-reference)
       (update :RelatedUrls expected-iso-19115-2-related-urls)
-      (update-in-each [:AdditionalAttributes] expected-iso19115-additional-attribute)
+      (update :AdditionalAttributes expected-iso19115-additional-attributes)
       (update :MetadataAssociations group-metadata-assocations)
       (update :ISOTopicCategories update-iso-topic-categories)
       (update :LocationKeywords conversion-util/fix-location-keyword-conversion)
@@ -209,4 +227,7 @@
       (assoc :ContactGroups nil)
       (assoc :ContactPersons nil)
       (assoc :MetadataDates nil)
+      (update :ScienceKeywords expected-science-keywords)
+      (update :AccessConstraints conversion-util/expected-access-constraints)
+      (update-in-each [:PublicationReferences] #(update % :ISBN su/format-isbn))
       js/parse-umm-c))

@@ -1,10 +1,11 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2.metadata-association
   "Functions for parsing UMM metadata association records out of ISO 19115-2 XML elemuments."
-  (:require [cmr.common.xml.simple-xpath :refer [select text]]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.umm-spec.util :refer [without-default-value-of]]
-            [cmr.umm-spec.iso19115-2-util :as iso]))
-
+  (:require
+   [clojure.string :as str]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.umm-spec.iso19115-2-util :as iso]
+   [cmr.umm-spec.util :refer [without-default-value-of]]))
 
 (def source-ma-xpath
   "Source associated metadata xpath relative to document root xpath"
@@ -34,7 +35,8 @@
                   ma (str citation-prefix "/gmd:edition"))
        :Description (iso/char-string-value
                       ma (str citation-prefix "/gmd:otherCitationDetails"))
-       :Type assoc-type})
+       :Type (some-> assoc-type
+                     str/upper-case)})
     (for [ma (select elem source-ma-xpath)]
       {:EntryId (iso/char-string-value ma "gmd:sourceCitation/gmd:CI_Citation/gmd:title")
        :Version (iso/char-string-value ma "gmd:sourceCitation/gmd:CI_Citation/gmd:edition")

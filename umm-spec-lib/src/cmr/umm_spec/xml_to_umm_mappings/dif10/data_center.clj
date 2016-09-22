@@ -20,12 +20,12 @@
 
 (defn parse-data-centers
   "Returns UMM-C data centers from DIF 10 XML document."
-  [doc]
+  [doc apply-default?]
   (for [center (select doc "/DIF/Organization")]
     {:Roles (seq (values-at center "Organization_Type"))
      :ShortName (value-of center "Organization_Name/Short_Name")
      :LongName (value-of center "Organization_Name/Long_Name")
      :Uuid (:uuid (:attrs (first (filter #(= :Organization_Name (:tag %)) (:content center)))))
      :ContactInformation (parse-contact-information center)
-     :ContactPersons (contact/parse-contact-persons (select center "Personnel"))
+     :ContactPersons (contact/parse-contact-persons (select center "Personnel") apply-default?)
      :ContactGroups (contact/parse-contact-groups (select center "Personnel"))}))

@@ -1,14 +1,17 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10
   "Defines mappings from ECHO10 XML into UMM records"
-  (:require [cmr.common.xml.simple-xpath :refer [select text]]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.umm-spec.date-util :as date]
-            [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
-            [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
-            [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.util :as u]
-            [cmr.umm-spec.location-keywords :as lk]
-            [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as dc]))
+  (:require
+   [clojure.string :as str]
+   [cmr.common.util :as util]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.umm-spec.date-util :as date]
+   [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as dc]
+   [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
+   [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]))
 
 (defn parse-temporal
   "Returns seq of UMM temporal extents from an ECHO10 XML document."
@@ -55,7 +58,8 @@
         assoc-type (value-of element "CollectionType")]
     {:EntryId (value-of element "ShortName")
      :Version (u/without-default version-id)
-     :Type (u/without-default assoc-type)
+     :Type (some-> (u/without-default assoc-type)
+                   str/upper-case)
      :Description (value-of element "CollectionUse")}))
 
 (defn parse-metadata-associations
@@ -100,6 +104,31 @@
   (when-let [revision-date (date/parse-date-type-from-xml doc "Collection/RevisionDate" "UPDATE")]
     [revision-date]))
 
+(defn- parse-science-keywords
+  "Parse ECHO10 science keywords or use default if applicable"
+  [doc apply-default?]
+  (if-let [science-keywords (seq (select doc "/Collection/ScienceKeywords/ScienceKeyword"))]
+    (for [sk science-keywords]
+      {:Category (value-of sk "CategoryKeyword")
+       :Topic (value-of sk "TopicKeyword")
+       :Term (value-of sk "TermKeyword")
+       :VariableLevel1 (value-of sk "VariableLevel1Keyword/Value")
+       :VariableLevel2 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/Value")
+       :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
+       :DetailedVariable (value-of sk "DetailedVariableKeyword")})
+    (when apply-default?
+      u/not-provided-science-keywords)))
+
+(defn- parse-access-constraints
+  "If both value and Description are nil, return nil.
+  Otherwise, if Description is nil, assoc it with u/not-provided"
+  [doc apply-default?]
+  (let [access-constraints-record
+        {:Description (value-of doc "/Collection/RestrictionComment")
+         :Value (value-of doc "/Collection/RestrictionFlag")}]
+    (when (seq (util/remove-nil-keys access-constraints-record))
+      (update access-constraints-record :Description #(u/with-default % apply-default?)))))
+
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [context doc {:keys [apply-default?]}]
@@ -112,20 +141,19 @@
    :CollectionDataType (value-of doc "/Collection/CollectionDataType")
    :Purpose    (value-of doc "/Collection/SuggestedUsage")
    :CollectionProgress (value-of doc "/Collection/CollectionState")
-   :AccessConstraints {:Description (value-of doc "/Collection/RestrictionComment")
-                       :Value (value-of doc "/Collection/RestrictionFlag")}
+   :AccessConstraints (parse-access-constraints doc apply-default?)
    :Distributions [{:DistributionFormat (value-of doc "/Collection/DataFormat")
                     :Fees (value-of doc "/Collection/Price")}]
    :TemporalKeywords (values-at doc "/Collection/TemporalKeywords/Keyword")
    :LocationKeywords (lk/spatial-keywords->location-keywords
                       (lk/get-spatial-keywords-maps context)
                       (values-at doc "/Collection/SpatialKeywords/Keyword"))
-   :SpatialExtent    (spatial/parse-spatial doc)
+   :SpatialExtent    (spatial/parse-spatial doc apply-default?)
    :TemporalExtents  (or (seq (parse-temporal doc))
                          (when apply-default? u/not-provided-temporal-extents))
    :Platforms (or (seq (parse-platforms doc))
                   (when apply-default? u/not-provided-platforms))
-   :ProcessingLevel {:Id (value-of doc "/Collection/ProcessingLevelId")
+   :ProcessingLevel {:Id (u/with-default (value-of doc "/Collection/ProcessingLevelId") apply-default?)
                      :ProcessingLevelDescription (value-of doc "/Collection/ProcessingLevelDescription")}
    :AdditionalAttributes (for [aa (select doc "/Collection/AdditionalAttributes/AdditionalAttribute")]
                            {:Name (value-of aa "Name")
@@ -141,15 +169,8 @@
                 :StartDate (value-of proj "StartDate")
                 :EndDate (value-of proj "EndDate")})
    :TilingIdentificationSystems (parse-tiling doc)
-   :RelatedUrls (ru/parse-related-urls doc)
-   :ScienceKeywords (for [sk (select doc "/Collection/ScienceKeywords/ScienceKeyword")]
-                      {:Category (value-of sk "CategoryKeyword")
-                       :Topic (value-of sk "TopicKeyword")
-                       :Term (value-of sk "TermKeyword")
-                       :VariableLevel1 (value-of sk "VariableLevel1Keyword/Value")
-                       :VariableLevel2 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/Value")
-                       :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
-                       :DetailedVariable (value-of sk "DetailedVariableKeyword")})
+   :RelatedUrls (ru/parse-related-urls doc apply-default?)
+   :ScienceKeywords (parse-science-keywords doc apply-default?)
    :DataCenters (dc/parse-data-centers doc apply-default?)
    :ContactPersons (dc/parse-data-contact-persons doc apply-default?)})
 

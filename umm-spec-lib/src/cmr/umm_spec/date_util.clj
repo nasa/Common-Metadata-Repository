@@ -1,20 +1,25 @@
 (ns cmr.umm-spec.date-util
   "Useful UMM date values and functions."
-  (:require [clj-time.format :as f]
-            [cmr.common.date-time-parser :as p]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.umm-spec.models.umm-common-models :as cmn]))
+  (:require
+   [clj-time.format :as f]
+   [clojure.string :as str]
+   [cmr.common.date-time-parser :as p]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.umm-spec.models.umm-common-models :as cmn]))
 
 (def default-date-value "1970-01-01T00:00:00")
 
 (def parsed-default-date
   (p/parse-datetime default-date-value))
 
-
 (defn with-default
   "Returns x if not nil, or else the default date placeholder value."
-  [x]
-  (or x default-date-value))
+  ([x]
+   (or x default-date-value))
+  ([x apply-default?]
+   (if apply-default?
+     (or x default-date-value)
+     x)))
 
 (defn without-default
   "Returns x if it is not the default date value string."
@@ -38,7 +43,7 @@
   "Get the date at the location in the doc and parse it into a UMM DateType"
   [doc date-location type]
   (when-let [date (value-of doc date-location)]
-    (cmn/map->DateType {:Date (f/parse date)
+    (cmn/map->DateType {:Date (f/parse (str/trim date))
                         :Type type})))
 
 (defn latest-date-of-type
