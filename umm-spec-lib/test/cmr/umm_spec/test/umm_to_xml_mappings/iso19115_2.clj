@@ -423,7 +423,7 @@
           generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
           ;; parse out the dataQualtiyInfo additional attributes
           parsed-additional-attributes (#'aa/parse-data-quality-info-additional-attributes
-                                         generated-iso (:apply-default? u/default-parsing-options))]
+                                         generated-iso (:sanitize? u/default-parsing-options))]
       ;; validate against xml schema
       (is (empty? (core/validate-xml :collection :iso19115 generated-iso)))
       (is (not (empty? parsed-additional-attributes)))

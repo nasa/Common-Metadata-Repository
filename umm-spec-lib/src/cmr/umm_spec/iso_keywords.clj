@@ -91,7 +91,7 @@
 
 (defn parse-science-keywords
   "Returns the science keywords parsed from the given xml document."
-  [md-data-id-el apply-default?]
+  [md-data-id-el sanitize?]
   (if-let [science-keywords (seq (descriptive-keywords md-data-id-el "theme"))]
     (for [sk science-keywords
           :let [[category topic term variable-level-1 variable-level-2 variable-level-3
@@ -104,7 +104,7 @@
        :VariableLevel2 variable-level-2
        :VariableLevel3 variable-level-3
        :DetailedVariable detailed-variable})
-    (when apply-default?
+    (when sanitize?
       su/not-provided-science-keywords)))
 
 (defmulti smap-keyword-str

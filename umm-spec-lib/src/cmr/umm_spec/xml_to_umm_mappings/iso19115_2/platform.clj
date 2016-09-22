@@ -23,8 +23,8 @@
 
 (defn parse-platforms
   "Returns the platforms parsed from the given xml document."
-  [doc apply-default?]
+  [doc sanitize?]
   (let [instruments-mapping (inst/xml-elem->instruments-mapping doc)
         platforms (seq (map #(xml-elem->platform instruments-mapping %)
                             (select doc platforms-xpath)))]
-    (or (seq platforms) (when apply-default? su/not-provided-platforms))))
+    (or (seq platforms) (when sanitize? su/not-provided-platforms))))

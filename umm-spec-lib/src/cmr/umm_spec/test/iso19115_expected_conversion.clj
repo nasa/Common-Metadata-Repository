@@ -173,6 +173,15 @@
       (assoc :UpdateDate nil)
       (assoc :Description (su/with-default (:Description attribute)))))
 
+(defn- expected-iso19115-additional-attributes
+  "Update each additional attribute and re-order the additional attributes to be non data Quality
+  then data quality additional attributes"
+  [additional-attributes]
+  (let [aas (map expected-iso19115-additional-attribute additional-attributes)]
+    (concat
+      (seq (remove #(iso-aa/data-quality-info-attributes (:Name %)) aas))
+      (seq (filter #(iso-aa/data-quality-info-attributes (:Name %)) aas)))))
+
 (defn- expected-iso19115-data-dates
   "Returns the expected ISO19115 DataDates"
   [data-dates]
@@ -208,7 +217,7 @@
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
       (update :PublicationReferences iso-19115-2-publication-reference)
       (update :RelatedUrls expected-iso-19115-2-related-urls)
-      (update-in-each [:AdditionalAttributes] expected-iso19115-additional-attribute)
+      (update :AdditionalAttributes expected-iso19115-additional-attributes)
       (update :MetadataAssociations group-metadata-assocations)
       (update :ISOTopicCategories update-iso-topic-categories)
       (update :LocationKeywords conversion-util/fix-location-keyword-conversion)
@@ -220,4 +229,5 @@
       (assoc :MetadataDates nil)
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
+      (update-in-each [:PublicationReferences] #(update % :ISBN su/format-isbn))
       js/parse-umm-c))

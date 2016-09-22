@@ -42,7 +42,7 @@
   ([]
    (make-group nil))
   ([attributes]
-   (merge {:name "Administrators"
+   (merge {:name "Administrators2"
            :description "A very good group"}
           attributes)))
 
@@ -59,9 +59,13 @@
   "Creates a group."
   ([token group]
    (create-group token group nil))
-  ([token group options]
-   (let [options (merge {:raw? true :token token} options)]
-     (process-response (ac/create-group (conn-context) group options)))))
+  ([token group {:keys [allow-failure?] :as options}]
+   (let [options (merge {:raw? true :token token} options)
+         {:keys [status] :as response} (process-response (ac/create-group (conn-context) group options))]
+     (when (and (not allow-failure?)
+                (or (> status 299) (< status 200)))
+       (throw (Exception. (format "Unexpected status [%s] when creating group" (pr-str response)))))
+     response)))
 
 (defn get-group
   "Retrieves a group by concept id"

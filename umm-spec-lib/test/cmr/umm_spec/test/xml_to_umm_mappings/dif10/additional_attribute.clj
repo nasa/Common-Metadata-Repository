@@ -178,9 +178,9 @@
   (testing "parse additional attributes from Extended_Metadata"
     (is (= expected-parsed-additional-attributes1
            (aa/xml-elem->AdditionalAttributes
-             example-dif1 (:apply-default? u/default-parsing-options)))))
+             example-dif1 (:sanitize? u/default-parsing-options)))))
 
   (testing "parse additional attributes from Additional_Attributes and Extended_Metadata together"
     (is (= expected-parsed-additional-attributes2
            (aa/xml-elem->AdditionalAttributes
-            example-dif2 (:apply-default? u/default-parsing-options))))))
+            example-dif2 (:sanitize? u/default-parsing-options))))))

@@ -4,6 +4,27 @@
             [cmr.transmit.connection :as conn]
             [camel-snake-kebab.core :as csk]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Constants for help in testing.
+
+(def mock-echo-system-group-guid
+  "The guid of the mock admin group."
+  "mock-admin-group-guid")
+
+(def mock-echo-system-token
+  "A token for the mock system/admin user."
+  "mock-echo-system-token")
+
+(def local-system-test-user
+  "A test user expected by ECHO in integration tests"
+  "User101")
+
+(def local-system-test-password
+  "The test user's password"
+  "Password101")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (def token-header
   "echo-token")
 
@@ -98,7 +119,21 @@
 
 (defconfig echo-system-token
   "The ECHO system token to use for request to ECHO."
-  {:default "mock-echo-system-token"})
+  {:default mock-echo-system-token})
+
+;; TODO add all these to hiera in every environment based on current values
+
+(defconfig echo-system-username
+  "The ECHO system token to use for request to ECHO."
+  {:default "ECHO_SYS"})
+
+(defconfig administrators-group-name
+  "The name of the Administrators group which the echo system user belongs to."
+  {:default "Administrators"})
+
+(defconfig administrators-group-legacy-guid
+  "The legacy guid of the administrators guid."
+  {:default mock-echo-system-group-guid})
 
 (def default-conn-info
   "The default values for connections."

@@ -15,6 +15,7 @@
    [cmr.dev-system.system :as system]
    [cmr.dev-system.tests :as tests]
    [cmr.system-int-test.system :as sit-sys]
+   [cmr.transmit.config :as transmit-config]
    [debugger.core]
    [proto-repl.saved-values] ;; For Proto REPL lib capabilities
    [refresh-persistent-settings :as settings]))
@@ -49,10 +50,12 @@
   []
   (config/set-config-value! :echo-rest-host "localhost")
   (config/set-config-value! :echo-rest-port 3012)
-  (config/set-config-value! :echo-rest-context "/soap-services/rest")
-  (config/set-config-value! :echo-system-token "mock-echo-system-token")
+  (config/set-config-value! :echo-rest-context "/legacy-services/rest")
   (config/set-config-value! :dev-system-echo-type "external")
-  (config/set-config-value! :dev-system-db-type "in-memory"))
+  (config/set-config-value! :dev-system-db-type "in-memory")
+  ;; Hard coded here and in legacy-services/echo/echo-env/support/db/bootstrap/business/system_acls_changeLog.xml
+  ;; so that ACLs that are bootstrapped in kernel reference same Administrators group in bootstrapped CMR.
+  (transmit-config/set-administrators-group-legacy-guid! "316520E041894014E050007F010038C4"))
 
 (defn start
   "Starts the current development system."

@@ -1,0 +1,189 @@
+<DIF
+    xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd">
+    <Entry_ID>gov.noaa.ncdc.C01076</Entry_ID>
+    <Entry_Title>US Air Force Data Processing Manuals</Entry_Title>
+    <Data_Set_Citation>
+        <Dataset_Title>US Air Force Data Processing Manuals</Dataset_Title>
+        <Dataset_Release_Date>2011-03-15</Dataset_Release_Date>
+        <Data_Presentation_Form>imageDigital</Data_Presentation_Form>
+    </Data_Set_Citation>
+    <Personnel>
+        <Role>DIF AUTHOR</Role>
+        <First_Name>NCEI METADATA</First_Name>
+        <Last_Name>DOC/NOAA/NESDIS/NCEI</Last_Name>
+        <Email>ncdc.metadata@noaa.gov</Email>
+        <Phone>+1 828-271-4800</Phone>
+        <Fax>+1 828-271-4876</Fax>
+        <Contact_Address>
+            <Address>151 Patton Avenue</Address>
+            <Address>Federal Building, Room 468</Address>
+            <City>Asheville</City>
+            <Province_or_State>NC</Province_or_State>
+            <Postal_Code>28801-5001</Postal_Code>
+            <Country>USA</Country>
+        </Contact_Address>
+    </Personnel>
+    <Personnel>
+        <Role>TECHNICAL CONTACT</Role>
+        <First_Name>JASON</First_Name>
+        <Last_Name>COOPER</Last_Name>
+        <Email>ncdc.orders@noaa.gov</Email>
+        <Phone>+1 828-271-4800</Phone>
+        <Fax>+1 828-271-4876</Fax>
+        <Contact_Address>
+            <Address>Federal Building, Room 468</Address>
+            <Address>151 Patton Avenue</Address>
+            <City>Asheville</City>
+            <Province_or_State>NC</Province_or_State>
+            <Postal_Code>28801-5001</Postal_Code>
+            <Country>USA</Country>
+        </Contact_Address>
+    </Personnel>
+    <Parameters>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC PHENOMENA</Term>
+    </Parameters>
+    <Parameters>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>CLIMATE INDICATORS</Topic>
+        <Term>ATMOSPHERIC/OCEAN INDICATORS</Term>
+    </Parameters>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Keyword>EARTH SCIENCE &gt; ATMOSPHERE &gt; ATMOSPHERIC PHENOMENA</Keyword>
+    <Keyword>EARTH SCIENCE &gt; CLIMATE INDICATORS &gt; ATMOSPHERIC/OCEAN INDICATORS</Keyword>
+    <Keyword>CONTINENT &gt; NORTH AMERICA &gt; UNITED STATES OF AMERICA</Keyword>
+    <Keyword>GEOGRAPHIC REGIONS &gt; GLOBAL</Keyword>
+    <Keyword>VERTICAL LOCATION &gt; LAND SURFACE</Keyword>
+    <Keyword>VERTICAL LOCATION &gt; OCEAN SURFACE</Keyword>
+    <Keyword>METEOROLOGICAL STATIONS</Keyword>
+    <Keyword>DOC/NOAA/NESDIS/NCDC &gt; National Climatic Data Center, NESDIS, NOAA, U.S. Department of Commerce</Keyword>
+    <Keyword>DOC/NOAA/NESDIS/NCEI &gt; National Centers for Environmental Information, NESDIS, NOAA, U.S. Department of Commerce</Keyword>
+    <Source_Name>
+        <Short_Name>METEOROLOGICAL STATIONS</Short_Name>
+    </Source_Name>
+    <Temporal_Coverage>
+        <Stop_Date>1970-12-31</Stop_Date>
+    </Temporal_Coverage>
+    <Data_Set_Progress>COMPLETE</Data_Set_Progress>
+    <Spatial_Coverage>
+        <Southernmost_Latitude>-90</Southernmost_Latitude>
+        <Northernmost_Latitude>90</Northernmost_Latitude>
+        <Westernmost_Longitude>-180</Westernmost_Longitude>
+        <Easternmost_Longitude>180</Easternmost_Longitude>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>VERTICAL LOCATION</Location_Category>
+        <Location_Type>LAND SURFACE</Location_Type>
+    </Location>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+    </Location>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Location>
+        <Location_Category>VERTICAL LOCATION</Location_Category>
+        <Location_Type>SEA SURFACE</Location_Type>
+    </Location>
+    <Data_Set_Language>English</Data_Set_Language>
+    <Data_Center>
+        <Data_Center_Name>
+            <Short_Name>DOC/NOAA/NESDIS/NCEI</Short_Name>
+            <Long_Name>National Centers for Environmental Information, NESDIS, NOAA, U.S. Department of Commerce</Long_Name>
+        </Data_Center_Name>
+        <Data_Center_URL>https://ncei.noaa.gov/</Data_Center_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <First_Name>CUSTOMER ENGAGEMENT BRANCH</First_Name>
+            <Last_Name>DOC/NOAA/NESDIS/NCEI</Last_Name>
+            <Email>ncdc.orders@noaa.gov</Email>
+            <Phone>+1 828-271-4800</Phone>
+            <Fax>+1 828-271-4876</Fax>
+            <Contact_Address>
+                <Address>151 Patton Avenue</Address>
+                <Address>Federal Building, Room 468</Address>
+                <City>Asheville</City>
+                <Province_or_State>NC</Province_or_State>
+                <Postal_Code>28801-5001</Postal_Code>
+                <Country>USA</Country>
+            </Contact_Address>
+        </Personnel>
+    </Data_Center>
+    <Data_Center>
+        <Data_Center_Name>
+            <Short_Name>DOC/NOAA/NESDIS/NCDC</Short_Name>
+            <Long_Name>National Climatic Data Center, NESDIS, NOAA, U.S. Department of Commerce</Long_Name>
+        </Data_Center_Name>
+        <Data_Center_URL>http://www.ncdc.noaa.gov/</Data_Center_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <First_Name>CUSTOMER ENGAGEMENT BRANCH</First_Name>
+            <Last_Name>DOC/NOAA/NESDIS/NCEI</Last_Name>
+            <Email>ncdc.orders@noaa.gov</Email>
+            <Phone>+1 828-271-4800</Phone>
+            <Fax>+1 828-271-4876</Fax>
+            <Contact_Address>
+                <Address>151 Patton Avenue</Address>
+                <Address>Federal Building, Room 468</Address>
+                <City>Asheville</City>
+                <Province_or_State>NC</Province_or_State>
+                <Postal_Code>28801-5001</Postal_Code>
+                <Country>USA</Country>
+            </Contact_Address>
+        </Personnel>
+    </Data_Center>
+    <Distribution>
+        <Distribution_Format>PDF</Distribution_Format>
+        <Fees>Electronic downloads of the data are free, however fees may apply for data certifications and data distribution on physical media.</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <URL>http://www1.ncdc.noaa.gov/pub/data/metadata/images/C01076.JPG</URL>
+        <Format>JPEG</Format>
+        <Description>Image example</Description>
+    </Multimedia_Sample>
+    <Summary>
+        <Abstract>Data Processing Reference manual for United States Air Force surface stations, circa 1960s. TDF-13 stands for Tape Deck Format number 13, the format in which the data were arranged on the magnetic tapes sent to NCDC from the Air Force.
+            While the data on the tapes have long since been migrated, these documents still contain station metadata, including period of record, for all Air Force stations for which data were included.</Abstract>
+        <Purpose>In the late 1990s NCDC realized the need to host digital images of weather and climate records on the internet. As a result, EV2 was developed as a key system for providing access to the millions of original source data images in the NCDC
+            archives. With its upload and index capability, EV2 also enables the continuation of NCDC's commitment to make more of its weather and climate data available online so that users across the world can view climate and weather records held in the NCDC
+            archives.</Purpose>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+        </URL_Content_Type>
+        <URL>https://www.ncdc.noaa.gov/EdadsV2/</URL>
+        <Description>EV2 Image Access System. EV2 Information and Data Access Page</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+        </URL_Content_Type>
+        <URL>https://www.ncdc.noaa.gov/climate-information/research-programs/climate-database-modernization-program</URL>
+        <Description>CDMP Web site Information about the Climate Database Modernization Program (CDMP) and the current Image Access Repository.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW EXTENDED METADATA</Type>
+        </URL_Content_Type>
+        <URL>http://gis.ncdc.noaa.gov/geoportal/catalog/search/resource/details.page?id=gov.noaa.ncdc:C01076</URL>
+        <Description>View Source Metadata</Description>
+    </Related_URL>
+    <IDN_Node>
+        <Short_Name>USA/NOAA</Short_Name>
+    </IDN_Node>
+    <IDN_Node>
+        <Short_Name>CEOS</Short_Name>
+    </IDN_Node>
+    <Originating_Metadata_Node>NOAA-NCDC</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 9.8.4</Metadata_Version>
+    <DIF_Creation_Date>2016-06-03</DIF_Creation_Date>
+    <Last_DIF_Revision_Date>2016-06-03</Last_DIF_Revision_Date></DIF>

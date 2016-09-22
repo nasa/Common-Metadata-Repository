@@ -253,7 +253,7 @@
                           :condition query-condition
                           :page-size :unlimited
                           :result-format :query-specified
-                          :fields [:entry-title :provider-id]
+                          :result-fields [:entry-title :provider-id]
                           :skip-acls? skip-acls?})
          results (qe/execute-query context query)]
      (:items results))))

@@ -1,3 +1,4 @@
+
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact
   "Defines mappings and parsing from ECHO10 contact elements into UMM records
    data center and contact person fields."
@@ -42,9 +43,9 @@
   "User Services" "User Services"
   "GHRC USER SERVICES" "User Services"
   "Science Software Development Manager" "Science Software Development"
-  "Deputy Science Software Development Manager" "Science Software"
-  "Sea Ice Algorithms" "Science Software"
-  "Snow Algorithms" "Science Software"})
+  "Deputy Science Software Development Manager" "Science Software Development"
+  "Sea Ice Algorithms" "Science Software Development"
+  "Snow Algorithms" "Science Software Development"})
 
 (def default-contact-person-role
   "Technical Contact")
@@ -85,12 +86,12 @@
 
 (defn- parse-contact-persons
   "Parse ECHO10 Contact Persons to UMM"
-  [contact apply-default?]
+  [contact sanitize?]
   (for [person (select contact "ContactPersons/ContactPerson")]
     {:Roles (remove nil? (u/map-with-default echo10-job-position->umm-contact-person-role
                                              [(value-of person "JobPosition")]
                                              default-contact-person-role
-                                             apply-default?))
+                                             sanitize?))
      :FirstName (value-of person "FirstName")
      :MiddleName (value-of person "MiddleName")
      :LastName (value-of person "LastName")}))
@@ -102,12 +103,12 @@
   used to hold a list of ContactPersons not associated with a data center, get the contacts
   that have the default role and empty organization name. The ContactPersons on that Contact
   should be associated with the collection but not the data center."
-  [doc apply-default?]
+  [doc sanitize?]
   (let [all-contacts (select doc "/Collection/Contacts/Contact")
         contacts (filter #(and (= (value-of % "Role") dc/default-echo10-contact-role)
                                (empty? (value-of % "OrganizationName")))
                          all-contacts)]
-    (mapcat #(parse-contact-persons % apply-default?) contacts)))
+    (mapcat #(parse-contact-persons % sanitize?) contacts)))
 
 (defn- parse-data-centers-from-contacts
   "Parse ECHO10 contacts to UMM data center contact persons.
@@ -116,7 +117,7 @@
   used to hold a list of ContactPersons not associated with a data center, remove the contacts
   that have the default role and empty organization name. The ContactPersons on that Contact
   should be associated with the collection but not the data center."
-  [doc apply-default?]
+  [doc sanitize?]
   (let [all-contacts (select doc "/Collection/Contacts/Contact")
         contacts (remove #(and (= (value-of % "Role") dc/default-echo10-contact-role)
                                (empty? (value-of % "OrganizationName")))
@@ -125,10 +126,10 @@
       {:Roles (remove nil? (u/map-with-default echo10-contact-role->umm-data-center-role
                                                [(value-of contact "Role")]
                                                default-data-center-role
-                                               apply-default?))
-       :ShortName (u/with-default (value-of contact "OrganizationName") apply-default?)
+                                               sanitize?))
+       :ShortName (u/with-default (value-of contact "OrganizationName") sanitize?)
        :ContactInformation (parse-contact-information contact)
-       :ContactPersons (parse-contact-persons contact apply-default?)})))
+       :ContactPersons (parse-contact-persons contact sanitize?)})))
 
 (defn- parse-additional-center
   "ECHO10 has both ArchiveCenter and ProcessingCenter fields which can each hold an additional
@@ -158,8 +159,8 @@
 (defn parse-data-centers
   "Parse data centers from ECHO10 XML. Data center information comes from Contacts/Contact,
   ArchiveCenter, and ProcessingCenter."
-  [doc apply-default?]
-  (let [data-centers (parse-data-centers-from-contacts doc apply-default?)
+  [doc sanitize?]
+  (let [data-centers (parse-data-centers-from-contacts doc sanitize?)
         data-centers (conj
                       data-centers
                       (parse-additional-center doc data-centers "ArchiveCenter" "ARCHIVER")
@@ -167,4 +168,4 @@
         data-centers (remove nil? data-centers)]
     (if (seq data-centers)
       data-centers
-      (when apply-default? [u/not-provided-data-center]))))
+      (when sanitize? [u/not-provided-data-center]))))

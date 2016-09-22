@@ -28,14 +28,14 @@
 
 (defn- parse-platforms
   "Parses a SERF Platform element into a UMM-S Platform"
-  [doc apply-default?]
+  [doc sanitize?]
   (let [platforms (parse-just-platforms doc)
         instruments (parse-instruments doc)]
     (if (= 1 (count platforms))
       (map #(assoc % :Instruments instruments) platforms)
       (if instruments
-        (conj platforms {:ShortName (when apply-default? not-provided)
-                         :LongName (when apply-default? not-provided)
+        (conj platforms {:ShortName (when sanitize? not-provided)
+                         :LongName (when sanitize? not-provided)
                          :Instruments instruments})
         platforms))))
 
@@ -96,7 +96,7 @@
                    :Publication_Place
                    :Publisher
                    :Pages
-                   [:ISBN (value-of pub-ref "ISBN")]
+                   [:ISBN (su/format-isbn (value-of pub-ref "ISBN"))]
                    [:DOI {:DOI (value-of pub-ref "DOI")}]
                    [:RelatedUrl
                     {:URLs (values-at pub-ref "Online_Resource")}]
@@ -121,7 +121,7 @@
 
 (defn- parse-related-urls
   "Parse SERF Related URLs and Multimedia Samples into a UMM RelatedUrls object"
-  [doc apply-default?]
+  [doc sanitize?]
   (let [actual-urls (parse-actual-related-urls doc)
         multimedia-urls (parse-multimedia-samples doc)]
     (if-let [related-urls (seq (concat actual-urls multimedia-urls))]
@@ -189,13 +189,13 @@
 
 (defn parse-serf-xml
   "Returns collection map from a SERF XML document."
-  [doc {:keys [apply-default?]}]
+  [doc {:keys [sanitize?]}]
   {:EntryId (value-of doc "/SERF/Entry_ID")
    :EntryTitle (value-of doc "/SERF/Entry_Title")
-   :Abstract (value-of doc "/SERF/Summary/Abstract")
+   :Abstract (su/with-default (value-of doc "/SERF/Summary/Abstract") sanitize?)
    :Purpose (value-of doc "/SERF/Summary/Purpose")
    :ServiceLanguage (value-of doc "/SERF/Service_Language")
-   :RelatedUrls (parse-related-urls doc apply-default?)
+   :RelatedUrls (parse-related-urls doc sanitize?)
    :ServiceCitation (parse-service-citations doc)
    :Quality (value-of doc "/SERF/Quality")
    :UseConstraints (value-of doc "/SERF/Use_Constraints")
@@ -203,7 +203,7 @@
    :MetadataAssociations (parse-metadata-associations doc)
    :PublicationReferences (parse-publication-references doc)
    :ISOTopicCategories (values-at doc "/SERF/ISO_Topic_Category")
-   :Platforms (parse-platforms doc apply-default?)
+   :Platforms (parse-platforms doc sanitize?)
    :Distributions (parse-distributions doc)
    :AdditionalAttributes (parse-additional-attributes doc)
    :AncillaryKeywords (values-at doc "/SERF/Keyword")
@@ -213,7 +213,7 @@
    :ScienceKeywords (parse-science-keywords doc)})
 
 (defn serf-xml-to-umm-s
-  "Returns UMM-S service record from a SERF XML document. The :apply-default? option
+  "Returns UMM-S service record from a SERF XML document. The :sanitize? option
   tells the parsing code to set the default values for fields when parsing the metadata into umm."
   [metadata options]
   (js/coerce js/umm-s-schema (parse-serf-xml metadata options)))

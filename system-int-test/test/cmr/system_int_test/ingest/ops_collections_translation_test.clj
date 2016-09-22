@@ -2,6 +2,8 @@
   "Translate OPS collections into various supported metadata formats."
   (:require
     [clj-http.client :as client]
+    [clojure.data.csv :as csv]
+    [clojure.java.io :as io]
     [clojure.string :as str]
     [clojure.test :refer :all]
     [cmr.common.concepts :as concepts]
@@ -17,11 +19,22 @@
     [cmr.umm-spec.test.location-keywords-helper :as lkt]
     [cmr.umm-spec.umm-json :as umm-json]
     [cmr.umm-spec.umm-spec-core :as umm]
-    [cmr.umm-spec.validation.umm-spec-validation-core :as umm-validation]))
+    [cmr.umm-spec.validation.umm-spec-validation-core :as umm-validation])
+  (:import
+   (java.io StringWriter)))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (def context (lkt/setup-context-for-test lkt/sample-keyword-map))
+
+(def write-errors-to-file
+  false)
+
+(def CSV_FILENAME
+  "ops_umm_translation_errors.csv")
+
+(def CSV_HEADER
+  ["Provider Id" "Concept Id" "Entry Title" "Errors"])
 
 (def starting-page-num
   "The starting page-num to retrieve collections for the translation test."
@@ -153,19 +166,45 @@
   "Translate collection from native format to UMM-C"
   [record]
   (let [{:keys [metadata-format metadata concept-id]} record]
-    (umm/parse-metadata context :collection metadata-format metadata {:apply-default? true})))
+    (umm/parse-metadata context :collection metadata-format metadata {:sanitize? true})))
 
 (defn- validate-record-schemas
   "Validate a record against the XML schema if applicable and UMM JSON schema. For records in umm-json
   validate the json schema against the collection's schema version"
   [record]
   (let [{:keys [metadata-format metadata]} record]
-    (if (= :umm-json (:format format))
+    (if (= :umm-json (:format metadata-format))
       (json-schema/validate-umm-json metadata :collection (:version metadata-format))
       (do
         (umm/validate-xml :collection metadata-format metadata)
         (json-schema/validate-umm-json (umm-json/umm->json (:collection record)) :collection)))))
 
+(defn- extract-errors-from-collection
+  "During collection translation from native XML to UMM, errors are put directly on the fields that
+  cannot be translated with the :_errors key. Walk through the collection and pull out the errors
+  so they can be reported."
+  [collection]
+  (remove empty?
+          (apply concat
+                 [(:_errors collection)]
+                 (for [key (keys collection)
+                       :let [coll (get collection key)]
+                       result (cond
+                                (map? coll) (extract-errors-from-collection coll)
+                                (coll? coll) (for [entry coll
+                                                   :when (map? entry)]
+                                               (extract-errors-from-collection entry)))]
+                   result))))
+
+(defn- reformat-error-message
+  "For a 'string too long' error, just print out what string it is and the size so that
+  the test output does not get bloated with the full string"
+  [error]
+  (if-let [result (re-find #"\w+ string .*is too long \(length: \d+, maximum allowed: \d+\)" (str/replace error "\n" ""))]
+    (let [string-index (str/index-of result "string")
+          length-index (str/index-of result "is too long (length:")]
+      (str (subs result 0 (+ 6 string-index)) " " (subs result length-index)))
+    error))
 
 (defn- get-collection-validation-errors
   "Collect the following collection validations:
@@ -177,8 +216,8 @@
   [record]
   (remove empty?
    (concat
-     [(str (get-in record [:collection :_errors]))] ; Errors from translating to UMM
-     (validate-record-schemas record)
+     (extract-errors-from-collection (:collection record)) ; Errors from translating to UMM
+     (map reformat-error-message (validate-record-schemas record))
      (umm-validation/validate-collection record))))
 
 (defn- translate-and-validation-collection
@@ -274,15 +313,31 @@
            (recur (+ page-num 1)))))
      (info "Finished OPS collections translation.")))
 
+(defn- validation-result->row
+  "Take a validation result and return a row formatted for CSV"
+  [result]
+  (let [{:keys [provider-id concept-id entry-title errors]} result
+        error-string (str/join "; " errors)]
+    [provider-id concept-id entry-title error-string]))
+
 #_(deftest ops-collections-validation
    (testing "get-collections the current collections in ops against the current UMM schema"
      (def results (get-ops-collections-umm-validation-errors))
+     (let [rows (cons CSV_HEADER
+                      (map validation-result->row (flatten results)))
+           string-writer (StringWriter.)]
+       (if write-errors-to-file
+         (with-open [out-file (io/writer CSV_FILENAME)]
+           (csv/write-csv out-file rows))
+         (do
+           (csv/write-csv string-writer rows)
+           (def error-csv (str string-writer)))))
     (info "Finished OPS collections translation.")))
 
 (comment
-  ;; Translate and validate a specific collection by concept-id
-  (def record (get-collection "C1282835544-SCIOPS"))
-  (translate-and-validation-collection record)
-  (translate-record-to-umm record)
-  (:metadata-format record)
-  (:metadata record))
+ ;; Translate and validate a specific collection by concept-id
+ (def record (get-collection "C1221629175-NOAA_NCEI"))
+ (translate-and-validation-collection record)
+ (translate-record-to-umm record)
+ (:metadata-format record)
+ (:metadata record))
