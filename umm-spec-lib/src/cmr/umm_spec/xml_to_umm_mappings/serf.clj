@@ -192,7 +192,7 @@
   [doc {:keys [apply-default?]}]
   {:EntryId (value-of doc "/SERF/Entry_ID")
    :EntryTitle (value-of doc "/SERF/Entry_Title")
-   :Abstract (value-of doc "/SERF/Summary/Abstract")
+   :Abstract (su/with-default (value-of doc "/SERF/Summary/Abstract") apply-default?)
    :Purpose (value-of doc "/SERF/Summary/Purpose")
    :ServiceLanguage (value-of doc "/SERF/Service_Language")
    :RelatedUrls (parse-related-urls doc apply-default?)

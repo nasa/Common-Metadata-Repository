@@ -96,14 +96,14 @@
 (defn- parse-temporal-extent
   "Return a temporal extent from a DIF10 Temporal_Coverage. Remove empty maps which could occur
   if only a Paleo Date Time is present."
-  [temporal]
+  [temporal apply-default?]
   (let [temporal-extent
         (util/remove-map-keys empty?
                               {:TemporalRangeType (value-of temporal "Temporal_Range_Type")
                                :PrecisionOfSeconds (value-of temporal "Precision_Of_Seconds")
                                :EndsAtPresentFlag (value-of temporal "Ends_At_Present_Flag")
                                :RangeDateTimes (for [rdt (select temporal "Range_DateTime")]
-                                                 {:BeginningDateTime (value-of rdt "Beginning_Date_Time")
+                                                 {:BeginningDateTime (date/with-default (value-of rdt "Beginning_Date_Time") apply-default?)
                                                   :EndingDateTime (parse-dif-end-date (value-of rdt "Ending_Date_Time"))})
                                :SingleDateTimes (values-at temporal "Single_DateTime")
                                :PeriodicDateTimes (for [pdt (select temporal "Periodic_DateTime")]
@@ -121,7 +121,7 @@
   "Returns a list of temportal extents"
   [doc apply-default?]
   (if-let [temporal-extents
-           (seq (remove nil? (map parse-temporal-extent (select doc "/DIF/Temporal_Coverage"))))]
+           (seq (remove nil? (map #(parse-temporal-extent % apply-default?) (select doc "/DIF/Temporal_Coverage"))))]
     temporal-extents
     (when apply-default?
       u/not-provided-temporal-extents)))
@@ -132,7 +132,7 @@
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
    :ShortName (value-of doc "/DIF/Entry_ID/Short_Name")
    :Version (value-of doc "/DIF/Entry_ID/Version")
-   :Abstract (value-of doc "/DIF/Summary/Abstract")
+   :Abstract (u/with-default (value-of doc "/DIF/Summary/Abstract") apply-default?)
    :CollectionDataType (value-of doc "/DIF/Collection_Data_Type")
    :Purpose (value-of doc "/DIF/Summary/Purpose")
    :DataLanguage (dif-util/dif-language->umm-langage (value-of doc "/DIF/Dataset_Language"))

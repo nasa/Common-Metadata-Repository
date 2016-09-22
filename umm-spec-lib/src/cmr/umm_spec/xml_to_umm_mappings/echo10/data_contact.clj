@@ -1,3 +1,4 @@
+
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact
   "Defines mappings and parsing from ECHO10 contact elements into UMM records
    data center and contact person fields."
@@ -42,9 +43,9 @@
   "User Services" "User Services"
   "GHRC USER SERVICES" "User Services"
   "Science Software Development Manager" "Science Software Development"
-  "Deputy Science Software Development Manager" "Science Software"
-  "Sea Ice Algorithms" "Science Software"
-  "Snow Algorithms" "Science Software"})
+  "Deputy Science Software Development Manager" "Science Software Development"
+  "Sea Ice Algorithms" "Science Software Development"
+  "Snow Algorithms" "Science Software Development"})
 
 (def default-contact-person-role
   "Technical Contact")
