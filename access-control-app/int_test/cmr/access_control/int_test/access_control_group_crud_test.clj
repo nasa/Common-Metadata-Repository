@@ -227,7 +227,7 @@
         {:keys [concept_id revision_id]} (u/create-group token group)]
 
     ;; Do not specify members in the update
-    (let [updated-group {:name "Administrators" :description "A very good group updated"}
+    (let [updated-group {:name "Administrators2" :description "A very good group updated"}
           token2 (e/login (u/conn-context) "user2")
           response (u/update-group token2 concept_id updated-group)]
       (is (= {:status 200 :concept_id concept_id :revision_id 2}
@@ -241,7 +241,7 @@
         {:keys [concept_id revision_id]} (u/create-group token group)]
 
     ;; Change members as part of the update
-    (let [updated-group {:name "Administrators" :description "A very good group updated" :members ["user1"]}
+    (let [updated-group {:name "Administrators2" :description "A very good group updated" :members ["user1"]}
           token2 (e/login (u/conn-context) "user2")
           response (u/update-group token2 concept_id updated-group)]
       (is (= {:status 200 :concept_id concept_id :revision_id 2}

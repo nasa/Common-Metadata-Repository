@@ -7,7 +7,8 @@
      [cmr.access-control.test.bootstrap :as bootstrap]
      [cmr.access-control.test.util :as u]
      [cmr.common.util :as util :refer [are3]]
-     [cmr.mock-echo.client.echo-util :as e]))
+     [cmr.mock-echo.client.echo-util :as e]
+     [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each
               (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"}
@@ -48,7 +49,7 @@
 
 (deftest group-search-test
   (let [token (e/login (u/conn-context) "user1")
-        existing-admin-group (-> (u/search-for-groups token {}) :items first)
+        existing-admin-group (-> (u/search-for-groups transmit-config/mock-echo-system-token {}) :items first)
         cmr-group1 (u/ingest-group token {:name "group1"} ["user1"])
         cmr-group2 (u/ingest-group token {:name "group2"} ["USER1" "user2"])
         cmr-group3 (u/ingest-group token {:name "group3"} nil)
@@ -56,7 +57,8 @@
         prov1-group2 (u/ingest-group token {:name "group2" :provider_id "PROV1"} ["user1" "user3"])
         prov2-group1 (u/ingest-group token {:name "group1" :provider_id "PROV2"} ["user2"])
         prov2-group2 (u/ingest-group token {:name "group2" :provider_id "PROV2"} ["user2" "user3"])
-        cmr-groups [existing-admin-group cmr-group1 cmr-group2 cmr-group3]
+        cmr-added-groups [cmr-group1 cmr-group2 cmr-group3]
+        cmr-groups (cons existing-admin-group cmr-added-groups)
         prov1-groups [prov1-group1 prov1-group2]
         prov2-groups [prov2-group1 prov2-group2]
         prov-groups (concat prov1-groups prov2-groups)
@@ -72,7 +74,7 @@
         [cmr-group1 cmr-group2 prov1-group1 prov1-group2] {:member "UsEr1"}
 
         "Pattern"
-        [cmr-group1 cmr-group2 prov1-group1 prov1-group2 prov2-group1 prov2-group2]
+        [existing-admin-group cmr-group1 cmr-group2 prov1-group1 prov1-group2 prov2-group1 prov2-group2]
         {:member "user*" "options[member][pattern]" true}
 
         "Multiple members"
@@ -101,7 +103,7 @@
         "Pattern - no match"
         [] {:name "*oupx" "options[name][pattern]" true}
         "Pattern - matches"
-        all-groups {:name "*Gr?up*" "options[name][pattern]" true}
+        (concat cmr-added-groups prov1-groups prov2-groups) {:name "*Gr?up*" "options[name][pattern]" true}
 
         "Multiple matches"
         [cmr-group1 prov1-group1 prov2-group1

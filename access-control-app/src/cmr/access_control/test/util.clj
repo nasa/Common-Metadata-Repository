@@ -42,7 +42,7 @@
   ([]
    (make-group nil))
   ([attributes]
-   (merge {:name "Administrators"
+   (merge {:name "Administrators2"
            :description "A very good group"}
           attributes)))
 

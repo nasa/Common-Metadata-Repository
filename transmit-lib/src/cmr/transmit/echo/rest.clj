@@ -24,20 +24,11 @@
          {:content-type :json
           :body (json/encode body-obj)}))
 
-(defn stacktrace
-  [])
-  ; (try (throw (Exception. "here"))
-  ;   (catch Exception e
-  ;     (.printStackTrace e))))
-
 (defn rest-get
   "Makes a get request to echo-rest. Returns a tuple of status, the parsed body, and the body."
   ([context url-path]
    (rest-get context url-path {}))
   ([context url-path options]
-   ;; TODO remove this and other extraneous logging
-   (println "REST GET" url-path options)
-   (stacktrace)
    (let [conn (config/context->app-connection context :echo-rest)
          url (format "%s%s" (conn/root-url conn) url-path)
          params (merge (request-options conn) options)
@@ -56,8 +47,6 @@
   ([context url-path]
    (rest-delete context url-path {}))
   ([context url-path options]
-   (println "REST DELETE" url-path options)
-   (stacktrace)
    (let [conn (config/context->app-connection context :echo-rest)
          url (format "%s%s" (conn/root-url conn) url-path)
          params (merge (request-options conn) options)
@@ -72,8 +61,6 @@
   ([context url-path body-obj]
    (rest-post context url-path body-obj {}))
   ([context url-path body-obj options]
-   (println "REST POST" url-path body-obj options)
-   (stacktrace)
    (let [conn (config/context->app-connection context :echo-rest)
          url (format "%s%s" (conn/root-url conn) url-path)
          params (merge (post-options conn body-obj) options)
