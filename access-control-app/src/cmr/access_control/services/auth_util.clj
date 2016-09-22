@@ -15,6 +15,7 @@
   [context]
   (if-let [token (:token context)]
     ;; TODO we need to cache token->sids cache like in search
+
     (let [user-id (echo-tokens/get-user-id context token)
           query (qm/query {:concept-type :access-group
                            :condition (qm/string-condition :member user-id)
@@ -113,7 +114,7 @@
   ;; We want to avoid a circular dependency here. Any call to the kernel will result in a search
   ;; for groups. We assume that the system read token has full permission here. The kernel will use
   ;; that to call the access control group.
-  (if (= (transmit-config/echo-system-token) (:token context))
+  (if (transmit-config/echo-system-token? context)
     query
     (let [context (put-sids-in-context context)
            system-condition (when (get-system-acls context :read)

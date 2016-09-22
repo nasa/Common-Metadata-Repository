@@ -1,14 +1,16 @@
 (ns cmr.acl.core
   "Contains code for retrieving and manipulating ACLs."
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.acl.acl-fetcher :as acl-fetcher]
-            [cmr.transmit.config :as tc]
-            [cmr.transmit.echo.acls :as echo-acls]
-            [cmr.transmit.echo.tokens :as echo-tokens]
-            [cmr.common.cache :as cache]
-            [clojure.string :as str]
-            [cmr.common.cache.in-memory-cache :as mem-cache]
-            [clojure.core.cache :as clj-cache]))
+  (:require
+   [clojure.core.cache :as clj-cache]
+   [clojure.string :as str]
+   [cmr.acl.acl-fetcher :as acl-fetcher]
+   [cmr.common.cache :as cache]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
+   [cmr.common.services.errors :as errors]
+   [cmr.transmit.config :as tc]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.echo.acls :as echo-acls]
+   [cmr.transmit.echo.tokens :as echo-tokens]))
 
 (def BROWSER_CLIENT_ID "browser")
 (def CURL_CLIENT_ID "curl")
@@ -110,12 +112,14 @@
   "Returns true if the user identified by the token in the cache has been granted
   INGEST_MANAGEMENT_PERMISSION in ECHO ACLS for the given permission type."
   [context permission-type object-identity-type provider-id]
-  (let [acl-oit-key (echo-acls/acl-type->acl-key object-identity-type)]
-    (->> (get-permitting-acls context object-identity-type "INGEST_MANAGEMENT_ACL" permission-type)
-         ;; Find acls for this provider
-         (filter #(or (nil? provider-id)
-                      (= provider-id (get-in % [acl-oit-key :provider-id]))))
-         seq)))
+  ;; Performance optimization here of returning true if it's the system user.
+  (or (transmit-config/echo-system-token? context)
+      (let [acl-oit-key (echo-acls/acl-type->acl-key object-identity-type)]
+        (->> (get-permitting-acls context object-identity-type "INGEST_MANAGEMENT_ACL" permission-type)
+             ;; Find acls for this provider
+             (filter #(or (nil? provider-id)
+                          (= provider-id (get-in % [acl-oit-key :provider-id]))))
+             seq))))
 
 (defn verify-ingest-management-permission
   "Verifies the current user has been granted INGEST_MANAGEMENT_PERMISSION in ECHO ACLs"

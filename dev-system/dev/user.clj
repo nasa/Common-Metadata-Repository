@@ -46,7 +46,7 @@
   (println "Logging level set to" level)
   nil)
 
-(defn configure-for-soap-services
+(defn configure-for-legacy-services
   []
   (config/set-config-value! :echo-rest-host "localhost")
   (config/set-config-value! :echo-rest-port 3012)
@@ -63,7 +63,7 @@
   (config/reset-config-values)
 
   ;; Uncomment this to force CMR to use SOAP Services
-  ; (configure-for-soap-services)
+  ; (configure-for-legacy-services)
 
   (jobs/set-default-job-start-delay! (* 3 3600))
 
