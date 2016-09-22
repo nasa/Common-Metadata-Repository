@@ -9,6 +9,21 @@
    [cmr.umm-spec.date-util :as du]
    [cmr.umm-spec.models.umm-common-models :as cmn]))
 
+(def ABSTRACT_SIZE
+  40000)
+
+(def PURPOSE_SIZE
+  10000)
+
+(def PROJECT_LONGNAME_SIZE
+  300)
+
+(def USECONSTRAINTS_SIZE
+  20000)
+
+(def QUALITY_SIZE
+  12000)
+
 (def ^:private umm-contact-mechanism-correction-map
   {"phone" "Telephone"
    "Phone" "Telephone"
@@ -221,3 +236,18 @@
         (str/replace "-" "")
         (str/replace "ISBN" "")
         (str/replace "ISSN" ""))))
+
+(defn truncate
+  "Truncate the string if the sanitize option is enabled, otherwise return the original string"
+  [s n sanitize?]
+  (if sanitize?
+    (util/trunc s n)
+    s))
+
+(defn truncate-with-default
+  "If s is nil and sanitize is true, return 'Not provided'. If sanitize is true, truncate string.
+  If sanitize is false, return s with no default or truncation."
+  [s n sanitize?]
+  (if sanitize?
+    (util/trunc (with-default s sanitize?) n)
+    s))

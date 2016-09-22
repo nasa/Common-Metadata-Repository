@@ -41,8 +41,10 @@
 
 (defn- parse-projects
   "Parses the Project elements of a SERF record and creates a UMM-S representation"
-  [doc]
-  (parse-short-name-long-name doc "/SERF/Project"))
+  [doc sanitize?]
+  (seq (for [elem (select doc "/SERF/Project")]
+         {:ShortName (value-of elem "Short_Name")
+          :LongName (su/truncate (value-of elem "Long_Name") su/PROJECT_LONGNAME_SIZE sanitize?)})))
 
 (defn- parse-data-dates
   "Returns seq of UMM-CMN DataDates parsed from SERF document."
@@ -192,13 +194,13 @@
   [doc {:keys [sanitize?]}]
   {:EntryId (value-of doc "/SERF/Entry_ID")
    :EntryTitle (value-of doc "/SERF/Entry_Title")
-   :Abstract (su/with-default (value-of doc "/SERF/Summary/Abstract") sanitize?)
-   :Purpose (value-of doc "/SERF/Summary/Purpose")
+   :Abstract (su/truncate-with-default (value-of doc "/SERF/Summary/Abstract") su/ABSTRACT_SIZE sanitize?)
+   :Purpose (su/truncate (value-of doc "/SERF/Summary/Purpose") su/PURPOSE_SIZE sanitize?)
    :ServiceLanguage (value-of doc "/SERF/Service_Language")
    :RelatedUrls (parse-related-urls doc sanitize?)
    :ServiceCitation (parse-service-citations doc)
-   :Quality (value-of doc "/SERF/Quality")
-   :UseConstraints (value-of doc "/SERF/Use_Constraints")
+   :Quality (su/truncate (value-of doc "/SERF/Quality") su/QUALITY_SIZE sanitize?)
+   :UseConstraints (su/truncate (value-of doc "/SERF/Use_Constraints") su/USECONSTRAINTS_SIZE sanitize?)
    :AccessConstraints {:Description (value-of doc "/SERF/Access_Constraints") :Value nil}
    :MetadataAssociations (parse-metadata-associations doc)
    :PublicationReferences (parse-publication-references doc)
@@ -207,7 +209,7 @@
    :Distributions (parse-distributions doc)
    :AdditionalAttributes (parse-additional-attributes doc)
    :AncillaryKeywords (values-at doc "/SERF/Keyword")
-   :Projects (parse-projects doc)
+   :Projects (parse-projects doc sanitize?)
    :MetadataDates (parse-data-dates doc)
    :ServiceKeywords (parse-service-keywords doc)
    :ScienceKeywords (parse-science-keywords doc)})

@@ -60,3 +60,29 @@
 
     "Remove ISSN"
     "ISSN-12345678" "12345678"))
+
+(deftest truncation
+  (testing "truncation with sanitize? option"
+    (are3 [str size sanitize? expected]
+      (is (= expected (util/truncate str size sanitize?)))
+
+      "Sanitize? true, truncate"
+      "ABCDEFG" 4 true "ABCD"
+
+      "Sanitize? false, do not truncate"
+      "ABCDEFG" 4 false "ABCDEFG"))
+  (testing "truncation with default and sanitize? option"
+    (are3 [str size sanitize? expected]
+      (is (= expected (util/truncate-with-default str size sanitize?)))
+
+      "Sanitize? true, nil value"
+      nil 100 true "Not provided"
+
+      "Sanitize? false, nil value"
+      nil 100 false nil
+
+      "Sanitize? true, truncate"
+      "ABCDEFG" 4 true "ABCD"
+
+      "Sanitize? false, do not truncate"
+      "ABCDEFG" 4 false "ABCDEFG")))

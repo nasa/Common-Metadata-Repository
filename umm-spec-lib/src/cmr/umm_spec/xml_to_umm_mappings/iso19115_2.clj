@@ -91,7 +91,7 @@
 
 (defn- parse-projects
   "Returns the projects parsed from the given xml document."
-  [doc]
+  [doc sanitize?]
   (for [proj (select doc projects-xpath)]
     (let [short-name (value-of proj iso-util/short-name-xpath)
           description (char-string-value proj "gmi:description")
@@ -99,7 +99,7 @@
           long-name (when-not (= short-name description)
                       (str/replace description (str short-name iso-util/keyword-separator-join) ""))]
       {:ShortName short-name
-       :LongName long-name})))
+       :LongName (u/truncate long-name u/PROJECT_LONGNAME_SIZE sanitize?)})))
 
 (defn- temporal-ends-at-present?
   [temporal-el]
@@ -145,16 +145,18 @@
     {:ShortName (char-string-value id-el "gmd:code")
      :EntryTitle (char-string-value citation-el "gmd:title")
      :Version (char-string-value citation-el "gmd:edition")
-     :Abstract (or (char-string-value md-data-id-el "gmd:abstract")
-                   (when sanitize? su/not-provided))
-     :Purpose (char-string-value md-data-id-el "gmd:purpose")
+     :Abstract (u/truncate-with-default (char-string-value md-data-id-el "gmd:abstract") u/ABSTRACT_SIZE sanitize?)
+     :Purpose (u/truncate (char-string-value md-data-id-el "gmd:purpose") u/PURPOSE_SIZE sanitize?)
      :CollectionProgress (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode")
-     :Quality (char-string-value doc quality-xpath)
+     :Quality (u/truncate (char-string-value doc quality-xpath) u/QUALITY_SIZE sanitize?)
      :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
      :AccessConstraints (parse-access-constraints doc sanitize?)
      :UseConstraints
-     (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
-                  #"(?s)^(?!Restriction Comment:).+")
+     (u/truncate
+       (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
+                    #"(?s)^(?!Restriction Comment:).+")
+       u/USECONSTRAINTS_SIZE
+       sanitize?)
      :LocationKeywords (lk/translate-spatial-keywords
                          context (kws/descriptive-keywords md-data-id-el "place"))
      :TemporalKeywords (kws/descriptive-keywords md-data-id-el "temporal")
@@ -174,7 +176,7 @@
                          md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
      :Distributions (dru/parse-distributions doc sanitize?)
      :Platforms (platform/parse-platforms doc sanitize?)
-     :Projects (parse-projects doc)
+     :Projects (parse-projects doc sanitize?)
 
      :PublicationReferences (for [publication (select md-data-id-el publication-xpath)
                                   :let [role-xpath "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue='%s']"

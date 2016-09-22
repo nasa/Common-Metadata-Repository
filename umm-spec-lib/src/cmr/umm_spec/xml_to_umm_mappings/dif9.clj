@@ -112,16 +112,16 @@
     {:EntryTitle (value-of doc "/DIF/Entry_Title")
      :ShortName short-name
      :Version (or version-id (when sanitize? su/not-provided))
-     :Abstract (su/with-default (value-of doc "/DIF/Summary/Abstract") sanitize?)
+     :Abstract (su/truncate-with-default (value-of doc "/DIF/Summary/Abstract") su/ABSTRACT_SIZE sanitize?)
      :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
-     :Purpose (value-of doc "/DIF/Summary/Purpose")
+     :Purpose (su/truncate (value-of doc "/DIF/Summary/Purpose") su/PURPOSE_SIZE sanitize?)
      :DataLanguage (dif-util/dif-language->umm-langage (value-of doc "/DIF/Data_Set_Language"))
      :MetadataDates (parse-metadata-dates doc)
      :ISOTopicCategories (values-at doc "DIF/ISO_Topic_Category")
      :TemporalKeywords (values-at doc "/DIF/Data_Resolution/Temporal_Resolution")
      :Projects (for [proj (select doc "/DIF/Project")]
                  {:ShortName (value-of proj "Short_Name")
-                  :LongName (value-of proj "Long_Name")})
+                  :LongName (su/truncate (value-of proj "Long_Name") su/PROJECT_LONGNAME_SIZE sanitize?)})
      :CollectionProgress (value-of doc "/DIF/Data_Set_Progress")
      :LocationKeywords  (let [lks (select doc "/DIF/Location")]
                           (for [lk lks]
@@ -131,9 +131,9 @@
                              :Subregion2 (value-of lk "Location_Subregion2")
                              :Subregion3 (value-of lk "Location_Subregion3")
                              :DetailedLocation (value-of lk "Detailed_Location")}))
-     :Quality (value-of doc "/DIF/Quality")
+     :Quality (su/truncate (value-of doc "/DIF/Quality") su/QUALITY_SIZE sanitize?)
      :AccessConstraints (dif-util/parse-access-constraints doc sanitize?)
-     :UseConstraints (value-of doc "/DIF/Use_Constraints")
+     :UseConstraints (su/truncate (value-of doc "/DIF/Use_Constraints") su/USECONSTRAINTS_SIZE sanitize?)
      :Platforms (parse-platforms doc sanitize?)
      :TemporalExtents (if-let [temporals (select doc "/DIF/Temporal_Coverage")]
                         [{:RangeDateTimes (for [temporal temporals]
