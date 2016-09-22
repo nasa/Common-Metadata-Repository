@@ -122,14 +122,16 @@
   (let [humanized (humanizer/umm-collection->umm-collection+humanizers
                     collection (hf/get-humanizer-instructions context))
         extract-fields (partial extract-humanized-elastic-fields humanized)]
+    (println "~~~~~~SCIENCE~~~~~~~~" (map sk/humanized-science-keyword->elastic-doc)
+                                  (:ScienceKeywords humanized))
     (merge
      {:science-keywords.humanized (map sk/humanized-science-keyword->elastic-doc
-                                   (:science-keywords humanized))}
-     (extract-fields [:platforms :cmr.humanized/short-name] :short-name)
-     (extract-fields [:platforms :instruments :cmr.humanized/short-name] :short-name)
-     (extract-fields [:projects :cmr.humanized/short-name] :short-name)
-     (extract-fields [:product :cmr.humanized/processing-level-id] :processing-level-id)
-     (extract-fields [:organizations :cmr.humanized/short-name] :short-name))))
+                                   (:ScienceKeywords humanized))}
+     (extract-fields [:Platforms :cmr.humanized/ShortName] :platform-sn)
+     (extract-fields [:Platforms :Instruments :cmr.humanized/ShortName] :instrument-sn)
+     (extract-fields [:Projects :cmr.humanized/ShortName] :project-sn)
+     (extract-fields [:ProcessingLevel :cmr.humanized/Id] :processing-level-id)
+     (extract-fields [:DataCenters :cmr.humanized/ShortName] :organization))))
 
 (defn- get-coll-permitted-group-ids
   "Returns the groups ids (group guids, 'guest', 'registered') that have permission to read
@@ -154,7 +156,7 @@
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-title summary related-urls spatial-keywords associated-difs
                 access-value personnel distribution]} collection
-        temporal-keywords (:TemporalKeywords umm-spec-collection) 
+        temporal-keywords (:TemporalKeywords umm-spec-collection)
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
                                (concat [collection-data-type] k/nrt-aliases)

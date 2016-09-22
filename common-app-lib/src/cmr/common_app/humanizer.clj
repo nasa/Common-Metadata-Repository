@@ -17,7 +17,7 @@
                       [:ScienceKeywords :VariableLevel3]
                       [:ScienceKeywords :DetailedVariable]]
    "project" [[:Projects :ShortName]]
-   "processing_level" [[:Product :ProcessingLevelId]]
+   "processing_level" [[:ProcessingLevel :Id]]
    "organization" [[:DataCenters :ShortName]]})
 
 (defmulti to-human

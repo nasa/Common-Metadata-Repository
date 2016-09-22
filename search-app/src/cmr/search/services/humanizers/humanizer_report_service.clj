@@ -23,13 +23,19 @@
 
 (defn- rfm->umm-collection
   "Takes a revision format map and parses it into a UMM-spec record."
-  [revision-format-map]
+  [context revision-format-map]
   (let [concept-id (:concept-id revision-format-map)
         umm (umm-spec-core/parse-metadata
-              (rfm/revision-format-map->concept :native revision-format-map))]
+             context
+             (rfm/revision-format-map->concept :native revision-format-map))]
     (assoc umm
            :concept-id concept-id
            :provider-id (:provider-id (concepts/parse-concept-id concept-id)))))
+
+(defn- rfms->umm-collections
+  "Parse multiple revision format maps into UMM-spec records"
+  [context rfms]
+  (map #(rfm->umm-collection context %) rfms))
 
 (defn- get-all-collections
   "Retrieves all collections from the Metadata cache, partitions them into batches of size
@@ -39,14 +45,13 @@
   ;; to throw an exception.
   (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
     (map
-     #(map rfm->umm-collection %)
+     #(rfms->umm-collections context %)
      (partition-all (humanizer-report-collection-batch-size) rfms))))
 
 (defn humanized-collection->reported-rows
   "Takes a humanized collection and returns rows to populate the CSV report."
   [collection]
-  (let [{:keys [provider-id concept-id Product]} collection
-        {:keys [ShortName VersionId]} Product]
+  (let [{:keys [provider-id concept-id ShortName Version]} collection]
     (for [paths (vals h/humanizer-field->umm-paths)
           path paths
           parents (u/get-in-all collection (drop-last path))
@@ -57,7 +62,7 @@
           :when (and (some? humanized-value) (:reportable humanized-value))
           :let [humanized-string-value (:value humanized-value)
                 original-value (get parent field)]]
-      [provider-id concept-id ShortName VersionId original-value humanized-string-value])))
+      [provider-id concept-id ShortName Version original-value humanized-string-value])))
 
 (defn humanizers-report-csv
   "Returns a report on humanizers in use in collections as a CSV."
