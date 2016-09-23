@@ -502,7 +502,7 @@
              (ac/delete-acl (u/conn-context) "ACL1234-NOPE" {:token token :raw? true}))))
     (testing "200 status, concept id and revision id of tombstone is returned on successful deletion."
       (is (= {:status 200
-              :body {:revision-id 2
+              :body {:revision-id 2 
                      :concept-id acl-concept-id}
               :content-type :json}
              (ac/delete-acl (u/conn-context) acl-concept-id {:token token :raw? true}))))
