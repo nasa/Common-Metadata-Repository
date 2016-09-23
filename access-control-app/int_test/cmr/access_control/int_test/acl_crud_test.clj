@@ -20,7 +20,7 @@
               (fixtures/grant-all-acl-fixture ["PROV1"]))
 
 (def system-acl
-  "A system ACL that grants create, read, update, delete to guest on any ACL"
+  "A system ingest management acl that grants read and update to guest users"
   {:group_permissions [{:user_type "guest"
                         :permissions ["read" "update"]}]
    :system_identity {:target "INGEST_MANAGEMENT_ACL"}})
