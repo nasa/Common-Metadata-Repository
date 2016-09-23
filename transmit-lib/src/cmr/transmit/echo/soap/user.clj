@@ -63,11 +63,11 @@
     Note that for now this returns a flat map, and does not contain nested elements like addresses."
   [token user-name]
   (let [body ["ns2:GetUserByUserName"
-                soap/soap-ns-map
-                ["ns2:token" token]
-                ["ns2:userName" user-name]]]
-      (-> (soap/post-soap :user body)
-          (soap/extract-item-map :get-user-by-user-name user-keys))))
+              soap/soap-ns-map
+              ["ns2:token" token]
+              ["ns2:userName" user-name]]]
+    (-> (soap/post-soap :user body)
+        (soap/extract-item-map :get-user-by-user-name user-keys))))
 
 (defn get-user-by-user-name
   "Perform a GetUserByUserName request against the SOAP API.  Takes a map containing request parameters:

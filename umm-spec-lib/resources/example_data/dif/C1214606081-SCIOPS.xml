@@ -1,0 +1,270 @@
+<DIF
+    xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd">
+    <Entry_ID>brdnwhc0001</Entry_ID>
+    <Entry_Title>Investigation of Bird Mortality in the Playa Lakes of Southeastern New Mexico.</Entry_Title>
+    <Data_Set_Citation>
+        <Dataset_Creator>Joshua Dein, Laurie Baeten</Dataset_Creator>
+        <Dataset_Title>Investigation of bird mortality in the playa lakes of SE N.M.</Dataset_Title>
+        <Dataset_Release_Date>August 1995</Dataset_Release_Date>
+        <Dataset_Release_Place>Washington, D.C.</Dataset_Release_Place>
+        <Dataset_Publisher>National Biological Service</Dataset_Publisher>
+    </Data_Set_Citation>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Role>TECHNICAL CONTACT</Role>
+        <First_Name>JOSHUA</First_Name>
+        <Last_Name>DEIN</Last_Name>
+        <Email>joshua_dein@nbs.gov</Email>
+        <Phone>(608) 264-5411</Phone>
+        <Fax>(608) 271-4640</Fax>
+        <Contact_Address>
+            <Address>National Wildlife Health Center</Address>
+            <Address>Biological Resources Division</Address>
+            <Address>U.S. Geological Survey</Address>
+            <Address>6006 Shroeder Road</Address>
+            <City>Madison</City>
+            <Province_or_State>WI</Province_or_State>
+            <Postal_Code>53711</Postal_Code>
+            <Country>USA</Country>
+        </Contact_Address>
+    </Personnel>
+    <Personnel>
+        <Role>DIF AUTHOR</Role>
+        <First_Name>TYLER</First_Name>
+        <Middle_Name>B.</Middle_Name>
+        <Last_Name>STEVENS</Last_Name>
+        <Email>Tyler.B.Stevens@nasa.gov</Email>
+        <Phone>(301) 614-6898</Phone>
+        <Fax>301-614-5268</Fax>
+        <Contact_Address>
+            <Address>NASA Goddard Space Flight Center</Address>
+            <Address>Global Change Master Directory</Address>
+            <City>Greenbelt</City>
+            <Province_or_State>MD</Province_or_State>
+            <Postal_Code>20771</Postal_Code>
+            <Country>USA</Country>
+        </Contact_Address>
+    </Personnel>
+    <Discipline uuid="c7d47ab1-aed5-4cf0-8d42-12098e8031e1">
+        <Discipline_Name>EARTH SCIENCE > BIOSPHERE</Discipline_Name>
+        <Subdiscipline>BIOSPHERE</Subdiscipline>
+    </Discipline>
+    <Parameters uuid="1bf8f27a-d6ff-4cb6-acb7-7e5cce11e029">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>BIOLOGICAL CLASSIFICATION</Topic>
+        <Term>ANIMALS/VERTEBRATES</Term>
+        <Variable_Level_1>BIRDS</Variable_Level_1>
+    </Parameters>
+    <Parameters uuid="57a3a5a7-66b9-4a4a-82da-7b09d82c684a">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>BIOSPHERE</Topic>
+        <Term>AQUATIC ECOSYSTEMS</Term>
+        <Variable_Level_1>LAKES</Variable_Level_1>
+    </Parameters>
+    <Parameters uuid="06a2da0f-5234-4d29-905b-153d88657eb9">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>BIOSPHERE</Topic>
+        <Term>AQUATIC ECOSYSTEMS</Term>
+        <Variable_Level_1>LAKES</Variable_Level_1>
+        <Variable_Level_2>SALINE LAKES</Variable_Level_2>
+    </Parameters>
+    <Parameters uuid="f6350232-b1c7-458c-bc43-bda357ebb6db">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>BIOSPHERE</Topic>
+        <Term>AQUATIC ECOSYSTEMS</Term>
+        <Variable_Level_1>MARINE HABITAT</Variable_Level_1>
+    </Parameters>
+    <Parameters uuid="a4ed794f-d7b6-4e53-b565-3b86fe584ba3">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>BIOSPHERE</Topic>
+        <Term>ECOLOGICAL DYNAMICS</Term>
+        <Variable_Level_1>SPECIES/POPULATION INTERACTIONS</Variable_Level_1>
+        <Variable_Level_2>MIGRATORY RATES/ROUTES</Variable_Level_2>
+    </Parameters>
+    <Parameters uuid="ad3a5f4f-4624-4a08-b875-6723c2615e90">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>BIOSPHERE</Topic>
+        <Term>ECOLOGICAL DYNAMICS</Term>
+        <Variable_Level_1>SPECIES/POPULATION INTERACTIONS</Variable_Level_1>
+        <Variable_Level_2>POPULATION DYNAMICS</Variable_Level_2>
+    </Parameters>
+    <Parameters uuid="5518feb6-93a8-46fd-9e9a-25be3a832d6d">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>BIOSPHERE</Topic>
+        <Term>ECOLOGICAL DYNAMICS</Term>
+        <Variable_Level_1>ECOTOXICOLOGY</Variable_Level_1>
+        <Variable_Level_2>TOXICITY LEVELS</Variable_Level_2>
+    </Parameters>
+    <ISO_Topic_Category uuid="c3d9cf68-90b1-46be-914c-38ecb2e70097">BIOTA</ISO_Topic_Category>
+    <ISO_Topic_Category uuid="0353d44f-2fc2-44df-9143-b1a3b86d5aa1">INLAND WATERS</ISO_Topic_Category>
+    <ISO_Topic_Category uuid="dbff9ea9-3b00-4cd4-b3ed-21790a797207">OCEANS</ISO_Topic_Category>
+    <Keyword>BIRD MORTALITY</Keyword>
+    <Keyword>BIRD USE</Keyword>
+    <Keyword>BRD</Keyword>
+    <Keyword>CALCIUM</Keyword>
+    <Keyword>DEHYDRATION</Keyword>
+    <Keyword>EDDY COUNTY</Keyword>
+    <Keyword>INLAND SALINE WATERS</Keyword>
+    <Keyword>LAGUNA TOSTON</Keyword>
+    <Keyword>LEA COUNTY</Keyword>
+    <Keyword>MAGNESIUM</Keyword>
+    <Keyword>MALLARD</Keyword>
+    <Keyword>NATIONAL POTASH COMPANY</Keyword>
+    <Keyword>NEW MEXICO</Keyword>
+    <Keyword>NORTHERN SHOVELER</Keyword>
+    <Keyword>PLAYA LAKES</Keyword>
+    <Keyword>POTASH MANUFACTURING</Keyword>
+    <Keyword>POTASSIUM</Keyword>
+    <Keyword>SALT POISONING</Keyword>
+    <Keyword>SODIUM</Keyword>
+    <Keyword>SOUTHEASTERN NEW MEXICO</Keyword>
+    <Keyword>SULFATE</Keyword>
+    <Keyword>TOSTON COUNTY</Keyword>
+    <Keyword>USGS</Keyword>
+    <Keyword>USGWS</Keyword>
+    <Keyword>WATERFOWL</Keyword>
+    <Keyword>WILLIAMS SINK</Keyword>
+    <Temporal_Coverage>
+        <Start_Date>1994-10-01</Start_Date>
+        <Stop_Date>1995-04-30</Stop_Date>
+    </Temporal_Coverage>
+    <Data_Set_Progress>COMPLETE</Data_Set_Progress>
+    <Spatial_Coverage>
+        <Southernmost_Latitude>32.0</Southernmost_Latitude>
+        <Northernmost_Latitude>34.0</Northernmost_Latitude>
+        <Westernmost_Longitude>-105.0</Westernmost_Longitude>
+        <Easternmost_Longitude>-103.0</Easternmost_Longitude>
+    </Spatial_Coverage>
+    <Location uuid="88bc8b39-ad19-4415-b426-e7d37450341a">
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+    </Location>
+    <Location uuid="b8bdae16-f063-42a5-8d47-2ee863fa56e9">
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+        <Location_Subregion2>NEW MEXICO</Location_Subregion2>
+    </Location>
+    <Quality>
+        The data was screened statistically to identify possible outliers and influential measurements.
+    </Quality>
+    <Access_Constraints>
+        Individuals interested in obtaining the playa lakes data set should contact Dr. Joshua Dein of the National Wildlife Health Center at Biological Resources Division in Minneapolis, Minnesota.
+    </Access_Constraints>
+    <Use_Constraints>
+        None
+    </Use_Constraints>
+    <Originating_Center>USGS/BRD/NWHC</Originating_Center>
+    <Data_Center>
+        <Data_Center_Name uuid="204abda8-b52e-4e59-9d7b-98263c3fd0cb">
+            <Short_Name>DOI/USGS/BRD/NWHC</Short_Name>
+            <Long_Name>National Wildlife Health Center, Biological Resources Division, USGS, U.S. Department of the Interior</Long_Name>
+        </Data_Center_Name>
+        <Data_Center_URL>http://www.nwhc.usgs.gov/</Data_Center_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <First_Name>JOSHUA</First_Name>
+            <Last_Name>DEIN</Last_Name>
+            <Email>joshua_dein@nbs.gov</Email>
+            <Phone>(608) 264-5411</Phone>
+            <Fax>(608) 271-4640</Fax>
+            <Contact_Address>
+                <Address>National Wildlife Health Center</Address>
+                <Address>Biological Resources Division</Address>
+                <Address>U.S. Geological Survey</Address>
+                <Address>6006 Shroeder Road</Address>
+                <City>Madison</City>
+                <Province_or_State>WI</Province_or_State>
+                <Postal_Code>53711</Postal_Code>
+                <Country>USA</Country>
+            </Contact_Address>
+        </Personnel>
+    </Data_Center>
+    <Reference>
+        Altmann, J. 1974. Observational Study of Behavior: sampling methods,Behavior, Vol. 49, pp. 227-267.
+    </Reference>
+    <Reference>
+        Buck, W.B., G.D. Osweiler, and G.A. van Gelder. 1976. Clinical anddiagnostic veterinary toxicology, Kendall/Hunt Publishers, Dubuque,IA.
+    </Reference>
+    <Reference>
+        Davis, D.R. and J.S. Hopkins. 1993. Lake water quality assessmentsurveys; Playa Lakes. New Mexico Environment Department, Santa Fe, NM.
+    </Reference>
+    <Reference>
+        Franson, J.C., L. Sileo, and W.U. Fleming. 1981. Iatrogenic saltpoisoning in captive sandhill cranes. JAWA, Vol. 179, pp. 1211-13.
+    </Reference>
+    <Reference>
+        Hatch, R.C. 1977. Poisons causing nervous stimulation ordepression. Veterinary pharmacology and therapeutics, Iowa StateUniversity, Ames, IA.
+    </Reference>
+    <Reference>
+        Playa Lakes Joint Venture. 1994. Draft management plan. USFWS Region2, USFWS, Albuquerque, NM.
+    </Reference>
+    <Reference>
+        Riggert, T.L. 1977. The biology of the mountain duck on RottnestIsland, Western Australia, Wildlife Monograph, 52:1
+    </Reference>
+    <Reference>
+        Shaw, P.A. 1938, Recent Progress in duck disease studies.JAWA,Vol. 30, pp. 561-567.
+    </Reference>
+    <Reference>
+        Windingstad, R.M, F.X. Kartach, R.K. Stroud, andM.R. Smith. 1987. Salt toxicosis in waterfowl in NorthDakota. J. Wildlife Dis., Vol. 23, pp. 443-446.
+    </Reference>
+    <Reference>
+        Wobeser, G.A. 1981. Diseases of wild waterfowl, Plenum Press, NewYork.
+    </Reference>
+    <Reference>
+        Wobeser, G. and J. Howard. 1987. Mortality of waterfowl on ahypersaline wetland as a result of salt encrustation. J. WildlifeDis., Vol. 23, pp. 127-134.
+    </Reference>
+    <Summary>
+        <Purpose>1. Estimate weekly migratory waterfowl use and mean duration of stay on selected playa lakes in the Potash Area, 2. Estimate weekly migratory waterfowl mortality on the selected playas, 3. Determine the cause(s) of death of birds found on
+            and around the selected playas, 4. Determine if the ingestion of waters of selected playa lakes in southwestern New Mexico causes deleterious physiologic changes in mallards, with and without direct contact with the water. 5. Prepare an annotated
+            bibliography of the existing literature on the geology, hydrology, water quality, playa ecology, and historic and current land uses in the Secretary's Potash Region in relation to potential causes or contributing factors to migratory bird mortality
+            and the suitability of playas as wildlife habitat.Playa lakes are shallow basins that are scattered through 140,000square miles in Texas, New Mexico, Oklahoma, Kansas, and Colorado.They are characterized as water catchments that are most
+            oftenephemeral, drain internally, accumulate sediment, and serve asrecharge points to underground aquifers. An estimated 31% (2,460) ofthese playas occur in New Mexico. The playas are important winteringareas for many species of waterfowl in the
+            Central Flyway, and providerefuge for many birds along this migratory pathway (Playa Lakes JointVenture, 1994).In the early 1990's the deaths of hundreds of migratory birds weredocumented along the shorelines of several playas in southeastern
+            NewMexico in an area known as the Secretary's Potash Area. This area,including parts of Lea and Eddy Counties, has been the subject ofmining and mineral development for 60- 70 years. Potash extractionbegan in the early 1930's following the
+            development of oil and gasresources in the late 1920's, and continues today as a major industry.The playa basins in this area have served as convenient dischargesites for waters produced by these mining and refining operations.The frequency,
+            magnitude, and geographic extent of migratory birdmortality in this region has not been assessed since there have beenno extensive surveys of historical and current bird use or mortalityon these playas. Likewise, the cause of death of birds dying
+            duringthe early 1990's has not been adequately evaluated. Necropsy of asmall number of birds found dead during 1993 suggest that physical andphysiological effects of high salt concentrations in certain playascaused or contributed to their deaths.
+            Concern has been raised thatconstituents of discharge water from potash mining and/or oil and gasdevelopment into playas may also be involved in causing mortality.Water quality surveys performed on several of the playas experiencingmortality in 1992
+            showed that there were significant differences inmany chemical and biological properties between playas that havereceived discharges and those without a similar history (Davis andHopkins, 1993). Questions also have been raised concerning
+            thehydrologic and geologic relationships amongst the playas involved inavian mortality. Information may exist on many of these issues, butpertinent sources have yet to be collected and analyzed.In April 1994, the National Wildlife Health Center
+            (NWHC) and theSouthern Ecological Science Center (SESC) received directives toinitiate a collaborative study investigating bird mortality in theplaya lakes of southeastern New Mexico. The NWHC was assigned leadresponsibility for the project in
+            cooperation with the SESC and theNew Mexico Cooperative Fish and Wildlife Research Unit (NMCFWRU). Aliterature survey on topics related to historic and current land use,hydrology, geology, water quality, playa ecology, and bird use andmortality were
+            also to be included in the study.</Purpose>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type uuid="3c9d4493-22fd-48a8-9af5-bf0d16b7ede5">
+            <Type>VIEW EXTENDED METADATA</Type>
+        </URL_Content_Type>
+        <URL>http://mercury-ops2.ornl.gov/clearinghouse/send/xsltText2?fileURL=%2Fdata%2FMercury_instances%2Fusgs%2Fcsas%2Fharvested%2Fwww1.usgs.gov_metadata_mdata_USGS_NWHC_brdnwhc0001.xml&amp;full_datasource=Metadata+Clearinghouse+Principal+Node&amp;full_queryString=+Investigation+of+Bird+Mortality+in+the+Playa+Lakes+of+Southeastern+New+Mexico.&amp;ds_id=</URL>
+    </Related_URL>
+    <IDN_Node uuid="1b25904e-7ccd-4ef3-b733-2ef741163d54">
+        <Short_Name>USA/USGS</Short_Name>
+    </IDN_Node>
+    <IDN_Node uuid="edff0791-121c-40aa-adf2-33feb2bc30e5">
+        <Short_Name>CEOS</Short_Name>
+    </IDN_Node>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 9.8.4</Metadata_Version>
+    <Last_DIF_Revision_Date>2015-12-02</Last_DIF_Revision_Date>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>91a2393f-fc03-43b0-b72f-fc7897c3a7d5</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2015-12-02 12:25:07</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

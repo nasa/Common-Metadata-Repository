@@ -31,7 +31,7 @@
              :skip-acls? true
              :page-size :unlimited
              :result-format :query-specified
-             :fields fields}))
+             :result-fields fields}))
 
 (defn- fetch-elastic-collections
   "Fetches fields on elastic collections matching the given condition, scoped to

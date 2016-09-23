@@ -115,9 +115,9 @@
   ;; for REPL testing purposes
   (def example-collection-record expected-conversion/example-collection-record)
   (cmr.umm.umm-core/parse-concept {:metadata (cmr.umm-spec.umm-spec-core/generate-metadata
-                                          example-collection-record :echo10)
-                               :concept-type :collection
-                               :format "application/echo10+xml"}))
+                                              example-collection-record :echo10)
+                                   :concept-type :collection
+                                   :format "application/echo10+xml"}))
 
 (deftest spatial-keywords-migration-test
   (testing "Make sure that spatial keywords are converted to LocationKeywords from 1.1->1.2"
@@ -202,9 +202,9 @@
               [] {:temporal "3000-01-01T10:00:00Z,3001-01-01T10:00:00Z"}
 
               "concept-id matches"
-              [result] {:concept_id "C1200000000-PROV1"}
+              [result] {:concept_id "C1200000001-PROV1"}
               "concept-id not matches"
-              [] {:concept-id "C1200000001-PROV1"}
+              [] {:concept-id "C1200000002-PROV1"}
 
               "platform matches"
               [result] {:platform "Platform 1"}
@@ -232,8 +232,8 @@
 
               "science-keywords"
               [result] {:science-keywords {:0 {:category "EARTH SCIENCE"
-                                             :topic    "top"
-                                             :term     "ter"}}}
+                                               :topic    "top"
+                                               :term     "ter"}}}
 
               "additional attributes match"
               [result] {"attribute[]" "PercentGroundHit"}

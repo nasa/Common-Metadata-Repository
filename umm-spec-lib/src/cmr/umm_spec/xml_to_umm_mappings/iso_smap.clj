@@ -54,12 +54,12 @@
 (defn- parse-science-keywords
   "Returns the parsed science keywords for the given ISO SMAP xml element. ISO-SMAP checks on the
   Category of each theme descriptive keyword to determine if it is a science keyword."
-  [data-id-el apply-default?]
+  [data-id-el sanitize?]
   (if-let [science-keywords (seq
-                              (->> (kws/parse-science-keywords data-id-el apply-default?)
+                              (->> (kws/parse-science-keywords data-id-el sanitize?)
                                    (filter #(.contains kws/science-keyword-categories (:Category %)))))]
     science-keywords
-    (when apply-default?
+    (when sanitize?
       u/not-provided-science-keywords)))
 
 (defn parse-temporal-extents
@@ -73,9 +73,9 @@
      :EndsAtPresentFlag (some? (seq (select temporal "gml:TimePeriod/gml:endPosition[@indeterminatePosition='now']")))}))
 
 (defn iso-smap-xml-to-umm-c
-  "Returns UMM-C collection record from ISO-SMAP collection XML document. The :apply-default? option
+  "Returns UMM-C collection record from ISO-SMAP collection XML document. The :sanitize? option
   tells the parsing code to set the default values for fields when parsing the metadata into umm."
-  [doc {:keys [apply-default?]}]
+  [doc {:keys [sanitize?]}]
   (let [data-id-el (first (select doc md-identification-base-xpath))
         short-name-el (first (select doc short-name-identification-xpath))]
     (js/parse-umm-c
@@ -91,13 +91,13 @@
        :Platforms (let [smap-keywords (values-at data-id-el keywords-xpath-str)]
                     (kws/parse-platforms smap-keywords))
        :TemporalExtents (or (seq (parse-temporal-extents data-id-el))
-                            (when apply-default? u/not-provided-temporal-extents))
-       :ScienceKeywords (parse-science-keywords data-id-el apply-default?)
-       :SpatialExtent (spatial/parse-spatial data-id-el apply-default?)
+                            (when sanitize? u/not-provided-temporal-extents))
+       :ScienceKeywords (parse-science-keywords data-id-el sanitize?)
+       :SpatialExtent (spatial/parse-spatial data-id-el sanitize?)
        :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)
        ;; Required by UMM-C
-       :RelatedUrls (when apply-default? [u/not-provided-related-url])
+       :RelatedUrls (when sanitize? [u/not-provided-related-url])
        ;; Required by UMM-C
-       :ProcessingLevel (when apply-default? {:Id u/not-provided})
+       :ProcessingLevel (when sanitize? {:Id u/not-provided})
        ;; DataCenters is not implemented but is required in UMM-C
-       :DataCenters (when apply-default? [u/not-provided-data-center])})))
+       :DataCenters (when sanitize? [u/not-provided-data-center])})))

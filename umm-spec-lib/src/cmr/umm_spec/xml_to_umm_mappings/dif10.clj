@@ -34,8 +34,8 @@
      :EndDate (date-at proj "End_Date")}))
 
 (defn- parse-projects
-  [doc apply-default?]
-  (if apply-default?
+  [doc sanitize?]
+  (if sanitize?
     ;; We shouldn't remove not provided during parsing
     (when-not (= u/not-provided (value-of doc "/DIF/Project[1]/Short_Name"))
       (parse-projects-impl doc))
@@ -57,8 +57,8 @@
                  :Characteristics (parse-characteristics sensor)})}))
 
 (defn- parse-instruments
-  [platform-el apply-default?]
-  (if apply-default?
+  [platform-el sanitize?]
+  (if sanitize?
     ;; We shouldn't remove not provided during parsing
     (when-not (= u/not-provided (value-of platform-el "Instrument[1]/Short_Name"))
       (parse-instruments-impl platform-el))
@@ -96,14 +96,14 @@
 (defn- parse-temporal-extent
   "Return a temporal extent from a DIF10 Temporal_Coverage. Remove empty maps which could occur
   if only a Paleo Date Time is present."
-  [temporal]
+  [temporal sanitize?]
   (let [temporal-extent
         (util/remove-map-keys empty?
                               {:TemporalRangeType (value-of temporal "Temporal_Range_Type")
                                :PrecisionOfSeconds (value-of temporal "Precision_Of_Seconds")
                                :EndsAtPresentFlag (value-of temporal "Ends_At_Present_Flag")
                                :RangeDateTimes (for [rdt (select temporal "Range_DateTime")]
-                                                 {:BeginningDateTime (value-of rdt "Beginning_Date_Time")
+                                                 {:BeginningDateTime (date/with-default (value-of rdt "Beginning_Date_Time") sanitize?)
                                                   :EndingDateTime (parse-dif-end-date (value-of rdt "Ending_Date_Time"))})
                                :SingleDateTimes (values-at temporal "Single_DateTime")
                                :PeriodicDateTimes (for [pdt (select temporal "Periodic_DateTime")]
@@ -119,20 +119,20 @@
 
 (defn- parse-temporal-extents
   "Returns a list of temportal extents"
-  [doc apply-default?]
+  [doc sanitize?]
   (if-let [temporal-extents
-           (seq (remove nil? (map parse-temporal-extent (select doc "/DIF/Temporal_Coverage"))))]
+           (seq (remove nil? (map #(parse-temporal-extent % sanitize?) (select doc "/DIF/Temporal_Coverage"))))]
     temporal-extents
-    (when apply-default?
+    (when sanitize?
       u/not-provided-temporal-extents)))
 
 (defn parse-dif10-xml
   "Returns collection map from DIF10 collection XML document."
-  [doc {:keys [apply-default?]}]
+  [doc {:keys [sanitize?]}]
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
    :ShortName (value-of doc "/DIF/Entry_ID/Short_Name")
    :Version (value-of doc "/DIF/Entry_ID/Version")
-   :Abstract (value-of doc "/DIF/Summary/Abstract")
+   :Abstract (u/with-default (value-of doc "/DIF/Summary/Abstract") sanitize?)
    :CollectionDataType (value-of doc "/DIF/Collection_Data_Type")
    :Purpose (value-of doc "/DIF/Summary/Purpose")
    :DataLanguage (dif-util/dif-language->umm-langage (value-of doc "/DIF/Dataset_Language"))
@@ -148,17 +148,17 @@
                         :Subregion2 (value-of lk "Location_Subregion2")
                         :Subregion3 (value-of lk "Location_Subregion3")
                         :DetailedLocation (value-of lk "Detailed_Location")})
-   :Projects (parse-projects doc apply-default?)
+   :Projects (parse-projects doc sanitize?)
    :Quality (value-of doc "/DIF/Quality")
-   :AccessConstraints (dif-util/parse-access-constraints doc apply-default?)
+   :AccessConstraints (dif-util/parse-access-constraints doc sanitize?)
    :UseConstraints (value-of doc "/DIF/Use_Constraints")
    :Platforms (for [platform (select doc "/DIF/Platform")]
                 {:ShortName (value-of platform "Short_Name")
                  :LongName (value-of platform "Long_Name")
                  :Type (without-default-value-of platform "Type")
                  :Characteristics (parse-characteristics platform)
-                 :Instruments (parse-instruments platform apply-default?)})
-   :TemporalExtents (parse-temporal-extents doc apply-default?)
+                 :Instruments (parse-instruments platform sanitize?)})
+   :TemporalExtents (parse-temporal-extents doc sanitize?)
    :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
    :SpatialExtent (spatial/parse-spatial doc)
    :TilingIdentificationSystems (spatial/parse-tiling doc)
@@ -167,8 +167,8 @@
                      :Sizes (u/parse-data-sizes (value-of dist "Distribution_Size"))
                      :DistributionFormat (value-of dist "Distribution_Format")
                      :Fees (value-of dist "Fees")})
-   :ProcessingLevel {:Id (u/with-default (value-of doc "/DIF/Product_Level_Id") apply-default?)}
-   :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc apply-default?)
+   :ProcessingLevel {:Id (u/with-default (value-of doc "/DIF/Product_Level_Id") sanitize?)}
+   :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc sanitize?)
    :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
                             (into {} (map (fn [x]
                                             (if (keyword? x)
@@ -207,12 +207,12 @@
                        :VariableLevel2 (value-of sk "Variable_Level_2")
                        :VariableLevel3 (value-of sk "Variable_Level_3")
                        :DetailedVariable (value-of sk "Detailed_Variable")})
-   :DataCenters (center/parse-data-centers doc apply-default?)
-   :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel") apply-default?)
+   :DataCenters (center/parse-data-centers doc sanitize?)
+   :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel") sanitize?)
    :ContactGroups (contact/parse-contact-groups (select doc "DIF/Personnel"))})
 
 (defn dif10-xml-to-umm-c
-  "Returns UMM-C collection record from DIF10 collection XML document. The :apply-default? option
+  "Returns UMM-C collection record from DIF10 collection XML document. The :sanitize? option
   tells the parsing code to set the default values for fields when parsing the metadata into umm."
   [metadata options]
   (js/parse-umm-c (parse-dif10-xml metadata options)))

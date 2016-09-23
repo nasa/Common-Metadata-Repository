@@ -22,6 +22,8 @@
     returns the GUID of the new group."
   [param-map]
   (let [{:keys [token name description member-guids managing-group guid owner-provider-guid]} param-map
+        _ (when-not (seq member-guids)
+            (throw (Exception. "At least one member guid must be present in a group.")))
         body ["ns2:CreateGroup"
                 soap/soap-ns-map
                 ["ns2:token" token]
@@ -61,11 +63,11 @@
   [param-map]
   (let [{:keys [token group-guids]} param-map
         body ["ns2:GetGroups2"
-                soap/soap-ns-map
-                ["ns2:token" token]
-                ["ns2:groupGuids" (soap/item-list group-guids)]]]
-      (-> (soap/post-soap :group2-management body)
-          (soap/extract-item-map-list :get-groups2 group-keys))))
+              soap/soap-ns-map
+              ["ns2:token" token]
+              ["ns2:groupGuids" (soap/item-list group-guids)]]]
+    (-> (soap/post-soap :group2-management body)
+        (soap/extract-item-map-list :get-groups2 group-keys))))
 
 (defn get-group-names-by-member
   "Perform a GetGroupNamesByMember2 request against the SOAP API.  Takes a map containing request parameters:
@@ -92,10 +94,9 @@
                    (filter #(= (:name %) group-name))
                    (first))
         group-guid (:guid group)]
-       (if group-guid
-          (-> (get-groups {:token token :group-guids [group-guid]})
-             (first))
-          (cmr.common.services.errors/throw-service-error :soap-fault (str "Group [" group-name "] does not exist or does not include the specified user.")))))
+    (if group-guid
+      (first (get-groups {:token token :group-guids [group-guid]}))
+      (cmr.common.services.errors/throw-service-error :soap-fault (str "Group [" group-name "] does not exist or does not include the specified user.")))))
 
 (defn remove-group
   "Perform a RemoveGroup request against the SOAP API. Takes a map containing request parameters:

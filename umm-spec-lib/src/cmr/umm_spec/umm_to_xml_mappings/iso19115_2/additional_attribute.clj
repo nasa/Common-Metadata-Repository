@@ -1,10 +1,11 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute
   "Functions for generating ISO19115-2 XML elements from UMM additional attribute records."
-  (:require [cmr.common.xml.gen :refer :all]
-            [cmr.umm-spec.util :refer [char-string]]
-            [cmr.umm-spec.iso19115-2-util :as iso]))
+  (:require
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.iso19115-2-util :as iso]
+   [cmr.umm-spec.util :refer [char-string]]))
 
-(def ^:private data-quality-info-attributes
+(def data-quality-info-attributes
   "Defines the additional attributes that should go to dataQualityInfo section of the ISO xml"
   #{ "AquisitionQuality" "Band10_Available" "Band11_Available" "Band12_Available" "Band13_Available"
     "Band14_Available" "Band1_Available" "Band2_Available" "Band3B_Available" "Band3N_Available"
@@ -104,6 +105,3 @@
     [:gmd:processStep
      [:gmi:LE_ProcessStep
       [:gmd:description {:gco:nilReason "unknown"}]]]))
-
-
-

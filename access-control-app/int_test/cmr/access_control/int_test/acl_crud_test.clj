@@ -474,12 +474,12 @@
     (testing "200 status, concept id and revision id of tombstone is returned on successful deletion."
       (is (= {:status 200
               :body {:revision-id 2
-                     :concept-id "ACL1200000000-CMR"}
+                     :concept-id "ACL1200000001-CMR"}
               :content-type :json}
              (ac/delete-acl (u/conn-context) acl-concept-id {:token token :raw? true}))))
     (testing "404 is returned when trying to delete an ACL again"
       (is (= {:status 404
-              :body {:errors ["ACL with concept id [ACL1200000000-CMR] was deleted."]}
+              :body {:errors ["ACL with concept id [ACL1200000001-CMR] was deleted."]}
               :content-type :json}
              (ac/delete-acl (u/conn-context) acl-concept-id {:token token :raw? true}))))
     (testing "concept can no longer be retrieved through access control service"

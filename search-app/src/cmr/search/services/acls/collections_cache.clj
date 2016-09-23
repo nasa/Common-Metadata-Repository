@@ -32,7 +32,7 @@
                         :skip-acls? true
                         :page-size :unlimited
                         :result-format :query-specified
-                        :fields (cons :concept-id acl-rhh/collection-elastic-fields)
+                        :result-fields (cons :concept-id acl-rhh/collection-elastic-fields)
                         :result-features {:query-specified {:result-processor result-processor}}})]
     (:items (qe/execute-query context query))))
 

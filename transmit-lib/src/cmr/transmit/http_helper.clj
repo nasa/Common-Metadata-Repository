@@ -12,6 +12,10 @@
   [conn]
   (format "%s/reset" (conn/root-url conn)))
 
+(defn clear-cache-url
+  [conn]
+  (format "%s/caches/clear-cache" (conn/root-url conn)))
+
 (defn health-url
   [conn]
   (format "%s/health" (conn/root-url conn)))
@@ -282,6 +286,22 @@
      ([context# raw#]
       (request context# ~app-name
                {:url-fn ~cmr.transmit.http-helper/reset-url
+                :method :post
+                :raw? raw#
+                :use-system-token? true}))))
+
+(defmacro defcacheclearer
+  "Creates a function to clear the cache for an application"
+  [fn-name app-name]
+  `(defn ~fn-name
+     "Sends a request to clear the caches of the given app.
+     * :raw - set to true to indicate the raw response should be returned. See
+     cmr.transmit.http-helper for more info. Default false."
+     ([context#]
+      (~fn-name context# false))
+     ([context# raw#]
+      (request context# ~app-name
+               {:url-fn ~cmr.transmit.http-helper/clear-cache-url
                 :method :post
                 :raw? raw#
                 :use-system-token? true}))))

@@ -90,9 +90,9 @@
 (defn parse-access-constraints
   "If both Value and Description are nil, return nil.
   Otherwise, if Description is nil, assoc it with u/not-provided"
-  [doc apply-default?]
+  [doc sanitize?]
   (let [access-constraints-record
         {:Description (value-of doc "/DIF/Access_Constraints")
          :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}]
     (when (seq (common-util/remove-nil-keys access-constraints-record))
-      (update access-constraints-record :Description #(util/with-default % apply-default?)))))
+      (update access-constraints-record :Description #(util/with-default % sanitize?)))))

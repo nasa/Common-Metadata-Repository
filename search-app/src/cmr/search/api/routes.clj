@@ -51,7 +51,6 @@
             [cmr.search.results-handlers.reference-results-handler]
             [cmr.search.results-handlers.kml-results-handler]
             [cmr.search.results-handlers.metadata-results-handler]
-            [cmr.search.results-handlers.query-specified-results-handler]
             [cmr.search.results-handlers.timeline-results-handler]
             [cmr.search.results-handlers.opendata-results-handler]
             [cmr.search.results-handlers.umm-json-results-handler]

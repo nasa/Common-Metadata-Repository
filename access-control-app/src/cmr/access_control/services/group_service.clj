@@ -142,26 +142,29 @@
 (defn create-group
   "Creates the group by saving it to Metadata DB. Returns a map of the concept id and revision id of
   the created group."
-  [context group]
-  (validate-create-group context group)
-  (auth/verify-can-create-group context group)
-  ;; Check if the group already exists - lower case the name to prevent duplicates.(CMR-2466)
-  (if-let [concept-id (mdb/get-concept-id context
-                                          :access-group
-                                          (group->mdb-provider-id group)
-                                          (str/lower-case (:name group)))]
+  ([context group]
+   (create-group context group nil))
+  ([context group {:keys [skip-acls?]}]
+   (validate-create-group context group)
+   (when-not skip-acls?
+     (auth/verify-can-create-group context group))
+   ;; Check if the group already exists - lower case the name to prevent duplicates.(CMR-2466)
+   (if-let [concept-id (mdb/get-concept-id context
+                                           :access-group
+                                           (group->mdb-provider-id group)
+                                           (str/lower-case (:name group)))]
 
-    ;; The group exists. Check if its latest revision is a tombstone
-    (let [concept (mdb/get-latest-concept context concept-id)]
-      (if (:deleted concept)
-        ;; The group exists but was previously deleted.
-        (save-updated-group-concept context concept group)
+     ;; The group exists. Check if its latest revision is a tombstone
+     (let [concept (mdb/get-latest-concept context concept-id)]
+       (if (:deleted concept)
+         ;; The group exists but was previously deleted.
+         (save-updated-group-concept context concept group)
 
-        ;; The group exists and was not deleted. Reject this.
-        (errors/throw-service-error :conflict (g-msg/group-already-exists group concept))))
+         ;; The group exists and was not deleted. Reject this.
+         (errors/throw-service-error :conflict (g-msg/group-already-exists group concept))))
 
-    ;; The group doesn't exist
-    (mdb/save-concept context (group->new-concept context group))))
+     ;; The group doesn't exist
+     (mdb/save-concept context (group->new-concept context group)))))
 
 (defn group-exists?
   "Returns true if group exists."
@@ -292,13 +295,16 @@
 (defn add-members
   "Adds members to the group identified by the concept id persisting it to Metadata DB. Returns
   the new concept id and revision id."
-  [context concept-id members]
-  (validate-members-exist context members)
-  (let [existing-concept (fetch-group-concept context concept-id)
-        existing-group (edn/read-string (:metadata existing-concept))
-        updated-group (add-members-to-group existing-group members)]
-    (auth/verify-can-update-group context existing-group)
-    (save-updated-group-concept context existing-concept updated-group)))
+  ([context concept-id members]
+   (add-members context concept-id members nil))
+  ([context concept-id members {:keys [skip-acls?]}]
+   (validate-members-exist context members)
+   (let [existing-concept (fetch-group-concept context concept-id)
+         existing-group (edn/read-string (:metadata existing-concept))
+         updated-group (add-members-to-group existing-group members)]
+     (when-not skip-acls?
+       (auth/verify-can-update-group context existing-group))
+     (save-updated-group-concept context existing-concept updated-group))))
 
 (defn- remove-members-from-group
   "Removes the members from the group."
