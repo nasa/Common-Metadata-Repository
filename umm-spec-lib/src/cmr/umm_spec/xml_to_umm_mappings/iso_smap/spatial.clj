@@ -27,11 +27,11 @@
 
 (defn parse-spatial
   "Returns UMM SpatialExtentType map from SMAP ISO data identifier XML document."
-  [data-id-el apply-default?]
+  [data-id-el sanitize?]
   (if-let [bounding-rectangles (parse-bounding-rectangles data-id-el)]
     {:SpatialCoverageType "HORIZONTAL"
      :GranuleSpatialRepresentation "GEODETIC"
      :HorizontalSpatialDomain {:Geometry {:CoordinateSystem "GEODETIC"
                                           :BoundingRectangles bounding-rectangles}}}
-    (when apply-default?
+    (when sanitize?
       su/not-provided-spatial-extent)))

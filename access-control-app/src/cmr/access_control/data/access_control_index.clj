@@ -1,18 +1,20 @@
 (ns cmr.access-control.data.access-control-index
   "Performs search and indexing of access control data."
-  (:require [cmr.access-control.services.acl-service :as acl-service]
-            [cmr.access-control.data.acls :as acls]
-            [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
-            [cmr.common.log :refer [info debug]]
-            [cmr.common-app.services.search.elastic-search-index :as esi]
-            [cmr.common-app.services.search.query-to-elastic :as q2e]
-            [cmr.common.lifecycle :as l]
-            [cmr.common.util :as util]
-            [cmr.common.services.errors :as errors]
-            [cmr.transmit.metadata-db2 :as mdb]
-            [clojure.string :as str]
-            [clojure.edn :as edn]
-            [cmr.umm.acl-matchers :as acl-matchers]))
+  (:require
+   [clojure.edn :as edn]
+   [clojure.string :as str]
+   [cmr.access-control.data.acls :as acls]
+   [cmr.access-control.services.acl-service :as acl-service]
+   [cmr.common-app.services.search.elastic-search-index :as esi]
+   [cmr.common-app.services.search.query-to-elastic :as q2e]
+   [cmr.common.lifecycle :as l]
+   [cmr.common.log :refer [info debug]]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
+   [cmr.transmit.metadata-db2 :as mdb]
+   [cmr.transmit.metadata-db2 :as mdb]
+   [cmr.umm.acl-matchers :as acl-matchers]))
 
 (defmulti index-concept
   "Indexes the concept map in elastic search."
@@ -23,7 +25,6 @@
   [context concept-map])
   ;; Do nothing
 
-
 (defmulti delete-concept
   "Deletes the concept map in elastic search."
   (fn [context concept-map]
@@ -33,6 +34,15 @@
   [context concept-map])
   ;; Do nothing
 
+(defn index-concept-by-concept-id-revision-id
+  "Indexes the concept identified by concept id and revision id"
+  [context concept-id revision-id]
+  (index-concept context (mdb/get-concept context concept-id revision-id)))
+
+(defn delete-concept-by-concept-id-revision-id
+  "Unindexes the concept identified by concept id and revision id"
+  [context concept-id revision-id]
+  (delete-concept context (mdb/get-concept context concept-id revision-id)))
 
 (defn- safe-lowercase
   [v]

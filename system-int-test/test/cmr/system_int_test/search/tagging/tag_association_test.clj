@@ -47,13 +47,13 @@
     (testing "Successfully Associate tag with collections"
       (let [response (tags/associate-by-query token tag-key {:provider "PROV1"})]
         (tags/assert-tag-association-response-ok?
-          {["C1200000000-PROV1"] {:concept-id "TA1200000013-CMR"
-                                  :revision-id 1}
-           ["C1200000001-PROV1"] {:concept-id "TA1200000014-CMR"
+          {["C1200000001-PROV1"] {:concept-id "TA1200000014-CMR"
                                   :revision-id 1}
            ["C1200000002-PROV1"] {:concept-id "TA1200000015-CMR"
                                   :revision-id 1}
            ["C1200000003-PROV1"] {:concept-id "TA1200000016-CMR"
+                                  :revision-id 1}
+           ["C1200000004-PROV1"] {:concept-id "TA1200000017-CMR"
                                   :revision-id 1}}
           response)))
 
@@ -70,9 +70,9 @@
       ;; Associates all the version 2 collections which is c2-p1 (already in) and c2-p2 (new)
       (let [response (tags/associate-by-query token tag-key {:version "v2"})]
         (tags/assert-tag-association-response-ok?
-          {["C1200000001-PROV1"] {:concept-id "TA1200000014-CMR"
+          {["C1200000002-PROV1"] {:concept-id "TA1200000015-CMR"
                                   :revision-id 2}
-           ["C1200000005-PROV2"] {:concept-id "TA1200000017-CMR"
+           ["C1200000006-PROV2"] {:concept-id "TA1200000018-CMR"
                                   :revision-id 1}}
           response)))))
 
@@ -106,9 +106,9 @@
                        token tag-key [{:concept-id c1-p1}
                                       {:concept-id c3-p2}])]
         (tags/assert-tag-association-response-ok?
-          {["C1200000000-PROV1"] {:concept-id "TA1200000013-CMR"
+          {["C1200000001-PROV1"] {:concept-id "TA1200000014-CMR"
                                   :revision-id 1}
-           ["C1200000006-PROV2"] {:concept-id "TA1200000014-CMR"
+           ["C1200000007-PROV2"] {:concept-id "TA1200000015-CMR"
                                   :revision-id 1}}
           response)))
 
@@ -156,7 +156,7 @@
                        token tag-key [{:concept-id c2-p1}
                                       {:concept-id "C100-P5"}])]
         (tags/assert-tag-association-response-ok?
-          {["C1200000001-PROV1"] {:concept-id "TA1200000015-CMR"
+          {["C1200000002-PROV1"] {:concept-id "TA1200000016-CMR"
                                   :revision-id 1}
            ["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
           response)))))
@@ -320,7 +320,7 @@
             response (tags/disassociate-by-concept-ids
                        token tag-key [{:concept-id c1-p2-concept-id}])]
         (tags/assert-tag-disassociation-response-ok?
-          {["C1200000004-PROV2"] {:errors [(format "Collection [%s] does not exist or is not visible."
+          {["C1200000005-PROV2"] {:errors [(format "Collection [%s] does not exist or is not visible."
                                                    c1-p2-concept-id)]}}
           response)))
 
@@ -330,7 +330,7 @@
             response (tags/disassociate-by-concept-ids
                        token tag-key [{:concept-id coll-concept-id}])]
         (tags/assert-tag-disassociation-response-ok?
-          {["C1200000011-PROV3"] {:errors [(format "Collection [%s] does not exist or is not visible."
+          {["C1200000012-PROV3"] {:errors [(format "Collection [%s] does not exist or is not visible."
                                                    coll-concept-id)]}}
           response)))))
 
@@ -416,13 +416,13 @@
                        [{:concept-id "C100-P5"} ;; non-existent collection
                         {:concept-id (:concept-id coll1)} ;; success
                         {:concept-id (:concept-id coll2) :revision-id 1} ;; success
-                        {:concept-id (:concept-id coll3)} ;; no tag association
-                        ])]
+                        {:concept-id (:concept-id coll3)}])] ;; no tag association
+
         (tags/assert-tag-disassociation-response-ok?
           {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}
-           ["C1200000000-PROV1"] {:concept-id "TA1200000004-CMR" :revision-id 2}
-           ["C1200000001-PROV1" 1] {:concept-id "TA1200000005-CMR" :revision-id 2}
-           ["C1200000002-PROV1"] {:warnings ["Tag [tag1] is not associated with collection [C1200000002-PROV1]."]}}
+           ["C1200000001-PROV1"] {:concept-id "TA1200000005-CMR" :revision-id 2}
+           ["C1200000002-PROV1" 1] {:concept-id "TA1200000006-CMR" :revision-id 2}
+           ["C1200000003-PROV1"] {:warnings ["Tag [tag1] is not associated with collection [C1200000003-PROV1]."]}}
           response)
         (assert-tag-associated [])))))
 

@@ -1,20 +1,21 @@
 (ns cmr.common-app.services.search.elastic-search-index
   "Implements searching against Elasticsearch. Defines an Elastic Search Index component."
-  (:require [clojurewerkz.elastisch.rest.document :as esd]
-            [clojurewerkz.elastisch.aggregation :as a]
-            [clojurewerkz.elastisch.rest.response :as esrsp]
-            [clojure.string :as s]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.util :as util]
-            [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.services.errors :as e]
-            [cmr.common.concepts :as concepts]
-            [cmr.elastic-utils.connect :as es]
-            [cmr.elastic-utils.config :as es-config]
-            [cmr.common-app.services.search.results-model :as results]
-            [cmr.common-app.services.search.query-model :as qm]
-            [cmr.common-app.services.search.query-to-elastic :as q2e]
-            [clojure.set :as set]))
+  (:require
+   [clojure.set :as set]
+   [clojurewerkz.elastisch.aggregation :as a]
+   [clojurewerkz.elastisch.rest.document :as esd]
+   [clojurewerkz.elastisch.rest.index :as esri]
+   [clojurewerkz.elastisch.rest.response :as esrsp]
+   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.common-app.services.search.query-to-elastic :as q2e]
+   [cmr.common-app.services.search.results-model :as results]
+   [cmr.common.concepts :as concepts]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.services.errors :as e]
+   [cmr.common.util :as util]
+   [cmr.elastic-utils.config :as es-config]
+   [cmr.elastic-utils.connect :as es]))
 
 (defmulti concept-type->index-info
   "Returns index info based on input concept type. The map should contain a :type-name key along with
@@ -141,6 +142,12 @@
     (when (and (= :unlimited (:page-size query)) (> hits (count (get-in e-results [:hits :hits])))
                (e/internal-error! "Failed to retrieve all hits.")))
     e-results))
+
+(defn refresh
+  "Make changes written to Elasticsearch available for search. See
+   https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-refresh.html"
+  [context]
+  (esri/refresh (context->conn context)))
 
 (defrecord ElasticSearchIndex
   [

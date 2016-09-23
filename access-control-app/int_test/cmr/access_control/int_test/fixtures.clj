@@ -5,7 +5,7 @@
             [cmr.transmit.metadata-db2 :as mdb]
             [cmr.access-control.system :as system]
             [cmr.access-control.config :as access-control-config]
-            [cmr.access-control.test.util :refer [conn-context]]
+            [cmr.access-control.test.util :as test-util :refer [conn-context]]
             [cmr.elastic-utils.test-util :as elastic-test-util]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.mock-echo.system :as mock-echo-system]
@@ -92,16 +92,22 @@
    (fn [f]
      (mock-echo-client/reset (conn-context))
      (mdb/reset (conn-context))
-     (ac/reset (conn-context))
+     (ac/reset (conn-context) {:bootstrap-data? true})
+     (e/grant-system-group-permissions-to-admin-group (conn-context) :create :read :update :delete)
      (doseq [[provider-guid provider-id] provider-map]
        (mdb/create-provider (assoc (conn-context) :token (config/echo-system-token))
-                            {:provider-id provider-id}))
+                            {:provider-id provider-id})
+       ;; Give full permission to the mock admin user to modify groups for the provider
+       (e/grant-provider-group-permissions-to-admin-group
+        (conn-context) provider-guid :create :read :update :delete))
      (e/create-providers (conn-context) provider-map)
 
      (when (seq usernames)
        (mock-urs-client/create-users (conn-context) (for [username usernames]
                                                       {:username username
                                                        :password (str username "pass")})))
+     ;; Resetting adds bootstrap minimal data to access control. Wait until it's indexed.
+     (test-util/wait-until-indexed)
      (f))))
 
 (defn grant-all-group-fixture

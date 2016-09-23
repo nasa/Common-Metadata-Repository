@@ -1,0 +1,233 @@
+<DIF
+    xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd">
+    <Entry_ID>REMSS-L4HRfnd-GLOB-mw_ir_OI</Entry_ID>
+    <Entry_Title>GHRSST Level 4 mw_ir_rt_OI Global Foundation Sea Surface Temperature analysis (realtime version) - REMSS-L4HRfnd-GLOB-mw_ir_OI</Entry_Title>
+    <Data_Set_Citation>
+        <Dataset_Creator>Remote Sensing Systems</Dataset_Creator>
+        <Dataset_Title>MWIR optimum interpolated SST data set</Dataset_Title>
+        <Dataset_Series_Name>MWIR</Dataset_Series_Name>
+        <Dataset_Release_Date>2008-01-01</Dataset_Release_Date>
+        <Dataset_Release_Place>Santa Rosa, CA, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Remote Sensing Systems</Dataset_Publisher>
+        <Version>1.0</Version>
+        <Other_Citation_Details>AMSR-E data are sponsored by NASA and NOPP</Other_Citation_Details>
+        <Online_Resource>http://ghrsst.nodc.noaa.gov</Online_Resource>
+    </Data_Set_Citation>
+    <Personnel>
+        <Role>TECHNICAL CONTACT</Role>
+        <First_Name>KENNETH</First_Name>
+        <Middle_Name>S.</Middle_Name>
+        <Last_Name>CASEY</Last_Name>
+        <Email>Kenneth.Casey@noaa.gov</Email>
+        <Phone>(301) 713-3272 x133</Phone>
+        <Fax>FAX: (301) 713-3300</Fax>
+        <Contact_Address>
+            <Address>NOAA National Oceanographic Data Center SSMC3, 4th Floor, Room 4853, Route: E/OC1 1315 East-West Highway</Address>
+            <City>Silver Spring</City>
+            <Province_or_State>Maryland</Province_or_State>
+            <Postal_Code>20910</Postal_Code>
+            <Country>U.S.A.</Country>
+        </Contact_Address>
+    </Personnel>
+    <Personnel>
+        <Role>TECHNICAL CONTACT</Role>
+        <First_Name>SHARON</First_Name>
+        <Last_Name>TREMBLE</Last_Name>
+        <Email>tremble@remss.com</Email>
+        <Phone>001 707 545 2904</Phone>
+        <Fax>001 707 545 2906</Fax>
+    </Personnel>
+    <Parameters>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>OCEANS</Topic>
+        <Term>OCEAN TEMPERATURE</Term>
+        <Variable_Level_1>SEA SURFACE TEMPERATURE</Variable_Level_1>
+        <Detailed_Variable>OPTIMUM INTERPOLATED SEA SURFACE TEMPERATURE</Detailed_Variable>
+    </Parameters>
+    <ISO_Topic_Category>OCEANS</ISO_Topic_Category>
+    <ISO_Topic_Category>GEOSCIENTIFIC INFORMATION</ISO_Topic_Category>
+    <Keyword>SEA SURFACE TEMPERATURE</Keyword>
+    <Keyword>AMSR-E</Keyword>
+    <Keyword>MODIS</Keyword>
+    <Keyword>TMI</Keyword>
+    <Keyword>satellite data</Keyword>
+    <Keyword>326S - SATELLITE</Keyword>
+    <Keyword>Group for High Resolution Sea Surface Temperature</Keyword>
+    <Keyword>Remote Sensing Systems</Keyword>
+    <Keyword>US NATIONAL AERONAUTIC AND SPACE ADMINISTRATION; JET PROPULSION LABORATORY Physical Oceanography Distributed Active Archive Center</Keyword>
+    <Keyword>Earth Science</Keyword>
+    <Keyword>Oceans</Keyword>
+    <Keyword>Ocean Temperature</Keyword>
+    <Keyword>Sea Surface Temperature</Keyword>
+    <Keyword>climatologyMeteorologyAtmosphere</Keyword>
+    <Keyword>environment</Keyword>
+    <Keyword>biota</Keyword>
+    <Keyword>World-Wide Distribution</Keyword>
+    <Keyword>Global Ocean</Keyword>
+    <Sensor_Name>
+        <Short_Name>AMSR-E</Short_Name>
+        <Long_Name>Advanced Microwave Scanning Radiometer-EOS</Long_Name>
+    </Sensor_Name>
+    <Sensor_Name>
+        <Short_Name>TMI</Short_Name>
+        <Long_Name>TRMM Microwave Imager</Long_Name>
+    </Sensor_Name>
+    <Sensor_Name>
+        <Short_Name>MODIS</Short_Name>
+        <Long_Name>Moderate-Resolution Imaging Spectroradiometer</Long_Name>
+    </Sensor_Name>
+    <Source_Name>
+        <Short_Name>TRMM</Short_Name>
+        <Long_Name>Tropical Rainfall Measuring Mission</Long_Name>
+    </Source_Name>
+    <Source_Name>
+        <Short_Name>AQUA</Short_Name>
+        <Long_Name>Earth Observing System, AQUA</Long_Name>
+    </Source_Name>
+    <Temporal_Coverage>
+        <Start_Date>2008-07-17</Start_Date>
+    </Temporal_Coverage>
+    <Spatial_Coverage>
+        <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+        <Northernmost_Latitude>90.0</Northernmost_Latitude>
+        <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+        <Easternmost_Longitude>180.0</Easternmost_Longitude>
+        <Minimum_Altitude>0</Minimum_Altitude>
+        <Maximum_Altitude>0</Maximum_Altitude>
+        <Minimum_Depth>0</Minimum_Depth>
+        <Maximum_Depth>0</Maximum_Depth>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>0.081</Latitude_Resolution>
+        <Longitude_Resolution>0.081</Longitude_Resolution>
+        <Temporal_Resolution>Daily</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>GHRSST</Short_Name>
+        <Long_Name>Group for High Resolution Sea Surface Temperature</Long_Name>
+    </Project>
+    <Project>
+        <Short_Name>CWIC</Short_Name>
+        <Long_Name>CEOS WGISS Integrated Catalog</Long_Name>
+    </Project>
+    <Access_Constraints>None</Access_Constraints>
+    <Use_Constraints>None</Use_Constraints>
+    <Data_Set_Language>English</Data_Set_Language>
+    <Originating_Center>Remote Sensing Systems</Originating_Center>
+    <Data_Center>
+        <Data_Center_Name>
+            <Short_Name>DOC/NOAA/NESDIS/NCEI</Short_Name>
+            <Long_Name>National Centers for Environmental Information, NESDIS, NOAA, U.S. Department of Commerce</Long_Name>
+        </Data_Center_Name>
+        <Data_Center_URL>https://ncei.noaa.gov/</Data_Center_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Last_Name>NOAA NCEI</Last_Name>
+            <Email>ncei.info@noaa.gov</Email>
+        </Personnel>
+    </Data_Center>
+    <Distribution>
+        <Distribution_Media>FTP, THREDDS</Distribution_Media>
+        <Distribution_Size>118.948</Distribution_Size>
+        <Distribution_Format>netCDF</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Summary>
+        <Abstract>A Group for High Resolution Sea Surface Temperature (GHRSST) global Level 4 sea surface temperature analysis produced daily on a 0.81 degree grid at Remote Sensing Systems in realtime. This product uses optimal interpolation (OI) from both
+            microwave (MW) sensors including the NASA Advanced Microwave Scanning Radiometer-EOS (AMSRE), and the Tropical Rainfall Measuring Mission Microwave Imager (TMI), and infrared (IR) sensors such as the Moderate Resolution Imaging Spectroradiometer
+            (MODIS) on the NASA Aqua platform. The through-cloud capabilities of microwave radiometers provide a valuable picture of global sea surface temperature (SST) while infrared radiometers (i.e., MODIS) have a higher spatial resolution. This analysis
+            does not use any in situ SST data such as drifting buoy SST. The product represents the realtime version of mw_ir_OI and is produced and made available as soon as possible, but users should use mw_ir_OI for the period of interest if available.</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>THREDDS DIRECTORY</Subtype>
+        </URL_Content_Type>
+        <URL>http://data.nodc.noaa.gov/thredds/catalog/ghrsst/L4/GLOB/REMSS/mw_ir_OI/catalog.html</URL>
+        <Description>Data may be directly downloaded from the NODC via the THREDDS (Thematic Real-time Environmental Distributed Data Services) server at the URL listed in this metadata record. For more information see the NODC GHRSST project web site: URL:
+            http://ghrsst.nodc.noaa.gov/</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>OPENDAP DIRECTORY (DODS)</Subtype>
+        </URL_Content_Type>
+        <URL>http://data.nodc.noaa.gov/opendap/ghrsst/L4/GLOB/REMSS/mw_ir_OI/contents.html</URL>
+        <Description>These data are also served using OPeNDAP (formerly DODS) server. The base URL is: http://data.nodc.noaa.gov/opendap/ghrsst/. For more information see the NODC GHRSST project web site: URL:http://ghrsst.nodc.noaa.gov/. For a listing of
+            OPeNDAP clients which may be used to access OPeNDAP-enabled data sets, please see the OPeNDAP web site at URL: http://opendap.org/</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+        </URL_Content_Type>
+        <URL>ftp://ftp.nodc.noaa.gov/pub/data.nodc/ghrsst/L4/GLOB/REMSS/mw_ir_OI/</URL>
+        <Description>Direct FTP access: Navigate to ftp://ftp.nodc.noaa.gov/pub/data.nodc/ghrsst using any FTP client to begin downloading data. For more information see the NODC GHRSST project web site: URL: http://ghrsst.nodc.noaa.gov/</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+        </URL_Content_Type>
+        <URL>http://data.nodc.noaa.gov/ghrsst/L4/GLOB/REMSS/mw_ir_OI/</URL>
+        <Description>Simple Web access: Using any web browser, navigate to URL: http://data.nodc.noaa.gov/ghrsst and begin browsing through the file hierarchy. Clicking on any of the files will prompt you to download that file or will launch any application
+            associated with netCDF files. For more information see the NODC GHRSST project web site: URL: http://ghrsst.nodc.noaa.gov/</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>LAS</Subtype>
+        </URL_Content_Type>
+        <URL>http://data.nodc.noaa.gov/las/getUI.do?dsid=id-1a6fe06180&amp;varid=analysed_sst-id-1a6fe06180&amp;auto=true</URL>
+        <Description>Navigate to NODC Live Access server at http://data.nodc.noaa.gov/las/ and follow directions on the web page</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+        </URL_Content_Type>
+        <URL>http://www.nodc.noaa.gov/Archive/Search/</URL>
+        <Description>Data may be directly downloaded through the NODC Ocean Archive System at: URL: http://www.nodc.noaa.gov/Archive/Search/. NODC can be contacted directly for custom orders. (When requesting data from the NODC, a data set may be referred to
+            by a 7-digit accession number assigned to individual data sets, see the NODC Ocean Archive System at http://www.nodc.noaa.gov/Archive/Search/.) For more information see the NODC GHRSST project web site: URL: http://ghrsst.nodc.noaa.gov/</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+        </URL_Content_Type>
+        <URL>http://www.remss.com/sst/microwave_oi_sst_data_description.html</URL>
+        <Description>Description of Microwave OI SST Data</Description>
+    </Related_URL>
+    <IDN_Node>
+        <Short_Name>USA/NASA</Short_Name>
+    </IDN_Node>
+    <IDN_Node>
+        <Short_Name>USA/NOAA</Short_Name>
+    </IDN_Node>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 9.8.4</Metadata_Version>
+    <DIF_Creation_Date>2012-08-22</DIF_Creation_Date>
+    <Last_DIF_Revision_Date>2013-01-09</Last_DIF_Revision_Date>
+    <DIF_Revision_History>2007-08-06. C L Gentemann: Original 2008-02-05. E. Armstrong: additional revisions 2012-08-22. Yuanjie Li:modified for NODC GHRSST product</DIF_Revision_History>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Update_Date>2014-01-15 16:47:45</Update_Date>
+            <Value>47f31cf5-a66e-49dd-98c6-a361470e9c4f</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-02-03 16:57:57</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata></DIF>

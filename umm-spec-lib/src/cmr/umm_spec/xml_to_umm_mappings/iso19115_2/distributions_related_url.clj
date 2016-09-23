@@ -31,14 +31,14 @@
 
 (defn parse-distributions
   "Returns the distributions parsed from the given xml document."
-  [doc apply-default?]
+  [doc sanitize?]
   (for [distributor-element (select doc distributor-xpath)]
     {:DistributionMedia (value-of distributor-element distributor-media-xpath)
      :Sizes (for [transfer-el (select distributor-element distributor-transfer-options-xpath)
                   :let [size (value-of transfer-el "gmd:transferSize/gco:Real")]]
               {:Size size
                :Unit (or (value-of transfer-el "gmd:unitsOfDistribution/gco:CharacterString")
-                         (when (and apply-default? size) "MB"))})
+                         (when (and sanitize? size) "MB"))})
      :DistributionFormat (value-of distributor-element distributor-format-xpath)
      :Fees (value-of distributor-element distributor-fees-xpath)}))
 
@@ -77,8 +77,8 @@
 
 (defn parse-related-urls
   "Parse related-urls present in the document"
-  [doc apply-default?]
+  [doc sanitize?]
   (if-let [related-urls (seq (concat (parse-online-urls doc) (parse-browse-graphics doc)))]
     related-urls
-    (when apply-default?
+    (when sanitize?
      [su/not-provided-related-url])))
