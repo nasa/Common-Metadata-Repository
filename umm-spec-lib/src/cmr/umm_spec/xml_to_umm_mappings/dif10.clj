@@ -193,7 +193,7 @@
                                                      (remove nil? [(value-of pub-ref "Online_Resource")]))}]
                                            :Other_Reference_Details])))
    :AncillaryKeywords (values-at doc "/DIF/Ancillary_Keyword")
-   :RelatedUrls (ru/parse-related-urls doc)
+   :RelatedUrls (ru/parse-related-urls doc sanitize?)
    :MetadataAssociations (for [ma (select doc "/DIF/Metadata_Association")]
                            {:EntryId (value-of ma "Entry_ID/Short_Name")
                             :Version (without-default-value-of ma "Entry_ID/Version")

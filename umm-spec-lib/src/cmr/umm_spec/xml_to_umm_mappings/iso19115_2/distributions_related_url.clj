@@ -6,6 +6,7 @@
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.iso19115-2-util :refer :all]
+   [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su]))
 
 (def distributor-xpath
@@ -50,7 +51,7 @@
 
 (defn- parse-online-urls
   "Parse ISO online resource urls"
-  [doc]
+  [doc sanitize?]
   (for [url (select doc distributor-online-url-xpath)
         :let [name (char-string-value url "gmd:name")
               code (value-of url "gmd:function/gmd:CI_OnlineFunctionCode")
@@ -58,19 +59,19 @@
                      "GET DATA"
                      (when name (resource-name->types name)))
               url-link (value-of url "gmd:linkage/gmd:URL")]]
-    {:URLs (when url-link [(str/trim url-link)])
+    {:URLs (when url-link [(url/format-url url-link sanitize?)])
      :Description (char-string-value url "gmd:description")
      :Relation (when type [type])}))
 
 (defn- parse-browse-graphics
   "Parse browse graphic urls"
-  [doc]
+  [doc sanitize?]
   (for [url (select doc browse-graphic-xpath)
         ;; We retrieve browse url from two different places. This might change depending on the
         ;; outcome of ECSE-129.
         :let [browse-url (or (value-of url "gmd:fileName/gmx:FileName/@src")
                              (value-of url "gmd:fileName/gco:CharacterString"))]]
-    {:URLs (when browse-url [(str/trim browse-url)])
+    {:URLs (when browse-url [(url/format-url browse-url sanitize?)])
      :Description (char-string-value url "gmd:fileDescription")
      :Relation (when-let [rel (resource-name->types (char-string-value url "gmd:fileType"))]
                  [rel])}))
@@ -78,7 +79,10 @@
 (defn parse-related-urls
   "Parse related-urls present in the document"
   [doc sanitize?]
-  (if-let [related-urls (seq (concat (parse-online-urls doc) (parse-browse-graphics doc)))]
+  (if-let [related-urls (seq
+                         (concat
+                          (parse-online-urls doc sanitize?)
+                          (parse-browse-graphics doc sanitize?)))]
     related-urls
     (when sanitize?
      [su/not-provided-related-url])))

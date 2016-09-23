@@ -14,7 +14,8 @@
     [cmr.umm-spec.xml-to-umm-mappings.dif9.data-center :as center]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.data-contact :as contact]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
-    [cmr.umm-spec.util :as su]))
+    [cmr.umm-spec.util :as su]
+    [cmr.umm-spec.url :as url]))
 
 (def dif-iso-topic-category->umm-iso-topic-category
   "DIF ISOTopicCategory to UMM ISOTopicCategory mapping. Some of the DIF ISOTopicCategory are made
@@ -96,7 +97,7 @@
   (if-let [related-urls (seq (select doc "/DIF/Related_URL"))]
     (for [related-url related-urls
           :let [description (value-of related-url "Description")]]
-      {:URLs (values-at related-url "URL")
+      {:URLs (map #(url/format-url % sanitize?) (values-at related-url "URL"))
        :Description description
        :Relation [(value-of related-url "URL_Content_Type/Type")
                   (value-of related-url "URL_Content_Type/Subtype")]})

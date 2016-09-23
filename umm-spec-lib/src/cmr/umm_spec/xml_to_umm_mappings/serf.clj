@@ -7,6 +7,7 @@
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [without-default-value-of not-provided]]))
 
 (defn- parse-short-name-long-name
@@ -66,14 +67,14 @@
 
 (defn- parse-service-citations
   "Parse SERF Service Citations into UMM-S"
-  [doc]
+  [doc sanitize?]
   (for [service-citation (select doc "/SERF/Service_Citation")]
     (into {} (map (fn [x]
                     (if (keyword? x)
                       [(csk/->PascalCaseKeyword x) (value-of service-citation (str x))]
                       x))
                   [[:Version (value-of service-citation "Edition")]
-                   [:RelatedUrl {:URLs [(value-of service-citation "URL")]}]
+                   [:RelatedUrl {:URLs [(url/format-url (value-of service-citation "URL") sanitize?)]}]
                    :Title
                    [:Creator (value-of service-citation "Originators")]
                    :ReleaseDate
@@ -81,7 +82,7 @@
 
 (defn- parse-publication-references
   "Parse SERF Publication References into UMM-S"
-  [doc]
+  [doc sanitize?]
   (for [pub-ref (select doc "/SERF/Reference")]
     (into {} (map (fn [x]
                     (if (keyword? x)
@@ -101,31 +102,31 @@
                    [:ISBN (su/format-isbn (value-of pub-ref "ISBN"))]
                    [:DOI {:DOI (value-of pub-ref "DOI")}]
                    [:RelatedUrl
-                    {:URLs (values-at pub-ref "Online_Resource")}]
+                    {:URLs (map #(url/format-url % sanitize?) (values-at pub-ref "Online_Resource"))}]
                    :Other_Reference_Details]))))
 
 (defn- parse-actual-related-urls
   "Parse a SERF RelatedURL element into a map"
-  [doc]
+  [doc sanitize?]
   (for [related-url (select doc "/SERF/Related_URL")]
-    {:URLs (values-at related-url "URL")
+    {:URLs (map #(url/format-url % sanitize?) (values-at related-url "URL"))
      :Description (value-of related-url "Description")
      :Relation [(value-of related-url "URL_Content_Type/Type")
                 (value-of related-url "URL_Content_Type/Subtype")]}))
 
 (defn- parse-multimedia-samples
   "Parse a SERF Multimedia Sample element into a RelatedURL map"
-  [doc]
+  [doc sanitize?]
   (for [multimedia-sample (select doc "/SERF/Multimedia_Sample")]
-    {:URLs (values-at multimedia-sample "URL")
+    {:URLs (map #(url/format-url % sanitize?) (values-at multimedia-sample "URL"))
      :MimeType (value-of multimedia-sample "Format")
      :Description (value-of multimedia-sample "Description")}))
 
 (defn- parse-related-urls
   "Parse SERF Related URLs and Multimedia Samples into a UMM RelatedUrls object"
   [doc sanitize?]
-  (let [actual-urls (parse-actual-related-urls doc)
-        multimedia-urls (parse-multimedia-samples doc)]
+  (let [actual-urls (parse-actual-related-urls doc sanitize?)
+        multimedia-urls (parse-multimedia-samples doc sanitize?)]
     (if-let [related-urls (seq (concat actual-urls multimedia-urls))]
       related-urls
       [su/not-provided-related-url])))
@@ -198,12 +199,12 @@
    :Purpose (su/truncate (value-of doc "/SERF/Summary/Purpose") su/PURPOSE_SIZE sanitize?)
    :ServiceLanguage (value-of doc "/SERF/Service_Language")
    :RelatedUrls (parse-related-urls doc sanitize?)
-   :ServiceCitation (parse-service-citations doc)
+   :ServiceCitation (parse-service-citations doc sanitize?)
    :Quality (su/truncate (value-of doc "/SERF/Quality") su/QUALITY_SIZE sanitize?)
    :UseConstraints (su/truncate (value-of doc "/SERF/Use_Constraints") su/USECONSTRAINTS_SIZE sanitize?)
    :AccessConstraints {:Description (value-of doc "/SERF/Access_Constraints") :Value nil}
    :MetadataAssociations (parse-metadata-associations doc)
-   :PublicationReferences (parse-publication-references doc)
+   :PublicationReferences (parse-publication-references doc sanitize?)
    :ISOTopicCategories (values-at doc "/SERF/ISO_Topic_Category")
    :Platforms (parse-platforms doc sanitize?)
    :Distributions (parse-distributions doc)

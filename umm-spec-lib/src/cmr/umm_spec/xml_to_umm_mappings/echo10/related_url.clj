@@ -3,7 +3,8 @@
    [clojure.string :as str]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select text]]
-   [cmr.umm-spec.util :as su]))
+   [cmr.umm-spec.util :as su]
+   [cmr.umm-spec.url :as url]))
 
 (def resource-type->related-url-types
   "A mapping of ECHO10 OnlineResource's type to UMM RelatedURL's type and sub-type.
@@ -51,7 +52,7 @@
 
 (defn- parse-online-resource-urls
   "Parse online resource urls"
-  [doc]
+  [doc sanitize?]
   (for [resource (select doc "/Collection/OnlineResources/OnlineResource")
         :let [resource-type (value-of resource "Type")
               [type sub-type] (resource-type->related-url-types
@@ -64,47 +65,38 @@
                                   (re-find #"^.*OPENDAP.*$" (str/upper-case resource-type)))
                          "OPENDAP DATA ACCESS"))
               description (value-of resource "Description")]]
-    {:URLs [(value-of resource "URL")]
+    {:URLs [(url/format-url (value-of resource "URL") sanitize?)]
      :Description description
      :Relation (when type [type sub-type])
      :MimeType (value-of resource "MimeType")}))
 
 (defn- parse-online-access-urls
   "Parse online access urls"
-  [doc]
+  [doc sanitize?]
   (for [resource (select doc "/Collection/OnlineAccessURLs/OnlineAccessURL")]
-    {:URLs [(value-of resource "URL")]
+    {:URLs [(url/format-url (value-of resource "URL") sanitize?)]
      :Description (value-of resource "URLDescription")
      :MimeType (value-of resource "MimeType")
      :Relation ["GET DATA"]}))
 
 (defn- parse-browse-urls
   "Parse browse urls"
-  [doc]
+  [doc sanitize?]
   (for [resource (select doc "/Collection/AssociatedBrowseImageUrls/ProviderBrowseUrl")
         :let [file-size (value-of resource "FileSize")]]
-    {:URLs [(value-of resource "URL")]
+    {:URLs [(url/format-url (value-of resource "URL") sanitize?)]
      :FileSize (when file-size {:Size (/ (Long. file-size) 1024) :Unit "KB"})
      :Description (value-of resource "Description")
      :MimeType (value-of resource "MimeType")
      :Relation ["GET RELATED VISUALIZATION"]}))
 
-(defn cleanup-urls
-  "Fixes bad URLs with whitespace in the middle."
-  [related-url]
-  (update related-url :URLs
-          (fn [urls]
-            (seq
-             (map (fn [s]
-                    (str/replace s #"(?s)\s+" ""))
-                  urls)))))
 
 (defn parse-related-urls
   "Returns related-urls elements from a parsed XML structure"
   [doc sanitize?]
-  (if-let [related-urls (seq (concat (parse-online-access-urls doc)
-                                     (parse-online-resource-urls doc)
-                                     (parse-browse-urls doc)))]
-    (seq (map cleanup-urls related-urls))
+  (if-let [related-urls (seq (concat (parse-online-access-urls doc sanitize?)
+                                     (parse-online-resource-urls doc sanitize?)
+                                     (parse-browse-urls doc sanitize?)))]
+    related-urls
     (when sanitize?
       [su/not-provided-related-url])))
