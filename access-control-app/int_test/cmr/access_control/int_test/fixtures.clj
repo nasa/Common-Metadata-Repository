@@ -3,7 +3,7 @@
     [clojure.test :as ct]
     [cmr.access-control.config :as access-control-config]
     [cmr.access-control.system :as system]
-    [cmr.access-control.test.util :refer [conn-context wait-until-indexed]]
+    [cmr.access-control.test.util :as test-util :refer [conn-context]]
     [cmr.common-app.test.client-util :as common-client-test-util]
     [cmr.common.jobs :as jobs]
     [cmr.elastic-utils.test-util :as elastic-test-util]
@@ -145,5 +145,5 @@
   (fn [f]
     (grant-any-acl-system-acl)
     (grant-provider-acl-permissions-to-all provider-ids)
-    (wait-until-indexed)
+    (test-util/wait-until-indexed)
     (f)))

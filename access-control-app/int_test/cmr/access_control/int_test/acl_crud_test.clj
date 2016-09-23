@@ -64,7 +64,7 @@
     (is (= 1 (:revision_id resp)))))
 
 (deftest create-catalog-item-acl-permission-test
-  ;; Tests creation validation of catalog item acls
+  ;; Tests creation permissions of catalog item acls
   (let [token (e/login (u/conn-context) "user1")
         guest-token (e/login-guest (u/conn-context))
         token2 (e/login (u/conn-context) "user2")
@@ -502,13 +502,13 @@
              (ac/delete-acl (u/conn-context) "ACL1234-NOPE" {:token token :raw? true}))))
     (testing "200 status, concept id and revision id of tombstone is returned on successful deletion."
       (is (= {:status 200
-              :body {:revision-id 2 
+              :body {:revision-id 2
                      :concept-id acl-concept-id}
               :content-type :json}
              (ac/delete-acl (u/conn-context) acl-concept-id {:token token :raw? true}))))
     (testing "404 is returned when trying to delete an ACL again"
       (is (= {:status 404
-              :body {:errors ["ACL with concept id [ACL1200000002-CMR] was deleted."]}
+              :body {:errors ["ACL with concept id [ACL1200000003-CMR] was deleted."]}
               :content-type :json}
              (ac/delete-acl (u/conn-context) acl-concept-id {:token token :raw? true}))))
     (testing "concept can no longer be retrieved through access control service"

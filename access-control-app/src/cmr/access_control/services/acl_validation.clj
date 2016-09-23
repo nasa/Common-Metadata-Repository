@@ -2,12 +2,16 @@
   (:require
     [cheshire.core :as json]
     [clj-time.core :as t]
+    [clojure.edn :as edn]
+    [cmr.access-control.data.acls :as acls]
     [cmr.access-control.services.acl-search-service :as acl-search]
     [cmr.access-control.services.acl-service-util :as acl-util]
-    [cmr.access-control.data.acls :as acls]
     [cmr.access-control.services.group-service :as groups]
     [cmr.access-control.services.messages :as msg]
+    [cmr.common-app.services.search.query-execution :as qe]
+    [cmr.common-app.services.search.query-model :as qm]
     [cmr.common.date-time-parser :as dtp]
+    [cmr.common.util :as util]
     [cmr.common.validations.core :as v]
     [cmr.transmit.echo.tokens :as tokens]
     [cmr.transmit.metadata-db :as mdb1]
@@ -165,12 +169,13 @@
   [sids acls target]
   (for [sid sids
         acl acls
-        :let [group-permissions (filter #(or
-                                           (and (contains? % :user-type) (= sid (:user-type %)))
-                                           (and (contains? % :group-id) (= sid (:group-id %))))
-                                        (:group-permissions acl))]
-        :when (= (get-in acl [:provider-identity :target]) target)]
-    (map :permissions group-permissions)))
+        :when (= (get-in acl [:provider-identity :target]) target)
+        group-permission (:group-permissions acl)
+        :when (or
+                (and (contains? group-permission :user-type) (= (name sid) (name (:user-type group-permission))))
+                (and (contains? group-permission :group-id) (= sid (:group-id group-permission))))
+        permission (:permissions group-permission)]
+    permission))
 
 (defn validate-target-provider-grants-create
   "Checks if provider ACL grants permission for user to create given catalog item ACL"
@@ -179,26 +184,26 @@
         user (if token (tokens/get-user-id context token) "guest")
         sids (acl-util/get-sids context user)
         provider-id (:provider-id acl)
-        provider-acls (map #(acl-util/get-acl context %)
-                           (map #(get % "concept_id")
-                                (get (json/parse-string
-                                       (:results
-                                         (acl-search/search-for-acls context
-                                                                     {:provider provider-id}
-                                                                     true)))
-                                     "items")))]
-    (when-not (contains? (set
-                           (flatten
-                             (permissions-granted-by-provider-to-user sids
-                                                                      provider-acls
-                                                                      "CATALOG_ITEM_ACL")))
+        query (qm/query {:concept-type :acl
+                         :condition (qm/string-condition :provider provider-id)
+                         :skip-acls? true
+                         :page-size :unlimited
+                         :result-format :query-specified
+                         :result-fields [:acl-gzip-b64]})
+        response (qe/execute-query context query)
+        provider-acls (map #(edn/read-string (util/gzip-base64->string (:acl-gzip-b64 %))) (:items response))]
+    (when-not (contains? (set (permissions-granted-by-provider-to-user sids
+                                                                       provider-acls
+                                                                       "CATALOG_ITEM_ACL"))
                          "create")
       {key-path [(format "User [%s] does not have permission to create a catalog item for provider-id [%s]"
                           user provider-id)]})))
 
 (defn- make-catalog-item-identity-validations
   "Returns a standard validation for an ACL catalog_item_identity field
-   closed over the given context and ACL to be validated."
+   closed over the given context and ACL to be validated.
+   Takes action flag (:create or :update) to do different valiations
+   based on type of save"
   [context acl action]
   (let [validations [catalog-item-identity-collection-or-granule-validation
                      catalog-item-identity-collection-applicable-validation
@@ -231,7 +236,8 @@
                          target (clojure.string/join ", " grantable-permissions))]})))
 
 (defn- make-acl-validations
-  "Returns a sequence of validations closed over the given context for validating ACL records."
+  "Returns a sequence of validations closed over the given context for validating ACL records.
+   Takes action flag (:create or :update) to do different valiations based on type of save"
   [context acl action]
   [#(validate-provider-exists context %1 %2)
    {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl action))

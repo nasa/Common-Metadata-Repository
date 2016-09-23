@@ -35,7 +35,7 @@
 
 (def fixture-provider-acl
   "Search response for provider acl in fixtures"
- {:concept_id "ACL1200000001-CMR"
+ {:concept_id "ACL1200000002-CMR"
   :revision_id 1
   :group_permissions [{:user_type "registered"
                        :permissions ["read" "update" "create" "delete"],}
@@ -45,8 +45,8 @@
                       :target "CATALOG_ITEM_ACL"}})
 
 (def fixture-system-acl
-  "Search response for provider acl in fixtures"
- {:concept_id "ACL1200000000-CMR"
+  "Search response for system acl in fixtures"
+ {:concept_id "ACL1200000001-CMR"
   :revision_id 1
   :group_permissions [{:user_type "registered"
                        :permissions ["read" "update" "create" "delete"],}
@@ -166,7 +166,7 @@
         group1-concept-id (:concept_id group1)
         group2-concept-id (:concept_id group2)
         ;; remove ANY_ACL read to all users
-        _ (ac/update-acl (u/conn-context) "ACL1200000000-CMR" (assoc-in (system-acl "ANY_ACL")
+        _ (ac/update-acl (u/conn-context) "ACL1200000001-CMR" (assoc-in (system-acl "ANY_ACL")
                                                                         [:group_permissions 0]
                                                                         {:permissions ["read"] :group_id group1-concept-id}))
         _ (u/wait-until-indexed)
