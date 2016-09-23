@@ -28,7 +28,7 @@
   [doc sanitize?]
   (for [proj (select doc "/DIF/Project")]
     {:ShortName (value-of proj "Short_Name")
-     :LongName (u/truncate (value-of proj "Long_Name") u/PROJECT_LONGNAME_SIZE sanitize?)
+     :LongName (u/truncate (value-of proj "Long_Name") u/PROJECT_LONGNAME_MAX sanitize?)
      :Campaigns (values-at proj "Campaign")
      :StartDate (date-at proj "Start_Date")
      :EndDate (date-at proj "End_Date")}))
@@ -132,9 +132,9 @@
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
    :ShortName (value-of doc "/DIF/Entry_ID/Short_Name")
    :Version (value-of doc "/DIF/Entry_ID/Version")
-   :Abstract (u/truncate-with-default (value-of doc "/DIF/Summary/Abstract") u/ABSTRACT_SIZE sanitize?)
+   :Abstract (u/truncate-with-default (value-of doc "/DIF/Summary/Abstract") u/ABSTRACT_MAX sanitize?)
    :CollectionDataType (value-of doc "/DIF/Collection_Data_Type")
-   :Purpose (u/truncate (value-of doc "/DIF/Summary/Purpose") u/PURPOSE_SIZE sanitize?)
+   :Purpose (u/truncate (value-of doc "/DIF/Summary/Purpose") u/PURPOSE_MAX sanitize?)
    :DataLanguage (dif-util/dif-language->umm-langage (value-of doc "/DIF/Dataset_Language"))
    :DataDates (parse-data-dates doc)
    :MetadataDates (parse-metadata-dates doc)
@@ -149,9 +149,9 @@
                         :Subregion3 (value-of lk "Location_Subregion3")
                         :DetailedLocation (value-of lk "Detailed_Location")})
    :Projects (parse-projects doc sanitize?)
-   :Quality (u/truncate (value-of doc "/DIF/Quality") u/QUALITY_SIZE sanitize?)
+   :Quality (u/truncate (value-of doc "/DIF/Quality") u/QUALITY_MAX sanitize?)
    :AccessConstraints (dif-util/parse-access-constraints doc sanitize?)
-   :UseConstraints (u/truncate (value-of doc "/DIF/Use_Constraints") u/USECONSTRAINTS_SIZE sanitize?)
+   :UseConstraints (u/truncate (value-of doc "/DIF/Use_Constraints") u/USECONSTRAINTS_MAX sanitize?)
    :Platforms (for [platform (select doc "/DIF/Platform")]
                 {:ShortName (value-of platform "Short_Name")
                  :LongName (value-of platform "Long_Name")

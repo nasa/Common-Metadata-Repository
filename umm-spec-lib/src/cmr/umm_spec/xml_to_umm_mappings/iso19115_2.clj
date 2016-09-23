@@ -99,7 +99,7 @@
           long-name (when-not (= short-name description)
                       (str/replace description (str short-name iso-util/keyword-separator-join) ""))]
       {:ShortName short-name
-       :LongName (u/truncate long-name u/PROJECT_LONGNAME_SIZE sanitize?)})))
+       :LongName (u/truncate long-name u/PROJECT_LONGNAME_MAX sanitize?)})))
 
 (defn- temporal-ends-at-present?
   [temporal-el]
@@ -126,9 +126,12 @@
   Otherwise, if Description is nil, assoc it with u/not-provided"
   [doc sanitize?]
   (let [access-constraints-record
-        {:Description (regex-value doc (str constraints-xpath
+        {:Description (u/truncate
+                       (regex-value doc (str constraints-xpath
                                          "/gmd:useLimitation/gco:CharacterString")
                          #"(?s)Restriction Comment: (.+)")
+                       u/ACCESSCONSTRAINTS_DESCRIPTION_MAX
+                       sanitize?)
          :Value (regex-value doc (str constraints-xpath
                                    "/gmd:otherConstraints/gco:CharacterString")
                    #"(?s)Restriction Flag:(.+)")}]
@@ -145,17 +148,17 @@
     {:ShortName (char-string-value id-el "gmd:code")
      :EntryTitle (char-string-value citation-el "gmd:title")
      :Version (char-string-value citation-el "gmd:edition")
-     :Abstract (u/truncate-with-default (char-string-value md-data-id-el "gmd:abstract") u/ABSTRACT_SIZE sanitize?)
-     :Purpose (u/truncate (char-string-value md-data-id-el "gmd:purpose") u/PURPOSE_SIZE sanitize?)
+     :Abstract (u/truncate-with-default (char-string-value md-data-id-el "gmd:abstract") u/ABSTRACT_MAX sanitize?)
+     :Purpose (u/truncate (char-string-value md-data-id-el "gmd:purpose") u/PURPOSE_MAX sanitize?)
      :CollectionProgress (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode")
-     :Quality (u/truncate (char-string-value doc quality-xpath) u/QUALITY_SIZE sanitize?)
+     :Quality (u/truncate (char-string-value doc quality-xpath) u/QUALITY_MAX sanitize?)
      :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
      :AccessConstraints (parse-access-constraints doc sanitize?)
      :UseConstraints
      (u/truncate
        (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
                     #"(?s)^(?!Restriction Comment:).+")
-       u/USECONSTRAINTS_SIZE
+       u/USECONSTRAINTS_MAX
        sanitize?)
      :LocationKeywords (lk/translate-spatial-keywords
                          context (kws/descriptive-keywords md-data-id-el "place"))

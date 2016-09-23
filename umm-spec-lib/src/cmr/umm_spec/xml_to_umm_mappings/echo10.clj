@@ -124,7 +124,10 @@
   Otherwise, if Description is nil, assoc it with u/not-provided"
   [doc sanitize?]
   (let [access-constraints-record
-        {:Description (value-of doc "/Collection/RestrictionComment")
+        {:Description (u/truncate
+                       (value-of doc "/Collection/RestrictionComment")
+                       u/ACCESSCONSTRAINTS_DESCRIPTION_MAX
+                       sanitize?)
          :Value (value-of doc "/Collection/RestrictionFlag")}]
     (when (seq (util/remove-nil-keys access-constraints-record))
       (update access-constraints-record :Description #(u/with-default % sanitize?)))))
@@ -138,9 +141,9 @@
    :Version    (value-of doc "/Collection/VersionId")
    :DataDates  (parse-data-dates doc)
    :MetadataDates (parse-metadata-dates doc)
-   :Abstract   (u/truncate (value-of doc "/Collection/Description") u/ABSTRACT_SIZE sanitize?)
+   :Abstract   (u/truncate (value-of doc "/Collection/Description") u/ABSTRACT_MAX sanitize?)
    :CollectionDataType (value-of doc "/Collection/CollectionDataType")
-   :Purpose    (u/truncate (value-of doc "/Collection/SuggestedUsage") u/PURPOSE_SIZE sanitize?)
+   :Purpose    (u/truncate (value-of doc "/Collection/SuggestedUsage") u/PURPOSE_MAX sanitize?)
    :CollectionProgress (value-of doc "/Collection/CollectionState")
    :AccessConstraints (parse-access-constraints doc sanitize?)
    :Distributions [{:DistributionFormat (value-of doc "/Collection/DataFormat")
@@ -166,7 +169,7 @@
    :MetadataAssociations (parse-metadata-associations doc)
    :Projects (for [proj (select doc "/Collection/Campaigns/Campaign")]
                {:ShortName (value-of proj "ShortName")
-                :LongName (u/truncate (value-of proj "LongName") u/PROJECT_LONGNAME_SIZE sanitize?)
+                :LongName (u/truncate (value-of proj "LongName") u/PROJECT_LONGNAME_MAX sanitize?)
                 :StartDate (value-of proj "StartDate")
                 :EndDate (value-of proj "EndDate")})
    :TilingIdentificationSystems (parse-tiling doc)

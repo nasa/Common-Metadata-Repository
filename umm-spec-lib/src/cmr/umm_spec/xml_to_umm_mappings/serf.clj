@@ -45,7 +45,7 @@
   [doc sanitize?]
   (seq (for [elem (select doc "/SERF/Project")]
          {:ShortName (value-of elem "Short_Name")
-          :LongName (su/truncate (value-of elem "Long_Name") su/PROJECT_LONGNAME_SIZE sanitize?)})))
+          :LongName (su/truncate (value-of elem "Long_Name") su/PROJECT_LONGNAME_MAX sanitize?)})))
 
 (defn- parse-data-dates
   "Returns seq of UMM-CMN DataDates parsed from SERF document."
@@ -195,14 +195,18 @@
   [doc {:keys [sanitize?]}]
   {:EntryId (value-of doc "/SERF/Entry_ID")
    :EntryTitle (value-of doc "/SERF/Entry_Title")
-   :Abstract (su/truncate-with-default (value-of doc "/SERF/Summary/Abstract") su/ABSTRACT_SIZE sanitize?)
-   :Purpose (su/truncate (value-of doc "/SERF/Summary/Purpose") su/PURPOSE_SIZE sanitize?)
+   :Abstract (su/truncate-with-default (value-of doc "/SERF/Summary/Abstract") su/ABSTRACT_MAX sanitize?)
+   :Purpose (su/truncate (value-of doc "/SERF/Summary/Purpose") su/PURPOSE_MAX sanitize?)
    :ServiceLanguage (value-of doc "/SERF/Service_Language")
    :RelatedUrls (parse-related-urls doc sanitize?)
    :ServiceCitation (parse-service-citations doc sanitize?)
-   :Quality (su/truncate (value-of doc "/SERF/Quality") su/QUALITY_SIZE sanitize?)
-   :UseConstraints (su/truncate (value-of doc "/SERF/Use_Constraints") su/USECONSTRAINTS_SIZE sanitize?)
-   :AccessConstraints {:Description (value-of doc "/SERF/Access_Constraints") :Value nil}
+   :Quality (su/truncate (value-of doc "/SERF/Quality") su/QUALITY_MAX sanitize?)
+   :UseConstraints (su/truncate (value-of doc "/SERF/Use_Constraints") su/USECONSTRAINTS_MAX sanitize?)
+   :AccessConstraints {:Description (su/truncate
+                                     (value-of doc "/SERF/Access_Constraints")
+                                     su/ACCESSCONSTRAINTS_DESCRIPTION_MAX
+                                     sanitize?)
+                       :Value nil}
    :MetadataAssociations (parse-metadata-associations doc)
    :PublicationReferences (parse-publication-references doc sanitize?)
    :ISOTopicCategories (values-at doc "/SERF/ISO_Topic_Category")

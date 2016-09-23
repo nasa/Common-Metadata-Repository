@@ -9,20 +9,23 @@
    [cmr.umm-spec.date-util :as du]
    [cmr.umm-spec.models.umm-common-models :as cmn]))
 
-(def ABSTRACT_SIZE
+(def ABSTRACT_MAX
   40000)
 
-(def PURPOSE_SIZE
+(def PURPOSE_MAX
   10000)
 
-(def PROJECT_LONGNAME_SIZE
+(def PROJECT_LONGNAME_MAX
   300)
 
-(def USECONSTRAINTS_SIZE
+(def USECONSTRAINTS_MAX
   20000)
 
-(def QUALITY_SIZE
+(def QUALITY_MAX
   12000)
+
+(def ACCESSCONSTRAINTS_DESCRIPTION_MAX
+  4000)
 
 (def ^:private umm-contact-mechanism-correction-map
   {"phone" "Telephone"
