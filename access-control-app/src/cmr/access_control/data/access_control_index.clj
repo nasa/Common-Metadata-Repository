@@ -25,7 +25,6 @@
   [context concept-map])
   ;; Do nothing
 
-
 (defmulti delete-concept
   "Deletes the concept map in elastic search."
   (fn [context concept-map]
@@ -35,6 +34,15 @@
   [context concept-map])
   ;; Do nothing
 
+(defn index-concept-by-concept-id-revision-id
+  "Indexes the concept identified by concept id and revision id"
+  [context concept-id revision-id]
+  (index-concept context (mdb/get-concept context concept-id revision-id)))
+
+(defn delete-concept-by-concept-id-revision-id
+  "Unindexes the concept identified by concept id and revision id"
+  [context concept-id revision-id]
+  (delete-concept context (mdb/get-concept context concept-id revision-id)))
 
 (defn- safe-lowercase
   [v]

@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10
   "Defines mappings from ECHO10 XML into UMM records"
   (:require
+   [clojure.string :as str]
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select text]]
@@ -57,7 +58,8 @@
         assoc-type (value-of element "CollectionType")]
     {:EntryId (value-of element "ShortName")
      :Version (u/without-default version-id)
-     :Type (u/without-default assoc-type)
+     :Type (some-> (u/without-default assoc-type)
+                   str/upper-case)
      :Description (value-of element "CollectionUse")}))
 
 (defn parse-metadata-associations
@@ -104,7 +106,7 @@
 
 (defn- parse-science-keywords
   "Parse ECHO10 science keywords or use default if applicable"
-  [doc apply-default?]
+  [doc sanitize?]
   (if-let [science-keywords (seq (select doc "/Collection/ScienceKeywords/ScienceKeyword"))]
     (for [sk science-keywords]
       {:Category (value-of sk "CategoryKeyword")
@@ -114,22 +116,22 @@
        :VariableLevel2 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/Value")
        :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
        :DetailedVariable (value-of sk "DetailedVariableKeyword")})
-    (when apply-default?
+    (when sanitize?
       u/not-provided-science-keywords)))
 
 (defn- parse-access-constraints
   "If both value and Description are nil, return nil.
   Otherwise, if Description is nil, assoc it with u/not-provided"
-  [doc apply-default?]
+  [doc sanitize?]
   (let [access-constraints-record
         {:Description (value-of doc "/Collection/RestrictionComment")
          :Value (value-of doc "/Collection/RestrictionFlag")}]
     (when (seq (util/remove-nil-keys access-constraints-record))
-      (update access-constraints-record :Description #(u/with-default % apply-default?)))))
+      (update access-constraints-record :Description #(u/with-default % sanitize?)))))
 
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
-  [context doc {:keys [apply-default?]}]
+  [context doc {:keys [sanitize?]}]
   {:EntryTitle (value-of doc "/Collection/DataSetId")
    :ShortName  (value-of doc "/Collection/ShortName")
    :Version    (value-of doc "/Collection/VersionId")
@@ -139,24 +141,24 @@
    :CollectionDataType (value-of doc "/Collection/CollectionDataType")
    :Purpose    (value-of doc "/Collection/SuggestedUsage")
    :CollectionProgress (value-of doc "/Collection/CollectionState")
-   :AccessConstraints (parse-access-constraints doc apply-default?)
+   :AccessConstraints (parse-access-constraints doc sanitize?)
    :Distributions [{:DistributionFormat (value-of doc "/Collection/DataFormat")
                     :Fees (value-of doc "/Collection/Price")}]
    :TemporalKeywords (values-at doc "/Collection/TemporalKeywords/Keyword")
    :LocationKeywords (lk/spatial-keywords->location-keywords
                       (lk/get-spatial-keywords-maps context)
                       (values-at doc "/Collection/SpatialKeywords/Keyword"))
-   :SpatialExtent    (spatial/parse-spatial doc apply-default?)
+   :SpatialExtent    (spatial/parse-spatial doc sanitize?)
    :TemporalExtents  (or (seq (parse-temporal doc))
-                         (when apply-default? u/not-provided-temporal-extents))
+                         (when sanitize? u/not-provided-temporal-extents))
    :Platforms (or (seq (parse-platforms doc))
-                  (when apply-default? u/not-provided-platforms))
-   :ProcessingLevel {:Id (u/with-default (value-of doc "/Collection/ProcessingLevelId") apply-default?)
+                  (when sanitize? u/not-provided-platforms))
+   :ProcessingLevel {:Id (u/with-default (value-of doc "/Collection/ProcessingLevelId") sanitize?)
                      :ProcessingLevelDescription (value-of doc "/Collection/ProcessingLevelDescription")}
    :AdditionalAttributes (for [aa (select doc "/Collection/AdditionalAttributes/AdditionalAttribute")]
                            {:Name (value-of aa "Name")
                             :DataType (value-of aa "DataType")
-                            :Description (u/with-default (value-of aa "Description") apply-default?)
+                            :Description (u/with-default (value-of aa "Description") sanitize?)
                             :ParameterRangeBegin (value-of aa "ParameterRangeBegin")
                             :ParameterRangeEnd (value-of aa "ParameterRangeEnd")
                             :Value (value-of aa "Value")})
@@ -167,13 +169,13 @@
                 :StartDate (value-of proj "StartDate")
                 :EndDate (value-of proj "EndDate")})
    :TilingIdentificationSystems (parse-tiling doc)
-   :RelatedUrls (ru/parse-related-urls doc apply-default?)
-   :ScienceKeywords (parse-science-keywords doc apply-default?)
-   :DataCenters (dc/parse-data-centers doc apply-default?)
-   :ContactPersons (dc/parse-data-contact-persons doc apply-default?)})
+   :RelatedUrls (ru/parse-related-urls doc sanitize?)
+   :ScienceKeywords (parse-science-keywords doc sanitize?)
+   :DataCenters (dc/parse-data-centers doc sanitize?)
+   :ContactPersons (dc/parse-data-contact-persons doc sanitize?)})
 
 (defn echo10-xml-to-umm-c
-  "Returns UMM-C collection record from ECHO10 collection XML document. The :apply-default? option
+  "Returns UMM-C collection record from ECHO10 collection XML document. The :sanitize? option
   tells the parsing code to set the default values for fields when parsing the metadata into umm."
   [context metadata options]
   (js/parse-umm-c (parse-echo10-xml context metadata options)))

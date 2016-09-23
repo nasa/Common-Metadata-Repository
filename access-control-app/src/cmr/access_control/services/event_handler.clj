@@ -1,12 +1,12 @@
 (ns cmr.access-control.services.event-handler
   "Provides functions for subscribing to and handling events."
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [cmr.access-control.config :as config]
-            [cmr.message-queue.services.queue :as queue]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
-            [cmr.transmit.metadata-db2 :as mdb]
-            [cmr.access-control.data.access-control-index :as index]))
+  (:require
+   [cmr.access-control.config :as config]
+   [cmr.access-control.data.access-control-index :as index]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.message-queue.services.queue :as queue]))
 
 (defmulti handle-event
   "Handle the various actions that can be requested via the indexing queue"
@@ -19,11 +19,11 @@
 
 (defmethod handle-event :concept-update
   [context {:keys [concept-id revision-id]}]
-  (index/index-concept context (mdb/get-concept context concept-id revision-id)))
+  (index/index-concept-by-concept-id-revision-id context concept-id revision-id))
 
 (defmethod handle-event :concept-delete
   [context {:keys [concept-id revision-id]}]
-  (index/delete-concept context (mdb/get-concept context concept-id revision-id)))
+  (index/delete-concept-by-concept-id-revision-id context concept-id revision-id))
 
 (defmethod handle-event :provider-delete
   [context {:keys [provider-id]}]

@@ -215,7 +215,7 @@
 (defn search-for-groups
   [context headers params]
   (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
-  (-> (group-service/search-for-groups context params)
+  (-> (group-service/search-for-groups context (dissoc params :token))
       cr/search-response))
 
 ;;; ACL Route Functions
@@ -282,16 +282,20 @@
 
 (defn reset
   "Resets the app state. Compatible with cmr.dev-system.control."
-  [context]
-  (cache/reset-caches context)
-  (index/reset (-> context :system :search-index)))
+  ([context]
+   (reset context true))
+  ([context bootstrap-data]
+   (cache/reset-caches context)
+   (index/reset (-> context :system :search-index))
+   (when bootstrap-data
+     (bootstrap/bootstrap (:system context)))))
 
 (def admin-api-routes
   "The administrative control routes."
   (routes
     (POST "/reset" {:keys [request-context params headers]}
       (acl/verify-ingest-management-permission request-context :update)
-      (reset request-context)
+      (reset request-context (= (:bootstrap_data params) "true"))
       {:status 204})))
 
 ;;; Handler

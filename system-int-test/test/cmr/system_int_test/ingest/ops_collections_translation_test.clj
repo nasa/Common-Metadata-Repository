@@ -19,7 +19,9 @@
     [cmr.umm-spec.test.location-keywords-helper :as lkt]
     [cmr.umm-spec.umm-json :as umm-json]
     [cmr.umm-spec.umm-spec-core :as umm]
-    [cmr.umm-spec.validation.umm-spec-validation-core :as umm-validation]))
+    [cmr.umm-spec.validation.umm-spec-validation-core :as umm-validation])
+  (:import
+   (java.io StringWriter)))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -164,7 +166,7 @@
   "Translate collection from native format to UMM-C"
   [record]
   (let [{:keys [metadata-format metadata concept-id]} record]
-    (umm/parse-metadata context :collection metadata-format metadata {:apply-default? true})))
+    (umm/parse-metadata context :collection metadata-format metadata {:sanitize? true})))
 
 (defn- validate-record-schemas
   "Validate a record against the XML schema if applicable and UMM JSON schema. For records in umm-json
@@ -334,7 +336,7 @@
 
 (comment
  ;; Translate and validate a specific collection by concept-id
- (def record (get-collection "C1214598113-SCIOPS"))
+ (def record (get-collection "C1221629175-NOAA_NCEI"))
  (translate-and-validation-collection record)
  (translate-record-to-umm record)
  (:metadata-format record)

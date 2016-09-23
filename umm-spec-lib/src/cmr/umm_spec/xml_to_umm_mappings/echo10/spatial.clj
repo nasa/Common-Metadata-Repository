@@ -44,7 +44,7 @@
 
 (defn parse-spatial
   "Returns UMM-C spatial map from ECHO10 XML document."
-  [doc apply-default?]
+  [doc sanitize?]
   (if-let [[spatial] (select doc "/Collection/Spatial")]
     {:SpatialCoverageType          (when-let [sct (value-of spatial "SpatialCoverageType")]
                                      (str/upper-case sct))
@@ -60,5 +60,5 @@
                                                 :InclinationAngle
                                                 :NumberOfOrbits
                                                 :StartCircularLatitude)}
-    (when apply-default?
+    (when sanitize?
       u/not-provided-spatial-extent)))

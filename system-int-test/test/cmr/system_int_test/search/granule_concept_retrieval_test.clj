@@ -112,13 +112,13 @@
             (result-matches? format-key item response))
 
           "echo10 granule revision 1"
-          umm-gran1-1 :echo10 mt/echo10 "G1200000003-PROV1" 1
+          umm-gran1-1 :echo10 mt/echo10 "G1200000004-PROV1" 1
 
           "echo10 granule revision 2"
-          umm-gran1-2 :echo10 mt/echo10 "G1200000003-PROV1" 2)))
+          umm-gran1-2 :echo10 mt/echo10 "G1200000004-PROV1" 2)))
     (testing "unsupported formats"
       (let [response (search/retrieve-concept
-                      "G1200000003-PROV1" nil
+                      "G1200000004-PROV1" nil
                       {:headers {transmit-config/token-header user1-token}
                        :accept mt/html})
             err-msg (first (:errors (json/decode (:body response) true)))]
@@ -127,7 +127,7 @@
                     mt/html "] are not supported.")
                err-msg)))
       (let [response (search/retrieve-concept
-                      "G1200000003-PROV1" nil
+                      "G1200000004-PROV1" nil
                       {:headers {transmit-config/token-header user1-token}
                        :url-extension "html"})
             err-msg (first (:errors (json/decode (:body response) true)))]

@@ -23,7 +23,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
 
-(h/defresetter reset :access-control)
+(defn reset
+  "Sends a request to call the reset endpoint of the given app.
+   * :raw - set to true to indicate the raw response should be returned. See
+   cmr.transmit.http-helper for more info. Default false."
+  ([context]
+   (reset context nil))
+  ([context {:keys [raw? bootstrap-data?]}]
+   (h/request context :access-control
+              {:url-fn cmr.transmit.http-helper/reset-url
+               :http-options {:query-params {:bootstrap_data bootstrap-data?}}
+               :method :post
+               :raw? raw?
+               :use-system-token? true})))
+
+(h/defcacheclearer clear-cache :access-control)
 
 ; Group CRUD functions
 (h/defcreator create-group :access-control groups-url)

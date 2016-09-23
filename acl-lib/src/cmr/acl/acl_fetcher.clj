@@ -46,7 +46,6 @@
 (defn get-acls
   "Gets the current acls limited to a specific set of object identity types."
   [context object-identity-types]
-
   (if-let [cache (cache/context->cache context acl-cache-key)]
     ;; Check that we're caching the requested object identity types
     ;; Otherwise we'd just silently fail to find any acls.
