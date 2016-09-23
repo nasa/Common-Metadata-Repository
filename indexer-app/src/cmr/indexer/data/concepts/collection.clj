@@ -5,7 +5,6 @@
     [cheshire.core :as json]
     [clj-time.core :as t]
     [clj-time.format :as f]
-    [clojure.set :as set]
     [clojure.string :as str]
     [cmr.acl.acl-fetcher :as acl-fetcher]
     [cmr.acl.core :as acl]
@@ -157,7 +156,7 @@
         {{:keys [long-name]} :product :keys [related-urls associated-difs personnel]} collection
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
-         temporal-keywords :TemporalKeywords} umm-spec-collection 
+         temporal-keywords :TemporalKeywords platforms :Platforms} umm-spec-collection 
         processing-level-id (get-in umm-spec-collection [:ProcessingLevel :Id]) 
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
@@ -170,9 +169,8 @@
                                collection-data-type)
         entry-id (eid/entry-id short-name version-id)
         personnel (person-with-email personnel)
-        platforms (let [pfs (:Platforms umm-spec-collection)]
-                    (when-not (= su/not-provided-platforms pfs) pfs))
-        platforms (map #(util/map-keys->kebab-case %) platforms)
+        platforms (map util/map-keys->kebab-case
+                       (when-not (= su/not-provided-platforms platforms) platforms))
         gcmd-keywords-map (kf/get-gcmd-keywords-map context)
         platforms-nested (map #(platform/platform-short-name->elastic-doc gcmd-keywords-map %)
                               (map :short-name platforms))

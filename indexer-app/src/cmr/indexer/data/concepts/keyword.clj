@@ -1,7 +1,6 @@
 (ns cmr.indexer.data.concepts.keyword
   "Contains functions to create keyword fields"
   (:require 
-    [clojure.set :as set]
     [clojure.string :as str]
     [cmr.common.concepts :as concepts]
     [cmr.common.util :as util]
@@ -35,11 +34,12 @@
   "Create a keyword field for keyword searches by concatenating several other fields
   into a single string"
   (let [;; TODO version-description will be added to UMM-SPEC in CMR-3241
+        ;; Once that is done, we need to remove collection argument from this function
         {:keys [version-description]} (:product collection)
         {:keys [platform-long-names instrument-long-names entry-id]} other-fields
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract 
-         temporal-keywords :TemporalKeywords} umm-spec-collection
+         temporal-keywords :TemporalKeywords platforms :Platforms} umm-spec-collection
         processing-level-id (get-in umm-spec-collection [:ProcessingLevel :Id]) 
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
@@ -53,9 +53,8 @@
                                collection-data-type)
         project-long-names (map :long-name projects)
         project-short-names (map :short-name projects)
-        platforms (let [pfs (:Platforms umm-spec-collection)]
-                    (when-not (= su/not-provided-platforms pfs) pfs)) 
-        platforms (map #(util/map-keys->kebab-case %) platforms)
+        platforms (map util/map-keys->kebab-case 
+                       (when-not (= su/not-provided-platforms platforms) platforms))
         platform-short-names (map :short-name platforms)
         instruments (mapcat :instruments platforms)
         instrument-short-names (keep :short-name instruments)
