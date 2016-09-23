@@ -5,6 +5,7 @@
     [cheshire.core :as json]
     [clj-time.core :as t]
     [clj-time.format :as f]
+    [clojure.set :as set]
     [clojure.string :as str]
     [cmr.acl.acl-fetcher :as acl-fetcher]
     [cmr.acl.core :as acl]
@@ -21,7 +22,7 @@
     [cmr.indexer.data.concepts.attribute :as attrib]
     [cmr.indexer.data.concepts.instrument :as instrument]
     [cmr.indexer.data.concepts.keyword :as k]
-    [cmr.indexer.data.concepts.location-keyword :as lk]
+    [cmr.indexer.data.concepts.location-keyword :as clk]
     [cmr.indexer.data.concepts.organization :as org]
     [cmr.indexer.data.concepts.platform :as platform]
     [cmr.indexer.data.concepts.science-keyword :as sk]
@@ -30,8 +31,10 @@
     [cmr.indexer.data.elasticsearch :as es]
     [cmr.indexer.data.humanizer-fetcher :as hf]
     [cmr.indexer.services.index-service :as idx]
+    [cmr.umm-spec.location-keywords :as lk]
     [cmr.umm-spec.time :as spec-time]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
+    [cmr.umm-spec.util :as su]
     [cmr.umm.acl-matchers :as umm-matchers]
     [cmr.umm.collection.entry-id :as eid]
     [cmr.umm.related-url-helper :as ru]
@@ -151,9 +154,18 @@
   [context concept collection umm-spec-collection]
   (let [{:keys [concept-id revision-id provider-id user-id
                 native-id revision-date deleted format extra-fields tag-associations]} concept
-        {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
-         :keys [entry-title summary related-urls spatial-keywords associated-difs
-                access-value personnel distribution]} collection
+        {{:keys [long-name]} :product :keys [related-urls associated-difs personnel]} collection
+        short-name (:ShortName umm-spec-collection)
+        version-id (:Version umm-spec-collection)
+        processing-level-id (:Id (:ProcessingLevel umm-spec-collection))
+        processing-level-id (when-not (= su/not-provided processing-level-id)
+                              processing-level-id)
+        collection-data-type (:CollectionDataType umm-spec-collection)
+        entry-title (:EntryTitle umm-spec-collection)       
+        summary (:Abstract umm-spec-collection)
+        access-value (:Value (:AccessConstraints umm-spec-collection))
+        spatial-keywords (lk/location-keywords->spatial-keywords 
+                           (:LocationKeywords umm-spec-collection))
         temporal-keywords (:TemporalKeywords umm-spec-collection) 
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
@@ -161,7 +173,11 @@
                                collection-data-type)
         entry-id (eid/entry-id short-name version-id)
         personnel (person-with-email personnel)
-        platforms (:platforms collection)
+        platforms (let [pf (:Platforms umm-spec-collection)]
+                    (when-not (set/subset? (set (into {} su/not-provided-platforms))
+                                           (set (into {} pf)))
+                      pf))
+        platforms (map #(util/map-keys->kebab-case %) platforms)
         gcmd-keywords-map (kf/get-gcmd-keywords-map context)
         platforms-nested (map #(platform/platform-short-name->elastic-doc gcmd-keywords-map %)
                               (map :short-name platforms))
@@ -181,9 +197,11 @@
         sensors (mapcat :sensors instruments)
         sensor-short-names (keep :short-name sensors)
         sensor-long-names (keep :long-name sensors)
-        project-short-names (->> (map :short-name (:projects collection))
+        projects (for [{:keys [ShortName LongName]} (:Projects umm-spec-collection)]
+                   {:short-name ShortName :long-name LongName}) 
+        project-short-names (->> (map :short-name projects) 
                                  (map str/trim))
-        project-long-names (->> (keep :long-name (:projects collection))
+        project-long-names (->> (keep :long-name projects)
                                 (map str/trim))
         two-d-coord-names (map :TilingIdentificationSystemName 
                                (:TilingIdentificationSystems umm-spec-collection))
@@ -244,8 +262,8 @@
             :data-centers data-centers
             :science-keywords (map #(sk/science-keyword->elastic-doc gcmd-keywords-map %)
                                    (:ScienceKeywords umm-spec-collection))
-            :location-keywords (map #(lk/location-keyword->elastic-doc gcmd-keywords-map %)
-                                   (:LocationKeywords umm-spec-collection))
+            :location-keywords (map #(clk/location-keyword->elastic-doc gcmd-keywords-map %)
+                                    (:LocationKeywords umm-spec-collection))
 
             :instrument-sn instrument-short-names
             :instrument-sn.lowercase  (map str/lower-case instrument-short-names)
@@ -278,7 +296,7 @@
                                  (csk/->SCREAMING_SNAKE_CASE_STRING spatial-representation))
 
             ;; fields added to support keyword searches
-            :keyword (k/create-keywords-field concept-id collection
+            :keyword (k/create-keywords-field concept-id collection umm-spec-collection
                                               {:platform-long-names platform-long-names
                                                :instrument-long-names instrument-long-names
                                                :entry-id entry-id})
