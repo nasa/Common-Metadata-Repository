@@ -55,6 +55,21 @@
        sort
        last))
 
+(defn sanitize-and-parse-date
+  "If sanitize? is enabled make corrections in the date string then parse. If the date string
+  cannot be parsed, the f/parse function will return nil. Return the original date instead
+  of nil to get error messages for invalid dates."
+  [date sanitize?]
+  (if sanitize?
+    (if-let [parsed-date (some-> date
+                                 (str/replace "/" "-")
+                                 f/parse)]
+      parsed-date
+      date)
+    date))
+
+;(sanitize-and-parse-date "2003/08" true)
+
 (defn- data-date-getter
   [date-type]
   (fn [c]

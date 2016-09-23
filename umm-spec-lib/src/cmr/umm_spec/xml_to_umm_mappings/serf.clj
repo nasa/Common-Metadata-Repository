@@ -89,7 +89,7 @@
                       [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
                       x))
                   [:Author
-                   :Publication_Date
+                   [:PublicationDate (date/sanitize-and-parse-date (value-of pub-ref "Publication_Date") sanitize?)]
                    :Title
                    :Series
                    :Edition

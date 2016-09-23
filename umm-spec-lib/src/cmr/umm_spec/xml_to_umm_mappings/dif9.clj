@@ -107,6 +107,7 @@
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
   [doc {:keys [sanitize?]}]
+  (def doc doc)
   (let [entry-id (value-of doc "/DIF/Entry_ID")
         version-id (value-of doc "/DIF/Data_Set_Citation/Version")
         short-name (get-short-name entry-id version-id)]
@@ -173,7 +174,7 @@
                                                 [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
                                                 x))
                                             [:Author
-                                             :Publication_Date
+                                             [:PublicationDate (date/sanitize-and-parse-date (value-of pub-ref "Publication_Date") sanitize?)]
                                              :Title
                                              :Series
                                              :Edition
@@ -203,7 +204,7 @@
                              {:EntryId parent-dif})
      :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel"))
      :DataCenters (concat (center/parse-originating-centers doc)
-                          (center/parse-data-centers doc)
+                          (center/parse-data-centers doc sanitize?)
                           (center/parse-processing-centers doc))}))
 
 (defn dif9-xml-to-umm-c
