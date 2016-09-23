@@ -163,13 +163,13 @@
 (defn permissions-granted-by-provider-to-user
   "Returns permissions granted for sids by the list of ACLs"
   [sids acls target]
-  (for [x sids
-        y acls
+  (for [sid sids
+        acl acls
         :let [group-permissions (filter #(or
-                                           (and (contains? % :user-type) (= x (:user-type %)))
-                                           (and (contains? % :group-id) (= x (:group-id %))))
-                                        (:group-permissions y))]
-        :when (= (get-in y [:provider-identity :target]) target)]
+                                           (and (contains? % :user-type) (= sid (:user-type %)))
+                                           (and (contains? % :group-id) (= sid (:group-id %))))
+                                        (:group-permissions acl))]
+        :when (= (get-in acl [:provider-identity :target]) target)]
     (map :permissions group-permissions)))
 
 (defn validate-target-provider-grants-create
@@ -199,14 +199,15 @@
 (defn- make-catalog-item-identity-validations
   "Returns a standard validation for an ACL catalog_item_identity field
    closed over the given context and ACL to be validated."
-  [context acl save-flag]
-  [catalog-item-identity-collection-or-granule-validation
-   catalog-item-identity-collection-applicable-validation
-   catalog-item-identity-granule-applicable-validation
-   (when (= :create save-flag)
-     #(validate-target-provider-grants-create context %1 %2))
-   {:collection-identifier (v/when-present (make-collection-identifier-validation context acl))
-    :granule-identifier (v/when-present granule-identifier-validation)}])
+  [context acl action]
+  (let [validations [catalog-item-identity-collection-or-granule-validation
+                     catalog-item-identity-collection-applicable-validation
+                     catalog-item-identity-granule-applicable-validation
+                     {:collection-identifier (v/when-present (make-collection-identifier-validation context acl))
+                      :granule-identifier (v/when-present granule-identifier-validation)}]]
+    (if (= :create action)
+      (merge validations #(validate-target-provider-grants-create context %1 %2))
+      validations)))
 
 (defn validate-provider-exists
   "Validates that the acl provider exists."
@@ -231,13 +232,14 @@
 
 (defn- make-acl-validations
   "Returns a sequence of validations closed over the given context for validating ACL records."
-  [context acl save-flag]
+  [context acl action]
   [#(validate-provider-exists context %1 %2)
-   {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl save-flag))
+   {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl action))
     :single-instance-identity (v/when-present (make-single-instance-identity-validations context))}
    validate-grantable-permissions])
 
 (defn validate-acl-save!
-  "Throws service errors if ACL is invalid."
-  [context acl save-flag]
-  (v/validate! (make-acl-validations context acl save-flag) acl))
+  "Throws service errors if ACL is invalid. Takes action flag (:create or :update) to do different valiations
+   based on type of save"
+  [context acl action]
+  (v/validate! (make-acl-validations context acl action) acl))
