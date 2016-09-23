@@ -203,7 +203,7 @@
   "Returns a standard validation for an ACL catalog_item_identity field
    closed over the given context and ACL to be validated.
    Takes action flag (:create or :update) to do different valiations
-   based on type of save"
+   based on whether creating or updating acl concept"
   [context acl action]
   (let [validations [catalog-item-identity-collection-or-granule-validation
                      catalog-item-identity-collection-applicable-validation
@@ -237,7 +237,7 @@
 
 (defn- make-acl-validations
   "Returns a sequence of validations closed over the given context for validating ACL records.
-   Takes action flag (:create or :update) to do different valiations based on type of save"
+   Takes action flag (:create or :update) to do different valiations based on whether creating or updating acl concept"
   [context acl action]
   [#(validate-provider-exists context %1 %2)
    {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl action))
@@ -246,6 +246,6 @@
 
 (defn validate-acl-save!
   "Throws service errors if ACL is invalid. Takes action flag (:create or :update) to do different valiations
-   based on type of save"
+   based on whether creating or updating acl concept"
   [context acl action]
   (v/validate! (make-acl-validations context acl action) acl))

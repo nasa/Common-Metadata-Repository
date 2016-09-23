@@ -21,17 +21,8 @@
               (fn [f]
                 (e/grant-all-ingest (u/conn-context) "prov1guid")
                 (f))
-              (fixtures/grant-all-group-fixture ["prov1guid"]))
-
-(def provider-acl-for-catalog-item
-  "A provider ACL that grants create to guest to facilitate catalog-item creation"
-  {:legacy_guid "ABCD-EFG-HIJK-LMNOP"
-   :group_permissions [{:group_id "REPLACEME"
-                        :permissions ["read" "update" "create" "delete"],}
-                       {:user_type "guest"
-                        :permissions ["read" "update" "create" "delete"]}]
-   :provider_identity {:provider_id "PROV1"
-                       :target "CATALOG_ITEM_ACL"}})
+              (fixtures/grant-all-group-fixture ["prov1guid"])
+              (fixtures/grant-all-acl-fixture ["PROV1"]))
 
 (deftest invalid-params-test
   (are [params errors]
@@ -129,10 +120,7 @@
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
         get-collection-permissions #(get-permissions %1 coll1)
-        get-granule-permissions #(get-permissions %1 gran1)
-        ;; required to create catalog item acl
-        _ (create-acl (assoc-in provider-acl-for-catalog-item [:group_permissions 0 :group_id] user1-group))
-        _ (u/wait-until-indexed)]
+        get-granule-permissions #(get-permissions %1 gran1)]
 
     (testing "no permissions granted"
       (are [user permissions]
@@ -253,9 +241,8 @@
         coll4 (save-access-value-collection "coll4" nil)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
-        get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)
-        ;; required to create catalog item acl
-        _ (create-acl provider-acl-for-catalog-item)]
+        get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)]
+
     (u/wait-until-indexed)
 
     (testing "no permissions granted"
@@ -344,9 +331,8 @@
                                   :no-temporal true})
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
-        get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)
-        ;; required to create catalog item acl
-        _ (create-acl provider-acl-for-catalog-item)]
+        get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)]
+
     (u/wait-until-indexed)
     (is (= {coll1 []
             coll2 []
@@ -416,10 +402,7 @@
         coll1 (save-prov1-collection "coll1")
         gran1 (save-granule coll1)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
-        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
-        ;; required to create catalog item acl
-        _ (create-acl (assoc-in provider-acl-for-catalog-item [:group_permissions 0 :group_id] created-group-concept-id))
-        _ (u/wait-until-indexed)]
+        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})]
 
     (testing "no permissions granted"
       (are [user permissions]
@@ -486,9 +469,7 @@
         gran1 (save-granule coll1)
         gran2 (save-granule coll2)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
-        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
-        ;; required to create catalog item acl
-        _ (create-acl (assoc-in provider-acl-for-catalog-item [:group_permissions 0 :group_id] created-group-concept-id))]
+        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})]
 
     (u/wait-until-indexed)
 
@@ -587,9 +568,6 @@
         ;; high access value
         gran3 (save-granule coll1 {:access-value 10})
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
-        ;; required to create catalog item acl
-        _ (create-acl (assoc-in provider-acl-for-catalog-item [:group_permissions 0 :group_id] created-group-concept-id))
-        _ (u/wait-until-indexed)
         ;; guest read coll1 granules with undefined access value
         acl1 (create-acl {:group_permissions [{:permissions [:read]
                                                :user_type :guest}]
@@ -641,9 +619,7 @@
         gran3 (save-granule coll1 {:temporal {:single-date-time "1999-01-01T00:00:00Z"}})
 
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
-        ;; required to create catalog item acl
-        _ (create-acl (assoc-in provider-acl-for-catalog-item [:group_permissions 0 :group_id] created-group-concept-id))
-        _ (u/wait-until-indexed)
+
         acl1 (create-acl {:group_permissions [{:permissions [:read]
                                                :user_type :guest}]
                           :catalog_item_identity {:name "prov1 granules between 2000 and 2011"

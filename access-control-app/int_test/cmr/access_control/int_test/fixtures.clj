@@ -130,7 +130,7 @@
                                    :provider_identity {:provider_id item
                                                        :target "CATALOG_ITEM_ACL"}})))
 
-(defn grant-any-acl-system-acl
+(defn grant-any-acl-system-acl-to-all
   "Creates system acl targeting ANY_ACL that grants create, read, update, and delete to all"
   []
   (ac/create-acl (conn-context) {:group_permissions [{:user_type :registered
@@ -143,7 +143,7 @@
   "Returns a test fixutre function which grants guest ability to create, read, update, and delete any ACL."
   [provider-ids]
   (fn [f]
-    (grant-any-acl-system-acl)
+    (grant-any-acl-system-acl-to-all)
     (grant-provider-acl-permissions-to-all provider-ids)
     (test-util/wait-until-indexed)
     (f)))

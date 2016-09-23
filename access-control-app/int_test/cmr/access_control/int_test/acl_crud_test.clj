@@ -314,9 +314,9 @@
       (is (thrown-with-msg? Exception #"concepts with the same acl identity were found"
                             (ac/create-acl (u/conn-context) provider-acl {:token token}))))
     (testing "catalog item ACL"
-      (is (= 1 (:revision_id (ac/create-acl (u/conn-context) catalog-item-acl){:token token})))
+      (is (= 1 (:revision_id (ac/create-acl (u/conn-context) catalog-item-acl {:token token}))))
       (is (thrown-with-msg? Exception #"concepts with the same acl identity were found"
-                            (ac/create-acl (u/conn-context) catalog-item-acl){:token token})))))
+                            (ac/create-acl (u/conn-context) catalog-item-acl {:token token}))))))
 
 (deftest get-acl-test
   (let [token (e/login (u/conn-context) "admin")
@@ -365,7 +365,6 @@
         group1 (u/ingest-group token {:name "group1"} ["user1"])
         group1-concept-id (:concept_id group1)
         {provider-concept-id :concept_id} (ac/create-acl (u/conn-context) provider-acl {:token token})
-        _ (u/wait-until-indexed)
         {catalog-concept-id :concept_id} (ac/create-acl (u/conn-context) catalog-item-acl {:token token})
         {single-instance-concept-id :concept_id} (ac/create-acl (u/conn-context) (assoc-in single-instance-acl [:single_instance_identity :target_id] group1-concept-id) {:token token})]
     (are3 [re acl concept-id]
@@ -474,8 +473,6 @@
 
 (deftest delete-acl-test
   (let [token (e/login-guest (u/conn-context))
-        ;; this wait is needed to all fixtures to index
-        _ (u/wait-until-indexed)
         acl-concept-id (:concept_id
                          (ac/create-acl (u/conn-context)
                                         {:group_permissions [{:permissions [:read]
