@@ -155,28 +155,23 @@
   (let [{:keys [concept-id revision-id provider-id user-id
                 native-id revision-date deleted format extra-fields tag-associations]} concept
         {{:keys [long-name]} :product :keys [related-urls associated-difs personnel]} collection
-        short-name (:ShortName umm-spec-collection)
-        version-id (:Version umm-spec-collection)
-        processing-level-id (:Id (:ProcessingLevel umm-spec-collection))
+        {short-name :ShortName version-id :Version entry-title :EntryTitle
+         collection-data-type :CollectionDataType summary :Abstract
+         temporal-keywords :TemporalKeywords} umm-spec-collection 
+        processing-level-id (get-in umm-spec-collection [:ProcessingLevel :Id]) 
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
-        collection-data-type (:CollectionDataType umm-spec-collection)
-        entry-title (:EntryTitle umm-spec-collection)       
-        summary (:Abstract umm-spec-collection)
-        access-value (:Value (:AccessConstraints umm-spec-collection))
         spatial-keywords (lk/location-keywords->spatial-keywords 
                            (:LocationKeywords umm-spec-collection))
-        temporal-keywords (:TemporalKeywords umm-spec-collection) 
+        access-value (get-in umm-spec-collection [:AccessConstraints :Value])
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
                                (concat [collection-data-type] k/nrt-aliases)
                                collection-data-type)
         entry-id (eid/entry-id short-name version-id)
         personnel (person-with-email personnel)
-        platforms (let [pf (:Platforms umm-spec-collection)]
-                    (when-not (set/subset? (set (into {} su/not-provided-platforms))
-                                           (set (into {} pf)))
-                      pf))
+        platforms (let [pfs (:Platforms umm-spec-collection)]
+                    (when-not (= su/not-provided-platforms pfs) pfs))
         platforms (map #(util/map-keys->kebab-case %) platforms)
         gcmd-keywords-map (kf/get-gcmd-keywords-map context)
         platforms-nested (map #(platform/platform-short-name->elastic-doc gcmd-keywords-map %)
@@ -197,11 +192,9 @@
         sensors (mapcat :sensors instruments)
         sensor-short-names (keep :short-name sensors)
         sensor-long-names (keep :long-name sensors)
-        projects (for [{:keys [ShortName LongName]} (:Projects umm-spec-collection)]
-                   {:short-name ShortName :long-name LongName}) 
-        project-short-names (->> (map :short-name projects) 
+        project-short-names (->> (map :ShortName (:Projects umm-spec-collection)) 
                                  (map str/trim))
-        project-long-names (->> (keep :long-name projects)
+        project-long-names (->> (keep :LongName (:Projects umm-spec-collection))
                                 (map str/trim))
         two-d-coord-names (map :TilingIdentificationSystemName 
                                (:TilingIdentificationSystems umm-spec-collection))

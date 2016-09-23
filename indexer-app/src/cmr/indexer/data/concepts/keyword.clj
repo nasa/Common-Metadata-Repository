@@ -5,9 +5,9 @@
     [clojure.string :as str]
     [cmr.common.concepts :as concepts]
     [cmr.common.util :as util]
-    [cmr.indexer.data.concepts.science-keyword :as sk]
     [cmr.indexer.data.concepts.attribute :as attrib]
     [cmr.indexer.data.concepts.organization :as org]
+    [cmr.indexer.data.concepts.science-keyword :as sk] 
     [cmr.umm-spec.location-keywords :as lk]
     [cmr.umm-spec.util :as su]))
 
@@ -34,19 +34,17 @@
   [concept-id collection umm-spec-collection other-fields]
   "Create a keyword field for keyword searches by concatenating several other fields
   into a single string"
-  (let [{:keys [version-description]} (:product collection)
+  (let [;; TODO version-description will be added to UMM-SPEC in CMR-3241
+        {:keys [version-description]} (:product collection)
         {:keys [platform-long-names instrument-long-names entry-id]} other-fields
-        short-name (:ShortName umm-spec-collection)
-        version-id (:Version umm-spec-collection)
-        processing-level-id (:Id (:ProcessingLevel umm-spec-collection))
+        {short-name :ShortName version-id :Version entry-title :EntryTitle
+         collection-data-type :CollectionDataType summary :Abstract 
+         temporal-keywords :TemporalKeywords} umm-spec-collection
+        processing-level-id (get-in umm-spec-collection [:ProcessingLevel :Id]) 
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
-        collection-data-type (:CollectionDataType umm-spec-collection)
-        entry-title (:EntryTitle umm-spec-collection)
-        summary (:Abstract umm-spec-collection)
         spatial-keywords (lk/location-keywords->spatial-keywords
                            (:LocationKeywords umm-spec-collection))
-        temporal-keywords (:TemporalKeywords umm-spec-collection)
         projects (for [{:keys [ShortName LongName]} (:Projects umm-spec-collection)]
                    {:short-name ShortName :long-name LongName})
         provider-id (:provider-id (concepts/parse-concept-id concept-id))
@@ -55,10 +53,8 @@
                                collection-data-type)
         project-long-names (map :long-name projects)
         project-short-names (map :short-name projects)
-        platforms (let [pf (:Platforms umm-spec-collection)]
-                    (when-not (set/subset? (set (into {} su/not-provided-platforms))
-                                           (set (into {} pf)))
-                      pf))
+        platforms (let [pfs (:Platforms umm-spec-collection)]
+                    (when-not (= su/not-provided-platforms pfs) pfs)) 
         platforms (map #(util/map-keys->kebab-case %) platforms)
         platform-short-names (map :short-name platforms)
         instruments (mapcat :instruments platforms)
