@@ -139,5 +139,4 @@
   "Returns parsed UMM IsoTopicCategories"
   [doc sanitize?]
   (let [iso-topic-categories (values-at doc "DIF/ISO_Topic_Category")]
-    (remove nil? (map #(parse-iso-topic-category % sanitize?) iso-topic-categories))))
-
+    (keep #(parse-iso-topic-category % sanitize?) iso-topic-categories)))

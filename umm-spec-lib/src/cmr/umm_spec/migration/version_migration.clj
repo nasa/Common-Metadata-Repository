@@ -49,6 +49,19 @@
   {:Role "RESOURCEPROVIDER"
    :Party {:OrganizationName {:ShortName u/not-provided}}})
 
+(def valid-iso-topic-categories
+  "Valid values for ISOTopicCategory as defined in UMM JSON schema"
+  #{"farming" "biota" "boundaries" "climatologyMeteorologyAtmosphere" "economy" "elevation"
+    "environment" "geoscientificInformation" "health" "imageryBaseMapsEarthCover"
+    "intelligenceMilitary" "inlandWaters" "location" "oceans" "planningCadastre" "society"
+    "structure" "transportation" "utilitiesCommunication"})
+
+(defn- get-iso-topic-category
+  "Returns the UMM iso topic category or the default value of location if it is not a known
+  iso topic category"
+  [iso-topic-category]
+  (get valid-iso-topic-categories iso-topic-category "location"))
+
 (defmethod migrate-umm-version [:collection "1.0" "1.1"]
   [context c & _]
   (-> c
@@ -136,6 +149,16 @@
       (update-in [:DataCenters] #(mapv ci/update-data-center-contact-info-to-array %))
       (update-in [:ContactPersons] #(mapv ci/contact-info-to-array %))
       (update-in [:ContactGroups] #(mapv ci/contact-info-to-array %))))
+
+(defmethod migrate-umm-version [:collection "1.6" "1.7"]
+  [context c & _]
+  (-> c
+    (update :ISOTopicCategories #(mapv get-iso-topic-category %))))
+
+(defmethod migrate-umm-version [:collection "1.7" "1.6"]
+  [context c & _]
+  ;; Don't need to migrate ISOTopicCategories back since what has lost is lost
+  c)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface
