@@ -24,8 +24,6 @@
          {:content-type :json
           :body (json/encode body-obj)}))
 
-;; TODO remove or comment out println logging
-
 (defn rest-get
   "Makes a get request to echo-rest. Returns a tuple of status, the parsed body, and the body."
   ([context url-path]
@@ -35,9 +33,9 @@
          url (format "%s%s" (conn/root-url conn) url-path)
          params (merge (request-options conn) options)
          start (System/currentTimeMillis)
-         _ (println "--Making ECHO GET Request" url (pr-str params))
+         ; _ (println "--Making ECHO GET Request" url (pr-str params))
          response (client/get url params)
-         _ (println "--Complete")
+         ; _ (println "--Complete")
          _ (debug (format "Completed ECHO GET Request to %s in [%d] ms" url (- (System/currentTimeMillis) start)))
 
          {:keys [status body headers]} response
@@ -55,9 +53,9 @@
          url (format "%s%s" (conn/root-url conn) url-path)
          params (merge (request-options conn) options)
          ;; Uncoment to log requests
-         _ (println "--Making ECHO DELETE Request" url (pr-str params))
+         ; _ (println "--Making ECHO DELETE Request" url (pr-str params))
          response (client/delete url params)
-         _ (println "--Complete")
+         ; _ (println "--Complete")
          {:keys [status body]} response]
      [status body])))
 
@@ -70,9 +68,9 @@
          url (format "%s%s" (conn/root-url conn) url-path)
          params (merge (post-options conn body-obj) options)
          ;; Uncoment to log requests
-         _ (println "--Making ECHO POST Request" url (pr-str params))
+         ; _ (println "--Making ECHO POST Request" url (pr-str params))
          response (client/post url params)
-         _ (println "--Complete")
+         ; _ (println "--Complete")
          {:keys [status body headers]} response
          parsed (if (.startsWith ^String (get headers "Content-Type" "") "application/json")
                   (json/decode body true)

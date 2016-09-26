@@ -77,8 +77,6 @@
   [context action-description permission group]
   (when-not (transmit-config/echo-system-token? context)
     (let [context (put-sids-in-context context)]
-      ;; TODO remove this
-      ; (proto-repl.saved-values/save 1)
       (when-not (or (get-instance-acls context permission group)
                     (get-provider-acls context permission group)
                     (get-system-acls context permission))

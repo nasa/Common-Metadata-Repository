@@ -92,7 +92,6 @@
   (sit-sys/set-logging-level @settings/logging-level)
 
   ;; Uncomment this to force CMR to use Legacy Services
-  ;; TODO recomment.
   ; (configure-for-legacy-services)
 
   (let [s (system/create-system)
