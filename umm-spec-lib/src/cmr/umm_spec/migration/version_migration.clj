@@ -157,7 +157,7 @@
 
 (defmethod migrate-umm-version [:collection "1.7" "1.6"]
   [context c & _]
-  ;; Don't need to migrate ISOTopicCategories back since what has lost is lost
+  ;; Don't need to migrate ISOTopicCategories
   c)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
