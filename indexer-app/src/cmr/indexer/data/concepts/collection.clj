@@ -122,8 +122,6 @@
   (let [humanized (humanizer/umm-collection->umm-collection+humanizers
                     collection (hf/get-humanizer-instructions context))
         extract-fields (partial extract-humanized-elastic-fields humanized)]
-    (println "~~~~~~SCIENCE~~~~~~~~" (map sk/humanized-science-keyword->elastic-doc)
-                                  (:ScienceKeywords humanized))
     (merge
      {:science-keywords.humanized (map sk/humanized-science-keyword->elastic-doc
                                    (:ScienceKeywords humanized))}
@@ -187,7 +185,7 @@
                                  (map str/trim))
         project-long-names (->> (keep :long-name (:projects collection))
                                 (map str/trim))
-        two-d-coord-names (map :TilingIdentificationSystemName 
+        two-d-coord-names (map :TilingIdentificationSystemName
                                (:TilingIdentificationSystems umm-spec-collection))
         archive-centers (map #(org/data-center-short-name->elastic-doc gcmd-keywords-map %)
                              (map str/trim
@@ -309,7 +307,7 @@
            (collection-temporal-elastic context concept-id umm-spec-collection)
            (get-in collection [:spatial-coverage :orbit-parameters])
            (spatial->elastic collection)
-           (sk/science-keywords->facet-fields collection)
+           (sk/science-keywords->facet-fields umm-spec-collection)
            (collection-humanizers-elastic context umm-spec-collection))))
 
 (defn- get-elastic-doc-for-tombstone-collection
