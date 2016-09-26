@@ -11,7 +11,7 @@
             [cmr.elastic-utils.config :as es-config]
             [cmr.cubby.data.elastic-cache-store :as elastic-cache-store]
             [cmr.transmit.config :as transmit-config]
-            [cmr.common-app.system :as common-sys]))
+            [cmr.common.system :as common-sys]))
 
 (defconfig cubby-nrepl-port
   "Port to listen for nREPL connections"

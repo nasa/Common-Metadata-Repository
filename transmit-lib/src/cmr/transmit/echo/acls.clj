@@ -76,13 +76,13 @@
    (doseq [t types] (validate-type t))
    (let [provider-guid-id-map (echo-providers/get-provider-guid-id-map context)
          [status acls body] (r/rest-get
-                              context
-                              "/acls"
-                              {:query-params
-                               (merge {:object_identity_type
-                                       (str/join "," (map acl-type->object-identity-type-string types))
-                                       :reference false}
-                                      (when provider-id {:provider_id provider-id}))})]
+                             context
+                             "/acls"
+                             {:query-params
+                              (merge {:object_identity_type
+                                      (str/join "," (map acl-type->object-identity-type-string types))
+                                      :reference false}
+                                     (when provider-id {:provider_id provider-id}))})]
      (case status
        200 (let [acls (mapv (comp (partial convert-provider-guid-to-id-in-acl provider-guid-id-map)
                                   c/echo-acl->cmr-acl)
