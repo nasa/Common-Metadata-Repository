@@ -197,9 +197,6 @@
         ;; spatial keywords
         "in" [coll10]
 
-        ;; associated difs
-        "dif-1" [coll17]
-
         ;; two d coord
         "xyz" [coll2 coll13]
 

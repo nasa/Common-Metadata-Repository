@@ -43,7 +43,7 @@
 
 (def not-provided-platforms
   "Default platforms to use if none is provided"
-  [{:ShortName not-provided}])
+  [(cmn/map->PlatformType {:ShortName not-provided})])
 
 (def not-provided-contact-person-role
   "Default role for a Contact Person to use if none is provided"
