@@ -7,7 +7,6 @@
     [cmr.common.xml.gen :refer :all]
     [cmr.umm-spec.date-util :as date]
     [cmr.umm-spec.dif-util :as dif-util]
-    [cmr.umm-spec.xml-to-umm-mappings.dif9 :as xtu]
     [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]
     [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]
     [cmr.umm-spec.util :as u]))
@@ -17,10 +16,6 @@
    :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
    :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd"})
-
-(def umm-iso-topic-category->dif-iso-topic-category
-  "UMM ISOTopicCategory to DIF ISOTopicCategory mapping."
-  (set/map-invert xtu/dif-iso-topic-category->umm-iso-topic-category))
 
 (defn- generate-short-name-long-name-elements
   "Returns xml elements with the given elem-key as name and sub-elements with Short_Name and
@@ -70,7 +65,8 @@
         [:Topic u/not-provided]
         [:Term u/not-provided]])
      (for [topic-category (:ISOTopicCategories c)]
-       [:ISO_Topic_Category topic-category])
+       [:ISO_Topic_Category (dif-util/umm-iso-topic-category->dif-iso-topic-category
+                              topic-category)])
      (for [ak (:AncillaryKeywords c)]
        [:Keyword ak])
      (generate-instruments (:Platforms c))
