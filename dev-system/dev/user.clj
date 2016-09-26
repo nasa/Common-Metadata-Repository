@@ -46,13 +46,12 @@
   (println "Logging level set to" level)
   nil)
 
-(defn configure-for-soap-services
+(defn configure-for-legacy-services
   []
   (config/set-config-value! :echo-rest-host "localhost")
   (config/set-config-value! :echo-rest-port 3012)
   (config/set-config-value! :echo-rest-context "/legacy-services/rest")
-  (config/set-config-value! :dev-system-echo-type "external")
-  (config/set-config-value! :dev-system-db-type "in-memory")
+  (config/set-config-value! :dev-system-db-type :in-memory)
   ;; Hard coded here and in legacy-services/echo/echo-env/support/db/bootstrap/business/system_acls_changeLog.xml
   ;; so that ACLs that are bootstrapped in kernel reference same Administrators group in bootstrapped CMR.
   (transmit-config/set-administrators-group-legacy-guid! "316520E041894014E050007F010038C4"))
@@ -61,9 +60,6 @@
   "Starts the current development system."
   []
   (config/reset-config-values)
-
-  ;; Uncomment this to force CMR to use SOAP Services
-  ; (configure-for-soap-services)
 
   (jobs/set-default-job-start-delay! (* 3 3600))
 
@@ -94,6 +90,9 @@
   ; (system/set-dev-system-message-queue-type! :aws)
 
   (sit-sys/set-logging-level @settings/logging-level)
+
+  ;; Uncomment this to force CMR to use Legacy Services
+  ; (configure-for-legacy-services)
 
   (let [s (system/create-system)
         s (configure-systems-logging s @settings/logging-level)]

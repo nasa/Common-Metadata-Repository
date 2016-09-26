@@ -12,7 +12,7 @@
             [cmr.virtual-product.services.virtual-product-service :as vps]
             [cmr.virtual-product.config :as config]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
-            [cmr.common-app.system :as common-sys]))
+            [cmr.common.system :as common-sys]))
 
 (defconfig virtual-product-nrepl-port
   "Port to listen for nREPL connections"

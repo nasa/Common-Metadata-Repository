@@ -15,6 +15,7 @@
   [context]
   (if-let [token (:token context)]
     ;; TODO we need to cache token->sids cache like in search
+
     (let [user-id (echo-tokens/get-user-id context token)
           query (qm/query {:concept-type :access-group
                            :condition (qm/string-condition :member user-id)
@@ -74,11 +75,12 @@
   "Throws a permission service error if no ACLs exist that grant the desired permission to the
   context user on group."
   [context action-description permission group]
-  (let [context (put-sids-in-context context)]
-    (when-not (or (get-instance-acls context permission group)
-                  (get-provider-acls context permission group)
-                  (get-system-acls context permission))
-      (throw-group-permission-error action-description group))))
+  (when-not (transmit-config/echo-system-token? context)
+    (let [context (put-sids-in-context context)]
+      (when-not (or (get-instance-acls context permission group)
+                    (get-provider-acls context permission group)
+                    (get-system-acls context permission))
+        (throw-group-permission-error action-description group)))))
 
 (defn verify-can-create-group
   "Throws a service error if the context user cannot create a group under provider-id."
@@ -113,7 +115,7 @@
   ;; We want to avoid a circular dependency here. Any call to the kernel will result in a search
   ;; for groups. We assume that the system read token has full permission here. The kernel will use
   ;; that to call the access control group.
-  (if (= (transmit-config/echo-system-token) (:token context))
+  (if (transmit-config/echo-system-token? context)
     query
     (let [context (put-sids-in-context context)
            system-condition (when (get-system-acls context :read)

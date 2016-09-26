@@ -17,7 +17,7 @@
             [cmr.acl.core :as acl]
             [cmr.common.config :as cfg]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
-            [cmr.common-app.system :as common-sys]))
+            [cmr.common.system :as common-sys]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
