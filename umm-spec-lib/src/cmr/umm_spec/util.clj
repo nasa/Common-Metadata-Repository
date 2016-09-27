@@ -183,7 +183,7 @@
         {:Size (/ (Double. (.replace num-str "," "")) 1000.0)
          :Unit "KB"}
         {:Size (Double. (.replace num-str "," ""))
-         :Unit (-> unit-str str .trim .toUpperCase first (str "B"))}))))
+         :Unit (-> unit-str str/trim str/upper-case first (str "B"))}))))
 
 (defn data-size-str
   "Takes a collection of FileSizeType records which have a Size and a Unit and converts them to a

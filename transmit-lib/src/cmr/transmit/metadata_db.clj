@@ -53,7 +53,7 @@
                                             {:accept :json
                                              :headers (ch/context->http-headers context)
                                              :throw-exceptions false}))
-         status (:status response)
+         status (int (:status response))
          body (json/decode (:body response))]
      (case status
        404
@@ -86,7 +86,7 @@
                                               :accept :json
                                               :throw-exceptions false
                                               :headers (ch/context->http-headers context)}))
-         status (:status response)]
+         status (int (:status response))]
      (case status
        404
        (let [err-msg "Unable to find all concepts."]
@@ -118,7 +118,7 @@
                                               :accept :json
                                               :throw-exceptions false
                                               :headers (ch/context->http-headers context)}))
-         status (:status response)]
+         status (int (:status response))]
      (case status
        404
        (let [err-msg "Unable to find all concepts."]
@@ -150,7 +150,8 @@
 (defn find-concepts
   "Searches metadata db for concepts matching the given parameters."
   [context params concept-type]
-  (let [{:keys [status body]} (find-concepts-raw context params concept-type)]
+  (let [{:keys [status body]} (find-concepts-raw context params concept-type)
+        status (int status)]
     (case status
       200 (map mdb2/finish-parse-concept (json/decode body true))
       ;; default
@@ -162,7 +163,8 @@
   "Searches metadata db for the latest concept matching the given parameters. Do not throw serivce
   excpetion, returns the status and error message in a map in case of error."
   [context params concept-type]
-  (let [{:keys [status body]} (find-concepts-raw context params concept-type)]
+  (let [{:keys [status body]} (find-concepts-raw context params concept-type)
+        status (int status)]
     (case status
       200 (first (map mdb2/finish-parse-concept (json/decode body true)))
       404 (errors/throw-service-error :not-found body)
@@ -212,7 +214,8 @@
                                             :query-params {:provider provider-id}
                                             :headers (ch/context->http-headers context)
                                             :throw-exceptions false}))
-        {:keys [status body]} response]
+        {:keys [status body]} response
+        status (int status)]
     (case status
       200 (json/decode body true)
       ;; default
@@ -283,7 +286,8 @@
 (defn-timed get-providers
   "Returns the list of provider ids configured in the metadata db"
   [context]
-  (let [{:keys [status body]} (get-providers-raw context)]
+  (let [{:keys [status body]} (get-providers-raw context)
+        status (int status)]
     (case status
       200 (json/decode body true)
       ;; default
@@ -302,7 +306,7 @@
                                  :accept :json
                                  :throw-exceptions false
                                  :headers (ch/context->http-headers context)}))
-        status (:status response)
+        status (int (:status response))
         body (json/decode (:body response))
         {:strs [concept-id revision-id]} body]
     (case status
