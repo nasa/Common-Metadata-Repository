@@ -16,6 +16,8 @@
     (when (and (not= value su/not-provided-url)
                (not (.isValid validator value)))
       {field-path
+       ;; Escape the %, because the error messages go through a format, which will throw an error
+       ;; Do the escape after the format here, so it doesn't get formatted out
        [(str/replace (format "[%s] is not a valid URL" value) "%" "%%")]})))
 
 (def urls-validation
