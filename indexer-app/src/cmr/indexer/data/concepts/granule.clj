@@ -1,24 +1,26 @@
 (ns cmr.indexer.data.concepts.granule
   "Contains functions to parse and convert granule concept"
-  (:require [clojure.string :as s]
-            [cheshire.core :as json]
-            [cmr.elastic-utils.index-util :as index-util]
-            [camel-snake-kebab.core :as csk]
-            [cmr.indexer.data.elasticsearch :as es]
-            [cmr.umm-spec.legacy :as umm-legacy]
-            [cmr.umm.related-url-helper :as ru]
-            [cmr.umm.echo10.spatial :as umm-spatial]
-            [cmr.transmit.metadata-db :as mdb]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.services.errors :as errors]
-            [cmr.umm.start-end-date :as sed]
-            [cmr.indexer.data.concepts.attribute :as attrib]
-            [cmr.indexer.data.concepts.orbit-calculated-spatial-domain :as ocsd]
-            [cmr.indexer.data.concepts.spatial :as spatial]
-            [cmr.common.cache :as cache]
-            [cmr.common.concepts :as concepts])
-  (:import cmr.spatial.mbr.Mbr))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [cheshire.core :as json]
+   [cmr.common.cache :as cache]
+   [cmr.common.concepts :as concepts]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.elastic-utils.index-util :as index-util]
+   [cmr.indexer.data.concepts.attribute :as attrib]
+   [cmr.indexer.data.concepts.orbit-calculated-spatial-domain :as ocsd]
+   [cmr.indexer.data.concepts.spatial :as spatial]
+   [cmr.indexer.data.elasticsearch :as es]
+   [cmr.transmit.metadata-db :as mdb]
+   [cmr.umm-spec.legacy :as umm-legacy]
+   [cmr.umm.echo10.spatial :as umm-spatial]
+   [cmr.umm.related-url-helper :as ru]
+   [cmr.umm.start-end-date :as sed]
+   [clojure.string :as s])
+  (:import
+   (cmr.spatial.mbr Mbr)))
 
 (def parent-collection-cache-key
   "The key to be used for the parent collection cache in the system cache map."
@@ -64,7 +66,7 @@
     (cond
       (or (= gsr :geodetic) (= gsr :cartesian))
       (let [geometries (seq (get-in granule [:spatial-coverage :geometries]))]
-        (spatial/spatial->elastic-docs gsr granule))
+        (spatial/granule-spatial->elastic-docs gsr granule))
 
       (= gsr :no-spatial)
       nil

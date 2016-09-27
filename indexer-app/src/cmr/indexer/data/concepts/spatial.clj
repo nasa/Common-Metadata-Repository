@@ -1,15 +1,18 @@
 (ns cmr.indexer.data.concepts.spatial
   "Contains functions to convert spatial geometry into indexed attributes."
-  (:require [cmr.spatial.derived :as d]
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [cmr.common.services.errors :as errors]
+   ;; Must be required for derived calculations
+   [cmr.spatial.geodetic-ring :as gr]
+   [cmr.spatial.mbr :as mbr]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.spatial.serialize :as srl]
 
-            ;; Must be required for derived calculations
-            [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.serialize :as srl]
-            [cmr.common.services.errors :as errors]
-            [cmr.umm.umm-spatial :as umm-s]))
+   [cmr.umm-spec.spatial-util :as su]
+   [cmr.umm.umm-spatial :as umm-s]
+   [cmr.spatial.derived :as d]))
 
 (defn mbr->elastic-attribs
   [prefix {:keys [west north east south]} crosses-antimeridian?]
@@ -92,9 +95,43 @@
            (mbr->elastic-attribs
              "lr"  (mbr/round-to-float-map lr false) (mbr/crosses-antimeridian? lr)))))
 
-(defn spatial->elastic-docs
-  "Converts the spatial area of the given catalog item to the elastic documents"
-  [coordinate-system catalog-item]
-  (when-let [geometries (get-in catalog-item [:spatial-coverage :geometries])]
-    (shapes->elastic-doc geometries coordinate-system)))
+(defn get-collection-coordinate-system
+  "Returns the coordinate system in lowercase keyword for the given collection"
+  [collection]
+  (when-let [coordinate-system (get-in collection [:SpatialExtent :HorizontalSpatialDomain
+                                                   :Geometry :CoordinateSystem])]
+    (csk/->kebab-case-keyword coordinate-system)))
 
+(defn get-collection-geometry-shapes
+  "Returns the horizontal spatital geometry shapes of the given collection"
+  [collection]
+  (when-let [geometry (get-in collection [:SpatialExtent :HorizontalSpatialDomain :Geometry])]
+    (let [coord-sys (get-collection-coordinate-system collection)
+          {points :Points brs :BoundingRectangles gpolygons :GPolygons lines :Lines} geometry]
+      (concat
+       (map su/umm-spec-point->point points)
+       (map su/umm-spec-br->mbr brs)
+       (map #(su/gpolygon->polygon coord-sys %) gpolygons)
+       (map #(su/umm-spec-line->line coord-sys %) lines)))))
+
+(defn collection-orbit-parameters->elastic-docs
+  "Converts the orbit parameters of the given collection to the elastic documents"
+  [collection]
+  (when-let [orbit-params (get-in collection [:SpatialExtent :OrbitParameters])]
+    {:swath-width (:SwathWidth orbit-params)
+     :period (:Period orbit-params)
+     :inclination-angle (:InclinationAngle orbit-params)
+     :number-of-orbits (:NumberOfOrbits orbit-params)
+     :start-circular-latitude (:StartCircularLatitude orbit-params)}))
+
+(defn collection-spatial->elastic-docs
+  "Converts the spatial area of the given collection to the elastic documents"
+  [coordinate-system collection]
+  (when-let [shapes (get-collection-geometry-shapes collection)]
+    (shapes->elastic-doc shapes coordinate-system)))
+
+(defn granule-spatial->elastic-docs
+  "Converts the spatial area of the given granule to the elastic documents"
+  [coordinate-system granule]
+  (when-let [geometries (get-in granule [:spatial-coverage :geometries])]
+    (shapes->elastic-doc geometries coordinate-system)))

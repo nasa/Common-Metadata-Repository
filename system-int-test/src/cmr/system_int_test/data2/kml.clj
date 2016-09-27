@@ -1,21 +1,23 @@
 (ns cmr.system-int-test.data2.kml
   "Contains functions for parsing kml results into spatial shapes."
-  (:require [clojure.data.xml :as x]
-            [cmr.system-int-test.utils.fast-xml :as fx]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.line-string :as l]
-            [cmr.common.xml :as cx]
-            [clojure.string :as str]
-            [cmr.spatial.relations :as r]
-            [clojure.test]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.common.util :as util])
-  (:import cmr.umm.umm_collection.UmmCollection
-           cmr.umm.umm_granule.UmmGranule
-           cmr.spatial.mbr.Mbr))
+  (:require
+   [clojure.string :as str]
+   [clojure.test]
+   [cmr.common.util :as util]
+   [cmr.common.xml :as cx]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.relations :as r]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.utils.fast-xml :as fx]
+   [clojure.data.xml :as x])
+  (:import
+   (cmr.spatial.mbr Mbr)
+   (cmr.umm.umm_granule UmmGranule)
+   (cmr.umm.umm_collection UmmCollection)))
 
 (defn coordinates-container-elem->points
   "Takes an XML element that contains a child called 'coordinates' and returns a list of the points
@@ -107,7 +109,7 @@
         {:name (if multiple-placemarks?
                  (str item-name "_" (name coord-sys))
                  item-name)
-         :shapes (map shape->kml-representation shapes)}))
+         :shapes (set (map shape->kml-representation shapes))}))
     [{:name item-name}]))
 
 (defn collection->expected-kml
@@ -133,17 +135,31 @@
   {:status 200
    :results (set (apply concat (map granule->expected-kml granules collections)))})
 
+(defn- update-result-shapes
+  "Returns the result with shapes in a set if applicable"
+  [result]
+  (if-let [shapes (:shapes result)]
+    (update-in result [:shapes] #(when % (set %)))
+    result))
+
+(defn- results-for-comparison
+  "Returns the results that is suitable for comparison"
+  [results]
+  (-> results
+      (util/update-in-each [:results] update-result-shapes)
+      (update-in [:results] set)))
+
 (defn assert-collection-kml-results-match
   "Returns true if the kml results are for the expected items"
   [collections actual-result]
   (clojure.test/is (= (collections->expected-kml collections)
-                      (update-in actual-result [:results] set))))
+                      (results-for-comparison actual-result))))
 
 (defn assert-granule-kml-results-match
   "Returns true if the kml results are for the expected items"
   [expected-granules collections actual-result]
   (clojure.test/is (= (granules->expected-kml expected-granules collections)
-                      (update-in actual-result [:results] set))))
+                      (results-for-comparison actual-result))))
 
 (comment
 
