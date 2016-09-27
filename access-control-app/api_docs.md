@@ -228,6 +228,7 @@ The following parameters are supported when searching for groups.
 * page_size
 * page_num
 * pretty
+* include_members - boolean parameter that indicates if the members of the group should be returned.
 
 ##### Group Matching Parameters
 

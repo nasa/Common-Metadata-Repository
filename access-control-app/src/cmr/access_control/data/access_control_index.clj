@@ -74,8 +74,9 @@
    :legacy-guid (m/stored m/string-field-mapping)
    :legacy-guid.lowercase m/string-field-mapping
 
-   ;; Member search is always case insensitive
+   :members (m/stored m/string-field-mapping)
    :members.lowercase m/string-field-mapping
+
    ;; Member count is returned in the group response. The list of members is returned separately so
    ;; we don't store the members in the elastic index. If members end up being stored at some point
    ;; we can get rid of this field.
@@ -95,10 +96,10 @@
         (merge (select-keys concept-map [:concept-id :revision-id]))
         (assoc :name.lowercase (safe-lowercase (:name group))
                :provider-id.lowercase (safe-lowercase (:provider-id group))
+               :members (:members group)
                :members.lowercase (map str/lower-case (:members group))
                :legacy-guid.lowercase (safe-lowercase (:legacy-guid group))
-               :member-count (count (:members group)))
-        (dissoc :members))))
+               :member-count (count (:members group))))))
 
 (defmethod index-concept :access-group
   [context concept-map]

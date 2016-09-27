@@ -41,15 +41,29 @@
     (is (= {:status 400 :errors ["Option [foo] is not supported for param [provider]"]}
            (u/search-for-groups token {:provider "PROV1"
                                        "options[provider][foo]" "bar"})))
+    (is (= {:status 400 :errors ["Parameter include_members must take value of true or false but was [foo]"]}
+           (u/search-for-groups token {:include_members "foo"})))
 
     ;; Members search is always case insensitive
     (is (= {:status 400 :errors ["Option [ignore_case] is not supported for param [member]"]}
            (u/search-for-groups token {:member "foo"
                                        "options[member][ignore_case]" true})))))
 
+(defn expected-search-response
+  "Returns the expected search response for a set of groups that matches a search result."
+  [expected-groups include-members?]
+  (let [groups (map (fn [group]
+                      (as-> group g
+                            (assoc g :member_count (count (:members g)))
+                            (if include-members? g (dissoc g :members))))
+                    expected-groups)]
+    {:status 200 :items (sort-groups groups) :hits (count groups)}))
+
 (deftest group-search-test
   (let [token (e/login (u/conn-context) "user1")
-        existing-admin-group (-> (u/search-for-groups transmit-config/mock-echo-system-token {}) :items first)
+        existing-admin-group (-> (u/search-for-groups transmit-config/mock-echo-system-token {:include_members true})
+                                 :items
+                                 first)
         cmr-group1 (u/ingest-group token {:name "group1"} ["user1"])
         cmr-group2 (u/ingest-group token {:name "group2"} ["USER1" "user2"])
         cmr-group3 (u/ingest-group token {:name "group3"} nil)
@@ -67,11 +81,14 @@
 
     (testing "Search by member"
       (are3 [expected-groups params]
-        (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
+        (is (= (expected-search-response expected-groups (:include_members params))
                (select-keys (u/search-for-groups token params) [:status :items :hits :errors])))
 
+        "Include members"
+        all-groups {:include_members true}
+
         "Normal case is case insensitive"
-        [cmr-group1 cmr-group2 prov1-group1 prov1-group2] {:member "UsEr1"}
+        [cmr-group1 cmr-group2 prov1-group1 prov1-group2] {:member "UsEr1" :include_members false}
 
         "Pattern"
         [existing-admin-group cmr-group1 cmr-group2 prov1-group1 prov1-group2 prov2-group1 prov2-group2]
@@ -89,7 +106,7 @@
 
     (testing "Search by name"
       (are3 [expected-groups params]
-        (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
+        (is (= (expected-search-response expected-groups false)
                (select-keys (u/search-for-groups token params) [:status :items :hits])))
 
         "Normal case insensitive"
@@ -111,7 +128,7 @@
 
     (testing "Search by provider"
       (are3 [expected-groups params]
-        (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
+        (is (= (expected-search-response expected-groups false)
                (select-keys (u/search-for-groups token params) [:status :items :hits])))
 
         "No parameters finds all groups"

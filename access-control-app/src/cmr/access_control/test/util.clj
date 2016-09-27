@@ -143,7 +143,7 @@
    (when-not (= status 200)
      (throw (Exception. (format "Unexpected status [%s] when creating group %s" status (pr-str resp)))))
    (assoc group
-          :member_count (count members)
+          :members members
           :concept_id concept_id
           :revision_id revision_id)))
 

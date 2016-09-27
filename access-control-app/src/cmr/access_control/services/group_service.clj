@@ -212,11 +212,15 @@
   [_]
   (cpv/merge-params-config
    cpv/basic-params-config
-   {:single-value #{}
+   {:single-value #{:include-members}
     :multiple-value #{:provider :name :member :legacy-guid}
     :always-case-sensitive #{}
     :disallow-pattern #{}
     :allow-or #{}}))
+
+(defmethod cpv/valid-query-level-params :access-group
+  [_]
+  #{:include-members})
 
 (defmethod cpv/valid-parameter-options :access-group
   [_]
@@ -237,7 +241,8 @@
                                     (partial cpv/validate-map [:options :legacy-guid])])]
     (cpv/validate-parameters
      :access-group safe-params
-     cpv/common-validations
+     (concat cpv/common-validations
+             [(partial cpv/validate-boolean-param :include-members)])
      type-errors))
   params)
 
@@ -264,6 +269,13 @@
       (common-qm/negated-condition (common-qm/exist-condition :provider))
       (cp/string-parameter->condition concept-type param value options))))
 
+(defmethod cp/parse-query-level-params :access-group
+  [concept-type params]
+  (let [[params query-attribs] (cp/default-parse-query-level-params :access-group params)]
+    [(dissoc params :include-members)
+     (merge query-attribs
+            (when (= (:include-members params) "true")
+              {:result-features [:include-members]}))]))
 
 (defn search-for-groups
   [context params]
