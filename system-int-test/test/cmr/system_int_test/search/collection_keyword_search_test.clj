@@ -524,20 +524,20 @@
 ;; ingest this UMM-SPEC collection but it contains some keyword values other tests are using. 
 ;; This would break other tests when doing the keyword searches. 
 (deftest search-by-ancillary-keywords
-  (let [c10-umm-json-1 (d/ingest "PROV1"
-                                 (-> exp-conv/example-collection-record
-                                     (assoc :AncillaryKeywords ["CMR2652AKW1" "CMR2652AKW2"])
-                                     (assoc :ShortName "CMR2652SN1")
-                                     (assoc :EntryTitle "CMR2652ET1")) 
-                                 {:format :umm-json
-                                  :accept-format :json})
-        c10-umm-json-2 (d/ingest "PROV1"
-                                 (-> exp-conv/example-collection-record
-                                     (assoc :AncillaryKeywords ["CMR2652AKW3" "CMR2652AKW4"])
-                                     (assoc :ShortName "CMR2652SN2")
-                                     (assoc :EntryTitle "CMR2652ET2"))
-                                 {:format :umm-json
-                                  :accept-format :json})]
+  (let [coll1 (d/ingest "PROV1"
+                        (-> exp-conv/example-collection-record
+                            (assoc :AncillaryKeywords ["CMR2652AKW1" "CMR2652AKW2"])
+                            (assoc :ShortName "CMR2652SN1")
+                            (assoc :EntryTitle "CMR2652ET1")) 
+                        {:format :umm-json
+                         :accept-format :json})
+        coll2 (d/ingest "PROV1"
+                        (-> exp-conv/example-collection-record
+                            (assoc :AncillaryKeywords ["CMR2652AKW3" "CMR2652AKW4"])
+                            (assoc :ShortName "CMR2652SN2")
+                            (assoc :EntryTitle "CMR2652ET2"))
+                        {:format :umm-json
+                         :accept-format :json})]
     (index/wait-until-indexed)
     (testing "parameter searches"  
       (are3 [keyword-str items]
@@ -546,11 +546,11 @@
       
         "testing parameter search by existing ancillary keywords"
         "CMR2652AKW1" 
-        [c10-umm-json-1] 
+        [coll1] 
 
         "testing parameter search by existing ancillary keywords"
         "CMR2652AKW4"
-        [c10-umm-json-2] 
+        [coll2] 
 
         "testing parmaeter search by non-existing ancillary keywords"
         "CMR2652NOAKW" 
@@ -563,11 +563,11 @@
  
         "testing json query search by existing ancillary keywords"
         "CMR2652AKW2" 
-        [c10-umm-json-1]
+        [coll1]
 
         "testing json query search by existing ancillary keywords"
         "CMR2652AKW3"
-        [c10-umm-json-2]
+        [coll2]
 
         "testing json query search by non-existing ancillary keywords"
         "CMR2652NOAKW"  
