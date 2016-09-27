@@ -18,7 +18,7 @@
             [cmr.common.jobs :as jobs]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.access-control.services.event-handler :as event-handler]
-            [cmr.common-app.system :as common-sys]))
+            [cmr.common.system :as common-sys]))
 
 (defconfig access-control-nrepl-port
   "Port to listen for nREPL connections"

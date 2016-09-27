@@ -81,11 +81,12 @@
   "Throws a permission service error if no ACLs exist that grant the desired permission to the
   context user on group."
   [context action-description permission group]
-  (let [context (put-sids-in-context context)]
-    (when-not (or (get-instance-acls context permission group)
-                  (get-provider-acls context permission group)
-                  (get-system-acls context permission))
-      (throw-group-permission-error action-description group))))
+  (when-not (transmit-config/echo-system-token? context)
+    (let [context (put-sids-in-context context)]
+      (when-not (or (get-instance-acls context permission group)
+                    (get-provider-acls context permission group)
+                    (get-system-acls context permission))
+        (throw-group-permission-error action-description group)))))
 
 (defn verify-can-create-group
   "Throws a service error if the context user cannot create a group under provider-id."

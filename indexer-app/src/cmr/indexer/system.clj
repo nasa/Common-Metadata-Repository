@@ -27,7 +27,7 @@
             [cmr.common-app.services.kms-fetcher :as kf]
             [cmr.indexer.services.event-handler :as event-handler]
             [cmr.indexer.data.index-set :as index-set]
-            [cmr.common-app.system :as common-sys]))
+            [cmr.common.system :as common-sys]))
 
 (def
   ^{:doc "Defines the order to start the components."

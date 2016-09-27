@@ -1,10 +1,14 @@
 (ns cmr.indexer.data.concepts.keyword
   "Contains functions to create keyword fields"
-  (:require [clojure.string :as str]
-            [cmr.common.concepts :as concepts]
-            [cmr.indexer.data.concepts.science-keyword :as sk]
-            [cmr.indexer.data.concepts.attribute :as attrib]
-            [cmr.indexer.data.concepts.organization :as org]))
+  (:require 
+    [clojure.string :as str]
+    [cmr.common.concepts :as concepts]
+    [cmr.common.util :as util]
+    [cmr.indexer.data.concepts.attribute :as attrib]
+    [cmr.indexer.data.concepts.organization :as org]
+    [cmr.indexer.data.concepts.science-keyword :as sk] 
+    [cmr.umm-spec.location-keywords :as lk]
+    [cmr.umm-spec.util :as su]))
 
 ;; NOTE -  The following fields are marked as deprecated in the UMM documenation
 ;; and are therefore not used for keyword searches in the CMR:
@@ -26,21 +30,31 @@
       (into [field-value] (str/split field-value keywords-separator-regex)))))
 
 (defn create-keywords-field
-  [concept-id collection other-fields]
+  [concept-id collection umm-spec-collection other-fields]
   "Create a keyword field for keyword searches by concatenating several other fields
   into a single string"
-  (let [{{:keys [short-name long-name version-id version-description
-                 processing-level-id collection-data-type]} :product
-         :keys [entry-title summary spatial-keywords temporal-keywords associated-difs
-                projects]} collection
+  (let [;; TODO version-description will be added to UMM-SPEC in CMR-3241
+        ;; Once that is done, we need to remove collection argument from this function
+        {:keys [version-description]} (:product collection)
         {:keys [platform-long-names instrument-long-names entry-id]} other-fields
+        {short-name :ShortName version-id :Version entry-title :EntryTitle
+         collection-data-type :CollectionDataType summary :Abstract 
+         temporal-keywords :TemporalKeywords platforms :Platforms} umm-spec-collection
+        processing-level-id (get-in umm-spec-collection [:ProcessingLevel :Id]) 
+        processing-level-id (when-not (= su/not-provided processing-level-id)
+                              processing-level-id)
+        spatial-keywords (lk/location-keywords->spatial-keywords
+                           (:LocationKeywords umm-spec-collection))
+        projects (for [{:keys [ShortName LongName]} (:Projects umm-spec-collection)]
+                   {:short-name ShortName :long-name LongName})
         provider-id (:provider-id (concepts/parse-concept-id concept-id))
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                nrt-aliases
                                collection-data-type)
         project-long-names (map :long-name projects)
         project-short-names (map :short-name projects)
-        platforms (:platforms collection)
+        platforms (map util/map-keys->kebab-case 
+                       (when-not (= su/not-provided-platforms platforms) platforms))
         platform-short-names (map :short-name platforms)
         instruments (mapcat :instruments platforms)
         instrument-short-names (keep :short-name instruments)
@@ -52,17 +66,19 @@
         characteristics (mapcat :characteristics platforms)
         char-names (keep :name characteristics)
         char-descs (keep :description characteristics)
-        two-d-coord-names (map :name (:two-d-coordinate-systems collection))
-        data-centers (org/extract-data-center-names collection)
-        science-keywords (sk/science-keywords->keywords collection)
-        attrib-keywords (attrib/psas->keywords collection)
+        two-d-coord-names (map :TilingIdentificationSystemName
+                               (:TilingIdentificationSystems umm-spec-collection)) 
+        data-centers (map :ShortName (:DataCenters umm-spec-collection))
+        science-keywords (mapcat #(sk/science-keyword->keywords (util/map-keys->kebab-case %))
+                                 (:ScienceKeywords umm-spec-collection)) 
+        attrib-keywords (mapcat #(attrib/psa->keywords (util/map-keys->kebab-case %))
+                                (:AdditionalAttributes umm-spec-collection))
         all-fields (flatten (conj [concept-id]
                                   provider-id
                                   entry-title
                                   collection-data-type
                                   short-name
                                   entry-id
-                                  long-name
                                   two-d-coord-names
                                   summary
                                   version-id
@@ -73,7 +89,6 @@
                                   attrib-keywords
                                   spatial-keywords
                                   temporal-keywords
-                                  associated-difs
                                   project-long-names
                                   project-short-names
                                   platform-short-names
