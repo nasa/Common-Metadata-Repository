@@ -24,6 +24,8 @@
 (defn- build-routes [system]
   (routes
     (context (get-in system [:ingest-public-conf :relative-root-url]) []
+      ;; for NGAP deployment health check
+      (GET "/" {} {:status 200})
 
       provider-api/provider-api-routes
 

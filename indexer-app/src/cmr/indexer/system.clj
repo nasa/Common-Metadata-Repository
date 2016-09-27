@@ -34,7 +34,7 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :elastic-server :caches :db :scheduler :queue-broker :web :nrepl])
+  component-order [:log :caches :db :scheduler :queue-broker :web :nrepl])
 
 (defn create-elastic
   []
@@ -52,7 +52,7 @@
   []
   (let [sys {:log (log/create-logger)
              :db (es/create-elasticsearch-store (es-config/elastic-config))
-             :elastic-server (create-elastic)
+            ;  :elastic-server (create-elastic)
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (config/indexer-nrepl-port))
              :relative-root-url (transmit-config/indexer-relative-root-url)

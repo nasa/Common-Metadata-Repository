@@ -131,6 +131,8 @@
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
+      ;; for NGAP deployment health check
+      (GET "/" {} {:status 200})
       (context "/bulk_migration" []
         (POST "/providers" {:keys [request-context body params]}
           (migrate-provider request-context body params))
@@ -173,6 +175,7 @@
 
 (defn make-api [system]
   (-> (build-routes system)
+      common-routes/temp-lockdown-access-to-app
       acl/add-authentication-handler
       errors/invalid-url-encoding-handler
       errors/exception-handler

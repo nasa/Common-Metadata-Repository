@@ -11,7 +11,7 @@
    [cmr.access-control.test.bootstrap :as bootstrap]
    [cmr.acl.core :as acl]
    [cmr.common-app.api-docs :as api-docs]
-   [cmr.common-app.api.routes :as cr]
+   [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.context :as context]
    [cmr.common.api.errors :as api-errors]
    [cmr.common.cache :as cache]
@@ -216,7 +216,7 @@
   [context headers params]
   (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
   (-> (group-service/search-for-groups context (dissoc params :token))
-      cr/search-response))
+      common-routes/search-response))
 
 ;;; ACL Route Functions
 
@@ -260,7 +260,7 @@
   [context headers params]
   (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
   (-> (acl-search/search-for-acls context params)
-      cr/search-response))
+      common-routes/search-response))
 
 (defn get-permissions
   "Returns a Ring response with the requested permission check results."
@@ -303,6 +303,8 @@
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
+      ;; for NGAP deployment health check
+      (GET "/" {} {:status 200})
       admin-api-routes
 
       ;; Add routes for API documentation
@@ -311,15 +313,15 @@
                             "public/access_control_index.html")
 
       ;; add routes for checking health of the application
-      (cr/health-api-routes group-service/health)
+      (common-routes/health-api-routes group-service/health)
 
       ;; add routes for accessing caches
-      cr/cache-api-routes
+      common-routes/cache-api-routes
 
       (context "/groups" []
         (OPTIONS "/" req
                  (validate-standard-params (:params req))
-                 cr/options-response)
+                 common-routes/options-response)
 
         ;; Search for groups
         (GET "/" {:keys [request-context headers params]}
@@ -331,7 +333,7 @@
           (create-group request-context headers (slurp body)))
 
         (context "/:group-id" [group-id]
-          (OPTIONS "/" req cr/options-response)
+          (OPTIONS "/" req common-routes/options-response)
           ;; Get a group
           (GET "/" {:keys [request-context params]}
             (validate-group-route-params params)
@@ -348,7 +350,7 @@
             (update-group request-context headers (slurp body) group-id))
 
           (context "/members" []
-            (OPTIONS "/" req cr/options-response)
+            (OPTIONS "/" req common-routes/options-response)
             (GET "/" {:keys [request-context params]}
               (validate-group-route-params params)
               (get-members request-context group-id))
@@ -364,7 +366,7 @@
       (context "/acls" []
         (OPTIONS "/" req
                  (validate-standard-params (:params req))
-                 cr/options-response)
+                 common-routes/options-response)
 
         ;; Search for ACLs
         (GET "/" {:keys [request-context headers params]}
@@ -376,7 +378,7 @@
           (create-acl request-context headers (slurp body)))
 
         (context "/:concept-id" [concept-id]
-          (OPTIONS "/" req cr/options-response)
+          (OPTIONS "/" req common-routes/options-response)
 
           ;; Update an ACL
           (PUT "/" {:keys [request-context headers body]}
@@ -391,7 +393,7 @@
             (get-acl request-context headers concept-id))))
 
       (context "/permissions" []
-        (OPTIONS "/" [] cr/options-response)
+        (OPTIONS "/" [] common-routes/options-response)
 
         (GET "/" {:keys [request-context params]}
           (get-permissions request-context params))))
@@ -400,12 +402,13 @@
 
 (defn make-api [system]
   (-> (build-routes system)
+      common-routes/temp-lockdown-access-to-app
       acl/add-authentication-handler
-      cr/add-request-id-response-handler
+      common-routes/add-request-id-response-handler
       (context/build-request-context-handler system)
       keyword-params/wrap-keyword-params
       nested-params/wrap-nested-params
       api-errors/invalid-url-encoding-handler
       api-errors/exception-handler
-      cr/pretty-print-response-handler
+      common-routes/pretty-print-response-handler
       params/wrap-params))

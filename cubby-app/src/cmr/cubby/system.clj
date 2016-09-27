@@ -21,7 +21,7 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :elastic-server :db :web :nrepl])
+  [:log :db :web :nrepl])
 
 (defn create-elastic
   []
@@ -35,7 +35,7 @@
   []
   (let [sys {:log (log/create-logger)
              :db (elastic-cache-store/create-elastic-cache-store (es-config/elastic-config))
-             :elastic-server (create-elastic)
+            ;  :elastic-server (create-elastic)
              :web (web/create-web-server (transmit-config/cubby-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (cubby-nrepl-port))
              :relative-root-url (transmit-config/cubby-relative-root-url)}]

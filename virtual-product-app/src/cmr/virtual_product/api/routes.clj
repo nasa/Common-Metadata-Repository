@@ -15,6 +15,8 @@
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
+      ;; for NGAP deployment health check
+      (GET "/" {} {:status 200})
       (context "/translate-granule-entries" []
         (POST "/" {:keys [body content-type headers request-context]}
           (if (= (mt/mime-type->format content-type) :json)
@@ -28,6 +30,7 @@
 
 (defn make-api [system]
   (-> (build-routes system)
+      common-routes/temp-lockdown-access-to-app
       errors/invalid-url-encoding-handler
       errors/exception-handler
       common-routes/add-request-id-response-handler

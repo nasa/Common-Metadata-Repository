@@ -23,7 +23,7 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :elastic-server :index :web :nrepl])
+  component-order [:log :index :web :nrepl])
 
 (defn create-elastic
   []
@@ -36,7 +36,7 @@
   "Returns a new instance of the whole application."
   []
   (let [sys {:log (log/create-logger)
-             :elastic-server (create-elastic)
+            ;  :elastic-server (create-elastic)
              :index (es/create-elasticsearch-store (es-config/elastic-config))
              :web (web/create-web-server (transmit-config/index-set-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (index-set-nrepl-port))
@@ -53,4 +53,3 @@
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
   (common-sys/stop-fn "index-set" component-order))
-

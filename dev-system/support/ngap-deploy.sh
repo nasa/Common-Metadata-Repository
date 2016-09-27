@@ -5,9 +5,7 @@
 # DEPLOYMENT_DIR (Optional) - defaults to $WORKSPACE_HOME/ngap-deployments
 # NGAP_CLI_DIR (Optional) - defaults to $WORKSPACE_HOME/ngap-cli
 
-# Verify all pre-requisites are met
-# Deployment directory is set and exists
-apps=("metadata-db" "cubby")
+apps=("metadata-db" "cubby" "index-set" "indexer" "virtual-product" "bootstrap" "access-control" "search" "ingest")
 environments=("sit")
 app=$1
 environment=$2
@@ -19,7 +17,7 @@ printUsage() {
 if [ "$#" -ne 2 ]; then
     printUsage && exit 1
 fi
-# Checks if the passed in first parameter exists as one of the elements of the second array parameter
+# Takes two arguments. A value and an array. Checks if the array contains the value.
 containsElement () {
   local e
   for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
@@ -44,7 +42,7 @@ fi
 
 # Verify that the .env file exists in the deployment directory
 if [ ! -f "$deployment_dir/.env" ]; then
-  echo "The deployment directory ${deployment_dir} is missing the required .env file." && exit 1
+  echo "The deployment directory ${deployment_dir} is missing the required .env file. You can override the default directory using \$DEPLOYMENT_DIR env var." && exit 1
 fi
 
 # Verify the application directory exists where we expect
@@ -57,17 +55,11 @@ if [ ! -d "$ngap_cli_dir" ]; then
   echo "The NGAP CLI directory ${ngap_cli_dir} does not exist. Is \$WORKSPACE_HOME set? You can override the default directory using \$NGAP_CLI_DIR env var." && exit 1
 fi
 
-## Optional print warnings about any extra files which exist in the deployment directory
-
-# All parameters are OK and .env files exist where expected
-# Start doing work
-
 # Create the Procfile in the deployment directory
 echo "web: java \$JVM_OPTS -cp target/cmr-${app}-app-standalone.jar clojure.main -m cmr.${app}.runner" > "${deployment_dir}/Procfile"
 
 # Create project.clj
 echo "(defproject ${app} \"0.1.0-SNAPSHOT\" :description \"${app} App\" :url \"http://example.com/FIXME\" :min-lein-version \"2.0.0\" :dependencies [] :profiles {:dev {:dependencies [[javax.servlet/servlet-api \"2.5\"]  [ring/ring-mock \"0.3.0\"]]} :production {:env {:production true}}})" > "${deployment_dir}/project.clj"
-## Optional - validate no errors in .env file?
 
 # Clean and create the uberjar
 (cd $app_dir && lein do clean, uberjar)
@@ -77,9 +69,11 @@ mkdir -p $deployment_dir/target
 cp $app_dir/target/cmr-${app}-app-0.1.0-SNAPSHOT-standalone.jar $deployment_dir/target/cmr-${app}-app-standalone.jar
 
 # Create the tar file from the deployment directory
+tars_dir=$deployment_dir/../tarfiles
+mkdir -p $tars_dir
 tar_file_name=cmr-${app}-${environment}.tar
-(cd $deployment_dir && tar -cf ../${tar_file_name} .)
+(cd $deployment_dir && tar -cf ${tars_dir}/${tar_file_name} .)
 
 # Create the ngap deployment
-echo "cd $ngap_cli_dir && ngap deployments:create cmr-${app}-${environment} ${deployment_dir}/../${tar_file_name}"
-(cd $ngap_cli_dir && ngap deployments:create cmr-${app}-${environment} ${deployment_dir}/../${tar_file_name})
+echo "cd $ngap_cli_dir && ngap deployments:create cmr-${app}-${environment} ${tars_dir}/${tar_file_name}"
+(cd $ngap_cli_dir && ngap deployments:create cmr-${app}-${environment} ${tars_dir}/${tar_file_name})
