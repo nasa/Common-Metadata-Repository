@@ -33,7 +33,7 @@
                       :headers {config/token-header (config/echo-system-token)}}))
         status (:status response)
         body (cheshire/decode (:body response) true)]
-    (case status
+    (case (int status)
       404 nil
       200 body
       (errors/internal-error! (format "Unexpected error fetching index-set with id: %s,
