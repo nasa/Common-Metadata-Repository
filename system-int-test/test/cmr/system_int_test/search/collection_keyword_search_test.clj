@@ -528,30 +528,35 @@
                                (assoc exp-conv/example-collection-record
                                       :AncillaryKeywords ["CMR-2652-AKW1" "CMR-2652-AKW2"])
                                {:format :umm-json
-                                :accept-format :json})
-        keyword-str1 "CMR-2652-AKW1"
-        keyword-str2 "CMR-2652-AKW2"
-        keyword-str3 "CMR-2652-AKW3"]
+                                :accept-format :json})]
     (index/wait-until-indexed)
-    (testing "search by existing ancillary keywords parameter match."
-      (let [parameter-refs (search/find-refs :collection {:keyword keyword-str1})
-            parameter-matches? (d/refs-match? [c10-umm-json] parameter-refs)]
-        (is parameter-matches?)))
+    (testing "parameter searches"  
+      (are3 [keyword-str items]
+        (let [parameter-refs (search/find-refs :collection {:keyword keyword-str})
+              parameter-matches? (d/refs-match? items parameter-refs)]
+          (is parameter-matches?))
+      
+        "testing parameter search by existing ancillary keywords"
+        "CMR-2652-AKW1" 
+        [c10-umm-json] 
 
-    (testing "search by non-existing ancillary keywords parameter match."
-      (let [parameter-refs (search/find-refs :collection {:keyword keyword-str3})
-            parameter-matches? (d/refs-match? [] parameter-refs)]
-        (is parameter-matches?)))
+        "testing parmaeter search by non-existing ancillary keywords"
+        "CMR-2652-NO-AKW" 
+        []))
+ 
+    (testing "json query searchs"
+      (are3 [keyword-str items]
+        (let [json-refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str})
+              json-matches? (d/refs-match? items json-refs)]
+          (is json-matches?))
+ 
+        "testing json query search by existing ancillary keywords"
+        "CMR-2652-AKW2" 
+        [c10-umm-json]
 
-    (testing "search by existing ancillary keywords json query match."
-      (let [json-refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str2})
-            json-matches? (d/refs-match? [c10-umm-json] json-refs)]
-        (is json-matches?)))
-
-    (testing "search by non-existing ancillary keywords json query match."
-      (let [json-refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str3})
-            json-matches? (d/refs-match? [] json-refs)]
-        (is json-matches?)))))
+        "testing json query search by non-existing ancillary keywords"
+        "CMR-2652-NO-AKW"  
+        []))))
 
 ;; This tests that when searching by relevancy that if the score is the same short name ascending is used for
 ;; sorting the results and then if short name is the same version is used for sorting the results
