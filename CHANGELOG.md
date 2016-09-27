@@ -115,4 +115,9 @@ Items to include in each issue
 * CMR-3340 Translate UMM ISOTopicCategories to ISO 19115-2 (MENDS)
   * Updated UMM JSON schema to 1.7 which changed ISOTopicCategory type from string to ISOTopicCategoryEnum.
 
+## 1.61
 
+* CMR-2717 - Changed legacy services to read groups from CMR access control
+  * Needs config v341
+  * Need to manually synchronize groups before deployment.
+  * The CMR deployment must happen first.
