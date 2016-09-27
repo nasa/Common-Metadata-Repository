@@ -525,26 +525,33 @@
 ;; This would break other tests when doing the keyword searches. 
 (deftest search-by-ancillary-keywords
   (let [c10-umm-json (d/ingest "PROV1"
-                               exp-conv/example-collection-record
+                               (assoc exp-conv/example-collection-record
+                                      :AncillaryKeywords ["CMR-2652-AKW1" "CMR-2652-AKW2"])
                                {:format :umm-json
-                                :accept-format :json})]
+                                :accept-format :json})
+        keyword-str1 "CMR-2652-AKW1"
+        keyword-str2 "CMR-2652-AKW2"
+        keyword-str3 "CMR-2652-AKW3"]
     (index/wait-until-indexed)
-    (testing "search by ancillary keywords."
-      (let [keyword-str "ancillary keyword 1"
-            items [c10-umm-json]
-            parameter-refs (search/find-refs :collection {:keyword keyword-str})
-            json-refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str})
-            parameter-matches? (d/refs-match? items parameter-refs)
-            json-matches? (d/refs-match? items json-refs)]
-        (when-not parameter-matches?
-          (println "Parameter search failed")
-          (println "Expected:" (map :entry-title items))
-          (println "Actual:" (map :name (:refs parameter-refs))))
-        (when-not json-matches?
-          (println "JSON Query search failed")
-          (println "Expected:" (map :entry-title items))
-          (println "Actual:" (map :name (:refs json-refs))))
-        (and parameter-matches? json-matches?)))))
+    (testing "search by existing ancillary keywords parameter match."
+      (let [parameter-refs (search/find-refs :collection {:keyword keyword-str1})
+            parameter-matches? (d/refs-match? [c10-umm-json] parameter-refs)]
+        (is parameter-matches?)))
+
+    (testing "search by non-existing ancillary keywords parameter match."
+      (let [parameter-refs (search/find-refs :collection {:keyword keyword-str3})
+            parameter-matches? (d/refs-match? [] parameter-refs)]
+        (is parameter-matches?)))
+
+    (testing "search by existing ancillary keywords json query match."
+      (let [json-refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str2})
+            json-matches? (d/refs-match? [c10-umm-json] json-refs)]
+        (is json-matches?)))
+
+    (testing "search by non-existing ancillary keywords json query match."
+      (let [json-refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str3})
+            json-matches? (d/refs-match? [] json-refs)]
+        (is json-matches?)))))
 
 ;; This tests that when searching by relevancy that if the score is the same short name ascending is used for
 ;; sorting the results and then if short name is the same version is used for sorting the results
