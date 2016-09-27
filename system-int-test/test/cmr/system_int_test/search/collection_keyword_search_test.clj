@@ -549,7 +549,7 @@
         [c10-umm-json-1] 
 
         "testing parameter search by existing ancillary keywords"
-        "CMR2652AKW3"
+        "CMR2652AKW4"
         [c10-umm-json-2] 
 
         "testing parmaeter search by non-existing ancillary keywords"
@@ -566,7 +566,7 @@
         [c10-umm-json-1]
 
         "testing json query search by existing ancillary keywords"
-        "CMR2652AKW4"
+        "CMR2652AKW3"
         [c10-umm-json-2]
 
         "testing json query search by non-existing ancillary keywords"
