@@ -58,17 +58,17 @@
 (defn sanitize-and-parse-date
   "If sanitize? is enabled make corrections in the date string then parse. If the date string
   cannot be parsed, the f/parse function will return nil. Return the original date instead
-  of nil to get error messages for invalid dates."
+  of nil to get error messages for invalid dates. Parse and unparse the date so the date string
+  can be processed."
   [date sanitize?]
   (if sanitize?
     (if-let [parsed-date (some-> date
                                  (str/replace "/" "-")
                                  f/parse)]
-      parsed-date
+      (let [parsed-date (f/unparse (f/formatters :date-time) parsed-date)]
+        parsed-date)
       date)
     date))
-
-;(sanitize-and-parse-date "2003/08" true)
 
 (defn- data-date-getter
   [date-type]
