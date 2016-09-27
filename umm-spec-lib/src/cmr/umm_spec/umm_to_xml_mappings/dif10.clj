@@ -323,7 +323,7 @@
                [:Persistent_Identifier
                  [:Type "DOI"]
                  [:Identifier (get-in pub-ref [:DOI :DOI])]])
-             [:Online_Resource (get-in pub-ref [:RelatedUrl :URLs 0])]
+             [:Online_Resource (-> pub-ref :RelatedUrl :URLs first)]
              :Other_Reference_Details])])
     [:Summary
      ;; DIF 10 requires a Summary element but none of the contents are required, so either one will

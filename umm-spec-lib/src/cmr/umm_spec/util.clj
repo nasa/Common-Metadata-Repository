@@ -46,10 +46,13 @@
     {:Roles ["ARCHIVER"]
      :ShortName not-provided}))
 
+(def not-provided-url
+  "Not%20provided")
+
 (def not-provided-related-url
   "Place holder to use when a related url is not provided."
   (cmn/map->RelatedUrlType
-    {:URLs ["Not%20provided"]}))
+    {:URLs [not-provided-url]}))
 
 (def default-granule-spatial-representation
   "Default value for GranuleSpatialRepresentation"
