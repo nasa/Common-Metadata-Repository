@@ -19,7 +19,7 @@
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.message-queue.queue.sqs :as sqs]
             [cmr.message-queue.queue.memory-queue :as queue]
-            [cmr.common-app.system :as common-sys]))
+            [cmr.common.system :as common-sys]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 

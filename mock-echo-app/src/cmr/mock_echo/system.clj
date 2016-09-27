@@ -12,7 +12,7 @@
             [cmr.mock-echo.data.urs-db :as urs-db]
             [cmr.transmit.config :as transmit-config]
             [cmr.common.api.context :as context]
-            [cmr.common-app.system :as common-sys]))
+            [cmr.common.system :as common-sys]))
 
 (def
   ^{:doc "Defines the order to start the components."

@@ -21,7 +21,7 @@
     [cmr.indexer.data.concepts.attribute :as attrib]
     [cmr.indexer.data.concepts.instrument :as instrument]
     [cmr.indexer.data.concepts.keyword :as k]
-    [cmr.indexer.data.concepts.location-keyword :as lk]
+    [cmr.indexer.data.concepts.location-keyword :as clk]
     [cmr.indexer.data.concepts.organization :as org]
     [cmr.indexer.data.concepts.platform :as platform]
     [cmr.indexer.data.concepts.science-keyword :as sk]
@@ -30,8 +30,10 @@
     [cmr.indexer.data.elasticsearch :as es]
     [cmr.indexer.data.humanizer-fetcher :as hf]
     [cmr.indexer.services.index-service :as idx]
+    [cmr.umm-spec.location-keywords :as lk]
     [cmr.umm-spec.time :as spec-time]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
+    [cmr.umm-spec.util :as su]
     [cmr.umm.acl-matchers :as umm-matchers]
     [cmr.umm.collection.entry-id :as eid]
     [cmr.umm.related-url-helper :as ru]
@@ -42,14 +44,13 @@
 
 (defn spatial->elastic
   [collection]
-  (when-let [geometries (seq (get-in collection [:spatial-coverage :geometries]))]
-    (let [sr (get-in collection [:spatial-coverage :spatial-representation])]
-      (cond
-        (or (= sr :geodetic) (= sr :cartesian))
-        (spatial/spatial->elastic-docs sr collection)
+  (when-let [coord-sys (spatial/get-collection-coordinate-system collection)]
+    (cond
+      (or (= coord-sys :geodetic) (= coord-sys :cartesian))
+      (spatial/collection-spatial->elastic-docs coord-sys collection)
 
-        :else
-        (errors/internal-error! (str "Unknown spatial representation [" sr "]"))))))
+      :else
+      (errors/internal-error! (str "Unknown spatial representation [" coord-sys "]")))))
 
 (defn- person->email-contact
   "Return an email contact for the Personnel record or nil if none is available."
@@ -151,17 +152,24 @@
   [context concept collection umm-spec-collection]
   (let [{:keys [concept-id revision-id provider-id user-id
                 native-id revision-date deleted format extra-fields tag-associations]} concept
-        {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
-         :keys [entry-title summary related-urls spatial-keywords associated-difs
-                access-value personnel distribution]} collection
-        temporal-keywords (:TemporalKeywords umm-spec-collection) 
+        {{:keys [long-name]} :product :keys [related-urls associated-difs personnel]} collection
+        {short-name :ShortName version-id :Version entry-title :EntryTitle
+         collection-data-type :CollectionDataType summary :Abstract
+         temporal-keywords :TemporalKeywords platforms :Platforms} umm-spec-collection
+        processing-level-id (get-in umm-spec-collection [:ProcessingLevel :Id])
+        processing-level-id (when-not (= su/not-provided processing-level-id)
+                              processing-level-id)
+        spatial-keywords (lk/location-keywords->spatial-keywords
+                          (:LocationKeywords umm-spec-collection))
+        access-value (get-in umm-spec-collection [:AccessConstraints :Value])
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
                                (concat [collection-data-type] k/nrt-aliases)
                                collection-data-type)
         entry-id (eid/entry-id short-name version-id)
         personnel (person-with-email personnel)
-        platforms (:platforms collection)
+        platforms (map util/map-keys->kebab-case
+                       (when-not (= su/not-provided-platforms platforms) platforms))
         gcmd-keywords-map (kf/get-gcmd-keywords-map context)
         platforms-nested (map #(platform/platform-short-name->elastic-doc gcmd-keywords-map %)
                               (map :short-name platforms))
@@ -181,11 +189,11 @@
         sensors (mapcat :sensors instruments)
         sensor-short-names (keep :short-name sensors)
         sensor-long-names (keep :long-name sensors)
-        project-short-names (->> (map :short-name (:projects collection))
+        project-short-names (->> (map :ShortName (:Projects umm-spec-collection))
                                  (map str/trim))
-        project-long-names (->> (keep :long-name (:projects collection))
+        project-long-names (->> (keep :LongName (:Projects umm-spec-collection))
                                 (map str/trim))
-        two-d-coord-names (map :TilingIdentificationSystemName 
+        two-d-coord-names (map :TilingIdentificationSystemName
                                (:TilingIdentificationSystems umm-spec-collection))
         archive-centers (map #(org/data-center-short-name->elastic-doc gcmd-keywords-map %)
                              (map str/trim
@@ -203,7 +211,8 @@
         update-time (index-util/date->elastic update-time)
         insert-time (get-in collection [:data-provider-timestamps :insert-time])
         insert-time (index-util/date->elastic insert-time)
-        spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
+        coordinate-system (get-in umm-spec-collection [:SpatialExtent :HorizontalSpatialDomain
+                                                       :Geometry :CoordinateSystem])
         permitted-group-ids (get-coll-permitted-group-ids context provider-id collection)]
     (merge {:concept-id concept-id
             :revision-id revision-id
@@ -244,8 +253,8 @@
             :data-centers data-centers
             :science-keywords (map #(sk/science-keyword->elastic-doc gcmd-keywords-map %)
                                    (:ScienceKeywords umm-spec-collection))
-            :location-keywords (map #(lk/location-keyword->elastic-doc gcmd-keywords-map %)
-                                   (:LocationKeywords umm-spec-collection))
+            :location-keywords (map #(clk/location-keyword->elastic-doc gcmd-keywords-map %)
+                                    (:LocationKeywords umm-spec-collection))
 
             :instrument-sn instrument-short-names
             :instrument-sn.lowercase  (map str/lower-case instrument-short-names)
@@ -274,11 +283,10 @@
             :insert-time insert-time
             :associated-difs associated-difs
             :associated-difs.lowercase (map str/lower-case associated-difs)
-            :coordinate-system (when spatial-representation
-                                 (csk/->SCREAMING_SNAKE_CASE_STRING spatial-representation))
+            :coordinate-system coordinate-system
 
             ;; fields added to support keyword searches
-            :keyword (k/create-keywords-field concept-id collection
+            :keyword (k/create-keywords-field concept-id collection umm-spec-collection
                                               {:platform-long-names platform-long-names
                                                :instrument-long-names instrument-long-names
                                                :entry-id entry-id})
@@ -300,13 +308,13 @@
             ;;                                      "data": "prod"}}
             :tags-gzip-b64 (when (seq tag-associations)
                              (util/string->gzip-base64
-                               (pr-str
-                                 (into {} (for [ta tag-associations]
-                                            [(:tag-key ta) (util/remove-nil-keys
-                                                             {:data (:data ta)})])))))}
+                              (pr-str
+                               (into {} (for [ta tag-associations]
+                                          [(:tag-key ta) (util/remove-nil-keys
+                                                          {:data (:data ta)})])))))}
            (collection-temporal-elastic context concept-id umm-spec-collection)
-           (get-in collection [:spatial-coverage :orbit-parameters])
-           (spatial->elastic collection)
+           (spatial/collection-orbit-parameters->elastic-docs umm-spec-collection)
+           (spatial->elastic umm-spec-collection)
            (sk/science-keywords->facet-fields collection)
            (collection-humanizers-elastic context collection))))
 

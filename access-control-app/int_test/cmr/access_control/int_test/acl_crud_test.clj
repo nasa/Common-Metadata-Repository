@@ -16,13 +16,14 @@
               (fixtures/int-test-fixtures)
               (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"}
                                       ["user1" "user2" "user3" "user4" "user5"])
-              (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
+              (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"])
+              (fixtures/grant-all-acl-fixture ["PROV1"]))
 
 (def system-acl
-  "A system acl that grants create, read, update, delete to guest on any acl"
+  "A system ingest management acl that grants read and update to guest users"
   {:group_permissions [{:user_type "guest"
-                        :permissions ["create" "read" "update" "delete"]}]
-   :system_identity {:target "ANY_ACL"}})
+                        :permissions ["read" "update"]}]
+   :system_identity {:target "INGEST_MANAGEMENT_ACL"}})
 
 (def provider-acl
   {:legacy_guid "ABCD-EFG-HIJK-LMNOP"
@@ -62,10 +63,35 @@
     (is (re-find #"^ACL.*" (:concept_id resp)))
     (is (= 1 (:revision_id resp)))))
 
+(deftest create-catalog-item-acl-permission-test
+  ;; Tests creation permissions of catalog item acls
+  (let [token (e/login (u/conn-context) "user1")
+        guest-token (e/login-guest (u/conn-context))
+        token2 (e/login (u/conn-context) "user2")
+        group1 (u/ingest-group token {:name "group1"} ["user1"])
+        group1-concept-id (:concept_id group1)
+        _ (ac/create-acl (u/conn-context) {:group_permissions [{:group_id group1-concept-id
+                                                                :permissions ["create"]}]
+                                           :provider_identity {:provider_id "PROV2"
+                                                               :target "CATALOG_ITEM_ACL"}})
+        _ (u/wait-until-indexed)
+        resp1 (ac/create-acl (merge {:token token} (u/conn-context)) (assoc-in catalog-item-acl
+                                                                               [:catalog_item_identity :provider_id] "PROV2"))]
+
+    (is (re-find #"^ACL.*" (:concept_id resp1)))
+    (is (= 1 (:revision_id resp1)))
+    (is (thrown-with-msg? Exception #"User \[guest\] does not have permission to create a catalog item for provider-id \[PROV2\]"
+                          (ac/create-acl (u/conn-context) (assoc-in catalog-item-acl
+                                                                    [:catalog_item_identity :provider_id] "PROV2") {:token guest-token})))
+    (is (thrown-with-msg? Exception #"User \[user2\] does not have permission to create a catalog item for provider-id \[PROV2\]"
+                          (ac/create-acl (u/conn-context) (assoc-in catalog-item-acl
+                                                                    [:catalog_item_identity :provider_id] "PROV2") {:token token2})))))
+
 (deftest create-acl-errors-test
   (let [token (e/login (u/conn-context) "admin")
         group1 (u/ingest-group token {:name "group1"} ["user1"])
-        group1-concept-id (:concept_id group1)]
+        group1-concept-id (:concept_id group1)
+        provider-id (:provider_id (:provider_identity (ac/create-acl (u/conn-context) provider-acl {:token token})))]
     (are3 [re acl]
           (is (thrown-with-msg? Exception re (ac/create-acl (u/conn-context) acl {:token token})))
 
@@ -141,11 +167,11 @@
                       :throw-exceptions false})))))))
 
 (deftest acl-catalog-item-identity-validation-test
-  (let [token (e/login (u/conn-context) "admin")]
+  (let [token (e/login-guest (u/conn-context))]
     (are3 [errors acl] (is (= errors (:errors (u/create-acl token acl {:raw? true}))))
 
           "An error is returned if creating a catalog item identity that does not grant permission
-               to collections or granules. (It must grant to collections or granules or both.)"
+           to collections or granules. (It must grant to collections or granules or both.)"
           ["when catalog_item_identity is specified, one or both of collection_applicable or granule_applicable must be true"]
           {:group_permissions [{:user_type "guest" :permissions ["read"]}]
            :catalog_item_identity {:name "A Catalog Item ACL"
@@ -278,7 +304,7 @@
                [:revision_id :status]))))))
 
 (deftest create-duplicate-acl-test
-  (let [token (e/login (u/conn-context) "admin")]
+  (let [token (e/login-guest (u/conn-context))]
     (testing "system ACL"
       (is (= 1 (:revision_id (ac/create-acl (u/conn-context) system-acl {:token token}))))
       (is (thrown-with-msg? Exception #"concepts with the same acl identity were found"
@@ -446,7 +472,7 @@
                            (assoc provider-acl :legacy_guid "XYZ-EFG-HIJK-LMNOP") {:token token}))))))
 
 (deftest delete-acl-test
-  (let [token (e/login (u/conn-context) "admin")
+  (let [token (e/login-guest (u/conn-context))
         acl-concept-id (:concept_id
                          (ac/create-acl (u/conn-context)
                                         {:group_permissions [{:permissions [:read]
@@ -474,12 +500,12 @@
     (testing "200 status, concept id and revision id of tombstone is returned on successful deletion."
       (is (= {:status 200
               :body {:revision-id 2
-                     :concept-id "ACL1200000001-CMR"}
+                     :concept-id acl-concept-id}
               :content-type :json}
              (ac/delete-acl (u/conn-context) acl-concept-id {:token token :raw? true}))))
     (testing "404 is returned when trying to delete an ACL again"
       (is (= {:status 404
-              :body {:errors ["ACL with concept id [ACL1200000001-CMR] was deleted."]}
+              :body {:errors ["ACL with concept id [ACL1200000003-CMR] was deleted."]}
               :content-type :json}
              (ac/delete-acl (u/conn-context) acl-concept-id {:token token :raw? true}))))
     (testing "concept can no longer be retrieved through access control service"

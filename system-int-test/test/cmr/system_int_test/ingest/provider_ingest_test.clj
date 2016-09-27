@@ -123,14 +123,21 @@
                           :description "A Group"
                           :provider_id "PROV1"}))
           acl1 (u/map-keys->kebab-case
-                 (access-control/create-acl (transmit-config/echo-system-token)
+                 (access-control/create-acl token
+                                           {:group_permissions [{:permissions [:create :update :read :delete]
+                                                                 :user_type "guest"}]
+                                            :provider_identity {:provider_id "PROV1"
+                                                                :target "CATALOG_ITEM_ACL"}}))
+          _ (index/wait-until-indexed)
+          acl2 (u/map-keys->kebab-case
+                 (access-control/create-acl token
                                             {:group_permissions [{:permissions [:read :order]
                                                                   :user_type "guest"}]
                                              :catalog_item_identity {:name "PROV1 read, order"
                                                                      :collection_applicable true
                                                                      :provider_id "PROV1"}}))
-          acl2 (u/map-keys->kebab-case
-                 (access-control/create-acl (transmit-config/echo-system-token)
+          acl3 (u/map-keys->kebab-case
+                 (access-control/create-acl token
                                            {:group_permissions [{:permissions [:update]
                                                                  :user_type "guest"}]
                                             :provider_identity {:provider_id "PROV1"
@@ -147,10 +154,10 @@
                     (access-control/search-for-groups (transmit-config/echo-system-token)
                                                       {:provider "PROV1"})))))
       ;; PROV1 ACLs are indexed
-      (is (= [(:concept-id acl1) (:concept-id acl2)]
-             (map :concept_id
-                  (:items
-                    (access-control/search-for-acls token {:provider "PROV1"})))))
+      (is (= (set [(:concept-id acl1) (:concept-id acl2) (:concept-id acl3)])
+             (set (map :concept_id
+                    (:items
+                      (access-control/search-for-acls token {:provider "PROV1"}))))))
 
       ;; delete provider PROV1
       (let [{:keys [status content-length]} (ingest/delete-ingest-provider "PROV1")]

@@ -22,7 +22,7 @@
             [cmr.ingest.api.ingest :as ingest-api]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.ingest.services.providers-cache :as pc]
-            [cmr.common-app.system :as common-sys]))
+            [cmr.common.system :as common-sys]))
 
 (def
   ^{:doc "Defines the order to start the components."

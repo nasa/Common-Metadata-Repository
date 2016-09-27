@@ -43,7 +43,7 @@
 
 (def not-provided-platforms
   "Default platforms to use if none is provided"
-  [{:ShortName not-provided}])
+  [(cmn/map->PlatformType {:ShortName not-provided})])
 
 (def not-provided-contact-person-role
   "Default role for a Contact Person to use if none is provided"
@@ -157,8 +157,8 @@
     (for [[_ num-str unit-str :as results] (re-seq data-size-re
                                                    (-> s str .toLowerCase))
           :when (and num-str (not (str/blank? unit-str)))]
-      {:Size (Double. (.replace num-str "," ""))
-       :Unit (-> unit-str str .trim .toUpperCase first (str "B"))})))
+      {:Size (Double. (str/replace num-str "," ""))
+       :Unit (-> unit-str str/trim str/upper-case first (str "B"))})))
 
 (defn data-size-str
   "Takes a collection of FileSizeType records which have a Size and a Unit and converts them to a

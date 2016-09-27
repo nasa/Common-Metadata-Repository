@@ -29,7 +29,7 @@
             [cmr.indexer.services.event-handler :as event-handler]
             [cmr.indexer.data.index-set :as index-set]
             [cmr.message-queue.queue.sqs :as sqs]
-            [cmr.common-app.system :as common-sys]))
+            [cmr.common.system :as common-sys]))
 
 (def
   ^{:doc "Defines the order to start the components."

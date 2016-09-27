@@ -23,7 +23,7 @@
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.bootstrap.config :as bootstrap-config]
             [cmr.acl.core :as acl]
-            [cmr.common-app.system :as common-sys]))
+            [cmr.common.system :as common-sys]))
 
 (defconfig db-batch-size
   "Batch size to use when batching database operations."

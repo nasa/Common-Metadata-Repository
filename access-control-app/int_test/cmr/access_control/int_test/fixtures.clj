@@ -1,26 +1,26 @@
 (ns cmr.access-control.int-test.fixtures
-  (:require [cmr.transmit.access-control :as ac]
-            [clojure.test :as ct]
-            [cmr.transmit.config :as config]
-            [cmr.transmit.metadata-db2 :as mdb]
-            [cmr.access-control.system :as system]
-            [cmr.access-control.config :as access-control-config]
-            [cmr.access-control.test.util :as test-util :refer [conn-context]]
-            [cmr.elastic-utils.test-util :as elastic-test-util]
-            [cmr.metadata-db.system :as mdb-system]
-            [cmr.mock-echo.system :as mock-echo-system]
-            [cmr.mock-echo.client.mock-echo-client :as mock-echo-client]
-            [cmr.mock-echo.client.mock-urs-client :as mock-urs-client]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.common-app.test.client-util :as common-client-test-util]
-            [cmr.metadata-db.system :as mdb-system]
-            [cmr.metadata-db.config :as mdb-config]
-            [cmr.metadata-db.data.memory-db :as memory]
-            [cmr.message-queue.queue.memory-queue :as mem-queue]
-            [cmr.message-queue.config :as rmq-conf]
-            [cmr.message-queue.test.queue-broker-wrapper :as queue-broker-wrapper]
-            [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
-            [cmr.common.jobs :as jobs]))
+  (:require
+    [clojure.test :as ct]
+    [cmr.access-control.config :as access-control-config]
+    [cmr.access-control.system :as system]
+    [cmr.access-control.test.util :as test-util :refer [conn-context]]
+    [cmr.common-app.test.client-util :as common-client-test-util]
+    [cmr.common.jobs :as jobs]
+    [cmr.elastic-utils.test-util :as elastic-test-util]
+    [cmr.message-queue.config :as rmq-conf]
+    [cmr.message-queue.queue.memory-queue :as mem-queue]
+    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
+    [cmr.message-queue.test.queue-broker-wrapper :as queue-broker-wrapper]
+    [cmr.metadata-db.config :as mdb-config]
+    [cmr.metadata-db.data.memory-db :as memory]
+    [cmr.metadata-db.system :as mdb-system]
+    [cmr.mock-echo.client.echo-util :as e]
+    [cmr.mock-echo.client.mock-echo-client :as mock-echo-client]
+    [cmr.mock-echo.client.mock-urs-client :as mock-urs-client]
+    [cmr.mock-echo.system :as mock-echo-system]
+    [cmr.transmit.access-control :as ac]
+    [cmr.transmit.config :as config]
+    [cmr.transmit.metadata-db2 :as mdb]))
 
 (defn queue-config
   []
@@ -117,4 +117,33 @@
     (e/grant-system-group-permissions-to-all (conn-context))
     (doseq [provider-guid provider-guids]
       (e/grant-provider-group-permissions-to-all (conn-context) provider-guid))
+    (f)))
+
+(defn grant-provider-acl-permissions-to-all
+  "Creates provider acls granting create on group-id or user-type"
+  [provider-ids]
+  (doseq [item provider-ids]
+    (ac/create-acl (conn-context) {:group_permissions [{:user_type :registered
+                                                        :permissions ["read" "update" "create" "delete"],}
+                                                       {:user_type :guest
+                                                        :permissions ["read" "update" "create" "delete"]}]
+                                   :provider_identity {:provider_id item
+                                                       :target "CATALOG_ITEM_ACL"}})))
+
+(defn grant-any-acl-system-acl-to-all
+  "Creates system acl targeting ANY_ACL that grants create, read, update, and delete to all"
+  []
+  (ac/create-acl (conn-context) {:group_permissions [{:user_type :registered
+                                                      :permissions ["read" "update" "create" "delete"],}
+                                                     {:user_type :guest
+                                                      :permissions ["read" "update" "create" "delete"]}]
+                                 :system_identity {:target "ANY_ACL"}}))
+
+(defn grant-all-acl-fixture
+  "Returns a test fixutre function which grants guest ability to create, read, update, and delete any ACL."
+  [provider-ids]
+  (fn [f]
+    (grant-any-acl-system-acl-to-all)
+    (grant-provider-acl-permissions-to-all provider-ids)
+    (test-util/wait-until-indexed)
     (f)))

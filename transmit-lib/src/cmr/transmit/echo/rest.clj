@@ -50,8 +50,6 @@
    (let [conn (config/context->app-connection context :echo-rest)
          url (format "%s%s" (conn/root-url conn) url-path)
          params (merge (request-options conn) options)
-         ;; Uncoment to log requests
-         ; _ (debug "Making ECHO DELETE Request" url (pr-str params))
          response (client/delete url params)
          {:keys [status body]} response]
      [status body])))
@@ -64,8 +62,6 @@
    (let [conn (config/context->app-connection context :echo-rest)
          url (format "%s%s" (conn/root-url conn) url-path)
          params (merge (post-options conn body-obj) options)
-         ;; Uncoment to log requests
-         ; _ (debug "Making ECHO POST Request" url (pr-str params))
          response (client/post url params)
          {:keys [status body headers]} response
          parsed (if (.startsWith ^String (get headers "Content-Type" "") "application/json")

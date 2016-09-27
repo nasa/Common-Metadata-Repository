@@ -13,7 +13,7 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.acl.core :as acl]
-            [cmr.common-app.system :as common-sys]))
+            [cmr.common.system :as common-sys]))
 
 (defconfig index-set-nrepl-port
   "Port to listen for nREPL connections"
