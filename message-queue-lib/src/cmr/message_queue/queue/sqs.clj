@@ -190,9 +190,11 @@
     (doseq [exchange-name exchange-names
             :let [ex-name (normalize-queue-name exchange-name)
                   topic (get-topic sns-client ex-name)
-                  topic-arn (.getTopicArn topic)]]
-      ;; subscribe the queue to the topic
-      (.subscribe sns-client topic-arn "sqs" q-arn))))
+                  topic-arn (.getTopicArn topic)
+                  ;; subscribe the queue to the topic
+                  subscription-arn (.getSubscriptionArn (.subscribe sns-client topic-arn "sqs" q-arn))]]
+
+      (.setSubscriptionAttributes sns-client subscription-arn "RawMessageDelivery" "true"))))
 
 (defn- normalized-queue-name->original-queue-name
   "Convert a normalized queue name to the original queue name used to create it."
