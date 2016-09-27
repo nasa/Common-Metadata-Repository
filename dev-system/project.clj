@@ -55,7 +55,12 @@
   :repl-options {:init-ns user
                  :timeout 180000}
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
-             "-Dclojure.compiler.direct-linking=true"]
+             "-Dclojure.compiler.direct-linking=true"
+             ;; Enable logging in jetty.
+             "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
+             "-Dorg.eclipse.jetty.LEVEL=INFO"
+             "-Dorg.eclipse.jetty.websocket.LEVEL=INFO"]
+
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]
                         [org.clojure/tools.namespace "0.2.11"]

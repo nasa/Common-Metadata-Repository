@@ -9,6 +9,7 @@
             [cmr.access-control.api.routes :as routes]
             [cmr.access-control.data.access-control-index :as access-control-index]
             [cmr.common-app.services.search.elastic-search-index :as search-index]
+            [cmr.access-control.test.bootstrap :as bootstrap]
             [cmr.access-control.config :as config]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.common.api.web-server :as web]
@@ -17,7 +18,7 @@
             [cmr.common.jobs :as jobs]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.access-control.services.event-handler :as event-handler]
-            [cmr.common-app.system :as common-sys]))
+            [cmr.common.system :as common-sys]))
 
 (defconfig access-control-nrepl-port
   "Port to listen for nREPL connections"
@@ -73,7 +74,7 @@
     (transmit-config/system-with-connections sys [:echo-rest :metadata-db :urs])))
 
 (defn start
-  "Performs side effects to initialize the system, acquire resources,  and start it running. Returns
+  "Performs side effects to initialize the system, acquire resources, and start it running. Returns
   an updated instance of the system."
   [system]
   (info "Access Control system starting")
@@ -90,13 +91,15 @@
   (common-sys/stop-fn "access-control" component-order))
 
 (defn dev-start
-  "Starts the system but performs extra calls to make sure all indexes are created in elastic."
+  "Starts the system but performs extra calls to make sure all indexes are created in elastic and
+   bootstrap necessary local test data."
   [system]
   (let [started-system (start system)]
     (try
       (access-control-index/create-index-or-update-mappings (:search-index started-system))
+      (bootstrap/bootstrap started-system)
       (catch Exception e
-        (.printStackTrace e)
-        (common-sys/stop started-system component-order)))
+        (common-sys/stop started-system component-order)
+        (throw e)))
     started-system))
 

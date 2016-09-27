@@ -29,6 +29,7 @@
               :page-size 0
               :condition condition
               :result-format :query-specified
+              :result-fields []
               :aggregations {:granule-counts-by-collection-id
                              {:terms {:field (q2e/query-field->elastic-field :collection-concept-id
                                                                              :granule)

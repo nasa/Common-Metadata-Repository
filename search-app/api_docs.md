@@ -1278,7 +1278,6 @@ The following fields are indexed for keyword search:
     * Entry title
     * Data type
     * Short name
-    * Long name
     * Summary
     * Version ID
     * Version description
@@ -1288,7 +1287,6 @@ The following fields are indexed for keyword search:
     * Additional attribute names, data types, values, and descriptions
     * Spatial keywords
     * Temporal keywords
-    * Associated DIFs
     * Project short and long names
     * Platform short and long names
     * Instrument short names, long names, and techniques

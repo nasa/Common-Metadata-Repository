@@ -27,7 +27,7 @@
             [cmr.common-app.services.kms-fetcher :as kf]
             [cmr.indexer.services.event-handler :as event-handler]
             [cmr.indexer.data.index-set :as index-set]
-            [cmr.common-app.system :as common-sys]))
+            [cmr.common.system :as common-sys]))
 
 (def
   ^{:doc "Defines the order to start the components."
@@ -82,9 +82,13 @@
   (let [started-system (start system)
         context {:system started-system}]
     ;; The indexes/alias will not be created if they already exist.
-    (es/create-indexes context)
-    (when (es/requires-update? context)
-      (es/update-indexes context))
+    (try
+      (es/create-indexes context)
+      (when (es/requires-update? context)
+        (es/update-indexes context))
+      (catch Exception e
+        (common-sys/stop started-system component-order)
+        (throw e)))
     started-system))
 
 (def stop

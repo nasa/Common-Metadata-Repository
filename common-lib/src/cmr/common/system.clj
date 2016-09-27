@@ -1,4 +1,4 @@
-(ns cmr.common-app.system
+(ns cmr.common.system
   "Contains helper functions for application systems."
   (require [cmr.common.lifecycle :as lifecycle]
            [cmr.common.log :as log :refer (debug info warn error)]))

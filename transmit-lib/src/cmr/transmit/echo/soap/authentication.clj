@@ -40,6 +40,11 @@
     (soap/post-soap :authentication body)
     nil))
 
+(defn logout-all
+  [& tokens]
+  (doseq [token tokens]
+    (logout token)))
+
 (defn get-security-token-informaton
   "Perform a security token information request against the SOAP API using the specified token."
   [admin-token tokens]

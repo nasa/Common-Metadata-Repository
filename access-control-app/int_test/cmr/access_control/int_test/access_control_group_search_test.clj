@@ -1,10 +1,14 @@
 (ns cmr.access-control.int-test.access-control-group-search-test
   "Tests searching for access control groups"
-    (:require [clojure.test :refer :all]
-              [cmr.mock-echo.client.echo-util :as e]
-              [cmr.common.util :as util :refer [are2]]
-              [cmr.access-control.int-test.fixtures :as fixtures]
-              [cmr.access-control.test.util :as u]))
+    (:require
+     [clojure.set :as set]
+     [clojure.test :refer :all]
+     [cmr.access-control.int-test.fixtures :as fixtures]
+     [cmr.access-control.test.bootstrap :as bootstrap]
+     [cmr.access-control.test.util :as u]
+     [cmr.common.util :as util :refer [are3]]
+     [cmr.mock-echo.client.echo-util :as e]
+     [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each
               (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"}
@@ -31,20 +35,21 @@
            (u/search-for-groups token {:foo "bar"})))
     (is (= {:status 400 :errors ["Parameter [options[provider]] must include a nested key, options[provider][...]=value."]}
            (u/search-for-groups token {:provider "foo"
-                            "options[provider]" "foo"})))
+                                       "options[provider]" "foo"})))
     (is (= {:status 400 :errors ["Parameter [options] must include a nested key, options[...]=value."]}
            (u/search-for-groups token {"options" "bar"})))
     (is (= {:status 400 :errors ["Option [foo] is not supported for param [provider]"]}
            (u/search-for-groups token {:provider "PROV1"
-                            "options[provider][foo]" "bar"})))
+                                       "options[provider][foo]" "bar"})))
 
     ;; Members search is always case insensitive
     (is (= {:status 400 :errors ["Option [ignore_case] is not supported for param [member]"]}
            (u/search-for-groups token {:member "foo"
-                            "options[member][ignore_case]" true})))))
+                                       "options[member][ignore_case]" true})))))
 
 (deftest group-search-test
   (let [token (e/login (u/conn-context) "user1")
+        existing-admin-group (-> (u/search-for-groups transmit-config/mock-echo-system-token {}) :items first)
         cmr-group1 (u/ingest-group token {:name "group1"} ["user1"])
         cmr-group2 (u/ingest-group token {:name "group2"} ["USER1" "user2"])
         cmr-group3 (u/ingest-group token {:name "group3"} nil)
@@ -52,7 +57,8 @@
         prov1-group2 (u/ingest-group token {:name "group2" :provider_id "PROV1"} ["user1" "user3"])
         prov2-group1 (u/ingest-group token {:name "group1" :provider_id "PROV2"} ["user2"])
         prov2-group2 (u/ingest-group token {:name "group2" :provider_id "PROV2"} ["user2" "user3"])
-        cmr-groups [cmr-group1 cmr-group2 cmr-group3]
+        cmr-added-groups [cmr-group1 cmr-group2 cmr-group3]
+        cmr-groups (cons existing-admin-group cmr-added-groups)
         prov1-groups [prov1-group1 prov1-group2]
         prov2-groups [prov2-group1 prov2-group2]
         prov-groups (concat prov1-groups prov2-groups)
@@ -60,7 +66,7 @@
     (u/wait-until-indexed)
 
     (testing "Search by member"
-      (are2 [expected-groups params]
+      (are3 [expected-groups params]
         (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
                (select-keys (u/search-for-groups token params) [:status :items :hits :errors])))
 
@@ -68,7 +74,7 @@
         [cmr-group1 cmr-group2 prov1-group1 prov1-group2] {:member "UsEr1"}
 
         "Pattern"
-        [cmr-group1 cmr-group2 prov1-group1 prov1-group2 prov2-group1 prov2-group2]
+        [existing-admin-group cmr-group1 cmr-group2 prov1-group1 prov1-group2 prov2-group1 prov2-group2]
         {:member "user*" "options[member][pattern]" true}
 
         "Multiple members"
@@ -81,10 +87,8 @@
         "Multiple members - AND'd"
         [prov2-group2] {:member ["user3" "user2"] "options[member][and]" true}))
 
-
-
     (testing "Search by name"
-      (are2 [expected-groups params]
+      (are3 [expected-groups params]
         (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
                (select-keys (u/search-for-groups token params) [:status :items :hits])))
 
@@ -97,17 +101,16 @@
         [cmr-group1 prov1-group1 prov2-group1] {:name "group1" "options[name][ignore_case]" false}
 
         "Pattern - no match"
-        [] {:name "*oup" "options[name][pattern]" true}
+        [] {:name "*oupx" "options[name][pattern]" true}
         "Pattern - matches"
-        all-groups {:name "Gr?up*" "options[name][pattern]" true}
+        (concat cmr-added-groups prov1-groups prov2-groups) {:name "*Gr?up*" "options[name][pattern]" true}
 
         "Multiple matches"
         [cmr-group1 prov1-group1 prov2-group1
          cmr-group2 prov1-group2 prov2-group2] {:name ["group1" "group2"]}))
 
-
     (testing "Search by provider"
-      (are2 [expected-groups params]
+      (are3 [expected-groups params]
         (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
                (select-keys (u/search-for-groups token params) [:status :items :hits])))
 

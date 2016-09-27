@@ -7,7 +7,6 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common-app.services.search.related-item-resolver :as related-item-resolver]))
 
-
 (defmulti add-acl-conditions-to-query
   "Adds conditions to the query to enforce ACLs."
   (fn [context query]

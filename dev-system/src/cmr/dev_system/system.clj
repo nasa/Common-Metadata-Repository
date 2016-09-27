@@ -66,7 +66,7 @@
       token)
     (catch Exception e
       (warn "Unable to extract the ECHO system read token from configuration.")
-      "mock-echo-system-token")))
+      transmit-config/mock-echo-system-token)))
 
 (def app-control-functions
   "A map of application name to the start function"
