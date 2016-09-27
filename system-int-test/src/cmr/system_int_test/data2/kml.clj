@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.data2.kml
   "Contains functions for parsing kml results into spatial shapes."
   (:require
+   [clojure.data.xml :as x]
    [clojure.string :as str]
    [clojure.test]
    [cmr.common.util :as util]
@@ -12,8 +13,7 @@
    [cmr.spatial.relations :as r]
    [cmr.spatial.ring-relations :as rr]
    [cmr.system-int-test.data2.granule :as dg]
-   [cmr.system-int-test.utils.fast-xml :as fx]
-   [clojure.data.xml :as x])
+   [cmr.system-int-test.utils.fast-xml :as fx])
   (:import
    (cmr.spatial.mbr Mbr)
    (cmr.umm.umm_granule UmmGranule)

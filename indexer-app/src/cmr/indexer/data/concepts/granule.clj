@@ -3,6 +3,7 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
+   [clojure.string :as s]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as concepts]
    [cmr.common.log :refer (debug info warn error)]
@@ -17,8 +18,7 @@
    [cmr.umm-spec.legacy :as umm-legacy]
    [cmr.umm.echo10.spatial :as umm-spatial]
    [cmr.umm.related-url-helper :as ru]
-   [cmr.umm.start-end-date :as sed]
-   [clojure.string :as s])
+   [cmr.umm.start-end-date :as sed])
   (:import
    (cmr.spatial.mbr Mbr)))
 

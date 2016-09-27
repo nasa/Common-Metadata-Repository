@@ -1,5 +1,5 @@
-(ns cmr.umm-spec.spatial-util
-  "Defines functions that translate umm spec spatial types to spatial lib spatial shapes."
+(ns cmr.umm-spec.spatial-conversion
+  "Defines functions that convert umm spec spatial types to spatial lib spatial shapes."
   (:require
    [cmr.spatial.line-string :as ls]
    [cmr.spatial.mbr :as mbr]

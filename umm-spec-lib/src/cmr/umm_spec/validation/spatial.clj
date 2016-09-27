@@ -3,7 +3,7 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [cmr.spatial.validation :as sv]
-   [cmr.umm-spec.spatial-util :as spatial-util]
+   [cmr.umm-spec.spatial-conversion :as sc]
    [cmr.common.validations.core :as v]))
 
 (def valid-coord-systems
@@ -20,7 +20,7 @@
   "Validates a polygon for umm-spec spatial geometry."
   [field-path gpolygon]
   (let [coord-sys (:coord-system gpolygon)]
-    (when-let [errors (seq (sv/validate (spatial-util/gpolygon->polygon coord-sys gpolygon)))]
+    (when-let [errors (seq (sv/validate (sc/gpolygon->polygon coord-sys gpolygon)))]
       {field-path  (map #(str "Spatial validation error: " %) errors)})))
 
 (defn- set-spatial-representation
@@ -43,20 +43,20 @@
 (defn point-validation
   "Validates point for umm-spec spatial geometry."
   [field-path point]
-  (when-let [errors (seq (sv/validate (spatial-util/umm-spec-point->point point)))]
+  (when-let [errors (seq (sv/validate (sc/umm-spec-point->point point)))]
     {field-path  (map #(str "Spatial validation error: " %) errors)}))
 
 (defn line-validation
   "Validates line for umm-spec spatial geometry."
   [field-path line]
   (let [coord-sys (:coord-system line)]
-    (when-let [errors (seq (sv/validate (spatial-util/umm-spec-line->line coord-sys line)))]
+    (when-let [errors (seq (sv/validate (sc/umm-spec-line->line coord-sys line)))]
       {field-path (map #(str "Spatial validation error: " %) errors)})))
 
 (defn bounding-rectangle-validation
   "Validates bounding rectangle for umm-spec spatial geometry."
   [field-path br]
-  (when-let [errors (seq (sv/validate (spatial-util/umm-spec-br->mbr br)))]
+  (when-let [errors (seq (sv/validate (sc/umm-spec-br->mbr br)))]
     {field-path (map #(str "Spatial validation error: " %) errors)}))
 
 (def spatial-extent-validation

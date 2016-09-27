@@ -3,16 +3,16 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [cmr.common.services.errors :as errors]
-   ;; Must be required for derived calculations
-   [cmr.spatial.geodetic-ring :as gr]
+   [cmr.spatial.derived :as d]
    [cmr.spatial.mbr :as mbr]
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.ring-relations :as rr]
    [cmr.spatial.serialize :as srl]
-
-   [cmr.umm-spec.spatial-util :as su]
-   [cmr.umm.umm-spatial :as umm-s]
-   [cmr.spatial.derived :as d]))
+   [cmr.umm-spec.spatial-conversion :as sc]
+   [cmr.umm.umm-spatial :as umm-s])
+  ;; Must be required for derived calculations
+  (:require
+   cmr.spatial.geodetic-ring))
 
 (defn mbr->elastic-attribs
   [prefix {:keys [west north east south]} crosses-antimeridian?]
@@ -109,10 +109,10 @@
     (let [coord-sys (get-collection-coordinate-system collection)
           {points :Points brs :BoundingRectangles gpolygons :GPolygons lines :Lines} geometry]
       (concat
-       (map su/umm-spec-point->point points)
-       (map su/umm-spec-br->mbr brs)
-       (map #(su/gpolygon->polygon coord-sys %) gpolygons)
-       (map #(su/umm-spec-line->line coord-sys %) lines)))))
+       (map sc/umm-spec-point->point points)
+       (map sc/umm-spec-br->mbr brs)
+       (map #(sc/gpolygon->polygon coord-sys %) gpolygons)
+       (map #(sc/umm-spec-line->line coord-sys %) lines)))))
 
 (defn collection-orbit-parameters->elastic-docs
   "Converts the orbit parameters of the given collection to the elastic documents"
