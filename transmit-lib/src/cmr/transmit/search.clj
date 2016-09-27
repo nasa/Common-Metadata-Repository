@@ -24,7 +24,8 @@
                                 :headers (assoc (ch/context->http-headers context)
                                                 config/token-header (config/echo-system-token))
                                 :throw-exceptions false}))
-        {:keys [status headers body]} response]
+        {:keys [headers body]} response
+        status (int (:status response))]
     (case status
       200 (Integer/parseInt (get headers "CMR-Hits"))
       ;; default

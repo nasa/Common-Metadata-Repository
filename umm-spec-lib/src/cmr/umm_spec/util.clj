@@ -157,8 +157,8 @@
     (for [[_ num-str unit-str :as results] (re-seq data-size-re
                                                    (-> s str .toLowerCase))
           :when (and num-str (not (str/blank? unit-str)))]
-      {:Size (Double. (.replace num-str "," ""))
-       :Unit (-> unit-str str .trim .toUpperCase first (str "B"))})))
+      {:Size (Double. (str/replace num-str "," ""))
+       :Unit (-> unit-str str/trim str/upper-case first (str "B"))})))
 
 (defn data-size-str
   "Takes a collection of FileSizeType records which have a Size and a Unit and converts them to a
