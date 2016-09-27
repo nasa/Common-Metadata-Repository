@@ -1,13 +1,15 @@
 (ns cmr.system-int-test.search.collection-keyword-search-test
   "Integration test for CMR collection search by keyword terms"
-  (:require [clojure.test :refer :all]
-            [cmr.common.util :refer [are3]]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.search.data.keywords-to-elastic :as k2e]))
+  (:require
+    [clojure.test :refer :all]
+    [cmr.common.util :refer [are3]]
+    [cmr.search.data.keywords-to-elastic :as k2e]
+    [cmr.system-int-test.data2.collection :as dc]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]
+    [cmr.umm-spec.test.expected-conversion :as exp-conv]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}))
 
@@ -517,6 +519,59 @@
     (testing "JSON negated keyword search does not return score"
       (let [refs (search/find-refs-with-json-query :collection {} {:not {:keyword "Laser"}})]
         (is (not-any? :score (:refs refs)))))))
+
+;; This test is separated out from the rest of the keyword search tests because we need to  
+;; ingest this UMM-SPEC collection but it contains some keyword values other tests are using. 
+;; This would break other tests when doing the keyword searches. 
+(deftest search-by-ancillary-keywords
+  (let [coll1 (d/ingest "PROV1"
+                        (-> exp-conv/example-collection-record
+                            (assoc :AncillaryKeywords ["CMR2652AKW1" "CMR2652AKW2"])
+                            (assoc :ShortName "CMR2652SN1")
+                            (assoc :EntryTitle "CMR2652ET1")) 
+                        {:format :umm-json
+                         :accept-format :json})
+        coll2 (d/ingest "PROV1"
+                        (-> exp-conv/example-collection-record
+                            (assoc :AncillaryKeywords ["CMR2652AKW3" "CMR2652AKW4"])
+                            (assoc :ShortName "CMR2652SN2")
+                            (assoc :EntryTitle "CMR2652ET2"))
+                        {:format :umm-json
+                         :accept-format :json})]
+    (index/wait-until-indexed)
+    (testing "parameter searches"  
+      (are3 [keyword-str items]
+        (let [parameter-refs (search/find-refs :collection {:keyword keyword-str})]
+          (d/assert-refs-match items parameter-refs))
+      
+        "testing parameter search by existing ancillary keywords"
+        "CMR2652AKW1" 
+        [coll1] 
+
+        "testing parameter search by existing ancillary keywords"
+        "CMR2652AKW4"
+        [coll2] 
+
+        "testing parmaeter search by non-existing ancillary keywords"
+        "CMR2652NOAKW" 
+        []))
+ 
+    (testing "json query searchs"
+      (are3 [keyword-str items]
+        (let [json-refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str})]
+          (d/assert-refs-match items json-refs))
+ 
+        "testing json query search by existing ancillary keywords"
+        "CMR2652AKW2" 
+        [coll1]
+
+        "testing json query search by existing ancillary keywords"
+        "CMR2652AKW3"
+        [coll2]
+
+        "testing json query search by non-existing ancillary keywords"
+        "CMR2652NOAKW"  
+        []))))
 
 ;; This tests that when searching by relevancy that if the score is the same short name ascending is used for
 ;; sorting the results and then if short name is the same version is used for sorting the results

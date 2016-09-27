@@ -1283,6 +1283,7 @@ The following fields are indexed for keyword search:
     * Version description
     * Processing level ID
     * Science keywords
+    * Ancillary keywords
     * Archive centers
     * Additional attribute names, data types, values, and descriptions
     * Spatial keywords
