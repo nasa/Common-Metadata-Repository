@@ -5,7 +5,6 @@
     [clojure.string :as str]
     [cmr.access-control.data.acls :as acls]
     [cmr.access-control.services.acl-service :as acl-service]
-    [cmr.access-control.services.acl-service-util :as acl-util]
     [cmr.common-app.services.search.elastic-search-index :as esi]
     [cmr.common-app.services.search.query-to-elastic :as q2e]
     [cmr.common.lifecycle :as l]
@@ -299,8 +298,8 @@
   [context concept-map]
   (let [collection-concept (acl-matchers/add-acl-enforcement-fields-to-concept concept-map)
         entry-title (:entry-title collection-concept)]
-    (doseq [acl-concept (acl-util/get-all-acl-concepts context)
-            :let [parsed-acl (acl-util/get-parsed-acl acl-concept)
+    (doseq [acl-concept (acl-service/get-all-acl-concepts context)
+            :let [parsed-acl (acl-service/get-parsed-acl acl-concept)
                   catalog-item-id (:catalog-item-identity parsed-acl)
                   acl-entry-titles (:entry-titles (:collection-identifier catalog-item-id))]
             :when (and (= (:provider-id collection-concept) (:provider-id catalog-item-id))

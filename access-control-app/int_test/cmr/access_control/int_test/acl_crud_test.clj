@@ -360,7 +360,7 @@
     (is (= (assoc-in single-instance-acl [:single_instance_identity :target_id] group2-concept-id) (ac/get-acl (u/conn-context) concept-id {:token token})))))
 
 (deftest update-acl-errors-test
-  (let [token (e/login-guest (u/conn-context))
+  (let [token (e/login (u/conn-context) "admin")
         {system-concept-id :concept_id} (ac/create-acl (u/conn-context) system-acl {:token token})
         group1 (u/ingest-group token {:name "group1"} ["user1"])
         group1-concept-id (:concept_id group1)

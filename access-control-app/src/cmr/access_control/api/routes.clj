@@ -7,7 +7,6 @@
     [cmr.access-control.data.acl-schema :as acl-schema]
     [cmr.access-control.services.acl-search-service :as acl-search]
     [cmr.access-control.services.acl-service :as acl-service]
-    [cmr.access-control.services.acl-service-util :as acl-util]
     [cmr.access-control.services.group-service :as group-service]
     [cmr.access-control.test.bootstrap :as bootstrap]
     [cmr.acl.core :as acl]
@@ -252,7 +251,7 @@
 (defn get-acl
   "Returns a Ring response with the metadata of the ACL identified by concept-id."
   [request-context headers concept-id]
-  (-> (acl-util/get-acl request-context concept-id)
+  (-> (acl-service/get-acl request-context concept-id)
       (util/map-keys->snake_case)
       api-response))
 
@@ -273,9 +272,9 @@
                              (keyword user_type)
                              user_id)
           result (cond
-                   system_object (acl-util/get-system-permissions request-context username-or-type system_object)
-                   target (acl-util/get-provider-permissions request-context username-or-type provider target)
-                   :else (acl-util/get-catalog-item-permissions request-context username-or-type concept_id))]
+                   system_object (acl-service/get-system-permissions request-context username-or-type system_object)
+                   target (acl-service/get-provider-permissions request-context username-or-type provider target)
+                   :else (acl-service/get-catalog-item-permissions request-context username-or-type concept_id))]
       {:status 200
        :body (json/generate-string result)})))
 

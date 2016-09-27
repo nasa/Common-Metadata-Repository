@@ -4,8 +4,7 @@
     [clj-time.core :as t]
     [clojure.edn :as edn]
     [cmr.access-control.data.acls :as acls]
-    [cmr.access-control.services.acl-search-service :as acl-search]
-    [cmr.access-control.services.acl-service-util :as acl-util]
+    [cmr.access-control.services.auth-util :as auth-util]
     [cmr.access-control.services.group-service :as groups]
     [cmr.access-control.services.messages :as msg]
     [cmr.common-app.services.search.query-execution :as qe]
@@ -182,7 +181,7 @@
   [context key-path acl]
   (let [token (:token context)
         user (if token (tokens/get-user-id context token) "guest")
-        sids (acl-util/get-sids context user)
+        sids (auth-util/get-sids context user)
         provider-id (:provider-id acl)
         query (qm/query {:concept-type :acl
                          :condition (qm/string-condition :provider provider-id)

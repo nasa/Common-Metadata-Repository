@@ -9,22 +9,28 @@
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.echo.tokens :as echo-tokens]))
 
+(defn get-sids
+  "Returns a seq of sids for the given username string or user type keyword
+   for use in checking permissions against acls."
+  [context username-or-type]
+  (if (contains? #{"guest" "registered"} (name username-or-type))
+    [(keyword username-or-type)]
+    (let [query (qm/query {:concept-type :access-group
+                           :condition (qm/string-condition :member username-or-type)
+                           :skip-acls? true
+                           :page-size :unlimited
+                           :result-format :query-specified
+                           :result-fields [:concept-id :legacy-guid]})
+          response (qe/execute-query context query)]
+      (cons :registered (map #(or (:legacy-guid %) (:concept-id %)) (:items response))))))
 
 (defn- put-sids-in-context
   "Gets the current SIDs of the user in the context from the Access control application."
   [context]
   (if-let [token (:token context)]
     ;; TODO we need to cache token->sids cache like in search
-
     (let [user-id (echo-tokens/get-user-id context token)
-          query (qm/query {:concept-type :access-group
-                           :condition (qm/string-condition :member user-id)
-                           :skip-acls? true
-                           :page-size :unlimited
-                           :result-format :query-specified
-                           :result-fields [:concept-id :legacy-guid]})
-          response (qe/execute-query context query)
-          sids (cons :registered (map #(or (:legacy-guid %) (:concept-id %)) (:items response)))]
+          sids (get-sids context user-id)]
       (assoc context :sids sids))
     (assoc context :sids [:guest])))
 
