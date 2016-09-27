@@ -1,20 +1,19 @@
 (ns cmr.access-control.data.access-control-index
   "Performs search and indexing of access control data."
   (:require
-   [clojure.edn :as edn]
-   [clojure.string :as str]
-   [cmr.access-control.data.acls :as acls]
-   [cmr.access-control.services.acl-service :as acl-service]
-   [cmr.common-app.services.search.elastic-search-index :as esi]
-   [cmr.common-app.services.search.query-to-elastic :as q2e]
-   [cmr.common.lifecycle :as l]
-   [cmr.common.log :refer [info debug]]
-   [cmr.common.services.errors :as errors]
-   [cmr.common.util :as util]
-   [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
-   [cmr.transmit.metadata-db2 :as mdb]
-   [cmr.transmit.metadata-db2 :as mdb]
-   [cmr.umm.acl-matchers :as acl-matchers]))
+    [clojure.edn :as edn]
+    [clojure.string :as str]
+    [cmr.access-control.data.acls :as acls]
+    [cmr.access-control.services.acl-service :as acl-service]
+    [cmr.common-app.services.search.elastic-search-index :as esi]
+    [cmr.common-app.services.search.query-to-elastic :as q2e]
+    [cmr.common.lifecycle :as l]
+    [cmr.common.log :refer [info debug]]
+    [cmr.common.services.errors :as errors]
+    [cmr.common.util :as util]
+    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
+    [cmr.transmit.metadata-db2 :as mdb]
+    [cmr.umm.acl-matchers :as acl-matchers]))
 
 (defmulti index-concept
   "Indexes the concept map in elastic search."
