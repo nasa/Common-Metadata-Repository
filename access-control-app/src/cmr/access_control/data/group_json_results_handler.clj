@@ -8,7 +8,7 @@
 
 (def base-fields
   "The base set of fields to select from Elasticsearch"
-  ["concept-id" "revision-id" "name" "provider-id" "description" "legacy-guid" "member-count"]
+  ["concept-id" "revision-id" "name" "provider-id" "description" "legacy-guid" "member-count"])
 
 (def fields-with-members
   "The fields to select from Elasticsearch if members should be included"
