@@ -445,9 +445,10 @@
            (util/find-concepts :service {:short-name "SN1"})))))
 
 (deftest find-groups
-  (let [group1 (util/create-and-save-group "REG_PROV" 1 3)]
+  (let [group1 (util/create-and-save-group "REG_PROV" 1 3)
+        group2 (util/create-and-save-group "CMR" 2 2)]
     (testing "find with parameters"
-      (testing "latest revsions"
+      (testing "latest revisions"
         (are2 [groups params]
               (= (set (map util/expected-concept groups))
                  (set (-> (util/find-latest-concepts :access-group params)
@@ -467,4 +468,11 @@
                  (count (-> (util/find-concepts :access-group params)
                             :concepts)))
               "provider-id, native-id - three revisons"
-              3 {:provider-id "REG_PROV" :native-id "native-id 1"})))))
+              3 {:provider-id "REG_PROV" :native-id "native-id 1"}
+              "everything"
+              5 {})))))
+
+(comment
+ (util/find-concepts
+  :access-group
+  {:provider-id "REG_PROV" :native-id "native-id 1"}))

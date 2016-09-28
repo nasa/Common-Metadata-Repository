@@ -228,6 +228,7 @@ The following parameters are supported when searching for groups.
 * page_size
 * page_num
 * pretty
+* include_members - boolean parameter that indicates if the members of the group should be returned.
 
 ##### Group Matching Parameters
 
@@ -244,6 +245,7 @@ These parameters will match fields within a group. They are case insensitive by 
   * options: pattern, and
   * Allows searching for groups by member. The Earthdata Login username should be provided. It is always searched case-insensitively.
   * The `and` option allows specifying when sending multiple members whether to find groups that contain at least one of the members passed in (`options[member][and]=false`) or all of the members passed in (`options[member][and]=true`). The option defaults to false.
+* concept_id - matches group concept ids
 
 ##### Group Search Response
 
