@@ -145,17 +145,6 @@
                     "Only 'provider', 'system', 'single_instance', or 'catalog_item' can be specified.")
                (str/join ", " invalid-types))])))
 
-(defn boolean-value-validation
-  "Validates that all of the boolean parameters have values of true or false."
-  [concept-type params]
-  (let [bool-params (select-keys params [:include-full-acl])]
-    (mapcat
-      (fn [[param value]]
-        (when-not (contains? #{"true" "false"} (when value (str/lower-case value)))
-          [(format "Parameter %s must take value of true or false but was [%s]"
-                   (csk/->snake_case_string param) value)]))
-      bool-params)))
-
 (defmethod cp/always-case-sensitive-fields :acl
   [_]
   #{:concept-id :identity-type})
@@ -174,9 +163,7 @@
 
 (defmethod cp/parse-query-level-params :acl
   [concept-type params]
-  (let [[params query-attribs] (cp/default-parse-query-level-params :acl params)
-        result-features (when (= (:include-full-acl params) "true"
-                                 [:include-full-acl]))]
+  (let [[params query-attribs] (cp/default-parse-query-level-params :acl params)]
     [(dissoc params :include-full-acl)
      (merge query-attribs
             (when (= (:include-full-acl params) "true")
@@ -231,7 +218,7 @@
              [permitted-group-validation
               identity-type-validation
               group-permission-validation
-              boolean-value-validation])
+              (partial cpv/validate-boolean-param :include-full-acl)])
      type-errors))
  params)
 
