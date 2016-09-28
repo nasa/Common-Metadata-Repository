@@ -46,7 +46,7 @@
    * :raw - set to true to indicate the raw response should be returned. See
    cmr.transmit.http-helper for more info. Default false."
   ([context]
-   (reset context nil))
+   (reindex-groups context nil))
   ([context {:keys [raw?]}]
    (h/request context :access-control
               {:url-fn reindex-groups-url

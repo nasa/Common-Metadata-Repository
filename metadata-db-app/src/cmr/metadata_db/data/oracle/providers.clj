@@ -16,7 +16,7 @@
   {:provider-id provider_id
    :short-name short_name
    :cmr-only (== 1 cmr_only)
-   :small (== 1 small) })
+   :small (== 1 small)})
 
 (defn- delete-small-provider-concepts
   "Delete all concepts of the given small provider"
@@ -105,6 +105,6 @@
        first vals first (== 0))
 
 
-  (j/delete! db :providers ["provider_id = ?" "FOO"])
+  (j/delete! db :providers ["provider_id = ?" "FOO"]))
 
-  )
+

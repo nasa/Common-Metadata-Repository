@@ -29,7 +29,7 @@
   "Fetches and indexes all groups"
   [context]
   (info "Reindexing all groups")
-  (doseq [group-batch (mdb-legacy/find-in-batches context :access-group 100 {})
+  (doseq [group-batch (mdb-legacy/find-in-batches context :access-group 100 {:latest true})
           group group-batch]
     (index-concept context group))
   (info "Reindexing all groups complete"))
