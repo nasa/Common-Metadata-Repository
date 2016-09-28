@@ -123,21 +123,21 @@
   "Creates provider acls granting create on group-id or user-type"
   [provider-ids]
   (doseq [item provider-ids]
-    (ac/create-acl (conn-context) {:group_permissions [{:user_type :registered
-                                                        :permissions ["read" "update" "create" "delete"],}
-                                                       {:user_type :guest
-                                                        :permissions ["read" "update" "create" "delete"]}]
-                                   :provider_identity {:provider_id item
-                                                       :target "CATALOG_ITEM_ACL"}})))
+    (ac/create-acl (merge {:token config/mock-echo-system-token} (conn-context)) {:group_permissions [{:user_type :registered
+                                                                                                       :permissions ["read" "update" "create" "delete"],}
+                                                                                                      {:user_type :guest
+                                                                                                       :permissions ["read" "update" "create" "delete"]}]
+                                                                                  :provider_identity {:provider_id item
+                                                                                                      :target "CATALOG_ITEM_ACL"}})))
 
 (defn grant-any-acl-system-acl-to-all
   "Creates system acl targeting ANY_ACL that grants create, read, update, and delete to all"
   []
-  (ac/create-acl (conn-context) {:group_permissions [{:user_type :registered
-                                                      :permissions ["read" "update" "create" "delete"],}
-                                                     {:user_type :guest
-                                                      :permissions ["read" "update" "create" "delete"]}]
-                                 :system_identity {:target "ANY_ACL"}}))
+  (ac/create-acl (merge {:token config/mock-echo-system-token} (conn-context)) {:group_permissions [{:user_type :registered
+                                                                                                     :permissions ["read" "update" "create" "delete"],}
+                                                                                                    {:user_type :guest
+                                                                                                     :permissions ["read" "update" "create" "delete"]}]
+                                                                                :system_identity {:target "ANY_ACL"}}))
 
 (defn grant-all-acl-fixture
   "Returns a test fixutre function which grants guest ability to create, read, update, and delete any ACL."

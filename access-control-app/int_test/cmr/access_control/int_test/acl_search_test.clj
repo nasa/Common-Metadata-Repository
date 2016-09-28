@@ -38,7 +38,7 @@
  {:concept_id "ACL1200000002-CMR"
   :revision_id 1
   :group_permissions [{:user_type "registered"
-                       :permissions ["read" "update" "create" "delete"],}
+                       :permissions ["read" "update" "create" "delete"]}
                       {:user_type "guest"
                        :permissions ["read" "update" "create" "delete"]}]
   :provider_identity {:provider_id "PROV1"
@@ -49,7 +49,7 @@
  {:concept_id "ACL1200000001-CMR"
   :revision_id 1
   :group_permissions [{:user_type "registered"
-                       :permissions ["read" "update" "create" "delete"],}
+                       :permissions ["read" "update" "create" "delete"]}
                       {:user_type "guest"
                        :permissions ["read" "update" "create" "delete"]}]
   :system_identity {:target "ANY_ACL"}})
@@ -167,7 +167,7 @@
         ;; remove ANY_ACL read to all users
         _ (ac/update-acl (u/conn-context) "ACL1200000001-CMR" (assoc-in (system-acl "ANY_ACL")
                                                                         [:group_permissions 0]
-                                                                        {:permissions ["read"] :group_id group1-concept-id}))
+                                                                        {:permissions ["read" "create"] :group_id group1-concept-id}))
         _ (u/wait-until-indexed)
 
         acl1 (ingest-acl token (assoc-in (system-acl "INGEST_MANAGEMENT_ACL")
