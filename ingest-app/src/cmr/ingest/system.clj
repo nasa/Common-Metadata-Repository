@@ -18,6 +18,7 @@
             [cmr.common-app.cache.consistent-cache :as consistent-cache]
             [cmr.oracle.connection :as oracle]
             [cmr.common-app.services.kms-fetcher :as kf]
+            [cmr.message-queue.queue.sqs :as sqs]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.ingest.api.ingest :as ingest-api]
             [cmr.common.config :as cfg :refer [defconfig]]
@@ -63,7 +64,7 @@
                        ingest-api/user-id-cache-key (ingest-api/create-user-id-cache)
                        kf/kms-cache-key (kf/create-kms-cache)}
               :ingest-public-conf ingest-public-conf
-              :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
+              :queue-broker (sqs/create-queue-broker (config/queue-config))}]
      (transmit-config/system-with-connections
        sys [:metadata-db :indexer :echo-rest :search :cubby :kms]))))
 
@@ -76,5 +77,3 @@
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
   (common-sys/stop-fn "ingest" component-order))
-
-

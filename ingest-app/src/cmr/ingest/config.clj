@@ -28,7 +28,7 @@
   "The ingest exchange to which provider change messages are published."
   {:default "cmr_ingest_provider.exchange"})
 
-(defn rabbit-mq-config
+(defn queue-config
   "Returns the rabbit mq configuration for the ingest application."
   []
   (assoc (rmq-conf/default-config)

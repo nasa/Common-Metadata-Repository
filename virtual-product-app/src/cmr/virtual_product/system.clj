@@ -12,6 +12,7 @@
             [cmr.virtual-product.services.virtual-product-service :as vps]
             [cmr.virtual-product.config :as config]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
+            [cmr.message-queue.queue.sqs :as sqs]
             [cmr.common.system :as common-sys]))
 
 (defconfig virtual-product-nrepl-port
@@ -31,7 +32,7 @@
              :web (web/create-web-server (transmit-config/virtual-product-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (virtual-product-nrepl-port))
              :relative-root-url (transmit-config/virtual-product-relative-root-url)
-             :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
+             :queue-broker (sqs/create-queue-broker (config/queue-config))}]
     (transmit-config/system-with-connections sys [:metadata-db :ingest :search])))
 
 (defn start

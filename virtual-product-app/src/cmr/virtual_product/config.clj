@@ -27,7 +27,7 @@
   {:default 5
    :type Long})
 
-(defn rabbit-mq-config
+(defn queue-config
   "Returns the rabbit mq configuration for the virtual-product application."
   []
   (assoc (mq-conf/default-config)

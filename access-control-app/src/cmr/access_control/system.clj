@@ -12,6 +12,7 @@
             [cmr.access-control.test.bootstrap :as bootstrap]
             [cmr.access-control.config :as config]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
+            [cmr.message-queue.queue.sqs :as sqs]
             [cmr.common.api.web-server :as web]
             [cmr.acl.acl-fetcher :as af]
             [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
@@ -62,7 +63,7 @@
              :search-index (search-index/create-elastic-search-index)
              :web (web/create-web-server (transmit-config/access-control-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
-             :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))
+             :queue-broker (sqs/create-queue-broker (config/queue-config))
              :caches {af/acl-cache-key (af/create-acl-cache
                                         (stl-cache/create-single-thread-lookup-cache)
                                         [:system-object :provider-object :single-instance-object])}
@@ -102,4 +103,3 @@
         (common-sys/stop started-system component-order)
         (throw e)))
     started-system))
-

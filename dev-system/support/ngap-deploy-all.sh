@@ -6,7 +6,7 @@
 # NGAP_CLI_DIR (Optional) - defaults to $WORKSPACE_HOME/ngap-cli
 
 apps=("metadata-db" "cubby" "index-set" "indexer" "virtual-product" "bootstrap" "access-control" "search" "ingest")
-# apps=("virtual-product" "ingest" "access-control")
+# apps=("cubby" "indexer" "virtual-product" "ingest")
 environments=("sit")
 environment=$1
 

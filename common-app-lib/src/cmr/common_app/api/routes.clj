@@ -11,7 +11,8 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.api.context :as cxt]
             [compojure.core :refer :all]
-            [ring.util.codec :as rc]))
+            [ring.util.codec :as rc]
+            [clojure.string :as str]))
 
 (def RESPONSE_REQUEST_ID_HEADER
   "The HTTP response header field containing the current request id."
@@ -225,8 +226,16 @@
   It expects the request context is already associated with the request."
   [f]
   (fn [request]
-    (let [{:keys [request-context]} request]
+    (let [{:keys [request-context headers]} request
+          user-agent (get headers "user-agent" (:user-agent headers))
+          x-forwarded-for (get headers "x-forwarded-for" (:x-forwarded-for headers))
+          from-outside-ngap (if-not x-forwarded-for
+                              true
+                              (str/includes? (pr-str x-forwarded-for) "198.118"))]
+      (println "Need to check permissions (not from NGAP) is" (or from-outside-ngap (not= "Apache-HttpClient/4.5 (Java/1.8.0_45)" user-agent)))
       ;; NGAP needs access to "/" for health check
-      (when-not (= "/" (:uri request))
-        (acl/verify-ingest-management-permission request-context :update))
+      (if (or from-outside-ngap (not= "Apache-HttpClient/4.5 (Java/1.8.0_45)" user-agent))
+        (when-not (= "/" (:uri request))
+          (acl/verify-ingest-management-permission request-context :update))
+        (println "Request came from NGAP - allowing"))
       (f request))))

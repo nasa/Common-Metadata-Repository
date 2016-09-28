@@ -169,17 +169,17 @@
 
 (defmethod create-queue-broker :aws
   [type]
-  (-> (indexer-config/rabbit-mq-config)
-      (rmq-conf/merge-configs (vp-config/rabbit-mq-config))
-      (rmq-conf/merge-configs (access-control-config/rabbit-mq-config))
+  (-> (indexer-config/queue-config)
+      (rmq-conf/merge-configs (vp-config/queue-config))
+      (rmq-conf/merge-configs (access-control-config/queue-config))
       sqs/create-queue-broker
       wrapper/create-queue-broker-wrapper))
 
 (defmethod create-queue-broker :in-memory
   [type]
-  (-> (indexer-config/rabbit-mq-config)
-      (rmq-conf/merge-configs (vp-config/rabbit-mq-config))
-      (rmq-conf/merge-configs (access-control-config/rabbit-mq-config))
+  (-> (indexer-config/queue-config)
+      (rmq-conf/merge-configs (vp-config/queue-config))
+      (rmq-conf/merge-configs (access-control-config/queue-config))
       mem-queue/create-memory-queue-broker
       wrapper/create-queue-broker-wrapper))
 
@@ -188,9 +188,9 @@
   ;; set the time-to-live on the retry queues to 1 second so our retry tests won't take too long
   (let [ttls [1 1 1 1 1]]
     (rmq-conf/set-rabbit-mq-ttls! ttls)
-    (-> (indexer-config/rabbit-mq-config)
-        (rmq-conf/merge-configs (vp-config/rabbit-mq-config))
-        (rmq-conf/merge-configs (access-control-config/rabbit-mq-config))
+    (-> (indexer-config/queue-config)
+        (rmq-conf/merge-configs (vp-config/queue-config))
+        (rmq-conf/merge-configs (access-control-config/queue-config))
         (assoc :ttls ttls)
         rmq/create-queue-broker
         wrapper/create-queue-broker-wrapper)))

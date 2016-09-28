@@ -69,7 +69,7 @@
                           `system-holder
                           [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
                            (kf/refresh-kms-cache-job "indexer-kms-cache-refresh")])
-             :queue-broker (sqs/create-queue-broker (config/rabbit-mq-config))}]
+             :queue-broker (sqs/create-queue-broker (config/queue-config))}]
 
     (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby :kms :search])))
 
