@@ -39,7 +39,8 @@
         {:keys [platform-long-names instrument-long-names entry-id]} other-fields
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract 
-         temporal-keywords :TemporalKeywords platforms :Platforms} umm-spec-collection
+         temporal-keywords :TemporalKeywords platforms :Platforms 
+         ancillary-keywords :AncillaryKeywords} umm-spec-collection
         processing-level-id (get-in umm-spec-collection [:ProcessingLevel :Id]) 
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
@@ -100,6 +101,7 @@
                                   sensor-long-names
                                   sensor-techniques
                                   char-names
-                                  char-descs))
+                                  char-descs
+                                  ancillary-keywords))
         split-fields (set (mapcat prepare-keyword-field all-fields))]
     (str/join " " split-fields)))

@@ -1,7 +1,9 @@
 (ns cmr.umm-spec.url
   "URL utilities for UMM spec"
-  (:import java.net.URL
-           java.net.MalformedURLException))
+  (:require
+   [clojure.string :as str])
+  (:import
+   (java.net URL MalformedURLException)))
 
 (defn url
   "Attempts to return a URL from the provided value. Returns nil if the value is not a URL."
@@ -20,3 +22,10 @@
   (or
    (some-> x url .getProtocol)
    "http"))
+
+(defn format-url
+  [url sanitize?]
+  (if sanitize?
+    (some-> url
+           (str/replace #"(?s)\s+" ""))
+    url))

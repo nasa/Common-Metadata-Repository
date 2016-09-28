@@ -10,6 +10,7 @@
    [cmr.umm-spec.related-url :as ru-gen]
    [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su]))
 
 (def serf-organization-role
@@ -78,7 +79,10 @@
 (defn- fix-publication-reference-url
   [some-url]
   (when some-url
-    (cmn/map->RelatedUrlType {:URLs (->> some-url :URLs (take 1))})))
+    (cmn/map->RelatedUrlType {:URLs (->> some-url
+                                          :URLs
+                                          (take 1)
+                                          (map #(url/format-url % true)))})))
 
 (defn- expected-serf-service-citation
   [citation]

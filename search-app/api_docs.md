@@ -1283,6 +1283,7 @@ The following fields are indexed for keyword search:
     * Version description
     * Processing level ID
     * Science keywords
+    * Ancillary keywords
     * Archive centers
     * Additional attribute names, data types, values, and descriptions
     * Spatial keywords
@@ -2119,7 +2120,7 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 Content-Length: 48
 
-{"concept_id":"H1200000000-CMR","revision_id":1}
+{"concept_id":"H1200000000-CMR","revision_id":2}
 ```
 
 ##### <a name="retrieving-humanizers"></a> Retrieving Humanizers
@@ -2476,7 +2477,7 @@ curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-E
   "description": "This is a sample tag."
  }'
 
-HTTP/1.1 200 OK
+HTTP/1.1 201 OK
 Content-Type: application/json;charset=ISO-8859-1
 Content-Length: 48
 

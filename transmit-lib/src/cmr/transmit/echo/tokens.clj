@@ -45,7 +45,7 @@
     (let [[status parsed body] (r/rest-get context (format "/tokens/%s/token_info",token)
                                            {:headers {"Accept" mt/json
                                                       "Echo-Token" (transmit-config/echo-system-token)}})]
-      (case status
+      (case (int status)
         200 (get-in parsed [:token_info :user_name])
         401 (errors/throw-service-error
              :unauthorized
@@ -58,7 +58,7 @@
   "Gets the 'security identifiers' for the user as string group guids and :registered and :guest"
   [context token]
   (let [[status sids body] (r/rest-get context (format "/tokens/%s/current_sids" token))]
-    (case status
+    (case (int status)
       200 (mapv c/echo-sid->cmr-sid sids)
       401 (errors/throw-service-error
             :unauthorized

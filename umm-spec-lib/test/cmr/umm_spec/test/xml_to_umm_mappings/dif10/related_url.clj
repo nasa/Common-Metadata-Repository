@@ -17,7 +17,8 @@
                   <Caption>ACOS xCO2 v2.5, yearly mean for 2013, in part per million in volume</Caption>
                   <Description> Global amounts of column CO2 in 2013, ...</Description>
                 </Multimedia_Sample>
-              </DIF>"))))
+              </DIF>"
+             true))))
 
   (testing "parse realted urls from Related_URL and Multimedia_Sample together"
     (is (= [{:URLs ["http://disc.sci.gsfc.nasa.gov/OCO-2/images/ACOS.xCO2.2013.v3.5.png"]
@@ -44,5 +45,5 @@
                   <URL>http://reverb.echo.nasa.gov/reverb/</URL>
                   <Description>Interface to search, discover, and access EOS data products, and invoke available data services.</Description>
                 </Related_URL>
-              </DIF>")))))
-
+              </DIF>"
+              true)))))

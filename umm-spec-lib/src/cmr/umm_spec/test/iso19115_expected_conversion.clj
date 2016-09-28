@@ -17,6 +17,7 @@
     [cmr.umm-spec.test.location-keywords-helper :as lkt]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
+    [cmr.umm-spec.url :as url]
     [cmr.umm-spec.util :as su]))
 
 (defn split-temporals
@@ -89,7 +90,8 @@
          (-> pub-ref
              (assoc :ReportNumber nil :Volume nil :RelatedUrl nil :PublicationPlace nil)
              (update-in [:DOI] (fn [doi] (when doi (assoc doi :Authority nil))))
-             (update-in [:PublicationDate] conversion-util/date-time->date)))))
+             (update-in [:PublicationDate] conversion-util/date-time->date)
+             (update :ISBN su/format-isbn)))))
 
 (defn- expected-iso-19115-2-distributions
   "Returns the expected ISO19115-2 distributions for comparison."
@@ -108,7 +110,8 @@
                (update-in [:Relation]
                           (fn [[rel]]
                             (when (conversion-util/relation-set rel)
-                              [rel]))))))
+                              [rel])))
+               (update-in-each [:URLs] #(url/format-url % true)))))
     [su/not-provided-related-url]))
 
 (defn- fix-iso-vertical-spatial-domain-values
@@ -229,5 +232,4 @@
       (assoc :MetadataDates nil)
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
-      (update-in-each [:PublicationReferences] #(update % :ISBN su/format-isbn))
       js/parse-umm-c))

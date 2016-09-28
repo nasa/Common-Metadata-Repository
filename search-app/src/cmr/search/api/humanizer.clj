@@ -17,8 +17,8 @@
 
 (defn- humanizer-response
   "Creates a successful humanizer response with the given data response"
-  [data]
-  {:status 200
+  [status-code data]
+  {:status status-code
    :body (json/generate-string data)
    :headers {cr/CONTENT_TYPE_HEADER mt/json}})
 
@@ -27,7 +27,9 @@
   [context headers body]
   (acl/verify-ingest-management-permission context :update)
   (validate-humanizer-content-type headers)
-  (humanizer-response (humanizer-service/update-humanizers context body)))
+  (let [result (humanizer-service/update-humanizers context body)
+        status-code (if (= 1 (:revision-id result)) 201 200)]
+    (humanizer-response status-code result)))
 
 (defn- humanizers-report
   "Handles a request to get a humanizers report"
@@ -45,7 +47,7 @@
 
     ;; retrieve humanizers
     (GET "/" {:keys [request-context]}
-      (humanizer-response (humanizer-service/get-humanizers request-context)))
+      (humanizer-response 200 (humanizer-service/get-humanizers request-context)))
 
     ;; retrieve the humanizers report
     (GET "/report" {context :request-context}
