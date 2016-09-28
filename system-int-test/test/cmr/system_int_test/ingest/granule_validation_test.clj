@@ -295,7 +295,7 @@
     (let [provider-id (get gran-attributes :provider-id "PROV1")
           coll (d/ingest provider-id (dc/collection coll-attributes))
           response (d/ingest provider-id (dg/granule coll gran-attributes))]
-      (is (= {:status 200} (select-keys response [:status :errors]))))))
+      (is (#{{:status 201} {:status 200}} (select-keys response [:status :errors]))))))
 
 (defn assert-invalid-spatial
   ([coord-sys shapes errors]

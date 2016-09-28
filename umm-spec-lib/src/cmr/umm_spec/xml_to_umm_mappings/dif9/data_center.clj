@@ -1,10 +1,12 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif9.data-center
   "Defines mappings and parsing from DIF 9 elements into UMM records data center fields."
-  (:require [clojure.set :as set]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.common.xml.simple-xpath :refer [select text]]
-            [cmr.umm-spec.xml-to-umm-mappings.dif9.data-contact :as contact]
-            [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]))
+  (:require
+   [clojure.set :as set]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]
+   [cmr.umm-spec.url :as url]
+   [cmr.umm-spec.xml-to-umm-mappings.dif9.data-contact :as contact]))
 
 (def dif9-data-center-contact-role->umm-contact-role
   "DIF9 data center contact role to UMM conatct role mapping. Here we only define the roles that
@@ -31,7 +33,7 @@
 
 (defn parse-data-centers
   "Returns UMM-C data centers from DIF 9 XML document."
-  [doc]
+  [doc sanitize?]
   (for [center (select doc "/DIF/Data_Center")]
     ;; all DIF Data_Centers have roles of ARCHIVER and DISTRIBUTOR
     {:Roles ["ARCHIVER" "DISTRIBUTOR"]
@@ -40,5 +42,5 @@
      ;; We probably want to refactor the following call into the common parse namespace later
      :Uuid (:uuid (:attrs (first (filter #(= :Data_Center_Name (:tag %)) (:content center)))))
      :ContactInformation (when-let [related-url (value-of center "Data_Center_URL")]
-                           {:RelatedUrls [{:URLs [related-url]}]})
+                           {:RelatedUrls [{:URLs [(url/format-url related-url sanitize?)]}]})
      :ContactPersons (contact/parse-contact-persons (select center "Personnel"))}))

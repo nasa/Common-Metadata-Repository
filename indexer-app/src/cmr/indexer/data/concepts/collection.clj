@@ -44,14 +44,13 @@
 
 (defn spatial->elastic
   [collection]
-  (when-let [geometries (seq (get-in collection [:spatial-coverage :geometries]))]
-    (let [sr (get-in collection [:spatial-coverage :spatial-representation])]
-      (cond
-        (or (= sr :geodetic) (= sr :cartesian))
-        (spatial/spatial->elastic-docs sr collection)
+  (when-let [coord-sys (spatial/get-collection-coordinate-system collection)]
+    (cond
+      (or (= coord-sys :geodetic) (= coord-sys :cartesian))
+      (spatial/collection-spatial->elastic-docs coord-sys collection)
 
-        :else
-        (errors/internal-error! (str "Unknown spatial representation [" sr "]"))))))
+      :else
+      (errors/internal-error! (str "Unknown spatial representation [" coord-sys "]")))))
 
 (defn- person->email-contact
   "Return an email contact for the Personnel record or nil if none is available."
@@ -212,7 +211,8 @@
         update-time (index-util/date->elastic update-time)
         insert-time (get-in collection [:data-provider-timestamps :insert-time])
         insert-time (index-util/date->elastic insert-time)
-        spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
+        coordinate-system (get-in umm-spec-collection [:SpatialExtent :HorizontalSpatialDomain
+                                                       :Geometry :CoordinateSystem])
         permitted-group-ids (get-coll-permitted-group-ids context provider-id collection)]
     (merge {:concept-id concept-id
             :revision-id revision-id
@@ -283,8 +283,7 @@
             :insert-time insert-time
             :associated-difs associated-difs
             :associated-difs.lowercase (map str/lower-case associated-difs)
-            :coordinate-system (when spatial-representation
-                                 (csk/->SCREAMING_SNAKE_CASE_STRING spatial-representation))
+            :coordinate-system coordinate-system
 
             ;; fields added to support keyword searches
             :keyword (k/create-keywords-field concept-id collection umm-spec-collection
@@ -309,15 +308,15 @@
             ;;                                      "data": "prod"}}
             :tags-gzip-b64 (when (seq tag-associations)
                              (util/string->gzip-base64
-                               (pr-str
-                                 (into {} (for [ta tag-associations]
-                                            [(:tag-key ta) (util/remove-nil-keys
-                                                             {:data (:data ta)})])))))}
-           (collection-temporal-elastic context concept-id umm-spec-collection)
-           (get-in collection [:spatial-coverage :orbit-parameters])
-           (spatial->elastic collection)
+                              (pr-str
+                               (into {} (for [ta tag-associations]
+                                          [(:tag-key ta) (util/remove-nil-keys
+                                                          {:data (:data ta)})])))))}
+           (collection-temporal-elastic context concept-id umm-spec-collection))))
+           (spatial/collection-orbit-parameters->elastic-docs umm-spec-collection)
+           (spatial->elastic umm-spec-collection)
            (sk/science-keywords->facet-fields umm-spec-collection)
-           (collection-humanizers-elastic context umm-spec-collection))))
+           (collection-humanizers-elastic context umm-spec-collection)
 
 (defn- get-elastic-doc-for-tombstone-collection
   "Get the subset of elastic field values that apply to a tombstone index operation."

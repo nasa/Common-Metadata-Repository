@@ -1,11 +1,13 @@
 (ns cmr.umm-spec.validation.umm-spec-collection-validation
   "Defines validations for UMM collections."
-  (:require [clj-time.core :as t]
-            [cmr.common.validations.core :as v]
-            [cmr.umm.validation.validation-utils :as vu]
-            [cmr.umm-spec.validation.spatial :as s]
-            [cmr.umm-spec.validation.platform :as p]
-            [cmr.umm-spec.validation.additional-attribute :as aa]))
+  (:require
+   [clj-time.core :as t]
+   [cmr.common.validations.core :as v]
+   [cmr.umm-spec.validation.additional-attribute :as aa]
+   [cmr.umm-spec.validation.platform :as p]
+   [cmr.umm-spec.validation.related-url :as url]
+   [cmr.umm-spec.validation.spatial :as s]
+   [cmr.umm.validation.validation-utils :as vu]))
 
 (defn- range-date-time-validation
   "Defines range-date-time validation"
@@ -57,4 +59,10 @@
    :ScienceKeywords (v/every science-keyword-validations)
    :SpatialExtent s/spatial-extent-validation
    :MetadataAssociations (vu/unique-by-name-validator metadata-association-name)
-   :TilingIdentificationSystems tiling-identification-system-validations})
+   :TilingIdentificationSystems tiling-identification-system-validations
+   :RelatedUrls (v/every url/urls-validation)
+   :DataCenters (v/every url/data-center-url-validation)
+   :ContactPersons (v/every url/contact-information-url-validation)
+   :ContactGroups (v/every url/contact-information-url-validation)
+   :CollectionCitations (v/every {:RelatedUrl url/urls-validation})
+   :PublicationReferences (v/every {:RelatedUrl url/urls-validation})})

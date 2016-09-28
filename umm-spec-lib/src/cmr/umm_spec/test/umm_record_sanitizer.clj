@@ -3,7 +3,10 @@
   version to pass the xml validation for various supported metadata format. This is needed because
   the incompatibility between UMM JSON schema and schemas of the various metadata formats making the
   generated metadata xml invalid without some kind of sanitization."
-  (:require [cmr.common.util :as util :refer [update-in-each]]))
+  (:require
+   [clojure.test.check.generators :as gen]
+   [cmr.common.test.test-check-ext :as test]
+   [cmr.common.util :as util :refer [update-in-each]]))
 
 (defn- set-if-exist
   "Sets the field of the given record to the value if the field has a value, returns the record."
@@ -31,6 +34,78 @@
                                    :else
                                    sk)))))
 
+
+(defn- sanitize-related-url
+  "Returns a single sanitized RelatedUrl"
+  [entry]
+  (if-let [urls (get-in entry [:RelatedUrl :URLs])]
+    (assoc-in entry [:RelatedUrl :URLs]
+      (seq (seq (gen/sample test/file-url-string (count urls)))))
+    entry))
+
+(defn- sanitize-related-urls
+  "Returns a list of sanitized related urls"
+  [related-urls]
+  (seq (for [ru related-urls]
+         (assoc ru :URLs
+           (seq (gen/sample test/file-url-string (count (:URLs ru))))))))
+
+(defn- sanitize-contact-informations
+  "Sanitize a record with ContactInformation"
+  [records]
+  (seq (for [record records]
+         (if-let [contact-info (:ContactInformation record)]
+           (update-in record [:ContactInformation :RelatedUrls] sanitize-related-urls)
+           record))))
+
+(defn- sanitize-data-centers
+  "Sanitize data center contact information and the contact information on contact
+  persons and groups associated with the data center"
+  [data-centers]
+  (seq (for [dc (sanitize-contact-informations data-centers)]
+         (-> dc
+             (update :ContactPersons sanitize-contact-informations)
+             (update :ContactGroups sanitize-contact-informations)))))
+
+(defn- sanitize-umm-record-related-urls
+  "Sanitize the RelatedUrls on the collection if any exist"
+  [record]
+  (if (seq (:RelatedUrls record))
+    (update record :RelatedUrls sanitize-related-urls)
+    record))
+
+(defn- sanitize-umm-record-data-centers
+  "Sanitize data centers if there are any data centers in the record"
+  [record]
+  (if (seq (:DataCenters record))
+    (update record :DataCenters sanitize-data-centers)
+    record))
+
+(defn- sanitize-umm-record-contacts
+  "Sanitize RelatedUrls if they key exists."
+  [record key]
+  (if (seq (get record key))
+    (update record key sanitize-contact-informations)
+    record))
+
+(defn- sanitize-umm-record-related-url
+  "Sanitize a single RelatedUrl in a collection if they key exists."
+  [collection key]
+  (if (seq (get collection key))
+    (update-in-each collection [key] sanitize-related-url)
+    collection))
+
+(defn- sanitize-umm-record-urls
+  "Sanitize all RelatedUrls throughout the collection by making them url strings."
+  [record]
+  (-> record
+      sanitize-umm-record-related-urls
+      sanitize-umm-record-data-centers
+      (sanitize-umm-record-contacts :ContactPersons)
+      (sanitize-umm-record-contacts :ContactGroups)
+      (sanitize-umm-record-related-url :CollectionCitations)
+      (sanitize-umm-record-related-url :PublicationReferences)))
+
 (defn sanitized-umm-record
   "Returns the sanitized version of the given umm record."
   [record]
@@ -41,4 +116,5 @@
       (set-if-exist :CollectionProgress "COMPLETE")
 
       ;; Figure out if we can define this in the schema
-      sanitize-science-keywords))
+      sanitize-science-keywords
+      sanitize-umm-record-urls))

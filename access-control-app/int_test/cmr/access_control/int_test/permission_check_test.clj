@@ -21,7 +21,8 @@
               (fn [f]
                 (e/grant-all-ingest (u/conn-context) "prov1guid")
                 (f))
-              (fixtures/grant-all-group-fixture ["prov1guid"]))
+              (fixtures/grant-all-group-fixture ["prov1guid"])
+              (fixtures/grant-all-acl-fixture ["PROV1"]))
 
 (deftest invalid-params-test
   (are [params errors]
@@ -223,7 +224,7 @@
 
 (deftest collection-catalog-item-identifier-access-value-test
   ;; tests ACLs which grant access to collections based on their access value
-  (let [token (e/login (u/conn-context) "user1" [])
+  (let [token (e/login-guest (u/conn-context))
         save-access-value-collection (fn [short-name access-value]
                                          (u/save-collection {:entry-title (str short-name " entry title")
                                                              :short-name short-name
@@ -241,6 +242,7 @@
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
         get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)]
+
     (u/wait-until-indexed)
 
     (testing "no permissions granted"
@@ -309,7 +311,7 @@
 
 (deftest collection-catalog-item-identifier-temporal-test
   ;; tests ACLs that grant access based on a collection's temporal range
-  (let [token (e/login (u/conn-context) "user1" [])
+  (let [token (e/login-guest (u/conn-context))
         save-temporal-collection (fn [short-name start-year end-year]
                                      (u/save-collection {:entry-title (str short-name " entry title")
                                                          :short-name short-name
@@ -330,6 +332,7 @@
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
         get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)]
+
     (u/wait-until-indexed)
     (is (= {coll1 []
             coll2 []

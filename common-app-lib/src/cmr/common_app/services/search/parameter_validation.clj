@@ -290,6 +290,14 @@
         errors)
       [])))
 
+(defn validate-boolean-param
+  "Validates a boolean parameter has a value of true or false."
+  [param concept-type params]
+  (when-let [value (get params param)]
+    (when-not (contains? #{"true" "false"} value)
+      [(format "Parameter %s must take value of true or false but was [%s]"
+               (csk/->snake_case_string param) value)])))
+
 (defn unrecognized-standard-query-params-validation
   "Validates that any query parameters passed to the AQL or JSON search endpoints are valid."
   [concept-type params]
