@@ -76,7 +76,7 @@
   [coll]
   (assert-valid coll)
   (let [response (d/ingest "PROV1" (dissoc coll :revision-id))]
-    (is (= 200 (:status response)))
+    (is (#{200 201} (:status response)))
     response))
 
 (defn make-coll
@@ -98,7 +98,7 @@
   ;; Granule is valid sent with parent collection
   (assert-granule-with-parent-collection-valid granule coll)
   (let [response (d/ingest "PROV1" (dissoc granule :revision-id))]
-    (is (= 200 (:status response)))
+    (is (#{200 201} (:status response)))
     response))
 
 (defn make-gran

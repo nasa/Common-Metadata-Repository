@@ -97,7 +97,7 @@
    (let [collection (assoc (dc/collection coll-attributes) :native-id (:native-id coll-attributes))
          provider-id (get coll-attributes :provider-id "PROV1")
          response (d/ingest provider-id collection options)]
-     (is (= {:status 200} (select-keys response [:status :errors]))))))
+     (is (#{{:status 200} {:status 201}} (select-keys response [:status :errors]))))))
 
 (defn assert-valid-keywords
   [coll-attributes]
@@ -610,7 +610,7 @@
     (are3 [format collection warning-message]
           (do
             (let [response (d/ingest "PROV1" collection {:format format})]
-              (is (= 200 (:status response)))
+              (is (#{200 201} (:status response)))
               (is (= warning-message (:warnings response))))
             (let [response (ingest/validate-concept (dc/collection-concept collection format))]
               (is (= 200 (:status response)))
@@ -638,7 +638,7 @@
               "/Platforms/0/ShortName string \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" is too long (length: 81, maximum allowed: 80)/ShortName string \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" is too long (length: 81, maximum allowed: 80)")
    (testing "Warnings returned in JSON format"
      (let [response (d/ingest "PROV1" (dc/collection-dif10 {}) {:format :dif10 :accept-format :json})]
-       (is (= 200 (:status response)))
+       (is (= 201 (:status response)))
        (is (= ["object has missing required properties ([\"ProcessingLevel\"])"] (:warnings response)))))))
 
 (comment

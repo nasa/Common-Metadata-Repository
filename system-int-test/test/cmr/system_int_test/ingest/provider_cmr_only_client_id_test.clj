@@ -13,24 +13,24 @@
 (def ingest-functions-to-test
   [#'ingest/validate-concept #'ingest/ingest-concept #'ingest/delete-concept])
 
-(defn- assert-ingest-result
-  "Executes the given function with the concept and client-id and compares the result with
-  the expected ones. It will print out the executed function name when test fails."
-  [func-var concept client-id expected-status expected-errors]
-  (let [{:keys [status errors]} ((var-get func-var) concept {:client-id client-id})]
-    (is (= [expected-status expected-errors] [status errors]) (format "Failed in %s." func-var))))
+(defn- assert-ingest-success
+  "Executes the given function with the concept and client-id and make sure the status code
+  is correct. It will print out the executed function name when test fails."
+  [func-var concept client-id]
+  (let [{:keys [status]} ((var-get func-var) concept {:client-id client-id})]
+    (is (#{200 201} status) (format "Failed in %s." func-var))))
 
 (deftest collection-cmr-only-client-id-test
   (testing "ingest operations on CMR-ONLY provider can be submitted by client Echo"
     (let [coll1 (d/ingest "PROV1" (dc/collection))
           concept (dissoc (d/item->concept coll1) :revision-id)]
       (doseq [func ingest-functions-to-test]
-        (assert-ingest-result func concept "ECHO" 200 nil))))
+        (assert-ingest-success func concept "ECHO"))))
   (testing "ingest operations on CMR-ONLY provider can be submitted by client other than Echo"
     (let [coll1 (d/ingest "PROV1" (dc/collection))
           concept (dissoc (d/item->concept coll1) :revision-id)]
       (doseq [func ingest-functions-to-test]
-        (assert-ingest-result func concept "any" 200 nil))))
+        (assert-ingest-success func concept "any"))))
   (testing "ingest operations on non CMR-ONLY provider can be submitted by client Echo"
     (let [coll1 (d/ingest "PROV1" (dc/collection))
           concept (dissoc (d/item->concept coll1) :revision-id)]
@@ -40,7 +40,7 @@
                                       :small false})
       (ingest/clear-caches)
       (doseq [func ingest-functions-to-test]
-        (assert-ingest-result func concept "ECHO" 200 nil))))
+        (assert-ingest-success func concept "ECHO"))))
   (testing "ingest operations on non CMR-ONLY provider can be submitted by client other than Echo"
     (let [coll1 (d/ingest "PROV1" (dc/collection))
           concept (dissoc (d/item->concept coll1) :revision-id)]
@@ -50,7 +50,7 @@
                                       :small false})
       (ingest/clear-caches)
       (doseq [func ingest-functions-to-test]
-        (assert-ingest-result func concept "any" 200 nil)))))
+        (assert-ingest-success func concept "any")))))
 
 (deftest granule-cmr-only-client-id-test
   (testing "ingest operations on CMR-ONLY provider can be submitted by client Echo"
@@ -58,13 +58,13 @@
           concept (d/item->concept (dg/granule collection))]
       (ingest/ingest-concept concept)
       (doseq [func ingest-functions-to-test]
-        (assert-ingest-result func concept "ECHO" 200 nil))))
+        (assert-ingest-success func concept "ECHO"))))
   (testing "ingest operations on CMR-ONLY provider can be submitted by client other than Echo"
     (let [collection (d/ingest "PROV1" (dc/collection {}))
           concept (d/item->concept (dg/granule collection))]
       (ingest/ingest-concept concept)
       (doseq [func ingest-functions-to-test]
-        (assert-ingest-result func concept "any" 200 nil))))
+        (assert-ingest-success func concept "any"))))
   (testing "ingest operations on non CMR-ONLY provider can be submitted by client Echo"
     (let [collection (d/ingest "PROV1" (dc/collection {}))
           concept (d/item->concept (dg/granule collection))]
@@ -75,7 +75,7 @@
                                       :small false})
       (ingest/clear-caches)
       (doseq [func ingest-functions-to-test]
-        (assert-ingest-result func concept "ECHO" 200 nil))))
+        (assert-ingest-success func concept "ECHO"))))
   (testing "ingest operations on non CMR-ONLY provider can be submitted by client other than Echo"
     (let [collection (d/ingest "PROV1" (dc/collection {}))
           concept (d/item->concept (dg/granule collection))]
@@ -86,19 +86,19 @@
                                       :small false})
       (ingest/clear-caches)
       (doseq [func ingest-functions-to-test]
-        (assert-ingest-result func concept "any" 200 nil)))))
+        (assert-ingest-success func concept "any")))))
 
 (deftest granule-virtual-product-service-ingest-test
   (testing "ingest with Virtual-Product-Service as client-id should succeed for cmr-only provider"
     (let [collection (d/ingest "PROV1" (dc/collection {}))
           granule (dg/granule collection)
           concept (d/item->concept granule)]
-      (assert-ingest-result #'ingest/validate-concept concept "Virtual-Product-Service" 200 nil)
-      (assert-ingest-result #'ingest/ingest-concept concept "Virtual-Product-Service" 200 nil)
+      (assert-ingest-success #'ingest/validate-concept concept "Virtual-Product-Service")
+      (assert-ingest-success #'ingest/ingest-concept concept "Virtual-Product-Service")
       (index/wait-until-indexed)
       (is (= 1 (:hits (search/find-refs :granule {:granule-ur (:granule-ur granule)
                                                   :page-size 50}))))
-      (assert-ingest-result #'ingest/delete-concept concept "Virtual-Product-Service" 200 nil)
+      (assert-ingest-success #'ingest/delete-concept concept "Virtual-Product-Service")
       (index/wait-until-indexed)
       (is (= 0 (:hits (search/find-refs :granule {:granule-ur (:granule-ur granule)
                                                   :page-size 50}))))))
@@ -111,13 +111,12 @@
                                       :cmr-only false
                                       :small false})
       (ingest/clear-caches)
-      (assert-ingest-result #'ingest/validate-concept concept "Virtual-Product-Service" 200 nil)
-      (assert-ingest-result #'ingest/ingest-concept concept "Virtual-Product-Service" 200 nil)
+      (assert-ingest-success #'ingest/validate-concept concept "Virtual-Product-Service")
+      (assert-ingest-success #'ingest/ingest-concept concept "Virtual-Product-Service")
       (index/wait-until-indexed)
       (is (= 1 (:hits (search/find-refs :granule {:granule-ur (:granule-ur granule)
                                                   :page-size 50}))))
-      (assert-ingest-result #'ingest/delete-concept concept "Virtual-Product-Service" 200 nil)
+      (assert-ingest-success #'ingest/delete-concept concept "Virtual-Product-Service")
       (index/wait-until-indexed)
       (is (= 0 (:hits (search/find-refs :granule {:granule-ur (:granule-ur granule)
                                                   :page-size 50})))))))
-

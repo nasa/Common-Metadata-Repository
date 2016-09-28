@@ -209,4 +209,4 @@
                  gran-metadata (slurp (io/resource "iso-samples/nsidc-cmr-3177-granule.xml"))
                  {:keys [status]} (ingest/ingest-concept
                                     (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata))]
-             (is (= 200 status)))))
+             (is (= 201 status)))))

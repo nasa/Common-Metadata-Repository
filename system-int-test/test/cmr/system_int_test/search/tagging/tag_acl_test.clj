@@ -31,8 +31,8 @@
 
     (testing "Create permissions"
       (testing "Success"
-        (is (= 200 (:status (tags/create-tag create-user (uniq-tag)))))
-        (is (= 200 (:status (tags/create-tag all-user (uniq-tag))))))
+        (is (= 201 (:status (tags/create-tag create-user (uniq-tag)))))
+        (is (= 201 (:status (tags/create-tag all-user (uniq-tag))))))
 
       (testing "Failure cases"
         (are
