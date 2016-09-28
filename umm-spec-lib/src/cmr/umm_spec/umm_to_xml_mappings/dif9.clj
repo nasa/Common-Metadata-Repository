@@ -147,7 +147,7 @@
               :Pages
               [:ISBN (:ISBN pub-ref)]
               [:DOI (get-in pub-ref [:DOI :DOI])]
-              [:Online_Resource (get-in pub-ref [:RelatedUrl :URLs 0])]
+              [:Online_Resource (-> pub-ref :RelatedUrl :URLs first)]
               :Other_Reference_Details])])
      [:Summary
       [:Abstract (:Abstract c)]

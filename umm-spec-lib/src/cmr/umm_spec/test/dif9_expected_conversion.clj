@@ -152,8 +152,9 @@
   Both ContactGroups and ContactPersons are converted into ContactPersons with the un-supported
   DIF fields dropped."
   [c]
-  (let [contacts (mapv #(contact->expected % role->expected)
-                      (concat (:ContactGroups c) (:ContactPersons c)))]
+  (let [contacts (conversion-util/expected-contact-information-urls
+                   (mapv #(contact->expected % role->expected)
+                       (concat (:ContactGroups c) (:ContactPersons c))))]
     (when (seq contacts)
       contacts)))
 
@@ -263,5 +264,4 @@
         (assoc :SpatialKeywords nil)
         (assoc :MetadataDates (expected-metadata-dates umm-coll))
         (update :AccessConstraints conversion-util/expected-access-constraints)
-        (update-in-each [:PublicationReferences] #(update % :ISBN su/format-isbn))
         js/parse-umm-c)))

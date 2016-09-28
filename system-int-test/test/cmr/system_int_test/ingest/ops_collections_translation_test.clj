@@ -200,7 +200,7 @@
   "For a 'string too long' error, just print out what string it is and the size so that
   the test output does not get bloated with the full string"
   [error]
-  (if-let [result (re-find #"\w+ string .*is too long \(length: \d+, maximum allowed: \d+\)" (str/replace error "\n" ""))]
+  (if-let [result (re-find #".* string .*is too long \(length: \d+, maximum allowed: \d+\)" (str/replace error "\n" ""))]
     (let [string-index (str/index-of result "string")
           length-index (str/index-of result "is too long (length:")]
       (str (subs result 0 (+ 6 string-index)) " " (subs result length-index)))
@@ -336,7 +336,7 @@
 
 (comment
  ;; Translate and validate a specific collection by concept-id
- (def record (get-collection "C1221629175-NOAA_NCEI"))
+ (def record (get-collection "C1221497060-SCIOPS"))
  (translate-and-validation-collection record)
  (translate-record-to-umm record)
  (:metadata-format record)
