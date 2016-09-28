@@ -8,8 +8,8 @@
 (deftest humanized-collection-report-science-keywords
   (let [collection {:provider-id "PROV1"
                     :concept-id "C1200000004-PROV1"
-                    :Product {:ShortName "ShortName"
-                              :VersionId "V15"}
+                    :ShortName "ShortName"
+                    :Version "V15"
                     :ScienceKeywords [{:Category "Bioosphere"
                                         :Topic "Topic1"
                                         :Term "Term1"}
@@ -25,8 +25,8 @@
 (deftest humanized-collection-report-platforms
   (let [collection {:provider-id "PROV1"
                     :concept-id "C1200000004-PROV1"
-                    :Product {:ShortName "ShortName"
-                              :VersionId "V15"}
+                    :ShortName "ShortName"
+                    :Version "V15"
                     :Platforms [{:ShortName "AM-1"}
                                 {:ShortName "TERRA"}]}
         humanized-collection (h/umm-collection->umm-collection+humanizers
@@ -38,8 +38,8 @@
 (deftest humanized-collection-report-instruments
   (let [collection {:provider-id "PROV1"
                     :concept-id "C1200000004-PROV1"
-                    :Product {:ShortName "ShortName"
-                              :VersionId "V15"}
+                    :ShortName "ShortName"
+                    :Version "V15"
                     :Platforms [{:ShortName "Terra"
                                  :Instruments [{:ShortName "GPS"}
                                                {:ShortName "GPS RECEIVERS"}
@@ -54,8 +54,8 @@
 (deftest humanized-collection-report-projects
   (let [collection {:provider-id "PROV1"
                     :concept-id "C1200000004-PROV1"
-                    :Product {:ShortName "ShortName"
-                              :VersionId "V15"}
+                    :ShortName "ShortName"
+                    :Version "V15"
                     :Projects [{:ShortName "USGS_SOFIA"}
                                {:ShortName " OPENDAP  "}]}
         humanized-collection (h/umm-collection->umm-collection+humanizers
@@ -67,34 +67,34 @@
 (deftest humanized-collection-report-processing-levels
   (let [collection {:provider-id "PROV1"
                     :concept-id "C1200000004-PROV1"
-                    :Product {:ShortName "ShortName"
-                              :VersionId "V15"}}]
+                    :ShortName "ShortName"
+                    :Version "V15"}]
     (testing "Processing level humanizer report L1T reportable"
-      (let [collection (assoc-in collection [:Product :ProcessingLevelId] "L1T")
+      (let [collection (assoc-in collection [:ProcessingLevel :Id] "L1T")
             humanized-collection (h/umm-collection->umm-collection+humanizers
                                    collection sh/sample-humanizers)]
         (is (= (hrs/humanized-collection->reported-rows humanized-collection)
                [["PROV1" "C1200000004-PROV1" "ShortName" "V15" "L1T" "1T"]]))))
     (testing "Processing level humanizer report Level 1 reportable"
-      (let [collection (assoc-in collection [:Product :ProcessingLevelId] "Level 1")
+      (let [collection (assoc-in collection [:ProcessingLevel :Id] "Level 1")
             humanized-collection (h/umm-collection->umm-collection+humanizers
                                    collection sh/sample-humanizers)]
         (is (= (hrs/humanized-collection->reported-rows humanized-collection)
                [["PROV1" "C1200000004-PROV1" "ShortName" "V15" "Level 1" "1"]]))))
     (testing "Processing level humanizer report Level 2 reportable"
-      (let [collection (assoc-in collection [:Product :ProcessingLevelId] "Level 2")
+      (let [collection (assoc-in collection [:ProcessingLevel :Id] "Level 2")
             humanized-collection (h/umm-collection->umm-collection+humanizers
                                    collection sh/sample-humanizers)]
         (is (= (hrs/humanized-collection->reported-rows humanized-collection)
                [["PROV1" "C1200000004-PROV1" "ShortName" "V15" "Level 2" "2"]]))))
     (testing "Processing level humanizer report Level 3 reportable"
-      (let [collection (assoc-in collection [:Product :ProcessingLevelId] "Level 3")
+      (let [collection (assoc-in collection [:ProcessingLevel :Id] "Level 3")
             humanized-collection (h/umm-collection->umm-collection+humanizers
                                    collection sh/sample-humanizers)]
         (is (= (hrs/humanized-collection->reported-rows humanized-collection)
                [["PROV1" "C1200000004-PROV1" "ShortName" "V15" "Level 3" "3"]]))))
     (testing "Processing level humanizer report trim whitespace not reportable"
-      (let [collection (assoc-in collection [:Product :ProcessingLevelId] " 1 ")
+      (let [collection (assoc-in collection [:ProcessingLevel :Id] " 1 ")
             humanized-collection (h/umm-collection->umm-collection+humanizers
                                    collection sh/sample-humanizers)]
         (is (= (hrs/humanized-collection->reported-rows humanized-collection)
@@ -103,8 +103,8 @@
 (deftest humanized-collection-report-organizations
   (let [collection {:provider-id "PROV1"
                     :concept-id "C1200000004-PROV1"
-                    :Product {:ShortName "ShortName"
-                              :VersionId "V15"}
+                    :ShortName "ShortName"
+                    :Version "V15"
                     :DataCenters [{:ShortName "NASA/NSIDC_DAAC"}
                                   {:ShortName " LPDAAC "}]}
         humanized-collection (h/umm-collection->umm-collection+humanizers
@@ -115,9 +115,10 @@
 (deftest humanized-collection-reportable
   (let [collection {:provider-id "PROV1"
                     :concept-id "C1200000004-PROV1"
-                    :Product {:ShortName "ShortName"
-                              :VersionId "V15"
-                              :ProcessingLevelId "L1T"}
+                    :ProcessingLevel {:Id "L1T"}
+                    :ShortName "ShortName"
+                    :Version "V15"
+
                     :ScienceKeywords [{:Category "Bioosphere"
                                         :Topic "Topic1"
                                         :Term "Term1"}

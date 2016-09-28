@@ -53,7 +53,7 @@
                {}))
   (testing "humanize no changes"
     (humanizes []
-               {:Product {:ProcessingLevelId "level-A"}
+               {:ProcessingLevel {:Id "level-A"}
                 :Platforms [{:ShortName "plat-A"
                              :Instruments [{:ShortName "inst-A"}
                                            {:ShortName "inst-B"}
@@ -71,8 +71,8 @@
                 :DataCenters [{:ShortName "org-A"}
                               {:ShortName "org-B"}]}
 
-               {:Product {:ProcessingLevelId "level-A"
-                          :cmr.humanized/ProcessingLevelId {:value "level-A" :priority 0}}
+               {:ProcessingLevel {:Id "level-A"
+                                  :cmr.humanized/Id {:value "level-A" :priority 0}}
                 :Platforms [{:ShortName "plat-A"
                              :cmr.humanized/ShortName {:value "plat-A" :priority 0}
                              :Instruments [{:ShortName "inst-A"
@@ -114,7 +114,7 @@
                 {:type "alias" :field "science_keyword" :replacement_value "sk-human"}
                 {:type "alias" :field "organization" :replacement_value "org-human"}]
 
-               {:Product {:ProcessingLevelId "level-A"}
+               {:ProcessingLevel {:Id "level-A"}
                 :Platforms [{:ShortName "plat-A"
                              :Instruments [{:ShortName "inst-A"}
                                            {:ShortName "inst-B"}
@@ -132,8 +132,8 @@
                 :DataCenters [{:ShortName "org-A"}
                               {:ShortName "org-B"}]}
 
-               {:Product {:ProcessingLevelId "level-A"
-                          :cmr.humanized/ProcessingLevelId {:value "level-human" :priority 0}}
+               {:ProcessingLevel {:Id "level-A"
+                                  :cmr.humanized/Id {:value "level-human" :priority 0}}
                 :Platforms [{:ShortName "plat-A"
                              :cmr.humanized/ShortName {:value "plat-human" :priority 0}
                              :Instruments [{:ShortName "inst-A"
@@ -175,7 +175,7 @@
                 {:type "alias" :field "science_keyword" :source_value "sk-X" :replacement_value "sk-Y"}
                 {:type "alias" :field "organization" :source_value "org-X" :replacement_value "org-Y"}]
 
-               {:Product {:ProcessingLevelId "level-X"}
+               {:ProcessingLevel {:Id "level-X"}
                 :Platforms [{:ShortName "plat-A"
                              :Instruments [{:ShortName "inst-A"}
                                            {:ShortName "inst-X"}
@@ -193,8 +193,8 @@
                 :DataCenters [{:ShortName "org-X"}
                               {:ShortName "org-X"}]}
 
-               {:Product {:ProcessingLevelId "level-X"
-                          :cmr.humanized/ProcessingLevelId {:value "level-Y" :priority 0}}
+               {:ProcessingLevel {:Id "level-X"
+                                  :cmr.humanized/Id {:value "level-Y" :priority 0}}
                 :Platforms [{:ShortName "plat-A"
                              :cmr.humanized/ShortName {:value "plat-A" :priority 0}
                              :Instruments [{:ShortName "inst-A"
