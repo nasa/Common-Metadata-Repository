@@ -48,7 +48,17 @@
     ;; Members search is always case insensitive
     (is (= {:status 400 :errors ["Option [ignore_case] is not supported for param [member]"]}
            (u/search-for-groups token {:member "foo"
-                                       "options[member][ignore_case]" true})))))
+                                       "options[member][ignore_case]" true})))
+
+    (is (= {:status 400 :errors ["Option [ignore_case] is not supported for param [concept_id]"]}
+           (u/search-for-groups token {:concept_id "AG12345-PROV"
+                                       "options[concept_id][ignore_case]" true})))
+    (is (= {:status 400 :errors ["Option [and] is not supported for param [concept_id]"]}
+           (u/search-for-groups token {:concept_id "AG12345-PROV"
+                                       "options[concept_id][and]" true})))
+    (is (= {:status 400 :errors ["Option [pattern] is not supported for param [concept_id]"]}
+           (u/search-for-groups token {:concept_id "AG12345-PROV"
+                                       "options[concept_id][pattern]" true})))))
 
 (defn expected-search-response
   "Returns the expected search response for a set of groups that matches a search result."
@@ -109,6 +119,17 @@
       (is (= (expected-search-response [cmr-group1 prov1-group1 prov1-group2] false)
              (select-keys (u/search-for-groups token {:concept-id (map :concept_id [cmr-group1 prov1-group1 prov1-group2])})
                           [:status :items :hits :errors]))))
+
+    (testing "Search by concept id"
+      (are3 [expected-groups params]
+        (is (= (expected-search-response expected-groups (:include_members params))
+               (select-keys (u/search-for-groups token params) [:status :items :hits :errors])))
+
+        "Multiple is OR'd"
+        [cmr-group1 prov1-group1 prov1-group2] {:concept-id (map :concept_id
+                                                                 [cmr-group1 prov1-group1 prov1-group2])}
+        "Single"
+        [cmr-group1] {:concept-id [(:concept_id cmr-group1)]}))
 
     (testing "Search by member"
       (are3 [expected-groups params]
