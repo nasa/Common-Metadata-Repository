@@ -24,7 +24,6 @@
 
 (defmethod elastic-results/elastic-result->query-result-item [:access-group :json]
   [context query elastic-result]
-  (proto-repl.saved-values/save 4 query elastic-result)
   (let [field-values (:fields elastic-result)
         item (util/map-values first (dissoc field-values :members))]
     (if (include-members? query)
