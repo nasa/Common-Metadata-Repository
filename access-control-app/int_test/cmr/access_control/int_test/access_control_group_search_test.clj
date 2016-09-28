@@ -8,6 +8,7 @@
      [cmr.access-control.test.util :as u]
      [cmr.common.util :as util :refer [are3]]
      [cmr.mock-echo.client.echo-util :as e]
+     [cmr.transmit.access-control :as access-control]
      [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each
@@ -59,11 +60,36 @@
                     expected-groups)]
     {:status 200 :items (sort-groups groups) :hits (count groups)}))
 
+(defn get-existing-admin-group
+  "Returns the bootstrapped administrators group"
+  []
+  (-> (u/search-for-groups transmit-config/mock-echo-system-token {:include_members true})
+      :items
+      first))
+
+(deftest group-reindexing-test
+  (u/without-publishing-messages
+   (let [token (e/login (u/conn-context) "user1")
+         existing-admin-group (get-existing-admin-group)
+         cmr-group (u/ingest-group token {:name "cmr-group"} ["user1"])
+         prov-group (u/ingest-group token {:name "prov-group" :provider_id "PROV1"} ["user1"])
+         all-groups [existing-admin-group cmr-group prov-group]]
+     (u/wait-until-indexed)
+
+     ;; Only find the administrators group since the other groups were not indexed.
+     (is (= (expected-search-response [existing-admin-group] true)
+            (select-keys (u/search-for-groups token {:include_members true}) [:status :items :hits :errors])))
+
+     (access-control/reindex-groups (u/conn-context))
+     (u/wait-until-indexed)
+
+     ;; Now all groups should be found.
+     (is (= (expected-search-response all-groups true)
+            (select-keys (u/search-for-groups token {:include_members true}) [:status :items :hits :errors]))))))
+
 (deftest group-search-test
   (let [token (e/login (u/conn-context) "user1")
-        existing-admin-group (-> (u/search-for-groups transmit-config/mock-echo-system-token {:include_members true})
-                                 :items
-                                 first)
+        existing-admin-group (get-existing-admin-group)
         cmr-group1 (u/ingest-group token {:name "group1"} ["user1"])
         cmr-group2 (u/ingest-group token {:name "group2"} ["USER1" "user2"])
         cmr-group3 (u/ingest-group token {:name "group3"} nil)

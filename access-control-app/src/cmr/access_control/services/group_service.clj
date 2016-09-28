@@ -1,30 +1,32 @@
 (ns cmr.access-control.services.group-service
   "Provides functions for creating, updating, deleting, retrieving, and finding groups."
-  (:require [cmr.transmit.metadata-db2 :as mdb]
-            [cmr.transmit.echo.rest :as rest]
-            [cmr.transmit.echo.tokens :as tokens]
-            [cmr.common.concepts :as concepts]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.util :as u]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.validations.core :as v]
-            [cmr.common-app.services.search :as cs]
-            [cmr.common-app.services.search.params :as cp]
-            [cmr.common-app.services.search.parameter-validation :as cpv]
-            [cmr.common-app.services.search.query-model :as common-qm]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.transmit.urs :as urs]
-            [cmr.access-control.services.group-service-messages :as g-msg]
-            [cmr.access-control.services.auth-util :as auth]
-            [clojure.edn :as edn]
-            [clojure.string :as str]
-    ;; Must be required to be available at runtime
-            [cmr.access-control.data.group-json-results-handler]
-            [cmr.access-control.data.acl-json-results-handler]
-            [cmr.acl.core :as acl]
-            [cheshire.core :as json]
-            [cmr.access-control.services.messages :as msg]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.edn :as edn]
+   [clojure.string :as str]
+   [cmr.access-control.services.auth-util :as auth]
+   [cmr.access-control.services.group-service-messages :as g-msg]
+   [cmr.access-control.services.messages :as msg]
+   [cmr.acl.core :as acl]
+   [cmr.common-app.services.search :as cs]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.parameter-validation :as cpv]
+   [cmr.common-app.services.search.params :as cp]
+   [cmr.common-app.services.search.query-model :as common-qm]
+   [cmr.common.concepts :as concepts]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as u]
+   [cmr.common.validations.core :as v]
+   [cmr.transmit.echo.rest :as rest]
+   [cmr.transmit.echo.tokens :as tokens]
+   [cmr.transmit.metadata-db2 :as mdb]
+   [cmr.transmit.urs :as urs])
+  ;; Must be required to be available at runtime
+  (:require
+   cmr.access-control.data.group-json-results-handler
+   cmr.access-control.data.acl-json-results-handler))
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"

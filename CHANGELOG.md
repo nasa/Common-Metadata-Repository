@@ -118,6 +118,12 @@ Items to include in each issue
 ## 1.61
 
 * CMR-2717 - Changed legacy services to read groups from CMR access control
-  * Needs config v341
-  * Need to manually synchronize groups before deployment.
-  * The CMR deployment must happen first.
+  * Deployment Impacts
+    * Needs config v341
+    * Need to manually synchronize groups before deployment.
+    * The CMR deployment must happen first.
+* CMR-3387 - Include members in search response
+  * Group search can no optionally include group members in a search response.
+  * Deployment Impacts
+    * Requires reindexing all groups after deployment
+      * `curl -i -XPOST http://localhost:3011/access-control/reindex-groups?token=XXXX`

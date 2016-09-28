@@ -108,6 +108,14 @@
   "Find concepts with specific parameters"
   [context params]
   (validate-find-params params)
-  (if (contains? #{:tag :tag-association :acl :humanizer} (:concept-type params))
+  (cond
+    (contains? #{:tag :tag-association :acl :humanizer} (:concept-type params))
     (find-cmr-concepts context params)
+
+    (= :access-group (:concept-type params))
+    (concat
+     (find-cmr-concepts context params)
+     (find-provider-concepts context params))
+
+    :else
     (find-provider-concepts context params)))

@@ -8,15 +8,23 @@ The caches of the Access Control application can be queried to help debug caches
 
 The following curl will return the list of caches:
 
-    curl -i %CMR-ENDPOINT%/caches
+    curl -i http://localhost:3011/access-control/caches
 
 The following curl will return the keys for a specific cache:
 
-    curl -i %CMR-ENDPOINT%/caches/<cache-name>
+    curl -i http://localhost:3011/access-control/caches/<cache-name>
 
 This curl will return the value for a specific key in the named cache:
 
-    curl -i %CMR-ENDPOINT%/caches/<cache-name>/<cache-key>
+    curl -i http://localhost:3011/access-control/caches/<cache-name>/<cache-key>
+
+## Reindexing All Groups
+
+Reindexing all groups can be accomplished by sending a post request to /reindex-groups
+
+    curl -i -XPOST http://localhost:3011/access-control/reindex-groups?token=XXXX
+
+
 
 ***
 

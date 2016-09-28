@@ -12,6 +12,10 @@
   [conn]
   (format "%s/groups" (conn/root-url conn)))
 
+(defn- reindex-groups-url
+  [conn]
+  (format "%s/reindex-groups" (conn/root-url conn)))
+
 (defn- group-url
   [conn group-id]
   (str (groups-url conn) "/" group-id))
@@ -33,6 +37,19 @@
    (h/request context :access-control
               {:url-fn cmr.transmit.http-helper/reset-url
                :http-options {:query-params {:bootstrap_data bootstrap-data?}}
+               :method :post
+               :raw? raw?
+               :use-system-token? true})))
+
+(defn reindex-groups
+  "Sends a request to call the reindex groups
+   * :raw - set to true to indicate the raw response should be returned. See
+   cmr.transmit.http-helper for more info. Default false."
+  ([context]
+   (reset context nil))
+  ([context {:keys [raw?]}]
+   (h/request context :access-control
+              {:url-fn reindex-groups-url
                :method :post
                :raw? raw?
                :use-system-token? true})))
