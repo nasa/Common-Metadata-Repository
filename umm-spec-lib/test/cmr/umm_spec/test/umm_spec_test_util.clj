@@ -8,7 +8,7 @@
 
 (deftest test-parse-data-size
   (are [s expected] (= expected
-                       (util/parse-data-sizes s false))
+                       (util/parse-data-sizes s))
     "2 k" [{:Size 2.0 :Unit "KB"}]
     "4,555.5mb" [{:Size 4555.5 :Unit "MB"}]
     "9.446 Tbytes" [{:Size 9.446 :Unit "TB"}]
@@ -24,26 +24,23 @@
     "173.596 Gbytes" [{:Size 173.596 :Unit "GB"}]
 
     ".5 GB" [{:Size 0.5 :Unit "GB"}])
-  (are3 [s sanitize? expected]
-    (is (= expected (util/parse-data-sizes s sanitize?)))
+  (are3 [s expected]
+    (is (= expected (util/parse-data-sizes s)))
 
     "Basic bytes to KB"
-    "1234 bytes" true [{:Size 1.234 :Unit "KB"}]
+    "1234 bytes" [{:Size 1.234 :Unit "KB"}]
 
     "Bytes to KB with commas"
-    "2,894,890 bytes" true [{:Size 2894.89 :Unit "KB"}]
+    "2,894,890 bytes" [{:Size 2894.89 :Unit "KB"}]
 
     "KB with sanitize"
-    "2 k" true [{:Size 2.0 :Unit "KB"}]
-
-    "Basic bytes, no sanitize - produce invalid Unit"
-    "1234 bytes" false [{:Size 1234.0 :Unit "BB"}]))
+    "2 k" [{:Size 2.0 :Unit "KB"}]))
 
 (deftest data-size-str-test
   (is (= (util/data-size-str [{:Size 92.4 :Unit "MB"} {:Size 0.4 :Unit "GB"}])
          "92.4 MB, 0.4 GB"))
   (is (= [{:Size 92.4 :Unit "MB"} {:Size 0.4 :Unit "GB"}]
-         (util/parse-data-sizes (util/data-size-str [{:Size 92.4 :Unit "MB"} {:Size 0.4 :Unit "GB"}]) true))))
+         (util/parse-data-sizes (util/data-size-str [{:Size 92.4 :Unit "MB"} {:Size 0.4 :Unit "GB"}])))))
 
 (deftest format-isbn
   (are3 [original-isbn formatted-isbn]
@@ -70,7 +67,10 @@
       "ABCDEFG" 4 true "ABCD"
 
       "Sanitize? false, do not truncate"
-      "ABCDEFG" 4 false "ABCDEFG"))
+      "ABCDEFG" 4 false "ABCDEFG"
+
+      "Sanitize? true, length equal to max"
+      "ABCDE" 5 true "ABCDE"))
   (testing "truncation with default and sanitize? option"
     (are3 [str size sanitize? expected]
       (is (= expected (util/truncate-with-default str size sanitize?)))

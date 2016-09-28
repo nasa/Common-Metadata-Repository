@@ -4,7 +4,7 @@
    [clojure.string :as str]
    [cmr.common.validations.core :as v]
    [cmr.umm-spec.util :as su]
-   [cmr.umm.validation.validation-utils :as vu])
+   [cmr.umm-spec.validation.umm-spec-validation-utils :as vu])
   (:import
    (org.apache.commons.validator.routines UrlValidator)))
 
@@ -18,7 +18,7 @@
       {field-path
        ;; Escape the %, because the error messages go through a format, which will throw an error
        ;; Do the escape after the format here, so it doesn't get formatted out
-       [(str/replace (format "[%s] is not a valid URL" value) "%" "%%")]})))
+       [(vu/escape-error-string (format "[%s] is not a valid URL" value))]})))
 
 (def urls-validation
   {:URLs (v/every url-validation)})

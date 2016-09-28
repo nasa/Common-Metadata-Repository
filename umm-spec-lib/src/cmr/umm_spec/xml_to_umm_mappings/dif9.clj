@@ -84,7 +84,6 @@
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
   [doc {:keys [sanitize?]}]
-  (def doc doc)
   (let [entry-id (value-of doc "/DIF/Entry_ID")
         version-id (value-of doc "/DIF/Data_Set_Citation/Version")
         short-name (get-short-name entry-id version-id)]
@@ -130,7 +129,7 @@
                                           :BoundingRectangles brs}}}))
      :Distributions (for [distribution (select doc "/DIF/:Distribution")]
                       {:DistributionMedia (value-of distribution "Distribution_Media")
-                       :Sizes (su/parse-data-sizes (value-of distribution "Distribution_Size") sanitize?)
+                       :Sizes (su/parse-data-sizes (value-of distribution "Distribution_Size"))
                        :DistributionFormat (value-of distribution "Distribution_Format")
                        :Fees (value-of distribution "Fees")})
      ;; umm-lib only has ProcessingLevelId and it is from Metadata Name "ProductLevelId"
