@@ -80,13 +80,15 @@
 (defn- find-cmr-concepts
   "Find tags or tag associations with specific parameters"
   [context params]
-  (let [db (db-util/context->db context)
-        latest-only? (or (true? (:latest params))
-                         (= "true" (:latest params)))
-        params (dissoc params :latest)]
-    (if latest-only?
-      (c/find-latest-concepts db {:provider-id "CMR"} params)
-      (c/find-concepts db [{:provider-id "CMR"}] params))))
+  (when (or (nil? (:provider-id params))
+            (= "CMR" (:provider-id params)))
+    (let [db (db-util/context->db context)
+          latest-only? (or (true? (:latest params))
+                           (= "true" (:latest params)))
+          params (dissoc params :latest)]
+      (if latest-only?
+        (c/find-latest-concepts db {:provider-id "CMR"} params)
+        (c/find-concepts db [{:provider-id "CMR"}] params)))))
 
 (defn- find-provider-concepts
   "Find concepts with specific parameters"
