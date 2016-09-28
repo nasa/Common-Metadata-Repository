@@ -632,10 +632,10 @@
           :iso-smap (dc/collection-smap {}) "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
 
           "Multiple Warnings"
-          :dif10 (dc/collection-dif10 {:product (dc/product {:short-name (apply str (repeat 81 "x"))
+          :dif10 (dc/collection-dif10 {:product (dc/product {:short-name (apply str (repeat 121 "x"))
                                                              :processing-level-id "1"})
                                        :platforms [(dc/platform {:short-name (apply str (repeat 81 "x"))})]})
-              "/Platforms/0/ShortName string \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" is too long (length: 81, maximum allowed: 80)/ShortName string \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" is too long (length: 81, maximum allowed: 80)")
+              "/Platforms/0/ShortName string \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" is too long (length: 81, maximum allowed: 80)/ShortName string \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" is too long (length: 121, maximum allowed: 120)")
    (testing "Warnings returned in JSON format"
      (let [response (d/ingest "PROV1" (dc/collection-dif10 {}) {:format :dif10 :accept-format :json})]
        (is (= 201 (:status response)))
