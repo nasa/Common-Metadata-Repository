@@ -7,12 +7,15 @@
             [cheshire.core :as json]))
 
 (def base-fields
-  ["concept-id" "revision-id" "name" "provider-id" "description" "legacy-guid" "member-count"])
+  "The base set of fields to select from Elasticsearch"
+  ["concept-id" "revision-id" "name" "provider-id" "description" "legacy-guid" "member-count"]
 
 (def fields-with-members
+  "The fields to select from Elasticsearch if members should be included"
   (conj base-fields "members"))
 
 (defn- include-members?
+  "Returns true if the query indicates members should be returned in the response."
   [query]
   (some #{:include-members} (:result-features query)))
 
