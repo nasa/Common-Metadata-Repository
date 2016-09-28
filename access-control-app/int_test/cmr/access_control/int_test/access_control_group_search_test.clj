@@ -115,11 +115,6 @@
         all-groups (concat cmr-groups prov1-groups prov2-groups)]
     (u/wait-until-indexed)
 
-    (testing "Search by multiple concept ids should be OR'd"
-      (is (= (expected-search-response [cmr-group1 prov1-group1 prov1-group2] false)
-             (select-keys (u/search-for-groups token {:concept-id (map :concept_id [cmr-group1 prov1-group1 prov1-group2])})
-                          [:status :items :hits :errors]))))
-
     (testing "Search by concept id"
       (are3 [expected-groups params]
         (is (= (expected-search-response expected-groups (:include_members params))
