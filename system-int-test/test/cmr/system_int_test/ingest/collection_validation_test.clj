@@ -629,7 +629,11 @@
           :iso19115 (dc/collection {}) "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
 
           "ISO SMAP Ingest and Ingest Validation"
-          :iso-smap (dc/collection-smap {}) "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])")
+          :iso-smap (dc/collection-smap {}) "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+
+          "DIF9 with no version - has warnings, but passes ingest"
+          :dif (assoc-in (dc/collection-dif {}) [:product :version-id] nil)
+          "object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"SpatialExtent\",\"TemporalExtents\",\"Version\"])")
 
           ; "Multiple Warnings"
           ; :dif10 (dc/collection-dif10 {:product (dc/product {:short-name (apply str (repeat 81 "x"))
