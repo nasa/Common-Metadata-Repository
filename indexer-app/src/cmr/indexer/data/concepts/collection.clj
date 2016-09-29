@@ -307,16 +307,16 @@
             ;;  "org.ceos.wgiss.cwic.cwic_status": {"associationDate":"2015-01-01T00:00:00.0Z",
             ;;                                      "data": "prod"}}
             :tags-gzip-b64 (when (seq tag-associations)
-                             (util/string->gzip-base64
-                              (pr-str
-                               (into {} (for [ta tag-associations]
-                                          [(:tag-key ta) (util/remove-nil-keys
-                                                          {:data (:data ta)})])))))}
-           (collection-temporal-elastic context concept-id umm-spec-collection))))
+                            (util/string->gzip-base64
+                             (pr-str
+                              (into {} (for [ta tag-associations]
+                                          [(:tag-key ta) (util/remove-nil-keys)
+                                                         {:data (:data ta)}])))))}
+           (collection-temporal-elastic context concept-id umm-spec-collection)
            (spatial/collection-orbit-parameters->elastic-docs umm-spec-collection)
            (spatial->elastic umm-spec-collection)
            (sk/science-keywords->facet-fields umm-spec-collection)
-           (collection-humanizers-elastic context umm-spec-collection)
+           (collection-humanizers-elastic context umm-spec-collection))))
 
 (defn- get-elastic-doc-for-tombstone-collection
   "Get the subset of elastic field values that apply to a tombstone index operation."
