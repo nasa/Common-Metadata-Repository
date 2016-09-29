@@ -6,8 +6,9 @@
     [clojure.edn :as edn]
     [clojure.string :as str]
     [cmr.access-control.data.acl-schema :as schema]
-    [cmr.access-control.services.acl-service :as acl-service]
     [cmr.access-control.services.group-service :as groups]
+    [cmr.access-control.services.acl-service :as acl-service]
+    [cmr.access-control.services.auth-util :as auth-util]
     [cmr.common-app.services.search :as cs]
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.parameter-validation :as cpv]
@@ -143,38 +144,6 @@
                     "Only 'provider', 'system', 'single_instance', or 'catalog_item' can be specified.")
                (str/join ", " invalid-types))])))
 
-(defn boolean-value-validation
-  "Validates that all of the boolean parameters have values of true or false."
-  [concept-type params]
-  (let [bool-params (select-keys params [:include-full-acl])]
-    (mapcat
-      (fn [[param value]]
-        (when-not (contains? #{"true" "false"} (when value (str/lower-case value)))
-          [(format "Parameter %s must take value of true or false but was [%s]"
-                   (csk/->snake_case_string param) value)]))
-      bool-params)))
-
-(defn validate-acl-search-params
-  "Validates the parameters for an ACL search. Returns the parameters or throws an error if invalid."
-  [context params]
-  (let [[safe-params type-errors] (cpv/apply-type-validations
-                                    params
-                                    [(partial cpv/validate-map [:options])
-                                     (partial cpv/validate-map [:options :permitted-group])
-                                     (partial cpv/validate-map [:options :identity-type])
-                                     (partial cpv/validate-map [:options :provider])
-                                     (partial cpv/validate-map [:options :permitted-user])
-                                     (partial cpv/validate-map [:group_permission])])]
-    (cpv/validate-parameters
-      :acl safe-params
-      (concat cpv/common-validations
-              [permitted-group-validation
-               identity-type-validation
-               group-permission-validation
-               boolean-value-validation])
-      type-errors))
-  params)
-
 (defmethod cp/always-case-sensitive-fields :acl
   [_]
   #{:concept-id :identity-type})
@@ -193,9 +162,7 @@
 
 (defmethod cp/parse-query-level-params :acl
   [concept-type params]
-  (let [[params query-attribs] (cp/default-parse-query-level-params :acl params)
-        result-features (when (= (:include-full-acl params) "true"
-                                 [:include-full-acl]))]
+  (let [[params query-attribs] (cp/default-parse-query-level-params :acl params)]
     [(dissoc params :include-full-acl)
      (merge query-attribs
             (when (= (:include-full-acl params) "true")
@@ -214,7 +181,7 @@
   ;; reject non-existent users
   (groups/validate-members-exist context [value])
 
-  (let [groups (->> (acl-service/get-sids context value)
+  (let [groups (->> (auth-util/get-sids context value)
                     (map name))]
     (cp/string-parameter->condition concept-type :permitted-group groups options)))
 
@@ -250,7 +217,7 @@
              [permitted-group-validation
               identity-type-validation
               group-permission-validation
-              boolean-value-validation])
+              (partial cpv/validate-boolean-param :include-full-acl)])
      type-errors))
  params)
 
@@ -283,7 +250,7 @@
   [context query]
   (let [token (:token context)
         user (if token (tokens/get-user-id context token) "guest")
-        sids (acl-service/get-sids context (if (= user "guest") :guest user))
+        sids (auth-util/get-sids context (if (= user "guest") :guest user))
         acl-concepts (acl-service/get-all-acl-concepts context)
         acls-with-concept-id (map #(assoc (acl-service/get-parsed-acl %) :concept-id (:concept-id %)) acl-concepts)]
     (if (has-any-read? sids acls-with-concept-id)
@@ -303,8 +270,7 @@
                                            (cp/parse-parameter-query context :acl)))
         [find-concepts-time results] (util/time-execution
                                        (cs/find-concepts context :acl query))
-
         total-took (+ query-creation-time find-concepts-time)]
-    (info (format "Found %d acls in %d ms in format %s with params %s."
-                  (:hits results) total-took (common-qm/base-result-format query) (pr-str params)))
-    (assoc results :took total-took)))
+   (info (format "Found %d acls in %d ms in format %s with params %s."
+                 (:hits results) total-took (common-qm/base-result-format query) (pr-str params)))
+   (assoc results :took total-took)))

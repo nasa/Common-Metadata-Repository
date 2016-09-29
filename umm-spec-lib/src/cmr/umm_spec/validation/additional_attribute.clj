@@ -22,8 +22,9 @@
     (aa/parse-value (aa/gen-data-type data-type) value)
     nil
     (catch Exception _
-      [(format "%s [%s] is not a valid value for type [%s]."
-               (v/humanize-field field) value (aa/gen-data-type data-type))])))
+      [(vu/escape-error-string
+        (format "%s [%s] is not a valid value for type [%s]."
+                (v/humanize-field field) value (aa/gen-data-type data-type)))])))
 
 (defn- values-match-data-type-validation
   "Validates additional attribute values match the data type"

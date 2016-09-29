@@ -77,7 +77,7 @@
           tag (tags/make-tag {:tag-key tag-key})
           token (e/login (s/context) "user1")
           {:keys [status concept-id revision-id]} (tags/create-tag token tag)]
-      (is (= 200 status))
+      (is (= 201 status))
       (is concept-id)
       (is (= 1 revision-id))
       (tags/assert-tag-saved (assoc tag :originator-id "user1") "user1" concept-id revision-id)
@@ -96,7 +96,7 @@
 
       (testing "Creation with different tag-key succeeds"
         (let [response (tags/create-tag token (assoc tag :tag-key "different"))]
-          (is (= 200 (:status response)))
+          (is (= 201 (:status response)))
           (is (not= concept-id (:concept-id response)))
           (is (= 1 (:revision-id response)))))
 
@@ -113,13 +113,13 @@
     (testing "Create tag with fields at maximum length"
       (let [tag (into {} (for [[field max-length] field-maxes]
                            [field (tags/string-of-length max-length)]))]
-        (is (= 200 (:status (tags/create-tag (e/login (s/context) "user1") tag)))))))
+        (is (= 201 (:status (tags/create-tag (e/login (s/context) "user1") tag)))))))
 
   (testing "Creation without optional fields is allowed"
     (let [tag (dissoc (tags/make-tag {:tag-key "tag-key2"}) :description)
           token (e/login (s/context) "user1")
           {:keys [status concept-id revision-id]} (tags/create-tag token tag)]
-      (is (= 200 status))
+      (is (= 201 status))
       (is concept-id)
       (is (= 1 revision-id)))))
 
@@ -243,4 +243,3 @@
       (is (= {:status 404
               :errors ["Tag could not be found with tag-key [tag2]"]}
              (tags/delete-tag token "tag2"))))))
-

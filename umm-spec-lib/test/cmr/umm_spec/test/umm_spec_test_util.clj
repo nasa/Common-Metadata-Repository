@@ -23,7 +23,18 @@
 
     "173.596 Gbytes" [{:Size 173.596 :Unit "GB"}]
 
-    ".5 GB" [{:Size 0.5 :Unit "GB"}]))
+    ".5 GB" [{:Size 0.5 :Unit "GB"}])
+  (are3 [s expected]
+    (is (= expected (util/parse-data-sizes s)))
+
+    "Basic bytes to KB"
+    "1234 bytes" [{:Size 1.234 :Unit "KB"}]
+
+    "Bytes to KB with commas"
+    "2,894,890 bytes" [{:Size 2894.89 :Unit "KB"}]
+
+    "KB with sanitize"
+    "2 k" [{:Size 2.0 :Unit "KB"}]))
 
 (deftest data-size-str-test
   (is (= (util/data-size-str [{:Size 92.4 :Unit "MB"} {:Size 0.4 :Unit "GB"}])
@@ -46,3 +57,32 @@
 
     "Remove ISSN"
     "ISSN-12345678" "12345678"))
+
+(deftest truncation
+  (testing "truncation with sanitize? option"
+    (are3 [str size sanitize? expected]
+      (is (= expected (util/truncate str size sanitize?)))
+
+      "Sanitize? true, truncate"
+      "ABCDEFG" 4 true "ABCD"
+
+      "Sanitize? false, do not truncate"
+      "ABCDEFG" 4 false "ABCDEFG"
+
+      "Sanitize? true, length equal to max"
+      "ABCDE" 5 true "ABCDE"))
+  (testing "truncation with default and sanitize? option"
+    (are3 [str size sanitize? expected]
+      (is (= expected (util/truncate-with-default str size sanitize?)))
+
+      "Sanitize? true, nil value"
+      nil 100 true "Not provided"
+
+      "Sanitize? false, nil value"
+      nil 100 false nil
+
+      "Sanitize? true, truncate"
+      "ABCDEFG" 4 true "ABCD"
+
+      "Sanitize? false, do not truncate"
+      "ABCDEFG" 4 false "ABCDEFG")))

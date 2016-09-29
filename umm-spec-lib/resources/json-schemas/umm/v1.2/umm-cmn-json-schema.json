@@ -288,7 +288,6 @@
           "description": "The URL for the relevant web page (e.g., the URL of the responsible organization's home page, the URL of the collection landing page, the URL of the download site for the collection).",
           "type": "array",
           "items": {
-            "format": "uri",
             "type": "string",
             "minLength": 1,
             "maxLength": 1024
@@ -856,7 +855,7 @@
           "description": "The expanded name of the campaign/experiment (e.g. Global climate observing system).",
           "type": "string",
           "minLength": 1,
-          "maxLength": 80
+          "maxLength": 300
         },
         "Campaigns": {
           "description": "The name of the campaign/experiment (e.g. Global climate observing system).",
@@ -1305,13 +1304,13 @@
       "description": "A brief description of the collection. This allows potential users to determine if the collection is useful for their needs.",
       "type": "string",
       "minLength": 1,
-      "maxLength": 4000
+      "maxLength": 40000
     },
     "PurposeType": {
       "description": "Describes the purpose and/or intended use of data in this collection.",
       "type": "string",
       "minLength": 1,
-      "maxLength": 4000
+      "maxLength": 10000
     },
     "ResponsibilityRoleEnum": {
       "type": "string",
@@ -1326,7 +1325,7 @@
       "description": "The unique name.",
       "type": "string",
       "minLength": 1,
-      "maxLength": 80
+      "maxLength": 120
     },
     "PlatformShortNameType": {
       "description": "The unique name of the platform.",
@@ -1358,7 +1357,7 @@
       "description": "Free-text information about how the data may or may not be used after access is granted to assure the protection of privacy or intellectual property. This includes any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the data set. Data providers may request acknowledgement of the data from users and claim no responsibility for quality and completeness of data.",
       "type": "string",
       "minLength": 1,
-      "maxLength": 12000
+      "maxLength": 20000
     },
     "MetadataAssociateTypeEnum": {
       "description": "The set of supported values for MetadataAssociationType.Type.",

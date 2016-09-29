@@ -78,11 +78,11 @@
 
      ;; This allows this to be used from many places where we don't expect a failure but if there is
      ;; one we'll be alerted immediately instead of through a side effect like searches failing.
-     (when (and (not (:allow-failure? options)) (not= status 200))
+     (when (and (not (:allow-failure? options)) (not (#{200 201} status)))
        (throw (Exception. (str "Ingest failed when expected to succeed: "
                                (pr-str response)))))
 
-     (if (= 200 status)
+     (if (#{200 201} status)
        (assoc item
               :status status
               :provider-id provider-id

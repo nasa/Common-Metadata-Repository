@@ -16,16 +16,16 @@
   "Attempts to perform the given action using the url and method with the token. Returns true
   if the action was successful."
   [url method token]
-   (let [response (client/request {:url url
-                                   :method method
-                                   :query-params {:token token}
-                                   :connection-manager (s/conn-mgr)
-                                   :throw-exceptions false})
-         status (:status response)]
+  (let [response (client/request {:url url
+                                  :method method
+                                  :query-params {:token token}
+                                  :connection-manager (s/conn-mgr)
+                                  :throw-exceptions false})
+        status (:status response)]
 
      ;; Make sure the status returned is success or 401
-     (is (some #{status} [200 201 204 401]))
-     (not= status 401)))
+    (is (some #{status} [200 201 204 401]))
+    (not= status 401)))
 
 (deftest ingest-management-permission-test
   ;; Grant admin-group-guid admin permission

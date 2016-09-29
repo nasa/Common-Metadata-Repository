@@ -1,30 +1,32 @@
 (ns cmr.access-control.services.group-service
   "Provides functions for creating, updating, deleting, retrieving, and finding groups."
-  (:require [cmr.transmit.metadata-db2 :as mdb]
-            [cmr.transmit.echo.rest :as rest]
-            [cmr.transmit.echo.tokens :as tokens]
-            [cmr.common.concepts :as concepts]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.util :as u]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.validations.core :as v]
-            [cmr.common-app.services.search :as cs]
-            [cmr.common-app.services.search.params :as cp]
-            [cmr.common-app.services.search.parameter-validation :as cpv]
-            [cmr.common-app.services.search.query-model :as common-qm]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.transmit.urs :as urs]
-            [cmr.access-control.services.group-service-messages :as g-msg]
-            [cmr.access-control.services.auth-util :as auth]
-            [clojure.edn :as edn]
-            [clojure.string :as str]
-            ;; Must be required to be available at runtime
-            [cmr.access-control.data.group-json-results-handler]
-            [cmr.access-control.data.acl-json-results-handler]
-            [cheshire.core :as json]
-            [cmr.access-control.services.messages :as msg]
-            [cmr.access-control.services.acl-service :as acl-service]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.edn :as edn]
+   [clojure.string :as str]
+   [cmr.access-control.services.acl-service :as acl-service]
+   [cmr.access-control.services.auth-util :as auth]
+   [cmr.access-control.services.group-service-messages :as g-msg]
+   [cmr.access-control.services.messages :as msg]
+   [cmr.common-app.services.search :as cs]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.parameter-validation :as cpv]
+   [cmr.common-app.services.search.params :as cp]
+   [cmr.common-app.services.search.query-model :as common-qm]
+   [cmr.common.concepts :as concepts]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as u]
+   [cmr.common.validations.core :as v]
+   [cmr.transmit.echo.rest :as rest]
+   [cmr.transmit.echo.tokens :as tokens]
+   [cmr.transmit.metadata-db2 :as mdb]
+   [cmr.transmit.urs :as urs])
+  ;; Must be required to be available at runtime
+  (:require
+   cmr.access-control.data.group-json-results-handler
+   cmr.access-control.data.acl-json-results-handler))
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
@@ -217,17 +219,22 @@
   [_]
   (cpv/merge-params-config
    cpv/basic-params-config
-   {:single-value #{}
-    :multiple-value #{:provider :name :member :legacy-guid}
+   {:single-value #{:include-members}
+    :multiple-value #{:provider :name :member :legacy-guid :concept-id}
     :always-case-sensitive #{}
     :disallow-pattern #{}
     :allow-or #{}}))
+
+(defmethod cpv/valid-query-level-params :access-group
+  [_]
+  #{:include-members})
 
 (defmethod cpv/valid-parameter-options :access-group
   [_]
   {:provider cpv/string-param-options
    :name cpv/string-param-options
    :legacy-guid cpv/string-param-options
+   :concept-id cpv/string-param-options
    :member #{:pattern :and}})
 
 (defn validate-group-search-params
@@ -239,10 +246,12 @@
                                     (partial cpv/validate-map [:options :provider])
                                     (partial cpv/validate-map [:options :name])
                                     (partial cpv/validate-map [:options :member])
+                                    (partial cpv/validate-map [:options :concept-id])
                                     (partial cpv/validate-map [:options :legacy-guid])])]
     (cpv/validate-parameters
      :access-group safe-params
-     cpv/common-validations
+     (concat cpv/common-validations
+             [(partial cpv/validate-boolean-param :include-members)])
      type-errors))
   params)
 
@@ -256,7 +265,8 @@
   {:provider :access-group-provider
    :name :string
    :member :string
-   :legacy-guid :string})
+   :legacy-guid :string
+   :concept-id :string})
 
 (defmethod cp/parameter->condition :access-group-provider
   [context concept-type param value options]
@@ -269,6 +279,13 @@
       (common-qm/negated-condition (common-qm/exist-condition :provider))
       (cp/string-parameter->condition concept-type param value options))))
 
+(defmethod cp/parse-query-level-params :access-group
+  [concept-type params]
+  (let [[params query-attribs] (cp/default-parse-query-level-params :access-group params)]
+    [(dissoc params :include-members)
+     (merge query-attribs
+            (when (= (:include-members params) "true")
+              {:result-features [:include-members]}))]))
 
 (defn search-for-groups
   [context params]

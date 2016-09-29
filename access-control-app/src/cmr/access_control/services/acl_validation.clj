@@ -1,11 +1,18 @@
 (ns cmr.access-control.services.acl-validation
-  (:require [cmr.common.validations.core :as v]
-            [cmr.common.date-time-parser :as dtp]
-            [clj-time.core :as t]
-            [cmr.transmit.metadata-db :as mdb1]
-            [cmr.transmit.metadata-db2 :as mdb]
-            [cmr.access-control.data.acls :as acls]
-            [cmr.access-control.services.messages :as msg]))
+  (:require
+    [clj-time.core :as t]
+    [clojure.edn :as edn]
+    [cmr.access-control.data.acls :as acls]
+    [cmr.access-control.services.auth-util :as auth-util]
+    [cmr.access-control.services.messages :as msg]
+    [cmr.common-app.services.search.query-execution :as qe]
+    [cmr.common-app.services.search.query-model :as qm]
+    [cmr.common.date-time-parser :as dtp]
+    [cmr.common.util :as util]
+    [cmr.common.validations.core :as v]
+    [cmr.transmit.echo.tokens :as tokens]
+    [cmr.transmit.metadata-db :as mdb1]
+    [cmr.transmit.metadata-db2 :as mdb]))
 
 (defn- catalog-item-identity-collection-applicable-validation
   "Validates the relationship between collection_applicable and collection_identifier."
@@ -154,14 +161,55 @@
   [context]
   {:target-id (v/when-present (make-single-instance-identity-target-id-validation context))})
 
+(defn permissions-granted-by-provider-to-user
+  "Returns permissions granted for sids by the list of ACLs"
+  [sids acls target]
+  (for [sid sids
+        acl acls
+        :when (= (get-in acl [:provider-identity :target]) target)
+        group-permission (:group-permissions acl)
+        :when (or
+                (and (contains? group-permission :user-type) (= (name sid) (name (:user-type group-permission))))
+                (and (contains? group-permission :group-id) (= sid (:group-id group-permission))))
+        permission (:permissions group-permission)]
+    permission))
+
+(defn validate-target-provider-grants-create
+  "Checks if provider ACL grants permission for user to create given catalog item ACL"
+  [context key-path acl]
+  (let [token (:token context)
+        user (if token (tokens/get-user-id context token) "guest")
+        sids (auth-util/get-sids context user)
+        provider-id (:provider-id acl)
+        query (qm/query {:concept-type :acl
+                         :condition (qm/string-condition :provider provider-id)
+                         :skip-acls? true
+                         :page-size :unlimited
+                         :result-format :query-specified
+                         :result-fields [:acl-gzip-b64]})
+        response (qe/execute-query context query)
+        provider-acls (map #(edn/read-string (util/gzip-base64->string (:acl-gzip-b64 %))) (:items response))]
+    (when-not (contains? (set (permissions-granted-by-provider-to-user sids
+                                                                       provider-acls
+                                                                       "CATALOG_ITEM_ACL"))
+                         "create")
+      {key-path [(format "User [%s] does not have permission to create a catalog item for provider-id [%s]"
+                          user provider-id)]})))
+
 (defn- make-catalog-item-identity-validations
-  "Returns a standard validation for an ACL catalog_item_identity field closed over the given context and ACL to be validated."
-  [context acl]
-  [catalog-item-identity-collection-or-granule-validation
-   catalog-item-identity-collection-applicable-validation
-   catalog-item-identity-granule-applicable-validation
-   {:collection-identifier (v/when-present (make-collection-identifier-validation context acl))
-    :granule-identifier (v/when-present granule-identifier-validation)}])
+  "Returns a standard validation for an ACL catalog_item_identity field
+   closed over the given context and ACL to be validated.
+   Takes action flag (:create or :update) to do different valiations
+   based on whether creating or updating acl concept"
+  [context acl action]
+  (let [validations [catalog-item-identity-collection-or-granule-validation
+                     catalog-item-identity-collection-applicable-validation
+                     catalog-item-identity-granule-applicable-validation
+                     {:collection-identifier (v/when-present (make-collection-identifier-validation context acl))
+                      :granule-identifier (v/when-present granule-identifier-validation)}]]
+    (if (= :create action)
+      (merge validations #(validate-target-provider-grants-create context %1 %2))
+      validations)))
 
 (defn validate-provider-exists
   "Validates that the acl provider exists."
@@ -185,14 +233,16 @@
                          target (clojure.string/join ", " grantable-permissions))]})))
 
 (defn- make-acl-validations
-  "Returns a sequence of validations closed over the given context for validating ACL records."
-  [context acl]
+  "Returns a sequence of validations closed over the given context for validating ACL records.
+   Takes action flag (:create or :update) to do different valiations based on whether creating or updating acl concept"
+  [context acl action]
   [#(validate-provider-exists context %1 %2)
-   {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl))
+   {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl action))
     :single-instance-identity (v/when-present (make-single-instance-identity-validations context))}
    validate-grantable-permissions])
 
 (defn validate-acl-save!
-  "Throws service errors if ACL is invalid."
-  [context acl]
-  (v/validate! (make-acl-validations context acl) acl))
+  "Throws service errors if ACL is invalid. Takes action flag (:create or :update) to do different valiations
+   based on whether creating or updating acl concept"
+  [context acl action]
+  (v/validate! (make-acl-validations context acl action) acl))

@@ -96,7 +96,7 @@
     (let [token (e/login (s/context) "admin" ["admin-update-group-guid"])
           humanizers (hu/make-humanizers)
           {:keys [status concept-id revision-id]} (hu/update-humanizers token humanizers)]
-      (is (= 200 status))
+      (is (= 201 status))
       (is concept-id)
       (is (= 1 revision-id))
       (hu/assert-humanizers-saved humanizers "admin" concept-id revision-id)

@@ -202,7 +202,7 @@
                          :format "application/echo10+xml; charset=utf-8"))
         {:keys [status errors]} (ingest/ingest-concept granule)]
     (index/wait-until-indexed)
-    (is (= 200 status))))
+    (is (= 201 status))))
 
 ;; Verify ingest behaves properly if request is missing content type.
 (deftest missing-content-type-ingest-test
@@ -235,7 +235,7 @@
         delete1-result (ingest/delete-concept granule)
         delete2-result (ingest/delete-concept granule)]
     (index/wait-until-indexed)
-    (is (= 200 (:status ingest-result)))
+    (is (= 201 (:status ingest-result)))
     (is (= 200 (:status delete1-result)))
     (is (= 404 (:status delete2-result)))
     (is (= [(format "Concept with native-id [%s] and concept-id [%s] is already deleted."
@@ -263,7 +263,7 @@
         {:keys [concept-id revision-id] :as response} (ingest/ingest-concept granule)
         ingested-concept (mdb/get-concept concept-id)]
     (index/wait-until-indexed)
-    (is (= 200 (:status response)))
+    (is (= 201 (:status response)))
     (is (mdb/concept-exists-in-mdb? concept-id revision-id))
     (is (= 1 revision-id))
     (is (= "Name/With/Slashes" (:native-id ingested-concept)))))
@@ -303,7 +303,7 @@
                           (d/item->concept :iso-smap))
               {:keys [status] :as response} (ingest/ingest-concept granule)]
           (index/wait-until-indexed)
-          (is (= 200 status) (pr-str response)))
+          (is (#{200 201} status) (pr-str response)))
 
         "EntryTitle"
         {:entry-title "correct"}
@@ -372,11 +372,11 @@
                               (get "Content-Type"))
         granule-search-response (search/find-refs :granule {:concept-id gran-concept-id})]
     (testing "Collection ingested and indexed successfully as version 1.2 UMM JSON"
-      (is (= 200 (:status ingest-collection-response)))
+      (is (= 201 (:status ingest-collection-response)))
       (is (= "application/vnd.nasa.cmr.umm+json;version=1.2; charset=utf-8"
              coll-content-type)))
     (testing "Granule ingested successfully"
-      (is (= 200 (:status ingest-granule-response))))
+      (is (= 201 (:status ingest-granule-response))))
     (testing "Granule successfully indexed for search"
       (is (= 1 (:hits granule-search-response)))
       (is (= gran-concept-id (-> granule-search-response :refs first :id))))))
