@@ -47,6 +47,7 @@
   (v/validate-concept-metadata collection-concept)
   (let [{:keys [format metadata]} collection-concept
         collection (spec/parse-metadata context :collection format metadata {:sanitize? false})
+        sanitized-collection (spec/parse-metadata context :collection format metadata {:sanitize? true})
 
     ;; Validate against the UMM Spec validation rules
         warnings (v/validate-collection-umm-spec context collection validation-options)]
@@ -55,7 +56,7 @@
                                (umm-legacy/parse-concept context collection-concept)
                                (:validate-keywords? validation-options))
     ;; The UMM Spec collection is returned
-    {:collection collection
+    {:collection sanitized-collection
      :warnings warnings}))
 
 (defn-timed validate-and-prepare-collection
