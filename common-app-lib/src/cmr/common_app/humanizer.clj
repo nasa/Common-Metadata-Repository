@@ -1,24 +1,25 @@
 (ns cmr.common-app.humanizer
   "Implements transforms to 'humanize' faceted fields on UMM collections.
   See https://wiki.earthdata.nasa.gov/display/CMR/Humanizing+Facets+Design"
-  (:require [clojure.string :as str]
-            [cmr.common.util :as util]))
+  (:require
+    [clojure.string :as str]
+    [cmr.common.util :as util]))
 
 (def humanizer-field->umm-paths
   "Map of humanizer JSON field names to lists of paths into parsed UMM collections
   corresponding to those fields."
-  {"platform" [[:platforms :short-name]]
-   "instrument" [[:platforms :instruments :short-name]]
-   "science_keyword" [[:science-keywords :category]
-                      [:science-keywords :topic]
-                      [:science-keywords :term]
-                      [:science-keywords :variable-level-1]
-                      [:science-keywords :variable-level-2]
-                      [:science-keywords :variable-level-3]
-                      [:science-keywords :detailed-variable]]
-   "project" [[:projects :short-name]]
-   "processing_level" [[:product :processing-level-id]]
-   "organization" [[:organizations :org-name]]})
+  {"platform" [[:Platforms :ShortName]]
+   "instrument" [[:Platforms :Instruments :ShortName]]
+   "science_keyword" [[:ScienceKeywords :Category]
+                      [:ScienceKeywords :Topic]
+                      [:ScienceKeywords :Term]
+                      [:ScienceKeywords :VariableLevel1]
+                      [:ScienceKeywords :VariableLevel2]
+                      [:ScienceKeywords :VariableLevel3]
+                      [:ScienceKeywords :DetailedVariable]]
+   "project" [[:Projects :ShortName]]
+   "processing_level" [[:ProcessingLevel :Id]]
+   "organization" [[:DataCenters :ShortName]]})
 
 (defmulti to-human
   "Map of humanizer JSON type values to functions which take a field value and
@@ -107,6 +108,6 @@
     (reduce #(transform-in-all %1 %2 add-humanizer-field) collection field-paths)))
 
 (defn umm-collection->umm-collection+humanizers
-  "Applies humanizers to a parsed UMM collection"
+  "Applies humanizers to a parsed UMM-spec collection"
   [collection humanizers]
   (reduce apply-humanizer (add-humanizer-fields collection) (sort-by :order humanizers)))
