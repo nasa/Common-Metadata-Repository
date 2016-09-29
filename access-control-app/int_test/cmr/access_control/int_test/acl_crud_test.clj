@@ -17,7 +17,7 @@
               (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"}
                                       ["user1" "user2" "user3" "user4" "user5"])
               (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"])
-              (fixtures/grant-all-acl-fixture ["PROV1"]))
+              (fixtures/grant-all-acl-fixture))
 
 (def system-acl
   "A system ingest management acl that grants read and update to guest users"
