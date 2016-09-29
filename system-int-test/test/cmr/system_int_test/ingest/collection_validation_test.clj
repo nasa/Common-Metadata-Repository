@@ -633,17 +633,22 @@
 
           "DIF9 with no version - has warnings, but passes ingest"
           :dif (assoc-in (dc/collection-dif {}) [:product :version-id] nil)
-          "object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"SpatialExtent\",\"TemporalExtents\",\"Version\"])")
+          "object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"SpatialExtent\",\"TemporalExtents\",\"Version\"])"))
 
-          ; "Multiple Warnings"
-          ; :dif10 (dc/collection-dif10 {:product (dc/product {:short-name (apply str (repeat 81 "x"))
-          ;                                                    :processing-level-id "1"})
-          ;                              :platforms [(dc/platform {:short-name (apply str (repeat 81 "x"))})]})
-          ;     "/Platforms/0/ShortName string \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" is too long (length: 81, maximum allowed: 80)/ShortName string \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" is too long (length: 81, maximum allowed: 80)")
-   (testing "Warnings returned in JSON format"
+  (testing "Multiple warnings"
+     (let [collection (dc/collection-dif10 {:platforms [(dc/platform {:short-name (apply str (repeat 81 "x"))})]
+                                            :purpose (apply str (repeat 12000 "y"))
+                                            :product (dc/product {:processing-level-id "1"})})
+           ingest-response (d/ingest "PROV1" collection {:format :dif10})
+           validation-response (ingest/validate-concept (dc/collection-concept collection :dif10))]
+       (is (some? (re-find #"/Platforms/0/ShortName string.*is too long \(length: 81, maximum allowed: 80\)" (:warnings ingest-response))))
+       (is (some? (re-find #"/Platforms/0/ShortName string.*is too long \(length: 81, maximum allowed: 80\)" (:warnings validation-response))))
+       (is (some? (re-find #"/Purpose string.*is too long \(length: 12000, maximum allowed: 10000\)" (:warnings ingest-response))))
+       (is (some? (re-find #"/Purpose string.*is too long \(length: 12000, maximum allowed: 10000\)" (:warnings validation-response))))))
+  (testing "Warnings returned in JSON format"
      (let [response (d/ingest "PROV1" (dc/collection-dif10 {}) {:format :dif10 :accept-format :json})]
        (is (= 201 (:status response)))
-       (is (= ["object has missing required properties ([\"ProcessingLevel\"])"] (:warnings response)))))))
+       (is (= ["object has missing required properties ([\"ProcessingLevel\"])"] (:warnings response))))))
 
 (comment
   (ingest/delete-provider "PROV1")
