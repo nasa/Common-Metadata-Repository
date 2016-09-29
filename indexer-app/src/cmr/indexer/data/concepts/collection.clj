@@ -118,23 +118,25 @@
     {field value-with-lowercases}))
 
 (defn- assoc-nil-if
-  "Set value to nil if the predicate is true"
+  "Set value to nil if the predicate is true
+   Uses assoc."
   [collection key predicate]
   (if predicate
     (assoc collection key nil)
     collection))
 
-(defn- assoc-nil-in-if
-  "Set value to nil if the predicate is true"
-  [collection key predicate]
+(defn- assoc-in-nil-if
+  "Set value to nil if the predicate is true.
+   Uses assoc-in."
+  [collection keys predicate]
   (if predicate
-    (assoc-in collection key nil)
+    (assoc-in collection keys nil)
     collection))
 
 (defn- sanitize-processing-level-ids
   "Sanitize Processing Level Ids if and only if the values are default"
   [collection]
-  (assoc-nil-in-if
+  (assoc-in-nil-if
    collection
    [:ProcessingLevel :Id]
    (= (get-in collection [:ProcessingLevel :Id]) su/not-provided)))
@@ -150,8 +152,9 @@
 (defn- collection-humanizers-elastic
   "Given a umm-spec collection, returns humanized elastic search fields"
   [context collection]
-  (let [humanized (humanizer/umm-collection->umm-collection+humanizers
-                    collection (hf/get-humanizer-instructions context))
+  (let [sanitized-collection (sanitize-collection collection)
+        humanized (humanizer/umm-collection->umm-collection+humanizers
+                    sanitized-collection (hf/get-humanizer-instructions context))
         extract-fields (partial extract-humanized-elastic-fields humanized)]
     (merge
      {:science-keywords.humanized (map sk/humanized-science-keyword->elastic-doc

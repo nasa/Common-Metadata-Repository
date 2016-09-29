@@ -13,7 +13,7 @@
    [cmr.umm-spec.legacy :as umm-legacy]
    [cmr.umm-spec.umm-spec-core :as umm-spec-core])
   (:import
-   java.io.StringWriter))
+   (java.io StringWriter)))
 
 (def CSV_HEADER
   ["provider", "concept_id", "short_name" "version", "original_value", "humanized_value"])
