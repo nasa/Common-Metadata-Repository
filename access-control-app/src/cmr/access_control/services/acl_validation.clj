@@ -5,7 +5,6 @@
             [cmr.transmit.metadata-db :as mdb1]
             [cmr.transmit.metadata-db2 :as mdb]
             [cmr.access-control.data.acls :as acls]
-            [cmr.access-control.services.group-service :as groups]
             [cmr.access-control.services.messages :as msg]))
 
 (defn- catalog-item-identity-collection-applicable-validation
@@ -147,7 +146,7 @@
   "Validates that the acl group exists."
   [context]
   (fn [key-path target-id]
-    (when-not (groups/group-exists? context target-id)
+    (when-not ((resolve 'cmr.access-control.services.group-service/group-exists?) context target-id)
       {key-path [(format "Group with concept-id [%s] does not exist" target-id)]})))
 
 (defn- make-single-instance-identity-validations

@@ -221,6 +221,21 @@
               :errors ["Group could not be found with concept id [AG100-CMR]"]}
              (u/delete-group token "AG100-CMR"))))))
 
+(deftest delete-group-cascade-to-acl-test
+  (let [token (e/login (u/conn-context) "user")
+        group (u/make-group {:name "test group"})
+        group-concept-id (:concept_id (u/create-group token group))]
+    (u/wait-until-indexed)
+    (u/create-acl token {:group_permissions [{:user_type :registered
+                                              :permissions ["update"]}]
+                         :single_instance_identity {:target "GROUP_MANAGEMENT"
+                                                    :target_id group-concept-id}})
+    (u/wait-until-indexed)
+    (is (= 1 (:hits (u/search-for-acls token {:identity-type "single_instance"}))))
+    (u/delete-group token group-concept-id)
+    (u/wait-until-indexed)
+    (is (= 0 (:hits (u/search-for-acls token {:identity-type "single_instance"}))))))
+
 (deftest update-group-test
   (let [group (u/make-group {:members ["user1" "user2"]})
         token (e/login (u/conn-context) "user1")

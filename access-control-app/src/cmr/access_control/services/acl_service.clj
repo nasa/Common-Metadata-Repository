@@ -7,7 +7,6 @@
     [cmr.access-control.data.acls :as acls]
     [cmr.access-control.services.acl-service-messages :as acl-msg]
     [cmr.access-control.services.acl-validation :as v]
-    [cmr.access-control.services.group-service :as groups]
     [cmr.access-control.services.messages :as msg]
     [cmr.acl.core :as acl]
     [cmr.common.concepts :as concepts]
@@ -68,7 +67,7 @@
   (cond
     (contains? #{:guest :registered} username-or-type) [username-or-type]
     (string? username-or-type) (concat [:registered]
-                                       (->> (groups/search-for-groups context {:member username-or-type})
+                                       (->> ((resolve 'cmr.access-control.services.group-service/search-for-groups) context {:member username-or-type})
                                             :results
                                             :items
                                             (map :concept_id)))))
