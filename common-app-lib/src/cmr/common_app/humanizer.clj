@@ -1,9 +1,9 @@
 (ns cmr.common-app.humanizer
   "Implements transforms to 'humanize' faceted fields on UMM collections.
   See https://wiki.earthdata.nasa.gov/display/CMR/Humanizing+Facets+Design"
-  (:require [clojure.string :as str]
-            [cmr.common.util :as util]
-            [cmr.umm-spec.util :as su]))
+  (:require
+    [clojure.string :as str]
+    [cmr.common.util :as util]))
 
 (def humanizer-field->umm-paths
   "Map of humanizer JSON field names to lists of paths into parsed UMM collections
@@ -107,34 +107,7 @@
   (let [field-paths (apply concat (vals humanizer-field->umm-paths))]
     (reduce #(transform-in-all %1 %2 add-humanizer-field) collection field-paths)))
 
-(defn- assoc-nil-if
-  "Set value to nil if the predicate is true"
-  [collection key predicate]
-  (if predicate
-    (assoc collection key nil)
-    collection))
-
-(defn- assoc-nil-in-if
-  "Set value to nil if the predicate is true"
-  [collection key predicate]
-  (if predicate
-    (assoc-in collection key nil)
-    collection))
-
-(defn- sanitize-processing-level-ids
-  "Sanitize Processing Level Ids if and only if the values are default"
-  [collection]
-  (assoc-nil-in-if
-   collection
-   [:ProcessingLevel :Id]
-   (= (get-in collection [:ProcessingLevel :Id]) su/not-provided)))
-
 (defn umm-collection->umm-collection+humanizers
   "Applies humanizers to a parsed UMM-spec collection"
   [collection humanizers]
-  ;; Remove default values to avoid them being indexed
-  (let [sanitized-collection (-> collection
-                              (assoc-nil-if :Platforms (= (:Platforms collection) su/not-provided-platforms))
-                              sanitize-processing-level-ids
-                              (assoc-nil-if :DataCenters (= (:DataCenters collection) [su/not-provided-data-center])))]
-    (reduce apply-humanizer (add-humanizer-fields sanitized-collection) (sort-by :order humanizers))))
+  (reduce apply-humanizer (add-humanizer-fields collection) (sort-by :order humanizers)))

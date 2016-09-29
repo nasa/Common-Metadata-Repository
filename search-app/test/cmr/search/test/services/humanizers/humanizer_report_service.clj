@@ -8,7 +8,7 @@
 (deftest humanized-collection-report-science-keywords
   (let [collection {:provider-id "PROV1"
                     :concept-id "C1200000004-PROV1"
-                    :ShortName "ShortName"
+                    :ShortName "short-name"
                     :Version "V15"
                     :ScienceKeywords [{:Category "Bioosphere"
                                         :Topic "Topic1"
@@ -20,12 +20,12 @@
                                collection sh/sample-humanizers)]
     (testing "Science keywords humanizer report"
       (is (= (hrs/humanized-collection->reported-rows humanized-collection)
-             [["PROV1" "C1200000004-PROV1" "ShortName" "V15" "Bioosphere" "Biosphere"]])))))
+             [["PROV1" "C1200000004-PROV1" "short-name" "V15" "Bioosphere" "Biosphere"]])))))
 
 (deftest humanized-collection-report-platforms
   (let [collection {:provider-id "PROV1"
                     :concept-id "C1200000004-PROV1"
-                    :ShortName "ShortName"
+                    :ShortName "short-name"
                     :Version "V15"
                     :Platforms [{:ShortName "AM-1"}
                                 {:ShortName "TERRA"}]}
@@ -33,12 +33,12 @@
                                collection sh/sample-humanizers)]
     (testing "Platforms humanizer report"
       (is (= (hrs/humanized-collection->reported-rows humanized-collection)
-             [["PROV1" "C1200000004-PROV1" "ShortName" "V15" "AM-1" "Terra"]])))))
+             [["PROV1" "C1200000004-PROV1" "short-name" "V15" "AM-1" "Terra"]])))))
 
 (deftest humanized-collection-report-instruments
   (let [collection {:provider-id "PROV1"
                     :concept-id "C1200000004-PROV1"
-                    :ShortName "ShortName"
+                    :ShortName "short-name"
                     :Version "V15"
                     :Platforms [{:ShortName "Terra"
                                  :Instruments [{:ShortName "GPS"}
@@ -48,13 +48,13 @@
                                collection sh/sample-humanizers)]
     (testing "Instruments humanizer report"
       (is (= (hrs/humanized-collection->reported-rows humanized-collection)
-             [["PROV1" "C1200000004-PROV1" "ShortName" "V15" "GPS" "GPS Receivers"]
-              ["PROV1" "C1200000004-PROV1" "ShortName" "V15" "GPS RECEIVERS" "GPS Receivers"]])))))
+             [["PROV1" "C1200000004-PROV1" "short-name" "V15" "GPS" "GPS Receivers"]
+              ["PROV1" "C1200000004-PROV1" "short-name" "V15" "GPS RECEIVERS" "GPS Receivers"]])))))
 
 (deftest humanized-collection-report-projects
   (let [collection {:provider-id "PROV1"
                     :concept-id "C1200000004-PROV1"
-                    :ShortName "ShortName"
+                    :ShortName "short-name"
                     :Version "V15"
                     :Projects [{:ShortName "USGS_SOFIA"}
                                {:ShortName " OPENDAP  "}]}
@@ -62,37 +62,37 @@
                                collection sh/sample-humanizers)]
     (testing "Projects humanizer report"
       (is (= (hrs/humanized-collection->reported-rows humanized-collection)
-             [["PROV1" "C1200000004-PROV1" "ShortName" "V15" "USGS_SOFIA" "USGS SOFIA"]])))))
+             [["PROV1" "C1200000004-PROV1" "short-name" "V15" "USGS_SOFIA" "USGS SOFIA"]])))))
 
 (deftest humanized-collection-report-processing-levels
   (let [collection {:provider-id "PROV1"
                     :concept-id "C1200000004-PROV1"
-                    :ShortName "ShortName"
+                    :ShortName "short-name"
                     :Version "V15"}]
     (testing "Processing level humanizer report L1T reportable"
       (let [collection (assoc-in collection [:ProcessingLevel :Id] "L1T")
             humanized-collection (h/umm-collection->umm-collection+humanizers
                                    collection sh/sample-humanizers)]
         (is (= (hrs/humanized-collection->reported-rows humanized-collection)
-               [["PROV1" "C1200000004-PROV1" "ShortName" "V15" "L1T" "1T"]]))))
+               [["PROV1" "C1200000004-PROV1" "short-name" "V15" "L1T" "1T"]]))))
     (testing "Processing level humanizer report Level 1 reportable"
       (let [collection (assoc-in collection [:ProcessingLevel :Id] "Level 1")
             humanized-collection (h/umm-collection->umm-collection+humanizers
                                    collection sh/sample-humanizers)]
         (is (= (hrs/humanized-collection->reported-rows humanized-collection)
-               [["PROV1" "C1200000004-PROV1" "ShortName" "V15" "Level 1" "1"]]))))
+               [["PROV1" "C1200000004-PROV1" "short-name" "V15" "Level 1" "1"]]))))
     (testing "Processing level humanizer report Level 2 reportable"
       (let [collection (assoc-in collection [:ProcessingLevel :Id] "Level 2")
             humanized-collection (h/umm-collection->umm-collection+humanizers
                                    collection sh/sample-humanizers)]
         (is (= (hrs/humanized-collection->reported-rows humanized-collection)
-               [["PROV1" "C1200000004-PROV1" "ShortName" "V15" "Level 2" "2"]]))))
+               [["PROV1" "C1200000004-PROV1" "short-name" "V15" "Level 2" "2"]]))))
     (testing "Processing level humanizer report Level 3 reportable"
       (let [collection (assoc-in collection [:ProcessingLevel :Id] "Level 3")
             humanized-collection (h/umm-collection->umm-collection+humanizers
                                    collection sh/sample-humanizers)]
         (is (= (hrs/humanized-collection->reported-rows humanized-collection)
-               [["PROV1" "C1200000004-PROV1" "ShortName" "V15" "Level 3" "3"]]))))
+               [["PROV1" "C1200000004-PROV1" "short-name" "V15" "Level 3" "3"]]))))
     (testing "Processing level humanizer report trim whitespace not reportable"
       (let [collection (assoc-in collection [:ProcessingLevel :Id] " 1 ")
             humanized-collection (h/umm-collection->umm-collection+humanizers
@@ -103,7 +103,7 @@
 (deftest humanized-collection-report-organizations
   (let [collection {:provider-id "PROV1"
                     :concept-id "C1200000004-PROV1"
-                    :ShortName "ShortName"
+                    :ShortName "short-name"
                     :Version "V15"
                     :DataCenters [{:ShortName "NASA/NSIDC_DAAC"}
                                   {:ShortName " LPDAAC "}]}
@@ -116,7 +116,7 @@
   (let [collection {:provider-id "PROV1"
                     :concept-id "C1200000004-PROV1"
                     :ProcessingLevel {:Id "L1T"}
-                    :ShortName "ShortName"
+                    :ShortName "short-name"
                     :Version "V15"
 
                     :ScienceKeywords [{:Category "Bioosphere"
@@ -132,7 +132,7 @@
                                collection sh/sample-humanizers)]
     (testing "Science keywords humanizer report"
       (is (= (hrs/humanized-collection->reported-rows humanized-collection)
-             [["PROV1" "C1200000004-PROV1" "ShortName" "V15" "AM-1" "Terra"]
-              ["PROV1" "C1200000004-PROV1" "ShortName" "V15" "GPS" "GPS Receivers"]
-              ["PROV1" "C1200000004-PROV1" "ShortName" "V15" "Bioosphere" "Biosphere"]
-              ["PROV1" "C1200000004-PROV1" "ShortName" "V15" "L1T" "1T"]])))))
+             [["PROV1" "C1200000004-PROV1" "short-name" "V15" "AM-1" "Terra"]
+              ["PROV1" "C1200000004-PROV1" "short-name" "V15" "GPS" "GPS Receivers"]
+              ["PROV1" "C1200000004-PROV1" "short-name" "V15" "Bioosphere" "Biosphere"]
+              ["PROV1" "C1200000004-PROV1" "short-name" "V15" "L1T" "1T"]])))))

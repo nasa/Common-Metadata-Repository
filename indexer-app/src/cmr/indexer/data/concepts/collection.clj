@@ -117,6 +117,36 @@
                                 (add-humanized-lowercase value-with-priorities))]
     {field value-with-lowercases}))
 
+(defn- assoc-nil-if
+  "Set value to nil if the predicate is true"
+  [collection key predicate]
+  (if predicate
+    (assoc collection key nil)
+    collection))
+
+(defn- assoc-nil-in-if
+  "Set value to nil if the predicate is true"
+  [collection key predicate]
+  (if predicate
+    (assoc-in collection key nil)
+    collection))
+
+(defn- sanitize-processing-level-ids
+  "Sanitize Processing Level Ids if and only if the values are default"
+  [collection]
+  (assoc-nil-in-if
+   collection
+   [:ProcessingLevel :Id]
+   (= (get-in collection [:ProcessingLevel :Id]) su/not-provided)))
+
+(defn- sanitize-collection
+  "Remove default values to avoid them being indexed"
+  [collection]
+  (-> collection
+   (assoc-nil-if :Platforms (= (:Platforms collection) su/not-provided-platforms))
+   sanitize-processing-level-ids
+   (assoc-nil-if :DataCenters (= (:DataCenters collection) [su/not-provided-data-center]))))
+
 (defn- collection-humanizers-elastic
   "Given a umm-spec collection, returns humanized elastic search fields"
   [context collection]

@@ -12,7 +12,8 @@
    [cmr.search.services.humanizers.humanizer-service :as hs]
    [cmr.umm-spec.legacy :as umm-legacy]
    [cmr.umm-spec.umm-spec-core :as umm-spec-core])
-  (:import java.io.StringWriter))
+  (:import
+   java.io.StringWriter))
 
 (def CSV_HEADER
   ["provider", "concept_id", "short_name" "version", "original_value", "humanized_value"])
@@ -69,8 +70,8 @@
   [context]
   (let [[t1 collection-batches] (u/time-execution
                                   (get-all-collections context))
-        string-writer (StringWriter.)
-        idx-atom (atom 0)]
+         string-writer (StringWriter.)
+         idx-atom (atom 0)]
     (debug "get-all-collections:" t1
            "processing " (count collection-batches)
            " batches of size" (humanizer-report-collection-batch-size))
