@@ -51,7 +51,6 @@
 
     ;; Validate against the UMM Spec validation rules
         warnings (v/validate-collection-umm-spec context collection validation-options)]
-    (proto-repl.saved-values/save 7)
     ;; Using the legacy UMM validation rules (for now)
     (v/validate-collection-umm context
                                (umm-legacy/parse-concept context collection-concept)

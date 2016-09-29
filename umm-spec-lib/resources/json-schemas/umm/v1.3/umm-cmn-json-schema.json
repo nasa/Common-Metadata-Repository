@@ -1325,7 +1325,7 @@
       "description": "The unique name.",
       "type": "string",
       "minLength": 1,
-      "maxLength": 120
+      "maxLength": 85
     },
     "PlatformShortNameType": {
       "description": "The unique name of the platform.",
