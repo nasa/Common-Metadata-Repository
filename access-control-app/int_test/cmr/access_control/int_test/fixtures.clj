@@ -119,6 +119,8 @@
       (e/grant-provider-group-permissions-to-all (conn-context) provider-guid))
     (f)))
 
+;;These two vars will be rebinded dynamically when the fixtures are setup for each test and
+;;are used to represent the ACLs inside of the tests
 (def ^:dynamic *fixture-provider-acl*)
 (def ^:dynamic *fixture-system-acl*)
 

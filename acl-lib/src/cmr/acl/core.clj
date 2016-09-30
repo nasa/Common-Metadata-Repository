@@ -64,6 +64,7 @@
           [:guest]))))
 
 (defn echo-style-temporal-identifier
+  "Returns an ECHO-style ACL temporal identifier from a CMR-style ACL temporal identifier"
   [t]
   (when t
     (-> t

@@ -144,9 +144,10 @@
         group1-concept-id (:concept_id group1)
         group2-concept-id (:concept_id group2)
         ;; remove ANY_ACL read to all users
-        _ (ac/update-acl (u/conn-context) (:concept-id fixtures/*fixture-system-acl*) (assoc-in (system-acl "ANY_ACL")
-                                                                                                [:group_permissions 0]
-                                                                                                {:permissions ["read" "create"] :group_id group1-concept-id}))
+        _ (ac/update-acl (u/conn-context) (:concept-id fixtures/*fixture-system-acl*)
+                         (assoc-in (system-acl "ANY_ACL")
+                                   [:group_permissions 0]
+                                   {:permissions ["read" "create"] :group_id group1-concept-id}))
         _ (u/wait-until-indexed)
 
         acl1 (ingest-acl token (assoc-in (system-acl "INGEST_MANAGEMENT_ACL")
