@@ -141,33 +141,6 @@
   [context concept-id]
   (edn/read-string (:metadata (fetch-acl-concept context concept-id))))
 
-(defn echo-style-temporal-identifier
-  [t]
-  (when t
-    (-> t
-        (assoc :temporal-field :acquisition)
-        (update-in [:mask] keyword)
-        (update-in [:start-date] dtp/try-parse-datetime)
-        (update-in [:stop-date] dtp/try-parse-datetime)
-        (set/rename-keys {:stop-date :end-date}))))
-
-(defn echo-style-acl
-  "Returns acl with the older ECHO-style keywords for consumption in utility functions from other parts of the CMR."
-  [acl]
-  (-> acl
-      (set/rename-keys {:system-identity :system-object-identity
-                        :provider-identity :provider-object-identity
-                        :group-permissions :aces})
-      (util/update-in-each [:aces] update-in [:user-type] keyword)
-      (util/update-in-each [:aces] set/rename-keys {:group-id :group-guid})
-      (update-in [:catalog-item-identity :collection-identifier :temporal] echo-style-temporal-identifier)
-      (update-in [:catalog-item-identity :granule-identifier :temporal] echo-style-temporal-identifier)
-      (update-in [:catalog-item-identity :collection-identifier :access-value]
-                 #(set/rename-keys % {:include-undefined-value :include-undefined}))
-      (update-in [:catalog-item-identity :granule-identifier :access-value]
-                 #(set/rename-keys % {:include-undefined-value :include-undefined}))
-      util/remove-empty-maps))
-
 (defn get-all-acl-concepts
   "Returns all ACLs in metadata db."
   [context]
@@ -183,7 +156,7 @@
 (defn- get-echo-style-acls
   "Returns all ACLs in metadata db, converted to \"ECHO-style\" keys for use with existing ACL functions."
   [context]
-  (map echo-style-acl (map get-parsed-acl (get-all-acl-concepts context))))
+  (map acl/echo-style-acl (map get-parsed-acl (get-all-acl-concepts context))))
 
 (def all-permissions
   "The set of all permissions checked and returned by the functions below."

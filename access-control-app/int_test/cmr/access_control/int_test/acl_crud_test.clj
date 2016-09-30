@@ -17,7 +17,7 @@
               (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"}
                                       ["user1" "user2" "user3" "user4" "user5"])
               (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"])
-              (fixtures/grant-all-acl-fixture ["PROV1"]))
+              (fixtures/grant-all-acl-fixture))
 
 (def system-acl
   "A system ingest management acl that grants read and update to guest users"
@@ -62,6 +62,36 @@
                             {:token token})]
     (is (re-find #"^ACL.*" (:concept_id resp)))
     (is (= 1 (:revision_id resp)))))
+
+(deftest create-system-level-acl-permission-test
+  ;; Tests user permission to create system level acls
+  (let [token-user1 (e/login (u/conn-context) "user1")
+        guest-token (e/login-guest (u/conn-context))
+        token-user2 (e/login (u/conn-context) "user2")
+        group1 (u/ingest-group token-user1 {:name "group1"} ["user1"])
+        group1-concept-id (:concept_id group1)
+        ;; Update ANY_ACL fixture to remove permissions from guest and registered,
+        ;; and replace it with group1
+        _ (ac/update-acl (merge {:token token-user1} (u/conn-context)) "ACL1200000001-CMR"
+                         (assoc (assoc-in system-acl
+                                          [:system_identity :target] "ANY_ACL")
+                                :group_permissions [{:group_id group1-concept-id :permissions ["read" "create"]},
+                                                    {:user_type :guest :permissions ["read"]}]))
+        _ (u/wait-until-indexed)
+        resp1 (ac/create-acl (merge {:token token-user1} (u/conn-context)) system-acl)]
+
+    (is (re-find #"^ACL.*" (:concept_id resp1)))
+    (is (= 1 (:revision_id resp1)))
+    (is (thrown-with-msg? Exception #"User \[guest\] does not have permission to create a system level ACL"
+                          (ac/create-acl (merge {:token guest-token} (u/conn-context))
+                                         (assoc (assoc-in system-acl
+                                                          [:system_identity :target] "ARCHIVE_RECORD")
+                                                :group_permissions [{:user_type :guest :permissions ["delete"]}]))))
+    (is (thrown-with-msg? Exception #"User \[user2\] does not have permission to create a system level ACL"
+                          (ac/create-acl (merge {:token token-user2} (u/conn-context))
+                                         (assoc (assoc-in system-acl
+                                                          [:system_identity :target] "ARCHIVE_RECORD")
+                                                :group_permissions [{:user_type :registered :permissions ["delete"]}]))))))
 
 (deftest create-catalog-item-acl-permission-test
   ;; Tests creation permissions of catalog item acls
