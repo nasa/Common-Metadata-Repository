@@ -7,7 +7,6 @@
    [cmr.access-control.services.auth-util :as auth]
    [cmr.access-control.services.group-service-messages :as g-msg]
    [cmr.access-control.services.messages :as msg]
-   [cmr.acl.core :as acl]
    [cmr.common-app.services.search :as cs]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.parameter-validation :as cpv]

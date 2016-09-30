@@ -1,11 +1,10 @@
 (ns cmr.access-control.services.acl-validation
   (:require
-    [cheshire.core :as json]
     [clj-time.core :as t]
     [clojure.edn :as edn]
     [cmr.access-control.data.acls :as acls]
     [cmr.access-control.services.auth-util :as auth-util]
-    [cmr.access-control.services.group-service :as groups]
+    [cmr.access-control.services.group-service :as group-service]
     [cmr.access-control.services.messages :as msg]
     [cmr.acl.core :as acl]
     [cmr.common-app.services.search.query-execution :as qe]
@@ -157,7 +156,7 @@
   "Validates that the acl group exists."
   [context]
   (fn [key-path target-id]
-    (when-not (groups/group-exists? context target-id)
+    (when-not (group-service/group-exists? context target-id)
       {key-path [(format "Group with concept-id [%s] does not exist" target-id)]})))
 
 (defn- make-single-instance-identity-validations

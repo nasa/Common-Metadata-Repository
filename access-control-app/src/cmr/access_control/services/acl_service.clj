@@ -8,7 +8,6 @@
     [cmr.access-control.services.acl-service-messages :as acl-msg]
     [cmr.access-control.services.acl-validation :as v]
     [cmr.access-control.services.auth-util :as auth-util]
-    [cmr.access-control.services.group-service :as groups]
     [cmr.access-control.services.messages :as msg]
     [cmr.acl.core :as acl]
     [cmr.common.concepts :as concepts]
