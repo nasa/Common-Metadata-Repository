@@ -311,10 +311,9 @@
 
   (health
     [this]
-    ;; try to get a list of queues and topics (exchanges) to test the connection to SNS/SQS
+    ;; try to get a list of queues for the first topic (exchange) to test the connection to SNS/SQS
     (try
-      (.listQueues sqs-client)
-      (.listTopics sns-client)
+      (queue/get-queues-bound-to-exchange this (first exchanges))
       {:ok? true}
       (catch Throwable e
         {:ok? false :msg (.getMessage e)}))))

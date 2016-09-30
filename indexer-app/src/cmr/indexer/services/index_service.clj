@@ -437,9 +437,9 @@
    :cubby cubby/get-cubby-health
    :metadata-db meta-db2/get-metadata-db-health
    :index-set tis/get-index-set-health
-   :rabbit-mq (fn [context]
-                (when-let [qb (get-in context [:system :queue-broker])]
-                  (queue/health qb)))})
+   :message-queue (fn [context]
+                    (when-let [qb (get-in context [:system :queue-broker])]
+                      (queue/health qb)))})
 
 (defn health
   "Returns the health state of the app."

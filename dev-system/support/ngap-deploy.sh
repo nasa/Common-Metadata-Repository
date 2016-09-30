@@ -12,12 +12,37 @@ app=$1
 environment=$2
 
 printUsage() {
-  echo "Usage: $0 application-name environment"
+  echo "Usage: $0 application-name environment [--skip-build]"
+  echo "Creates a tar file for the given app after optionally building the uberjar and deploys it to NGAP."
+  echo "--skip-build - Don't build the uberjar, just use the existing one."
 }
 
-if [ "$#" -ne 2 ]; then
+if [ "$#" -ne 2 -a "$#" -ne 3 ]; then
     printUsage && exit 1
 fi
+
+shift
+shift
+
+skip_build=false
+
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+
+    --skip-build)
+    skip_build=true
+    ;;
+    *)
+            # unknown option
+    ;;
+esac
+shift # past argument or value
+done
+
+
 # Takes two arguments. A value and an array. Checks if the array contains the value.
 containsElement () {
   local e
@@ -63,7 +88,11 @@ echo "web: java \$JVM_OPTS -cp target/cmr-${app}-app-standalone.jar clojure.main
 echo "(defproject ${app} \"0.1.0-SNAPSHOT\" :description \"${app} App\" :url \"http://example.com/FIXME\" :min-lein-version \"2.0.0\" :dependencies [] :profiles {:dev {:dependencies [[javax.servlet/servlet-api \"2.5\"]  [ring/ring-mock \"0.3.0\"]]} :production {:env {:production true}}})" > "${deployment_dir}/project.clj"
 
 # Clean and create the uberjar
-(cd $app_dir && lein do clean, uberjar)
+if [ "$skip_build" = false ]; then
+  (cd $app_dir && lein do clean, uberjar)
+else
+  echo "Skipping uberjar build."
+fi
 
 # Copy the uberjar file into the deployment target directory
 mkdir -p $deployment_dir/target
@@ -75,6 +104,6 @@ mkdir -p $tars_dir
 tar_file_name=cmr-${app}-${environment}.tar
 (cd $deployment_dir && tar -cf ${tars_dir}/${tar_file_name} .)
 
-# Create the ngap deployment
+Create the ngap deployment
 echo "cd $ngap_cli_dir && ngap deployments:create cmr-${app}-${environment} ${tars_dir}/${tar_file_name}"
 (cd $ngap_cli_dir && ngap deployments:create cmr-${app}-${environment} ${tars_dir}/${tar_file_name})
