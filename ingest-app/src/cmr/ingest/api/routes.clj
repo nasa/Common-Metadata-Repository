@@ -81,18 +81,17 @@
   [_request e]
   (or (mt/format->mime-type (:default-format (ex-data e))) mt/json))
 
-(defn print-headers
-  "This is a ring handler that adds the authentication token and client id to the request context.
-  It expects the request context is already associated with the request."
-  [f]
-  (fn [request]
-    (let [{:keys [request-context headers]} request]
-      (println "Headers are" (pr-str headers))
-      (f request))))
+; (defn print-headers
+;   "This is a ring handler that adds the authentication token and client id to the request context.
+;   It expects the request context is already associated with the request."
+;   [f]
+;   (fn [request]
+;     (let [{:keys [request-context headers]} request]
+;       (println "Headers are" (pr-str headers))
+;       (f request))))
 
 (defn make-api [system]
   (-> (build-routes system)
-      print-headers
       acl/add-authentication-handler
       keyword-params/wrap-keyword-params
       nested-params/wrap-nested-params

@@ -33,7 +33,9 @@
              :nrepl (nrepl/create-nrepl-if-configured (virtual-product-nrepl-port))
              :relative-root-url (transmit-config/virtual-product-relative-root-url)
              :queue-broker (sqs/create-queue-broker (config/queue-config))}]
-    (transmit-config/system-with-connections sys [:metadata-db :ingest :search])))
+    ;; Temporarily add echo-rest to the list of connections we require because we have to enforce
+    ;; token access within NGAP.
+    (transmit-config/system-with-connections sys [:metadata-db :ingest :search :echo-rest])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
