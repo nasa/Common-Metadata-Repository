@@ -171,6 +171,8 @@
         platforms (map util/map-keys->kebab-case
                        (when-not (= su/not-provided-platforms platforms) platforms))
         gcmd-keywords-map (kf/get-gcmd-keywords-map context)
+        ;; TODO - fix temp change to work around cubby issue with KMS
+        ; gcmd-keywords-map {}
         platforms-nested (map #(platform/platform-short-name->elastic-doc gcmd-keywords-map %)
                               (map :short-name platforms))
         platform-short-names (->> (map :short-name platforms-nested)
