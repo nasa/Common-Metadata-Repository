@@ -88,7 +88,7 @@
         version-id (value-of doc "/DIF/Data_Set_Citation/Version")
         short-name (get-short-name entry-id version-id)]
     {:EntryTitle (value-of doc "/DIF/Entry_Title")
-     :ShortName (su/truncate-with-default short-name su/SHORTNAME_MAX sanitize?)
+     :ShortName short-name
      :Version (or version-id (when sanitize? su/not-provided))
      :Abstract (su/truncate-with-default (value-of doc "/DIF/Summary/Abstract") su/ABSTRACT_MAX sanitize?)
      :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
