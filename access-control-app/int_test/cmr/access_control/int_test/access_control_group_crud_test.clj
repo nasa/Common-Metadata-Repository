@@ -239,8 +239,7 @@
                 (u/create-acl token {:group_permissions [{:user_type :registered
                                                           :permissions ["update"]}]
                                      :single_instance_identity {:target "GROUP_MANAGEMENT"
-                                                                :target_id group-2-concept-id}}))
-        _ (println "acl-2-concept-id" acl-2-concept-id)]
+                                                                :target_id group-2-concept-id}}))]
     (u/wait-until-indexed)
     (is (= #{acl-1-concept-id acl-2-concept-id}
            (set
