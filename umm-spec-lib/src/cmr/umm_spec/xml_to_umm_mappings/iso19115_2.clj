@@ -145,7 +145,7 @@
         citation-el (first (select doc citation-base-xpath))
         id-el (first (select doc identifier-base-xpath))
         extent-info (iso-util/get-extent-info-map doc)]
-    {:ShortName (char-string-value id-el "gmd:code")
+    {:ShortName (su/truncate (char-string-value id-el "gmd:code") su/SHORTNAME_MAX sanitize?)
      :EntryTitle (char-string-value citation-el "gmd:title")
      :Version (char-string-value citation-el "gmd:edition")
      :Abstract (su/truncate-with-default (char-string-value md-data-id-el "gmd:abstract") su/ABSTRACT_MAX sanitize?)

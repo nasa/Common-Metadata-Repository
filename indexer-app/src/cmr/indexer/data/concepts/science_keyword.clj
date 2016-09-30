@@ -1,6 +1,6 @@
 (ns cmr.indexer.data.concepts.science-keyword
   "Contains functions for converting science keyword domains into elastic documents"
-  (:require 
+  (:require
     [clojure.string :as str]
     [cmr.common-app.services.kms-fetcher :as kf]
     [cmr.common.util :as util]))
@@ -40,11 +40,11 @@
   code that use lowercase mappings."
   [gcmd-keywords-map science-keyword]
   (let [science-keyword-kebab-key (util/map-keys->kebab-case science-keyword)
-        science-keyword-upper-case (util/map-values normalize-sk-field-value 
+        science-keyword-upper-case (util/map-values normalize-sk-field-value
                                                     science-keyword-kebab-key)
         {:keys [category topic term variable-level-1 variable-level-2 variable-level-3
                 detailed-variable]} science-keyword-upper-case
-        {:keys [uuid]} (kf/get-full-hierarchy-for-science-keyword gcmd-keywords-map 
+        {:keys [uuid]} (kf/get-full-hierarchy-for-science-keyword gcmd-keywords-map
                                                                   science-keyword-kebab-key)]
     {:category category
      :category.lowercase (str/lower-case category)
@@ -69,7 +69,7 @@
   [science-keyword]
   (let [humanized-fields (filter #(-> % key namespace (= "cmr.humanized")) science-keyword)
         humanized-fields-with-raw-values (util/map-values :value humanized-fields)
-        ns-stripped-fields (util/map-keys #(keyword (name %)) humanized-fields-with-raw-values)]
+        ns-stripped-fields (util/map-keys->kebab-case humanized-fields-with-raw-values)]
     (merge
      ns-stripped-fields
      ;; Create "*.lowercase" versions of the fields

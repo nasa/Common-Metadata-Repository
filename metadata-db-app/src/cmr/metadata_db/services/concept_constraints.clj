@@ -9,7 +9,7 @@
 
 (defconfig enforce-granule-ur-constraint
   "Configuration to allow enabling and disabling of the granule UR uniqueness constraint"
-  {:default false
+  {:default true
    :type Boolean})
 
 (defn- find-latest-matching-concepts

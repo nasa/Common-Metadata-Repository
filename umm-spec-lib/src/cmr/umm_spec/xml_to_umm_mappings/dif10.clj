@@ -130,7 +130,7 @@
   "Returns collection map from DIF10 collection XML document."
   [doc {:keys [sanitize?]}]
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
-   :ShortName (value-of doc "/DIF/Entry_ID/Short_Name")
+   :ShortName (u/truncate-with-default (value-of doc "/DIF/Entry_ID/Short_Name") u/SHORTNAME_MAX sanitize?)
    :Version (value-of doc "/DIF/Entry_ID/Version")
    :Abstract (u/truncate-with-default (value-of doc "/DIF/Summary/Abstract") u/ABSTRACT_MAX sanitize?)
    :CollectionDataType (value-of doc "/DIF/Collection_Data_Type")

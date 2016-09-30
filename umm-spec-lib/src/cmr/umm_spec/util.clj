@@ -27,6 +27,9 @@
 (def ACCESSCONSTRAINTS_DESCRIPTION_MAX
   4000)
 
+(def SHORTNAME_MAX
+  85)
+
 (def ^:private umm-contact-mechanism-correction-map
   {"phone" "Telephone"
    "Phone" "Telephone"
