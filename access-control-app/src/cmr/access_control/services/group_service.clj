@@ -4,7 +4,6 @@
    [cheshire.core :as json]
    [clojure.edn :as edn]
    [clojure.string :as str]
-   [cmr.access-control.services.acl-service :as acl-service]
    [cmr.access-control.services.auth-util :as auth]
    [cmr.access-control.services.group-service-messages :as g-msg]
    [cmr.access-control.services.messages :as msg]
@@ -194,11 +193,6 @@
   (let [group-concept (fetch-group-concept context concept-id)
         group (edn/read-string (:metadata group-concept))]
     (auth/verify-can-delete-group context group)
-    ;; find and delete any ACLs that target this group
-    (doseq [acl-concept (acl-service/get-all-acl-concepts context)
-            :let [parsed-acl (acl-service/get-parsed-acl acl-concept)]
-            :when (= concept-id (get-in parsed-acl [:single-instance-identity :target-id]))]
-      (acl-service/delete-acl context (:concept-id acl-concept)))
     (save-deleted-group-concept context group-concept)))
 
 (defn update-group

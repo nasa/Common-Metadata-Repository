@@ -4,6 +4,7 @@
     [clojure.edn :as edn]
     [cmr.access-control.data.acls :as acls]
     [cmr.access-control.services.auth-util :as auth-util]
+    [cmr.access-control.services.group-service :as group-service]
     [cmr.access-control.services.messages :as msg]
     [cmr.common-app.services.search.query-execution :as qe]
     [cmr.common-app.services.search.query-model :as qm]
@@ -153,7 +154,7 @@
   "Validates that the acl group exists."
   [context]
   (fn [key-path target-id]
-    (when-not ((resolve 'cmr.access-control.services.group-service/group-exists?) context target-id)
+    (when-not (group-service/group-exists? context target-id)
       {key-path [(format "Group with concept-id [%s] does not exist" target-id)]})))
 
 (defn- make-single-instance-identity-validations

@@ -222,19 +222,35 @@
              (u/delete-group token "AG100-CMR"))))))
 
 (deftest delete-group-cascade-to-acl-test
+  ;; Two groups will be created along with two ACLs referencing each respective group. After one
+  ;; group is deleted, the ACL referencing it should also be deleted, and the other ACL should
+  ;; still exist.
   (let [token (e/login (u/conn-context) "user")
-        group (u/make-group {:name "test group"})
-        group-concept-id (:concept_id (u/create-group token group))]
+        ;; group 1 will be deleted
+        group-1-concept-id (:concept_id (u/create-group token (u/make-group {:name "group 1"})))
+        acl-1-concept-id (:concept_id
+                      (u/create-acl token {:group_permissions [{:user_type :registered
+                                                                :permissions ["update"]}]
+                                           :single_instance_identity {:target "GROUP_MANAGEMENT"
+                                                                      :target_id group-1-concept-id}}))
+        ;; group 2 won't be deleted
+        group-2-concept-id (:concept_id (u/create-group token (u/make-group {:name "group 2"})))
+        acl-2-concept-id (:concept_id
+                (u/create-acl token {:group_permissions [{:user_type :registered
+                                                          :permissions ["update"]}]
+                                     :single_instance_identity {:target "GROUP_MANAGEMENT"
+                                                                :target_id group-2-concept-id}}))
+        _ (println "acl-2-concept-id" acl-2-concept-id)]
     (u/wait-until-indexed)
-    (u/create-acl token {:group_permissions [{:user_type :registered
-                                              :permissions ["update"]}]
-                         :single_instance_identity {:target "GROUP_MANAGEMENT"
-                                                    :target_id group-concept-id}})
+    (is (= #{acl-1-concept-id acl-2-concept-id}
+           (set
+             (map :concept_id
+                  (:items (u/search-for-acls token {:identity-type "single_instance"}))))))
+    (u/delete-group token group-1-concept-id)
     (u/wait-until-indexed)
-    (is (= 1 (:hits (u/search-for-acls token {:identity-type "single_instance"}))))
-    (u/delete-group token group-concept-id)
-    (u/wait-until-indexed)
-    (is (= 0 (:hits (u/search-for-acls token {:identity-type "single_instance"}))))))
+    (is (= [acl-2-concept-id]
+           (map :concept_id
+                (:items (u/search-for-acls token {:identity-type "single_instance"})))))))
 
 (deftest update-group-test
   (let [group (u/make-group {:members ["user1" "user2"]})

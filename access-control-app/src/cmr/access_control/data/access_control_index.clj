@@ -5,6 +5,7 @@
    [clojure.string :as str]
    [cmr.access-control.data.acls :as acls]
    [cmr.access-control.services.acl-service :as acl-service]
+   [cmr.access-control.services.group-service :as group-service]
    [cmr.common-app.services.search.elastic-search-index :as esi]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common.lifecycle :as l]
@@ -123,6 +124,11 @@
 (defmethod delete-concept :access-group
   [context concept-map]
   (let [id (:concept-id concept-map)]
+    ;; when access control groups are deleted, all ACLs referencing the group should be cleaned up
+    (doseq [acl-concept (acl-service/get-all-acl-concepts context)
+            :let [parsed-acl (acl-service/get-parsed-acl acl-concept)]
+            :when (= id (get-in parsed-acl [:single-instance-identity :target-id]))]
+      (acl-service/delete-acl context (:concept-id acl-concept)))
     (m/delete-by-id (esi/context->search-index context)
                     group-index-name
                     group-type-name
