@@ -6,7 +6,7 @@
                  [org.clojure/core.async "0.2.385"]
                  [org.ow2.asm/asm "5.1"]
 
-                 [com.taoensso/timbre "4.7.3"]
+                 [com.taoensso/timbre "4.1.4"]
 
                  [org.clojure/test.check "0.9.0"]
                  [com.gfredericks/test.chuck "0.2.7"]
