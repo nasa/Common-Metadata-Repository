@@ -7,6 +7,7 @@
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [without-default-value-of not-provided]]))
 
 (defn- parse-short-name-long-name
@@ -41,8 +42,10 @@
 
 (defn- parse-projects
   "Parses the Project elements of a SERF record and creates a UMM-S representation"
-  [doc]
-  (parse-short-name-long-name doc "/SERF/Project"))
+  [doc sanitize?]
+  (seq (for [elem (select doc "/SERF/Project")]
+         {:ShortName (value-of elem "Short_Name")
+          :LongName (su/truncate (value-of elem "Long_Name") su/PROJECT_LONGNAME_MAX sanitize?)})))
 
 (defn- parse-data-dates
   "Returns seq of UMM-CMN DataDates parsed from SERF document."
@@ -64,14 +67,14 @@
 
 (defn- parse-service-citations
   "Parse SERF Service Citations into UMM-S"
-  [doc]
+  [doc sanitize?]
   (for [service-citation (select doc "/SERF/Service_Citation")]
     (into {} (map (fn [x]
                     (if (keyword? x)
                       [(csk/->PascalCaseKeyword x) (value-of service-citation (str x))]
                       x))
                   [[:Version (value-of service-citation "Edition")]
-                   [:RelatedUrl {:URLs [(value-of service-citation "URL")]}]
+                   [:RelatedUrl {:URLs [(url/format-url (value-of service-citation "URL") sanitize?)]}]
                    :Title
                    [:Creator (value-of service-citation "Originators")]
                    :ReleaseDate
@@ -79,14 +82,14 @@
 
 (defn- parse-publication-references
   "Parse SERF Publication References into UMM-S"
-  [doc]
+  [doc sanitize?]
   (for [pub-ref (select doc "/SERF/Reference")]
     (into {} (map (fn [x]
                     (if (keyword? x)
                       [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
                       x))
                   [:Author
-                   :Publication_Date
+                   [:PublicationDate (date/sanitize-and-parse-date (value-of pub-ref "Publication_Date") sanitize?)]
                    :Title
                    :Series
                    :Edition
@@ -99,31 +102,31 @@
                    [:ISBN (su/format-isbn (value-of pub-ref "ISBN"))]
                    [:DOI {:DOI (value-of pub-ref "DOI")}]
                    [:RelatedUrl
-                    {:URLs (values-at pub-ref "Online_Resource")}]
+                    {:URLs (map #(url/format-url % sanitize?) (values-at pub-ref "Online_Resource"))}]
                    :Other_Reference_Details]))))
 
 (defn- parse-actual-related-urls
   "Parse a SERF RelatedURL element into a map"
-  [doc]
+  [doc sanitize?]
   (for [related-url (select doc "/SERF/Related_URL")]
-    {:URLs (values-at related-url "URL")
+    {:URLs (map #(url/format-url % sanitize?) (values-at related-url "URL"))
      :Description (value-of related-url "Description")
      :Relation [(value-of related-url "URL_Content_Type/Type")
                 (value-of related-url "URL_Content_Type/Subtype")]}))
 
 (defn- parse-multimedia-samples
   "Parse a SERF Multimedia Sample element into a RelatedURL map"
-  [doc]
+  [doc sanitize?]
   (for [multimedia-sample (select doc "/SERF/Multimedia_Sample")]
-    {:URLs (values-at multimedia-sample "URL")
+    {:URLs (map #(url/format-url % sanitize?) (values-at multimedia-sample "URL"))
      :MimeType (value-of multimedia-sample "Format")
      :Description (value-of multimedia-sample "Description")}))
 
 (defn- parse-related-urls
   "Parse SERF Related URLs and Multimedia Samples into a UMM RelatedUrls object"
   [doc sanitize?]
-  (let [actual-urls (parse-actual-related-urls doc)
-        multimedia-urls (parse-multimedia-samples doc)]
+  (let [actual-urls (parse-actual-related-urls doc sanitize?)
+        multimedia-urls (parse-multimedia-samples doc sanitize?)]
     (if-let [related-urls (seq (concat actual-urls multimedia-urls))]
       related-urls
       [su/not-provided-related-url])))
@@ -192,22 +195,26 @@
   [doc {:keys [sanitize?]}]
   {:EntryId (value-of doc "/SERF/Entry_ID")
    :EntryTitle (value-of doc "/SERF/Entry_Title")
-   :Abstract (su/with-default (value-of doc "/SERF/Summary/Abstract") sanitize?)
-   :Purpose (value-of doc "/SERF/Summary/Purpose")
+   :Abstract (su/truncate-with-default (value-of doc "/SERF/Summary/Abstract") su/ABSTRACT_MAX sanitize?)
+   :Purpose (su/truncate (value-of doc "/SERF/Summary/Purpose") su/PURPOSE_MAX sanitize?)
    :ServiceLanguage (value-of doc "/SERF/Service_Language")
    :RelatedUrls (parse-related-urls doc sanitize?)
-   :ServiceCitation (parse-service-citations doc)
-   :Quality (value-of doc "/SERF/Quality")
-   :UseConstraints (value-of doc "/SERF/Use_Constraints")
-   :AccessConstraints {:Description (value-of doc "/SERF/Access_Constraints") :Value nil}
+   :ServiceCitation (parse-service-citations doc sanitize?)
+   :Quality (su/truncate (value-of doc "/SERF/Quality") su/QUALITY_MAX sanitize?)
+   :UseConstraints (su/truncate (value-of doc "/SERF/Use_Constraints") su/USECONSTRAINTS_MAX sanitize?)
+   :AccessConstraints {:Description (su/truncate
+                                     (value-of doc "/SERF/Access_Constraints")
+                                     su/ACCESSCONSTRAINTS_DESCRIPTION_MAX
+                                     sanitize?)
+                       :Value nil}
    :MetadataAssociations (parse-metadata-associations doc)
-   :PublicationReferences (parse-publication-references doc)
+   :PublicationReferences (parse-publication-references doc sanitize?)
    :ISOTopicCategories (values-at doc "/SERF/ISO_Topic_Category")
    :Platforms (parse-platforms doc sanitize?)
    :Distributions (parse-distributions doc)
    :AdditionalAttributes (parse-additional-attributes doc)
    :AncillaryKeywords (values-at doc "/SERF/Keyword")
-   :Projects (parse-projects doc)
+   :Projects (parse-projects doc sanitize?)
    :MetadataDates (parse-data-dates doc)
    :ServiceKeywords (parse-service-keywords doc)
    :ScienceKeywords (parse-science-keywords doc)})

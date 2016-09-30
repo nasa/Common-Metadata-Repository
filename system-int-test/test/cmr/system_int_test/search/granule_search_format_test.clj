@@ -65,7 +65,7 @@
         concept (-> (d/item->concept item :echo10)
                     (update :metadata #(str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" %)))
         response (ingest/ingest-concept concept)
-        _ (is (= 200 (:status response)))
+        _ (is (= 201 (:status response)))
         g5-echo (assoc item
                        :concept-id (:concept-id response)
                        :revision-id (:revision-id response)

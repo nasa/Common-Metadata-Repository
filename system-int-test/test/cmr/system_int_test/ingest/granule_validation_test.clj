@@ -295,7 +295,7 @@
     (let [provider-id (get gran-attributes :provider-id "PROV1")
           coll (d/ingest provider-id (dc/collection coll-attributes))
           response (d/ingest provider-id (dg/granule coll gran-attributes))]
-      (is (= {:status 200} (select-keys response [:status :errors]))))))
+      (is (#{{:status 201} {:status 200}} (select-keys response [:status :errors]))))))
 
 (defn assert-invalid-spatial
   ([coord-sys shapes errors]
@@ -397,21 +397,28 @@
                     ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is GEODETIC"])))
 
 (deftest duplicate-granule-ur-test
-  ;; Turn on enforcement of duplicate granule UR constraint
-  (dev-sys-util/eval-in-dev-sys
-    `(cmr.metadata-db.services.concept-constraints/set-enforce-granule-ur-constraint! true))
   (testing "same granule-ur and native-id across providers is valid"
     (assert-valid
-      {}
-      {:granule-ur "UR-1" :concept-id "G1-PROV1" :native-id "Native1"})
+     {}
+     {:granule-ur "UR-1" :concept-id "G1-PROV1" :native-id "Native1"})
     (assert-valid
-      {}
-      {:granule-ur "UR-1" :concept-id "G1-PROV2" :native-id "Native1" :provider-id "PROV2"}))
+     {}
+     {:granule-ur "UR-1" :concept-id "G1-PROV2" :native-id "Native1" :provider-id "PROV2"}))
   (testing "updating the same granule is valid"
     (assert-valid
-      {}
-      {:granule-ur "UR-1" :concept-id "G1-PROV1" :native-id "Native1"}))
+     {}
+     {:granule-ur "UR-1" :concept-id "G1-PROV1" :native-id "Native1"}))
   (testing "granule-ur must be unique for a provider"
     (assert-conflict
-      {:granule-ur "UR-1" :concept-id "G2-PROV1" :native-id "Native2"}
-      ["The Granule Ur [UR-1] must be unique. The following concepts with the same granule ur were found: [G1-PROV1]."])))
+     {:granule-ur "UR-1" :concept-id "G2-PROV1" :native-id "Native2"}
+     ["The Granule Ur [UR-1] must be unique. The following concepts with the same granule ur were found: [G1-PROV1]."]))
+  ;; Turn off enforcement of duplicate granule UR constraint
+  (dev-sys-util/eval-in-dev-sys
+   `(cmr.metadata-db.services.concept-constraints/set-enforce-granule-ur-constraint! false))
+  (testing "same granule-ur and native-id across providers is valid"
+    (assert-valid
+     {}
+     {:granule-ur "UR-1" :concept-id "G2-PROV1" :native-id "Native2"}))
+  ;; Turn it back on after the test
+  (dev-sys-util/eval-in-dev-sys
+   `(cmr.metadata-db.services.concept-constraints/set-enforce-granule-ur-constraint! true)))

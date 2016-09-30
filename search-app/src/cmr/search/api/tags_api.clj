@@ -25,10 +25,12 @@
 
 (defn- tag-api-response
   "Creates a successful tag response with the given data response"
-  [data]
-  {:status 200
-   :body (json/generate-string (snake-case-data data))
-   :headers {"Content-Type" mt/json}})
+  ([data]
+   (tag-api-response 200 data))
+  ([status-code data]
+   {:status status-code
+    :body (json/generate-string (snake-case-data data))
+    :headers {"Content-Type" mt/json}}))
 
 (defn- verify-tag-modification-permission
   "Verifies the current user has been granted permission to modify tags in ECHO ACLs"
@@ -43,7 +45,9 @@
   [context headers body]
   (verify-tag-modification-permission context :create)
   (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/create-tag context body)))
+  (let [result (tagging-service/create-tag context body)
+        status-code (if (= 1 (:revision-id result)) 201 200)]
+    (tag-api-response status-code result)))
 
 (defn get-tag
   "Retrieves the tag with the given tag-key."

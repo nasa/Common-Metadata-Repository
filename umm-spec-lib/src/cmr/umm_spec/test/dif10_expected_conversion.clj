@@ -117,7 +117,7 @@
                          (update :ContactMechanisms expected-dif10-contact-mechanisms)
                          (update :Addresses conversion-util/expected-dif-addresses))]
     (when (seq (util/remove-nil-keys contact-info))
-      (cmn/map->ContactInformationType contact-info))))
+      contact-info)))
 
 (defn- expected-dif10-contact-info-urls
   "Returns a vector of the first URL in the list"
@@ -187,7 +187,9 @@
 (defn- expected-dif10-contacts
   [contacts]
   "Returns the expected DIF 10 data center contact persons or contact groups for the given UMM collection."
-  (let [expected-contacts (mapv #(contact->expected-dif10-collection %) contacts)]
+  (let [expected-contacts
+        (conversion-util/expected-contact-information-urls
+         (mapv #(contact->expected-dif10-collection %) contacts))]
     (when (seq expected-contacts)
       expected-contacts)))
 
@@ -206,7 +208,9 @@
 (defn- expected-dif10-data-centers
   "Returns the list of expected DIF 10 data centers"
   [data-centers]
-  (seq (mapv #(data-center->expected-dif10 %) data-centers)))
+  (seq
+    (conversion-util/expected-data-center-urls
+     (mapv #(data-center->expected-dif10 %) data-centers))))
 
 (defn- expected-dif10-additional-attribute
   [attribute]
@@ -255,5 +259,4 @@
       (assoc :SpatialKeywords nil)
       (assoc :MetadataDates (expected-metadata-dates umm-coll))
       (update :AccessConstraints conversion-util/expected-access-constraints)
-      (update-in-each [:PublicationReferences] #(update % :ISBN su/format-isbn))
       js/parse-umm-c))

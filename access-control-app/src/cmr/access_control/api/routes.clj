@@ -278,6 +278,12 @@
       {:status 200
        :body (json/generate-string result)})))
 
+(defn reindex-groups
+  "Processes a request to reindex all groups"
+  [context]
+  (index/reindex-groups context)
+  {:status 200})
+
 ;;; Various Admin Route Functions
 
 (defn reset
@@ -317,6 +323,12 @@
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes
+
+      ;; Reindex all groups
+      (POST "/reindex-groups" {:keys [request-context headers params]}
+        (acl/verify-ingest-management-permission request-context :update)
+        (validate-standard-params params)
+        (reindex-groups request-context))
 
       (context "/groups" []
         (OPTIONS "/" req

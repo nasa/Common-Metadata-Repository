@@ -6,12 +6,12 @@
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value]]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.util :as su :refer [char-string]]
-   [cmr.umm-spec.util :as u]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.metadata-association :as ma]
@@ -91,7 +91,7 @@
 
 (defn- parse-projects
   "Returns the projects parsed from the given xml document."
-  [doc]
+  [doc sanitize?]
   (for [proj (select doc projects-xpath)]
     (let [short-name (value-of proj iso-util/short-name-xpath)
           description (char-string-value proj "gmi:description")
@@ -99,7 +99,7 @@
           long-name (when-not (= short-name description)
                       (str/replace description (str short-name iso-util/keyword-separator-join) ""))]
       {:ShortName short-name
-       :LongName long-name})))
+       :LongName (su/truncate long-name su/PROJECT_LONGNAME_MAX sanitize?)})))
 
 (defn- temporal-ends-at-present?
   [temporal-el]
@@ -123,17 +123,20 @@
 
 (defn- parse-access-constraints
   "If both value and Description are nil, return nil.
-  Otherwise, if Description is nil, assoc it with u/not-provided"
+  Otherwise, if Description is nil, assoc it with su/not-provided"
   [doc sanitize?]
   (let [access-constraints-record
-        {:Description (regex-value doc (str constraints-xpath
+        {:Description (su/truncate
+                       (regex-value doc (str constraints-xpath
                                          "/gmd:useLimitation/gco:CharacterString")
                          #"(?s)Restriction Comment: (.+)")
+                       su/ACCESSCONSTRAINTS_DESCRIPTION_MAX
+                       sanitize?)
          :Value (regex-value doc (str constraints-xpath
                                    "/gmd:otherConstraints/gco:CharacterString")
                    #"(?s)Restriction Flag:(.+)")}]
     (when (seq (util/remove-nil-keys access-constraints-record))
-      (update access-constraints-record :Description #(u/with-default % sanitize?)))))
+      (update access-constraints-record :Description #(su/with-default % sanitize?)))))
 
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
@@ -142,19 +145,21 @@
         citation-el (first (select doc citation-base-xpath))
         id-el (first (select doc identifier-base-xpath))
         extent-info (iso-util/get-extent-info-map doc)]
-    {:ShortName (char-string-value id-el "gmd:code")
+    {:ShortName (su/truncate (char-string-value id-el "gmd:code") su/SHORTNAME_MAX sanitize?)
      :EntryTitle (char-string-value citation-el "gmd:title")
      :Version (char-string-value citation-el "gmd:edition")
-     :Abstract (or (char-string-value md-data-id-el "gmd:abstract")
-                   (when sanitize? su/not-provided))
-     :Purpose (char-string-value md-data-id-el "gmd:purpose")
+     :Abstract (su/truncate-with-default (char-string-value md-data-id-el "gmd:abstract") su/ABSTRACT_MAX sanitize?)
+     :Purpose (su/truncate (char-string-value md-data-id-el "gmd:purpose") su/PURPOSE_MAX sanitize?)
      :CollectionProgress (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode")
-     :Quality (char-string-value doc quality-xpath)
+     :Quality (su/truncate (char-string-value doc quality-xpath) su/QUALITY_MAX sanitize?)
      :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
      :AccessConstraints (parse-access-constraints doc sanitize?)
      :UseConstraints
-     (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
-                  #"(?s)^(?!Restriction Comment:).+")
+     (su/truncate
+       (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
+                    #"(?s)^(?!Restriction Comment:).+")
+       su/USECONSTRAINTS_MAX
+       sanitize?)
      :LocationKeywords (lk/translate-spatial-keywords
                          context (kws/descriptive-keywords md-data-id-el "place"))
      :TemporalKeywords (kws/descriptive-keywords md-data-id-el "temporal")
@@ -163,7 +168,7 @@
      :SpatialExtent (spatial/parse-spatial doc extent-info sanitize?)
      :TilingIdentificationSystems (tiling/parse-tiling-system md-data-id-el)
      :TemporalExtents (or (seq (parse-temporal-extents doc extent-info md-data-id-el))
-                          (when sanitize? u/not-provided-temporal-extents))
+                          (when sanitize? su/not-provided-temporal-extents))
      :ProcessingLevel {:Id
                        (su/with-default
                          (char-string-value
@@ -174,7 +179,7 @@
                          md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
      :Distributions (dru/parse-distributions doc sanitize?)
      :Platforms (platform/parse-platforms doc sanitize?)
-     :Projects (parse-projects doc)
+     :Projects (parse-projects doc sanitize?)
 
      :PublicationReferences (for [publication (select md-data-id-el publication-xpath)
                                   :let [role-xpath "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue='%s']"
@@ -182,9 +187,11 @@
                                                        (char-string-value publication
                                                                           (str (format role-xpath name) xpath)))]]
                               {:Author (select-party "author" "/gmd:organisationName")
-                               :PublicationDate (str (date-at publication
+                               :PublicationDate (date/sanitize-and-parse-date
+                                                   (str (date-at publication
                                                               (str "gmd:date/gmd:CI_Date[gmd:dateType/gmd:CI_DateTypeCode/@codeListValue='publication']/"
                                                                    "gmd:date/gco:Date")))
+                                                   sanitize?)
                                :Title (char-string-value publication "gmd:title")
                                :Series (char-string-value publication "gmd:series/gmd:CI_Series/gmd:name")
                                :Edition (char-string-value publication "gmd:edition")
@@ -203,7 +210,7 @@
      :AdditionalAttributes (aa/parse-additional-attributes doc sanitize?)
      ;; DataCenters is not implemented but is required in UMM-C
      ;; Implement with CMR-3161
-     :DataCenters (when sanitize? [u/not-provided-data-center])}))
+     :DataCenters (when sanitize? [su/not-provided-data-center])}))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document. The :sanitize? option

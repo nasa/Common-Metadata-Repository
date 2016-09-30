@@ -25,10 +25,10 @@
     (fields-from characteristic :Name :Description :DataType :Unit :Value)))
 
 (defn- parse-projects-impl
-  [doc]
+  [doc sanitize?]
   (for [proj (select doc "/DIF/Project")]
     {:ShortName (value-of proj "Short_Name")
-     :LongName (value-of proj "Long_Name")
+     :LongName (u/truncate (value-of proj "Long_Name") u/PROJECT_LONGNAME_MAX sanitize?)
      :Campaigns (values-at proj "Campaign")
      :StartDate (date-at proj "Start_Date")
      :EndDate (date-at proj "End_Date")}))
@@ -38,8 +38,8 @@
   (if sanitize?
     ;; We shouldn't remove not provided during parsing
     (when-not (= u/not-provided (value-of doc "/DIF/Project[1]/Short_Name"))
-      (parse-projects-impl doc))
-    (parse-projects-impl doc)))
+      (parse-projects-impl doc sanitize?))
+    (parse-projects-impl doc sanitize?)))
 
 (defn- parse-instruments-impl
   [platform-el]
@@ -130,11 +130,11 @@
   "Returns collection map from DIF10 collection XML document."
   [doc {:keys [sanitize?]}]
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
-   :ShortName (value-of doc "/DIF/Entry_ID/Short_Name")
+   :ShortName (u/truncate-with-default (value-of doc "/DIF/Entry_ID/Short_Name") u/SHORTNAME_MAX sanitize?)
    :Version (value-of doc "/DIF/Entry_ID/Version")
-   :Abstract (u/with-default (value-of doc "/DIF/Summary/Abstract") sanitize?)
+   :Abstract (u/truncate-with-default (value-of doc "/DIF/Summary/Abstract") u/ABSTRACT_MAX sanitize?)
    :CollectionDataType (value-of doc "/DIF/Collection_Data_Type")
-   :Purpose (value-of doc "/DIF/Summary/Purpose")
+   :Purpose (u/truncate (value-of doc "/DIF/Summary/Purpose") u/PURPOSE_MAX sanitize?)
    :DataLanguage (dif-util/dif-language->umm-langage (value-of doc "/DIF/Dataset_Language"))
    :DataDates (parse-data-dates doc)
    :MetadataDates (parse-metadata-dates doc)
@@ -149,9 +149,9 @@
                         :Subregion3 (value-of lk "Location_Subregion3")
                         :DetailedLocation (value-of lk "Detailed_Location")})
    :Projects (parse-projects doc sanitize?)
-   :Quality (value-of doc "/DIF/Quality")
+   :Quality (u/truncate (value-of doc "/DIF/Quality") u/QUALITY_MAX sanitize?)
    :AccessConstraints (dif-util/parse-access-constraints doc sanitize?)
-   :UseConstraints (value-of doc "/DIF/Use_Constraints")
+   :UseConstraints (u/truncate (value-of doc "/DIF/Use_Constraints") u/USECONSTRAINTS_MAX sanitize?)
    :Platforms (for [platform (select doc "/DIF/Platform")]
                 {:ShortName (value-of platform "Short_Name")
                  :LongName (value-of platform "Long_Name")
@@ -175,7 +175,7 @@
                                               [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
                                               x))
                                           [:Author
-                                           :Publication_Date
+                                           [:PublicationDate (date/sanitize-and-parse-date (value-of pub-ref "Publication_Date") sanitize?)]
                                            :Title
                                            :Series
                                            :Edition
@@ -193,7 +193,7 @@
                                                      (remove nil? [(value-of pub-ref "Online_Resource")]))}]
                                            :Other_Reference_Details])))
    :AncillaryKeywords (values-at doc "/DIF/Ancillary_Keyword")
-   :RelatedUrls (ru/parse-related-urls doc)
+   :RelatedUrls (ru/parse-related-urls doc sanitize?)
    :MetadataAssociations (for [ma (select doc "/DIF/Metadata_Association")]
                            {:EntryId (value-of ma "Entry_ID/Short_Name")
                             :Version (without-default-value-of ma "Entry_ID/Version")

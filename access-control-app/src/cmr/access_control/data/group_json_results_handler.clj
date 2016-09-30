@@ -6,15 +6,32 @@
             [cmr.common.util :as util]
             [cheshire.core :as json]))
 
+(def base-fields
+  "The base set of fields to select from Elasticsearch"
+  ["concept-id" "revision-id" "name" "provider-id" "description" "legacy-guid" "member-count"])
+
+(def fields-with-members
+  "The fields to select from Elasticsearch if members should be included"
+  (conj base-fields "members"))
+
+(defn- include-members?
+  "Returns true if the query indicates members should be returned in the response."
+  [query]
+  (some #{:include-members} (:result-features query)))
+
 (defmethod elastic-search-index/concept-type+result-format->fields [:access-group :json]
   [concept-type query]
-  ["concept-id" "revision-id" "name" "provider-id" "description" "legacy-guid" "member-count"])
+  (if (include-members? query)
+    fields-with-members
+    base-fields))
 
 (defmethod elastic-results/elastic-result->query-result-item [:access-group :json]
   [context query elastic-result]
-  (->> elastic-result
-      :fields
-      (util/map-values first)))
+  (let [field-values (:fields elastic-result)
+        item (util/map-values first (dissoc field-values :members))]
+    (if (include-members? query)
+      (assoc item :members (:members field-values))
+      item)))
 
 (defmethod qs/search-results->response [:access-group :json]
   [context query results]

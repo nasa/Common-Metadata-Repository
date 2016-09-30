@@ -143,19 +143,29 @@
    (when-not (= status 200)
      (throw (Exception. (format "Unexpected status [%s] when creating group %s" status (pr-str resp)))))
    (assoc group
-          :member_count (count members)
+          :members members
           :concept_id concept_id
           :revision_id revision_id)))
+
+(defn disable-publishing-messages
+  "Configures metadata db to not publish messages for new data."
+  []
+  (side/eval-form `(mdb-config/set-publish-messages! false)))
+
+(defn enable-publishing-messages
+  "Configures metadata db to start publishing messages for new data it sees."
+  []
+  (side/eval-form `(mdb-config/set-publish-messages! true)))
 
 (defmacro without-publishing-messages
   "Temporarily configures metadata db not to publish messages while executing the body."
   [& body]
   `(do
-     (side/eval-form (quote (mdb-config/set-publish-messages! false)))
+     (disable-publishing-messages)
      (try
        ~@body
        (finally
-         (side/eval-form (quote (mdb-config/set-publish-messages! true)))))))
+         (enable-publishing-messages)))))
 
 (defn save-collection
   "Test helper. Saves collection to Metadata DB and returns its concept id."

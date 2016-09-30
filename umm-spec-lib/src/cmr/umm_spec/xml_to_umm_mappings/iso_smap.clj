@@ -79,13 +79,13 @@
   (let [data-id-el (first (select doc md-identification-base-xpath))
         short-name-el (first (select doc short-name-identification-xpath))]
     (js/parse-umm-c
-      {:ShortName (value-of data-id-el short-name-xpath)
+      {:ShortName (u/truncate (value-of data-id-el short-name-xpath) u/SHORTNAME_MAX sanitize?)
        :EntryTitle (value-of doc entry-title-xpath)
        :Version (value-of data-id-el version-xpath)
-       :Abstract (value-of short-name-el "gmd:abstract/gco:CharacterString")
-       :Purpose (value-of short-name-el "gmd:purpose/gco:CharacterString")
+       :Abstract (u/truncate (value-of short-name-el "gmd:abstract/gco:CharacterString") u/ABSTRACT_MAX sanitize?)
+       :Purpose (u/truncate (value-of short-name-el "gmd:purpose/gco:CharacterString") u/PURPOSE_MAX sanitize?)
        :CollectionProgress (value-of data-id-el "gmd:status/gmd:MD_ProgressCode")
-       :Quality (char-string-value doc quality-xpath)
+       :Quality (u/truncate (char-string-value doc quality-xpath) u/QUALITY_MAX sanitize?)
        :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
        :DataLanguage (value-of short-name-el "gmd:language/gco:CharacterString")
        :Platforms (let [smap-keywords (values-at data-id-el keywords-xpath-str)]

@@ -9,6 +9,27 @@
    [cmr.umm-spec.date-util :as du]
    [cmr.umm-spec.models.umm-common-models :as cmn]))
 
+(def ABSTRACT_MAX
+  40000)
+
+(def PURPOSE_MAX
+  10000)
+
+(def PROJECT_LONGNAME_MAX
+  300)
+
+(def USECONSTRAINTS_MAX
+  20000)
+
+(def QUALITY_MAX
+  12000)
+
+(def ACCESSCONSTRAINTS_DESCRIPTION_MAX
+  4000)
+
+(def SHORTNAME_MAX
+  85)
+
 (def ^:private umm-contact-mechanism-correction-map
   {"phone" "Telephone"
    "Phone" "Telephone"
@@ -28,10 +49,13 @@
     {:Roles ["ARCHIVER"]
      :ShortName not-provided}))
 
+(def not-provided-url
+  "Not%20provided")
+
 (def not-provided-related-url
   "Place holder to use when a related url is not provided."
   (cmn/map->RelatedUrlType
-    {:URLs ["Not%20provided"]}))
+    {:URLs [not-provided-url]}))
 
 (def default-granule-spatial-representation
   "Default value for GranuleSpatialRepresentation"
@@ -151,14 +175,18 @@
 
 (defn parse-data-sizes
   "Parses the data size and units from the provided string. Returns a sequence of maps with the Size
-  and the Unit. Returns nil if the string cannot be parsed into file sizes with units."
+  and the Unit. Returns nil if the string cannot be parsed into file sizes with units.
+  If data sanitization is enabled convert bytes to KB since bytes is not a UMM valid unit."
   [s]
   (seq
     (for [[_ num-str unit-str :as results] (re-seq data-size-re
                                                    (-> s str .toLowerCase))
           :when (and num-str (not (str/blank? unit-str)))]
-      {:Size (Double. (str/replace num-str "," ""))
-       :Unit (-> unit-str str/trim str/upper-case first (str "B"))})))
+      (if (= (str/lower-case unit-str) "bytes")
+        {:Size (/ (Double. (str/replace num-str "," "")) 1000.0)
+         :Unit "KB"}
+        {:Size (Double. (str/replace num-str "," ""))
+         :Unit (-> unit-str str/trim str/upper-case first (str "B"))}))))
 
 (defn data-size-str
   "Takes a collection of FileSizeType records which have a Size and a Unit and converts them to a
@@ -217,3 +245,18 @@
         (str/replace "-" "")
         (str/replace "ISBN" "")
         (str/replace "ISSN" ""))))
+
+(defn truncate
+  "Truncate the string if the sanitize option is enabled, otherwise return the original string"
+  [s n sanitize?]
+  (if sanitize?
+    (util/trunc s n)
+    s))
+
+(defn truncate-with-default
+  "If s is nil and sanitize is true, return 'Not provided'. If sanitize is true, truncate string.
+  If sanitize is false, return s with no default or truncation."
+  [s n sanitize?]
+  (if sanitize?
+    (util/trunc (with-default s sanitize?) n)
+    s))

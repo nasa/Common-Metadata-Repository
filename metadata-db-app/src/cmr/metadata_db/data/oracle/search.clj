@@ -30,6 +30,11 @@
    :acl (into common-columns [:provider_id :user_id :acl_identity])
    :humanizer (into common-columns [:user_id])})
 
+(def single-table-with-providers-concept-type?
+  "The set of concept types that are stored in a single table with a provider column. These concept
+   types must include the provider id as part of the sql params"
+  #{:access-group})
+
 (defn columns-for-find-concept
   "Returns the table columns that should be included in a find-concept sql query"
   [concept-type params]
@@ -39,8 +44,8 @@
 
 (defn- params->sql-params
   "Converts the search params into params that can be converted into a sql condition clause."
-  [provider params]
-  (if (:small provider)
+  [concept-type providers params]
+  (if (or (every? :small providers) (single-table-with-providers-concept-type? concept-type))
     (dissoc params :concept-type :exclude-metadata)
     (dissoc params :concept-type :exclude-metadata :provider-id)))
 
@@ -90,7 +95,8 @@
 (defmethod find-concepts-in-table true
   [db table concept-type providers params]
   (let [fields (columns-for-find-concept concept-type params)
-        params (params->sql-params (first providers)
+        params (params->sql-params concept-type
+                                   providers
                                    (assoc params :provider-id (map :provider-id providers)))
         stmt (gen-find-concepts-in-table-sql concept-type table fields params)]
     (j/with-db-transaction
@@ -102,17 +108,21 @@
 ;; Execute a query against a normal (not small) provider table
 (defmethod find-concepts-in-table :default
   [db table concept-type providers params]
-  {:pre [(== 1 (count providers))]}
-  (let [provider (first providers)
-        provider-id (:provider-id provider)
+  {:pre [(or (single-table-with-providers-concept-type? concept-type)
+             (== 1 (count providers)))]}
+  (let [provider-ids (map :provider-id providers)
         fields (disj (columns-for-find-concept concept-type params) :provider_id)
-        params (params->sql-params provider (assoc params :provider-id provider-id))
+        params (params->sql-params concept-type providers (assoc params :provider-id provider-ids))
         stmt (gen-find-concepts-in-table-sql concept-type table fields params)]
     (j/with-db-transaction
       [conn db]
       ;; doall is necessary to force result retrieval while inside transaction - otherwise
       ;; connection closed errors will occur
-      (doall (mapv #(oc/db-result->concept-map concept-type conn provider-id %)
+      (doall (mapv (fn [result]
+                    (oc/db-result->concept-map concept-type conn
+                                               (or (:provider_id result)
+                                                   (:provider-id (first providers)))
+                                               result))
                    (su/query conn stmt))))))
 
 (extend-protocol c/ConceptSearch
@@ -133,7 +143,7 @@
     ([db provider params batch-size requested-start-index]
      (let [{:keys [concept-type]} params
            provider-id (:provider-id provider)
-           params (params->sql-params provider params)
+           params (params->sql-params concept-type [provider] params)
            table (tables/get-table-name provider concept-type)]
        (letfn [(find-batch
                  [start-index]

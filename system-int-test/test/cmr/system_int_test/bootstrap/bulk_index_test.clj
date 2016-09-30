@@ -184,9 +184,7 @@
       (mdb/tombstone-concept coll2-tombstone)
 
       ;; Verify that all of the ingest requests completed successfully
-      (doseq [concept [coll1 coll3 gran1]] (is (= 201 (:status concept))))
-      ;; tombstone should return 200
-      (is (= 200 (:status coll2)))
+      (doseq [concept [coll1 coll2 coll3 gran1]] (is (= 201 (:status concept))))
 
       (bootstrap/bulk-index-provider "PROV1")
       (index/wait-until-indexed)
