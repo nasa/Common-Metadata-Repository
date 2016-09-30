@@ -13,8 +13,8 @@
    [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]
+   [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su]))
-
 (defn- fixup-echo10-data-dates
   [data-dates]
   (seq
@@ -56,7 +56,8 @@
                                             (assoc file-size :Size (/ (int byte-size) 1024) :Unit "KB")))))
                (update-in [:Relation] (fn [[rel]]
                                         (when (conversion-util/relation-set rel)
-                                          [rel]))))))
+                                          [rel])))
+               (update-in-each [:URLs] #(url/format-url % true)))))
     [su/not-provided-related-url]))
 
 (defn- expected-echo10-reorder-related-urls
@@ -124,7 +125,7 @@
     ;; Check for nil after updates because contact mechanisms could have been dropped making
     ;; contact information nil
     (when (seq (util/remove-nil-keys contact-information))
-      contact-information)))
+      (cmn/map->ContactInformationType contact-information))))
 
 (defn- expected-echo10-contact-person
   "Returns an expected contact person for each role. ECHO10 only allows for 1 role per
@@ -145,7 +146,9 @@
   "Returns the list of expected contact persons"
   [contact-persons]
   (when (seq contact-persons)
-    (flatten (mapv expected-echo10-contact-person contact-persons))))
+    (flatten
+     (conversion-util/expected-contact-information-urls
+       (mapv expected-echo10-contact-person contact-persons)))))
 
 (defn- expected-echo10-data-center
   "Returns an expected data center for each role. ECHO10 only allows for 1 role per
@@ -165,7 +168,9 @@
   "Returns the list of expected data centers"
   [data-centers]
   (if (seq data-centers)
-    (flatten (mapv expected-echo10-data-center data-centers))
+    (flatten
+     (conversion-util/expected-contact-information-urls
+       (mapv expected-echo10-data-center data-centers)))
     [su/not-provided-data-center]))
 
 (defn- expected-metadata-dates

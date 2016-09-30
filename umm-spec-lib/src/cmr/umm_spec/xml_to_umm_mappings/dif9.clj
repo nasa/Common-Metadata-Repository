@@ -14,7 +14,8 @@
     [cmr.umm-spec.xml-to-umm-mappings.dif9.data-center :as center]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.data-contact :as contact]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
-    [cmr.umm-spec.util :as su]))
+    [cmr.umm-spec.util :as su]
+    [cmr.umm-spec.url :as url]))
 
 (defn- parse-mbrs
   "Returns a seq of bounding rectangle maps in the given DIF XML doc."
@@ -82,7 +83,7 @@
   (if-let [related-urls (seq (select doc "/DIF/Related_URL"))]
     (for [related-url related-urls
           :let [description (value-of related-url "Description")]]
-      {:URLs (values-at related-url "URL")
+      {:URLs (map #(url/format-url % sanitize?) (values-at related-url "URL"))
        :Description description
        :Relation [(value-of related-url "URL_Content_Type/Type")
                   (value-of related-url "URL_Content_Type/Subtype")]})
@@ -98,17 +99,17 @@
     {:EntryTitle (value-of doc "/DIF/Entry_Title")
      :ShortName short-name
      :Version (or version-id (when sanitize? su/not-provided))
-     :Abstract (su/with-default (value-of doc "/DIF/Summary/Abstract") sanitize?)
+     :Abstract (su/truncate-with-default (value-of doc "/DIF/Summary/Abstract") su/ABSTRACT_MAX sanitize?)
      :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
-     :Purpose (value-of doc "/DIF/Summary/Purpose")
+     :Purpose (su/truncate (value-of doc "/DIF/Summary/Purpose") su/PURPOSE_MAX sanitize?)
      :DataLanguage (dif-util/dif-language->umm-langage (value-of doc "/DIF/Data_Set_Language"))
      :MetadataDates (parse-metadata-dates doc)
      :ISOTopicCategories (dif-util/parse-iso-topic-categories doc sanitize?)
      :TemporalKeywords (values-at doc "/DIF/Data_Resolution/Temporal_Resolution")
      :Projects (for [proj (select doc "/DIF/Project")]
                  {:ShortName (value-of proj "Short_Name")
-                  :LongName (value-of proj "Long_Name")})
-     :DirectoryNames (parse-idn-node doc)
+                  :LongName (su/truncate (value-of proj "Long_Name") su/PROJECT_LONGNAME_MAX sanitize?)})
+     :DirectoryNames (parse-idn-node doc) 
      :CollectionProgress (value-of doc "/DIF/Data_Set_Progress")
      :LocationKeywords  (let [lks (select doc "/DIF/Location")]
                           (for [lk lks]
@@ -118,9 +119,9 @@
                              :Subregion2 (value-of lk "Location_Subregion2")
                              :Subregion3 (value-of lk "Location_Subregion3")
                              :DetailedLocation (value-of lk "Detailed_Location")}))
-     :Quality (value-of doc "/DIF/Quality")
+     :Quality (su/truncate (value-of doc "/DIF/Quality") su/QUALITY_MAX sanitize?)
      :AccessConstraints (dif-util/parse-access-constraints doc sanitize?)
-     :UseConstraints (value-of doc "/DIF/Use_Constraints")
+     :UseConstraints (su/truncate (value-of doc "/DIF/Use_Constraints") su/USECONSTRAINTS_MAX sanitize?)
      :Platforms (parse-platforms doc sanitize?)
      :TemporalExtents (if-let [temporals (select doc "/DIF/Temporal_Coverage")]
                         [{:RangeDateTimes (for [temporal temporals]
@@ -159,7 +160,7 @@
                                                 [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
                                                 x))
                                             [:Author
-                                             :Publication_Date
+                                             [:PublicationDate (date/sanitize-and-parse-date (value-of pub-ref "Publication_Date") sanitize?)]
                                              :Title
                                              :Series
                                              :Edition
@@ -189,7 +190,7 @@
                              {:EntryId parent-dif})
      :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel"))
      :DataCenters (concat (center/parse-originating-centers doc)
-                          (center/parse-data-centers doc)
+                          (center/parse-data-centers doc sanitize?)
                           (center/parse-processing-centers doc))}))
 
 (defn dif9-xml-to-umm-c

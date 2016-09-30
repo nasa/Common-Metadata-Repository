@@ -76,6 +76,13 @@
         (mt/extract-header-mime-type valid-response-mime-types headers "accept" true)
         default-format)))
 
+(defn- ingest-status-code
+  "Returns the ingest status code when ingest is successful"
+  [result]
+  (if (= 1 (:revision-id result))
+    201
+    200))
+
 (defmulti generate-ingest-response
   "Convert a result to a proper response format"
   (fn [headers result]
@@ -84,13 +91,13 @@
 (defmethod generate-ingest-response :json
   [headers result]
   ;; ring-json middleware will handle converting the body to json
-  {:status 200
+  {:status (ingest-status-code result)
    :headers {"Content-Type" (mt/format->mime-type :json)}
    :body result})
 
 (defmethod generate-ingest-response :xml
   [headers result]
-  {:status 200
+  {:status (ingest-status-code result)
    :headers {"Content-Type" (mt/format->mime-type :xml)}
    :body (result-map->xml result)})
 

@@ -8,6 +8,7 @@
   [cmr.umm-spec.models.umm-collection-models :as umm-c]
   [cmr.umm-spec.models.umm-common-models :as cmn]
   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+  [cmr.umm-spec.url :as url]
   [cmr.umm-spec.util :as su]))
 
 (def relation-set #{"GET DATA"
@@ -93,10 +94,12 @@
   [pub-ref]
   (-> pub-ref
       (update-in [:DOI] (fn [doi] (when doi (assoc doi :Authority nil))))
+      (update :ISBN su/format-isbn)
       (update-in [:RelatedUrl]
                  (fn [related-url]
                    (when related-url (assoc related-url
-                                            :URLs (seq (remove nil? [(first (:URLs related-url))]))
+                                            :URLs (seq (remove nil?
+                                                               [(url/format-url (first (:URLs related-url)) true)]))
                                             :Description nil
                                             :Relation nil
                                             :Title nil
@@ -109,7 +112,9 @@
   [related-urls]
   (if (seq related-urls)
     (seq (for [related-url related-urls]
-           (assoc related-url :Title nil :FileSize nil :MimeType nil)))
+           (-> related-url
+               (assoc :Title nil :FileSize nil :MimeType nil)
+               (update-in-each [:URLs] #(url/format-url % true)))))
     [su/not-provided-related-url]))
 
 (def bounding-rectangles-path
@@ -121,3 +126,39 @@
   [access-constraints]
   (when (some? access-constraints)
     (update access-constraints :Description su/with-default)))
+
+(defn expected-related-url
+  "Format all of the URLs in RelatedUrl"
+  [entry]
+  (if-let [urls (get-in entry [:RelatedUrl :URLs])]
+    (assoc-in entry [:RelatedUrl :URLs]
+      (seq (for [url urls]
+             (url/format-url url true))))
+    entry))
+
+(defn- expected-related-urls
+  "Format all of the URLs in RelatedUrls, returns a list of RelatedUrls"
+  [related-urls]
+  (seq (for [ru related-urls]
+         (assoc ru :URLs
+           (seq (for [url (:URLs ru)]
+                  (url/format-url url true)))))))
+
+(defn expected-contact-information-urls
+  "Format all of the URLs in ContactInformation"
+  [records]
+  (seq (for [record records]
+         (if (and (some? (:ContactInformation record))
+                  (seq (:RelatedUrls (:ContactInformation record))))
+           (update-in record [:ContactInformation :RelatedUrls] expected-related-urls)
+           record))))
+
+(defn expected-data-center-urls
+  "Format all of the URLs in Data Centers, including the data center contact info,
+  the contact groups contact info, and the contact persons contact info"
+  [data-centers]
+  (def data-centers data-centers)
+  (seq (for [dc (expected-contact-information-urls data-centers)]
+         (-> dc
+             (update :ContactPersons expected-contact-information-urls)
+             (update :ContactGroups expected-contact-information-urls)))))

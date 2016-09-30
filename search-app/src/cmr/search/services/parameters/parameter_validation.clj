@@ -561,7 +561,7 @@
                bounding-box-validation
                point-validation
                line-validation
-               collection-concept-id-validation ])
+               collection-concept-id-validation])
    :tag cpv/common-validations})
 
 (def standard-query-parameter-validations

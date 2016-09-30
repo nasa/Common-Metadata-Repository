@@ -1,19 +1,20 @@
 (ns cmr.access-control.data.access-control-index
   "Performs search and indexing of access control data."
   (:require
-    [clojure.edn :as edn]
-    [clojure.string :as str]
-    [cmr.access-control.data.acls :as acls]
-    [cmr.access-control.services.acl-service :as acl-service]
-    [cmr.common-app.services.search.elastic-search-index :as esi]
-    [cmr.common-app.services.search.query-to-elastic :as q2e]
-    [cmr.common.lifecycle :as l]
-    [cmr.common.log :refer [info debug]]
-    [cmr.common.services.errors :as errors]
-    [cmr.common.util :as util]
-    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
-    [cmr.transmit.metadata-db2 :as mdb]
-    [cmr.umm.acl-matchers :as acl-matchers]))
+   [clojure.edn :as edn]
+   [clojure.string :as str]
+   [cmr.access-control.data.acls :as acls]
+   [cmr.access-control.services.acl-service :as acl-service]
+   [cmr.common-app.services.search.elastic-search-index :as esi]
+   [cmr.common-app.services.search.query-to-elastic :as q2e]
+   [cmr.common.lifecycle :as l]
+   [cmr.common.log :refer [info debug]]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util :refer [defn-timed]]
+   [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
+   [cmr.transmit.metadata-db :as mdb-legacy]
+   [cmr.transmit.metadata-db2 :as mdb]
+   [cmr.umm.acl-matchers :as acl-matchers]))
 
 (defmulti index-concept
   "Indexes the concept map in elastic search."
@@ -23,6 +24,15 @@
 (defmethod index-concept :default
   [context concept-map])
   ;; Do nothing
+
+(defn-timed reindex-groups
+  "Fetches and indexes all groups"
+  [context]
+  (info "Reindexing all groups")
+  (doseq [group-batch (mdb-legacy/find-in-batches context :access-group 100 {:latest true})
+          group group-batch]
+    (index-concept context group))
+  (info "Reindexing all groups complete"))
 
 (defmulti delete-concept
   "Deletes the concept map in elastic search."
@@ -74,8 +84,9 @@
    :legacy-guid (m/stored m/string-field-mapping)
    :legacy-guid.lowercase m/string-field-mapping
 
-   ;; Member search is always case insensitive
+   :members (m/stored m/string-field-mapping)
    :members.lowercase m/string-field-mapping
+
    ;; Member count is returned in the group response. The list of members is returned separately so
    ;; we don't store the members in the elastic index. If members end up being stored at some point
    ;; we can get rid of this field.
@@ -95,10 +106,10 @@
         (merge (select-keys concept-map [:concept-id :revision-id]))
         (assoc :name.lowercase (safe-lowercase (:name group))
                :provider-id.lowercase (safe-lowercase (:provider-id group))
+               :members (:members group)
                :members.lowercase (map str/lower-case (:members group))
                :legacy-guid.lowercase (safe-lowercase (:legacy-guid group))
-               :member-count (count (:members group)))
-        (dissoc :members))))
+               :member-count (count (:members group))))))
 
 (defmethod index-concept :access-group
   [context concept-map]

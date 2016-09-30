@@ -8,6 +8,7 @@
      [cmr.access-control.test.util :as u]
      [cmr.common.util :as util :refer [are3]]
      [cmr.mock-echo.client.echo-util :as e]
+     [cmr.transmit.access-control :as access-control]
      [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each
@@ -41,15 +42,64 @@
     (is (= {:status 400 :errors ["Option [foo] is not supported for param [provider]"]}
            (u/search-for-groups token {:provider "PROV1"
                                        "options[provider][foo]" "bar"})))
+    (is (= {:status 400 :errors ["Parameter include_members must take value of true or false but was [foo]"]}
+           (u/search-for-groups token {:include_members "foo"})))
 
     ;; Members search is always case insensitive
     (is (= {:status 400 :errors ["Option [ignore_case] is not supported for param [member]"]}
            (u/search-for-groups token {:member "foo"
-                                       "options[member][ignore_case]" true})))))
+                                       "options[member][ignore_case]" true})))
+
+    (is (= {:status 400 :errors ["Option [ignore_case] is not supported for param [concept_id]"]}
+           (u/search-for-groups token {:concept_id "AG12345-PROV"
+                                       "options[concept_id][ignore_case]" true})))
+    (is (= {:status 400 :errors ["Option [and] is not supported for param [concept_id]"]}
+           (u/search-for-groups token {:concept_id "AG12345-PROV"
+                                       "options[concept_id][and]" true})))
+    (is (= {:status 400 :errors ["Option [pattern] is not supported for param [concept_id]"]}
+           (u/search-for-groups token {:concept_id "AG12345-PROV"
+                                       "options[concept_id][pattern]" true})))))
+
+(defn expected-search-response
+  "Returns the expected search response for a set of groups that matches a search result."
+  [expected-groups include-members?]
+  (let [groups (map (fn [group]
+                      (as-> group g
+                            (assoc g :member_count (count (:members g)))
+                            (if include-members? g (dissoc g :members))))
+                    expected-groups)]
+    {:status 200 :items (sort-groups groups) :hits (count groups)}))
+
+(defn get-existing-admin-group
+  "Returns the bootstrapped administrators group"
+  []
+  (-> (u/search-for-groups transmit-config/mock-echo-system-token {:include_members true})
+      :items
+      first))
+
+(deftest group-reindexing-test
+  (u/without-publishing-messages
+   (let [token (e/login (u/conn-context) "user1")
+         existing-admin-group (get-existing-admin-group)
+         cmr-group (u/ingest-group token {:name "cmr-group"} ["user1"])
+         prov-group (u/ingest-group token {:name "prov-group" :provider_id "PROV1"} ["user1"])
+         all-groups [existing-admin-group cmr-group prov-group]]
+     (u/wait-until-indexed)
+
+     ;; Only find the administrators group since the other groups were not indexed.
+     (is (= (expected-search-response [existing-admin-group] true)
+            (select-keys (u/search-for-groups token {:include_members true}) [:status :items :hits :errors])))
+
+     (access-control/reindex-groups (u/conn-context))
+     (u/wait-until-indexed)
+
+     ;; Now all groups should be found.
+     (is (= (expected-search-response all-groups true)
+            (select-keys (u/search-for-groups token {:include_members true}) [:status :items :hits :errors]))))))
 
 (deftest group-search-test
   (let [token (e/login (u/conn-context) "user1")
-        existing-admin-group (-> (u/search-for-groups transmit-config/mock-echo-system-token {}) :items first)
+        existing-admin-group (get-existing-admin-group)
         cmr-group1 (u/ingest-group token {:name "group1"} ["user1"])
         cmr-group2 (u/ingest-group token {:name "group2"} ["USER1" "user2"])
         cmr-group3 (u/ingest-group token {:name "group3"} nil)
@@ -65,13 +115,27 @@
         all-groups (concat cmr-groups prov1-groups prov2-groups)]
     (u/wait-until-indexed)
 
-    (testing "Search by member"
+    (testing "Search by concept id"
       (are3 [expected-groups params]
-        (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
+        (is (= (expected-search-response expected-groups (:include_members params))
                (select-keys (u/search-for-groups token params) [:status :items :hits :errors])))
 
+        "Multiple is OR'd"
+        [cmr-group1 prov1-group1 prov1-group2] {:concept-id (map :concept_id
+                                                                 [cmr-group1 prov1-group1 prov1-group2])}
+        "Single"
+        [cmr-group1] {:concept-id [(:concept_id cmr-group1)]}))
+
+    (testing "Search by member"
+      (are3 [expected-groups params]
+        (is (= (expected-search-response expected-groups (:include_members params))
+               (select-keys (u/search-for-groups token params) [:status :items :hits :errors])))
+
+        "Include members"
+        all-groups {:include_members true}
+
         "Normal case is case insensitive"
-        [cmr-group1 cmr-group2 prov1-group1 prov1-group2] {:member "UsEr1"}
+        [cmr-group1 cmr-group2 prov1-group1 prov1-group2] {:member "UsEr1" :include_members false}
 
         "Pattern"
         [existing-admin-group cmr-group1 cmr-group2 prov1-group1 prov1-group2 prov2-group1 prov2-group2]
@@ -89,7 +153,7 @@
 
     (testing "Search by name"
       (are3 [expected-groups params]
-        (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
+        (is (= (expected-search-response expected-groups false)
                (select-keys (u/search-for-groups token params) [:status :items :hits])))
 
         "Normal case insensitive"
@@ -111,7 +175,7 @@
 
     (testing "Search by provider"
       (are3 [expected-groups params]
-        (is (= {:status 200 :items (sort-groups expected-groups) :hits (count expected-groups)}
+        (is (= (expected-search-response expected-groups false)
                (select-keys (u/search-for-groups token params) [:status :items :hits])))
 
         "No parameters finds all groups"

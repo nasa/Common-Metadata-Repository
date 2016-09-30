@@ -268,7 +268,7 @@
                              :native-id "NID-2"
                              :entry-title "EID-2")
                       {:format :dif :allow-failure? true})]
-        (is (= ["C2-PROV1" 1 200 nil] [concept-id revision-id status errors]))))
+        (is (= ["C2-PROV1" 1 201 nil] [concept-id revision-id status errors]))))
 
     (testing "entry-id and entry-title constraint violations return multiple errors"
       (let [{:keys [status errors]} (d/ingest "PROV1"
@@ -284,7 +284,7 @@
       (let [{:keys [status]} (d/ingest "PROV2"
                                        (assoc coll1-2 :concept-id "C1-PROV2")
                                        {:format :dif})]
-        (is (= 200 status))))))
+        (is (= 201 status))))))
 
 ;; Ingest same concept N times and verify same concept-id is returned and
 ;; revision id is 1 greater on each subsequent ingest
@@ -455,7 +455,7 @@
                        :format "application/echo10+xml; charset=utf-8")
         {:keys [status]} (ingest/ingest-concept concept)]
     (index/wait-until-indexed)
-    (is (= status 200))))
+    (is (= 201 status))))
 
 ;; Verify ingest behaves properly if request is missing content type.
 (deftest missing-content-type-ingest-test
@@ -484,7 +484,7 @@
         {:keys [concept-id revision-id] :as response} (ingest/ingest-concept collection)
         ingested-concept (mdb/get-concept concept-id)]
     (index/wait-until-indexed)
-    (is (= 200 (:status response)))
+    (is (= 201 (:status response)))
     (is (mdb/concept-exists-in-mdb? concept-id revision-id))
     (is (= 1 revision-id))
     (is (= crazy-id (:native-id ingested-concept)))
@@ -549,7 +549,7 @@
                   :format "application/vnd.nasa.cmr.umm+json"
                   :metadata json}
         response (ingest/ingest-concept coll-map)]
-    (is (= 200 (:status response)))
+    (is (= 201 (:status response)))
     (index/wait-until-indexed)
     (is (mdb/concept-exists-in-mdb? (:concept-id response) 1))
     (is (= 1 (:revision-id response)))
@@ -588,7 +588,7 @@
                   :format       "application/vnd.nasa.cmr.umm+json;version=1.0"
                   :metadata     json}
         response (ingest/ingest-concept coll-map {:accept-format :json})]
-    (is (= 200 (:status response)))))
+    (is (= 201 (:status response)))))
 
 (deftest ingest-invalid-umm-version
   (let [coll-map {:provider-id  "PROV1"
@@ -609,4 +609,4 @@
                        :format "application/echo10+xml; charset=utf-8")
         {:keys [status]} (ingest/ingest-concept concept)]
     (index/wait-until-indexed)
-    (is (= status 200))))
+    (is (= status 201))))

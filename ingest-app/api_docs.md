@@ -101,7 +101,8 @@ This header returns the unique id assigned to the request. This can be used to h
 
 | Status Code |                                               Description                                                                          |
 | ----------- | -----------------------------------------------------------------------------------------------------------------------------------|
-|         200 | Success                                                                                                                            |
+|         200 | Successful update/delete                                                                                                           |
+|         201 | Successful create                                                                                                                  |
 |         400 | Bad request. The body will contain errors.                                                                                         |
 |         404 | Not found. This could be returned either because the URL isn't known by ingest or the item wasn't found.                           |
 |         409 | Conflict. This is returned when a revision id conflict occurred while saving the item.                                             |
@@ -112,7 +113,7 @@ This header returns the unique id assigned to the request. This can be used to h
 
 #### <a name="successful-responses"></a> Successful Responses
 
-Successful ingest responses will return an HTTP Status code of 200 and a body containing the [CMR Concept Id](#concept-id) of the item that was updated or deleted along with the [revision id](#revision-id).
+Successful ingest responses will return an HTTP Status code of 201 for create and 200 for update/delete, and a body containing the [CMR Concept Id](#concept-id) of the item that was created, updated or deleted along with the [revision id](#revision-id).
 
 UMM-C validation errors are returned as warnings in the response by default. When Cmr-Validate-Umm-C request header is set to true, the ingest request will fail when there are any UMM-C validation errors.
 

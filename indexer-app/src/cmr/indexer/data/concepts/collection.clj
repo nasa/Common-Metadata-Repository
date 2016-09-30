@@ -117,20 +117,53 @@
                                 (add-humanized-lowercase value-with-priorities))]
     {field value-with-lowercases}))
 
+(defn- assoc-nil-if
+  "Set value to nil if the predicate is true
+   Uses assoc."
+  [collection key predicate]
+  (if predicate
+    (assoc collection key nil)
+    collection))
+
+(defn- assoc-in-nil-if
+  "Set value to nil if the predicate is true.
+   Uses assoc-in."
+  [collection keys predicate]
+  (if predicate
+    (assoc-in collection keys nil)
+    collection))
+
+(defn- sanitize-processing-level-ids
+  "Sanitize Processing Level Ids if and only if the values are default"
+  [collection]
+  (assoc-in-nil-if
+   collection
+   [:ProcessingLevel :Id]
+   (= (get-in collection [:ProcessingLevel :Id]) su/not-provided)))
+
+(defn- sanitize-collection
+  "Remove default values to avoid them being indexed"
+  [collection]
+  (-> collection
+   (assoc-nil-if :Platforms (= (:Platforms collection) su/not-provided-platforms))
+   sanitize-processing-level-ids
+   (assoc-nil-if :DataCenters (= (:DataCenters collection) [su/not-provided-data-center]))))
+
 (defn- collection-humanizers-elastic
-  "Given a collection, returns humanized elastic search fields"
+  "Given a umm-spec collection, returns humanized elastic search fields"
   [context collection]
-  (let [humanized (humanizer/umm-collection->umm-collection+humanizers
-                    collection (hf/get-humanizer-instructions context))
+  (let [sanitized-collection (sanitize-collection collection)
+        humanized (humanizer/umm-collection->umm-collection+humanizers
+                    sanitized-collection (hf/get-humanizer-instructions context))
         extract-fields (partial extract-humanized-elastic-fields humanized)]
     (merge
      {:science-keywords.humanized (map sk/humanized-science-keyword->elastic-doc
-                                   (:science-keywords humanized))}
-     (extract-fields [:platforms :cmr.humanized/short-name] :platform-sn)
-     (extract-fields [:platforms :instruments :cmr.humanized/short-name] :instrument-sn)
-     (extract-fields [:projects :cmr.humanized/short-name] :project-sn)
-     (extract-fields [:product :cmr.humanized/processing-level-id] :processing-level-id)
-     (extract-fields [:organizations :cmr.humanized/org-name] :organization))))
+                                   (:ScienceKeywords humanized))}
+     (extract-fields [:Platforms :cmr.humanized/ShortName] :platform-sn)
+     (extract-fields [:Platforms :Instruments :cmr.humanized/ShortName] :instrument-sn)
+     (extract-fields [:Projects :cmr.humanized/ShortName] :project-sn)
+     (extract-fields [:ProcessingLevel :cmr.humanized/Id] :processing-level-id)
+     (extract-fields [:DataCenters :cmr.humanized/ShortName] :organization))))
 
 (defn- get-coll-permitted-group-ids
   "Returns the groups ids (group guids, 'guest', 'registered') that have permission to read
@@ -160,7 +193,7 @@
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
         spatial-keywords (lk/location-keywords->spatial-keywords
-                          (:LocationKeywords umm-spec-collection))
+                           (:LocationKeywords umm-spec-collection))
         access-value (get-in umm-spec-collection [:AccessConstraints :Value])
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
@@ -307,16 +340,16 @@
             ;;  "org.ceos.wgiss.cwic.cwic_status": {"associationDate":"2015-01-01T00:00:00.0Z",
             ;;                                      "data": "prod"}}
             :tags-gzip-b64 (when (seq tag-associations)
-                             (util/string->gzip-base64
-                              (pr-str
-                               (into {} (for [ta tag-associations]
+                            (util/string->gzip-base64
+                             (pr-str
+                              (into {} (for [ta tag-associations]
                                           [(:tag-key ta) (util/remove-nil-keys
                                                           {:data (:data ta)})])))))}
            (collection-temporal-elastic context concept-id umm-spec-collection)
            (spatial/collection-orbit-parameters->elastic-docs umm-spec-collection)
            (spatial->elastic umm-spec-collection)
            (sk/science-keywords->facet-fields collection)
-           (collection-humanizers-elastic context collection))))
+           (collection-humanizers-elastic context umm-spec-collection))))
 
 (defn- get-elastic-doc-for-tombstone-collection
   "Get the subset of elastic field values that apply to a tombstone index operation."
