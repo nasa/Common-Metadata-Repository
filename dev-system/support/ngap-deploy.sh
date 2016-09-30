@@ -104,6 +104,6 @@ mkdir -p $tars_dir
 tar_file_name=cmr-${app}-${environment}.tar
 (cd $deployment_dir && tar -cf ${tars_dir}/${tar_file_name} .)
 
-Create the ngap deployment
+# Create the ngap deployment
 echo "cd $ngap_cli_dir && ngap deployments:create cmr-${app}-${environment} ${tars_dir}/${tar_file_name}"
 (cd $ngap_cli_dir && ngap deployments:create cmr-${app}-${environment} ${tars_dir}/${tar_file_name})
