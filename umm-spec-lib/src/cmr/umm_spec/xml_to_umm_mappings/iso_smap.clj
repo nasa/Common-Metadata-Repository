@@ -79,7 +79,7 @@
   (let [data-id-el (first (select doc md-identification-base-xpath))
         short-name-el (first (select doc short-name-identification-xpath))]
     (js/parse-umm-c
-      {:ShortName (u/truncate (value-of data-id-el short-name-xpath) u/SHORTNAME_MAX sanitize?)
+      {:ShortName (value-of data-id-el short-name-xpath)
        :EntryTitle (value-of doc entry-title-xpath)
        :Version (value-of data-id-el version-xpath)
        :Abstract (u/truncate (value-of short-name-el "gmd:abstract/gco:CharacterString") u/ABSTRACT_MAX sanitize?)
