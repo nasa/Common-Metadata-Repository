@@ -136,7 +136,7 @@
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [context doc {:keys [sanitize?]}]
   {:EntryTitle (value-of doc "/Collection/DataSetId")
-   :ShortName  (value-of doc "/Collection/ShortName")
+   :ShortName  (u/truncate (value-of doc "/Collection/ShortName") u/SHORTNAME_MAX sanitize?)
    :Version    (value-of doc "/Collection/VersionId")
    :DataDates  (parse-data-dates doc)
    :MetadataDates (parse-metadata-dates doc)
