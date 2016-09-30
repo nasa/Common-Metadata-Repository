@@ -112,7 +112,7 @@ Items to include in each issue
 * CMR-3350 - As an Ops user, I should have a way of determining via Splunk if an ingest request is new or updating an existing granule
   * Client Impacts
     * CMR changed http status code for ingesting a new concept from 200 to 201, updating or deleting an existing concept still returns http status code 200.
-* CMR-3355 - Changed collection temporal indexing to use umm-spec-lib
+* CMR-3355 - Changed CMR_ENFORCE_GRANULE_UR_CONSTRAINT default to true
   * Client Impacts
     * CMR enabled unique granule ur validation during granule ingest so that ingest of granule with a granule ur that is used by a different non-deleted granule within the same provider will fail.
 * CMR-3340 Translate UMM ISOTopicCategories to ISO 19115-2 (MENDS)
