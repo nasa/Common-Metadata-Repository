@@ -179,7 +179,7 @@
     permission))
 
 (defn get-acls-by-condition
-  ""
+  "Returns user in context, sids of user, and search items returned using condition"
   [context condition]
   (let [token (:token context)
         user (if token (tokens/get-user-id context token) "guest")
@@ -227,15 +227,18 @@
   [context key-path system-identity]
   (let [condition (qm/string-condition :identity-type "System" true false)
         response (get-acls-by-condition context condition)
-        any-acl-system-acl (acl/echo-style-acl (first (filter #(= "ANY_ACL" (:target (:system-identity %))) (:items response))))]
-    (when-not (or (transmit-config/echo-system-token? context) (acl/acl-matches-sids-and-permission? (:sids response) "create" any-acl-system-acl))
+        any-acl-system-acl (acl/echo-style-acl
+                             (first (filter #(= "ANY_ACL" (:target (:system-identity %))) (:items response))))]
+    (when-not (or (transmit-config/echo-system-token? context)
+                  (acl/acl-matches-sids-and-permission? (:sids response) "create" any-acl-system-acl))
       {key-path [(format "User [%s] does not have permission to create a system level ACL" (:user response))]})))
 
 (defn make-system-identity-validations
   "Returns validations for ACLs with a System identity"
   [context action]
   (when (= :create action)
-    [#(system-identity-create-permission-validation context %1 %2)]))
+    [(fn [key-path system-identity]
+       (system-identity-create-permission-validation context key-path system-identity))]))
 
 (defn validate-provider-exists
   "Validates that the acl provider exists."
