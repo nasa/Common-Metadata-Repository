@@ -1284,6 +1284,7 @@ The following fields are indexed for keyword search:
     * Processing level ID
     * Science keywords
     * Ancillary keywords
+    * IDN_Nodes
     * Archive centers
     * Additional attribute names, data types, values, and descriptions
     * Spatial keywords

@@ -126,6 +126,15 @@
     (when sanitize?
       u/not-provided-temporal-extents)))
 
+(defn- parse-idn-node
+  "Returns values for DirectoryNames"
+  [doc]
+  (if-let [dnames (seq (select doc "/DIF/IDN_Node"))]
+    (for [dirname dnames]
+      {:ShortName (value-of dirname "Short_Name")
+       :LongName (value-of dirname "Long_Name")})
+    nil))
+
 (defn parse-dif10-xml
   "Returns collection map from DIF10 collection XML document."
   [doc {:keys [sanitize?]}]
@@ -149,6 +158,7 @@
                         :Subregion3 (value-of lk "Location_Subregion3")
                         :DetailedLocation (value-of lk "Detailed_Location")})
    :Projects (parse-projects doc sanitize?)
+   :DirectoryNames (parse-idn-node doc)
    :Quality (value-of doc "/DIF/Quality")
    :AccessConstraints (dif-util/parse-access-constraints doc sanitize?)
    :UseConstraints (value-of doc "/DIF/Use_Constraints")

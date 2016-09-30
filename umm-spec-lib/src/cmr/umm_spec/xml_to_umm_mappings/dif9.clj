@@ -67,6 +67,15 @@
   (remove nil? [(date/parse-date-type-from-xml doc "DIF/DIF_Creation_Date" "CREATE")
                 (date/parse-date-type-from-xml doc "DIF/Last_DIF_Revision_Date" "UPDATE")]))
 
+(defn- parse-idn-node
+  "Returns values for DirectoryNames" 
+  [doc]
+  (if-let [dnames (seq (select doc "/DIF/IDN_Node"))]
+    (for [dirname dnames]
+      {:ShortName (value-of dirname "Short_Name")
+       :LongName (value-of dirname "Long_Name")})
+    nil))   
+
 (defn- parse-related-urls
   "Returns a list of related urls"
   [doc sanitize?]
@@ -99,6 +108,7 @@
      :Projects (for [proj (select doc "/DIF/Project")]
                  {:ShortName (value-of proj "Short_Name")
                   :LongName (value-of proj "Long_Name")})
+     :DirectoryNames (parse-idn-node doc)
      :CollectionProgress (value-of doc "/DIF/Data_Set_Progress")
      :LocationKeywords  (let [lks (select doc "/DIF/Location")]
                           (for [lk lks]

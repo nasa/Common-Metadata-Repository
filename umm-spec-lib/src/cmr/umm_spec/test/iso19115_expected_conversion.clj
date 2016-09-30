@@ -200,6 +200,7 @@
 (defn umm-expected-conversion-iso19115
   [umm-coll]
   (-> umm-coll
+      (assoc :DirectoryNames nil)
       fix-bounding-rectangles
       (update :SpatialExtent update-iso-spatial)
       ;; ISO only supports a single tiling identification system
