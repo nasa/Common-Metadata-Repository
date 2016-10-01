@@ -189,16 +189,6 @@
     [:Related_URL
      [:URL "http://example.com"]]))
 
-(defn- generate-idn-nodes
-  "Returns DIF10 IDN_Nodes for the provided UMM-C collection record"
-  [c]
-  (if-let [dnames (:DirectoryNames c)]
-    (for [{:keys [ShortName LongName]} dnames]
-      [:IDN_Node
-       [:Short_Name ShortName]
-       [:Long_Name LongName]])
-    nil))
-
 (def collection-progress->dif10-dataset-progress
   "Mapping from known collection progress values to values supported for DIF10 Dataset_Progress."
   {"PLANNED" "PLANNED"
@@ -350,7 +340,7 @@
         [:Version (u/with-default (:Version ma))]]
        [:Type (or (u/capitalize-words (:Type ma)) "Science Associated")]
        [:Description (:Description ma)]])
-    (generate-idn-nodes c)
+    (dif-util/generate-idn-nodes c)
     [:Metadata_Name "CEOS IDN DIF"]
     [:Metadata_Version "VERSION 10.2"]
     [:Metadata_Dates
