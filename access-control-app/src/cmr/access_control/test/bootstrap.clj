@@ -37,7 +37,8 @@
         {:keys [concept-id revision-id]} (group-service/add-members context concept-id
                                                                     [(transmit-config/echo-system-username)
                                                                      transmit-config/local-system-test-user]
-                                                                    {:skip-acls? true})]
+                                                                    {:skip-acls? true
+                                                                     :skip-member-validation? true})]
     ;; Manually index the concept. We want the data to be available as soon as this function returns.
     (ac-index/index-concept-by-concept-id-revision-id context concept-id revision-id)
     (search-index/refresh context)))

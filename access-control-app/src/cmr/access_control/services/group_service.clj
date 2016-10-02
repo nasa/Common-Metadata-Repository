@@ -313,8 +313,9 @@
   the new concept id and revision id."
   ([context concept-id members]
    (add-members context concept-id members nil))
-  ([context concept-id members {:keys [skip-acls?]}]
-   (validate-members-exist context members)
+  ([context concept-id members {:keys [skip-acls? skip-member-validation?]}]
+   (when-not skip-member-validation?
+     (validate-members-exist context members))
    (let [existing-concept (fetch-group-concept context concept-id)
          existing-group (edn/read-string (:metadata existing-concept))
          updated-group (add-members-to-group existing-group members)]
