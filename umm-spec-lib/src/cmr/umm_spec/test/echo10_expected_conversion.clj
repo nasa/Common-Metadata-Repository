@@ -1,21 +1,20 @@
 (ns cmr.umm-spec.test.echo10-expected-conversion
  "ECHO 10 specific expected conversion functionality"
  (:require
-  [clj-time.core :as t]
-  [clj-time.format :as f]
-  [clojure.string :as str]
-  [cmr.common.util :as util :refer [update-in-each]]
-  [cmr.umm-spec.date-util :as date]
-  [cmr.umm-spec.location-keywords :as lk]
-  [cmr.umm-spec.models.umm-collection-models :as umm-c]
-  [cmr.umm-spec.models.umm-common-models :as cmn]
-  [cmr.umm-spec.related-url :as ru-gen]
-  [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
-  [cmr.umm-spec.test.location-keywords-helper :as lkt]
-  [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]
-  [cmr.umm-spec.url :as url]
-  [cmr.umm-spec.util :as su]))
-
+   [clj-time.core :as t]
+   [clj-time.format :as f]
+   [clojure.string :as str]
+   [cmr.common.util :as util :refer [update-in-each]]
+   [cmr.umm-spec.date-util :as date]
+   [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]
+   [cmr.umm-spec.models.umm-common-models :as cmn]
+   [cmr.umm-spec.related-url :as ru-gen]
+   [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
+   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]
+   [cmr.umm-spec.url :as url]
+   [cmr.umm-spec.util :as su]))
 (defn- fixup-echo10-data-dates
   [data-dates]
   (seq
@@ -192,6 +191,7 @@
 (defn umm-expected-conversion-echo10
   [umm-coll]
   (-> umm-coll
+      (assoc :DirectoryNames nil)
       ;; CMR 3523. DIF10 data makes the order inside the :RelatedUrls important:
       ;; access urls first, resource urls second, browse urls last - which is
       ;; the order used when umm is converted to echo10.

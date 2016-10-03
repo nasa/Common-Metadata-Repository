@@ -149,6 +149,7 @@
                         :Subregion3 (value-of lk "Location_Subregion3")
                         :DetailedLocation (value-of lk "Detailed_Location")})
    :Projects (parse-projects doc sanitize?)
+   :DirectoryNames (dif-util/parse-idn-node doc)
    :Quality (u/truncate (value-of doc "/DIF/Quality") u/QUALITY_MAX sanitize?)
    :AccessConstraints (dif-util/parse-access-constraints doc sanitize?)
    :UseConstraints (u/truncate (value-of doc "/DIF/Use_Constraints") u/USECONSTRAINTS_MAX sanitize?)

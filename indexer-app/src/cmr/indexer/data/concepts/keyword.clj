@@ -40,7 +40,8 @@
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract 
          temporal-keywords :TemporalKeywords platforms :Platforms 
-         ancillary-keywords :AncillaryKeywords} umm-spec-collection
+         ancillary-keywords :AncillaryKeywords
+         directory-names :DirectoryNames} umm-spec-collection
         processing-level-id (get-in umm-spec-collection [:ProcessingLevel :Id]) 
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
@@ -54,6 +55,8 @@
                                collection-data-type)
         project-long-names (map :long-name projects)
         project-short-names (map :short-name projects)
+        directory-long-names (map :LongName directory-names)
+        directory-short-names (map :ShortName directory-names)
         platforms (map util/map-keys->kebab-case 
                        (when-not (= su/not-provided-platforms platforms) platforms))
         platform-short-names (map :short-name platforms)
@@ -102,6 +105,8 @@
                                   sensor-techniques
                                   char-names
                                   char-descs
-                                  ancillary-keywords))
+                                  ancillary-keywords
+                                  directory-long-names
+                                  directory-short-names))
         split-fields (set (mapcat prepare-keyword-field all-fields))]
     (str/join " " split-fields)))

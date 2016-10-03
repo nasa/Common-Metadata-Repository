@@ -1,17 +1,17 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif10
   "Defines mappings from a UMM record into DIF10 XML"
   (:require
-   [camel-snake-kebab.core :as csk]
-   [clj-time.format :as f]
-   [clojure.set :as set]
-   [clojure.string :as str]
-   [cmr.common.xml.gen :as gen]
-   [cmr.umm-spec.date-util :as date]
-   [cmr.umm-spec.dif-util :as dif-util]
-   [cmr.umm-spec.umm-to-xml-mappings.dif10.data-center :as center]
-   [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]
-   [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as spatial]
-   [cmr.umm-spec.util :as u :refer [with-default]]))
+    [camel-snake-kebab.core :as csk]
+    [clj-time.format :as f]
+    [clojure.set :as set]
+    [clojure.string :as str]
+    [cmr.common.xml.gen :as gen]
+    [cmr.umm-spec.date-util :as date]
+    [cmr.umm-spec.dif-util :as dif-util]
+    [cmr.umm-spec.umm-to-xml-mappings.dif10.data-center :as center]
+    [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]
+    [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as spatial]
+    [cmr.umm-spec.util :as u :refer [with-default]]))
 
 (def platform-types
   "The set of values that DIF 10 defines for platform types as enumerations in its schema"
@@ -340,6 +340,7 @@
         [:Version (u/with-default (:Version ma))]]
        [:Type (or (u/capitalize-words (:Type ma)) "Science Associated")]
        [:Description (:Description ma)]])
+    (dif-util/generate-idn-nodes c)
     [:Metadata_Name "CEOS IDN DIF"]
     [:Metadata_Version "VERSION 10.2"]
     [:Metadata_Dates

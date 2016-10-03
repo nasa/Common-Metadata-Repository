@@ -9,6 +9,7 @@
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]
+    [cmr.umm-spec.models.umm-collection-models :as um]
     [cmr.umm-spec.test.expected-conversion :as exp-conv]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}))
@@ -523,10 +524,13 @@
 ;; This test is separated out from the rest of the keyword search tests because we need to  
 ;; ingest this UMM-SPEC collection but it contains some keyword values other tests are using. 
 ;; This would break other tests when doing the keyword searches. 
-(deftest search-by-ancillary-keywords
+(deftest search-by-more-keywords
   (let [coll1 (d/ingest "PROV1"
                         (-> exp-conv/example-collection-record
                             (assoc :AncillaryKeywords ["CMR2652AKW1" "CMR2652AKW2"])
+                            (assoc :DirectoryNames 
+                                   [(um/map->DirectoryNameType
+                                     {:ShortName "CMR2654DNSN1" :LongName "CMR2654DNLN1"})])
                             (assoc :ShortName "CMR2652SN1")
                             (assoc :EntryTitle "CMR2652ET1")) 
                         {:format :umm-json
@@ -534,6 +538,9 @@
         coll2 (d/ingest "PROV1"
                         (-> exp-conv/example-collection-record
                             (assoc :AncillaryKeywords ["CMR2652AKW3" "CMR2652AKW4"])
+                            (assoc :DirectoryNames
+                                   [(um/map->DirectoryNameType
+                                     {:ShortName "CMR2654DNSN2" :LongName "CMR2654DNLN2"})]) 
                             (assoc :ShortName "CMR2652SN2")
                             (assoc :EntryTitle "CMR2652ET2"))
                         {:format :umm-json
@@ -548,11 +555,19 @@
         "CMR2652AKW1" 
         [coll1] 
 
+        "testing parameter search by existing DirectoryNames keywords"
+        "CMR2654DNSN1"
+        [coll1]
+
         "testing parameter search by existing ancillary keywords"
         "CMR2652AKW4"
         [coll2] 
 
-        "testing parmaeter search by non-existing ancillary keywords"
+        "testing parameter search by existing DirectoryNames keywords"
+        "CMR2654DNLN2"
+        [coll2]
+
+        "testing parmaeter search by non-existing keywords"
         "CMR2652NOAKW" 
         []))
  
@@ -565,11 +580,19 @@
         "CMR2652AKW2" 
         [coll1]
 
+        "testing json query search by existing DirectoryNames keywords"
+        "CMR2654DNLN1"
+        [coll1]
+
         "testing json query search by existing ancillary keywords"
         "CMR2652AKW3"
         [coll2]
 
-        "testing json query search by non-existing ancillary keywords"
+        "testing json query search by existing DirectoryNames keywords"
+        "CMR2654DNSN2"
+        [coll2]
+
+        "testing json query search by non-existing keywords"
         "CMR2652NOAKW"  
         []))))
 

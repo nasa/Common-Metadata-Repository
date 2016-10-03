@@ -2,9 +2,31 @@
   "Contains common definitions and functions for DIF9 and DIF10 metadata parsing and generation."
   (:require
    [clojure.set :as set]
-   [cmr.common.util :as common-util]
    [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select]]
+   [cmr.common.util :as common-util]
    [cmr.umm-spec.util :as util]))
+
+;; For now, we assume DIF9 and DIF10 contain the same IDN_Nodes structures
+;; after confirming with the system engineer people - even though some of DIF10 files
+;; contain different structures. 
+;; Will need to revisit this after we get the new version of the DIF10 schema
+(defn parse-idn-node
+  "Returns DirectoryNames for the provided DIF doc"
+  [doc]
+  (when-let [dnames (seq (select doc "/DIF/IDN_Node"))]
+    (for [dirname dnames]
+      {:ShortName (value-of dirname "Short_Name")
+       :LongName (value-of dirname "Long_Name")})))
+
+(defn generate-idn-nodes
+  "Returns IDN_Nodes for the provided UMM-C collection record"
+  [c]
+  (when-let [dnames (:DirectoryNames c)]
+    (for [{:keys [ShortName LongName]} dnames]
+      [:IDN_Node
+       [:Short_Name ShortName]
+       [:Long_Name LongName]])))
 
 (def iso-639-2->dif10-dataset-language
   "Mapping from ISO 639-2 to the enumeration supported for dataset languages in DIF10."
