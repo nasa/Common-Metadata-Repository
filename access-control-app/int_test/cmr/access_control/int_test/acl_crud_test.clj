@@ -129,7 +129,13 @@
        "PROVIDER_OBJECT_ACL check"
        token-user2
        {:provider_identity {:provider_id "PROV2" :target "AUDIT_REPORT"}
-        :group_permissions [{:user_type "guest" :permissions ["read"]}]}))))
+        :group_permissions [{:user_type "guest" :permissions ["read"]}]}))
+
+    (testing "Check that CATALOG_ITEM_ACL provider still cannot be created by user3"
+      (is (thrown-with-msg? Exception #"Permission Denied"
+                            (ac/create-acl (merge {:token token-user3} (u/conn-context))
+                                           {:provider_identity {:provider_id "PROV2" :target "CATALOG_ITEM_ACL"}
+                                            :group_permissions [{:user_type "guest" :permissions ["read"]}]}))))))
 
 (deftest create-system-level-acl-permission-test
   ;; Tests user permission to create system level acls
