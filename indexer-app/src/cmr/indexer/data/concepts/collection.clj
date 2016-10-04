@@ -36,7 +36,7 @@
     [cmr.umm-spec.util :as su]
     [cmr.umm.acl-matchers :as umm-matchers]
     [cmr.umm.collection.entry-id :as eid]
-    [cmr.umm.related-url-helper :as ru]
+    [cmr.umm-spec.related-url :as ru]
     [cmr.umm.start-end-date :as sed]
     [cmr.umm.umm-collection :as umm-c])
   (:import
@@ -180,18 +180,38 @@
        (map #(or (:group-guid %) (some-> % :user-type name)))
        distinct))
 
+(defn- related-url->opendata-related-url
+  "Returns the opendata related url for the given collection related url"
+  [related-url]
+  (let [{:keys [Title Description Relation URLs MimeType FileSize]} related-url
+        {:keys [Size Unit]} FileSize
+        size (when (or Size Unit) (str Size Unit))]
+    ;; The current UMM JSON RelatedUrlType is flawed in that there can be multiple URLs,
+    ;; but only a single Title, MimeType and FileSize. This model doesn't make sense.
+    ;; Talked to Erich and he said that we are going to change the model.
+    ;; So for now, we make the assumption that there is only one URL in each RelatedUrlType.
+    {:type (first Relation)
+     :sub-type (second Relation)
+     :url (first URLs)
+     :description Description
+     :mime-type MimeType
+     :title Title
+     :size size}))
+
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection umm-spec-collection]
   (let [{:keys [concept-id revision-id provider-id user-id
                 native-id revision-date deleted format extra-fields tag-associations]} concept
-        {{:keys [long-name]} :product :keys [related-urls associated-difs personnel]} collection
+        {:keys [personnel]} collection
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
-         temporal-keywords :TemporalKeywords platforms :Platforms} umm-spec-collection
+         temporal-keywords :TemporalKeywords platforms :Platforms
+         related-urls :RelatedUrls} umm-spec-collection
         processing-level-id (get-in umm-spec-collection [:ProcessingLevel :Id])
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
+        related-urls (when-not (= [su/not-provided-related-url] related-urls) related-urls)
         spatial-keywords (lk/location-keywords->spatial-keywords
                            (:LocationKeywords umm-spec-collection))
         access-value (get-in umm-spec-collection [:AccessConstraints :Value])
@@ -200,6 +220,7 @@
                                (concat [collection-data-type] k/nrt-aliases)
                                collection-data-type)
         entry-id (eid/entry-id short-name version-id)
+        opendata-related-urls (map related-url->opendata-related-url related-urls)
         personnel (person-with-email personnel)
         platforms (map util/map-keys->kebab-case
                        (when-not (= su/not-provided-platforms platforms) platforms))
@@ -311,11 +332,9 @@
             :atom-links atom-links
             :summary summary
             :metadata-format (name (mt/format-key format))
-            :related-urls (map json/generate-string related-urls)
+            :related-urls (map json/generate-string opendata-related-urls)
             :update-time update-time
             :insert-time insert-time
-            :associated-difs associated-difs
-            :associated-difs.lowercase (map str/lower-case associated-difs)
             :coordinate-system coordinate-system
 
             ;; fields added to support keyword searches
@@ -323,7 +342,6 @@
                                               {:platform-long-names platform-long-names
                                                :instrument-long-names instrument-long-names
                                                :entry-id entry-id})
-            :long-name.lowercase (when long-name (str/lower-case long-name))
             :platform-ln.lowercase (map str/lower-case platform-long-names)
             :instrument-ln.lowercase (map str/lower-case instrument-long-names)
             :sensor-ln.lowercase (map str/lower-case sensor-long-names)

@@ -620,7 +620,7 @@
            ;; Multiple values
            [c1-p1 c2-p1 c3-p2 c4-p2] [c1-p1-cid c2-p1-cid c3-p2-cid c4-p2-cid dummy-cid] {}))))
 
-(deftest dif-entry-id-search-test
+#_(deftest dif-entry-id-search-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "S1"
                                                 :version-id "V1"}))
         coll2 (d/ingest "PROV1" (dc/collection-dif {:short-name "S2"}) {:format :dif})

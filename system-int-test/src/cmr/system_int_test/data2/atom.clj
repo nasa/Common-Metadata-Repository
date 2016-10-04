@@ -223,31 +223,37 @@
   (if (nil? value) attribs (assoc attribs field value)))
 
 (defn- related-url->link
-  "Returns the atom link of the given related url"
-  [related-url]
+  "Returns the atom link of the given related url. Collection's related url uses umm-spec-lib for
+  parsing and granule's related url uses umm-lib for parsing and the title is parsed differently."
+  [related-url is-granule?]
   (let [{:keys [type url title mime-type size inherited]} related-url
-        title (if (or (= "VIEW PROJECT HOME PAGE" type)
-                      (= "ALGORITHM INFO" type))
-                (str title " (USER SUPPORT)") title)
         attribs (-> {}
                     (add-attribs :inherited inherited)
                     (add-attribs :size size)
                     (add-attribs :rel (resource-type->link-type-uri type "http://esipfed.org/ns/fedsearch/1.1/metadata#"))
                     (add-attribs :type mime-type)
-                    (add-attribs :title title)
                     (add-attribs :hreflang "en-US")
-                    (add-attribs :href url))]
+                    (add-attribs :href url))
+        attribs (if is-granule? (add-attribs attribs :title title) attribs)]
     attribs))
 
-(defn- related-urls->links
-  "Returns the atom links of the given related urls"
+(defn- collection-related-urls->links
+  "Returns the atom links of the given collection related urls"
   [related-urls]
-  (map related-url->link related-urls))
+  (map #(related-url->link % false) related-urls))
+
+(defn- granule-related-urls->links
+  "Returns the atom links of the given granule related urls.
+  Since granule parsing still uses umm-lib, the atom link will have the title populated
+  differently from collection's related url which uses umm-spec-lib for parsing."
+  [related-urls]
+  (map #(related-url->link % true) related-urls))
 
 (defn- add-collection-links
   "Returns the related-urls after adding the atom-links in the collection"
   [coll related-urls]
-  (let [non-browse-coll-links (filter #(not= "GET RELATED VISUALIZATION" (:type %)) (:related-urls coll))]
+  (let [coll-related-urls (map #(assoc % :title nil) (:related-urls coll))
+        non-browse-coll-links (filter #(not= "GET RELATED VISUALIZATION" (:type %)) coll-related-urls)]
     (concat related-urls (map #(assoc % :inherited "true") non-browse-coll-links))))
 
 (defn collection->expected-atom
@@ -296,7 +302,7 @@
                ;; no temporal in collection will be treated as start date 1970-01-01T00:00:00 by CMR
                date-util/parsed-default-date)
       :end (some->> temporal (sed/end-date :collection))
-      :links (seq (related-urls->links related-urls))
+      :links (seq (collection-related-urls->links related-urls))
       :coordinate-system coordinate-system
       ;; Need to create UMM OrbitParameters record into map so test comparisons don't fail
       :orbit-parameters (when orbit-parameters (into {} orbit-parameters))
@@ -346,7 +352,7 @@
        :size size
        :original-format (atom-results-handler/metadata-format->atom-original-format (name format-key))
        :data-center (:provider-id (cu/parse-concept-id concept-id))
-       :links (seq (related-urls->links related-urls))
+       :links (seq (granule-related-urls->links related-urls))
        :orbit (when orbit (into {} orbit))
        :orbit-calculated-spatial-domains (seq orbit-calculated-spatial-domains)
        :start (some->> (:temporal granule) (sed/start-date :granule))
