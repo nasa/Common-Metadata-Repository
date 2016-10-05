@@ -542,13 +542,12 @@
                                    [(um/map->DirectoryNameType
                                      {:ShortName "CMR2654DNSN2" :LongName "CMR2654DNLN2"})])
                             (assoc :ScienceKeywords
-                                   [{:Category "Bioosphere" :Topic "biota" :Term "term"}])
+                                   [{:Category "Biosphere" :Topic "biota" :Term "term"}])
                             (assoc :ShortName "CMR2652SN2")
                             (assoc :EntryTitle "CMR2652ET2"))
                         {:format :umm-json
                          :accept-format :json})]
     (index/wait-until-indexed)
-    ; (println coll1)
     (testing "parameter searches"
       (are3 [keyword-str items]
         (let [parameter-refs (search/find-refs :collection {:keyword keyword-str})]
@@ -579,7 +578,7 @@
         [coll2]
 
         "testing iso-topic-category search again"
-        "Bioosphere"
+        "Biosphere"
         [coll2]))
 
     (testing "json query searchs"
