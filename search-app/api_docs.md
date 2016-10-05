@@ -1289,7 +1289,7 @@ The following fields are indexed for keyword search:
     * Additional attribute names, data types, values, and descriptions
     * Spatial keywords
     * Temporal keywords
-    * ISO Topic Keywords
+    * ISO Topic Categories
     * Project short and long names
     * Platform short and long names
     * Instrument short names, long names, and techniques
