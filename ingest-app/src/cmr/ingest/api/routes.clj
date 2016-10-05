@@ -1,25 +1,27 @@
 (ns cmr.ingest.api.routes
   "Defines the HTTP URL routes for the application."
-  (:require [compojure.route :as route]
-            [compojure.core :refer :all]
-            [ring.middleware.json :as ring-json]
-            [ring.middleware.params :as params]
-            [ring.middleware.nested-params :as nested-params]
-            [ring.middleware.keyword-params :as keyword-params]
-            [cmr.ingest.api.multipart :as mp]
-            [clojure.stacktrace :refer [print-stack-trace]]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.api.errors :as api-errors]
-            [cmr.ingest.services.jobs :as jobs]
-            [cmr.acl.core :as acl]
-            [cmr.ingest.services.ingest-service :as ingest]
-            [cmr.common.api.context :as context]
-            [cmr.ingest.api.provider :as provider-api]
-            [cmr.ingest.api.ingest :as ingest-api]
-            [cmr.ingest.api.translation :as translation-api]
-            [cmr.common-app.api.routes :as common-routes]
-            [cmr.common-app.api-docs :as api-docs]))
+  (:require
+   [clojure.stacktrace :refer [print-stack-trace]]
+   [cmr.acl.core :as acl]
+   [cmr.common-app.api-docs :as api-docs]
+   [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.routes :as common-routes]
+   [cmr.common.api.context :as context]
+   [cmr.common.api.errors :as api-errors]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.ingest.api.ingest :as ingest-api]
+   [cmr.ingest.api.multipart :as mp]
+   [cmr.ingest.api.provider :as provider-api]
+   [cmr.ingest.api.translation :as translation-api]
+   [cmr.ingest.services.ingest-service :as ingest]
+   [cmr.ingest.services.jobs :as jobs]
+   [compojure.core :refer :all]
+   [compojure.route :as route]
+   [ring.middleware.json :as ring-json]
+   [ring.middleware.keyword-params :as keyword-params]
+   [ring.middleware.nested-params :as nested-params]
+   [ring.middleware.params :as params]))
 
 (defn- build-routes [system]
   (routes
@@ -68,7 +70,7 @@
       common-routes/cache-api-routes
 
       ;; add routes for checking health of the application
-      (common-routes/health-api-routes ingest/health))
+      (common-health/health-api-routes ingest/health))
 
     (route/not-found "Not Found")))
 
@@ -91,4 +93,3 @@
       (context/build-request-context-handler system)
       common-routes/pretty-print-response-handler
       params/wrap-params))
-

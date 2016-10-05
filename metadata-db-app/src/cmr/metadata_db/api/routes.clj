@@ -18,6 +18,7 @@
             [cmr.acl.core :as acl]
             [cmr.metadata-db.api.provider :as provider-api]
             [cmr.metadata-db.api.concepts :as concepts-api]
+            [cmr.common-app.api.health :as common-health]
             [cmr.common-app.api.routes :as common-routes]))
 
 (def admin-api-routes
@@ -53,7 +54,7 @@
       provider-api/provider-api-routes
       common-routes/cache-api-routes
       job-api-routes
-      (common-routes/health-api-routes hs/health)
+      (common-health/health-api-routes hs/health)
       admin-api-routes)
 
     (route/not-found "Not Found")))
@@ -71,8 +72,3 @@
       ring-json/wrap-json-body
       common-routes/pretty-print-response-handler
       params/wrap-params))
-
-
-
-
-
