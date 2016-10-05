@@ -52,19 +52,36 @@
       :else
       (errors/internal-error! (str "Unknown spatial representation [" coord-sys "]")))))
 
-(defn- person->email-contact
-  "Return an email contact for the Personnel record or nil if none is available."
+(defn- email-contact?
+  "Return true if the given person has an email as contact info."
   [person]
-  (first (filter (fn [contact]
-                   (= :email
-                      (:type contact)))
-                 (:contacts person))))
+  (some #(= "Email" (:Type %))
+        (get-in person [:ContactInformation :ContactMechanisms])))
 
-(defn person-with-email
-  "Returns the first Personnel record for the list with an email contact or
-  nil if none exists."
-  [personnel]
-  (first (filter person->email-contact personnel)))
+(defn- data-center-contacts
+  "Returns the data center contacts with ContactInformation added if it doesn't have contact info"
+  [data-center]
+  (let [contacts (concat (:ContactPersons data-center) (:ContactGroups data-center))]
+    (map #(if (:ContactInformation %)
+            % (assoc % :ContactInformation (:ContactInformation data-center)))
+         contacts)))
+
+(defn opendata-email-contact
+  "Returns the opendata email contact info for the given collection, it is just the first email
+  contact info found in the ContactPersons, ContactGroups or DataCenters."
+  [collection]
+  (let [{:keys [ContactPersons ContactGroups DataCenters]} collection
+        contacts (concat ContactPersons ContactGroups (mapcat data-center-contacts DataCenters))
+        email-contact (some #(when (email-contact? %) %) contacts)]
+    (when email-contact
+      (let [email (some #(when (= "Email" (:Type %)) (:Value %))
+                        (get-in email-contact [:ContactInformation :ContactMechanisms]))
+            email-contacts (when email [{:type :email :value email}])]
+        {:first-name (:FirstName email-contact)
+         :middle-name (:MiddleName email-contact)
+         :last-name (:LastName email-contact)
+         :roles (:Roles email-contact)
+         :contacts email-contacts}))))
 
 (defn- collection-temporal-elastic
   "Returns a map of collection temporal fields for indexing in Elasticsearch."
@@ -203,7 +220,6 @@
   [context concept collection umm-spec-collection]
   (let [{:keys [concept-id revision-id provider-id user-id
                 native-id revision-date deleted format extra-fields tag-associations]} concept
-        {:keys [personnel]} collection
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
          temporal-keywords :TemporalKeywords platforms :Platforms
@@ -221,7 +237,7 @@
                                collection-data-type)
         entry-id (eid/entry-id short-name version-id)
         opendata-related-urls (map related-url->opendata-related-url related-urls)
-        personnel (person-with-email personnel)
+        personnel (opendata-email-contact umm-spec-collection)
         platforms (map util/map-keys->kebab-case
                        (when-not (= su/not-provided-platforms platforms) platforms))
         gcmd-keywords-map (kf/get-gcmd-keywords-map context)
