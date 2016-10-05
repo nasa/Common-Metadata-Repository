@@ -42,7 +42,7 @@
          temporal-keywords :TemporalKeywords platforms :Platforms
          ancillary-keywords :AncillaryKeywords
          directory-names :DirectoryNames
-         iso-keywords :ISOTopicCategories} umm-spec-collection
+         iso-topic-categories :ISOTopicCategories} umm-spec-collection
         processing-level-id (get-in umm-spec-collection [:ProcessingLevel :Id])
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
@@ -109,6 +109,6 @@
                                   ancillary-keywords
                                   directory-long-names
                                   directory-short-names
-                                  iso-keywords))
+                                  iso-topic-categories))
         split-fields (set (mapcat prepare-keyword-field all-fields))]
     (str/join " " split-fields)))

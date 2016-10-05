@@ -531,6 +531,7 @@
                             (assoc :DirectoryNames
                                    [(um/map->DirectoryNameType
                                      {:ShortName "CMR2654DNSN1" :LongName "CMR2654DNLN1"})])
+                            (assoc :ISOTopicCategories ["inlandWaters"])
                             (assoc :ShortName "CMR2652SN1")
                             (assoc :EntryTitle "CMR2652ET1"))
                         {:format :umm-json
@@ -541,8 +542,7 @@
                             (assoc :DirectoryNames
                                    [(um/map->DirectoryNameType
                                      {:ShortName "CMR2654DNSN2" :LongName "CMR2654DNLN2"})])
-                            (assoc :ScienceKeywords
-                                   [{:Category "Biosphere" :Topic "biota" :Term "term"}])
+                            (assoc :ISOTopicCategories ["biota"])
                             (assoc :ShortName "CMR2652SN2")
                             (assoc :EntryTitle "CMR2652ET2"))
                         {:format :umm-json
@@ -578,8 +578,8 @@
         [coll2]
 
         "testing iso-topic-category search again"
-        "Biosphere"
-        [coll2]))
+        "inlandWaters"
+        [coll1]))
 
     (testing "json query searchs"
       (are3 [keyword-str items]
