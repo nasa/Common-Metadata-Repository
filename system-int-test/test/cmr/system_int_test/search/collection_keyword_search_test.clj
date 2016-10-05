@@ -523,6 +523,7 @@
                             (assoc :DirectoryNames
                                    [(um/map->DirectoryNameType
                                      {:ShortName "CMR2654DNSN1" :LongName "CMR2654DNLN1"})])
+                            (assoc :ISOTopicCategories ["environment" "health"])
                             (assoc :ShortName "CMR2652SN1")
                             (assoc :EntryTitle "CMR2652ET1"))
                         {:format :umm-json
@@ -533,6 +534,7 @@
                             (assoc :DirectoryNames
                                    [(um/map->DirectoryNameType
                                      {:ShortName "CMR2654DNSN2" :LongName "CMR2654DNLN2"})])
+                            (assoc :ISOTopicCategories ["biota"])
                             (assoc :ShortName "CMR2652SN2")
                             (assoc :EntryTitle "CMR2652ET2"))
                         {:format :umm-json
@@ -560,8 +562,19 @@
         [coll2]
 
         "testing parmaeter search by non-existing keywords"
-        "CMR2652NOAKW"
-        []))
+        []
+
+        "testing iso-topic-category search - biota"
+        "biota"
+        [coll2]
+
+        "testing iso-topic-category search - environment"
+        "environment"
+        [coll1]
+
+        "testing iso-topic-category search - health"
+        "health"
+        [coll1]))
 
     (testing "json query searchs"
       (are3 [keyword-str items]

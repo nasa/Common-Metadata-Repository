@@ -2,37 +2,38 @@
   "Defines functions for creating, starting, and stopping the application. Applications are
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.nrepl :as nrepl]
-            [cmr.bootstrap.api.routes :as routes]
-            [cmr.common.api.web-server :as web]
-            [cmr.oracle.connection :as oracle]
-            [clojure.core.async :as ca :refer [chan]]
-            [cmr.bootstrap.data.bulk-migration :as bm]
-            [cmr.bootstrap.data.bulk-index :as bi]
-            [cmr.bootstrap.data.virtual-products :as vp]
-            [cmr.metadata-db.config :as mdb-config]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.metadata-db.system :as mdb-system]
-            [cmr.indexer.system :as idx-system]
-            [cmr.indexer.data.concepts.granule :as g]
-            [cmr.common.cache :as cache]
-            [cmr.common.cache.in-memory-cache :as mem-cache]
-            [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.bootstrap.config :as bootstrap-config]
-            [cmr.acl.core :as acl]
-            [cmr.common.system :as common-sys]))
+  (:require
+   [clojure.core.async :as ca :refer [chan]]
+   [cmr.acl.core :as acl]
+   [cmr.bootstrap.api.routes :as routes]
+   [cmr.bootstrap.config :as bootstrap-config]
+   [cmr.bootstrap.data.bulk-index :as bi]
+   [cmr.bootstrap.data.bulk-migration :as bm]
+   [cmr.bootstrap.data.virtual-products :as vp]
+   [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.services.kms-fetcher :as kf]
+   [cmr.common.api.web-server :as web]
+   [cmr.common.cache :as cache]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.nrepl :as nrepl]
+   [cmr.common.system :as common-sys]
+   [cmr.indexer.data.concepts.granule :as g]
+   [cmr.indexer.system :as idx-system]
+   [cmr.metadata-db.config :as mdb-config]
+   [cmr.metadata-db.system :as mdb-system]
+   [cmr.oracle.connection :as oracle]
+   [cmr.transmit.config :as transmit-config]))
 
 (defconfig db-batch-size
   "Batch size to use when batching database operations."
   {:default 100 :type Long})
 
-(def
-  ^{:doc "Defines the order to start the components."
-    :private true}
-  component-order [:log :db :web :nrepl])
+(def ^:private component-order
+  "Defines the order to start the components."
+  [:log :caches :db :web :nrepl])
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -77,7 +78,8 @@
              :nrepl (nrepl/create-nrepl-if-configured (bootstrap-config/bootstrap-nrepl-port))
              :relative-root-url (transmit-config/bootstrap-relative-root-url)
              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
-                      kf/kms-cache-key (kf/create-kms-cache)}}]
+                      kf/kms-cache-key (kf/create-kms-cache)
+                      common-health/health-cache-key (common-health/create-health-cache)}}]
     (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms :cubby :index-set
                                                   :indexer])))
 
