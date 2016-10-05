@@ -31,12 +31,12 @@
     [cmr.indexer.data.humanizer-fetcher :as hf]
     [cmr.indexer.services.index-service :as idx]
     [cmr.umm-spec.location-keywords :as lk]
+    [cmr.umm-spec.related-url :as ru]
     [cmr.umm-spec.time :as spec-time]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
     [cmr.umm-spec.util :as su]
     [cmr.umm.acl-matchers :as umm-matchers]
     [cmr.umm.collection.entry-id :as eid]
-    [cmr.umm-spec.related-url :as ru]
     [cmr.umm.start-end-date :as sed]
     [cmr.umm.umm-collection :as umm-c])
   (:import
