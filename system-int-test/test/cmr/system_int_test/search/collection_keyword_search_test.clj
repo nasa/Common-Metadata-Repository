@@ -521,18 +521,18 @@
       (let [refs (search/find-refs-with-json-query :collection {} {:not {:keyword "Laser"}})]
         (is (not-any? :score (:refs refs)))))))
 
-;; This test is separated out from the rest of the keyword search tests because we need to  
-;; ingest this UMM-SPEC collection but it contains some keyword values other tests are using. 
-;; This would break other tests when doing the keyword searches. 
+;; This test is separated out from the rest of the keyword search tests because we need to
+;; ingest this UMM-SPEC collection but it contains some keyword values other tests are using.
+;; This would break other tests when doing the keyword searches.
 (deftest search-by-more-keywords
   (let [coll1 (d/ingest "PROV1"
                         (-> exp-conv/example-collection-record
                             (assoc :AncillaryKeywords ["CMR2652AKW1" "CMR2652AKW2"])
-                            (assoc :DirectoryNames 
+                            (assoc :DirectoryNames
                                    [(um/map->DirectoryNameType
                                      {:ShortName "CMR2654DNSN1" :LongName "CMR2654DNLN1"})])
                             (assoc :ShortName "CMR2652SN1")
-                            (assoc :EntryTitle "CMR2652ET1")) 
+                            (assoc :EntryTitle "CMR2652ET1"))
                         {:format :umm-json
                          :accept-format :json})
         coll2 (d/ingest "PROV1"
@@ -540,20 +540,23 @@
                             (assoc :AncillaryKeywords ["CMR2652AKW3" "CMR2652AKW4"])
                             (assoc :DirectoryNames
                                    [(um/map->DirectoryNameType
-                                     {:ShortName "CMR2654DNSN2" :LongName "CMR2654DNLN2"})]) 
+                                     {:ShortName "CMR2654DNSN2" :LongName "CMR2654DNLN2"})])
+                            (assoc :ScienceKeywords
+                                   [{:Category "Bioosphere" :Topic "biota" :Term "term"}])
                             (assoc :ShortName "CMR2652SN2")
                             (assoc :EntryTitle "CMR2652ET2"))
                         {:format :umm-json
                          :accept-format :json})]
     (index/wait-until-indexed)
-    (testing "parameter searches"  
+    ; (println coll1)
+    (testing "parameter searches"
       (are3 [keyword-str items]
         (let [parameter-refs (search/find-refs :collection {:keyword keyword-str})]
           (d/assert-refs-match items parameter-refs))
-      
+
         "testing parameter search by existing ancillary keywords"
-        "CMR2652AKW1" 
-        [coll1] 
+        "CMR2652AKW1"
+        [coll1]
 
         "testing parameter search by existing DirectoryNames keywords"
         "CMR2654DNSN1"
@@ -561,23 +564,31 @@
 
         "testing parameter search by existing ancillary keywords"
         "CMR2652AKW4"
-        [coll2] 
+        [coll2]
 
         "testing parameter search by existing DirectoryNames keywords"
         "CMR2654DNLN2"
         [coll2]
 
         "testing parmaeter search by non-existing keywords"
-        "CMR2652NOAKW" 
-        []))
- 
+        "CMR2652NOAKW"
+        []
+
+        "testing iso-topic-category search"
+        "biota"
+        [coll2]
+
+        "testing iso-topic-category search again"
+        "Bioosphere"
+        [coll2]))
+
     (testing "json query searchs"
       (are3 [keyword-str items]
         (let [json-refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str})]
           (d/assert-refs-match items json-refs))
- 
+
         "testing json query search by existing ancillary keywords"
-        "CMR2652AKW2" 
+        "CMR2652AKW2"
         [coll1]
 
         "testing json query search by existing DirectoryNames keywords"
@@ -593,7 +604,7 @@
         [coll2]
 
         "testing json query search by non-existing keywords"
-        "CMR2652NOAKW"  
+        "CMR2652NOAKW"
         []))))
 
 ;; This tests that when searching by relevancy that if the score is the same short name ascending is used for

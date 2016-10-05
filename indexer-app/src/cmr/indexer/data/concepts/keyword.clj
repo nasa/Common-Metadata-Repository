@@ -1,12 +1,12 @@
 (ns cmr.indexer.data.concepts.keyword
   "Contains functions to create keyword fields"
-  (:require 
+  (:require
     [clojure.string :as str]
     [cmr.common.concepts :as concepts]
     [cmr.common.util :as util]
     [cmr.indexer.data.concepts.attribute :as attrib]
     [cmr.indexer.data.concepts.organization :as org]
-    [cmr.indexer.data.concepts.science-keyword :as sk] 
+    [cmr.indexer.data.concepts.science-keyword :as sk]
     [cmr.umm-spec.location-keywords :as lk]
     [cmr.umm-spec.util :as su]))
 
@@ -38,11 +38,12 @@
         {:keys [version-description]} (:product collection)
         {:keys [platform-long-names instrument-long-names entry-id]} other-fields
         {short-name :ShortName version-id :Version entry-title :EntryTitle
-         collection-data-type :CollectionDataType summary :Abstract 
-         temporal-keywords :TemporalKeywords platforms :Platforms 
+         collection-data-type :CollectionDataType summary :Abstract
+         temporal-keywords :TemporalKeywords platforms :Platforms
          ancillary-keywords :AncillaryKeywords
-         directory-names :DirectoryNames} umm-spec-collection
-        processing-level-id (get-in umm-spec-collection [:ProcessingLevel :Id]) 
+         directory-names :DirectoryNames
+         iso-keywords :ISOTopicCategories} umm-spec-collection
+        processing-level-id (get-in umm-spec-collection [:ProcessingLevel :Id])
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
         spatial-keywords (lk/location-keywords->spatial-keywords
@@ -57,7 +58,7 @@
         project-short-names (map :short-name projects)
         directory-long-names (map :LongName directory-names)
         directory-short-names (map :ShortName directory-names)
-        platforms (map util/map-keys->kebab-case 
+        platforms (map util/map-keys->kebab-case
                        (when-not (= su/not-provided-platforms platforms) platforms))
         platform-short-names (map :short-name platforms)
         instruments (mapcat :instruments platforms)
@@ -71,10 +72,10 @@
         char-names (keep :name characteristics)
         char-descs (keep :description characteristics)
         two-d-coord-names (map :TilingIdentificationSystemName
-                               (:TilingIdentificationSystems umm-spec-collection)) 
+                               (:TilingIdentificationSystems umm-spec-collection))
         data-centers (map :ShortName (:DataCenters umm-spec-collection))
         science-keywords (mapcat #(sk/science-keyword->keywords (util/map-keys->kebab-case %))
-                                 (:ScienceKeywords umm-spec-collection)) 
+                                 (:ScienceKeywords umm-spec-collection))
         attrib-keywords (mapcat #(attrib/psa->keywords (util/map-keys->kebab-case %))
                                 (:AdditionalAttributes umm-spec-collection))
         all-fields (flatten (conj [concept-id]
@@ -107,6 +108,7 @@
                                   char-descs
                                   ancillary-keywords
                                   directory-long-names
-                                  directory-short-names))
+                                  directory-short-names
+                                  iso-keywords))
         split-fields (set (mapcat prepare-keyword-field all-fields))]
     (str/join " " split-fields)))
