@@ -11,6 +11,7 @@
     [cmr.common.log :refer (debug info warn error)]
     [cmr.common.services.errors :as errors]
     [cmr.indexer.data.index-set :as indexer-index-set]
+    [cmr.indexer.system :as indexer-system]
     [cmr.transmit.index-set :as index-set]
     [cmr.transmit.indexer :as indexer]))
 
@@ -128,7 +129,10 @@
   ;; indexer to finish indexing any granule currently being processed.
   ;; This doesn't remove the race condition. We still have steps in the overall process to detect it
   ;; and resolve it. (manual fixes if necessary)
-  (Thread/sleep 5000)
+  (Thread/sleep
+   ;; Wait 10 seconds beyond the time that the indexer set cache consistency setting.
+   (+ 10000
+      (* 1000 (indexer-system/index-set-cache-consistent-timeout-seconds))))
   ;; Remove all granules from small collections for this collection.
   (rebalance-util/delete-collection-granules-from-small-collections context concept-id))
 

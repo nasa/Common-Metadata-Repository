@@ -8,6 +8,7 @@
    [cmr.common-app.cache.consistent-cache :as consistent-cache]
    [cmr.common.cache :as cache]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+   [cmr.common.config :refer [defconfig]]
    [cmr.common.jobs :refer [defjob]]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
@@ -34,11 +35,17 @@
   [object-identity-types]
   (create-acl-cache* (stl-cache/create-single-thread-lookup-cache) object-identity-types))
 
+(defconfig acl-cache-consistent-timeout-seconds
+  "The number of seconds between when the ACL cache should check with cubby for consistence"
+  {:default 30
+   :type Long})
+
 (defn create-consistent-acl-cache
   "Creates the acl cache using the given object-identity-types that uses cubby for consistency."
   [object-identity-types]
   (create-acl-cache* (stl-cache/create-single-thread-lookup-cache
-                      (consistent-cache/create-consistent-cache))
+                      (consistent-cache/create-consistent-cache
+                       {:hash-timeout-seconds (acl-cache-consistent-timeout-seconds)}))
                      object-identity-types))
 
 (defn- context->cached-object-identity-types

@@ -14,12 +14,13 @@
                     ]}
          :providers [...]}"
   (:require
-    [clojure.string :as str] 
+    [clojure.string :as str]
     [cmr.common-app.cache.consistent-cache :as consistent-cache]
     [cmr.common-app.cache.cubby-cache :as cubby-cache]
     [cmr.common.cache :as cache]
     [cmr.common.cache.fallback-cache :as fallback-cache]
     [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+    [cmr.common.config :refer [defconfig]]
     [cmr.common.jobs :refer [def-stateful-job]]
     [cmr.common.log :as log :refer (debug info warn error)]
     [cmr.common.services.errors :as errors]
@@ -46,6 +47,11 @@
   "The key used to store the KMS cache in the system cache map."
   :kms)
 
+(defconfig kms-cache-consistent-timeout-seconds
+  "The number of seconds between when the KMS cache should check with cubby for consistence"
+  {:default 3600
+   :type Long})
+
 (defn create-kms-cache
   "Used to create the cache that will be used for caching KMS keywords. All applications caching
   KMS keywords should use the same fallback cache to ensure functionality even if GCMD KMS becomes
@@ -53,7 +59,8 @@
   []
   (stl-cache/create-single-thread-lookup-cache
     (fallback-cache/create-fallback-cache
-      (consistent-cache/create-consistent-cache)
+      (consistent-cache/create-consistent-cache
+       {:hash-timeout-seconds (kms-cache-consistent-timeout-seconds)})
       (cubby-cache/create-cubby-cache))))
 
 (defn- fetch-gcmd-keywords-map

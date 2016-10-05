@@ -3,32 +3,36 @@
    Elasticsearch. Collecting this data is relatively expensive so it is fetched and cached. The
    functions in this namespace can be used to fetch the information when indexing a collection.
    The data will be somewhat stale but should be adequate for the searching needs here."
-  (require [cmr.common.jobs :refer [def-stateful-job]]
-           [cmr.common.util :as util]
-           [cmr.common.log :refer [debug info error]]
-           [cmr.transmit.metadata-db :as meta-db]
-           [cmr.common.services.errors :as errors]
-           ;; cache dependencies
-           [cmr.common.cache :as c]
-           [cmr.common.cache.fallback-cache :as fallback-cache]
-           [cmr.common-app.cache.cubby-cache :as cubby-cache]
-           [cmr.common-app.cache.consistent-cache :as consistent-cache]
-           [cmr.common-app.services.search.datetime-helper :as datetime-helper]
-           [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
-           [cmr.indexer.services.index-service :as index-service]
-
-           ;; elasticsearch dependencies
-           [cmr.indexer.data.elasticsearch :as es]
-           [clojurewerkz.elastisch.rest.document :as esd]
-           [clojurewerkz.elastisch.query :as esq]
-           [cmr.common.time-keeper :as tk]
-           [clj-time.core :as t]
-           [clj-time.format :as f]
-           [clj-time.coerce :as tc]))
+  (:require
+   [clj-time.coerce :as tc]
+   [clj-time.core :as t]
+   [clj-time.format :as f]
+   [clojurewerkz.elastisch.query :as esq]
+   [clojurewerkz.elastisch.rest.document :as esd]
+   [cmr.common-app.cache.consistent-cache :as consistent-cache]
+   [cmr.common-app.cache.cubby-cache :as cubby-cache]
+   [cmr.common-app.services.search.datetime-helper :as datetime-helper]
+   [cmr.common.cache :as c]
+   [cmr.common.cache.fallback-cache :as fallback-cache]
+   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+   [cmr.common.config :refer [defconfig]]
+   [cmr.common.jobs :refer [def-stateful-job]]
+   [cmr.common.log :refer [debug info error]]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.time-keeper :as tk]
+   [cmr.common.util :as util]
+   [cmr.indexer.data.elasticsearch :as es]
+   [cmr.indexer.services.index-service :as index-service]
+   [cmr.transmit.metadata-db :as meta-db]))
 
 (def coll-gran-aggregate-cache-key
   "The cache key to use when storing with caches in the system."
   :collection-granule-aggregation-cache)
+
+(defconfig coll-gran-agg-cache-consistent-timeout-seconds
+  "The number of seconds between when the collection granule aggregate cache should check with cubby for consistence"
+  {:default (* 5 60) ; 5 minutes
+   :type Long})
 
 (defn create-cache
   "Creates an instance of the cache."
@@ -42,7 +46,8 @@
 
       ;; Consistent cache is required so that if we have multiple instances of the indexer we'll have
       ;; only a single indexer refreshing it's cache.
-      (consistent-cache/create-consistent-cache)
+      (consistent-cache/create-consistent-cache
+       {:hash-timeout-seconds (coll-gran-agg-cache-consistent-timeout-seconds)})
       (cubby-cache/create-cubby-cache))))
 
 (def ^:private collection-aggregations

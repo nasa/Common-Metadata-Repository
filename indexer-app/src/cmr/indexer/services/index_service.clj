@@ -23,7 +23,7 @@
     [cmr.indexer.data.concept-parser :as cp]
     [cmr.indexer.data.elasticsearch :as es]
     [cmr.indexer.data.elasticsearch :as es]
-    [cmr.indexer.data.humanizer-fetcher :as hf]
+    [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]
     [cmr.indexer.data.index-set :as idx-set]
     [cmr.message-queue.config :as qcfg]
     [cmr.message-queue.services.queue :as queue]
@@ -129,6 +129,10 @@
    (reindex-provider-collections
      context provider-ids {:all-revisions-index? nil :refresh-acls? true :force-version? false}))
   ([context provider-ids {:keys [all-revisions-index? refresh-acls? force-version?]}]
+
+   ;; We refresh this cache because it is fairly lightweight to do once for each provider and because
+   ;; we want the latest humanizers on each of the Indexer instances that are processing these messages.
+   (humanizer-fetcher/refresh-cache context)
 
    (if refresh-acls?
      ;; Refresh the ACL cache.
@@ -416,7 +420,7 @@
 (defn update-humanizers
   "Update the humanizer cache and reindex all collections"
   [context]
-  (hf/refresh-cache context)
+  (humanizer-fetcher/refresh-cache context)
   (reindex-all-collections context))
 
 (defn reset
