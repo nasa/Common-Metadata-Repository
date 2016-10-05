@@ -18,5 +18,6 @@
 (deftest consistent-cache-functions-as-consistent-cache-test
   (consistent-cache-spec/assert-consistent-cache
     (consistent-cache/create-consistent-cache)
-    (consistent-cache/create-consistent-cache)))
+    (consistent-cache/create-consistent-cache)
+    (consistent-cache/consistent-cache-default-hash-timeout-seconds)))
 
