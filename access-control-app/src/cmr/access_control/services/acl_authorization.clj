@@ -12,7 +12,7 @@
     [cmr.transmit.echo.tokens :as tokens]))
 
 (defn- get-acls-by-condition
-  "Returns user in context, sids of user, and acls returned by the query using condition"
+  "Returns a map containing the context user, the user's sids, and acls found by executing given condition against ACL index"
   [context condition]
   (let [token (:token context)
         user (if token (tokens/get-user-id context token) "guest")
@@ -47,6 +47,11 @@
                       (first (filter #(= target (:target (:provider-identity %))) (:acls provider-acls))))]
     (acl/acl-matches-sids-and-permission? (:sids provider-acls) (name action) prov-acl)))
 
+(defn- permission-denied-message
+  "Returns permission denied message for given user and action."
+  [action]
+  (format "Permission to %s ACL is denied" (name action)))
+
 (defn can?
   "Throws service error if user doesn't have permission to intiate a given action for a given acl.
    Actions include create and update."
@@ -56,11 +61,11 @@
       (:provider-identity acl) (if (= (:target (:provider-identity acl)) "CATALOG_ITEM_ACL")
                                  (when-not (has-provider-access? context action "CATALOG_ITEM_ACL"
                                                                  (:provider-id (:provider-identity acl)))
-                                   (errors/throw-service-error :bad-request "Permission Denied"))
+                                   (errors/throw-service-error :bad-request (permission-denied-message action)))
                                  (when-not (has-provider-access? context action "PROVIDER_OBJECT_ACL"
                                                                  (:provider-id (:provider-identity acl)))
-                                   (errors/throw-service-error :bad-request "Permission Denied")))
+                                   (errors/throw-service-error :bad-request (permission-denied-message action))))
       (:catalog-item-identity acl) (when-not (has-provider-access? context action "CATALOG_ITEM_ACL"
                                                                    (:provider-id (:catalog-item-identity acl)))
-                                     (errors/throw-service-error :bad-request "Permission Denied"))
-      (:system-identity acl) (errors/throw-service-error :bad-request "Permission Denied"))))
+                                     (errors/throw-service-error :bad-request (permission-denied-message action)))
+      (:system-identity acl) (errors/throw-service-error :bad-request (permission-denied-message action)))))

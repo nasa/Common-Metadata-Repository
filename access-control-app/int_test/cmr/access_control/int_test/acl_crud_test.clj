@@ -85,7 +85,7 @@
 
     (testing "Without permissions"
       (are3 [token acl]
-        (is (thrown-with-msg? Exception #"Permission Denied"
+        (is (thrown-with-msg? Exception #"Permission to create ACL is denied"
                               (ac/create-acl (merge {:token token} (u/conn-context)) acl)))
 
         "ANY_ACL check"
@@ -132,7 +132,7 @@
         :group_permissions [{:user_type "guest" :permissions ["read"]}]}))
 
     (testing "Check that CATALOG_ITEM_ACL provider still cannot be created by user3"
-      (is (thrown-with-msg? Exception #"Permission Denied"
+      (is (thrown-with-msg? Exception #"Permission to create ACL is denied"
                             (ac/create-acl (merge {:token token-user3} (u/conn-context))
                                            {:provider_identity {:provider_id "PROV2" :target "CATALOG_ITEM_ACL"}
                                             :group_permissions [{:user_type "guest" :permissions ["read"]}]}))))))
@@ -156,12 +156,12 @@
 
     (is (re-find #"^ACL.*" (:concept_id resp1)))
     (is (= 1 (:revision_id resp1)))
-    (is (thrown-with-msg? Exception #"Permission Denied"
+    (is (thrown-with-msg? Exception #"Permission to create ACL is denied"
                           (ac/create-acl (merge {:token guest-token} (u/conn-context))
                                          (assoc (assoc-in system-acl
                                                           [:system_identity :target] "ARCHIVE_RECORD")
                                                 :group_permissions [{:user_type :guest :permissions ["delete"]}]))))
-    (is (thrown-with-msg? Exception #"Permission Denied"
+    (is (thrown-with-msg? Exception #"Permission to create ACL is denied"
                           (ac/create-acl (merge {:token token-user2} (u/conn-context))
                                          (assoc (assoc-in system-acl
                                                           [:system_identity :target] "ARCHIVE_RECORD")
@@ -188,10 +188,10 @@
 
     (is (re-find #"^ACL.*" (:concept_id resp1)))
     (is (= 1 (:revision_id resp1)))
-    (is (thrown-with-msg? Exception #"Permission Denied"
+    (is (thrown-with-msg? Exception #"Permission to create ACL is denied"
                           (ac/create-acl (u/conn-context) (assoc-in catalog-item-acl
                                                                     [:catalog_item_identity :provider_id] "PROV2") {:token guest-token})))
-    (is (thrown-with-msg? Exception #"Permission Denied"
+    (is (thrown-with-msg? Exception #"Permission to create ACL is denied"
                           (ac/create-acl (u/conn-context) (assoc-in catalog-item-acl
                                                                     [:catalog_item_identity :provider_id] "PROV2") {:token token2})))))
 
