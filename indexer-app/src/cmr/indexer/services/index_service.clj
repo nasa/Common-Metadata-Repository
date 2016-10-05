@@ -130,10 +130,15 @@
      context provider-ids {:all-revisions-index? nil :refresh-acls? true :force-version? false}))
   ([context provider-ids {:keys [all-revisions-index? refresh-acls? force-version?]}]
 
-   (when refresh-acls?
+   (if refresh-acls?
      ;; Refresh the ACL cache.
      ;; We want the latest permitted groups to be indexed with the collections
-     (acl-fetcher/refresh-acl-cache context))
+     (acl-fetcher/refresh-acl-cache context)
+     ;; Otherwise we'll make sure we check cubby to make sure we have a consistent set of ACLs.
+     ;; Ingest usually refreshes the cache and then sends a message without the flag relying on
+     ;; cubby to indicate to indexers that they should fetch the latest ACLs. Without expiring
+     ;; these here we'll think we have the latest.
+     (acl-fetcher/expire-consistent-cache-hashes context))
 
    (doseq [provider-id provider-ids]
      (when (or (nil? all-revisions-index?) (not all-revisions-index?))

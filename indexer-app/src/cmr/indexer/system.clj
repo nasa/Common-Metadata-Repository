@@ -46,9 +46,7 @@
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (config/indexer-nrepl-port))
              :relative-root-url (transmit-config/indexer-relative-root-url)
-             :caches {af/acl-cache-key (af/create-acl-cache
-                                         (stl-cache/create-single-thread-lookup-cache
-                                           (consistent-cache/create-consistent-cache))
+             :caches {af/acl-cache-key (af/create-consistent-acl-cache
                                          [:catalog-item :system-object :provider-object])
                       index-set/index-set-cache-key (consistent-cache/create-consistent-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)

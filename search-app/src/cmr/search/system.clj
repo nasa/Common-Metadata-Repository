@@ -9,7 +9,6 @@
    [cmr.common.api.web-server :as web]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
-   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
    [cmr.common.lifecycle :as lifecycle]
@@ -82,9 +81,7 @@
              :nrepl (nrepl/create-nrepl-if-configured (search-nrepl-port))
              ;; Caches added to this list must be explicitly cleared in query-service/clear-cache
              :caches {idx/index-cache-name (mem-cache/create-in-memory-cache)
-                      af/acl-cache-key (af/create-acl-cache
-                                         (stl-cache/create-single-thread-lookup-cache)
-                                         [:catalog-item :system-object])
+                      af/acl-cache-key (af/create-acl-cache [:catalog-item :system-object])
                       ;; Caches a map of tokens to the security identifiers
                       ah/token-sid-cache-name (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_CACHE_TIME})
                       :has-granules-map (hgrf/create-has-granules-map-cache)

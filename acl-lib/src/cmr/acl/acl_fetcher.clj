@@ -3,19 +3,22 @@
   is configured in the system. If the acl cache is used the job defined in this namespace should be
   used to keep the acls fresh. By using the cache and background job, ACLs will always be available
   for callers without any"
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.common.time-keeper :as tk]
-            [cmr.common.jobs :refer [defjob]]
-            [cmr.transmit.echo.acls :as echo-acls]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.cache :as cache]
-            [clojure.set :as set]))
+  (:require
+   [clojure.set :as set]
+   [cmr.common-app.cache.consistent-cache :as consistent-cache]
+   [cmr.common.cache :as cache]
+   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+   [cmr.common.jobs :refer [defjob]]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.time-keeper :as tk]
+   [cmr.transmit.echo.acls :as echo-acls]))
 
 (def acl-cache-key
   "The key used to store the acl cache in the system cache map."
   :acls)
 
-(defn create-acl-cache
+(defn create-acl-cache*
   "Creates the acl cache using the given cmr cache protocol implementation and object-identity-types.
   The object-identity-types are specified and stored as extra information in the cache so that when
   fetching acls later we will always pull and retrieve all of the ACLs needed for the application.
@@ -26,10 +29,29 @@
   ;; protocol we just associate extra information on the cache impl.
   (assoc cache-impl :object-identity-types object-identity-types))
 
+(defn create-acl-cache
+  "Creates the acl cache using the given object-identity-types."
+  [object-identity-types]
+  (create-acl-cache* (stl-cache/create-single-thread-lookup-cache) object-identity-types))
+
+(defn create-consistent-acl-cache
+  "Creates the acl cache using the given object-identity-types that uses cubby for consistency."
+  [object-identity-types]
+  (create-acl-cache* (stl-cache/create-single-thread-lookup-cache
+                      (consistent-cache/create-consistent-cache))
+                     object-identity-types))
+
 (defn- context->cached-object-identity-types
   "Gets the object identity types configured in the acl cache in the context."
   [context]
   (:object-identity-types (cache/context->cache context acl-cache-key)))
+
+(defn expire-consistent-cache-hashes
+  "Forces the cached hash codes of an ACL consistent cache to expire so that subsequent requests for
+   ACLs will check cubby for consistency."
+  [context]
+  (let [cache (cache/context->cache context acl-cache-key)]
+    (consistent-cache/expire-hash-cache-timeouts (:delegate-cache cache))))
 
 (defn refresh-acl-cache
   "Refreshes the acls stored in the cache. This should be called from a background job on a timer

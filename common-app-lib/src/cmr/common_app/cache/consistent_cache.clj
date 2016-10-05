@@ -49,7 +49,10 @@
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
-   [cmr.common.time-keeper :as time-keeper]))
+   [cmr.common.services.errors :as errors]
+   [cmr.common.time-keeper :as time-keeper])
+  (:import
+   (cmr.common.cache.in_memory_cache InMemoryCache)))
 
 (defconfig consistent-cache-default-hash-timeout-seconds
   "The length of time that the hashes will be cached to prevent too many requests to Cubby."
@@ -115,6 +118,19 @@
    (mem-cache/create-in-memory-cache :ttl {} {:ttl (* 1000 timeout)})
    hash-cache))
 
+(defn expire-hash-cache-timeouts
+  "Forces the locally cached hash codes stored in the cache returned by fallback-with-timeout to expire
+   by clearing the primary cache. This can be used when we occasionally need to make sure that some
+   cached data is consistent with cubby."
+  [consistent-cache]
+  (if-let [ttl-cache (get-in consistent-cache [:hash-cache :primary-cache])]
+    (if (instance? InMemoryCache ttl-cache)
+      (c/reset ttl-cache)
+      (errors/internal-error!
+       "Did not find expected type of in memory cache when trying to clear the hash cache timeouts"))
+    (errors/internal-error!
+     "Did not find expected type of fallback cache when trying to clear the hash cache timeouts")))
+
 (defn create-consistent-cache
   "Creates an instance of the consistent cache. Accepts no arguments, options with :hash-timeout-seconds
    or two specific caches to use. The option :hash-timeout-seconds will configure the amount of time
@@ -130,3 +146,6 @@
   ([memory-cache hash-cache]
    (->ConsistentMemoryCache
     memory-cache hash-cache)))
+
+
+
