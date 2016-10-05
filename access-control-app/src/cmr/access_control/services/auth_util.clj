@@ -34,12 +34,12 @@
       (assoc context :sids sids))
     (assoc context :sids [:guest])))
 
-(defn- get-system-acls
+(defn- get-system-level-group-acls
   "Returns ACLs which grant the given permission to the context user for system-level groups."
   [context permission]
   (seq (acl/get-permitting-acls context :system-object "GROUP" permission)))
 
-(defn- get-all-provider-acls
+(defn- get-provider-level-group-acls
   "Returns all ACLs that grant given permission to context user for any provider-level groups."
   [context permission]
   (acl/get-permitting-acls context :provider-object "GROUP" permission))
@@ -51,7 +51,7 @@
     (when-not (= "CMR" provider-id)
       (seq
         (filter #(= provider-id (-> % :provider-object-identity :provider-id))
-                (get-all-provider-acls context permission))))))
+                (get-provider-level-group-acls context permission))))))
 
 (defn- get-instance-acls
   "Returns any ACLs that grant the given permission to the context user on a specific group by its :legacy-guid."
@@ -85,7 +85,7 @@
     (let [context (put-sids-in-context context)]
       (when-not (or (get-instance-acls context permission group)
                     (get-provider-acls context permission group)
-                    (get-system-acls context permission))
+                    (get-system-level-group-acls context permission))
         (throw-group-permission-error action-description group)))))
 
 (defn verify-can-create-group
@@ -121,16 +121,16 @@
   ;; We want to avoid a circular dependency here. Any call to the kernel will result in a search
   ;; for groups. We assume that the system read token has full permission here. The kernel will use
   ;; that to call the access control group.
-  (if (transmit-config/echo-system-token? context)
-    query
-    (let [context (put-sids-in-context context)
-           system-condition (when (get-system-acls context :read)
-                              (qm/negated-condition (qm/exist-condition :provider-id)))
-           provider-ids (map #(-> % :provider-object-identity :provider-id)
-                             (get-all-provider-acls context :read))
-           provider-condition (when (seq provider-ids)
-                                (qm/string-conditions :provider-id provider-ids))
-           all-conditions (remove nil? [system-condition provider-condition])]
-      (if (seq all-conditions)
-        (update-in query [:condition] #(gc/and-conds [(gc/or-conds all-conditions) %]))
-        (assoc query :condition qm/match-none)))))
+  (let [context (put-sids-in-context context)]
+    ;; When the user is the system, or a user with system group read permission, they can see all groups.
+    (if (or (transmit-config/echo-system-token? context)
+            (seq (get-system-level-group-acls context :read)))
+      query
+      ;; Otherwise, we need to filter the results to only the providers visible to the current user.
+      (let [provider-ids (map #(-> % :provider-object-identity :provider-id)
+                              (get-provider-level-group-acls context :read))]
+        (if (seq provider-ids)
+          (update-in query [:condition] (fn [condition]
+                                          (gc/and-conds [(qm/string-conditions :provider-id provider-ids)
+                                                         condition])))
+          (assoc query :condition qm/match-none))))))

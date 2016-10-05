@@ -13,7 +13,7 @@
                            "prov4guid" "PROV4"}
                           ["user1" "user2" "user3" "user4" "user5"])
   (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"])
-  (fixtures/grant-all-acl-fixture ["PROV1"]))
+  (fixtures/grant-all-acl-fixture))
 (use-fixtures :once (fixtures/int-test-fixtures))
 
 (deftest invalid-search-test
@@ -32,27 +32,6 @@
             :body {:errors ["Parameter [foo] was not recognized."]}
             :content-type :json}
            (ac/search-for-acls (u/conn-context) {:foo "bar"} {:raw? true})))))
-
-(def fixture-provider-acl
-  "Search response for provider acl in fixtures"
- {:concept_id "ACL1200000002-CMR"
-  :revision_id 1
-  :group_permissions [{:user_type "registered"
-                       :permissions ["read" "update" "create" "delete"],}
-                      {:user_type "guest"
-                       :permissions ["read" "update" "create" "delete"]}]
-  :provider_identity {:provider_id "PROV1"
-                      :target "CATALOG_ITEM_ACL"}})
-
-(def fixture-system-acl
-  "Search response for system acl in fixtures"
- {:concept_id "ACL1200000001-CMR"
-  :revision_id 1
-  :group_permissions [{:user_type "registered"
-                       :permissions ["read" "update" "create" "delete"],}
-                      {:user_type "guest"
-                       :permissions ["read" "update" "create" "delete"]}]
-  :system_identity {:target "ANY_ACL"}})
 
 (def sample-system-acl
   "A sample system ACL."
@@ -165,9 +144,10 @@
         group1-concept-id (:concept_id group1)
         group2-concept-id (:concept_id group2)
         ;; remove ANY_ACL read to all users
-        _ (ac/update-acl (u/conn-context) "ACL1200000001-CMR" (assoc-in (system-acl "ANY_ACL")
-                                                                        [:group_permissions 0]
-                                                                        {:permissions ["read"] :group_id group1-concept-id}))
+        _ (ac/update-acl (u/conn-context) (:concept-id fixtures/*fixture-system-acl*)
+                         (assoc-in (system-acl "ANY_ACL")
+                                   [:group_permissions 0]
+                                   {:permissions ["read" "create"] :group_id group1-concept-id}))
         _ (u/wait-until-indexed)
 
         acl1 (ingest-acl token (assoc-in (system-acl "INGEST_MANAGEMENT_ACL")
@@ -181,17 +161,17 @@
     (testing "Guest search permission"
       (let [token (e/login-guest (u/conn-context))
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-        (is (= (acls->search-response 2 [fixture-provider-acl acl3])
+        (is (= (acls->search-response 2 [fixtures/*fixture-provider-acl* acl3])
                (dissoc response :took)))))
     (testing "User search permission"
       (let [token (e/login (u/conn-context) "user1")
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-        (is (= (acls->search-response 5 [fixture-provider-acl (assoc fixture-system-acl :revision_id 2) acl1 acl2 acl3])
+        (is (= (acls->search-response 5 [fixtures/*fixture-provider-acl* (assoc fixtures/*fixture-system-acl* :revision_id 2) acl1 acl2 acl3])
                (dissoc response :took)))))
     (testing "Search permission without ANY_ACL read"
       (let [token (e/login (u/conn-context) "user2")
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-        (is (= (acls->search-response 2 [fixture-provider-acl acl2])
+        (is (= (acls->search-response 2 [fixtures/*fixture-provider-acl* acl2])
                (dissoc response :took)))))))
 
 (deftest acl-search-test
@@ -225,8 +205,8 @@
         acl8 (ingest-acl token (catalog-item-acl "All Collections"))
         acl9 (ingest-acl token (catalog-item-acl "All Granules"))
 
-        system-acls [fixture-system-acl acl1 acl2 acl3 acl4]
-        provider-acls [fixture-provider-acl acl5]
+        system-acls [fixtures/*fixture-system-acl* acl1 acl2 acl3 acl4]
+        provider-acls [fixtures/*fixture-provider-acl* acl5]
         single-instance-acls [acl6 acl7]
         catalog-item-acls [acl8 acl9]
         all-acls (concat system-acls provider-acls single-instance-acls catalog-item-acls)]
@@ -290,13 +270,13 @@
                                       [{:user_type "registered" :permissions ["read" "order"]}
                                        {:group_id "AG10000-PROV" :permissions ["create"]}]))
 
-        guest-acls [fixture-system-acl fixture-provider-acl acl1 acl3 acl4 acl7]
-        registered-acls [fixture-system-acl fixture-provider-acl acl2 acl5 acl8]
+        guest-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl1 acl3 acl4 acl7]
+        registered-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl2 acl5 acl8]
         AG12345-acls [acl3 acl6]
         AG10000-acls [acl8]
-        read-acls [fixture-system-acl fixture-provider-acl acl1 acl2 acl3 acl4 acl8]
-        create-acls [fixture-system-acl fixture-provider-acl acl3 acl5 acl7 acl8]
-        all-acls [fixture-system-acl fixture-provider-acl acl1 acl2 acl3 acl4 acl5 acl6 acl7 acl8]]
+        read-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl1 acl2 acl3 acl4 acl8]
+        create-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl3 acl5 acl7 acl8]
+        all-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl1 acl2 acl3 acl4 acl5 acl6 acl7 acl8]]
     (u/wait-until-indexed)
 
     (testing "Search ACLs by permitted group"
@@ -344,13 +324,13 @@
                     (dissoc response :took))))
            ;; CMR-3154 acceptance criterium 1
            "Guests create"
-           ["guest" "create"] [fixture-provider-acl fixture-system-acl acl7]
+           ["guest" "create"] [fixtures/*fixture-provider-acl* fixtures/*fixture-system-acl* acl7]
 
            "Guest read"
-           ["guest" "read"] [fixture-provider-acl fixture-system-acl acl1 acl3 acl4]
+           ["guest" "read"] [fixtures/*fixture-provider-acl* fixtures/*fixture-system-acl* acl1 acl3 acl4]
 
            "Registered read"
-           ["registered" "read"] [fixture-provider-acl fixture-system-acl acl2 acl8]
+           ["registered" "read"] [fixtures/*fixture-provider-acl* fixtures/*fixture-system-acl* acl2 acl8]
 
            "Group create"
            ["AG10000-PROV" "create"] [acl8]
@@ -378,7 +358,7 @@
            ["registered" "read" "registered" "create"] registered-acls
 
            "Registered read or group AG12345-PROV delete"
-           ["registered" "read" "AG12345-PROV" "delete"] [fixture-provider-acl fixture-system-acl acl2 acl6 acl8]))
+           ["registered" "read" "AG12345-PROV" "delete"] [fixtures/*fixture-provider-acl* fixtures/*fixture-system-acl* acl2 acl6 acl8]))
 
     ;; CMR-3154 acceptance criterium 3
     (testing "Search ACLs by group permission just group or permission"
@@ -436,7 +416,7 @@
         group1-concept-id (:concept_id group1)
         acl-single-instance (ingest-acl token (single-instance-acl group1-concept-id))
         acl-catalog-item (ingest-acl token (catalog-item-acl "All Collections"))
-        all-acls [fixture-system-acl fixture-provider-acl acl-single-instance acl-catalog-item]]
+        all-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl-single-instance acl-catalog-item]]
     (u/wait-until-indexed)
 
     (testing "Search with invalid identity type returns error"
@@ -453,10 +433,10 @@
                  (dissoc response :took))))
 
         "Identity type 'provider'"
-        ["provider"] [fixture-provider-acl]
+        ["provider"] [fixtures/*fixture-provider-acl*]
 
         "Identity type 'system'"
-        ["system"] [fixture-system-acl]
+        ["system"] [fixtures/*fixture-system-acl*]
 
         "Identity type 'single_instance'"
         ["single_instance"] [acl-single-instance]
@@ -465,13 +445,13 @@
         ["catalog_item"] [acl-catalog-item]
 
         "Multiple identity types"
-        ["provider" "single_instance"] [fixture-provider-acl acl-single-instance]
+        ["provider" "single_instance"] [fixtures/*fixture-provider-acl* acl-single-instance]
 
         "All identity types"
         ["provider" "system" "single_instance" "catalog_item"] all-acls
 
         "Identity type searches are always case-insensitive"
-        ["PrOvIdEr"] [fixture-provider-acl]))))
+        ["PrOvIdEr"] [fixtures/*fixture-provider-acl*]))))
 
 (deftest acl-search-by-permitted-user-test
   (let [token (e/login (u/conn-context) "user1")
@@ -496,7 +476,7 @@
                                             :group_permissions
                                             [{:group_id (:concept_id group3) :permissions ["create"]}]))
 
-        registered-acls [acl-registered-1 acl-registered-2 fixture-provider-acl fixture-system-acl]]
+        registered-acls [acl-registered-1 acl-registered-2 fixtures/*fixture-provider-acl* fixtures/*fixture-system-acl*]]
 
     (u/wait-until-indexed)
 
@@ -526,13 +506,13 @@
         ["user3"] (concat registered-acls)
 
         "user1 gets acls for registered, group1, and group2"
-        ["user1"] [fixture-system-acl fixture-provider-acl acl-registered-1 acl-registered-2 acl-group1 acl-group2]
+        ["user1"] [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl-registered-1 acl-registered-2 acl-group1 acl-group2]
 
         "user2 gets acls for guest, registered, and group2"
-        ["user2"] [fixture-system-acl fixture-provider-acl acl-registered-1 acl-registered-2 acl-group2]
+        ["user2"] [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl-registered-1 acl-registered-2 acl-group2]
 
         "User names are case-insensitive"
-        ["USER1"] [fixture-system-acl fixture-provider-acl acl-registered-1 acl-registered-2 acl-group1 acl-group2]))))
+        ["USER1"] [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl-registered-1 acl-registered-2 acl-group1 acl-group2]))))
 
 (deftest acl-search-provider-test
   (let [token (e/login (u/conn-context) "user1")
@@ -560,8 +540,8 @@
 
         acl8 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item6_PROV4")
                                          [:catalog_item_identity :provider_id] "PROV4"))
-        prov1-acls [fixture-provider-acl acl4 acl5]
-        prov1-and-2-acls [fixture-provider-acl acl1 acl4 acl5 acl6 acl7]
+        prov1-acls [fixtures/*fixture-provider-acl* acl4 acl5]
+        prov1-and-2-acls [fixtures/*fixture-provider-acl* acl1 acl4 acl5 acl6 acl7]
         prov3-acls [acl2]]
     (u/wait-until-indexed)
     (testing "Search ACLs that grant permissions to objects owned by a single provider
@@ -667,7 +647,7 @@
          :permitted-group ["guest" "registered"]
          :identity-type ["catalog_item" "provider"]
          :permitted-user "user1"}
-        [acl3 fixture-provider-acl acl4 acl5]
+        [acl3 fixtures/*fixture-provider-acl* acl4 acl5]
 
         ;;Shows when permitted groups are not specified, then all user groups are returned for that user
         "Multiple search criteria with no permitted group specified and permitted users set to user2"
@@ -675,4 +655,4 @@
          :permitted-group ""
          :identity-type ["catalog_item" "provider"]
          :permitted-user "user2"}
-        [acl3 fixture-provider-acl acl5 acl7]))))
+        [acl3 fixtures/*fixture-provider-acl* acl5 acl7]))))

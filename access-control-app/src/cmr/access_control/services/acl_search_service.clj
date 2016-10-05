@@ -6,9 +6,10 @@
     [clojure.edn :as edn]
     [clojure.string :as str]
     [cmr.access-control.data.acl-schema :as schema]
-    [cmr.access-control.services.group-service :as groups]
     [cmr.access-control.services.acl-service :as acl-service]
     [cmr.access-control.services.auth-util :as auth-util]
+    [cmr.access-control.services.group-service :as groups]
+    [cmr.acl.core :as acl]
     [cmr.common-app.services.search :as cs]
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.parameter-validation :as cpv]
@@ -224,7 +225,7 @@
 (defn has-any-read?
   "Returns true if user has permssion to read any ACL."
   [sids acls]
-  (some #{:read} (acl-service/system-permissions-granted-by-acls "ANY_ACL" sids (map acl-service/echo-style-acl acls))))
+  (some #{:read} (acl-service/system-permissions-granted-by-acls "ANY_ACL" sids (map acl/echo-style-acl acls))))
 
 (defn grants-search-permission?
   "Returns true if ACL is searchable for given sids for a given key (:group-id or :user-type)"

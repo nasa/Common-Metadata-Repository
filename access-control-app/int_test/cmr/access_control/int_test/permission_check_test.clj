@@ -22,7 +22,7 @@
                 (e/grant-all-ingest (u/conn-context) "prov1guid")
                 (f))
               (fixtures/grant-all-group-fixture ["prov1guid"])
-              (fixtures/grant-all-acl-fixture ["PROV1"]))
+              (fixtures/grant-all-acl-fixture))
 
 (deftest invalid-params-test
   (are [params errors]

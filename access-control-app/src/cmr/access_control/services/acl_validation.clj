@@ -1,17 +1,18 @@
 (ns cmr.access-control.services.acl-validation
   (:require
-    [cheshire.core :as json]
     [clj-time.core :as t]
     [clojure.edn :as edn]
     [cmr.access-control.data.acls :as acls]
     [cmr.access-control.services.auth-util :as auth-util]
-    [cmr.access-control.services.group-service :as groups]
+    [cmr.access-control.services.group-service :as group-service]
     [cmr.access-control.services.messages :as msg]
+    [cmr.acl.core :as acl]
     [cmr.common-app.services.search.query-execution :as qe]
     [cmr.common-app.services.search.query-model :as qm]
     [cmr.common.date-time-parser :as dtp]
     [cmr.common.util :as util]
     [cmr.common.validations.core :as v]
+    [cmr.transmit.config :as transmit-config]
     [cmr.transmit.echo.tokens :as tokens]
     [cmr.transmit.metadata-db :as mdb1]
     [cmr.transmit.metadata-db2 :as mdb]))
@@ -155,7 +156,7 @@
   "Validates that the acl group exists."
   [context]
   (fn [key-path target-id]
-    (when-not (groups/group-exists? context target-id)
+    (when-not (group-service/group-exists? context target-id)
       {key-path [(format "Group with concept-id [%s] does not exist" target-id)]})))
 
 (defn- make-single-instance-identity-validations
@@ -176,27 +177,34 @@
         permission (:permissions group-permission)]
     permission))
 
-(defn validate-target-provider-grants-create
-  "Checks if provider ACL grants permission for user to create given catalog item ACL"
-  [context key-path acl]
+(defn get-acls-by-condition
+  "Returns user in context, sids of user, and search items returned using condition"
+  [context condition]
   (let [token (:token context)
         user (if token (tokens/get-user-id context token) "guest")
         sids (auth-util/get-sids context user)
-        provider-id (:provider-id acl)
         query (qm/query {:concept-type :acl
-                         :condition (qm/string-condition :provider provider-id)
+                         :condition condition
                          :skip-acls? true
                          :page-size :unlimited
                          :result-format :query-specified
                          :result-fields [:acl-gzip-b64]})
         response (qe/execute-query context query)
-        provider-acls (map #(edn/read-string (util/gzip-base64->string (:acl-gzip-b64 %))) (:items response))]
-    (when-not (contains? (set (permissions-granted-by-provider-to-user sids
-                                                                       provider-acls
+        response-acls (map #(edn/read-string (util/gzip-base64->string (:acl-gzip-b64 %))) (:items response))]
+    {:items response-acls :sids sids :user user}))
+
+(defn validate-target-provider-grants-create
+  "Checks if provider ACL grants permission for user to create given catalog item ACL"
+  [context key-path acl]
+  (let [provider-id (:provider-id acl)
+        condition (qm/string-condition :provider provider-id)
+        response (get-acls-by-condition context condition)]
+    (when-not (contains? (set (permissions-granted-by-provider-to-user (:sids response)
+                                                                       (:items response)
                                                                        "CATALOG_ITEM_ACL"))
                          "create")
       {key-path [(format "User [%s] does not have permission to create a catalog item for provider-id [%s]"
-                          user provider-id)]})))
+                          (:user response) provider-id)]})))
 
 (defn- make-catalog-item-identity-validations
   "Returns a standard validation for an ACL catalog_item_identity field
@@ -212,6 +220,24 @@
     (if (= :create action)
       (merge validations #(validate-target-provider-grants-create context %1 %2))
       validations)))
+
+(defn system-identity-create-permission-validation
+  "Checks if user has permissions to create system level ACLs."
+  [context key-path system-identity]
+  (let [condition (qm/string-condition :identity-type "System" true false)
+        response (get-acls-by-condition context condition)
+        any-acl-system-acl (acl/echo-style-acl
+                             (first (filter #(= "ANY_ACL" (:target (:system-identity %))) (:items response))))]
+    (when-not (or (transmit-config/echo-system-token? context)
+                  (acl/acl-matches-sids-and-permission? (:sids response) "create" any-acl-system-acl))
+      {key-path [(format "User [%s] does not have permission to create a system level ACL" (:user response))]})))
+
+(defn make-system-identity-validations
+  "Returns validations for ACLs with a System identity"
+  [context action]
+  (when (= :create action)
+    [(fn [key-path system-identity]
+       (system-identity-create-permission-validation context key-path system-identity))]))
 
 (defn validate-provider-exists
   "Validates that the acl provider exists."
@@ -240,7 +266,8 @@
   [context acl action]
   [#(validate-provider-exists context %1 %2)
    {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl action))
-    :single-instance-identity (v/when-present (make-single-instance-identity-validations context))}
+    :single-instance-identity (v/when-present (make-single-instance-identity-validations context))
+    :system-identity (v/when-present (make-system-identity-validations context action))}
    validate-grantable-permissions])
 
 (defn validate-acl-save!

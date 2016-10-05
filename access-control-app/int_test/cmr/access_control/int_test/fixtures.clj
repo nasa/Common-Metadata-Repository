@@ -119,31 +119,46 @@
       (e/grant-provider-group-permissions-to-all (conn-context) provider-guid))
     (f)))
 
+;;These two vars will be rebinded dynamically when the fixtures are setup for each test and
+;;are used to represent the ACLs inside of the tests
+(def ^:dynamic *fixture-provider-acl*)
+(def ^:dynamic *fixture-system-acl*)
+
 (defn grant-provider-acl-permissions-to-all
   "Creates provider acls granting create on group-id or user-type"
-  [provider-ids]
-  (doseq [item provider-ids]
-    (ac/create-acl (conn-context) {:group_permissions [{:user_type :registered
-                                                        :permissions ["read" "update" "create" "delete"],}
-                                                       {:user_type :guest
-                                                        :permissions ["read" "update" "create" "delete"]}]
-                                   :provider_identity {:provider_id item
-                                                       :target "CATALOG_ITEM_ACL"}})))
+  []
+  (let [acl {:group_permissions [{:user_type "registered"
+                                  :permissions ["read" "update" "create" "delete"]}
+                                 {:user_type "guest"
+                                  :permissions ["read" "update" "create" "delete"]}]
+              :provider_identity {:provider_id "PROV1"
+                                  :target "CATALOG_ITEM_ACL"}}
+        {:keys [concept_id revision_id]} (ac/create-acl (merge {:token config/mock-echo-system-token}
+                                                               (conn-context))
+                                                        acl)]
+    (assoc acl :concept-id concept_id :revision-id revision_id)))
 
 (defn grant-any-acl-system-acl-to-all
   "Creates system acl targeting ANY_ACL that grants create, read, update, and delete to all"
   []
-  (ac/create-acl (conn-context) {:group_permissions [{:user_type :registered
-                                                      :permissions ["read" "update" "create" "delete"],}
-                                                     {:user_type :guest
-                                                      :permissions ["read" "update" "create" "delete"]}]
-                                 :system_identity {:target "ANY_ACL"}}))
+  (let [acl {:group_permissions [{:user_type "registered"
+                                  :permissions ["read" "update" "create" "delete"]}
+                                 {:user_type "guest"
+                                  :permissions ["read" "update" "create" "delete"]}]
+             :system_identity {:target "ANY_ACL"}}
+        {:keys [concept_id revision_id]} (ac/create-acl
+                                           (merge {:token config/mock-echo-system-token}
+                                                  (conn-context))
+                                           acl)]
+    (assoc acl :concept-id concept_id :revision-id revision_id)))
 
 (defn grant-all-acl-fixture
-  "Returns a test fixutre function which grants guest ability to create, read, update, and delete any ACL."
-  [provider-ids]
+  "Returns a test fixture function which grants guest ability to create, read, update, and delete any ACL."
+  []
   (fn [f]
-    (grant-any-acl-system-acl-to-all)
-    (grant-provider-acl-permissions-to-all provider-ids)
-    (test-util/wait-until-indexed)
-    (f)))
+    (let [system-acl (grant-any-acl-system-acl-to-all)
+          provider-acl (grant-provider-acl-permissions-to-all)]
+      (binding [*fixture-system-acl* system-acl
+                *fixture-provider-acl* provider-acl]
+        (test-util/wait-until-indexed)
+        (f)))))

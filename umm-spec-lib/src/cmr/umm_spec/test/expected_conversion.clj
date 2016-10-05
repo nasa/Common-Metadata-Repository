@@ -2,23 +2,22 @@
   "This contains functions for manipulating the expected UMM record when taking a UMM record
   writing it to an XML format and parsing it back. Conversion from a UMM record into metadata
   can be lossy if some fields are not supported by that format"
-  (:require [clj-time.core :as t]
-            [clj-time.format :as f]
-            [clojure.string :as str]
-            [cmr.common.util :as util :refer [update-in-each]]
-            [cmr.umm-spec.util :as su]
-            [cmr.umm-spec.json-schema :as js]
-            ;; Required for loading service models for testing
-            [cmr.umm-spec.models.umm-service-models]
-            [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
-            [cmr.umm-spec.test.echo10-expected-conversion :as echo10]
-            [cmr.umm-spec.test.dif9-expected-conversion :as dif9]
-            [cmr.umm-spec.test.dif10-expected-conversion :as dif10]
-            [cmr.umm-spec.test.serf-expected-conversion :as serf]
-            [cmr.umm-spec.test.iso19115-expected-conversion :as iso19115]
-            [cmr.umm-spec.test.iso-smap-expected-conversion :as iso-smap]
-            [cmr.umm-spec.models.umm-common-models :as cmn]
-            [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]))
+  (:require 
+    [clj-time.format :as f]
+    [clj-time.core :as t]
+    [clojure.string :as str]
+    [cmr.common.util :as util :refer [update-in-each]]
+    [cmr.umm-spec.json-schema :as js]
+    [cmr.umm-spec.models.umm-common-models :as cmn]
+    [cmr.umm-spec.models.umm-service-models]
+    [cmr.umm-spec.test.dif10-expected-conversion :as dif10]
+    [cmr.umm-spec.test.dif9-expected-conversion :as dif9]
+    [cmr.umm-spec.test.echo10-expected-conversion :as echo10]
+    [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
+    [cmr.umm-spec.test.iso19115-expected-conversion :as iso19115]
+    [cmr.umm-spec.test.iso-smap-expected-conversion :as iso-smap]
+    [cmr.umm-spec.test.serf-expected-conversion :as serf]
+    [cmr.umm-spec.util :as su]))
 
 (def example-collection-record
   "An example record with fields supported by most formats."
@@ -439,8 +438,7 @@
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:CollectionCitations :MetadataLanguage
-    :DirectoryNames :SpatialInformation})
+  #{:CollectionCitations :MetadataLanguage :SpatialInformation})
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"

@@ -3,7 +3,7 @@
   (:require
     [camel-snake-kebab.core :as csk]
     [clj-time.format :as f]
-    [cmr.common.xml.simple-xpath :refer [select text]]
+    [cmr.common.xml.simple-xpath :refer [select]]
     [cmr.common.xml.parse :refer :all]
     [cmr.umm.dif.date-util :refer [parse-dif-end-date]]
     [cmr.umm-spec.date-util :as date]
@@ -88,7 +88,7 @@
         version-id (value-of doc "/DIF/Data_Set_Citation/Version")
         short-name (get-short-name entry-id version-id)]
     {:EntryTitle (value-of doc "/DIF/Entry_Title")
-     :ShortName (su/truncate-with-default short-name su/SHORTNAME_MAX sanitize?)
+     :ShortName short-name
      :Version (or version-id (when sanitize? su/not-provided))
      :Abstract (su/truncate-with-default (value-of doc "/DIF/Summary/Abstract") su/ABSTRACT_MAX sanitize?)
      :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
@@ -100,6 +100,7 @@
      :Projects (for [proj (select doc "/DIF/Project")]
                  {:ShortName (value-of proj "Short_Name")
                   :LongName (su/truncate (value-of proj "Long_Name") su/PROJECT_LONGNAME_MAX sanitize?)})
+     :DirectoryNames (dif-util/parse-idn-node doc) 
      :CollectionProgress (value-of doc "/DIF/Data_Set_Progress")
      :LocationKeywords  (let [lks (select doc "/DIF/Location")]
                           (for [lk lks]

@@ -1,18 +1,18 @@
 (ns cmr.umm-spec.test.iso-smap-expected-conversion
  "ISO SMAP specific expected conversion functionality"
  (:require
-  [clj-time.core :as t]
-  [clj-time.format :as f]
-  [cmr.common.util :as util :refer [update-in-each]]
-  [cmr.umm-spec.date-util :as du]
-  [cmr.umm-spec.iso-keywords :as kws]
-  [cmr.umm-spec.location-keywords :as lk]
-  [cmr.umm-spec.models.umm-collection-models :as umm-c]
-  [cmr.umm-spec.models.umm-common-models :as cmn]
-  [cmr.umm-spec.related-url :as ru-gen]
-  [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
-  [cmr.umm-spec.test.location-keywords-helper :as lkt]
-  [cmr.umm-spec.util :as su]))
+   [clj-time.core :as t]
+   [clj-time.format :as f]
+   [cmr.common.util :as util :refer [update-in-each]]
+   [cmr.umm-spec.date-util :as du]
+   [cmr.umm-spec.iso-keywords :as kws]
+   [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]
+   [cmr.umm-spec.models.umm-common-models :as cmn]
+   [cmr.umm-spec.related-url :as ru-gen]
+   [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
+   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm-spec.util :as su]))
 
 (defn- normalize-smap-instruments
   "Collects all instruments across given platforms and returns a seq of platforms with all
@@ -55,6 +55,7 @@
 (defn umm-expected-conversion-iso-smap
   [umm-coll original-brs]
   (-> umm-coll
+        (assoc :DirectoryNames nil)
         (update-in [:SpatialExtent] expected-smap-iso-spatial-extent)
         (update-in [:DataDates] expected-smap-data-dates)
         ;; ISO SMAP does not support the PrecisionOfSeconds field.
