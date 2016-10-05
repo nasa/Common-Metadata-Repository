@@ -12,7 +12,7 @@
     [cmr.transmit.echo.tokens :as tokens]))
 
 (defn- get-acls-by-condition
-  "Returns user in context, sids of user, and search items returned using condition"
+  "Returns user in context, sids of user, and acls returned by the query using condition"
   [context condition]
   (let [token (:token context)
         user (if token (tokens/get-user-id context token) "guest")
@@ -25,16 +25,16 @@
                          :result-fields [:acl-gzip-b64]})
         response (qe/execute-query context query)
         response-acls (map #(edn/read-string (util/gzip-base64->string (:acl-gzip-b64 %))) (:items response))]
-    {:items response-acls :sids sids :user user}))
+    {:acls response-acls :sids sids :user user}))
 
 (defn- has-system-access?
   "Returns true if system acl matches sids for user in context for a given action"
   [context action target]
   (let [condition (qm/string-condition :identity-type "System" true false)
-        response (get-acls-by-condition context condition)
+        system-acls (get-acls-by-condition context condition)
         any-acl-system-acl (acl/echo-style-acl
-                             (first (filter #(= target (:target (:system-identity %))) (:items response))))]
-    (acl/acl-matches-sids-and-permission? (:sids response) (name action) any-acl-system-acl)))
+                             (first (filter #(= target (:target (:system-identity %))) (:acls system-acls))))]
+    (acl/acl-matches-sids-and-permission? (:sids system-acls) (name action) any-acl-system-acl)))
 
 (defn- has-provider-access?
   "Returns true if provider acl matches sids for user in context for a given action"
@@ -42,13 +42,14 @@
   (let [provider-identity-condition (qm/string-condition :identity-type "Provider" true false)
         provider-id-condition (qm/string-condition :provider provider-id)
         conditions (gc/and-conds [provider-identity-condition provider-id-condition])
-        response (get-acls-by-condition context conditions)
+        provider-acls (get-acls-by-condition context conditions)
         prov-acl (acl/echo-style-acl
-                      (first (filter #(= target (:target (:provider-identity %))) (:items response))))]
-    (acl/acl-matches-sids-and-permission? (:sids response) (name action) prov-acl)))
+                      (first (filter #(= target (:target (:provider-identity %))) (:acls provider-acls))))]
+    (acl/acl-matches-sids-and-permission? (:sids provider-acls) (name action) prov-acl)))
 
 (defn can?
-  "For a given concept, check if user from context has permissions requested"
+  "Throws service error if user doesn't have permission to intiate a given action for a given acl.
+   Actions include create and update."
   [context action acl]
   (when-not (or (transmit-config/echo-system-token? context) (has-system-access? context action "ANY_ACL"))
     (cond
