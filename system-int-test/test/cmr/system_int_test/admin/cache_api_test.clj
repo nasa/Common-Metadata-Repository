@@ -70,25 +70,20 @@
       (are [url caches]
         (is (= (set caches) (set (list-caches-for-app url admin-read-token))))
 
-        (url/indexer-read-caches-url) ["acls" "indexer-index-set-cache" "token-imp" "kms"
+        (url/indexer-read-caches-url) ["acls" "indexer-index-set-cache" "token-imp" "kms" "health"
                                        "collection-granule-aggregation-cache" "humanizer-cache"]
-        (url/index-set-read-caches-url) ["token-imp"]
-        (url/mdb-read-caches-url) ["token-imp"]
-        (url/ingest-read-caches-url) ["token-imp" "providers" "acls" "token-user-ids" "kms"]
-        (url/access-control-read-caches-url) ["acls"]
-        (url/search-read-caches-url) ["acls"
-                                      "collections-for-gran-acls"
-                                      "has-granules-map"
-                                      "index-names"
-                                      "token-imp"
-                                      "token-sid"
-                                      "xsl-transformer-templates"
-                                      "metadata-cache"
-                                      "kms"])
+        (url/index-set-read-caches-url) ["token-imp" "health"]
+        (url/mdb-read-caches-url) ["token-imp" "health"]
+        (url/ingest-read-caches-url) ["token-imp" "providers" "acls" "token-user-ids" "kms"
+                                      "health"]
+        (url/access-control-read-caches-url) ["acls" "health"]
+        (url/search-read-caches-url) ["acls" "collections-for-gran-acls" "has-granules-map"
+                                      "index-names" "token-imp" "token-sid" "health"
+                                      "xsl-transformer-templates" "metadata-cache" "kms"])
       (s/only-with-real-database
        (testing "list caches for bootstrap"
          (let [response (list-caches-for-app (url/bootstrap-read-caches-url) admin-read-token)]
-           (is (= ["token-imp" "kms"] response))))))
+           (is (= ["token-imp" "kms" "health"] response))))))
 
 
     (testing "normal user cannot access cache list API"
@@ -233,4 +228,3 @@
         {:collection "collection"
          :granule "granule"
          :tag "tag"}))))
-

@@ -60,4 +60,4 @@
 (h/defresetter reset :cubby)
 
 ;; Defines health check function
-(h/defhealther get-cubby-health :cubby 2)
+(h/defhealther get-cubby-health :cubby {:timeout-secs 2})

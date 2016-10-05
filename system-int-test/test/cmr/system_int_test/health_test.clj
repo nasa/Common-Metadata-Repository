@@ -1,10 +1,14 @@
 (ns cmr.system-int-test.health-test
   "This tests the health api for CMR applications."
-  (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
-            [cheshire.core :as json]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.system-int-test.system :as s]))
+  (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clojure.test :refer :all]
+   [cmr.common-app.test.side-api :as side]
+   [cmr.common.time-keeper :as tk]
+   [cmr.elastic-utils.connect :as es-util]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.url-helper :as url]))
 
 (defn- get-app-health
   "Returns the status code and health detail of the app with the given health endpoint url"
