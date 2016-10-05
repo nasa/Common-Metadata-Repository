@@ -36,7 +36,7 @@
     (context (:relative-root-url system) []
        ;; for NGAP deployment health check
       (GET "/" {} {:status 200})
-      
+
       ;; TEMPORARY CODE - Remove this after EI-3988 is fixed.
       (POST "/wait/:n" [n]
         (info "Waiting" n "seconds to respond")
@@ -104,7 +104,6 @@
 
 (defn make-api [system]
   (-> (build-routes system)
-      common-routes/temp-lockdown-access-to-app
       acl/add-authentication-handler
       errors/invalid-url-encoding-handler
       errors/exception-handler
@@ -114,6 +113,3 @@
       common-routes/pretty-print-response-handler
       ring-json/wrap-json-body
       ring-json/wrap-json-response))
-
-
-

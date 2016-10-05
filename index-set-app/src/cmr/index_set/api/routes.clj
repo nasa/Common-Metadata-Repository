@@ -23,7 +23,7 @@
     (context (:relative-root-url system) []
        ;; for NGAP deployment health check
       (GET "/" {} {:status 200})
-      
+
       (context "/index-sets" []
         (POST "/" {body :body request-context :request-context params :params headers :headers}
           (let [index-set (walk/keywordize-keys body)]
@@ -83,7 +83,6 @@
 
 (defn make-api [system]
   (-> (build-routes system)
-      common-routes/temp-lockdown-access-to-app
       acl/add-authentication-handler
       errors/invalid-url-encoding-handler
       errors/exception-handler
@@ -94,6 +93,3 @@
       ring-json/wrap-json-body
       common-routes/pretty-print-response-handler
       params/wrap-params))
-
-
-
