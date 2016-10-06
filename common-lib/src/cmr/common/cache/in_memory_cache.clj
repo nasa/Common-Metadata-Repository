@@ -73,6 +73,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Time To Live Cache
 ;; This is a copy of the TTLCache from clojure core cache that uses the time keeper to allow easier testing.
+;; From [org.clojure/core.cache "0.6.5"] (Not Clojure itself)
 
 (defn- key-killer
   [ttl expiry now]
