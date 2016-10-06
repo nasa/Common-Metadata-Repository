@@ -1284,11 +1284,12 @@ The following fields are indexed for keyword search:
     * Processing level ID
     * Science keywords
     * Ancillary keywords
-    * Directory Names 
+    * Directory Names
     * Archive centers
     * Additional attribute names, data types, values, and descriptions
     * Spatial keywords
     * Temporal keywords
+    * ISO Topic Categories
     * Project short and long names
     * Platform short and long names
     * Instrument short names, long names, and techniques

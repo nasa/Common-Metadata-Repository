@@ -2,6 +2,7 @@
   "Defines the HTTP URL routes for the application."
   (:require [compojure.handler :as handler]
             [compojure.route :as route]
+            [cmr.common-app.api.health :as common-health]
             [cmr.common-app.api.routes :as common-routes]
             [compojure.core :refer :all]
             [ring.middleware.json :as ring-json]
@@ -23,7 +24,7 @@
             {:status 415
              :body (str "Unsupported content type [" content-type "]")})))
 
-      (common-routes/health-api-routes hs/health))
+      (common-health/health-api-routes hs/health))
     (route/not-found "Not Found")))
 
 (defn make-api [system]
@@ -35,4 +36,3 @@
       handler/site
       common-routes/pretty-print-response-handler
       ring-json/wrap-json-response))
-

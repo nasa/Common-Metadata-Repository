@@ -14,10 +14,9 @@
             [cmr.common.api.context :as context]
             [cmr.common.system :as common-sys]))
 
-(def
-  ^{:doc "Defines the order to start the components."
-    :private true}
-  component-order [:log :web])
+(def ^:private component-order
+  "Defines the order to start the components."
+  [:log :web])
 
 (defn create-system
   "Returns a new instance of the whole application."

@@ -5,8 +5,6 @@
             [cmr.transmit.connection :as transmit-conn]))
 
 ;; Defines health check function
-(h/defhealther get-indexer-health :indexer 2)
+(h/defhealther get-indexer-health :indexer {:timeout-secs 2})
 
 (h/defcacheclearer clear-cache :indexer)
-
-

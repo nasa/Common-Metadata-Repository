@@ -10,6 +10,7 @@
             [cmr.cubby.data :as d]
             [cmr.common.cache :as cache]
             [cmr.acl.core :as acl]
+            [cmr.common-app.api.health :as common-health]
             [cmr.common-app.api.routes :as common-routes]
             [cmr.elastic-utils.connect :as es-conn]
             [cmr.transmit.echo.rest :as echo-rest]))
@@ -89,7 +90,7 @@
   (routes
     (context (:relative-root-url system) []
       admin-routes
-      (common-routes/health-api-routes health)
+      (common-health/health-api-routes health)
       key-routes)
     (route/not-found "Not Found")))
 
@@ -103,6 +104,3 @@
       common-routes/pretty-print-response-handler
       ring-json/wrap-json-body
       ring-json/wrap-json-response))
-
-
-

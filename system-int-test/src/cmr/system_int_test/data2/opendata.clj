@@ -8,7 +8,6 @@
    [clojure.test :refer [is]]
    [clojure.test]
    [cmr.common.util :as util]
-   [cmr.indexer.data.concepts.collection :as c]
    [cmr.indexer.data.concepts.science-keyword :as sk]
    [cmr.search.results-handlers.opendata-results-handler :as odrh]
    [cmr.spatial.line-string :as l]
@@ -48,6 +47,17 @@
   {:fn (odrh/personnel->contact-name personnel)
    :hasEmail (str "mailto:" (personnel->contact-email personnel))})
 
+(defn- email-contact?
+  "Return true if the given person has an email."
+  [person]
+  (some #(= :email (:type %)) (:contacts person)))
+
+(defn- person-with-email
+  "Returns the first Personnel record for the list with an email contact or
+  nil if none exists."
+  [personnel]
+  (some #(when (email-contact? %) %) personnel))
+
 (defn collection->expected-opendata
   "Convert to expcted opendata. First convert to native format metadata then back to UMM to mimic
   ingest. If umm-json leave as is since parse-concept will convert to echo10."
@@ -71,7 +81,7 @@
                     (get-in collection [:spatial-coverage :geometries]))
         distribution (not-empty (odrh/distribution related-urls))
         project-sn (not-empty (map :short-name projects))
-        personnel (c/person-with-email personnel)
+        personnel (person-with-email personnel)
         contact-point (contact-point personnel)
         archive-center (:org-name (first (filter #(= :archive-center (:type %)) organizations)))]
     (util/remove-nil-keys {:title entry-title

@@ -63,6 +63,80 @@
     (is (re-find #"^ACL.*" (:concept_id resp)))
     (is (= 1 (:revision_id resp)))))
 
+(deftest create-provider-acl-permission-test
+  ;; Tests user permission to create provider acls
+  (let [token-user1 (e/login (u/conn-context) "user1")
+        guest-token (e/login-guest (u/conn-context))
+        token-user2 (e/login (u/conn-context) "user2")
+        token-user3 (e/login (u/conn-context) "user3")
+        any-acl-group (u/ingest-group token-user1 {:name "any acl group"} ["user1"])
+        any-acl-group-id (:concept_id any-acl-group)
+        prov-obj-acl-group (u/ingest-group token-user1 {:name "prov obj acl group"} ["user2"])
+        prov-obj-acl-group-id (:concept_id prov-obj-acl-group)
+        cat-item-prov-acl-group (u/ingest-group token-user1 {:name "cat item prov acl"} ["user3"])
+        cat-item-prov-acl-group-id (:concept_id cat-item-prov-acl-group)]
+
+    ;; Update ANY_ACL fixture to remove permissions to create from registered users.
+    (ac/update-acl (merge {:token guest-token} (u/conn-context))
+                   (:concept-id fixtures/*fixture-system-acl*)
+                   {:system_identity {:target "ANY_ACL"}
+                    :group_permissions [{:user_type "guest" :permissions ["create" "update"]}]})
+    (u/wait-until-indexed)
+
+    (testing "Without permissions"
+      (are3 [token acl]
+        (is (thrown-with-msg? Exception #"Permission to create ACL is denied"
+                              (ac/create-acl (merge {:token token} (u/conn-context)) acl)))
+
+        "ANY_ACL check"
+        token-user1
+        {:provider_identity {:provider_id "PROV1" :target "AUDIT_REPORT"}
+         :group_permissions [{:user_type "guest" :permissions ["read"]}]}
+
+        "PROVIDER_OBJECT_ACL check"
+        token-user2
+        {:provider_identity {:provider_id "PROV2" :target "AUDIT_REPORT"}
+         :group_permissions [{:user_type "guest" :permissions ["read"]}]}
+
+        "CATALOG_ITEM_ACL check"
+        token-user3
+        {:provider_identity {:provider_id "PROV2" :target "CATALOG_ITEM_ACL"}
+         :group_permissions [{:user_type "guest" :permissions ["read"]}]}))
+
+    (testing "With permissions"
+      ;; Update ANY_ACL fixture to remove permissions to create from registered users.
+      (ac/update-acl (merge {:token guest-token} (u/conn-context))
+                     (:concept-id fixtures/*fixture-system-acl*)
+                     {:system_identity {:target "ANY_ACL"}
+                      :group_permissions [{:user_type "guest" :permissions ["create"]}
+                                          {:group_id any-acl-group-id :permissions ["create"]}]})
+      ;; Create provider acl target PROVIDER_OBJECT_ACL and grant access to prov obj acl group.
+      (ac/create-acl (merge {:token guest-token} (u/conn-context))
+                     {:provider_identity {:provider_id "PROV2" :target "PROVIDER_OBJECT_ACL"}
+                      :group_permissions [{:user_type "guest" :permissions ["create"]}
+                                          {:group_id prov-obj-acl-group-id :permissions ["create"]}]})
+      (u/wait-until-indexed)
+
+      (are3 [token acl]
+        (let [resp (ac/create-acl (merge {:token token} (u/conn-context)) acl)]
+          (is (re-find #"^ACL.*" (:concept_id resp)))
+          (is (= 1 (:revision_id resp))))
+       "ANY_ACL check"
+       token-user1
+       {:provider_identity {:provider_id "PROV1" :target "AUDIT_REPORT"}
+        :group_permissions [{:user_type "guest" :permissions ["read"]}]}
+
+       "PROVIDER_OBJECT_ACL check"
+       token-user2
+       {:provider_identity {:provider_id "PROV2" :target "AUDIT_REPORT"}
+        :group_permissions [{:user_type "guest" :permissions ["read"]}]}))
+
+    (testing "Check that CATALOG_ITEM_ACL provider still cannot be created by user3"
+      (is (thrown-with-msg? Exception #"Permission to create ACL is denied"
+                            (ac/create-acl (merge {:token token-user3} (u/conn-context))
+                                           {:provider_identity {:provider_id "PROV2" :target "CATALOG_ITEM_ACL"}
+                                            :group_permissions [{:user_type "guest" :permissions ["read"]}]}))))))
+
 (deftest create-system-level-acl-permission-test
   ;; Tests user permission to create system level acls
   (let [token-user1 (e/login (u/conn-context) "user1")
@@ -72,7 +146,7 @@
         group1-concept-id (:concept_id group1)
         ;; Update ANY_ACL fixture to remove permissions from guest and registered,
         ;; and replace it with group1
-        _ (ac/update-acl (merge {:token token-user1} (u/conn-context)) "ACL1200000001-CMR"
+        _ (ac/update-acl (merge {:token token-user1} (u/conn-context)) (:concept-id fixtures/*fixture-system-acl*)
                          (assoc (assoc-in system-acl
                                           [:system_identity :target] "ANY_ACL")
                                 :group_permissions [{:group_id group1-concept-id :permissions ["read" "create"]},
@@ -82,12 +156,12 @@
 
     (is (re-find #"^ACL.*" (:concept_id resp1)))
     (is (= 1 (:revision_id resp1)))
-    (is (thrown-with-msg? Exception #"User \[guest\] does not have permission to create a system level ACL"
+    (is (thrown-with-msg? Exception #"Permission to create ACL is denied"
                           (ac/create-acl (merge {:token guest-token} (u/conn-context))
                                          (assoc (assoc-in system-acl
                                                           [:system_identity :target] "ARCHIVE_RECORD")
                                                 :group_permissions [{:user_type :guest :permissions ["delete"]}]))))
-    (is (thrown-with-msg? Exception #"User \[user2\] does not have permission to create a system level ACL"
+    (is (thrown-with-msg? Exception #"Permission to create ACL is denied"
                           (ac/create-acl (merge {:token token-user2} (u/conn-context))
                                          (assoc (assoc-in system-acl
                                                           [:system_identity :target] "ARCHIVE_RECORD")
@@ -100,6 +174,10 @@
         token2 (e/login (u/conn-context) "user2")
         group1 (u/ingest-group token {:name "group1"} ["user1"])
         group1-concept-id (:concept_id group1)
+        _ (ac/update-acl (u/conn-context)
+                         (:concept-id fixtures/*fixture-system-acl*)
+                         {:system_identity {:target "ANY_ACL"}
+                          :group_permissions [{:user_type "guest" :permissions ["read"]}]})
         _ (ac/create-acl (u/conn-context) {:group_permissions [{:group_id group1-concept-id
                                                                 :permissions ["create"]}]
                                            :provider_identity {:provider_id "PROV2"
@@ -110,10 +188,10 @@
 
     (is (re-find #"^ACL.*" (:concept_id resp1)))
     (is (= 1 (:revision_id resp1)))
-    (is (thrown-with-msg? Exception #"User \[guest\] does not have permission to create a catalog item for provider-id \[PROV2\]"
+    (is (thrown-with-msg? Exception #"Permission to create ACL is denied"
                           (ac/create-acl (u/conn-context) (assoc-in catalog-item-acl
                                                                     [:catalog_item_identity :provider_id] "PROV2") {:token guest-token})))
-    (is (thrown-with-msg? Exception #"User \[user2\] does not have permission to create a catalog item for provider-id \[PROV2\]"
+    (is (thrown-with-msg? Exception #"Permission to create ACL is denied"
                           (ac/create-acl (u/conn-context) (assoc-in catalog-item-acl
                                                                     [:catalog_item_identity :provider_id] "PROV2") {:token token2})))))
 

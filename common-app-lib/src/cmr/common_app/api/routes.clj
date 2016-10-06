@@ -1,17 +1,18 @@
 (ns cmr.common-app.api.routes
   "Defines routes that are common across multiple applications."
-  (:require [cmr.common.cache :as cache]
-            [cmr.common.jobs :as jobs]
-            [ring.middleware.json :as ring-json]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.acl.core :as acl]
-            [cheshire.core :as json]
-            [cmr.common.xml :as cx]
-            [ring.util.response :as ring-resp]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.api.context :as cxt]
-            [compojure.core :refer :all]
-            [ring.util.codec :as rc]))
+  (:require
+   [cheshire.core :as json]
+   [cmr.acl.core :as acl]
+   [cmr.common.api.context :as cxt]
+   [cmr.common.cache :as cache]
+   [cmr.common.jobs :as jobs]
+   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.xml :as cx]
+   [compojure.core :refer [context GET POST]]
+   [ring.middleware.json :as ring-json]
+   [ring.util.codec :as rc]
+   [ring.util.response :as ring-resp]))
 
 (def RESPONSE_REQUEST_ID_HEADER
   "The HTTP response header field containing the current request id."
@@ -78,7 +79,6 @@
              ;; set to 30 days
              CORS_MAX_AGE_HEADER "2592000"}})
 
-
 (def cache-api-routes
   "Create routes for the cache querying/management api"
   (context "/caches" []
@@ -143,19 +143,6 @@
           :body (json/generate-string {:paused paused?})}))
 
      additional-job-routes)))
-
-(defn health-api-routes
-  "Creates common routes for checking the health of a CMR application. Takes a health-fn which
-  takes a request-context as a parameter to determine if the application and its dependencies are
-  working as expected."
-  [health-fn]
-  (GET "/health" {request-context :request-context :as request}
-    (let [{:keys [ok? dependencies]} (health-fn request-context)]
-      (when-not ok?
-        (warn "Health check failed" (pr-str dependencies)))
-      {:status (if ok? 200 503)
-       :headers {"Content-Type" (mt/with-utf-8 mt/json)}
-       :body (json/generate-string dependencies)})))
 
 (defn pretty-request?
   "Returns true if the request indicates the response should be returned in a human readable

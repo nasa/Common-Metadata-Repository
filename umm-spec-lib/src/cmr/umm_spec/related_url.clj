@@ -10,6 +10,12 @@
    "VIEW RELATED INFORMATION" "USER SUPPORT"
    "OPENDAP DATA ACCESS" "GET DATA : OPENDAP DATA (DODS)"})
 
+(def DOCUMENTATION_MIME_TYPES
+  "Mime Types that indicate the RelatedURL is of documentation type"
+  #{"Text/rtf" "Text/richtext" "Text/plain" "Text/html" "Text/example" "Text/enriched"
+   "Text/directory" "Text/csv" "Text/css" "Text/calendar" "Application/http" "Application/msword"
+   "Application/rtf" "Application/wordperfect5.1"})
+
 (defn downloadable-url?
   "Returns true if the related-url is downloadable"
   [related-url]
@@ -30,6 +36,11 @@
   [related-urls]
   (filter browse-url? related-urls))
 
+(defn- documentation-url?
+  "Returns true if the related-url is documentation url"
+  [related-url]
+  (some DOCUMENTATION_MIME_TYPES (:Relation related-url)))
+
 (defn resource-url?
   "Returns true if the related-url is resource url"
   [related-url]
@@ -40,6 +51,35 @@
   "Returns the related-urls that are resource urls"
   [related-urls]
   (filter resource-url? related-urls))
+
+(defn- related-url->link-type
+  "Returns the atom link type of the related url"
+  [related-url]
+  (cond
+    (downloadable-url? related-url) "data"
+    (browse-url? related-url) "browse"
+    (documentation-url? related-url) "documentation"
+    :else "metadata"))
+
+(defn- related-url->atom-link
+  "Returns the atom link of the given related-url"
+  [related-url]
+  (let [{urls :URLs title :Title mime-type :MimeType {:keys [Size Unit]} :FileSize} related-url
+        size (when (or Size Unit) (str Size Unit))]
+    ;; The current UMM JSON RelatedUrlType is flawed in that there can be multiple URLs,
+    ;; but only a single Title, MimeType and FileSize. This model doesn't make sense.
+    ;; Talked to Erich and he said that we are going to change the model.
+    ;; So for now, we make the assumption that there is only one URL in each RelatedUrlType.
+    {:href (first urls)
+     :link-type (related-url->link-type related-url)
+     :title title
+     :mime-type mime-type
+     :size size}))
+
+(defn atom-links
+  "Returns a sequence of atom links for the given related urls"
+  [related-urls]
+  (map related-url->atom-link related-urls))
 
 (defn generate-access-urls
   "Generates the OnlineAccessURLs element of an ECHO10 XML from a UMM related urls entry."
