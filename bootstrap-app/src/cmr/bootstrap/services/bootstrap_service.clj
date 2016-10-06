@@ -7,12 +7,14 @@
     [cmr.bootstrap.data.bulk-migration :as bm]
     [cmr.bootstrap.data.rebalance-util :as rebalance-util]
     [cmr.bootstrap.data.virtual-products :as vp]
+    [cmr.common.cache :as cache]
     [cmr.common.concepts :as concepts]
     [cmr.common.log :refer (debug info warn error)]
     [cmr.common.services.errors :as errors]
     [cmr.indexer.data.index-set :as indexer-index-set]
-    [cmr.transmit.index-set :as index-set]
-    [cmr.transmit.indexer :as indexer]))
+    [cmr.indexer.system :as indexer-system]
+    [cmr.transmit.index-set :as index-set]))
+
 
 (defn migrate-provider
   "Copy all the data for a provider (including collections and graunules) from catalog rest
@@ -94,6 +96,16 @@
       (info "Adding message to virtual products channel.")
       (-> context :system (get vp/channel-name) (>! {:provider-id provider-id
                                                      :entry-title entry-title})))))
+
+(defn- wait-until-index-set-hash-cache-times-out
+  "Waits until the indexer's index set cache hash codes times out so that all of the indexer's will
+   be using the same cached data."
+  []
+  ;; Wait 3 seconds beyond the time that the indexer set cache consistency setting.
+  (let [sleep-secs (+ 3 (indexer-system/index-set-cache-consistent-timeout-seconds))]
+    (info "Waiting" sleep-secs "seconds so indexer index set hashes will timeout.")
+    (Thread/sleep (* 1000 sleep-secs))))
+
 (defn start-rebalance-collection
   "Kicks off collection rebalancing. Will run synchronously if synchronous is true. Throws exceptions
   from failures to change the index set."
@@ -103,13 +115,21 @@
   (index-set/add-rebalancing-collection context indexer-index-set/index-set-id concept-id)
 
   ;; Clear the cache so that the newest index set data will be used.
-  (indexer/clear-cache context)
+  ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
+  (cache/reset-caches context)
+
+  ;; We must wait here so that any new granules coming in will start to pick up the new index set
+  ;; and be indexed into both the old and the new. Then we can safely reindex everything and know
+  ;; we haven't missed a granule. There would be a race condition otherwise where a new granule
+  ;; came in and was indexed only to the old collection but after we started reindexing the collection.
+  (wait-until-index-set-hash-cache-times-out)
+
   (let [provider-id (:provider-id (concepts/parse-concept-id concept-id))]
-   ;; queue the collection for reindexing into the new index
-   (index-collection
-    context provider-id concept-id synchronous
-    {:target-index-key (keyword concept-id)
-     :completion-message (format "Completed reindex of [%s] for rebalancing granule indexes." concept-id)})))
+    ;; queue the collection for reindexing into the new index
+    (index-collection
+     context provider-id concept-id synchronous
+     {:target-index-key (keyword concept-id)
+      :completion-message (format "Completed reindex of [%s] for rebalancing granule indexes." concept-id)})))
 
 (defn finalize-rebalance-collection
   "Finalizes collection rebalancing."
@@ -118,7 +138,9 @@
   ;; This will throw an exception if the collection is not rebalancing
   (index-set/finalize-rebalancing-collection context indexer-index-set/index-set-id concept-id)
   ;; Clear the cache so that the newest index set data will be used.
-  (indexer/clear-cache context)
+  ;; This clears embedded caches so the indexer cache in this bootstrap app will be cleared.
+  (cache/reset-caches context)
+
   ;; There is a race condition as noted here: https://wiki.earthdata.nasa.gov/display/CMR/Rebalancing+Collection+Indexes+Approach
   ;; "There's a period of time during which the different indexer applications may be processing
   ;; granules for this very collection and may have already decided which index its going to. It's
@@ -128,7 +150,8 @@
   ;; indexer to finish indexing any granule currently being processed.
   ;; This doesn't remove the race condition. We still have steps in the overall process to detect it
   ;; and resolve it. (manual fixes if necessary)
-  (Thread/sleep 5000)
+  (wait-until-index-set-hash-cache-times-out)
+
   ;; Remove all granules from small collections for this collection.
   (rebalance-util/delete-collection-granules-from-small-collections context concept-id))
 

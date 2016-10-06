@@ -8,6 +8,7 @@
    [cmr.bootstrap.services.health-service :as hs]
    [cmr.common.api.context :as context]
    [cmr.common.api.errors :as errors]
+   [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.date-time-parser :as date-time-parser]
    [cmr.common.jobs :as jobs]
@@ -171,7 +172,7 @@
       common-routes/cache-api-routes
 
       ;; Add routes for checking health of the application
-      (common-routes/health-api-routes hs/health))))
+      (common-health/health-api-routes hs/health))))
 
 (defn make-api [system]
   (-> (build-routes system)

@@ -11,10 +11,9 @@
             [clj-http.client :as client]
             [cmr.system-int-test.utils.url-helper :as url]))
 
-(def
-  ^{:doc "Defines the order to start the components."
-    :private true}
-  component-order [:log :bootstrap-db])
+(def ^:private component-order
+  "Defines the order to start the components."
+  [:log :bootstrap-db])
 
 (def ^:private saved-system
   "Saves the last started system so it's available to integration test code which has no way of

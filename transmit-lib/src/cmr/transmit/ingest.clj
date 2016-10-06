@@ -59,4 +59,4 @@
                                 :accept :json}}))))
 
 ;; Defines health check function
-(h/defhealther get-ingest-health :ingest 2)
+(h/defhealther get-ingest-health :ingest {:timeout-secs 2})

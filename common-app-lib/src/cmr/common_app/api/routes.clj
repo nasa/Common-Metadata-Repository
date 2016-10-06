@@ -1,18 +1,18 @@
 (ns cmr.common-app.api.routes
   "Defines routes that are common across multiple applications."
-  (:require [cmr.common.cache :as cache]
-            [cmr.common.jobs :as jobs]
-            [ring.middleware.json :as ring-json]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.acl.core :as acl]
-            [cheshire.core :as json]
-            [cmr.common.xml :as cx]
-            [ring.util.response :as ring-resp]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.api.context :as cxt]
-            [compojure.core :refer :all]
-            [ring.util.codec :as rc]
-            [clojure.string :as str]))
+  (:require
+   [cheshire.core :as json]
+   [cmr.acl.core :as acl]
+   [cmr.common.api.context :as cxt]
+   [cmr.common.cache :as cache]
+   [cmr.common.jobs :as jobs]
+   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.xml :as cx]
+   [compojure.core :refer [context GET POST]]
+   [ring.middleware.json :as ring-json]
+   [ring.util.codec :as rc]
+   [ring.util.response :as ring-resp]))
 
 (def RESPONSE_REQUEST_ID_HEADER
   "The HTTP response header field containing the current request id."
@@ -79,7 +79,6 @@
              ;; set to 30 days
              CORS_MAX_AGE_HEADER "2592000"}})
 
-
 (def cache-api-routes
   "Create routes for the cache querying/management api"
   (context "/caches" []
@@ -145,19 +144,6 @@
 
      additional-job-routes)))
 
-(defn health-api-routes
-  "Creates common routes for checking the health of a CMR application. Takes a health-fn which
-  takes a request-context as a parameter to determine if the application and its dependencies are
-  working as expected."
-  [health-fn]
-  (GET "/health" {request-context :request-context :as request}
-    (let [{:keys [ok? dependencies]} (health-fn request-context)]
-      (when-not ok?
-        (warn "Health check failed" (pr-str dependencies)))
-      {:status (if ok? 200 503)
-       :headers {"Content-Type" (mt/with-utf-8 mt/json)}
-       :body (json/generate-string dependencies)})))
-
 (defn pretty-request?
   "Returns true if the request indicates the response should be returned in a human readable
   fashion. This can be specified either through a pretty=true in the URL query parameters or
@@ -220,22 +206,3 @@
       (-> (f request)
           (assoc-in [:headers RESPONSE_REQUEST_ID_HEADER] request-id))
       ((ring-json/wrap-json-response f) request))))
-
-(defn temp-lockdown-access-to-app
-  "This is a ring handler that adds the authentication token and client id to the request context.
-  It expects the request context is already associated with the request."
-  [f]
-  (fn [request]
-    (let [{:keys [request-context headers]} request
-          user-agent (get headers "user-agent" (:user-agent headers))
-          x-forwarded-for (get headers "x-forwarded-for" (:x-forwarded-for headers))
-          from-outside-ngap (if-not x-forwarded-for
-                              true
-                              (str/includes? (pr-str x-forwarded-for) "198.118"))]
-      ; (println "Need to check permissions (not from NGAP) is" (or from-outside-ngap (not= "Apache-HttpClient/4.5 (Java/1.8.0_45)" user-agent)))
-      ;; NGAP needs access to "/" for health check
-      (if (or from-outside-ngap (not= "Apache-HttpClient/4.5 (Java/1.8.0_45)" user-agent))
-        (when-not (= "/" (:uri request))
-          (acl/verify-ingest-management-permission request-context :update)))
-        ; (println "Request came from NGAP - allowing"))
-      (f request))))

@@ -166,11 +166,11 @@
     :interval (partial-refresh-collection-granule-aggregation-cache-interval)}
 
    {:job-type TriggerFullRefreshCollectionGranuleAggregationCacheJob
-    ;; Everyday at 1:20 am so it's before the reindex all collections job
-    :daily-at-hour-and-minute [1 20]}
+    ;; Everyday at 11:20 am so it's before the reindex all collections job
+    :daily-at-hour-and-minute [11 20]}
 
    {:job-type ReindexAllCollections
-    ;; Run everyday at 2:20 am. Chosen because it is offset from the bootstrap database synchronize
-    ;; job by 2 hours. It's offset from the top of the hour so as not to be at the same time as
-    ;; EDSC fetches all the collection metadata.
-    :daily-at-hour-and-minute [2 20]}])
+    ;; Run everyday at 12:20 pm. Chosen because it's least busy time for indexer historically and also
+    ;; during business hours when people can debug issues. It's offset from the top of the hour so as
+    ;; not to be at the same time as EDSC fetches all the collection metadata.
+    :daily-at-hour-and-minute [12 20]}])

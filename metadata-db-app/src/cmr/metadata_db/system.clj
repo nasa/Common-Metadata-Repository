@@ -2,30 +2,31 @@
   "Defines functions for creating, starting, and stopping the application. Applications are
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [clojure.string :as string]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.nrepl :as nrepl]
-            [cmr.common.api.web-server :as web]
-            [cmr.oracle.connection :as oracle]
-            [cmr.metadata-db.api.routes :as routes]
-            [cmr.metadata-db.services.jobs :as mdb-jobs]
-            [cmr.common.jobs :as jobs]
-            [cmr.oracle.config :as oracle-config]
-            [cmr.metadata-db.config :as config]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.acl.core :as acl]
-            [cmr.common.config :as cfg]
-            [cmr.message-queue.queue.rabbit-mq :as rmq]
-            [cmr.message-queue.queue.sqs :as sqs]
-            [cmr.message-queue.queue.memory-queue :as queue]
-            [cmr.common.system :as common-sys]))
+  (:require
+   [clojure.string :as string]
+   [cmr.acl.core :as acl]
+   [cmr.common-app.api.health :as common-health]
+   [cmr.common.api.web-server :as web]
+   [cmr.common.config :as cfg]
+   [cmr.common.jobs :as jobs]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.nrepl :as nrepl]
+   [cmr.common.system :as common-sys]
+   [cmr.message-queue.queue.rabbit-mq :as rmq]
+   [cmr.message-queue.queue.sqs :as sqs]
+   [cmr.metadata-db.api.routes :as routes]
+   [cmr.metadata-db.config :as config]
+   [cmr.metadata-db.services.jobs :as mdb-jobs]
+   [cmr.oracle.config :as oracle-config]
+   [cmr.oracle.connection :as oracle]
+   [cmr.transmit.config :as transmit-config]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:db :log :queue-broker :scheduler :web :nrepl])
+  [:log :caches :db :queue-broker :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -43,7 +44,8 @@
               :web (web/create-web-server (transmit-config/metadata-db-port) routes/make-api)
               :nrepl (nrepl/create-nrepl-if-configured (config/metadata-db-nrepl-port))
               :parallel-chunk-size (config/parallel-chunk-size)
-              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}
+              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
+                       common-health/health-cache-key (common-health/create-health-cache)}
               :scheduler (jobs/create-clustered-scheduler `system-holder :db mdb-jobs/jobs)
               :queue-broker (sqs/create-queue-broker (config/queue-config))
               :relative-root-url (transmit-config/metadata-db-relative-root-url)}]

@@ -1,81 +1,14 @@
 (ns cmr.access-control.services.acl-validation
   (:require
     [clj-time.core :as t]
-    [clojure.edn :as edn]
     [cmr.access-control.data.acls :as acls]
-    [cmr.access-control.services.auth-util :as auth-util]
     [cmr.access-control.services.group-service :as group-service]
     [cmr.access-control.services.messages :as msg]
     [cmr.acl.core :as acl]
-    [cmr.common-app.services.search.query-execution :as qe]
-    [cmr.common-app.services.search.query-model :as qm]
     [cmr.common.date-time-parser :as dtp]
-    [cmr.common.util :as util]
     [cmr.common.validations.core :as v]
-    [cmr.transmit.config :as transmit-config]
-    [cmr.transmit.echo.tokens :as tokens]
     [cmr.transmit.metadata-db :as mdb1]
     [cmr.transmit.metadata-db2 :as mdb]))
-
-(defn- catalog-item-identity-collection-applicable-validation
-  "Validates the relationship between collection_applicable and collection_identifier."
-  [key-path cat-item-id]
-  (when (and (:collection-identifier cat-item-id)
-             (not (:collection-applicable cat-item-id)))
-    {key-path ["collection_applicable must be true when collection_identifier is specified"]}))
-
-(defn- catalog-item-identity-granule-applicable-validation
-  "Validates the relationship between granule_applicable and granule_identifier."
-  [key-path cat-item-id]
-  (when (and (:granule-identifier cat-item-id)
-             (not (:granule-applicable cat-item-id)))
-    {key-path ["granule_applicable must be true when granule_identifier is specified"]}))
-
-(defn- catalog-item-identity-collection-or-granule-validation
-  "Validates minimal catalog_item_identity fields."
-  [key-path cat-item-id]
-  (when-not (or (:collection-applicable cat-item-id)
-                (:granule-applicable cat-item-id))
-    {key-path ["when catalog_item_identity is specified, one or both of collection_applicable or granule_applicable must be true"]}))
-
-(defn- make-collection-entry-titles-validation
-  "Returns a validation for the entry_titles part of a collection identifier, closed over the context and ACL to be validated."
-  [context acl]
-  (let [provider-id (-> acl :catalog-item-identity :provider-id)]
-    (v/every (fn [key-path entry-title]
-               (when-not (seq (mdb1/find-concepts context {:provider-id provider-id :entry-title entry-title} :collection))
-                 {key-path [(format "collection with entry-title [%s] does not exist in provider [%s]" entry-title provider-id)]})))))
-
-(defn- access-value-validation
-  "Validates the access_value part of a collection or granule identifier."
-  [key-path access-value-map]
-  (let [{:keys [min-value max-value include-undefined-value]} access-value-map]
-    (cond
-      (and include-undefined-value (or min-value max-value))
-      {key-path ["min_value and/or max_value must not be specified if include_undefined_value is true"]}
-
-      (and (not include-undefined-value) (not (or min-value max-value)))
-      {key-path ["min_value and/or max_value must be specified when include_undefined_value is false"]})))
-
-(defn temporal-identifier-validation
-  "A validation for the temporal part of an ACL collection or granule identifier."
-  [key-path temporal]
-  (let [{:keys [start-date stop-date]} temporal]
-    (when (and start-date stop-date
-               (t/after? (dtp/parse-datetime start-date) (dtp/parse-datetime stop-date)))
-      {key-path ["start_date must be before stop_date"]})))
-
-(defn- make-collection-identifier-validation
-  "Returns a validation for an ACL catalog_item_identity.collection_identifier closed over the given context and ACL to be validated."
-  [context acl]
-  {:entry-titles (v/when-present (make-collection-entry-titles-validation context acl))
-   :access-value (v/when-present access-value-validation)
-   :temporal (v/when-present temporal-identifier-validation)})
-
-(def granule-identifier-validation
-  "Validation for the catalog_item_identity.granule_identifier portion of an ACL."
-  {:access-value (v/when-present access-value-validation)
-   :temporal (v/when-present temporal-identifier-validation)})
 
 (def ^:private c "create")
 (def ^:private r "read")
@@ -152,6 +85,45 @@
     (:system-identity acl)          :system-identity
     (:catalog-item-identity acl)    :catalog-item-identity))
 
+(defn- make-collection-entry-titles-validation
+  "Returns a validation for the entry_titles part of a collection identifier, closed over the context and ACL to be validated."
+  [context acl]
+  (let [provider-id (-> acl :catalog-item-identity :provider-id)]
+    (v/every (fn [key-path entry-title]
+               (when-not (seq (mdb1/find-concepts context {:provider-id provider-id :entry-title entry-title} :collection))
+                 {key-path [(format "collection with entry-title [%s] does not exist in provider [%s]" entry-title provider-id)]})))))
+
+(defn- access-value-validation
+  "Validates the access_value part of a collection or granule identifier."
+  [key-path access-value-map]
+  (let [{:keys [min-value max-value include-undefined-value]} access-value-map]
+    (cond
+      (and include-undefined-value (or min-value max-value))
+      {key-path ["min_value and/or max_value must not be specified if include_undefined_value is true"]}
+
+      (and (not include-undefined-value) (not (or min-value max-value)))
+      {key-path ["min_value and/or max_value must be specified when include_undefined_value is false"]})))
+
+(defn temporal-identifier-validation
+  "A validation for the temporal part of an ACL collection or granule identifier."
+  [key-path temporal]
+  (let [{:keys [start-date stop-date]} temporal]
+    (when (and start-date stop-date
+               (t/after? (dtp/parse-datetime start-date) (dtp/parse-datetime stop-date)))
+      {key-path ["start_date must be before stop_date"]})))
+
+(defn- make-collection-identifier-validation
+  "Returns a validation for an ACL catalog_item_identity.collection_identifier closed over the given context and ACL to be validated."
+  [context acl]
+  {:entry-titles (v/when-present (make-collection-entry-titles-validation context acl))
+   :access-value (v/when-present access-value-validation)
+   :temporal (v/when-present temporal-identifier-validation)})
+
+(def granule-identifier-validation
+  "Validation for the catalog_item_identity.granule_identifier portion of an ACL."
+  {:access-value (v/when-present access-value-validation)
+   :temporal (v/when-present temporal-identifier-validation)})
+
 (defn make-single-instance-identity-target-id-validation
   "Validates that the acl group exists."
   [context]
@@ -164,47 +136,26 @@
   [context]
   {:target-id (v/when-present (make-single-instance-identity-target-id-validation context))})
 
-(defn permissions-granted-by-provider-to-user
-  "Returns permissions granted for sids by the list of ACLs"
-  [sids acls target]
-  (for [sid sids
-        acl acls
-        :when (= (get-in acl [:provider-identity :target]) target)
-        group-permission (:group-permissions acl)
-        :when (or
-                (and (contains? group-permission :user-type) (= (name sid) (name (:user-type group-permission))))
-                (and (contains? group-permission :group-id) (= sid (:group-id group-permission))))
-        permission (:permissions group-permission)]
-    permission))
+(defn- catalog-item-identity-collection-applicable-validation
+  "Validates the relationship between collection_applicable and collection_identifier."
+  [key-path cat-item-id]
+  (when (and (:collection-identifier cat-item-id)
+             (not (:collection-applicable cat-item-id)))
+    {key-path ["collection_applicable must be true when collection_identifier is specified"]}))
 
-(defn get-acls-by-condition
-  "Returns user in context, sids of user, and search items returned using condition"
-  [context condition]
-  (let [token (:token context)
-        user (if token (tokens/get-user-id context token) "guest")
-        sids (auth-util/get-sids context user)
-        query (qm/query {:concept-type :acl
-                         :condition condition
-                         :skip-acls? true
-                         :page-size :unlimited
-                         :result-format :query-specified
-                         :result-fields [:acl-gzip-b64]})
-        response (qe/execute-query context query)
-        response-acls (map #(edn/read-string (util/gzip-base64->string (:acl-gzip-b64 %))) (:items response))]
-    {:items response-acls :sids sids :user user}))
+(defn- catalog-item-identity-granule-applicable-validation
+  "Validates the relationship between granule_applicable and granule_identifier."
+  [key-path cat-item-id]
+  (when (and (:granule-identifier cat-item-id)
+             (not (:granule-applicable cat-item-id)))
+    {key-path ["granule_applicable must be true when granule_identifier is specified"]}))
 
-(defn validate-target-provider-grants-create
-  "Checks if provider ACL grants permission for user to create given catalog item ACL"
-  [context key-path acl]
-  (let [provider-id (:provider-id acl)
-        condition (qm/string-condition :provider provider-id)
-        response (get-acls-by-condition context condition)]
-    (when-not (contains? (set (permissions-granted-by-provider-to-user (:sids response)
-                                                                       (:items response)
-                                                                       "CATALOG_ITEM_ACL"))
-                         "create")
-      {key-path [(format "User [%s] does not have permission to create a catalog item for provider-id [%s]"
-                          (:user response) provider-id)]})))
+(defn- catalog-item-identity-collection-or-granule-validation
+  "Validates minimal catalog_item_identity fields."
+  [key-path cat-item-id]
+  (when-not (or (:collection-applicable cat-item-id)
+                (:granule-applicable cat-item-id))
+    {key-path ["when catalog_item_identity is specified, one or both of collection_applicable or granule_applicable must be true"]}))
 
 (defn- make-catalog-item-identity-validations
   "Returns a standard validation for an ACL catalog_item_identity field
@@ -212,32 +163,11 @@
    Takes action flag (:create or :update) to do different valiations
    based on whether creating or updating acl concept"
   [context acl action]
-  (let [validations [catalog-item-identity-collection-or-granule-validation
-                     catalog-item-identity-collection-applicable-validation
-                     catalog-item-identity-granule-applicable-validation
-                     {:collection-identifier (v/when-present (make-collection-identifier-validation context acl))
-                      :granule-identifier (v/when-present granule-identifier-validation)}]]
-    (if (= :create action)
-      (merge validations #(validate-target-provider-grants-create context %1 %2))
-      validations)))
-
-(defn system-identity-create-permission-validation
-  "Checks if user has permissions to create system level ACLs."
-  [context key-path system-identity]
-  (let [condition (qm/string-condition :identity-type "System" true false)
-        response (get-acls-by-condition context condition)
-        any-acl-system-acl (acl/echo-style-acl
-                             (first (filter #(= "ANY_ACL" (:target (:system-identity %))) (:items response))))]
-    (when-not (or (transmit-config/echo-system-token? context)
-                  (acl/acl-matches-sids-and-permission? (:sids response) "create" any-acl-system-acl))
-      {key-path [(format "User [%s] does not have permission to create a system level ACL" (:user response))]})))
-
-(defn make-system-identity-validations
-  "Returns validations for ACLs with a System identity"
-  [context action]
-  (when (= :create action)
-    [(fn [key-path system-identity]
-       (system-identity-create-permission-validation context key-path system-identity))]))
+  [catalog-item-identity-collection-or-granule-validation
+   catalog-item-identity-collection-applicable-validation
+   catalog-item-identity-granule-applicable-validation
+   {:collection-identifier (v/when-present (make-collection-identifier-validation context acl))
+    :granule-identifier (v/when-present granule-identifier-validation)}])
 
 (defn validate-provider-exists
   "Validates that the acl provider exists."
@@ -266,8 +196,7 @@
   [context acl action]
   [#(validate-provider-exists context %1 %2)
    {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl action))
-    :single-instance-identity (v/when-present (make-single-instance-identity-validations context))
-    :system-identity (v/when-present (make-system-identity-validations context action))}
+    :single-instance-identity (v/when-present (make-single-instance-identity-validations context))}
    validate-grantable-permissions])
 
 (defn validate-acl-save!

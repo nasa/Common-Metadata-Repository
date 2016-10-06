@@ -21,6 +21,7 @@
 
             [cmr.indexer.services.index-service :as index-svc]
             [cmr.common.api.context :as context]
+            [cmr.common-app.api.health :as common-health]
             [cmr.common-app.api.routes :as common-routes]))
 
 (defn- ignore-conflict?
@@ -98,7 +99,7 @@
               request-context concept-id revision-id (assoc options :all-revisions-index? false))
             {:status 204})))
 
-      (common-routes/health-api-routes index-svc/health))
+      (common-health/health-api-routes index-svc/health))
 
     (route/not-found "Not Found")))
 

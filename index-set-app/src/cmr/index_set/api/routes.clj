@@ -16,7 +16,8 @@
             [cmr.index-set.services.index-service :as index-svc]
             [cmr.common.api.context :as context]
             [cmr.acl.core :as acl]
-            [cmr.common-app.api.routes :as common-routes]))
+            [cmr.common-app.api.routes :as common-routes]
+            [cmr.common-app.api.health :as common-health]))
 
 (defn- build-routes [system]
   (routes
@@ -70,7 +71,7 @@
       common-routes/cache-api-routes
 
       ;; add routes for checking health of the application
-      (common-routes/health-api-routes index-svc/health)
+      (common-health/health-api-routes index-svc/health)
 
       ;; delete all of the indices associated with index-sets and index-set docs in elastic
       (POST "/reset" {request-context :request-context params :params headers :headers}

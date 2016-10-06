@@ -13,6 +13,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
+   [cmr.transmit.config :as transmit-config]
    [cmr.transmit.metadata-db :as mdb-legacy]
    [cmr.transmit.metadata-db2 :as mdb]
    [cmr.umm.acl-matchers :as acl-matchers]))
@@ -329,7 +330,7 @@
         (let [new-acl (update-in parsed-acl
                                  [:catalog-item-identity :collection-identifier :entry-titles]
                                  #(remove #{entry-title} %))]
-          (acl-service/update-acl context (:concept-id acl-concept) new-acl))))))
+          (acl-service/update-acl (transmit-config/with-echo-system-token context) (:concept-id acl-concept) new-acl))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common public functions

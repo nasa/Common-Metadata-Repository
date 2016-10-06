@@ -1,52 +1,39 @@
 (ns cmr.dev-system.system
-  (:require [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.config :as config :refer [defconfig]]
-            [cmr.common.util :as u]
-            [cmr.common.jobs :as jobs]
-            [cmr.common.dev.gorilla-repl :as gorilla-repl]
-
-            [cmr.bootstrap.system :as bootstrap-system]
-
-            [cmr.access-control.system :as access-control-system]
-            [cmr.access-control.config :as access-control-config]
-
-            [cmr.cubby.system :as cubby-system]
-
-            [cmr.virtual-product.system :as vp-system]
-            [cmr.virtual-product.config :as vp-config]
-
-            [cmr.metadata-db.system :as mdb-system]
-            [cmr.metadata-db.data.memory-db :as memory]
-
-            [cmr.indexer.system :as indexer-system]
-            [cmr.indexer.config :as indexer-config]
-
-            [cmr.ingest.system :as ingest-system]
-            [cmr.ingest.data.provider-acl-hash :as ingest-data]
-
-            [cmr.index-set.system :as index-set-system]
-            [cmr.index-set.data.elasticsearch :as es-index]
-
-            [cmr.mock-echo.system :as mock-echo-system]
-
-            [cmr.common-app.services.search.elastic-search-index :as es-search]
-            [cmr.search.system :as search-system]
-
-            [cmr.elastic-utils.test-util :as elastic-test-util]
-            [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
-            [cmr.elastic-utils.config :as elastic-config]
-
-            [cmr.message-queue.config :as rmq-conf]
-            [cmr.message-queue.queue.rabbit-mq :as rmq]
-            [cmr.message-queue.queue.sqs :as sqs]
-            [cmr.message-queue.services.queue :as queue]
-            [cmr.message-queue.queue.memory-queue :as mem-queue]
-
-            [cmr.message-queue.test.queue-broker-wrapper :as wrapper]
-            [cmr.dev-system.control :as control]
-
-            [cmr.transmit.config :as transmit-config]))
+  (:require
+   [cmr.access-control.config :as access-control-config]
+   [cmr.access-control.system :as access-control-system]
+   [cmr.bootstrap.system :as bootstrap-system]
+   [cmr.common-app.services.search.elastic-search-index :as es-search]
+   [cmr.common.config :as config :refer [defconfig]]
+   [cmr.common.dev.gorilla-repl :as gorilla-repl]
+   [cmr.common.jobs :as jobs]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.util :as u]
+   [cmr.cubby.system :as cubby-system]
+   [cmr.dev-system.control :as control]
+   [cmr.elastic-utils.config :as elastic-config]
+   [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
+   [cmr.elastic-utils.test-util :as elastic-test-util]
+   [cmr.index-set.data.elasticsearch :as es-index]
+   [cmr.index-set.system :as index-set-system]
+   [cmr.indexer.config :as indexer-config]
+   [cmr.indexer.system :as indexer-system]
+   [cmr.ingest.data.provider-acl-hash :as ingest-data]
+   [cmr.ingest.system :as ingest-system]
+   [cmr.message-queue.config :as rmq-conf]
+   [cmr.message-queue.queue.memory-queue :as mem-queue]
+   [cmr.message-queue.queue.rabbit-mq :as rmq]
+   [cmr.message-queue.queue.sqs :as sqs]
+   [cmr.message-queue.services.queue :as queue]
+   [cmr.message-queue.test.queue-broker-wrapper :as wrapper]
+   [cmr.metadata-db.data.memory-db :as memory]
+   [cmr.metadata-db.system :as mdb-system]
+   [cmr.mock-echo.system :as mock-echo-system]
+   [cmr.search.system :as search-system]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.virtual-product.config :as vp-config]
+   [cmr.virtual-product.system :as vp-system]))
 
 (def external-echo-port 10000)
 
@@ -289,7 +276,7 @@
    :parser parse-dev-system-component-type})
 
 (defconfig dev-system-message-queue-type
-  "Specifies whether dev system should skip the use of a message queue or use a Rabbit MQ or 
+  "Specifies whether dev system should skip the use of a message queue or use a Rabbit MQ or
   AWS SNS/SQS message queue"
   {:default :in-memory
    :parser parse-dev-system-message-queue-type})
@@ -396,8 +383,6 @@
       (start-components :pre-components)
       start-apps
       (start-components :post-components)))
-
-
 
 (defn stop
   "Performs side effects to shut down the system and release its

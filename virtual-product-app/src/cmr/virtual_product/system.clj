@@ -2,28 +2,29 @@
   "Defines functions for creating, starting, and stopping the application. Applications are
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.nrepl :as nrepl]
-            [cmr.virtual-product.api.routes :as routes]
-            [cmr.common.api.web-server :as web]
-            [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.virtual-product.services.virtual-product-service :as vps]
-            [cmr.virtual-product.config :as config]
-            [cmr.message-queue.queue.rabbit-mq :as rmq]
-            [cmr.message-queue.queue.sqs :as sqs]
-            [cmr.common.system :as common-sys]))
+  (:require
+   [cmr.common-app.api.health :as common-health]
+   [cmr.common.api.web-server :as web]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common.nrepl :as nrepl]
+   [cmr.common.system :as common-sys]
+   [cmr.message-queue.queue.rabbit-mq :as rmq]
+   [cmr.message-queue.queue.sqs :as sqs]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.virtual-product.api.routes :as routes]
+   [cmr.virtual-product.config :as config]
+   [cmr.virtual-product.services.virtual-product-service :as vps]))
 
 (defconfig virtual-product-nrepl-port
   "Port to listen for nREPL connections"
   {:default nil
    :parser cfg/maybe-long})
 
-(def
-  ^{:doc "Defines the order to start the components."
-    :private true}
-  component-order [:log :queue-broker :web :nrepl])
+(def ^:private component-order
+  "Defines the order to start the components."
+  [:log :caches :queue-broker :web :nrepl])
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -32,10 +33,10 @@
              :web (web/create-web-server (transmit-config/virtual-product-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (virtual-product-nrepl-port))
              :relative-root-url (transmit-config/virtual-product-relative-root-url)
-             :queue-broker (sqs/create-queue-broker (config/queue-config))}]
-    ;; Temporarily add echo-rest to the list of connections we require because we have to enforce
-    ;; token access within NGAP.
-    (transmit-config/system-with-connections sys [:metadata-db :ingest :search :echo-rest])))
+             :queue-broker (sqs/create-queue-broker (config/queue-config))
+            ;  :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))
+             :caches (common-health/health-cache-key (common-health/create-health-cache))}]
+    (transmit-config/system-with-connections sys [:metadata-db :ingest :search])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

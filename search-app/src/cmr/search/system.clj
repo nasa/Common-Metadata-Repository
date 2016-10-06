@@ -4,12 +4,12 @@
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
    [cmr.collection-renderer.services.collection-renderer :as collection-renderer]
+   [cmr.common-app.api.health :as common-health]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
    [cmr.common.api.web-server :as web]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
-   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
    [cmr.common.lifecycle :as lifecycle]
@@ -57,10 +57,8 @@
    :port (search-public-port)
    :relative-root-url (transmit-config/search-relative-root-url)})
 
-(def
-  ^{:doc "Defines the order to start the components."
-    :private true}
-  component-order
+(def ^:private component-order
+  "Defines the order to start the components."
   [:log :caches collection-renderer/system-key :search-index :scheduler :web :nrepl])
 
 (def system-holder
@@ -82,9 +80,7 @@
              :nrepl (nrepl/create-nrepl-if-configured (search-nrepl-port))
              ;; Caches added to this list must be explicitly cleared in query-service/clear-cache
              :caches {idx/index-cache-name (mem-cache/create-in-memory-cache)
-                      af/acl-cache-key (af/create-acl-cache
-                                         (stl-cache/create-single-thread-lookup-cache)
-                                         [:catalog-item :system-object])
+                      af/acl-cache-key (af/create-acl-cache [:catalog-item :system-object])
                       ;; Caches a map of tokens to the security identifiers
                       ah/token-sid-cache-name (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_CACHE_TIME})
                       :has-granules-map (hgrf/create-has-granules-map-cache)
@@ -95,7 +91,8 @@
                       ;; already refreshes the cache. Since we use a consistent cache, the search
                       ;; application will also pick up the updated KMS keywords.
                       kf/kms-cache-key (kf/create-kms-cache)
-                      metadata-cache/cache-key (metadata-cache/create-cache)}
+                      metadata-cache/cache-key (metadata-cache/create-cache)
+                      common-health/health-cache-key (common-health/create-health-cache)}
              :public-conf search-public-conf
              collection-renderer/system-key (collection-renderer/create-collection-renderer)
              :scheduler (jobs/create-scheduler

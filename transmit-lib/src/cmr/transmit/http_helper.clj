@@ -257,7 +257,7 @@
   after its components time out."
   ([fn-name app-name]
    `(defhealther ~fn-name ~app-name 0))
-  ([fn-name app-name timeout-level]
+  ([fn-name app-name options]
    `(defn ~fn-name
       "Sends a request to call the health endpoint of the given app."
       [context#]
@@ -272,7 +272,8 @@
                            (if (= 200 status#)
                              {:ok? true :dependencies body#}
                              {:ok? false :dependencies body#})))
-            timeout-ms# (* 1000 (+ ~timeout-level (hh/health-check-timeout-seconds)))]
+            timeout-ms# (* 1000 (+ (get ~options :timeout-secs 0)
+                                   (hh/health-check-timeout-seconds)))]
         (hh/get-health health-fn# timeout-ms#)))))
 
 (defmacro defresetter

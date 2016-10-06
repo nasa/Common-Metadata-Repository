@@ -23,7 +23,7 @@
     [cmr.indexer.data.concept-parser :as cp]
     [cmr.indexer.data.elasticsearch :as es]
     [cmr.indexer.data.elasticsearch :as es]
-    [cmr.indexer.data.humanizer-fetcher :as hf]
+    [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]
     [cmr.indexer.data.index-set :as idx-set]
     [cmr.message-queue.config :as qcfg]
     [cmr.message-queue.services.queue :as queue]
@@ -129,10 +129,19 @@
      context provider-ids {:all-revisions-index? nil :refresh-acls? true :force-version? false}))
   ([context provider-ids {:keys [all-revisions-index? refresh-acls? force-version?]}]
 
-   (when refresh-acls?
+   ;; We refresh this cache because it is fairly lightweight to do once for each provider and because
+   ;; we want the latest humanizers on each of the Indexer instances that are processing these messages.
+   (humanizer-fetcher/refresh-cache context)
+
+   (if refresh-acls?
      ;; Refresh the ACL cache.
      ;; We want the latest permitted groups to be indexed with the collections
-     (acl-fetcher/refresh-acl-cache context))
+     (acl-fetcher/refresh-acl-cache context)
+     ;; Otherwise we'll make sure we check cubby to make sure we have a consistent set of ACLs.
+     ;; Ingest usually refreshes the cache and then sends a message without the flag relying on
+     ;; cubby to indicate to indexers that they should fetch the latest ACLs. Without expiring
+     ;; these here we'll think we have the latest.
+     (acl-fetcher/expire-consistent-cache-hashes context))
 
    (doseq [provider-id provider-ids]
      (when (or (nil? all-revisions-index?) (not all-revisions-index?))
@@ -413,7 +422,7 @@
 (defn update-humanizers
   "Update the humanizer cache and reindex all collections"
   [context]
-  (hf/refresh-cache context)
+  (humanizer-fetcher/refresh-cache context)
   (reindex-all-collections context))
 
 (defn reset
