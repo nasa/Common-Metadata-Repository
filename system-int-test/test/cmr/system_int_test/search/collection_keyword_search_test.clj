@@ -562,6 +562,7 @@
         [coll2]
 
         "testing parmaeter search by non-existing keywords"
+        "CMR2652NOAKW"
         []
 
         "testing iso-topic-category search - biota"

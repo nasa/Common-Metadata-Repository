@@ -62,8 +62,10 @@
   "Returns the data center contacts with ContactInformation added if it doesn't have contact info"
   [data-center]
   (let [contacts (concat (:ContactPersons data-center) (:ContactGroups data-center))]
-    (map #(if (:ContactInformation %)
-            % (assoc % :ContactInformation (:ContactInformation data-center)))
+    (map (fn [contact]
+           (if (:ContactInformation contact)
+             contact
+             (assoc contact :ContactInformation (:ContactInformation data-center))))
          contacts)))
 
 (defn opendata-email-contact

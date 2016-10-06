@@ -225,7 +225,7 @@
 (defn- related-url->link
   "Returns the atom link of the given related url. Collection's related url uses umm-spec-lib for
   parsing and granule's related url uses umm-lib for parsing and the title is parsed differently."
-  [related-url is-granule?]
+  [related-url concept-type]
   (let [{:keys [type url title mime-type size inherited]} related-url
         attribs (-> {}
                     (add-attribs :inherited inherited)
@@ -234,20 +234,22 @@
                     (add-attribs :type mime-type)
                     (add-attribs :hreflang "en-US")
                     (add-attribs :href url))
-        attribs (if is-granule? (add-attribs attribs :title title) attribs)]
+        attribs (if (= :granule concept-type)
+                  (add-attribs attribs :title title)
+                  attribs)]
     attribs))
 
 (defn- collection-related-urls->links
   "Returns the atom links of the given collection related urls"
   [related-urls]
-  (map #(related-url->link % false) related-urls))
+  (map #(related-url->link % :collection) related-urls))
 
 (defn- granule-related-urls->links
   "Returns the atom links of the given granule related urls.
   Since granule parsing still uses umm-lib, the atom link will have the title populated
   differently from collection's related url which uses umm-spec-lib for parsing."
   [related-urls]
-  (map #(related-url->link % true) related-urls))
+  (map #(related-url->link % :granule) related-urls))
 
 (defn- add-collection-links
   "Returns the related-urls after adding the atom-links in the collection"
