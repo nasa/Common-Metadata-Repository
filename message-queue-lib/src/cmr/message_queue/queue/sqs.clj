@@ -194,6 +194,8 @@
                   ;; subscribe the queue to the topic
                   subscription-arn (.getSubscriptionArn (.subscribe sns-client topic-arn "sqs" q-arn))]])))
 
+      ; (.setSubscriptionAttributes sns-client subscription-arn "RawMessageDelivery" "true"))))
+
 (defn- normalized-queue-name->original-queue-name
   "Convert a normalized queue name to the original queue name used to create it."
   [queue-broker queue-name]
