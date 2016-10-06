@@ -315,9 +315,6 @@
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
     (routes
       (context relative-root-url []
-        ;; for NGAP deployment health check
-        (GET "/" {} {:status 200})
-
         ;; Add routes for tagging
         tags-api/tag-api-routes
 
