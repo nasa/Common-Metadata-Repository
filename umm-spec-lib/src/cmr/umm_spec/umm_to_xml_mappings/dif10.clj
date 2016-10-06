@@ -227,6 +227,7 @@
     [:Entry_ID
      [:Short_Name (:ShortName c)]
      [:Version (:Version c)]]
+    [:Version_Description (:VersionDescription c)]
     [:Entry_Title (or (:EntryTitle c) u/not-provided)]
     (contact/generate-collection-personnel c)
 

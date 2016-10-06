@@ -481,3 +481,14 @@
                                {:ISOTopicCategories
                                 ["biota" "location" "climatologyMeteorologyAtmosphere"]})]
     (is (= ["biota" "location" "climatologyMeteorologyAtmosphere"] (:ISOTopicCategories result)))))
+
+(deftest migrate-1_7-up-to-1_8
+  (let [result (vm/migrate-umm {} :collection "1.7" "1.8"
+                               {:Version "003"})]
+    ;; Nothing changed, VersionDescription is nil
+    (is (= nil (:VersionDescription result)))))
+
+(deftest migrate-1_8-down-to-1_7
+  (let [result (vm/migrate-umm {} :collection "1.8" "1.7"
+                               {:VersionDescription "description of the collection version"})]
+    (is (= nil (:VersionDescription result)))))
