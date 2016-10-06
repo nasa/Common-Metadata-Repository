@@ -102,12 +102,16 @@
                                                      :legacy_guid "normal-group-guid"
                                                      :members ["user1"]}))]
     (u/wait-until-indexed)
-    ;; as an admin user, update the system ANY_ACL ACL to grant permission to the newly created group by concept id
+
+    ;; Update the system-level ANY_ACL to avoid granting ACL creation permission to "user1", since it normally
+    ;; grants this permission to all registered users.
     (ac/update-acl (merge (u/conn-context) {:token admin-token})
                    (:concept-id fixtures/*fixture-system-acl*)
                    {:group_permissions [{:group_id created-group
                                          :permissions [:create :read :update :delete]}]
                     :system_identity {:target "ANY_ACL"}})
+    
+    ;; Update the PROV1 CATALOG_ITEM_ACL ACL to grant permission explicitly to only the group which "user1" belongs to.
     (ac/update-acl (merge (u/conn-context) {:token admin-token})
                    (:concept-id fixtures/*fixture-provider-acl*)
                    {:group_permissions [{:group_id created-group
@@ -115,7 +119,8 @@
                     :provider_identity {:provider_id "PROV1"
                                         :target "CATALOG_ITEM_ACL"}})
     (u/wait-until-indexed)
-    ;; as a non-admin user belonging to the created group, try to perform an action that should be allowed
+
+    ;; As "user1" try to create a catalog item ACL for PROV1.
     (let [user-token (e/login (u/conn-context) "user1" ["normal-group-guid"])]
       (is (= 1 (:revision_id
                  (ac/create-acl (merge (u/conn-context) {:token user-token})
