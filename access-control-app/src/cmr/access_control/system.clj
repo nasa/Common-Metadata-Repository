@@ -2,23 +2,25 @@
   "Defines functions for creating, starting, and stopping the application. Applications are
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.nrepl :as nrepl]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.access-control.api.routes :as routes]
-            [cmr.access-control.data.access-control-index :as access-control-index]
-            [cmr.common-app.services.search.elastic-search-index :as search-index]
-            [cmr.access-control.test.bootstrap :as bootstrap]
-            [cmr.access-control.config :as config]
-            [cmr.message-queue.queue.rabbit-mq :as rmq]
-            [cmr.common.api.web-server :as web]
-            [cmr.acl.acl-fetcher :as af]
-            [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
-            [cmr.common.jobs :as jobs]
-            [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.access-control.services.event-handler :as event-handler]
-            [cmr.common.system :as common-sys]))
+  (:require
+   [cmr.access-control.api.routes :as routes]
+   [cmr.access-control.config :as config]
+   [cmr.access-control.data.access-control-index :as access-control-index]
+   [cmr.access-control.services.event-handler :as event-handler]
+   [cmr.access-control.test.bootstrap :as bootstrap]
+   [cmr.acl.acl-fetcher :as af]
+   [cmr.common-app.services.search.elastic-search-index :as search-index]
+   [cmr.common-app.api.health :as common-health]
+   [cmr.common.api.web-server :as web]
+   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.jobs :as jobs]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.nrepl :as nrepl]
+   [cmr.common.system :as common-sys]
+   [cmr.message-queue.queue.rabbit-mq :as rmq]
+   [cmr.transmit.config :as transmit-config]))
 
 (defconfig access-control-nrepl-port
   "Port to listen for nREPL connections"
@@ -46,10 +48,9 @@
    :port (access-control-public-port)
    :relative-root-url (transmit-config/access-control-relative-root-url)})
 
-(def
-  ^{:doc "Defines the order to start the components."
-    :private true}
-  component-order [:log :caches :search-index :queue-broker :scheduler :web :nrepl])
+(def ^:private component-order
+  "Defines the order to start the components."
+  [:log :caches :search-index :queue-broker :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -64,8 +65,8 @@
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
              :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))
              :caches {af/acl-cache-key (af/create-acl-cache
-                                        (stl-cache/create-single-thread-lookup-cache)
-                                        [:system-object :provider-object :single-instance-object])}
+                                        [:system-object :provider-object :single-instance-object])
+                      common-health/health-cache-key (common-health/create-health-cache)}
              :public-conf (public-conf)
              :relative-root-url (transmit-config/access-control-relative-root-url)
              :scheduler (jobs/create-scheduler
@@ -102,4 +103,3 @@
         (common-sys/stop started-system component-order)
         (throw e)))
     started-system))
-

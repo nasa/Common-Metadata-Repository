@@ -2,41 +2,47 @@
   "Defines functions for creating, starting, and stopping the application. Applications are
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.nrepl :as nrepl]
-            [cmr.common.api.web-server :as web]
-            [cmr.elastic-utils.index-util :as esi]
-            [cmr.indexer.data.elasticsearch :as es]
-            [cmr.indexer.config :as config]
-            [cmr.common.cache :as cache]
-            [cmr.common.cache.in-memory-cache :as mem-cache]
-            [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
-            [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
-            [cmr.indexer.data.humanizer-fetcher :as hf]
-            [cmr.acl.acl-fetcher :as af]
-            [cmr.common.jobs :as jobs]
-            [cmr.indexer.api.routes :as routes]
-            [cmr.transmit.config :as transmit-config]
-            [clojure.string :as str]
-            [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.elastic-utils.config :as es-config]
-            [cmr.acl.core :as acl]
-            [cmr.message-queue.queue.rabbit-mq :as rmq]
-            [cmr.common-app.cache.consistent-cache :as consistent-cache]
-            [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.indexer.services.event-handler :as event-handler]
-            [cmr.indexer.data.index-set :as index-set]
-            [cmr.common.system :as common-sys]))
+  (:require
+   [clojure.string :as str]
+   [cmr.acl.acl-fetcher :as af]
+   [cmr.acl.core :as acl]
+   [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.cache.consistent-cache :as consistent-cache]
+   [cmr.common-app.services.kms-fetcher :as kf]
+   [cmr.common.api.web-server :as web]
+   [cmr.common.cache :as cache]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
+   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.jobs :as jobs]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.nrepl :as nrepl]
+   [cmr.common.system :as common-sys]
+   [cmr.elastic-utils.config :as es-config]
+   [cmr.elastic-utils.index-util :as esi]
+   [cmr.indexer.api.routes :as routes]
+   [cmr.indexer.config :as config]
+   [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
+   [cmr.indexer.data.elasticsearch :as es]
+   [cmr.indexer.data.humanizer-fetcher :as hf]
+   [cmr.indexer.data.index-set :as index-set]
+   [cmr.indexer.services.event-handler :as event-handler]
+   [cmr.message-queue.queue.rabbit-mq :as rmq]
+   [cmr.transmit.config :as transmit-config]))
 
-(def
-  ^{:doc "Defines the order to start the components."
-    :private true}
-  component-order [:log :caches :db :scheduler :queue-broker :web :nrepl])
+(def ^:private component-order
+  "Defines the order to start the components."
+  [:log :caches :db :scheduler :queue-broker :web :nrepl])
 
 (def system-holder
   "Required for jobs"
   (atom nil))
+
+(defconfig index-set-cache-consistent-timeout-seconds
+  "The number of seconds between when the indexer's index set cache should check with cubby for consistence"
+  {:default 5
+   :type Long})
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -46,15 +52,15 @@
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (config/indexer-nrepl-port))
              :relative-root-url (transmit-config/indexer-relative-root-url)
-             :caches {af/acl-cache-key (af/create-acl-cache
-                                         (stl-cache/create-single-thread-lookup-cache
-                                           (consistent-cache/create-consistent-cache))
+             :caches {af/acl-cache-key (af/create-consistent-acl-cache
                                          [:catalog-item :system-object :provider-object])
-                      index-set/index-set-cache-key (consistent-cache/create-consistent-cache)
+                      index-set/index-set-cache-key (consistent-cache/create-consistent-cache
+                                                     {:hash-timeout-seconds (index-set-cache-consistent-timeout-seconds)})
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
                       cgac/coll-gran-aggregate-cache-key (cgac/create-cache)
-                      hf/humanizer-cache-key (hf/create-cache)}
+                      hf/humanizer-cache-key (hf/create-cache)
+                      common-health/health-cache-key (common-health/create-health-cache)}
              :scheduler (jobs/create-scheduler
                           `system-holder
                           [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")

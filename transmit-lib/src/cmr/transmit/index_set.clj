@@ -41,7 +41,7 @@
                                       id status (pr-str (flatten (:errors body))))))))
 
 ;; Defines health check function
-(h/defhealther get-index-set-health :index-set 2)
+(h/defhealther get-index-set-health :index-set {:timeout-secs 2})
 
 (defn- submit-rebalancing-collection-request
   "A helper function for submitting a request to modify the list of rebalancing collections."

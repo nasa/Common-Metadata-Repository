@@ -25,6 +25,11 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn with-echo-system-token
+  "Returns context with mock-echo-system-token"
+  [context]
+  (assoc context :token mock-echo-system-token))
+
 (def token-header
   "echo-token")
 

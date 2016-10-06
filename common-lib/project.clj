@@ -12,6 +12,8 @@
                  [com.gfredericks/test.chuck "0.2.7"]
                  [org.clojure/data.xml "0.0.8"]
                  [camel-snake-kebab "0.4.0"]
+
+                 ;; Note that we copied some code from this library into in memory cache. Replace that when updating.
                  [org.clojure/core.cache "0.6.5"]
                  [org.clojure/data.codec "0.1.0"]
                  [org.clojure/tools.nrepl "0.2.12"]

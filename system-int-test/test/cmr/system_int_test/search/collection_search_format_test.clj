@@ -500,7 +500,6 @@
                                             :beginning-date-time "2010-01-01T12:00:00Z"
                                             :ending-date-time "2010-01-11T12:00:00Z"
                                             :related-urls [ru1 ru2]
-                                            :associated-difs ["DIF-1" "DIF-2"]
                                             :science-keywords [sk1]
                                             :spatial-coverage
                                             (dc/spatial {:sr :geodetic
@@ -661,14 +660,14 @@
                 [:status :results])))))))
 
 (deftest formats-have-scores-test
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:long-name "ABC!XYZ" :entry-title "Foo"}))]
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "ABC!XYZ" :entry-title "Foo"}))]
     (index/wait-until-indexed)
     (testing "XML references"
       (testing "XML has score for keyword search."
         (are [keyword-str scores]
              (= scores
                 (map :score (:refs (search/find-refs :collection {:keyword keyword-str}))))
-             "ABC" [0.7]
+             "ABC!XYZ" [0.7]
              "ABC Foo" [0.5]))
       (testing "XML has no score field for non-keyword search."
         (are [title-str scores]
@@ -683,7 +682,7 @@
                 (map :score (get-in (search/find-concepts-atom :collection
                                                                {:keyword keyword-str})
                                     [:results :entries])))
-             "ABC" [0.7]
+             "ABC!XYZ" [0.7]
              "ABC Foo" [0.5]))
       (testing "Atom has no score field for non-keyword search."
         (are [title-str scores]
@@ -697,7 +696,7 @@
              (= scores
                 (map :score (get-in (search/find-concepts-json :collection {:keyword keyword-str})
                                     [:results :entries])))
-             "ABC" [0.7]
+             "ABC!XYZ" [0.7]
              "ABC Foo" [0.5]))
       (testing "JSON has no score field for non-keyword search."
         (are [title-str scores]

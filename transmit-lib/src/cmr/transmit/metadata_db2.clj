@@ -128,5 +128,4 @@
        finish-parse-concept)))
 
 ;; Defines health check function
-(h/defhealther get-metadata-db-health :metadata-db 2)
-
+(h/defhealther get-metadata-db-health :metadata-db {:timeout-secs 2})

@@ -41,10 +41,23 @@
 
   Reading keys of the cache is an expensive operation. (See the comment there.) If you need fast access
   to the set of keys in the cache consider a different implementation."
-  (:require [cmr.common.cache :as c]
-            [cmr.common.cache.in-memory-cache :as mem-cache]
-            [cmr.common-app.cache.cubby-cache :as cubby-cache]
-            [clojure.set :as set]))
+  (:require
+   [clojure.set :as set]
+   [cmr.common-app.cache.cubby-cache :as cubby-cache]
+   [cmr.common.cache :as c]
+   [cmr.common.cache.fallback-cache :as fallback-cache]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
+   [cmr.common.config :refer [defconfig]]
+   [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.time-keeper :as time-keeper])
+  (:import
+   (cmr.common.cache.in_memory_cache InMemoryCache)))
+
+(defconfig consistent-cache-default-hash-timeout-seconds
+  "The length of time that the hashes will be cached to prevent too many requests to Cubby."
+  {:default 5
+   :type Long})
 
 (defn- key->hash-cache-key
   "Returns the key to use to store the hash code."
@@ -62,7 +75,6 @@
    ;; The cache that holds the hash values of items in the memory cache
    ;; Should implement CmrCache protocol.
    hash-cache]
-
 
   c/CmrCache
   (get-keys
@@ -97,12 +109,43 @@
     [this key value]
     (c/set-value memory-cache key value)
     (c/set-value hash-cache (key->hash-cache-key key) (hash value))))
+(record-pretty-printer/enable-record-pretty-printing ConsistentMemoryCache)
+
+(defn fallback-with-timeout
+  "Takes the hash cache and makes it so that it will use it with a timeout."
+  [hash-cache timeout]
+  (fallback-cache/create-fallback-cache
+   (mem-cache/create-in-memory-cache :ttl {} {:ttl (* 1000 timeout)})
+   hash-cache))
+
+(defn expire-hash-cache-timeouts
+  "Forces the locally cached hash codes stored in the cache returned by fallback-with-timeout to expire
+   by clearing the primary cache. This can be used when we occasionally need to make sure that some
+   cached data is consistent with cubby."
+  [consistent-cache]
+  (if-let [ttl-cache (get-in consistent-cache [:hash-cache :primary-cache])]
+    (if (instance? InMemoryCache ttl-cache)
+      (c/reset ttl-cache)
+      (errors/internal-error!
+       "Did not find expected type of in memory cache when trying to clear the hash cache timeouts"))
+    (errors/internal-error!
+     "Did not find expected type of fallback cache when trying to clear the hash cache timeouts")))
 
 (defn create-consistent-cache
-  "Creates an instance of the consistent cache."
+  "Creates an instance of the consistent cache. Accepts no arguments, options with :hash-timeout-seconds
+   or two specific caches to use. The option :hash-timeout-seconds will configure the amount of time
+   the hash code should be cached before going to cubby to get the hash code values. Defaults to
+   value configured in consistent-cache-default-hash-timeout-seconds"
   ([]
-   (create-consistent-cache
-     (mem-cache/create-in-memory-cache)
-     (cubby-cache/create-cubby-cache)))
+   (create-consistent-cache nil))
+  ([options]
+   (let [timeout (get options :hash-timeout-seconds (consistent-cache-default-hash-timeout-seconds))
+         hash-cache (fallback-with-timeout (cubby-cache/create-cubby-cache) timeout)
+         main-cache (mem-cache/create-in-memory-cache)]
+     (create-consistent-cache main-cache hash-cache)))
   ([memory-cache hash-cache]
-   (->ConsistentMemoryCache memory-cache hash-cache)))
+   (->ConsistentMemoryCache
+    memory-cache hash-cache)))
+
+
+

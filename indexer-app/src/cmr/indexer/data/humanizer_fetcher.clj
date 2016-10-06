@@ -1,12 +1,10 @@
 (ns cmr.indexer.data.humanizer-fetcher
   "Stores the latest humanizer json in a consistent cache."
-  (require [cmr.common.jobs :refer [def-stateful-job]]
-           ;; cache dependencies
-           [cmr.common.cache :as c]
-           [cmr.common-app.cache.consistent-cache :as consistent-cache]
-           [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
-
-           [cmr.transmit.humanizer :as humanizer]))
+  (:require
+   [cmr.common.cache :as c]
+   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+   [cmr.common.jobs :refer [def-stateful-job]]
+   [cmr.transmit.humanizer :as humanizer]))
 
 (def humanizer-cache-key
   "The cache key to use when storing with caches in the system."
@@ -15,8 +13,7 @@
 (defn create-cache
   "Creates an instance of the cache."
   []
-  (stl-cache/create-single-thread-lookup-cache
-    (consistent-cache/create-consistent-cache)))
+  (stl-cache/create-single-thread-lookup-cache))
 
 (defn- retrieve-humanizers
   [context]

@@ -95,7 +95,7 @@
                                  {:entry-title "coll2" :short-name "ABC!XYZ" :version-id "V001"}))
         coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3" :collection-data-type "OTHER"}))
         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4" :collection-data-type "OTHER"}))
-        coll5 (d/ingest "PROV2" (dc/collection {:entry-title "coll5" :long-name "ABC" :short-name "Space!Laser"}))
+        coll5 (d/ingest "PROV2" (dc/collection {:entry-title "coll5" :short-name "Space!Laser"}))
         coll6 (d/ingest "PROV2" (dc/collection {:entry-title "coll6" :organizations [org]}))
         coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7" :version-id "Laser"}))
         coll8 (d/ingest "PROV2" (dc/collection {:entry-title "coll8" :processing-level-id "PDQ123"}))
@@ -110,18 +110,17 @@
                                                  :product-specific-attributes [psa5]}))
         coll12 (d/ingest "PROV2" (dc/collection {:entry-title "coll12" :product-specific-attributes [psa1 psa2 psa3 psa4]}))
         coll13 (d/ingest "PROV2" (dc/collection {:entry-title "coll13" :two-d-coordinate-systems [tdcs1 tdcs2]}))
-        coll14 (d/ingest "PROV2" (dc/collection {:entry-title "coll14" :long-name "spoonA laser"}))
+        coll14 (d/ingest "PROV2" (dc/collection {:entry-title "coll14" :short-name "spoonA laser"}))
         coll15 (d/ingest "PROV2" (dc/collection {:entry-title "coll15" :processing-level-id "plid1"
                                                  :collection-data-type "SCIENCE_QUALITY" :platforms [p1]
                                                  :summary "summary" :temporal-keywords ["tk1" "tk2"]}))
         coll16 (d/ingest "PROV2" (dc/collection-dif {:short-name "entryid4"}) {:format :dif})
         coll17 (d/ingest "PROV2" (dc/collection {:associated-difs ["DIF-1" "DIF-2"]}))
         coll18 (d/ingest "PROV2" (dc/collection {:short-name "SNFoobar"}))
-        coll19 (d/ingest "PROV2" (dc/collection {:long-name "LNFoobar"}))
-        coll20 (d/ingest "PROV2" (dc/collection {:projects pr1}))
-        coll21 (d/ingest "PROV2" (dc/collection {:entry-title "coll21" :long-name "ABC!"}))
-        coll22 (d/ingest "PROV2" (dc/collection {:collection-data-type "NEAR_REAL_TIME"}))
-        coll23 (d/ingest "PROV1" (dc/collection {:entry-title "coll23" :long-name "\"Quoted\" collection"}))
+        coll20 (d/ingest "PROV2" (dc/collection {:projects pr1 :entry-title "Mixed"}))
+        coll21 (d/ingest "PROV2" (dc/collection {:entry-title "coll21" :short-name "Laser"}))
+        coll22 (d/ingest "PROV2" (dc/collection {:collection-data-type "NEAR_REAL_TIME" :short-name "Mixed"}))
+        coll23 (d/ingest "PROV1" (dc/collection {:entry-title "coll23" :short-name "\"Quoted\" collection"}))
         coll24 (d/ingest "PROV2" (dc/collection {:entry-title "coll24" :short-name "coll24" :platforms [p4]}))
         coll-boost (d/ingest "PROV2" (dc/collection {:entry-title "boost"
                                                      :short-name "boost"
@@ -146,12 +145,12 @@
             (println "Actual:" (map :name (:refs json-refs))))
           (and parameter-matches? json-matches?))
 
-        "ABC" [coll2 coll5 coll21]
+        "ABC" [coll2]
         "place" [coll6]
-        "Laser" [coll5 coll7 coll9 coll14]
-        "ABC space" [coll5]
+        "Laser" [coll21 coll5 coll7 coll9 coll14]
+        "ABC V001" [coll2]
         "BLAH" []
-        "abc!" [coll21]
+        "Space!Laser" [coll5]
 
         ;; Checking specific fields
 
@@ -166,9 +165,6 @@
 
         ;; short name
         "XYZ" [coll2 coll13]
-
-        ;; long name
-        "ABC" [coll5 coll2 coll21]
 
         ;; version id
         "V001" [coll2]
@@ -274,18 +270,16 @@
         "S@PER" [coll10]
 
         ;; search by keywords using wildcard *
-        "A*C" [coll2 coll5 coll21]
         "XY*" [coll2 coll13]
-        "*aser" [coll5 coll7 coll9 coll14]
+        "*aser" [coll21 coll5 coll7 coll9 coll14]
         "p*ce" [coll6]
         "NEA*REA*IME" [coll22]
         "nea*rea*ime" [coll22]
         "\"Quoted*" [coll23]
 
         ;; search by keywords using wildcard ?
-        "A?C" [coll2 coll5 coll21]
         "XY?" [coll2 coll13]
-        "?aser" [coll5 coll7 coll9 coll14]
+        "?aser" [coll21 coll5 coll7 coll9 coll14]
         "p*ace" [coll6]
         "NEAR?REAL?TIME" [coll22]
         "near?real?time" [coll22]))
@@ -296,8 +290,6 @@
 
         "short-name"
         {:keyword "SNFoobar"} [short-name-boost]
-        "long-name"
-        {:keyword "LNFoobar"} [short-name-boost]
 
         "entry-id"
         {:keyword "ABC!XYZ_V001"} [entry-id-boost]
@@ -426,7 +418,7 @@
         {:keyword "coll5" :boosts {:entry-title 10.0}} [10.0]
 
         "mixed boosts"
-        {:keyword "Laser spoonA" :boosts {:short-name 10.0 :science-keywords 11.0}} [11.0 10.0]
+        {:keyword "Mixed" :boosts {:short-name 10.0 :entry-title 11.0}} [11.0 10.0]
 
         "no defaults"
         {:keyword (:category sk1) :boosts {:include-defaults false}} [1.0]
@@ -473,10 +465,10 @@
             (println "Expected:" (map :entry-title items))
             (println "Actual:" (map :name (:refs refs))))
           matches?)
-        {:keyword "Laser spoonA"} [coll14 coll9]
-        {:keyword "La?er spoonA"} [coll14 coll9]
-        {:keyword "L*er spo*A"} [coll14 coll9]
-        {:keyword "L?s* s?o*A"} [coll14 coll9]))
+        {:keyword "Laser spoonA"} [coll9 coll14]
+        {:keyword "La?er spoonA"} [coll9 coll14]
+        {:keyword "L*er spo*A"} [coll9 coll14]
+        {:keyword "L?s* s?o*A"} [coll9 coll14]))
 
     (testing "sorted search by keywords JSON query."
       (are [keyword-str items]
@@ -486,7 +478,7 @@
             (println "Expected:" (map :entry-title items))
             (println "Actual:" (map :name (:refs refs))))
           matches?)
-        "Laser spoonA" [coll14 coll9]))
+        "Laser spoonA" [coll9 coll14]))
 
     (testing "sorted search by keywords with sort keys."
       (are [keyword-str sort-key items]
@@ -496,10 +488,10 @@
             (println "Expected:" (map :entry-title items))
             (println "Actual:" (map :name (:refs refs))))
           matches?)
-        "Laser" "-entry-title" [coll7 coll5 coll14 coll9]
-        "Laser" "score" [coll14 coll5 coll7 coll9]
-        "Laser" "+score" [coll5 coll7 coll9 coll14]
-        "Laser" "-score" [coll14 coll5 coll7 coll9]))
+        "laser" "-entry-title" [coll7 coll5 coll21 coll14 coll9]
+        "laser" "score" [coll21 coll5 coll7 coll9 coll14]
+        "laser" "+score" [coll5 coll7 coll9 coll14 coll21]
+        "laser" "-score" [coll21 coll5 coll7 coll9 coll14]))
 
     (testing "parameter search by keywords returns score"
       (let [refs (search/find-refs :collection {:keyword "Laser"})]
@@ -521,18 +513,19 @@
       (let [refs (search/find-refs-with-json-query :collection {} {:not {:keyword "Laser"}})]
         (is (not-any? :score (:refs refs)))))))
 
-;; This test is separated out from the rest of the keyword search tests because we need to  
-;; ingest this UMM-SPEC collection but it contains some keyword values other tests are using. 
-;; This would break other tests when doing the keyword searches. 
+;; This test is separated out from the rest of the keyword search tests because we need to
+;; ingest this UMM-SPEC collection but it contains some keyword values other tests are using.
+;; This would break other tests when doing the keyword searches.
 (deftest search-by-more-keywords
   (let [coll1 (d/ingest "PROV1"
                         (-> exp-conv/example-collection-record
                             (assoc :AncillaryKeywords ["CMR2652AKW1" "CMR2652AKW2"])
-                            (assoc :DirectoryNames 
+                            (assoc :DirectoryNames
                                    [(um/map->DirectoryNameType
                                      {:ShortName "CMR2654DNSN1" :LongName "CMR2654DNLN1"})])
+                            (assoc :ISOTopicCategories ["environment" "health"])
                             (assoc :ShortName "CMR2652SN1")
-                            (assoc :EntryTitle "CMR2652ET1")) 
+                            (assoc :EntryTitle "CMR2652ET1"))
                         {:format :umm-json
                          :accept-format :json})
         coll2 (d/ingest "PROV1"
@@ -540,20 +533,21 @@
                             (assoc :AncillaryKeywords ["CMR2652AKW3" "CMR2652AKW4"])
                             (assoc :DirectoryNames
                                    [(um/map->DirectoryNameType
-                                     {:ShortName "CMR2654DNSN2" :LongName "CMR2654DNLN2"})]) 
+                                     {:ShortName "CMR2654DNSN2" :LongName "CMR2654DNLN2"})])
+                            (assoc :ISOTopicCategories ["biota"])
                             (assoc :ShortName "CMR2652SN2")
                             (assoc :EntryTitle "CMR2652ET2"))
                         {:format :umm-json
                          :accept-format :json})]
     (index/wait-until-indexed)
-    (testing "parameter searches"  
+    (testing "parameter searches"
       (are3 [keyword-str items]
         (let [parameter-refs (search/find-refs :collection {:keyword keyword-str})]
           (d/assert-refs-match items parameter-refs))
-      
+
         "testing parameter search by existing ancillary keywords"
-        "CMR2652AKW1" 
-        [coll1] 
+        "CMR2652AKW1"
+        [coll1]
 
         "testing parameter search by existing DirectoryNames keywords"
         "CMR2654DNSN1"
@@ -561,23 +555,35 @@
 
         "testing parameter search by existing ancillary keywords"
         "CMR2652AKW4"
-        [coll2] 
+        [coll2]
 
         "testing parameter search by existing DirectoryNames keywords"
         "CMR2654DNLN2"
         [coll2]
 
         "testing parmaeter search by non-existing keywords"
-        "CMR2652NOAKW" 
-        []))
- 
+        "CMR2652NOAKW"
+        []
+
+        "testing iso-topic-category search - biota"
+        "biota"
+        [coll2]
+
+        "testing iso-topic-category search - environment"
+        "environment"
+        [coll1]
+
+        "testing iso-topic-category search - health"
+        "health"
+        [coll1]))
+
     (testing "json query searchs"
       (are3 [keyword-str items]
         (let [json-refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str})]
           (d/assert-refs-match items json-refs))
- 
+
         "testing json query search by existing ancillary keywords"
-        "CMR2652AKW2" 
+        "CMR2652AKW2"
         [coll1]
 
         "testing json query search by existing DirectoryNames keywords"
@@ -593,7 +599,7 @@
         [coll2]
 
         "testing json query search by non-existing keywords"
-        "CMR2652NOAKW"  
+        "CMR2652NOAKW"
         []))))
 
 ;; This tests that when searching by relevancy that if the score is the same short name ascending is used for

@@ -1,8 +1,10 @@
 (ns cmr.common.time-keeper
   "This namespace provides a function for retrieving the current time. This is used instead of
   clj-time.core/now directly so that tests can have programmatic control over the current time."
-  (:require [clj-time.core :as t]
-            [cmr.common.log :refer (debug info warn error)]))
+  (:require
+   [clj-time.core :as t]
+   [clj-time.coerce :as coerce]
+   [cmr.common.log :refer (debug info warn error)]))
 
 (def time-override
   "Contains the current time to return if it is overriden."
@@ -39,7 +41,21 @@
     (finally
       (clear-current-time!))))
 
+(defmacro with-frozen-time
+  "Freezes time around the body and then clears it."
+  [& body]
+  `(try
+     (freeze-time!)
+     (do ~@body)
+     (finally
+       (clear-current-time!))))
+
 (defn now
   "Returns the current time"
   []
   (or @time-override (t/now)))
+
+(defn now-ms
+  "Returns the current time in milliseconds"
+  []
+  (coerce/to-long (now)))

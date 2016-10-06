@@ -107,6 +107,53 @@
       (update coll-holding :granule-count + num)
       coll-holding)))
 
+;; Rebalances a single collection with a single granule
+(deftest simple-rebalance-collection-test
+  (s/only-with-real-database
+   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
+         gran1 (ingest-granule-for-coll coll1 1)
+         expected-provider-holdings (-> coll1
+                                        (select-keys [:provider-id :concept-id :entry-title])
+                                        (assoc :granule-count 1)
+                                        vector)]
+     (index/wait-until-indexed)
+
+     (assert-rebalance-status {:small-collections 1} coll1)
+     (verify-provider-holdings expected-provider-holdings "Initial")
+
+     ;; Start rebalancing of collection 1. After this it will be in small collections and a separate index
+     (bootstrap/start-rebalance-collection (:concept-id coll1))
+     (index/wait-until-indexed)
+
+     ;; After rebalancing 1 granule is in small collections and in the new index.
+     (assert-rebalance-status {:small-collections 1 :separate-index 1} coll1)
+
+     ;; Clear the search cache so it will get the last index set
+     (search/clear-caches)
+     (verify-provider-holdings expected-provider-holdings  "After start and after clear cache")
+
+     ;; Index new data. It should go into both indexes
+     (ingest-granule-for-coll coll1 2)
+     (index/wait-until-indexed)
+     (assert-rebalance-status {:small-collections 2 :separate-index 2} coll1)
+
+     (let [expected-provider-holdings (inc-provider-holdings-for-coll
+                                       expected-provider-holdings coll1 1)]
+       (verify-provider-holdings expected-provider-holdings "After indexing more")
+
+       ;; Finalize rebalancing
+       (bootstrap/finalize-rebalance-collection (:concept-id coll1))
+       (index/wait-until-indexed)
+
+       ;; The granules have been removed from small collections
+       (assert-rebalance-status {:small-collections 0 :separate-index 2} coll1)
+
+       ;; After the cache is cleared the right amount of data is found
+       (search/clear-caches)
+       (verify-provider-holdings
+         expected-provider-holdings
+         "After finalize after clear cache")))))
+
 (deftest rebalance-collection-test
   (s/only-with-real-database
    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
