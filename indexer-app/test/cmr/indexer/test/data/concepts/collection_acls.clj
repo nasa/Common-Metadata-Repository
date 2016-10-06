@@ -9,7 +9,7 @@
 (defn context-with-acls
   "Creates a fake context with the acls in an acl cache"
   [& acls]
-  (let [acl-cache (af/create-acl-cache
+  (let [acl-cache (af/create-acl-cache*
                     (mem-cache/create-in-memory-cache)
                     [:catalog-item])]
     (cache/set-value acl-cache :acls acls)

@@ -57,9 +57,7 @@
                            (conj (ingest-jobs/jobs) (af/refresh-acl-cache-job "ingest-acl-cache-refresh")))
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                        pc/providers-cache-key (pc/create-providers-cache)
-                       af/acl-cache-key (af/create-acl-cache
-                                          (stl-cache/create-single-thread-lookup-cache
-                                            (consistent-cache/create-consistent-cache))
+                       af/acl-cache-key (af/create-consistent-acl-cache
                                           [:catalog-item :system-object :provider-object])
                        ingest-api/user-id-cache-key (ingest-api/create-user-id-cache)
                        kf/kms-cache-key (kf/create-kms-cache)

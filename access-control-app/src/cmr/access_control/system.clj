@@ -65,7 +65,6 @@
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
              :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))
              :caches {af/acl-cache-key (af/create-acl-cache
-                                        (stl-cache/create-single-thread-lookup-cache)
                                         [:system-object :provider-object :single-instance-object])
                       common-health/health-cache-key (common-health/create-health-cache)}
              :public-conf (public-conf)

@@ -39,6 +39,11 @@
   "Required for jobs"
   (atom nil))
 
+(defconfig index-set-cache-consistent-timeout-seconds
+  "The number of seconds between when the indexer's index set cache should check with cubby for consistence"
+  {:default 5
+   :type Long})
+
 (defn create-system
   "Returns a new instance of the whole application."
   []
@@ -47,11 +52,10 @@
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (config/indexer-nrepl-port))
              :relative-root-url (transmit-config/indexer-relative-root-url)
-             :caches {af/acl-cache-key (af/create-acl-cache
-                                         (stl-cache/create-single-thread-lookup-cache
-                                           (consistent-cache/create-consistent-cache))
+             :caches {af/acl-cache-key (af/create-consistent-acl-cache
                                          [:catalog-item :system-object :provider-object])
-                      index-set/index-set-cache-key (consistent-cache/create-consistent-cache)
+                      index-set/index-set-cache-key (consistent-cache/create-consistent-cache
+                                                     {:hash-timeout-seconds (index-set-cache-consistent-timeout-seconds)})
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
                       cgac/coll-gran-aggregate-cache-key (cgac/create-cache)
