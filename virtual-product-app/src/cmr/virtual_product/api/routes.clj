@@ -10,7 +10,6 @@
             [cmr.common.api.errors :as errors]
             [cmr.common.api.context :as context]
             [cmr.common.mime-types :as mt]
-            [cmr.acl.core :as acl]
             [cmr.virtual-product.services.translation-service :as ts]
             [cmr.virtual-product.services.health-service :as hs]))
 
@@ -32,7 +31,6 @@
 
 (defn make-api [system]
   (-> (build-routes system)
-      acl/add-authentication-handler
       errors/invalid-url-encoding-handler
       errors/exception-handler
       common-routes/add-request-id-response-handler
