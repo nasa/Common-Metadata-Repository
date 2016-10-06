@@ -34,7 +34,8 @@
             [cmr.umm-spec.versioning :as umm-version]
             [cmr.acl.core :as acl]
             [cmr.search.api.keyword :as keyword-api]
-            [cmr.common-app.api.routes :as cr]
+            [cmr.common-app.api.health :as common-health]
+            [cmr.common-app.api.routes :as common-routes]
             [cmr.common-app.api-docs :as api-docs]
             [cmr.common-app.services.search.query-model :as common-qm]
             [cmr.search.services.result-format-helper :as rfh]
@@ -182,7 +183,7 @@
 (defn- search-response
   "Returns the response map for finding concepts"
   [response]
-  (cr/search-response (update response :result-format mt/format->mime-type)))
+  (common-routes/search-response (update response :result-format mt/format->mime-type)))
 
 (defn- find-concepts-by-json-query
   "Invokes query service to parse the JSON query, find results and return the response."
@@ -212,7 +213,7 @@
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
   [context path-w-extension params headers body]
-  (let [content-type-header (get headers (str/lower-case cr/CONTENT_TYPE_HEADER))]
+  (let [content-type-header (get headers (str/lower-case common-routes/CONTENT_TYPE_HEADER))]
     (cond
       (= mt/json content-type-header)
       (find-concepts-by-json-query context path-w-extension params headers body)
@@ -222,9 +223,9 @@
 
       :else
       {:status 415
-       :headers {cr/CORS_ORIGIN_HEADER "*"}
+       :headers {common-routes/CORS_ORIGIN_HEADER "*"}
        :body (str "Unsupported content type ["
-                  (get headers (str/lower-case cr/CONTENT_TYPE_HEADER)) "]")})))
+                  (get headers (str/lower-case common-routes/CONTENT_TYPE_HEADER)) "]")})))
 
 (defn- get-granules-timeline
   "Retrieves a timeline of granules within each collection found."
@@ -235,7 +236,7 @@
         search-params (lp/process-legacy-psa params)
         results (query-svc/get-granule-timeline context search-params)]
     {:status 200
-     :headers {cr/CORS_ORIGIN_HEADER "*"}
+     :headers {common-routes/CORS_ORIGIN_HEADER "*"}
      :body results}))
 
 (defn- find-concepts-by-aql
@@ -296,10 +297,10 @@
         collection-count (count provider-holdings)
         granule-count (reduce + (map :granule-count provider-holdings))]
     {:status 200
-     :headers {cr/CONTENT_TYPE_HEADER (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")
+     :headers {common-routes/CONTENT_TYPE_HEADER (str (mt/format->mime-type (:result-format params)) "; charset=utf-8")
                CMR_COLLECTION_COUNT_HEADER (str collection-count)
                CMR_GRANULE_COUNT_HEADER (str granule-count)
-               cr/CORS_ORIGIN_HEADER "*"}
+               common-routes/CORS_ORIGIN_HEADER "*"}
      :body provider-holdings-formatted}))
 
 (defn- find-tiles
@@ -307,7 +308,7 @@
   [context params]
   (let [results (query-svc/find-tiles-by-geometry context params)]
     {:status 200
-     :headers {cr/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)}
+     :headers {common-routes/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)}
      :body results}))
 
 (defn- build-routes [system]
@@ -344,13 +345,13 @@
         (context ["/concepts/:path-w-extension" :path-w-extension #"[A-Z][A-Z]?[0-9]+-[0-9A-Z_]+.*"] [path-w-extension]
           ;; OPTIONS method is needed to support CORS when custom headers are used in requests to
           ;; the endpoint. In this case, the Echo-Token header is used in the GET request.
-          (OPTIONS "/" req cr/options-response)
+          (OPTIONS "/" req common-routes/options-response)
           (GET "/" {params :params headers :headers context :request-context}
             (find-concept-by-cmr-concept-id context path-w-extension params headers)))
 
         ;; Find concepts
         (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections))(?:\..+)?"] [path-w-extension]
-          (OPTIONS "/" req cr/options-response)
+          (OPTIONS "/" req common-routes/options-response)
           (GET "/" {params :params headers :headers context :request-context query-string :query-string}
             (find-concepts context path-w-extension params headers query-string))
           ;; Find concepts - form encoded or JSON
@@ -359,7 +360,7 @@
 
         ;; Granule timeline
         (context ["/granules/:path-w-extension" :path-w-extension #"(?:timeline)(?:\..+)?"] [path-w-extension]
-          (OPTIONS "/" req cr/options-response)
+          (OPTIONS "/" req common-routes/options-response)
           (GET "/" {params :params headers :headers context :request-context query-string :query-string}
             (get-granules-timeline context path-w-extension params headers query-string))
           (POST "/" {params :params headers :headers context :request-context body :body-copy}
@@ -367,13 +368,13 @@
 
         ;; AQL search - xml
         (context ["/concepts/:path-w-extension" :path-w-extension #"(?:search)(?:\..+)?"] [path-w-extension]
-          (OPTIONS "/" req cr/options-response)
+          (OPTIONS "/" req common-routes/options-response)
           (POST "/" {params :params headers :headers context :request-context body :body-copy}
             (find-concepts-by-aql context path-w-extension params headers body)))
 
         ;; Provider holdings
         (context ["/:path-w-extension" :path-w-extension #"(?:provider_holdings)(?:\..+)?"] [path-w-extension]
-          (OPTIONS "/" req cr/options-response)
+          (OPTIONS "/" req common-routes/options-response)
           (GET "/" {params :params headers :headers context :request-context}
             (get-provider-holdings context path-w-extension params headers)))
 
@@ -387,7 +388,7 @@
         keyword-api/keyword-api-routes
 
         ;; add routes for managing jobs
-        (cr/job-api-routes
+        (common-routes/job-api-routes
           (routes
             (POST "/refresh-collection-metadata-cache" {:keys [headers params request-context]}
               (acl/verify-ingest-management-permission request-context :update)
@@ -395,10 +396,10 @@
               {:status 200})))
 
         ;; add routes for accessing caches
-        cr/cache-api-routes
+        common-routes/cache-api-routes
 
         ;; add routes for checking health of the application
-        (cr/health-api-routes hs/health)
+        (common-health/health-api-routes hs/health)
 
         (GET "/tiles" {params :params context :request-context}
           (find-tiles context params)))
@@ -460,8 +461,8 @@
       errors/invalid-url-encoding-handler
       mixed-arity-param-handler
       (errors/exception-handler default-error-format-fn)
-      cr/add-request-id-response-handler
+      common-routes/add-request-id-response-handler
       (context/build-request-context-handler system)
-      cr/pretty-print-response-handler
+      common-routes/pretty-print-response-handler
       params/wrap-params
       copy-of-body-handler))

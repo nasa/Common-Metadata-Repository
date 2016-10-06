@@ -26,8 +26,10 @@
   For most use cases only a single store is required with the fallback being a lookup function
   provided to obtain the value. This cache should only be used when a secondary store is
   needed rather than just a lookup function."
-  (:require [cmr.common.cache :as c]
-            [clojure.set :as set]))
+  (:require
+   [clojure.set :as set]
+   [cmr.common.cache :as c]
+   [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
 (defrecord FallbackCache
   [
@@ -36,8 +38,8 @@
 
    ;; The backup cache which is used when values are not found in the primary cache. Must implement
    ;; CmrCache protocol.
-   backup-cache
-   ]
+   backup-cache]
+
 
   c/CmrCache
   (get-keys
@@ -69,6 +71,7 @@
     [this key value]
     (c/set-value backup-cache key value)
     (c/set-value primary-cache key value)))
+(record-pretty-printer/enable-record-pretty-printing FallbackCache)
 
 (defn create-fallback-cache
   "Creates an instance of the fallback cache."

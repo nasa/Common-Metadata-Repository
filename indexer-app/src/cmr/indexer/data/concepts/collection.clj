@@ -31,12 +31,12 @@
     [cmr.indexer.data.humanizer-fetcher :as hf]
     [cmr.indexer.services.index-service :as idx]
     [cmr.umm-spec.location-keywords :as lk]
+    [cmr.umm-spec.related-url :as ru]
     [cmr.umm-spec.time :as spec-time]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
     [cmr.umm-spec.util :as su]
     [cmr.umm.acl-matchers :as umm-matchers]
     [cmr.umm.collection.entry-id :as eid]
-    [cmr.umm.related-url-helper :as ru]
     [cmr.umm.start-end-date :as sed]
     [cmr.umm.umm-collection :as umm-c])
   (:import
@@ -52,19 +52,38 @@
       :else
       (errors/internal-error! (str "Unknown spatial representation [" coord-sys "]")))))
 
-(defn- person->email-contact
-  "Return an email contact for the Personnel record or nil if none is available."
+(defn- email-contact?
+  "Return true if the given person has an email as contact info."
   [person]
-  (first (filter (fn [contact]
-                   (= :email
-                      (:type contact)))
-                 (:contacts person))))
+  (some #(= "Email" (:Type %))
+        (get-in person [:ContactInformation :ContactMechanisms])))
 
-(defn person-with-email
-  "Returns the first Personnel record for the list with an email contact or
-  nil if none exists."
-  [personnel]
-  (first (filter person->email-contact personnel)))
+(defn- data-center-contacts
+  "Returns the data center contacts with ContactInformation added if it doesn't have contact info"
+  [data-center]
+  (let [contacts (concat (:ContactPersons data-center) (:ContactGroups data-center))]
+    (map (fn [contact]
+           (if (:ContactInformation contact)
+             contact
+             (assoc contact :ContactInformation (:ContactInformation data-center))))
+         contacts)))
+
+(defn opendata-email-contact
+  "Returns the opendata email contact info for the given collection, it is just the first email
+  contact info found in the ContactPersons, ContactGroups or DataCenters."
+  [collection]
+  (let [{:keys [ContactPersons ContactGroups DataCenters]} collection
+        contacts (concat ContactPersons ContactGroups (mapcat data-center-contacts DataCenters))
+        email-contact (some #(when (email-contact? %) %) contacts)]
+    (when email-contact
+      (let [email (some #(when (= "Email" (:Type %)) (:Value %))
+                        (get-in email-contact [:ContactInformation :ContactMechanisms]))
+            email-contacts (when email [{:type :email :value email}])]
+        {:first-name (:FirstName email-contact)
+         :middle-name (:MiddleName email-contact)
+         :last-name (:LastName email-contact)
+         :roles (:Roles email-contact)
+         :contacts email-contacts}))))
 
 (defn- collection-temporal-elastic
   "Returns a map of collection temporal fields for indexing in Elasticsearch."
@@ -180,18 +199,37 @@
        (map #(or (:group-guid %) (some-> % :user-type name)))
        distinct))
 
+(defn- related-url->opendata-related-url
+  "Returns the opendata related url for the given collection related url"
+  [related-url]
+  (let [{:keys [Title Description Relation URLs MimeType FileSize]} related-url
+        {:keys [Size Unit]} FileSize
+        size (when (or Size Unit) (str Size Unit))]
+    ;; The current UMM JSON RelatedUrlType is flawed in that there can be multiple URLs,
+    ;; but only a single Title, MimeType and FileSize. This model doesn't make sense.
+    ;; Talked to Erich and he said that we are going to change the model.
+    ;; So for now, we make the assumption that there is only one URL in each RelatedUrlType.
+    {:type (first Relation)
+     :sub-type (second Relation)
+     :url (first URLs)
+     :description Description
+     :mime-type MimeType
+     :title Title
+     :size size}))
+
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection umm-spec-collection]
   (let [{:keys [concept-id revision-id provider-id user-id
                 native-id revision-date deleted format extra-fields tag-associations]} concept
-        {{:keys [long-name]} :product :keys [related-urls associated-difs personnel]} collection
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
-         temporal-keywords :TemporalKeywords platforms :Platforms} umm-spec-collection
+         temporal-keywords :TemporalKeywords platforms :Platforms
+         related-urls :RelatedUrls} umm-spec-collection
         processing-level-id (get-in umm-spec-collection [:ProcessingLevel :Id])
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
+        related-urls (when-not (= [su/not-provided-related-url] related-urls) related-urls)
         spatial-keywords (lk/location-keywords->spatial-keywords
                            (:LocationKeywords umm-spec-collection))
         access-value (get-in umm-spec-collection [:AccessConstraints :Value])
@@ -200,7 +238,8 @@
                                (concat [collection-data-type] k/nrt-aliases)
                                collection-data-type)
         entry-id (eid/entry-id short-name version-id)
-        personnel (person-with-email personnel)
+        opendata-related-urls (map related-url->opendata-related-url related-urls)
+        personnel (opendata-email-contact umm-spec-collection)
         platforms (map util/map-keys->kebab-case
                        (when-not (= su/not-provided-platforms platforms) platforms))
         gcmd-keywords-map (kf/get-gcmd-keywords-map context)
@@ -311,11 +350,9 @@
             :atom-links atom-links
             :summary summary
             :metadata-format (name (mt/format-key format))
-            :related-urls (map json/generate-string related-urls)
+            :related-urls (map json/generate-string opendata-related-urls)
             :update-time update-time
             :insert-time insert-time
-            :associated-difs associated-difs
-            :associated-difs.lowercase (map str/lower-case associated-difs)
             :coordinate-system coordinate-system
 
             ;; fields added to support keyword searches
@@ -323,7 +360,6 @@
                                               {:platform-long-names platform-long-names
                                                :instrument-long-names instrument-long-names
                                                :entry-id entry-id})
-            :long-name.lowercase (when long-name (str/lower-case long-name))
             :platform-ln.lowercase (map str/lower-case platform-long-names)
             :instrument-ln.lowercase (map str/lower-case instrument-long-names)
             :sensor-ln.lowercase (map str/lower-case sensor-long-names)

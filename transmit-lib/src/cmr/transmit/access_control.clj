@@ -148,4 +148,4 @@
 ;;; Misc. Functions
 
 ;; Defines health check function
-(h/defhealther get-access-control-health :access-control 2)
+(h/defhealther get-access-control-health :access-control {:timeout-secs 2})
