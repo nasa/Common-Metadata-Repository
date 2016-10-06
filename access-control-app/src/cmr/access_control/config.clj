@@ -25,7 +25,7 @@
    :type Long})
 
 (defn queue-config
-  "Returns the rabbit mq configuration for the metadata db application."
+  "Returns the queue configuration for the application."
   []
   (assoc (rmq-conf/default-config)
          :queues [(index-queue-name)]

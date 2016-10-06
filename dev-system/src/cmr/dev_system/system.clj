@@ -190,7 +190,7 @@
 
 (defmethod create-queue-broker :aws
   [type]
-  (-> (external-queue-config [1 1 1 1 1])
+  (-> (external-queue-config [])
       sqs/create-queue-broker
       wrapper/create-queue-broker-wrapper))
 
