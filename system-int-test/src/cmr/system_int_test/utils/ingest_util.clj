@@ -125,7 +125,8 @@
                  :body metadata
                  :query-params (:query-params options)
                  :headers {"content-type" (mt/format->mime-type input-format)
-                           "accept" (mt/format->mime-type output-format)}}))
+                           "accept" (mt/format->mime-type output-format)
+                           "cmr-sanitize-umm" (:cmr-sanitize-umm options)}}))
   ([concept-type input-format metadata output-format]
    (translate-metadata concept-type input-format metadata output-format nil)))
 

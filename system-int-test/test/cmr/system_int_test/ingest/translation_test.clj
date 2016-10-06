@@ -59,6 +59,52 @@
         (is (= (mt/format->mime-type output-format) content-type))
         (is (= expected parsed-umm-json)))))
 
+  ;; testing -H "Cmr-Sanitize-Umm:true" has no effect on all the translations.
+  (doseq [input-format valid-formats
+          output-format valid-formats]
+    (testing (format "Translating %s to %s are not impacted when Cmr-Sanitize-Umm is set to true" 
+                     (name input-format) (name output-format))
+      (let [options {:cmr-sanitize-umm "true"}
+            input-str (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
+            expected (expected-conversion/convert expected-conversion/example-collection-record input-format output-format)
+            {:keys [status headers body]} (ingest/translate-metadata :collection input-format input-str 
+                                                                     output-format options)
+            _ (is (= 200 status) body)
+            content-type (first (mt/extract-mime-types (:content-type headers)))
+            parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
+        (is (= 200 status) body)
+        (is (= (mt/format->mime-type output-format) content-type))
+        (is (= expected parsed-umm-json))))) 
+
+  ;; testing -H "Cmr-Sanitize-Umm:false" has no effect on all the translations with destination format
+  ;; not being umm-json. 
+  (doseq [input-format valid-formats
+          output-format (drop 1 valid-formats)]
+    (testing (format "Translating %s to non-umm-json are not impacted by Cmr-Sanitize-Umm header" (name input-format))
+      (let [options {:cmr-sanitize-umm "false"}
+            input-str (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
+            expected (expected-conversion/convert expected-conversion/example-collection-record input-format output-format)
+            {:keys [status headers body]} (ingest/translate-metadata :collection input-format input-str
+                                                                     output-format options)
+            _ (is (= 200 status) body)
+            content-type (first (mt/extract-mime-types (:content-type headers)))
+            parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
+        (is (= 200 status) body)
+        (is (= (mt/format->mime-type output-format) content-type))
+        (is (= expected parsed-umm-json))))) 
+
+  ;; Testing -H "Cmr-Sanitize-Umm:false" will not sanitize when destination format of translation is umm-json
+  ;; In this case the DataCenter is missing.
+  (doseq [input-format [:iso19115] 
+          output-format [:umm-json]]
+    (testing (format "Translating %s to umm-json without sanitizing umm" (name input-format))
+      (let [options {:cmr-sanitize-umm "false"}
+            input-str (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
+            {:keys [status body]} (ingest/translate-metadata :collection input-format input-str 
+                                                                            output-format options)]
+        (is (= "{\"errors\":[\"object has missing required properties ([\\\"DataCenters\\\"])\"]}" body))
+        (is (= 422 status)))))
+
   (testing "Failure cases"
     (testing "unsupported input format"
       (assert-translate-failure

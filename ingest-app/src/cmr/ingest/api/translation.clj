@@ -46,7 +46,7 @@
   [context concept-type headers body skip-umm-validation]
   (let [supported-formats (concept-type->supported-formats concept-type)
         content-type (get headers "content-type")
-        not-sanitize-umm? (= "false" (get headers "Cmr-Sanitize-Umm"))]
+        not-sanitize-umm? (= "false" (get headers "cmr-sanitize-umm"))]
 
     ;; just for validation (throws service error if invalid media type is given)
     (mt/extract-header-mime-type supported-formats headers "content-type" true)
@@ -63,7 +63,6 @@
                       u/no-sanitize-options 
                       u/default-parsing-options)
             umm (umm-spec/parse-metadata context concept-type content-type body options)]
-        
         (if-let [umm-errors (when-not skip-umm-validation (umm-errors context concept-type umm))]
           (errors/throw-service-errors :invalid-data umm-errors)
           ;; Otherwise, if the parsed UMM validates, return a response with the metadata in the
