@@ -34,6 +34,10 @@
   request timed out."
   {:default 10000 :type Long})
 
+(defconfig use-aws
+  "This indeicates whether or not to AWS SNS/SQS for queues."
+  {:default false :type Boolean})
+
 (defn default-config
   "Returns a default config map for connecting to the message queue"
   []
