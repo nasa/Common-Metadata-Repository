@@ -3,9 +3,9 @@
   (:require
    [clj-time.format :as f]
    [clojure.string :as str]
-   [cmr.common.util :as util]
    [cmr.common.xml.parse :as p]
    [cmr.common.xml.simple-xpath :refer [select]]
+   [cmr.common.util :as util]
    [cmr.umm-spec.date-util :as du]
    [cmr.umm-spec.models.umm-common-models :as cmn]))
 
@@ -38,6 +38,10 @@
 (def default-parsing-options
   "Defines the default options for parsing metadata into umm"
   {:sanitize? true})
+
+(def no-sanitize-options
+  "Defines no sanitize options for parsing metadata into umm"
+  {:sanitize? false})
 
 (def not-provided
   "place holder string value for not provided string field"

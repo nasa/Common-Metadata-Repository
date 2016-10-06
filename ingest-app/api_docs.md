@@ -81,6 +81,10 @@ Note that when multiple fields are present the combination of keywords are valid
 
 If this header is set to true, collection metadata is validated against the UMM-C JSON schema. It also uses the UMM-C Specification for parsing the metadata and checking business rules. This is temporary header for testing. Eventually the CMR will enforce this validation by default.
 
+#### <a name="sanitize-umm-header"></a> Cmr-Sanitize-Umm Header
+
+If this header is set to false, translation to UMM Json will not add default values to the converted UMM when the required fields are missing. This may cause umm schema validation failure if skip-umm-validation is not set to true.
+
 #### <a name="user-id"></a> User-Id Header
 
 The user id header allows specifying the user-id to use when saving or deleting a collection concept. This header is currently ignored for granule concepts. If user-id header is not specified, user id is retrieved using the token supplied during the ingest.

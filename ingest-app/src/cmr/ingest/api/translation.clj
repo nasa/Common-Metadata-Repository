@@ -1,16 +1,14 @@
 (ns cmr.ingest.api.translation
   "Defines an API for translating metadata between formats."
-  (:require [compojure.core :refer :all]
-            [cmr.common.mime-types :as mt]
-            [cmr.umm-spec.umm-spec-core :as umm-spec]
-            [cmr.common.services.errors :as errors]
-            [cmr.umm-spec.versioning :as umm-versions]
-
-    ;; Needed for development time random metadata generation
-            [cmr.umm-spec.test.umm-generators :as umm-generators]
-            [clojure.test.check.generators :as test-check-gen]
-            [cmr.umm-spec.versioning :as ver]
-            [cmr.common.services.errors :as svc-errors]))
+  (:require 
+    [clojure.test.check.generators :as test-check-gen]
+    [cmr.common.mime-types :as mt]
+    [cmr.common.services.errors :as errors]
+    [cmr.umm-spec.test.umm-generators :as umm-generators]
+    [cmr.umm-spec.versioning :as ver]
+    [cmr.umm-spec.umm-spec-core :as umm-spec]
+    [cmr.umm-spec.util :as u]
+    [compojure.core :refer :all]))
 
 (def concept-type->supported-formats
   "A map of concept type to the list of formats that are supported both for input and output of
@@ -47,7 +45,8 @@
   a ring response with translated metadata."
   [context concept-type headers body skip-umm-validation]
   (let [supported-formats (concept-type->supported-formats concept-type)
-        content-type (get headers "content-type")]
+        content-type (get headers "content-type")
+        not-sanitize-umm? (= "false" (get headers "Cmr-Sanitize-Umm"))]
 
     ;; just for validation (throws service error if invalid media type is given)
     (mt/extract-header-mime-type supported-formats headers "content-type" true)
@@ -59,12 +58,17 @@
 
       ;; If there were no errors, then proceed to convert it to UMM and check for UMM schema
       ;; validation errors.
-      (let [umm (umm-spec/parse-metadata context concept-type content-type body)]
+      (let [accept-header (get headers "accept")
+            options (if (and not-sanitize-umm? (mt/umm-json? accept-header))
+                      u/no-sanitize-options 
+                      u/default-parsing-options)
+            umm (umm-spec/parse-metadata context concept-type content-type body options)]
+        
         (if-let [umm-errors (when-not skip-umm-validation (umm-errors context concept-type umm))]
           (errors/throw-service-errors :invalid-data umm-errors)
           ;; Otherwise, if the parsed UMM validates, return a response with the metadata in the
           ;; requested XML format.
-          (translate-response context umm (get headers "accept")))))))
+          (translate-response context umm accept-header))))))
 
 (def translation-routes
   (context "/translate" []
