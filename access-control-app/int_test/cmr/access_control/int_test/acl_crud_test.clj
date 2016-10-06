@@ -93,6 +93,38 @@
                                                           [:system_identity :target] "ARCHIVE_RECORD")
                                                 :group_permissions [{:user_type :registered :permissions ["delete"]}]))))))
 
+(deftest acl-targeting-group-with-legacy-guid-test
+  (let [admin-token (e/login (u/conn-context) "admin")
+        ;; as an admin user, create a group with a legacy_guid
+        created-group (:concept_id (ac/create-group (merge (u/conn-context) {:token admin-token})
+                                                    {:name "group"
+                                                     :description "a group"
+                                                     :legacy_guid "normal-group-guid"
+                                                     :members ["user1"]}))]
+    (u/wait-until-indexed)
+    ;; as an admin user, update the system ANY_ACL ACL to grant permission to the newly created group by concept id
+    (ac/update-acl (merge (u/conn-context) {:token admin-token})
+                   (:concept-id fixtures/*fixture-system-acl*)
+                   {:group_permissions [{:group_id created-group
+                                         :permissions [:create :read :update :delete]}]
+                    :system_identity {:target "ANY_ACL"}})
+    (ac/update-acl (merge (u/conn-context) {:token admin-token})
+                   (:concept-id fixtures/*fixture-provider-acl*)
+                   {:group_permissions [{:group_id created-group
+                                         :permissions [:create :read :update :delete]}]
+                    :provider_identity {:provider_id "PROV1"
+                                        :target "CATALOG_ITEM_ACL"}})
+    (u/wait-until-indexed)
+    ;; as a non-admin user belonging to the created group, try to perform an action that should be allowed
+    (let [user-token (e/login (u/conn-context) "user1" ["normal-group-guid"])]
+      (is (= 1 (:revision_id
+                 (ac/create-acl (merge (u/conn-context) {:token user-token})
+                                {:group_permissions [{:user_type :registered
+                                                      :permissions [:read]}]
+                                 :catalog_item_identity {:provider_id "PROV1"
+                                                         :name "PROV1 collections ACL"
+                                                         :collection_applicable true}})))))))
+
 (deftest create-catalog-item-acl-permission-test
   ;; Tests creation permissions of catalog item acls
   (let [token (e/login (u/conn-context) "user1")
