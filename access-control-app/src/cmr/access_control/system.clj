@@ -19,6 +19,7 @@
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
+   [cmr.message-queue.config :as queue-config]
    [cmr.message-queue.queue.rabbit-mq :as rmq]
    [cmr.message-queue.queue.sqs :as sqs]
    [cmr.transmit.config :as transmit-config]))
@@ -64,7 +65,9 @@
              :search-index (search-index/create-elastic-search-index)
              :web (web/create-web-server (transmit-config/access-control-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
-             :queue-broker (sqs/create-queue-broker (config/queue-config))
+             :queue-broker (if (queue-config/use-aws)
+                             (sqs/create-queue-broker (config/queue-config))
+                             (rmq/create-queue-broker (config/queue-config)))
              :caches {af/acl-cache-key (af/create-acl-cache
                                         [:system-object :provider-object :single-instance-object])
                       common-health/health-cache-key (common-health/create-health-cache)}

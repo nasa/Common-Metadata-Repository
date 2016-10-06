@@ -13,6 +13,7 @@
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
+   [cmr.message-queue.config :as queue-config]
    [cmr.message-queue.queue.rabbit-mq :as rmq]
    [cmr.message-queue.queue.sqs :as sqs]
    [cmr.metadata-db.api.routes :as routes]
@@ -47,7 +48,9 @@
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                        common-health/health-cache-key (common-health/create-health-cache)}
               :scheduler (jobs/create-clustered-scheduler `system-holder :db mdb-jobs/jobs)
-              :queue-broker (sqs/create-queue-broker (config/queue-config))
+              :queue-broker (if (queue-config/use-aws)
+                              (sqs/create-queue-broker (config/queue-config))
+                              (rmq/create-queue-broker (config/queue-config)))
               :relative-root-url (transmit-config/metadata-db-relative-root-url)}]
      (transmit-config/system-with-connections sys [:echo-rest]))))
 
