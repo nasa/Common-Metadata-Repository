@@ -333,18 +333,18 @@
   ;; list the topics for the cmr-ingest_exchange exchange/topic
   (get-topic (:sns-client broker) "cmr_ingest_exchange")
   ;; list the queues for the cmr_ingest_exchange
-  (queue/get-queues-bound-to-exchange broker "ngap-cmr_testB_exchange")
+  (queue/get-queues-bound-to-exchange broker "cmr_test_exchange")
   ;; create a test queue
-  (create-queue (:sqs-client broker) "test-ABG")
+  (create-queue (:sqs-client broker) "cmr_test.queue")
   ;; create a test exchange
-  (create-exchange (:sns-client broker) "ngap-cmr_testB_exchange")
+  (create-exchange (:sns-client broker) "cmr_test_exchange")
   ;; list the queues for the cmr_test_exchange
   (queue/get-queues-bound-to-exchange broker "cmr_test_exchange")
   ;; Bind the queue to the new exchange
-  (bind-queue-to-exchanges (:sns-client broker) (:sqs-client broker) ["ngap-cmr_testB_exchange"] "test-ABG")
+  (bind-queue-to-exchanges (:sns-client broker) (:sqs-client broker) ["cmr_test_exchange"] "cmr_test.queue")
   ;; subscribe to test queue with a simple handler that prints received messages
   (queue/subscribe broker "cmr-test.queue" (fn [msg] (println "Got Message: " msg)))
   ;; publish a message to the queue to verify our subscribe worked
   (queue/publish-to-queue broker "cmr-test.queue" "{\"body\": \"ABC\"}")
   ;; publish a message to the exchange to verify the message is sent to the queue
-  (queue/publish-to-exchange broker "ngap-cmr_testB_exchange" "{\"body\": \"ABC-exchange\"}"))
+  (queue/publish-to-exchange broker "cmr_test_exchange" "{\"body\": \"test-exchange\"}"))

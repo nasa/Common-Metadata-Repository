@@ -267,7 +267,6 @@
                                         {:url-fn ~cmr.transmit.http-helper/health-url
                                          :method :get
                                          :raw? true
-                                         :use-system-token? true
                                          :http-options {:accept :json}})]
                            (if (= 200 status#)
                              {:ok? true :dependencies body#}

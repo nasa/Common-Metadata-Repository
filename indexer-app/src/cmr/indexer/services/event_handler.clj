@@ -12,7 +12,6 @@
 (defmulti handle-ingest-event
   "Handle the various actions that can be requested via the indexing queue"
   (fn [context all-revisions-index? msg]
-    (debug "HANDLING INGEST EVENT: " msg)
     (keyword (:action msg))))
 
 (defmethod handle-ingest-event :default
@@ -35,7 +34,6 @@
 
 (defmethod handle-ingest-event :concept-update
   [context all-revisions-index? {:keys [concept-id revision-id]}]
-  (debug "CONCPEPT UPDATE REQUEST:" concept-id revision-id "all-revision-index?:" all-revisions-index?)
   (if (= :humanizer (cc/concept-id->type concept-id))
     (indexer/update-humanizers context)
     (indexer/index-concept-by-concept-id-revision-id
