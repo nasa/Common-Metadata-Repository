@@ -321,3 +321,39 @@
       (is (= {:status 404
               :errors [(format "Group with concept id [%s] was deleted." concept_id)]}
              (u/update-group token concept_id group))))))
+
+(deftest update-group-legacy-guid-test
+  (let [group1 (u/make-group {:legacy_guid "legacy_guid_1" :name "group1"})
+        group2 (u/make-group {:legacy_guid "legacy_guid_2" :name "group2"})
+        group3 (u/make-group {:legacy_guid "legacy_guid_3" :name "group3"})
+
+        no-legacy-group (u/make-group {:name "group1"})
+        same-legacy-group (u/make-group {:legacy_guid "legacy_guid_2" :name "group2"})
+        diff-legacy-group (u/make-group {:legacy_guid "wrong_legacy_guid" :name "group3"})
+
+        token (e/login (u/conn-context) "user1")
+        concept-id-no-legacy (:concept_id (u/create-group token group1))
+        concept-id-same-legacy (:concept_id (u/create-group token group2))
+        concept-id-diff-legacy (:concept_id (u/create-group token group3))
+        _ (u/wait-until-indexed)
+
+        response-no-legacy (u/update-group token concept-id-no-legacy no-legacy-group)
+        response-same-legacy (u/update-group token concept-id-same-legacy same-legacy-group)
+        response-diff-legacy (u/update-group token concept-id-diff-legacy diff-legacy-group)]
+
+    (u/wait-until-indexed)
+
+    ;;We should now successfully update groups with a legacy_guid, without specifying the legacy_guid in the updated group
+    (is (= {:status 200 :concept_id concept-id-no-legacy :revision_id 2}
+           response-no-legacy))
+    (u/assert-group-saved (assoc no-legacy-group :legacy_guid "legacy_guid_1") "user1" concept-id-no-legacy 2)
+
+    ;;Specifying the same legacy_guid should also successfully update the group
+    (is (= {:status 200 :concept_id concept-id-same-legacy :revision_id 2}
+           response-same-legacy))
+    (u/assert-group-saved (assoc same-legacy-group :legacy_guid "legacy_guid_2") "user1" concept-id-same-legacy 2)
+
+    ;;When specifying a different legacy_guid, an error message should be recieved
+    (is (= {:status 400,
+            :errors ["Legacy Guid cannot be modified. Attempted to change existing value [legacy_guid_3] to [wrong_legacy_guid]"]}
+           response-diff-legacy))))
