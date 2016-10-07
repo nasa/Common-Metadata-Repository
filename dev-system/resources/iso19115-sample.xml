@@ -78,7 +78,7 @@
                 </gmd:CI_Citation>
             </gmd:citation>
             <gmd:abstract>
-                <gco:CharacterString>A very abstract collection</gco:CharacterString>
+                <gco:CharacterString>A very abstract collection Version Description: Best version ever</gco:CharacterString>
             </gmd:abstract>
             <gmd:purpose gco:nilReason="missing"/>
             <gmd:descriptiveKeywords>

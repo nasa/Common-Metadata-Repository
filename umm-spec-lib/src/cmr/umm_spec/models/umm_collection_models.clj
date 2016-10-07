@@ -24,6 +24,9 @@
    ;; date is the date that the metadata record is scheduled to be reviewed.
    MetadataDates
 
+   ;; The Version Description of the collection.
+   VersionDescription
+
    ;; This is deprecated and will be removed. Use LocationKeywords instead. Controlled hierarchical
    ;; keywords used to specify the spatial location of the collection. The controlled vocabulary for
    ;; spatial keywords is maintained in the Keyword Management System (KMS). The Spatial Keyword

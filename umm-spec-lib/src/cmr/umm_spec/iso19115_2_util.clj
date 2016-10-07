@@ -57,6 +57,10 @@
   "Separator used to join keyword fields into a keyword string"
   " > ")
 
+(def version-description-separator
+  "Separator used to join Abstract and VersionDescription"
+  " Version Description: ")
+
 (defn generate-title
   "Returns an ISO title string from the ShortName and LongName fields of the given record."
   [record]

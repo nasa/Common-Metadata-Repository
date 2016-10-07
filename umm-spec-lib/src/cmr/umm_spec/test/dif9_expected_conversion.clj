@@ -264,4 +264,6 @@
         (assoc :SpatialKeywords nil)
         (assoc :MetadataDates (expected-metadata-dates umm-coll))
         (update :AccessConstraints conversion-util/expected-access-constraints)
+        ;; DIF 9 does not support VersionDescription
+        (assoc :VersionDescription nil)
         js/parse-umm-c)))
