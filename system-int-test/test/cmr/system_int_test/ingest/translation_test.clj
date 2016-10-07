@@ -61,7 +61,7 @@
     (testing (format "Translating iso19115 to umm-json without skipping sanitizing")
       (let [input-format :iso19115
             output-format :umm-json
-            options {:cmr-skip-sanitize-umm-c false}
+            options {:skip-sanitize-umm-c false}
             input-xml (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
             {:keys [status]} (ingest/translate-metadata :collection input-format input-xml
                                                                     output-format options)]
@@ -70,7 +70,7 @@
     (testing (format "Translating iso19115 to umm-json with skipping sanitizing and without skipping umm validation")
       (let [input-format :iso19115
             output-format :umm-json
-            options {:cmr-skip-sanitize-umm-c true}
+            options {:skip-sanitize-umm-c true}
             input-xml (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
             {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml 
                                                                             output-format options)]
@@ -80,7 +80,7 @@
     (testing (format "Translating iso19115 to umm-json with skipping sanitizing and with skipping validation")
       (let [input-format :iso19115
             output-format :umm-json
-            options {:cmr-skip-sanitize-umm-c true :query-params {:skip_umm_validation true}}
+            options {:skip-sanitize-umm-c true :query-params {:skip_umm_validation true}}
             input-xml (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
             {:keys [status]} (ingest/translate-metadata :collection input-format input-xml
                                                                     output-format options)]
@@ -89,7 +89,7 @@
     (testing (format "Translating iso19115 to dif10 with skipping sanitizing")
       (let [input-format :iso19115
             output-format :dif10
-            options {:cmr-skip-sanitize-umm-c true}
+            options {:skip-sanitize-umm-c true}
             input-xml (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
             {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
                                                                          output-format options)]
