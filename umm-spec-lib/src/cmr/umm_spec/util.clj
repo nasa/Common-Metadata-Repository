@@ -39,8 +39,8 @@
   "Defines the default options for parsing metadata into umm"
   {:sanitize? true})
 
-(def no-sanitize-options
-  "Defines no sanitize options for parsing metadata into umm"
+(def skip-sanitize-parsing-options
+  "Defines skipping sanitize options for parsing metadata into umm"
   {:sanitize? false})
 
 (def not-provided

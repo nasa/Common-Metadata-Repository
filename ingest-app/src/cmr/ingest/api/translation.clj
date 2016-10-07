@@ -46,28 +46,34 @@
   [context concept-type headers body skip-umm-validation]
   (let [supported-formats (concept-type->supported-formats concept-type)
         content-type (get headers "content-type")
-        not-sanitize-umm? (= "false" (get headers "cmr-sanitize-umm"))]
+        accept-header (get headers "accept")
+        skip-sanitize-umm-header (get headers "cmr-skip-sanitize-umm-c")
+        skip-sanitize-umm? (= "true" skip-sanitize-umm-header)
+        options (if (and skip-sanitize-umm? (mt/umm-json? accept-header))
+                  u/skip-sanitize-parsing-options
+                  u/default-parsing-options)]
 
     ;; just for validation (throws service error if invalid media type is given)
     (mt/extract-header-mime-type supported-formats headers "content-type" true)
     (mt/extract-header-mime-type supported-formats headers "accept" true)
 
-    ;; Validate the input data against its own native schema (ECHO, DIF, etc.)
-    (if-let [errors (seq (umm-spec/validate-metadata concept-type content-type body))]
-      (errors/throw-service-errors :bad-request errors)
+    ;; Can not skip-sanitize-umm when the target format is not UMM-C 
+    (if (and skip-sanitize-umm? (not (mt/umm-json? accept-header)))
+      (let [errors ["Skipping santization during translation is only supported when the target format is UMM-C"]]
+        (errors/throw-service-errors :bad-request errors)) 
+   
+      ;; Validate the input data against its own native schema (ECHO, DIF, etc.)
+      (if-let [errors (seq (umm-spec/validate-metadata concept-type content-type body))]
+        (errors/throw-service-errors :bad-request errors)
 
-      ;; If there were no errors, then proceed to convert it to UMM and check for UMM schema
-      ;; validation errors.
-      (let [accept-header (get headers "accept")
-            options (if (and not-sanitize-umm? (mt/umm-json? accept-header))
-                      u/no-sanitize-options 
-                      u/default-parsing-options)
-            umm (umm-spec/parse-metadata context concept-type content-type body options)]
-        (if-let [umm-errors (when-not skip-umm-validation (umm-errors context concept-type umm))]
-          (errors/throw-service-errors :invalid-data umm-errors)
-          ;; Otherwise, if the parsed UMM validates, return a response with the metadata in the
-          ;; requested XML format.
-          (translate-response context umm accept-header))))))
+        ;; If there were no errors, then proceed to convert it to UMM and check for UMM schema
+        ;; validation errors.
+        (let [umm (umm-spec/parse-metadata context concept-type content-type body options)]
+          (if-let [umm-errors (when-not skip-umm-validation (umm-errors context concept-type umm))]
+            (errors/throw-service-errors :invalid-data umm-errors)
+            ;; Otherwise, if the parsed UMM validates, return a response with the metadata in the
+            ;; requested XML format.
+            (translate-response context umm accept-header)))))))
 
 (def translation-routes
   (context "/translate" []

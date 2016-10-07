@@ -81,9 +81,9 @@ Note that when multiple fields are present the combination of keywords are valid
 
 If this header is set to true, collection metadata is validated against the UMM-C JSON schema. It also uses the UMM-C Specification for parsing the metadata and checking business rules. This is temporary header for testing. Eventually the CMR will enforce this validation by default.
 
-#### <a name="sanitize-umm-header"></a> Cmr-Sanitize-Umm Header
+#### <a name="skip-sanitize-umm-c-header"></a> Cmr-Skip-Sanitize-Umm-C Header
 
-If this header is set to false, translation to UMM Json will not add default values to the converted UMM when the required fields are missing. This may cause umm schema validation failure if skip-umm-validation is not set to true.
+If this header is set to true, translation to UMM JSON will not add default values to the converted UMM when the required fields are missing. This may cause umm schema validation failure if skip-umm-validation is not set to true. This header can not be set to true when translating to all other formats because we currently only allows the skipping of sanitation when translating to destination of UMM JSON. 
 
 #### <a name="user-id"></a> User-Id Header
 
