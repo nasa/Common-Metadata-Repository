@@ -11,8 +11,7 @@
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
    [cmr.message-queue.config :as queue-config]
-   [cmr.message-queue.queue.rabbit-mq :as rmq]
-   [cmr.message-queue.queue.sqs :as sqs]
+   [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.transmit.config :as transmit-config]
    [cmr.virtual-product.api.routes :as routes]
    [cmr.virtual-product.config :as config]
@@ -34,9 +33,7 @@
              :web (web/create-web-server (transmit-config/virtual-product-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (virtual-product-nrepl-port))
              :relative-root-url (transmit-config/virtual-product-relative-root-url)
-             :queue-broker (if (queue-config/use-aws)
-                             (sqs/create-queue-broker (config/queue-config))
-                             (rmq/create-queue-broker (config/queue-config)))
+             :queue-broker (queue-broker/create-queue-broker (config/queue-config))
              :caches (common-health/health-cache-key (common-health/create-health-cache))}]
     (transmit-config/system-with-connections sys [:metadata-db :ingest :search])))
 

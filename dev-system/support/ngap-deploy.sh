@@ -28,18 +28,18 @@ skip_build=false
 
 while [[ $# -gt 0 ]]
 do
-key="$1"
+  key="$1"
 
-case $key in
+  case $key in
 
-    --skip-build)
-    skip_build=true
-    ;;
-    *)
-            # unknown option
-    ;;
-esac
-shift # past argument or value
+      --skip-build)
+      skip_build=true
+      ;;
+      *)
+              # unknown option
+      ;;
+  esac
+  shift # past argument or value
 done
 
 

@@ -154,14 +154,6 @@
   (fn [type]
     type))
 
-(defmethod create-queue-broker :aws
-  [type]
-  (-> (indexer-config/queue-config)
-      (rmq-conf/merge-configs (vp-config/queue-config))
-      (rmq-conf/merge-configs (access-control-config/queue-config))
-      sqs/create-queue-broker
-      wrapper/create-queue-broker-wrapper))
-
 (defmethod create-queue-broker :in-memory
   [type]
   (-> (indexer-config/queue-config)

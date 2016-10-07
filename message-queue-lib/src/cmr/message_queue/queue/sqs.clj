@@ -117,7 +117,7 @@
                 (handler msg-content)
                 (.deleteMessage sqs-client queue-url (.getReceiptHandle msg))
                 (catch Throwable e
-                  (error e "Message processing failed for message" (pr-str msg) "on queue" queue-name "stack trace:" (.printStackTrace e)))))))
+                  (error e "Message processing failed for message" (pr-str msg) "on queue" queue-name))))))
         (catch Throwable e
           (error  e "Async handler for queue" queue-name "completing."))))))
 
@@ -193,7 +193,8 @@
                   topic-arn (.getTopicArn topic)
                   ;; subscribe the queue to the topic
                   subscription-arn (.getSubscriptionArn (.subscribe sns-client topic-arn "sqs" q-arn))]])))
-
+      ;; Keeping the following commented-out line until we determine if raw message delivery has
+      ;; performance benefits.
       ; (.setSubscriptionAttributes sns-client subscription-arn "RawMessageDelivery" "true"))))
 
 (defn- normalized-queue-name->original-queue-name
