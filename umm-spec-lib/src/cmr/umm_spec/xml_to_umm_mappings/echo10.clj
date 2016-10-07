@@ -138,6 +138,7 @@
   {:EntryTitle (value-of doc "/Collection/DataSetId")
    :ShortName  (value-of doc "/Collection/ShortName")
    :Version    (value-of doc "/Collection/VersionId")
+   :VersionDescription (value-of doc "/Collection/VersionDescription")
    :DataDates  (parse-data-dates doc)
    :MetadataDates (parse-metadata-dates doc)
    :Abstract   (u/truncate (value-of doc "/Collection/Description") u/ABSTRACT_MAX sanitize?)

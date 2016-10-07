@@ -139,6 +139,7 @@
      [:ProcessingLevelId (-> c :ProcessingLevel :Id)]
      [:ProcessingLevelDescription (-> c :ProcessingLevel :ProcessingLevelDescription)]
      (dc/generate-archive-centers c)
+     [:VersionDescription (:VersionDescription c)]
      [:CollectionState (:CollectionProgress c)]
      [:RestrictionFlag (-> c :AccessConstraints :Value)]
      [:RestrictionComment (util/trunc (-> c :AccessConstraints :Description) 1024)]

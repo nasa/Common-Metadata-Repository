@@ -187,7 +187,9 @@
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
   (let [platforms (platform/platforms-with-id (:Platforms c))
-        additional-attributes (:AdditionalAttributes c)]
+        {additional-attributes :AdditionalAttributes
+         abstract :Abstract
+         version-description :VersionDescription} c]
     (xml
       [:gmi:MI_Metadata
        iso19115-2-xml-namespaces
@@ -216,7 +218,9 @@
             [:gmd:MD_Identifier
              [:gmd:code (char-string (:ShortName c))]
              [:gmd:version (char-string (:Version c))]]]]]
-         [:gmd:abstract (char-string (or (:Abstract c) su/not-provided))]
+         [:gmd:abstract (char-string (if (or abstract version-description)
+                                       (str abstract iso/version-description-separator version-description)
+                                       su/not-provided))]
          [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
          [:gmd:status
           (when-let [collection-progress (:CollectionProgress c)]
