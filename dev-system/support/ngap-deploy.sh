@@ -2,8 +2,8 @@
 # This script is used to deploy a single application to NGAP.
 # Environment vars used by the script
 # WORKSPACE_HOME - required. Directory above the cmr root directory.
-# DEPLOYMENT_DIR (Optional) - defaults to $WORKSPACE_HOME/ngap-deployments
-# NGAP_CLI_DIR (Optional) - defaults to $WORKSPACE_HOME/ngap-cli
+# DEPLOYMENT_DIR (Optional) - Where the staging dirs for the applications are - defaults to $WORKSPACE_HOME/ngap-deployments
+# NGAP_CLI_DIR (Optional) - Where the NGAP command line utils are installed - defaults to $WORKSPACE_HOME/ngap-cli
 
 apps=("metadata-db" "cubby" "index-set" "indexer" "virtual-product" "bootstrap" "access-control" "search" "ingest")
 
