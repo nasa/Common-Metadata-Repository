@@ -50,13 +50,15 @@
 (def default-contact-person-role
   "Technical Contact")
 
-(def short-name-length
-  85)
-
 (defn- truncate-short-name?
   "Return true if ShortName is more than 85 characters and should be truncated"
   [short-name]
-  (> (count short-name) short-name-length))
+  (> (count short-name) u/SHORTNAME_MAX))
+
+(defn- validate-short-name
+  "Truncate ShortName if it's count is greater than 85 characters"
+  [short-name]
+  (u/truncate short-name u/SHORTNAME_MAX (truncate-short-name? short-name)))
 
 (defn- parse-contact-mechanisms
   "Parse ECHO10 contact mechanisms to UMM."
@@ -132,8 +134,7 @@
                          all-contacts)]
     (for [contact contacts]
       (let [organization-name (u/with-default (value-of contact "OrganizationName") sanitize?)
-            short-name (if (truncate-short-name? organization-name)
-                         (subs organization-name 0 short-name-length) organization-name)
+            short-name (validate-short-name organization-name)
             long-name (if (truncate-short-name? organization-name) organization-name nil)]
        {:Roles (remove nil? (u/map-with-default echo10-contact-role->umm-data-center-role
                                                [(value-of contact "Role")]
@@ -161,6 +162,7 @@
   center-role - role for the data center"
   [doc data-centers center-name center-role]
   (let [center (value-of doc (str "/Collection/" center-name))
+        short-name (validate-short-name center)
         long-name (if (truncate-short-name? center) center nil)]
     (if center
       ;; Check to see if we already have an entry for this data center - the role and short name

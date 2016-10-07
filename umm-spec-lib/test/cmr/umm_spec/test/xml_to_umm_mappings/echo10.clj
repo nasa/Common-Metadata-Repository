@@ -37,5 +37,7 @@
                   </Contacts>
                  </Collection>"
             data-centers (contact/parse-data-centers xml false)]
-        (is (<= (count (:ShortName (first data-centers))) 85))
+        (is (= (:ShortName (first data-centers))
+               "TheNeverEndingOrganizationNameCheckItOutItJustKeepsGoingAndGoingLikeTheEngerigizerBun"))
+        (is (= (count (:ShortName (first data-centers))) 85))
         (is (> (count (:LongName (first data-centers))) 85)))))))
