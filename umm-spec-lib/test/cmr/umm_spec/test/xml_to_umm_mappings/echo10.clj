@@ -37,4 +37,5 @@
                   </Contacts>
                  </Collection>"
             data-centers (contact/parse-data-centers xml false)]
-        (is (<= (count (:ShortName data-centers)) 85)))))))
+        (is (<= (count (:ShortName (first data-centers))) 85))
+        (is (> (count (:LongName (first data-centers))) 85)))))))

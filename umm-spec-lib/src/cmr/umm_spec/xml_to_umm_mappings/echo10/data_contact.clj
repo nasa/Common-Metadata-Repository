@@ -133,7 +133,8 @@
     (for [contact contacts]
       (let [organization-name (u/with-default (value-of contact "OrganizationName") sanitize?)
             short-name (if (truncate-short-name? organization-name)
-                         (subs organization-name 0 short-name-length) organization-name)]
+                         (subs organization-name 0 short-name-length) organization-name)
+            long-name (if (truncate-short-name? organization-name) organization-name nil)]
        {:Roles (remove nil? (u/map-with-default echo10-contact-role->umm-data-center-role
                                                [(value-of contact "Role")]
                                                default-data-center-role
@@ -141,7 +142,7 @@
         ;; If ShortName is longer than 85 characters, it will be truncated automatically
         ;; and the full value will be stored in LongName
         :ShortName short-name
-        :LongName organization-name
+        :LongName long-name
         :ContactInformation (parse-contact-information contact)
         :ContactPersons (parse-contact-persons contact sanitize?)}))))
 
@@ -159,7 +160,8 @@
   center-name - name by which to find in XML - 'ArchiveCenter' or 'ProcessingCenter'
   center-role - role for the data center"
   [doc data-centers center-name center-role]
-  (let [center (value-of doc (str "/Collection/" center-name))]
+  (let [center (value-of doc (str "/Collection/" center-name))
+        long-name (if (truncate-short-name? center) center nil)]
     (if center
       ;; Check to see if we already have an entry for this data center - the role and short name
       ;; match. If so, don't create a new record.
@@ -169,7 +171,7 @@
              data-centers)
        {:Roles [center-role]
         :ShortName center
-        :LongName center}))))
+        :LongName long-name}))))
 
 (defn parse-data-centers
   "Parse data centers from ECHO10 XML. Data center information comes from Contacts/Contact,
