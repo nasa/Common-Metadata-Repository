@@ -58,22 +58,22 @@
     (mt/extract-header-mime-type supported-formats headers "accept" true)
 
     ;; Can not skip-sanitize-umm when the target format is not UMM-C 
-    (if (and skip-sanitize-umm? (not (mt/umm-json? accept-header)))
+    (when (and skip-sanitize-umm? (not (mt/umm-json? accept-header)))
       (let [errors ["Skipping santization during translation is only supported when the target format is UMM-C"]]
-        (errors/throw-service-errors :bad-request errors)) 
+        (errors/throw-service-errors :bad-request errors))) 
    
-      ;; Validate the input data against its own native schema (ECHO, DIF, etc.)
-      (if-let [errors (seq (umm-spec/validate-metadata concept-type content-type body))]
-        (errors/throw-service-errors :bad-request errors)
+    ;; Validate the input data against its own native schema (ECHO, DIF, etc.)
+    (if-let [errors (seq (umm-spec/validate-metadata concept-type content-type body))]
+      (errors/throw-service-errors :bad-request errors)
 
-        ;; If there were no errors, then proceed to convert it to UMM and check for UMM schema
-        ;; validation errors.
-        (let [umm (umm-spec/parse-metadata context concept-type content-type body options)]
-          (if-let [umm-errors (when-not skip-umm-validation (umm-errors context concept-type umm))]
-            (errors/throw-service-errors :invalid-data umm-errors)
-            ;; Otherwise, if the parsed UMM validates, return a response with the metadata in the
-            ;; requested XML format.
-            (translate-response context umm accept-header)))))))
+      ;; If there were no errors, then proceed to convert it to UMM and check for UMM schema
+      ;; validation errors.
+      (let [umm (umm-spec/parse-metadata context concept-type content-type body options)]
+        (if-let [umm-errors (when-not skip-umm-validation (umm-errors context concept-type umm))]
+          (errors/throw-service-errors :invalid-data umm-errors)
+          ;; Otherwise, if the parsed UMM validates, return a response with the metadata in the
+          ;; requested XML format.
+          (translate-response context umm accept-header))))))
 
 (def translation-routes
   (context "/translate" []

@@ -83,7 +83,7 @@ If this header is set to true, collection metadata is validated against the UMM-
 
 #### <a name="skip-sanitize-umm-c-header"></a> Cmr-Skip-Sanitize-Umm-C Header
 
-If this header is set to true, translation to UMM JSON will not add default values to the converted UMM when the required fields are missing. This may cause umm schema validation failure if skip-umm-validation is not set to true. This header can not be set to true when translating to all other formats because we currently only allows the skipping of sanitation when translating to destination of UMM JSON. 
+If this header is set to true, translation to UMM JSON will not add default values to the converted UMM when the required fields are missing. This may cause umm schema validation failure if skip-umm-validation is not set to true. This header can not be set to true when translating to all other formats because we currently only allows the skipping of sanitation when translating to target format of UMM JSON. 
 
 #### <a name="user-id"></a> User-Id Header
 
