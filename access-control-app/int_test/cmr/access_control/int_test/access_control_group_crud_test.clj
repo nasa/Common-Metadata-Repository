@@ -342,7 +342,6 @@
     (testing "We should now successfully update groups with a legacy_guid, without specifying the legacy_guid in the updated group")
       (is (= {:status 200 :concept_id concept-id :revision_id 2}
              response-no-legacy))
-      (println response-no-legacy)
       (u/assert-group-saved (assoc no-legacy-group :legacy_guid "legacy_guid_1") "user1" concept-id 2)
 
     (testing "Specifying the same legacy_guid should also successfully update the group")
