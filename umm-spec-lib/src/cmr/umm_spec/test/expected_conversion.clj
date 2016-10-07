@@ -2,7 +2,7 @@
   "This contains functions for manipulating the expected UMM record when taking a UMM record
   writing it to an XML format and parsing it back. Conversion from a UMM record into metadata
   can be lossy if some fields are not supported by that format"
-  (:require 
+  (:require
     [clj-time.format :as f]
     [clj-time.core :as t]
     [clojure.string :as str]
@@ -103,6 +103,7 @@
     :DataDates [{:Date (t/date-time 2012)
                  :Type "CREATE"}]
     :Abstract "A very abstract collection"
+    :VersionDescription "Best version ever"
     :DataLanguage "eng"
     :CollectionDataType "SCIENCE_QUALITY"
     :Projects [{:ShortName "project short_name"}]

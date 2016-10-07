@@ -65,6 +65,7 @@
         ;; Fields not supported by ISO-SMAP
         (assoc :MetadataAssociations nil) ;; Not supported for ISO SMAP
         (assoc :DataCenters [su/not-provided-data-center])
+        (assoc :VersionDescription nil)
         (assoc :ContactGroups nil)
         (assoc :ContactPersons nil)
         (assoc :UseConstraints nil)

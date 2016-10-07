@@ -138,17 +138,30 @@
     (when (seq (util/remove-nil-keys access-constraints-record))
       (update access-constraints-record :Description #(su/with-default % sanitize?)))))
 
+(defn- parse-abstract-version-description
+  "Returns the Abstract and VersionDescription parsed from the collection
+  DataIdentification element"
+  [md-data-id-el sanitize?]
+  (if-let [value (char-string-value md-data-id-el "gmd:abstract")]
+    (let [[abstract version-description](str/split
+                                         value (re-pattern iso-util/version-description-separator))
+          abstract (when (seq abstract) abstract)]
+      [(su/truncate-with-default abstract su/ABSTRACT_MAX sanitize?) version-description])
+    [(su/with-default nil sanitize?)]))
+
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
   [context doc {:keys [sanitize?]}]
   (let [md-data-id-el (first (select doc md-data-id-base-xpath))
         citation-el (first (select doc citation-base-xpath))
         id-el (first (select doc identifier-base-xpath))
-        extent-info (iso-util/get-extent-info-map doc)]
+        extent-info (iso-util/get-extent-info-map doc)
+        [abstract version-description] (parse-abstract-version-description md-data-id-el sanitize?)]
     {:ShortName (char-string-value id-el "gmd:code")
      :EntryTitle (char-string-value citation-el "gmd:title")
      :Version (char-string-value citation-el "gmd:edition")
-     :Abstract (su/truncate-with-default (char-string-value md-data-id-el "gmd:abstract") su/ABSTRACT_MAX sanitize?)
+     :VersionDescription version-description
+     :Abstract abstract
      :Purpose (su/truncate (char-string-value md-data-id-el "gmd:purpose") su/PURPOSE_MAX sanitize?)
      :CollectionProgress (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode")
      :Quality (su/truncate (char-string-value doc quality-xpath) su/QUALITY_MAX sanitize?)
