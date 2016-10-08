@@ -58,13 +58,16 @@
         (is (= (mt/format->mime-type output-format) content-type))
         (is (= expected parsed-umm-json)))))
 
-    (testing (format "Translating iso19115 to umm-json without skipping sanitizing")
+    (testing (format "Translating iso19115 to umm-json without skipping sanitizing makes use of default values")
       (let [input-format :iso19115
             output-format :umm-json
             options {:skip-sanitize-umm-c false}
             input-xml (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
-            {:keys [status]} (ingest/translate-metadata :collection input-format input-xml
-                                                                    output-format options)]
+            {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
+                                                                         output-format options)
+            parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
+        (is (= [(umm-cmn/map->DataCenterType {:Roles ["ARCHIVER"], :ShortName "Not provided"})] 
+               (:DataCenters parsed-umm-json)))
         (is (= 200 status))))
             
     (testing (format "Translating iso19115 to umm-json with skipping sanitizing and without skipping umm validation")

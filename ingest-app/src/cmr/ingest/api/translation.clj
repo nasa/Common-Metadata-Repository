@@ -47,8 +47,7 @@
   (let [supported-formats (concept-type->supported-formats concept-type)
         content-type (get headers "content-type")
         accept-header (get headers "accept")
-        skip-sanitize-umm-header (get headers "cmr-skip-sanitize-umm-c")
-        skip-sanitize-umm? (= "true" skip-sanitize-umm-header)
+        skip-sanitize-umm? (= "true" (get headers "cmr-skip-sanitize-umm-c"))
         options (if (and skip-sanitize-umm? (mt/umm-json? accept-header))
                   u/skip-sanitize-parsing-options
                   u/default-parsing-options)]
