@@ -85,8 +85,10 @@
             output-format :umm-json
             options {:skip-sanitize-umm-c true :query-params {:skip_umm_validation true}}
             input-xml (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
-            {:keys [status]} (ingest/translate-metadata :collection input-format input-xml
-                                                                    output-format options)]
+            {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
+                                                                         output-format options)
+            parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
+        (is (= nil (:DataCenters parsed-umm-json)))
         (is (= 200 status))))
 
     (testing (format "Translating iso19115 to dif10 with skipping sanitizing")
