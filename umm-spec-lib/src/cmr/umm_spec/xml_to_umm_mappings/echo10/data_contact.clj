@@ -50,11 +50,6 @@
 (def default-contact-person-role
   "Technical Contact")
 
-(defn- truncate-short-name?
-  "Return true if ShortName is more than 85 characters and should be truncated"
-  [short-name]
-  (> (count short-name) u/SHORTNAME_MAX))
-
 (defn- parse-contact-mechanisms
   "Parse ECHO10 contact mechanisms to UMM."
   [contact]
