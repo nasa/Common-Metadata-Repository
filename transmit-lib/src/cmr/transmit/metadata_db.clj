@@ -300,20 +300,18 @@
         concept-json-str (json/generate-string concept)
         response (client/post (str (conn/root-url conn) "/concepts")
                               (merge
-                                (config/conn-params conn)
-                                {:body concept-json-str
-                                 :content-type :json
-                                 :accept :json
-                                 :throw-exceptions false
-                                 :headers (ch/context->http-headers context)}))
+                               (config/conn-params conn)
+                               {:body concept-json-str
+                                :content-type :json
+                                :accept :json
+                                :throw-exceptions false
+                                :headers (ch/context->http-headers context)}))
         status (int (:status response))
         body (json/decode (:body response))
         {:strs [concept-id revision-id]} body]
     (case status
       422
-      (let [errors-str (json/generate-string (flatten (get body "errors")))]
-        ;; catalog rest supplied invalid concept id
-        (errors/throw-service-error :invalid-data errors-str))
+      (errors/throw-service-errors :invalid-data (get body "errors"))
 
       201
       {:concept-id concept-id :revision-id revision-id}
@@ -324,5 +322,5 @@
 
       ;; default
       (errors/internal-error!
-        (format "Save concept failed. MetadataDb app response status code: %s response: %s"
-                status response)))))
+       (format "Save concept failed. MetadataDb app response status code: %s response: %s"
+               status response)))))

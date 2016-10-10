@@ -31,6 +31,10 @@
     [db concept-type provider native-id]
     "Return a distinct identifier for the given arguments.")
 
+  (get-granule-concept-ids
+    [db provider native-id]
+    "Return the granule concept-id and parent collection concept-id for the given granule native id.")
+
   (get-concept
     [db concept-type provider concept-id revision-id]
     [db concept-type provider concept-id]

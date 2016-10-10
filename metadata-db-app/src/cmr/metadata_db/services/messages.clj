@@ -130,6 +130,10 @@
     (format "Provider with short name [%s] already exists. Its provider id is [%s]."
             short-name provider-id)))
 
+(defn granule-collection-cannot-change [old-concept-id new-concept-id]
+  (format "Granule's parent collection cannot be changed, was [%s], now [%s]."
+          old-concept-id, new-concept-id))
+
 (defn field-too-long [value limit]
   (format "%%s [%s] exceeds %d characters" value limit))
 

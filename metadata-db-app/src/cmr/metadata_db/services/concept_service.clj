@@ -84,16 +84,33 @@
     (when (> (count unknown-providers) 0)
       (errors/throw-service-error :not-found (msg/providers-do-not-exist unknown-providers)))))
 
-(defn- set-or-generate-concept-id
-  "Get an existing concept-id from the DB for the given concept or generate one
-  if the concept has never been saved."
+(defmulti set-or-generate-concept-id
+  "Get an existing concept-id from the DB for the given concept or generate one if the concept
+  has never been saved. Also validate the parent collection concept-id for granule concept."
+  (fn [db provider concept]
+    (:concept-type concept)))
+
+(defmethod set-or-generate-concept-id :default
+  [db provider concept]
   [db provider concept]
   (if (:concept-id concept)
     concept
-    (let [concept-id (c/get-concept-id db (:concept-type concept) provider (:native-id concept))]
-      (if concept-id
-        (assoc concept :concept-id concept-id)
-        (assoc concept :concept-id (c/generate-concept-id db concept))))))
+    (let [concept-id (c/get-concept-id db (:concept-type concept) provider (:native-id concept))
+          concept-id (if concept-id concept-id (c/generate-concept-id db concept))]
+        (assoc concept :concept-id concept-id))))
+
+(defmethod set-or-generate-concept-id :granule
+  [db provider concept]
+  (if (:concept-id concept)
+    concept
+    (let [[existing-concept-id coll-concept-id] (c/get-granule-concept-ids
+                                                 db provider (:native-id concept))
+          concept-id (if existing-concept-id existing-concept-id (c/generate-concept-id db concept))
+          parent-concept-id (get-in concept [:extra-fields :parent-collection-id])]
+      (if (and existing-concept-id (not= coll-concept-id parent-concept-id))
+        (errors/throw-service-error
+         :invalid-data (msg/granule-collection-cannot-change coll-concept-id parent-concept-id))
+        (assoc concept :concept-id concept-id)))))
 
 (defn- set-or-generate-revision-id
   "Get the next available revision id from the DB for the given concept or

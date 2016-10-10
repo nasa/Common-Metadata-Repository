@@ -55,6 +55,25 @@
            (get-in (mdb/get-concept (:concept-id gran3) (:revision-id gran3))
                    [:extra-fields :parent-collection-id])))))
 
+(deftest granule-change-parent-collection-test
+  (testing "Cannot change granule's parent collection"
+    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
+                                                  :short-name "short1"
+                                                  :version-id "V1"
+                                                  :native-id "native1"}))
+          coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"
+                                                  :short-name "short2"
+                                                  :version-id "V2"
+                                                  :native-id "native2"}))
+          _ (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1"}))
+          {:keys [status errors]} (d/ingest "PROV1"
+                                            (dg/granule coll2 {:granule-ur "gran1"})
+                                            {:allow-failure? true})]
+      (is (= 422 status))
+      (is (= [(format "Granule's parent collection cannot be changed, was [%s], now [%s]."
+                      (:concept-id coll1) (:concept-id coll2))]
+             errors)))))
+
 ;; Verify a new granule is ingested successfully.
 (deftest granule-ingest-test
   (testing "ingest of a new granule"
