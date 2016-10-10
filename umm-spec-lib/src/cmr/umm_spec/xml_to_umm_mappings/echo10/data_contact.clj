@@ -50,6 +50,11 @@
 (def default-contact-person-role
   "Technical Contact")
 
+(defn- truncate-short-name?
+  "Return true if ShortName is greater and 85 characters and should be truncated"
+  [short-name]
+  (> (count short-name) u/SHORTNAME_MAX))
+
 (defn- parse-contact-mechanisms
   "Parse ECHO10 contact mechanisms to UMM."
   [contact]
@@ -125,7 +130,7 @@
     (for [contact contacts]
       (let [organization-name (u/with-default (value-of contact "OrganizationName") sanitize?)
             short-name (u/truncate-with-default organization-name u/SHORTNAME_MAX sanitize?)
-            long-name (when sanitize? organization-name)]
+            long-name (when (and sanitize? (truncate-short-name? organization-name)) organization-name)]
        {:Roles (remove nil? (u/map-with-default echo10-contact-role->umm-data-center-role
                                                [(value-of contact "Role")]
                                                default-data-center-role
@@ -153,7 +158,7 @@
   [doc data-centers center-name center-role sanitize?]
   (let [center (value-of doc (str "/Collection/" center-name))
         short-name (u/truncate-with-default center u/SHORTNAME_MAX sanitize?)
-        long-name (when sanitize? center)]
+        long-name (when (and sanitize? (truncate-short-name? center)) center)]
     (if center
       ;; Check to see if we already have an entry for this data center - the role and short name
       ;; match. If so, don't create a new record.
