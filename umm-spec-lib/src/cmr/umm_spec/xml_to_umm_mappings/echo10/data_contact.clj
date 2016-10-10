@@ -129,9 +129,8 @@
                          all-contacts)]
     (for [contact contacts]
       (let [organization-name (u/with-default (value-of contact "OrganizationName") sanitize?)
-            short-name (u/truncate-with-default
-                        organization-name u/SHORTNAME_MAX (truncate-short-name? organization-name))
-            long-name (when (truncate-short-name? organization-name) organization-name)]
+            short-name (u/truncate-with-default organization-name u/SHORTNAME_MAX sanitize?)
+            long-name (when sanitize? organization-name)]
        {:Roles (remove nil? (u/map-with-default echo10-contact-role->umm-data-center-role
                                                [(value-of contact "Role")]
                                                default-data-center-role
@@ -156,11 +155,10 @@
   data-centers - data centers converted to UMM from Contacts/Contact
   center-name - name by which to find in XML - 'ArchiveCenter' or 'ProcessingCenter'
   center-role - role for the data center"
-  [doc data-centers center-name center-role]
+  [doc data-centers center-name center-role sanitize?]
   (let [center (value-of doc (str "/Collection/" center-name))
-        short-name (u/truncate-with-default
-                    center u/SHORTNAME_MAX (truncate-short-name? center))
-        long-name (when (truncate-short-name? center) center)]
+        short-name (u/truncate-with-default center u/SHORTNAME_MAX sanitize?)
+        long-name (when sanitize? center)]
     (if center
       ;; Check to see if we already have an entry for this data center - the role and short name
       ;; match. If so, don't create a new record.
@@ -179,8 +177,8 @@
   (let [data-centers (parse-data-centers-from-contacts doc sanitize?)
         data-centers (conj
                       data-centers
-                      (parse-additional-center doc data-centers "ArchiveCenter" "ARCHIVER")
-                      (parse-additional-center doc data-centers "ProcessingCenter" "PROCESSOR"))
+                      (parse-additional-center doc data-centers "ArchiveCenter" "ARCHIVER" sanitize?)
+                      (parse-additional-center doc data-centers "ProcessingCenter" "PROCESSOR" sanitize?))
         data-centers (remove nil? data-centers)]
     (if (seq data-centers)
       data-centers
