@@ -53,7 +53,7 @@
   [action]
   (format "Permission to %s ACL is denied" (name action)))
 
-(defn can?
+(defn- can?
   "Returns true if current context user has permission to perform action on given acl."
   [context action acl]
   (cond
