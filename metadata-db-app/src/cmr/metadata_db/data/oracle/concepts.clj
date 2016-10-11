@@ -279,11 +279,12 @@
                               (where (by-provider concept-type provider `(= :native-id ~native-id))))))))
   (get-granule-concept-ids
    [db provider native-id]
-   (let [table (tables/get-table-name provider :granule)]
-     (vals
-      (su/find-one db (select [:concept-id :parent-collection-id]
-                              (from table)
-                              (where (by-provider :granule provider `(= :native-id ~native-id))))))))
+   (let [table (tables/get-table-name provider :granule)
+         result (su/find-one
+                 db (select [:concept-id :parent-collection-id]
+                            (from table)
+                            (where (by-provider :granule provider `(= :native-id ~native-id)))))]
+     [(:concept_id result) (:parent_collection_id result)]))
 
   (get-concept
    ([db concept-type provider concept-id]
