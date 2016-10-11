@@ -1,31 +1,32 @@
 (ns cmr.access-control.services.group-service
   "Provides functions for creating, updating, deleting, retrieving, and finding groups."
   (:require
-   [cheshire.core :as json]
-   [clojure.edn :as edn]
-   [clojure.string :as str]
-   [cmr.access-control.services.auth-util :as auth]
-   [cmr.access-control.services.group-service-messages :as g-msg]
-   [cmr.access-control.services.messages :as msg]
-   [cmr.common-app.services.search :as cs]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.parameter-validation :as cpv]
-   [cmr.common-app.services.search.params :as cp]
-   [cmr.common-app.services.search.query-model :as common-qm]
-   [cmr.common.concepts :as concepts]
-   [cmr.common.log :refer (debug info warn error)]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.services.errors :as errors]
-   [cmr.common.util :as u]
-   [cmr.common.validations.core :as v]
-   [cmr.transmit.echo.rest :as rest]
-   [cmr.transmit.echo.tokens :as tokens]
-   [cmr.transmit.metadata-db2 :as mdb]
-   [cmr.transmit.urs :as urs])
+    [cheshire.core :as json]
+    [clojure.edn :as edn]
+    [clojure.string :as str]
+    [cmr.access-control.services.auth-util :as auth]
+    [cmr.access-control.services.group-service-messages :as g-msg]
+    [cmr.access-control.services.messages :as msg]
+    [cmr.common-app.services.search :as cs]
+    [cmr.common-app.services.search.group-query-conditions :as gc]
+    [cmr.common-app.services.search.parameter-validation :as cpv]
+    [cmr.common-app.services.search.params :as cp]
+    [cmr.common-app.services.search.query-model :as common-qm]
+    [cmr.common.concepts :as concepts]
+    [cmr.common.log :refer (debug info warn error)]
+    [cmr.common.mime-types :as mt]
+    [cmr.common.services.errors :as errors]
+    [cmr.common.util :as u]
+    [cmr.common.validations.core :as v]
+    [cmr.transmit.echo.rest :as rest]
+    [cmr.transmit.echo.tokens :as tokens]
+    [cmr.transmit.metadata-db2 :as mdb]
+    [cmr.transmit.urs :as urs])
   ;; Must be required to be available at runtime
   (:require
-   cmr.access-control.data.group-json-results-handler
-   cmr.access-control.data.acl-json-results-handler))
+    cmr.access-control.data.group-json-results-handler
+    cmr.access-control.data.acl-json-results-handler)
+  (:import (java.util UUID)))
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
@@ -37,6 +38,9 @@
 (def SYSTEM_PROVIDER_ID
   "The provider id used when a group is a system provider."
   "CMR")
+
+;; to avoid reordering code (used in group creation)
+(declare search-for-groups)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB Concept Map Manipulation
@@ -50,7 +54,8 @@
   "Converts a group into a new concept that can be persisted in metadata db."
   [context group]
   {:concept-type :access-group
-   :native-id (str/lower-case (:name group))
+   ;; We don't care about a group's native ID, but it's required by metadata DB, so we "set it and forget it" here.
+   :native-id (str (UUID/randomUUID))
    ;; Provider id is optional in group. If it is a system level group then it's owned by the CMR.
    :provider-id (group->mdb-provider-id group)
    :metadata (pr-str group)
@@ -121,9 +126,8 @@
 
 (defn- update-group-validations
   "Service level validations when updating a group."
-  [context]
-  [(v/field-cannot-be-changed :name)
-   (v/field-cannot-be-changed :provider-id)
+  [_]
+  [(v/field-cannot-be-changed :provider-id)
    (v/field-cannot-be-changed :legacy-guid)])
 
 (defn- validate-update-group
@@ -149,11 +153,12 @@
    (validate-create-group context group)
    (when-not skip-acls?
      (auth/verify-can-create-group context group))
-   ;; Check if the group already exists - lower case the name to prevent duplicates.(CMR-2466)
-   (if-let [concept-id (mdb/get-concept-id context
-                                           :access-group
-                                           (group->mdb-provider-id group)
-                                           (str/lower-case (:name group)))]
+
+   (if-let [concept-id (->> (search-for-groups context {:name (:name group)
+                                                        :provider (get group :provider-id SYSTEM_PROVIDER_ID)})
+                            :results
+                            :items
+                            (some :concept_id))]
 
      ;; The group exists. Check if its latest revision is a tombstone
      (let [concept (mdb/get-latest-concept context concept-id)]
