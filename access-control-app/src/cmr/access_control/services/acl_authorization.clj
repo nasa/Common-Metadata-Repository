@@ -53,7 +53,7 @@
   [action]
   (format "Permission to %s ACL is denied" (name action)))
 
-(defn- permitted?
+(defn- action-permitted-on-acl?
   "Returns true if any ACLs grant the current context user the given permission
   keyword (:create, :update, etc.) on the given acl."
   [context permission acl]
@@ -88,5 +88,5 @@
   "Throws service error if user doesn't have permission to intiate a given action for a given acl.
    Actions include create and update."
   [context action acl]
-  (when-not (permitted? context action acl)
+  (when-not (action-permitted-on-acl? context action acl)
     (errors/throw-service-error :bad-request (permission-denied-message action))))
