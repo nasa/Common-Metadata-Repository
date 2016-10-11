@@ -30,16 +30,16 @@
     (testing "ECHO10 OrganizationName is truncated to comply with ShortName's 85 character limit"
       (let [organization-name "TheNeverEndingOrganizationNameCheckItOutItJustKeepsGoingAndGoingLikeTheEngerigizerBunnyThisIsJustImpressiveWhatAGreatOrganizationName"
             xml (str "<Collection>
-                  <Contacts>
-                   <Contact>
-                    <Role>USER SERVICES</Role>
-                    <OrganizationName>" organization-name "</OrganizationName>
-                   </Contact>
-                  </Contacts>
-                 </Collection>")
+                       <Contacts>
+                        <Contact>
+                         <Role>USER SERVICES</Role>
+                         <OrganizationName>" organization-name "</OrganizationName>
+                        </Contact>
+                       </Contacts>
+                      </Collection>")
             data-centers (contact/parse-data-centers xml true)]
-        (is (= (:LongName (first data-centers)) organization-name))
-        (is (= (:ShortName (first data-centers))
-               (subs organization-name 0 85)))
-        (is (= (count (:ShortName (first data-centers))) 85))
-        (is (> (count (:LongName (first data-centers))) 85)))))))
+        (is (= organization-name (:LongName (first data-centers))))
+        (is (= (subs organization-name 0 85)
+               (:ShortName (first data-centers))))
+        (is (= 85 (count (:ShortName (first data-centers)))))
+        (is (< 85 (count (:LongName (first data-centers))))))))))

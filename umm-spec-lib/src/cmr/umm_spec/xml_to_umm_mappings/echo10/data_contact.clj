@@ -128,7 +128,7 @@
                                (empty? (value-of % "OrganizationName")))
                          all-contacts)]
     (for [contact contacts]
-      (let [organization-name (u/with-default (value-of contact "OrganizationName") sanitize?)
+      (let [organization-name (value-of contact "OrganizationName")
             short-name (u/truncate-with-default organization-name u/SHORTNAME_MAX sanitize?)
             long-name (when (and sanitize? (truncate-short-name? organization-name)) organization-name)]
        {:Roles (remove nil? (u/map-with-default echo10-contact-role->umm-data-center-role
