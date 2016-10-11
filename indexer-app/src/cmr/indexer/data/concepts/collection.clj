@@ -360,7 +360,7 @@
             :coordinate-system coordinate-system
 
             ;; fields added to support keyword searches
-            :keyword (k/create-keywords-field concept-id collection umm-spec-collection
+            :keyword (k/create-keywords-field concept-id umm-spec-collection
                                               {:platform-long-names platform-long-names
                                                :instrument-long-names instrument-long-names
                                                :entry-id entry-id})
