@@ -214,7 +214,7 @@
    :metadata-db mdb2/get-metadata-db-health
    :indexer indexer/get-indexer-health
    :cubby cubby/get-cubby-health
-   :rabbit-mq #(queue/health (get-in % [:system :queue-broker]))})
+   :message-queue #(queue/health (get-in % [:system :queue-broker]))})
 
 (defn health
   "Returns the health state of the app."

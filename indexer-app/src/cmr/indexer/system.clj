@@ -28,7 +28,8 @@
    [cmr.indexer.data.humanizer-fetcher :as hf]
    [cmr.indexer.data.index-set :as index-set]
    [cmr.indexer.services.event-handler :as event-handler]
-   [cmr.message-queue.queue.rabbit-mq :as rmq]
+   [cmr.message-queue.config :as queue-config]
+   [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.transmit.config :as transmit-config]))
 
 (def ^:private component-order
@@ -65,7 +66,7 @@
                           `system-holder
                           [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
                            (kf/refresh-kms-cache-job "indexer-kms-cache-refresh")])
-             :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
+             :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
 
     (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby :kms :search])))
 

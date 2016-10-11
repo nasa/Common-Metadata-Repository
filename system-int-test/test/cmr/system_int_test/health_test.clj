@@ -38,7 +38,7 @@
    :dependencies {:elastic_search {:ok? true}
                   :echo {:ok? true}
                   :cubby good-cubby-health
-                  :rabbit-mq {:ok? true}
+                  :message-queue {:ok? true}
                   :metadata-db good-metadata-db-health
                   :index-set good-index-set-db-health}})
 
@@ -47,7 +47,7 @@
    :dependencies {:oracle {:ok? true}
                   :echo {:ok? true}
                   :metadata-db good-metadata-db-health
-                  :rabbit-mq {:ok? true}
+                  :message-queue {:ok? true}
                   :cubby good-cubby-health
                   :indexer good-indexer-health}})
 
@@ -68,7 +68,7 @@
   (s/only-with-real-database
     (is (= [200 {:elastic_search {:ok? true}
                  :echo {:ok? true}
-                 :rabbit-mq {:ok? true}
+                 :message-queue {:ok? true}
                  :metadata-db good-metadata-db-health
                  :index-set good-index-set-db-health
                  :cubby good-cubby-health}]
@@ -79,7 +79,7 @@
     (is (= [200 {:oracle {:ok? true}
                  :echo {:ok? true}
                  :metadata-db good-metadata-db-health
-                 :rabbit-mq {:ok? true}
+                 :message-queue {:ok? true}
                  :cubby good-cubby-health
                  :indexer good-indexer-health}]
            (get-app-health (url/ingest-health-url))))))
@@ -95,14 +95,14 @@
   (s/only-with-real-database
     (is (= [200 {:metadata-db good-metadata-db-health
                  :internal-metadata-db good-metadata-db-health
-                 :indexer (update-in good-indexer-health [:dependencies] dissoc :rabbit-mq)}]
+                 :indexer (update-in good-indexer-health [:dependencies] dissoc :message-queue)}]
            (get-app-health (url/bootstrap-health-url))))))
 
 (deftest virtual-product-health-test
   (s/only-with-real-database
     (is (= [200 {:ingest good-ingest-health
                  :metadata-db good-metadata-db-health
-                 :rabbit-mq {:ok? true}}]
+                 :message-queue {:ok? true}}]
            (get-app-health (url/virtual-product-health-url))))))
 
 (deftest access-control-health-test

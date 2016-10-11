@@ -37,7 +37,7 @@
   from metadata db."
   {:default "cmr_deleted_collection_revision.exchange"})
 
-(defn rabbit-mq-config
+(defn queue-config
   "Returns the rabbit mq configuration for the indexer application."
   []
   (assoc (rmq-conf/default-config)

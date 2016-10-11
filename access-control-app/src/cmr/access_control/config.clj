@@ -24,8 +24,8 @@
   {:default 5
    :type Long})
 
-(defn rabbit-mq-config
-  "Returns the rabbit mq configuration for the metadata db application."
+(defn queue-config
+  "Returns the queue configuration for the application."
   []
   (assoc (rmq-conf/default-config)
          :queues [(index-queue-name)]
@@ -33,6 +33,3 @@
          :queues-to-exchanges {(index-queue-name) [(access-control-exchange-name)
                                                    (provider-exchange-name)
                                                    (concept-ingest-exchange-name)]}))
-
-
-
