@@ -1,23 +1,23 @@
 (ns cmr.system-int-test.ingest.granule-ingest-test
   "CMR granule ingest integration tests"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.search-util :as search]
-            [clojure.string :as str]
-            [cmr.common.mime-types :as mt]
-            [cmr.umm.umm-granule :as umm-g]
-            [cmr.common.util :as u :refer [are3]]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.indexer.system :as indexer-system]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-            [clojure.java.io :as io]
-            [cheshire.core :as json]))
-
+  (:require
+   [cheshire.core :as json]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as u :refer [are3]]
+   [cmr.indexer.system :as indexer-system]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.umm.umm-granule :as umm-g]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 

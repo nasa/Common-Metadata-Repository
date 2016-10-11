@@ -1,6 +1,7 @@
 (ns cmr.metadata-db.data.concepts
   "Defines a protocol for CRUD operations on concepts."
-  (:require [cmr.common.util :as util]))
+  (:require
+   [cmr.common.util :as util]))
 
 (defprotocol ConceptSearch
   "Functions for retrieving concepts by parameters"

@@ -1,34 +1,39 @@
 (ns cmr.metadata-db.services.concept-service
   "Sevices to support the business logic of the metadata db."
-  (:require [cmr.metadata-db.data.concepts :as c]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.concepts :as cu]
-            [cmr.common.util :as cutil]
-            [cmr.metadata-db.services.messages :as msg]
-            [cmr.common.services.messages :as cmsg]
-            [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.metadata-db.services.util :as util]
-            [cmr.metadata-db.services.concept-validations :as cv]
-            [cmr.metadata-db.services.provider-service :as provider-service]
-            [cmr.metadata-db.data.providers :as provider-db]
-            [cmr.metadata-db.config :as config]
-            [cmr.metadata-db.data.ingest-events :as ingest-events]
-            [cmr.metadata-db.services.search-service :as search]
-
-            ;; Required to get code loaded
-            cmr.metadata-db.data.oracle.concepts
-            (cmr.metadata-db.data.oracle.concepts collection granule
-                                                  tag tag-association
-                                                  service group acl humanizer)
-            (cmr.metadata-db.data.oracle providers search)
-
-            [cmr.common.log :refer (debug info warn error)]
-            [clojure.set :as set]
-            [clojure.string]
-            [clj-time.core :as t]
-            [cmr.common.time-keeper :as time-keeper]
-            [cmr.metadata-db.services.concept-constraints :as cc]))
-
+  (:require
+   [clj-time.core :as t]
+   [clojure.set :as set]
+   [clojure.string]
+   [cmr.common.concepts :as cu]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.services.messages :as cmsg]
+   [cmr.common.time-keeper :as time-keeper]
+   [cmr.common.util :as cutil]
+   [cmr.metadata-db.config :as config]
+   [cmr.metadata-db.data.concepts :as c]
+   [cmr.metadata-db.data.ingest-events :as ingest-events]
+   [cmr.metadata-db.data.providers :as provider-db]
+   [cmr.metadata-db.services.concept-constraints :as cc]
+   [cmr.metadata-db.services.concept-validations :as cv]
+   [cmr.metadata-db.services.messages :as msg]
+   [cmr.metadata-db.services.provider-service :as provider-service]
+   [cmr.metadata-db.services.search-service :as search]
+   [cmr.metadata-db.services.util :as util])
+  ;; Required to get code loaded
+  (:require
+   [cmr.metadata-db.data.oracle.concepts.acl]
+   [cmr.metadata-db.data.oracle.concepts.collection]
+   [cmr.metadata-db.data.oracle.concepts.granule]
+   [cmr.metadata-db.data.oracle.concepts.group]
+   [cmr.metadata-db.data.oracle.concepts.humanizer]
+   [cmr.metadata-db.data.oracle.concepts.service]
+   [cmr.metadata-db.data.oracle.concepts.tag-association]
+   [cmr.metadata-db.data.oracle.concepts.tag]
+   [cmr.metadata-db.data.oracle.concepts]
+   [cmr.metadata-db.data.oracle.providers]
+   [cmr.metadata-db.data.oracle.search]))
 
 (def num-revisions-to-keep-per-concept-type
   "Number of revisions to keep by concept-type. If a concept instance has more than the number
@@ -92,12 +97,11 @@
 
 (defmethod set-or-generate-concept-id :default
   [db provider concept]
-  [db provider concept]
   (if (:concept-id concept)
     concept
     (let [concept-id (c/get-concept-id db (:concept-type concept) provider (:native-id concept))
           concept-id (if concept-id concept-id (c/generate-concept-id db concept))]
-        (assoc concept :concept-id concept-id))))
+      (assoc concept :concept-id concept-id))))
 
 (defmethod set-or-generate-concept-id :granule
   [db provider concept]

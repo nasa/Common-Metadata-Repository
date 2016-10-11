@@ -1,14 +1,15 @@
 (ns cmr.metadata-db.int-test.concepts.delete-test
   "Contains integration tests for deleting concepts. Tests delete with various configurations including
   checking for proper error handling."
-  (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
-            [cheshire.core :as cheshire]
-            [cmr.metadata-db.int-test.utility :as util]
-            [cmr.metadata-db.services.messages :as messages]
-            [cmr.common.util :as u]
-            [clj-time.core :as t]
-            [cmr.metadata-db.int-test.concepts.concept-delete-spec :as cd-spec]))
+  (:require
+   [cheshire.core :as cheshire]
+   [clj-http.client :as client]
+   [clj-time.core :as t]
+   [clojure.test :refer :all]
+   [cmr.common.util :as u]
+   [cmr.metadata-db.int-test.concepts.concept-delete-spec :as cd-spec]
+   [cmr.metadata-db.int-test.utility :as util]
+   [cmr.metadata-db.services.messages :as messages]))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

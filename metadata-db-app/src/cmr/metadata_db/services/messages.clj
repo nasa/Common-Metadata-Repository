@@ -1,6 +1,7 @@
 (ns cmr.metadata-db.services.messages
-  (:require [clojure.string :as str]
-            [camel-snake-kebab.core :as csk]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.string :as str]))
 
 (defn missing-concept-id [concept-type provider-id native-id]
   (format
@@ -155,4 +156,3 @@
 (defn humanizers-only-system-level [provider-id]
   (format "Humanizer could not be associated with provider [%s]. Humanizer is system level entity."
           provider-id))
-
