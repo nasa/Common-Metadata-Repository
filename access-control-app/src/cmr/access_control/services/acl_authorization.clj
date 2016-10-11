@@ -54,32 +54,35 @@
   (format "Permission to %s ACL is denied" (name action)))
 
 (defn- can?
-  "Returns true if current context user has permission to perform action on given acl."
-  [context action acl]
+  "Returns true if any ACLs grant the current context user the given permission
+  keyword (:create, :update, etc.) on the given acl."
+  [context permission acl]
   (cond
     ;; system token or system-level ANY_ACL permission can do anything
     (or (transmit-config/echo-system-token? context)
-        (has-system-access? context action "ANY_ACL"))
+        (has-system-access? context permission "ANY_ACL"))
     true
+
+    ;; If the user does not have system-level permissions, they may not perform any actions
+    ;; on system-level ACLs.
+    (:system-identity acl)
+    false
 
     (:provider-identity acl)
     (if (= (:target (:provider-identity acl)) "CATALOG_ITEM_ACL")
-      (has-provider-access? context action "CATALOG_ITEM_ACL"
+      (has-provider-access? context permission "CATALOG_ITEM_ACL"
                             (:provider-id (:provider-identity acl)))
-      (has-provider-access? context action "PROVIDER_OBJECT_ACL"
+      (has-provider-access? context permission "PROVIDER_OBJECT_ACL"
                             (:provider-id (:provider-identity acl))))
 
     (:catalog-item-identity acl)
-    (has-provider-access? context action "CATALOG_ITEM_ACL"
+    (has-provider-access? context permission "CATALOG_ITEM_ACL"
                           (:provider-id (:catalog-item-identity acl)))
 
     (:single-instance-identity acl)
     (let [target-group (group-service/get-group context (get-in acl [:single-instance-identity :target-id]))]
       (and (:provider-id target-group)
-           (has-provider-access? context action "PROVIDER_OBJECT_ACL" (:provider-id target-group))))
-
-    (:system-identity acl)
-    false))
+           (has-provider-access? context permission "PROVIDER_OBJECT_ACL" (:provider-id target-group))))))
 
 (defn authorize-acl-action
   "Throws service error if user doesn't have permission to intiate a given action for a given acl.
