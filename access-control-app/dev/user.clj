@@ -15,7 +15,7 @@
    [cmr.common.jobs :as jobs]
    [cmr.common.lifecycle :as l]
    [cmr.common.log :as log :refer (debug info warn error)]
-   [cmr.message-queue.services.queue :as queue]
+   [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.message-queue.test.queue-broker-side-api :as queue-broker-side-api]
    [cmr.message-queue.test.queue-broker-wrapper :as queue-broker-wrapper]
    [cmr.metadata-db.system :as mdb]
@@ -71,7 +71,7 @@
 
   (let [queue-broker (queue-broker-wrapper/create-queue-broker-wrapper
                       (if use-external-mq?
-                        (queue/create-queue-broker (int-test-util/queue-config))
+                        (queue-broker/create-queue-broker (int-test-util/queue-config))
                         (int-test-util/create-memory-queue-broker)))]
     ;; Start side api server
     (alter-var-root
