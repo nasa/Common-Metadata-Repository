@@ -3,6 +3,7 @@
   (:require
     [clj-http.client :as client]
     [clj-time.core :as t]
+    [clojure.java.io :as io]
     [clojure.string :as string]
     [clojure.test :refer :all]
     [cmr.access-control.test.util :as ac]
@@ -22,8 +23,7 @@
     [cmr.system-int-test.utils.search-util :as search]
     [cmr.umm-spec.test.expected-conversion :as exc]
     [cmr.umm-spec.test.location-keywords-helper :as lkt]
-    [cmr.umm-spec.umm-spec-core :as umm-spec]
-    [ring.util.io :as io]))
+    [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -610,4 +610,12 @@
                        :format "application/echo10+xml; charset=utf-8")
         {:keys [status]} (ingest/ingest-concept concept)]
     (index/wait-until-indexed)
-    (is (= status 201))))
+    (is (= 201 status))))
+
+(deftest dif9-missing-version-ingest
+  (testing "Ingest of a DIF9 collection with missing version. This verifies that we apply the
+           defaults to collections by default during ingest."
+    (let [coll-metadata (slurp (io/resource "example_data/dif/C1214305813-AU_AADC.xml"))
+          {:keys [status]} (ingest/ingest-concept
+                            (ingest/concept :collection "PROV1" "foo" :dif coll-metadata))]
+      (is (= 201 status)))))

@@ -746,14 +746,20 @@
 
       (d/ingest "PROV1"
                 (dc/collection
-                  {:short-name "S-ECHO10"
-                   :organizations [processing-org archive-org]}))
+                 {:short-name "S-ECHO10"
+                  :organizations [processing-org archive-org]}))
 
       (d/ingest "PROV1"
                 (dc/collection
-                  {:short-name "S-ISO-SMAP"
-                   :organizations [processing-org archive-org]})
+                 {:short-name "S-ISO-SMAP"
+                  :organizations [processing-org archive-org]})
                 {:format :iso-smap})
+
+      (d/ingest "PROV1"
+                (dc/collection
+                 {:short-name "S-ISO19115"
+                  :organizations [processing-org archive-org]})
+                {:format :iso19115})
 
       (d/ingest "PROV1"
                 (assoc exp-conv/example-collection-record :ShortName "S-UMM-JSON")
@@ -761,25 +767,28 @@
                  :accept-format :json})
       (index/wait-until-indexed)
 
-      (are2 [short-name expected-orgs]
-            (let [organizations (-> (search/find-concepts-json :collection {:short-name short-name})
-                                    :results
-                                    :entries
-                                    first
-                                    :organizations)]
-              (= expected-orgs organizations))
+      (are3 [short-name expected-orgs]
+        (let [organizations (-> (search/find-concepts-json :collection {:short-name short-name})
+                                :results
+                                :entries
+                                first
+                                :organizations)]
+          (is (= expected-orgs organizations)))
 
-            "ECHO10 only has archive-center and processing-center"
-            "S-ECHO10" ["archive-org" "processing-org"]
+        "ECHO10 only has archive-center and processing-center"
+        "S-ECHO10" ["archive-org" "processing-org"]
 
-            "DIF9 only has distribution-centers"
-            "S-DIF9" ["distribution-org" "distribution-org-1"]
+        "DIF9 only has distribution-centers"
+        "S-DIF9" ["distribution-org" "distribution-org-1"]
 
-            "DIF10 with archive center, distribution center and others"
-            "S-DIF10" ["archive-org" "distribution-org" "processing-org" "originating-org"]
+        "DIF10 with archive center, distribution center and others"
+        "S-DIF10" ["archive-org" "distribution-org" "processing-org" "originating-org"]
 
-            "ISO-SMAP only has archive-center and processing-center"
-            "S-ISO-SMAP" ["archive-org" "processing-org"]
+        "ISO-SMAP does not support data centers"
+        "S-ISO-SMAP" nil
 
-            "UMM-JSON has an archive center and processing center"
-            "S-UMM-JSON" ["TNRIS" "Processing Center"]))))
+        "ISO19115 does not support data centers"
+        "S-ISO19115" nil
+
+        "UMM-JSON has an archive center and processing center"
+        "S-UMM-JSON" ["TNRIS" "NSIDC" "LPDAAC" "Processing Center"]))))

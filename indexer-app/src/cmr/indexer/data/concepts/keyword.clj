@@ -5,7 +5,6 @@
     [cmr.common.concepts :as concepts]
     [cmr.common.util :as util]
     [cmr.indexer.data.concepts.attribute :as attrib]
-    [cmr.indexer.data.concepts.organization :as org]
     [cmr.indexer.data.concepts.science-keyword :as sk]
     [cmr.umm-spec.location-keywords :as lk]
     [cmr.umm-spec.util :as su]))

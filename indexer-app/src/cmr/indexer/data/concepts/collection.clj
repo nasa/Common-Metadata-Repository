@@ -19,10 +19,10 @@
     [cmr.elastic-utils.index-util :as index-util]
     [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
     [cmr.indexer.data.concepts.attribute :as attrib]
+    [cmr.indexer.data.concepts.data-center :as dc]
     [cmr.indexer.data.concepts.instrument :as instrument]
     [cmr.indexer.data.concepts.keyword :as k]
     [cmr.indexer.data.concepts.location-keyword :as clk]
-    [cmr.indexer.data.concepts.organization :as org]
     [cmr.indexer.data.concepts.platform :as platform]
     [cmr.indexer.data.concepts.science-keyword :as sk]
     [cmr.indexer.data.concepts.spatial :as spatial]
@@ -30,6 +30,7 @@
     [cmr.indexer.data.elasticsearch :as es]
     [cmr.indexer.data.humanizer-fetcher :as hf]
     [cmr.indexer.services.index-service :as idx]
+    [cmr.umm-spec.date-util :as date-util]
     [cmr.umm-spec.location-keywords :as lk]
     [cmr.umm-spec.related-url :as ru]
     [cmr.umm-spec.time :as spec-time]
@@ -231,7 +232,7 @@
                               processing-level-id)
         related-urls (when-not (= [su/not-provided-related-url] related-urls) related-urls)
         spatial-keywords (lk/location-keywords->spatial-keywords
-                           (:LocationKeywords umm-spec-collection))
+                          (:LocationKeywords umm-spec-collection))
         access-value (get-in umm-spec-collection [:AccessConstraints :Value])
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
@@ -267,14 +268,17 @@
                                 (map str/trim))
         two-d-coord-names (map :TilingIdentificationSystemName
                                (:TilingIdentificationSystems umm-spec-collection))
-        archive-centers (map #(org/data-center-short-name->elastic-doc gcmd-keywords-map %)
-                             (map str/trim
-                                  (org/extract-data-center-names collection :archive-center)))
+        meaningful-short-name-fn (fn [c]
+                                   (when-let [short-name (:short-name c)]
+                                     (when (not= su/not-provided short-name)
+                                       short-name)))
+        archive-centers (map #(dc/data-center-short-name->elastic-doc gcmd-keywords-map %)
+                             (map str/trim (dc/extract-archive-center-names umm-spec-collection)))
         ;; get the normalized names back
-        archive-center-names (keep :short-name archive-centers)
-        data-centers (map #(org/data-center-short-name->elastic-doc gcmd-keywords-map %)
-                          (map str/trim (org/extract-data-center-names collection)))
-        data-center-names (keep :short-name data-centers)
+        archive-center-names (keep meaningful-short-name-fn archive-centers)
+        data-centers (map #(dc/data-center-short-name->elastic-doc gcmd-keywords-map %)
+                          (map str/trim (dc/extract-data-center-names umm-spec-collection)))
+        data-center-names (keep meaningful-short-name-fn data-centers)
         atom-links (map json/generate-string (ru/atom-links related-urls))
         ;; not empty is used below to get a real true/false value
         downloadable (not (empty? (ru/downloadable-urls related-urls)))
@@ -376,9 +380,9 @@
             ;;  "org.ceos.wgiss.cwic.cwic_status": {"associationDate":"2015-01-01T00:00:00.0Z",
             ;;                                      "data": "prod"}}
             :tags-gzip-b64 (when (seq tag-associations)
-                            (util/string->gzip-base64
-                             (pr-str
-                              (into {} (for [ta tag-associations]
+                             (util/string->gzip-base64
+                              (pr-str
+                               (into {} (for [ta tag-associations]
                                           [(:tag-key ta) (util/remove-nil-keys
                                                           {:data (:data ta)})])))))}
            (collection-temporal-elastic context concept-id umm-spec-collection)
