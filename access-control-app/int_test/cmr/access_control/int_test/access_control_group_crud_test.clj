@@ -1,11 +1,12 @@
 (ns cmr.access-control.int-test.access-control-group-crud-test
   (:require
-   [clojure.string :as str]
-   [clojure.test :refer :all]
-   [cmr.access-control.int-test.fixtures :as fixtures]
-   [cmr.access-control.test.util :as u]
-   [cmr.mock-echo.client.echo-util :as e]
-   [cmr.transmit.config :as transmit-config]))
+    [clojure.string :as str]
+    [clojure.test :refer :all]
+    [cmr.access-control.int-test.fixtures :as fixtures]
+    [cmr.access-control.test.util :as u]
+    [cmr.mock-echo.client.echo-util :as e]
+    [cmr.transmit.config :as transmit-config]
+    [cmr.transmit.config :as tc]))
 
 (use-fixtures :once (fixtures/int-test-fixtures))
 
@@ -225,24 +226,29 @@
   ;; Two groups will be created along with two ACLs referencing each respective group. After one
   ;; group is deleted, the ACL referencing it should also be deleted, and the other ACL should
   ;; still exist.
+  (u/create-acl tc/mock-echo-system-token {:group_permissions [{:permissions [:create :read]
+                                                                :user_type :registered}]
+                                           :system_identity {:target "ANY_ACL"}})
   (let [token (e/login (u/conn-context) "user")
         ;; group 1 will be deleted
-        group-1-concept-id (:concept_id (u/create-group token (u/make-group {:name "group 1"})))
+        group-1-concept-id (:concept_id (u/create-group token (u/make-group {:name "group 1" :provider_id "PROV1"})))
+        _ (u/wait-until-indexed)
         acl-1-concept-id (:concept_id
-                      (u/create-acl token {:group_permissions [{:user_type :registered
-                                                                :permissions ["update"]}]
-                                           :single_instance_identity {:target "GROUP_MANAGEMENT"
-                                                                      :target_id group-1-concept-id}}))
+                           (u/create-acl token {:group_permissions [{:user_type :registered
+                                                                     :permissions ["update"]}]
+                                                :single_instance_identity {:target "GROUP_MANAGEMENT"
+                                                                           :target_id group-1-concept-id}}))
         ;; group 2 won't be deleted
-        group-2-concept-id (:concept_id (u/create-group token (u/make-group {:name "group 2"})))
+        group-2-concept-id (:concept_id (u/create-group token (u/make-group {:name "group 2" :provider_id "PROV1"})))
+        _ (u/wait-until-indexed)
         acl-2-concept-id (:concept_id
-                (u/create-acl token {:group_permissions [{:user_type :registered
-                                                          :permissions ["update"]}]
-                                     :single_instance_identity {:target "GROUP_MANAGEMENT"
-                                                                :target_id group-2-concept-id}}))]
+                           (u/create-acl token {:group_permissions [{:user_type :registered
+                                                                     :permissions ["update"]}]
+                                                :single_instance_identity {:target "GROUP_MANAGEMENT"
+                                                                           :target_id group-2-concept-id}}))]
     (u/wait-until-indexed)
-    (is (= #{acl-1-concept-id acl-2-concept-id}
-           (set
+    (is (= [acl-1-concept-id acl-2-concept-id]
+           (sort
              (map :concept_id
                   (:items (u/search-for-acls token {:identity-type "single_instance"}))))))
     (u/delete-group token group-1-concept-id)

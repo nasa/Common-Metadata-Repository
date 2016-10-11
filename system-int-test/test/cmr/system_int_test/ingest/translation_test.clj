@@ -52,12 +52,54 @@
       (let [input-str (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
             expected (expected-conversion/convert expected-conversion/example-collection-record input-format output-format)
             {:keys [status headers body]} (ingest/translate-metadata :collection input-format input-str output-format)
-            _ (is (= 200 status) body)
             content-type (first (mt/extract-mime-types (:content-type headers)))
             parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
         (is (= 200 status) body)
         (is (= (mt/format->mime-type output-format) content-type))
         (is (= expected parsed-umm-json)))))
+
+    (testing (format "Translating iso19115 to umm-json without skipping sanitizing makes use of default values")
+      (let [input-format :iso19115
+            output-format :umm-json
+            options {:skip-sanitize-umm-c false}
+            input-xml (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
+            {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
+                                                                         output-format options)
+            parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
+        (is (= [(umm-cmn/map->DataCenterType {:Roles ["ARCHIVER"], :ShortName "Not provided"})] 
+               (:DataCenters parsed-umm-json)))
+        (is (= 200 status))))
+            
+    (testing (format "Translating iso19115 to umm-json with skipping sanitizing and without skipping umm validation")
+      (let [input-format :iso19115
+            output-format :umm-json
+            options {:skip-sanitize-umm-c true}
+            input-xml (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
+            {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml 
+                                                                            output-format options)]
+        (is (= "{\"errors\":[\"object has missing required properties ([\\\"DataCenters\\\"])\"]}" body))
+        (is (= 422 status))))
+
+    (testing (format "Translating iso19115 to umm-json with skipping sanitizing and with skipping validation")
+      (let [input-format :iso19115
+            output-format :umm-json
+            options {:skip-sanitize-umm-c true :query-params {:skip_umm_validation true}}
+            input-xml (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
+            {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
+                                                                         output-format options)
+            parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
+        (is (= nil (:DataCenters parsed-umm-json)))
+        (is (= 200 status))))
+
+    (testing (format "Translating iso19115 to dif10 with skipping sanitizing")
+      (let [input-format :iso19115
+            output-format :dif10
+            options {:skip-sanitize-umm-c true}
+            input-xml (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
+            {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
+                                                                         output-format options)]
+        (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><errors><error>Skipping santization during translation is only supported when the target format is UMM-C</error></errors>" body))
+        (is (= 400 status))))
 
   (testing "Failure cases"
     (testing "unsupported input format"
