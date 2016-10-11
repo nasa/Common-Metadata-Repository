@@ -9,7 +9,8 @@
     [cmr.common.services.errors :as errors]
     [cmr.common.util :as util]
     [cmr.transmit.config :as transmit-config]
-    [cmr.transmit.echo.tokens :as tokens]))
+    [cmr.transmit.echo.tokens :as tokens]
+    [cmr.access-control.services.group-service :as group-service]))
 
 (defn- get-acls-by-condition
   "Returns a map containing the context user, the user's sids, and acls found by executing given condition against ACL index"
@@ -52,20 +53,40 @@
   [action]
   (format "Permission to %s ACL is denied" (name action)))
 
-(defn can?
+(defn- action-permitted-on-acl?
+  "Returns true if any ACLs grant the current context user the given permission
+  keyword (:create, :update, etc.) on the given acl."
+  [context permission acl]
+  (cond
+    ;; system token or system-level ANY_ACL permission can do anything
+    (or (transmit-config/echo-system-token? context)
+        (has-system-access? context permission "ANY_ACL"))
+    true
+
+    ;; If the user does not have system-level permissions, they may not perform any actions
+    ;; on system-level ACLs.
+    (:system-identity acl)
+    false
+
+    (:provider-identity acl)
+    (if (= (:target (:provider-identity acl)) "CATALOG_ITEM_ACL")
+      (has-provider-access? context permission "CATALOG_ITEM_ACL"
+                            (:provider-id (:provider-identity acl)))
+      (has-provider-access? context permission "PROVIDER_OBJECT_ACL"
+                            (:provider-id (:provider-identity acl))))
+
+    (:catalog-item-identity acl)
+    (has-provider-access? context permission "CATALOG_ITEM_ACL"
+                          (:provider-id (:catalog-item-identity acl)))
+
+    (:single-instance-identity acl)
+    (let [target-group (group-service/get-group context (get-in acl [:single-instance-identity :target-id]))]
+      (and (:provider-id target-group)
+           (has-provider-access? context permission "PROVIDER_OBJECT_ACL" (:provider-id target-group))))))
+
+(defn authorize-acl-action
   "Throws service error if user doesn't have permission to intiate a given action for a given acl.
    Actions include create and update."
   [context action acl]
-  (when-not (or (transmit-config/echo-system-token? context) (has-system-access? context action "ANY_ACL"))
-    (cond
-      (:provider-identity acl) (if (= (:target (:provider-identity acl)) "CATALOG_ITEM_ACL")
-                                 (when-not (has-provider-access? context action "CATALOG_ITEM_ACL"
-                                                                 (:provider-id (:provider-identity acl)))
-                                   (errors/throw-service-error :bad-request (permission-denied-message action)))
-                                 (when-not (has-provider-access? context action "PROVIDER_OBJECT_ACL"
-                                                                 (:provider-id (:provider-identity acl)))
-                                   (errors/throw-service-error :bad-request (permission-denied-message action))))
-      (:catalog-item-identity acl) (when-not (has-provider-access? context action "CATALOG_ITEM_ACL"
-                                                                   (:provider-id (:catalog-item-identity acl)))
-                                     (errors/throw-service-error :bad-request (permission-denied-message action)))
-      (:system-identity acl) (errors/throw-service-error :bad-request (permission-denied-message action)))))
+  (when-not (action-permitted-on-acl? context action acl)
+    (errors/throw-service-error :bad-request (permission-denied-message action))))
