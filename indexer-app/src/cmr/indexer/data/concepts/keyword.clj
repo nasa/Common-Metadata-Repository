@@ -71,8 +71,7 @@
         two-d-coord-names (map :TilingIdentificationSystemName
                                (:TilingIdentificationSystems collection))
         data-centers (map :ShortName (:DataCenters collection))
-        science-keywords (mapcat #(sk/science-keyword->keywords (util/map-keys->kebab-case %))
-                                 (:ScienceKeywords collection))
+        science-keywords (mapcat sk/science-keyword->keywords (:ScienceKeywords collection))
         attrib-keywords (mapcat #(attrib/psa->keywords (util/map-keys->kebab-case %))
                                 (:AdditionalAttributes collection))
         all-fields (flatten (conj [concept-id]

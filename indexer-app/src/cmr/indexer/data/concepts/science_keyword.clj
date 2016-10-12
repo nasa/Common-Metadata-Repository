@@ -3,32 +3,29 @@
   (:require
     [clojure.string :as str]
     [cmr.common-app.services.kms-fetcher :as kf]
-    [cmr.common.util :as util]))
+    [cmr.common.util :as util]
+    [cmr.umm-spec.util :as spec-util]))
 
 (defn flatten-science-keywords
   "Convert the science keywords into a flat list composed of the category, topic, and term values."
   [collection]
   (distinct (mapcat (fn [science-keyword]
-                      (let [{:keys [category topic term]} science-keyword]
+                      (let [{category :Category topic :Topic term :Term} science-keyword]
                         (filter identity [category topic term])))
-                    (:science-keywords collection))))
+                    (:ScienceKeywords collection))))
 
 (defn science-keyword->keywords
   "Converts a science keyword into a vector of terms for keyword searches"
   [science-keyword]
-  (let [{:keys [category topic term variable-level-1 variable-level-2 variable-level-3
-                detailed-variable]} science-keyword]
+  (let [{category :Category topic :Topic term :Term variable-level-1 :VariableLevel1
+         variable-level-2 :VariableLevel2 variable-level-3 :VariableLevel3
+         detailed-variable :DetailedVariable} science-keyword]
     [category topic term variable-level-1 variable-level-2 variable-level-3 detailed-variable]))
-
-(defn science-keywords->keywords
-  "Converts the science keywords into a sequence of terms for keyword searches"
-  [collection]
-  (mapcat science-keyword->keywords (:science-keywords collection)))
 
 (defn- normalize-sk-field-value
   "Convert science keyword field values into upper case and trim whitespace from both ends."
   [sk-field-value]
-  (when sk-field-value
+  (when (and sk-field-value (not= spec-util/not-provided sk-field-value))
     (-> sk-field-value str/trim str/upper-case)))
 
 (defn science-keyword->elastic-doc
@@ -47,11 +44,11 @@
         {:keys [uuid]} (kf/get-full-hierarchy-for-science-keyword gcmd-keywords-map
                                                                   science-keyword-kebab-key)]
     {:category category
-     :category.lowercase (str/lower-case category)
+     :category.lowercase (when category (str/lower-case category))
      :topic topic
-     :topic.lowercase (str/lower-case topic)
+     :topic.lowercase (when topic (str/lower-case topic))
      :term term
-     :term.lowercase (str/lower-case term)
+     :term.lowercase (when term (str/lower-case term))
      :variable-level-1 variable-level-1
      :variable-level-1.lowercase (when variable-level-1 (str/lower-case variable-level-1))
      :variable-level-2 variable-level-2
@@ -77,11 +74,12 @@
           (util/map-keys #(keyword (str (name %) ".lowercase")))
           (util/map-values #(when % (str/lower-case %)))))))
 
-(defn science-keyword->facet-fields
+(defn- science-keyword->facet-fields
   [science-keyword]
   (let [science-keyword-upper-case (util/map-values normalize-sk-field-value science-keyword)
-        {:keys [category topic term variable-level-1 variable-level-2
-                variable-level-3 detailed-variable]} science-keyword-upper-case]
+        {category :Category topic :Topic term :Term variable-level-1 :VariableLevel1
+         variable-level-2 :VariableLevel2 variable-level-3 :VariableLevel3
+         detailed-variable :DetailedVariable} science-keyword-upper-case]
     {:category category
      :topic topic
      :term term
@@ -107,4 +105,4 @@
            :variable-level-2 []
            :variable-level-3 []
            :detailed-variable []}
-          (:science-keywords collection)))
+          (:ScienceKeywords collection)))

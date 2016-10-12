@@ -97,8 +97,8 @@
                            ;; If the granule end date is within the last 3 days we indicate that
                            ;; the collection has no end date. This allows NRT collections to be
                            ;; found even if the collection has been reindexed recently.
-                          nil
-                          granule-end-date)
+                           nil
+                           granule-end-date)
         coll-start (index-util/date->elastic start-date)
         coll-end (index-util/date->elastic end-date)]
     (merge {:start-date coll-start
@@ -139,7 +139,7 @@
 
 (defn- assoc-nil-if
   "Set value to nil if the predicate is true
-   Uses assoc."
+  Uses assoc."
   [collection key predicate]
   (if predicate
     (assoc collection key nil)
@@ -147,7 +147,7 @@
 
 (defn- assoc-in-nil-if
   "Set value to nil if the predicate is true.
-   Uses assoc-in."
+  Uses assoc-in."
   [collection keys predicate]
   (if predicate
     (assoc-in collection keys nil)
@@ -156,34 +156,34 @@
 (defn- sanitize-processing-level-ids
   "Sanitize Processing Level Ids if and only if the values are default"
   [collection]
-  (assoc-in-nil-if
-   collection
-   [:ProcessingLevel :Id]
-   (= (get-in collection [:ProcessingLevel :Id]) su/not-provided)))
+  (assoc-in-nil-if collection
+                   [:ProcessingLevel :Id]
+                   (= (get-in collection [:ProcessingLevel :Id]) su/not-provided)))
 
 (defn- sanitize-collection
   "Remove default values to avoid them being indexed"
   [collection]
   (-> collection
-   (assoc-nil-if :Platforms (= (:Platforms collection) su/not-provided-platforms))
-   sanitize-processing-level-ids
-   (assoc-nil-if :DataCenters (= (:DataCenters collection) [su/not-provided-data-center]))))
+      sanitize-processing-level-ids
+      (assoc-nil-if :Platforms (= (:Platforms collection) su/not-provided-platforms))
+      (assoc-nil-if :RelatedUrls (= (:RelatedUrls collection) [su/not-provided-related-url]))
+      (assoc-nil-if :ScienceKeywords (= (:ScienceKeywords collection) su/not-provided-science-keywords))
+      (assoc-nil-if :DataCenters (= (:DataCenters collection) [su/not-provided-data-center]))))
 
 (defn- collection-humanizers-elastic
   "Given a umm-spec collection, returns humanized elastic search fields"
   [context collection]
-  (let [sanitized-collection (sanitize-collection collection)
-        humanized (humanizer/umm-collection->umm-collection+humanizers
-                    sanitized-collection (hf/get-humanizer-instructions context))
+  (let [humanized (humanizer/umm-collection->umm-collection+humanizers
+                    collection (hf/get-humanizer-instructions context))
         extract-fields (partial extract-humanized-elastic-fields humanized)]
     (merge
-     {:science-keywords.humanized (map sk/humanized-science-keyword->elastic-doc
-                                   (:ScienceKeywords humanized))}
-     (extract-fields [:Platforms :cmr.humanized/ShortName] :platform-sn)
-     (extract-fields [:Platforms :Instruments :cmr.humanized/ShortName] :instrument-sn)
-     (extract-fields [:Projects :cmr.humanized/ShortName] :project-sn)
-     (extract-fields [:ProcessingLevel :cmr.humanized/Id] :processing-level-id)
-     (extract-fields [:DataCenters :cmr.humanized/ShortName] :organization))))
+      {:science-keywords.humanized (map sk/humanized-science-keyword->elastic-doc
+                                        (:ScienceKeywords humanized))}
+      (extract-fields [:Platforms :cmr.humanized/ShortName] :platform-sn)
+      (extract-fields [:Platforms :Instruments :cmr.humanized/ShortName] :instrument-sn)
+      (extract-fields [:Projects :cmr.humanized/ShortName] :project-sn)
+      (extract-fields [:ProcessingLevel :cmr.humanized/Id] :processing-level-id)
+      (extract-fields [:DataCenters :cmr.humanized/ShortName] :organization))))
 
 (defn- get-coll-permitted-group-ids
   "Returns the groups ids (group guids, 'guest', 'registered') that have permission to read
@@ -223,16 +223,14 @@
   [context concept collection umm-spec-collection]
   (let [{:keys [concept-id revision-id provider-id user-id
                 native-id revision-date deleted format extra-fields tag-associations]} concept
+        umm-spec-collection (sanitize-collection umm-spec-collection)
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
          temporal-keywords :TemporalKeywords platforms :Platforms
          related-urls :RelatedUrls} umm-spec-collection
         processing-level-id (get-in umm-spec-collection [:ProcessingLevel :Id])
-        processing-level-id (when-not (= su/not-provided processing-level-id)
-                              processing-level-id)
-        related-urls (when-not (= [su/not-provided-related-url] related-urls) related-urls)
         spatial-keywords (lk/location-keywords->spatial-keywords
-                          (:LocationKeywords umm-spec-collection))
+                           (:LocationKeywords umm-spec-collection))
         access-value (get-in umm-spec-collection [:AccessConstraints :Value])
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
@@ -241,8 +239,7 @@
         entry-id (eid/entry-id short-name version-id)
         opendata-related-urls (map related-url->opendata-related-url related-urls)
         personnel (opendata-email-contact umm-spec-collection)
-        platforms (map util/map-keys->kebab-case
-                       (when-not (= su/not-provided-platforms platforms) platforms))
+        platforms (map util/map-keys->kebab-case platforms)
         gcmd-keywords-map (kf/get-gcmd-keywords-map context)
         platforms-nested (map #(platform/platform-short-name->elastic-doc gcmd-keywords-map %)
                               (map :short-name platforms))
@@ -343,7 +340,7 @@
             :spatial-keyword spatial-keywords
             :spatial-keyword.lowercase  (map str/lower-case spatial-keywords)
             :attributes (attrib/aas->elastic-docs umm-spec-collection)
-            :science-keywords-flat (sk/flatten-science-keywords collection)
+            :science-keywords-flat (sk/flatten-science-keywords umm-spec-collection)
             :personnel (json/generate-string personnel)
             :archive-center archive-center-names
             :archive-center.lowercase (map str/lower-case archive-center-names)
@@ -381,14 +378,14 @@
             ;;                                      "data": "prod"}}
             :tags-gzip-b64 (when (seq tag-associations)
                              (util/string->gzip-base64
-                              (pr-str
-                               (into {} (for [ta tag-associations]
-                                          [(:tag-key ta) (util/remove-nil-keys
-                                                          {:data (:data ta)})])))))}
+                               (pr-str
+                                 (into {} (for [ta tag-associations]
+                                            [(:tag-key ta) (util/remove-nil-keys
+                                                             {:data (:data ta)})])))))}
            (collection-temporal-elastic context concept-id umm-spec-collection)
            (spatial/collection-orbit-parameters->elastic-docs umm-spec-collection)
            (spatial->elastic umm-spec-collection)
-           (sk/science-keywords->facet-fields collection)
+           (sk/science-keywords->facet-fields umm-spec-collection)
            (collection-humanizers-elastic context umm-spec-collection))))
 
 (defn- get-elastic-doc-for-tombstone-collection
