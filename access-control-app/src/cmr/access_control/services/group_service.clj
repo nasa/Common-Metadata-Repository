@@ -26,7 +26,8 @@
   (:require
     cmr.access-control.data.group-json-results-handler
     cmr.access-control.data.acl-json-results-handler)
-  (:import (java.util UUID)))
+  (:import
+    (java.util UUID)))
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
