@@ -148,7 +148,6 @@
                          q-to-chans
                          (atom nil))))
 
-
 (comment
 
   (def qb (create-memory-queue-broker {:queues ["a" "b" "c"]

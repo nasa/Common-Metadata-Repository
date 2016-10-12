@@ -132,6 +132,8 @@
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
+      ;; for NGAP deployment health check
+      (GET "/" {} {:status 200})
       (context "/bulk_migration" []
         (POST "/providers" {:keys [request-context body params]}
           (migrate-provider request-context body params))

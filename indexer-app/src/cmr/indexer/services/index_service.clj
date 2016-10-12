@@ -30,7 +30,6 @@
     [cmr.transmit.cubby :as cubby]
     [cmr.transmit.echo.rest :as rest]
     [cmr.transmit.index-set :as tis]
-    [cmr.transmit.metadata-db :as mdb]
     [cmr.transmit.metadata-db :as meta-db]
     [cmr.transmit.metadata-db2 :as meta-db2]
     [cmr.umm.umm-core :as umm]))
@@ -80,7 +79,7 @@
   [context batch options]
   ;; Get the tag associations as well.
   (let [batch (map (fn [concept]
-                     (let [tag-associations (mdb/get-tag-associations-for-collection
+                     (let [tag-associations (meta-db/get-tag-associations-for-collection
                                               context concept)]
                        (assoc concept :tag-associations tag-associations)))
                    batch)]
@@ -219,7 +218,7 @@
 
 (defmethod get-elastic-version :collection
   [context concept]
-  (let [tag-associations (mdb/get-tag-associations-for-collection context concept)]
+  (let [tag-associations (meta-db/get-tag-associations-for-collection context concept)]
     (get-elastic-version-with-tag-associations context concept tag-associations)))
 
 (defmulti get-tag-associations
@@ -233,7 +232,7 @@
 
 (defmethod get-tag-associations :collection
   [context concept]
-  (mdb/get-tag-associations-for-collection context concept))
+  (meta-db/get-tag-associations-for-collection context concept))
 
 (defmulti index-concept
   "Index the given concept with the parsed umm record."
@@ -444,9 +443,9 @@
    :cubby cubby/get-cubby-health
    :metadata-db meta-db2/get-metadata-db-health
    :index-set tis/get-index-set-health
-   :rabbit-mq (fn [context]
-                (when-let [qb (get-in context [:system :queue-broker])]
-                  (queue/health qb)))})
+   :message-queue (fn [context]
+                    (when-let [qb (get-in context [:system :queue-broker])]
+                      (queue/health qb)))})
 
 (defn health
   "Returns the health state of the app."

@@ -330,3 +330,35 @@
       (is (= {:status 404
               :errors [(format "Group with concept id [%s] was deleted." concept_id)]}
              (u/update-group token concept_id group))))))
+
+(deftest update-group-legacy-guid-test
+  (let [group1 (u/make-group {:legacy_guid "legacy_guid_1" :name "group1"})
+
+        no-legacy-group (u/make-group {:name "group1"})
+        same-legacy-group (u/make-group {:legacy_guid "legacy_guid_1" :name "group1"})
+        diff-legacy-group (u/make-group {:legacy_guid "wrong_legacy_guid" :name "group1"})
+
+        token (e/login (u/conn-context) "user1")
+        concept-id (:concept_id (u/create-group token group1))
+        _ (u/wait-until-indexed)
+
+        response-no-legacy (u/update-group token concept-id no-legacy-group)
+        response-same-legacy (u/update-group token concept-id same-legacy-group)
+        response-diff-legacy (u/update-group token concept-id diff-legacy-group)]
+
+    (u/wait-until-indexed)
+
+    (testing "We should now successfully update groups with a legacy_guid, without specifying the legacy_guid in the updated group")
+      (is (= {:status 200 :concept_id concept-id :revision_id 2}
+             response-no-legacy))
+      (u/assert-group-saved (assoc no-legacy-group :legacy_guid "legacy_guid_1") "user1" concept-id 2)
+
+    (testing "Specifying the same legacy_guid should also successfully update the group")
+      (is (= {:status 200 :concept_id concept-id :revision_id 3}
+             response-same-legacy))
+      (u/assert-group-saved same-legacy-group "user1" concept-id 3)
+
+    (testing "When specifying a different legacy_guid, an error message should be received")
+      (is (= {:status 400,
+              :errors ["Legacy Guid cannot be modified. Attempted to change existing value [legacy_guid_1] to [wrong_legacy_guid]"]}
+             response-diff-legacy))))

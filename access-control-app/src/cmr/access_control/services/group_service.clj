@@ -128,7 +128,7 @@
   "Service level validations when updating a group."
   [_]
   [(v/field-cannot-be-changed :provider-id)
-   (v/field-cannot-be-changed :legacy-guid)])
+   (v/field-cannot-be-changed :legacy-guid true)])
 
 (defn- validate-update-group
   "Validates a group update."
