@@ -127,3 +127,11 @@ Items to include in each issue
   * Deployment Impacts
     * Requires reindexing all groups after deployment
       * `curl -i -XPOST http://localhost:3011/access-control/reindex-groups?token=XXXX`
+
+## 1.61
+
+* CMR-3215 - Added granule validation to not allow a granule to change its parent collection
+  * Client Impacts
+    * Once a granule is created to reference a parent collection, the granule cannot be updated to reference a different collection as its parent collection.
+    * Changed the error message format for status code 422 during ingest to the correct format.
+

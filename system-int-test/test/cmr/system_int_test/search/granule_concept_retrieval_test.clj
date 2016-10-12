@@ -1,27 +1,28 @@
 (ns cmr.system-int-test.search.granule-concept-retrieval-test
   "Integration test for granule retrieval via the /concepts/:concept-id and
   /concepts/:concept-id/:revision-id endpoints."
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.umm.echo10.echo10-collection :as c]
-            [cmr.common.util :refer [are2] :as util]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.common.mime-types :as mt]
-            [cmr.umm.umm-core :as umm]
-            [cheshire.core :as json]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]
-            [cmr.umm.iso-mends.iso-mends-collection :as umm-c]
-            [clojure.string :as str]
-            [cmr.common.mime-types :as mt]
-            [clj-time.format :as f]
-            [cmr.common.xml :as cx]
-            [cmr.system-int-test.utils.fast-xml :as fx]))
+  (:require
+   [cheshire.core :as json]
+   [clj-time.format :as f]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :refer [are3] :as util]
+   [cmr.common.xml :as cx]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.fast-xml :as fx]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.umm.echo10.echo10-collection :as c]
+   [cmr.umm.iso-mends.iso-mends-collection :as umm-c]
+   [cmr.umm.umm-core :as umm]))
 
 (use-fixtures
   :each
@@ -98,6 +99,7 @@
         ;; ingest granule twice
         gran1-1 (d/ingest "PROV1" umm-gran1-1)
         gran1-2 (d/ingest "PROV1" umm-gran1-2)
+        gran-concept-id (:concept-id gran1-1)
 
         guest-token (e/login-guest (s/context))
         user1-token (e/login (s/context) "user1")]
@@ -105,20 +107,20 @@
 
     (testing "retrieve metadata from search by concept-id/revision-id"
       (testing "collections and granules"
-        (are2 [item format-key accept concept-id revision-id]
+        (are3 [item format-key accept concept-id revision-id]
           (let [headers {transmit-config/token-header user1-token
                          "Accept" accept}
                 response (search/retrieve-concept concept-id revision-id {:headers headers})]
             (result-matches? format-key item response))
 
           "echo10 granule revision 1"
-          umm-gran1-1 :echo10 mt/echo10 "G1200000004-PROV1" 1
+          umm-gran1-1 :echo10 mt/echo10 gran-concept-id 1
 
           "echo10 granule revision 2"
-          umm-gran1-2 :echo10 mt/echo10 "G1200000004-PROV1" 2)))
+          umm-gran1-2 :echo10 mt/echo10 gran-concept-id 2)))
     (testing "unsupported formats"
       (let [response (search/retrieve-concept
-                      "G1200000004-PROV1" nil
+                      gran-concept-id nil
                       {:headers {transmit-config/token-header user1-token}
                        :accept mt/html})
             err-msg (first (:errors (json/decode (:body response) true)))]
@@ -127,12 +129,10 @@
                     mt/html "] are not supported.")
                err-msg)))
       (let [response (search/retrieve-concept
-                      "G1200000004-PROV1" nil
+                      gran-concept-id nil
                       {:headers {transmit-config/token-header user1-token}
                        :url-extension "html"})
             err-msg (first (:errors (json/decode (:body response) true)))]
         (is (= 400 (:status response)))
         (is (= "The URL extension [html] is not supported."
                err-msg))))))
-
-

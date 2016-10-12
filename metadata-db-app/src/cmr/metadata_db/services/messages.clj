@@ -1,6 +1,7 @@
 (ns cmr.metadata-db.services.messages
-  (:require [clojure.string :as str]
-            [camel-snake-kebab.core :as csk]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.string :as str]))
 
 (defn missing-concept-id [concept-type provider-id native-id]
   (format
@@ -130,6 +131,10 @@
     (format "Provider with short name [%s] already exists. Its provider id is [%s]."
             short-name provider-id)))
 
+(defn granule-collection-cannot-change [old-concept-id new-concept-id]
+  (format "Granule's parent collection cannot be changed, was [%s], now [%s]."
+          old-concept-id, new-concept-id))
+
 (defn field-too-long [value limit]
   (format "%%s [%s] exceeds %d characters" value limit))
 
@@ -151,4 +156,3 @@
 (defn humanizers-only-system-level [provider-id]
   (format "Humanizer could not be associated with provider [%s]. Humanizer is system level entity."
           provider-id))
-
