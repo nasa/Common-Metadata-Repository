@@ -44,21 +44,21 @@
         {:keys [uuid]} (kf/get-full-hierarchy-for-science-keyword gcmd-keywords-map
                                                                   science-keyword-kebab-key)]
     {:category category
-     :category.lowercase (when category (str/lower-case category))
+     :category.lowercase (util/safe-lowercase category)
      :topic topic
-     :topic.lowercase (when topic (str/lower-case topic))
+     :topic.lowercase (util/safe-lowercase topic)
      :term term
-     :term.lowercase (when term (str/lower-case term))
+     :term.lowercase (util/safe-lowercase term)
      :variable-level-1 variable-level-1
-     :variable-level-1.lowercase (when variable-level-1 (str/lower-case variable-level-1))
+     :variable-level-1.lowercase (util/safe-lowercase variable-level-1)
      :variable-level-2 variable-level-2
-     :variable-level-2.lowercase (when variable-level-2 (str/lower-case variable-level-2))
+     :variable-level-2.lowercase (util/safe-lowercase variable-level-2)
      :variable-level-3 variable-level-3
-     :variable-level-3.lowercase (when variable-level-3 (str/lower-case variable-level-3))
+     :variable-level-3.lowercase (util/safe-lowercase variable-level-3)
      :detailed-variable detailed-variable
-     :detailed-variable.lowercase (when detailed-variable (str/lower-case detailed-variable))
+     :detailed-variable.lowercase (util/safe-lowercase detailed-variable)
      :uuid uuid
-     :uuid.lowercase (when uuid (str/lower-case uuid))}))
+     :uuid.lowercase (util/safe-lowercase uuid)}))
 
 (defn humanized-science-keyword->elastic-doc
   "Extracts humanized fields from the science keyword and places them into an elastic doc with
@@ -72,7 +72,7 @@
      ;; Create "*.lowercase" versions of the fields
      (->> ns-stripped-fields
           (util/map-keys #(keyword (str (name %) ".lowercase")))
-          (util/map-values #(when % (str/lower-case %)))))))
+          (util/map-values #(util/safe-lowercase %))))))
 
 (defn- science-keyword->facet-fields
   [science-keyword]

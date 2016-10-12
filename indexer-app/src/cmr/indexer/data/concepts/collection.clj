@@ -19,7 +19,7 @@
     [cmr.elastic-utils.index-util :as index-util]
     [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
     [cmr.indexer.data.concepts.attribute :as attrib]
-    [cmr.indexer.data.concepts.data-center :as dc]
+    [cmr.indexer.data.concepts.data-center :as data-center]
     [cmr.indexer.data.concepts.instrument :as instrument]
     [cmr.indexer.data.concepts.keyword :as k]
     [cmr.indexer.data.concepts.location-keyword :as clk]
@@ -160,8 +160,8 @@
                    [:ProcessingLevel :Id]
                    (= (get-in collection [:ProcessingLevel :Id]) su/not-provided)))
 
-(defn- sanitize-collection
-  "Remove default values to avoid them being indexed"
+(defn- remove-index-irrelevant-defaults
+  "Remove default values irrelevant to indexing to avoid them being indexed"
   [collection]
   (-> collection
       sanitize-processing-level-ids
@@ -223,7 +223,7 @@
   [context concept collection umm-spec-collection]
   (let [{:keys [concept-id revision-id provider-id user-id
                 native-id revision-date deleted format extra-fields tag-associations]} concept
-        umm-spec-collection (sanitize-collection umm-spec-collection)
+        umm-spec-collection (remove-index-irrelevant-defaults umm-spec-collection)
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
          temporal-keywords :TemporalKeywords platforms :Platforms
@@ -269,12 +269,12 @@
                                    (when-let [short-name (:short-name c)]
                                      (when (not= su/not-provided short-name)
                                        short-name)))
-        archive-centers (map #(dc/data-center-short-name->elastic-doc gcmd-keywords-map %)
-                             (map str/trim (dc/extract-archive-center-names umm-spec-collection)))
+        archive-centers (map #(data-center/data-center-short-name->elastic-doc gcmd-keywords-map %)
+                             (map str/trim (data-center/extract-archive-center-names umm-spec-collection)))
         ;; get the normalized names back
         archive-center-names (keep meaningful-short-name-fn archive-centers)
-        data-centers (map #(dc/data-center-short-name->elastic-doc gcmd-keywords-map %)
-                          (map str/trim (dc/extract-data-center-names umm-spec-collection)))
+        data-centers (map #(data-center/data-center-short-name->elastic-doc gcmd-keywords-map %)
+                          (map str/trim (data-center/extract-data-center-names umm-spec-collection)))
         data-center-names (keep meaningful-short-name-fn data-centers)
         atom-links (map json/generate-string (ru/atom-links related-urls))
         ;; not empty is used below to get a real true/false value
@@ -303,14 +303,14 @@
             :provider-id provider-id
             :provider-id.lowercase (str/lower-case provider-id)
             :short-name short-name
-            :short-name.lowercase (when short-name (str/lower-case short-name))
+            :short-name.lowercase (util/safe-lowercase short-name)
             :version-id version-id
-            :version-id.lowercase (when version-id (str/lower-case version-id))
+            :version-id.lowercase (util/safe-lowercase version-id)
             :deleted (boolean deleted)
             :revision-date2 revision-date
             :access-value access-value
             :processing-level-id processing-level-id
-            :processing-level-id.lowercase (when processing-level-id (str/lower-case processing-level-id))
+            :processing-level-id.lowercase (util/safe-lowercase processing-level-id)
             :collection-data-type collection-data-type
             :collection-data-type.lowercase (when collection-data-type
                                               (if (sequential? collection-data-type)
@@ -405,13 +405,13 @@
      :native-id.lowercase (str/lower-case native-id)
      :user-id user-id
      :short-name short-name
-     :short-name.lowercase (when short-name (str/lower-case short-name))
+     :short-name.lowercase (util/safe-lowercase short-name)
      :entry-id entry-id
      :entry-id.lowercase (str/lower-case entry-id)
      :entry-title entry-title
      :entry-title.lowercase (str/lower-case entry-title)
      :version-id version-id
-     :version-id.lowercase (when version-id (str/lower-case version-id))
+     :version-id.lowercase (util/safe-lowercase version-id)
      :deleted (boolean deleted)
      :provider-id provider-id
      :provider-id.lowercase (str/lower-case provider-id)
