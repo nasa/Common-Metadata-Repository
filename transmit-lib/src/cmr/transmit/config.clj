@@ -122,7 +122,7 @@
   {:default mock-echo-system-token})
 
 (defn with-echo-system-token
-  "Returns context with mock-echo-system-token"
+  "Returns context map with ECHO system token assoc'ed under :token key."
   [context]
   (assoc context :token (echo-system-token)))
 
