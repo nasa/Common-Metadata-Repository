@@ -50,6 +50,9 @@
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
+      ;; for NGAP deployment health check
+      (GET "/" {} {:status 200})
+
       concepts-api/concepts-api-routes
       provider-api/provider-api-routes
       common-routes/cache-api-routes
@@ -58,7 +61,6 @@
       admin-api-routes)
 
     (route/not-found "Not Found")))
-
 
 (defn make-api [system]
   (-> (build-routes system)

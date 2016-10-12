@@ -26,7 +26,6 @@
 (defn- build-routes [system]
   (routes
     (context (get-in system [:ingest-public-conf :relative-root-url]) []
-
       provider-api/provider-api-routes
 
       ;; Add routes for translating metadata formats

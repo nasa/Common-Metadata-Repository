@@ -1,27 +1,28 @@
 (ns user
   "user is the default namespace of the REPL. This defines helper functions for starting and
   stopping the application from the REPL."
-  (:require [clojure.pprint :refer (pprint pp)]
-            [clojure.tools.namespace.repl :refer (refresh refresh-all)]
-            [clojure.test :refer (run-all-tests)]
-            [clojure.repl :refer :all]
-            [compojure.core :as compojure]
-            [cmr.access-control.system :as system]
-            [cmr.access-control.int-test.fixtures :as int-test-util]
-            [cmr.elastic-utils.embedded-elastic-server :as es]
-            [cmr.elastic-utils.config :as elastic-config]
-            [cmr.metadata-db.system :as mdb]
-            [cmr.mock-echo.system :as mock-echo]
-            [cmr.message-queue.queue.rabbit-mq :as rmq]
-            [cmr.common.lifecycle :as l]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.common.jobs :as jobs]
-            [cmr.common.dev.util :as d]
-            [cmr.common-app.test.side-api :as side-api]
-            [cmr.message-queue.test.queue-broker-wrapper :as queue-broker-wrapper]
-            [cmr.message-queue.test.queue-broker-side-api :as queue-broker-side-api]
-            proto-repl.saved-values))
+  (:require
+   [clojure.pprint :refer (pprint pp)]
+   [clojure.repl :refer :all]
+   [clojure.test :refer (run-all-tests)]
+   [clojure.tools.namespace.repl :refer (refresh refresh-all)]
+   [cmr.access-control.int-test.fixtures :as int-test-util]
+   [cmr.access-control.system :as system]
+   [cmr.elastic-utils.config :as elastic-config]
+   [cmr.elastic-utils.embedded-elastic-server :as es]
+   [cmr.common-app.test.side-api :as side-api]
+   [cmr.common.dev.util :as d]
+   [cmr.common.jobs :as jobs]
+   [cmr.common.lifecycle :as l]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.message-queue.queue.queue-broker :as queue-broker]
+   [cmr.message-queue.test.queue-broker-side-api :as queue-broker-side-api]
+   [cmr.message-queue.test.queue-broker-wrapper :as queue-broker-wrapper]
+   [cmr.metadata-db.system :as mdb]
+   [cmr.mock-echo.system :as mock-echo]
+   [cmr.transmit.config :as transmit-config]
+   [compojure.core :as compojure]
+   proto-repl.saved-values))
 
 (def system nil)
 
@@ -70,7 +71,7 @@
 
   (let [queue-broker (queue-broker-wrapper/create-queue-broker-wrapper
                       (if use-external-mq?
-                        (rmq/create-queue-broker (int-test-util/queue-config))
+                        (queue-broker/create-queue-broker (int-test-util/queue-config))
                         (int-test-util/create-memory-queue-broker)))]
     ;; Start side api server
     (alter-var-root

@@ -9,9 +9,9 @@
   [context]
   (let [ingest-health (ingest/get-ingest-health context)
         metadata-db-health (mdb/get-metadata-db-health context)
-        rabbit-mq-health (queue/health (get-in context [:system :queue-broker]))
-        ok? (every? :ok? [ingest-health metadata-db-health rabbit-mq-health])]
+        message-queue-health (queue/health (get-in context [:system :queue-broker]))
+        ok? (every? :ok? [ingest-health metadata-db-health message-queue-health])]
     {:ok? ok?
      :dependencies {:ingest ingest-health
                     :metadata-db metadata-db-health
-                    :rabbit-mq rabbit-mq-health}}))
+                    :message-queue message-queue-health}}))

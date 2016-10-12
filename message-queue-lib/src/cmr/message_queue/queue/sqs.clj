@@ -21,7 +21,7 @@
    [cmr.message-queue.services.queue :as queue])
   (:import
    (com.amazonaws ClientConfiguration)
-   (com.amazonaws.auth.policy Condition Policy Principal Statement Statement$Effect)
+   (com.amazonaws.auth.policy Condition Policy Principal Resource Statement Statement$Effect)
    (com.amazonaws.auth.policy.actions SQSActions)
    (com.amazonaws.auth.policy.conditions ConditionFactory)
    (com.amazonaws.services.sns AmazonSNSClient)
@@ -161,9 +161,12 @@
   "Returns an access policy allowing the given SNS topic to publish to the given SQS queue."
   [sns-client sqs-client queue-name exchange-names]
   (let [conditions (topic-conditions sns-client exchange-names)
+        queue-arn (get-queue-arn sqs-client queue-name)
+        resource (Resource. queue-arn)
         statement (doto (Statement. Statement$Effect/Allow)
                         (.withPrincipals (into-array Principal [Principal/AllUsers]))
                         (.withActions (into-array SQSActions [SQSActions/SendMessage]))
+                        (.withResources (into-array Resource [resource]))
                         (.withConditions (into-array Condition conditions)))
         policy (.withStatements (Policy.) (into-array Statement [statement]))]
     (.toJson policy)))
@@ -175,10 +178,10 @@
        q-arn (get-queue-arn sqs-client q-name)
        q-url (.getQueueUrl (.getQueueUrl sqs-client q-name))
        ;; create an access policy to allow the topic to publish to the queue
-       access-policy (sns-to-sqs-access-policy sns-client sqs-client queue-name exchange-names)
+       access-policy (sns-to-sqs-access-policy sns-client sqs-client q-name exchange-names)
        q-attrs (HashMap. {"Policy" access-policy})
 
-       ;; create and empty SetQueueAttributesRequest object and then set the attributes on it
+       ;; create an empty SetQueueAttributesRequest object and then set the attributes on it
        set-queue-attrs-request (doto (SetQueueAttributesRequest.)
                                      (.setAttributes q-attrs)
                                      (.setQueueUrl q-url))]
@@ -187,9 +190,12 @@
     (doseq [exchange-name exchange-names
             :let [ex-name (normalize-queue-name exchange-name)
                   topic (get-topic sns-client ex-name)
-                  topic-arn (.getTopicArn topic)]]
-      ;; subscribe the queue to the topic
-      (.subscribe sns-client topic-arn "sqs" q-arn))))
+                  topic-arn (.getTopicArn topic)
+                  ;; subscribe the queue to the topic
+                  subscription-arn (.getSubscriptionArn (.subscribe sns-client topic-arn "sqs" q-arn))]])))
+      ;; Keeping the following commented-out line until we determine if raw message delivery has
+      ;; performance benefits.
+      ; (.setSubscriptionAttributes sns-client subscription-arn "RawMessageDelivery" "true"))))
 
 (defn- normalized-queue-name->original-queue-name
   "Convert a normalized queue name to the original queue name used to create it."
@@ -306,10 +312,9 @@
 
   (health
     [this]
-    ;; try to get a list of queues and topics (exchanges) to test the connection to SNS/SQS
+    ;; try to get a list of queues for the first topic (exchange) to test the connection to SNS/SQS
     (try
-      (.listQueues sqs-client)
-      (.listTopics sns-client)
+      (queue/get-queues-bound-to-exchange this (first exchanges))
       {:ok? true}
       (catch Throwable e
         {:ok? false :msg (.getMessage e)}))))
@@ -323,23 +328,24 @@
 
 ;; Tests to make sure SNS/SQS is working
 (comment
+  ; (.subscribe (:sns-client broker) "arn:aws:sns:us-east-1:688991608580:gsfc-eosdis-cmr-ingest_exchange" "sqs" "arn:aws:sqs:us-east-1:688991608580:gsfc-eosdis-cmr-ngap-cmr-test_queue")
   ;; create a broker
   (def broker (lifecycle/start (create-queue-broker {}) nil))
   ;; list the topics for the cmr-ingest_exchange exchange/topic
   (get-topic (:sns-client broker) "cmr_ingest_exchange")
   ;; list the queues for the cmr_ingest_exchange
-  (queue/get-queues-bound-to-exchange broker "cmr_ingest_exchange")
+  (queue/get-queues-bound-to-exchange broker "cmr_test_exchange")
   ;; create a test queue
-  (create-queue (:sqs-client broker) "cmr-test.queue")
+  (create-queue (:sqs-client broker) "cmr_test.queue")
   ;; create a test exchange
   (create-exchange (:sns-client broker) "cmr_test_exchange")
   ;; list the queues for the cmr_test_exchange
   (queue/get-queues-bound-to-exchange broker "cmr_test_exchange")
   ;; Bind the queue to the new exchange
-  (bind-queue-to-exchanges (:sns-client broker) (:sqs-client broker) ["cmr_test_exchange"] "cmr-test.queue")
+  (bind-queue-to-exchanges (:sns-client broker) (:sqs-client broker) ["cmr_test_exchange"] "cmr_test.queue")
   ;; subscribe to test queue with a simple handler that prints received messages
   (queue/subscribe broker "cmr-test.queue" (fn [msg] (println "Got Message: " msg)))
   ;; publish a message to the queue to verify our subscribe worked
   (queue/publish-to-queue broker "cmr-test.queue" "{\"body\": \"ABC\"}")
   ;; publish a message to the exchange to verify the message is sent to the queue
-  (queue/publish-to-exchange broker "cmr_test_exchange" "{\"body\": \"ABC-exchange\"}"))
+  (queue/publish-to-exchange broker "cmr_test_exchange" "{\"body\": \"test-exchange\"}"))
