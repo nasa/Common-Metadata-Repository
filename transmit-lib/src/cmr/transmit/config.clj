@@ -25,11 +25,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn with-echo-system-token
-  "Returns context with mock-echo-system-token"
-  [context]
-  (assoc context :token mock-echo-system-token))
-
 (def token-header
   "echo-token")
 
@@ -125,6 +120,11 @@
 (defconfig echo-system-token
   "The ECHO system token to use for request to ECHO."
   {:default mock-echo-system-token})
+
+(defn with-echo-system-token
+  "Returns context with mock-echo-system-token"
+  [context]
+  (assoc context :token (echo-system-token)))
 
 (defn echo-system-token?
   "Returns true if the token passed in (or config map) is the echo system user's token"
