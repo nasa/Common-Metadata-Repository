@@ -83,6 +83,17 @@
     201
     200))
 
+(defn- contextualize-warnings
+  "Add a message to warnings to make translation issues more clear to the user"
+  [result]
+  (let [warning-context "After translating item to UMM-C the metadata had the following issue: "]
+   (update result
+          :warnings
+          (fn [warnings]
+            (if (coll? warnings)
+             (map #(str warning-context %) warnings)
+             (apply str warning-context warnings))))))
+
 (defmulti generate-ingest-response
   "Convert a result to a proper response format"
   (fn [headers result]
@@ -93,13 +104,13 @@
   ;; ring-json middleware will handle converting the body to json
   {:status (ingest-status-code result)
    :headers {"Content-Type" (mt/format->mime-type :json)}
-   :body result})
+   :body (contextualize-warnings result)})
 
 (defmethod generate-ingest-response :xml
   [headers result]
   {:status (ingest-status-code result)
    :headers {"Content-Type" (mt/format->mime-type :xml)}
-   :body (result-map->xml result)})
+   :body (result-map->xml (contextualize-warnings result))})
 
 (defmulti generate-validate-response
   "Convert a result to a proper response format"
@@ -112,7 +123,7 @@
   (if (seq result)
     {:status 200
      :headers {"Content-Type" (mt/format->mime-type :json)}
-     :body result}
+     :body (contextualize-warnings result)}
     {:status 200}))
 
 (defmethod generate-validate-response :xml
@@ -120,7 +131,7 @@
   (if (seq result)
    {:status 200
     :headers {"Content-Type" (mt/format->mime-type :xml)}
-    :body (result-map->xml result)}
+    :body (result-map->xml (contextualize-warnings result))}
    {:status 200}))
 
 (defn- invalid-revision-id-error
