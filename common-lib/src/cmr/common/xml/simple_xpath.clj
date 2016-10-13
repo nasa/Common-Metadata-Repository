@@ -50,9 +50,10 @@
   XPaths against.
 
   The `:context` key always contains the result of an XPath evaluation."
-  (:require [clojure.string :as str]
-            [clojure.data.xml :as x]
-            [cmr.common.util :as u]))
+  (:require
+   [clojure.data.xml :as x]
+   [clojure.string :as str]
+   [cmr.common.util :as u]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Selector creation functions
@@ -497,7 +498,6 @@
     (catch Exception e
       (throw (Exception. (str "Error processing xpath: " original-xpath) e)))))
 
-
 (defn evaluate
   "Returns the XPath context resulting from evaluating an XPath expression against XML or Clojure
   data. The given context may be an XPath context, an XML string, or a Clojure data structure. The
@@ -517,7 +517,16 @@
     (seq? context-or-node) (apply str (map text context-or-node))
     (:content context-or-node) (str/join (map text (:content context-or-node)))))
 
-(defn select
+(defn select*
   "Returns all elements matching the XPath expression."
   [context xpath]
   (seq (:context (evaluate context xpath))))
+
+(defmacro select
+  "Perform work of parsing XPath at compile time if a string literal is passed in to improve
+  performance at runtime."
+  [context xpath]
+  (if (string? xpath)
+    (let [parsed (parse-xpath xpath)]
+      `(select* ~context ~parsed))
+    `(select* ~context ~xpath)))
