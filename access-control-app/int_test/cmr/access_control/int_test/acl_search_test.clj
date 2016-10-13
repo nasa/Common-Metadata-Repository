@@ -141,8 +141,13 @@
         group2 (u/ingest-group token
                                {:name "without any acl read"}
                                ["user2"])
+        group3 (u/ingest-group token
+                               {:name "provider object prov1 read"}
+                               ["user3"])
         group1-concept-id (:concept_id group1)
         group2-concept-id (:concept_id group2)
+        group3-concept-id (:concept_id group3)
+
         ;; remove ANY_ACL read to all users
         _ (ac/update-acl (u/conn-context) (:concept-id fixtures/*fixture-system-acl*)
                          (assoc-in (system-acl "ANY_ACL")
@@ -156,17 +161,28 @@
         acl2 (ingest-acl token (assoc-in (system-acl "ARCHIVE_RECORD")
                                          [:group_permissions 0]
                                          {:permissions ["delete"] :group_id group2-concept-id}))
-        acl3 (ingest-acl token (system-acl "SYSTEM_OPTION_DEFINITION_DEPRECATION"))]
+        acl3 (ingest-acl token (system-acl "SYSTEM_OPTION_DEFINITION_DEPRECATION"))
+        acl4 (ingest-acl token (assoc (provider-acl "PROVIDER_OBJECT_ACL")
+                                      :group_permissions
+                                      [{:group_id group3-concept-id :permissions ["read"]}]))
+        acl5 (ingest-acl token (provider-acl "OPTION_DEFINITION"))
+        acl6 (ingest-acl token (assoc-in (provider-acl "OPTION_DEFINITION")
+                                         [:provider_identity :provider_id] "PROV2"))]
     (u/wait-until-indexed)
+    (testing "Provider Object ACL permissions"
+      (let [token (e/login (u/conn-context) "user3")
+            response (ac/search-for-acls (merge {:token token} (u/conn-context)) {:provider "PROV1"})]
+        (is (= (acls->search-response 3 [fixtures/*fixture-provider-acl* acl4 acl5])
+               (dissoc response :took)))))
     (testing "Guest search permission"
       (let [token (e/login-guest (u/conn-context))
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-        (is (= (acls->search-response 2 [fixtures/*fixture-provider-acl* acl3])
+        (is (= (acls->search-response 4 [fixtures/*fixture-provider-acl* acl3 acl5 acl6])
                (dissoc response :took)))))
     (testing "User search permission"
       (let [token (e/login (u/conn-context) "user1")
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-        (is (= (acls->search-response 5 [fixtures/*fixture-provider-acl* (assoc fixtures/*fixture-system-acl* :revision_id 2) acl1 acl2 acl3])
+        (is (= (acls->search-response 8 [fixtures/*fixture-provider-acl* (assoc fixtures/*fixture-system-acl* :revision_id 2) acl1 acl2 acl3 acl4 acl5 acl6])
                (dissoc response :took)))))
     (testing "Search permission without ANY_ACL read"
       (let [token (e/login (u/conn-context) "user2")

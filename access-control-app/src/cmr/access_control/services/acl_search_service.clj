@@ -6,6 +6,7 @@
     [clojure.edn :as edn]
     [clojure.string :as str]
     [cmr.access-control.data.acl-schema :as schema]
+    [cmr.access-control.services.acl-authorization :as acl-auth]
     [cmr.access-control.services.acl-service :as acl-service]
     [cmr.access-control.services.auth-util :as auth-util]
     [cmr.access-control.services.group-service :as groups]
@@ -224,39 +225,30 @@
 
 (defn has-any-read?
   "Returns true if user has permssion to read any ACL."
-  [sids acls]
-  (some #{:read} (acl-service/system-permissions-granted-by-acls "ANY_ACL" sids (map acl/echo-style-acl acls))))
-
-(defn grants-search-permission?
-  "Returns true if ACL is searchable for given sids for a given key (:group-id or :user-type)"
-  [sids acl key]
-  (some (set (map #(name %) sids)) (map key (:group-permissions acl))))
+  [context]
+  (acl-auth/has-system-access? context :read "ANY_ACL"))
 
 (defn get-searchable-acls
   "Returns a lazy sequence of concept-ids for ACLs that are searchable for the given sids."
-  [sids acls-with-concept-id]
+  [context acls-with-concept-id]
   (for [acl acls-with-concept-id
-        :when (or (grants-search-permission? sids acl :group-id)
-                  (grants-search-permission? sids acl :user-type))]
+        :when (acl-auth/action-permitted-on-acl? context :read acl (:concept-id acl))]
     (:concept-id acl)))
 
 (defn make-acl-condition
   "Returns elastic condition to filter out ACLs that are not visible to the user."
-  [sids acls]
-  (let [concept-ids (get-searchable-acls sids acls)]
+  [context acls-with-concept-id]
+  (let [concept-ids (get-searchable-acls context acls-with-concept-id)]
     (when (seq concept-ids)
       (common-qm/string-conditions :concept-id concept-ids true))))
 
 (defmethod qe/add-acl-conditions-to-query :acl
   [context query]
-  (let [token (:token context)
-        user (if token (tokens/get-user-id context token) "guest")
-        sids (auth-util/get-sids context (if (= user "guest") :guest user))
-        acl-concepts (acl-service/get-all-acl-concepts context)
+  (let [acl-concepts (acl-service/get-all-acl-concepts context)
         acls-with-concept-id (map #(assoc (acl-service/get-parsed-acl %) :concept-id (:concept-id %)) acl-concepts)]
-    (if (has-any-read? sids acls-with-concept-id)
+    (if (has-any-read? context)
       query
-      (if-let [acl-cond (make-acl-condition sids acls-with-concept-id)]
+      (if-let [acl-cond (make-acl-condition context acls-with-concept-id)]
         (update-in query [:condition] #(gc/and-conds [acl-cond %]))
         (assoc query :condition common-qm/match-none)))))
 

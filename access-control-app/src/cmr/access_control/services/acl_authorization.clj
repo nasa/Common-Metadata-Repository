@@ -28,8 +28,8 @@
         response-acls (map #(edn/read-string (util/gzip-base64->string (:acl-gzip-b64 %))) (:items response))]
     {:acls response-acls :sids sids :user user}))
 
-(defn- has-system-access?
-  "Returns true if system acl matches sids for user in context for a given action"
+(defn has-system-access?
+  "Returns true if system ACL matches sids for user in context for a given action"
   [context action target]
   (let [condition (qm/string-condition :identity-type "System" true false)
         system-acls (get-acls-by-condition context condition)
@@ -38,51 +38,68 @@
     (acl/acl-matches-sids-and-permission? (:sids system-acls) (name action) any-acl-system-acl)))
 
 (defn- has-provider-access?
-  "Returns true if provider acl matches sids for user in context for a given action"
+  "Returns true if provider ACL matches sids for user in context for a given action"
   [context action target provider-id]
   (let [provider-identity-condition (qm/string-condition :identity-type "Provider" true false)
         provider-id-condition (qm/string-condition :provider provider-id)
         conditions (gc/and-conds [provider-identity-condition provider-id-condition])
         provider-acls (get-acls-by-condition context conditions)
         prov-acl (acl/echo-style-acl
-                      (first (filter #(= target (:target (:provider-identity %))) (:acls provider-acls))))]
+                   (first (filter #(= target (:target (:provider-identity %))) (:acls provider-acls))))]
     (acl/acl-matches-sids-and-permission? (:sids provider-acls) (name action) prov-acl)))
+
+(defn- has-self-permission?
+  "Returns true if ACL itself matches sids for user in context for a given action"
+  [context action concept-id]
+  (let [condition (qm/string-condition :concept-id concept-id true false)
+        returned-acl (get-acls-by-condition context condition)
+        echo-acl (acl/echo-style-acl (first (:acls returned-acl)))]
+    ;; read is special, if the user has any permission for the acl
+    ;; then the user has permission to read
+    (if (= action :read)
+      (some #(acl/acl-matches-sids-and-permission? (:sids returned-acl) % echo-acl)
+            ["create" "read" "update" "delete"])
+      (acl/acl-matches-sids-and-permission? (:sids returned-acl) (name action) echo-acl))))
 
 (defn- permission-denied-message
   "Returns permission denied message for given user and action."
   [action]
   (format "Permission to %s ACL is denied" (name action)))
 
-(defn- action-permitted-on-acl?
+(defn action-permitted-on-acl?
   "Returns true if any ACLs grant the current context user the given permission
   keyword (:create, :update, etc.) on the given acl."
-  [context permission acl]
-  (cond
-    ;; system token or system-level ANY_ACL permission can do anything
-    (or (transmit-config/echo-system-token? context)
-        (has-system-access? context permission "ANY_ACL"))
-    true
+  ([context permission acl]
+   (action-permitted-on-acl? context permission acl nil))
+  ([context permission acl concept-id]
+   (cond
+     ;; system token or system-level ANY_ACL permission can do anything
+     (or (transmit-config/echo-system-token? context)
+         (has-system-access? context permission "ANY_ACL")
+         (when concept-id
+           (has-self-permission? context permission concept-id)))
+     true
 
-    ;; If the user does not have system-level permissions, they may not perform any actions
-    ;; on system-level ACLs.
-    (:system-identity acl)
-    false
+     ;; If the user does not have system-level permissions, they may not perform any actions
+     ;; on system-level ACLs.
+     (:system-identity acl)
+     false
 
-    (:provider-identity acl)
-    (if (= (:target (:provider-identity acl)) "CATALOG_ITEM_ACL")
-      (has-provider-access? context permission "CATALOG_ITEM_ACL"
-                            (:provider-id (:provider-identity acl)))
-      (has-provider-access? context permission "PROVIDER_OBJECT_ACL"
-                            (:provider-id (:provider-identity acl))))
+     (:provider-identity acl)
+     (if (= (:target (:provider-identity acl)) "CATALOG_ITEM_ACL")
+       (has-provider-access? context permission "CATALOG_ITEM_ACL"
+                             (:provider-id (:provider-identity acl)))
+       (has-provider-access? context permission "PROVIDER_OBJECT_ACL"
+                             (:provider-id (:provider-identity acl))))
 
-    (:catalog-item-identity acl)
-    (has-provider-access? context permission "CATALOG_ITEM_ACL"
-                          (:provider-id (:catalog-item-identity acl)))
+     (:catalog-item-identity acl)
+     (has-provider-access? context permission "CATALOG_ITEM_ACL"
+                           (:provider-id (:catalog-item-identity acl)))
 
-    (:single-instance-identity acl)
-    (let [target-group (group-service/get-group context (get-in acl [:single-instance-identity :target-id]))]
-      (and (:provider-id target-group)
-           (has-provider-access? context permission "PROVIDER_OBJECT_ACL" (:provider-id target-group))))))
+     (:single-instance-identity acl)
+     (let [target-group (group-service/get-group context (get-in acl [:single-instance-identity :target-id]))]
+       (and (:provider-id target-group)
+            (has-provider-access? context permission "PROVIDER_OBJECT_ACL" (:provider-id target-group)))))))
 
 (defn authorize-acl-action
   "Throws service error if user doesn't have permission to intiate a given action for a given acl.
