@@ -51,7 +51,7 @@
 (defn- has-self-permission?
   "Returns true if ACL itself matches sids for user in context for a given action"
   [context action concept-id]
-  (let [condition (qm/string-conditions :concept-id concept-id true)
+  (let [condition (qm/string-condition :concept-id concept-id true false)
         returned-acl (get-acls-by-condition context condition)
         echo-acl (acl/echo-style-acl (first (:acls returned-acl)))]
     ;; read is special, if the user has any permission for the acl
@@ -71,38 +71,40 @@
 (defn action-permitted-on-acl?
   "Returns true if any ACLs grant the current context user the given permission
   keyword (:create, :update, etc.) on the given acl."
-  [context permission acl & concept-id]
-  (cond
-    ;; system token or system-level ANY_ACL permission can do anything
-    (or (transmit-config/echo-system-token? context)
-        (has-system-access? context permission "ANY_ACL")
-        (when concept-id
-          (has-self-permission? context permission concept-id)))
-    true
+  ([context permission acl]
+   (action-permitted-on-acl? context permission acl nil))
+  ([context permission acl concept-id]
+   (cond
+     ;; system token or system-level ANY_ACL permission can do anything
+     (or (transmit-config/echo-system-token? context)
+         (has-system-access? context permission "ANY_ACL")
+         (when concept-id
+           (has-self-permission? context permission concept-id)))
+     true
 
-    ;; If the user does not have system-level permissions, they may not perform any actions
-    ;; on system-level ACLs.
-    (:system-identity acl)
-    false
+     ;; If the user does not have system-level permissions, they may not perform any actions
+     ;; on system-level ACLs.
+     (:system-identity acl)
+     false
 
-    ;;TODO the catalog item check is reduntant with the self permission check earlier,
-    ;;we might want to pass concept-id during update and create to remove this redundancy.
-    ;;Currently, concept-id is only specified for acl searches.
-    (:provider-identity acl)
-    (if (= (:target (:provider-identity acl)) "CATALOG_ITEM_ACL")
-      (has-provider-access? context permission "CATALOG_ITEM_ACL"
-                            (:provider-id (:provider-identity acl)))
-      (has-provider-access? context permission "PROVIDER_OBJECT_ACL"
-                            (:provider-id (:provider-identity acl))))
+     ;;TODO the catalog item check is reduntant with the self permission check earlier,
+     ;;we might want to pass concept-id during update and create to remove this redundancy.
+     ;;Currently, concept-id is only specified for acl searches.
+     (:provider-identity acl)
+     (if (= (:target (:provider-identity acl)) "CATALOG_ITEM_ACL")
+       (has-provider-access? context permission "CATALOG_ITEM_ACL"
+                             (:provider-id (:provider-identity acl)))
+       (has-provider-access? context permission "PROVIDER_OBJECT_ACL"
+                             (:provider-id (:provider-identity acl))))
 
-    (:catalog-item-identity acl)
-    (has-provider-access? context permission "CATALOG_ITEM_ACL"
-                          (:provider-id (:catalog-item-identity acl)))
+     (:catalog-item-identity acl)
+     (has-provider-access? context permission "CATALOG_ITEM_ACL"
+                           (:provider-id (:catalog-item-identity acl)))
 
-    (:single-instance-identity acl)
-    (let [target-group (group-service/get-group context (get-in acl [:single-instance-identity :target-id]))]
-      (and (:provider-id target-group)
-           (has-provider-access? context permission "PROVIDER_OBJECT_ACL" (:provider-id target-group))))))
+     (:single-instance-identity acl)
+     (let [target-group (group-service/get-group context (get-in acl [:single-instance-identity :target-id]))]
+       (and (:provider-id target-group)
+            (has-provider-access? context permission "PROVIDER_OBJECT_ACL" (:provider-id target-group)))))))
 
 (defn authorize-acl-action
   "Throws service error if user doesn't have permission to intiate a given action for a given acl.
