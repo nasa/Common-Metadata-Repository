@@ -85,9 +85,6 @@
      (:system-identity acl)
      false
 
-     ;;TODO the catalog item check is reduntant with the self permission check earlier,
-     ;;we might want to pass concept-id during update and create to remove this redundancy.
-     ;;Currently, concept-id is only specified for acl searches.
      (:provider-identity acl)
      (if (= (:target (:provider-identity acl)) "CATALOG_ITEM_ACL")
        (has-provider-access? context permission "CATALOG_ITEM_ACL"
