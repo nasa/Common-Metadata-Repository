@@ -201,7 +201,6 @@
   [group user-id concept-id revision-id]
   (let [concept (mdb/get-concept (conn-context) concept-id revision-id)]
     (is (= {:concept-type :access-group
-            :native-id (str/lower-case (:name group))
             :provider-id (:provider_id group "CMR")
             :format mt/edn
             :metadata (pr-str (util/map-keys->kebab-case group))
@@ -209,14 +208,13 @@
             :deleted false
             :concept-id concept-id
             :revision-id revision-id}
-           (dissoc concept :revision-date :transaction-id)))))
+           (dissoc concept :revision-date :transaction-id :native-id)))))
 
 (defn assert-group-deleted
   "Checks that a group tombstone was persisted correctly in metadata db."
   [group user-id concept-id revision-id]
   (let [concept (mdb/get-concept (conn-context) concept-id revision-id)]
     (is (= {:concept-type :access-group
-            :native-id (str/lower-case (:name group))
             :provider-id (:provider_id group "CMR")
             :metadata ""
             :format mt/edn
@@ -224,7 +222,7 @@
             :deleted true
             :concept-id concept-id
             :revision-id revision-id}
-           (dissoc concept :revision-date :transaction-id)))))
+           (dissoc concept :revision-date :transaction-id :native-id)))))
 
 (defn create-acl
   "Creates an acl."

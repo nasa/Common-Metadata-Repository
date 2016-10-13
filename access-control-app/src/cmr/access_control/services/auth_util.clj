@@ -21,8 +21,13 @@
                            :page-size :unlimited
                            :result-format :query-specified
                            :result-fields [:concept-id :legacy-guid]})
-          response (qe/execute-query context query)]
-      (cons :registered (map #(or (:legacy-guid %) (:concept-id %)) (:items response))))))
+          groups (:items (qe/execute-query context query))]
+      (distinct
+        (concat [:registered]
+                ;; ACLs may be from ECHO or CMR, and may reference ECHO GUIDs as well as CMR concept IDs,
+                ;; depending on the context, so we will return both types of IDs here.
+                (keep :legacy-guid groups)
+                (keep :concept-id groups))))))
 
 (defn- put-sids-in-context
   "Gets the current SIDs of the user in the context from the Access control application."

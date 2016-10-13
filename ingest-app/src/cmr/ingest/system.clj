@@ -21,7 +21,8 @@
    [cmr.ingest.config :as config]
    [cmr.ingest.services.jobs :as ingest-jobs]
    [cmr.ingest.services.providers-cache :as pc]
-   [cmr.message-queue.queue.rabbit-mq :as rmq]
+   [cmr.message-queue.config :as queue-config]
+   [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as oracle]
    [cmr.transmit.config :as transmit-config]))
@@ -63,7 +64,7 @@
                        kf/kms-cache-key (kf/create-kms-cache)
                        common-health/health-cache-key (common-health/create-health-cache)}
               :ingest-public-conf ingest-public-conf
-              :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
+              :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
      (transmit-config/system-with-connections
        sys [:metadata-db :indexer :echo-rest :search :cubby :kms]))))
 

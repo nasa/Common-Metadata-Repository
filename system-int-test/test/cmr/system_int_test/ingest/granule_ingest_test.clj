@@ -1,23 +1,23 @@
 (ns cmr.system-int-test.ingest.granule-ingest-test
   "CMR granule ingest integration tests"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.search-util :as search]
-            [clojure.string :as str]
-            [cmr.common.mime-types :as mt]
-            [cmr.umm.umm-granule :as umm-g]
-            [cmr.common.util :as u :refer [are3]]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.indexer.system :as indexer-system]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-            [clojure.java.io :as io]
-            [cheshire.core :as json]))
-
+  (:require
+   [cheshire.core :as json]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as u :refer [are3]]
+   [cmr.indexer.system :as indexer-system]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.umm.umm-granule :as umm-g]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -54,6 +54,25 @@
     (is (= (:concept-id new-coll)
            (get-in (mdb/get-concept (:concept-id gran3) (:revision-id gran3))
                    [:extra-fields :parent-collection-id])))))
+
+(deftest granule-change-parent-collection-test
+  (testing "Cannot change granule's parent collection"
+    (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
+                                                  :short-name "short1"
+                                                  :version-id "V1"
+                                                  :native-id "native1"}))
+          coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"
+                                                  :short-name "short2"
+                                                  :version-id "V2"
+                                                  :native-id "native2"}))
+          _ (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "gran1"}))
+          {:keys [status errors]} (d/ingest "PROV1"
+                                            (dg/granule coll2 {:granule-ur "gran1"})
+                                            {:allow-failure? true})]
+      (is (= 422 status))
+      (is (= [(format "Granule's parent collection cannot be changed, was [%s], now [%s]."
+                      (:concept-id coll1) (:concept-id coll2))]
+             errors)))))
 
 ;; Verify a new granule is ingested successfully.
 (deftest granule-ingest-test

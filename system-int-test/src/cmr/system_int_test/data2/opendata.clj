@@ -58,6 +58,14 @@
   [personnel]
   (some #(when (email-contact? %) %) personnel))
 
+(defn- flatten-science-keywords
+  "Convert the science keywords into a flat list composed of the category, topic, and term values."
+  [collection]
+  (distinct (mapcat (fn [science-keyword]
+                      (let [{:keys [category topic term]} science-keyword]
+                        (filter identity [category topic term])))
+                    (:science-keywords collection))))
+
 (defn collection->expected-opendata
   "Convert to expcted opendata. First convert to native format metadata then back to UMM to mimic
   ingest. If umm-json leave as is since parse-concept will convert to echo10."
@@ -86,7 +94,7 @@
         archive-center (:org-name (first (filter #(= :archive-center (:type %)) organizations)))]
     (util/remove-nil-keys {:title entry-title
                            :description summary
-                           :keyword (conj (sk/flatten-science-keywords collection)
+                           :keyword (conj (flatten-science-keywords collection)
                                           "NGDA"
                                           "National Geospatial Data Asset")
                            :modified (str update-time)

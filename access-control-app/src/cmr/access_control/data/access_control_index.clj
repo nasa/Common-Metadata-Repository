@@ -55,10 +55,6 @@
   [context concept-id revision-id]
   (delete-concept context (mdb/get-concept context concept-id revision-id)))
 
-(defn- safe-lowercase
-  [v]
-  (when v (str/lower-case v)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Groups
 
@@ -106,11 +102,11 @@
   (let [group (edn/read-string (:metadata concept-map))]
     (-> group
         (merge (select-keys concept-map [:concept-id :revision-id]))
-        (assoc :name.lowercase (safe-lowercase (:name group))
-               :provider-id.lowercase (safe-lowercase (:provider-id group))
+        (assoc :name.lowercase (util/safe-lowercase (:name group))
+               :provider-id.lowercase (util/safe-lowercase (:provider-id group))
                :members (:members group)
                :members.lowercase (map str/lower-case (:members group))
-               :legacy-guid.lowercase (safe-lowercase (:legacy-guid group))
+               :legacy-guid.lowercase (util/safe-lowercase (:legacy-guid group))
                :member-count (count (:members group))))))
 
 (defmethod index-concept :access-group
@@ -267,7 +263,7 @@
            :permitted-group.lowercase (map str/lower-case permitted-groups)
            :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
            :target-provider-id provider-id
-           :target-provider-id.lowercase (safe-lowercase provider-id)
+           :target-provider-id.lowercase (util/safe-lowercase provider-id)
            :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map)))))
 
 (defmethod index-concept :acl

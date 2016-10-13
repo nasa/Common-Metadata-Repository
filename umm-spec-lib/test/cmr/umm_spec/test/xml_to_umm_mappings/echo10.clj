@@ -26,4 +26,20 @@
                  </Contacts>
                 </Collection>"
            data-centers (contact/parse-data-centers xml false)]
-       (is (= [] (:Roles (first data-centers))))))))
+       (is (= [] (:Roles (first data-centers)))))
+    (testing "ECHO10 OrganizationName is truncated to comply with ShortName's 85 character limit"
+      (let [organization-name "TheNeverEndingOrganizationNameCheckItOutItJustKeepsGoingAndGoingLikeTheEngerigizerBunnyThisIsJustImpressiveWhatAGreatOrganizationName"
+            xml (str "<Collection>
+                       <Contacts>
+                        <Contact>
+                         <Role>USER SERVICES</Role>
+                         <OrganizationName>" organization-name "</OrganizationName>
+                        </Contact>
+                       </Contacts>
+                      </Collection>")
+            data-center (first (contact/parse-data-centers xml true))]
+        (is (= organization-name (:LongName data-center)))
+        (is (= (subs organization-name 0 85)
+               (:ShortName data-center)))
+        (is (= 85 (count (:ShortName data-center))))
+        (is (< 85 (count (:LongName data-center)))))))))

@@ -154,33 +154,37 @@
   (fn [type]
     type))
 
-(defmethod create-queue-broker :aws
-  [type]
-  (-> (indexer-config/rabbit-mq-config)
-      (rmq-conf/merge-configs (vp-config/rabbit-mq-config))
-      (rmq-conf/merge-configs (access-control-config/rabbit-mq-config))
-      sqs/create-queue-broker
-      wrapper/create-queue-broker-wrapper))
-
 (defmethod create-queue-broker :in-memory
   [type]
-  (-> (indexer-config/rabbit-mq-config)
-      (rmq-conf/merge-configs (vp-config/rabbit-mq-config))
-      (rmq-conf/merge-configs (access-control-config/rabbit-mq-config))
+  (-> (indexer-config/queue-config)
+      (rmq-conf/merge-configs (vp-config/queue-config))
+      (rmq-conf/merge-configs (access-control-config/queue-config))
       mem-queue/create-memory-queue-broker
       wrapper/create-queue-broker-wrapper))
 
+(defn- external-queue-config
+  "Create a configuration for an external queue (Rabbit MQ or AWS)."
+  [ttls]
+  (-> (indexer-config/queue-config)
+      (rmq-conf/merge-configs (vp-config/queue-config))
+      (rmq-conf/merge-configs (access-control-config/queue-config))
+      (assoc :ttls ttls)))
+
+;; for legacy reasons :external refers to Rabbit MQ
 (defmethod create-queue-broker :external
   [type]
   ;; set the time-to-live on the retry queues to 1 second so our retry tests won't take too long
   (let [ttls [1 1 1 1 1]]
     (rmq-conf/set-rabbit-mq-ttls! ttls)
-    (-> (indexer-config/rabbit-mq-config)
-        (rmq-conf/merge-configs (vp-config/rabbit-mq-config))
-        (rmq-conf/merge-configs (access-control-config/rabbit-mq-config))
-        (assoc :ttls ttls)
+    (-> (external-queue-config ttls)
         rmq/create-queue-broker
         wrapper/create-queue-broker-wrapper)))
+
+(defmethod create-queue-broker :aws
+  [type]
+  (-> (external-queue-config [])
+      sqs/create-queue-broker
+      wrapper/create-queue-broker-wrapper))
 
 (defn create-metadata-db-app
   "Create an instance of the metadata-db application."
@@ -264,7 +268,8 @@
    :parser parse-dev-system-component-type})
 
 (defconfig dev-system-message-queue-type
-  "Specifies whether dev system should skip the use of a message queue or use an external message queue"
+  "Specifies whether dev system should skip the use of a message queue or use a Rabbit MQ or
+  AWS SNS/SQS message queue"
   {:default :in-memory
    :parser parse-dev-system-message-queue-type})
 

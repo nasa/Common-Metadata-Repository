@@ -1,6 +1,7 @@
 (ns cmr.metadata-db.data.concepts
   "Defines a protocol for CRUD operations on concepts."
-  (:require [cmr.common.util :as util]))
+  (:require
+   [cmr.common.util :as util]))
 
 (defprotocol ConceptSearch
   "Functions for retrieving concepts by parameters"
@@ -30,6 +31,10 @@
   (get-concept-id
     [db concept-type provider native-id]
     "Return a distinct identifier for the given arguments.")
+
+  (get-granule-concept-ids
+    [db provider native-id]
+    "Return the granule concept-id and parent collection concept-id for the given granule native id.")
 
   (get-concept
     [db concept-type provider concept-id revision-id]

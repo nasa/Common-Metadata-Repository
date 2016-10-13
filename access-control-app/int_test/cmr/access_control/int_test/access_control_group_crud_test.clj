@@ -83,6 +83,7 @@
       (is (= 1 revision_id))
       (u/assert-group-saved group "user1" concept_id revision_id)
 
+      (u/wait-until-indexed)
       (testing "Creation with an already existing name"
         (testing "Is rejected for another system group"
           (is (= {:status 409
@@ -124,6 +125,8 @@
       (is (re-matches #"AG\d+-PROV1" concept_id) "Incorrect concept id for a provider group")
       (is (= 1 revision_id))
       (u/assert-group-saved group "user1" concept_id revision_id)
+
+      (u/wait-until-indexed)
 
       (testing "Creation with an already existing name"
         (testing "Is rejected for the same provider"
@@ -260,10 +263,11 @@
 (deftest update-group-test
   (let [group (u/make-group {:members ["user1" "user2"]})
         token (e/login (u/conn-context) "user1")
-        {:keys [concept_id revision_id]} (u/create-group token group)]
+        {:keys [concept_id]} (u/create-group token group)]
 
     ;; Do not specify members in the update
-    (let [updated-group {:name "Administrators2" :description "A very good group updated"}
+    (let [updated-group {:name "Updated Group Name"
+                         :description "Updated group description"}
           token2 (e/login (u/conn-context) "user2")
           response (u/update-group token2 concept_id updated-group)]
       (is (= {:status 200 :concept_id concept_id :revision_id 2}
@@ -308,7 +312,6 @@
                                 human-name
                                 (get group field))]}
               (u/update-group token concept_id (assoc group field "updated")))
-           :name "Name"
            :provider_id "Provider Id"
            :legacy_guid "Legacy Guid"))
 
