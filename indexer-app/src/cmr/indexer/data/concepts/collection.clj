@@ -280,9 +280,9 @@
         ;; not empty is used below to get a real true/false value
         downloadable (not (empty? (ru/downloadable-urls related-urls)))
         browsable (not (empty? (ru/browse-urls related-urls)))
-        update-time (get-in collection [:data-provider-timestamps :update-time])
+        update-time (date-util/data-update-date umm-spec-collection)
         update-time (index-util/date->elastic update-time)
-        insert-time (get-in collection [:data-provider-timestamps :insert-time])
+        insert-time (date-util/data-create-date umm-spec-collection)
         insert-time (index-util/date->elastic insert-time)
         coordinate-system (get-in umm-spec-collection [:SpatialExtent :HorizontalSpatialDomain
                                                        :Geometry :CoordinateSystem])
