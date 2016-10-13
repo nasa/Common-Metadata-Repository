@@ -50,14 +50,16 @@
         sanitized-collection (spec/parse-metadata context :collection format metadata)
 
     ;; Validate against the UMM Spec validation rules
-        warnings (v/validate-collection-umm-spec context collection validation-options)]
+        warnings (first (v/validate-collection-umm-spec context collection validation-options))
+        warnings-with-context (when warnings [(str "Given object encountered some errors in its translation to UMM: "
+                                               (first (v/validate-collection-umm-spec context collection validation-options)))])]
     ;; Using the legacy UMM validation rules (for now)
     (v/validate-collection-umm context
                                (umm-legacy/parse-concept context collection-concept)
                                (:validate-keywords? validation-options))
     ;; The sanitized UMM Spec collection is returned so that ingest does not fail
     {:collection sanitized-collection
-     :warnings warnings}))
+     :warnings warnings-with-context}))
 
 (defn-timed validate-and-prepare-collection
   "Validates the collection and adds extra fields needed for metadata db. Throws a service error
