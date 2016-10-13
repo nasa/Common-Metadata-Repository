@@ -1,14 +1,10 @@
 (ns cmr.indexer.data.concepts.collection
   "Contains functions to parse and convert collection concept"
   (:require
-    [camel-snake-kebab.core :as csk]
     [cheshire.core :as json]
     [clj-time.core :as t]
-    [clj-time.format :as f]
     [clojure.string :as str]
     [cmr.acl.acl-fetcher :as acl-fetcher]
-    [cmr.acl.core :as acl]
-    [cmr.common-app.humanizer :as humanizer]
     [cmr.common-app.services.kms-fetcher :as kf]
     [cmr.common.concepts :as concepts]
     [cmr.common.log :refer (debug info warn error)]
@@ -20,16 +16,16 @@
     [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
     [cmr.indexer.data.concepts.attribute :as attrib]
     [cmr.indexer.data.concepts.data-center :as data-center]
+    [cmr.indexer.data.concepts.humanizer :as humanizer]
     [cmr.indexer.data.concepts.instrument :as instrument]
     [cmr.indexer.data.concepts.keyword :as k]
     [cmr.indexer.data.concepts.location-keyword :as clk]
+    [cmr.indexer.data.concepts.opendata :as opendata]
     [cmr.indexer.data.concepts.platform :as platform]
     [cmr.indexer.data.concepts.science-keyword :as sk]
     [cmr.indexer.data.concepts.spatial :as spatial]
     [cmr.indexer.data.concepts.tag :as tag]
     [cmr.indexer.data.elasticsearch :as es]
-    [cmr.indexer.data.humanizer-fetcher :as hf]
-    [cmr.indexer.services.index-service :as idx]
     [cmr.umm-spec.date-util :as date-util]
     [cmr.umm-spec.location-keywords :as lk]
     [cmr.umm-spec.related-url :as ru]
@@ -38,10 +34,7 @@
     [cmr.umm-spec.util :as su]
     [cmr.umm.acl-matchers :as umm-matchers]
     [cmr.umm.collection.entry-id :as eid]
-    [cmr.umm.start-end-date :as sed]
-    [cmr.umm.umm-collection :as umm-c])
-  (:import
-    (cmr.spatial.mbr Mbr)))
+    [cmr.umm.umm-collection :as umm-c]))
 
 (defn spatial->elastic
   [collection]
@@ -52,39 +45,6 @@
 
       :else
       (errors/internal-error! (str "Unknown spatial representation [" coord-sys "]")))))
-
-(defn- email-contact?
-  "Return true if the given person has an email as contact info."
-  [person]
-  (some #(= "Email" (:Type %))
-        (get-in person [:ContactInformation :ContactMechanisms])))
-
-(defn- data-center-contacts
-  "Returns the data center contacts with ContactInformation added if it doesn't have contact info"
-  [data-center]
-  (let [contacts (concat (:ContactPersons data-center) (:ContactGroups data-center))]
-    (map (fn [contact]
-           (if (:ContactInformation contact)
-             contact
-             (assoc contact :ContactInformation (:ContactInformation data-center))))
-         contacts)))
-
-(defn opendata-email-contact
-  "Returns the opendata email contact info for the given collection, it is just the first email
-  contact info found in the ContactPersons, ContactGroups or DataCenters."
-  [collection]
-  (let [{:keys [ContactPersons ContactGroups DataCenters]} collection
-        contacts (concat ContactPersons ContactGroups (mapcat data-center-contacts DataCenters))
-        email-contact (some #(when (email-contact? %) %) contacts)]
-    (when email-contact
-      (let [email (some #(when (= "Email" (:Type %)) (:Value %))
-                        (get-in email-contact [:ContactInformation :ContactMechanisms]))
-            email-contacts (when email [{:type :email :value email}])]
-        {:first-name (:FirstName email-contact)
-         :middle-name (:MiddleName email-contact)
-         :last-name (:LastName email-contact)
-         :roles (:Roles email-contact)
-         :contacts email-contacts}))))
 
 (defn- collection-temporal-elastic
   "Returns a map of collection temporal fields for indexing in Elasticsearch."
@@ -109,33 +69,6 @@
                ;; Use the collection start and end date if there are no granule start and end dates.
                {:granule-start-date coll-start
                 :granule-end-date coll-end}))))
-
-(defn- add-humanized-lowercase
-  "Adds a :value.lowercase field to a humanized object"
-  [obj]
-  (assoc obj :value.lowercase (str/lower-case (:value obj))))
-
-(defn- select-indexable-humanizer-fields
-  "Selects the fields from humanizers that can be indexed."
-  [value]
-  (select-keys value [:value :priority]))
-
-(defn- extract-humanized-elastic-fields
-  "Descends into the humanized collection extracting values at the given humanized
-  field path and returns a map of humanized and lowercase humanized elastic fields
-  for that path"
-  [humanized-collection path base-es-field]
-  (let [prefix (subs (str base-es-field) 1)
-        field (keyword (str prefix ".humanized2"))
-        value-with-priorities (util/get-in-all humanized-collection path)
-        value-with-priorities (if (sequential? value-with-priorities)
-                                (map select-indexable-humanizer-fields value-with-priorities)
-                                (select-indexable-humanizer-fields value-with-priorities))
-        value-with-lowercases (if (sequential? value-with-priorities)
-                                (map add-humanized-lowercase
-                                     (distinct (filter :value value-with-priorities)))
-                                (add-humanized-lowercase value-with-priorities))]
-    {field value-with-lowercases}))
 
 (defn- assoc-nil-if
   "Set value to nil if the predicate is true
@@ -170,21 +103,6 @@
       (assoc-nil-if :ScienceKeywords (= (:ScienceKeywords collection) su/not-provided-science-keywords))
       (assoc-nil-if :DataCenters (= (:DataCenters collection) [su/not-provided-data-center]))))
 
-(defn- collection-humanizers-elastic
-  "Given a umm-spec collection, returns humanized elastic search fields"
-  [context collection]
-  (let [humanized (humanizer/umm-collection->umm-collection+humanizers
-                    collection (hf/get-humanizer-instructions context))
-        extract-fields (partial extract-humanized-elastic-fields humanized)]
-    (merge
-      {:science-keywords.humanized (map sk/humanized-science-keyword->elastic-doc
-                                        (:ScienceKeywords humanized))}
-      (extract-fields [:Platforms :cmr.humanized/ShortName] :platform-sn)
-      (extract-fields [:Platforms :Instruments :cmr.humanized/ShortName] :instrument-sn)
-      (extract-fields [:Projects :cmr.humanized/ShortName] :project-sn)
-      (extract-fields [:ProcessingLevel :cmr.humanized/Id] :processing-level-id)
-      (extract-fields [:DataCenters :cmr.humanized/ShortName] :organization))))
-
 (defn- get-coll-permitted-group-ids
   "Returns the groups ids (group guids, 'guest', 'registered') that have permission to read
   this collection"
@@ -200,45 +118,27 @@
        (map #(or (:group-guid %) (some-> % :user-type name)))
        distinct))
 
-(defn- related-url->opendata-related-url
-  "Returns the opendata related url for the given collection related url"
-  [related-url]
-  (let [{:keys [Title Description Relation URLs MimeType FileSize]} related-url
-        {:keys [Size Unit]} FileSize
-        size (when (or Size Unit) (str Size Unit))]
-    ;; The current UMM JSON RelatedUrlType is flawed in that there can be multiple URLs,
-    ;; but only a single Title, MimeType and FileSize. This model doesn't make sense.
-    ;; Talked to Erich and he said that we are going to change the model.
-    ;; So for now, we make the assumption that there is only one URL in each RelatedUrlType.
-    {:type (first Relation)
-     :sub-type (second Relation)
-     :url (first URLs)
-     :description Description
-     :mime-type MimeType
-     :title Title
-     :size size}))
-
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
-  [context concept collection umm-spec-collection]
+  [context concept umm-lib-collection collection]
   (let [{:keys [concept-id revision-id provider-id user-id
                 native-id revision-date deleted format extra-fields tag-associations]} concept
-        umm-spec-collection (remove-index-irrelevant-defaults umm-spec-collection)
+        collection (remove-index-irrelevant-defaults collection)
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
          temporal-keywords :TemporalKeywords platforms :Platforms
-         related-urls :RelatedUrls} umm-spec-collection
-        processing-level-id (get-in umm-spec-collection [:ProcessingLevel :Id])
+         related-urls :RelatedUrls} collection
+        processing-level-id (get-in collection [:ProcessingLevel :Id])
         spatial-keywords (lk/location-keywords->spatial-keywords
-                           (:LocationKeywords umm-spec-collection))
-        access-value (get-in umm-spec-collection [:AccessConstraints :Value])
+                           (:LocationKeywords collection))
+        access-value (get-in collection [:AccessConstraints :Value])
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
                                (concat [collection-data-type] k/nrt-aliases)
                                collection-data-type)
         entry-id (eid/entry-id short-name version-id)
-        opendata-related-urls (map related-url->opendata-related-url related-urls)
-        personnel (opendata-email-contact umm-spec-collection)
+        opendata-related-urls (map opendata/related-url->opendata-related-url related-urls)
+        personnel (opendata/opendata-email-contact collection)
         platforms (map util/map-keys->kebab-case platforms)
         gcmd-keywords-map (kf/get-gcmd-keywords-map context)
         platforms-nested (map #(platform/platform-short-name->elastic-doc gcmd-keywords-map %)
@@ -259,34 +159,34 @@
         sensors (mapcat :sensors instruments)
         sensor-short-names (keep :short-name sensors)
         sensor-long-names (keep :long-name sensors)
-        project-short-names (->> (map :ShortName (:Projects umm-spec-collection))
+        project-short-names (->> (map :ShortName (:Projects collection))
                                  (map str/trim))
-        project-long-names (->> (keep :LongName (:Projects umm-spec-collection))
+        project-long-names (->> (keep :LongName (:Projects collection))
                                 (map str/trim))
         two-d-coord-names (map :TilingIdentificationSystemName
-                               (:TilingIdentificationSystems umm-spec-collection))
+                               (:TilingIdentificationSystems collection))
         meaningful-short-name-fn (fn [c]
                                    (when-let [short-name (:short-name c)]
                                      (when (not= su/not-provided short-name)
                                        short-name)))
         archive-centers (map #(data-center/data-center-short-name->elastic-doc gcmd-keywords-map %)
-                             (map str/trim (data-center/extract-archive-center-names umm-spec-collection)))
+                             (map str/trim (data-center/extract-archive-center-names collection)))
         ;; get the normalized names back
         archive-center-names (keep meaningful-short-name-fn archive-centers)
         data-centers (map #(data-center/data-center-short-name->elastic-doc gcmd-keywords-map %)
-                          (map str/trim (data-center/extract-data-center-names umm-spec-collection)))
+                          (map str/trim (data-center/extract-data-center-names collection)))
         data-center-names (keep meaningful-short-name-fn data-centers)
         atom-links (map json/generate-string (ru/atom-links related-urls))
         ;; not empty is used below to get a real true/false value
         downloadable (not (empty? (ru/downloadable-urls related-urls)))
         browsable (not (empty? (ru/browse-urls related-urls)))
-        update-time (date-util/data-update-date umm-spec-collection)
+        update-time (date-util/data-update-date collection)
         update-time (index-util/date->elastic update-time)
-        insert-time (date-util/data-create-date umm-spec-collection)
+        insert-time (date-util/data-create-date collection)
         insert-time (index-util/date->elastic insert-time)
-        coordinate-system (get-in umm-spec-collection [:SpatialExtent :HorizontalSpatialDomain
+        coordinate-system (get-in collection [:SpatialExtent :HorizontalSpatialDomain
                                                        :Geometry :CoordinateSystem])
-        permitted-group-ids (get-coll-permitted-group-ids context provider-id collection)]
+        permitted-group-ids (get-coll-permitted-group-ids context provider-id umm-lib-collection)]
     (merge {:concept-id concept-id
             :revision-id revision-id
             :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
@@ -325,9 +225,9 @@
             :archive-centers archive-centers
             :data-centers data-centers
             :science-keywords (map #(sk/science-keyword->elastic-doc gcmd-keywords-map %)
-                                   (:ScienceKeywords umm-spec-collection))
+                                   (:ScienceKeywords collection))
             :location-keywords (map #(clk/location-keyword->elastic-doc gcmd-keywords-map %)
-                                    (:LocationKeywords umm-spec-collection))
+                                    (:LocationKeywords collection))
 
             :instrument-sn instrument-short-names
             :instrument-sn.lowercase  (map str/lower-case instrument-short-names)
@@ -339,8 +239,8 @@
             :two-d-coord-name.lowercase  (map str/lower-case two-d-coord-names)
             :spatial-keyword spatial-keywords
             :spatial-keyword.lowercase  (map str/lower-case spatial-keywords)
-            :attributes (attrib/aas->elastic-docs umm-spec-collection)
-            :science-keywords-flat (sk/flatten-science-keywords umm-spec-collection)
+            :attributes (attrib/aas->elastic-docs collection)
+            :science-keywords-flat (sk/flatten-science-keywords collection)
             :personnel (json/generate-string personnel)
             :archive-center archive-center-names
             :archive-center.lowercase (map str/lower-case archive-center-names)
@@ -357,7 +257,7 @@
             :coordinate-system coordinate-system
 
             ;; fields added to support keyword searches
-            :keyword (k/create-keywords-field concept-id umm-spec-collection
+            :keyword (k/create-keywords-field concept-id collection
                                               {:platform-long-names platform-long-names
                                                :instrument-long-names instrument-long-names
                                                :entry-id entry-id})
@@ -382,11 +282,11 @@
                                  (into {} (for [ta tag-associations]
                                             [(:tag-key ta) (util/remove-nil-keys
                                                              {:data (:data ta)})])))))}
-           (collection-temporal-elastic context concept-id umm-spec-collection)
-           (spatial/collection-orbit-parameters->elastic-docs umm-spec-collection)
-           (spatial->elastic umm-spec-collection)
-           (sk/science-keywords->facet-fields umm-spec-collection)
-           (collection-humanizers-elastic context umm-spec-collection))))
+           (collection-temporal-elastic context concept-id collection)
+           (spatial/collection-orbit-parameters->elastic-docs collection)
+           (spatial->elastic collection)
+           (sk/science-keywords->facet-fields collection)
+           (humanizer/collection-humanizers-elastic context collection))))
 
 (defn- get-elastic-doc-for-tombstone-collection
   "Get the subset of elastic field values that apply to a tombstone index operation."
@@ -420,11 +320,11 @@
      :permitted-group-ids tombstone-permitted-group-ids}))
 
 (defmethod es/parsed-concept->elastic-doc :collection
-  [context concept umm-legacy-collection]
+  [context concept umm-lib-collection]
   (if (:deleted concept)
     (get-elastic-doc-for-tombstone-collection context concept)
     (let [umm-spec-collection (umm-spec/parse-metadata context concept)]
       (get-elastic-doc-for-full-collection context
                                            concept
-                                           umm-legacy-collection
+                                           umm-lib-collection
                                            umm-spec-collection))))
