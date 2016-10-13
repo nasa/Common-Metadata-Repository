@@ -57,10 +57,8 @@
     ;; read is special, if the user has any permission for the acl
     ;; then the user has permission to read
     (if (= action :read)
-      (some #{true}
-        (set
-          (for [act ["create" "read" "update" "delete"]]
-            (acl/acl-matches-sids-and-permission? (:sids returned-acl) act echo-acl))))
+      (some #(acl/acl-matches-sids-and-permission? (:sids returned-acl) % echo-acl)
+            ["create" "read" "update" "delete"])
       (acl/acl-matches-sids-and-permission? (:sids returned-acl) (name action) echo-acl))))
 
 (defn- permission-denied-message
