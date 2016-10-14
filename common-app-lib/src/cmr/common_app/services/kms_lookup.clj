@@ -1,11 +1,25 @@
 (ns cmr.common-app.services.kms-lookup
-  "Functions to support fast lookup of KMS keywords. We store
-  a map to lookup by leaf node ID such as short-name, a map to look up a map by its hash, and a map
-  to look up the full hierarchy for any location keyword string."
+  "Functions to support fast lookup of KMS keywords. The kms-index structure is a map with keys for
+  each of the different KMS keywords In addition the kms-index has 3 additional 'index' keys to
+  support fast retrieval. For example:
+  {:providers [{:level-0 \"ACADEMIC\" :uuid \"abc\" ...}]
+   :science-keywords [...]
+   :platforms [...]
+   ...
+   :short-name-index {:platforms {\"TERRA\" {:category \"SATELLITES\" :short-name \"TERRA\" :uuid \"abc\"...}
+								                ...}
+                      :instruments {\"ATM\" {...}}}
+   :umm-c-index {:spatial-keywords {{:category \"CONTINENT\" :subregion1 \"WESTERN AFRICA\"} ;; key
+                                    {:category \"CONTINENT\" :subregion1 \"WESTERN AFRICA\" :uuid \"123\"} ;; value
+                                   ...}
+                 :science-keywords ...}
+  :locations-index {\"WESTERN AFRICA\" {:category \"CONTINENT\" :type \"AFRICA\"
+                                        :subregion-1 \"WESTERN AFRICA\" :uuid \"123\"}
+                    \"CHAD\" {:category \"CONTINENT\" :type \"AFRICA\" :subregion-1 \"WESTERN AFRICA\"
+                              :subregion-2 \"CHAD\" :uuid \"456\"}}}"
   (:require
    [cmr.common.util :as util]
-   [clojure.string :as str]
-   [cmr.transmit.kms :as kms]))
+   [clojure.string :as str]))
 
 (def kms-scheme->fields-for-umm-c-lookup
   "Maps the KMS keyword scheme to the list of fields that should be matched when comparing fields

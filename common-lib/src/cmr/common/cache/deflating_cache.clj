@@ -40,7 +40,7 @@
 
   (set-value
     [this key value]
-    (c/set-value delegate-cache key (deflate-fn value))))
+    (c/set-value delegate-cache key (when value (deflate-fn value)))))
 (record-pretty-printer/enable-record-pretty-printing DeflatingCache)
 
 (defn create-deflating-cache
