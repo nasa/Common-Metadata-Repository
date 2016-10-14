@@ -1,4 +1,4 @@
-(ns cmr.indexer.data.concepts.platform
+(ns cmr.indexer.data.concepts.collection.platform
   "Contains functions for converting platform hierarchies into elastic documents"
   (:require [clojure.string :as str]
             [cmr.common-app.services.kms-fetcher :as kf]

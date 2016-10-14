@@ -1,7 +1,7 @@
-(ns cmr.indexer.test.data.concepts.science-keyword
+(ns cmr.indexer.test.data.concepts.collection.science-keyword
   "Tests for science keywords"
   (:require [clojure.test :refer :all]
-            [cmr.indexer.data.concepts.science-keyword :as sk]))
+            [cmr.indexer.data.concepts.collection.science-keyword :as sk]))
 
 (deftest flatten-science-keywords-test
   (let [science-keyword1 {:Category "category"

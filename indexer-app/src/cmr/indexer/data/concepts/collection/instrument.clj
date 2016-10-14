@@ -1,4 +1,4 @@
-(ns cmr.indexer.data.concepts.instrument
+(ns cmr.indexer.data.concepts.collection.instrument
   "Contains functions for converting instrument hierarchies into elastic documents"
   (:require [clojure.string :as str]
             [cmr.common-app.services.kms-fetcher :as kf]

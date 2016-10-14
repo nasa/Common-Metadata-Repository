@@ -1,4 +1,4 @@
-(ns cmr.indexer.data.concepts.data-center
+(ns cmr.indexer.data.concepts.collection.data-center
   "Contains functions to extract data center fields. There are four types of data centers:
   ARCHIVER, DISTRIBUTOR, PROCESSOR and ORIGINATOR."
   (require
