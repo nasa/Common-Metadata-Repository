@@ -89,9 +89,7 @@
   (let [warning-context "After translating item to UMM-C the metadata had the following issue: "]
    (update result
           :warnings
-          (fn [warnings]
-            (when (seq warnings)
-              (map #(str warning-context %) warnings))))))
+          (fn [warnings] (seq (map #(str warning-context %) warnings))))))
 
 (defmulti generate-ingest-response
   "Convert a result to a proper response format"
@@ -252,10 +250,10 @@
       (info (format "Ingesting collection %s from client %s"
                     (concept->loggable-string concept) (:client-id request-context)))
       (generate-ingest-response headers (contextualize-warnings
-                                         (ingest/save-collection
-                                          request-context
-                                          (set-user-id concept request-context headers)
-                                          validation-options))))))
+                                          (ingest/save-collection
+                                           request-context
+                                           (set-user-id concept request-context headers)
+                                           validation-options))))))
 
 (defn delete-collection
   [provider-id native-id request]
