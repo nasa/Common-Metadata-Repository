@@ -1,20 +1,22 @@
 (ns cmr.ingest.validation.validation
   "Provides functions to validate concept"
-  (:require [clojure.string :as s]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.log :as log :refer (warn)]
-            [cmr.umm.umm-core :as umm]
-            [cmr.ingest.config :as config]
-            [cmr.umm.validation.validation-core :as umm-validation]
-            [cmr.umm-spec.umm-spec-core :as umm-spec]
-            [cmr.umm-spec.validation.umm-spec-validation-core :as umm-spec-validation]
-            [cmr.umm-spec.umm-json :as umm-json]
-            [cmr.umm-spec.json-schema :as json-schema]
-            [cmr.ingest.validation.business-rule-validation :as bv]
-            [cmr.common.validations.core :as v]
-            [cmr.common-app.services.kms-fetcher :as kms-fetcher]
-            [cmr.ingest.services.messages :as msg]))
+  (:require
+   [clojure.string :as s]
+   [cmr.common-app.services.kms-fetcher :as kms-fetcher]
+   [cmr.common-app.services.kms-lookup :as kms-lookup]
+   [cmr.common.log :as log :refer (warn)]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.validations.core :as v]
+   [cmr.ingest.config :as config]
+   [cmr.ingest.services.messages :as msg]
+   [cmr.ingest.validation.business-rule-validation :as bv]
+   [cmr.umm-spec.json-schema :as json-schema]
+   [cmr.umm-spec.umm-json :as umm-json]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm-spec.validation.umm-spec-validation-core :as umm-spec-validation]
+   [cmr.umm.umm-core :as umm]
+   [cmr.umm.validation.validation-core :as umm-validation]))
 
 (def ^:private
   valid-concept-mime-types
@@ -56,37 +58,30 @@
 (defn match-kms-keywords-validation
   "A validation that checks that the item matches a known KMS field. Takes the following arguments:
 
-  * gcmd-keywords-map - The keywords map as returned by kms-fetcher/get-gcmd-keywords-map
-  * matches-keyword-fn - A function that will take the gcmd-keywords-map and the value and return a
+  * kms-index - The keywords map as returned by kms-fetcher/get-kms-index
+  * matches-keyword-fn - A function that will take the kms-index and the value and return a
   logically true value if the value matches a keyword.
   * msg-fn - A function taking the value and returning the error to return to the user if it doesn't
   match."
-  [gcmd-keywords-map matches-keyword-fn msg-fn]
+  [kms-index keyword-scheme msg-fn]
   (v/every
     (fn [field-path value]
-      (when-not (matches-keyword-fn gcmd-keywords-map value)
+      (when-not (kms-lookup/lookup-by-umm-c-keyword kms-index keyword-scheme value)
         {field-path [(msg-fn value)]}))))
 
 (defn keyword-validations
   "Creates validations that check various collection fields to see if they match KMS keywords."
   [context]
-  (let [gcmd-keywords-map (kms-fetcher/get-gcmd-keywords-map context)]
+  (let [kms-index (kms-fetcher/get-kms-index context)]
     {:platforms [(match-kms-keywords-validation
-                   gcmd-keywords-map
-                   kms-fetcher/get-full-hierarchy-for-platform
-                   msg/platform-not-matches-kms-keywords)
+                  kms-index :platforms msg/platform-not-matches-kms-keywords)
                  (v/every {:instruments (match-kms-keywords-validation
-                                          gcmd-keywords-map
-                                          kms-fetcher/get-full-hierarchy-for-instrument
-                                          msg/instrument-not-matches-kms-keywords)})]
+                                         kms-index :instruments
+                                         msg/instrument-not-matches-kms-keywords)})]
      :science-keywords (match-kms-keywords-validation
-                         gcmd-keywords-map
-                         kms-fetcher/get-full-hierarchy-for-science-keyword
-                         msg/science-keyword-not-matches-kms-keywords)
+                         kms-index :science-keywords msg/science-keyword-not-matches-kms-keywords)
      :projects (match-kms-keywords-validation
-                 gcmd-keywords-map
-                 kms-fetcher/get-full-hierarchy-for-project
-                 msg/project-not-matches-kms-keywords)}))
+                kms-index :projects msg/project-not-matches-kms-keywords)}))
 
 (defn validate-concept-metadata
   [concept]

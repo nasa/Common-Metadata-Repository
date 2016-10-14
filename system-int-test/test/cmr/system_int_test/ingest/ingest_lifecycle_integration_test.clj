@@ -23,7 +23,7 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(def context (lkt/setup-context-for-test lkt/sample-keyword-map))
+(def context (lkt/setup-context-for-test))
 
 (defn- unparse-date-time
   "Parse a date-time into a string that can be used in a parameter query"

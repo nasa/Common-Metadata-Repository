@@ -158,7 +158,7 @@
     (validate-keyword-scheme orig-keyword-scheme)
     (let [cmr-keyword-scheme (kms/translate-keyword-scheme-to-cmr orig-keyword-scheme)
           gcmd-keyword-scheme (kms/translate-keyword-scheme-to-gcmd orig-keyword-scheme)
-          keywords (vals (gcmd-keyword-scheme (kf/get-gcmd-keywords-map context)))
+          keywords (gcmd-keyword-scheme (kf/get-kms-index context))
           keyword-hierarchy (cmr-keyword-scheme kf/nested-fields-mappings)
           hierarchical-keywords (flat-keywords->hierarchical-keywords keywords keyword-hierarchy)]
       {:staus 200
