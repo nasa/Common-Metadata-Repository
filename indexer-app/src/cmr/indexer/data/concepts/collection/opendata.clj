@@ -40,8 +40,8 @@
   (let [{:keys [Title Description Relation URLs MimeType FileSize]} related-url
         {:keys [Size Unit]} FileSize
         size (when (or Size Unit) (str Size Unit))]
-    ;; The current UMM JSON RelatedUrlType is flawed in that there can be multiple URLs,
-    ;; but only a single Title, MimeType and FileSize. This model doesn't make sense.
+    ;; See CMR-3446. The current UMM JSON RelatedUrlType is flawed in that there can be multiple
+    ;; URLs, but only a single Title, MimeType and FileSize. This model doesn't make sense.
     ;; Talked to Erich and he said that we are going to change the model.
     ;; So for now, we make the assumption that there is only one URL in each RelatedUrlType.
     {:type (first Relation)
