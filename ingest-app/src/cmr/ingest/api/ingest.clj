@@ -90,9 +90,8 @@
    (update result
           :warnings
           (fn [warnings]
-            (if (coll? warnings)
-             (map #(str warning-context %) warnings)
-             (apply str warning-context warnings))))))
+            (when (seq warnings)
+              (map #(str warning-context %) warnings))))))
 
 (defmulti generate-ingest-response
   "Convert a result to a proper response format"
@@ -104,13 +103,13 @@
   ;; ring-json middleware will handle converting the body to json
   {:status (ingest-status-code result)
    :headers {"Content-Type" (mt/format->mime-type :json)}
-   :body (contextualize-warnings result)})
+   :body result})
 
 (defmethod generate-ingest-response :xml
   [headers result]
   {:status (ingest-status-code result)
    :headers {"Content-Type" (mt/format->mime-type :xml)}
-   :body (result-map->xml (contextualize-warnings result))})
+   :body (result-map->xml result)})
 
 (defmulti generate-validate-response
   "Convert a result to a proper response format"
@@ -123,7 +122,7 @@
   (if (seq result)
     {:status 200
      :headers {"Content-Type" (mt/format->mime-type :json)}
-     :body (contextualize-warnings result)}
+     :body result}
     {:status 200}))
 
 (defmethod generate-validate-response :xml
@@ -131,7 +130,7 @@
   (if (seq result)
    {:status 200
     :headers {"Content-Type" (mt/format->mime-type :xml)}
-    :body (result-map->xml (contextualize-warnings result))}
+    :body (result-map->xml result)}
    {:status 200}))
 
 (defn- invalid-revision-id-error
@@ -241,7 +240,7 @@
     (let [validate-response (ingest/validate-and-prepare-collection request-context
                                                                     concept
                                                                     validation-options)]
-      (generate-validate-response headers (util/remove-nil-keys (select-keys validate-response [:warnings]))))))
+      (generate-validate-response headers (util/remove-nil-keys (select-keys (contextualize-warnings validate-response) [:warnings]))))))
 
 (defn ingest-collection
   [provider-id native-id request]
@@ -252,10 +251,11 @@
           validation-options (get-validation-options headers)]
       (info (format "Ingesting collection %s from client %s"
                     (concept->loggable-string concept) (:client-id request-context)))
-      (generate-ingest-response headers (ingest/save-collection
+      (generate-ingest-response headers (contextualize-warnings
+                                         (ingest/save-collection
                                           request-context
                                           (set-user-id concept request-context headers)
-                                          validation-options)))))
+                                          validation-options))))))
 
 (defn delete-collection
   [provider-id native-id request]
@@ -269,7 +269,7 @@
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (info (format "Deleting collection %s from client %s"
                   (pr-str concept-attribs) (:client-id request-context)))
-    (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs))))
+    (generate-ingest-response headers (contextualize-warnings (ingest/delete-concept request-context concept-attribs)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Granule API Functions
