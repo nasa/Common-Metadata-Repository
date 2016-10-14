@@ -23,13 +23,16 @@
 
   (get-value
     [this key]
-    (inflate-fn (c/get-value delegate-cache key)))
+    (when-let [value (c/get-value delegate-cache key)]
+      (inflate-fn value)))
 
   (get-value
     [this key lookup-fn]
-    (inflate-fn (c/get-value delegate-cache key
-                             ;; If we lookup a value then it needs to be deflated for storage in the underlying cache.
-                             (comp deflate-fn lookup-fn))))
+    (when-let [value (c/get-value delegate-cache key
+                                  ;; If we lookup a value then it needs to be deflated for storage
+                                  ;; in the underlying cache.
+                                  (comp deflate-fn lookup-fn))]
+      (inflate-fn value)))
 
   (reset
     [this]
@@ -41,9 +44,8 @@
 (record-pretty-printer/enable-record-pretty-printing DeflatingCache)
 
 (defn create-deflating-cache
-  "Create a deflating cache with the "
+  "Create a deflating cache with the provided delegate-cache, inflate and deflate functions."
   [delegate-cache inflate-fn deflate-fn]
   (map->DeflatingCache {:delegate-cache delegate-cache
                         :inflate-fn inflate-fn
                         :deflate-fn deflate-fn}))
-

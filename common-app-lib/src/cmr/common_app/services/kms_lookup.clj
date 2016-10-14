@@ -7,7 +7,6 @@
    [clojure.string :as str]
    [cmr.transmit.kms :as kms]))
 
-;; TODO - what about providers - potentially only lookup using short-name?
 (def kms-scheme->fields-for-umm-c-lookup
   "Maps the KMS keyword scheme to the list of fields that should be matched when comparing fields
   between UMM-C and KMS."
@@ -26,7 +25,6 @@
        util/remove-nil-keys
        (util/map-values str/lower-case)))
 
-;; TODO rewrite
 (defn- generate-lookup-by-umm-c-map
   "Takes a GCMD keywords map and stores them in a way for faster lookup when trying to find
   a location keyword that matches a UMM-C collection with a location keyword in KMS. For each KMS
@@ -44,7 +42,6 @@
                                             keyword-maps)))])
              gcmd-keywords-map)))
 
-;; TODO - what about projects?
 (def keywords-to-lookup-by-short-name
   "Set of KMS keywords that we need to be able to lookup by short name."
   #{:providers :platforms :instruments})

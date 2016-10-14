@@ -22,17 +22,15 @@
 
 (defn- find-spatial-keyword
   "Finds spatial keywords in the hierarchy and pick the one with the fewest keys (e.g. shortest
-  hierarchical depth.) Takes a string keyword as a parameter, a list of keyword maps and returns
-  the map of hierarichies which contain the keyword (treated case insensitive).
-  You can also pass :uuid as a keyword argument e.g. 'afbc0a01-742e-49da-939e-3eaa3cf431b0' for
-  'BLACK SEA'. If the keyword is a duplicate, it will substitute the correct one."
+  hierarchical depth.) Takes the kms-index and a location string as parameters, and returns
+  the map of hierarichies which contain the location string (treated case insensitive)."
   [kms-index location-string]
   (or (kms-lookup/lookup-by-location-string kms-index location-string)
       {:category "OTHER" :type location-string}))
 
 (defn spatial-keywords->location-keywords
-  "Takes a keyword map list and a list of Spatial Keywords and returns a list of location keyword maps
-  for that kms-index"
+  "Takes the kms-index and a list of Spatial Keywords and returns a list of location keyword maps
+  for that spatial keyword."
   [kms-index spatial-keywords]
   (map (fn [keyword]
          (dissoc

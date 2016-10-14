@@ -62,11 +62,10 @@
     (fallback-cache/create-fallback-cache
       (consistent-cache/create-consistent-cache
        {:hash-timeout-seconds (kms-cache-consistent-timeout-seconds)})
-      (cubby-cache/create-cubby-cache))))
-      ; (deflating-cache/create-deflating-cache
-      ;   (cubby-cache/create-cubby-cache)
-      ;   kms-lookup/create-kms-index
-      ;   kms-lookup/deflate))))
+      (deflating-cache/create-deflating-cache
+        (cubby-cache/create-cubby-cache)
+        kms-lookup/create-kms-index
+        kms-lookup/deflate))))
 
 (defn- fetch-gcmd-keywords-map
   "Calls GCMD KMS endpoints to retrieve the keywords. Response is a map structured in the same way

@@ -150,9 +150,6 @@
        (reduce merge-hierarchical-maps sorted-hierarchical-map)
        collapse-hierarchical-map))
 
-(comment
- (kf/get-kms-index {:system (get-in user/system [:apps :indexer])}))
-
 (defn- get-hierarchical-keywords
   "Returns hierarchical keywords for the provided keyword scheme. Returns a 400 error if the
   keyword scheme is invalid."

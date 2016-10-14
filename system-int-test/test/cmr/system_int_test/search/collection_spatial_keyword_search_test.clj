@@ -9,32 +9,6 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
-(deftest reindex-all-perf-test
-  (let [c1 (d/ingest-concept-with-metadata-file
-            "example_data/dif/C1214610485-SCIOPS.xml"
-            {:provider-id "PROV1" :concept-type :collection :format-key :dif :native-id "c1"})
-        c2 (d/ingest-concept-with-metadata-file
-            "example_data/dif10/C1218210258-LARC_ASDC.xml"
-            {:provider-id "PROV1" :concept-type :collection :format-key :dif10 :native-id "c2"})
-        ;; NOTE: Has 154 spatial keywords
-        c3 (d/ingest-concept-with-metadata-file
-            "example_data/echo10/C1000000000-SEDAC.xml"
-            {:provider-id "PROV1" :concept-type :collection :format-key :echo10 :native-id "c3"})]
-        ; c4 (d/ingest-concept-with-metadata-file
-        ;     "example_data/echo10/C1000000040-OMINRT.xml"
-        ;     {:provider-id "PROV1" :concept-type :collection :format-key :echo10 :native-id "c4"})]
-    (index/wait-until-indexed)
-    (println "Ready")))
-
-(comment
- (def context {:system (get-in user/system [:apps :indexer])})
- (require '[criterium.core :as criterium])
- (criterium/with-progress-reporting
-  (criterium/quick-bench
-   (cmr.indexer.services.index-service/reindex-provider-collections
-    context ["PROV1"]
-    {:all-revisions-index? false :refresh-acls? false :force-version? false}))))
-
 (deftest search-by-spatial-keywords
   (let [coll1 (d/ingest "PROV1" (dc/collection {}))
         coll2 (d/ingest "PROV1" (dc/collection {:spatial-keywords []}))

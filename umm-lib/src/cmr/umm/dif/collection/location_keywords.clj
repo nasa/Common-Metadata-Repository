@@ -27,18 +27,16 @@
 
 (defn- find-spatial-keyword
   "Finds spatial keywords in the hierarchy and pick the one with the fewest keys (e.g. shortest
-  hierarchical depth.) Takes a string keyword as a parameter, a list of keyword maps and returns
-  the map of hierarichies which contain the keyword (treated case insensitive).
-  You can also pass :uuid as a keyword argument e.g. 'afbc0a01-742e-49da-939e-3eaa3cf431b0' for
-  'BLACK SEA'. If the keyword is a duplicate, it will substitute the correct one."
-  [kms-index keyword]
-  (or (kms-lookup/lookup-by-umm-c-keyword kms-index :spatial-keywords keyword)
-      {:category "OTHER" :type keyword}))
+  hierarchical depth.) Takes the kms-index and a location string as parameters, and returns
+  the map of hierarichies which contain the location string (treated case insensitive)."
+  [kms-index location-string]
+  (or (kms-lookup/lookup-by-location-string kms-index location-string)
+      {:category "OTHER" :type location-string}))
 
 (defn spatial-keywords->location-keywords
-  "Takes a keyword map list and a list of Spatial Keywords and returns a list of location keyword maps
-  for that kms-index"
-  [kms-index spatial-keywords _]
+  "Takes the kms-index and a list of Spatial Keywords and returns a list of location keyword maps
+  for that spatial keyword."
+  [kms-index spatial-keywords]
   (map (fn [keyword]
          (dissoc
           (set/rename-keys
@@ -67,7 +65,7 @@
 
 (defn translate-spatial-keywords
   "Translates a list of spatial keywords into an array of LocationKeyword type objects"
-  [kms-index spatial-keywords _]
+  [kms-index spatial-keywords]
   (let [location-keyword-maps (spatial-keywords->location-keywords kms-index spatial-keywords)
         umm-location-keyword-maps (seq
                                    (map
@@ -76,6 +74,7 @@
                                       :uuid)
                                     location-keyword-maps))]
     umm-location-keyword-maps))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn xml-elem->location-keyword

@@ -3,38 +3,9 @@
   (:require
    [clojure.java.io :as io]
    [clojure.test :refer :all]
-   [cmr.transmit.kms :as kms]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
-   [cmr.common.util :refer [are3]]))
-
-; (defn- load-all-kms-keywords
-;   "Loads all of the KMS keywords from the example KMS files."
-;   []
-;   (into {}
-;         (for [keyword-scheme (keys kms/keyword-scheme->gcmd-resource-name)
-;               :let [filename (format "kms_examples/%s"
-;                                      (kms/keyword-scheme->gcmd-resource-name keyword-scheme))
-;                     kms-keywords-csv (-> filename io/resource slurp)]]
-;           [keyword-scheme (#'kms/parse-entries-from-csv keyword-scheme kms-keywords-csv)])))
-;
-; (defn- sort-of-deflate-sample
-;   "TODO"
-;   []
-;   (into {}
-;         (for [[k v] (load-all-kms-keywords)]
-;           [k [(first (vals v))]])))
-;
-; (defn- sort-of-deflate
-;   "TODO"
-;   []
-;   (into {}
-;         (for [[k v] (load-all-kms-keywords)]
-;           [k (vals v)])))
-;
-; (comment
-;  (sort-of-deflate)
-;
-;  {:spatial-keywords {:location-strings {"a location" {:category "a" :type "OTHER"}}}})
+   [cmr.common.util :refer [are3]]
+   [cmr.transmit.kms :as kms]))
 
 (def sample-map
   "Sample GCMD keywords map to use for all of the tests"
@@ -92,7 +63,6 @@
     "Duplicate maps are used to override default location choice - GEORGIA"
     "GEORGIA" "d79e134c-a4d0-44f2-9706-cad2b59de992"))
 
-;; TODO what about providers?
 (deftest lookup-by-umm-c-keyword-test
   (testing "Full keyword map is returned by umm-c lookup"
     (is (= {:short-name "PLAT1" :long-name "Platform 1" :other-random-key 7 :uuid "plat1-uuid"}
