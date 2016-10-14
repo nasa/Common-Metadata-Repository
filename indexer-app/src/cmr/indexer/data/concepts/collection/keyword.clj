@@ -1,11 +1,11 @@
-(ns cmr.indexer.data.concepts.keyword
+(ns cmr.indexer.data.concepts.collection.keyword
   "Contains functions to create keyword fields"
   (:require
     [clojure.string :as str]
     [cmr.common.concepts :as concepts]
     [cmr.common.util :as util]
     [cmr.indexer.data.concepts.attribute :as attrib]
-    [cmr.indexer.data.concepts.science-keyword :as sk]
+    [cmr.indexer.data.concepts.collection.science-keyword :as sk]
     [cmr.umm-spec.location-keywords :as lk]
     [cmr.umm-spec.util :as su]))
 

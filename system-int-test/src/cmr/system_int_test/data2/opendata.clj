@@ -8,7 +8,6 @@
    [clojure.test :refer [is]]
    [clojure.test]
    [cmr.common.util :as util]
-   [cmr.indexer.data.concepts.science-keyword :as sk]
    [cmr.search.results-handlers.opendata-results-handler :as odrh]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
@@ -75,7 +74,7 @@
         {:keys [short-name keywords projects related-urls summary entry-title organizations
                 access-value personnel]} collection
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
-        ;; TODO: See ECSE-158. DIF9 doesn't support DataDates in umm-spec-lib.
+        ;; See ECSE-158. DIF9 doesn't support DataDates in umm-spec-lib.
         ;; DIF10 DataDates is parsed differently umm-spec-lib vs umm-lib.
         ;; Here we set the update-time and insert-time to nil to make the test pass.
         ;; We should fix the next two lines once ECSE-158 is resolved

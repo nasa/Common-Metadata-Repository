@@ -1,4 +1,4 @@
-(ns cmr.indexer.data.concepts.opendata
+(ns cmr.indexer.data.concepts.collection.opendata
   "Contains functions to convert collection into opendata related elasticsearch documents")
 
 (defn- email-contact?

@@ -267,7 +267,7 @@
          :keys [concept-id format-key]} collection
         collection (data-core/mimic-ingest-retrieve-metadata-conversion collection)
         {:keys [summary entry-title related-urls associated-difs organizations]} collection
-        ;; TODO: See ECSE-158. DIF9 doesn't support DataDates in umm-spec-lib.
+        ;; See ECSE-158. DIF9 doesn't support DataDates in umm-spec-lib.
         ;; DIF10 DataDates is parsed differently umm-spec-lib vs umm-lib.
         ;; Here we set the update-time and insert-time to nil to make the test pass.
         ;; We should fix the next line once ECSE-158 is resolved

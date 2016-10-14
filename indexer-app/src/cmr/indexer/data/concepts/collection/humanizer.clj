@@ -1,10 +1,10 @@
-(ns cmr.indexer.data.concepts.humanizer
+(ns cmr.indexer.data.concepts.collection.humanizer
   "Contains functions to converting collection into elasticsearch humanized collection docs"
   (:require
     [clojure.string :as str]
     [cmr.common.util :as util]
     [cmr.common-app.humanizer :as humanizer]
-    [cmr.indexer.data.concepts.science-keyword :as sk]
+    [cmr.indexer.data.concepts.collection.science-keyword :as sk]
     [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]))
 
 (defn- add-humanized-lowercase
