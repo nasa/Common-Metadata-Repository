@@ -150,6 +150,9 @@
        (reduce merge-hierarchical-maps sorted-hierarchical-map)
        collapse-hierarchical-map))
 
+(comment
+ (kf/get-kms-index {:system (get-in user/system [:apps :indexer])}))
+
 (defn- get-hierarchical-keywords
   "Returns hierarchical keywords for the provided keyword scheme. Returns a 400 error if the
   keyword scheme is invalid."
@@ -158,7 +161,7 @@
     (validate-keyword-scheme orig-keyword-scheme)
     (let [cmr-keyword-scheme (kms/translate-keyword-scheme-to-cmr orig-keyword-scheme)
           gcmd-keyword-scheme (kms/translate-keyword-scheme-to-gcmd orig-keyword-scheme)
-          keywords (vals (gcmd-keyword-scheme (kf/get-gcmd-keywords-map context)))
+          keywords (gcmd-keyword-scheme (kf/get-kms-index context))
           keyword-hierarchy (cmr-keyword-scheme kf/nested-fields-mappings)
           hierarchical-keywords (flat-keywords->hierarchical-keywords keywords keyword-hierarchy)]
       {:staus 200

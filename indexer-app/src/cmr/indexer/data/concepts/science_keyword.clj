@@ -3,6 +3,7 @@
   (:require
     [clojure.string :as str]
     [cmr.common-app.services.kms-fetcher :as kf]
+    [cmr.common-app.services.kms-lookup :as kms-lookup]
     [cmr.common.util :as util]
     [cmr.umm-spec.util :as spec-util]))
 
@@ -35,14 +36,14 @@
   this means there is no need to also index the keywords in all lowercase; however, we continue to
   index in lowercase so that science keywords are not treated as a special case in parts of the
   code that use lowercase mappings."
-  [gcmd-keywords-map science-keyword]
+  [kms-index science-keyword]
   (let [science-keyword-kebab-key (util/map-keys->kebab-case science-keyword)
         science-keyword-upper-case (util/map-values normalize-sk-field-value
                                                     science-keyword-kebab-key)
         {:keys [category topic term variable-level-1 variable-level-2 variable-level-3
                 detailed-variable]} science-keyword-upper-case
-        {:keys [uuid]} (kf/get-full-hierarchy-for-science-keyword gcmd-keywords-map
-                                                                  science-keyword-kebab-key)]
+        {:keys [uuid]} (kms-lookup/lookup-by-umm-c-keyword kms-index :science-keywords
+                                                           science-keyword-kebab-key)]
     {:category category
      :category.lowercase (util/safe-lowercase category)
      :topic topic

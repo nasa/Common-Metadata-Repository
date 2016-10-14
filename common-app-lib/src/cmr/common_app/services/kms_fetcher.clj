@@ -8,16 +8,17 @@
   use the last keyword values which were retrieved from the GCMD KMS before it became unavailable.
 
   The KMS keywords are all cached under a single :kms key. The structure looks like the following:
-  {:kms {:platforms [\"sn-1\" {:category \"C\" :series-entity \"S\"
-                               :short-name \"SN-1\" :long-name \"LN\"}
-                     \"sn-2\" {...}
-                    ]}
+  {:kms {:platforms [{:category \"C\" :series-entity \"S\"
+                      :short-name \"SN-1\" :long-name \"LN\"}
+                     {...}]}
          :providers [...]}"
   (:require
     [clojure.string :as str]
     [cmr.common-app.cache.consistent-cache :as consistent-cache]
     [cmr.common-app.cache.cubby-cache :as cubby-cache]
+    [cmr.common-app.services.kms-lookup :as kms-lookup]
     [cmr.common.cache :as cache]
+    [cmr.common.cache.deflating-cache :as deflating-cache]
     [cmr.common.cache.fallback-cache :as fallback-cache]
     [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
     [cmr.common.config :refer [defconfig]]
@@ -62,76 +63,38 @@
       (consistent-cache/create-consistent-cache
        {:hash-timeout-seconds (kms-cache-consistent-timeout-seconds)})
       (cubby-cache/create-cubby-cache))))
+      ; (deflating-cache/create-deflating-cache
+      ;   (cubby-cache/create-cubby-cache)
+      ;   kms-lookup/create-kms-index
+      ;   kms-lookup/deflate))))
 
 (defn- fetch-gcmd-keywords-map
   "Calls GCMD KMS endpoints to retrieve the keywords. Response is a map structured in the same way
   as used in the KMS cache."
   [context]
-  (into {}
-        (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
-          [keyword-scheme (kms/get-keywords-for-keyword-scheme
-                            context keyword-scheme)])))
+  (kms-lookup/create-kms-index
+   (into {}
+         (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
+           [keyword-scheme (kms/get-keywords-for-keyword-scheme context keyword-scheme)]))))
 
-(defn refresh-kms-cache
-  "Refreshes the KMS keywords stored in the cache. This should be called from a background job on a
-  timer to keep the cache fresh. This will throw an exception if there is a problem fetching the
-  keywords from KMS. The caller is responsible for catching and logging the exception."
-  [context]
-  (let [cache (cache/context->cache context kms-cache-key)]
-    (cache/set-value cache kms-cache-key (fetch-gcmd-keywords-map context))))
-
-(defn get-gcmd-keywords-map
+(defn get-kms-index
   "Retrieves the GCMD keywords map from the cache."
   [context]
   (let [cache (cache/context->cache context kms-cache-key)]
     (cache/get-value cache kms-cache-key (partial fetch-gcmd-keywords-map context))))
 
-(defn get-full-hierarchy-for-short-name
-  "Returns the full hierarchy for a given short name. If the provided short-name cannot be found,
-  nil will be returned."
-  [gcmd-keywords-map keyword-scheme short-name]
-  {:pre (some? (keyword-scheme kms/keyword-scheme->field-names))}
-  (get-in gcmd-keywords-map [keyword-scheme (str/lower-case short-name)]))
+(defn- refresh-kms-cache
+  "Refreshes the KMS keywords stored in the cache. This should be called from a background job on a
+  timer to keep the cache fresh. This will throw an exception if there is a problem fetching the
+  keywords from KMS. The caller is responsible for catching and logging the exception."
+  [context]
+  (let [cache (cache/context->cache context kms-cache-key)
+        gcmd-keywords-map (fetch-gcmd-keywords-map context)]
+    (cache/set-value cache kms-cache-key gcmd-keywords-map)))
 
-(defn get-full-hierarchy-for-keyword
-  "Returns the full hierarchy for a given keyword. All of the fields within the keyword need
-  to match one of the keywords, otherwise nil is returned."
-  [gcmd-keywords-map keyword-scheme keyword-map fields-to-compare]
-  {:pre (some? (keyword-scheme kms/keyword-scheme->field-names))}
-  (let [prepare-for-compare (fn [m]
-                              (->> (select-keys m fields-to-compare)
-                                   util/remove-nil-keys
-                                   (util/map-values str/lower-case)))
-        comparison-map (prepare-for-compare keyword-map)
-        keyword-values (vals (keyword-scheme gcmd-keywords-map))]
-    (some #(when (= (prepare-for-compare %) comparison-map) %) keyword-values)))
-
-(defn get-full-hierarchy-for-science-keyword
-  [gcmd-keywords-map keyword-map]
-  (get-full-hierarchy-for-keyword
-    gcmd-keywords-map :science-keywords keyword-map
-    [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3]))
-
-(defn get-full-hierarchy-for-platform
-  [gcmd-keywords-map platform]
-  (get-full-hierarchy-for-keyword gcmd-keywords-map :platforms platform [:short-name :long-name]))
-
-(defn get-full-hierarchy-for-instrument
-  [gcmd-keywords-map instrument]
-  (get-full-hierarchy-for-keyword gcmd-keywords-map :instruments instrument [:short-name :long-name]))
-
-(defn get-full-hierarchy-for-project
-  [gcmd-keywords-map project-map]
-  (get-full-hierarchy-for-keyword gcmd-keywords-map :projects project-map [:short-name :long-name]))
-
-(defn get-full-hierarchy-for-location-keywords
-  [gcmd-keywords-map location-map]
-  (get-full-hierarchy-for-keyword gcmd-keywords-map :spatial-keywords location-map
-                                  [:category :type :subregion-1 :subregion-2 :subregion-3]))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache because
 ;; we use a consistent cache which uses cubby to coordinate any changes to the cache.
-
 (def-stateful-job RefreshKmsCacheJob
   [_ system]
   (refresh-kms-cache {:system system}))

@@ -26,7 +26,7 @@
   "Seq of formats to use in round-trip conversion and XML validation tests."
   [:dif :dif10 :echo10 :iso19115 :iso-smap])
 
-(def test-context (lkt/setup-context-for-test lkt/sample-keyword-map))
+(def test-context (lkt/setup-context-for-test))
 
 (def tested-service-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."

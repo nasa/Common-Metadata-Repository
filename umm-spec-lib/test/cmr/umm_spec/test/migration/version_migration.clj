@@ -23,7 +23,7 @@
   (for-all [umm-record   (gen/no-shrink umm-gen/umm-c-generator)
             dest-version (gen/elements v/versions)]
     (let [dest-media-type (str mt/umm-json "; version=" dest-version)
-          metadata (core/generate-metadata (lkt/setup-context-for-test lkt/sample-keyword-map)
+          metadata (core/generate-metadata (lkt/setup-context-for-test)
                                            umm-record dest-media-type)]
       (empty? (core/validate-metadata :collection dest-media-type metadata)))))
 
@@ -54,28 +54,28 @@
 
 (deftest migrate-1_1-up-to-1_2
   (is (empty? (:LocationKeywords
-               (vm/migrate-umm (lkt/setup-context-for-test lkt/sample-keyword-map)
+               (vm/migrate-umm (lkt/setup-context-for-test)
                                :collection "1.1" "1.2" {:SpatialKeywords nil}))))
   (is (empty? (:LocationKeywords
-               (vm/migrate-umm (lkt/setup-context-for-test lkt/sample-keyword-map)
+               (vm/migrate-umm (lkt/setup-context-for-test)
                                :collection "1.1" "1.2" {:SpatialKeywords []}))))
 
   (is (= [{:Category "CONTINENT"}]
          (:LocationKeywords
           (vm/migrate-umm
-           (lkt/setup-context-for-test lkt/sample-keyword-map)
+           (lkt/setup-context-for-test)
            :collection "1.1" "1.2" {:SpatialKeywords ["CONTINENT"]}))))
   ;; If not in the hierarchy, convert to CATEGORY OTHER and put the value as Type.
   (is (= [{:Category "OTHER" :Type "Somewhereville"}]
          (:LocationKeywords
           (vm/migrate-umm
-           (lkt/setup-context-for-test lkt/sample-keyword-map)
+           (lkt/setup-context-for-test)
            :collection "1.1" "1.2" {:SpatialKeywords ["Somewhereville"]}))))
 
   (is (= [{:Category "CONTINENT" :Type "AFRICA" :Subregion1 "CENTRAL AFRICA" :Subregion2 "ANGOLA"}]
          (:LocationKeywords
           (vm/migrate-umm
-           (lkt/setup-context-for-test lkt/sample-keyword-map)
+           (lkt/setup-context-for-test)
            :collection "1.1" "1.2" {:SpatialKeywords ["ANGOLA"]})))))
 
 

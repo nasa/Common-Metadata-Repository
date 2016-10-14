@@ -3,6 +3,7 @@
   (:require
     [clojure.string :as str]
     [cmr.common-app.services.kms-fetcher :as kf]
+    [cmr.common-app.services.kms-lookup :as kms-lookup]
     [cmr.common.util :as util]
     [cmr.umm-spec.location-keywords :as lk]))
 
@@ -16,16 +17,15 @@
   for the match from the GCMD KMS keywords. Note: :detailed-location is removed because it's not
   defined in KMS and won't be used for the matching. If a field is not present in the KMS hierarchy,
   we use a dummy value to indicate the field was not present, except for uuid which will be nil."
-  [gcmd-keywords-map location-keyword]
+  [kms-index location-keyword]
   (let [location-keyword-kebab-key (dissoc
                                      (util/remove-nil-keys
                                        (util/map-keys->kebab-case location-keyword))
                                      :detailed-location)
         hierarchical-location (merge default-location
                                      location-keyword-kebab-key
-                                     (kf/get-full-hierarchy-for-location-keywords
-                                       gcmd-keywords-map
-                                       location-keyword-kebab-key))
+                                     (kms-lookup/lookup-by-umm-c-keyword
+                                       kms-index :spatial-keywords location-keyword-kebab-key))
         {:keys [category type subregion-1 subregion-2 subregion-3 uuid]} hierarchical-location]
     {:category category
      :category.lowercase (str/lower-case category)

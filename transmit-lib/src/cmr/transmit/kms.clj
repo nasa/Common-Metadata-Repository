@@ -127,14 +127,12 @@
   a breakdown of the subfields for the keyword scheme, and from the third line on are the actual
   values.
 
-  Returns a map with each short-name as a key and the full hierarchy map for each keyword as the
-  value."
+  Returns a sequence of full hierarchy maps."
   [keyword-scheme csv-content]
   (let [all-lines (csv/read-csv csv-content)
         ;; Line 2 contains the subfield names
         kms-subfield-names (map csk/->kebab-case-keyword (second all-lines))
         _ (validate-subfield-names keyword-scheme kms-subfield-names)
-        leaf-field-name (keyword-scheme keyword-scheme->leaf-field-name)
         keyword-entries (->> all-lines
                              (drop NUM_HEADER_LINES)
                              ;; Create a map for each row using the subfield-names as keys
@@ -142,20 +140,15 @@
                              (map remove-blank-keys)
                              ;; Only keep entries which map to full valid keywords
                              (filter (keyword-scheme->required-field keyword-scheme)))
+        leaf-field-name (keyword-scheme keyword-scheme->leaf-field-name)
         invalid-entries (find-invalid-entries keyword-entries leaf-field-name)]
 
     ;; Print out warnings for any duplicate keywords so that we can create a Splunk alert.
     (doseq [entry invalid-entries]
       (warn (format "Found duplicate keywords for %s short-name [%s]: %s" (name keyword-scheme)
                     (:short-name entry) entry)))
+    keyword-entries))
 
-    ;; Create a map with the leaf node identifier in all lower case as keys to the full hierarchy
-    ;; for that entry. GCMD ensures that no two leaf fields can be the same when compared in a case
-    ;; insensitive manner.
-    (into {}
-          (for [entry keyword-entries
-                :let [leaf-field (leaf-field-name entry)]]
-            [(str/lower-case leaf-field) entry]))))
 
 (defn- get-by-keyword-scheme
   "Makes a get request to the GCMD KMS. Returns the controlled vocabulary map for the given

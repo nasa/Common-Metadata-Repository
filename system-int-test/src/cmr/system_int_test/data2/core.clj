@@ -26,7 +26,7 @@
     (or (some-> entry-title str/trim)
         (some #(get item %) [:granule-ur :native-id]))))
 
-(def context (lkt/setup-context-for-test lkt/sample-keyword-map))
+(def context (lkt/setup-context-for-test))
 
 (defn item->concept
   "Returns a concept map from a UMM item or tombstone. Default provider-id to PROV1 if not present."
