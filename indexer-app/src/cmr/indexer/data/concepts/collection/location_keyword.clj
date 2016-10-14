@@ -1,4 +1,4 @@
-(ns cmr.indexer.data.concepts.location-keyword
+(ns cmr.indexer.data.concepts.collection.location-keyword
   "Contains functions for converting location keyword hierarchies into elastic documents"
   (:require
     [clojure.string :as str]
