@@ -160,20 +160,20 @@
 
     (testing "parameter search acl enforcement"
       (are [token items]
-           (d/refs-match? items (search/find-refs :collection (when token {:token token})))
+        (d/refs-match? items (search/find-refs :collection (when token {:token token})))
 
-           ;; not logged in should be guest
-           nil guest-permitted-collections
+        ;; not logged in should be guest
+        nil guest-permitted-collections
 
-           ;; login and use guest token
-           guest-token guest-permitted-collections
+        ;; login and use guest token
+        guest-token guest-permitted-collections
 
-           ;; test searching as a user
-           user1-token [coll2 coll4]
+        ;; test searching as a user
+        user1-token [coll2 coll4]
 
-           ;; Test searching with users in groups
-           user2-token [coll2 coll4 coll3]
-           user3-token [coll2 coll4 coll3 coll6 coll8]))
+        ;; Test searching with users in groups
+        user2-token [coll2 coll4 coll3]
+        user3-token [coll2 coll4 coll3 coll6 coll8]))
     (testing "token can be sent through a header"
       (is (d/refs-match? [coll2 coll4]
                          (search/find-refs :collection {} {:headers {"Echo-Token" user1-token}}))))
@@ -183,59 +183,59 @@
     (testing "Direct transformer retrieval acl enforcement"
       (testing "registered user"
         (d/assert-metadata-results-match
-          :echo10 [coll2 coll4]
-          (search/find-metadata :collection :echo10 {:token user1-token
-                                                     :concept-id (conj (map :concept-id all-colls)
-                                                                       "C9999-PROV1")})))
+         :echo10 [coll2 coll4]
+         (search/find-metadata :collection :echo10 {:token user1-token
+                                                    :concept-id (conj (map :concept-id all-colls)
+                                                                      "C9999-PROV1")})))
       (testing "guest access"
         (d/assert-metadata-results-match
-          :echo10 guest-permitted-collections
-          (search/find-metadata :collection :echo10 {:token guest-token
-                                                     :concept-id (map :concept-id all-colls)})))
+         :echo10 guest-permitted-collections
+         (search/find-metadata :collection :echo10 {:token guest-token
+                                                    :concept-id (map :concept-id all-colls)})))
       (testing "Empty token matches guest access"
         (d/assert-metadata-results-match
-          :echo10 guest-permitted-collections
-          (search/find-metadata :collection :echo10 {:token ""
-                                                     :concept-id (map :concept-id all-colls)})))
+         :echo10 guest-permitted-collections
+         (search/find-metadata :collection :echo10 {:token ""
+                                                    :concept-id (map :concept-id all-colls)})))
 
       (testing "user in groups"
         (d/assert-metadata-results-match
-          :echo10 [coll4 coll6 coll3 coll8 coll2]
-          (search/find-metadata :collection :echo10 {:token user3-token
-                                                     :concept-id (map :concept-id all-colls)}))))
+         :echo10 [coll4 coll6 coll3 coll8 coll2]
+         (search/find-metadata :collection :echo10 {:token user3-token
+                                                    :concept-id (map :concept-id all-colls)}))))
     (testing "ATOM ACL enforcement"
       (testing "all items"
         (let [coll-atom (da/collections->expected-atom
-                          guest-permitted-collections
-                          (format "collections.atom?token=%s&page_size=100" guest-token))]
+                         guest-permitted-collections
+                         (format "collections.atom?token=%s&page_size=100" guest-token))]
           (is (= coll-atom (:results (search/find-concepts-atom :collection {:token guest-token
                                                                              :page-size 100}))))))
 
       (testing "by concept id"
         (let [concept-ids (map :concept-id all-colls)
               coll-atom (da/collections->expected-atom
-                          guest-permitted-collections
-                          (str "collections.atom?token=" guest-token
-                               "&page_size=100&concept_id="
-                               (str/join "&concept_id=" concept-ids)))]
+                         guest-permitted-collections
+                         (str "collections.atom?token=" guest-token
+                              "&page_size=100&concept_id="
+                              (str/join "&concept_id=" concept-ids)))]
           (is (= coll-atom (:results (search/find-concepts-atom :collection {:token guest-token
                                                                              :page-size 100
                                                                              :concept-id concept-ids})))))))
     (testing "JSON ACL enforcement"
       (testing "all items"
         (let [coll-json (da/collections->expected-atom
-                          guest-permitted-collections
-                          (format "collections.json?token=%s&page_size=100" guest-token))]
+                         guest-permitted-collections
+                         (format "collections.json?token=%s&page_size=100" guest-token))]
           (is (= coll-json (:results (search/find-concepts-json :collection {:token guest-token
                                                                              :page-size 100}))))))
 
       (testing "by concept id"
         (let [concept-ids (map :concept-id all-colls)
               coll-json (da/collections->expected-atom
-                          guest-permitted-collections
-                          (str "collections.json?token=" guest-token
-                               "&page_size=100&concept_id="
-                               (str/join "&concept_id=" concept-ids)))]
+                         guest-permitted-collections
+                         (str "collections.json?token=" guest-token
+                              "&page_size=100&concept_id="
+                              (str/join "&concept_id=" concept-ids)))]
           (is (= coll-json (:results (search/find-concepts-json :collection {:token guest-token
                                                                              :page-size 100
                                                                              :concept-id concept-ids})))))))
@@ -255,22 +255,22 @@
 
     (testing "all_revisions"
       (are2 [collections params]
-            (d/refs-match? collections (search/find-refs :collection params))
+        (d/refs-match? collections (search/find-refs :collection params))
 
-            ;; only old revisions satisfy ACL - they should not be returned
-            "provider-id all-revisions=false"
-            []
-            {:provider-id "PROV4" :all-revisions false :token user4-token}
+        ;; only old revisions satisfy ACL - they should not be returned
+        "provider-id all-revisions=false"
+        []
+        {:provider-id "PROV4" :all-revisions false :token user4-token}
 
-            ;; only permissioned revisions are returned - including tombstones
-            "provider-id all-revisions=true"
-            [coll11-1 coll11-2 coll12-1]
-            {:provider-id "PROV4" :all-revisions true :token user4-token}
+        ;; only permissioned revisions are returned - including tombstones
+        "provider-id all-revisions=true"
+        [coll11-1 coll11-2 coll12-1]
+        {:provider-id "PROV4" :all-revisions true :token user4-token}
 
-            ;; none of the revisions are readable by guest users
-            "provider-id all-revisions=true no token"
-            []
-            {:provider-id "PROV4" :all-revisions true}))))
+        ;; none of the revisions are readable by guest users
+        "provider-id all-revisions=true no token"
+        []
+        {:provider-id "PROV4" :all-revisions true}))))
 
 
 ;; This tests that when acls change after collections have been indexed that collections will be

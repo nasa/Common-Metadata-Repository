@@ -102,6 +102,11 @@
   (when s
     (subs s 0 (min (count s) n))))
 
+(defn safe-lowercase
+  "Returns the given string in lower case safely."
+  [v]
+  (when v (str/lower-case v)))
+
 (defn sequence->fn
   [vals]
   "Creates a stateful function that returns individual values from the sequence. It returns the first

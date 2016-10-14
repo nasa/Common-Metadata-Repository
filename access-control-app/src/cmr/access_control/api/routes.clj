@@ -310,6 +310,8 @@
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
+      ;; for NGAP deployment health check
+      (GET "/" {} {:status 200})
       admin-api-routes
 
       ;; Add routes for API documentation

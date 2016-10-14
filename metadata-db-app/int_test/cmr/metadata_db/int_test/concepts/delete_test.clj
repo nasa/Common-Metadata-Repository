@@ -1,14 +1,15 @@
 (ns cmr.metadata-db.int-test.concepts.delete-test
   "Contains integration tests for deleting concepts. Tests delete with various configurations including
   checking for proper error handling."
-  (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
-            [cheshire.core :as cheshire]
-            [cmr.metadata-db.int-test.utility :as util]
-            [cmr.metadata-db.services.messages :as messages]
-            [cmr.common.util :as u]
-            [clj-time.core :as t]
-            [cmr.metadata-db.int-test.concepts.concept-delete-spec :as cd-spec]))
+  (:require
+   [cheshire.core :as cheshire]
+   [clj-http.client :as client]
+   [clj-time.core :as t]
+   [clojure.test :refer :all]
+   [cmr.common.util :as u]
+   [cmr.metadata-db.int-test.concepts.concept-delete-spec :as cd-spec]
+   [cmr.metadata-db.int-test.utility :as util]
+   [cmr.metadata-db.services.messages :as messages]))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -55,7 +56,7 @@
     (let [coll1 (util/create-and-save-collection provider-id 1 3)
           gran1 (util/create-and-save-granule provider-id coll1 1 2)
           coll2 (util/create-and-save-collection provider-id 2)
-          gran3 (util/create-and-save-granule provider-id coll2 1)
+          gran3 (util/create-and-save-granule provider-id coll2 2)
           {:keys [status revision-id] :as tombstone} (util/delete-concept (:concept-id coll1))
           deleted-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) revision-id))
           saved-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) (dec revision-id)))]
@@ -89,7 +90,7 @@
     (let [coll1 (util/create-and-save-collection provider-id 1 3)
           gran1 (util/create-and-save-granule provider-id coll1 1 2)
           coll2 (util/create-and-save-collection provider-id 2)
-          gran3 (util/create-and-save-granule provider-id coll2 1)
+          gran3 (util/create-and-save-granule provider-id coll2 2)
 
           {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id coll1)
                                                            :deleted true

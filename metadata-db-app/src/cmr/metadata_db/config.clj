@@ -72,8 +72,8 @@
   "This indicates whether or not messages be published to the exchange"
   {:default true :type Boolean})
 
-(defn rabbit-mq-config
-  "Returns the rabbit mq configuration for the metadata db application."
+(defn queue-config
+  "Returns the queue configuration for the metadata db application."
   []
   (assoc (rmq-conf/default-config)
          :exchanges [(deleted-collection-revision-exchange-name)

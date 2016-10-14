@@ -1,12 +1,11 @@
-(ns cmr.indexer.data.concepts.keyword
+(ns cmr.indexer.data.concepts.collection.keyword
   "Contains functions to create keyword fields"
   (:require
     [clojure.string :as str]
     [cmr.common.concepts :as concepts]
     [cmr.common.util :as util]
     [cmr.indexer.data.concepts.attribute :as attrib]
-    [cmr.indexer.data.concepts.organization :as org]
-    [cmr.indexer.data.concepts.science-keyword :as sk]
+    [cmr.indexer.data.concepts.collection.science-keyword :as sk]
     [cmr.umm-spec.location-keywords :as lk]
     [cmr.umm-spec.util :as su]))
 
@@ -30,25 +29,23 @@
       (into [field-value] (str/split field-value keywords-separator-regex)))))
 
 (defn create-keywords-field
-  [concept-id collection umm-spec-collection other-fields]
+  [concept-id collection other-fields]
   "Create a keyword field for keyword searches by concatenating several other fields
   into a single string"
-  (let [;; TODO version-description will be added to UMM-SPEC in CMR-3241
-        ;; Once that is done, we need to remove collection argument from this function
-        {:keys [version-description]} (:product collection)
-        {:keys [platform-long-names instrument-long-names entry-id]} other-fields
+  (let [{:keys [platform-long-names instrument-long-names entry-id]} other-fields
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
          temporal-keywords :TemporalKeywords platforms :Platforms
          ancillary-keywords :AncillaryKeywords
          directory-names :DirectoryNames
-         iso-topic-categories :ISOTopicCategories} umm-spec-collection
-        processing-level-id (get-in umm-spec-collection [:ProcessingLevel :Id])
+         iso-topic-categories :ISOTopicCategories
+         version-description :VersionDescription} collection
+        processing-level-id (get-in collection [:ProcessingLevel :Id])
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
         spatial-keywords (lk/location-keywords->spatial-keywords
-                           (:LocationKeywords umm-spec-collection))
-        projects (for [{:keys [ShortName LongName]} (:Projects umm-spec-collection)]
+                           (:LocationKeywords collection))
+        projects (for [{:keys [ShortName LongName]} (:Projects collection)]
                    {:short-name ShortName :long-name LongName})
         provider-id (:provider-id (concepts/parse-concept-id concept-id))
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
@@ -72,12 +69,11 @@
         char-names (keep :name characteristics)
         char-descs (keep :description characteristics)
         two-d-coord-names (map :TilingIdentificationSystemName
-                               (:TilingIdentificationSystems umm-spec-collection))
-        data-centers (map :ShortName (:DataCenters umm-spec-collection))
-        science-keywords (mapcat #(sk/science-keyword->keywords (util/map-keys->kebab-case %))
-                                 (:ScienceKeywords umm-spec-collection))
+                               (:TilingIdentificationSystems collection))
+        data-centers (map :ShortName (:DataCenters collection))
+        science-keywords (mapcat sk/science-keyword->keywords (:ScienceKeywords collection))
         attrib-keywords (mapcat #(attrib/psa->keywords (util/map-keys->kebab-case %))
-                                (:AdditionalAttributes umm-spec-collection))
+                                (:AdditionalAttributes collection))
         all-fields (flatten (conj [concept-id]
                                   provider-id
                                   entry-title

@@ -10,7 +10,8 @@
     [cmr.mock-echo.client.echo-util :as e]
     [cmr.transmit.access-control :as ac]
     [cmr.transmit.config :as transmit-config]
-    [cmr.transmit.metadata-db2 :as mdb]))
+    [cmr.transmit.metadata-db2 :as mdb]
+    [cmr.transmit.config :as tc]))
 
 (use-fixtures :each
               (fixtures/int-test-fixtures)
@@ -62,6 +63,37 @@
                             {:token token})]
     (is (re-find #"^ACL.*" (:concept_id resp)))
     (is (= 1 (:revision_id resp)))))
+
+(deftest create-single-instance-acl-permission-test
+  (let [token (e/login (u/conn-context) "user1")
+        group1 (u/ingest-group token {:name "group1" :provider_id "PROV1"} ["user1"])
+        group1-concept-id (:concept_id group1)]
+    ;; Update the system ACL to remove permission to create single instance ACLs
+    (ac/update-acl (merge (u/conn-context) {:token tc/mock-echo-system-token})
+                   (:concept-id fixtures/*fixture-system-acl*)
+                   {:system_identity {:target "ANY_ACL"}
+                    :group_permissions [{:user_type "registered" :permissions ["read"]}]})
+    (u/wait-until-indexed)
+    (is (thrown-with-msg? Exception #"Permission to create ACL is denied"
+                          (ac/create-acl (u/conn-context)
+                                         {:group_permissions [{:user_type "registered" :permissions ["update" "delete"]}]
+                                          :single_instance_identity {:target_id group1-concept-id
+                                                                     :target "GROUP_MANAGEMENT"}}
+                                         {:token token})))
+    ;; Create a provider-specific ACL granting permission to create ACLs targeting groups
+    (ac/create-acl (u/conn-context)
+                   {:group_permissions [{:user_type "registered" :permissions ["create"]}]
+                    :provider_identity {:target "PROVIDER_OBJECT_ACL"
+                                        :provider_id "PROV1"}}
+                   {:token tc/mock-echo-system-token})
+    (u/wait-until-indexed)
+    (is (= 1 (:revision_id
+               (ac/create-acl (u/conn-context)
+                              {:group_permissions [{:user_type "registered" :permissions ["update" "delete"]}]
+                               :single_instance_identity {:target_id group1-concept-id
+                                                          :target "GROUP_MANAGEMENT"}}
+                              {:token token}))))
+    ))
 
 (deftest create-provider-acl-permission-test
   ;; Tests user permission to create provider acls
@@ -166,6 +198,43 @@
                                          (assoc (assoc-in system-acl
                                                           [:system_identity :target] "ARCHIVE_RECORD")
                                                 :group_permissions [{:user_type :registered :permissions ["delete"]}]))))))
+
+(deftest acl-targeting-group-with-legacy-guid-test
+  (let [admin-token (e/login (u/conn-context) "admin")
+        ;; as an admin user, create a group with a legacy_guid
+        created-group (:concept_id (ac/create-group (merge (u/conn-context) {:token admin-token})
+                                                    {:name "group"
+                                                     :description "a group"
+                                                     :legacy_guid "normal-group-guid"
+                                                     :members ["user1"]}))]
+    (u/wait-until-indexed)
+
+    ;; Update the system-level ANY_ACL to avoid granting ACL creation permission to "user1", since it normally
+    ;; grants this permission to all registered users.
+    (ac/update-acl (merge (u/conn-context) {:token admin-token})
+                   (:concept-id fixtures/*fixture-system-acl*)
+                   {:group_permissions [{:group_id created-group
+                                         :permissions [:create :read :update :delete]}]
+                    :system_identity {:target "ANY_ACL"}})
+    
+    ;; Update the PROV1 CATALOG_ITEM_ACL ACL to grant permission explicitly to only the group which "user1" belongs to.
+    (ac/update-acl (merge (u/conn-context) {:token admin-token})
+                   (:concept-id fixtures/*fixture-provider-acl*)
+                   {:group_permissions [{:group_id created-group
+                                         :permissions [:create :read :update :delete]}]
+                    :provider_identity {:provider_id "PROV1"
+                                        :target "CATALOG_ITEM_ACL"}})
+    (u/wait-until-indexed)
+
+    ;; As "user1" try to create a catalog item ACL for PROV1.
+    (let [user-token (e/login (u/conn-context) "user1" ["normal-group-guid"])]
+      (is (= 1 (:revision_id
+                 (ac/create-acl (merge (u/conn-context) {:token user-token})
+                                {:group_permissions [{:user_type :registered
+                                                      :permissions [:read]}]
+                                 :catalog_item_identity {:provider_id "PROV1"
+                                                         :name "PROV1 collections ACL"
+                                                         :collection_applicable true}})))))))
 
 (deftest create-catalog-item-acl-permission-test
   ;; Tests creation permissions of catalog item acls

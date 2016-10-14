@@ -34,6 +34,11 @@
   request timed out."
   {:default 10000 :type Long})
 
+(defconfig queue-type
+  "This indicates which type of queue to use. Valid types are \"memory\", \"rabbit-mq\",
+  and \"aws\""
+  {:default "rabbit-mq"})
+
 (defn default-config
   "Returns a default config map for connecting to the message queue"
   []

@@ -4,20 +4,21 @@
   to that namespace using the latest style. Note when using the metadata db2 namespace functions that
   they do not throw exceptions except in exceptional cases like an invalid status code. A concept
   not being found is not considered an exceptional case."
-  (:require [clj-http.client :as client]
-            [clojure.string :as str]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.services.messages :as cmsg]
-            [cmr.transmit.config :as config]
-            [cheshire.core :as json]
-            [clojure.walk :as walk]
-            [cmr.common.api.context :as ch]
-            [ring.util.codec :as codec]
-            [cmr.transmit.connection :as conn]
-            [cmr.transmit.metadata-db2 :as mdb2]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.util :as util :refer [defn-timed]]
-            [camel-snake-kebab.core :as csk]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clojure.string :as str]
+   [clojure.walk :as walk]
+   [cmr.common.api.context :as ch]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.services.messages :as cmsg]
+   [cmr.common.util :as util :refer [defn-timed]]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.connection :as conn]
+   [cmr.transmit.metadata-db2 :as mdb2]
+   [ring.util.codec :as codec]))
 
 (defn-timed get-concept
   "Retrieve the concept with the given concept and revision-id"
@@ -300,20 +301,18 @@
         concept-json-str (json/generate-string concept)
         response (client/post (str (conn/root-url conn) "/concepts")
                               (merge
-                                (config/conn-params conn)
-                                {:body concept-json-str
-                                 :content-type :json
-                                 :accept :json
-                                 :throw-exceptions false
-                                 :headers (ch/context->http-headers context)}))
+                               (config/conn-params conn)
+                               {:body concept-json-str
+                                :content-type :json
+                                :accept :json
+                                :throw-exceptions false
+                                :headers (ch/context->http-headers context)}))
         status (int (:status response))
         body (json/decode (:body response))
         {:strs [concept-id revision-id]} body]
     (case status
       422
-      (let [errors-str (json/generate-string (flatten (get body "errors")))]
-        ;; catalog rest supplied invalid concept id
-        (errors/throw-service-error :invalid-data errors-str))
+      (errors/throw-service-errors :invalid-data (get body "errors"))
 
       201
       {:concept-id concept-id :revision-id revision-id}
@@ -324,5 +323,5 @@
 
       ;; default
       (errors/internal-error!
-        (format "Save concept failed. MetadataDb app response status code: %s response: %s"
-                status response)))))
+       (format "Save concept failed. MetadataDb app response status code: %s response: %s"
+               status response)))))

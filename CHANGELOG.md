@@ -127,3 +127,14 @@ Items to include in each issue
   * Deployment Impacts
     * Requires reindexing all groups after deployment
       * `curl -i -XPOST http://localhost:3011/access-control/reindex-groups?token=XXXX`
+
+## 1.61
+
+* CMR-3215 - Added granule validation to not allow a granule to change its parent collection
+  * Client Impacts
+    * Once a granule is created to reference a parent collection, the granule cannot be updated to reference a different collection as its parent collection.
+    * Changed the error message format for status code 422 during ingest to the correct format.
+* CMR-3286 - As a Client User, I can only retrieve provider level ACLs through search that I have permission to read.
+  * Client Impacts
+    * Provider ACLs will now only be searchable by users or user-types which are given permission to by a system ACL targeting ANY_ACL, by the provider ACL itself, or by a provider ACL targeting PROVIDER_OBJECT_ACL.
+    * Read permission is special. A user with create, read, update, or delete permissions granted by an ACL will automatically be able to read that ACL.  This does not apply when the user is instead granted permission to an ACL via the governing management ACLs, where only explicit read permission applies.
