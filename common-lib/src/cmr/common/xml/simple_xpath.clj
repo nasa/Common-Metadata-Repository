@@ -523,8 +523,8 @@
   (seq (:context (evaluate context xpath))))
 
 (defmacro select
-  "Perform work of parsing XPath at compile time if a string literal is passed in to improve
-  performance at runtime."
+  "Returns all elements matching the XPath expression. Perform work of parsing XPath at compile time
+  if a string literal is passed in to improve performance at runtime."
   [context xpath]
   (if (string? xpath)
     (let [parsed (parse-xpath xpath)]
