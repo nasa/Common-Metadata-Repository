@@ -13,7 +13,7 @@
            [cmr.umm-spec.test.location-keywords-helper :as lkt]
            [cmr.umm.collection.entry-id :as eid]))
 
-(def test-context (lkt/setup-context-for-test lkt/sample-keyword-map))
+(def test-context (lkt/setup-context-for-test))
 
 (defn- collection->umm-json-meta
   "Returns the meta section of umm-json format."

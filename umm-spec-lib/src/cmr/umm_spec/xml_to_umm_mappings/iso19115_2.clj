@@ -3,6 +3,7 @@
   (:require
    [clojure.data :as data]
    [clojure.string :as str]
+   [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select text]]
@@ -174,7 +175,7 @@
        su/USECONSTRAINTS_MAX
        sanitize?)
      :LocationKeywords (lk/translate-spatial-keywords
-                         context (kws/descriptive-keywords md-data-id-el "place"))
+                        (kf/get-kms-index context) (kws/descriptive-keywords md-data-id-el "place"))
      :TemporalKeywords (kws/descriptive-keywords md-data-id-el "temporal")
      :DataLanguage (char-string-value md-data-id-el "gmd:language")
      :ISOTopicCategories (values-at doc topic-categories-xpath)

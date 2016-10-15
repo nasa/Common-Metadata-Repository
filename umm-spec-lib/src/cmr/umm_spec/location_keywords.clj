@@ -3,19 +3,9 @@
   (:require
     [clojure.set :as set]
     [clojure.string :as str]
-    [cmr.common-app.services.kms-fetcher :as kf]
+    [cmr.common-app.services.kms-lookup :as kms-lookup]
     [cmr.common.util :as util]
     [cmr.umm-spec.models.umm-collection-models :as umm-c]))
-
-(def duplicate-keywords
-  "Lookup table to account for any duplicate keywords. Will choose the preferred value.
-  Common key is :uuid which is a field in the location-keyword map. "
-   ;; Choose Black Sea here because it's more associated with Eastern Europe than Western Asia.
-  {"BLACK SEA" {:uuid "afbc0a01-742e-49da-939e-3eaa3cf431b0"}
-   ;; Choose a more specific SPACE element because the general SPACE is too broad and top-level.
-   "SPACE" {:uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"}
-   ;; Choose Georgia the country instead of Georgia the US State.
-   "GEORGIA" {:uuid "d79e134c-a4d0-44f2-9706-cad2b59de992"}})
 
 (def location-keyword-order
   "Defines the order of hierarchical keywords for LocationKeywords"
@@ -30,47 +20,27 @@
    :subregion-3 :Subregion3
    :detailed-location :DetailedLocation})
 
-(defn get-spatial-keywords-maps
-  "Takes a context map and returns a list of maps that correspond to the spatial keywords hierarchy of the full map of GCMD keywords.
-    Keys are :category :type :subregion-1 :subregion-2 :subregion-3 :uuid. Values are single string-type.
-    Not all keys are present in every map."
-  [context]
-  (:spatial-keywords (kf/get-gcmd-keywords-map context)))
-
-(defn find-spatial-keywords-in-map
-  "Finds all occurrences of a spatial keyword in the spatial-keywords map.
-  Takes a string keyword as a parameter, e.g. 'OCEAN' and a list of spatial keyword maps;
-  returns a list of maps of hierarchies which contain the keyword."
-  [keyword-map-list keyword]
-  (filter (fn [keyword-map]
-            (some #{(str/upper-case keyword)} (mapv str/upper-case (vals keyword-map))))
-          (vals keyword-map-list)))
-
-(defn find-spatial-keyword
+(defn- find-spatial-keyword
   "Finds spatial keywords in the hierarchy and pick the one with the fewest keys (e.g. shortest
-  hierarchical depth.) Takes a string keyword as a parameter, a list of keyword maps and returns
-  the map of hierarichies which contain the keyword (treated case insensitive).
-  You can also pass :uuid as a keyword argument e.g. 'afbc0a01-742e-49da-939e-3eaa3cf431b0' for
-  'BLACK SEA'. If the keyword is a duplicate, it will substitute the correct one."
-  [keyword-map-list keyword]
-  (if (contains? duplicate-keywords keyword)
-    (first (find-spatial-keywords-in-map keyword-map-list (:uuid (get duplicate-keywords (str/upper-case keyword)))))
-    (let [result (first (sort-by count (find-spatial-keywords-in-map keyword-map-list keyword)))]
-      (or result {:category "OTHER" :type keyword}))))
+  hierarchical depth.) Takes the kms-index and a location string as parameters, and returns
+  the map of hierarichies which contain the location string (treated case insensitive)."
+  [kms-index location-string]
+  (or (kms-lookup/lookup-by-location-string kms-index location-string)
+      {:category "OTHER" :type location-string}))
 
 (defn spatial-keywords->location-keywords
-  "Takes a keyword map list and a list of Spatial Keywords and returns a list of location keyword maps
-  for that context"
-  [keyword-map-list spatial-keywords]
+  "Takes the kms-index and a list of Spatial Keywords and returns a list of location keyword maps
+  for that spatial keyword."
+  [kms-index spatial-keywords]
   (map (fn [keyword]
          (dissoc
           (set/rename-keys
-            (find-spatial-keyword keyword-map-list keyword)
+            (find-spatial-keyword kms-index keyword)
             cache-location-keywords->umm-location-keywords)
           :uuid))
        spatial-keywords))
 
-(defn location-values
+(defn- location-values
   "Returns the location keyword values in order so that we can get the last one"
   [location-keyword]
   (for [k location-keyword-order
@@ -78,7 +48,7 @@
         :when value]
     value))
 
-(defn leaf-value
+(defn- leaf-value
   "Returns the leaf value of the location-keyword object to be put in a SpatialKeywords list"
   [location-keyword]
   (last (location-values location-keyword)))
@@ -90,9 +60,8 @@
 
 (defn translate-spatial-keywords
   "Translates a list of spatial keywords into an array of LocationKeyword type objects"
-  [context spatial-keywords]
-  (let [spatial-keyword-maps (get-spatial-keywords-maps context)
-        location-keyword-maps (spatial-keywords->location-keywords spatial-keyword-maps spatial-keywords)
+  [kms-index spatial-keywords]
+  (let [location-keyword-maps (spatial-keywords->location-keywords kms-index spatial-keywords)
         umm-location-keyword-maps (seq
                                    (map
                                     #(dissoc

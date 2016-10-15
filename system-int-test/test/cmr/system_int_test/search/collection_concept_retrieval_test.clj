@@ -56,7 +56,7 @@
 ;; Utility functions
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def test-context (lkt/setup-context-for-test lkt/sample-keyword-map))
+(def test-context (lkt/setup-context-for-test))
 
 (defn- get-concept-by-id-helper
   [concept options]

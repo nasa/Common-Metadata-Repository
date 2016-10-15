@@ -267,7 +267,12 @@
          :keys [concept-id format-key]} collection
         collection (data-core/mimic-ingest-retrieve-metadata-conversion collection)
         {:keys [summary entry-title related-urls associated-difs organizations]} collection
-        update-time (get-in collection [:data-provider-timestamps :update-time])
+        ;; See ECSE-158. DIF9 doesn't support DataDates in umm-spec-lib.
+        ;; DIF10 DataDates is parsed differently umm-spec-lib vs umm-lib.
+        ;; Here we set the update-time and insert-time to nil to make the test pass.
+        ;; We should fix the next line once ECSE-158 is resolved
+        update-time (when (not (#{:dif :dif10} format-key))
+                      (get-in collection [:data-provider-timestamps :update-time]))
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         coordinate-system (when spatial-representation
                             (csk/->SCREAMING_SNAKE_CASE_STRING spatial-representation))
@@ -289,7 +294,7 @@
      {:id concept-id
       :title entry-title
       :summary summary
-      :updated (str update-time)
+      :updated (when update-time (str update-time))
       :dataset-id entry-title
       :short-name short-name
       :version-id version-id

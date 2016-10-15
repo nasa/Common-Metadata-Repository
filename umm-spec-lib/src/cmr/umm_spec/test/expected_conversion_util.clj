@@ -3,6 +3,7 @@
  (:require
   [clj-time.core :as t]
   [clj-time.format :as f]
+  [cmr.common-app.services.kms-fetcher :as kf]
   [cmr.common.util :as util :refer [update-in-each]]
   [cmr.umm-spec.location-keywords :as lk]
   [cmr.umm-spec.models.umm-collection-models :as umm-c]
@@ -79,7 +80,7 @@
   ;;Convert the Location Keyword to a leaf.
   (let [leaf-values (lk/location-keywords->spatial-keywords location-keywords)
         translated-values (lk/translate-spatial-keywords
-                            (lkt/setup-context-for-test lkt/sample-keyword-map) leaf-values)]
+                           (kf/get-kms-index (lkt/setup-context-for-test)) leaf-values)]
     ;;If the keyword exists in the hierarchy
     (seq (map #(umm-c/map->LocationKeywordType %) translated-values))))
 

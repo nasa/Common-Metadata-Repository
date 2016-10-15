@@ -10,7 +10,8 @@
     [cmr.common.util :as util]
     [cmr.transmit.config :as transmit-config]
     [cmr.transmit.echo.tokens :as tokens]
-    [cmr.access-control.services.group-service :as group-service]))
+    [cmr.access-control.services.group-service :as group-service]
+    [cmr.transmit.config :as tc]))
 
 (defn- get-acls-by-condition
   "Returns a map containing the context user, the user's sids, and acls found by executing given condition against ACL index"
@@ -97,7 +98,8 @@
                            (:provider-id (:catalog-item-identity acl)))
 
      (:single-instance-identity acl)
-     (let [target-group (group-service/get-group context (get-in acl [:single-instance-identity :target-id]))]
+     (let [target-group (group-service/get-group (tc/with-echo-system-token context)
+                                                 (get-in acl [:single-instance-identity :target-id]))]
        (and (:provider-id target-group)
             (has-provider-access? context permission "PROVIDER_OBJECT_ACL" (:provider-id target-group)))))))
 

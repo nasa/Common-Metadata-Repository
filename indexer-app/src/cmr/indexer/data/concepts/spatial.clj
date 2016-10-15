@@ -2,7 +2,6 @@
   "Contains functions to convert spatial geometry into indexed attributes."
   (:require
    [camel-snake-kebab.core :as csk]
-   [cmr.common.services.errors :as errors]
    [cmr.spatial.derived :as d]
    [cmr.spatial.mbr :as mbr]
    [cmr.spatial.polygon :as poly]

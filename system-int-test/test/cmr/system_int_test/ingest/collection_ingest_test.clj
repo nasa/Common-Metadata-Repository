@@ -27,7 +27,7 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
-(def test-context (lkt/setup-context-for-test lkt/sample-keyword-map))
+(def test-context (lkt/setup-context-for-test))
 
 ;; tests
 ;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp;

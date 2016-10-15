@@ -14,7 +14,7 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
-(def test-context (lkt/setup-context-for-test lkt/sample-keyword-map))
+(def test-context (lkt/setup-context-for-test))
 
 (deftest search-collection-all-revisions
   (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"
