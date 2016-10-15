@@ -83,6 +83,14 @@
     201
     200))
 
+(defn- contextualize-warnings
+  "Add a message to warnings to make translation issues more clear to the user"
+  [result]
+  (let [warning-context "After translating item to UMM-C the metadata had the following issue: "]
+   (update result
+          :warnings
+          (fn [warnings] (seq (map #(str warning-context %) warnings))))))
+
 (defmulti generate-ingest-response
   "Convert a result to a proper response format"
   (fn [headers result]
@@ -230,7 +238,7 @@
     (let [validate-response (ingest/validate-and-prepare-collection request-context
                                                                     concept
                                                                     validation-options)]
-      (generate-validate-response headers (util/remove-nil-keys (select-keys validate-response [:warnings]))))))
+      (generate-validate-response headers (util/remove-nil-keys (select-keys (contextualize-warnings validate-response) [:warnings]))))))
 
 (defn ingest-collection
   [provider-id native-id request]
@@ -241,10 +249,11 @@
           validation-options (get-validation-options headers)]
       (info (format "Ingesting collection %s from client %s"
                     (concept->loggable-string concept) (:client-id request-context)))
-      (generate-ingest-response headers (ingest/save-collection
-                                          request-context
-                                          (set-user-id concept request-context headers)
-                                          validation-options)))))
+      (generate-ingest-response headers (contextualize-warnings
+                                          (ingest/save-collection
+                                           request-context
+                                           (set-user-id concept request-context headers)
+                                           validation-options))))))
 
 (defn delete-collection
   [provider-id native-id request]
@@ -258,7 +267,7 @@
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (info (format "Deleting collection %s from client %s"
                   (pr-str concept-attribs) (:client-id request-context)))
-    (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs))))
+    (generate-ingest-response headers (contextualize-warnings (ingest/delete-concept request-context concept-attribs)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Granule API Functions
