@@ -22,6 +22,9 @@
 
 (defonce system nil)
 
+(def sit-token
+  "Echo-Token: C03871D3-1289-015D-CFF8-E5371195E95C")
+
 (defn configure-systems-logging
   "Configures the systems in the system map to the indicated level"
   [system level]
