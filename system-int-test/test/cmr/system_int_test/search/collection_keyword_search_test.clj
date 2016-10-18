@@ -1,7 +1,6 @@
 (ns cmr.system-int-test.search.collection-keyword-search-test
   "Integration test for CMR collection search by keyword terms"
   (:require
-    [clojure.java.io :as io]
     [clojure.test :refer :all]
     [cmr.common.util :refer [are3]]
     [cmr.search.data.keywords-to-elastic :as k2e]
