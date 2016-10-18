@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.search.collection-keyword-search-test
   "Integration test for CMR collection search by keyword terms"
   (:require
+    [clojure.java.io :as io]
     [clojure.test :refer :all]
     [cmr.common.util :refer [are3]]
     [cmr.search.data.keywords-to-elastic :as k2e]
@@ -538,12 +539,19 @@
                             (assoc :ShortName "CMR2652SN2")
                             (assoc :EntryTitle "CMR2652ET2"))
                         {:format :umm-json
-                         :accept-format :json})]
+                         :accept-format :json})
+        coll3 (d/ingest-concept-with-metadata-file "iso19115-nil-shapes-C1216318185-NSIDCV0TST-from-uat.xml"
+                                                   {:provider-id "PROV1"
+                                                    :concept-type :collection
+                                                    :format-key :iso19115})]
     (index/wait-until-indexed)
     (testing "parameter searches"
       (are3 [keyword-str items]
         (let [parameter-refs (search/find-refs :collection {:keyword keyword-str})]
           (d/assert-refs-match items parameter-refs))
+        "testing parameter search by shortname keyword in collection whose xml file contains no SpatialExtent content"
+        "NSIDC-0705"
+        [coll3]
 
         "testing parameter search by existing ancillary keywords"
         "CMR2652AKW1"
@@ -581,6 +589,9 @@
       (are3 [keyword-str items]
         (let [json-refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str})]
           (d/assert-refs-match items json-refs))
+        "testing json query search by shortname keyword in the collection whoes xml file contains no SpatialExtent content"
+        "NSIDC-0705"
+        [coll3] 
 
         "testing json query search by existing ancillary keywords"
         "CMR2652AKW2"
