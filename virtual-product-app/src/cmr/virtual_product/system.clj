@@ -34,7 +34,7 @@
              :nrepl (nrepl/create-nrepl-if-configured (virtual-product-nrepl-port))
              :relative-root-url (transmit-config/virtual-product-relative-root-url)
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))
-             :caches (common-health/health-cache-key (common-health/create-health-cache))}]
+             :caches {common-health/health-cache-key (common-health/create-health-cache)}}]
     (transmit-config/system-with-connections sys [:metadata-db :ingest :search])))
 
 (defn start

@@ -617,23 +617,23 @@
               (is (= warning-message (:warnings response)))))
 
           "ECHO10 Ingest and Ingest Validation"
-          :echo10 (dc/collection {}) "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+          :echo10 (dc/collection {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
 
           "DIF10 Ingest and Ingest Validation"
-          :dif10 (dc/collection-dif10 {}) "object has missing required properties ([\"ProcessingLevel\"])"
+          :dif10 (dc/collection-dif10 {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"ProcessingLevel\"])"
 
           "DIF9 Ingest and Ingest Validation"
-          :dif (dc/collection-dif {}) "object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"SpatialExtent\",\"TemporalExtents\"])"
+          :dif (dc/collection-dif {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"SpatialExtent\",\"TemporalExtents\"])"
 
           "ISO19115 Ingest and Ingest Validation"
-          :iso19115 (dc/collection {}) "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+          :iso19115 (dc/collection {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
 
           "ISO SMAP Ingest and Ingest Validation"
-          :iso-smap (dc/collection-smap {}) "object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+          :iso-smap (dc/collection-smap {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
 
           "DIF9 with no version - has warnings, but passes ingest"
           :dif (assoc-in (dc/collection-dif {}) [:product :version-id] nil)
-          "object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"SpatialExtent\",\"TemporalExtents\",\"Version\"])"))
+          "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"SpatialExtent\",\"TemporalExtents\",\"Version\"])"))
 
   (testing "Multiple warnings"
      (let [collection (dc/collection-dif10 {:platforms [(dc/platform {:short-name (apply str (repeat 81 "x"))})]
@@ -648,7 +648,7 @@
   (testing "Warnings returned in JSON format"
      (let [response (d/ingest "PROV1" (dc/collection-dif10 {}) {:format :dif10 :accept-format :json})]
        (is (= 201 (:status response)))
-       (is (= ["object has missing required properties ([\"ProcessingLevel\"])"] (:warnings response))))))
+       (is (= ["After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"ProcessingLevel\"])"] (:warnings response))))))
 
 (comment
   (ingest/delete-provider "PROV1")
