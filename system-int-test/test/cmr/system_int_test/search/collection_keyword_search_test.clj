@@ -520,6 +520,7 @@
   (let [coll1 (d/ingest "PROV1"
                         (-> exp-conv/example-collection-record
                             (assoc :AncillaryKeywords ["CMR2652AKW1" "CMR2652AKW2"])
+
                             (assoc :DirectoryNames
                                    [(um/map->DirectoryNameType
                                      {:ShortName "CMR2654DNSN1" :LongName "CMR2654DNLN1"})])
@@ -539,7 +540,7 @@
                             (assoc :EntryTitle "CMR2652ET2"))
                         {:format :umm-json
                          :accept-format :json})
-        coll3 (d/ingest-concept-with-metadata-file "iso19115-nil-shapes-C1216318185-NSIDCV0TST-from-uat.xml"
+        coll3 (d/ingest-concept-with-metadata-file "data/iso_mends/no_spatial_iso_collection.xml"
                                                    {:provider-id "PROV1"
                                                     :concept-type :collection
                                                     :format-key :iso19115})]
