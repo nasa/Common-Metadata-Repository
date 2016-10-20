@@ -183,6 +183,9 @@
 
    :group-permission group-permission-field-mapping
 
+   :legacy-guid (m/stored m/string-field-mapping)
+   :legacy-guid.lowercase m/string-field-mapping
+
    ;; target-provider-id indexes the provider id of the provider-identity or
    ;; catalog-item-identity field of an acl, if present
    :target-provider-id (m/stored m/string-field-mapping)
@@ -264,7 +267,9 @@
            :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
            :target-provider-id provider-id
            :target-provider-id.lowercase (util/safe-lowercase provider-id)
-           :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map)))))
+           :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map))
+           :legacy-guid (:legacy-guid acl)
+           :legacy-guid.lowercase (str/lower-case (:legacy-guid acl)))))
 
 (defmethod index-concept :acl
   [context concept-map]
