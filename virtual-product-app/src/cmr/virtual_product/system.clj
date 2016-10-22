@@ -26,7 +26,7 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches :queue-broker :web :nrepl])
+  [:log :caches :queue-broker :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
