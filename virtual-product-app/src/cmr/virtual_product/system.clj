@@ -4,8 +4,10 @@
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common.api.web-server :as web]
    [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.jobs :as jobs]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.nrepl :as nrepl]
@@ -26,6 +28,10 @@
   "Defines the order to start the components."
   [:log :caches :queue-broker :web :nrepl])
 
+(def system-holder
+  "Required for jobs"
+  (atom nil))
+
 (defn create-system
   "Returns a new instance of the whole application."
   []
@@ -34,7 +40,10 @@
              :nrepl (nrepl/create-nrepl-if-configured (virtual-product-nrepl-port))
              :relative-root-url (transmit-config/virtual-product-relative-root-url)
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))
-             :caches {common-health/health-cache-key (common-health/create-health-cache)}}]
+             :caches {common-health/health-cache-key (common-health/create-health-cache)}
+             :scheduler (jobs/create-scheduler
+                          `system-holder
+                          [(jvm-info/log-jvm-statistics-job)])}]
     (transmit-config/system-with-connections sys [:metadata-db :ingest :search])))
 
 (defn start

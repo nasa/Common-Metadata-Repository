@@ -4,10 +4,12 @@
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common.api.web-server :as web]
    [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.jobs :as jobs]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
    [cmr.cubby.api.routes :as routes]
@@ -22,7 +24,11 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches :db :web :nrepl])
+  [:log :caches :db :scheduler :web :nrepl])
+
+(def system-holder
+  "Required for jobs"
+  (atom nil))
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -32,7 +38,10 @@
              :web (web/create-web-server (transmit-config/cubby-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (cubby-nrepl-port))
              :relative-root-url (transmit-config/cubby-relative-root-url)
-             :caches {common-health/health-cache-key (common-health/create-health-cache)}}]
+             :caches {common-health/health-cache-key (common-health/create-health-cache)}
+             :scheduler (jobs/create-scheduler
+                         `system-holder
+                         [(jvm-info/log-jvm-statistics-job)])}]
     (transmit-config/system-with-connections sys [:echo-rest])))
 
 (def start

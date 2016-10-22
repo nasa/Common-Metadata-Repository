@@ -8,6 +8,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.cache.consistent-cache :as consistent-cache]
+   [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.api.web-server :as web]
    [cmr.common.cache :as cache]
@@ -65,7 +66,8 @@
              :scheduler (jobs/create-scheduler
                           `system-holder
                           [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
-                           (kf/refresh-kms-cache-job "indexer-kms-cache-refresh")])
+                           (kf/refresh-kms-cache-job "indexer-kms-cache-refresh")
+                           (jvm-info/log-jvm-statistics-job)])
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
 
     (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby :kms :search])))

@@ -9,8 +9,9 @@
    [cmr.access-control.services.event-handler :as event-handler]
    [cmr.access-control.test.bootstrap :as bootstrap]
    [cmr.acl.acl-fetcher :as af]
-   [cmr.common-app.services.search.elastic-search-index :as search-index]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.services.jvm-info :as jvm-info]
+   [cmr.common-app.services.search.elastic-search-index :as search-index]
    [cmr.common.api.web-server :as web]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -72,7 +73,8 @@
              :relative-root-url (transmit-config/access-control-relative-root-url)
              :scheduler (jobs/create-scheduler
                          `system-holder
-                         [(af/refresh-acl-cache-job "access-control-acl-cache-refresh")])}]
+                         [(af/refresh-acl-cache-job "access-control-acl-cache-refresh")
+                          (jvm-info/log-jvm-statistics-job)])}]
     (transmit-config/system-with-connections sys [:echo-rest :metadata-db :urs])))
 
 (defn start

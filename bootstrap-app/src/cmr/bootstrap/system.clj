@@ -11,11 +11,13 @@
    [cmr.bootstrap.data.bulk-migration :as bm]
    [cmr.bootstrap.data.virtual-products :as vp]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.api.web-server :as web]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.jobs :as jobs]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.nrepl :as nrepl]
@@ -33,7 +35,11 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches :db :web :nrepl])
+  [:log :caches :db :scheduler :web :nrepl])
+
+(def system-holder
+  "Required for jobs"
+  (atom nil))
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -79,7 +85,10 @@
              :relative-root-url (transmit-config/bootstrap-relative-root-url)
              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
-                      common-health/health-cache-key (common-health/create-health-cache)}}]
+                      common-health/health-cache-key (common-health/create-health-cache)}
+             :scheduler (jobs/create-scheduler
+                         `system-holder
+                         [(jvm-info/log-jvm-statistics-job)])}]
     (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms :cubby :index-set
                                                   :indexer])))
 

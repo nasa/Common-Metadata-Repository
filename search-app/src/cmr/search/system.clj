@@ -5,6 +5,7 @@
    [cmr.acl.core :as acl]
    [cmr.collection-renderer.services.collection-renderer :as collection-renderer]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
    [cmr.common.api.web-server :as web]
@@ -101,7 +102,8 @@
                            idx/refresh-index-names-cache-job
                            hgrf/refresh-has-granules-map-job
                            (metadata-cache/refresh-collections-metadata-cache-job)
-                           coll-cache/refresh-collections-cache-for-granule-acls-job])}]
+                           coll-cache/refresh-collections-cache-for-granule-acls-job
+                           (jvm-info/log-jvm-statistics-job)])}]
     (transmit-config/system-with-connections sys [:index-set :echo-rest :metadata-db :kms :cubby])))
 
 (defn start
