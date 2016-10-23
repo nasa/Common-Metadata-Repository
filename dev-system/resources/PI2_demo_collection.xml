@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Collection>
+<ShortName>PI2_COLL1</ShortName>
+<VersionId>1</VersionId>
+<InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
+<LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+<LongName>A minimal valid collection</LongName>
+<DataSetId>Collection 1 for PI2 Demo</DataSetId>
+<Description>A minimal valid collection</Description>
+<Orderable>true</Orderable>
+<Visible>true</Visible>
+<Temporal>
+<RangeDateTime>
+<BeginningDateTime>1970-06-26T00:00:00.000Z</BeginningDateTime>
+</RangeDateTime>
+</Temporal>
+</Collection>
