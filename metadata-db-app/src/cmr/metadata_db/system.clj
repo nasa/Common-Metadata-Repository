@@ -27,7 +27,7 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches :db :queue-broker :scheduler :web :nrepl])
+  [:log :caches :db :queue-broker :scheduler :unclustered-scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -47,9 +47,9 @@
               :parallel-chunk-size (config/parallel-chunk-size)
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                        common-health/health-cache-key (common-health/create-health-cache)}
-              :scheduler (jobs/create-clustered-scheduler
-                          `system-holder :db
-                          (conj mdb-jobs/jobs (jvm-info/log-jvm-statistics-job)))
+              :scheduler (jobs/create-clustered-scheduler `system-holder :db mdb-jobs/jobs)
+              :unclustered-scheduler (jobs/create-scheduler
+                                      `system-holder [(jvm-info/log-jvm-statistics-job)])
               :queue-broker (queue-broker/create-queue-broker (config/queue-config))
               :relative-root-url (transmit-config/metadata-db-relative-root-url)}]
      (transmit-config/system-with-connections sys [:echo-rest]))))
