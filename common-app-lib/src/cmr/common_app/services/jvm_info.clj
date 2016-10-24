@@ -13,20 +13,22 @@
   (let [runtime (Runtime/getRuntime)
         free-mb (double (/ (.freeMemory runtime) 1024 1024))
         max-mb (double (/ (.maxMemory runtime) 1024 1024))
-        percent-free (double (* 100 (/ free-mb max-mb)))]
+        total-mb (double (/ (.totalMemory runtime) 1024 1024))
+        used-mb (double (- total-mb free-mb))
+        percent-used (double (* 100 (/ used-mb max-mb)))]
     {:free-mb free-mb
      :max-mb max-mb
-     :used-mb (- max-mb free-mb)
-     :percent-free percent-free
-     :percent-used (- 100.00 percent-free)}))
+     :total-mb total-mb
+     :used-mb used-mb
+     :percent-used percent-used}))
 
 (defn log-jvm-statistics
   "Logs JVM memory statistics."
   []
-  (let [{:keys [free-mb max-mb used-mb percent-free percent-used]} (get-memory-statistics)]
-    (info (format (str "Maximum Memory (MB): [%.0f] Free memory (MB): [%.0f] Used memory (MB): "
-                       "[%.0f] Percent free: [%.1f] Percent used: [%.1f]")
-                  max-mb free-mb used-mb percent-free percent-used))))
+  (let [{:keys [free-mb max-mb total-mb used-mb percent-used]} (get-memory-statistics)]
+    (info (format (str "Maximum Memory (MB): [%.0f] Total Allocated Memory (MB): [%.0f] Free "
+                       " memory (MB): [%.0f] Used memory (MB): [%.0f] Percent used: [%.1f]")
+                  max-mb total-mb free-mb used-mb percent-used))))
 
 ;; Job for logging JVM statistics
 (defjob LogJvmStatisticsJob

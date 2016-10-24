@@ -45,7 +45,7 @@
   "Returns a new instance of the whole application."
   []
   (let [metadata-db (-> (mdb-system/create-system "metadata-db-in-bootstrap-pool")
-                        (dissoc :log :web :scheduler :queue-broker))
+                        (dissoc :log :web :scheduler :unclustered-scheduler :queue-broker))
         indexer (-> (idx-system/create-system)
                     (dissoc :log :web :queue-broker)
                     ;; Setting the parent-collection-cache to cache parent collection umm
