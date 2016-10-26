@@ -85,7 +85,7 @@
                                                  (+ total-bytes-read bytes-read)))))
               (recur (+ total-bytes-read bytes-read)))))))))
 
-(defn- create-access-log-handler
+(defn create-access-log-handler
   "Setup access logging for each application. Access log entries will go to stdout similar to
   application logging. As a result the access log entries will be in the same log as the
   application log."
