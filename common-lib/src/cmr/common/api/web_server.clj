@@ -1,20 +1,17 @@
 (ns cmr.common.api.web-server
   "Defines a web server component."
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [ring.adapter.jetty :as jetty]
-            [cmr.common.log :refer (debug info warn error)]
-            [clojure.java.io :as io]
-            [cmr.common.mime-types :as mt])
-  (:import [org.eclipse.jetty.server
-            Server
-            NCSARequestLog
-            Connector
-            HttpConnectionFactory]
-           [java.io
-            ByteArrayInputStream
-            InputStream]
-           org.eclipse.jetty.servlets.gzip.GzipHandler
-           org.eclipse.jetty.server.handler.RequestLogHandler))
+  (:require
+   [clojure.java.io :as io]
+   [cmr.common.config :refer [defconfig]]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.mime-types :as mt]
+   [ring.adapter.jetty :as jetty])
+  (:import
+   (java.io ByteArrayInputStream InputStream)
+   (org.eclipse.jetty.server Server NCSARequestLog Connector HttpConnectionFactory)
+   (org.eclipse.jetty.server.handler RequestLogHandler)
+   (org.eclipse.jetty.servlets.gzip GzipHandler)))
 
 (def MIN_THREADS
   "The minimum number of threads for Jetty to use to process requests. The was originally set to the
@@ -88,9 +85,7 @@
                                                  (+ total-bytes-read bytes-read)))))
               (recur (+ total-bytes-read bytes-read)))))))))
 
-
-
-(defn create-access-log-handler
+(defn- create-access-log-handler
   "Setup access logging for each application. Access log entries will go to stdout similar to
   application logging. As a result the access log entries will be in the same log as the
   application log."
@@ -101,7 +96,7 @@
       (doto (NCSARequestLog.)
         (.setLogLatency true)))))
 
-(defn create-gzip-handler
+(defn- create-gzip-handler
   "Setup gzip compression for responses.  Compression will be used for any response larger than
   the configured minimum size."
   [existing-handler min-gzip-size]
@@ -161,7 +156,6 @@
           (doto server
             (.setHandler request-handler)
             (.start)))
-
         (info "Jetty started on port" port)
         (assoc this :server server))
       (catch Exception e
@@ -173,7 +167,6 @@
     (when-let [^Server server (:server this)]
       (.stop server))
     (assoc this :server nil)))
-
 
 (defn create-web-server
   "Creates a new web server. Accepts argument of port and a routes function that should accept
