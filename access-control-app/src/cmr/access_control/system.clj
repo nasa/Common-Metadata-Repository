@@ -74,7 +74,7 @@
              :scheduler (jobs/create-scheduler
                          `system-holder
                          [(af/refresh-acl-cache-job "access-control-acl-cache-refresh")
-                          (jvm-info/log-jvm-statistics-job)])}]
+                          jvm-info/log-jvm-statistics-job])}]
     (transmit-config/system-with-connections sys [:echo-rest :metadata-db :urs])))
 
 (defn start

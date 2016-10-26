@@ -43,7 +43,7 @@
              :caches {common-health/health-cache-key (common-health/create-health-cache)}
              :scheduler (jobs/create-scheduler
                           `system-holder
-                          [(jvm-info/log-jvm-statistics-job)])}]
+                          [jvm-info/log-jvm-statistics-job])}]
     (transmit-config/system-with-connections sys [:metadata-db :ingest :search])))
 
 (defn start

@@ -10,8 +10,8 @@
   (:import
    (java.io ByteArrayInputStream InputStream)
    (org.eclipse.jetty.server Server NCSARequestLog Connector HttpConnectionFactory)
-   org.eclipse.jetty.server.handler.RequestLogHandler
-   org.eclipse.jetty.servlets.gzip.GzipHandler))
+   (org.eclipse.jetty.server.handler RequestLogHandler)
+   (org.eclipse.jetty.servlets.gzip GzipHandler)))
 
 (def MIN_THREADS
   "The minimum number of threads for Jetty to use to process requests. The was originally set to the

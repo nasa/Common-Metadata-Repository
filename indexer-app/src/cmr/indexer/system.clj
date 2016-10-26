@@ -67,7 +67,7 @@
                           `system-holder
                           [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
                            (kf/refresh-kms-cache-job "indexer-kms-cache-refresh")
-                           (jvm-info/log-jvm-statistics-job)])
+                           jvm-info/log-jvm-statistics-job])
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
 
     (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby :kms :search])))

@@ -58,7 +58,7 @@
                            `system-holder :db
                            (conj (ingest-jobs/jobs)
                                  (af/refresh-acl-cache-job "ingest-acl-cache-refresh")
-                                 (jvm-info/log-jvm-statistics-job)))
+                                 jvm-info/log-jvm-statistics-job))
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                        pc/providers-cache-key (pc/create-providers-cache)
                        af/acl-cache-key (af/create-consistent-acl-cache

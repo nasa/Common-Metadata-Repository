@@ -43,7 +43,7 @@
              :relative-root-url (transmit-config/index-set-relative-root-url)
              :scheduler (jobs/create-scheduler
                          `system-holder
-                         [(jvm-info/log-jvm-statistics-job)])}]
+                         [jvm-info/log-jvm-statistics-job])}]
     (transmit-config/system-with-connections sys [:echo-rest])))
 
 (def start

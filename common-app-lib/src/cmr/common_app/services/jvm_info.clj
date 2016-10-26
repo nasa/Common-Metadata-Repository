@@ -5,7 +5,7 @@
    [cmr.common.jobs :refer [defjob]]
    [cmr.common.log :refer [debug warn info error]])
   (:import
-   (java.lang.Runtime)))
+   (java.lang Runtime)))
 
 (defn- get-memory-statistics
   "Returns a map containing the memory statistics for the current JVM process."
@@ -40,9 +40,8 @@
   {:default 300
    :type Long})
 
-(defn log-jvm-statistics-job
+(def log-jvm-statistics-job
   "A job to log the JVM statistics."
-  []
   {:job-type LogJvmStatisticsJob
    :job-key "log-jvm-statistics"
    :interval (log-statistics-interval)})
