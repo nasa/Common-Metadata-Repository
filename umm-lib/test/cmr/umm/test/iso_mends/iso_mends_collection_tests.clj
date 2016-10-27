@@ -1,25 +1,26 @@
 (ns cmr.umm.test.iso-mends.iso-mends-collection-tests
   "Tests parsing and generating ISO Collection XML."
-  (:require [clojure.test :refer :all]
-            [cmr.common.test.test-check-ext :refer [defspec]]
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-            [clojure.string :as s]
-            [clojure.java.io :as io]
-            [cmr.common.joda-time]
-            [cmr.common.date-time-parser :as p]
-            ;; this is not needed until the ECHO to ISO XSLT is fixed
-            ;; [cmr.common.xml.xslt :as xslt]
-            [cmr.umm.test.generators.collection :as coll-gen]
-            [cmr.umm.iso-mends.iso-mends-collection :as c]
-            [cmr.umm.echo10.echo10-collection :as echo10-c]
-            [cmr.umm.echo10.collection.personnel :as echo-pe]
-            [cmr.umm.echo10.echo10-core :as echo10]
-            [cmr.umm.umm-collection :as umm-c]
-            [cmr.umm.iso-mends.iso-mends-core :as iso]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.umm.test.echo10.echo10-collection-tests :as test-echo10]
-            [cmr.spatial.derived :as d]))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.string :as s]
+   [clojure.test :refer :all]
+   [clojure.test.check.generators :as gen]
+   [clojure.test.check.properties :refer [for-all]]
+   [cmr.common.date-time-parser :as p]
+   [cmr.common.joda-time]
+   [cmr.common.test.test-check-ext :refer [defspec]]
+   ;; this is not needed until the ECHO to ISO XSLT is fixed
+   ;; [cmr.common.xml.xslt :as xslt]
+   [cmr.spatial.derived :as d]
+   [cmr.umm.echo10.collection.personnel :as echo-pe]
+   [cmr.umm.echo10.echo10-collection :as echo10-c]
+   [cmr.umm.echo10.echo10-core :as echo10]
+   [cmr.umm.iso-mends.iso-mends-collection :as c]
+   [cmr.umm.iso-mends.iso-mends-core :as iso]
+   [cmr.umm.test.echo10.echo10-collection-tests :as test-echo10]
+   [cmr.umm.test.generators.collection :as coll-gen]
+   [cmr.umm.umm-collection :as umm-c]
+   [cmr.umm.umm-spatial :as umm-s]))
 
 (defn- spatial-coverage->expected-parsed
   "Returns the expected parsed ISO MENDS SpatialCoverage from a UMM collection."
@@ -192,6 +193,9 @@
 (def valid-collection-xml
   (slurp (io/file (io/resource "data/iso_mends/sample_iso_collection.xml"))))
 
+(def real-data-collection-xml
+  (slurp (io/file (io/resource "data/iso_mends/C1216109961-NSIDCV0TST.xml"))))
+
 (def expected-temporal
   (umm-c/map->Temporal
     {:range-date-times
@@ -348,3 +352,11 @@
                  "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
                  "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
            (c/validate-xml (s/replace valid-collection-xml "fileIdentifier" "XXXX"))))))
+
+(deftest parse-collection-defaults-test
+  "Check that defaults are being added correctly to create valid umm"
+  (let [umm (c/parse-collection real-data-collection-xml)]
+    (testing "default granule spatial represetation"
+      (is (= "NO_SPATIAL" (get-in umm [:spatial-coverage :granule-spatial-representation]))))
+    (testing "default ScienceKeywords Term"
+      (is (= umm-c/not-provided (->> umm :science-keywords first :term))))))
