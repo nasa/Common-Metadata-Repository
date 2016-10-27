@@ -105,11 +105,9 @@
   [concept-type params]
   (let [page-size-errors [(str "page_size must be a number between 0 and " max-page-size)]]
     (try
-      (if-let [page-size-i (get-ivalue-from-params params :page-size)]
-        (if (or (< page-size-i 0) (> page-size-i max-page-size))
-          page-size-errors
-          [])
-        [])
+      (when-let [page-size-i (get-ivalue-from-params params :page-size)]
+        (when (or (< page-size-i 0) (> page-size-i max-page-size))
+          page-size-errors))
       (catch NumberFormatException e
         page-size-errors))))
 
@@ -133,11 +131,9 @@
   "Validates that the page-num (if present) is a number in the valid range."
   [concept-type params]
   (try
-    (if-let [page-num-i (get-ivalue-from-params params :page-num)]
-      (if (> 1 page-num-i)
-        ["page_num must be a number greater than or equal to 1"]
-        [])
-      [])
+    (when-let [page-num-i (get-ivalue-from-params params :page-num)]
+      (when (> 1 page-num-i)
+        ["page_num must be a number greater than or equal to 1"]))
     (catch NumberFormatException e
       ["page_num must be a number greater than or equal to 1"])))
 
