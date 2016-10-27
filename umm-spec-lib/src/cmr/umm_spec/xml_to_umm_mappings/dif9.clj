@@ -93,14 +93,14 @@
      :Abstract (su/truncate-with-default (value-of doc "/DIF/Summary/Abstract") su/ABSTRACT_MAX sanitize?)
      :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
      :Purpose (su/truncate (value-of doc "/DIF/Summary/Purpose") su/PURPOSE_MAX sanitize?)
-     :DataLanguage (dif-util/dif-language->umm-langage (value-of doc "/DIF/Data_Set_Language"))
+     :DataLanguage (dif-util/dif-language->umm-language (value-of doc "/DIF/Data_Set_Language"))
      :MetadataDates (parse-metadata-dates doc)
      :ISOTopicCategories (dif-util/parse-iso-topic-categories doc sanitize?)
      :TemporalKeywords (values-at doc "/DIF/Data_Resolution/Temporal_Resolution")
      :Projects (for [proj (select doc "/DIF/Project")]
                  {:ShortName (value-of proj "Short_Name")
                   :LongName (su/truncate (value-of proj "Long_Name") su/PROJECT_LONGNAME_MAX sanitize?)})
-     :DirectoryNames (dif-util/parse-idn-node doc) 
+     :DirectoryNames (dif-util/parse-idn-node doc)
      :CollectionProgress (value-of doc "/DIF/Data_Set_Progress")
      :LocationKeywords  (let [lks (select doc "/DIF/Location")]
                           (for [lk lks]
