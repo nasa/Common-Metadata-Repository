@@ -27,7 +27,7 @@
   (when (or granule-spatial-representation (seq geometries))
     (umm-c/map->SpatialCoverage
       {:spatial-representation spatial-representation
-       :granule-spatial-representation granule-spatial-representation
+       :granule-spatial-representation (or granule-spatial-representation "NO_SPATIAL")
        :geometries (seq (map #(umm-s/set-coordinate-system spatial-representation %) geometries))})))
 
 (defn- related-urls->expected-parsed

@@ -136,7 +136,7 @@
    :Abstract (u/truncate-with-default (value-of doc "/DIF/Summary/Abstract") u/ABSTRACT_MAX sanitize?)
    :CollectionDataType (value-of doc "/DIF/Collection_Data_Type")
    :Purpose (u/truncate (value-of doc "/DIF/Summary/Purpose") u/PURPOSE_MAX sanitize?)
-   :DataLanguage (dif-util/dif-language->umm-langage (value-of doc "/DIF/Dataset_Language"))
+   :DataLanguage (dif-util/dif-language->umm-language (value-of doc "/DIF/Dataset_Language"))
    :DataDates (parse-data-dates doc)
    :MetadataDates (parse-metadata-dates doc)
    :ISOTopicCategories (dif-util/parse-iso-topic-categories doc sanitize?)
