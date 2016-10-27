@@ -1,20 +1,22 @@
 (ns cmr.common-app.services.search.parameter-validation
   "Contains functions for validating query parameters"
-  (:require [clojure.set :as set]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.services.messages :as c-msg]
-            [cmr.common.parameter-parser :as parser]
-            [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.common.util :as util]
-            [cmr.common.concepts :as cc]
-            [clojure.string :as s]
-            [cmr.common.date-time-parser :as dt-parser]
-            [cmr.common.date-time-range-parser :as dtr-parser]
-            [cmr.common-app.services.search.params :as p]
-            [cmr.common-app.services.search.messages :as msg]
-            [camel-snake-kebab.core :as csk]
-            [clj-time.core :as t])
-  (:import clojure.lang.ExceptionInfo))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clj-time.core :as t]
+   [clojure.set :as set]
+   [clojure.string :as s]
+   [cmr.common-app.services.search.messages :as msg]
+   [cmr.common-app.services.search.params :as p]
+   [cmr.common.concepts :as cc]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.date-time-parser :as dt-parser]
+   [cmr.common.date-time-range-parser :as dtr-parser]
+   [cmr.common.parameter-parser :as parser]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.services.messages :as c-msg]
+   [cmr.common.util :as util])
+  (:import
+   (clojure.lang ExceptionInfo)))
 
 (defn- by-concept-type
   "This is a very simple helper function for defining some of the multimethods here."
@@ -38,6 +40,10 @@
    :disallow-pattern #{:concept-id}
    ;; Parameter which allow search with the OR option.
    :allow-or #{}})
+
+(def max-page-size
+  "Maximum page size allowed to specify for search"
+  2000)
 
 (defn merge-params-config
   "Takes two parameter configs like that matching basic-params-config and merges them."
@@ -97,20 +103,21 @@
 (defn page-size-validation
   "Validates that the page-size (if present) is a number in the valid range."
   [concept-type params]
-  (try
-    (if-let [page-size-i (get-ivalue-from-params params :page-size)]
-      (cond
-        (< page-size-i 0)
-        ["page_size must be a number between 0 and 2000"]
+  (let [page-size-errors [(str "page_size must be a number between 0 and " max-page-size)]]
+    (try
+      (if-let [page-size-i (get-ivalue-from-params params :page-size)]
+        (cond
+          (< page-size-i 0)
+          page-size-errors
 
-        (> page-size-i 2000)
-        ["page_size must be a number between 0 and 2000"]
+          (> page-size-i max-page-size)
+          page-size-errors
 
-        :else
+          :else
+          [])
         [])
-      [])
-    (catch NumberFormatException e
-      ["page_size must be a number between 0 and 2000"])))
+      (catch NumberFormatException e
+        page-size-errors))))
 
 (defn- offset-error-message
   []

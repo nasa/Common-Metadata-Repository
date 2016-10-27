@@ -1,13 +1,15 @@
 (ns cmr.virtual-product.services.translation-service
   "Handles translate virtual products granule entries to source granule entries."
-  (:require [cheshire.core :as json]
-            [cmr.common.validations.json-schema :as js]
-            [cmr.common.concepts :as concepts]
-            [cmr.common.services.errors :as errors]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.transmit.search :as search]
-            [cmr.virtual-product.config :as config]
-            [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
+  (:require
+   [cheshire.core :as json]
+   [cmr.common-app.services.search.parameter-validation :as parameter-validation]
+   [cmr.common.concepts :as concepts]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.validations.json-schema :as js]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.search :as search]
+   [cmr.virtual-product.config :as config]
+   [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
 
 (def granule-entries-schema
   "Schema for the JSON request to the translate-granule-entries end-point"
@@ -56,7 +58,8 @@
   (let [query-params {"provider-id[]" provider-id
                       "entry_title" entry-title
                       "granule_ur[]" (vec (set granule-urs))
-                      "token" (transmit-config/echo-system-token)}
+                      "token" (transmit-config/echo-system-token)
+                      "page-size" parameter-validation/max-page-size}
         gran-refs (search/find-granule-references context query-params)]
     (for [{:keys [concept-id granule-ur]} gran-refs]
       {:concept-id concept-id
@@ -103,7 +106,7 @@
                                               (filter :granule-ur annotated-entries))
           ;; Create a map of granule-ur to the corresponding source entry in batches, each batch
           ;; corresponding to a group in entries-by-src-collection
-          gran-ur-src-entry-map (into {} (mapcat (partial map-granule-ur-src-entry context)
+          gran-ur-src-entry-map (into {} (mapcat #(map-granule-ur-src-entry context %)
                                                  entries-by-src-collection))]
       (map (fn [annotated-entry]
              (let [[provider-id granule-ur] (get-prov-id-gran-ur annotated-entry)]

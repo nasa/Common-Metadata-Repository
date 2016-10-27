@@ -1,18 +1,19 @@
 (ns cmr.system-int-test.virtual-product.translation-test
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.virtual-product-util :as vp]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.virtual-product.config]
-            [cmr.virtual-product.data.source-to-virtual-mapping :as svm]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-            [cheshire.core :as json]
-            [cmr.common.util :as util]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.common.util :as util]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.virtual-product-util :as vp]
+   [cmr.virtual-product.config]
+   [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
 
 (use-fixtures :each (ingest/reset-fixture (into {"PROV_guid" "PROV"
                                                  "LP_ALIAS_guid" "LP_ALIAS"}
@@ -239,3 +240,24 @@
     (let [response (vp/translate-granule-entries
                      (json/generate-string all-virt-entries))]
       (= expected-src-entries (json/parse-string (:body response) true)))))
+
+(defn- make-grans
+  "Ingest n granules for the given collection"
+  [coll n]
+  (doall (for [i (range 0 n)]
+           (d/ingest "PROV" (dg/granule coll {:granule-ur (str "SC:MIL2ASAE.002:2505203" i)})))))
+
+;; This test is added for CMR-3508 to show that we can now handle translation of more than
+;; 10 (default search page size) granules on a single collection during the translation
+(deftest translate-granule-entries-more-than-default-page-size-test
+  (let [coll (d/ingest "PROV"
+                        (dc/collection {:entry-title "MISR Level 2 Aerosol parameters V002"}))
+        grans (make-grans coll 12)
+        gran->entry (fn [g]
+                      {:concept-id (:concept-id g)
+                       :entry-title "MISR Level 2 Aerosol parameters V002"
+                       :granule-ur (:granule-ur g)})
+        entries (map gran->entry grans)
+        _ (index/wait-until-indexed)
+        response (vp/translate-granule-entries (json/generate-string entries))]
+    (is (= entries (json/parse-string (:body response) true)))))
