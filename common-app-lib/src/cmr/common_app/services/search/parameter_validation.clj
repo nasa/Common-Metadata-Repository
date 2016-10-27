@@ -106,14 +106,8 @@
   (let [page-size-errors [(str "page_size must be a number between 0 and " max-page-size)]]
     (try
       (if-let [page-size-i (get-ivalue-from-params params :page-size)]
-        (cond
-          (< page-size-i 0)
+        (if (or (< page-size-i 0) (> page-size-i max-page-size))
           page-size-errors
-
-          (> page-size-i max-page-size)
-          page-size-errors
-
-          :else
           [])
         [])
       (catch NumberFormatException e

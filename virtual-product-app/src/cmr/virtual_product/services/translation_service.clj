@@ -20,7 +20,8 @@
                           :entry-title {:type :string}
                           :granule-ur {:anyOf [{:type :string}
                                                {:type :null}]}}
-             :required [:concept-id :entry-title :granule-ur]}}))
+             :required [:concept-id :entry-title :granule-ur]}
+     :minItems 1}))
 
 (defn- annotate-entries
   "Annotate entries with provider id derived from concept-id present in the entry"
@@ -93,9 +94,18 @@
     (for [[gran-ur src-gran-ur] arr-gran-ur-src-gran-ur]
       [[provider-id gran-ur] (get src-gran-ur-entry-map src-gran-ur)])))
 
+(defn- validate-granule-entries
+  "Validate the given granule entries, throws exception if it is not valid"
+  [granule-entries]
+  (when (> (count granule-entries) parameter-validation/max-page-size)
+    (errors/throw-service-error
+     :bad-request (format "The maximum allowed granule entries in a request is %s, but was %s."
+                          parameter-validation/max-page-size (count granule-entries)))))
+
 (defn- translate-granule-entries
   "Translate virtual granules in the granule-entries into the corresponding source entries. See routes.clj for the JSON schema of granule-entries."
   [context granule-entries]
+  (validate-granule-entries granule-entries)
   (if (config/virtual-products-enabled)
     (let [annotated-entries (annotate-entries granule-entries)
           ;; Group entries by the combination of provider-id and entry-title of source collection for
