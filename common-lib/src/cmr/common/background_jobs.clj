@@ -1,6 +1,8 @@
 (ns cmr.common.background-jobs
   "Namespace for creating simple background jobs that run at a specified interval in a thread.
-  For more complex requirements see the cmr.common.jobs namespace which use Quartz."
+  For more complex requirements see the cmr.common.jobs namespace which use Quartz. An alternative
+  to Quartz was required for the legacy-services application because it is using a version of Quartz
+  which is not compatible with the cmr.common.jobs namespace."
   (:require
    [cmr.common.lifecycle :as lifecycle]))
 
@@ -13,7 +15,7 @@
    job-interval-secs
 
    ;; A reference to the thread to run the background job
-   thread-ref]
+   ^Thread thread-ref]
 
   lifecycle/Lifecycle
 

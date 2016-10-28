@@ -12,7 +12,7 @@
         job-10-times-a-second (background-jobs/create-background-job #(swap! counter1 inc) 0.1)
         job-5-times-a-second (background-jobs/create-background-job #(swap! counter2 inc) 0.2)
         job-1-time-a-second (background-jobs/create-background-job #(swap! counter3 inc) 1)]
-    (testing "None of the counters are updated until prior to start being called"
+    (testing "None of the counters are updated prior to start being called"
       (Thread/sleep 200)
       (is (= 0 @counter1 @counter2 @counter3)))
 
@@ -55,7 +55,7 @@
                                   "only 1 thread is running")
                       (let [job-10-times-a-second (lifecycle/start job-10-times-a-second nil)]
                         (Thread/sleep 550)
-                        (is (<= (+ 10 counter1-value @counter1 (+ 12 counter1-value))))
+                        (is (<= (+ 10 counter1-value) @counter1 (+ 12 counter1-value)))
                         ;; Stop all the jobs
                         (lifecycle/stop job-10-times-a-second nil)
                         (lifecycle/stop job-5-times-a-second nil)
