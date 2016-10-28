@@ -19,9 +19,6 @@
 ;; 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; helper function section
-;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn assert-valid
   ([coll-attributes]
    (assert-valid coll-attributes nil))
@@ -39,9 +36,6 @@
             :errors errors}
            (select-keys response [:status :errors])))))
 
-;;;;;;;;;;;;;;;;;;;;
-;; Testing section
-;;;;;;;;;;;;;;;;;;;;
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest spatial-with-no-representation
@@ -58,13 +52,6 @@
                :path ["SpatialCoverage"]}]
              errors)))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; The following tests are included in duplicate-entry-title-test
-;; 1. same entry-title and native-id across providers is valid
-;; 2. entry-title must be unique for a provider
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest duplicate-entry-title-test
   (testing "same entry-title and native-id across providers is valid"
     (assert-valid

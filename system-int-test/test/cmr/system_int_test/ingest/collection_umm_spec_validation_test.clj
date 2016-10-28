@@ -23,9 +23,6 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; helper function section
-;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order."
   [& ords]
@@ -70,23 +67,8 @@
                                                   :sr coord-sys
                                                   :geometries shapes})})))
 
-;;;;;;;;;;;;;;;;;;;;
-;; Testing section
-;;;;;;;;;;;;;;;;;;;;
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; The following tests are included in collection-umm-spec-validation-test:
-;; 
-;; 1. UMM-C JSON-Schema validation through config settings
-;; 2. UMM-C JSON-Schema validation through Cmr-Validate-Umm-C header
-;; 3. UMM-SPEC validation through Cmr-Validation-Umm-C header
-;; 4. Additional Attribute validation
-;; 5. Nested Path Validation
-;; 6. Spatial validation
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest collection-umm-spec-validation-test
   (testing "UMM-C JSON-Schema validation through config settings"
     (testing "schema validation errors returned"
@@ -234,12 +216,6 @@
         ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"])))
   (side/eval-form `(icfg/set-return-umm-spec-validation-errors! false)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; The following tests are included in umm-spec-validation-warnings:
-;; 1. Ingest and Ingest Validation with warning messages for all formats:
-;;    ECHO10, DIF10, DIF9, ISO19115, ISO-SMAP
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest umm-spec-validation-warnings
   ;; By default the config return-umm-spec-validation-errors is false, so warnings are returned with the collection. 
   (testing "Ingest and Ingest Validation with warning messages for all formats"

@@ -16,31 +16,14 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; helper function section
-;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn- assert-revision-conflict
   [concept-id format-str response]
   (is (= {:status 409
           :errors [(format format-str concept-id)]}
          response)))
 
-;;;;;;;;;;;;;;;;;;;;
-;; Testing section
-;;;;;;;;;;;;;;;;;;;;
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; The following tests are included in revision-id-validations:
-;; 1. ingesting a concept with the same concept-id and revision-id fails
-;; 2. attempting to ingest using an non-integer revision id returns an error
-;; 3. attempting to ingest using a negative revision id returns an error
-;; 4. ingesting a concept with just the revision-id succeeds
-;; 5. ingesting a concept while skipping revision-ids succeeds,
-;;    but fails if revision id is smaller than the maximum revision id
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest revision-id-validations
   (testing "ingesting a concept with the same concept-id and revision-id fails"
     (let [concept-id "C1-PROV1"
@@ -87,16 +70,6 @@
 ;; guaranteed that the ingest events are processed by Virtual Product Service in the same order
 ;; that the events are placed on the queue.
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; The following tests are included in revision-conflict-tests
-;; 1. Update with lower revision id should be rejected
-;; 2. Delete with lower revision id than latest concept should be rejected
-;; 3. Ingest with lower revision id than latest tombstone should be rejected
-;; 4. Delete with lower revision id than latest tombstone results in a 404 
-;; 5. Deleting non-existent collection should be rejected
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest revision-conflict-tests
   (testing "Update with lower revision id should be rejected 
             if it comes after an concept with a higher revision id"

@@ -17,9 +17,6 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; helper function section
-;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn assert-invalid
   ([coll-attributes field-path errors]
    (assert-invalid coll-attributes field-path errors nil))
@@ -48,22 +45,8 @@
   [coll-attributes]
   (assert-valid coll-attributes {:validate-keywords true}))
 
-;;;;;;;;;;;;;;;;;;;;
-;; Testing section
-;;;;;;;;;;;;;;;;;;;;
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; The following tests are included in collection-keyword-validation-test 
-;;
-;; 1. keyword validation using validation end points.
-;; 2. Project keyword validation
-;; 3. Platform keyword validation
-;; 4. Instrument keyword validation
-;; 5. Science Keyword validation
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest collection-keyword-validation-test
   ;; For a list of the valid keywords during testing see dev-system/resources/kms_examples
   (testing "Keyword validation using validation endpoint"
