@@ -40,10 +40,3 @@
   "Creates a background job using the provided job-fn and how often to run the job in seconds."
   [job-fn job-interval-secs]
   (->BackgroundJob job-fn job-interval-secs nil))
-
-(comment
-  (def counter (atom 1))
-  (def job (create-background-job #(swap! counter inc) 0.1))
-  (def job (lifecycle/start job nil))
-  (def job (lifecycle/stop job nil))
-  @counter)
