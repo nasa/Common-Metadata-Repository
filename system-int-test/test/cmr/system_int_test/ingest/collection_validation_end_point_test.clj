@@ -23,7 +23,6 @@
 ;; The following tests are included in validation-endpoint-test
 ;; 1. successful case
 ;; 2. invalid collection xml fails validation with appropriate message
-;; 3. invalid umm-json fails validation with appropriate message (ToBeDone) 
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest validation-endpoint-test
