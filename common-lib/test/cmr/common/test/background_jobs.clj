@@ -1,9 +1,9 @@
 (ns cmr.common.test.background-jobs
   "Contains tests for background jobs"
-  (:require [clojure.test :refer :all]
-            [cmr.common.background-jobs :as background-jobs]
-            [cmr.common.lifecycle :as lifecycle]
-            [clj-time.core :as t]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.background-jobs :as background-jobs]
+   [cmr.common.lifecycle :as lifecycle]))
 
 (deftest background-jobs-test
   (let [counter1 (atom 0)

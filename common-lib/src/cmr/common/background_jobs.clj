@@ -1,7 +1,8 @@
 (ns cmr.common.background-jobs
   "Namespace for creating simple background jobs that run at a specified interval in a thread.
   For more complex requirements see the cmr.common.jobs namespace which use Quartz."
-  (:require [cmr.common.lifecycle :as lifecycle]))
+  (:require
+   [cmr.common.lifecycle :as lifecycle]))
 
 (defrecord BackgroundJob
   [
