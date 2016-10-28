@@ -66,7 +66,7 @@
 
   ;; Page Size
   (testing "Search with large page size"
-    (is (= nil
+    (is (empty?
            (cpv/page-size-validation :collection (assoc valid-params :page-size 100)))))
   (testing "Negative page size"
     (is (= ["page_size must be a number between 0 and 2000"]
@@ -80,7 +80,7 @@
 
   ;; Page Num
   (testing "Valid page_num"
-    (is (= nil
+    (is (empty?
            (cpv/page-num-validation :collection (assoc valid-params :page-num 5)))))
   (testing "Page num less than one"
     (is (= ["page_num must be a number greater than or equal to 1"]
