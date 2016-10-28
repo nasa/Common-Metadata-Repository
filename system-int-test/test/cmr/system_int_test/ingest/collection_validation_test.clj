@@ -23,53 +23,43 @@
     [cmr.system-int-test.utils.search-util :as search]
     [clojure.java.io :as io]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; The following tests are included in this file:
+;; 1. Spatial coordinate reference type must be supplied.
+;; 2. Validation end point tests: 
+;;    a)successful case
+;;    b)invalid collection xml fails validation with appropriate message
+;;    (Do we want to test invalid umm-json fails validation here?)  
+;; 3. successful validation requests do not get an xml or json response body
+;; 4. failed validations with no accept or content-type header return xml
+;; 5. Collection Keyword validation
+;;    a) keyword validation using validation end points.
+;;    b) Project keyword validation
+;;    c) Platform keyword validation
+;;    d) Instrument keyword validation
+;;    e) Science Keyword validation
+;; 6. collection-umm-spec-validation-test
+;;    a)UMM-C JSON-Schema validation through config settings
+;;    b)UMM-C JSON-Schema validation through Cmr-Validate-Umm-C header
+;;    c)UMM-SPEC validation through Cmr-Validation-Umm-C header
+;;    d)Additional Attribute validation
+;;    e)Nested Path Validation
+;;    f)Spatial validation
+;; 7. duplicate-entry-title-test
+;; 8. revision-id-validations
+;; 9. revision-conflict-tests
+;;10. Collections with nil versions are rejected
+;;11. Conversion from dif9 to echo10 is successful
+;;    (Do we want to move other conversions here or leave it in the unit tests?
+;;     do we want to add the conversion through translate end point also?)
+;;12. umm-spec-validation-warnings for all formats
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftest spatial-with-no-representation
-  ;; ISO19115 allows you to ingest metadata with no spatial coordinate reference but have spatial
-  ;; points. We should reject it because UMM requires a spatial coordinate reference.
-  (testing "A collection with spatial data but no representation should fail ingest validation"
-    (let [bad-metadata (slurp (io/resource
-                                "iso-samples/iso-spatial-data-missing-coordinate-system.iso19115"))
-          {:keys [status errors]}
-          (ingest/ingest-concept (ingest/concept :collection "PROV1" "foo" :iso19115 bad-metadata))]
-
-      (is (= 422 status))
-      (is (= [{:errors ["Spatial coordinate reference type must be supplied."]
-               :path ["SpatialCoverage"]}]
-             errors)))))
-
-(deftest validation-endpoint-test
-  (testing "successful validation of collection"
-    (let [concept (dc/collection-concept {})
-          {:keys [status errors]} (ingest/validate-concept concept)]
-      (is (= [200 nil] [status errors]))))
-  (testing "invalid collection xml fails validation with appropriate message"
-    (let [concept (dc/collection-concept {})
-          {:keys [status errors]}
-          (ingest/validate-concept (assoc concept
-                                          :metadata "<Collection>invalid xml</Collection>"))]
-      (is (= [400 ["Line 1 - cvc-complex-type.2.3: Element 'Collection' cannot have character [children], because the type's content type is element-only."
-                   "Line 1 - cvc-complex-type.2.4.b: The content of element 'Collection' is not complete. One of '{ShortName}' is expected."]]
-             [status errors])))))
-
-;; Verify that successful validation requests do not get an xml or json response body
-(deftest successful-validation-with-accept-header-test
-  (are [accept]
-       (let [collection (dc/collection-dif10 {:processing-level-id "Level 1"})
-             concept (dc/collection-concept collection :dif10)
-             response-map (select-keys (ingest/validate-concept concept {:accept-format accept :raw? true})
-                                       [:status :body])]
-         (= {:status 200 :body ""} response-map))
-       :json :xml))
-
-;; Verify that failed validations with no accept or content-type header return xml
-(deftest failed-validation-without-headers-returns-xml
-  (let [concept (assoc (dc/collection-concept {}) :metadata "<Collection>invalid xml</Collection>")
-        {:keys [status body]} (ingest/validate-concept concept {:raw? true})]
-    (is (= [400 "<?xml version=\"1.0\" encoding=\"UTF-8\"?><errors><error>Line 1 - cvc-complex-type.2.3: Element 'Collection' cannot have character [children], because the type's content type is element-only.</error><error>Line 1 - cvc-complex-type.2.4.b: The content of element 'Collection' is not complete. One of '{ShortName}' is expected.</error></errors>"]
-           [status body]))))
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; helper function section
+;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order."
   [& ords]
@@ -86,10 +76,6 @@
                        :errors errors}]}
             (select-keys response [:status :errors]))))))
 
-(defn assert-invalid-keywords
-  [coll-attributes field-path errors]
-  (assert-invalid coll-attributes field-path errors {:validate-keywords true}))
-
 (defn assert-valid
   ([coll-attributes]
    (assert-valid coll-attributes nil))
@@ -98,6 +84,10 @@
          provider-id (get coll-attributes :provider-id "PROV1")
          response (d/ingest provider-id collection options)]
      (is (#{{:status 200} {:status 201}} (select-keys response [:status :errors]))))))
+
+(defn assert-invalid-keywords
+  [coll-attributes field-path errors]
+  (assert-invalid coll-attributes field-path errors {:validate-keywords true}))
 
 (defn assert-valid-keywords
   [coll-attributes]
@@ -130,9 +120,64 @@
             :errors errors}
            (select-keys response [:status :errors])))))
 
+(defn- assert-revision-conflict
+  [concept-id format-str response]
+  (is (= {:status 409
+          :errors [(format format-str concept-id)]}
+         response)))
+
+;;;;;;;;;;;;;;;;;;;;
+;; Testing section
+;;;;;;;;;;;;;;;;;;;;
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
+
+(deftest spatial-with-no-representation
+  ;; ISO19115 allows you to ingest metadata with no spatial coordinate reference but have spatial
+  ;; points. We should reject it because UMM requires a spatial coordinate reference.
+  (testing "A collection with spatial data but no representation should fail ingest validation"
+    (let [bad-metadata (slurp (io/resource
+                                "iso-samples/iso-spatial-data-missing-coordinate-system.iso19115"))
+          {:keys [status errors]}
+          (ingest/ingest-concept (ingest/concept :collection "PROV1" "foo" :iso19115 bad-metadata))]
+
+      (is (= 422 status))
+      (is (= [{:errors ["Spatial coordinate reference type must be supplied."]
+               :path ["SpatialCoverage"]}]
+             errors)))))
+
+(deftest validation-endpoint-test
+  (testing "successful validation of collection"
+    (let [concept (dc/collection-concept {})
+          {:keys [status errors]} (ingest/validate-concept concept)]
+      (is (= [200 nil] [status errors]))))
+  (testing "invalid collection xml fails validation with appropriate message"
+    (let [concept (dc/collection-concept {})
+          {:keys [status errors]}
+          (ingest/validate-concept (assoc concept
+                                          :metadata "<Collection>invalid xml</Collection>"))]
+      (is (= [400 ["Line 1 - cvc-complex-type.2.3: Element 'Collection' cannot have character [children], because the type's content type is element-only."
+                   "Line 1 - cvc-complex-type.2.4.b: The content of element 'Collection' is not complete. One of '{ShortName}' is expected."]]
+             [status errors])))))
+
+(deftest successful-validation-with-accept-header-test
+  (testing "successful validation requests do not get an xml or json response body"
+    (are [accept]
+         (let [collection (dc/collection-dif10 {:processing-level-id "Level 1"})
+               concept (dc/collection-concept collection :dif10)
+               response-map (select-keys (ingest/validate-concept concept {:accept-format accept :raw? true})
+                                         [:status :body])]
+           (= {:status 200 :body ""} response-map))
+         :json :xml)))
+
+(deftest failed-validation-without-headers-returns-xml
+  (testing "failed validations with no accept or content-type header return xml"
+    (let [concept (assoc (dc/collection-concept {}) :metadata "<Collection>invalid xml</Collection>")
+          {:keys [status body]} (ingest/validate-concept concept {:raw? true})]
+      (is (= [400 "<?xml version=\"1.0\" encoding=\"UTF-8\"?><errors><error>Line 1 - cvc-complex-type.2.3: Element 'Collection' cannot have character [children], because the type's content type is element-only.</error><error>Line 1 - cvc-complex-type.2.4.b: The content of element 'Collection' is not complete. One of '{ShortName}' is expected.</error></errors>"]
+             [status body])))))
+
 (deftest collection-keyword-validation-test
   ;; For a list of the valid keywords during testing see dev-system/resources/kms_examples
-
   (testing "Keyword validation using validation endpoint"
     (let [concept (dc/collection-concept {:platforms [(dc/platform {:short-name "foo"
                                                                     :long-name "Airbus A340-600"})]})
@@ -327,94 +372,90 @@
           :variable-level-2 "MAXiMUM/MiNiMUM TEMPERATURE"
           :variable-level-3 "24 HOUR MAXiMUM TEMPERATURE"})))
 
-;; This tests that UMM type validations are applied during collection ingest.
-;; Thorough tests of UMM validations should go in cmr.umm.test.validation.core and related
-;; namespaces.
-;; Currently in the process of moving validation too UMM Spec Lib. Some validation tests
-;; are in cmr.umm-spec.test.validation
 (deftest collection-umm-spec-validation-test
-  (testing "UMM-C JSON-Schema validation"
-    ;; enable return of schema validation errors from API
-    (side/eval-form `(icfg/set-return-umm-json-validation-errors! true))
-    ;; create collection valid against echo10 but invalid against schema
-    (let [response (d/ingest "PROV1" (dc/collection {:product-specific-attributes
-                                                     [(dc/psa {:name "bool1" :data-type :boolean :value true})
-                                                      (dc/psa {:name "bool2" :data-type :boolean :value true})]})
-                             {:allow-failure? true})]
-      (is (= {:status 422
-              :errors ["object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
-             (select-keys response [:status :errors]))))
-    ;; disable return of schema validation errors from API
-    (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
-    (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
-                                                 (dc/psa {:name "bool2" :data-type :boolean :value true})]}))
+  (testing "UMM-C JSON-Schema validation through config settings"
+    (testing "schema validation errors returned"
+      (side/eval-form `(icfg/set-return-umm-json-validation-errors! true))
+      (let [response (d/ingest "PROV1" 
+                               (dc/collection {:product-specific-attributes
+                                               [(dc/psa {:name "bool1" :data-type :boolean :value true})
+                                                (dc/psa {:name "bool2" :data-type :boolean :value true})]})
+                               {:allow-failure? true})]
+        (is (= {:status 422
+                :errors ["object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
+               (select-keys response [:status :errors])))))
 
-  ;; testing enabling umm json schema validation through Cmr-Validation-Umm-C header
-  (testing "Enabling UMM-C JSON-Schema validation through Cmr-Validate-Umm-C header being true"
-    ;; create collection valid against echo10 but invalid against schema
-    (let [response (d/ingest "PROV1" (dc/collection {:product-specific-attributes
-                                                     [(dc/psa {:name "bool1" :data-type :boolean :value true})
-                                                      (dc/psa {:name "bool2" :data-type :boolean :value true})]})
-                             {:allow-failure? true :validate-umm-c true})]
-      (is (= {:status 422
-              :errors ["object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
-             (select-keys response [:status :errors])))))
+    (testing "schema validation errors not returned" 
+      (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
+      (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
+                                                   (dc/psa {:name "bool2" :data-type :boolean :value true})]})))
 
-  (let [coll-attr {:product-specific-attributes
-                   [(dc/psa {:name "bool1" :data-type :boolean :value true})
-                    (dc/psa {:name "bool2" :data-type :boolean :value true})]}]
-    (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
-    (are3 [coll-attributes options]
-          (assert-valid coll-attributes options)
+  (testing "UMM-C JSON-Schema validation through Cmr-Validate-Umm-C header"
+    (testing "schema validation errors returned when Cmr-Validate-Umm-C header is true"
+      (let [response (d/ingest "PROV1" (dc/collection {:product-specific-attributes
+                                                       [(dc/psa {:name "bool1" :data-type :boolean :value true})
+                                                        (dc/psa {:name "bool2" :data-type :boolean :value true})]})
+                               {:allow-failure? true :validate-umm-c true})]
+        (is (= {:status 422
+                :errors ["object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
+               (select-keys response [:status :errors])))))
 
-          "Set Cmr-Validate-Umm-C header to false - schema validation error is not returned"
-          coll-attr
-          {:allow-failure? true :validate-umm-c false}
+    (testing "schema validation error returns is controlled by config setting when Cmr-Validate-Umm-C header is NOT true" 
+      (let [coll-attr {:product-specific-attributes
+                       [(dc/psa {:name "bool1" :data-type :boolean :value true})
+                        (dc/psa {:name "bool2" :data-type :boolean :value true})]}]
+        (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
+        (are3 [coll-attributes options]
+              (assert-valid coll-attributes options)
 
-          "Do not set Cmr-Validate-Umm-C header - schema validation error is not returned"
-          coll-attr
-          {:allow-failure? true}))
+              "Set Cmr-Validate-Umm-C header to false - schema validation error is not returned"
+              coll-attr
+              {:allow-failure? true :validate-umm-c false}
 
-  ;; testing enabling umm-spec validation through Cmr-Validation-Umm-C header
-  (let [coll-attr {:processing-level-id "1"
-                   :science-keywords [(dc/science-keyword {:category "upcase"
-                                                           :topic "Cool"
-                                                           :term "Mild"})]
-                   :spatial-coverage (dc/spatial {:gsr :cartesian})
-                   :related-urls [(dc/related-url {:type "type" :url "http://www.foo.com"})]
-                   :organizations [{:type :archive-center :org-name "Larc"}]
-                   :platforms [{:short-name "plat"
-                                :long-name "plat"
-                                :type "Aircraft"
-                                :instruments [{:short-name "inst"}]}]
-                   :beginning-date-time "1965-12-12T07:00:00.000-05:00"
-                   :ending-date-time "1967-12-12T07:00:00.000-05:00"
-                   :product-specific-attributes
-                   [(dc/psa {:name "bool" :data-type :boolean :value true})
-                    (dc/psa {:name "bool" :data-type :boolean :value true})]}]
-    (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
-    (side/eval-form `(icfg/set-return-umm-spec-validation-errors! false))
-    (are3 [coll-attributes field-path error options]
-          (assert-invalid coll-attributes field-path error options)
+              "Do not set Cmr-Validate-Umm-C header - schema validation error is not returned"
+              coll-attr
+              {:allow-failure? true}))))
 
-          "Set Cmr-Validate-Umm-C header to true - schema validation passed, umm-spec validation error is returned"
-          coll-attr
-          ["AdditionalAttributes"]
-          ["Additional Attributes must be unique. This contains duplicates named [bool]."]
-          {:validate-umm-c true}
+  (testing "UMM-SPEC validation through Cmr-Validation-Umm-C header"
+    (let [coll-attr {:processing-level-id "1"
+                     :science-keywords [(dc/science-keyword {:category "upcase"
+                                                             :topic "Cool"
+                                                             :term "Mild"})]
+                     :spatial-coverage (dc/spatial {:gsr :cartesian})
+                     :related-urls [(dc/related-url {:type "type" :url "http://www.foo.com"})]
+                     :organizations [{:type :archive-center :org-name "Larc"}]
+                     :platforms [{:short-name "plat"
+                                  :long-name "plat"
+                                  :type "Aircraft"
+                                  :instruments [{:short-name "inst"}]}]
+                     :beginning-date-time "1965-12-12T07:00:00.000-05:00"
+                     :ending-date-time "1967-12-12T07:00:00.000-05:00"
+                     :product-specific-attributes
+                     [(dc/psa {:name "bool" :data-type :boolean :value true})
+                      (dc/psa {:name "bool" :data-type :boolean :value true})]}]
+      (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
+      (side/eval-form `(icfg/set-return-umm-spec-validation-errors! false))
+      (are3 [coll-attributes field-path error options]
+            (assert-invalid coll-attributes field-path error options)
 
-          "Set Cmr-Validate-Umm-C header to false - schema validation passed, umm-spec validation error is not returned"
-          coll-attr
-          ["ProductSpecificAttributes"]
-          ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]
-          {:validate-umm-c false}
+            "Set Cmr-Validate-Umm-C header to true - schema validation passed, umm-spec validation error is returned"
+            coll-attr
+            ["AdditionalAttributes"]
+            ["Additional Attributes must be unique. This contains duplicates named [bool]."]
+            {:validate-umm-c true}
 
-          "Do not set Cmr-Validate-Umm-C header - schema validation passed, umm-spec validation error is not returned"
-          coll-attr
-          ["ProductSpecificAttributes"]
-          ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]
-          nil))
+            "Set Cmr-Validate-Umm-C header to false - schema validation passed, umm-spec validation error is not returned"
+            coll-attr
+            ["ProductSpecificAttributes"]
+            ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]
+            {:validate-umm-c false}
 
+            "Do not set Cmr-Validate-Umm-C header - schema validation passed, umm-spec validation error is not returned"
+            coll-attr
+            ["ProductSpecificAttributes"]
+            ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]
+            nil)))
+  
   (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
 
   (testing "Additional Attribute validation"
@@ -424,12 +465,14 @@
         (dc/psa {:name "bool" :data-type :boolean :value true})]}
       ["AdditionalAttributes"]
       ["Additional Attributes must be unique. This contains duplicates named [bool]."]))
+
   (testing "Nested Path Validation"
     (assert-invalid
       {:platforms [(dc/platform {:instruments [(dc/instrument {:short-name "I1"})
                                                (dc/instrument {:short-name "I1"})]})]}
       ["Platforms" 0 "Instruments"]
       ["Instruments must be unique. This contains duplicates named [I1]."]))
+
   (testing "Spatial validation"
     (testing "geodetic polygon"
       ;; Invalid points are caught in the schema validation
@@ -441,6 +484,7 @@
          "Spatial validation error: The shape contained duplicate points. Points 3 [lon=-180 lat=-90] and 4 [lon=180 lat=-90] were considered equivalent or very close."
          "Spatial validation error: The shape contained consecutive antipodal points. Points 2 [lon=-180 lat=90] and 3 [lon=-180 lat=-90] are antipodal."
          "Spatial validation error: The shape contained consecutive antipodal points. Points 4 [lon=180 lat=-90] and 5 [lon=180 lat=90] are antipodal."]))
+
     (testing "geodetic polygon with holes"
       ;; Hole validation is not supported yet. See CMR-1173.
       ;; Holes are ignored during validation for now.
@@ -481,12 +525,13 @@
       {:entry-title "ET-1" :concept-id "C1-PROV1" :native-id "Native1"})
     (assert-valid
       {:entry-title "ET-1" :concept-id "C1-PROV2" :native-id "Native1" :provider-id "PROV2"}))
+  
   (testing "entry-title must be unique for a provider"
     (assert-conflict
       {:entry-title "ET-1" :concept-id "C2-PROV1" :native-id "Native2"}
       ["The Entry Title [ET-1] must be unique. The following concepts with the same entry title were found: [C1-PROV1]."])))
 
-(deftest header-validations
+(deftest revision-id-validations
   (testing "ingesting a concept with the same concept-id and revision-id fails"
     (let [concept-id "C1-PROV1"
           existing-concept (dc/collection-concept {:revision-id 1 :concept-id concept-id})
@@ -495,22 +540,27 @@
       (is (= {:status 409
               :errors [(format "Expected revision-id of [2] got [1] for [%s]" concept-id)]}
              response))))
+ 
   (testing "attempting to ingest using an non-integer revision id returns an error"
     (let [response (ingest/ingest-concept (dc/collection-concept {:concept-id "C2-PROV1"
                                                                   :revision-id "NaN"}))]
       (is (= {:status 422
               :errors [(msg/invalid-revision-id "NaN")]}
              response))))
+  
   (testing "attempting to ingest using a negative revision id returns an error"
     (let [response (ingest/ingest-concept (dc/collection-concept {:concept-id "C2-PROV1"
                                                                   :revision-id "-1"}))]
       (is (= {:status 422
               :errors [(msg/invalid-revision-id "-1")]}
              response))))
+  
   (testing "ingesting a concept with just the revision-id succeeds"
     (let [response (ingest/ingest-concept (dc/collection-concept {:revision-id "2"}))]
       (is (and (= 200 (:status response)) (= 2 (:revision-id response))))))
-  (testing "ingesting a concept while skipping revision-ids succeeds, but fails if revision id is smaller than the maximum revision id"
+  
+  (testing "ingesting a concept while skipping revision-ids succeeds, 
+            but fails if revision id is smaller than the maximum revision id"
     (let [concept-id "C3-PROV1"
           coll (dc/collection-concept {:concept-id concept-id})
           _ (ingest/ingest-concept (assoc coll :revision-id "2"))
@@ -521,19 +571,14 @@
               :errors [(format "Expected revision-id of [7] got [4] for [%s]" concept-id)]}
              response2)))))
 
-(defn- assert-revision-conflict
-  [concept-id format-str response]
-  (is (= {:status 409
-          :errors [(format format-str concept-id)]}
-         response)))
-
 ;; Added to test out of order processing of ingest and delete requests with revision-ids in their
 ;; header. The proper handling of incorrectly ordered requests is important for Virtual Product
 ;; Service which picks events off the queue and sends them to ingest service. It cannot be
-;; gauranteed that the ingest events are processed by Virtual Product Service in the same order
+;; guaranteed that the ingest events are processed by Virtual Product Service in the same order
 ;; that the events are placed on the queue.
 (deftest revision-conflict-tests
-  (testing "Update with lower revision id should be rejected if it comes after an concept with a higher revision id"
+  (testing "Update with lower revision id should be rejected 
+            if it comes after an concept with a higher revision id"
     (let [concept (dc/collection-concept {:revision-id 4})
           concept-id (:concept-id (ingest/ingest-concept concept))
           response (ingest/ingest-concept (assoc concept :revision-id 2))]
@@ -577,36 +622,37 @@
              response)))))
 
 (deftest dif-to-echo10-conversion
-  (let [coll (d/ingest "PROV1"
-                       (dc/collection-dif {:short-name "S1"
-                                           :version-id "V1"
-                                           :entry-title "ET1"
-                                           :long-name "L4"
-                                           :summary (name :dif)
-                                           ;; The following fields are needed for DIF to pass xml validation
-                                           :science-keywords [(dc/science-keyword {:category "upcase"
-                                                                                   :topic "Cool"
-                                                                                   :term "Mild"})]
-                                           :organizations [(dc/org :distribution-center "Larc")]
-                                           ;; The following fields are needed for DIF10 to pass xml validation
-                                           :beginning-date-time "1965-12-12T12:00:00Z"
-                                           :ending-date-time "1967-12-12T12:00:00Z"
-                                           :product-specific-attributes [(c/map->ProductSpecificAttribute {:name "moo" :data-type :string})]})
-                       {:format :dif})
-        response (search/retrieve-concept (:concept-id coll) nil {:accept mt/echo10})
-        concept-map {:metadata (:body response)
-                     :format mt/echo10
-                     :concept-type :collection
-                     :provider-id "PROV1"
-                     :native-id "new collection"}
-        {:keys [status body]} (ingest/validate-concept concept-map {:raw? true})]
-    (is (= 200 status))))
+  (testing "Conversion from dif9 to echo10 is successful" 
+    (let [coll (d/ingest "PROV1"
+                         (dc/collection-dif 
+                           {:short-name "S1"
+                            :version-id "V1"
+                            :entry-title "ET1"
+                            :long-name "L4"
+                            :summary (name :dif)
+                            ;; The following fields are needed for DIF to pass xml validation
+                            :science-keywords [(dc/science-keyword {:category "upcase"
+                                                                    :topic "Cool"
+                                                                    :term "Mild"})]
+                            :organizations [(dc/org :distribution-center "Larc")]
+                            ;; The following fields are needed for DIF10 to pass xml validation
+                            :beginning-date-time "1965-12-12T12:00:00Z"
+                            :ending-date-time "1967-12-12T12:00:00Z"
+                            :product-specific-attributes 
+                             [(c/map->ProductSpecificAttribute {:name "moo" :data-type :string})]})
+                         {:format :dif})
+          response (search/retrieve-concept (:concept-id coll) nil {:accept mt/echo10})
+          concept-map {:metadata (:body response)
+                       :format mt/echo10
+                       :concept-type :collection
+                       :provider-id "PROV1"
+                       :native-id "new collection"}
+          {:keys [status body]} (ingest/validate-concept concept-map {:raw? true})]
+      (is (= 200 status)))))
 
 (deftest umm-spec-validation-warnings
-  ;; By default the config return-umm-spec-validation-errors is false, so warnings are returned
-  ;; with the collection. If return-umm-spec-validation-errors was true, errors would be thrown. tests
-  ;; for the errors if return-umm-spec-validation-errors is true are in this file.
-  (testing "Ingest and Ingest Validation"
+  ;; By default the config return-umm-spec-validation-errors is false, so warnings are returned with the collection. 
+  (testing "Ingest and Ingest Validation with warning messages for all formats"
     (are3 [format collection warning-message]
           (do
             (let [response (d/ingest "PROV1" collection {:format format})]
@@ -633,22 +679,20 @@
 
           "DIF9 with no version - has warnings, but passes ingest"
           :dif (assoc-in (dc/collection-dif {}) [:product :version-id] nil)
-          "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"SpatialExtent\",\"TemporalExtents\",\"Version\"])"))
+          "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"SpatialExtent\",\"TemporalExtents\",\"Version\"])")))
 
-  (testing "Multiple warnings"
-     (let [collection (dc/collection-dif10 {:platforms [(dc/platform {:short-name (apply str (repeat 81 "x"))})]
-                                            :purpose (apply str (repeat 12000 "y"))
-                                            :product (dc/product {:processing-level-id "1"})})
-           ingest-response (d/ingest "PROV1" collection {:format :dif10})
-           validation-response (ingest/validate-concept (dc/collection-concept collection :dif10))]
-       (is (some? (re-find #"/Platforms/0/ShortName string.*is too long \(length: 81, maximum allowed: 80\)" (:warnings ingest-response))))
-       (is (some? (re-find #"/Platforms/0/ShortName string.*is too long \(length: 81, maximum allowed: 80\)" (:warnings validation-response))))
-       (is (some? (re-find #"/Purpose string.*is too long \(length: 12000, maximum allowed: 10000\)" (:warnings ingest-response))))
-       (is (some? (re-find #"/Purpose string.*is too long \(length: 12000, maximum allowed: 10000\)" (:warnings validation-response))))))
-  (testing "Warnings returned in JSON format"
-     (let [response (d/ingest "PROV1" (dc/collection-dif10 {}) {:format :dif10 :accept-format :json})]
-       (is (= 201 (:status response)))
-       (is (= ["After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"ProcessingLevel\"])"] (:warnings response))))))
+(deftest field-exceeding-maxlength-warnings
+  (testing "Multiple warnings returned for the fields exceeding maxlength allowed"
+    (let [collection (dc/collection-dif10 
+                       {:platforms [(dc/platform {:short-name (apply str (repeat 81 "x"))})]
+                        :purpose (apply str (repeat 12000 "y"))
+                        :product (dc/product {:processing-level-id "1"})})
+          ingest-response (d/ingest "PROV1" collection {:format :dif10})
+          validation-response (ingest/validate-concept (dc/collection-concept collection :dif10))]
+      (is (some? (re-find #"/Platforms/0/ShortName string.*is too long \(length: 81, maximum allowed: 80\)" (:warnings ingest-response))))
+      (is (some? (re-find #"/Platforms/0/ShortName string.*is too long \(length: 81, maximum allowed: 80\)" (:warnings validation-response))))
+      (is (some? (re-find #"/Purpose string.*is too long \(length: 12000, maximum allowed: 10000\)" (:warnings ingest-response))))
+      (is (some? (re-find #"/Purpose string.*is too long \(length: 12000, maximum allowed: 10000\)" (:warnings validation-response)))))))
 
 (comment
   (ingest/delete-provider "PROV1")
