@@ -71,7 +71,7 @@
     (when (or gran-spatial-rep (seq geometries))
       (c/map->SpatialCoverage
         {:spatial-representation coord-sys
-         :granule-spatial-representation gran-spatial-rep
+         :granule-spatial-representation (or gran-spatial-rep "NO_SPATIAL")
          :geometries (seq (map #(umm-s/set-coordinate-system coord-sys %) geometries))}))))
 
 (defn spatial-coverage->coordinate-system-xml
@@ -102,4 +102,3 @@
       :gmd:description
       (str "SpatialGranuleSpatialRepresentation="
            (some-> granule-spatial-representation csk/->SCREAMING_SNAKE_CASE_STRING)))))
-

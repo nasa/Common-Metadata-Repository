@@ -9,7 +9,7 @@
 
 ;; For now, we assume DIF9 and DIF10 contain the same IDN_Nodes structures
 ;; after confirming with the system engineer people - even though some of DIF10 files
-;; contain different structures. 
+;; contain different structures.
 ;; Will need to revisit this after we get the new version of the DIF10 schema
 (defn parse-idn-node
   "Returns DirectoryNames for the provided DIF doc"
@@ -113,7 +113,7 @@
   "Set of Dataset_Languages supported in DIF10"
   (set (vals iso-639-2->dif10-dataset-language)))
 
-(defn- umm-langage->dif-language
+(defn umm-language->dif-language
   "Return DIF9/DIF10 dataset language for the given umm DataLanguage.
   Currenlty, the UMM JSON schema does mandate the language as an enum, so we try our best to match
   the possible arbitrary string to a defined DIF10 language enum."
@@ -123,7 +123,7 @@
         language
         (get iso-639-2->dif10-dataset-language language "English"))))
 
-(defn dif-language->umm-langage
+(defn dif-language->umm-language
   "Return UMM DataLanguage for the given DIF9/DIF10 dataset language."
   [language]
   (when-let [language (util/capitalize-words language)]
@@ -134,7 +134,7 @@
   and UMM DataLanguage"
   [element-key data-language]
   (when data-language
-    [element-key (umm-langage->dif-language data-language)]))
+    [element-key (umm-language->dif-language data-language)]))
 
 (defn parse-access-constraints
   "If both Value and Description are nil, return nil.
