@@ -248,7 +248,7 @@
   (is (= ["parameter [categories] is not a valid science keyword search term."
           "parameter [topics] is not a valid science keyword search term."]
          (pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords {:0 {:categories "Cat1"
-                                                                             :topics "Topic1"}}}))))
+                                                                                                         :topics "Topic1"}}}))))
 
 (deftest validate-parameters-test
   (testing "parameters are returned when valid"
