@@ -226,10 +226,12 @@
         {:keys [tag-key originator-id]} existing-tag
         mdb-context (assoc context :system
                            (get-in context [:system :embedded-systems :metadata-db]))
-        [t1 result] (util/time-execution (util/fast-map #(update-tag-association
-                                                            mdb-context (merge % {:tag-key tag-key
-                                                                                  :originator-id originator-id}) operation)
-                                            tag-associations))]
+        [t1 result] (util/time-execution (util/fast-map
+                                           (fn [association]
+                                             (update-tag-association
+                                                mdb-context (merge association {:tag-key tag-key
+                                                                                :originator-id originator-id}) operation))
+                                           tag-associations))]
      (debug "update-tag-associations:" t1)
      result))
 

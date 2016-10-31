@@ -348,12 +348,12 @@
   [f values]
   (let [errors (atom nil)
         result (doall (pmap
-                        #(try
-                           (f %)
+                        (fn [val]
+                         (try
+                           (f val)
                            (catch Exception e
-                             (def error_nil e)
                              (swap! errors conj e)
-                             nil))
+                             nil)))
                         values))]
     (if @errors
       (throw (first @errors))
