@@ -64,6 +64,7 @@
       (search/find-refs :granule {:page-size 500 :page-num 22})))
   (testing "Within page depth"
     (are3 [resp]
+      ;; This means the query was successful.
       (is (= 0 (:hits resp)))
 
       "Collection query with page_size and page_num"
