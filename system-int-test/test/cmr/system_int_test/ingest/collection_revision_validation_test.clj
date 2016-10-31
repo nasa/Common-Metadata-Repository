@@ -6,16 +6,6 @@
     [cmr.system-int-test.data2.collection :as dc]
     [cmr.ingest.services.messages :as msg]))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; The following tests are included in this file
-;; See individual deftest for detailed test info.
-;; 
-;; 1. revision-id-validations
-;; 2. revision-conflict-tests
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defn- assert-revision-conflict
   [concept-id format-str response]
   (is (= {:status 409

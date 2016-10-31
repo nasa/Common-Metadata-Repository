@@ -8,15 +8,6 @@
     [cmr.common.util :refer [are2]]
     [cmr.ingest.services.messages :as msg]))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; The following tests are included in this file
-;; See individual deftest for detailed test info.
-;;
-;; 1. collection-keyword-validation-test
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defn assert-invalid
   ([coll-attributes field-path errors]
    (assert-invalid coll-attributes field-path errors nil))

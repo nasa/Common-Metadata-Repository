@@ -7,18 +7,6 @@
     [cmr.system-int-test.data2.core :as d]
     [clojure.java.io :as io]))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; The following tests are included in this file
-;; See individual deftest for detailed test info.
-;; 
-;; 1. Spatial coordinate reference type must be supplied.
-;; 2. duplicate-entry-title-test
-;; 3. nil version test
-;; 4. field-exceeding-maxlength-warnings
-;; 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defn assert-valid
   ([coll-attributes]
    (assert-valid coll-attributes nil))

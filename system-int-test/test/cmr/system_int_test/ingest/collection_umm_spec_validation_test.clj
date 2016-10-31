@@ -13,16 +13,6 @@
     [cmr.spatial.mbr :as m]
     [cmr.ingest.config :as icfg]))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; The following tests are included in this file
-;; See individual deftest for detailed test info.
-;;
-;; 1. collection-umm-spec-validation-test
-;; 2. umm-spec-validation-warnings for all formats
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defn polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order."
   [& ords]

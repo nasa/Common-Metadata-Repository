@@ -7,15 +7,6 @@
     [cmr.system-int-test.data2.core :as d]
     [cmr.umm-spec.test.expected-conversion :as exp-conv]))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; The following tests are included in this file
-;; See individual deftest for detailed test info.
-;; 1. Validation end point test 
-;; 2. successful-validation-with-accept-header-test 
-;; 3. failed-validation-without-headers-returns-xml 
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest validation-endpoint-test
