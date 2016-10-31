@@ -248,7 +248,7 @@
   (is (= ["parameter [categories] is not a valid science keyword search term."
           "parameter [topics] is not a valid science keyword search term."]
          (pv/science-keywords-validation-for-field :science-keywords :collection {:science-keywords {:0 {:categories "Cat1"
-                                                                             :topics "Topic1"}}}))))
+                                                                                                         :topics "Topic1"}}}))))
 
 (deftest validate-parameters-test
   (testing "parameters are returned when valid"
@@ -334,11 +334,11 @@
 
 (deftest collection-concept-id-validation-test
   (is (empty? (pv/collection-concept-id-validation :granule {:collection-concept-id "C1234-Valid"})))
-  (is (= ["Collection-concept-id [C1234-Invalid'] is not valid."] 
+  (is (= ["Collection-concept-id [C1234-Invalid'] is not valid."]
          (pv/collection-concept-id-validation :granule {:collection-concept-id "C1234-Invalid'"})))
-  (is (= ["Collection-concept-id [C1234-Invalid'] is not valid." 
-          "Collection-concept-id [C5678-Invalid'] is not valid."] 
-         (pv/collection-concept-id-validation :granule 
-                                              {:collection-concept-id ["C1234-Invalid'" 
-                                                                       "C5678-Invalid'" 
+  (is (= ["Collection-concept-id [C1234-Invalid'] is not valid."
+          "Collection-concept-id [C5678-Invalid'] is not valid."]
+         (pv/collection-concept-id-validation :granule
+                                              {:collection-concept-id ["C1234-Invalid'"
+                                                                       "C5678-Invalid'"
                                                                        "C5678-Valid"]}))))
