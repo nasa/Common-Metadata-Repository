@@ -704,3 +704,19 @@
       (is @marker3)
       (is (= [1 {:a [1 2] :b {:foo [[1 2 3]]}} 3]
              result)))))
+
+;; Test fast-map exception handling. In pmap the error thrown will be a
+;; java.util.concurrent.ExecutionException which will mask the original exception. Fast-map
+;; throws the original exception.
+(deftest fast-map
+  (testing "Basic fast-map test"
+    (is (= [2 3 4] (util/fast-map inc [1 2 3]))))
+  (testing "Fast-map exception handling"
+    (is (thrown? NullPointerException
+          (try
+            (util/fast-map inc [1 nil 3]) ; Will throw NullPointerException
+            ;; If we get to this point, the test failed because the exception was not thrown correctly
+            (is false "Fast-map did not throw an exception as expected")
+            (catch java.util.concurrent.ExecutionException ee
+              ; We don't want an ExecutionException, we want to get the null pointer exception
+              (is false "Fast-map threw ExecutionException and should throw NullPointerException")))))))

@@ -18,3 +18,4 @@ nohup.out
 test2junit
 build.xml
 /plugins
+dev/no_commit.clj
