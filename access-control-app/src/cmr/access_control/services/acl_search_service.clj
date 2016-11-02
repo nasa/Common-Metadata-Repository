@@ -40,7 +40,7 @@
 
 (defmethod cpv/valid-parameter-options :acl
   [_]
-  {:collection-concept-id #{}
+  {:collection-concept-id cpv/string-param-options
    :permitted-group cpv/string-param-options
    :provider cpv/string-param-options
    :identity-type cpv/string-param-options
