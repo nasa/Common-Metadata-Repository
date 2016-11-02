@@ -1,10 +1,11 @@
 (ns cmr.umm.iso-mends.collection.keyword
   "Contains functions for parsing and generating the ISO MENDS keyword related fields"
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [clojure.string :as s]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.iso-mends.collection.helper :as h]))
+  (:require
+   [clojure.data.xml :as x]
+   [clojure.string :as s]
+   [cmr.common.xml :as cx]
+   [cmr.umm.iso-mends.collection.helper :as h]
+   [cmr.umm.umm-collection :as c]))
 
 (defn- xml-elem->keywords
   "Returns a list of UMM keywords from a parsed XML structure for the given match key string"
@@ -38,8 +39,8 @@
         (map #(if (= "NONE" %) nil %) (s/split science-keyword #">"))]
     (c/map->ScienceKeyword
       {:category category
-       :topic topic
-       :term term
+       :topic (or topic c/not-provided)
+       :term (or term c/not-provided)
        :variable-level-1 variable-level-1
        :variable-level-2 variable-level-2
        :variable-level-3 variable-level-3

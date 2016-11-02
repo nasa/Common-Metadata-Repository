@@ -416,7 +416,7 @@
 
 (deftest data-quality-info-additional-attributes
   (testing "additional attributes that should go to dataQualityInfo section are written out correctly"
-    (let [parsed (#'parser/parse-iso19115-xml (lkt/setup-context-for-test lkt/sample-keyword-map)
+    (let [parsed (#'parser/parse-iso19115-xml (lkt/setup-context-for-test)
                                               iso-with-use-constraints u/default-parsing-options)
           ;; all the parsed additional attributes are from dataQualityInfo and we use it as the expected value
           expected-additional-attributes (:AdditionalAttributes parsed)
@@ -431,7 +431,7 @@
 
 (deftest granule-spatial-representation
   (testing "granule spatial representation is parsed correctly"
-    (let [parsed (#'parser/parse-iso19115-xml (lkt/setup-context-for-test lkt/sample-keyword-map)
+    (let [parsed (#'parser/parse-iso19115-xml (lkt/setup-context-for-test)
                                               iso-with-use-constraints u/default-parsing-options)
           gran-spatial-representation (get-in parsed [:SpatialExtent :GranuleSpatialRepresentation])]
       (is (= "CARTESIAN" gran-spatial-representation)))))

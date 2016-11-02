@@ -202,7 +202,7 @@
                             (assoc :native-id native-id)
                             (assoc :user-id (context->user-id mdb-context)))
         tagged-item (util/remove-nil-keys
-                      {:concept-id coll-concept-id :revision-id coll-revision-id})]
+                     {:concept-id coll-concept-id :revision-id coll-revision-id})]
     (if (seq errors)
       {:errors errors :tagged-item tagged-item}
       (let [{:keys [concept-id revision-id message]} ;; only delete-tag-association could potentially return message
@@ -226,14 +226,14 @@
         {:keys [tag-key originator-id]} existing-tag
         mdb-context (assoc context :system
                            (get-in context [:system :embedded-systems :metadata-db]))
-        [t1 result] (util/time-execution
-                      (doall
-                        (pmap #(update-tag-association
-                                 mdb-context (merge % {:tag-key tag-key
-                                                       :originator-id originator-id}) operation)
-                              tag-associations)))]
-    (debug "update-tag-associations:" t1)
-    result))
+        [t1 result] (util/time-execution (util/fast-map
+                                           (fn [association]
+                                             (update-tag-association
+                                                mdb-context (merge association {:tag-key tag-key
+                                                                                :originator-id originator-id}) operation))
+                                           tag-associations))]
+     (debug "update-tag-associations:" t1)
+     result))
 
 (defn- update-tag-associations-with-query
   "Based on the input operation type (:insert or :delete), insert or delete tag associations

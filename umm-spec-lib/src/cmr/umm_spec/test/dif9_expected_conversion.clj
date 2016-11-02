@@ -266,4 +266,5 @@
         (update :AccessConstraints conversion-util/expected-access-constraints)
         ;; DIF 9 does not support VersionDescription
         (assoc :VersionDescription nil)
+        (update :DataLanguage conversion-util/dif-expected-data-language)
         js/parse-umm-c)))

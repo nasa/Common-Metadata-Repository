@@ -1,7 +1,8 @@
 (ns cmr.indexer.data.concepts.collection.instrument
   "Contains functions for converting instrument hierarchies into elastic documents"
   (:require [clojure.string :as str]
-            [cmr.common-app.services.kms-fetcher :as kf]))
+            [cmr.common-app.services.kms-fetcher :as kf]
+            [cmr.common-app.services.kms-lookup :as kms-lookup]))
 
 (def default-instrument-values
   "Default values to use for any platform fields which are nil."
@@ -12,10 +13,10 @@
   "Converts an instrument short-name into an elastic document with the full nested hierarchy for
   that short-name from the GCMD KMS keywords. If a field is not present in the KMS hierarchy, we
   use a dummy value to indicate the field was not present."
-  [gcmd-keywords-map short-name]
+  [kms-index short-name]
   (let [full-instrument
         (merge default-instrument-values
-               (kf/get-full-hierarchy-for-short-name gcmd-keywords-map :instruments short-name))
+               (kms-lookup/lookup-by-short-name kms-index :instruments short-name))
         {:keys [category type subtype short-name long-name uuid]
          ;; Use the short-name from KMS if present, otherwise use the metadata short-name
          :or {short-name short-name} i-class :class} full-instrument]

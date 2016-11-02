@@ -3,7 +3,9 @@
  (:require
   [clj-time.core :as t]
   [clj-time.format :as f]
+  [cmr.common-app.services.kms-fetcher :as kf]
   [cmr.common.util :as util :refer [update-in-each]]
+  [cmr.umm-spec.dif-util :as dif-util]
   [cmr.umm-spec.location-keywords :as lk]
   [cmr.umm-spec.models.umm-collection-models :as umm-c]
   [cmr.umm-spec.models.umm-common-models :as cmn]
@@ -79,7 +81,7 @@
   ;;Convert the Location Keyword to a leaf.
   (let [leaf-values (lk/location-keywords->spatial-keywords location-keywords)
         translated-values (lk/translate-spatial-keywords
-                            (lkt/setup-context-for-test lkt/sample-keyword-map) leaf-values)]
+                           (kf/get-kms-index (lkt/setup-context-for-test)) leaf-values)]
     ;;If the keyword exists in the hierarchy
     (seq (map #(umm-c/map->LocationKeywordType %) translated-values))))
 
@@ -162,3 +164,11 @@
          (-> dc
              (update :ContactPersons expected-contact-information-urls)
              (update :ContactGroups expected-contact-information-urls)))))
+
+(defn dif-expected-data-language
+  "DIF and DIF10 do conversions on data language, since they only accept certain formats of
+  language so convert the language to dif and back"
+  [language]
+  (when language
+    (let [dif-language (dif-util/umm-language->dif-language language)]
+      (dif-util/dif-language->umm-language dif-language))))

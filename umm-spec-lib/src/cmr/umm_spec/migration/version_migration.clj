@@ -1,12 +1,14 @@
 (ns cmr.umm-spec.migration.version-migration
   "Contains functions for migrating between versions of UMM schema."
-  (:require [clojure.set :as set]
-            [cmr.common.mime-types :as mt]
-            [cmr.umm-spec.migration.organization-personnel-migration :as op]
-            [cmr.umm-spec.migration.contact-information-migration :as ci]
-            [cmr.umm-spec.versioning :refer [versions current-version]]
-            [cmr.umm-spec.location-keywords :as lk]
-            [cmr.umm-spec.util :as u]))
+  (:require
+   [clojure.set :as set]
+   [cmr.common-app.services.kms-fetcher :as kf]
+   [cmr.common.mime-types :as mt]
+   [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.migration.contact-information-migration :as ci]
+   [cmr.umm-spec.migration.organization-personnel-migration :as op]
+   [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.versioning :refer [versions current-version]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Utility Functions
@@ -78,7 +80,8 @@
   [context c & _]
   ;; Change SpatialKeywords to LocationKeywords
   (-> c
-      (assoc :LocationKeywords (lk/translate-spatial-keywords context (:SpatialKeywords c)))))
+      (assoc :LocationKeywords (lk/translate-spatial-keywords (kf/get-kms-index context)
+                                                              (:SpatialKeywords c)))))
 
 (defmethod migrate-umm-version [:collection "1.2" "1.1"]
   [context c & _]

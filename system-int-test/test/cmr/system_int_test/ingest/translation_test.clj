@@ -17,7 +17,7 @@
    :dif10
    :echo10])
 
-(def test-context (lkt/setup-context-for-test lkt/sample-keyword-map))
+(def test-context (lkt/setup-context-for-test))
 
 (defn assert-translate-failure
   [error-regex & args]

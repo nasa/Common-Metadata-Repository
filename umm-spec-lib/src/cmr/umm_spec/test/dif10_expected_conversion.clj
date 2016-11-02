@@ -259,4 +259,5 @@
       (assoc :SpatialKeywords nil)
       (assoc :MetadataDates (expected-metadata-dates umm-coll))
       (update :AccessConstraints conversion-util/expected-access-constraints)
+      (update :DataLanguage conversion-util/dif-expected-data-language)
       js/parse-umm-c))

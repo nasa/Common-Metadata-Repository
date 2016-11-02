@@ -25,7 +25,7 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(def context (lkt/setup-context-for-test lkt/sample-keyword-map))
+(def context (lkt/setup-context-for-test))
 
 (def write-errors-to-file
   false)

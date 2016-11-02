@@ -2,6 +2,7 @@
   "Defines mappings from ECHO10 XML into UMM records"
   (:require
    [clojure.string :as str]
+   [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select text]]
@@ -150,7 +151,7 @@
                     :Fees (value-of doc "/Collection/Price")}]
    :TemporalKeywords (values-at doc "/Collection/TemporalKeywords/Keyword")
    :LocationKeywords (lk/spatial-keywords->location-keywords
-                      (lk/get-spatial-keywords-maps context)
+                      (kf/get-kms-index context)
                       (values-at doc "/Collection/SpatialKeywords/Keyword"))
    :SpatialExtent    (spatial/parse-spatial doc sanitize?)
    :TemporalExtents  (or (seq (parse-temporal doc))

@@ -1,11 +1,18 @@
-(ns cmr.search.validators.all-granule-spatial-validation
+(ns cmr.search.validators.all-granule-validation
   "Validates that queries against all granules do not contain a spatial condition. This is an expensive
    query for the CMR. See CMR-2458."
   (:require
+   [cmr.common.config :refer [defconfig]]
    [cmr.search.services.query-walkers.condition-extractor :as extractor])
   (:import
    (cmr.common_app.services.search.query_model StringCondition StringsCondition)
    (cmr.search.models.query SpatialCondition)))
+
+(defconfig all-granules-page-depth-limit
+  "The depth limit for all granules queries. These are expensive and impact other query performance.
+   See CMR-3488."
+  {:type Long
+   :default 10000})
 
 (def granule-limiting-search-fields
   #{:concept-id :provider :provider-id :short-name :entry-title :version :entry-id :collection-concept-id})
@@ -35,3 +42,16 @@
     [(str "The CMR does not allow querying across granules in all collections with a spatial"
           " condition. You should limit your query using conditions that identify one or more"
           " collections such as provider, concept_id, short_name, or entry_title.")]))
+
+(defn all-granules-exceeds-page-depth-limit
+  "Validates that the query is not an all granules query that pages beyond the depth limit."
+  [query]
+  (when (and (all-granules-query? query)
+             (> (:offset query) (all-granules-page-depth-limit)))
+    [(format
+      (str "The paging depth (page_num * page_size or offset) of [%d] "
+           "exceeds the limit of %d for an all granules query. "
+           "You should limit your query using conditions that identify one or more "
+           "collections such as provider, concept_id, short_name, or entry_title.")
+      (:offset query) (all-granules-page-depth-limit))]))
+

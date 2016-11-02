@@ -140,15 +140,15 @@
         opendata-related-urls (map opendata/related-url->opendata-related-url related-urls)
         personnel (opendata/opendata-email-contact collection)
         platforms (map util/map-keys->kebab-case platforms)
-        gcmd-keywords-map (kf/get-gcmd-keywords-map context)
-        platforms-nested (map #(platform/platform-short-name->elastic-doc gcmd-keywords-map %)
+        kms-index (kf/get-kms-index context)
+        platforms-nested (map #(platform/platform-short-name->elastic-doc kms-index %)
                               (map :short-name platforms))
         platform-short-names (->> (map :short-name platforms-nested)
                                   (map str/trim))
         platform-long-names (->> (distinct (keep :long-name (concat platforms platforms-nested)))
                                  (map str/trim))
         instruments (mapcat :instruments platforms)
-        instruments-nested (map #(instrument/instrument-short-name->elastic-doc gcmd-keywords-map %)
+        instruments-nested (map #(instrument/instrument-short-name->elastic-doc kms-index %)
                                 (keep :short-name instruments))
         instrument-short-names (->> instruments-nested
                                     (map :short-name)
@@ -169,11 +169,11 @@
                                    (when-let [short-name (:short-name c)]
                                      (when (not= su/not-provided short-name)
                                        short-name)))
-        archive-centers (map #(data-center/data-center-short-name->elastic-doc gcmd-keywords-map %)
+        archive-centers (map #(data-center/data-center-short-name->elastic-doc kms-index %)
                              (map str/trim (data-center/extract-archive-center-names collection)))
         ;; get the normalized names back
         archive-center-names (keep meaningful-short-name-fn archive-centers)
-        data-centers (map #(data-center/data-center-short-name->elastic-doc gcmd-keywords-map %)
+        data-centers (map #(data-center/data-center-short-name->elastic-doc kms-index %)
                           (map str/trim (data-center/extract-data-center-names collection)))
         data-center-names (keep meaningful-short-name-fn data-centers)
         atom-links (map json/generate-string (ru/atom-links related-urls))
@@ -224,9 +224,9 @@
             :instruments instruments-nested
             :archive-centers archive-centers
             :data-centers data-centers
-            :science-keywords (map #(sk/science-keyword->elastic-doc gcmd-keywords-map %)
+            :science-keywords (map #(sk/science-keyword->elastic-doc kms-index %)
                                    (:ScienceKeywords collection))
-            :location-keywords (map #(clk/location-keyword->elastic-doc gcmd-keywords-map %)
+            :location-keywords (map #(clk/location-keyword->elastic-doc kms-index %)
                                     (:LocationKeywords collection))
 
             :instrument-sn instrument-short-names
