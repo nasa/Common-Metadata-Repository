@@ -52,3 +52,14 @@
     ;; retrieve the humanizers report
     (GET "/report" {context :request-context}
             (humanizers-report context))))
+
+(def community-usage-metrics-routes
+  (context "/community-usage-metrics" []
+
+    ;; create/update community usage metrics
+    (PUT "/" {:keys [request-context headers body]}
+      (update-humanizers request-context headers (slurp body)))
+
+    ;; retrieve community usage metrics
+    (GET "/" {:keys [request-context]}
+      (humanizer-response 200 (humanizer-service/get-community-usage-metrics request-context)))))

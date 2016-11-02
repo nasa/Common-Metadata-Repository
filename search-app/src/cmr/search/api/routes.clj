@@ -322,6 +322,9 @@
         ;; Add routes for humanizers
         humanizers-api/humanizers-routes
 
+        ;; Add routes for community usage metrics
+        humanizers-api/community-usage-metrics-routes
+
         ;; Add routes for API documentation
         (api-docs/docs-routes
          (get-in system [:public-conf :protocol])

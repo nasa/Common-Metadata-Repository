@@ -17,7 +17,7 @@
 
 (defn- retrieve-humanizers
   [context]
-  (:humanizers (humanizer/get-humanizers context)))
+  (humanizer/get-humanizers context))
 
 (defn refresh-cache
   "Refreshes the humanizers in the cache."

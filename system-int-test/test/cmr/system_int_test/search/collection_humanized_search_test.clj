@@ -92,7 +92,7 @@
                          (search/find-refs :collection {:platform-h "Terra"}))))
     (testing "After humanizer is updated, collection search reflect the updates"
       (hu/save-humanizers
-        {:humanizers [{:type "capitalize", :field "platform", :source_value "TERRA", :order 0}]})
+        [{:type "capitalize", :field "platform", :source_value "TERRA", :order 0}])
       (index/wait-until-indexed)
       (is (d/refs-match? [coll1]
                          (search/find-refs :collection {:platform-h "Terra"}))))))

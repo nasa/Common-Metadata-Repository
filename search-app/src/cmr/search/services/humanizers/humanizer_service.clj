@@ -46,12 +46,19 @@
 (defn get-humanizers
   "Retrieves the set of humanizer instructions from metadata-db."
   [context]
-  (json/decode (:metadata (fetch-humanizer-concept context)) true))
+  (:humanizers (json/decode (:metadata (fetch-humanizer-concept context)) true)))
+
+(defn get-community-usage-metrics
+  "Retrieves the set of community usage metrics from metadata-db."
+  [context]
+  (:community-usage-metrics (json/decode (:metadata (fetch-humanizer-concept context)) true)))
 
 (defn update-humanizers
   "Create/Update the humanizer instructions saving them as a humanizer revision in metadata db.
   Returns the concept id and revision id of the saved humanizer."
   [context humanizer-json-str]
-  (hv/validate-humanizer-json humanizer-json-str)
-  (let [humanizer-concept (humanizer-concept context humanizer-json-str)]
-      (mdb/save-concept context humanizer-concept)))
+  (let [humanizers (json/decode humanizer-json-str true)
+        humanizer-json (json/generate-string {:humanizers humanizers})]
+    (hv/validate-humanizer-json humanizer-json)
+    (let [humanizer-concept (humanizer-concept context humanizer-json)]
+        (mdb/save-concept context humanizer-concept))))

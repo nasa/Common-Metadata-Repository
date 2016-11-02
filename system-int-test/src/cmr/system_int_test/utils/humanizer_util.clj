@@ -27,7 +27,7 @@
 (defn- process-response
   "Returns the response in a map for easy testing"
   [{:keys [status body]}]
-  (if (and (map? body) (not (contains? body :humanizers)))
+  (if (map? body)
     (assoc body :status status)
     {:status status
      :body body}))
@@ -49,7 +49,7 @@
 (defn save-sample-humanizers-fixture
   "A test fixture that saves sample humanizers in CMR for testing"
   [f]
-  (save-humanizers sh/sample-humanizers)
+  (save-humanizers (:humanizers sh/sample-humanizers))
   (f))
 
 (defn get-humanizers
