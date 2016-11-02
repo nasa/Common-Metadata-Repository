@@ -76,7 +76,7 @@
            "processing " (count collection-batches)
            " batches of size" (humanizer-report-collection-batch-size))
     (csv/write-csv string-writer [CSV_HEADER])
-    (let [humanizers (hs/get-humanizers context)
+    (let [humanizers (:humanizers (hs/get-humanizers context))
           [t4 csv-string]
           (u/time-execution
             (doseq [batch collection-batches]

@@ -55,5 +55,3 @@
   (hv/validate-humanizer-json humanizer-json-str)
   (let [humanizer-concept (humanizer-concept context humanizer-json-str)]
       (mdb/save-concept context humanizer-concept)))
-
-

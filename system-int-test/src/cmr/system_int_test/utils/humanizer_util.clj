@@ -27,7 +27,7 @@
 (defn- process-response
   "Returns the response in a map for easy testing"
   [{:keys [status body]}]
-  (if (map? body)
+  (if (and (map? body) (not (contains? body :humanizers)))
     (assoc body :status status)
     {:status status
      :body body}))
