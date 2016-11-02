@@ -3,15 +3,12 @@
 This is a modern and responsive [codox][codox] theme, partially inspired by the
 styling of [RDash UI][rdash].
 
+<img src='screenshots/rdash.jpg' alt='Codox + RDash' />
+
 Note that this needs codox ≥ 0.10.0.
 
 [codox]: https://github.com/weavejester/codox
 [rdash]: http://rdash.github.io/
-
-## Screenshots
-
-<img src='screenshots/rdash.png' alt='Codox + RDash' height='250' />
-<img src='screenshots/rdash-responsive.png' alt='Codox + RDash (responsive)' height='250' />
 
 ## Usage
 
@@ -32,6 +29,13 @@ via:
 :codox {:metadata {:doc/format :markdown}
         :themes [:rdash]}
 ```
+
+## Examples
+
+- [xsc/claro](https://xsc.github.io/claro/)
+- [xsc/iapetos](https://xsc.github.io/iapetos/index.html)
+- [xsc/invariant](https://xsc.github.io/invariant/index.html)
+- [xsc/kithara](https://xsc.github.io/kithara/index.html)
 
 ## License
 
