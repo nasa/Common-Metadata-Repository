@@ -84,21 +84,22 @@
           cmr-group (u/ingest-group token {:name "cmr-group"} ["user1"])
           prov-group (u/ingest-group token {:name "prov-group" :provider_id "PROV1"} ["user1"])
           all-groups [existing-admin-group cmr-group prov-group]]
-
-
       (u/wait-until-indexed)
 
-      ;; TODO this needs to be fixed to account for the new group indexing behavior
-      (comment
-        (is (= (expected-search-response [existing-admin-group] true)
-               (select-keys (u/search-for-groups token {:include_members true}) [:status :items :hits :errors]))))
+      ;; Group indexing is synchronous so we must manually unindex all groups
+      (u/unindex-all-groups)
+
+      (is (= (expected-search-response [] true)
+             (select-keys (u/search-for-groups token {:include_members true}) [:status :items :hits :errors]))
+          "Found groups after unindexing all groups")
 
       (access-control/reindex-groups (u/conn-context))
       (u/wait-until-indexed)
 
       ;; Now all groups should be found.
       (is (= (expected-search-response all-groups true)
-             (select-keys (u/search-for-groups token {:include_members true}) [:status :items :hits :errors]))))))
+             (select-keys (u/search-for-groups token {:include_members true}) [:status :items :hits :errors]))
+          "Did not find groups after reindexing all groups."))))
 
 (deftest group-search-test
   (let [token (e/login (u/conn-context) "user1")

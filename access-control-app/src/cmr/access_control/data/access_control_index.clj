@@ -15,11 +15,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Groups
 
-(def ^:private group-index-name
+(def group-index-name
   "The name of the index in elastic search."
   "groups")
 
-(def ^:private group-type-name
+(def group-type-name
   "The name of the mapping type within the cubby elasticsearch index."
   "access-group")
 
