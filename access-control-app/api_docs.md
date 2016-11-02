@@ -474,6 +474,8 @@ The following parameters are supported when searching for ACLs.
 * group_permission
   * options: none (always case-insensitive)
   * This is a nested parameter that has subfields 'permitted_group' and 'permission'. It can contain both subfields or just one.
+* collection_concept_id
+  * Matches ACls that grant permission to the collection through access value.
 
 ##### ACL Search Response
 
