@@ -689,8 +689,8 @@
         coll3 (save-access-value-collection "coll3" 10)
         ;; and one with no access value
         coll4 (save-access-value-collection "coll4" nil)
-        acl1 (ingest-acl token (assoc (catalog-item-acl "Access values 1-10")
-                                      :catalog_item_identity {:name "Access values 1-10"
+        acl1 (ingest-acl token (assoc (catalog-item-acl "Access value 1-10")
+                                      :catalog_item_identity {:name "Access value 1-10"
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:min_value 1 :max_value 10}}
                                                               :provider_id "PROV1"}))
