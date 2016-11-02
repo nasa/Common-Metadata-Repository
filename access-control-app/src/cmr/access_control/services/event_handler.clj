@@ -71,7 +71,6 @@
                   acl-entry-titles (:entry-titles (:collection-identifier catalog-item-id))]
             :when (and (= (:provider-id collection-concept) (:provider-id catalog-item-id))
                        (some #{entry-title} acl-entry-titles))]
-      (debug "relevant ACL =" (pr-str acl-concept))
       (if (= 1 (count acl-entry-titles))
         ;; the ACL only references the collection being deleted, and therefore the ACL should be deleted
         (acl-service/delete-acl context (:concept-id acl-concept))
