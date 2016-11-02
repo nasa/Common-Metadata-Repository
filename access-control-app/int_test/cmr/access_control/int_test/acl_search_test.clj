@@ -706,7 +706,7 @@
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:min_value 5 :max_value 10}}
                                                               :provider_id "PROV1"}))
-        acl4 (ingest-acl token (assoc (catalog-item-acl "Access value 2-10")
+        acl4 (ingest-acl token (assoc (catalog-item-acl "Access value undefined")
                                       :catalog_item_identity {:name "include undefined value"
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:include_undefined_value true}}
