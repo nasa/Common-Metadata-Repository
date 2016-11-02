@@ -173,10 +173,18 @@
    :permission m/string-field-mapping
    :permission.lowercase m/string-field-mapping})
 
+(defnestedmapping access-value-field-mapping
+  "Defines mappings for access value."
+  {:min-value m/int-field-mapping
+   :max-value m/int-field-mapping
+   :include-undefined-value m/bool-field-mapping})
+
 (defmapping ^:private acl-mappings acl-type-name
   "Defines the field mappings and type options for indexing acls in elasticsearch."
   {:concept-id (m/stored m/string-field-mapping)
    :revision-id (m/stored m/int-field-mapping)
+
+   :access-value access-value-field-mapping
 
    :permitted-group (m/stored m/string-field-mapping)
    :permitted-group.lowercase m/string-field-mapping
@@ -261,6 +269,7 @@
            :identity-type (acl->identity-type acl)
            :permitted-group permitted-groups
            :permitted-group.lowercase (map str/lower-case permitted-groups)
+           :access-value (:access-value (:collection-identifier (:catalog-item-identity acl)))
            :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
            :target-provider-id provider-id
            :target-provider-id.lowercase (util/safe-lowercase provider-id)

@@ -672,3 +672,64 @@
          :identity-type ["catalog_item" "provider"]
          :permitted-user "user2"}
         [acl3 fixtures/*fixture-provider-acl* acl5 acl7]))))
+
+(deftest acl-search-collection-concept-id-access-value
+  (let [token (e/login (u/conn-context) "user1")
+        save-access-value-collection (fn [short-name access-value]
+                                         (u/save-collection {:entry-title (str short-name " entry title")
+                                                             :short-name short-name
+                                                             :native-id short-name
+                                                             :provider-id "PROV1"
+                                                             :access-value access-value}))
+        ;; one collection with a low access value
+        coll1 (save-access-value-collection "coll1" 1)
+        ;; one with an intermediate access value
+        coll2 (save-access-value-collection "coll2" 4)
+        ;; one with a higher access value
+        coll3 (save-access-value-collection "coll3" 10)
+        ;; and one with no access value
+        coll4 (save-access-value-collection "coll4" nil)
+        acl1 (ingest-acl token (assoc (catalog-item-acl "Access values 1-10")
+                                      :catalog_item_identity {:name "Access values 1-10"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:access_value {:min_value 1 :max_value 10}}
+                                                              :provider_id "PROV1"}))
+
+        acl2 (ingest-acl token (assoc (catalog-item-acl "Access value 1")
+                                      :catalog_item_identity {:name "Access value 1"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:access_value {:min_value 1 :max_value 1}}
+                                                              :provider_id "PROV1"}))
+
+        acl3 (ingest-acl token (assoc (catalog-item-acl "Access value 5-10")
+                                      :catalog_item_identity {:name "Access value 5-10"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:access_value {:min_value 5 :max_value 10}}
+                                                              :provider_id "PROV1"}))
+        acl4 (ingest-acl token (assoc (catalog-item-acl "Access value 2-10")
+                                      :catalog_item_identity {:name "include undefined value"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:access_value {:include_undefined_value true}}
+                                                              :provider_id "PROV1"}))]
+
+    (u/wait-until-indexed)
+    (testing "collection concept id search, access value acls"
+      (are3 [params acls]
+        (let [response (ac/search-for-acls (u/conn-context) params)]
+          (is (= (acls->search-response (count acls) acls)
+                 (dissoc response :took))))
+        "coll1 test"
+        {:collection-concept-id coll1}
+        [acl1 acl2]
+
+        "coll2 test"
+        {:collection-concept-id coll2}
+        [acl1]
+
+        "coll3 test"
+        {:collection-concept-id coll3}
+        [acl1 acl3]
+
+        "coll4 test"
+        {:collection-concept-id coll4}
+        [acl4]))))
