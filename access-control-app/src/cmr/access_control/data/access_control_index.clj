@@ -76,6 +76,7 @@
     (m/save-elastic-doc
       elastic-store group-index-name group-type-name concept-id elastic-doc revision-id
       {:ignore-conflict? true
+       ;; This option makes indexing synchronous by forcing a refresh of the index before returning.
        :refresh? true})))
 
 (defn-timed reindex-groups
