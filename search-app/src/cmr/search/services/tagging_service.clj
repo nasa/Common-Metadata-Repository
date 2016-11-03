@@ -226,14 +226,28 @@
         {:keys [tag-key originator-id]} existing-tag
         mdb-context (assoc context :system
                            (get-in context [:system :embedded-systems :metadata-db]))
-        [t1 result] (util/time-execution (util/fast-map
-                                           (fn [association]
-                                             (update-tag-association
-                                                mdb-context (merge association {:tag-key tag-key
-                                                                                :originator-id originator-id}) operation))
-                                           tag-associations))]
-     (debug "update-tag-associations:" t1)
-     result))
+        failed-concepts (atom nil)
+        [t1 result] (util/time-execution
+                     (doall (pmap (fn [association]
+                                    (try
+                                      (update-tag-association
+                                       mdb-context (merge association {:tag-key tag-key
+                                                                       :originator-id originator-id}) operation)
+                                      (catch Exception e
+                                        (swap! failed-concepts conj {:exception e
+                                                                     :concept-id (:concept-id association)})
+                                        nil)))
+                                  tag-associations)))]
+    (debug "update-tag-associations:" t1)
+    (if @failed-concepts
+      (let [messages (map #(format "Failed to %s collection [%s] with tag [%s]"
+                                   (if (= operation :insert) "associate" "dissociate")
+                                   (:concept-id %) (:concept-id tag-concept))
+                          @failed-concepts)]
+        (if (= (count @failed-concepts) (count tag-associations)) ; total failure
+          (errors/throw-service-errors (:type (ex-data (-> @failed-concepts first :exception))) messages)
+          (remove nil? (merge result {:errors messages})))) ; partial failure - 200 status code + list of results and errors
+      result)))
 
 (defn- update-tag-associations-with-query
   "Based on the input operation type (:insert or :delete), insert or delete tag associations
