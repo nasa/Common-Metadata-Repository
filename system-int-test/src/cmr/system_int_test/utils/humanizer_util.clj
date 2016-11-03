@@ -32,6 +32,14 @@
     {:status status
      :body body}))
 
+(defn update-community-usage-metrics
+  "Updates the community usage metrics"
+  ([token metrics]
+   (update-community-usage-metrics token metrics nil))
+  ([token metrics options]
+   (let [options (merge {:raw? true :token token} options)]
+     (process-response (h/update-community-usage-metrics (s/context) metrics options)))))
+
 (defn update-humanizers
   "Updates the humanizers."
   ([token humanizers]
@@ -51,6 +59,11 @@
   [f]
   (save-humanizers (:humanizers sh/sample-humanizers))
   (f))
+
+(defn get-community-usage-metrics
+  "Retrieves the community usage metrics"
+  []
+  (process-response (h/get-community-usage-metrics (s/context) {:raw? true})))
 
 (defn get-humanizers
   "Retrieves the humanizers"
