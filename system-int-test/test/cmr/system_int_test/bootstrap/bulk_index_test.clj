@@ -128,7 +128,6 @@
                               :items
                               (fn [items]
                                 (map #(select-keys % [:concept-id :revision-id]) items)))]
-            (println "RESULT-TAGS " result-tags)
             (tags/assert-tag-search expected-tags result-tags))
 
           "Tags"

@@ -105,6 +105,44 @@
            0
            concept-batches)))
 
+(defn- get-max-revision-date
+  "Takes a batch of concepts to index and returns the maximum revision date."
+  [batch previous-max-revision-date]
+  (let [revision-datetime-strings (map :revision-date batch)
+        revision-datetimes (->> (map #(f/parse (f/formatters :date-time) %)
+                                     revision-datetime-strings)
+                                (cons previous-max-revision-date)
+                                (remove nil?))]
+    (reduce (fn [t1 t2]
+              (if (and t1 t2)
+                (if (< 0 (.compareTo t1 t2)) t1 t2)
+                (or t1 t2)))
+            revision-datetimes)))
+
+(defn bulk-index-with-revision-date
+  "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
+  directly to this function - it does not retrieve them from metadata db (tag associations for
+  collections WILL be retrieved, however). The bulk API is invoked repeatedly if necessary -
+  processing batch-size concepts each time. Returns the number of concepts that have been indexed.
+
+  Valid options:
+  * :all-revisions-index? - true indicates this should be indexed into the all revisions index
+  * :force-version? - true indicates that we should overwrite whatever is in elasticsearch with the
+  latest regardless of whether the version in the database is older than the _version in elastic."
+  ([context concept-batches]
+   (bulk-index context concept-batches nil))
+  ([context concept-batches options]
+   (reduce (fn [{:keys [num-indexed max-revision-date]} batch]
+             (let [max-revision-date (get-max-revision-date batch max-revision-date)
+                   batch (prepare-batch context batch options)]
+               (es/bulk-index-documents context batch options)
+              ;  (println (format "I would return num-indexed %d, max revision-date: %s"
+              ;                   (+ num-indexed (count batch)) max-revision-date))
+               {:num-indexed (+ num-indexed (count batch))
+                :max-revision-date max-revision-date}))
+           {:num-indexed 0 :max-revision-date nil}
+           concept-batches)))
+
 (defn- indexing-applicable?
   "Returns true if indexing is applicable for the given concept-type and all-revisions-index? flag.
   Indexing is applicable for all concept types if all-revisions-index? is false and only for
