@@ -205,14 +205,23 @@
                      {:concept-id coll-concept-id :revision-id coll-revision-id})]
     (if (seq errors)
       {:errors errors :tagged-item tagged-item}
-      (let [{:keys [concept-id revision-id message]} ;; only delete-tag-association could potentially return message
-            (if (= :insert operation)
-              (save-concept-in-mdb mdb-context (tag-association->concept-map tag-association))
-              (delete-tag-association mdb-context native-id))]
-        (if (some? message)
-          (merge {:tagged-item tagged-item} message)
-          {:tag-association {:concept-id concept-id :revision-id revision-id}
-           :tagged-item tagged-item})))))
+      (try
+        (let [{:keys [concept-id revision-id message]} ;; only delete-tag-association could potentially return message
+              (if (= :insert operation)
+                (save-concept-in-mdb mdb-context (tag-association->concept-map tag-association))
+                (delete-tag-association mdb-context native-id))]
+          (if (some? message)
+            (merge {:tagged-item tagged-item} message)
+            {:tag-association {:concept-id concept-id :revision-id revision-id}
+             :tagged-item tagged-item}))
+        (catch Exception e ; Report a specific error in the case of a conflict, otherwise throw error
+          (if (= :conflict (:type (ex-data e)))
+            {:errors (format "Failed to %s tag [%s] with collection [%s] because it conflicted with a concurrent operation"
+                        (if (= :insert operation) "associate" "dissociate")
+                        (:tag-key tag-association)
+                        coll-concept-id)
+             :tagged-item tagged-item}
+            (throw e)))))))
 
 (defn- update-tag-associations
   "Based on the input operation type (:insert or :delete), insert or delete tag associations,
@@ -226,28 +235,14 @@
         {:keys [tag-key originator-id]} existing-tag
         mdb-context (assoc context :system
                            (get-in context [:system :embedded-systems :metadata-db]))
-        failed-concepts (atom nil)
-        [t1 result] (util/time-execution
-                     (doall (pmap (fn [association]
-                                    (try
-                                      (update-tag-association
-                                       mdb-context (merge association {:tag-key tag-key
-                                                                       :originator-id originator-id}) operation)
-                                      (catch Exception e
-                                        (swap! failed-concepts conj {:exception e
-                                                                     :concept-id (:concept-id association)})
-                                        nil)))
-                                  tag-associations)))]
+        [t1 result] (util/time-execution (doall (pmap
+                                                   (fn [association]
+                                                     (update-tag-association
+                                                      mdb-context (merge association {:tag-key tag-key
+                                                                                      :originator-id originator-id}) operation))
+                                                   tag-associations)))]
     (debug "update-tag-associations:" t1)
-    (if @failed-concepts
-      (let [messages (map #(format "Failed to %s collection [%s] with tag [%s]"
-                                   (if (= operation :insert) "associate" "dissociate")
-                                   (:concept-id %) (:concept-id tag-concept))
-                          @failed-concepts)]
-        (if (= (count @failed-concepts) (count tag-associations)) ; total failure
-          (errors/throw-service-errors (:type (ex-data (-> @failed-concepts first :exception))) messages)
-          (remove nil? (merge result {:errors messages})))) ; partial failure - 200 status code + list of results and errors
-      result)))
+    result))
 
 (defn- update-tag-associations-with-query
   "Based on the input operation type (:insert or :delete), insert or delete tag associations
