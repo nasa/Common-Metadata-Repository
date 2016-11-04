@@ -57,22 +57,30 @@
    :version-col (.indexOf csv-header "Version")
    :hosts-col (.indexOf csv-header "Hosts")})
 
+(defn- read-csv-column
+  "Read a column from the csv, if the column is exists. Otherwise, return nil."
+  [csv-line col]
+  (when (>= col 0)
+    (nth csv-line col)))
+
 (defn- csv-entry->community-usage-metric
   "Convert a line in the csv file to a community usage metric. Only storing short-name (product),
    version (can be 'N/A' or a version number), and access-count (hosts)"
   [csv-line product-col version-col hosts-col]
-  (let [metric {:short-name (nth csv-line product-col)
-                :version (let [version (read-string (nth csv-line version-col))]
-                            (when (number? version) version))
-                :access-count (read-string (nth csv-line hosts-col))}]
+  (let [metric {:short-name (read-csv-column csv-line product-col)
+                :version (when-let [version (read-csv-column csv-line version-col)]
+                           (let [version (read-string version)]
+                              (when (number? version) version)))
+                :access-count (when-let [access-count (read-csv-column csv-line hosts-col)]
+                                (read-string access-count))}]
     (util/remove-nil-keys metric)))
 
 (defn- community-usage-csv->community-usage-metrics
   "Convert the community usage csv to a list of community usage metrics to save"
   [community-usage-csv]
-  (let [csv-lines (csv/read-csv (read-string community-usage-csv)) ; Use read-string to remove escape chars
-        {:keys [product-col version-col hosts-col]} (get-community-usage-columns (first csv-lines))]
-    (map #(csv-entry->community-usage-metric % product-col version-col hosts-col) (rest csv-lines))))
+  (when-let [csv-lines (seq (csv/read-csv (str (read-string community-usage-csv))))] ; Use read-string to remove escape chars
+    (let [{:keys [product-col version-col hosts-col]} (get-community-usage-columns (first csv-lines))]
+      (seq (map #(csv-entry->community-usage-metric % product-col version-col hosts-col) (rest csv-lines))))))
 
 (defn- save-humanizers
   "Save the humanizers, which includes both community usage metrics and humanizers."

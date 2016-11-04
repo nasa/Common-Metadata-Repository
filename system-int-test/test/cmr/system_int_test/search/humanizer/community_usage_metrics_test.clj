@@ -1,13 +1,14 @@
 (ns cmr.system-int-test.search.humanizer.community-usage-metrics-test
   "This tests the CMR Search API's humanizers capabilities"
   (:require
-   [clojure.test :refer :all]
    [clojure.string :as str]
-   [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.humanizer-util :as hu]
+   [clojure.test :refer :all]
+   [cmr.access-control.test.util :as u]
+   [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]
-   [cmr.access-control.test.util :as u]))
+   [cmr.system-int-test.utils.humanizer-util :as hu]
+   [cmr.system-int-test.utils.ingest-util :as ingest]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -49,3 +50,69 @@
         (is (= 2 revision-id))
         (hu/assert-humanizers-saved {:community-usage-metrics [{:short-name "AST_09XT" :version 3 :access-count 156}]}
                                     "admin" concept-id revision-id)))))
+
+(deftest update-community-usage-no-permission-test
+  (testing "Create without token"
+    (is (= {:status 401
+            :errors ["You do not have permission to perform that action."]}
+           (hu/update-community-usage-metrics nil sample-usage-csv))))
+
+  (testing "Create with unknown token"
+    (is (= {:status 401
+            :errors ["Token ABC does not exist"]}
+           (hu/update-community-usage-metrics "ABC" sample-usage-csv))))
+
+  (testing "Create without permission"
+    (let [token (e/login (s/context) "user2")]
+      (is (= {:status 401
+              :errors ["You do not have permission to perform that action."]}
+             (hu/update-community-usage-metrics token sample-usage-csv))))))
+
+(deftest update-community-usage-metrics-validation-test
+  (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
+
+  (let [admin-update-token (e/login (s/context) "admin" ["admin-update-group-guid"])]
+    (testing "Create community usage with invalid content type"
+      (is (= {:status 400,
+              :errors
+              ["The mime types specified in the content-type header [application/json] are not supported."]}
+             (hu/update-community-usage-metrics admin-update-token sample-usage-csv {:http-options {:content-type :json}}))))
+
+    (testing "Create community usage with nil body"
+      (is (= {:status 400,
+              :errors
+              ["/community-usage-metrics instance type (null) does not match any allowed primitive type (allowed: [\"array\"])"]}
+             (hu/update-community-usage-metrics admin-update-token nil))))
+
+    (testing "Create humanizer with empty csv"
+      (is (= {:status 400,
+              :errors
+              ["/community-usage-metrics instance type (null) does not match any allowed primitive type (allowed: [\"array\"])"]}
+             (hu/update-community-usage-metrics admin-update-token ""))))
+
+    (testing "Missing field validations"
+      (are3 [field csv]
+            (is (= {:status 400
+                    :errors [(format "/community-usage-metrics/0 object has missing required properties ([\"%s\"])"
+                                     (name field))]}
+                   (hu/update-community-usage-metrics admin-update-token csv)))
+
+            "Missing product (short-name)"
+            :short-name "Version,Hosts\n3,4"
+
+            "Missing hosts (access-count)"
+            :access-count "Product,Version\nAMSR-L1A,4"))
+
+    (testing "Minimum field length validations"
+      (is (= {:status 400
+              :errors ["/community-usage-metrics/0/short-name string \"\" is too short (length: 0, required minimum: 1)"]}
+             (hu/update-community-usage-metrics admin-update-token "Product,Version,Hosts\n,3,4"))))
+
+    (testing "Maximum field length validations"
+      (let [long-value (apply str (repeat 86 "x"))]
+        (is (= {:status 400
+                :errors [(format
+                          "/community-usage-metrics/0/short-name string \"%s\" is too long (length: 86, maximum allowed: 85)"
+                          long-value)]}
+               (hu/update-community-usage-metrics
+                admin-update-token (format "Product,Version,Hosts\n%s,3,4" long-value))))))))
