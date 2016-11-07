@@ -21,7 +21,7 @@
                                           :items {:type :object
                                                    :additionalProperties false
                                                    :properties {:short-name {:type :string :minLength 1 :maxLength 85}
-                                                                :version {:type :integer}
+                                                                :version {:type :string :maxLength 20}
                                                                 :access-count {:type :integer}}
                                                    :required [:short-name :access-count]}}}})
 

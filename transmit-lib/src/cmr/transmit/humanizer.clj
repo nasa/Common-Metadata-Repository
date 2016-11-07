@@ -1,9 +1,11 @@
 (ns cmr.transmit.humanizer
   "This contains functions for interacting with the humanizers API."
-  (:require [cmr.transmit.connection :as conn]
-            [cmr.transmit.config :as config]
-            [cmr.transmit.http-helper :as h]
-            [cheshire.core :as json]))
+  (:require
+   [cheshire.core :as json]
+   [cmr.common.mime-types :as mt]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.connection :as conn]
+   [cmr.transmit.http-helper :as h]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
@@ -32,8 +34,8 @@
                 {:url-fn community-usage-metrics-url
                  :method :put
                  :raw? raw?
-                 :http-options (merge {:body (json/generate-string content)
-                                       :content-type "text/csv"
+                 :http-options (merge {:body content
+                                       :content-type (mt/format->mime-type :csv)
                                        :headers headers
                                        :accept :json}
                                       http-options)}))))
