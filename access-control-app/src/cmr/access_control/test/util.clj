@@ -178,17 +178,7 @@
               short-name (assoc :ShortName short-name)
               (contains? options :access-value) (assoc-in [:AccessConstraints :Value] access-value)
               no-temporal (assoc :TemporalExtents nil)
-              temporal-range (assoc-in [:TemporalExtents 0 :RangeDateTimes] [temporal-range]))
-        extra-fields (if access-value
-                       {:short-name short-name
-                        :entry-title entry-title
-                        :entry-id short-name
-                        :access-value access-value
-                        :version-id "v1"}
-                       {:short-name short-name
-                        :entry-title entry-title
-                        :entry-id short-name
-                        :version-id "v1"})]
+              temporal-range (assoc-in [:TemporalExtents 0 :RangeDateTimes] [temporal-range]))]
 
     ;; We don't want to publish messages in metadata db since different envs may or may not be running
     ;; the indexer when we run this test.
@@ -201,7 +191,10 @@
                           :provider-id provider-id
                           :native-id native-id
                           :revision-id 1
-                          :extra-fields extra-fields})))))
+                          :extra-fields {:short-name short-name
+                                         :entry-title entry-title
+                                         :entry-id short-name
+                                         :version-id "v1"}})))))
 
 (defn assert-group-saved
   "Checks that a group was persisted correctly in metadata db. The user-id indicates which user

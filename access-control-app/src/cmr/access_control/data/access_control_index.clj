@@ -173,18 +173,15 @@
    :permission m/string-field-mapping
    :permission.lowercase m/string-field-mapping})
 
-(defnestedmapping access-value-field-mapping
-  "Defines mappings for access value."
-  {:min-value m/int-field-mapping
-   :max-value m/int-field-mapping
-   :include-undefined-value m/bool-field-mapping})
-
 (defmapping ^:private acl-mappings acl-type-name
   "Defines the field mappings and type options for indexing acls in elasticsearch."
   {:concept-id (m/stored m/string-field-mapping)
    :revision-id (m/stored m/int-field-mapping)
 
-   :access-value access-value-field-mapping
+   :collection-identifier m/bool-field-mapping
+   :collection-access-value-min m/int-field-mapping
+   :collection-access-value-max m/int-field-mapping
+   :collection-access-value-include-undefined-value m/bool-field-mapping
 
    :permitted-group (m/stored m/string-field-mapping)
    :permitted-group.lowercase m/string-field-mapping
@@ -264,16 +261,26 @@
   (let [acl (edn/read-string (:metadata concept-map))
         permitted-groups (acl->permitted-groups acl)
         provider-id (acls/acl->provider-id acl)]
-    (assoc (select-keys concept-map [:concept-id :revision-id])
-           :display-name (acl->display-name acl)
-           :identity-type (acl->identity-type acl)
-           :permitted-group permitted-groups
-           :permitted-group.lowercase (map str/lower-case permitted-groups)
-           :access-value (:access-value (:collection-identifier (:catalog-item-identity acl)))
-           :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
-           :target-provider-id provider-id
-           :target-provider-id.lowercase (util/safe-lowercase provider-id)
-           :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map)))))
+    (merge
+      (when-let [av (:access-value (:collection-identifier (:catalog-item-identity acl)))]
+        {:collection-access-value-max (:max-value av)
+         :collection-access-value-min (:min-value av)
+         :collection-access-value-include-undefined-value (:include-undefined-value av)
+         :collection-identifier true})
+      (when (and
+              (not (:collection-identifier (:catalog-item-identity acl)))
+              (not (:granule-identifier (:catalog-item-identity acl)))
+              (:catalog-item-identity acl))
+        {:collection-identifier false})
+      (assoc (select-keys concept-map [:concept-id :revision-id])
+             :display-name (acl->display-name acl)
+             :identity-type (acl->identity-type acl)
+             :permitted-group permitted-groups
+             :permitted-group.lowercase (map str/lower-case permitted-groups)
+             :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
+             :target-provider-id provider-id
+             :target-provider-id.lowercase (util/safe-lowercase provider-id)
+             :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map))))))
 
 (defmethod index-concept :acl
   [context concept-map]

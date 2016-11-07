@@ -10,6 +10,7 @@
     [cmr.access-control.services.acl-service :as acl-service]
     [cmr.access-control.services.auth-util :as auth-util]
     [cmr.access-control.services.group-service :as groups]
+    [cmr.access-control.services.permitted-concept-id-search :as pcs]
     [cmr.acl.core :as acl]
     [cmr.common-app.services.search :as cs]
     [cmr.common-app.services.search.group-query-conditions :as gc]
@@ -19,9 +20,9 @@
     [cmr.common-app.services.search.query-execution :as qe]
     [cmr.common-app.services.search.query-model :as common-qm]
     [cmr.common.log :refer [info debug]]
-    [cmr.transmit.metadata-db2 :as mdb2]
     [cmr.common.util :as util]
     [cmr.transmit.echo.tokens :as tokens]
+    [cmr.transmit.metadata-db2 :as mdb2]
     [cmr.umm.collection.product-specific-attribute :as psa]))
 
 (defmethod cpv/params-config :acl
@@ -29,7 +30,7 @@
   (cpv/merge-params-config
     cpv/basic-params-config
     {:single-value #{:include-full-acl}
-     :multiple-value #{:permitted-group :identity-type :provider :collection-concept-id}
+     :multiple-value #{:permitted-group :identity-type :provider}
      :always-case-sensitive #{}
      :disallow-pattern #{:identity-type :permitted-user :group-permission}
      :allow-or #{}}))
@@ -40,7 +41,7 @@
 
 (defmethod cpv/valid-parameter-options :acl
   [_]
-  {:collection-concept-id cpv/string-param-options
+  {:permitted-concept-id #{}
    :permitted-group cpv/string-param-options
    :provider cpv/string-param-options
    :identity-type cpv/string-param-options
@@ -158,7 +159,7 @@
 
 (defmethod cp/param-mappings :acl
   [_]
-  {:collection-concept-id :acl-collection-concept-id
+  {:permitted-concept-id :permitted-concept-id
    :permitted-group :string
    :identity-type :acl-identity-type
    :provider :string
@@ -173,21 +174,10 @@
             (when (= (:include-full-acl params) "true")
               {:result-features [:include-full-acl]}))]))
 
-(defn- create-access-value-condition
-  [min-value max-value]
-  (if min-value
-    (common-qm/numeric-range-intersection-condition
-      :access-value.min-value
-      :access-value.max-value
-      min-value
-      max-value)
-    (common-qm/boolean-condition :access-value.include-undefined-value true)))
-
-(defmethod cp/parameter->condition :acl-collection-concept-id
+(defmethod cp/parameter->condition :permitted-concept-id
  [context concept-type param value options]
- (let [collection (mdb2/get-latest-concept context value)
-       access-value (:access-value (:extra-fields collection))]
-   (common-qm/nested-condition :access-value (create-access-value-condition access-value access-value))))
+ (let [concept (mdb2/get-latest-concept context value)]
+   (pcs/get-permitted-concept-id-conditions context concept)))
 
 (defmethod cp/parameter->condition :acl-identity-type
  [context concept-type param value options]
@@ -227,7 +217,7 @@
  (let [[safe-params type-errors] (cpv/apply-type-validations
                                    params
                                    [(partial cpv/validate-map [:options])
-                                    (partial cpv/validate-map [:options :collection-concept-id])
+                                    (partial cpv/validate-map [:collection-concept-id])
                                     (partial cpv/validate-map [:options :permitted-group])
                                     (partial cpv/validate-map [:options :identity-type])
                                     (partial cpv/validate-map [:options :provider])

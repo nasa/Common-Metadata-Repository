@@ -673,7 +673,10 @@
          :permitted-user "user2"}
         [acl3 fixtures/*fixture-provider-acl* acl5 acl7]))))
 
-(deftest acl-search-collection-concept-id-access-value
+(deftest acl-search-permitted-concept-id-access-value
+  ;; This test is for searching ACLs by permitted concept id.  For a given
+  ;; collection concept id, acls granting permission to this collection by access value
+  ;; are returned.
   (let [token (e/login (u/conn-context) "user1")
         save-access-value-collection (fn [short-name access-value]
                                          (u/save-collection {:entry-title (str short-name " entry title")
@@ -687,8 +690,14 @@
         coll2 (save-access-value-collection "coll2" 4)
         ;; one with a higher access value
         coll3 (save-access-value-collection "coll3" 10)
-        ;; and one with no access value
+        ;; one with no access value
         coll4 (save-access-value-collection "coll4" nil)
+        ;; one with FOO entry-title
+        coll5 (u/save-collection {:entry-title "FOO"
+                                  :short-name "coll5"
+                                  :native-id "coll5"
+                                  :provider-id "PROV1"})
+
         acl1 (ingest-acl token (assoc (catalog-item-acl "Access value 1-10")
                                       :catalog_item_identity {:name "Access value 1-10"
                                                               :collection_applicable true
@@ -710,7 +719,19 @@
                                       :catalog_item_identity {:name "include undefined value"
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:include_undefined_value true}}
+                                                              :provider_id "PROV1"}))
+        acl5 (ingest-acl token (catalog-item-acl "No collection identifier"))
+        acl6 (ingest-acl token (assoc (catalog-item-acl "Entry titles FOO")
+                                      :catalog_item_identity {:name "Entry titles FOO"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:entry_titles ["FOO"]}
+                                                              :provider_id "PROV1"}))
+        acl7 (ingest-acl token (assoc (catalog-item-acl "Access value 1-10 for granule")
+                                      :catalog_item_identity {:name "Access value 1-10 for granule"
+                                                              :granule_applicable true
+                                                              :granule_identifier {:access_value {:min_value 1 :max_value 10}}
                                                               :provider_id "PROV1"}))]
+
 
     (u/wait-until-indexed)
     (testing "collection concept id search, access value acls"
@@ -719,17 +740,17 @@
           (is (= (acls->search-response (count acls) acls)
                  (dissoc response :took))))
         "coll1 test"
-        {:collection-concept-id coll1}
-        [acl1 acl2]
+        {:permitted-concept-id coll1}
+        [acl1 acl2 acl5]
 
         "coll2 test"
-        {:collection-concept-id coll2}
-        [acl1]
+        {:permitted-concept-id coll2}
+        [acl1 acl5]
 
         "coll3 test"
-        {:collection-concept-id coll3}
-        [acl1 acl3]
+        {:permitted-concept-id coll3}
+        [acl1 acl3 acl5]
 
         "coll4 test"
-        {:collection-concept-id coll4}
-        [acl4]))))
+        {:permitted-concept-id coll4}
+        [acl4 acl5]))))
