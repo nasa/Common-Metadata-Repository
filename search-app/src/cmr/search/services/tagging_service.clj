@@ -25,6 +25,9 @@
   "This is the separator character used when creating the native id for a tag."
   "/")
 
+(def ^:private association-conflict-error-message
+  "Failed to %s tag [%s] with collection [%s] because it conflicted with a concurrent %s on the same tag and collection. This means that someone is sending the same request to the CMR at the same time.")
+
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
   [context]
@@ -214,12 +217,13 @@
             (merge {:tagged-item tagged-item} message)
             {:tag-association {:concept-id concept-id :revision-id revision-id}
              :tagged-item tagged-item}))
-        (catch Exception e ; Report a specific error in the case of a conflict, otherwise throw error
+        (catch clojure.lang.ExceptionInfo e ; Report a specific error in the case of a conflict, otherwise throw error
           (if (= :conflict (:type (ex-data e)))
-            {:errors (format "Failed to %s tag [%s] with collection [%s] because it conflicted with a concurrent operation"
+            {:errors (format association-conflict-error-message
                         (if (= :insert operation) "associate" "dissociate")
                         (:tag-key tag-association)
-                        coll-concept-id)
+                        coll-concept-id
+                        (if (= :insert operation) "association" "dissociation"))
              :tagged-item tagged-item}
             (throw e)))))))
 
@@ -235,12 +239,12 @@
         {:keys [tag-key originator-id]} existing-tag
         mdb-context (assoc context :system
                            (get-in context [:system :embedded-systems :metadata-db]))
-        [t1 result] (util/time-execution (doall (pmap
-                                                   (fn [association]
-                                                     (update-tag-association
-                                                      mdb-context (merge association {:tag-key tag-key
-                                                                                      :originator-id originator-id}) operation))
-                                                   tag-associations)))]
+        [t1 result] (util/time-execution (util/fast-map
+                                          (fn [association]
+                                            (update-tag-association
+                                             mdb-context (merge association {:tag-key tag-key
+                                                                             :originator-id originator-id}) operation))
+                                          tag-associations))]
     (debug "update-tag-associations:" t1)
     result))
 
