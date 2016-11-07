@@ -31,7 +31,7 @@
           (range-cond [field from to]
                       (qm/numeric-range-condition (add-prefix field) from to))
           (bool-cond [field value]
-                     (qm/->BooleanCondition (add-prefix field) value))]
+                     (qm/boolean-condition (add-prefix field) value))]
     (if (mbr/crosses-antimeridian? br)
       (let [c (range-cond :west -180 west)
             d (range-cond :east -180 east)

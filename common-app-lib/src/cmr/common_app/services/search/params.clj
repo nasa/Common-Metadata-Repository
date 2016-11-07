@@ -113,9 +113,7 @@
   [_context concept-type param value options]
   (cond
     (or (= "true" value) (= "false" value))
-    (qm/map->BooleanCondition {:field param
-                               :value (= "true" value)})
-
+    (qm/boolean-condition param (= "true" value))
     (= "unset" (str/lower-case value))
     qm/match-all
 
