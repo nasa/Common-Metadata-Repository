@@ -1,11 +1,13 @@
 (ns cmr.metadata-db.services.concept-constraints
   "Functions for enforcing constraint checks just after a concept has been saved."
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.metadata-db.data.concepts :as c]
-            [cmr.common.config :refer [defconfig]]
-            [cmr.metadata-db.services.messages :as msg]
-            [cmr.common.util :as util]
-            [clojure.set :as set]))
+  (:require
+    [clojure.set :as set]
+    [cmr.common.config :refer [defconfig]]
+    [cmr.common.log :as log :refer (warn)] 
+    [cmr.common.services.errors :as errors]
+    [cmr.common.util :as util]
+    [cmr.metadata-db.data.concepts :as c]
+    [cmr.metadata-db.services.messages :as msg]))
 
 (defconfig enforce-granule-ur-constraint
   "Configuration to allow enabling and disabling of the granule UR uniqueness constraint"
@@ -29,7 +31,7 @@
   (let [num-concepts (count concepts)]
     (cond
       (zero? num-concepts)
-      (errors/internal-error!
+      (warn
         (format "Unable to find saved concept for provider [%s] and %s [%s]"
                 (:provider-id concept)
                 (name field)
