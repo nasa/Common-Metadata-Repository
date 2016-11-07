@@ -238,7 +238,6 @@
                                     (partial cpv/validate-map [:options :provider])
                                     (partial cpv/validate-map [:options :permitted-user])
                                     (partial cpv/validate-map [:group_permission])])]
-   (proto-repl.saved-values/save 2)
    (cpv/validate-parameters
      :acl safe-params
      (concat cpv/common-validations
