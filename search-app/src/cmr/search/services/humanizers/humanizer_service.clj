@@ -52,7 +52,12 @@
     (errors/throw-service-error :not-found "Humanizer does not exist.")))
 
 (defn- get-community-usage-columns
-  "The community usage csv has many columns. Get the indices of the columns we want to store."
+  "The community usage csv has many columns. Get the indices of the columns we want to store.
+
+   Returns:
+   product-col - the index of the Product in each CSV line
+   version-col - the index of the Version in each CSV line
+   hosts-col - the index of the Hosts in each CSV line"
   [csv-header]
   {:product-col (.indexOf csv-header "Product")
    :version-col (.indexOf csv-header "Version")
@@ -71,14 +76,21 @@
   {:short-name (read-csv-column csv-line product-col)
    :version (read-csv-column csv-line version-col)
    :access-count (when-let [access-count (read-csv-column csv-line hosts-col)]
-                   (read-string access-count))})
+                   (Integer/parseInt access-count))})
+        ; :access-count (when-let [access-count (read-csv-column csv-line hosts-col)]
+        ;                 (try
+        ;                   (Integer/parseInt access-count)
+        ;                   (catch java.lang.NumberFormatException e
+        ;                     (errors/throw-service-error :invalid-data
+        ;                       (format "Error parsing 'Hosts' CSV Data for collection [%s], version [%s]. Hosts must be an integer."
+        ;                               short-name version)))))})
 
 (defn- community-usage-csv->community-usage-metrics
   "Convert the community usage csv to a list of community usage metrics to save"
   [community-usage-csv]
   (when-let [csv-lines (seq (csv/read-csv community-usage-csv))]
     (let [{:keys [product-col version-col hosts-col]} (get-community-usage-columns (first csv-lines))]
-      (seq (map #(csv-entry->community-usage-metric % product-col version-col hosts-col) (rest csv-lines))))))
+      (map #(csv-entry->community-usage-metric % product-col version-col hosts-col) (rest csv-lines)))))
 
 (defn- aggregate-usage-metrics
  "Combine access counts for entries with the same short-name and version number."
@@ -112,12 +124,13 @@
    key: What we are updating :humanizers or :community-usage-metrics
    data: The data to add to the file, as a clojure map"
   [context key data]
+  {:pre [(or (= key :humanizers) (= key :community-usage-metrics))]}
   (if-let [humanizer-concept (find-latest-humanizer-concept context)]
     (let [humanizers (json/parse-string (:metadata humanizer-concept) true)
           humanizers (assoc humanizers key data)] ; Overwrite just the data we are saving, not the whole file
       (save-humanizers context (json/generate-string humanizers) (inc (:revision-id humanizer-concept))))
     (let [json (json/generate-string {key data})] ; No current revision exists, just write the data
-      (save-humanizers context json))))
+      (save-humanizers context json 1))))
 
 (defn get-humanizers
   "Retrieves the set of humanizer instructions from metadata-db."

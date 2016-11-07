@@ -128,9 +128,12 @@
                 admin-update-token (format "Product,Version,Hosts\nAST_09XT,%s,4" long-value))))))))
 
 (def sample-aggregation-csv
+  "Sample CSV to test aggregation of access counts in different CSV entries with the same short-name
+   and version"
   "Product,Version,Hosts\nAMSR-L1A,3,4\nAMSR-L1A,3,6\nAMSR-L1A,N/A,87\nAMSR-L1A,N/A,10\nMAPSS_MOD04_L2,4,12")
 
 (def sample-aggregation-data
+ "Expected sample aggregated data from sample-aggregation-csv"
  [{:short-name "AMSR-L1A"
    :version "3"
    :access-count 10}
@@ -141,6 +144,8 @@
    :version "4"
    :access-count 12}])
 
+;; Test that metrics are combined appropriately when short-name and version match for different
+;; CSV entries.
 (deftest aggregate-community-metrics-test
   (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
 
