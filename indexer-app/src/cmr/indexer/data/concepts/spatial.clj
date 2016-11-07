@@ -126,7 +126,7 @@
 (defn collection-spatial->elastic-docs
   "Converts the spatial area of the given collection to the elastic documents"
   [coordinate-system collection]
-  (when-let [shapes (get-collection-geometry-shapes collection)]
+  (when-let [shapes (seq (get-collection-geometry-shapes collection))]
     (shapes->elastic-doc shapes coordinate-system)))
 
 (defn granule-spatial->elastic-docs

@@ -1,13 +1,15 @@
 (ns cmr.virtual-product.services.translation-service
   "Handles translate virtual products granule entries to source granule entries."
-  (:require [cheshire.core :as json]
-            [cmr.common.validations.json-schema :as js]
-            [cmr.common.concepts :as concepts]
-            [cmr.common.services.errors :as errors]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.transmit.search :as search]
-            [cmr.virtual-product.config :as config]
-            [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
+  (:require
+   [cheshire.core :as json]
+   [cmr.common-app.services.search.parameter-validation :as parameter-validation]
+   [cmr.common.concepts :as concepts]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.validations.json-schema :as js]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.search :as search]
+   [cmr.virtual-product.config :as config]
+   [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
 
 (def granule-entries-schema
   "Schema for the JSON request to the translate-granule-entries end-point"
@@ -18,7 +20,8 @@
                           :entry-title {:type :string}
                           :granule-ur {:anyOf [{:type :string}
                                                {:type :null}]}}
-             :required [:concept-id :entry-title :granule-ur]}}))
+             :required [:concept-id :entry-title :granule-ur]}
+     :minItems 1}))
 
 (defn- annotate-entries
   "Annotate entries with provider id derived from concept-id present in the entry"
@@ -56,7 +59,8 @@
   (let [query-params {"provider-id[]" provider-id
                       "entry_title" entry-title
                       "granule_ur[]" (vec (set granule-urs))
-                      "token" (transmit-config/echo-system-token)}
+                      "token" (transmit-config/echo-system-token)
+                      "page-size" parameter-validation/max-page-size}
         gran-refs (search/find-granule-references context query-params)]
     (for [{:keys [concept-id granule-ur]} gran-refs]
       {:concept-id concept-id
@@ -90,9 +94,18 @@
     (for [[gran-ur src-gran-ur] arr-gran-ur-src-gran-ur]
       [[provider-id gran-ur] (get src-gran-ur-entry-map src-gran-ur)])))
 
+(defn- validate-granule-entries
+  "Validate the given granule entries, throws exception if it is not valid"
+  [granule-entries]
+  (when (> (count granule-entries) parameter-validation/max-page-size)
+    (errors/throw-service-error
+     :bad-request (format "The maximum allowed granule entries in a request is %s, but was %s."
+                          parameter-validation/max-page-size (count granule-entries)))))
+
 (defn- translate-granule-entries
   "Translate virtual granules in the granule-entries into the corresponding source entries. See routes.clj for the JSON schema of granule-entries."
   [context granule-entries]
+  (validate-granule-entries granule-entries)
   (if (config/virtual-products-enabled)
     (let [annotated-entries (annotate-entries granule-entries)
           ;; Group entries by the combination of provider-id and entry-title of source collection for
@@ -103,7 +116,7 @@
                                               (filter :granule-ur annotated-entries))
           ;; Create a map of granule-ur to the corresponding source entry in batches, each batch
           ;; corresponding to a group in entries-by-src-collection
-          gran-ur-src-entry-map (into {} (mapcat (partial map-granule-ur-src-entry context)
+          gran-ur-src-entry-map (into {} (mapcat #(map-granule-ur-src-entry context %)
                                                  entries-by-src-collection))]
       (map (fn [annotated-entry]
              (let [[provider-id granule-ur] (get-prov-id-gran-ur annotated-entry)]

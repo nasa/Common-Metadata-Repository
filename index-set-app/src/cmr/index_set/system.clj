@@ -5,8 +5,10 @@
   (:require
    [cmr.acl.core :as acl]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common.api.web-server :as web]
    [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.jobs :as jobs]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.nrepl :as nrepl]
@@ -23,7 +25,11 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches :index :web :nrepl])
+  [:log :caches :index :scheduler :web :nrepl])
+
+(def system-holder
+  "Required for jobs"
+  (atom nil))
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -34,7 +40,10 @@
              :nrepl (nrepl/create-nrepl-if-configured (index-set-nrepl-port))
              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                       common-health/health-cache-key (common-health/create-health-cache)}
-             :relative-root-url (transmit-config/index-set-relative-root-url)}]
+             :relative-root-url (transmit-config/index-set-relative-root-url)
+             :scheduler (jobs/create-scheduler
+                         `system-holder
+                         [jvm-info/log-jvm-statistics-job])}]
     (transmit-config/system-with-connections sys [:echo-rest])))
 
 (def start
