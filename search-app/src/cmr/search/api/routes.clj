@@ -1,65 +1,67 @@
 (ns cmr.search.api.routes
-  (:require [compojure.route :as route]
-            [compojure.core :refer :all]
-            [clojure.string :as str]
-            [clojure.java.io :as io]
-            [ring.util.response :as r]
-            [ring.util.request :as request]
-            [ring.util.codec :as codec]
-            [ring.middleware.json :as ring-json]
-            [ring.middleware.params :as params]
-            [ring.middleware.nested-params :as nested-params]
-            [ring.middleware.keyword-params :as keyword-params]
-            [ring.swagger.ui :as ring-swagger-ui]
-            [cheshire.core :as json]
-            [inflections.core :as inf]
+  (:require
+   [cheshire.core :as json]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [cmr.acl.core :as acl]
+   [cmr.collection-renderer.api.routes :as collection-renderer-routes]
+   [cmr.common-app.api-docs :as api-docs]
+   [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.routes :as common-routes]
+   [cmr.common-app.services.search.query-model :as common-qm]
+   [cmr.common.api.context :as context]
+   [cmr.common.api.errors :as errors]
+   [cmr.common.cache :as cache]
+   [cmr.common.concepts :as concepts]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as svc-errors]
+   [cmr.common.util :as util]
+   [cmr.common.xml :as cx]
+   [cmr.search.api.community-usage-metrics :as metrics-api]
+   [cmr.search.api.humanizer :as humanizers-api]
+   [cmr.search.api.keyword :as keyword-api]
+   [cmr.search.api.tags-api :as tags-api]
 
-            [cmr.common.concepts :as concepts]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.api.errors :as errors]
+   ;; Required here to make sure the multimethod function implementation is available
+   [cmr.search.data.elastic-results-to-query-results]
 
-            [cmr.common.cache :as cache]
-            [cmr.common.services.errors :as svc-errors]
-            [cmr.common.util :as util]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.xml :as cx]
-            [cmr.search.services.query-service :as query-svc]
-            [cmr.common.api.context :as context]
-            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
-            [cmr.search.services.parameters.legacy-parameters :as lp]
-            [cmr.search.services.messages.common-messages :as msg]
-            [cmr.search.services.health-service :as hs]
-            [cmr.search.api.tags-api :as tags-api]
-            [cmr.search.api.humanizer :as humanizers-api]
-            [cmr.umm-spec.versioning :as umm-version]
-            [cmr.acl.core :as acl]
-            [cmr.search.api.keyword :as keyword-api]
-            [cmr.common-app.api.health :as common-health]
-            [cmr.common-app.api.routes :as common-routes]
-            [cmr.common-app.api-docs :as api-docs]
-            [cmr.common-app.services.search.query-model :as common-qm]
-            [cmr.search.services.result-format-helper :as rfh]
-            [cmr.collection-renderer.api.routes :as collection-renderer-routes]
+   [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
 
-            ;; Required here to make sure the multimethod function implementation is available
-            [cmr.search.data.elastic-results-to-query-results]
+   ;; Result handlers
+   ;; required here to avoid circular dependency in query service
+   [cmr.search.results-handlers.csv-results-handler]
+   [cmr.search.results-handlers.atom-results-handler]
+   [cmr.search.results-handlers.atom-json-results-handler]
+   [cmr.search.results-handlers.reference-results-handler]
+   [cmr.search.results-handlers.kml-results-handler]
+   [cmr.search.results-handlers.metadata-results-handler]
+   [cmr.search.results-handlers.timeline-results-handler]
+   [cmr.search.results-handlers.opendata-results-handler]
+   [cmr.search.results-handlers.umm-json-results-handler]
+   [cmr.search.results-handlers.tags-json-results-handler]
 
-            ;; Result handlers
-            ;; required here to avoid circular dependency in query service
-            [cmr.search.results-handlers.csv-results-handler]
-            [cmr.search.results-handlers.atom-results-handler]
-            [cmr.search.results-handlers.atom-json-results-handler]
-            [cmr.search.results-handlers.reference-results-handler]
-            [cmr.search.results-handlers.kml-results-handler]
-            [cmr.search.results-handlers.metadata-results-handler]
-            [cmr.search.results-handlers.timeline-results-handler]
-            [cmr.search.results-handlers.opendata-results-handler]
-            [cmr.search.results-handlers.umm-json-results-handler]
-            [cmr.search.results-handlers.tags-json-results-handler]
+   ;; ACL support. Required here to avoid circular dependencies
+   [cmr.search.services.acls.collection-acls]
+   [cmr.search.services.acls.granule-acls]
 
-            ;; ACL support. Required here to avoid circular dependencies
-            [cmr.search.services.acls.collection-acls]
-            [cmr.search.services.acls.granule-acls]))
+   [cmr.search.services.health-service :as hs]
+   [cmr.search.services.messages.common-messages :as msg]
+   [cmr.search.services.parameters.legacy-parameters :as lp]
+   [cmr.search.services.query-service :as query-svc]
+   [cmr.search.services.result-format-helper :as rfh]
+   [cmr.umm-spec.versioning :as umm-version]
+   [compojure.core :refer :all]
+   [compojure.route :as route]
+   [inflections.core :as inf]
+   [ring.middleware.json :as ring-json]
+   [ring.middleware.keyword-params :as keyword-params]
+   [ring.middleware.nested-params :as nested-params]
+   [ring.middleware.params :as params]
+   [ring.swagger.ui :as ring-swagger-ui]
+   [ring.util.codec :as codec]
+   [ring.util.request :as request]
+   [ring.util.response :as r]))
 
 (def CMR_GRANULE_COUNT_HEADER "CMR-Granule-Hits")
 (def CMR_COLLECTION_COUNT_HEADER "CMR-Collection-Hits")
@@ -323,7 +325,7 @@
         humanizers-api/humanizers-routes
 
         ;; Add routes for community usage metrics
-        humanizers-api/community-usage-metrics-routes
+        metrics-api/community-usage-metrics-routes
 
         ;; Add routes for API documentation
         (api-docs/docs-routes

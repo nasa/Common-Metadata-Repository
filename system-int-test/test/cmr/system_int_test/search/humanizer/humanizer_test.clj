@@ -41,7 +41,7 @@
   (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
 
   (let [admin-update-token (e/login (s/context) "admin" ["admin-update-group-guid"])
-        valid-humanizers (:humanizers (hu/make-humanizers))
+        valid-humanizers (hu/make-humanizers)
         valid-humanizer-rule (first valid-humanizers)]
     (testing "Create humanizer with invalid content type"
       (is (= {:status 400,
@@ -94,15 +94,15 @@
   (testing "Successful creation"
     (let [token (e/login (s/context) "admin" ["admin-update-group-guid"])
           humanizers (hu/make-humanizers)
-          {:keys [status concept-id revision-id]} (hu/update-humanizers token (:humanizers humanizers))]
+          {:keys [status concept-id revision-id]} (hu/update-humanizers token humanizers)]
       (is (= 201 status))
       (is concept-id)
       (is (= 1 revision-id))
-      (hu/assert-humanizers-saved humanizers "admin" concept-id revision-id)
+      (hu/assert-humanizers-saved {:humanizers humanizers} "admin" concept-id revision-id)
 
       (testing "Successful update"
         (let [existing-concept-id concept-id
-              updated-humanizers [(second (:humanizers humanizers))]
+              updated-humanizers [(second humanizers)]
               {:keys [status concept-id revision-id]} (hu/update-humanizers token updated-humanizers)]
           (is (= 200 status))
           (is (= existing-concept-id concept-id))
@@ -121,8 +121,8 @@
   (testing "Get humanizer"
     (let [humanizers (hu/make-humanizers)
           token (e/login (s/context) "admin" ["admin-update-group-guid"])
-          _ (hu/update-humanizers token (:humanizers humanizers))
+          _ (hu/update-humanizers token humanizers)
           expected-humanizers {:status 200
-                               :body (:humanizers humanizers)}]
+                               :body humanizers}]
 
       (is (= expected-humanizers (hu/get-humanizers))))))

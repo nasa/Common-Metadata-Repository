@@ -57,7 +57,7 @@
 (defn save-sample-humanizers-fixture
   "A test fixture that saves sample humanizers in CMR for testing"
   [f]
-  (save-humanizers (:humanizers sh/sample-humanizers))
+  (save-humanizers sh/sample-humanizers)
   (f))
 
 (defn get-community-usage-metrics

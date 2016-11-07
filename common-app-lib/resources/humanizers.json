@@ -1,11 +1,10 @@
-"Humanizer configuration file.",
-  "For the time being, humanizers are configured using this file instead of being",
-  "ingested into MetadataDB. This file contains an array of humanizers in the",
-  "format that will be used by the ingest API. Order is not important. String",
-  "entries are treated as comments. For details on humanizers and the format, see",
-  "https://wiki.earthdata.nasa.gov/display/CMR/Humanizing+Facets+Design"
-
-{"humanizers": [
+[
+      "Humanizer configuration file.",
+      "For the time being, humanizers are configured using this file instead of being",
+      "ingested into MetadataDB. This file contains an array of humanizers in the",
+      "format that will be used by the ingest API. Order is not important. String",
+      "entries are treated as comments. For details on humanizers and the format, see",
+      "https://wiki.earthdata.nasa.gov/display/CMR/Humanizing+Facets+Design",
 
       {"type": "trim_whitespace", "field": "platform", "order": -100},
       {"type": "trim_whitespace", "field": "instrument", "order": -100},
@@ -122,5 +121,5 @@
       {"type": "priority", "field": "instrument", "source_value": "MODIS", "order": 10, "priority": 10},
       {"type": "priority", "field": "instrument", "source_value": "ASTER", "order": 10, "priority": 10},
       {"type": "priority", "field": "platform", "source_value": "Terra", "order": 10, "priority": 10},
-      {"type": "priority", "field": "platform", "source_value": "Aqua", "order": 10, "priority": 10}]
-}
+      {"type": "priority", "field": "platform", "source_value": "Aqua", "order": 10, "priority": 10}
+]

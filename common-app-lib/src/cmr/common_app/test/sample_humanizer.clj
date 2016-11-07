@@ -1,8 +1,9 @@
 (ns cmr.common-app.test.sample-humanizer
   "Contains sample humanizer helper function for testing"
-  (:require [cheshire.core :as json]
-            [clojure.java.io :as io]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.java.io :as io]))
 
 (def sample-humanizers
   "A sample humanizer for testing. It is referenced in system-int-test and search-app."
-  (json/decode (slurp (io/resource "humanizers.json")) true))
+  (remove string? (json/decode (slurp (io/resource "humanizers.json")) true)))

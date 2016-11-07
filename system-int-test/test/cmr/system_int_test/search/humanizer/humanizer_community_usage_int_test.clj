@@ -31,7 +31,7 @@
 (deftest update-humanizers-test
   (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
   (let [token (e/login (s/context) "admin" ["admin-update-group-guid"])
-        humanizers (:humanizers (hu/make-humanizers))
+        humanizers (hu/make-humanizers)
         {:keys [status concept-id revision-id]} (hu/update-humanizers token humanizers)]
 
     (testing "update community usage metrics"

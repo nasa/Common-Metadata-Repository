@@ -31,15 +31,6 @@
         status-code (if (= 1 (:revision-id result)) 201 200)]
     (humanizer-response status-code result)))
 
-(defn- update-community-usage
-  "Processes a community usage update request"
-  [context headers body]
-  (acl/verify-ingest-management-permission context :update)
-  (mt/extract-header-mime-type #{mt/csv} headers "content-type" true)
-  (let [result (humanizer-service/update-community-usage context body)
-        status-code (if (= 1 (:revision-id result)) 201 200)]
-    (humanizer-response status-code result)))
-
 (defn- humanizers-report
   "Handles a request to get a humanizers report"
   [context]
@@ -62,15 +53,3 @@
     ;; retrieve the humanizers report
     (GET "/report" {context :request-context}
             (humanizers-report context))))
-
-(def community-usage-metrics-routes
-  "Routes for community usage metrics endpoints"
-  (context "/community-usage-metrics" []
-
-    ;; create/update community usage metrics
-    (PUT "/" {:keys [request-context headers body]}
-      (update-community-usage request-context headers (slurp body)))
-
-    ;; retrieve community usage metrics
-    (GET "/" {:keys [request-context]}
-      (humanizer-response 200 (humanizer-service/get-community-usage-metrics request-context)))))

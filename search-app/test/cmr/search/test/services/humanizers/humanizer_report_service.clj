@@ -5,9 +5,6 @@
             [cmr.common-app.test.sample-humanizer :as sh]
             [cmr.search.services.humanizers.humanizer-report-service :as hrs]))
 
-(def sample-humanizers
-  (:humanizers sh/sample-humanizers))
-
 (deftest humanized-collection-report-science-keywords
   (let [collection {:provider-id "PROV1"
                     :concept-id "C1200000004-PROV1"
@@ -20,7 +17,7 @@
                                         :Topic "Topic2"
                                         :Term "Term2"}]}
         humanized-collection (h/umm-collection->umm-collection+humanizers
-                               collection sample-humanizers)]
+                               collection sh/sample-humanizers)]
     (testing "Science keywords humanizer report"
       (is (= (hrs/humanized-collection->reported-rows humanized-collection)
              [["PROV1" "C1200000004-PROV1" "short-name" "V15" "Bioosphere" "Biosphere"]])))))
@@ -33,7 +30,7 @@
                     :Platforms [{:ShortName "AM-1"}
                                 {:ShortName "TERRA"}]}
         humanized-collection (h/umm-collection->umm-collection+humanizers
-                               collection sample-humanizers)]
+                               collection sh/sample-humanizers)]
     (testing "Platforms humanizer report"
       (is (= (hrs/humanized-collection->reported-rows humanized-collection)
              [["PROV1" "C1200000004-PROV1" "short-name" "V15" "AM-1" "Terra"]])))))
@@ -48,7 +45,7 @@
                                                {:ShortName "GPS RECEIVERS"}
                                                {:ShortName "  LIDAR   "}]}]}
         humanized-collection (h/umm-collection->umm-collection+humanizers
-                               collection sample-humanizers)]
+                               collection sh/sample-humanizers)]
     (testing "Instruments humanizer report"
       (is (= (hrs/humanized-collection->reported-rows humanized-collection)
              [["PROV1" "C1200000004-PROV1" "short-name" "V15" "GPS" "GPS Receivers"]
@@ -62,7 +59,7 @@
                     :Projects [{:ShortName "USGS_SOFIA"}
                                {:ShortName " OPENDAP  "}]}
         humanized-collection (h/umm-collection->umm-collection+humanizers
-                               collection sample-humanizers)]
+                               collection sh/sample-humanizers)]
     (testing "Projects humanizer report"
       (is (= (hrs/humanized-collection->reported-rows humanized-collection)
              [["PROV1" "C1200000004-PROV1" "short-name" "V15" "USGS_SOFIA" "USGS SOFIA"]])))))
@@ -75,31 +72,31 @@
     (testing "Processing level humanizer report L1T reportable"
       (let [collection (assoc-in collection [:ProcessingLevel :Id] "L1T")
             humanized-collection (h/umm-collection->umm-collection+humanizers
-                                   collection sample-humanizers)]
+                                   collection sh/sample-humanizers)]
         (is (= (hrs/humanized-collection->reported-rows humanized-collection)
                [["PROV1" "C1200000004-PROV1" "short-name" "V15" "L1T" "1T"]]))))
     (testing "Processing level humanizer report Level 1 reportable"
       (let [collection (assoc-in collection [:ProcessingLevel :Id] "Level 1")
             humanized-collection (h/umm-collection->umm-collection+humanizers
-                                   collection sample-humanizers)]
+                                   collection sh/sample-humanizers)]
         (is (= (hrs/humanized-collection->reported-rows humanized-collection)
                [["PROV1" "C1200000004-PROV1" "short-name" "V15" "Level 1" "1"]]))))
     (testing "Processing level humanizer report Level 2 reportable"
       (let [collection (assoc-in collection [:ProcessingLevel :Id] "Level 2")
             humanized-collection (h/umm-collection->umm-collection+humanizers
-                                   collection sample-humanizers)]
+                                   collection sh/sample-humanizers)]
         (is (= (hrs/humanized-collection->reported-rows humanized-collection)
                [["PROV1" "C1200000004-PROV1" "short-name" "V15" "Level 2" "2"]]))))
     (testing "Processing level humanizer report Level 3 reportable"
       (let [collection (assoc-in collection [:ProcessingLevel :Id] "Level 3")
             humanized-collection (h/umm-collection->umm-collection+humanizers
-                                   collection sample-humanizers)]
+                                   collection sh/sample-humanizers)]
         (is (= (hrs/humanized-collection->reported-rows humanized-collection)
                [["PROV1" "C1200000004-PROV1" "short-name" "V15" "Level 3" "3"]]))))
     (testing "Processing level humanizer report trim whitespace not reportable"
       (let [collection (assoc-in collection [:ProcessingLevel :Id] " 1 ")
             humanized-collection (h/umm-collection->umm-collection+humanizers
-                                   collection sample-humanizers)]
+                                   collection sh/sample-humanizers)]
         (is (= (hrs/humanized-collection->reported-rows humanized-collection)
                []))))))
 
@@ -111,7 +108,7 @@
                     :DataCenters [{:ShortName "NASA/NSIDC_DAAC"}
                                   {:ShortName " LPDAAC "}]}
         humanized-collection (h/umm-collection->umm-collection+humanizers
-                               collection sample-humanizers)]
+                               collection sh/sample-humanizers)]
     (testing "Organizations humanizer report humanized but not reportable"
       (is (empty? (hrs/humanized-collection->reported-rows humanized-collection))))))
 
@@ -132,7 +129,7 @@
                                  :Instruments [{:ShortName "GPS"}
                                                {:ShortName "  LIDAR   "}]}]}
         humanized-collection (h/umm-collection->umm-collection+humanizers
-                               collection sample-humanizers)]
+                               collection sh/sample-humanizers)]
     (testing "Science keywords humanizer report"
       (is (= (hrs/humanized-collection->reported-rows humanized-collection)
              [["PROV1" "C1200000004-PROV1" "short-name" "V15" "AM-1" "Terra"]
