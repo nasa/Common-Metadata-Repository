@@ -48,6 +48,7 @@
    :body (hrs/humanizers-report-csv context)})
 
 (def humanizers-routes
+  "Routes for humanizer endpoints"
   (context "/humanizers" []
 
     ;; create/update humanizers
@@ -63,6 +64,7 @@
             (humanizers-report context))))
 
 (def community-usage-metrics-routes
+  "Routes for community usage metrics endpoints"
   (context "/community-usage-metrics" []
 
     ;; create/update community usage metrics
