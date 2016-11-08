@@ -109,17 +109,29 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations
 
-(defn validate-provider-exists
+(defn- validate-group-provider-exists
   "Validates that the groups provider exists."
   [context fieldpath provider-id]
   (when (and provider-id
              (not (some #{provider-id} (map :provider-id (mdb/get-providers context)))))
     {fieldpath [(msg/provider-does-not-exist provider-id)]}))
 
+(defn- non-existent-users
+  "Returns the list of users that does not exist in URS among the given list of users."
+  [context usernames]
+  (seq (remove #(urs/user-exists? context %) (distinct usernames))))
+
+(defn- validate-group-members-exist
+  "Validates that the given usernames exist. Throws an exception if they do not."
+  [context fieldpath usernames]
+  (when-let [non-existent-users (non-existent-users context usernames)]
+    {fieldpath [(msg/users-do-not-exist non-existent-users)]}))
+
 (defn- create-group-validations
   "Service level validations when creating a group."
   [context]
-  {:provider-id #(validate-provider-exists context %1 %2)})
+  {:provider-id #(validate-group-provider-exists context %1 %2)
+   :members #(validate-group-members-exist context %1 %2)})
 
 (defn- validate-create-group
   "Validates a group create."
@@ -140,7 +152,7 @@
 (defn validate-members-exist
   "Validates that the given usernames exist. Throws an exception if they do not."
   [context usernames]
-  (when-let [non-existent-users (seq (remove #(urs/user-exists? context %) (distinct usernames)))]
+  (when-let [non-existent-users (non-existent-users context usernames)]
     (errors/throw-service-error :bad-request (msg/users-do-not-exist non-existent-users))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
