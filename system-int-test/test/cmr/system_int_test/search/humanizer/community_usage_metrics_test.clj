@@ -82,19 +82,19 @@
     (testing "Create community usage with nil body"
       (is (= {:status 400,
               :errors
-              ["/community-usage-metrics instance type (null) does not match any allowed primitive type (allowed: [\"array\"])"]}
+              ["instance type (null) does not match any allowed primitive type (allowed: [\"array\"])"]}
              (hu/update-community-usage-metrics admin-update-token nil))))
 
     (testing "Create humanizer with empty csv"
       (is (= {:status 400,
               :errors
-              ["/community-usage-metrics instance type (null) does not match any allowed primitive type (allowed: [\"array\"])"]}
+              ["instance type (null) does not match any allowed primitive type (allowed: [\"array\"])"]}
              (hu/update-community-usage-metrics admin-update-token ""))))
 
     (testing "Missing field validations"
       (are3 [field csv]
             (is (= {:status 400
-                    :errors [(format "/community-usage-metrics/0 object has missing required properties ([\"%s\"])"
+                    :errors [(format "/0 object has missing required properties ([\"%s\"])"
                                      (name field))]}
                    (hu/update-community-usage-metrics admin-update-token csv)))
 
@@ -106,14 +106,14 @@
 
     (testing "Minimum field length validations"
       (is (= {:status 400
-              :errors ["/community-usage-metrics/0/short-name string \"\" is too short (length: 0, required minimum: 1)"]}
+              :errors ["/0/short-name string \"\" is too short (length: 0, required minimum: 1)"]}
              (hu/update-community-usage-metrics admin-update-token "Product,Version,Hosts\n,3,4"))))
 
     (testing "Maximum product length validations"
       (let [long-value (apply str (repeat 86 "x"))]
         (is (= {:status 400
                 :errors [(format
-                          "/community-usage-metrics/0/short-name string \"%s\" is too long (length: 86, maximum allowed: 85)"
+                          "/0/short-name string \"%s\" is too long (length: 86, maximum allowed: 85)"
                           long-value)]}
                (hu/update-community-usage-metrics
                 admin-update-token (format "Product,Version,Hosts\n%s,3,4" long-value))))))
@@ -122,7 +122,7 @@
       (let [long-value (apply str (repeat 21 "x"))]
         (is (= {:status 400
                 :errors [(format
-                          "/community-usage-metrics/0/version string \"%s\" is too long (length: 21, maximum allowed: 20)"
+                          "/0/version string \"%s\" is too long (length: 21, maximum allowed: 20)"
                           long-value)]}
                (hu/update-community-usage-metrics
                 admin-update-token (format "Product,Version,Hosts\nAST_09XT,%s,4" long-value))))))))

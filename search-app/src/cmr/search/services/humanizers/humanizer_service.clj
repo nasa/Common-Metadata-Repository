@@ -7,7 +7,6 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
-   [cmr.search.services.humanizers.humanizer-json-schema-validation :as hv]
    [cmr.transmit.echo.tokens :as tokens]
    [cmr.transmit.metadata-db :as mdb]))
 
@@ -23,12 +22,13 @@
 
 (defn- humanizer-concept
   "Returns the set of humanizer instructions that can be persisted in metadata db."
-  [context humanizer-json-str]
+  [context humanizer-json-str revision-id]
   {:concept-type :humanizer
    :native-id cc/humanizer-native-id
    :metadata humanizer-json-str
    :user-id (context->user-id context)
-   :format mt/json})
+   :format mt/json
+   :revision-id revision-id})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public API
@@ -49,18 +49,6 @@
       concept)
     (errors/throw-service-error :not-found "Humanizer does not exist.")))
 
-(defn- save-humanizers
-  "Save the humanizers, which includes both community usage metrics and humanizers."
-  ([context humanizer-json]
-   (save-humanizers context humanizer-json nil))
-  ([context humanizer-json revision-id]
-   (hv/validate-humanizer-json humanizer-json)
-   (let [humanizer-concept (humanizer-concept context humanizer-json)
-         humanizer-concept (if revision-id
-                             (assoc humanizer-concept :revision-id revision-id)
-                             humanizer-concept)]
-     (mdb/save-concept context humanizer-concept))))
-
 (defn update-humanizers-metadata
   "Update and save the humanizers metadata function which includes humanizers and community usage.
    First check if a revision exists. If so, just update either the humanizers or community usage
@@ -72,12 +60,14 @@
    data: The data to add to the file, as a clojure map"
   [context key data]
   {:pre [(or (= key :humanizers) (= key :community-usage-metrics))]}
-  (if-let [humanizer-concept (find-latest-humanizer-concept context)]
-    (let [humanizers (json/parse-string (:metadata humanizer-concept) true)
-          humanizers (assoc humanizers key data)] ; Overwrite just the data we are saving, not the whole file
-      (save-humanizers context (json/generate-string humanizers) (inc (:revision-id humanizer-concept))))
-    (let [json (json/generate-string {key data})] ; No current revision exists, just write the data
-      (save-humanizers context json 1))))
+  (if-let [latest-concept (find-latest-humanizer-concept context)]
+    (let [humanizers (json/parse-string (:metadata latest-concept) true)
+          humanizers (assoc humanizers key data) ; Overwrite just the data we are saving, not the whole file
+          humanizer-concept (humanizer-concept context (json/generate-string humanizers) (inc (:revision-id latest-concept)))]
+      (mdb/save-concept context humanizer-concept))
+    (let [json (json/generate-string {key data}) ; No current revision exists, just write the data
+          humanizer-concept (humanizer-concept context json 1)]
+      (mdb/save-concept context humanizer-concept))))
 
 (defn get-humanizers
   "Retrieves the set of humanizer instructions from metadata-db."

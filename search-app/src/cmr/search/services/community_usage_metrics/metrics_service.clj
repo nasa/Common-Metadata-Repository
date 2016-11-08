@@ -7,6 +7,7 @@
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
+   [cmr.search.services.community-usage-metrics.metrics-json-schema-validation :as metrics-json]
    [cmr.search.services.humanizers.humanizer-service :as humanizer-service]))
 
 (defn- get-community-usage-columns
@@ -31,17 +32,17 @@
   "Convert a line in the csv file to a community usage metric. Only storing short-name (product),
    version (can be 'N/A' or a version number), and access-count (hosts)"
   [csv-line product-col version-col hosts-col]
-  {:short-name (read-csv-column csv-line product-col)
-   :version (read-csv-column csv-line version-col)
-   :access-count (when-let [access-count (read-csv-column csv-line hosts-col)]
-                   (Integer/parseInt access-count))})
-        ; :access-count (when-let [access-count (read-csv-column csv-line hosts-col)]
-        ;                 (try
-        ;                   (Integer/parseInt access-count)
-        ;                   (catch java.lang.NumberFormatException e
-        ;                     (errors/throw-service-error :invalid-data
-        ;                       (format "Error parsing 'Hosts' CSV Data for collection [%s], version [%s]. Hosts must be an integer."
-        ;                               short-name version)))))})
+  (let [short-name (read-csv-column csv-line product-col)
+        version (read-csv-column csv-line version-col)]
+    {:short-name short-name
+     :version version
+     :access-count (when-let [access-count (read-csv-column csv-line hosts-col)]
+                     (try
+                       (Integer/parseInt access-count)
+                       (catch java.lang.NumberFormatException e
+                         (errors/throw-service-error :invalid-data
+                                                     (format "Error parsing 'Hosts' CSV Data for collection [%s], version [%s]. Hosts must be an integer."
+                                                             short-name version)))))}))
 
 (defn- community-usage-csv->community-usage-metrics
   "Convert the community usage csv to a list of community usage metrics to save"
@@ -51,14 +52,20 @@
       (map #(csv-entry->community-usage-metric % product-col version-col hosts-col) (rest csv-lines)))))
 
 (defn- aggregate-usage-metrics
- "Combine access counts for entries with the same short-name and version number."
- [metrics]
- (let [name-version-groups (group-by (juxt :short-name :version) metrics)] ; Group by short-name and version
-   ;; name-version-groups is map of [short-name, version] [entries that match short-name/version]
-   ;; The first entry in each list has the short-name and version we want so just add up the access-counts
-   ;; in the rest and add that to the first entry to make the access-counts right
-   (map #(util/remove-nil-keys (assoc (first %) :access-count (reduce + (map :access-count %))))
-        (vals name-version-groups))))
+  "Combine access counts for entries with the same short-name and version number."
+  [metrics]
+  (let [name-version-groups (group-by (juxt :short-name :version) metrics)] ; Group by short-name and version
+    ;; name-version-groups is map of [short-name, version] [entries that match short-name/version]
+    ;; The first entry in each list has the short-name and version we want so just add up the access-counts
+    ;; in the rest and add that to the first entry to make the access-counts right
+    (map #(util/remove-nil-keys (assoc (first %) :access-count (reduce + (map :access-count %))))
+         (vals name-version-groups))))
+
+(defn- validate-metrics
+  "Validate metrics against the JSON schema validation"
+  [metrics]
+  (let [json (json/generate-string metrics)]
+    (metrics-json/validate-metrics-json json)))
 
 (defn get-community-usage-metrics
   "Retrieves the set of community usage metrics from metadata-db."
@@ -73,4 +80,5 @@
   [context community-usage-csv]
   (let [metrics (community-usage-csv->community-usage-metrics community-usage-csv)
         metrics (seq (aggregate-usage-metrics metrics))] ; Combine access-counts for entries with the same version/short-name
+    (validate-metrics metrics)
     (humanizer-service/update-humanizers-metadata context :community-usage-metrics metrics)))

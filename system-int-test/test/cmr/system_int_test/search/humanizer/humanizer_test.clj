@@ -52,19 +52,19 @@
     (testing "Create humanizer with nil body"
       (is (= {:status 400,
               :errors
-              ["/humanizers instance type (null) does not match any allowed primitive type (allowed: [\"array\"])"]}
+              ["instance type (null) does not match any allowed primitive type (allowed: [\"array\"])"]}
              (hu/update-humanizers admin-update-token nil))))
 
     (testing "Create humanizer with empty array"
       (is (= {:status 400,
               :errors
-              ["/humanizers array is too short: must have at least 1 elements but instance has 0 elements"]}
+              ["array is too short: must have at least 1 elements but instance has 0 elements"]}
              (hu/update-humanizers admin-update-token []))))
 
     (testing "Missing field validations"
       (are [field]
         (= {:status 400
-            :errors [(format "/humanizers/0 object has missing required properties ([\"%s\"])"
+            :errors [(format "/0 object has missing required properties ([\"%s\"])"
                              (name field))]}
            (hu/update-humanizers admin-update-token [(dissoc valid-humanizer-rule field)]))
 
@@ -73,7 +73,7 @@
     (testing "Minimum field length validations"
       (are [field]
         (= {:status 400
-            :errors [(format "/humanizers/0/%s string \"\" is too short (length: 0, required minimum: 1)"
+            :errors [(format "/0/%s string \"\" is too short (length: 0, required minimum: 1)"
                              (name field))]}
            (hu/update-humanizers admin-update-token [(assoc valid-humanizer-rule field "")]))
 
@@ -84,7 +84,7 @@
         (let [long-value (string-of-length (inc max-length))]
           (is (= {:status 400
                   :errors [(format
-                            "/humanizers/0/%s string \"%s\" is too long (length: %d, maximum allowed: %d)"
+                            "/0/%s string \"%s\" is too long (length: %d, maximum allowed: %d)"
                             (name field) long-value (inc max-length) max-length)]}
                  (hu/update-humanizers
                   admin-update-token [(assoc valid-humanizer-rule field long-value)]))))))))
