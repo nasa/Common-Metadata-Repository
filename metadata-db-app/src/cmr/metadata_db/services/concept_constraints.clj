@@ -31,11 +31,13 @@
   (let [num-concepts (count concepts)]
     (cond
       (zero? num-concepts)
-      (warn
-        (format "Unable to find saved concept for provider [%s] and %s [%s]"
-                (:provider-id concept)
-                (name field)
-                field-value))
+      (do
+        (warn
+          (format "Unable to find saved concept for provider [%s] and %s [%s]"
+                  (:provider-id concept)
+                  (name field)
+                  field-value))
+        nil)
       (> num-concepts 1)
       [(msg/duplicate-field-msg
          field
