@@ -10,6 +10,7 @@
     [cmr.bootstrap.data.bulk-migration :as bm]
     [cmr.bootstrap.embedded-system-helper :as helper]
     [cmr.common.log :refer (debug info warn error)]
+    [cmr.common.util :as util]
     [cmr.indexer.services.index-service :as index]
     [cmr.metadata-db.data.concepts :as db]
     [cmr.metadata-db.data.providers :as p]
@@ -127,25 +128,6 @@
                 :revision-date {:comparator `> :value (time-coerce/to-sql-time date-time)}}
         concept-batches (db/find-concepts-in-batches
                           db provider params (:db-batch-size system))
-        num-concepts (index/bulk-index
-                      {:system (helper/get-indexer system)}
-                      concept-batches
-                      {})]
-    (info "Indexed" num-concepts (str (name concept-type) "(s) for provider") provider-id
-     "with revision-date later than " date-time)
-    num-concepts))
-
-(defn- fetch-and-index-new-concepts-with-revision-date
-  "Get batches of concepts for a given provider/concept type that have a revision-date
-  newer than the given date time and then index them."
-  [system provider concept-type date-time]
-  (let [db (helper/get-metadata-db-db system)
-        provider-id (:provider-id provider)
-        params {:concept-type concept-type
-                :provider-id provider-id
-                :revision-date {:comparator `> :value (time-coerce/to-sql-time date-time)}}
-        concept-batches (db/find-concepts-in-batches
-                          db provider params (:db-batch-size system))
         {:keys [max-revision-date num-indexed]} (index/bulk-index-with-revision-date
                                                  {:system (helper/get-indexer system)}
                                                  concept-batches
@@ -160,16 +142,6 @@
     {:max-revision-date max-revision-date
      :num-indexed num-indexed}))
 
-(defn- get-max-revision-date
-  "Takes a collection of datetimes and returns the maximum revision date."
-  [revision-datetimes]
-  (when-let [revision-datetimes (seq (remove nil? revision-datetimes))]
-    (reduce (fn [t1 t2]
-              (if (and t1 t2)
-                (if (< 0 (.compareTo t1 t2)) t1 t2)
-                (or t1 t2)))
-            revision-datetimes)))
-
 (defn index-data-later-than-date-time
   "Index all concept revisions created later than or equal to the given date-time."
   [system date-time]
@@ -178,22 +150,22 @@
         providers (p/get-providers db)]
     (let [provider-response-map (for [provider providers
                                       concept-type [:collection :granule :service]]
-                                  (fetch-and-index-new-concepts-with-revision-date
+                                  (fetch-and-index-new-concepts
                                     system provider concept-type date-time))
-          non-system-concept-count (reduce + (map :num-indexed provider-response-map))
+          provider-concept-count (reduce + (map :num-indexed provider-response-map))
           system-concept-response-map (for [concept-type [:tag]]
-                                        (fetch-and-index-new-concepts-with-revision-date
+                                        (fetch-and-index-new-concepts
                                           system {:provider-id "CMR"} concept-type date-time))
           system-concept-count (reduce + (map :num-indexed system-concept-response-map))
           indexing-complete-message (format "Indexed %d provider concepts and %d system concepts."
-                                            non-system-concept-count
+                                            provider-concept-count
                                             system-concept-count)]
       (info "Indexing concepts with revision-date later than" date-time "completed.")
       (info indexing-complete-message)
       {:message indexing-complete-message
-       :max-revision-date (get-max-revision-date (map :max-revision-date
-                                                      (apply conj provider-response-map
-                                                             system-concept-response-map)))})))
+       :max-revision-date (util/get-max-from-collection
+                           (map :max-revision-date
+                                (apply conj provider-response-map system-concept-response-map)))})))
 
 ;; Background task to handle bulk index requests
 (defn handle-bulk-index-requests

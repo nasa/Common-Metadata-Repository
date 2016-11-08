@@ -58,15 +58,15 @@
   (let [db (get-in context [:system :db])
         revision-datetime (j/with-db-transaction
                             [conn db]
-                            (-> (su/find-one conn (select [(csk/->kebab-case-keyword
-                                                            replication-date-column)]
-                                                          (from replication-status-table)))
-                                :last_replicated_revision_date
-                                (->> (oracle/oracle-timestamp->clj-time conn))
-                                (t/minus (t/seconds buffer))))
+                            (->> (su/find-one conn (select [(csk/->kebab-case-keyword
+                                                             replication-date-column)]
+                                                           (from replication-status-table)))
+                                 :last_replicated_revision_date
+                                 (oracle/oracle-timestamp->clj-time conn)))
         ;; Perform the indexing
         {:keys [max-revision-date]} (bulk-index/index-data-later-than-date-time
-                                     (:system context) revision-datetime)]
+                                     (:system context)
+                                     (t/minus revision-datetime (t/seconds buffer)))]
     ;; Update the latest replicated revision date in the database
     (when max-revision-date
       (let [stmt (format "UPDATE %s SET %s = ?" replication-status-table replication-date-column)]

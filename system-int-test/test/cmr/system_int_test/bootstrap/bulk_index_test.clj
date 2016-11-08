@@ -5,7 +5,6 @@
     [clj-time.core :as t]
     [clojure.java.jdbc :as j]
     [clojure.test :refer :all]
-    [cmr.bootstrap.services.replication :as replication]
     [cmr.common.date-time-parser :as p]
     [cmr.common.util :as util :refer [are3]]
     [cmr.mock-echo.client.echo-util :as e]

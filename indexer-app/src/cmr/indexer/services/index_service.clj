@@ -113,22 +113,12 @@
                                      revision-datetime-strings)
                                 (cons previous-max-revision-date)
                                 (remove nil?))]
-    (reduce (fn [t1 t2]
-              (if (and t1 t2)
-                (if (< 0 (.compareTo t1 t2)) t1 t2)
-                (or t1 t2)))
-            revision-datetimes)))
+    (util/get-max-from-collection revision-datetimes)))
 
 (defn bulk-index-with-revision-date
-  "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
-  directly to this function - it does not retrieve them from metadata db (tag associations for
-  collections WILL be retrieved, however). The bulk API is invoked repeatedly if necessary -
-  processing batch-size concepts each time. Returns the number of concepts that have been indexed.
-
-  Valid options:
-  * :all-revisions-index? - true indicates this should be indexed into the all revisions index
-  * :force-version? - true indicates that we should overwrite whatever is in elasticsearch with the
-  latest regardless of whether the version in the database is older than the _version in elastic."
+  "See documentation for bulk-index. This is a temporary function added for supporting replication
+  using DMS. It does the same work as bulk-index, but instead of returning the number of concepts
+  indexed it returns a map with keys of :num-indexed and :max-revision-date."
   ([context concept-batches]
    (bulk-index context concept-batches nil))
   ([context concept-batches options]
@@ -136,8 +126,6 @@
              (let [max-revision-date (get-max-revision-date batch max-revision-date)
                    batch (prepare-batch context batch options)]
                (es/bulk-index-documents context batch options)
-              ;  (println (format "I would return num-indexed %d, max revision-date: %s"
-              ;                   (+ num-indexed (count batch)) max-revision-date))
                {:num-indexed (+ num-indexed (count batch))
                 :max-revision-date max-revision-date}))
            {:num-indexed 0 :max-revision-date nil}
