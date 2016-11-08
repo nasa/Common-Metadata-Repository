@@ -19,6 +19,8 @@
   [parsed-concept]
   (gc/group-conds
     :and
+    ;; If there are no access values present in the concept then the include undefined
+    ;; value is used.
     [(if-let [access-value (:Value (:AccessConstraints parsed-concept))]
        (common-qm/numeric-range-intersection-condition
          :collection-access-value-min
@@ -26,7 +28,6 @@
          access-value
          access-value)
        (common-qm/boolean-condition :collection-access-value-include-undefined-value true))
-     (common-qm/boolean-condition :collection-identifier true)
      (common-qm/boolean-condition :collection-applicable true)]))
 
 (defn get-permitted-concept-id-conditions
