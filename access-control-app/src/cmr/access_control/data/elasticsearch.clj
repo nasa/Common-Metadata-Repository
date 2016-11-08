@@ -42,6 +42,10 @@
   [_ concept _]
   (access-control-index/acl-concept-map->elastic-doc concept))
 
+(defmethod parsed-concept->elastic-doc :access-group
+  [_ concept _]
+  (access-control-index/group-concept-map->elastic-doc concept))
+
 (defn- concept->bulk-elastic-docs
   "Converts a concept map into an elastic document suitable for bulk indexing."
   [context concept {:keys [all-revisions-index?] :as options}]

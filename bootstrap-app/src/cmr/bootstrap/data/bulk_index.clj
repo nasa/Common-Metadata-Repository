@@ -118,12 +118,12 @@
             gran-count
             provider-id)))
 
-(defn- index-acls
-  "Bulk index all the ACLs"
+(defn- index-access-control-concepts
+  "Bulk index ACLs or acces groups"
   [system concept-batches]
-  (info "Indexing ACLs")
+  (info "Indexing concepts")
   (let [count (ac-bulk-index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
-    (info "Indexed" count "ACLs")
+    (info "Indexed" count "concepts")
     count))
 
 (defn- index-concepts
@@ -145,8 +145,8 @@
                 :revision-date {:comparator `> :value (time-coerce/to-sql-time date-time)}}
         concept-batches (db/find-concepts-in-batches
                           db provider params (:db-batch-size system))
-        num-concepts (if (= :acl concept-type)
-                       (index-acls system concept-batches)
+        num-concepts (if (contains? #{:acl :access-group} concept-type)
+                       (index-access-control-concepts system concept-batches)
                        (index-concepts system concept-batches))]
     (info "Indexed" num-concepts (str (name concept-type) "(s) for provider") provider-id
      "with revision-date later than " date-time)
@@ -162,7 +162,7 @@
                                                  concept-type [:collection :granule :service]]
                                              (fetch-and-index-new-concepts
                                                  system provider concept-type date-time)))
-        system-concept-count (reduce + (for [concept-type [:tag :acl]]
+        system-concept-count (reduce + (for [concept-type [:tag :acl :access-group]]
                                          (fetch-and-index-new-concepts
                                            system {:provider-id "CMR"} concept-type date-time)))]
     (info "Indexing concepts with revision-date later than" date-time "completed.")

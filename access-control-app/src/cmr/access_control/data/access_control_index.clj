@@ -54,7 +54,7 @@
    :number_of_replicas 1,
    :refresh_interval "1s"})
 
-(defn- group-concept-map->elastic-doc
+(defn group-concept-map->elastic-doc
   "Converts a concept map containing an access group into the elasticsearch document to index."
   [concept-map]
   (let [group (edn/read-string (:metadata concept-map))]
@@ -301,4 +301,4 @@
 
 (def concept-type->index-name
   {:acl acl-index-name
-   :group group-index-name})
+   :access-group group-index-name})
