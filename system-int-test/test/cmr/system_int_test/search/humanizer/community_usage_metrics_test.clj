@@ -102,7 +102,10 @@
             :short-name "Version,Hosts\n3,4"
 
             "Missing hosts (access-count)"
-            :access-count "Product,Version\nAMSR-L1A,4"))
+            :access-count "Product,Version\nAMSR-L1A,4"
+
+            "Empty hosts (access-count)"
+            :access-count "Product,Version,Hosts\nAMSR-L1A,4,"))
 
     (testing "Minimum field length validations"
       (is (= {:status 400
@@ -125,7 +128,12 @@
                           "/0/version string \"%s\" is too long (length: 21, maximum allowed: 20)"
                           long-value)]}
                (hu/update-community-usage-metrics
-                admin-update-token (format "Product,Version,Hosts\nAST_09XT,%s,4" long-value))))))))
+                admin-update-token (format "Product,Version,Hosts\nAST_09XT,%s,4" long-value))))))
+
+    (testing "Non-integer value for hosts (access-count)"
+       (is (= {:status 422
+               :errors ["Error parsing 'Hosts' CSV Data for collection [AMSR-L1A], version [3]. Hosts must be an integer."]}
+              (hu/update-community-usage-metrics admin-update-token "Product,Version,Hosts\nAMSR-L1A,3,x"))))))
 
 (def sample-aggregation-csv
   "Sample CSV to test aggregation of access counts in different CSV entries with the same short-name

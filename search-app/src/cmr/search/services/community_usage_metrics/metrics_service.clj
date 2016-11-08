@@ -36,13 +36,14 @@
         version (read-csv-column csv-line version-col)]
     {:short-name short-name
      :version version
-     :access-count (when-let [access-count (read-csv-column csv-line hosts-col)]
-                     (try
-                       (Integer/parseInt access-count)
-                       (catch java.lang.NumberFormatException e
-                         (errors/throw-service-error :invalid-data
-                                                     (format "Error parsing 'Hosts' CSV Data for collection [%s], version [%s]. Hosts must be an integer."
-                                                             short-name version)))))}))
+     :access-count (let [access-count (read-csv-column csv-line hosts-col)]
+                     (when (seq access-count)
+                       (try
+                         (Integer/parseInt access-count)
+                         (catch java.lang.NumberFormatException e
+                           (errors/throw-service-error :invalid-data
+                                                       (format "Error parsing 'Hosts' CSV Data for collection [%s], version [%s]. Hosts must be an integer."
+                                                               short-name version))))))}))
 
 (defn- community-usage-csv->community-usage-metrics
   "Convert the community usage csv to a list of community usage metrics to save"
