@@ -41,7 +41,6 @@
                     :collection-access-value-max
                     1.0
                     1.0)
-                  (common-qm/boolean-condition :collection-identifier true)
                   (common-qm/boolean-condition :collection-applicable true)])]))))
     (testing "create permitted-concept-id conditions with access value nil"
       (is (= (pcs/get-permitted-concept-id-conditions (u/conn-context) concept-access-value-nil)
@@ -54,5 +53,4 @@
                (gc/group-conds
                  :and
                  [(common-qm/boolean-condition :collection-access-value-include-undefined-value true)
-                  (common-qm/boolean-condition :collection-identifier true)
                   (common-qm/boolean-condition :collection-applicable true)])]))))))
