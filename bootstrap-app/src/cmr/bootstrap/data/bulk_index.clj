@@ -7,6 +7,8 @@
     [clojure.core.async :as ca :refer [go go-loop alts!! <!! >!]]
     [clojure.java.jdbc :as j]
     [clojure.string :as str]
+    [cmr.access-control.data.access-control-index :as access-control-index]
+    [cmr.access-control.data.bulk-index :as ac-bulk-index]
     [cmr.bootstrap.data.bulk-migration :as bm]
     [cmr.bootstrap.embedded-system-helper :as helper]
     [cmr.common.log :refer (debug info warn error)]
@@ -116,6 +118,22 @@
             gran-count
             provider-id)))
 
+(defn- index-acls
+  "Bulk index all the ACLs"
+  [system concept-batches]
+  (info "Indexing ACLs")
+  (let [count (ac-bulk-index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
+    (info "Indexed" count "ACLs")
+    count))
+
+(defn- index-concepts
+  "Bulk index the given concepts using the indexer-app"
+  [system concept-batches]
+  (info "Indexing concepts")
+  (let [count (index/bulk-index {:system (helper/get-indexer system)} concept-batches {})]
+    (info "Indexed" count "concepts")
+    count))
+
 (defn- fetch-and-index-new-concepts
   "Get batches of concepts for a given provider/concept type that have a revision-date
   newer than the given date time and then index them."
@@ -127,10 +145,9 @@
                 :revision-date {:comparator `> :value (time-coerce/to-sql-time date-time)}}
         concept-batches (db/find-concepts-in-batches
                           db provider params (:db-batch-size system))
-        num-concepts (index/bulk-index
-                      {:system (helper/get-indexer system)}
-                      concept-batches
-                      {})]
+        num-concepts (if (= :acl concept-type)
+                       (index-acls system concept-batches)
+                       (index-concepts system concept-batches))]
     (info "Indexed" num-concepts (str (name concept-type) "(s) for provider") provider-id
      "with revision-date later than " date-time)
     num-concepts))
@@ -140,26 +157,25 @@
   [system date-time]
   (info "Indexing concepts.")
   (let [db (helper/get-metadata-db-db system)
-        providers (p/get-providers db)]
-
-    (let [non-system-concept-count (reduce + (for [provider providers
-                                                   concept-type [:collection :granule :service]]
-                                               (fetch-and-index-new-concepts
+        providers (p/get-providers db)
+        non-system-concept-count (reduce + (for [provider providers
+                                                 concept-type [:collection :granule :service]]
+                                             (fetch-and-index-new-concepts
                                                  system provider concept-type date-time)))
-          system-concept-count (reduce + (for [concept-type [:tag]]
-                                           (fetch-and-index-new-concepts
-                                             system {:provider-id "CMR"} concept-type date-time)))]
-      (info "Indexing concepts with revision-date later than" date-time "completed.")
-      (format "Indexed %d provider concepts and %d system concepts."
-              non-system-concept-count
-              system-concept-count))))
+        system-concept-count (reduce + (for [concept-type [:tag :acl]]
+                                         (fetch-and-index-new-concepts
+                                           system {:provider-id "CMR"} concept-type date-time)))]
+    (info "Indexing concepts with revision-date later than" date-time "completed.")
+    (format "Indexed %d provider concepts and %d system concepts."
+            non-system-concept-count
+            system-concept-count)))
 
 ;; Background task to handle bulk index requests
 (defn handle-bulk-index-requests
   "Handle any requests for bulk indexing. We use separate channels for each type of
   indexing request instead of a single channel to simplify the dispatch logic.
   Since we know at the time a request is made what function should be used, there
-  is no point in implementing separate code to determine what funciton to
+  is no point in implementing separate code to determine what funciton to call
   when an item comes off the channel."
   [system]
   (info "Starting background task for monitoring bulk provider indexing channels.")

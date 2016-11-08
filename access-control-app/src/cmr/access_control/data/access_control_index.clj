@@ -6,6 +6,7 @@
    [cmr.access-control.data.acls :as acls]
    [cmr.common-app.services.search.elastic-search-index :as esi]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
+   [cmr.common.concepts :as cs]
    [cmr.common.log :refer [info debug]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
@@ -219,7 +220,7 @@
      :permission permissions
      :permission.lowercase (map str/lower-case permissions)}))
 
-(defn- acl-concept-map->elastic-doc
+(defn acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."
   [concept-map]
   (let [acl (edn/read-string (:metadata concept-map))
@@ -294,3 +295,10 @@
   [elastic-store]
   (m/reset group-index-name group-index-settings group-type-name group-mappings elastic-store)
   (m/reset acl-index-name acl-index-settings acl-type-name acl-mappings elastic-store))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Support for bulk indexing
+
+(def concept-type->index-name
+  {:acl acl-index-name
+   :group group-index-name})

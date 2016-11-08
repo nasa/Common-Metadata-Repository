@@ -22,7 +22,6 @@
     [cmr.indexer.config :as config]
     [cmr.indexer.data.concept-parser :as cp]
     [cmr.indexer.data.elasticsearch :as es]
-    [cmr.indexer.data.elasticsearch :as es]
     [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]
     [cmr.indexer.data.index-set :as idx-set]
     [cmr.message-queue.config :as qcfg]

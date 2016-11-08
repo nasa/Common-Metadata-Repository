@@ -3,6 +3,7 @@
   :url "***REMOVED***projects/CMR/repos/cmr/browse/bootstrap-app"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [clj-http "2.0.0"]
+                 [nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-indexer-app "0.1.0-SNAPSHOT"]

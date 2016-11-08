@@ -27,7 +27,8 @@
   "Returns true if the params contains the :synchronous key and it's
   value converted to lower case equals the string 'true'."
   [params]
-  (= "true" (str/lower-case (:synchronous params))))
+  (= "true" (when (:synchronous params)
+              (str/lower-case (:synchronous params)))))
 
 (defn- migrate-collection
   "Copy collections data from catalog-rest to metadata db (including granules)"
