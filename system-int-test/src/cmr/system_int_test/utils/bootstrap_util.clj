@@ -127,6 +127,14 @@
     (is (= 202
            (:status (bulk-index-provider provider-id))))))
 
+(defn index-recently-replicated
+  "Calls the index-recently-replicated endpoint to index all recently replicated concepts."
+  []
+  (client/request {:method :post
+                   :url (url/bootstrap-index-recently-replicated-url)
+                   :throw-exceptions false
+                   :connection-manager (s/conn-mgr)}))
+
 (defn bootstrap-virtual-products
   "Call the bootstrap app to bulk index a collection."
   [provider-id entry-title]

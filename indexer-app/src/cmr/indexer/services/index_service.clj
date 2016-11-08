@@ -148,10 +148,8 @@
   Indexing is applicable for all concept types if all-revisions-index? is false and only for
   collection concept type if all-revisions-index? is true."
   [concept-type all-revisions-index?]
-  (if (or (not all-revisions-index?)
-          (and all-revisions-index? (contains? #{:collection :tag-association} concept-type)))
-    true
-    false))
+  (or (not all-revisions-index?)
+      (and all-revisions-index? (contains? #{:collection :tag-association} concept-type))))
 
 (def REINDEX_BATCH_SIZE 2000)
 

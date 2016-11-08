@@ -160,8 +160,18 @@
     {:max-revision-date max-revision-date
      :num-indexed num-indexed}))
 
+(defn- get-max-revision-date
+  "Takes a collection of datetimes and returns the maximum revision date."
+  [revision-datetimes]
+  (when-let [revision-datetimes (seq (remove nil? revision-datetimes))]
+    (reduce (fn [t1 t2]
+              (if (and t1 t2)
+                (if (< 0 (.compareTo t1 t2)) t1 t2)
+                (or t1 t2)))
+            revision-datetimes)))
+
 (defn index-data-later-than-date-time
-  "Index all concept revisions created later than the given date-time."
+  "Index all concept revisions created later than or equal to the given date-time."
   [system date-time]
   (info "Indexing concepts with revision-date later than " date-time "started.")
   (let [db (helper/get-metadata-db-db system)
@@ -180,7 +190,10 @@
                                             system-concept-count)]
       (info "Indexing concepts with revision-date later than" date-time "completed.")
       (info indexing-complete-message)
-      indexing-complete-message)))
+      {:message indexing-complete-message
+       :max-revision-date (get-max-revision-date (map :max-revision-date
+                                                      (apply conj provider-response-map
+                                                             system-concept-response-map)))})))
 
 ;; Background task to handle bulk index requests
 (defn handle-bulk-index-requests
