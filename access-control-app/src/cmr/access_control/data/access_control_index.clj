@@ -144,7 +144,11 @@
   {:concept-id (m/stored m/string-field-mapping)
    :revision-id (m/stored m/int-field-mapping)
 
+   ;; collection-applicable is used in the access value condition to avoid
+   ;; applying the min max or undefined value conditions to catalog-item-identity
+   ;; acls that don't include collection-applicable
    :collection-identifier m/bool-field-mapping
+   :collection-applicable m/bool-field-mapping
    :collection-access-value-min m/int-field-mapping
    :collection-access-value-max m/int-field-mapping
    :collection-access-value-include-undefined-value m/bool-field-mapping
@@ -224,6 +228,21 @@
      :permission permissions
      :permission.lowercase (map str/lower-case permissions)}))
 
+(defn- access-value-elastic-doc-map
+  "Returns map for access value to be merged into full elasic doc"
+  [acl]
+  (merge
+    (when-let [av (:access-value (:collection-identifier (:catalog-item-identity acl)))]
+      {:collection-access-value-max (:max-value av)
+       :collection-access-value-min (:min-value av)
+       :collection-access-value-include-undefined-value (:include-undefined-value av)})
+    (if (:collection-identifier (:catalog-item-identity acl))
+      {:collection-identifier true}
+      {:collection-identifier false})
+    (if (:collection-applicable (:catalog-item-identity acl))
+      {:collection-applicable true}
+      {:collection-applicable false})))
+
 (defn- acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."
   [concept-map]
@@ -231,16 +250,7 @@
         permitted-groups (acl->permitted-groups acl)
         provider-id (acls/acl->provider-id acl)]
     (merge
-      (when-let [av (:access-value (:collection-identifier (:catalog-item-identity acl)))]
-        {:collection-access-value-max (:max-value av)
-         :collection-access-value-min (:min-value av)
-         :collection-access-value-include-undefined-value (:include-undefined-value av)
-         :collection-identifier true})
-      (when (and
-              (not (:collection-identifier (:catalog-item-identity acl)))
-              (not (:granule-identifier (:catalog-item-identity acl)))
-              (:catalog-item-identity acl))
-        {:collection-identifier false})
+      (access-value-elastic-doc-map acl)
       (assoc (select-keys concept-map [:concept-id :revision-id])
              :display-name (acl->display-name acl)
              :identity-type (acl->identity-type acl)

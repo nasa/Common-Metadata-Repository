@@ -11,7 +11,6 @@
    [cmr.acl.acl-fetcher :as af]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.services.jvm-info :as jvm-info]
-   [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.search.elastic-search-index :as search-index]
    [cmr.common.api.web-server :as web]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
@@ -69,8 +68,7 @@
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))
              :caches {af/acl-cache-key (af/create-acl-cache
                                         [:system-object :provider-object :single-instance-object])
-                      common-health/health-cache-key (common-health/create-health-cache)
-                      kf/kms-cache-key (kf/create-kms-cache)}
+                      common-health/health-cache-key (common-health/create-health-cache)}
 
              :public-conf (public-conf)
              :relative-root-url (transmit-config/access-control-relative-root-url)
@@ -78,7 +76,7 @@
                          `system-holder
                          [(af/refresh-acl-cache-job "access-control-acl-cache-refresh")
                           jvm-info/log-jvm-statistics-job])}]
-    (transmit-config/system-with-connections sys [:echo-rest :kms :metadata-db :urs])))
+    (transmit-config/system-with-connections sys [:echo-rest :metadata-db :urs])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources, and start it running. Returns

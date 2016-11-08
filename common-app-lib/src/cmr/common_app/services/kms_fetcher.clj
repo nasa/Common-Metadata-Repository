@@ -79,8 +79,9 @@
 (defn get-kms-index
   "Retrieves the GCMD keywords map from the cache."
   [context]
-  (let [cache (cache/context->cache context kms-cache-key)]
-    (cache/get-value cache kms-cache-key (partial fetch-gcmd-keywords-map context))))
+  (when-not (:ignore-kms-keywords context)
+    (let [cache (cache/context->cache context kms-cache-key)]
+      (cache/get-value cache kms-cache-key (partial fetch-gcmd-keywords-map context)))))
 
 (defn- refresh-kms-cache
   "Refreshes the KMS keywords stored in the cache. This should be called from a background job on a
