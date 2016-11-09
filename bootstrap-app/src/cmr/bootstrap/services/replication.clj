@@ -39,7 +39,7 @@
 
 (def replication-status-table
   "The name of the database table where replication status is stored."
-  "CMR_BOOTSTRAP.REPLICATION_STATUS")
+  "REPLICATION_STATUS")
 
 (def replication-date-column
   "The column name in the database storing the latest replication date for which we have processed
@@ -87,7 +87,7 @@
 
 (def-stateful-job IndexRecentlyReplicatedJob
   [context system]
-  (index-replicated-concepts system))
+  (index-replicated-concepts {:system system}))
 
 (def index-recently-replicated-job
   {:job-type IndexRecentlyReplicatedJob

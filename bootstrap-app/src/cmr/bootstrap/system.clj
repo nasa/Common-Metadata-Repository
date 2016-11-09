@@ -80,7 +80,7 @@
              vp/channel-name (chan)
 
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
-             :db (oracle/create-db (mdb-config/db-spec "bootstrap-pool"))
+             :db (oracle/create-db (bootstrap-config/db-spec "bootstrap-pool"))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (bootstrap-config/bootstrap-nrepl-port))
              :relative-root-url (transmit-config/bootstrap-relative-root-url)

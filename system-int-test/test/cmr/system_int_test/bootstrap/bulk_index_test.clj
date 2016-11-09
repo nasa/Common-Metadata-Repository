@@ -97,7 +97,7 @@
   [db]
   (j/with-db-transaction
    [conn db]
-   (->> (j/query conn ["SELECT LAST_REPLICATED_REVISION_DATE FROM CMR_BOOTSTRAP.REPLICATION_STATUS"])
+   (->> (j/query conn ["SELECT LAST_REPLICATED_REVISION_DATE FROM REPLICATION_STATUS"])
         first
         :last_replicated_revision_date
         (oracle/oracle-timestamp->str-time conn))))
@@ -117,7 +117,7 @@
          tag-within-buffer (save-tag 2 {:revision-date "2016-01-01T09:59:41Z"})
          tag-after-date (save-tag 3 {:revision-date "2016-01-02T00:00:00Z"})
          db (get-in (s/context) [:system :bootstrap-db])
-         stmt "UPDATE CMR_BOOTSTRAP.REPLICATION_STATUS SET LAST_REPLICATED_REVISION_DATE = ?"]
+         stmt "UPDATE REPLICATION_STATUS SET LAST_REPLICATED_REVISION_DATE = ?"]
      (j/db-do-prepared db stmt [(cr/to-sql-time (p/parse-datetime last-replicated-datetime))])
      (bootstrap/index-recently-replicated)
      ;; Force elastic data to be flushed, not actually waiting for index requests to finish

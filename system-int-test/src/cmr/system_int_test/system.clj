@@ -3,7 +3,7 @@
   system integration tests."
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.metadata-db.config :as mdb-config]
+            [cmr.bootstrap.config :as bootstrap-config]
             [cmr.oracle.connection :as oracle]
             [clj-http.conn-mgr :as conn-mgr]
             [cmr.transmit.config :as transmit-config]
@@ -32,7 +32,7 @@
   [component-type-map]
   (let [sys {:log (log/create-logger {:level @logging-level-atom})
              :bootstrap-db (when (= :external (:db component-type-map))
-                             (oracle/create-db (mdb-config/db-spec "bootstrap-test-pool")))
+                             (oracle/create-db (bootstrap-config/db-spec "bootstrap-test-pool")))
              ;; the HTTP connection manager to use. This allows system integration tests to use persistent
              ;; HTTP connections
              :conn-mgr (conn-mgr/make-reusable-conn-manager {})
