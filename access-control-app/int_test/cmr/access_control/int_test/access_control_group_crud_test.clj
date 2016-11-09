@@ -95,12 +95,14 @@
           (is (= 200 (:status (u/create-group token (assoc group :provider_id "PROV1")))))))
 
       (testing "Creation of previously deleted group"
-        (u/delete-group token concept_id)
+        (is (= 200 (:status (u/delete-group token concept_id))))
+
+
         (let [new-group (assoc group :legacy_guid "the legacy guid" :description "new description")
               response (u/create-group token new-group)]
-          (is (= {:status 200 :concept_id concept_id :revision_id 3}
+          (is (= {:status 200 :concept_id (:concept_id response) :revision_id 1}
                  response))
-          (u/assert-group-saved new-group "user1" concept_id 3))))
+          (u/assert-group-saved new-group "user1" (:concept_id response) 1))))
 
     (testing "Create group with fields at maximum length"
       (let [group (into {} (for [[field max-length] field-maxes]
@@ -359,16 +361,16 @@
     (u/wait-until-indexed)
 
     (testing "We should now successfully update groups with a legacy_guid, without specifying the legacy_guid in the updated group")
-      (is (= {:status 200 :concept_id concept-id :revision_id 2}
-             response-no-legacy))
-      (u/assert-group-saved (assoc no-legacy-group :legacy_guid "legacy_guid_1") "user1" concept-id 2)
+    (is (= {:status 200 :concept_id concept-id :revision_id 2}
+           response-no-legacy))
+    (u/assert-group-saved (assoc no-legacy-group :legacy_guid "legacy_guid_1") "user1" concept-id 2)
 
     (testing "Specifying the same legacy_guid should also successfully update the group")
-      (is (= {:status 200 :concept_id concept-id :revision_id 3}
-             response-same-legacy))
-      (u/assert-group-saved same-legacy-group "user1" concept-id 3)
+    (is (= {:status 200 :concept_id concept-id :revision_id 3}
+           response-same-legacy))
+    (u/assert-group-saved same-legacy-group "user1" concept-id 3)
 
     (testing "When specifying a different legacy_guid, an error message should be received")
-      (is (= {:status 400,
-              :errors ["Legacy Guid cannot be modified. Attempted to change existing value [legacy_guid_1] to [wrong_legacy_guid]"]}
-             response-diff-legacy))))
+    (is (= {:status 400,
+            :errors ["Legacy Guid cannot be modified. Attempted to change existing value [legacy_guid_1] to [wrong_legacy_guid]"]}
+           response-diff-legacy))))

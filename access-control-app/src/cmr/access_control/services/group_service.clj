@@ -179,12 +179,8 @@
 
      ;; The group exists. Check if its latest revision is a tombstone.
      (let [concept (mdb/get-latest-concept context concept-id)]
-       (if (:deleted concept)
-         ;; The group exists but was previously deleted.
-         (save-updated-group-concept context concept group)
-
-         ;; The group exists and was not deleted. Reject this.
-         (errors/throw-service-error :conflict (g-msg/group-already-exists group concept))))
+       ;; The group exists and was not deleted. Reject this.
+       (errors/throw-service-error :conflict (g-msg/group-already-exists group concept)))
 
      ;; The group doesn't exist.
      (let [new-concept (group->new-concept context group)
