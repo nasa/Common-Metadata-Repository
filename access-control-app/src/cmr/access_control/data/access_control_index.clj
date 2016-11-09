@@ -57,8 +57,9 @@
   "Converts a concept map containing an access group into the elasticsearch document to index."
   [concept-map]
   (try
-    (let [{:keys [name provider-id members legacy-guid metadata]} concept-map
-          group (edn/read-string metadata)]
+    (let [group (edn/read-string (:metadata concept-map))
+          {:keys [name provider-id members legacy-guid]} group]
+
       (-> group
           (merge (select-keys concept-map [:concept-id :revision-id]))
           (assoc :name.lowercase (util/safe-lowercase name)
