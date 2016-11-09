@@ -6,7 +6,7 @@
    [cmr.access-control.data.acls :as acls]
    [cmr.common-app.services.search.elastic-search-index :as esi]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
-   [cmr.common.log :refer [info debug]]
+   [cmr.common.log :refer [info debug error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
@@ -56,15 +56,20 @@
 (defn- group-concept-map->elastic-doc
   "Converts a concept map containing an access group into the elasticsearch document to index."
   [concept-map]
-  (let [group (edn/read-string (:metadata concept-map))]
-    (-> group
-        (merge (select-keys concept-map [:concept-id :revision-id]))
-        (assoc :name.lowercase (util/safe-lowercase (:name group))
-               :provider-id.lowercase (util/safe-lowercase (:provider-id group))
-               :members (:members group)
-               :members.lowercase (map str/lower-case (:members group))
-               :legacy-guid.lowercase (util/safe-lowercase (:legacy-guid group))
-               :member-count (count (:members group))))))
+  (try
+    (let [{:keys [name provider-id members legacy-guid metadata]} concept-map
+          group (edn/read-string metadata)]
+      (-> group
+          (merge (select-keys concept-map [:concept-id :revision-id]))
+          (assoc :name.lowercase (util/safe-lowercase name)
+                 :provider-id.lowercase (util/safe-lowercase provider-id)
+                 :members (:members group)
+                 :members.lowercase (map str/lower-case members)
+                 :legacy-guid.lowercase (util/safe-lowercase legacy-guid)
+                 :member-count (count members))))
+    (catch Exception e
+      (error e (str "Failure to create elastic-doc from " (pr-str concept-map)))
+      (throw e))))
 
 (defn index-group
   "Indexes an access control group."
@@ -79,22 +84,26 @@
        ;; This option makes indexing synchronous by forcing a refresh of the index before returning.
        :refresh? true})))
 
+(defn unindex-group
+  "Removes group from index by concept ID."
+  [context concept-id]
+  (info "Unindexing group concept:" concept-id)
+  (m/delete-by-id (esi/context->search-index context)
+                  group-index-name
+                  group-type-name
+                  concept-id
+                  {:refresh? true}))
+
 (defn-timed reindex-groups
   "Fetches and indexes all groups"
   [context]
   (info "Reindexing all groups")
   (doseq [group-batch (mdb-legacy/find-in-batches context :access-group 100 {:latest true})
           group group-batch]
-    (index-group context group))
+    (if (:deleted group)
+      (unindex-group context (:concept-id group))
+      (index-group context group)))
   (info "Reindexing all groups complete"))
-
-(defn unindex-group
-  "Removes group from index by concept ID."
-  [context concept-id]
-  (m/delete-by-id (esi/context->search-index context)
-                  group-index-name
-                  group-type-name
-                  concept-id))
 
 (defn unindex-groups-by-provider
   "Unindexes all access groups owned by provider-id."
