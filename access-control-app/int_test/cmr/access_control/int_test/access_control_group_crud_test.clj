@@ -11,7 +11,7 @@
 (use-fixtures :once (fixtures/int-test-fixtures))
 
 (use-fixtures :each
-              (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"})
+              (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"} ["user1" "user2"])
               (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 
 ;; CMR-2134, CMR-2133 test creating groups without various permissions
@@ -154,9 +154,19 @@
 
 (deftest create-group-with-members-test
   (let [token (e/login (u/conn-context) "user1")
-        group (u/make-group {:members ["user1" "user2"]})
-        {:keys [concept_id]} (u/create-group token group)]
-    (is (= {:status 200 :body ["user1" "user2"]} (u/get-members token concept_id)))))
+        create-group-with-members (fn [members]
+                                    (u/create-group token
+                                                    (u/make-group {:members members})
+                                                    {:allow-failure? true}))]
+    (testing "Successful create with existing members"
+      (let [{:keys [status concept_id]} (create-group-with-members ["user1" "user2"])]
+        (is (= 200 status))
+        (is (= {:status 200 :body ["user1" "user2"]} (u/get-members token concept_id)))))
+
+    (testing "Attempt to create group with non-existent members"
+      (let [{:keys [status errors]} (create-group-with-members ["user1" "user3"])]
+        (is (= 400 status))
+        (is (= ["The following users do not exist [user3]"] errors))))))
 
 (deftest get-group-test
   (let [group (u/make-group)
