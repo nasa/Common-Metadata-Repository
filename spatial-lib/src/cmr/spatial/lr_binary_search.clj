@@ -235,7 +235,7 @@
   rectangle for a shape. It uses a simpler algorithm that works well for simple 4 point rings and
   less well for more points. It should always find a LR for any ring of arbitrary shape."
   ([shape]
-   (find-lr shape true))
+   (find-lr shape false))
   ([shape not-found-is-error?]
    (let [shape (d/calculate-derived shape)
          mbr (relations/mbr shape)
