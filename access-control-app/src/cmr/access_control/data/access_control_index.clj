@@ -94,7 +94,8 @@
   (m/delete-by-id (esi/context->search-index context)
                   group-index-name
                   group-type-name
-                  concept-id))
+                  concept-id
+                  {:refresh? true}))
 
 (defn unindex-groups-by-provider
   "Unindexes all access groups owned by provider-id."
