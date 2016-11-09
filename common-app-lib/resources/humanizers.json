@@ -1,7 +1,6 @@
 [
-      "Humanizer configuration file.",
-      "For the time being, humanizers are configured using this file instead of being",
-      "ingested into MetadataDB. This file contains an array of humanizers in the",
+      "Humanizer configuration file, used for testing and bookkeeping purposes",
+      "This file contains an array of humanizers in the",
       "format that will be used by the ingest API. Order is not important. String",
       "entries are treated as comments. For details on humanizers and the format, see",
       "https://wiki.earthdata.nasa.gov/display/CMR/Humanizing+Facets+Design",
