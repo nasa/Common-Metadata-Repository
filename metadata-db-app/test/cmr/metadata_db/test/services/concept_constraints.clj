@@ -83,30 +83,13 @@
         (let [other-concept (make-concept concept-type "PROV1" "C2-PROV1" 1 extra-fields)]
           (not-valid
             (msg/duplicate-field-msg field [other-concept])
-            [other-concept])))
-      (testing "cannot find saved concept throws internal error"
-        (let [db (mem-db/create-db)
-              error-regex (java.util.regex.Pattern/compile
-                            (format "Unable to find saved concept for provider.*PROV1.*and %s .*unique-field1"
-                                    (name field)))]
-          (is (thrown-with-msg?
-                java.lang.Exception
-                error-regex
-                (constraint-fn db {:provider-id "PROV1"} test-concept))))))))
+            [other-concept]))))))
 
 (deftest unique-constraint-tests
   (unique-constraint-test :collection (cc/unique-field-constraint :entry-title) :entry-title)
   (unique-constraint-test :collection (cc/unique-field-constraint :entry-id) :entry-id)
   (unique-constraint-test :granule (cc/unique-field-constraint :granule-ur) :granule-ur)
-  (unique-constraint-test :granule cc/granule-ur-unique-constraint :granule-ur)
-
-  (testing "invalid field throws internal error"
-    (let [db (mem-db/create-db)
-          test-concept (make-concept :collection "PROV1" "C1-PROV1" 5 {:entry-title "ET1"})]
-      (is (thrown-with-msg?
-            java.lang.Exception
-            #"Unable to find saved concept for provider \[PROV1\] and invalid-field \[null\]"
-            ((cc/unique-field-constraint :invalid-field) db {:provider-id "PROV1"} test-concept))))))
+  (unique-constraint-test :granule cc/granule-ur-unique-constraint :granule-ur))
 
 (deftest granule-ur-unique-constraint-test
   (testing "native-id is checked for uniqueness when granule-ur is null"
