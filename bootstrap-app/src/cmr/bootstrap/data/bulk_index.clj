@@ -123,17 +123,13 @@
   "Bulk index ACLs or acces groups"
   [system concept-batches]
   (info "Indexing concepts")
-  (let [count (ac-bulk-index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches {})]
-    (info "Indexed" count "concepts")
-    count))
+  (ac-bulk-index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches {}))
 
 (defn- index-concepts
   "Bulk index the given concepts using the indexer-app"
   [system concept-batches]
   (info "Indexing concepts")
-  (let [{:keys [max-revision-date num-indexed]} (index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches {})]
-    (info "Indexed" count "concepts")
-    count))
+  (index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches {}))
 
 (defn- fetch-and-index-new-concepts
   "Get batches of concepts for a given provider/concept type that have a revision-date
