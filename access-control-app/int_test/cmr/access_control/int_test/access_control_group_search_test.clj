@@ -87,8 +87,13 @@
     (let [token (e/login (u/conn-context) "user1")
           existing-admin-group (get-existing-admin-group)
           cmr-group (u/ingest-group token {:name "cmr-group"} ["user1"])
+          deleted-group (u/ingest-group token {:name "deleted-group"})
           prov-group (u/ingest-group token {:name "prov-group" :provider_id "PROV1"} ["user1"])
           all-groups [existing-admin-group cmr-group prov-group]]
+      (u/wait-until-indexed)
+
+      ;; Delete the group so we can test with a tombstone.
+      (is (= 200 (:status (u/delete-group token (:concept_id deleted-group)))))
       (u/wait-until-indexed)
 
       ;; Group indexing is synchronous so we must manually unindex all groups
