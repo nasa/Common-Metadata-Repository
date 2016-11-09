@@ -122,9 +122,8 @@
 
      (testing "Created groups should be found"
        (is (= (expected-search-response [existing-admin-group group1 group2 group3] true)
-              (search-for-groups token {:include_members true})))
-       (is (= (expected-search-response [existing-admin-group group1 group2 group3] true)
               (search-for-groups token {:include_members true}))))
+
      (testing "Deleted groups are unindexed"
        (let [resp (u/delete-group token (:concept_id group3))]
          (is (= 200 (:status resp)) (pr-str resp)))

@@ -57,15 +57,16 @@
   "Converts a concept map containing an access group into the elasticsearch document to index."
   [concept-map]
   (try
-    (let [group (edn/read-string (:metadata concept-map))]
+    (let [{:keys [name provider-id members legacy-guid metadata]} concept-map
+          group (edn/read-string metadata)]
       (-> group
           (merge (select-keys concept-map [:concept-id :revision-id]))
-          (assoc :name.lowercase (util/safe-lowercase (:name group))
-                 :provider-id.lowercase (util/safe-lowercase (:provider-id group))
+          (assoc :name.lowercase (util/safe-lowercase name)
+                 :provider-id.lowercase (util/safe-lowercase provider-id)
                  :members (:members group)
-                 :members.lowercase (map str/lower-case (:members group))
-                 :legacy-guid.lowercase (util/safe-lowercase (:legacy-guid group))
-                 :member-count (count (:members group)))))
+                 :members.lowercase (map str/lower-case members)
+                 :legacy-guid.lowercase (util/safe-lowercase legacy-guid)
+                 :member-count (count members))))
     (catch Exception e
       (error e (str "Failure to create elastic-doc from " (pr-str concept-map)))
       (throw e))))

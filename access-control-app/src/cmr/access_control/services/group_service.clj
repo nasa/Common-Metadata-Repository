@@ -98,14 +98,13 @@
 (defn- save-deleted-group-concept
   "Saves an existing group concept as a tombstone"
   [context existing-concept]
-  (let [updated-concept (-> existing-concept
+  (let [deleted-concept (-> existing-concept
                             ;; Remove fields not allowed when creating a tombstone.
-                            (dissoc :metadata :format :provider-id :native-id)
+                            (dissoc :metadata :format :provider-id :native-id :revision-date :transaction-id)
                             (assoc :deleted true
                                    :user-id (context->user-id context))
-                            (dissoc :revision-date :transaction-id)
                             (update :revision-id inc))
-        result (mdb/save-concept context updated-concept)]
+        result (mdb/save-concept context deleted-concept)]
     (index/unindex-group context (:concept-id existing-concept))
     result))
 
