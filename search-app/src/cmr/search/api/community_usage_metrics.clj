@@ -1,5 +1,7 @@
 (ns cmr.search.api.community-usage-metrics
-  "Defines the API for humanizer in the CMR."
+  "Defines the API for community usage metrics in the CMR. Community usage metrics come from the EMS
+   as a CSV and are stored in the CMR as JSON with the humanizers. The metrics are used for relevancy
+   scoring based on popularity."
   (:require
    [cheshire.core :as json]
    [cmr.acl.core :as acl]
@@ -11,7 +13,7 @@
    [compojure.route :as route]))
 
 (defn- community-usage-metrics-response
-  "Creates a successful humanizer response with the given data response"
+  "Creates a successful community usage metrics response with the given data response"
   [status-code data]
   {:status status-code
    :body (json/generate-string data)
