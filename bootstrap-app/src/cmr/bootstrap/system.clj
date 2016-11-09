@@ -11,6 +11,7 @@
    [cmr.bootstrap.data.bulk-index :as bi]
    [cmr.bootstrap.data.bulk-migration :as bm]
    [cmr.bootstrap.data.virtual-products :as vp]
+   [cmr.bootstrap.services.replication :as replication]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
@@ -36,7 +37,7 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches :db :scheduler :web :nrepl])
+  [:log :caches :db :scheduler :db-scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -87,16 +88,17 @@
              vp/channel-name (chan)
 
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
-             :db (oracle/create-db (mdb-config/db-spec "bootstrap-pool"))
+             :db (oracle/create-db (bootstrap-config/db-spec "bootstrap-pool"))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (bootstrap-config/bootstrap-nrepl-port))
              :relative-root-url (transmit-config/bootstrap-relative-root-url)
              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
                       common-health/health-cache-key (common-health/create-health-cache)}
-             :scheduler (jobs/create-scheduler
-                         `system-holder
-                         [jvm-info/log-jvm-statistics-job])}]
+             :db-scheduler (when (replication/index-recently-replicated)
+                             (jobs/create-clustered-scheduler
+                              `system-holder :db [replication/index-recently-replicated-job]))
+             :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job])}]
     (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms :cubby :index-set
                                                   :indexer])))
 

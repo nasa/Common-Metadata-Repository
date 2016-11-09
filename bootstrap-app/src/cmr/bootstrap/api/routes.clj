@@ -6,18 +6,19 @@
    [cmr.acl.core :as acl]
    [cmr.bootstrap.services.bootstrap-service :as bs]
    [cmr.bootstrap.services.health-service :as hs]
-   [cmr.common.api.context :as context]
-   [cmr.common.api.errors :as errors]
+   [cmr.bootstrap.services.replication :as replication]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.common.api.context :as context]
+   [cmr.common.api.errors :as errors]
    [cmr.common.date-time-parser :as date-time-parser]
    [cmr.common.jobs :as jobs]
-   [cmr.common.log :refer (info)]
+   [cmr.common.log :refer [info]]
    [cmr.common.services.errors :as srv-errors]
    [cmr.common.util :as util]
    [cmr.virtual-product.data.source-to-virtual-mapping :as svm]
-   [compojure.route :as route]
    [compojure.core :refer :all]
+   [compojure.route :as route]
    [ring.middleware.json :as ring-json]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
@@ -27,8 +28,7 @@
   "Returns true if the params contains the :synchronous key and it's
   value converted to lower case equals the string 'true'."
   [params]
-  (= "true" (when (:synchronous params)
-              (str/lower-case (:synchronous params)))))
+  (= "true" (when (:synchronous params) (str/lower-case (:synchronous params)))))
 
 (defn- migrate-collection
   "Copy collections data from catalog-rest to metadata db (including granules)"
@@ -69,7 +69,7 @@
     (if-let [date-time-value (date-time-parser/try-parse-datetime date-time)]
       (let [result (bs/index-data-later-than-date-time context date-time-value synchronous)
             msg (if synchronous
-                  result
+                  (:message result)
                   (str "Processing data after " date-time " for bulk indexing"))]
         {:status 202
          :body {:message msg}})
@@ -168,6 +168,12 @@
       (context "/virtual_products" []
         (POST "/" {:keys [request-context params]}
           (bootstrap-virtual-products request-context params)))
+
+      (common-routes/job-api-routes
+        (routes
+          (POST "/index-recently-replicated" {:keys [request-context]}
+            (replication/index-replicated-concepts request-context)
+            {:status 200})))
 
       ;; Add routes for accessing caches
       common-routes/cache-api-routes

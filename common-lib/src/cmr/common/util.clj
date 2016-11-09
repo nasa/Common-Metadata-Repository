@@ -765,3 +765,13 @@
   "Returns true if only one of xs is truthy."
   [& xs]
   (= 1 (count (filter identity xs))))
+
+(defn get-max-from-collection
+  "Returns the maximum value from a collection of objects which implement the Comparator interface."
+  [coll]
+  (when (seq coll)
+    (reduce (fn [x y]
+              (if (and x y)
+                (if (< 0 (compare x y)) x y)
+                (or x y)))
+            coll)))

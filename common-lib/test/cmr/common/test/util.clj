@@ -720,3 +720,30 @@
             (catch java.util.concurrent.ExecutionException ee
               ; We don't want an ExecutionException, we want to get the null pointer exception
               (is false "Fast-map threw ExecutionException and should throw NullPointerException")))))))
+
+(deftest get-max-from-collection-test
+  (util/are3
+    [coll expected-max]
+    (is (= expected-max (util/get-max-from-collection coll)))
+
+    "Numbers"
+    [1 7 52 3] 52
+
+    "Large numbers"
+    [123456789 14 3 456789123] 456789123
+
+    "Joda times"
+    [(t/date-time 2006 10 13 23) (t/date-time 2006 10 14 22) (t/date-time 1986 12 15 14)]
+    (t/date-time 2006 10 14 22)
+
+    "Empty collection is ok"
+    [] nil
+
+    "Only nil is ok"
+    [nil] nil
+
+    "Some nils"
+    [1 nil 15 nil 32 nil 14] 32
+
+    "Set of numbers"
+    #{1 7 52 3} 52))

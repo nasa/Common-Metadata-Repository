@@ -12,6 +12,7 @@
     [cmr.bootstrap.data.bulk-migration :as bm]
     [cmr.bootstrap.embedded-system-helper :as helper]
     [cmr.common.log :refer (debug info warn error)]
+    [cmr.common.util :as util]
     [cmr.indexer.services.index-service :as index]
     [cmr.metadata-db.data.concepts :as db]
     [cmr.metadata-db.data.providers :as p]
@@ -122,7 +123,7 @@
   "Bulk index ACLs or acces groups"
   [system concept-batches]
   (info "Indexing concepts")
-  (let [count (ac-bulk-index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
+  (let [count (ac-bulk-index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches {})]
     (info "Indexed" count "concepts")
     count))
 
@@ -130,7 +131,7 @@
   "Bulk index the given concepts using the indexer-app"
   [system concept-batches]
   (info "Indexing concepts")
-  (let [count (index/bulk-index {:system (helper/get-indexer system)} concept-batches {})]
+  (let [{:keys [max-revision-date num-indexed]} (index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches {})]
     (info "Indexed" count "concepts")
     count))
 
@@ -145,30 +146,43 @@
                 :revision-date {:comparator `> :value (time-coerce/to-sql-time date-time)}}
         concept-batches (db/find-concepts-in-batches
                           db provider params (:db-batch-size system))
-        num-concepts (if (contains? #{:acl :access-group} concept-type)
-                       (index-access-control-concepts system concept-batches)
-                       (index-concepts system concept-batches))]
-    (info "Indexed" num-concepts (str (name concept-type) "(s) for provider") provider-id
-     "with revision-date later than " date-time)
-    num-concepts))
+        {:keys [max-revision-date num-indexed]} (if (contains? #{:acl :access-group} concept-type)
+                                                 (index-access-control-concepts system concept-batches)
+                                                 (index-concepts system concept-batches))]
+    (info (format (str "Indexed %d %s(s) for provider %s with revision-date later than %s and max "
+                       "revision date was %s.")
+                  num-indexed
+                  (name concept-type)
+                  provider-id
+                  date-time
+                  max-revision-date))
+    {:max-revision-date max-revision-date
+     :num-indexed num-indexed}))
 
 (defn index-data-later-than-date-time
-  "Index all concept revisions created later than the given date-time."
+  "Index all concept revisions created later than or equal to the given date-time."
   [system date-time]
-  (info "Indexing concepts.")
+  (info "Indexing concepts with revision-date later than " date-time "started.")
   (let [db (helper/get-metadata-db-db system)
         providers (p/get-providers db)
-        non-system-concept-count (reduce + (for [provider providers
-                                                 concept-type [:collection :granule :service]]
-                                             (fetch-and-index-new-concepts
-                                                 system provider concept-type date-time)))
-        system-concept-count (reduce + (for [concept-type [:tag :acl :access-group]]
-                                         (fetch-and-index-new-concepts
-                                           system {:provider-id "CMR"} concept-type date-time)))]
-    (info "Indexing concepts with revision-date later than" date-time "completed.")
-    (format "Indexed %d provider concepts and %d system concepts."
-            non-system-concept-count
-            system-concept-count)))
+        provider-response-map (for [provider providers
+                                    concept-type [:collection :granule :service]]
+                                (fetch-and-index-new-concepts
+                                  system provider concept-type date-time))
+        provider-concept-count (reduce + (map :num-indexed provider-response-map))
+        system-concept-response-map (for [concept-type [:tag :acl :access-group]]
+                                      (fetch-and-index-new-concepts
+                                        system {:provider-id "CMR"} concept-type date-time))
+        system-concept-count (reduce + (map :num-indexed system-concept-response-map))
+        indexing-complete-message (format "Indexed %d provider concepts and %d system concepts."
+                                          provider-concept-count
+                                          system-concept-count)]
+      (info "Indexing concepts with revision-date later than" date-time "completed.")
+      (info indexing-complete-message)
+      {:message indexing-complete-message
+       :max-revision-date (util/get-max-from-collection
+                           (map :max-revision-date
+                                (apply conj provider-response-map system-concept-response-map)))}))
 
 ;; Background task to handle bulk index requests
 (defn handle-bulk-index-requests

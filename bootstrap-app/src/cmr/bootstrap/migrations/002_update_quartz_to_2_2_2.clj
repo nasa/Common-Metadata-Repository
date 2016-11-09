@@ -14,5 +14,3 @@
   []
   (println "migrations.002-update-quartz-to-2-2-2 down...")
   (j/db-do-commands (config/db) "ALTER TABLE QRTZ_FIRED_TRIGGERS DROP COLUMN SCHED_TIME"))
-
-
