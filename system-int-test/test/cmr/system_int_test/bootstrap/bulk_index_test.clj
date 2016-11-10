@@ -1,10 +1,14 @@
 (ns cmr.system-int-test.bootstrap.bulk-index-test
   "Integration test for CMR bulk indexing."
   (:require
+    [clj-time.coerce :as cr]
     [clj-time.core :as t]
+    [clojure.java.jdbc :as j]
     [clojure.test :refer :all]
-    [cmr.mock-echo.client.echo-util :as e]
+    [cmr.common.date-time-parser :as p]
     [cmr.common.util :as util :refer [are3]]
+    [cmr.mock-echo.client.echo-util :as e]
+    [cmr.oracle.connection :as oracle]
     [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
@@ -22,92 +26,156 @@
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
                        tags/grant-all-tag-fixture]))
 
+(defn- save-collection
+  "Saves a collection concept"
+  ([n]
+   (save-collection n {}))
+  ([n attributes]
+   (let [unique-str (str "coll" n)
+         umm (dc/collection {:short-name unique-str :entry-title unique-str})
+         xml (echo10/umm->echo10-xml umm)
+         coll (mdb/save-concept (merge
+                                 {:concept-type :collection
+                                  :format "application/echo10+xml"
+                                  :metadata xml
+                                  :extra-fields {:short-name unique-str
+                                                 :entry-title unique-str
+                                                 :entry-id unique-str
+                                                 :version-id "v1"}
+                                  :revision-date "2000-01-01T10:00:00Z"
+                                  :provider-id "PROV1"
+                                  :native-id unique-str
+                                  :short-name unique-str}
+                                 attributes))]
+     ;; Make sure the concept was saved successfully
+     (is (= 201 (:status coll)))
+     (merge umm (select-keys coll [:concept-id :revision-id])))))
+
+(defn- save-granule
+  "Saves a granule concept"
+  ([n collection]
+   (save-granule n collection {}))
+  ([n collection attributes]
+   (let [unique-str (str "gran" n)
+         umm (dg/granule collection {:granule-ur unique-str})
+         xml (echo10/umm->echo10-xml umm)
+         gran (mdb/save-concept (merge
+                                 {:concept-type :granule
+                                  :provider-id "PROV1"
+                                  :native-id unique-str
+                                  :format "application/echo10+xml"
+                                  :metadata xml
+                                  :revision-date "2000-01-01T10:00:00Z"
+                                  :extra-fields {:parent-collection-id (:concept-id collection)
+                                                 :parent-entry-title (:entry-title collection)
+                                                 :granule-ur unique-str}}
+                                 attributes))]
+     ;; Make sure the concept was saved successfully
+     (is (= 201 (:status gran)))
+     (merge umm (select-keys gran [:concept-id :revision-id])))))
+
+(defn- save-tag
+  "Saves a tag concept"
+  ([n]
+   (save-tag n {}))
+  ([n attributes]
+   (let [unique-str (str "tag" n)
+         tag (mdb/save-concept (merge
+                                {:concept-type :tag
+                                 :native-id unique-str
+                                 :user-id "user1"
+                                 :format "application/edn"
+                                 :metadata (str "{:tag-key \"" unique-str "\" :description \"A good tag\" :originator-id \"user1\"}")
+                                 :revision-date "2000-01-01T10:00:00Z"}
+                                attributes))]
+     ;; Make sure the concept was saved successfully
+     (is (= 201 (:status tag)))
+     (merge tag (select-keys tag [:concept-id :revision-id])))))
+
+(defn- get-last-replicated-revision-date
+  "Helper to get the last replicated revision date from the database."
+  [db]
+  (j/with-db-transaction
+   [conn db]
+   (->> (j/query conn ["SELECT LAST_REPLICATED_REVISION_DATE FROM REPLICATION_STATUS"])
+        first
+        :last_replicated_revision_date
+        (oracle/oracle-timestamp->str-time conn))))
+
+(deftest index-recently-replicated-test
+  (s/only-with-real-database
+   ;; Disable message publishing so items are not indexed as part of the initial save.
+   (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! false))
+   (let [last-replicated-datetime "2016-01-01T10:00:00Z"
+         coll-missed-cutoff (save-collection 1 {:revision-date "2016-01-01T09:59:40Z"})
+         coll-within-buffer (save-collection 2 {:revision-date "2016-01-01T09:59:41Z"})
+         coll-after-date (save-collection 3 {:revision-date "2016-01-02T00:00:00Z"})
+         gran-missed-cutoff (save-granule 1 coll-missed-cutoff {:revision-date "2016-01-01T09:59:40Z"})
+         gran-within-buffer (save-granule 2 coll-within-buffer {:revision-date "2016-01-01T09:59:41Z"})
+         gran-after-date (save-granule 3 coll-after-date {:revision-date "2016-01-02T00:00:00Z"})
+         tag-missed-cutoff (save-tag 1 {:revision-date "2016-01-01T09:59:40Z"})
+         tag-within-buffer (save-tag 2 {:revision-date "2016-01-01T09:59:41Z"})
+         tag-after-date (save-tag 3 {:revision-date "2016-01-02T00:00:00Z"})
+         db (get-in (s/context) [:system :bootstrap-db])
+         stmt "UPDATE REPLICATION_STATUS SET LAST_REPLICATED_REVISION_DATE = ?"]
+     (j/db-do-prepared db stmt [(cr/to-sql-time (p/parse-datetime last-replicated-datetime))])
+     (bootstrap/index-recently-replicated)
+     ;; Force elastic data to be flushed, not actually waiting for index requests to finish
+     (index/wait-until-indexed)
+     (testing "Concepts with revision date within 20 seconds of last replicated date are indexed."
+       (are3 [concept-type expected]
+         (d/refs-match? expected (search/find-refs concept-type {}))
+
+         "Collections"
+         :collection [coll-within-buffer coll-after-date]
+
+         "Granules"
+         :granule [gran-within-buffer gran-after-date])
+
+       (are3 [expected-tags]
+         (let [result-tags (update
+                             (tags/search {})
+                             :items
+                             (fn [items]
+                               (map #(select-keys % [:concept-id :revision-id]) items)))]
+           (tags/assert-tag-search expected-tags result-tags))
+
+         "Tags"
+         [tag-within-buffer tag-after-date]))
+
+     (testing "When there are no concepts to index the date is not changed."
+       (j/db-do-prepared db stmt [(cr/to-sql-time (p/parse-datetime "2016-02-01T10:00:00.000Z"))])
+       (bootstrap/index-recently-replicated)
+       (is (= "2016-02-01T10:00:00.000Z" (get-last-replicated-revision-date db))))
+
+     (testing "Max revision dates are tracked correctly"
+       (testing "for provider concepts"
+         (let [coll (save-collection 1 {:revision-date "2016-02-02T10:59:40Z"})]
+           (save-granule 1 coll {:revision-date "2016-02-01T11:59:40Z"})
+           (save-tag 1 {:revision-date "2016-02-01T18:59:40Z"})
+           (bootstrap/index-recently-replicated))
+         (is (= "2016-02-02T10:59:40.000Z" (get-last-replicated-revision-date db))))
+       (testing "for system concepts"
+         (let [coll (save-collection 1 {:revision-date "2016-02-03T10:59:40Z"})]
+           (save-granule 1 coll {:revision-date "2016-03-01T11:59:40Z"})
+           (save-tag 1 {:revision-date "2016-03-01T12:10:47Z"})
+           (bootstrap/index-recently-replicated))
+         (is (= "2016-03-01T12:10:47.000Z" (get-last-replicated-revision-date db))))))
+
+   ;; Re-enable message publishing.
+   (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! true))))
+
 (deftest bulk-index-after-date-time
   (s/only-with-real-database
     ;; Disable message publishing so items are not indexed.
-    (dev-sys-util/eval-in-dev-sys
-        `(cmr.metadata-db.config/set-publish-messages! false))
+    (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! false))
     (let [;; saved but not indexed
-          umm1 (dc/collection {:short-name "coll1" :entry-title "coll1"})
-          xml1 (echo10/umm->echo10-xml umm1)
-          coll1 (mdb/save-concept {:concept-type :collection
-                                   :format "application/echo10+xml"
-                                   :metadata xml1
-                                   :extra-fields {:short-name "coll1"
-                                                  :entry-title "coll1"
-                                                  :entry-id "coll1"
-                                                  :version-id "v1"}
-                                   :revision-date "2000-01-01T10:00:00Z"
-                                   :provider-id "PROV1"
-                                   :native-id "coll1"
-                                   :short-name "coll1"})
-          umm1 (merge umm1 (select-keys coll1 [:concept-id :revision-id]))
-
-          ;; granule
-          ummg1 (dg/granule coll1 {:granule-ur "gran1"})
-          xmlg1 (echo10/umm->echo10-xml ummg1)
-          gran1 (mdb/save-concept {:concept-type :granule
-                                   :provider-id "PROV1"
-                                   :native-id "gran1"
-                                   :format "application/echo10+xml"
-                                   :metadata xmlg1
-                                   :revision-date "2000-01-01T10:00:00Z"
-                                   :extra-fields {:parent-collection-id (:concept-id umm1)
-                                                  :parent-entry-title "coll1"
-                                                  :granule-ur "ur1"}})
-          ummg1 (merge ummg1 (select-keys gran1 [:concept-id :revision-id]))
-
-          user1-token (e/login (s/context) "user1")
-
-          tag1 (mdb/save-concept {:concept-type :tag
-                                  :native-id "tag1"
-                                  :user-id "user1"
-                                  :format "application/edn"
-                                  :metadata "{:tag-key \"tag1\" :description \"A good tag\" :originator-id \"user1\"}"
-                                  :revision-date "2000-01-01T10:00:00Z"})
-
-          umm2 (dc/collection {:short-name "coll2" :entry-title "coll2"})
-          xml2 (echo10/umm->echo10-xml umm2)
-          coll2 (mdb/save-concept {:concept-type :collection
-                                   :format "application/echo10+xml"
-                                   :metadata xml2
-                                   :extra-fields {:short-name "coll2"
-                                                  :entry-title "coll2"
-                                                  :entry-id "coll2"
-                                                  :version-id "v1"}
-                                   :revision-date "2016-01-01T10:00:00Z"
-                                   :provider-id "PROV1"
-                                   :native-id "coll2"
-                                   :short-name "coll2"})
-           umm2 (merge umm2 (select-keys coll2 [:concept-id :revision-id]))
-
-
-           ; granule
-           ummg2 (dg/granule coll2 {:granule-ur "gran2"})
-           xmlg2 (echo10/umm->echo10-xml ummg2)
-           gran2 (mdb/save-concept {:concept-type :granule
-                                    :provider-id "PROV1"
-                                    :native-id "gran2"
-                                    :format "application/echo10+xml"
-                                    :metadata xmlg2
-                                    :revision-date "2016-01-01T10:00:00Z"
-                                    :extra-fields {:parent-collection-id (:concept-id umm2)
-                                                   :parent-entry-title "coll2"
-                                                   :granule-ur "ur2"}})
-          ummg2 (merge ummg2 (select-keys gran2 [:concept-id :revision-id]))
-
-          tag2 (mdb/save-concept {:concept-type :tag
-                                  :native-id "tag2"
-                                  :user-id "user1"
-                                  :format "application/edn"
-                                  :metadata "{:tag-key \"tag2\" :description \"A good tag\" :originator-id \"user1\"}"
-                                  :revision-date "2016-01-01T10:00:00Z"})]
-      ;; Re-enable message publishing.
-      (dev-sys-util/eval-in-dev-sys
-        `(cmr.metadata-db.config/set-publish-messages! true))
-
-      ;; Verify that all of the ingest requests completed successfully
-      (doseq [concept [coll1 coll2 gran1 gran2]] (is (= 201 (:status concept))))
+          coll1 (save-collection 1)
+          coll2 (save-collection 2 {:revision-date "2016-01-01T10:00:00Z"})
+          gran1 (save-granule 1 coll1)
+          gran2 (save-granule 2 coll2 {:revision-date "2016-01-01T10:00:00Z"})
+          tag1 (save-tag 1)
+          tag2 (save-tag 2 {:revision-date "2016-01-01T10:00:00Z"})]
 
       (bootstrap/bulk-index-after-date-time "2015-01-01T12:00:00Z")
       (index/wait-until-indexed)
@@ -117,10 +185,10 @@
           (d/refs-match? expected (search/find-refs concept-type {}))
 
           "Collections"
-          :collection [umm2]
+          :collection [coll2]
 
           "Granules"
-          :granule [ummg2])
+          :granule [gran2])
 
         (are3 [expected-tags]
           (let [result-tags (update
@@ -128,11 +196,12 @@
                               :items
                               (fn [items]
                                 (map #(select-keys % [:concept-id :revision-id]) items)))]
-            (println "RESULT-TAGS " result-tags)
             (tags/assert-tag-search expected-tags result-tags))
 
           "Tags"
-          [tag2])))))
+          [tag2])))
+    ;; Re-enable message publishing.
+    (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! true))))
 
 ;; This test runs bulk index with some concepts in mdb that are good, and some that are
 ;; deleted, and some that have not yet been deleted, but have an expired deletion date.

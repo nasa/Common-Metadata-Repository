@@ -77,20 +77,30 @@
       :items
       first))
 
+(defn search-for-groups
+  "Searches for groups with the token and params. Returns a response that can be used for comparing"
+  [token params]
+  (select-keys (u/search-for-groups token params) [:status :items :hits :errors]))
+
 (deftest group-reindexing-test
   (u/without-publishing-messages
     (let [token (e/login (u/conn-context) "user1")
           existing-admin-group (get-existing-admin-group)
           cmr-group (u/ingest-group token {:name "cmr-group"} ["user1"])
+          deleted-group (u/ingest-group token {:name "deleted-group"})
           prov-group (u/ingest-group token {:name "prov-group" :provider_id "PROV1"} ["user1"])
           all-groups [existing-admin-group cmr-group prov-group]]
+      (u/wait-until-indexed)
+
+      ;; Delete the group so we can test with a tombstone.
+      (is (= 200 (:status (u/delete-group token (:concept_id deleted-group)))))
       (u/wait-until-indexed)
 
       ;; Group indexing is synchronous so we must manually unindex all groups
       (u/unindex-all-groups)
 
       (is (= (expected-search-response [] true)
-             (select-keys (u/search-for-groups token {:include_members true}) [:status :items :hits :errors]))
+             (search-for-groups token {:include_members true}))
           "Found groups after unindexing all groups")
 
       (access-control/reindex-groups (u/conn-context))
@@ -98,8 +108,49 @@
 
       ;; Now all groups should be found.
       (is (= (expected-search-response all-groups true)
-             (select-keys (u/search-for-groups token {:include_members true}) [:status :items :hits :errors]))
+             (search-for-groups token {:include_members true}))
           "Did not find groups after reindexing all groups."))))
+
+;; This tests that groups are synchronously indexed correctly.
+(deftest synchronous-group-indexing-test
+  (u/without-publishing-messages
+   (let [token (e/login (u/conn-context) "user1")
+         existing-admin-group (get-existing-admin-group)
+         group1 (u/ingest-group token {:name "group1"})
+         group2 (u/ingest-group token {:name "group2" :provider_id "PROV1"})
+         group3 (u/ingest-group token {:name "group3" :provider_id "PROV1"})]
+
+     (testing "Created groups should be found"
+       (is (= (expected-search-response [existing-admin-group group1 group2 group3] true)
+              (search-for-groups token {:include_members true}))))
+
+     (testing "Deleted groups are unindexed"
+       (let [resp (u/delete-group token (:concept_id group3))]
+         (is (= 200 (:status resp)) (pr-str resp)))
+       (is (= (expected-search-response [existing-admin-group group1 group2] true)
+              (search-for-groups token {:include_members true}))))
+
+     (let [;; Group 2 will have an updated description
+           updated-group2 (assoc group2 :description "Updated desc" :revision_id 2)
+           resp (u/update-group token (:concept_id group2) updated-group2)
+           _ (is (= 200 (:status resp)) (pr-str resp))
+           ;; Group 1 will have new members
+           resp (u/add-members token (:concept_id group1) ["user1" "user2"])
+           _ (is (= 200 (:status resp)) (pr-str resp))
+           updated-group1 (assoc group1 :members ["user1" "user2"] :revision_id 2)]
+
+       (testing "Updated groups are indexed correctly"
+         (is (= (expected-search-response [existing-admin-group updated-group1 updated-group2] true)
+                (search-for-groups token {:include_members true}))))
+
+       (let [updated-group1 (assoc group1 :members ["user1"] :revision_id 3)
+             resp (u/remove-members token (:concept_id group1) ["user2"])
+             _ (is (= 200 (:status resp)) (pr-str resp))]
+
+         (testing "Groups with removed members are indexed correctly"
+           (is (= (expected-search-response [existing-admin-group updated-group1 updated-group2] true)
+                  (search-for-groups token {:include_members true})))))))))
+
 
 (deftest group-search-test
   (let [token (e/login (u/conn-context) "user1")
@@ -122,7 +173,7 @@
     (testing "Search by concept id"
       (are3 [expected-groups params]
         (is (= (expected-search-response expected-groups (:include_members params))
-               (select-keys (u/search-for-groups token params) [:status :items :hits :errors])))
+               (search-for-groups token params)))
 
         "Multiple is OR'd"
         [cmr-group1 prov1-group1 prov1-group2] {:concept-id (map :concept_id
@@ -133,7 +184,7 @@
     (testing "Search by member"
       (are3 [expected-groups params]
         (is (= (expected-search-response expected-groups (:include_members params))
-               (select-keys (u/search-for-groups token params) [:status :items :hits :errors])))
+               (search-for-groups token params)))
 
         "Include members"
         all-groups {:include_members true}
@@ -158,7 +209,7 @@
     (testing "Search by name"
       (are3 [expected-groups params]
         (is (= (expected-search-response expected-groups false)
-               (select-keys (u/search-for-groups token params) [:status :items :hits])))
+               (search-for-groups token params)))
 
         "Normal case insensitive"
         [cmr-group1 prov1-group1 prov2-group1] {:name "Group1"}
@@ -180,7 +231,7 @@
     (testing "Search by provider"
       (are3 [expected-groups params]
         (is (= (expected-search-response expected-groups false)
-               (select-keys (u/search-for-groups token params) [:status :items :hits])))
+               (search-for-groups token params)))
 
         "No parameters finds all groups"
         all-groups {}
