@@ -34,29 +34,57 @@
   [csv-line product-col version-col hosts-col]
   (let [short-name (read-csv-column csv-line product-col)
         version (read-csv-column csv-line version-col)]
-    {:short-name short-name
+    {:short-name (if (seq short-name)
+                   short-name
+                   (errors/throw-service-error :invalid-data
+                     "Error parsing 'Product' CSV Data. Product may not be empty."))
      :version version
      :access-count (let [access-count (read-csv-column csv-line hosts-col)]
-                     (when (seq access-count)
+                     (if (seq access-count)
                        (try
                          (Integer/parseInt access-count)
                          (catch java.lang.NumberFormatException e
                            (errors/throw-service-error :invalid-data
-                                                       (format "Error parsing 'Hosts' CSV Data for collection [%s], version [%s]. Hosts must be an integer."
-                                                               short-name version))))))}))
+                             (format (str "Error parsing 'Hosts' CSV Data for collection [%s], version "
+                                          "[%s]. Hosts must be an integer.")
+                               short-name version))))
+                      (errors/throw-service-error :invalid-data
+                        (format (str "Error parsing 'Hosts' CSV Data for collection [%s], version "
+                                      "[%s]. Hosts may not be empty.")
+                          short-name version))))}))
+
+(defn- validate-and-read-csv
+  "Validate the ingested community usage metrics csv and if valid, return the data lines read
+  from the CSV (everything except the header) and column indices of data we want to store. If there
+  is invalid data, throw an error.
+
+  Perform the following validations:
+   * CSV is neither nil nor empty
+   * A Product column exists
+   * A Hosts column exists"
+  [community-usage-csv]
+  (if community-usage-csv
+    (if-let [csv-lines (seq (csv/read-csv community-usage-csv))]
+      (let [csv-columns (get-community-usage-columns (first csv-lines))]
+        (when (< (:product-col csv-columns) 0)
+          (errors/throw-service-error :invalid-data "A 'Product' column is required in community usage CSV data"))
+        (when (< (:hosts-col csv-columns) 0)
+          (errors/throw-service-error :invalid-data "A 'Hosts' column is required in community usage CSV data"))
+        (merge {:csv-lines (rest csv-lines)} csv-columns))
+      (errors/throw-service-error :invalid-data "You posted empty content"))
+    (errors/throw-service-error :invalid-data "You posted empty content")))
 
 (defn- community-usage-csv->community-usage-metrics
-  "Convert the community usage csv to a list of community usage metrics to save"
+  "Validate the community usage csv and convert to a list of community usage metrics to save"
   [community-usage-csv]
-  (when-let [csv-lines (seq (csv/read-csv community-usage-csv))]
-    (let [{:keys [product-col version-col hosts-col]} (get-community-usage-columns (first csv-lines))]
-      (map #(csv-entry->community-usage-metric % product-col version-col hosts-col) (rest csv-lines)))))
+  (let [{:keys [csv-lines product-col version-col hosts-col]} (validate-and-read-csv community-usage-csv)]
+    (map #(csv-entry->community-usage-metric % product-col version-col hosts-col) csv-lines)))
 
 (defn- aggregate-usage-metrics
   "Combine access counts for entries with the same short-name and version number."
   [metrics]
+  ;; name-version-groups is map of [short-name, version] [entries that match short-name/version]
   (let [name-version-groups (group-by (juxt :short-name :version) metrics)] ; Group by short-name and version
-    ;; name-version-groups is map of [short-name, version] [entries that match short-name/version]
     ;; The first entry in each list has the short-name and version we want so just add up the access-counts
     ;; in the rest and add that to the first entry to make the access-counts right
     (map #(util/remove-nil-keys (assoc (first %) :access-count (reduce + (map :access-count %))))

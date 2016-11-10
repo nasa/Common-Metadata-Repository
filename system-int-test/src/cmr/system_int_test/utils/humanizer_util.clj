@@ -1,15 +1,17 @@
 (ns cmr.system-int-test.utils.humanizer-util
   "This contains utilities for testing humanizer"
-  (:require [cmr.transmit.humanizer :as h]
-            [clojure.test :refer [is]]
-            [cheshire.core :as json]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.concepts :as cc]
-            [cmr.common-app.test.sample-humanizer :as sh]
-            [cmr.system-int-test.utils.index-util :as index]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.test :refer [is]]
+   [cmr.common-app.test.sample-humanizer :as sh]
+   [cmr.common.concepts :as cc]
+   [cmr.common.mime-types :as mt]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
+   [cmr.transmit.community-usage-metrics :as metrics]
+   [cmr.transmit.humanizer :as h]))
 
 (defn grant-all-humanizers-fixture
   "A test fixture that grants all users the ability to create and modify humanizers"
@@ -38,7 +40,7 @@
    (update-community-usage-metrics token metrics nil))
   ([token metrics options]
    (let [options (merge {:raw? true :token token} options)]
-     (process-response (h/update-community-usage-metrics (s/context) metrics options)))))
+     (process-response (metrics/update-community-usage-metrics (s/context) metrics options)))))
 
 (defn update-humanizers
   "Updates the humanizers."
@@ -63,7 +65,7 @@
 (defn get-community-usage-metrics
   "Retrieves the community usage metrics"
   []
-  (process-response (h/get-community-usage-metrics (s/context) {:raw? true})))
+  (process-response (metrics/get-community-usage-metrics (s/context) {:raw? true})))
 
 (defn get-humanizers
   "Retrieves the humanizers"

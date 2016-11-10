@@ -2868,7 +2868,7 @@ Community usage metrics are metrics showing how many times a particular version 
 
 #### <a name="updating-community-usage-metrics"></a> Updating Community Usage Metrics
 
-Community usage metrics can be updated with a CSV obtained from the EMS to `%CMR-ENDPOINT%/community-usage-metrics` along with a valid ECHO token. The 'Product', 'Version', and 'Hosts' columns are parsed from the CSV file and stored as 'short-name', 'version', and 'access-count' respectively in the CMR. Entries with the same Product (short-name) and Version will have the access count aggregated to form a total access count for that collection and version, stored as one entry in the CMR.
+Community usage metrics can be updated using the `%CMR-ENDPOINT%/community-usage-metrics` endpoint with a valid ECHO token. The content is a CSV file obtained from the EMS. The 'Product', 'Version', and 'Hosts' columns are parsed from the CSV file and stored as 'short-name', 'version', and 'access-count' respectively in the CMR. Entries with the same Product (short-name) and Version will have the access count aggregated to form a total access count for that collection and version, stored as one entry in the CMR.
 
 The response will contain a concept id and revision id identifying the set of community usage metrics.
 

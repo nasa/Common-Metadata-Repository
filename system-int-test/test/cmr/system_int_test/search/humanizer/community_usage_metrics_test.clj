@@ -80,37 +80,41 @@
              (hu/update-community-usage-metrics admin-update-token sample-usage-csv {:http-options {:content-type :json}}))))
 
     (testing "Create community usage with nil body"
-      (is (= {:status 400,
+      (is (= {:status 422,
               :errors
-              ["instance type (null) does not match any allowed primitive type (allowed: [\"array\"])"]}
+              ["You posted empty content"]}
              (hu/update-community-usage-metrics admin-update-token nil))))
 
     (testing "Create humanizer with empty csv"
-      (is (= {:status 400,
+      (is (= {:status 422,
               :errors
-              ["instance type (null) does not match any allowed primitive type (allowed: [\"array\"])"]}
+              ["You posted empty content"]}
              (hu/update-community-usage-metrics admin-update-token ""))))
 
-    (testing "Missing field validations"
-      (are3 [field csv]
-            (is (= {:status 400
-                    :errors [(format "/0 object has missing required properties ([\"%s\"])"
-                                     (name field))]}
+    (testing "Missing CSV Column"
+      (are3 [column-name csv]
+            (is (= {:status 422
+                    :errors [(format "A '%s' column is required in community usage CSV data"
+                                     column-name)]}
                    (hu/update-community-usage-metrics admin-update-token csv)))
 
             "Missing product (short-name)"
-            :short-name "Version,Hosts\n3,4"
+            "Product" "Version,Hosts\n3,4"
 
             "Missing hosts (access-count)"
-            :access-count "Product,Version\nAMSR-L1A,4"
+            "Hosts" "Product,Version\nAMSR-L1A,4"))
 
-            "Empty hosts (access-count)"
-            :access-count "Product,Version,Hosts\nAMSR-L1A,4,"))
-
-    (testing "Minimum field length validations"
-      (is (= {:status 400
-              :errors ["/0/short-name string \"\" is too short (length: 0, required minimum: 1)"]}
-             (hu/update-community-usage-metrics admin-update-token "Product,Version,Hosts\n,3,4"))))
+    (testing "Empty Required CSV Column"
+      (testing "Empty Product"
+        (is (= {:status 422
+                :errors ["Error parsing 'Product' CSV Data. Product may not be empty."]}
+               (hu/update-community-usage-metrics admin-update-token
+                                                  "Product,Version,Hosts\n,4,64"))))
+      (testing "Empty Hosts"
+        (is (= {:status 422
+                :errors ["Error parsing 'Hosts' CSV Data for collection [AMSR-L1A], version [4]. Hosts may not be empty."]}
+               (hu/update-community-usage-metrics admin-update-token
+                                                  "Product,Version,Hosts\nAMSR-L1A,4,")))))
 
     (testing "Maximum product length validations"
       (let [long-value (apply str (repeat 86 "x"))]
@@ -131,9 +135,9 @@
                 admin-update-token (format "Product,Version,Hosts\nAST_09XT,%s,4" long-value))))))
 
     (testing "Non-integer value for hosts (access-count)"
-       (is (= {:status 422
-               :errors ["Error parsing 'Hosts' CSV Data for collection [AMSR-L1A], version [3]. Hosts must be an integer."]}
-              (hu/update-community-usage-metrics admin-update-token "Product,Version,Hosts\nAMSR-L1A,3,x"))))))
+      (is (= {:status 422
+              :errors ["Error parsing 'Hosts' CSV Data for collection [AMSR-L1A], version [3]. Hosts must be an integer."]}
+             (hu/update-community-usage-metrics admin-update-token "Product,Version,Hosts\nAMSR-L1A,3,x"))))))
 
 (def sample-aggregation-csv
   "Sample CSV to test aggregation of access counts in different CSV entries with the same short-name
