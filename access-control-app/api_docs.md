@@ -474,6 +474,8 @@ The following parameters are supported when searching for ACLs.
 * group_permission
   * options: none (always case-insensitive)
   * This is a nested parameter that has subfields 'permitted_group' and 'permission'. It can contain both subfields or just one.
+* permitted_concept_id
+  * Matches ACLs that grant permission to the collection through access value.
 
 ##### ACL Search Response
 
@@ -656,6 +658,42 @@ Server: Jetty(9.2.10.v20150310)
     "identity_type" : "System",
     "name" : "System - SYSTEM_AUDIT_REPORT",
     "location" : "%CMR-ENDPOINT%/acls/ACL1200000002-CMR"
+  } ]
+}
+```
+
+###### By permitted_concept_id
+
+```
+curl -i -g
+"%CMR-ENDPOINT%/acls?permitted_concept_id=C1200000003-PROV1&pretty=true"
+
+HTTP/1.1 200 OK
+Date: Thu, 03 Nov 2016 15:48:41 GMT
+Content-Type: application/json; charset=UTF-8
+Access-Control-Expose-Headers: CMR-Hits, CMR-Request-Id
+Access-Control-Allow-Origin: *
+CMR-Hits: 2
+CMR-Took: 21
+CMR-Request-Id: 461bfb0f-dc52-442a-a79f-d615909298ac
+Content-Length: 456
+Server: Jetty(9.2.10.v20150310)
+
+{
+  "hits" : 2,
+  "took" : 12,
+  "items" : [ {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000008-CMR",
+    "identity_type" : "Catalog Item",
+    "name" : "Access value 1",
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000008-CMR"
+  }, {
+    "revision_id" : 1,
+    "concept_id" : "ACL1200000007-CMR",
+    "identity_type" : "Catalog Item",
+    "name" : "Access value 1-10",
+    "location" : "%CMR-ENDPOINT%/acls/ACL1200000007-CMR"
   } ]
 }
 ```

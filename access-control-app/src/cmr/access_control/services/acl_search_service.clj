@@ -10,6 +10,7 @@
     [cmr.access-control.services.acl-service :as acl-service]
     [cmr.access-control.services.auth-util :as auth-util]
     [cmr.access-control.services.group-service :as groups]
+    [cmr.access-control.services.permitted-concept-id-search :as pcs]
     [cmr.acl.core :as acl]
     [cmr.common-app.services.search :as cs]
     [cmr.common-app.services.search.group-query-conditions :as gc]
@@ -21,6 +22,7 @@
     [cmr.common.log :refer [info debug]]
     [cmr.common.util :as util]
     [cmr.transmit.echo.tokens :as tokens]
+    [cmr.transmit.metadata-db2 :as mdb2]
     [cmr.umm.collection.product-specific-attribute :as psa]))
 
 (defmethod cpv/params-config :acl
@@ -39,7 +41,8 @@
 
 (defmethod cpv/valid-parameter-options :acl
   [_]
-  {:permitted-group cpv/string-param-options
+  {:permitted-concept-id #{}
+   :permitted-group cpv/string-param-options
    :provider cpv/string-param-options
    :identity-type cpv/string-param-options
    :legacy-guid cpv/string-param-options
@@ -157,7 +160,8 @@
 
 (defmethod cp/param-mappings :acl
   [_]
-  {:permitted-group :string
+  {:permitted-concept-id :permitted-concept-id
+   :permitted-group :string
    :identity-type :acl-identity-type
    :provider :string
    :permitted-user :acl-permitted-user
@@ -171,6 +175,11 @@
      (merge query-attribs
             (when (= (:include-full-acl params) "true")
               {:result-features [:include-full-acl]}))]))
+
+(defmethod cp/parameter->condition :permitted-concept-id
+ [context concept-type param value options]
+ (let [concept (mdb2/get-latest-concept context value)]
+   (pcs/get-permitted-concept-id-conditions context concept)))
 
 (defmethod cp/parameter->condition :acl-identity-type
  [context concept-type param value options]
@@ -214,6 +223,7 @@
  (let [[safe-params type-errors] (cpv/apply-type-validations
                                    params
                                    [(partial cpv/validate-map [:options])
+                                    (partial cpv/validate-map [:collection-concept-id])
                                     (partial cpv/validate-map [:options :permitted-group])
                                     (partial cpv/validate-map [:options :identity-type])
                                     (partial cpv/validate-map [:options :provider])
