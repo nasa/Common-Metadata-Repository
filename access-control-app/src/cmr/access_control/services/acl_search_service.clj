@@ -20,6 +20,7 @@
     [cmr.common-app.services.search.query-execution :as qe]
     [cmr.common-app.services.search.query-model :as common-qm]
     [cmr.common.log :refer [info debug]]
+    [cmr.common.services.errors :as errors]
     [cmr.common.util :as util]
     [cmr.transmit.echo.tokens :as tokens]
     [cmr.transmit.metadata-db2 :as mdb2]
@@ -61,6 +62,13 @@
   (or (.equalsIgnoreCase "guest" group)
       (.equalsIgnoreCase "registered" group)
       (some? (re-find #"[Aa][Gg]\d+-.+" group))))
+
+(defn- permitted-concept-id-validation
+  "Validates permitted concept id parameter"
+  [context params]
+  (when-let [permitted-concept-id (:permitted-concept-id params)]
+    (when-not (re-matches #"(C|G)\d+-[A-Za-z0-9_]+" permitted-concept-id)
+      [(format "Must be collection or granule concept id.")])))
 
 (defn- permitted-group-validation
   "Validates permitted group parameters."
@@ -178,8 +186,9 @@
 
 (defmethod cp/parameter->condition :permitted-concept-id
  [context concept-type param value options]
- (let [concept (mdb2/get-latest-concept context value)]
-   (pcs/get-permitted-concept-id-conditions context concept)))
+ (if-let [concept (mdb2/get-latest-concept context value)]
+   (pcs/get-permitted-concept-id-conditions context concept)
+   (errors/throw-service-error :bad-request (format "permitted_concept_id does not exist."))))
 
 (defmethod cp/parameter->condition :acl-identity-type
  [context concept-type param value options]
@@ -232,7 +241,8 @@
    (cpv/validate-parameters
      :acl safe-params
      (concat cpv/common-validations
-             [permitted-group-validation
+             [permitted-concept-id-validation
+              permitted-group-validation
               identity-type-validation
               group-permission-validation
               (partial cpv/validate-boolean-param :include-full-acl)])

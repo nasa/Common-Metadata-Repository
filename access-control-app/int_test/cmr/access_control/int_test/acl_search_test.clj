@@ -31,7 +31,17 @@
     (is (= {:status 400
             :body {:errors ["Parameter [foo] was not recognized."]}
             :content-type :json}
-           (ac/search-for-acls (u/conn-context) {:foo "bar"} {:raw? true})))))
+           (ac/search-for-acls (u/conn-context) {:foo "bar"} {:raw? true}))))
+  (testing "Invalid permitted concept id"
+    (is (= {:status 400
+            :body {:errors ["Must be collection or granule concept id."]}
+            :content-type :json}
+           (ac/search-for-acls (u/conn-context) {:permitted-concept-id "BAD_CONCEPT_ID"} {:raw? true}))))
+  (testing "Permitted concept id does not exist"
+    (is (= {:status 400
+            :body {:errors ["permitted_concept_id does not exist."]}
+            :content-type :json}
+           (ac/search-for-acls (u/conn-context) {:permitted-concept-id "C1200000001-PROV1"} {:raw? true})))))
 
 (def sample-system-acl
   "A sample system ACL."
