@@ -162,15 +162,19 @@
   * version - the version of the document to use. This is usually revision-id of a concept. If the
   version of the document in elastic is newer than this then an exception will be raised. This can
   be overriden by passing :ignore-conflict? true in the options
-  * options - Optional map of options. :ignore-conflict? and :ttl (time to live) are options."
+  * options - Optional map of options. :ignore-conflict?, :refresh?, and :ttl (time to live) are options."
   ([elastic-store index-name type-name elastic-id doc version]
    (save-elastic-doc elastic-store index-name type-name elastic-id doc version nil))
   ([elastic-store index-name type-name elastic-id doc version options]
    (let [conn (:conn elastic-store)
-         {:keys [ttl ignore-conflict?]} options
+         {:keys [ttl ignore-conflict? refresh?]} options
          elastic-options (merge {:version version :version_type "external_gte"}
                                 (when ttl
-                                  {:ttl ttl}))
+                                  {:ttl ttl})
+                                ;; Force refresh of the index when specified.
+                                ;; NOTE: This has performance implications and should be used sparingly.
+                                (when refresh?
+                                  {:refresh "true"}))
          result (try-elastic-operation
                  (doc/put conn index-name type-name elastic-id doc elastic-options))]
      (if (:error result)
@@ -187,10 +191,17 @@
       index-name - string name of the index
       type-name - symbol of concept type to be deleted
       id - ID of document to be deleted (concept id)
+    And Options
+     :refresh? - to synchronously force the index to make the change searchable. Use with care.
 
     Returns a hashmap of the HTTP response"
-  [elastic-store index-name type-name id]
-  (doc/delete (:conn elastic-store) index-name type-name id))
+  ([elastic-store index-name type-name id]
+   (delete-by-id elastic-store index-name type-name id nil))
+  ([elastic-store index-name type-name id options]
+   (let [elastic-options (if (:refresh? options)
+                           {:refresh "true"}
+                           {})]
+     (doc/delete (:conn elastic-store) index-name type-name id elastic-options))))
 
 (defn delete-by-query
   "Delete document that match the given query"

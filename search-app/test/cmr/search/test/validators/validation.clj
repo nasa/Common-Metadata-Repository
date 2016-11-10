@@ -12,7 +12,7 @@
     :case-sensitive? true,
     :pattern? false},
    :page-size 10,
-   :page-num 1,
+   :offset 10,
    :sort-keys
    [{:field :provider-id, :order :asc}
     {:field :start-date, :order :asc}],

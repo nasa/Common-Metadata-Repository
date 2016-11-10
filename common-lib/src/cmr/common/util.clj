@@ -1,27 +1,27 @@
 (ns cmr.common.util
   "Utility functions that might be useful throughout the CMR."
-  (:require [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
-            [camel-snake-kebab.core :as csk]
-            [clojure.string :as str]
-            [clojure.set :as set]
-            [clojure.java.io :as io]
-            [clojure.walk :as w]
-            [clojure.template :as template]
-            [clojure.test :as test]
-            [clojure.data.codec.base64 :as b64])
-  (:import java.text.DecimalFormat
-           java.util.zip.GZIPInputStream
-           java.util.zip.GZIPOutputStream
-           java.io.ByteArrayOutputStream
-           java.io.ByteArrayInputStream
-           java.sql.Blob
-           java.util.Arrays
-           [net.jpountz.lz4
-            LZ4Compressor
-            LZ4SafeDecompressor
-            LZ4FastDecompressor
-            LZ4Factory]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.data.codec.base64 :as b64]
+   [clojure.java.io :as io]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [clojure.template :as template]
+   [clojure.test :as test]
+   [clojure.walk :as w]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors])
+  (:import
+   (java.text DecimalFormat)
+   (java.util.zip GZIPInputStream GZIPOutputStream)
+   (java.io ByteArrayOutputStream ByteArrayInputStream)
+   (java.sql Blob)
+   (java.util Arrays)
+   [net.jpountz.lz4
+    LZ4Compressor
+    LZ4SafeDecompressor
+    LZ4FastDecompressor
+    LZ4Factory]))
 
 (defmacro are2
   "DEPRECATED. Use are3 instead.
@@ -342,9 +342,22 @@
     (mapv deref futures)))
 
 (defn fast-map
-  "Eager version of pmap"
+  "Eager version of pmap. Does error handling to throw the original error thrown in f. In pmap the
+   error thrown will be java.util.concurrent.ExecutionException which will mask the original exception.
+   This version will throw the original exception so it can be handled appropriately."
   [f values]
-  (doall (pmap f values)))
+  (let [errors (atom nil)
+        result (doall (pmap
+                        (fn [val]
+                         (try
+                           (f val)
+                           (catch Exception e
+                             (swap! errors conj e)
+                             nil)))
+                        values))]
+    (if @errors
+      (throw (first @errors))
+      result)))
 
 (defn doall-recursive
   "Recursively forces evaluation of any nested sequences. The regular doall will force evaluation
@@ -752,3 +765,12 @@
   "Returns true if only one of xs is truthy."
   [& xs]
   (= 1 (count (filter identity xs))))
+
+(defn max-compare
+  "Returns the maximum of the objects which can be compared using compare."
+  ([] nil)
+  ([x] x)
+  ([x y]
+   (if (< 0 (compare x y)) x y))
+  ([x y & more]
+   (reduce max-compare (max-compare x y) more)))

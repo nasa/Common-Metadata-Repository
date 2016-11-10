@@ -4,65 +4,22 @@
    [clojure.edn :as edn]
    [clojure.string :as str]
    [cmr.access-control.data.acls :as acls]
-   [cmr.access-control.services.acl-service :as acl-service]
-   [cmr.access-control.services.group-service :as group-service]
    [cmr.common-app.services.search.elastic-search-index :as esi]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
-   [cmr.common.lifecycle :as l]
-   [cmr.common.log :refer [info debug]]
+   [cmr.common.log :refer [info debug error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
-   [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.metadata-db :as mdb-legacy]
-   [cmr.transmit.metadata-db2 :as mdb]
-   [cmr.umm.acl-matchers :as acl-matchers]))
-
-(defmulti index-concept
-  "Indexes the concept map in elastic search."
-  (fn [context concept-map]
-    (:concept-type concept-map)))
-
-(defmethod index-concept :default
-  [context concept-map])
-  ;; Do nothing
-
-(defn-timed reindex-groups
-  "Fetches and indexes all groups"
-  [context]
-  (info "Reindexing all groups")
-  (doseq [group-batch (mdb-legacy/find-in-batches context :access-group 100 {:latest true})
-          group group-batch]
-    (index-concept context group))
-  (info "Reindexing all groups complete"))
-
-(defmulti delete-concept
-  "Deletes the concept map in elastic search."
-  (fn [context concept-map]
-    (:concept-type concept-map)))
-
-(defmethod delete-concept :default
-  [context concept-map])
-  ;; Do nothing
-
-(defn index-concept-by-concept-id-revision-id
-  "Indexes the concept identified by concept id and revision id"
-  [context concept-id revision-id]
-  (index-concept context (mdb/get-concept context concept-id revision-id)))
-
-(defn delete-concept-by-concept-id-revision-id
-  "Unindexes the concept identified by concept id and revision id"
-  [context concept-id revision-id]
-  (delete-concept context (mdb/get-concept context concept-id revision-id)))
+   [cmr.transmit.metadata-db :as mdb-legacy]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Groups
 
-(def ^:private group-index-name
+(def group-index-name
   "The name of the index in elastic search."
   "groups")
 
-(def ^:private group-type-name
+(def group-type-name
   "The name of the mapping type within the cubby elasticsearch index."
   "access-group")
 
@@ -99,41 +56,60 @@
 (defn- group-concept-map->elastic-doc
   "Converts a concept map containing an access group into the elasticsearch document to index."
   [concept-map]
-  (let [group (edn/read-string (:metadata concept-map))]
-    (-> group
-        (merge (select-keys concept-map [:concept-id :revision-id]))
-        (assoc :name.lowercase (util/safe-lowercase (:name group))
-               :provider-id.lowercase (util/safe-lowercase (:provider-id group))
-               :members (:members group)
-               :members.lowercase (map str/lower-case (:members group))
-               :legacy-guid.lowercase (util/safe-lowercase (:legacy-guid group))
-               :member-count (count (:members group))))))
+  (try
+    (let [group (edn/read-string (:metadata concept-map))
+          {:keys [name provider-id members legacy-guid]} group]
 
-(defmethod index-concept :access-group
+      (-> group
+          (merge (select-keys concept-map [:concept-id :revision-id]))
+          (assoc :name.lowercase (util/safe-lowercase name)
+                 :provider-id.lowercase (util/safe-lowercase provider-id)
+                 :members (:members group)
+                 :members.lowercase (map str/lower-case members)
+                 :legacy-guid.lowercase (util/safe-lowercase legacy-guid)
+                 :member-count (count members))))
+    (catch Exception e
+      (error e (str "Failure to create elastic-doc from " (pr-str concept-map)))
+      (throw e))))
+
+(defn index-group
+  "Indexes an access control group."
   [context concept-map]
+  (info "Indexing group concept:" (pr-str concept-map))
   (let [elastic-doc (group-concept-map->elastic-doc concept-map)
         {:keys [concept-id revision-id]} concept-map
         elastic-store (esi/context->search-index context)]
     (m/save-elastic-doc
       elastic-store group-index-name group-type-name concept-id elastic-doc revision-id
-      {:ignore-conflict? true})))
+      {:ignore-conflict? true
+       ;; This option makes indexing synchronous by forcing a refresh of the index before returning.
+       :refresh? true})))
 
-(defmethod delete-concept :access-group
-  [context concept-map]
-  (let [id (:concept-id concept-map)]
-    ;; when access control groups are deleted, all ACLs referencing the group should be cleaned up
-    (doseq [acl-concept (acl-service/get-all-acl-concepts context)
-            :let [parsed-acl (acl-service/get-parsed-acl acl-concept)]
-            :when (= id (get-in parsed-acl [:single-instance-identity :target-id]))]
-      (acl-service/delete-acl context (:concept-id acl-concept)))
-    (m/delete-by-id (esi/context->search-index context)
-                    group-index-name
-                    group-type-name
-                    id)))
+(defn unindex-group
+  "Removes group from index by concept ID."
+  [context concept-id]
+  (info "Unindexing group concept:" concept-id)
+  (m/delete-by-id (esi/context->search-index context)
+                  group-index-name
+                  group-type-name
+                  concept-id
+                  {:refresh? true}))
 
-(defn delete-provider-groups
+(defn-timed reindex-groups
+  "Fetches and indexes all groups"
+  [context]
+  (info "Reindexing all groups")
+  (doseq [group-batch (mdb-legacy/find-in-batches context :access-group 100 {:latest true})
+          group group-batch]
+    (if (:deleted group)
+      (unindex-group context (:concept-id group))
+      (index-group context group)))
+  (info "Reindexing all groups complete"))
+
+(defn unindex-groups-by-provider
   "Unindexes all access groups owned by provider-id."
   [context provider-id]
+  (info "Unindexing all groups for" provider-id)
   (m/delete-by-query (esi/context->search-index context)
                      group-index-name
                      group-type-name
@@ -182,6 +158,9 @@
    :permitted-group.lowercase m/string-field-mapping
 
    :group-permission group-permission-field-mapping
+
+   :legacy-guid (m/stored m/string-field-mapping)
+   :legacy-guid.lowercase m/string-field-mapping
 
    ;; target-provider-id indexes the provider id of the provider-identity or
    ;; catalog-item-identity field of an acl, if present
@@ -264,10 +243,15 @@
            :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
            :target-provider-id provider-id
            :target-provider-id.lowercase (util/safe-lowercase provider-id)
-           :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map)))))
+           :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map))
+           :legacy-guid (:legacy-guid acl)
+           :legacy-guid.lowercase (when-let [legacy-guid (:legacy-guid acl)]
+                                    (str/lower-case legacy-guid)))))
 
-(defmethod index-concept :acl
+(defn index-acl
+  "Indexes ACL concept map."
   [context concept-map]
+  (info "Indexing ACL concept:" (pr-str concept-map))
   (let [elastic-doc (acl-concept-map->elastic-doc concept-map)
         {:keys [concept-id revision-id]} concept-map
         elastic-store (esi/context->search-index context)]
@@ -275,14 +259,13 @@
       elastic-store acl-index-name acl-type-name concept-id elastic-doc revision-id
       {:ignore-conflict? true})))
 
-(defmethod delete-concept :acl
-  [context concept-map]
-  (let [id (:concept-id concept-map)]
-    (info "Unindexing ACL concept" id)
-    (m/delete-by-id (esi/context->search-index context)
-                    acl-index-name
-                    acl-type-name
-                    id)))
+(defn unindex-acl
+  "Removes ACL from index by concept ID."
+  [context concept-id]
+  (m/delete-by-id (esi/context->search-index context)
+                  acl-index-name
+                  acl-type-name
+                  concept-id))
 
 (defmethod esi/concept-type->index-info :acl
   [context _ _]
@@ -297,36 +280,13 @@
   [_]
   {:provider "target-provider-id.lowercase"})
 
-(defn delete-provider-acls
+(defn unindex-acls-by-provider
   "Removes all ACLs granting permissions to the specified provider ID from the index."
   [context provider-id]
   (m/delete-by-query (esi/context->search-index context)
                      acl-index-name
                      acl-type-name
                      {:term {:target-provider-id.lowercase (str/lower-case provider-id)}}))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Propagating Concept Deletes to ACLs
-
-(defmethod delete-concept :collection
-  [context concept-map]
-  (let [collection-concept (acl-matchers/add-acl-enforcement-fields-to-concept concept-map)
-        entry-title (:entry-title collection-concept)]
-    (doseq [acl-concept (acl-service/get-all-acl-concepts context)
-            :let [parsed-acl (acl-service/get-parsed-acl acl-concept)
-                  catalog-item-id (:catalog-item-identity parsed-acl)
-                  acl-entry-titles (:entry-titles (:collection-identifier catalog-item-id))]
-            :when (and (= (:provider-id collection-concept) (:provider-id catalog-item-id))
-                       (some #{entry-title} acl-entry-titles))]
-      (debug "relevant ACL =" (pr-str acl-concept))
-      (if (= 1 (count acl-entry-titles))
-        ;; the ACL only references the collection being deleted, and therefore the ACL should be deleted
-        (acl-service/delete-acl context (:concept-id acl-concept))
-        ;; otherwise the ACL references other collections, and will be updated
-        (let [new-acl (update-in parsed-acl
-                                 [:catalog-item-identity :collection-identifier :entry-titles]
-                                 #(remove #{entry-title} %))]
-          (acl-service/update-acl (transmit-config/with-echo-system-token context) (:concept-id acl-concept) new-acl))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common public functions

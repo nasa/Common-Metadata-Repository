@@ -1,18 +1,20 @@
 (ns cmr.access-control.test.util
-  (:require [cmr.transmit.access-control :as ac]
-            [clojure.test :refer [is]]
-            [clj-http.client :as client]
-            [cmr.transmit.config :as config]
-            [cmr.transmit.metadata-db2 :as mdb]
-            [cmr.elastic-utils.config :as es-config]
-            [cmr.metadata-db.config :as mdb-config]
-            [cmr.common-app.test.side-api :as side]
-            [cmr.common.mime-types :as mt]
-            [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
-            [cmr.common.util :as util]
-            [clojure.string :as str]
-            [cmr.umm-spec.umm-spec-core :as umm-spec]
-            [cmr.umm-spec.test.expected-conversion :refer [example-collection-record]]))
+  (:require
+   [clj-http.client :as client]
+   [clojure.string :as str]
+   [clojure.test :refer [is]]
+   [cmr.access-control.data.access-control-index :as access-control-index]
+   [cmr.common-app.test.side-api :as side]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
+   [cmr.elastic-utils.config :as es-config]
+   [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
+   [cmr.metadata-db.config :as mdb-config]
+   [cmr.transmit.access-control :as ac]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.metadata-db2 :as mdb]
+   [cmr.umm-spec.test.expected-conversion :refer [example-collection-record]]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
 (def conn-context-atom
   "An atom containing the cached connection context map."
@@ -30,6 +32,19 @@
 (defn refresh-elastic-index
   []
   (client/post (format "http://localhost:%s/_refresh" (es-config/elastic-port))))
+
+(defn unindex-all-groups
+  "Manually unindexes all groups from Elasticsearch"
+  []
+  (let [response (client/delete (format "http://localhost:%s/%s/%s/_query"
+                                 (es-config/elastic-port)
+                                 access-control-index/group-index-name
+                                 access-control-index/group-type-name)
+                                {:throw-exceptions false
+                                 :body "{\"query\": {\"match_all\": {}}}"})]
+    (when-not (= 200 (:status response))
+      (throw (Exception. (str "Failed to unindex all groups:" (pr-str response)))))
+    (refresh-elastic-index)))
 
 (defn wait-until-indexed
   "Waits until all messages are processed and then flushes the elasticsearch index"
@@ -79,7 +94,8 @@
   ([token concept-id group]
    (update-group token concept-id group nil))
   ([token concept-id group options]
-   (let [options (merge {:raw? true :token token} options)]
+   (let [options (merge {:raw? true :token token} options)
+         group (util/remove-nil-keys (dissoc group :concept_id :revision_id))]
      (process-response (ac/update-group (conn-context) concept-id group options)))))
 
 (defn delete-group
@@ -136,16 +152,19 @@
        group))))
 
 (defn ingest-group
- "Ingests the group and returns a group such that it can be matched with a search result."
- [token attributes members]
- (let [group (make-group attributes)
-       {:keys [concept_id status revision_id] :as resp} (create-group-with-members token group members)]
-   (when-not (= status 200)
-     (throw (Exception. (format "Unexpected status [%s] when creating group %s" status (pr-str resp)))))
-   (assoc group
-          :members members
-          :concept_id concept_id
-          :revision_id revision_id)))
+  "Ingests the group and returns a group such that it can be matched with a search result."
+  ([token attributes]
+   (ingest-group token attributes nil))
+  ([token attributes members]
+   (let [group (make-group attributes)
+         {:keys [concept_id status revision_id] :as resp} (create-group-with-members token group members)]
+     (when-not (= status 200)
+       (throw (Exception. (format "Unexpected status [%s] when creating group %s" status (pr-str resp)))))
+     (assoc group
+            :members members
+            :concept_id concept_id
+            :revision_id revision_id))))
+
 
 (defn disable-publishing-messages
   "Configures metadata db to not publish messages for new data."

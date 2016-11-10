@@ -1,13 +1,15 @@
 (ns cmr.system-int-test.search.paging-search-test
   "Tests for search paging."
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.common.concepts :as concepts]
-            [cmr.system-int-test.data2.core :as d2c]
-            [cmr.search.services.parameters.parameter-validation :as pm]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.concepts :as concepts]
+   [cmr.common.util :refer [are3]]
+   [cmr.search.services.parameters.parameter-validation :as pm]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d2c]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]))
 
 (def prov1-collection-count 10)
 (def prov1-deleted-collection-count 3)
@@ -44,19 +46,38 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
+(defn assert-exceeds-paging-depth
+  [{:keys [status errors]}]
+  (is (= 400 status))
+  (is (re-matches #"The paging depth \(page_num \* page_size(?: or offset)?\) of \[\d*?\] exceeds the limit of \d*?.*?"
+                  (or (first errors) "No errors"))))
+
+(deftest page-depth-test
+  (testing "Exceeded page depth"
+    (are3 [resp]
+      (assert-exceeds-paging-depth resp)
+
+      "Collection query with page_size and page_num"
+      (search/find-refs :collection {:page-size 10 :page-num 1000000000})
+
+      "All granules query"
+      (search/find-refs :granule {:page-size 500 :page-num 22})))
+  (testing "Within page depth"
+    (are3 [resp]
+      ;; This means the query was successful.
+      (is (= 0 (:hits resp)))
+
+      "Collection query with page_size and page_num"
+      (search/find-refs :collection {:page-size 10 :page-num 100000})
+
+      "All granules query"
+      (search/find-refs :granule {:page-size 500 :page-num 20})
+
+      "Granules in a specific provider query can go to a higher page number"
+      (search/find-refs :granule {:page-size 500 :page-num 22 :provider-id "foo"}))))
+
 (deftest search-with-page-size
   (create-collections)
-
-  (testing "Exceeded page depth (page-num * page-size)"
-    (let [page-size 10
-          page-num 1000000000]
-      (let [resp (search/find-refs :collection
-                                   {:page_size page-size
-                                    :page-num page-num})
-            {:keys [status errors]} resp]
-        (is (= 400 status))
-        (is (re-matches #"The paging depth \(page_num \* page_size\) of \[\d*?\] exceeds the limit of \d*?.*?"
-                        (first errors))))))
 
   (testing "Search with page_size."
     (let [{:keys [refs]} (search/find-refs :collection {:page_size 5})]
@@ -221,7 +242,7 @@
          (first (:errors (search/find-refs :collection {"offset" offset}))))
       "asdf"
       "-1"
-      "9999999"))
+      "1000001"))
   (testing "invalid combination of offset and page-num"
     (is (= "Only one of offset or page-num may be specified"
            (first (:errors (search/find-refs :collection {"page_num" 2 "offset" 100}))))))

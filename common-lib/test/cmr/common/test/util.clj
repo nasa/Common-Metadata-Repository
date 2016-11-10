@@ -704,3 +704,52 @@
       (is @marker3)
       (is (= [1 {:a [1 2] :b {:foo [[1 2 3]]}} 3]
              result)))))
+
+;; Test fast-map exception handling. In pmap the error thrown will be a
+;; java.util.concurrent.ExecutionException which will mask the original exception. Fast-map
+;; throws the original exception.
+(deftest fast-map
+  (testing "Basic fast-map test"
+    (is (= [2 3 4] (util/fast-map inc [1 2 3]))))
+  (testing "Fast-map exception handling"
+    (is (thrown? NullPointerException
+          (try
+            (util/fast-map inc [1 nil 3]) ; Will throw NullPointerException
+            ;; If we get to this point, the test failed because the exception was not thrown correctly
+            (is false "Fast-map did not throw an exception as expected")
+            (catch java.util.concurrent.ExecutionException ee
+              ; We don't want an ExecutionException, we want to get the null pointer exception
+              (is false "Fast-map threw ExecutionException and should throw NullPointerException")))))))
+
+(deftest max-compare-test
+  (util/are3
+    [coll expected-max]
+    (is (= expected-max (apply util/max-compare coll)))
+
+    "Numbers"
+    [1 7 52 3] 52
+
+    "Large numbers"
+    [123456789 14 3 456789123] 456789123
+
+    "Joda times"
+    [(t/date-time 2006 10 13 23) (t/date-time 2006 10 14 22) (t/date-time 1986 12 15 14)]
+    (t/date-time 2006 10 14 22)
+
+    "Empty collection is ok"
+    [] nil
+
+    "Only nil is ok"
+    [nil] nil
+
+    "Some nils"
+    [1 nil 15 nil 32 nil 14] 32
+
+    "Strings - notice lowercase are considered greater than uppercase characters"
+    ["Apple" "Orange" "banana" "dog" "DANGER"] "dog"
+
+    "Arrays - maximum length of the array is considered the greatest"
+    [[51 52 435] [7] [1 2 3 4]] [1 2 3 4]
+
+    "Set of numbers"
+    #{1 7 52 3} 52))

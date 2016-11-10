@@ -25,7 +25,8 @@
   ;; Must be required to be available at runtime
   (:require
     cmr.access-control.data.group-json-results-handler
-    cmr.access-control.data.acl-json-results-handler)
+    cmr.access-control.data.acl-json-results-handler
+    [cmr.access-control.data.access-control-index :as index])
   (:import
     (java.util UUID)))
 
@@ -83,42 +84,57 @@
 (defn- save-updated-group-concept
   "Saves an updated group concept"
   [context existing-concept updated-group]
-  (mdb/save-concept
-    context
-    (-> existing-concept
-        (assoc :metadata (pr-str updated-group)
-               :deleted false
-               :user-id (context->user-id context))
-        (dissoc :revision-date)
-        (update :revision-id inc))))
+  (let [updated-concept (-> existing-concept
+                            (assoc :metadata (pr-str updated-group)
+                                   :deleted false
+                                   :user-id (context->user-id context))
+                            (dissoc :revision-date)
+                            (update :revision-id inc))
+         result (mdb/save-concept context updated-concept)]
+    ;; Index the group since group updates are synchronous
+    (index/index-group context updated-concept)
+    result))
 
 (defn- save-deleted-group-concept
   "Saves an existing group concept as a tombstone"
   [context existing-concept]
-  (mdb/save-concept
-    context
-    (-> existing-concept
-        ;; Remove fields not allowed when creating a tombstone.
-        (dissoc :metadata :format :provider-id :native-id)
-        (assoc :deleted true
-               :user-id (context->user-id context))
-        (dissoc :revision-date :transaction-id)
-        (update :revision-id inc))))
+  (let [deleted-concept (-> existing-concept
+                            ;; Remove fields not allowed when creating a tombstone.
+                            (dissoc :metadata :format :provider-id :native-id :revision-date :transaction-id)
+                            (assoc :deleted true
+                                   :user-id (context->user-id context))
+                            (update :revision-id inc))
+        result (mdb/save-concept context deleted-concept)]
+    (index/unindex-group context (:concept-id existing-concept))
+    result))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations
 
-(defn validate-provider-exists
+(defn- validate-group-provider-exists
   "Validates that the groups provider exists."
   [context fieldpath provider-id]
   (when (and provider-id
              (not (some #{provider-id} (map :provider-id (mdb/get-providers context)))))
     {fieldpath [(msg/provider-does-not-exist provider-id)]}))
 
+(defn- non-existent-users
+  "Returns the list of users that does not exist in URS among the given list of users."
+  [context usernames]
+  (seq (remove #(urs/user-exists? context %) (distinct usernames))))
+
+(defn- validate-group-members-exist
+  "Validates that the given usernames exist. Throws an exception if they do not."
+  [context fieldpath usernames]
+  (when-let [non-existent-users (non-existent-users context usernames)]
+    {fieldpath [(msg/users-do-not-exist non-existent-users)]}))
+
 (defn- create-group-validations
   "Service level validations when creating a group."
   [context]
-  {:provider-id #(validate-provider-exists context %1 %2)})
+  {:provider-id #(validate-group-provider-exists context %1 %2)
+   :members #(validate-group-members-exist context %1 %2)})
 
 (defn- validate-create-group
   "Validates a group create."
@@ -139,7 +155,7 @@
 (defn validate-members-exist
   "Validates that the given usernames exist. Throws an exception if they do not."
   [context usernames]
-  (when-let [non-existent-users (seq (remove #(urs/user-exists? context %) (distinct usernames)))]
+  (when-let [non-existent-users (non-existent-users context usernames)]
     (errors/throw-service-error :bad-request (msg/users-do-not-exist non-existent-users))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -161,17 +177,17 @@
                             :items
                             (some :concept_id))]
 
-     ;; The group exists. Check if its latest revision is a tombstone
+     ;; The group exists. Check if its latest revision is a tombstone.
      (let [concept (mdb/get-latest-concept context concept-id)]
-       (if (:deleted concept)
-         ;; The group exists but was previously deleted.
-         (save-updated-group-concept context concept group)
+       ;; The group exists and was not deleted. Reject this.
+       (errors/throw-service-error :conflict (g-msg/group-already-exists group concept)))
 
-         ;; The group exists and was not deleted. Reject this.
-         (errors/throw-service-error :conflict (g-msg/group-already-exists group concept))))
-
-     ;; The group doesn't exist
-     (mdb/save-concept context (group->new-concept context group)))))
+     ;; The group doesn't exist.
+     (let [new-concept (group->new-concept context group)
+           {:keys [concept-id revision-id] :as result} (mdb/save-concept context new-concept)]
+       ;; Index the group here. Group indexing is synchronous.
+       (index/index-group context (assoc new-concept :concept-id concept-id :revision-id revision-id))
+       result))))
 
 (defn group-exists?
   "Returns true if group exists."
@@ -199,7 +215,9 @@
   (let [group-concept (fetch-group-concept context concept-id)
         group (edn/read-string (:metadata group-concept))]
     (auth/verify-can-delete-group context group)
-    (save-deleted-group-concept context group-concept)))
+    (let [delete-result (save-deleted-group-concept context group-concept)]
+      (index/unindex-group context concept-id)
+      delete-result)))
 
 (defn update-group
   "Updates an existing group with the given concept id"
@@ -210,7 +228,9 @@
     (auth/verify-can-update-group context existing-group)
     ;; Avoid clobbering :members by merging the updated-group into existing-group. If updated-group
     ;; specifies :members then it will overwrite the existing value.
-    (save-updated-group-concept context existing-concept (merge existing-group updated-group))))
+    (let [updated-group (merge existing-group updated-group)
+          update-result (save-updated-group-concept context existing-concept updated-group)]
+      update-result)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search functions

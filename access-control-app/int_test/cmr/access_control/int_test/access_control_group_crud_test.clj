@@ -11,7 +11,7 @@
 (use-fixtures :once (fixtures/int-test-fixtures))
 
 (use-fixtures :each
-              (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"})
+              (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"} ["user1" "user2"])
               (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
 
 ;; CMR-2134, CMR-2133 test creating groups without various permissions
@@ -95,12 +95,14 @@
           (is (= 200 (:status (u/create-group token (assoc group :provider_id "PROV1")))))))
 
       (testing "Creation of previously deleted group"
-        (u/delete-group token concept_id)
+        (is (= 200 (:status (u/delete-group token concept_id))))
+
+
         (let [new-group (assoc group :legacy_guid "the legacy guid" :description "new description")
               response (u/create-group token new-group)]
-          (is (= {:status 200 :concept_id concept_id :revision_id 3}
+          (is (= {:status 200 :concept_id (:concept_id response) :revision_id 1}
                  response))
-          (u/assert-group-saved new-group "user1" concept_id 3))))
+          (u/assert-group-saved new-group "user1" (:concept_id response) 1))))
 
     (testing "Create group with fields at maximum length"
       (let [group (into {} (for [[field max-length] field-maxes]
@@ -154,9 +156,19 @@
 
 (deftest create-group-with-members-test
   (let [token (e/login (u/conn-context) "user1")
-        group (u/make-group {:members ["user1" "user2"]})
-        {:keys [concept_id]} (u/create-group token group)]
-    (is (= {:status 200 :body ["user1" "user2"]} (u/get-members token concept_id)))))
+        create-group-with-members (fn [members]
+                                    (u/create-group token
+                                                    (u/make-group {:members members})
+                                                    {:allow-failure? true}))]
+    (testing "Successful create with existing members"
+      (let [{:keys [status concept_id]} (create-group-with-members ["user1" "user2"])]
+        (is (= 200 status))
+        (is (= {:status 200 :body ["user1" "user2"]} (u/get-members token concept_id)))))
+
+    (testing "Attempt to create group with non-existent members"
+      (let [{:keys [status errors]} (create-group-with-members ["user1" "user3"])]
+        (is (= 400 status))
+        (is (= ["The following users do not exist [user3]"] errors))))))
 
 (deftest get-group-test
   (let [group (u/make-group)
@@ -349,16 +361,16 @@
     (u/wait-until-indexed)
 
     (testing "We should now successfully update groups with a legacy_guid, without specifying the legacy_guid in the updated group")
-      (is (= {:status 200 :concept_id concept-id :revision_id 2}
-             response-no-legacy))
-      (u/assert-group-saved (assoc no-legacy-group :legacy_guid "legacy_guid_1") "user1" concept-id 2)
+    (is (= {:status 200 :concept_id concept-id :revision_id 2}
+           response-no-legacy))
+    (u/assert-group-saved (assoc no-legacy-group :legacy_guid "legacy_guid_1") "user1" concept-id 2)
 
     (testing "Specifying the same legacy_guid should also successfully update the group")
-      (is (= {:status 200 :concept_id concept-id :revision_id 3}
-             response-same-legacy))
-      (u/assert-group-saved same-legacy-group "user1" concept-id 3)
+    (is (= {:status 200 :concept_id concept-id :revision_id 3}
+           response-same-legacy))
+    (u/assert-group-saved same-legacy-group "user1" concept-id 3)
 
     (testing "When specifying a different legacy_guid, an error message should be received")
-      (is (= {:status 400,
-              :errors ["Legacy Guid cannot be modified. Attempted to change existing value [legacy_guid_1] to [wrong_legacy_guid]"]}
-             response-diff-legacy))))
+    (is (= {:status 400,
+            :errors ["Legacy Guid cannot be modified. Attempted to change existing value [legacy_guid_1] to [wrong_legacy_guid]"]}
+           response-diff-legacy))))

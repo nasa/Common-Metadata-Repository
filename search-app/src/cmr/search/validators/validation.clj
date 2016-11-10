@@ -5,7 +5,7 @@
    [cmr.common-app.services.search.query-validation :as cqv]
    [cmr.common.mime-types :as mt]
    [cmr.search.models.query :as qm]
-   [cmr.search.validators.all-granule-spatial-validation :as agsv]
+   [cmr.search.validators.all-granule-validation :as all-granule-validation]
    [cmr.search.validators.leading-wildcard-validation :as lwv]
    [cmr.spatial.validation :as spatial-validation]
    [cmr.umm-spec.versioning :as umm-version])
@@ -67,7 +67,8 @@
 (defmethod cqv/query-validations :granule
   [_]
   [lwv/limit-number-of-leading-wildcard-patterns
-   agsv/no-all-granules-with-spatial])
+   all-granule-validation/no-all-granules-with-spatial
+   all-granule-validation/all-granules-exceeds-page-depth-limit])
 
 (extend-protocol cqv/Validator
   cmr.search.models.query.SpatialCondition
