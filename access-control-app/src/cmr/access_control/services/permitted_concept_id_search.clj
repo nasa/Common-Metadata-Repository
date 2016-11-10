@@ -16,7 +16,7 @@
         stop-date (index-util/date->elastic (spec-time/collection-end-date parsed-metadata))
         now (index-util/date->elastic (t/now))
         floor-date (index-util/date->elastic (t/date-time 1970))]
-    (proto-repl.saved-values/save 1)
+    ;(proto-repl.saved-values/save 1)
     (gc/group-conds
       :or
       [(gc/group-conds
