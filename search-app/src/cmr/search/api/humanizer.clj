@@ -1,14 +1,16 @@
 (ns cmr.search.api.humanizer
   "Defines the API for humanizer in the CMR."
-  (:require [compojure.route :as route]
-            [compojure.core :refer :all]
-            [cheshire.core :as json]
-            [cmr.common.mime-types :as mt]
-            [cmr.common-app.api.routes :as cr]
-            [cmr.search.services.humanizers.humanizer-service :as humanizer-service]
-            [cmr.search.services.humanizers.humanizer-report-service :as hrs]
-            [cmr.common.services.errors :as errors]
-            [cmr.acl.core :as acl]))
+  (:require
+   [cheshire.core :as json]
+   [cmr.acl.core :as acl]
+   [cmr.common-app.api.routes :as cr]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.search.services.humanizers.humanizer-json-schema-validation :as hv]
+   [cmr.search.services.humanizers.humanizer-report-service :as hrs]
+   [cmr.search.services.humanizers.humanizer-service :as humanizer-service]
+   [compojure.core :refer :all]
+   [compojure.route :as route]))
 
 (defn- validate-humanizer-content-type
   "Validates that content type sent with humanizer is JSON"
@@ -27,6 +29,7 @@
   [context headers body]
   (acl/verify-ingest-management-permission context :update)
   (validate-humanizer-content-type headers)
+  (hv/validate-humanizer-json body)
   (let [result (humanizer-service/update-humanizers context body)
         status-code (if (= 1 (:revision-id result)) 201 200)]
     (humanizer-response status-code result)))
@@ -39,6 +42,7 @@
    :body (hrs/humanizers-report-csv context)})
 
 (def humanizers-routes
+  "Routes for humanizer endpoints"
   (context "/humanizers" []
 
     ;; create/update humanizers

@@ -123,6 +123,14 @@ Virtual collections contain granules derived from a source collection. Only gran
 
 Note that provider-id and entry-title are required.
 
+### Index recently replicated concepts
+
+This endpoint should only be using in an AWS environment where the Database Migration Service (DMS)
+is being used to replicate changes from another database to this environment. This will index any
+concepts that have been replicated since the last replication run.
+
+    curl -v -XPOST http://localhost:3006/index_recently_replicated
+
 ### Check application health
 
 This will report the current health of the application. It checks all resources and services used by the application and reports their healthes in the response body in JSON format. For resources, the report includes an "ok?" status and a "problem" field if the resource is not OK. For services, the report includes an overall "ok?" status for the service and health reports for each of its dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.

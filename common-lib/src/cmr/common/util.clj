@@ -765,3 +765,12 @@
   "Returns true if only one of xs is truthy."
   [& xs]
   (= 1 (count (filter identity xs))))
+
+(defn max-compare
+  "Returns the maximum of the objects which can be compared using compare."
+  ([] nil)
+  ([x] x)
+  ([x y]
+   (if (< 0 (compare x y)) x y))
+  ([x y & more]
+   (reduce max-compare (max-compare x y) more)))
