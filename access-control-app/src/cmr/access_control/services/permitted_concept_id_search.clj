@@ -1,8 +1,10 @@
 (ns cmr.access-control.services.permitted-concept-id-search
   "Contains ACL search functions for permitted-concept-id searches"
   (:require
+    [clj-time.core :as t]
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.query-model :as common-qm]
+    [cmr.elastic-utils.index-util :as index-util]
     [cmr.umm-spec.time :as spec-time]
     [cmr.search.models.query :as q]
     [cmr.umm-spec.umm-spec-core :as umm-spec]))
@@ -10,28 +12,30 @@
 (defn- create-temporal-condition
   "Constructs query condition for searching permitted_concept_ids by temporal"
   [parsed-metadata]
-  (let [start-date (spec-time/collection-start-date parsed-metadata)
-        stop-date (spec-time/collection-end-date parsed-metadata)]
+  (let [start-date (index-util/date->elastic (spec-time/collection-start-date parsed-metadata))
+        stop-date (index-util/date->elastic (spec-time/collection-end-date parsed-metadata))
+        now (index-util/date->elastic (t/now))
+        floor-date (index-util/date->elastic (t/date-time 1970))]
     (proto-repl.saved-values/save 1)
     (gc/group-conds
       :or
       [(gc/group-conds
          :and
          [(common-qm/string-condition :temporal-mask "contains")
-          (common-qm/date-range-condition :temporal-range-start-date start-date stop-date false)
-          (common-qm/date-range-condition :temporal-range-stop-date start-date stop-date false)])
-       (gc/group-conds
-         :and
-         [(common-qm/string-condition :temporal-mask "disjoint")
-          (common-qm/negated-condition (q/map->TemporalCondition {:temporal-range-start start-date
-                                                                  :temporal-range-stop stop-date
-                                                                  :exclusive? false}))])
-       (gc/group-conds
-         :and
-         [(common-qm/string-condition :temporal-mask "intersect")
-          (q/map->TemporalCondition {:temporal-range-start-date start-date
-                                     :temporal-range-stop-date stop-date
-                                     :exclusive? false})])])))
+          (common-qm/date-range-condition :temporal-range-start-date floor-date start-date false)
+          (common-qm/date-range-condition :temporal-range-stop-date stop-date now false)])])))
+       ;(gc/group-conds
+       ;  :and
+       ;  [(common-qm/string-condition :temporal-mask "disjoint")
+       ;   (common-qm/negated-condition (q/map->TemporalCondition {:temporal-range-start start-date
+       ;                                                           :temporal-range-stop stop-date
+       ;                                                           :exclusive? false)])])))
+       ;(gc/group-conds
+       ;  :and
+       ;  [(common-qm/string-condition :temporal-mask "intersect")
+       ;   (q/map->TemporalCondition {:temporal-range-start-date start-date
+       ;                              :temporal-range-stop-date stop-date
+       ;                              :exclusive? false)])])))
 
 
 (defn- create-access-value-condition
