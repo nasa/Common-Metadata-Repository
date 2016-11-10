@@ -53,12 +53,16 @@
 (defn- get-max-revision-date
   "Takes a batch of concepts to index and returns the maximum revision date."
   [batch previous-max-revision-date]
-  (let [revision-datetime-strings (map :revision-date batch)
-        revision-datetimes (->> (map #(f/parse (f/formatters :date-time) %)
-                                     revision-datetime-strings)
-                                (cons previous-max-revision-date)
-                                (remove nil?))]
-    (util/get-max-from-collection revision-datetimes)))
+  (->> batch
+       ;; Get the revision date of each item
+       (map :revision-date)
+       ;; Parse the date
+       (map #(f/parse (f/formatters :date-time) %))
+       ;; Add on the last date
+       (cons previous-max-revision-date)
+       ;; Remove nil because previous-max-revision-date could be nil
+       (remove nil?)
+       (apply util/max-compare)))
 
 (defn bulk-index-with-revision-date
   "See documentation for bulk-index. This is a temporary function added for supporting replication

@@ -191,10 +191,17 @@
       index-name - string name of the index
       type-name - symbol of concept type to be deleted
       id - ID of document to be deleted (concept id)
+    And Options
+     :refresh? - to synchronously force the index to make the change searchable. Use with care.
 
     Returns a hashmap of the HTTP response"
-  [elastic-store index-name type-name id]
-  (doc/delete (:conn elastic-store) index-name type-name id))
+  ([elastic-store index-name type-name id]
+   (delete-by-id elastic-store index-name type-name id nil))
+  ([elastic-store index-name type-name id options]
+   (let [elastic-options (if (:refresh? options)
+                           {:refresh "true"}
+                           {})]
+     (doc/delete (:conn elastic-store) index-name type-name id elastic-options))))
 
 (defn delete-by-query
   "Delete document that match the given query"

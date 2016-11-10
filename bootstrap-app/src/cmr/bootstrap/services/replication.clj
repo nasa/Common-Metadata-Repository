@@ -17,8 +17,10 @@
 
   The reason we use a buffer is because concepts can be saved to the database with out of order
   revision-dates, but they should be extremely close in time. A 20 second buffer is overkill, but
-  indexing the same concept multiple times is fine, missing a concept is not. Transaction IDs have
-  the same out of order problem as revision-dates, so we could not just use transaction IDs.
+  indexing the same concept multiple times is fine, missing a concept is not. Using Transaction IDs
+  instead of revision-dates to try to track replication had several unknowns regarding whether we
+  could reliably track the current transaction ID and whether transaction IDs could be 100%
+  guaranteed to be in order. As a result we decided to use the revision-date approach.
 
   Note that during periods of time with no ingest we will continue to index the same concepts
   repeatedly though again this should not cause any problems other than increasing the number of

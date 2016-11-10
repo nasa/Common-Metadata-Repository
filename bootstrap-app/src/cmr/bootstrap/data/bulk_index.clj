@@ -123,13 +123,13 @@
   "Bulk index ACLs or acces groups"
   [system concept-batches]
   (info "Indexing concepts")
-  (ac-bulk-index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches {}))
+  (ac-bulk-index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches))
 
 (defn- index-concepts
   "Bulk index the given concepts using the indexer-app"
   [system concept-batches]
   (info "Indexing concepts")
-  (index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches {}))
+  (index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches))
 
 (defn- fetch-and-index-new-concepts
   "Get batches of concepts for a given provider/concept type that have a revision-date
@@ -145,6 +145,7 @@
         {:keys [max-revision-date num-indexed]} (if (contains? #{:acl :access-group} concept-type)
                                                  (index-access-control-concepts system concept-batches)
                                                  (index-concepts system concept-batches))]
+
     (info (format (str "Indexed %d %s(s) for provider %s with revision-date later than %s and max "
                        "revision date was %s.")
                   num-indexed
@@ -176,7 +177,7 @@
       (info "Indexing concepts with revision-date later than" date-time "completed.")
       (info indexing-complete-message)
       {:message indexing-complete-message
-       :max-revision-date (util/get-max-from-collection
+       :max-revision-date (apply util/max-compare
                            (map :max-revision-date
                                 (apply conj provider-response-map system-concept-response-map)))}))
 

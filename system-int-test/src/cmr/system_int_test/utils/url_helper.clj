@@ -353,7 +353,7 @@
 (defn bootstrap-index-recently-replicated-url
   "URL to call the index recently replicated endpoint."
   []
-  (format "http://localhost:%s/jobs/index-recently-replicated" (transmit-config/bootstrap-port)))
+  (format "http://localhost:%s/jobs/index_recently_replicated" (transmit-config/bootstrap-port)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Index Set URLs
