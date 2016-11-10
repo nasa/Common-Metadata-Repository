@@ -1,12 +1,18 @@
-(ns cmr.bootstrap.migrations.001-create-quartz-tables
-  (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]
-            [config.mdb-migrate-helper :as h]))
+(ns cmr.bootstrap.migrations.004-setup-replication-tracking
+  (:require
+   [config.mdb-migrate-helper :as h]))
 
 (defn up
-  "Migrates the database up to version 1."
+  "Migrates the database up to version 4."
   []
-  (println "migrations.001-create-quartz-tables up...")
+  (println "migrations.004-setup-replication-tracking up...")
+
+  ;; Replication status table
+  (h/sql "CREATE TABLE replication_status (
+            last_replicated_revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL)")
+  (h/sql "INSERT INTO replication_status VALUES (DEFAULT)")
+
+  ;; Create Quartz jobs tables
   (h/sql "CREATE TABLE qrtz_job_details (
                               SCHED_NAME VARCHAR2(120) NOT NULL,
                               JOB_NAME  VARCHAR2(200) NOT NULL,
@@ -116,6 +122,7 @@
                               TRIGGER_GROUP VARCHAR2(200) NOT NULL,
                               INSTANCE_NAME VARCHAR2(200) NOT NULL,
                               FIRED_TIME NUMBER(13) NOT NULL,
+                              SCHED_TIME NUMBER(13) DEFAULT 0 NOT NULL,
                               PRIORITY NUMBER(13) NOT NULL,
                               STATE VARCHAR2(16) NOT NULL,
                               JOB_NAME VARCHAR2(200) NULL,
@@ -164,9 +171,9 @@
   (h/sql "CREATE INDEX idx_qrtz_ft_tg ON qrtz_fired_triggers(SCHED_NAME,TRIGGER_GROUP)"))
 
 (defn down
-  "Migrates the database down from version 1."
+  "Migrates the database down from version 4."
   []
-  (println "migrations.001-create-quartz-tables down...")
+  (println "migrations.004-setup-replication-tracking down...")
   (h/sql "DROP TABLE qrtz_calendars")
   (h/sql "DROP TABLE qrtz_fired_triggers")
   (h/sql "DROP TABLE qrtz_blob_triggers")
@@ -177,4 +184,5 @@
   (h/sql "DROP TABLE qrtz_job_details")
   (h/sql "DROP TABLE qrtz_paused_trigger_grps")
   (h/sql "DROP TABLE qrtz_locks")
-  (h/sql "DROP TABLE qrtz_scheduler_state"))
+  (h/sql "DROP TABLE qrtz_scheduler_state")
+  (h/sql "DROP TABLE replication_status"))
