@@ -30,7 +30,7 @@
   "Saves a collection concept"
   ([n]
    (save-collection n {}))
-  ([n field-overrides]
+  ([n attributes]
    (let [unique-str (str "coll" n)
          umm (dc/collection {:short-name unique-str :entry-title unique-str})
          xml (echo10/umm->echo10-xml umm)
@@ -46,7 +46,7 @@
                                   :provider-id "PROV1"
                                   :native-id unique-str
                                   :short-name unique-str}
-                                 field-overrides))]
+                                 attributes))]
      ;; Make sure the concept was saved successfully
      (is (= 201 (:status coll)))
      (merge umm (select-keys coll [:concept-id :revision-id])))))
@@ -55,7 +55,7 @@
   "Saves a granule concept"
   ([n collection]
    (save-granule n collection {}))
-  ([n collection field-overrides]
+  ([n collection attributes]
    (let [unique-str (str "gran" n)
          umm (dg/granule collection {:granule-ur unique-str})
          xml (echo10/umm->echo10-xml umm)
@@ -69,7 +69,7 @@
                                   :extra-fields {:parent-collection-id (:concept-id collection)
                                                  :parent-entry-title (:entry-title collection)
                                                  :granule-ur unique-str}}
-                                 field-overrides))]
+                                 attributes))]
      ;; Make sure the concept was saved successfully
      (is (= 201 (:status gran)))
      (merge umm (select-keys gran [:concept-id :revision-id])))))
@@ -78,7 +78,7 @@
   "Saves a tag concept"
   ([n]
    (save-tag n {}))
-  ([n field-overrides]
+  ([n attributes]
    (let [unique-str (str "tag" n)
          tag (mdb/save-concept (merge
                                 {:concept-type :tag
@@ -87,7 +87,7 @@
                                  :format "application/edn"
                                  :metadata (str "{:tag-key \"" unique-str "\" :description \"A good tag\" :originator-id \"user1\"}")
                                  :revision-date "2000-01-01T10:00:00Z"}
-                                field-overrides))]
+                                attributes))]
      ;; Make sure the concept was saved successfully
      (is (= 201 (:status tag)))
      (merge tag (select-keys tag [:concept-id :revision-id])))))

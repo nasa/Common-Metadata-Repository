@@ -721,10 +721,10 @@
               ; We don't want an ExecutionException, we want to get the null pointer exception
               (is false "Fast-map threw ExecutionException and should throw NullPointerException")))))))
 
-(deftest get-max-from-collection-test
+(deftest max-compare-test
   (util/are3
     [coll expected-max]
-    (is (= expected-max (util/get-max-from-collection coll)))
+    (is (= expected-max (apply util/max-compare coll)))
 
     "Numbers"
     [1 7 52 3] 52
@@ -744,6 +744,12 @@
 
     "Some nils"
     [1 nil 15 nil 32 nil 14] 32
+
+    "Strings - notice lowercase are considered greater than uppercase characters"
+    ["Apple" "Orange" "banana" "dog" "DANGER"] "dog"
+
+    "Arrays - maximum length of the array is considered the greatest"
+    [[51 52 435] [7] [1 2 3 4]] [1 2 3 4]
 
     "Set of numbers"
     #{1 7 52 3} 52))

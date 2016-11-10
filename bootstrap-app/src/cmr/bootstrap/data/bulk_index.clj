@@ -130,8 +130,7 @@
                           db provider params (:db-batch-size system))
         {:keys [max-revision-date num-indexed]} (index/bulk-index-with-revision-date
                                                  {:system (helper/get-indexer system)}
-                                                 concept-batches
-                                                 {})]
+                                                 concept-batches)]
     (info (format (str "Indexed %d %s(s) for provider %s with revision-date later than %s and max "
                        "revision date was %s.")
                   num-indexed
@@ -163,7 +162,7 @@
       (info "Indexing concepts with revision-date later than" date-time "completed.")
       (info indexing-complete-message)
       {:message indexing-complete-message
-       :max-revision-date (util/get-max-from-collection
+       :max-revision-date (apply util/max-compare
                            (map :max-revision-date
                                 (apply conj provider-response-map system-concept-response-map)))})))
 

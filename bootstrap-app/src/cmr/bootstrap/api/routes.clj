@@ -171,7 +171,7 @@
 
       (common-routes/job-api-routes
         (routes
-          (POST "/index-recently-replicated" {:keys [request-context]}
+          (POST "/index_recently_replicated" {:keys [request-context]}
             (replication/index-replicated-concepts request-context)
             {:status 200})))
 
