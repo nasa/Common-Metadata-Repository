@@ -1,5 +1,6 @@
 (ns cmr.access-control.int-test.acl-search-test
   (:require
+    [clj-time.core :as t]
     [clojure.test :refer :all]
     [cmr.access-control.data.access-control-index :as access-control-index]
     [cmr.access-control.int-test.fixtures :as fixtures]
@@ -718,35 +719,33 @@
                                   :short-name "coll7"
                                   :native-id "coll7"
                                   :provider-id "PROV1"
-                                  :temporal-range (c/map->RangeDateTime {:beginning-date-time "2010-01-01T10:00:00Z"
-                                                                         :ending-date-time "2011-01-01T10:00:00Z"})})
+                                  :temporal-range {:BeginningDateTime (t/date-time 2010)
+                                                   :EndingDateTime (t/date-time 2011)}})
 
         coll8 (u/save-collection {:entry-title "coll8 entry title"
                                   :short-name "coll8"
                                   :native-id "coll8"
                                   :provider-id "PROV1"
-                                  :temporal-range (c/map->RangeDateTime {:beginning-date-time "2009-01-01T10:00:00Z"
-                                                                         :ending-date-time "2012-01-01T10:00:00Z"})})
+                                  :temporal-range {:BeginningDateTime (t/date-time 2009)
+                                                   :EndingDateTime (t/date-time 2012)}})
 
         coll9 (u/save-collection {:entry-title "coll9 entry title"
                                   :short-name "coll9"
                                   :native-id "coll9"
                                   :provider-id "PROV1"
-                                  :temporal-range (c/map->RangeDateTime {:beginning-date-time "2009-01-01T10:00:00Z"
-                                                                         :ending-date-time "2009-12-301T10:00:00Z"})})
+                                  :temporal-range {:BeginningDateTime (t/date-time 2009)
+                                                   :EndingDateTime (t/date-time 2009 12 30)}})
 
         acl1 (ingest-acl token (assoc (catalog-item-acl "Access value 1-10")
                                       :catalog_item_identity {:name "Access value 1-10"
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:min_value 1 :max_value 10}}
                                                               :provider_id "PROV1"}))
-
         acl2 (ingest-acl token (assoc (catalog-item-acl "Access value 1")
                                       :catalog_item_identity {:name "Access value 1"
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:min_value 1 :max_value 1}}
                                                               :provider_id "PROV1"}))
-
         acl3 (ingest-acl token (assoc (catalog-item-acl "Access value 5-10")
                                       :catalog_item_identity {:name "Access value 5-10"
                                                               :collection_applicable true
@@ -771,29 +770,26 @@
         acl9 (ingest-acl token (assoc-in (catalog-item-acl "No collection identifier PROV2")
                                          [:catalog_item_identity :provider_id] "PROV2"))
         acl10 (ingest-acl token (assoc (catalog-item-acl "Temporal contains")
-                                      :catalog_item_identity {:name "Temporal contains"
-                                                              :collection_applicable true
-                                                              :collection_identifier {:temporal {:start_date "2010-01-01T10:00:00Z"
-                                                                                                 :stop_date "2011-01-01T10:00:00Z"
-                                                                                                 :mask "contains"}}
-                                                              :provider_id "PROV1"}))
+                                       :catalog_item_identity {:name "Temporal contains"
+                                                               :collection_applicable true
+                                                               :collection_identifier {:temporal {:start_date "2010-01-01T10:00:00Z"
+                                                                                                  :stop_date "2011-01-01T10:00:00Z"
+                                                                                                  :mask "contains"}}
+                                                               :provider_id "PROV1"}))
         acl11 (ingest-acl token (assoc (catalog-item-acl "Temporal intersect")
-                                      :catalog_item_identity {:name "Temporal intersect"
-                                                              :collection_applicable true
-                                                              :collection_identifier {:temporal {:start_date "2010-01-01T10:00:00Z"
-                                                                                                 :stop_date "2011-01-01T10:00:00Z"
-                                                                                                 :mask "intersect"}}
-                                                              :provider_id "PROV1"}))
+                                       :catalog_item_identity {:name "Temporal intersect"
+                                                               :collection_applicable true
+                                                               :collection_identifier {:temporal {:start_date "2010-01-01T10:00:00Z"
+                                                                                                  :stop_date "2011-01-01T10:00:00Z"
+                                                                                                  :mask "intersect"}}
+                                                               :provider_id "PROV1"}))
         acl12 (ingest-acl token (assoc (catalog-item-acl "Temporal disjoint")
-                                      :catalog_item_identity {:name "Temporal disjoint"
-                                                              :collection_applicable true
-                                                              :collection_identifier {:temporal {:start_date "2010-01-01T10:00:00Z"
-                                                                                                 :stop_date "2011-01-01T10:00:00Z"
-                                                                                                 :mask "disjoint"}}
-                                                              :provider_id "PROV1"}))]
-
-
-
+                                       :catalog_item_identity {:name "Temporal disjoint"
+                                                               :collection_applicable true
+                                                               :collection_identifier {:temporal {:start_date "2010-01-01T10:00:00Z"
+                                                                                                  :stop_date "2011-01-01T10:00:00Z"
+                                                                                                  :mask "disjoint"}}
+                                                               :provider_id "PROV1"}))]
     (u/wait-until-indexed)
     (testing "collection concept id search"
       (are3 [params acls]

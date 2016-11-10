@@ -3,33 +3,34 @@
   (:require
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.query-model :as common-qm]
-    [cmr.umm.start-end-date :as sed]
+    [cmr.umm-spec.time :as spec-time]
     [cmr.search.models.query :as q]
     [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
 (defn- create-temporal-condition
   "Constructs query condition for searching permitted_concept_ids by temporal"
   [parsed-metadata]
-  (let [start-date (sed/start-date :collection (:temporal parsed-metadata))
-        stop-date (sed/end-date :collection (:temporal parsed-metadata))]
+  (let [start-date (spec-time/collection-start-date parsed-metadata)
+        stop-date (spec-time/collection-end-date parsed-metadata)]
+    (proto-repl.saved-values/save 1)
     (gc/group-conds
       :or
       [(gc/group-conds
          :and
          [(common-qm/string-condition :temporal-mask "contains")
-          (common-qm/date-range-condition :temporal-range-start start-date stop-date false)
-          (common-qm/date-range-condition :temporal-range-stop start-date stop-date false)])
+          (common-qm/date-range-condition :temporal-range-start-date start-date stop-date false)
+          (common-qm/date-range-condition :temporal-range-stop-date start-date stop-date false)])
        (gc/group-conds
          :and
          [(common-qm/string-condition :temporal-mask "disjoint")
-          (common-qm/negated-condition ((q/map->TemporalCondition {:temporal-range-start start-date
-                                                                   :temporal-range-stop stop-date
-                                                                   :exclusive? false})))])
+          (common-qm/negated-condition (q/map->TemporalCondition {:temporal-range-start start-date
+                                                                  :temporal-range-stop stop-date
+                                                                  :exclusive? false}))])
        (gc/group-conds
          :and
          [(common-qm/string-condition :temporal-mask "intersect")
-          (q/map->TemporalCondition {:temporal-range-start start-date
-                                     :temporal-range-stop stop-date
+          (q/map->TemporalCondition {:temporal-range-start-date start-date
+                                     :temporal-range-stop-date stop-date
                                      :exclusive? false})])])))
 
 
@@ -64,5 +65,6 @@
   (let [parsed-metadata (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)]
     (gc/group-conds
      :or
-     [(create-provider-condition (:provider-id concept))
+     [(create-temporal-condition parsed-metadata)
+      (create-provider-condition (:provider-id concept))
       (create-access-value-condition parsed-metadata)])))

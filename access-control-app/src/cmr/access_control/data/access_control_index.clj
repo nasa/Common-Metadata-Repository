@@ -153,8 +153,8 @@
    :collection-access-value-max m/int-field-mapping
    :collection-access-value-include-undefined-value m/bool-field-mapping
 
-   :temporal-range-start m/date-field-mapping
-   :temporal-range-stop m/date-field-mapping
+   :temporal-range-start-date m/date-field-mapping
+   :temporal-range-stop-date m/date-field-mapping
    :temporal-mask m/string-field-mapping
 
    :permitted-group (m/stored m/string-field-mapping)
@@ -251,8 +251,8 @@
   "Returns map for temporal range values to be merged into full elastic doc"
   [acl]
   (when-let [temporal (:temporal (:collection-identifier (:catalog-item-identity acl)))]
-    {:temporal-range-start (:start-date temporal)
-     :temporal-range-stop (:stop-date temporal)
+    {:temporal-range-start-date (:start-date temporal)
+     :temporal-range-stop-date (:stop-date temporal)
      :temporal-mask (:mask temporal)}))
 
 (defn- acl-concept-map->elastic-doc
