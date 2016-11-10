@@ -6,7 +6,7 @@
    [cmr.access-control.data.acls :as acls]
    [cmr.common-app.services.search.elastic-search-index :as esi]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
-   [cmr.common.log :refer [info debug]]
+   [cmr.common.log :refer [info debug error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
@@ -56,15 +56,21 @@
 (defn- group-concept-map->elastic-doc
   "Converts a concept map containing an access group into the elasticsearch document to index."
   [concept-map]
-  (let [group (edn/read-string (:metadata concept-map))]
-    (-> group
-        (merge (select-keys concept-map [:concept-id :revision-id]))
-        (assoc :name.lowercase (util/safe-lowercase (:name group))
-               :provider-id.lowercase (util/safe-lowercase (:provider-id group))
-               :members (:members group)
-               :members.lowercase (map str/lower-case (:members group))
-               :legacy-guid.lowercase (util/safe-lowercase (:legacy-guid group))
-               :member-count (count (:members group))))))
+  (try
+    (let [group (edn/read-string (:metadata concept-map))
+          {:keys [name provider-id members legacy-guid]} group]
+
+      (-> group
+          (merge (select-keys concept-map [:concept-id :revision-id]))
+          (assoc :name.lowercase (util/safe-lowercase name)
+                 :provider-id.lowercase (util/safe-lowercase provider-id)
+                 :members (:members group)
+                 :members.lowercase (map str/lower-case members)
+                 :legacy-guid.lowercase (util/safe-lowercase legacy-guid)
+                 :member-count (count members))))
+    (catch Exception e
+      (error e (str "Failure to create elastic-doc from " (pr-str concept-map)))
+      (throw e))))
 
 (defn index-group
   "Indexes an access control group."
@@ -79,22 +85,26 @@
        ;; This option makes indexing synchronous by forcing a refresh of the index before returning.
        :refresh? true})))
 
+(defn unindex-group
+  "Removes group from index by concept ID."
+  [context concept-id]
+  (info "Unindexing group concept:" concept-id)
+  (m/delete-by-id (esi/context->search-index context)
+                  group-index-name
+                  group-type-name
+                  concept-id
+                  {:refresh? true}))
+
 (defn-timed reindex-groups
   "Fetches and indexes all groups"
   [context]
   (info "Reindexing all groups")
   (doseq [group-batch (mdb-legacy/find-in-batches context :access-group 100 {:latest true})
           group group-batch]
-    (index-group context group))
+    (if (:deleted group)
+      (unindex-group context (:concept-id group))
+      (index-group context group)))
   (info "Reindexing all groups complete"))
-
-(defn unindex-group
-  "Removes group from index by concept ID."
-  [context concept-id]
-  (m/delete-by-id (esi/context->search-index context)
-                  group-index-name
-                  group-type-name
-                  concept-id))
 
 (defn unindex-groups-by-provider
   "Unindexes all access groups owned by provider-id."
@@ -144,7 +154,11 @@
   {:concept-id (m/stored m/string-field-mapping)
    :revision-id (m/stored m/int-field-mapping)
 
+   ;; collection-applicable is used in the access value condition to avoid
+   ;; applying the min max or undefined value conditions to catalog-item-identity
+   ;; acls that don't include collection-applicable
    :collection-identifier m/bool-field-mapping
+   :collection-applicable m/bool-field-mapping
    :collection-access-value-min m/int-field-mapping
    :collection-access-value-max m/int-field-mapping
    :collection-access-value-include-undefined-value m/bool-field-mapping
@@ -224,6 +238,21 @@
      :permission permissions
      :permission.lowercase (map str/lower-case permissions)}))
 
+(defn- access-value-elastic-doc-map
+  "Returns map for access value to be merged into full elasic doc"
+  [acl]
+  (merge
+    (when-let [av (:access-value (:collection-identifier (:catalog-item-identity acl)))]
+      {:collection-access-value-max (:max-value av)
+       :collection-access-value-min (:min-value av)
+       :collection-access-value-include-undefined-value (:include-undefined-value av)})
+    (if (:collection-identifier (:catalog-item-identity acl))
+      {:collection-identifier true}
+      {:collection-identifier false})
+    (if (:collection-applicable (:catalog-item-identity acl))
+      {:collection-applicable true}
+      {:collection-applicable false})))
+
 (defn- acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."
   [concept-map]
@@ -231,16 +260,7 @@
         permitted-groups (acl->permitted-groups acl)
         provider-id (acls/acl->provider-id acl)]
     (merge
-      (when-let [av (:access-value (:collection-identifier (:catalog-item-identity acl)))]
-        {:collection-access-value-max (:max-value av)
-         :collection-access-value-min (:min-value av)
-         :collection-access-value-include-undefined-value (:include-undefined-value av)
-         :collection-identifier true})
-      (when (and
-              (not (:collection-identifier (:catalog-item-identity acl)))
-              (not (:granule-identifier (:catalog-item-identity acl)))
-              (:catalog-item-identity acl))
-        {:collection-identifier false})
+      (access-value-elastic-doc-map acl)
       (assoc (select-keys concept-map [:concept-id :revision-id])
              :display-name (acl->display-name acl)
              :identity-type (acl->identity-type acl)

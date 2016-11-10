@@ -1,6 +1,7 @@
 (ns cmr.search.services.humanizers.humanizer-json-schema-validation
   "This contains JSON schema validations related to the humanizer"
-  (:require [cmr.common.validations.json-schema :as js]))
+  (:require
+   [cmr.common.validations.json-schema :as js]))
 
 (def ^:private humanizer-schema-structure
   "Schema for humanizer as json."
@@ -25,4 +26,3 @@
   "Validates the humanizer JSON string against the schema. Throws a service error if it is invalid."
   [json-str]
   (js/validate-json! humanizer-schema json-str))
-

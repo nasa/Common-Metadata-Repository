@@ -86,9 +86,10 @@
   "Indicates whether the servers will use gzip compression. Disable this to make tcpmon usable"
   true)
 
-(def use-access-log?
+(defconfig use-access-log
   "Indicates whether the servers will use the access log."
-  false)
+ {:type Boolean
+  :default false})
 
 (defn- set-web-server-options
   "Modifies the app server instances to configure web server options. Takes the system
@@ -99,7 +100,7 @@
                (into {} (for [[app-name app-system] app-map]
                           [app-name (-> app-system
                                         (assoc-in [:web :use-compression?] use-compression?)
-                                        (assoc-in [:web :use-access-log?] use-access-log?))])))))
+                                        (assoc-in [:web :use-access-log?] (use-access-log)))])))))
 
 
 (defmulti create-elastic

@@ -17,7 +17,7 @@
 (use-fixtures :once (fixtures/int-test-fixtures))
 
 (use-fixtures :each
-              (fixtures/reset-fixture {"prov1guid" "PROV1"})
+              (fixtures/reset-fixture {"prov1guid" "PROV1"} ["user1" "user2"])
               (fn [f]
                 (e/grant-all-ingest (u/conn-context) "prov1guid")
                 (f))
