@@ -7,15 +7,6 @@
     [cmr.search.models.query :as q]
     [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
-(defn- create-generic-collection-applicable-condition
-  "Constructs query condition for searching permitted_concept_ids by
-   collection-applicable acls without a collection identifier"
-  []
-  (gc/group-conds
-    :and
-    [(common-qm/boolean-condition :collection-identifier false)
-     (common-qm/boolean-condition :collection-applicable true)]))
-
 (defn- create-temporal-condition
   "Constructs query condition for searching permitted_concept_ids by temporal"
   [parsed-metadata]
