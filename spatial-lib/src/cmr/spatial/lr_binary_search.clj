@@ -1,26 +1,29 @@
 (ns cmr.spatial.lr-binary-search
   "Prototype code that finds the largest interior rectangle of a ring."
-  (:require [cmr.spatial.point :as p]
-            [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.math :refer :all]
-            [primitive-math]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.conversion :as c]
-            [cmr.common.services.errors :as errors]
-            [cmr.spatial.arc :as a]
-            [cmr.spatial.derived :as d]
-            [clojure.math.combinatorics :as combo]
-            [pjstadig.assertions :as pj]
-            [cmr.spatial.line-segment :as s]
-            [cmr.common.util :as util]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.relations :as relations]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.arc-line-segment-intersections :as asi])
-  (:import cmr.spatial.mbr.Mbr
-           cmr.spatial.geodetic_ring.GeodeticRing
-           cmr.spatial.cartesian_ring.CartesianRing
-           cmr.spatial.polygon.Polygon))
+  (:require 
+    [clojure.math.combinatorics :as combo]
+    [cmr.common.log :refer (warn)]
+    [cmr.common.services.errors :as errors]
+    [cmr.common.util :as util]
+    [cmr.spatial.arc :as a]
+    [cmr.spatial.arc-line-segment-intersections :as asi]
+    [cmr.spatial.conversion :as c]
+    [cmr.spatial.derived :as d]
+    [cmr.spatial.geodetic-ring :as gr]
+    [cmr.spatial.line-segment :as s]
+    [cmr.spatial.math :refer :all]
+    [cmr.spatial.mbr :as m]
+    [cmr.spatial.point :as p]
+    [cmr.spatial.polygon :as poly]
+    [cmr.spatial.relations :as relations]
+    [cmr.spatial.ring-relations :as rr]
+    [pjstadig.assertions :as pj]
+    [primitive-math])
+  (:import
+    cmr.spatial.cartesian_ring.CartesianRing 
+    cmr.spatial.mbr.Mbr
+    cmr.spatial.geodetic_ring.GeodeticRing
+    cmr.spatial.polygon.Polygon))
 (primitive-math/use-primitive-operators)
 
 (def ^:const ^long max-search-depth
@@ -246,7 +249,6 @@
                       (first (filter identity
                                      (map (partial even-lr-search shape)
                                           (shape->lr-search-points shape)))))]
-
      (if initial-lr
        ;; Grow LR in all directions
        (->> initial-lr
@@ -260,8 +262,11 @@
             (lr-search [:east] shape)
             (lr-search [:south] shape)
             (lr-search [:west] shape))
-
-       (when not-found-is-error?
-         (errors/internal-error!
-           (str "Could not find lr from shape " (pr-str shape))))))))
+        (if not-found-is-error?
+          (errors/internal-error! (str "Could not find lr from shape " (pr-str shape)))
+          (do
+            (warn "Return a mbr using one of the points in the shape because could not find lr from shape: " (pr-str shape))
+            (let [point (-> shape :rings first :points first)]
+              (m/point->mbr point))))
+       ))))
 

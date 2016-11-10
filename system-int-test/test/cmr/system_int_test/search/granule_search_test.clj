@@ -157,7 +157,7 @@
 (deftest search-by-granule-ur
   (let [coll1 (d/ingest "PROV1" (dc/collection {}))
         coll2 (d/ingest "PROV2" (dc/collection {}))
-        coll3 (d/ingest-concept-with-metadata-file "echo10_CMR3527_IR_Not_Found_Collection.xml"
+        coll3 (d/ingest-concept-with-metadata-file "data/echo10/echo10_CMR3527_IR_Not_Found_Collection.xml"
                                                    {:provider-id "PROV1"
                                                     :concept-type :collection
                                                     :format-key :echo10})
@@ -168,7 +168,7 @@
         gran5 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "SampleUR1"}))
         gran6 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "SampleUR2"}))
         gran7 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "sampleur33"}))
-        gran8 (d/ingest-concept-with-metadata-file "echo10_CMR3527_IR_Not_Found_Granule.xml"
+        gran8 (d/ingest-concept-with-metadata-file "data/echo10/echo10_CMR3527_IR_Not_Found_Granule.xml"
                                                    {:provider-id "PROV1"
                                                     :concept-type :granule
                                                     :format-key :echo10})]
