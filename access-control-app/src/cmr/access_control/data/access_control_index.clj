@@ -153,6 +153,10 @@
    :collection-access-value-max m/int-field-mapping
    :collection-access-value-include-undefined-value m/bool-field-mapping
 
+   :temporal-range-start m/date-field-mapping
+   :temporal-range-stop m/date-field-mapping
+   :temporal-mask m/string-field-mapping
+
    :permitted-group (m/stored m/string-field-mapping)
    :permitted-group.lowercase m/string-field-mapping
 
@@ -243,6 +247,14 @@
       {:collection-applicable true}
       {:collection-applicable false})))
 
+(defn- temporal-elastic-doc-map
+  "Returns map for temporal range values to be merged into full elastic doc"
+  [acl]
+  (when-let [temporal (:temporal (:collection-identifier (:catalog-item-identity acl)))]
+    {:temporal-range-start (:start-date temporal)
+     :temporal-range-stop (:stop-date temporal)
+     :temporal-mask (:mask temporal)}))
+
 (defn- acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."
   [concept-map]
@@ -251,6 +263,7 @@
         provider-id (acls/acl->provider-id acl)]
     (merge
       (access-value-elastic-doc-map acl)
+      (temporal-elastic-doc-map acl)
       (assoc (select-keys concept-map [:concept-id :revision-id])
              :display-name (acl->display-name acl)
              :identity-type (acl->identity-type acl)
