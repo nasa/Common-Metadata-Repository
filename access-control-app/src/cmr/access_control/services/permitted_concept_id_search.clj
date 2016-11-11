@@ -5,7 +5,7 @@
     [cmr.common-app.services.search.query-model :as common-qm]
     [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
-(defn- create-generic-collection-applicable-condition
+(defn- create-generic-permitted-concept-id-condition
   "Constructs query condition for searching permitted_concept_ids by
    collection-applicable acls without a collection identifier"
   []
@@ -30,20 +30,14 @@
        (common-qm/boolean-condition :collection-access-value-include-undefined-value true))
      (common-qm/boolean-condition :collection-applicable true)]))
 
-(defn- create-provider-condition
-  "Constructs query condition for searching permitted_concept_id by provider"
-  [provider-id]
-  (gc/group-conds
-    :and
-    [(common-qm/boolean-condition :collection-applicable true)
-     (common-qm/boolean-condition :collection-identifier false)
-     (common-qm/string-condition :provider provider-id false false)]))
-
 (defn get-permitted-concept-id-conditions
   "Returns query to search for ACLs that could permit given concept"
   [context concept]
   (let [parsed-metadata (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)]
     (gc/group-conds
-     :or
-     [(create-provider-condition (:provider-id concept))
-      (create-access-value-condition parsed-metadata)])))
+     :and
+     [(common-qm/string-condition :provider (:provider-id concept))
+      (gc/group-conds
+       :or
+       [(create-generic-permitted-concept-id-condition)
+        (create-access-value-condition parsed-metadata)])])))

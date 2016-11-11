@@ -713,6 +713,12 @@
                                   :native-id "coll6"
                                   :provider-id "PROV2"})
 
+        coll7 (u/save-collection {:entry-title "coll7 entry title"
+                                  :short-name "coll7"
+                                  :native-id "coll7"
+                                  :access-value 1
+                                  :provider-id "PROV2"})
+
         acl1 (ingest-acl token (assoc (catalog-item-acl "Access value 1-10")
                                       :catalog_item_identity {:name "Access value 1-10"
                                                               :collection_applicable true
@@ -777,4 +783,8 @@
 
         "coll6 test"
         {:permitted-concept-id coll6}
+        [acl9]
+
+        "coll7 test"
+        {:permitted-concept-id coll7}
         [acl9]))))
