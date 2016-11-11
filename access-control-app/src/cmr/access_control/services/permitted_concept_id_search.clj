@@ -16,12 +16,12 @@
 
 (defn- create-access-value-condition
   "Constructs query condition for searching permitted_concept_ids by access-value."
-  [parsed-concept]
+  [parsed-metadata]
   (gc/group-conds
     :and
     ;; If there are no access values present in the concept then the include undefined
     ;; value is used.
-    [(if-let [access-value (:Value (:AccessConstraints parsed-concept))]
+    [(if-let [access-value (:Value (:AccessConstraints parsed-metadata))]
        (common-qm/numeric-range-intersection-condition
          :collection-access-value-min
          :collection-access-value-max
@@ -33,8 +33,11 @@
 (defn get-permitted-concept-id-conditions
   "Returns query to search for ACLs that could permit given concept"
   [context concept]
-  (let [parsed-concept (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)]
+  (let [parsed-metadata (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)]
     (gc/group-conds
-     :or
-     [(create-generic-collection-applicable-condition)
-      (create-access-value-condition parsed-concept)])))
+     :and
+     [(common-qm/string-condition :provider (:provider-id concept))
+      (gc/group-conds
+       :or
+       [(create-generic-collection-applicable-condition)
+        (create-access-value-condition parsed-metadata)])])))
