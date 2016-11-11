@@ -157,21 +157,13 @@
 (deftest search-by-granule-ur
   (let [coll1 (d/ingest "PROV1" (dc/collection {}))
         coll2 (d/ingest "PROV2" (dc/collection {}))
-        coll3 (d/ingest-concept-with-metadata-file "data/echo10/echo10_CMR3527_IR_Not_Found_Collection.xml"
-                                                   {:provider-id "PROV1"
-                                                    :concept-type :collection
-                                                    :format-key :echo10})
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
         gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"}))
         gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule3"}))
         gran4 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "Granule3"}))
         gran5 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "SampleUR1"}))
         gran6 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "SampleUR2"}))
-        gran7 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "sampleur33"}))
-        gran8 (d/ingest-concept-with-metadata-file "data/echo10/echo10_CMR3527_IR_Not_Found_Granule.xml"
-                                                   {:provider-id "PROV1"
-                                                    :concept-type :granule
-                                                    :format-key :echo10})]
+        gran7 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "sampleur33"}))]
     (index/wait-until-indexed)
 
     (testing "search granule by granule ur."
@@ -196,12 +188,7 @@
            [gran5] "sampleUR1" {:ignore-case true}
            [gran5] "sampleUR1" {}
            [gran5 gran6] "sampleUR?" {:ignore-case true :pattern true}
-           [gran5 gran6] "sampleUR?" {:pattern true}
-
-           ;; Missing Internal Rectangle case
-           [gran8] "8046d7eb-0ce7-48f5-921a-a1600f41c5b2" {}))
-
-         
+           [gran5 gran6] "sampleUR?" {:pattern true}))
 
     (testing "search granule by granule ur with aql"
       (are [items urs options]

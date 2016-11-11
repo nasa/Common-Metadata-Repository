@@ -265,8 +265,7 @@
         (if not-found-is-error?
           (errors/internal-error! (str "Could not find lr from shape " (pr-str shape)))
           (do
-            (warn "Return a mbr using one of the points in the shape because could not find lr from shape: " (pr-str shape))
-            (let [point (-> shape :rings first :points first)]
-              (m/point->mbr point))))
-       ))))
+            (warn "Use mbr from one of the points in the shape because lr is not found " 
+                  (pr-str shape))
+            (m/point->mbr (relations/pt shape))))))))
 

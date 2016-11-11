@@ -160,6 +160,8 @@
         on-np (make-gran "on-np" (polygon 45 85, 135 85, -135 85, -45 85, 45 85))
         on-sp (make-gran "on-sp" (polygon -45 -85, -135 -85, 135 -85, 45 -85, -45 -85))
         normal-poly (make-gran "normal-poly" (polygon -20 -10, -10 -10, -10 10, -20 10, -20 -10))
+        ;;normal-poly1 (make-gran "normal-poly1" (polygon -20 -10, -10 -10, -10 10, -20 10, -20 -10))
+        ;;no-lr (make-gran "no-lr" (polygon 0.0 0.0, -179.9998 -89.9999, 0.0 -89.9999, 0.0 0.0)) 
 
         ;; polygon with holes
         outer (umm-s/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
@@ -334,6 +336,10 @@
 
         [20.16,-13.7,21.64,12.43,12.47,11.84,-22.57,7.06,20.16,-13.7]
         [whole-world normal-poly normal-brs polygon-with-holes normal-line normal-line-cart]
+
+        ;; no-lr case
+        ;;[0.0 0.0, 0.0 -89.9999, -179.9998 -89.9999]
+        ;;[no-lr]
 
         ;; Intersects 2nd of normal-brs
         [-16.79,-12.71,-6.32,-10.95,-5.74,-6.11,-15.18,-7.63,-16.79,-12.71]
