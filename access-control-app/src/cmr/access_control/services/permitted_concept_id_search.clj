@@ -5,7 +5,7 @@
     [cmr.common-app.services.search.query-model :as common-qm]
     [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
-(defn- create-generic-permitted-concept-id-condition
+(defn- create-generic-collection-applicable-condition
   "Constructs query condition for searching permitted_concept_ids by
    collection-applicable acls without a collection identifier"
   []
