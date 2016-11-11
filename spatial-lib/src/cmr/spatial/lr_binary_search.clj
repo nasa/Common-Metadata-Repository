@@ -20,9 +20,9 @@
     [pjstadig.assertions :as pj]
     [primitive-math])
   (:import
-    cmr.spatial.cartesian_ring.CartesianRing 
+    cmr.spatial.cartesian_ring.CartesianRing
+    cmr.spatial.geodetic_ring.GeodeticRing 
     cmr.spatial.mbr.Mbr
-    cmr.spatial.geodetic_ring.GeodeticRing
     cmr.spatial.polygon.Polygon))
 (primitive-math/use-primitive-operators)
 

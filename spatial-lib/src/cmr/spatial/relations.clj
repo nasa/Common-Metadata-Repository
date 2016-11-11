@@ -1,21 +1,23 @@
 (ns cmr.spatial.relations
   "This namespace describes functions for determining the relations between various spatial types."
-  (:require [cmr.spatial.point :as p]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.cartesian-ring :as cr]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.line-string :as ls]
-            [cmr.spatial.arc :as a]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.derived :as d]
-            [cmr.spatial.math :refer :all])
-  (:import cmr.spatial.point.Point
-           cmr.spatial.geodetic_ring.GeodeticRing
-           cmr.spatial.cartesian_ring.CartesianRing
-           cmr.spatial.mbr.Mbr
-           cmr.spatial.line_string.LineString
-           cmr.spatial.polygon.Polygon))
+  (:require 
+    [cmr.spatial.arc :as a]
+    [cmr.spatial.cartesian-ring :as cr]
+    [cmr.spatial.derived :as d]
+    [cmr.spatial.geodetic-ring :as gr]
+    [cmr.spatial.line-string :as ls]
+    [cmr.spatial.math :refer :all]
+    [cmr.spatial.mbr :as m]
+    [cmr.spatial.point :as p]
+    [cmr.spatial.polygon :as poly]
+    [cmr.spatial.ring-relations :as rr])
+  (:import 
+    cmr.spatial.cartesian_ring.CartesianRing 
+    cmr.spatial.geodetic_ring.GeodeticRing
+    cmr.spatial.line_string.LineString
+    cmr.spatial.mbr.Mbr
+    cmr.spatial.point.Point
+    cmr.spatial.polygon.Polygon))
 
 (defprotocol SpatialRelations
   "Defines functions for determining relations between different spatial areas."
