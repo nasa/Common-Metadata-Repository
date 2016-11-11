@@ -198,6 +198,7 @@
               (contains? options :access-value) (assoc-in [:AccessConstraints :Value] access-value)
               no-temporal (assoc :TemporalExtents nil)
               temporal-range (assoc-in [:TemporalExtents 0 :RangeDateTimes] [temporal-range]))]
+
     ;; We don't want to publish messages in metadata db since different envs may or may not be running
     ;; the indexer when we run this test.
     (without-publishing-messages

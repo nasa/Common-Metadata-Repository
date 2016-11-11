@@ -350,6 +350,11 @@
   [field query-str]
   (->TextCondition field query-str))
 
+(defn boolean-condition
+  "Creates a boolean condition."
+  [field value]
+  (map->BooleanCondition {:field field :value value}))
+
 (defn negated-condition
   "Creates a negated condition."
   [value]

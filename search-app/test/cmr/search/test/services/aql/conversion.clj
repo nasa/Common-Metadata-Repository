@@ -167,7 +167,7 @@
 (deftest aql-boolean-conversion-test
   (testing "boolean aql"
     (are [value aql-snippet]
-         (= (q/map->BooleanCondition {:field :downloadable :value value})
+         (= (q/boolean-condition :downloadable value)
             (aql-boolean-elem->condition aql-snippet))
 
          true "<onlineOnly value=\"Y\" />"
@@ -206,4 +206,3 @@
          "\\?"
          "aa\\y\\*bb"
          "ab\\%\\_\\\\c\\d\\")))
-

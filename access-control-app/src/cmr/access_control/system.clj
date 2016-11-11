@@ -69,6 +69,7 @@
              :caches {af/acl-cache-key (af/create-acl-cache
                                         [:system-object :provider-object :single-instance-object])
                       common-health/health-cache-key (common-health/create-health-cache)}
+
              :public-conf (public-conf)
              :relative-root-url (transmit-config/access-control-relative-root-url)
              :scheduler (jobs/create-scheduler

@@ -49,12 +49,11 @@
               ["The mime types specified in the content-type header [application/xml] are not supported."]}
              (hu/update-humanizers admin-update-token valid-humanizers {:http-options {:content-type :xml}}))))
 
-    (testing "Create humanizer with empty body"
+    (testing "Create humanizer with nil body"
       (is (= {:status 400,
               :errors
               ["instance type (null) does not match any allowed primitive type (allowed: [\"array\"])"]}
              (hu/update-humanizers admin-update-token nil))))
-
 
     (testing "Create humanizer with empty array"
       (is (= {:status 400,
@@ -64,31 +63,31 @@
 
     (testing "Missing field validations"
       (are [field]
-           (= {:status 400
-               :errors [(format "/0 object has missing required properties ([\"%s\"])"
-                                (name field))]}
-              (hu/update-humanizers admin-update-token [(dissoc valid-humanizer-rule field)]))
+        (= {:status 400
+            :errors [(format "/0 object has missing required properties ([\"%s\"])"
+                             (name field))]}
+           (hu/update-humanizers admin-update-token [(dissoc valid-humanizer-rule field)]))
 
-           :type :field))
+        :type :field))
 
     (testing "Minimum field length validations"
       (are [field]
-           (= {:status 400
-               :errors [(format "/0/%s string \"\" is too short (length: 0, required minimum: 1)"
-                                (name field))]}
-              (hu/update-humanizers admin-update-token [(assoc valid-humanizer-rule field "")]))
+        (= {:status 400
+            :errors [(format "/0/%s string \"\" is too short (length: 0, required minimum: 1)"
+                             (name field))]}
+           (hu/update-humanizers admin-update-token [(assoc valid-humanizer-rule field "")]))
 
-           :type :field))
+        :type :field))
 
     (testing "Maximum field length validations"
       (doseq [[field max-length] field-maxes]
         (let [long-value (string-of-length (inc max-length))]
           (is (= {:status 400
                   :errors [(format
-                             "/0/%s string \"%s\" is too long (length: %d, maximum allowed: %d)"
-                             (name field) long-value (inc max-length) max-length)]}
+                            "/0/%s string \"%s\" is too long (length: %d, maximum allowed: %d)"
+                            (name field) long-value (inc max-length) max-length)]}
                  (hu/update-humanizers
-                   admin-update-token [(assoc valid-humanizer-rule field long-value)]))))))))
+                  admin-update-token [(assoc valid-humanizer-rule field long-value)]))))))))
 
 (deftest update-humanizers-test
   (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
@@ -99,7 +98,7 @@
       (is (= 201 status))
       (is concept-id)
       (is (= 1 revision-id))
-      (hu/assert-humanizers-saved humanizers "admin" concept-id revision-id)
+      (hu/assert-humanizers-saved {:humanizers humanizers} "admin" concept-id revision-id)
 
       (testing "Successful update"
         (let [existing-concept-id concept-id
@@ -108,7 +107,7 @@
           (is (= 200 status))
           (is (= existing-concept-id concept-id))
           (is (= 2 revision-id))
-          (hu/assert-humanizers-saved updated-humanizers "admin" concept-id revision-id)))))
+          (hu/assert-humanizers-saved {:humanizers updated-humanizers} "admin" concept-id revision-id)))))
 
   (testing "Create humanizer with fields at maximum length"
     (let [token (e/login (s/context) "admin" ["admin-update-group-guid"])
