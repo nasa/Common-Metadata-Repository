@@ -71,14 +71,18 @@
                     (mapv #(get special-cases % %))
                     (mapv d/calculate-derived))
         ords-info-map (srl/shapes->ords-info-map shapes)
-        lrs (mapv srl/shape->lr shapes)
+        lrs (seq (remove nil? (mapv srl/shape->lr shapes)))
         ;; union mbrs to get one covering the whole area
         mbr (reduce mbr/union (mapv srl/shape->mbr shapes))
         ;; Choose the largest lr
-        lr (->> lrs
-                (sort-by mbr/percent-covering-world)
-                reverse
-                first)]
+        lr (when lrs
+             (->> lrs
+                  (sort-by mbr/percent-covering-world)
+                  reverse
+                  first))
+        lr-info-map (when lr
+                      (mbr->elastic-attribs
+                        "lr"  (mbr/round-to-float-map lr false) (mbr/crosses-antimeridian? lr)))]  
     (merge ords-info-map
            ;; The bounding rectangles are converted from double to float for storage in Elasticsearch
            ;; This takes up less space in the fielddata cache when using a numeric range filter with
@@ -91,8 +95,7 @@
            ;; the area of 24 centimeters.
            (mbr->elastic-attribs
              "mbr" (mbr/round-to-float-map mbr true) (mbr/crosses-antimeridian? mbr))
-           (mbr->elastic-attribs
-             "lr"  (mbr/round-to-float-map lr false) (mbr/crosses-antimeridian? lr)))))
+           lr-info-map)))
 
 (defn get-collection-coordinate-system
   "Returns the coordinate system in lowercase keyword for the given collection"
