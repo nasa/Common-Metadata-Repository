@@ -29,9 +29,6 @@
 
   (mbr [shape] "Returns the minimum bounding rectangle of the shape")
   
-  (pt [shape] "Returns a point from the shape. Used to create a single point mbr to replace  
-               lr when it can not be created because the area is too small. Added for CMR-3527")
-
   (contains-north-pole? [shape] "Returns true if the shape contains the north pole")
   (contains-south-pole? [shape] "Returns true if the shape contains the south pole")
 
@@ -58,10 +55,6 @@
   (mbr
     [point]
     (m/point->mbr point))
-
-  (pt
-    [point]
-    point)
 
   (contains-north-pole?
     [point]
@@ -105,10 +98,6 @@
     [line]
     (:mbr line))
 
-  (pt
-    [line]
-    (-> line :points first))
-    
   (contains-north-pole?
     [line]
     (ls/covers-point? line p/north-pole))
@@ -147,10 +136,6 @@
     :cartesian)
 
   (mbr [br] br)
-
-  (pt
-    [br]
-    (-> br :corner-points first))
 
   (contains-north-pole?
     [br]
@@ -195,10 +180,6 @@
     [ring]
     (:mbr ring))
 
-  (pt
-    [ring]
-    (-> ring :points first))
-
   (contains-north-pole?
     [ring]
     (:contains-north-pole ring))
@@ -241,10 +222,6 @@
   (mbr
     [ring]
     (:mbr ring))
-
-  (pt
-    [ring]
-    (-> ring :points first))
 
   (contains-north-pole?
     [ring]
@@ -291,10 +268,6 @@
         :rings
         first
         :mbr))
-
-  (pt
-    [polygon]
-    (-> polygon :rings first :points first))
 
   (contains-north-pole?
     [polygon]

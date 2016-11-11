@@ -234,38 +234,38 @@
   (ring->lr-search-points ring))
 
 (defn find-lr
-  "Finds the 'largest' interior rectangle (LR) of the shape. This is not the provably largest interior
-  rectangle for a shape. It uses a simpler algorithm that works well for simple 4 point rings and
-  less well for more points. It should always find a LR for any ring of arbitrary shape."
-  ([shape]
-   (find-lr shape false))
-  ([shape not-found-is-error?]
-   (let [shape (d/calculate-derived shape)
-         mbr (relations/mbr shape)
+  "Finds the 'largest' interior rectangle (LR) of the polygon. This is not the provably largest interior
+  rectangle for a polygon. It uses a simpler algorithm that works well for simple 4 point rings and
+  less well for more points. It should always find a LR for any ring of arbitrary polygon."
+  ([polygon]
+   (find-lr polygon false))
+  ([polygon not-found-is-error?]
+   (let [polygon (d/calculate-derived polygon)
+         mbr (relations/mbr polygon)
          initial-lr (or
-                      ;; Find an LR from the center point of the shape
-                      (even-lr-search shape (m/center-point mbr))
+                      ;; Find an LR from the center point of the polygon 
+                      (even-lr-search polygon (m/center-point mbr))
                       ;; Return the first LR that we can find using a test point
                       (first (filter identity
-                                     (map (partial even-lr-search shape)
-                                          (shape->lr-search-points shape)))))]
+                                     (map (partial even-lr-search polygon)
+                                          (shape->lr-search-points polygon)))))]
      (if initial-lr
        ;; Grow LR in all directions
        (->> initial-lr
             ;; Grow corners
-            (lr-search [:west :north] shape)
-            (lr-search [:north :east] shape)
-            (lr-search [:east :south] shape)
-            (lr-search [:south :west] shape)
+            (lr-search [:west :north] polygon)
+            (lr-search [:north :east] polygon)
+            (lr-search [:east :south] polygon)
+            (lr-search [:south :west] polygon)
             ;; Grow edges
-            (lr-search [:north] shape)
-            (lr-search [:east] shape)
-            (lr-search [:south] shape)
-            (lr-search [:west] shape))
+            (lr-search [:north] polygon)
+            (lr-search [:east] polygon)
+            (lr-search [:south] polygon)
+            (lr-search [:west] polygon))
         (if not-found-is-error?
-          (errors/internal-error! (str "Could not find lr from shape " (pr-str shape)))
+          (errors/internal-error! (str "Could not find lr from polygon " (pr-str polygon)))
           (do
-            (warn "Use mbr from one of the points in the shape because lr is not found " 
-                  (pr-str shape))
-            (m/point->mbr (relations/pt shape))))))))
+            (warn "Use mbr from one of the points in the polygon because lr is not found " 
+                  (pr-str polygon))
+            (m/point->mbr (-> polygon :rings first :points first))))))))
 
