@@ -28,31 +28,35 @@
         concept-access-value-nil (mdb2/get-latest-concept (u/conn-context) concept-id-access-value-nil)]
     (testing "create permitted-concept-id conditions with access value 1"
       (is (= (gc/group-conds
-               :or
-               [(gc/group-conds
-                  :and
-                  [(common-qm/boolean-condition :collection-applicable true)
-                   (common-qm/boolean-condition :collection-identifier false)
-                   (common-qm/string-condition :provider "PROV1" false false)])
+               :and
+               [(common-qm/string-condition :provider "PROV1" false false)
                 (gc/group-conds
-                  :and
-                  [(common-qm/numeric-range-intersection-condition
-                     :collection-access-value-min
-                     :collection-access-value-max
-                     1.0
-                     1.0)
-                   (common-qm/boolean-condition :collection-applicable true)])])
+                  :or
+                  [(gc/group-conds
+                    :and
+                    [(common-qm/boolean-condition :collection-identifier false)
+                     (common-qm/boolean-condition :collection-applicable true)])
+                   (gc/group-conds
+                     :and
+                     [(common-qm/numeric-range-intersection-condition
+                        :collection-access-value-min
+                        :collection-access-value-max
+                        1.0
+                        1.0)
+                      (common-qm/boolean-condition :collection-applicable true)])])])
              (pcs/get-permitted-concept-id-conditions (u/conn-context) concept-access-value-1))))
     (testing "create permitted-concept-id conditions with access value nil"
       (is (= (gc/group-conds
-               :or
-               [(gc/group-conds
-                  :and
-                  [(common-qm/boolean-condition :collection-applicable true)
-                   (common-qm/boolean-condition :collection-identifier false)
-                   (common-qm/string-condition :provider "PROV1" false false)])
+               :and
+               [(common-qm/string-condition :provider "PROV1" false false)
                 (gc/group-conds
-                  :and
-                  [(common-qm/boolean-condition :collection-access-value-include-undefined-value true)
-                   (common-qm/boolean-condition :collection-applicable true)])])
+                  :or
+                  [(gc/group-conds
+                    :and
+                    [(common-qm/boolean-condition :collection-identifier false)
+                     (common-qm/boolean-condition :collection-applicable true)])
+                   (gc/group-conds
+                     :and
+                     [(common-qm/boolean-condition :collection-access-value-include-undefined-value true)
+                      (common-qm/boolean-condition :collection-applicable true)])])])
              (pcs/get-permitted-concept-id-conditions (u/conn-context) concept-access-value-nil))))))
