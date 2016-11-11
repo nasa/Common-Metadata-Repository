@@ -425,12 +425,8 @@
     (testing "polygon searches"
       (are [ords items]
         (let [found (search/find-refs :granule {:polygon (apply search-poly ords)
-                                                :provider "PROV1"})
-              matches? (d/refs-match? items found)]
-          (when-not matches?
-            (println "Expected:" (->> items (map :granule-ur) sort pr-str))
-            (println "Actual:" (->> found :refs (map :name) sort pr-str)))
-          matches?)
+                                                :provider "PROV1"})]
+          (d/assert-refs-match items found))
         ;; no-lr case
         [0.0 0.0, -179.9998 -89.9999, 0.0 -89.9999, 0.0 0.0]
         [no-lr]))))
