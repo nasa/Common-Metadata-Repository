@@ -39,5 +39,5 @@
      [(common-qm/string-condition :provider (:provider-id concept))
       (gc/group-conds
        :or
-       [(create-generic-permitted-concept-id-condition)
+       [(create-generic-collection-applicable-condition)
         (create-access-value-condition parsed-metadata)])])))
