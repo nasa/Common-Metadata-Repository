@@ -31,7 +31,17 @@
     (is (= {:status 400
             :body {:errors ["Parameter [foo] was not recognized."]}
             :content-type :json}
-           (ac/search-for-acls (u/conn-context) {:foo "bar"} {:raw? true})))))
+           (ac/search-for-acls (u/conn-context) {:foo "bar"} {:raw? true}))))
+  (testing "Invalid permitted concept id"
+    (is (= {:status 400
+            :body {:errors ["Must be collection or granule concept id."]}
+            :content-type :json}
+           (ac/search-for-acls (u/conn-context) {:permitted-concept-id "BAD_CONCEPT_ID"} {:raw? true}))))
+  (testing "Permitted concept id does not exist"
+    (is (= {:status 400
+            :body {:errors ["permitted_concept_id does not exist."]}
+            :content-type :json}
+           (ac/search-for-acls (u/conn-context) {:permitted-concept-id "C1200000001-PROV1"} {:raw? true})))))
 
 (def sample-system-acl
   "A sample system ACL."
@@ -672,3 +682,85 @@
          :identity-type ["catalog_item" "provider"]
          :permitted-user "user2"}
         [acl3 fixtures/*fixture-provider-acl* acl5 acl7]))))
+
+(deftest acl-search-permitted-concept-id-access-value
+  ;; This test is for searching ACLs by permitted concept id.  For a given
+  ;; collection concept id, acls granting permission to this collection by access value
+  ;; are returned.
+  (let [token (e/login (u/conn-context) "user1")
+        save-access-value-collection (fn [short-name access-value]
+                                         (u/save-collection {:entry-title (str short-name " entry title")
+                                                             :short-name short-name
+                                                             :native-id short-name
+                                                             :provider-id "PROV1"
+                                                             :access-value access-value}))
+        ;; one collection with a low access value
+        coll1 (save-access-value-collection "coll1" 1)
+        ;; one with an intermediate access value
+        coll2 (save-access-value-collection "coll2" 4)
+        ;; one with a higher access value
+        coll3 (save-access-value-collection "coll3" 10)
+        ;; one with no access value
+        coll4 (save-access-value-collection "coll4" nil)
+        ;; one with FOO entry-title
+        coll5 (u/save-collection {:entry-title "FOO"
+                                  :short-name "coll5"
+                                  :native-id "coll5"
+                                  :provider-id "PROV1"})
+
+        acl1 (ingest-acl token (assoc (catalog-item-acl "Access value 1-10")
+                                      :catalog_item_identity {:name "Access value 1-10"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:access_value {:min_value 1 :max_value 10}}
+                                                              :provider_id "PROV1"}))
+
+        acl2 (ingest-acl token (assoc (catalog-item-acl "Access value 1")
+                                      :catalog_item_identity {:name "Access value 1"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:access_value {:min_value 1 :max_value 1}}
+                                                              :provider_id "PROV1"}))
+
+        acl3 (ingest-acl token (assoc (catalog-item-acl "Access value 5-10")
+                                      :catalog_item_identity {:name "Access value 5-10"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:access_value {:min_value 5 :max_value 10}}
+                                                              :provider_id "PROV1"}))
+        acl4 (ingest-acl token (assoc (catalog-item-acl "Access value undefined")
+                                      :catalog_item_identity {:name "include undefined value"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:access_value {:include_undefined_value true}}
+                                                              :provider_id "PROV1"}))
+        acl5 (ingest-acl token (catalog-item-acl "No collection identifier"))
+        acl6 (ingest-acl token (assoc (catalog-item-acl "Entry titles FOO")
+                                      :catalog_item_identity {:name "Entry titles FOO"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:entry_titles ["FOO"]}
+                                                              :provider_id "PROV1"}))
+        acl7 (ingest-acl token (assoc (catalog-item-acl "Access value 1-10 for granule")
+                                      :catalog_item_identity {:name "Access value 1-10 for granule"
+                                                              :granule_applicable true
+                                                              :granule_identifier {:access_value {:min_value 1 :max_value 10}}
+                                                              :provider_id "PROV1"}))]
+
+
+    (u/wait-until-indexed)
+    (testing "collection concept id search, access value acls"
+      (are3 [params acls]
+        (let [response (ac/search-for-acls (u/conn-context) params)]
+          (is (= (acls->search-response (count acls) acls)
+                 (dissoc response :took))))
+        "coll1 test"
+        {:permitted-concept-id coll1}
+        [acl1 acl2 acl5]
+
+        "coll2 test"
+        {:permitted-concept-id coll2}
+        [acl1 acl5]
+
+        "coll3 test"
+        {:permitted-concept-id coll3}
+        [acl1 acl3 acl5]
+
+        "coll4 test"
+        {:permitted-concept-id coll4}
+        [acl4 acl5]))))

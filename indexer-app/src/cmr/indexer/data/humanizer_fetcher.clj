@@ -33,5 +33,3 @@
     (c/get-value cache
                  humanizer-cache-key
                  #(retrieve-humanizers context))))
-
-
