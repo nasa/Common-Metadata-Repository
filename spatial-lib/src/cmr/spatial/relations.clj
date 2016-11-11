@@ -107,7 +107,7 @@
 
   (pt
     [line]
-    (-> line :point1))
+    (-> line :points first))
     
   (contains-north-pole?
     [line]
