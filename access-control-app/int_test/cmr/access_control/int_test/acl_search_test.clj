@@ -683,7 +683,7 @@
          :permitted-user "user2"}
         [acl3 fixtures/*fixture-provider-acl* acl5 acl7]))))
 
-(deftest acl-search-permitted-concept-id-access-value
+(deftest acl-search-permitted-concept-id
   ;; This test is for searching ACLs by permitted concept id.  For a given
   ;; collection concept id, acls granting permission to this collection by access value
   ;; are returned.
@@ -707,6 +707,17 @@
                                   :short-name "coll5"
                                   :native-id "coll5"
                                   :provider-id "PROV1"})
+
+        coll6 (u/save-collection {:entry-title "coll6 entry title"
+                                  :short-name "coll6"
+                                  :native-id "coll6"
+                                  :provider-id "PROV2"})
+
+        coll7 (u/save-collection {:entry-title "coll7 entry title"
+                                  :short-name "coll7"
+                                  :native-id "coll7"
+                                  :access-value 1
+                                  :provider-id "PROV2"})
 
         acl1 (ingest-acl token (assoc (catalog-item-acl "Access value 1-10")
                                       :catalog_item_identity {:name "Access value 1-10"
@@ -740,11 +751,11 @@
                                       :catalog_item_identity {:name "Access value 1-10 for granule"
                                                               :granule_applicable true
                                                               :granule_identifier {:access_value {:min_value 1 :max_value 10}}
-                                                              :provider_id "PROV1"}))]
-
-
+                                                              :provider_id "PROV1"}))
+        acl9 (ingest-acl token (assoc-in (catalog-item-acl "No collection identifier PROV2")
+                                         [:catalog_item_identity :provider_id] "PROV2"))]
     (u/wait-until-indexed)
-    (testing "collection concept id search, access value acls"
+    (testing "collection concept id search"
       (are3 [params acls]
         (let [response (ac/search-for-acls (u/conn-context) params)]
           (is (= (acls->search-response (count acls) acls)
@@ -763,4 +774,17 @@
 
         "coll4 test"
         {:permitted-concept-id coll4}
-        [acl4 acl5]))))
+        [acl4 acl5]
+
+        ;; Will eventually also return acl6
+        "coll5 test"
+        {:permitted-concept-id coll5}
+        [acl5]
+
+        "coll6 test"
+        {:permitted-concept-id coll6}
+        [acl9]
+
+        "coll7 test"
+        {:permitted-concept-id coll7}
+        [acl9]))))
