@@ -64,6 +64,17 @@
     (is (re-find #"^ACL.*" (:concept_id resp)))
     (is (= 1 (:revision_id resp)))))
 
+(deftest create-catalog-item-identity-acl-test
+  (is (= 1 (:revision_id
+             (ac/create-acl (u/conn-context)
+                            {:group_permissions [{:user_type "guest"
+                                                  :permissions ["read"]}]
+                             :catalog_item_identity {:name "Catalog Item Identity Without Collection Identifier"
+                                                     :provider_id "PROV1"
+                                                     :collection_identifier {:access_value {:include_undefined_value true}}
+                                                     :granule_applicable true}}
+                            {:token (transmit-config/echo-system-token)})))))
+
 (deftest create-single-instance-acl-permission-test
   (let [token (e/login (u/conn-context) "user1")
         group1 (u/ingest-group token {:name "group1" :provider_id "PROV1"} ["user1"])
@@ -216,7 +227,7 @@
                    {:group_permissions [{:group_id created-group
                                          :permissions [:create :read :update :delete]}]
                     :system_identity {:target "ANY_ACL"}})
-    
+
     ;; Update the PROV1 CATALOG_ITEM_ACL ACL to grant permission explicitly to only the group which "user1" belongs to.
     (ac/update-acl (merge (u/conn-context) {:token admin-token})
                    (:concept-id fixtures/*fixture-provider-acl*)
@@ -320,7 +331,15 @@
           "System identity target grantable permission check"
           #"\[system-identity\] ACL cannot have \[read\] permission for target \[TAG_GROUP\], only \[create, update, delete\] are grantable"
           (assoc-in (assoc-in system-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"])
-                    [:system_identity :target] "TAG_GROUP"))
+                    [:system_identity :target] "TAG_GROUP")
+
+          "collection_applicable or granule_applicable must be true when collection_identifier is specified"
+          #"when catalog_item_identity is specified, one or both of collection_applicable or granule_applicable must be true"
+          {:group_permissions [{:user_type "guest"
+                                :permissions ["read"]}]
+           :catalog_item_identity {:name "Catalog Item Identity Without Collection Identifier"
+                                   :provider_id "PROV1"
+                                   :collection_identifier {:access_value {:include_undefined_value true}}}})
 
     (testing "Acceptance criteria: I receive an error if creating an ACL with invalid JSON"
       (is
