@@ -264,9 +264,10 @@
 (defn make-acl-condition
   "Returns elastic condition to filter out ACLs that are not visible to the user."
   [context acls-with-concept-id]
-  (let [concept-ids (get-searchable-acls context acls-with-concept-id)]
-    (when (seq concept-ids)
-      (common-qm/string-conditions :concept-id concept-ids true))))
+  (when-not (acl-auth/has-system-access? context :read "ANY_ACL")
+   (let [concept-ids (get-searchable-acls context acls-with-concept-id)]
+     (when (seq concept-ids)
+       (common-qm/string-conditions :concept-id concept-ids true)))))
 
 (defmethod qe/add-acl-conditions-to-query :acl
   [context query]
