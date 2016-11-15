@@ -1,0 +1,13 @@
+User-agent: *
+Disallow: /ingest/providers/
+Disallow: /ingest/translate/
+Disallow: /ingest/reindex-collection-permitted-groups
+Disallow: /ingest/reindex-all-collections
+Disallow: /ingest/cleanup-expired-collections
+Disallow: /ingest/trigger-full-collection-granule-aggregate-cache-refresh
+Disallow: /ingest/trigger-partial-collection-granule-aggregate-cache-refresh
+
+Disallow: /search/humanizers/
+Disallow: /search/concepts/
+Disallow: /search/granules/
+Disallow: /search/collections/
