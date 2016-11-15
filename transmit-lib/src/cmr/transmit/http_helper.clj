@@ -87,9 +87,15 @@
   [context app-name {:keys [url-fn method http-options response-handler use-system-token?] :as request}]
   (let [conn (config/context->app-connection context app-name)
         response-handler (or response-handler default-response-handler)
+        connection-params (config/conn-params conn)
+
+        ;; Validate that a connection manager is always present. This can cause poor performance if not.
+        _ (when-not (:connection-manager connection-params)
+            (errors/internal-error! (format "No connection manager created for [%s] in current application" app-name)))
+
         response (http-response->raw-response
                    (client/request
-                     (merge (config/conn-params conn)
+                     (merge connection-params
                             {:url (url-fn conn)
                              :method method
                              :throw-exceptions false}
@@ -97,7 +103,6 @@
                               {:headers {config/token-header (config/echo-system-token)}})
                             http-options)))]
     (response-handler request response)))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CRUD Macros
