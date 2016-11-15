@@ -411,7 +411,7 @@
    (try 
    (spatial-validation params :polygon)
    (catch StackOverflowError e
-    (errors/throw-service-errors :bad-request ["Number of points in polygon search parameter exceeds max of 439 points"])))))
+    (errors/throw-service-errors :bad-request ["Number of points in polygon search parameter exceeds max of 400 points"])))))
 
 (defn bounding-box-validation
   ([params] (bounding-box-validation nil params))

@@ -1365,7 +1365,7 @@ Find collections with tag_data in the form of tag_data[tag_key]=tag_value. It fi
 
 ##### <a name="c-polygon"></a> Polygon
 
-Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on. The maximum number of points allowed is 439.
+Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on. The maximum number of points allowed is 400.
 
     curl "%CMR-ENDPOINT%/collections?polygon=10,10,30,10,30,20,10,20,10,10"
 
