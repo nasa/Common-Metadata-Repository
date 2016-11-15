@@ -64,14 +64,28 @@
     (is (re-find #"^ACL.*" (:concept_id resp)))
     (is (= 1 (:revision_id resp)))))
 
+;; The following test covers creating simple but valid catalog item identity. We permit collection_applicable false
+;; and collection_identifier when granule_applicable is true.
+
 (deftest create-catalog-item-identity-acl-test
   (is (= 1 (:revision_id
              (ac/create-acl (u/conn-context)
                             {:group_permissions [{:user_type "guest"
                                                   :permissions ["read"]}]
-                             :catalog_item_identity {:name "Catalog Item Identity Without Collection Identifier"
+                             :catalog_item_identity {:name "Catalog Item Identity 1"
                                                      :provider_id "PROV1"
                                                      :collection_identifier {:access_value {:include_undefined_value true}}
+                                                     :collection_applicable true
+                                                     :granule_applicable false}}
+                            {:token (transmit-config/echo-system-token)}))))
+  (is (= 1 (:revision_id
+             (ac/create-acl (u/conn-context)
+                            {:group_permissions [{:user_type "guest"
+                                                  :permissions ["read"]}]
+                             :catalog_item_identity {:name "Catalog Item Identity 2"
+                                                     :provider_id "PROV1"
+                                                     :collection_identifier {:access_value {:include_undefined_value true}}
+                                                     :collection_applicable false
                                                      :granule_applicable true}}
                             {:token (transmit-config/echo-system-token)})))))
 
@@ -331,15 +345,7 @@
           "System identity target grantable permission check"
           #"\[system-identity\] ACL cannot have \[read\] permission for target \[TAG_GROUP\], only \[create, update, delete\] are grantable"
           (assoc-in (assoc-in system-acl [:group_permissions 0 :permissions] ["create" "read" "update" "delete"])
-                    [:system_identity :target] "TAG_GROUP")
-
-          "collection_applicable or granule_applicable must be true when collection_identifier is specified"
-          #"when catalog_item_identity is specified, one or both of collection_applicable or granule_applicable must be true"
-          {:group_permissions [{:user_type "guest"
-                                :permissions ["read"]}]
-           :catalog_item_identity {:name "Catalog Item Identity Without Collection Identifier"
-                                   :provider_id "PROV1"
-                                   :collection_identifier {:access_value {:include_undefined_value true}}}})
+                    [:system_identity :target] "TAG_GROUP"))
 
     (testing "Acceptance criteria: I receive an error if creating an ACL with invalid JSON"
       (is
