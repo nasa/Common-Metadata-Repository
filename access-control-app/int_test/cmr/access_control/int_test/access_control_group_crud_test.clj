@@ -95,12 +95,12 @@
           (is (= 200 (:status (u/create-group token (assoc group :provider_id "PROV1")))))))
 
       (testing "Creation of previously deleted group"
-        (u/delete-group token concept_id)
+        (is (= 200 (:status (u/delete-group token concept_id))))
         (let [new-group (assoc group :legacy_guid "the legacy guid" :description "new description")
               response (u/create-group token new-group)]
-          (is (= {:status 200 :concept_id concept_id :revision_id 3}
+          (is (= {:status 200 :concept_id (:concept_id response) :revision_id 1}
                  response))
-          (u/assert-group-saved new-group "user1" concept_id 3))))
+          (u/assert-group-saved new-group "user1" (:concept_id response) 1))))
 
     (testing "Create group with fields at maximum length"
       (let [group (into {} (for [[field max-length] field-maxes]
