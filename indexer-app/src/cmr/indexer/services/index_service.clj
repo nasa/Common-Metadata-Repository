@@ -22,9 +22,9 @@
     [cmr.indexer.config :as config]
     [cmr.indexer.data.concept-parser :as cp]
     [cmr.indexer.data.elasticsearch :as es]
-    [cmr.indexer.data.elasticsearch :as es]
     [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]
     [cmr.indexer.data.index-set :as idx-set]
+    [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]
     [cmr.message-queue.config :as qcfg]
     [cmr.message-queue.services.queue :as queue]
     [cmr.transmit.cubby :as cubby]
@@ -158,6 +158,7 @@
    ;; We refresh this cache because it is fairly lightweight to do once for each provider and because
    ;; we want the latest humanizers on each of the Indexer instances that are processing these messages.
    (humanizer-fetcher/refresh-cache context)
+   (metrics-fetcher/refresh-cache context)
 
    (if refresh-acls?
      ;; Refresh the ACL cache.
