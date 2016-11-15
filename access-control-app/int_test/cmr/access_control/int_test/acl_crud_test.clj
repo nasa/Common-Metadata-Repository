@@ -68,26 +68,28 @@
 ;; and collection_identifier when granule_applicable is true.
 
 (deftest create-catalog-item-identity-acl-test
-  (is (= 1 (:revision_id
-             (ac/create-acl (u/conn-context)
-                            {:group_permissions [{:user_type "guest"
-                                                  :permissions ["read"]}]
-                             :catalog_item_identity {:name "Catalog Item Identity 1"
-                                                     :provider_id "PROV1"
-                                                     :collection_identifier {:access_value {:include_undefined_value true}}
-                                                     :collection_applicable true
-                                                     :granule_applicable false}}
-                            {:token (transmit-config/echo-system-token)}))))
-  (is (= 1 (:revision_id
-             (ac/create-acl (u/conn-context)
-                            {:group_permissions [{:user_type "guest"
-                                                  :permissions ["read"]}]
-                             :catalog_item_identity {:name "Catalog Item Identity 2"
-                                                     :provider_id "PROV1"
-                                                     :collection_identifier {:access_value {:include_undefined_value true}}
-                                                     :collection_applicable false
-                                                     :granule_applicable true}}
-                            {:token (transmit-config/echo-system-token)})))))
+  (testing "with collection_identifier, collection_applicable true, and granule_applicable false"
+    (is (= 1 (:revision_id
+               (ac/create-acl (u/conn-context)
+                              {:group_permissions [{:user_type "guest"
+                                                    :permissions ["read"]}]
+                               :catalog_item_identity {:name "Catalog Item Identity 1"
+                                                       :provider_id "PROV1"
+                                                       :collection_identifier {:access_value {:include_undefined_value true}}
+                                                       :collection_applicable true
+                                                       :granule_applicable false}}
+                              {:token (transmit-config/echo-system-token)})))))
+  (testing "with collection_identifier, collection_applicable false, and granule_applicable true"
+    (is (= 1 (:revision_id
+               (ac/create-acl (u/conn-context)
+                              {:group_permissions [{:user_type "guest"
+                                                    :permissions ["read"]}]
+                               :catalog_item_identity {:name "Catalog Item Identity 2"
+                                                       :provider_id "PROV1"
+                                                       :collection_identifier {:access_value {:include_undefined_value true}}
+                                                       :collection_applicable false
+                                                       :granule_applicable true}}
+                              {:token (transmit-config/echo-system-token)}))))))
 
 (deftest create-single-instance-acl-permission-test
   (let [token (e/login (u/conn-context) "user1")
