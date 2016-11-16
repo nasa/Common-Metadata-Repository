@@ -1,35 +1,32 @@
 (ns cmr.search.services.parameters.parameter-validation
   "Contains functions for validating query parameters"
-  (:require 
-    [camel-snake-kebab.core :as csk]
-    [clj-time.core :as t]
-    [clojure.set :as set]
-    [clojure.string :as s]
-    [cmr.common-app.services.search.messages :as d-msg]
-    [cmr.common-app.services.search.parameter-validation :as cpv]
-    [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
-    [cmr.common-app.services.search.params :as common-params]
-    [cmr.common-app.services.search.query-model :as cqm]
-    [cmr.common.concepts :as cc]
-    [cmr.common.config :as cfg]
-    [cmr.common.date-time-parser :as dt-parser]
-    [cmr.common.date-time-range-parser :as dtr-parser]
-    [cmr.common.log :refer (debug info warn error)]
-    [cmr.common.parameter-parser :as parser]
-    [cmr.common.services.errors :as errors]
-    [cmr.common.services.messages :as c-msg]
-    [cmr.common.util :as util]
-    [cmr.search.data.keywords-to-elastic :as k2e]
-    [cmr.search.services.messages.attribute-messages :as attrib-msg]
-    [cmr.search.services.messages.common-messages :as msg]
-    [cmr.search.services.messages.orbit-number-messages :as on-msg]
-    [cmr.search.services.parameters.converters.attribute :as attrib]
-    [cmr.search.services.parameters.converters.orbit-number :as on]
-    [cmr.search.services.parameters.legacy-parameters :as lp]
-    [cmr.spatial.codec :as spatial-codec])
-  (:import 
-    clojure.lang.ExceptionInfo
-    java.lang.Integer))
+  (:require [clojure.set :as set]
+            [clojure.string :as s]
+            [cmr.common-app.services.search.parameter-validation :as cpv]
+            [cmr.common-app.services.search.query-model :as cqm]
+            [cmr.common.concepts :as cc]
+            [cmr.common.services.errors :as errors]
+            [cmr.common.services.messages :as c-msg]
+            [cmr.common.parameter-parser :as parser]
+            [cmr.common.config :as cfg]
+            [cmr.common.util :as util]
+            [cmr.common.date-time-parser :as dt-parser]
+            [cmr.common.date-time-range-parser :as dtr-parser]
+            [cmr.common-app.services.search.params :as common-params]
+            [cmr.search.services.parameters.legacy-parameters :as lp]
+            [cmr.search.services.parameters.converters.attribute :as attrib]
+            [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
+            [cmr.search.services.messages.attribute-messages :as attrib-msg]
+            [cmr.search.services.parameters.converters.orbit-number :as on]
+            [cmr.search.services.messages.orbit-number-messages :as on-msg]
+            [cmr.search.services.messages.common-messages :as msg]
+            [cmr.common-app.services.search.messages :as d-msg]
+            [cmr.search.data.keywords-to-elastic :as k2e]
+            [camel-snake-kebab.core :as csk]
+            [cmr.spatial.codec :as spatial-codec]
+            [clj-time.core :as t])
+  (:import clojure.lang.ExceptionInfo
+           java.lang.Integer))
 
 (defmethod cpv/params-config :collection
   [_]
@@ -407,11 +404,7 @@
 
 (defn polygon-validation
   ([params] (polygon-validation nil params))
-  ([_ params]
-   (try 
-   (spatial-validation params :polygon)
-   (catch StackOverflowError e
-    (errors/throw-service-errors :bad-request ["Number of points in polygon search parameter exceeds max of 400 points"])))))
+  ([_ params] (spatial-validation params :polygon)))
 
 (defn bounding-box-validation
   ([params] (bounding-box-validation nil params))
