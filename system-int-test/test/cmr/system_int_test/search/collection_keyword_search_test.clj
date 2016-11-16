@@ -424,11 +424,15 @@
         {:keyword (:category sk1) :boosts {:include-defaults false}} [1.0]
 
         "matches all fields, do not include defaults"
-        {:keyword "boost" :boosts {:short-name 5.0 :include-defaults false}} [5.0]
+        {:keyword "boost" :boosts {:short-name 5.0 :include-defaults false}}
+        ;; Still need to take into account that fields that match will get the default boost,
+        ;; not the configured defaults, but the overall default. This will be a different
+        ;; score than the example below.
+        [(+ 5.0 (* k2e/default-boost 3))]
 
         "matches all fields, use defaults, but override short-name boost"
         {:keyword "boost" :boosts {:short-name 5.0 :include-defaults true}}
-        [(* 5.0 entry-title-boost platform-boost science-keywords-boost)]))
+        [(+ 5.0 entry-title-boost platform-boost science-keywords-boost)]))
 
     (testing "Setting boosts without keyword search is an error"
       (let [resp (search/find-refs :collection {:provider "PROV1"
@@ -590,7 +594,7 @@
           (d/assert-refs-match items json-refs))
         "testing json query search by shortname keyword in the collection whoes xml file contains no SpatialExtent content"
         "NSIDC-0705"
-        [coll3] 
+        [coll3]
 
         "testing json query search by existing ancillary keywords"
         "CMR2652AKW2"
