@@ -1,11 +1,12 @@
 (ns cmr.system-int-test.search.collection-platform-instrument-sensor-search-test
   "Integration test for CMR collection search by platform, instrument and sensor short-names"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]))
+  (:require 
+    [clojure.test :refer :all]
+    [cmr.system-int-test.data2.collection :as dc]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -37,6 +38,24 @@
                                                     :format-key :iso-smap})]
 
     (index/wait-until-indexed)
+
+    (testing "search collections by platform-h"
+      (are [items platform-sn options]
+           (let [params (merge {:platform-h platform-sn}
+                               (when options
+                                 {"options[platform-h]" options}))]
+             (d/refs-match? items (search/find-refs :collection params)))
+
+           [coll1 coll2] "platform_Sn A" {}
+           [coll6 coll7] "platform_x" {}
+           [] "BLAH" {}
+           [coll9] "SMAP" {}
+           [coll1 coll2 coll4] ["platform_SnA" "platform_Sn A"] {}
+           [coll6 coll7] ["platform_x"] {:ignore-case true}
+           [coll7] ["platform_x"] {:ignore-case false}
+           [coll1 coll2 coll3] ["platform_Sn *"] {:pattern true}
+           [coll4 coll5] ["platform_Sn?"] {:pattern true}
+           [coll2] ["platform_Sn B" "platform_Sn A"] {:and true}))
 
     (testing "search collections by platform"
       (are [items platform-sn options]
