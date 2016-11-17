@@ -171,6 +171,10 @@
    :legacy-guid (m/stored m/string-field-mapping)
    :legacy-guid.lowercase m/string-field-mapping
 
+   ;; Target will be the target of a system identity or a provider identity such as ANY_ACL.
+   :target (m/stored m/string-field-mapping)
+   :target.lowercase m/string-field-mapping
+
    ;; target-provider-id indexes the provider id of the provider-identity or
    ;; catalog-item-identity field of an acl, if present
    :target-provider-id (m/stored m/string-field-mapping)
@@ -258,21 +262,25 @@
   [concept-map]
   (let [acl (edn/read-string (:metadata concept-map))
         permitted-groups (acl->permitted-groups acl)
-        provider-id (acls/acl->provider-id acl)]
+        provider-id (acls/acl->provider-id acl)
+        target (:target (or (:system-identity acl)
+                            (:provider-identity acl)))]
     (merge
-      (access-value-elastic-doc-map acl)
-      (assoc (select-keys concept-map [:concept-id :revision-id])
-             :display-name (acl->display-name acl)
-             :identity-type (acl->identity-type acl)
-             :permitted-group permitted-groups
-             :permitted-group.lowercase (map str/lower-case permitted-groups)
-             :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
-             :target-provider-id provider-id
-             :target-provider-id.lowercase (util/safe-lowercase provider-id)
-             :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map))
-             :legacy-guid (:legacy-guid acl)
-             :legacy-guid.lowercase (when-let [legacy-guid (:legacy-guid acl)]
-                                      (str/lower-case legacy-guid))))))
+     (access-value-elastic-doc-map acl)
+     (assoc (select-keys concept-map [:concept-id :revision-id])
+            :display-name (acl->display-name acl)
+            :identity-type (acl->identity-type acl)
+            :permitted-group permitted-groups
+            :permitted-group.lowercase (map str/lower-case permitted-groups)
+            :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
+            :target target
+            :target.lowercase (util/safe-lowercase target)
+            :target-provider-id provider-id
+            :target-provider-id.lowercase (util/safe-lowercase provider-id)
+            :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map))
+            :legacy-guid (:legacy-guid acl)
+            :legacy-guid.lowercase (when-let [legacy-guid (:legacy-guid acl)]
+                                     (str/lower-case legacy-guid))))))
 
 (defn index-acl
   "Indexes ACL concept map."

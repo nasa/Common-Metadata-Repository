@@ -7,27 +7,76 @@
     [cmr.common-app.services.search.query-execution :as qe]
     [cmr.common-app.services.search.query-model :as qm]
     [cmr.common.services.errors :as errors]
-    [cmr.common.util :as util]
+    [cmr.common.util :as util :refer [defn-timed]]
     [cmr.transmit.config :as transmit-config]
-    [cmr.transmit.echo.tokens :as tokens]
     [cmr.access-control.services.group-service :as group-service]
     [cmr.transmit.config :as tc]))
 
-(defn- get-acls-by-condition
-  "Returns a map containing the context user, the user's sids, and acls found by executing given condition against ACL index"
+;; TODO add timing everywhere
+
+;; TODO many of the functions here are likely no longer needed. See what can be removed.
+;; TODO replace System and Provider with constants
+
+(defn-timed get-acls-by-condition
+  "Returns the acls found by executing given condition against ACL index"
   [context condition]
-  (let [token (:token context)
-        user (if token (tokens/get-user-id context token) "guest")
-        sids (auth-util/get-sids context user)
-        query (qm/query {:concept-type :acl
+  (let [query (qm/query {:concept-type :acl
                          :condition condition
                          :skip-acls? true
                          :page-size :unlimited
                          :result-format :query-specified
                          :result-fields [:acl-gzip-b64]})
-        response (qe/execute-query context query)
-        response-acls (map #(edn/read-string (util/gzip-base64->string (:acl-gzip-b64 %))) (:items response))]
-    {:acls response-acls :sids sids :user user}))
+        response (qe/execute-query context query)]
+    (mapv #(edn/read-string (util/gzip-base64->string (:acl-gzip-b64 %))) (:items response))))
+
+(defn- acls-granting-acl-read
+  "Returns a sequences of acls granting ACL read to the current user"
+  [context]
+  (let [sids (auth-util/get-sids context)
+        system-condition (gc/and-conds (qm/string-condition :identity-type "System" true false)
+                                       (qm/string-condition :target "ANY_ACL"))
+        prov-condition (gc/and-conds
+                        (qm/string-condition :identity-type "Provider" true false)
+                        (gc/or-conds
+                         (qm/string-condition :target "CATALOG_ITEM_ACL")
+                         (qm/string-condition :target "PROVIDER_OBJECT_ACL")))
+        condition (gc/or-conds system-condition prov-condition)
+        acls (get-acls-by-condition context condition)]
+    (filterv #(acl/acl-matches-sids-and-permission? sids "read" %) acls)))
+
+;; TODO this won't quite work yet. Single instance identity ACLs don't reference a provider id.
+;; I added an idea of how to make that work. See TODO in cmr.access-control.data.acls
+(defn- provider-read-acl->condition
+  "TODO"
+  [acl]
+  (let [target (get-in acl [:provider_identity :target])
+        ;; TODO constants for all these strings
+        target-cond (case target
+                      "CATALOG_ITEM_ACL"
+                      (qm/string-condition :identity-type "Catalog Item" true false)
+                      "PROVIDER_OBJECT_ACL"
+                      (gc/or-conds
+                       [(qm/string-condition :identity-type "Provider" true false)
+                        (qm/string-condition :identity-type "Single Instance Identity" true false)])
+                      ;; else
+                      (throw (Exception. (format "Unexpected target for acl [%s] of [%s]"
+                                                 (pr-str acl) target))))
+        provider-id (get-in acl [:provider_identity :provider_id])
+        provider-cond (qm/string-condition :target-provider-id provider-id)]
+    (gc/and-conds [provider-cond target-cond])))
+
+(defmethod qe/add-acl-conditions-to-query :acl
+  [context query]
+  (let [acls (acls-granting-acl-read context)]
+    ;; TODO ANY_ACL constant
+    (if (some #(= "ANY_ACL" (get-in % [:system_identity :target])) acls)
+      query
+      (if (seq acls)
+        (let [combined-condition (gc/group-conds :or (mapv provider-read-acl->condition acls))]
+          (update query :condition #(gc/and-conds combined-condition %)))
+        (assoc query :condition qm/match-none)))))
+
+;; TODO do we need the functions below this?
 
 (defn has-system-access?
   "Returns true if system ACL matches sids for user in context for a given action"
@@ -35,8 +84,9 @@
   (let [condition (qm/string-condition :identity-type "System" true false)
         system-acls (get-acls-by-condition context condition)
         any-acl-system-acl (acl/echo-style-acl
-                             (first (filter #(= target (:target (:system-identity %))) (:acls system-acls))))]
-    (acl/acl-matches-sids-and-permission? (:sids system-acls) (name action) any-acl-system-acl)))
+                             (first (filter #(= target (:target (:system-identity %))) (:acls system-acls))))
+        sids (auth-util/get-sids context)]
+    (acl/acl-matches-sids-and-permission? sids (name action) any-acl-system-acl)))
 
 (defn- has-provider-access?
   "Returns true if provider ACL matches sids for user in context for a given action"
@@ -46,21 +96,23 @@
         conditions (gc/and-conds [provider-identity-condition provider-id-condition])
         provider-acls (get-acls-by-condition context conditions)
         prov-acl (acl/echo-style-acl
-                   (first (filter #(= target (:target (:provider-identity %))) (:acls provider-acls))))]
-    (acl/acl-matches-sids-and-permission? (:sids provider-acls) (name action) prov-acl)))
+                   (first (filter #(= target (:target (:provider-identity %))) (:acls provider-acls))))
+        sids (auth-util/get-sids context)]
+    (acl/acl-matches-sids-and-permission? sids (name action) prov-acl)))
 
 (defn- has-self-permission?
   "Returns true if ACL itself matches sids for user in context for a given action"
   [context action concept-id]
   (let [condition (qm/string-condition :concept-id concept-id true false)
-        returned-acl (get-acls-by-condition context condition)
-        echo-acl (acl/echo-style-acl (first (:acls returned-acl)))]
+        returned-acl (first (get-acls-by-condition context condition))
+        echo-acl (acl/echo-style-acl returned-acl)
+        sids (auth-util/get-sids context)]
     ;; read is special, if the user has any permission for the acl
     ;; then the user has permission to read
     (if (= action :read)
-      (some #(acl/acl-matches-sids-and-permission? (:sids returned-acl) % echo-acl)
+      (some #(acl/acl-matches-sids-and-permission? sids % echo-acl)
             ["create" "read" "update" "delete"])
-      (acl/acl-matches-sids-and-permission? (:sids returned-acl) (name action) echo-acl))))
+      (acl/acl-matches-sids-and-permission? sids (name action) echo-acl))))
 
 (defn- permission-denied-message
   "Returns permission denied message for given user and action."

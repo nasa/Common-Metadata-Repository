@@ -17,7 +17,6 @@
     [cmr.common-app.services.search.parameter-validation :as cpv]
     [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
     [cmr.common-app.services.search.params :as cp]
-    [cmr.common-app.services.search.query-execution :as qe]
     [cmr.common-app.services.search.query-model :as common-qm]
     [cmr.common.log :refer [info debug]]
     [cmr.common.services.errors :as errors]
@@ -249,35 +248,23 @@
      type-errors))
  params)
 
-(defn has-any-read?
-  "Returns true if user has permssion to read any ACL."
-  [context]
-  (acl-auth/has-system-access? context :read "ANY_ACL"))
 
-(defn get-searchable-acls
-  "Returns a lazy sequence of concept-ids for ACLs that are searchable for the given sids."
-  [context acls-with-concept-id]
-  (for [acl acls-with-concept-id
-        :when (acl-auth/action-permitted-on-acl? context :read acl (:concept-id acl))]
-    (:concept-id acl)))
 
-(defn make-acl-condition
-  "Returns elastic condition to filter out ACLs that are not visible to the user."
-  [context acls-with-concept-id]
-  (when-not (acl-auth/has-system-access? context :read "ANY_ACL")
-   (let [concept-ids (get-searchable-acls context acls-with-concept-id)]
-     (when (seq concept-ids)
-       (common-qm/string-conditions :concept-id concept-ids true)))))
-
-(defmethod qe/add-acl-conditions-to-query :acl
-  [context query]
-  (let [acl-concepts (acl-service/get-all-acl-concepts context)
-        acls-with-concept-id (map #(assoc (acl-service/get-parsed-acl %) :concept-id (:concept-id %)) acl-concepts)]
-    (if (has-any-read? context)
-      query
-      (if-let [acl-cond (make-acl-condition context acls-with-concept-id)]
-        (update-in query [:condition] #(gc/and-conds [acl-cond %]))
-        (assoc query :condition common-qm/match-none)))))
+; ;; TODO Get rid of this function
+; (defn get-searchable-acls
+;   "Returns a lazy sequence of concept-ids for ACLs that are searchable for the given sids."
+;   [context acls-with-concept-id]
+;   (for [acl acls-with-concept-id
+;         :when (acl-auth/action-permitted-on-acl? context :read acl (:concept-id acl))]
+;     (:concept-id acl)))
+;
+; ;; TODO Get rid of this function
+; (defn make-acl-condition
+;   "Returns elastic condition to filter out ACLs that are not visible to the user."
+;   [context acls-with-concept-id]
+;   (let [concept-ids (get-searchable-acls context acls-with-concept-id)]
+;     (when (seq concept-ids)
+;       (common-qm/string-conditions :concept-id concept-ids true))))
 
 (defn search-for-acls
   "Searches for ACLs using given parameters. Returns result map from find-concepts
