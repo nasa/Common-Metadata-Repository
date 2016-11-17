@@ -1,11 +1,13 @@
 (ns cmr.system-int-test.search.collection-platform-instrument-sensor-search-test
   "Integration test for CMR collection search by platform, instrument and sensor short-names"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]))
+  (:require 
+    [clojure.test :refer :all]
+    [cmr.common.util :as util :refer [are3]]
+    [cmr.system-int-test.data2.collection :as dc]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -38,23 +40,44 @@
 
     (index/wait-until-indexed)
 
-    (testing "search collections by platform"
-      (are [items platform-sn options]
-           (let [params (merge {:platform platform-sn}
-                               (when options
-                                 {"options[platform]" options}))]
-             (d/refs-match? items (search/find-refs :collection params)))
+    (doseq [field [:platform :platform-h]]
+      (testing (str "Testing collection search by " (name field))
+        (are3 [items platform-sn options]
+              (let [params (merge {field platform-sn}
+                                  (when options
+                                    {(str "options[" (name field) "]") options}))]
+                (d/refs-match? items (search/find-refs :collection params)))
 
-           [coll1 coll2] "platform_Sn A" {}
-           [coll6 coll7] "platform_x" {}
-           [] "BLAH" {}
-           [coll9] "SMAP" {}
-           [coll1 coll2 coll4] ["platform_SnA" "platform_Sn A"] {}
-           [coll6 coll7] ["platform_x"] {:ignore-case true}
-           [coll7] ["platform_x"] {:ignore-case false}
-           [coll1 coll2 coll3] ["platform_Sn *"] {:pattern true}
-           [coll4 coll5] ["platform_Sn?"] {:pattern true}
-           [coll2] ["platform_Sn B" "platform_Sn A"] {:and true}))
+              "search with one platform case1"
+              [coll1 coll2] "platform_Sn A" {}
+
+              "search with one platform case2"
+              [coll6 coll7] "platform_x" {}
+ 
+              "search with non existing platform return nothing"
+              [] "BLAH" {}
+
+              "search with one smap platform"
+              [coll9] "SMAP" {}
+
+              "search for collections with either platform1 or platform2"
+              [coll1 coll2 coll4] ["platform_SnA" "platform_Sn A"] {}
+
+              "search with one platform with ignore-case being true"
+              [coll6 coll7] ["platform_x"] {:ignore-case true}
+
+              "search with one platform with ignore-case being false"
+              [coll7] ["platform_x"] {:ignore-case false}
+
+              "search with platform containing pattern case1"
+              [coll1 coll2 coll3] ["platform_Sn *"] {:pattern true}
+
+              "search with platform containing pattern case2"
+              [coll4 coll5] ["platform_Sn?"] {:pattern true}
+
+              "search for collections with both platform1 and platform2" 
+              [coll2] ["platform_Sn B" "platform_Sn A"] {:and true})))
+
 
     (testing "search collections by platform with aql"
       (are [items platform-sn options]
@@ -141,24 +164,46 @@
 
     (index/wait-until-indexed)
 
-    (testing "search collections by instrument"
-      (are [items instrument-sn options]
-           (let [params (merge {:instrument instrument-sn}
-                               (when options
-                                 {"options[instrument]" options}))]
-             (d/refs-match? items (search/find-refs :collection params)))
+    (doseq [field [:instrument :instrument-h]]
+      (testing (str "Testing collection search by " (name field))
+        (are3 [items instrument-sn options]
+              (let [params (merge {field instrument-sn}
+                                  (when options
+                                    {(str "options[" (name field) "]") options}))]
+                (d/refs-match? items (search/find-refs :collection params)))
 
-           [coll1 coll2 coll6] "instrument_Sn A" {}
-           [coll7 coll8] "instrument_x" {}
-           [] "BLAH" {}
-           [coll10] "SMAP L-BAND RADAR" {}
-           [coll10] ["SMAP L-BAND RADAR" "SMAP L-BAND RADIOMETER"] {}
-           [coll1 coll2 coll4 coll6] ["instrument_SnA" "instrument_Sn A"] {}
-           [coll7 coll8] ["instrument_x"] {:ignore-case true}
-           [coll8] ["instrument_x"] {:ignore-case false}
-           [coll1 coll2 coll3 coll6] ["instrument_Sn *"] {:pattern true}
-           [coll4 coll5] ["instrument_Sn?"] {:pattern true}
-           [coll2 coll6] ["instrument_Sn B" "instrument_Sn A"] {:and true}))
+              "search with one instrument case1"
+              [coll1 coll2 coll6] "instrument_Sn A" {}
+
+              "search with one instrument case2"
+              [coll7 coll8] "instrument_x" {}
+
+              "search with non-existing instrument"
+              [] "BLAH" {}
+
+              "search with one instrument case3"
+              [coll10] "SMAP L-BAND RADAR" {}
+
+              "search for collections with either instrument1 or instrument2 case1"
+              [coll10] ["SMAP L-BAND RADAR" "SMAP L-BAND RADIOMETER"] {}
+
+              "search for collections with either instrument1 or instrument2 case2"
+              [coll1 coll2 coll4 coll6] ["instrument_SnA" "instrument_Sn A"] {}
+
+              "search with one instrument with ingore-case being true" 
+              [coll7 coll8] ["instrument_x"] {:ignore-case true}
+
+              "search with one instruement with ignore-case being false"
+              [coll8] ["instrument_x"] {:ignore-case false}
+
+              "search with instrument containing pattern case1"  
+              [coll1 coll2 coll3 coll6] ["instrument_Sn *"] {:pattern true}
+
+              "search with instrument containing pattern case2"
+              [coll4 coll5] ["instrument_Sn?"] {:pattern true}
+
+              "search for collections with both instrument1 and instrument2"
+              [coll2 coll6] ["instrument_Sn B" "instrument_Sn A"] {:and true})))
 
     (testing "search collections by instrument with aql"
       (are [items instruments options]

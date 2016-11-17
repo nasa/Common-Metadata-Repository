@@ -1,11 +1,13 @@
 (ns cmr.system-int-test.search.coll-archive-ctr-search-test
   "Search CMR Collections by Data Centers."
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]))
+  (:require 
+    [clojure.test :refer :all]
+    [cmr.common.util :as util :refer [are3]]
+    [cmr.system-int-test.data2.collection :as dc]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -135,10 +137,15 @@
     (testing "search data center using wild cards"
       (is (d/refs-match? [coll5 coll7]
                          (search/find-refs :collection {:data-center "S*", "options[data-center][pattern]" "true"}))))
-    (testing "search data center using AND/OR operators"
-      (are [kvs items] (d/refs-match? items (search/find-refs :collection kvs))
-           {"data-center[]" ["SEDAC AC" "Larc" "Sedac AC"]} [coll3 coll4 coll5 coll6 coll7]
-           {"data-center[]" ["SEDAC AC" "SEDAC PC"] "options[data-center][and]" "true"} [coll5]))
+
+    (doseq [field [:data-center :data-center-h]]
+      (testing (str "search" (name field) "using AND/OR operators")
+        (are3 [kvs items] (d/refs-match? items (search/find-refs :collection kvs))
+              "search for collections containing any of the data centers- default case"
+              {(str (name field) "[]") ["SEDAC AC" "Larc" "Sedac AC"]} [coll3 coll4 coll5 coll6 coll7]
+
+              "search for collections containing all of the data centers"
+              {(str (name field) "[]") ["SEDAC AC" "SEDAC PC"] (str "options[" (name field) "][and]") "true"} [coll5])))
 
     (testing "Search collections by data center using JSON Query."
       (are [items search]
