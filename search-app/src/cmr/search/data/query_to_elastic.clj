@@ -266,7 +266,6 @@
         sub-sort-fields (if (:all-revisions? query)
                           collection-all-revision-sub-sort-fields
                           collection-latest-sub-sort-fields)]
-    (proto-repl.saved-values/save 8)
     (concat (or specified-sort keyword-sort default-sort) sub-sort-fields)))
 
 (extend-protocol c2s/ComplexQueryToSimple

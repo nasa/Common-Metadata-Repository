@@ -49,7 +49,7 @@
 
   (testing "Equal keyword relevancy, order by usage"
     (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
-      (is (= (map :name results) ["Relevancy 2" "Relevancy 3" "Relevancy 1"]))))
+      (is (= ["Relevancy 2" "Relevancy 3" "Relevancy 1"] (map :name results)))))
 
   (testing "Collection missing from metrics file"
     (d/ingest "PROV1" (dc/collection {:short-name "AG_MAPSS"
@@ -96,7 +96,7 @@
   (ingest-community-usage-metrics)
 
   (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
-    (is (= (map :name results) ["Relevancy 2" "Relevancy 3" "Relevancy 1"]))))
+    (is (= ["Relevancy 2" "Relevancy 3" "Relevancy 1"] (map :name results)))))
 
 (deftest change-metrics
   (ingest-community-usage-metrics)
@@ -119,7 +119,7 @@
                                        "AG_MAPSS,2,58\n"))
 
   (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
-    (is (= (map :name results) ["Relevancy 3" "Relevancy 1" "Relevancy 2"]))))
+    (is (= ["Relevancy 3" "Relevancy 1" "Relevancy 2"] (map :name results)))))
 
 ;; Outside of keyword search, allow the user to sort by community usage
 (deftest sort-by-community-usage
@@ -137,7 +137,37 @@
   (index/wait-until-indexed)
   (testing "Sort by usage ascending"
     (let [results (:refs (search/find-refs :collection {:sort-key "usage-score"}))]
-      (is (= (map :name results) ["Relevancy 1" "Relevancy 3" "Relevancy 2"]))))
+      (is (= ["Relevancy 1" "Relevancy 3" "Relevancy 2"]
+             (map :name results)))))
   (testing "Sort by usage descending"
     (let [results (:refs (search/find-refs :collection {:sort-key "-usage-score"}))]
-      (is (= (map :name results) ["Relevancy 2" "Relevancy 3" "Relevancy 1"])))))
+      (is (= ["Relevancy 2" "Relevancy 3" "Relevancy 1"]
+             (map :name results))))))
+
+;; More complicated example/test with entries with version N/A - N/A version entries are
+;; currently added to all collection versions
+(def sample-csv-not-provided-versions
+  (str "Product,Version,Hosts\n"
+       "AMSR-L1A,3,10\n"
+       "AMSR-L1A,N/A,50\n"
+       "AG_VIRTUAL,1,100\n"
+       "AG_MAPSS,2,30\n"))
+
+(deftest community-usage-not-provided-versions
+  (ingest-community-usage-metrics sample-csv-not-provided-versions)
+  (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
+                                    :entry-title "AMSR-L1A V3 Relevancy"
+                                    :version-id "3"}))
+  (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
+                                    :entry-title "AMSR-L1A V2 Relevancy"
+                                    :version-id "2"}))
+  (d/ingest "PROV1" (dc/collection {:short-name "AG_VIRTUAL"
+                                    :entry-title "AG_VIRTUAL Relevancy"
+                                    :version-id "1"}))
+  (d/ingest "PROV1" (dc/collection {:short-name "AG_MAPSS"
+                                    :entry-title "AG_MAPSS Relevancy"
+                                    :version-id "2"}))
+  (index/wait-until-indexed)
+  (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
+    (is (= ["AG_VIRTUAL Relevancy" "AMSR-L1A V3 Relevancy" "AMSR-L1A V2 Relevancy" "AG_MAPSS Relevancy"]
+           (map :name results)))))

@@ -88,7 +88,7 @@
                                      :detailed-variable "boost"})
         tdcs1 (dc/two-d "XYZ")
         tdcs2 (dc/two-d "twoduniq")
-        org (dc/org :archive-center "Some Place")
+        org (dc/org :archive-center "Some&Place")
         coll1 (d/ingest "PROV1" (dc/collection
                                  {:entry-title "coll1" :version-description "VersionDescription"}))
         coll2 (d/ingest "PROV1" (dc/collection
@@ -425,9 +425,6 @@
 
         "matches all fields, do not include defaults"
         {:keyword "boost" :boosts {:short-name 5.0 :include-defaults false}}
-        ;; Still need to take into account that fields that match will get the default boost,
-        ;; not the configured defaults, but the overall default. This will be a different
-        ;; score than the example below.
         [5.0]
 
         "matches all fields, use defaults, but override short-name boost"
