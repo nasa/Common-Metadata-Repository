@@ -6,7 +6,6 @@
    [cmr.access-control.data.acls :as acls]
    [cmr.common-app.services.search.elastic-search-index :as esi]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
-   [cmr.common.concepts :as cs]
    [cmr.common.log :refer [info debug error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
