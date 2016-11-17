@@ -2,6 +2,7 @@
   "Integration test for CMR collection search by campaign terms"
   (:require
     [clojure.test :refer :all]
+    [cmr.common.util :as util :refer [are3]]
     [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.utils.index-util :as index]
@@ -43,11 +44,18 @@
     (testing "search by wild card to get max collections"
       (is (d/refs-match? [coll3 coll4 coll5 coll6]
                          (search/find-refs :collection {:campaign "E*", "options[campaign][pattern]" "true"}))))
-    (testing "search by campaign sn terms ORed"
-      (are [campaign-kvs items] (d/refs-match? items (search/find-refs :collection campaign-kvs))
-           {"campaign[]" ["ESI" "EPI" "EVI"], "options[campaign][and]" "true"} [coll6]
-           {"campaign[]" ["ESI" "EPI" "EVI"], "options[campaign][and]" "false"} [coll3 coll4 coll5 coll6]
-           {"campaign[]" ["ESI" "EPI" "EVI"]} [coll3 coll4 coll5 coll6]))
+
+    (doseq [field [:campaign :project-h]]
+      (testing (str "search by " (name field) "sn terms ORed") 
+        (are3 [campaign-kvs items] (d/refs-match? items (search/find-refs :collection campaign-kvs))
+              "searching for collections containing all the values"
+              {(str (name field) "[]") ["ESI" "EPI" "EVI"], (str "options[" (name field) "][and]") "true"} [coll6]
+             
+              "searching for collections containg either of the values"
+              {(str (name field) "[]") ["ESI" "EPI" "EVI"], (str "options[" (name field) "][and]") "false"} [coll3 coll4 coll5 coll6]
+
+              "searching for collections containing any of the values default case" 
+              {(str (name field) "[]") ["ESI" "EPI" "EVI"]} [coll3 coll4 coll5 coll6])))
 
     (testing "search campaign by AQL."
       (are [items campaigns options]
