@@ -2,6 +2,7 @@
   "This tests the health api for CMR applications."
   (:require
    [cheshire.core :as json]
+   [clojure.java.io :as io]
    [clj-http.client :as client]
    [clojure.test :refer :all]
    [cmr.common-app.test.side-api :as side]
@@ -50,6 +51,11 @@
                   :message-queue {:ok? true}
                   :cubby good-cubby-health
                   :indexer good-indexer-health}})
+
+(deftest robots-dot-txt-test
+  (let [robots (slurp (io/resource "public/robots.txt"))]
+   ;; Don't verify the contents of the file, as it's likely to change
+   (is (not= nil robots))))
 
 (deftest index-set-health-test
   (is (= [200 {:elastic_search {:ok? true} :echo {:ok? true}}]
