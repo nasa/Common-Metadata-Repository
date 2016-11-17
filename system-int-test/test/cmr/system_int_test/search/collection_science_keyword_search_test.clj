@@ -136,7 +136,7 @@
                              {field {:0 {:category "Hurricane"
                                          :topic "Popular"}
                                      :1 {:term "Extreme"}}
-                            (str "options[" (name field) "][or]") "true"})))))
+                              (str "options[" (name field) "][or]") "true"})))))
 
     (testing "search by science keywords, multiple and legacy :or format"
       (is (d/refs-match? [coll2 coll6]
