@@ -214,5 +214,4 @@
   expectations of better results. We will wait until that time to come up with a more reasonable
   approach."
   [score]
-  ;(when score (/ score 2.0)))
-  score)
+  (when score (/ score 2.0)))

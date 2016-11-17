@@ -14,40 +14,6 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}))
 
-(deftest laser
-  (let [sk1 (dc/science-keyword {:category "Cat1"
-                                   :topic "Topic1"
-                                   :term "Term1"
-                                   :variable-level-1 "Level1-1"
-                                   :variable-level-2 "Level1-2"
-                                   :variable-level-3 "Level1-3"
-                                   :detailed-variable "SUPER DETAILED!"})
-        sk2 (dc/science-keyword {:category "Hurricane"
-                                   :topic "Laser spoonA"
-                                   :term "Extreme"
-                                   :variable-level-1 "Level2-1"
-                                   :variable-level-2 "Level2-2"
-                                   :variable-level-3 "Level2-3"})
-        coll5 (d/ingest "PROV2" (dc/collection {:entry-title "coll5" :short-name "Space!Laser"}))
-        coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7" :version-id "Laser"}))
-        coll9 (d/ingest "PROV2" (dc/collection {:entry-title "coll09" :science-keywords [sk1 sk2]}))
-        coll14 (d/ingest "PROV2" (dc/collection {:entry-title "coll14" :short-name "spoonA laser"}))
-        coll21 (d/ingest "PROV2" (dc/collection {:entry-title "coll21" :short-name "Laser"}))]
-      (index/wait-until-indexed)
-      (def res (search/find-refs :collection {:keyword "laser"}))
-      (testing "sorted search by keywords with sort keys."
-        (are [keyword-str sort-key items]
-          (let [refs (search/find-refs :collection {:keyword keyword-str :sort-key sort-key})
-                matches? (d/refs-match-order? items refs)]
-            (when-not matches?
-              (println "Expected:" (map :entry-title items))
-              (println "Actual:" (map :name (:refs refs))))
-            matches?)
-        ;  "laser" "-entry-title" [coll7 coll5 coll21 coll14 coll9]
-          "laser" "score" [coll21 coll5 coll7 coll9 coll14]))))
-          ; "laser" "+score" [coll5 coll7 coll9 coll14 coll21]
-          ; "laser" "-score" [coll21 coll5 coll7 coll9 coll14]))))
-
 (deftest search-by-keywords
   (let [short-name-boost (k2e/get-boost nil :short-name)
         entry-id-boost (k2e/get-boost nil :entry-id)
@@ -462,11 +428,11 @@
         ;; Still need to take into account that fields that match will get the default boost,
         ;; not the configured defaults, but the overall default. This will be a different
         ;; score than the example below.
-        [(+ 5.0 (* k2e/default-boost 3))]
+        [5.0]
 
         "matches all fields, use defaults, but override short-name boost"
         {:keyword "boost" :boosts {:short-name 5.0 :include-defaults true}}
-        [(+ 5.0 entry-title-boost platform-boost science-keywords-boost)]))
+        [(* 5.0 entry-title-boost platform-boost science-keywords-boost)]))
 
     (testing "Setting boosts without keyword search is an error"
       (let [resp (search/find-refs :collection {:provider "PROV1"

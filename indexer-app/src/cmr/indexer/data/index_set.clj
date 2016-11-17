@@ -380,7 +380,7 @@
           :tags-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))
 
           ;; Relevancy score from community usage metrics
-          :usage-relevancy-score (m/stored m/double-field-mapping)}
+          :usage-relevancy-score m/int-field-mapping}
          spatial-coverage-fields))
 
 (defmapping granule-mapping :granule

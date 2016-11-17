@@ -27,4 +27,4 @@
                               metrics)]
       ;; There should be only one entry that matches
       (when (seq usage-entry)
-        {:usage-relevancy-score (normalize-score (:access-count (first usage-entry)) metrics)}))))
+        {:usage-relevancy-score (:access-count (first usage-entry))}))))
