@@ -80,7 +80,7 @@
                                     :version-id "2"}))
   (index/wait-until-indexed)
   (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
-    (is (= (map :name results) ["AST_O5" "Relevancy 1" "Relevancy 2" "Relevancy 3"]))))
+    (is (= (map :name results) ["AST_05" "Relevancy 1" "Relevancy 2" "Relevancy 3"]))))
 
 (deftest ingest-metrics-after-collections
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
@@ -121,21 +121,42 @@
   (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
     (is (= (map :name results) ["Relevancy 3" "Relevancy 1" "Relevancy 2"]))))
 
-(deftest community-usage-relevancy-scoring-2
+;; Outside of keyword search, allow the user to sort by community usage
+(deftest sort-by-community-usage
   (ingest-community-usage-metrics)
-  (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
+  (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A" ;10
                                     :entry-title "Relevancy 1"
                                     :version-id "3"}))
-  (d/ingest "PROV1" (dc/collection {:short-name "AG_VIRTUAL"
-                                    :entry-title "Relevancy"
+  (d/ingest "PROV1" (dc/collection {:short-name "AG_VIRTUAL" ; 100
+                                    :entry-title "Relevancy 2"
                                     :version-id "1"}))
-  (d/ingest "PROV1" (dc/collection {:short-name "AG_MAPSS"
+  (d/ingest "PROV1" (dc/collection {:short-name "AG_MAPSS" ;30
                                     :entry-title "Relevancy 3"
                                     :version-id "2"
                                     :platforms [(dc/platform {:short-name "Relevancy"})]}))
   (index/wait-until-indexed)
+  (testing "Sort by usage ascending"
+    (let [results (:refs (search/find-refs :collection {:sort-key "usage-score"}))]
+      (is (= (map :name results) ["Relevancy 1" "Relevancy 3" "Relevancy 2"]))))
+  (testing "Sort by usage descending"
+    (let [results (:refs (search/find-refs :collection {:sort-key "-usage-score"}))]
+      (is (= (map :name results) ["Relevancy 2" "Relevancy 3" "Relevancy 1"])))))
 
-  (def res (search/find-refs :collection {:keyword "Relevancy"})))
+(deftest community-usage-relevancy-scoring-2
+  (ingest-community-usage-metrics)
+  (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A" ;10
+                                    :entry-title "Relevancy 1"
+                                    :version-id "3"}))
+  (d/ingest "PROV1" (dc/collection {:short-name "AG_VIRTUAL" ; 100
+                                    :entry-title "Relevancy"
+                                    :version-id "1"}))
+  (d/ingest "PROV1" (dc/collection {:short-name "AG_MAPSS" ;30
+                                    :entry-title "Relevancy 3"
+                                    :version-id "2"
+                                    :platforms [(dc/platform {:short-name "Relevancy"})]}))
+
+  (def res (search/find-refs :collection {:keyword "Relevancy"}))
+  (def sort (search/find-refs :collection {:sort-key "-usage-score"})))
 
 ;; Field value score off:
 ;; Rel 3 = 1.3

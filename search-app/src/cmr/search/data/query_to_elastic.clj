@@ -199,7 +199,8 @@
    :instrument :instrument-sn.lowercase
    :sensor :sensor-sn.lowercase
    :score :_score
-   :revision-date :revision-date2})
+   :revision-date :revision-date2
+   :usage-score :usage-relevancy-score})
 
 (defmethod q2e/concept-type->sort-key-map :tag
   [_]
