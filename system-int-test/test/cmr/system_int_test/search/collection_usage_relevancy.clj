@@ -49,7 +49,7 @@
 
   (testing "Equal keyword relevancy, order by usage"
     (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
-      (is (= ["Relevancy 2" "Relevancy 3" "Relevancy 1"] (map :name results)))))
+      (is (= ["Relevancy 2" "Relevancy 3" "Relevancy 1"] (map :name results)git ))))
 
   (testing "Collection missing from metrics file"
     (d/ingest "PROV1" (dc/collection {:short-name "AG_MAPSS"
@@ -145,7 +145,7 @@
              (map :name results))))))
 
 ;; More complicated example/test with entries with version N/A - N/A version entries are
-;; currently added to all collection versions
+;; currently added to all collection versions. See CMR-3594.
 (def sample-csv-not-provided-versions
   (str "Product,Version,Hosts\n"
        "AMSR-L1A,3,10\n"

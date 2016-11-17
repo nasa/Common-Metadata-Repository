@@ -17,7 +17,7 @@
   The score comes from the ingested EMS metrics, if available. The score is equal to:
   the access count for that collection/version (if exists, should only be 1) + the access count for
   that collection/'N/A' (if exists). This is temporary behavior and the 'N/A' version entries should
-  be applied to the highest version of the collection. "
+  be applied to the highest version of the collection. See CMR-3594."
   [context collection]
   (when-let [metrics (seq (metrics-fetcher/get-community-usage-metrics context))]
     (let [{:keys [Version ShortName]} collection]
