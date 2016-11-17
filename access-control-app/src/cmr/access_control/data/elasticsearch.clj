@@ -40,11 +40,15 @@
 
 (defmethod parsed-concept->elastic-doc :acl
   [_ concept _]
-  (access-control-index/acl-concept-map->elastic-doc concept))
+  (if (:deleted concept)
+    concept
+    (access-control-index/acl-concept-map->elastic-doc concept)))
 
 (defmethod parsed-concept->elastic-doc :access-group
   [_ concept _]
-  (access-control-index/group-concept-map->elastic-doc concept))
+  (if (:deleted concept)
+    concept
+    (access-control-index/group-concept-map->elastic-doc concept)))
 
 (defn- concept->bulk-elastic-docs
   "Converts a concept map into an elastic document suitable for bulk indexing."
@@ -81,7 +85,7 @@
    (->> concept-batch
         (pmap #(concept->bulk-elastic-docs context % options))
         ;; Remove nils because some concepts may fail with an exception and return nil.
-        (filter identity)
+        (remove nil?)
         flatten)))
 
 (defn bulk-index-documents

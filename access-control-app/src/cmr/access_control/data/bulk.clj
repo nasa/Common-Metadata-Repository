@@ -1,6 +1,6 @@
 (ns cmr.access-control.data.bulk
   "Implementation of elastisch bulk index preparation that supports _version and _version_type.
-  The origninal implementation is in clojurewerkz.elastisch.rest.bulk namespace.")
+  The original implementation is in clojurewerkz.elastisch.rest.bulk namespace.")
 
 (def ^:private special-operation-keys
   [:_index :_type :_version :_version_type :_id :_routing :_percolate :_parent :_timestamp :_ttl])

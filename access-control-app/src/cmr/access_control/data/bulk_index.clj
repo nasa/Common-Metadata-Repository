@@ -10,17 +10,6 @@
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]))
 
-(defn filter-expired-concepts
-  "Remove concepts that have an expired delete-time."
-  [batch]
-  (filter (fn [concept]
-            (let [delete-time-str (get-in concept [:extra-fields :delete-time])
-                  delete-time (when delete-time-str
-                                (date/parse-datetime delete-time-str))]
-              (or (nil? delete-time)
-                  (t/after? delete-time (tk/now)))))
-          batch))
-
 (defmulti prepare-batch
   "Returns the batch of concepts into elastic docs for bulk indexing."
   (fn [context batch options]
@@ -28,27 +17,7 @@
 
 (defmethod prepare-batch :default
   [context batch options]
-  (es/prepare-batch context (filter-expired-concepts batch) options))
-
-(defn bulk-index
-  "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
-  directly to this function - it does not retrieve them from metadata db.
-  The bulk API is invoked repeatedly if necessary -
-  processing batch-size concepts each time. Returns the number of concepts that have been indexed.
-
-  Valid options:
-  * :force-version? - true indicates that we should overwrite whatever is in elasticsearch with the
-  latest regardless of whether the version in the database is older than the _version in elastic."
-  ([context concept-batches]
-   (bulk-index context concept-batches nil))
-  ([context concept-batches options]
-   (reduce (fn [num-indexed batch]
-             (let [batch (prepare-batch context batch options)]
-               (es/bulk-index-documents context batch)
-               (+ num-indexed (count batch))))
-           0
-           concept-batches)))
-
+  (es/prepare-batch context batch options))
 
 (defn- get-max-revision-date
   "Takes a batch of concepts to index and returns the maximum revision date."

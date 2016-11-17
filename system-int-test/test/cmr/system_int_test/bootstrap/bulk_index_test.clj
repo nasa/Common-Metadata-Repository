@@ -132,6 +132,12 @@
      (is (= 201 (:status group)))
      group)))
 
+(defn- delete-concept
+  "Creates a tombstone for the concept in metadata-db."
+  [concept]
+  (let [tombstone (update-in concept [:revision-id] inc)]
+    (is (= 201 (:status (mdb/tombstone-concept tombstone))))))
+
 (defn- normalize-search-result-item
   "Returns a map with just concept-id and revision-id for the given item."
   [result-item]
@@ -155,6 +161,60 @@
         first
         :last_replicated_revision_date
         (oracle/oracle-timestamp->str-time conn))))
+
+(deftest index-system-concepts-test
+  (s/only-with-real-database
+   ;; Disable message publishing so items are not indexed as part of the initial save.
+   (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! false))
+   (let [acl1 (save-acl 1
+                        {:extra-fields {:acl-identity "system:token"
+                                        :target-provider-id "PROV1"}}
+                        "TOKEN")
+         acl2 (save-acl 2
+                        {:extra-fields {:acl-identity "system:group"
+                                        :target-provider-id "PROV1"}}
+                        "GROUP")
+         acl3 (save-acl 3
+                        {:extra-fields {:acl-identity "system:user"
+                                        :target-provider-id "PROV1"}}
+                        "USER")
+         _ (delete-concept acl3)
+         group1 (save-group 1 {})
+         group2 (save-group 2 {})
+         group3 (save-group 3 {})
+         _ (delete-concept group2)
+         tag1 (save-tag 1 {})
+         _ (delete-concept tag1)
+         tag2 (save-tag 2 {})
+         tag3 (save-tag 3 {})]
+     (bootstrap/bulk-index-system-concepts)
+     ;; Force elastic data to be flushed, not actually waiting for index requests to finish
+     (index/wait-until-indexed)
+
+     ;; ACLs
+     (let [response (ac/search-for-acls (u/conn-context) {})
+           items (:items response)]
+       (search-results-match? items [acl1 acl2]))
+
+     ;; Groups
+     (let [response (ac/search-for-groups (u/conn-context) {})
+           ;; Need to filter out admin group created by fixture
+           items (filter #(not (= "mock-admin-group-guid" (:legacy_guid %))) (:items response))]
+       (search-results-match? items [group1 group3]))
+
+     (are3 [expected-tags]
+       (let [result-tags (update
+                           (tags/search {})
+                           :items
+                           (fn [items]
+                             (map #(select-keys % [:concept-id :revision-id]) items)))]
+         (tags/assert-tag-search expected-tags result-tags))
+
+       "Tags"
+       [tag2 tag3])
+    ;; Re-enable message publishing.
+    (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! true)))))
+
 
 (deftest index-recently-replicated-test
   (s/only-with-real-database

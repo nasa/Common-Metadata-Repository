@@ -120,7 +120,7 @@
             provider-id)))
 
 (defn- index-access-control-concepts
-  "Bulk index ACLs or acces groups"
+  "Bulk index ACLs or access groups"
   [system concept-batches]
   (info "Indexing concepts")
   (ac-bulk-index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches))
@@ -156,6 +156,25 @@
     {:max-revision-date max-revision-date
      :num-indexed num-indexed}))
 
+(defn index-system-concepts
+  "Bulk index tags, acls, and access-groups."
+  [system start-index]
+  (let [db (helper/get-metadata-db-db system)
+        provider {:provider-id "CMR"}
+        total (apply + (for [concept-type [:tag :acl :access-group]
+                             :let [params {:concept-type concept-type
+                                           :provider-id (:provider-id provider)}
+                                   concept-batches (db/find-concepts-in-batches db
+                                                                                provider
+                                                                                params
+                                                                                (:db-batch-size system)
+                                                                                start-index)]]
+                         (:num-indexed (if (= concept-type :tag)
+                                         (index-concepts system concept-batches)
+                                         (index-access-control-concepts system concept-batches)))))]
+    (info "Indexed" total "system concepts.")
+    total))
+
 (defn index-data-later-than-date-time
   "Index all concept revisions created later than or equal to the given date-time."
   [system date-time]
@@ -186,7 +205,7 @@
   "Handle any requests for bulk indexing. We use separate channels for each type of
   indexing request instead of a single channel to simplify the dispatch logic.
   Since we know at the time a request is made what function should be used, there
-  is no point in implementing separate code to determine what funciton to call
+  is no point in implementing separate code to determine what function to call
   when an item comes off the channel."
   [system]
   (info "Starting background task for monitoring bulk provider indexing channels.")
@@ -209,5 +228,12 @@
                  (try ; catch any errors and log them, but don't let the thread die
                    (let [{:keys [provider-id collection-id] :as options} (<!! channel)]
                      (index-granules-for-collection system provider-id collection-id options))
+                   (catch Throwable e
+                     (error e (.getMessage e)))))))
+  (let [channel (:system-concept-channel system)]
+    (ca/thread (while true
+                 (try ; catch any errors and log them, but don't let the thread die
+                   (let [{:keys [start-index]} (<!! channel)]
+                     (index-system-concepts system start-index))
                    (catch Throwable e
                      (error e (.getMessage e))))))))

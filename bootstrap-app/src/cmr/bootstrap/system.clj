@@ -81,6 +81,9 @@
              ;; Channel for processing data newer than a given date-time.
              :data-index-channel (chan 10)
 
+             ;; Channel for processing bulk index requests for system concepts (tags, acls, access-groups)
+             :system-concept-channel (chan 10)
+
              ;; Channel for bootstrapping virtual products
              vp/channel-name (chan)
 
