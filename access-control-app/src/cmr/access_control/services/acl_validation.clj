@@ -136,13 +136,6 @@
   [context]
   {:target-id (v/when-present (make-single-instance-identity-target-id-validation context))})
 
-(defn- catalog-item-identity-collection-applicable-validation
-  "Validates the relationship between collection_applicable and collection_identifier."
-  [key-path cat-item-id]
-  (when (and (:collection-identifier cat-item-id)
-             (not (:collection-applicable cat-item-id)))
-    {key-path ["collection_applicable must be true when collection_identifier is specified"]}))
-
 (defn- catalog-item-identity-granule-applicable-validation
   "Validates the relationship between granule_applicable and granule_identifier."
   [key-path cat-item-id]
@@ -164,7 +157,6 @@
    based on whether creating or updating acl concept"
   [context acl action]
   [catalog-item-identity-collection-or-granule-validation
-   catalog-item-identity-collection-applicable-validation
    catalog-item-identity-granule-applicable-validation
    {:collection-identifier (v/when-present (make-collection-identifier-validation context acl))
     :granule-identifier (v/when-present granule-identifier-validation)}])
