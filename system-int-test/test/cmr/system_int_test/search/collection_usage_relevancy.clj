@@ -49,7 +49,7 @@
 
   (testing "Equal keyword relevancy, order by usage"
     (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
-      (is (= ["Relevancy 2" "Relevancy 3" "Relevancy 1"] (map :name results)git ))))
+      (is (= ["Relevancy 2" "Relevancy 3" "Relevancy 1"] (map :name results)))))
 
   (testing "Collection missing from metrics file"
     (d/ingest "PROV1" (dc/collection {:short-name "AG_MAPSS"
