@@ -2,6 +2,7 @@
   "Contains functions to parse and convert tag concepts"
   (:require [clojure.string :as str]
             [cmr.common.log :refer (debug info warn error)]
+            [cmr.common.util :as util]
             [cmr.indexer.data.elasticsearch :as es]))
 
 (defmethod es/parsed-concept->elastic-doc :tag
@@ -16,13 +17,13 @@
       {:concept-id concept-id
        :tag-key.lowercase (str/lower-case tag-key)
        :description description
-       :originator-id.lowercase  (str/lower-case originator-id)})))
+       :originator-id.lowercase  (util/safe-lowercase originator-id)})))
 
 (defn tag-association->elastic-doc
   "Converts the tag association into the portion going in the collection elastic document."
   [tag-association]
   (let [{:keys [tag-key originator-id data]} tag-association]
     {:tag-key.lowercase (str/lower-case tag-key)
-     :originator-id.lowercase  (str/lower-case originator-id)
+     :originator-id.lowercase  (util/safe-lowercase originator-id)
      :tag-value.lowercase (when (string? data)
                             (str/lower-case data))}))
