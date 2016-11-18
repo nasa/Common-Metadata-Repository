@@ -185,7 +185,8 @@
          _ (delete-concept group2)
          tag1 (save-tag 1 {})
          _ (delete-concept tag1)
-         tag2 (save-tag 2 {})
+         ;; this tag has no originator-id to test a bug fix for a bug in tag processing related to missing originator-ids
+         tag2 (save-tag 2 {:metadata "{:tag-key \"tag2\" :description \"A good tag\"}"})
          tag3 (save-tag 3 {})]
      (bootstrap/bulk-index-system-concepts)
      ;; Force elastic data to be flushed, not actually waiting for index requests to finish
