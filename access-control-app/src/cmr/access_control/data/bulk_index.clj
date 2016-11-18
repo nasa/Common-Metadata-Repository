@@ -34,9 +34,16 @@
        (apply util/max-compare)))
 
 (defn bulk-index-with-revision-date
-  "See documentation for bulk-index. This is a temporary function added for supporting replication
-  using DMS. It does the same work as bulk-index, but instead of returning the number of concepts
-  indexed it returns a map with keys of :num-indexed and :max-revision-date."
+  "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
+  directly to this function - it does not retrieve them from metadata db (tag associations for
+  collections WILL be retrieved, however). The bulk API is invoked repeatedly if necessary -
+  processing batch-size concepts each time. Returns the number of concepts that have been indexed.
+
+  Valid options:
+  * :all-revisions-index? - true indicates this should be indexed into the all revisions index
+  * :force-version? - true indicates that we should overwrite whatever is in elasticsearch with the
+  latest regardless of whether the version in the database is older than the _version in elastic.
+  Returns a map with keys of :num-indexed and :max-revision-date."
   ([context concept-batches]
    (bulk-index-with-revision-date context concept-batches nil))
   ([context concept-batches options]
