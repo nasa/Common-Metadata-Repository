@@ -86,8 +86,7 @@
              {:required [:group_permissions :single_instance_identity]}
              {:required [:group_permissions :catalog_item_identity]}]
      :definitions {:IdentifierType {:type :string
-                                    :minLength 1
-                                    :maxLength 100}
+                                    :minLength 1}
                    :GroupPermissionsType {:type :object
                                           :additionalProperties false
                                           :properties {:permissions {:type :array
