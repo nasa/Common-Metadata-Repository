@@ -15,7 +15,8 @@
    [cmr.common.services.errors :as e]
    [cmr.common.util :as util]
    [cmr.elastic-utils.config :as es-config]
-   [cmr.elastic-utils.connect :as es]))
+   [cmr.elastic-utils.connect :as es]
+   [cmr.transmit.connection :as transmit-conn]))
 
 (defmulti concept-type->index-info
   "Returns index info based on input concept type. The map should contain a :type-name key along with
@@ -75,10 +76,11 @@
            "with sort" (pr-str sort-params)
            "with aggregations" (pr-str aggregations)
            "and highlights" (pr-str highlights))
-    (let [response (esd/search (context->conn context)
-                               (:index-name index-info)
-                               [(:type-name index-info)]
-                               query-map)]
+    (let [response (transmit-conn/handle-socket-exception-retries
+                    (esd/search (context->conn context)
+                                (:index-name index-info)
+                                [(:type-name index-info)]
+                                query-map))]
       ;; Replace the Elasticsearch field names with their query model field names within the results
       (update-in response [:hits :hits]
                  (fn [all-concepts]
