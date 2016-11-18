@@ -142,8 +142,7 @@
                                               :additionalProperties false
                                               :properties {:entry_titles {:type :array
                                                                           :items {:type :string
-                                                                                  :minLength 1
-                                                                                  :maxLength 100}}
+                                                                                  :minLength 1}}
                                                            :access_value (ref-def :AccessValueType)
                                                            :temporal (ref-def :TemporalIdentifierType)}}
                    :GranuleIdentifierType {:type :object
