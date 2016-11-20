@@ -144,7 +144,7 @@
 (defn validate-granule-umm-spec
   "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record"
   [context collection granule]
-  (when-let [errors (seq (umm-spec-validation/validate-granule collection granule))]
+  (when-let [errors (seq (umm-spec-validation/validate-granule context collection granule))]
     (if (config/return-umm-spec-validation-errors)
       (if-errors-throw :invalid-data errors)
       (warn (format "Granule with Granule UR [%s] had the following UMM Spec validation errors: %s"
@@ -152,7 +152,7 @@
 
 (defn validate-granule-umm
   [context collection granule]
-  (if-errors-throw :invalid-data (umm-validation/validate-granule collection granule)))
+  (if-errors-throw :invalid-data (umm-validation/validate-granule context collection granule)))
 
 (defn validate-business-rules
   "Validates the concept against CMR ingest rules."
