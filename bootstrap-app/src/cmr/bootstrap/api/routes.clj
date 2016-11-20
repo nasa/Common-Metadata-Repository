@@ -89,6 +89,18 @@
     {:status 202
      :body {:message msg}}))
 
+(defn- bulk-index-system-concepts
+  "Index all tags, acls, and access-groups."
+  [context params]
+  (let [synchronous (synchronous? params)
+        start-index (or (:start-index params) 0)
+        result (bs/index-system-concepts context synchronous start-index)
+        msg (if synchronous
+              (str "Processed " result " system concepts for bulk indexing.")
+              (str "Processing system concepts for bulk indexing."))]
+    {:status 202
+     :body {:message msg}}))
+
 (defn- bootstrap-virtual-products
   "Bootstrap virtual products."
   [context params]
@@ -149,7 +161,10 @@
           (bulk-index-collection request-context body params))
 
         (POST "/after_date_time" {:keys [request-context params]}
-          (bulk-index-data-later-than-date-time request-context params)))
+          (bulk-index-data-later-than-date-time request-context params))
+
+        (POST "/system_concepts" {:keys [request-context params]}
+          (bulk-index-system-concepts request-context params)))
 
       (context "/rebalancing_collections/:concept-id" [concept-id]
 
