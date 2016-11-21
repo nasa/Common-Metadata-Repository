@@ -15,9 +15,11 @@
         group-operation (p/group-operation param options :or)
         parent-field (q2e/query-field->elastic-field param concept-type)
         value-field (keyword (str (name parent-field) ".value"))]
-
-    (qm/nested-condition
-     parent-field
-     (if (sequential? value)
-       (qm/string-conditions value-field value case-sensitive? pattern? group-operation)
-       (qm/string-condition value-field value case-sensitive? pattern?)))))
+    (if (sequential? value) 
+      (qm/->ConditionGroup
+        group-operation
+        (map #(qm/nested-condition parent-field %) 
+             (map #(qm/string-condition value-field % case-sensitive? pattern?) value)))
+      (qm/nested-condition
+        parent-field
+        (qm/string-condition value-field value case-sensitive? pattern?)))))

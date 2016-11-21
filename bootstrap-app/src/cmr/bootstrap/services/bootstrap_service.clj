@@ -87,6 +87,15 @@
                               {:provider-id provider-id
                                :collection-id collection-id})))))))
 
+(defn index-system-concepts
+  "Bulk index all the tags, acls, and access-groups."
+  [context synchronous start-index]
+  (if synchronous
+    (bulk/index-system-concepts (:system context) start-index)
+    (let [channel (get-in context [:system :system-concept-channel])]
+      (info "Adding bulk index request to system concepts channel.")
+      (go (>! channel {:start-index start-index})))))
+
 (defn bootstrap-virtual-products
   "Initializes virtual products."
   [context synchronous provider-id entry-title]

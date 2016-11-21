@@ -1,11 +1,12 @@
 (ns cmr.system-int-test.search.collection-science-keyword-search-test
   "Integration test for CMR collection search by science keyword terms"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]))
+  (:require 
+    [clojure.test :refer :all]
+    [cmr.system-int-test.data2.collection :as dc]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -117,23 +118,25 @@
            [] :category "cat1" false
            [coll1] :category "cat1" true))
 
-    (testing "search by science keywords, multiple. options :or false"
-      (is (d/refs-match? [coll2 coll6]
-                         (search/find-refs
-                           :collection
-                           {:science-keywords {:0 {:category "Hurricane"
-                                                   :topic "Popular"}
-                                               :1 {:term "Extreme"}}
-                            "options[science-keywords][or]" "false"}))))
+    (doseq [field [:science-keywords :science-keywords-h]]
+      (testing (str "search by " (name field) ", multiple. options :or false")
+        (is (d/refs-match? [coll2 coll6]
+                           (search/find-refs
+                             :collection
+                             {field {:0 {:category "Hurricane"
+                                         :topic "Popular"}
+                                     :1 {:term "Extreme"}}
+                              (str "options[" (name field) "][or]") "false"})))))
 
-    (testing "search by science keywords, multiple. options :or true"
-      (is (d/refs-match? [coll2 coll3 coll5 coll6 coll7]
-                         (search/find-refs
-                           :collection
-                           {:science-keywords {:0 {:category "Hurricane"
-                                                   :topic "Popular"}
-                                               :1 {:term "Extreme"}}
-                            "options[science-keywords][or]" "true"}))))
+    (doseq [field [:science-keywords :science-keywords-h]]
+      (testing (str "search by " (name field) ", multiple. options :or true")
+        (is (d/refs-match? [coll2 coll3 coll5 coll6 coll7]
+                           (search/find-refs
+                             :collection
+                             {field {:0 {:category "Hurricane"
+                                         :topic "Popular"}
+                                     :1 {:term "Extreme"}}
+                              (str "options[" (name field) "][or]") "true"})))))
 
     (testing "search by science keywords, multiple and legacy :or format"
       (is (d/refs-match? [coll2 coll6]

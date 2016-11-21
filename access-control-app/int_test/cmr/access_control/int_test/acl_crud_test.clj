@@ -64,6 +64,33 @@
     (is (re-find #"^ACL.*" (:concept_id resp)))
     (is (= 1 (:revision_id resp)))))
 
+;; The following test covers creating simple but valid catalog item identity. We permit collection_applicable false
+;; and collection_identifier when granule_applicable is true.
+
+(deftest create-catalog-item-identity-acl-test
+  (testing "with collection_identifier, collection_applicable true, and granule_applicable false"
+    (is (= 1 (:revision_id
+               (ac/create-acl (u/conn-context)
+                              {:group_permissions [{:user_type "guest"
+                                                    :permissions ["read"]}]
+                               :catalog_item_identity {:name "Catalog Item Identity 1"
+                                                       :provider_id "PROV1"
+                                                       :collection_identifier {:access_value {:include_undefined_value true}}
+                                                       :collection_applicable true
+                                                       :granule_applicable false}}
+                              {:token (transmit-config/echo-system-token)})))))
+  (testing "with collection_identifier, collection_applicable false, and granule_applicable true"
+    (is (= 1 (:revision_id
+               (ac/create-acl (u/conn-context)
+                              {:group_permissions [{:user_type "guest"
+                                                    :permissions ["read"]}]
+                               :catalog_item_identity {:name "Catalog Item Identity 2"
+                                                       :provider_id "PROV1"
+                                                       :collection_identifier {:access_value {:include_undefined_value true}}
+                                                       :collection_applicable false
+                                                       :granule_applicable true}}
+                              {:token (transmit-config/echo-system-token)}))))))
+
 (deftest create-single-instance-acl-permission-test
   (let [token (e/login (u/conn-context) "user1")
         group1 (u/ingest-group token {:name "group1" :provider_id "PROV1"} ["user1"])
@@ -216,7 +243,7 @@
                    {:group_permissions [{:group_id created-group
                                          :permissions [:create :read :update :delete]}]
                     :system_identity {:target "ANY_ACL"}})
-    
+
     ;; Update the PROV1 CATALOG_ITEM_ACL ACL to grant permission explicitly to only the group which "user1" belongs to.
     (ac/update-acl (merge (u/conn-context) {:token admin-token})
                    (:concept-id fixtures/*fixture-provider-acl*)
@@ -478,7 +505,22 @@
                                                             :provider_id "PROV1"
                                                             :collection_applicable true
                                                             :collection_identifier {:entry_titles ["coll1 v1"]}}})
-               [:revision_id :status]))))))
+               [:revision_id :status]))))
+
+    (testing "long entry titles"
+      (u/save-collection {:entry-title "coll2 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                          :native-id "coll2"
+                          :entry-id "coll2"
+                          :short-name "coll2"
+                          :version "v1"
+                          :provider-id "PROV1"})
+      (u/wait-until-indexed)
+      (let [result (u/create-acl token {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+                                        :catalog_item_identity {:name "Catalog item ACL with a long entry title"
+                                                                :provider_id "PROV1"
+                                                                :collection_applicable true
+                                                                :collection_identifier {:entry_titles ["coll2 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"]}}})]
+        (is (= 1 (:revision_id result)))))))
 
 (deftest create-duplicate-acl-test
   (let [token (e/login-guest (u/conn-context))]

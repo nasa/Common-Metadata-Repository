@@ -4,6 +4,7 @@
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require
    [clojure.core.async :as ca :refer [chan]]
+   [cmr.access-control.system :as ac-system]
    [cmr.acl.core :as acl]
    [cmr.bootstrap.api.routes :as routes]
    [cmr.bootstrap.config :as bootstrap-config]
@@ -55,9 +56,13 @@
                               (mem-cache/create-in-memory-cache :lru {} {:threshold 2000}))
                     ;; Specify an Elasticsearch http retry handler
                     (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler))
+        access-control (-> (ac-system/create-system)
+                           (dissoc :log :web :queue-broker)
+                           (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler))
         sys {:log (log/create-logger)
              :embedded-systems {:metadata-db metadata-db
-                                :indexer indexer}
+                                :indexer indexer
+                                :access-control access-control}
              :db-batch-size (db-batch-size)
 
              ;; Channel for requesting full provider migration - provider/collections/granules.
@@ -75,6 +80,9 @@
 
              ;; Channel for processing data newer than a given date-time.
              :data-index-channel (chan 10)
+
+             ;; Channel for processing bulk index requests for system concepts (tags, acls, access-groups)
+             :system-concept-channel (chan 10)
 
              ;; Channel for bootstrapping virtual products
              vp/channel-name (chan)
