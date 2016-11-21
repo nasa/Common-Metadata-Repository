@@ -2,12 +2,14 @@
   "Contains unit tests for permitted-concept-id-search namespace"
   (:require
     [clojure.test :refer :all]
-    [cmr.access-control.services.permitted-concept-id-search :as pcs]
     [cmr.access-control.int-test.fixtures :as fixtures]
+    [cmr.access-control.services.permitted-concept-id-search :as pcs]
     [cmr.access-control.test.util :as u]
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.query-model :as common-qm]
-    [cmr.transmit.metadata-db2 :as mdb2]))
+    [cmr.transmit.metadata-db2 :as mdb2]
+    [cmr.umm-spec.time :as spec-time]
+    [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
 (use-fixtures :each
   (fixtures/reset-fixture {"prov1guid" "PROV1"}))
@@ -25,34 +27,90 @@
                                                         :provider-id "PROV1"
                                                         :access-value nil})
         concept-access-value-1 (mdb2/get-latest-concept (u/conn-context) concept-id-access-value-1)
-        concept-access-value-nil (mdb2/get-latest-concept (u/conn-context) concept-id-access-value-nil)]
+        concept-access-value-nil (mdb2/get-latest-concept (u/conn-context) concept-id-access-value-nil)
+        parsed-1 (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} (u/conn-context)) concept-access-value-1)
+        parsed-nil (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} (u/conn-context)) concept-access-value-nil)
+        start-date-1 (spec-time/collection-start-date parsed-1)
+        stop-date-1 (spec-time/collection-end-date parsed-1)
+        start-date-nil (spec-time/collection-start-date parsed-nil)
+        stop-date-nil (spec-time/collection-end-date parsed-nil)]
     (testing "create permitted-concept-id conditions with access value 1"
-      (is (= (gc/group-conds
-               :or
-               [(gc/group-conds
-                  :and
-                  [(common-qm/boolean-condition :collection-applicable true)
-                   (common-qm/boolean-condition :collection-identifier false)
-                   (common-qm/string-condition :provider "PROV1" false false)])
-                (gc/group-conds
-                  :and
-                  [(common-qm/numeric-range-intersection-condition
-                     :collection-access-value-min
-                     :collection-access-value-max
-                     1.0
-                     1.0)
-                   (common-qm/boolean-condition :collection-applicable true)])])
+      (is (= (gc/and-conds
+               [(common-qm/string-condition :provider "PROV1" false false)
+                (gc/or-conds
+                  [(gc/and-conds
+                     [(common-qm/boolean-condition :collection-applicable true)
+                      (common-qm/boolean-condition :collection-identifier false)])
+                   (gc/and-conds
+                     [(common-qm/numeric-range-intersection-condition
+                        :collection-access-value-min
+                        :collection-access-value-max
+                        1.0
+                        1.0)
+                      (common-qm/boolean-condition :collection-applicable true)])
+                   (gc/and-conds
+                     [(common-qm/boolean-condition :collection-applicable true)
+                      (gc/or-conds
+                        [(gc/and-conds
+                           [(common-qm/string-condition :temporal-mask "contains" true false)
+                            (common-qm/date-range-condition :temporal-range-start-date nil start-date-1)
+                            (common-qm/date-range-condition :temporal-range-stop-date stop-date-1 nil)])
+                         (gc/and-conds
+                           [(common-qm/string-condition :temporal-mask "intersect" true false)
+                            (gc/or-conds
+                              [(gc/and-conds
+                                 [(common-qm/date-range-condition :temporal-range-start-date nil stop-date-1)
+                                  (common-qm/date-range-condition :temporal-range-start-date start-date-1 nil)])
+                               (gc/and-conds
+                                 [(common-qm/date-range-condition :temporal-range-stop-date start-date-1 nil)
+                                  (common-qm/date-range-condition :temporal-range-stop-date nil stop-date-1)])
+                               (gc/and-conds
+                                 [(common-qm/date-range-condition :temporal-range-start-date nil start-date-1)
+                                  (common-qm/date-range-condition :temporal-range-stop-date stop-date-1 nil)])
+                               (gc/and-conds
+                                 [(common-qm/date-range-condition :temporal-range-stop-date nil stop-date-1)
+                                  (common-qm/date-range-condition :temporal-range-start-date start-date-1 nil)])])])
+                         (gc/and-conds
+                           [(common-qm/string-condition :temporal-mask "disjoint" true false)
+                            (gc/or-conds
+                              [(common-qm/date-range-condition :temporal-range-start-date stop-date-1 nil true)
+                               (common-qm/date-range-condition :temporal-range-stop-date nil start-date-1 true)])])])])])])
              (pcs/get-permitted-concept-id-conditions (u/conn-context) concept-access-value-1))))
     (testing "create permitted-concept-id conditions with access value nil"
-      (is (= (gc/group-conds
-               :or
-               [(gc/group-conds
-                  :and
-                  [(common-qm/boolean-condition :collection-applicable true)
-                   (common-qm/boolean-condition :collection-identifier false)
-                   (common-qm/string-condition :provider "PROV1" false false)])
-                (gc/group-conds
-                  :and
-                  [(common-qm/boolean-condition :collection-access-value-include-undefined-value true)
-                   (common-qm/boolean-condition :collection-applicable true)])])
+      (is (= (gc/and-conds
+               [(common-qm/string-condition :provider "PROV1" false false)
+                (gc/or-conds
+                  [(gc/and-conds
+                     [(common-qm/boolean-condition :collection-applicable true)
+                      (common-qm/boolean-condition :collection-identifier false)])
+                   (gc/and-conds
+                     [(common-qm/boolean-condition :collection-access-value-include-undefined-value true)
+                      (common-qm/boolean-condition :collection-applicable true)])
+                   (gc/and-conds
+                     [(common-qm/boolean-condition :collection-applicable true)
+                      (gc/or-conds
+                        [(gc/and-conds
+                           [(common-qm/string-condition :temporal-mask "contains" true false)
+                            (common-qm/date-range-condition :temporal-range-start-date nil start-date-nil)
+                            (common-qm/date-range-condition :temporal-range-stop-date stop-date-nil nil)])
+                         (gc/and-conds
+                           [(common-qm/string-condition :temporal-mask "intersect" true false)
+                            (gc/or-conds
+                              [(gc/and-conds
+                                 [(common-qm/date-range-condition :temporal-range-start-date nil stop-date-nil)
+                                  (common-qm/date-range-condition :temporal-range-start-date start-date-nil nil)])
+                               (gc/and-conds
+                                 [(common-qm/date-range-condition :temporal-range-stop-date start-date-nil nil)
+                                  (common-qm/date-range-condition :temporal-range-stop-date nil stop-date-nil)])
+                               (gc/and-conds
+                                 [(common-qm/date-range-condition :temporal-range-start-date nil start-date-nil)
+                                  (common-qm/date-range-condition :temporal-range-stop-date stop-date-nil nil)])
+                               (gc/and-conds
+                                 [(common-qm/date-range-condition :temporal-range-stop-date nil stop-date-nil)
+                                  (common-qm/date-range-condition :temporal-range-start-date start-date-nil nil)])])])
+                         (gc/and-conds
+                           [(common-qm/string-condition :temporal-mask "disjoint" true false)
+                            (gc/or-conds
+                              [(common-qm/date-range-condition :temporal-range-start-date stop-date-nil nil true)
+                               (common-qm/date-range-condition :temporal-range-stop-date nil start-date-nil true)])])])])])])
              (pcs/get-permitted-concept-id-conditions (u/conn-context) concept-access-value-nil))))))

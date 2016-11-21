@@ -8,7 +8,6 @@
 (defn- start-date-is-before-end-date
   "Validates start-date is before end-date"
   [date-range]
-  ;(proto-repl.saved-values/save 2)
   (let [{:keys [start-date end-date]} date-range]
     (if (and start-date end-date (t/after? start-date end-date))
       [(format "start_date [%s] must be before end_date [%s]"

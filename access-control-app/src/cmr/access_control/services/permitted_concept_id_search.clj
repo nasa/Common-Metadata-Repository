@@ -9,40 +9,77 @@
     [cmr.search.models.query :as q]
     [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
+(defn- create-generic-collection-applicable-condition
+  "Constructs query condition for collection-applicable acls without a collection identifier"
+  []
+  (gc/and-conds
+    [(common-qm/boolean-condition :collection-applicable true)
+     (common-qm/boolean-condition :collection-identifier false)]))
+
+(defn- create-temporal-intersect-condition
+  "Constructs query condition for intersect mask"
+  [start-date stop-date]
+  (gc/and-conds
+    [(common-qm/string-condition :temporal-mask "intersect" true false)
+     (gc/or-conds
+       [(gc/and-conds
+          ;; The ACL start date must be greater than the collection's start date and
+          ;; less than the collection's stop date
+          [(common-qm/date-range-condition :temporal-range-start-date nil stop-date)
+           (common-qm/date-range-condition :temporal-range-start-date start-date nil)])
+        (gc/and-conds
+          ;; The ACL stop date must be less than the collection's stop date and
+          ;; greater than the collection's start date
+          [(common-qm/date-range-condition :temporal-range-stop-date start-date nil)
+           (common-qm/date-range-condition :temporal-range-stop-date nil stop-date)])
+        (gc/and-conds
+          ;; The ACL stop date must be greater than the collection stop date and
+          ;; the ACL start date must be less than the collection start date
+          [(common-qm/date-range-condition :temporal-range-start-date nil start-date)
+           (common-qm/date-range-condition :temporal-range-stop-date stop-date nil)])
+        (gc/and-conds
+          ;; The ACL stop date must be less than the collection's stop date and
+          ;; the ACL start date must be greater than the collection's start date
+          [(common-qm/date-range-condition :temporal-range-stop-date nil stop-date)
+           (common-qm/date-range-condition :temporal-range-start-date start-date nil)])])]))
+
+(defn- create-temporal-disjoint-condition
+  "Constructs query condition for disjoint mask"
+  [start-date stop-date]
+  (gc/and-conds
+    [(common-qm/string-condition :temporal-mask "disjoint" true false)
+     (gc/or-conds
+       ;; The ACL start date is greater than the collection's stop date or
+       ;; THE ACL stop date is less than the collection's start date
+       [(common-qm/date-range-condition :temporal-range-start-date stop-date nil true)
+        (common-qm/date-range-condition :temporal-range-stop-date nil start-date true)])]))
+
+(defn create-temporal-contains-condition
+  "Constructs query condiiton for contains mask"
+  [start-date stop-date]
+  (gc/and-conds
+      ;; The ACL start date must be less than the collection's start date and
+      ;; the ACL stop date must be greater than the collection's stop date
+     [(common-qm/string-condition :temporal-mask "contains" true false)
+      (common-qm/date-range-condition :temporal-range-start-date nil start-date)
+      (common-qm/date-range-condition :temporal-range-stop-date stop-date nil)]))
+
 (defn- create-temporal-condition
   "Constructs query condition for searching permitted_concept_ids by temporal"
   [parsed-metadata]
-  (let [start-date (index-util/date->elastic (spec-time/collection-start-date parsed-metadata))
-        stop-date (index-util/date->elastic (spec-time/collection-end-date parsed-metadata))
-        now (index-util/date->elastic (t/now))
-        floor-date (index-util/date->elastic (t/date-time 1970))]
-    ;(proto-repl.saved-values/save 1)
-    (gc/group-conds
-      :or
-      [(gc/group-conds
-         :and
-         [(common-qm/string-condition :temporal-mask "contains")
-          (common-qm/date-range-condition :temporal-range-start-date floor-date start-date false)
-          (common-qm/date-range-condition :temporal-range-stop-date stop-date now false)])])))
-       ;(gc/group-conds
-       ;  :and
-       ;  [(common-qm/string-condition :temporal-mask "disjoint")
-       ;   (common-qm/negated-condition (q/map->TemporalCondition {:temporal-range-start start-date
-       ;                                                           :temporal-range-stop stop-date
-       ;                                                           :exclusive? false)])])))
-       ;(gc/group-conds
-       ;  :and
-       ;  [(common-qm/string-condition :temporal-mask "intersect")
-       ;   (q/map->TemporalCondition {:temporal-range-start-date start-date
-       ;                              :temporal-range-stop-date stop-date
-       ;                              :exclusive? false)])])))
-
+  (let [start-date (spec-time/collection-start-date parsed-metadata)
+        stop-date (spec-time/collection-end-date parsed-metadata)]
+    (gc/and-conds
+      [(common-qm/boolean-condition :collection-applicable true)
+       (gc/or-conds
+         [(create-temporal-contains-condition start-date stop-date)
+          (create-temporal-intersect-condition start-date stop-date)
+          (create-temporal-disjoint-condition start-date stop-date)])])))
 
 (defn- create-access-value-condition
   "Constructs query condition for searching permitted_concept_ids by access-value."
   [parsed-metadata]
-  (gc/group-conds
-    :and
+  (gc/and-conds
     ;; If there are no access values present in the concept then the include undefined
     ;; value is used.
     [(if-let [access-value (:Value (:AccessConstraints parsed-metadata))]
@@ -54,21 +91,16 @@
        (common-qm/boolean-condition :collection-access-value-include-undefined-value true))
      (common-qm/boolean-condition :collection-applicable true)]))
 
-(defn- create-provider-condition
-  "Constructs query condition for searching permitted_concept_id by provider"
-  [provider-id]
-  (gc/group-conds
-    :and
-    [(common-qm/boolean-condition :collection-applicable true)
-     (common-qm/boolean-condition :collection-identifier false)
-     (common-qm/string-condition :provider provider-id false false)]))
-
 (defn get-permitted-concept-id-conditions
   "Returns query to search for ACLs that could permit given concept"
   [context concept]
-  (let [parsed-metadata (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)]
-    (gc/group-conds
-     :or
-     [(create-temporal-condition parsed-metadata)
-      (create-provider-condition (:provider-id concept))
-      (create-access-value-condition parsed-metadata)])))
+  (let [parsed-metadata (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)
+        start-date (spec-time/collection-start-date parsed-metadata)
+        stop-date (spec-time/collection-end-date parsed-metadata)]
+    (gc/and-conds
+     [(common-qm/string-condition :provider (:provider-id concept))
+      (gc/or-conds
+        [(create-generic-collection-applicable-condition)
+         (create-access-value-condition parsed-metadata)
+         (when (and start-date stop-date)
+           (create-temporal-condition parsed-metadata))])])))
