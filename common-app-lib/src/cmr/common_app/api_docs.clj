@@ -94,9 +94,6 @@
                             {:status 200
                              :body (slurp (io/resource welcome-page-location))}))
 
-    (GET "/robots.txt" req {:status 200
-                            :body (slurp (io/resource "public/robots.txt"))})
-
     (context "/site" []
       ;; Return swagger.json if the application provides one
       (GET "/swagger.json" {:keys [headers]}
