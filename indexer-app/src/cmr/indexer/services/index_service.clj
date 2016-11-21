@@ -22,7 +22,6 @@
     [cmr.indexer.config :as config]
     [cmr.indexer.data.concept-parser :as cp]
     [cmr.indexer.data.elasticsearch :as es]
-    [cmr.indexer.data.elasticsearch :as es]
     [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]
     [cmr.indexer.data.index-set :as idx-set]
     [cmr.message-queue.config :as qcfg]
@@ -123,15 +122,17 @@
   "See documentation for bulk-index. This is a temporary function added for supporting replication
   using DMS. It does the same work as bulk-index, but instead of returning the number of concepts
   indexed it returns a map with keys of :num-indexed and :max-revision-date."
-  [context concept-batches]
-  (reduce (fn [{:keys [num-indexed max-revision-date]} batch]
-            (let [max-revision-date (get-max-revision-date batch max-revision-date)
-                  batch (prepare-batch context batch nil)]
-              (es/bulk-index-documents context batch nil)
-              {:num-indexed (+ num-indexed (count batch))
-               :max-revision-date max-revision-date}))
-          {:num-indexed 0 :max-revision-date nil}
-          concept-batches))
+  ([context concept-batches]
+   (bulk-index-with-revision-date context concept-batches {}))
+  ([context concept-batches options]
+   (reduce (fn [{:keys [num-indexed max-revision-date]} batch]
+             (let [max-revision-date (get-max-revision-date batch max-revision-date)
+                   batch (prepare-batch context batch options)]
+               (es/bulk-index-documents context batch options)
+               {:num-indexed (+ num-indexed (count batch))
+                :max-revision-date max-revision-date}))
+           {:num-indexed 0 :max-revision-date nil}
+           concept-batches)))
 
 (defn- indexing-applicable?
   "Returns true if indexing is applicable for the given concept-type and all-revisions-index? flag.

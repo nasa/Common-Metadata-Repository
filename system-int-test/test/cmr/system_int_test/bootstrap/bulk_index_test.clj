@@ -5,6 +5,7 @@
     [clj-time.core :as t]
     [clojure.java.jdbc :as j]
     [clojure.test :refer :all]
+    [cmr.access-control.test.util :as u]
     [cmr.common.date-time-parser :as p]
     [cmr.common.util :as util :refer [are3]]
     [cmr.mock-echo.client.echo-util :as e]
@@ -20,6 +21,7 @@
     [cmr.system-int-test.utils.metadata-db-util :as mdb]
     [cmr.system-int-test.utils.search-util :as search]
     [cmr.system-int-test.utils.tag-util :as tags]
+    [cmr.transmit.access-control :as ac]
     [cmr.umm.echo10.echo10-core :as echo10]))
 
 (use-fixtures :each (join-fixtures
@@ -92,6 +94,64 @@
      (is (= 201 (:status tag)))
      (merge tag (select-keys tag [:concept-id :revision-id])))))
 
+(defn- save-acl
+  "Saves an acl"
+  [n attributes target]
+  (let [unique-str (str "acl" n)
+        acl (mdb/save-concept (merge
+                               {:concept-type :acl
+                                :provider-id "CMR"
+                                :native-id unique-str
+                                :format "application/edn"
+                                :metadata (pr-str {:group-permissions [{:user-type "guest"
+                                                                        :permissions ["read" "update"]}]
+                                                   :system-identity {:target target}})
+                                :revision-date "2000-01-01T10:00:00Z"}
+                               attributes))]
+    ;; Make sure the acl was saved successfully
+    (is (= 201 (:status acl)))
+    acl))
+
+(defn- save-group
+  "Saves a group"
+  ([n]
+   (save-group n {}))
+  ([n attributes]
+   (let [unique-str (str "group" n)
+         group (mdb/save-concept (merge
+                                  {:concept-type :access-group
+                                   :provider-id "CMR"
+                                   :native-id unique-str
+                                   :format "application/edn"
+                                   :metadata "{:name \"Administrators\"
+                                               :description \"The group of users that manages the CMR.\"
+                                               :members [\"user1\" \"user2\"]}"
+                                   :revision-date "2000-01-01T10:00:00Z"}
+                                  attributes))]
+     ;; Make sure the group was saved successfully
+     (is (= 201 (:status group)))
+     group)))
+
+(defn- delete-concept
+  "Creates a tombstone for the concept in metadata-db."
+  [concept]
+  (let [tombstone (update-in concept [:revision-id] inc)]
+    (is (= 201 (:status (mdb/tombstone-concept tombstone))))))
+
+(defn- normalize-search-result-item
+  "Returns a map with just concept-id and revision-id for the given item."
+  [result-item]
+  (-> result-item
+      util/map-keys->kebab-case
+      (select-keys [:concept-id :revision-id])))
+
+(defn- search-results-match?
+  "Compare search results to expected results."
+  [results expected]
+  (let [search-items (set (map normalize-search-result-item results))
+        exp-items (set (map #(dissoc % :status) expected))]
+    (is (= exp-items search-items))))
+
 (defn- get-last-replicated-revision-date
   "Helper to get the last replicated revision date from the database."
   [db]
@@ -102,20 +162,93 @@
         :last_replicated_revision_date
         (oracle/oracle-timestamp->str-time conn))))
 
+(deftest index-system-concepts-test
+  (s/only-with-real-database
+   ;; Disable message publishing so items are not indexed as part of the initial save.
+   (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! false))
+   (let [acl1 (save-acl 1
+                        {:extra-fields {:acl-identity "system:token"
+                                        :target-provider-id "PROV1"}}
+                        "TOKEN")
+         acl2 (save-acl 2
+                        {:extra-fields {:acl-identity "system:group"
+                                        :target-provider-id "PROV1"}}
+                        "GROUP")
+         acl3 (save-acl 3
+                        {:extra-fields {:acl-identity "system:user"
+                                        :target-provider-id "PROV1"}}
+                        "USER")
+         _ (delete-concept acl3)
+         group1 (save-group 1 {})
+         group2 (save-group 2 {})
+         group3 (save-group 3 {})
+         _ (delete-concept group2)
+         tag1 (save-tag 1 {})
+         _ (delete-concept tag1)
+         ;; this tag has no originator-id to test a bug fix for a bug in tag processing related to missing originator-ids
+         tag2 (save-tag 2 {:metadata "{:tag-key \"tag2\" :description \"A good tag\"}"})
+         tag3 (save-tag 3 {})]
+     (bootstrap/bulk-index-system-concepts)
+     ;; Force elastic data to be flushed, not actually waiting for index requests to finish
+     (index/wait-until-indexed)
+
+     ;; ACLs
+     (let [response (ac/search-for-acls (u/conn-context) {})
+           items (:items response)]
+       (search-results-match? items [acl1 acl2]))
+
+     ;; Groups
+     (let [response (ac/search-for-groups (u/conn-context) {})
+           ;; Need to filter out admin group created by fixture
+           items (filter #(not (= "mock-admin-group-guid" (:legacy_guid %))) (:items response))]
+       (search-results-match? items [group1 group3]))
+
+     (are3 [expected-tags]
+       (let [result-tags (update
+                           (tags/search {})
+                           :items
+                           (fn [items]
+                             (map #(select-keys % [:concept-id :revision-id]) items)))]
+         (tags/assert-tag-search expected-tags result-tags))
+
+       "Tags"
+       [tag2 tag3])
+    ;; Re-enable message publishing.
+    (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! true)))))
+
+
 (deftest index-recently-replicated-test
   (s/only-with-real-database
    ;; Disable message publishing so items are not indexed as part of the initial save.
    (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! false))
-   (let [last-replicated-datetime "2016-01-01T10:00:00Z"
-         coll-missed-cutoff (save-collection 1 {:revision-date "2016-01-01T09:59:40Z"})
-         coll-within-buffer (save-collection 2 {:revision-date "2016-01-01T09:59:41Z"})
-         coll-after-date (save-collection 3 {:revision-date "2016-01-02T00:00:00Z"})
-         gran-missed-cutoff (save-granule 1 coll-missed-cutoff {:revision-date "2016-01-01T09:59:40Z"})
-         gran-within-buffer (save-granule 2 coll-within-buffer {:revision-date "2016-01-01T09:59:41Z"})
-         gran-after-date (save-granule 3 coll-after-date {:revision-date "2016-01-02T00:00:00Z"})
-         tag-missed-cutoff (save-tag 1 {:revision-date "2016-01-01T09:59:40Z"})
-         tag-within-buffer (save-tag 2 {:revision-date "2016-01-01T09:59:41Z"})
-         tag-after-date (save-tag 3 {:revision-date "2016-01-02T00:00:00Z"})
+   (let [last-replicated-datetime "3016-01-01T10:00:00Z"
+         coll-missed-cutoff (save-collection 1 {:revision-date "3016-01-01T09:59:40Z"})
+         coll-within-buffer (save-collection 2 {:revision-date "3016-01-01T09:59:41Z"})
+         coll-after-date (save-collection 3 {:revision-date "3016-01-02T00:00:00Z"})
+         gran-missed-cutoff (save-granule 1 coll-missed-cutoff {:revision-date "3016-01-01T09:59:40Z"})
+         gran-within-buffer (save-granule 2 coll-within-buffer {:revision-date "3016-01-01T09:59:41Z"})
+         gran-after-date (save-granule 3 coll-after-date {:revision-date "3016-01-02T00:00:00Z"})
+         tag-missed-cutoff (save-tag 1 {:revision-date "3016-01-01T09:59:40Z"})
+         tag-within-buffer (save-tag 2 {:revision-date "3016-01-01T09:59:41Z"})
+         tag-after-date (save-tag 3 {:revision-date "3016-01-02T00:00:00Z"})
+         acl-missed-cutoff (save-acl 1
+                                     {:revision-date "3016-01-01T09:59:40Z"
+                                      :extra-fields {:acl-identity "system:token"
+                                                     :target-provider-id "PROV1"}}
+                                     "TOKEN")
+         acl-within-buffer (save-acl 2
+                                     {:revision-date "3016-01-01T09:59:41Z"
+                                      :extra-fields {:acl-identity "system:group"
+                                                     :target-provider-id "PROV1"}}
+                                     "GROUP")
+         acl-after-date (save-acl 3
+                                  {:revision-date "3016-01-02T00:00:00Z"
+                                   :extra-fields {:acl-identity "system:user"
+                                                  :target-provider-id "PROV1"}}
+                                  "USER")
+         group-missed-cutoff (save-group 1 {:revision-date "3016-01-01T09:59:40Z"})
+         group-within-buffer (save-group 2 {:revision-date "3016-01-01T09:59:41Z"})
+         group-after-date (save-group 3 {:revision-date "3016-01-02T00:00:00Z"})
          db (get-in (s/context) [:system :bootstrap-db])
          stmt "UPDATE REPLICATION_STATUS SET LAST_REPLICATED_REVISION_DATE = ?"]
      (j/db-do-prepared db stmt [(cr/to-sql-time (p/parse-datetime last-replicated-datetime))])
@@ -132,6 +265,18 @@
          "Granules"
          :granule [gran-within-buffer gran-after-date])
 
+       ;; ACLs
+       (let [response (ac/search-for-acls (u/conn-context) {})
+             items (:items response)]
+         (search-results-match? items [acl-within-buffer acl-after-date]))
+
+       ;; Groups
+       (let [response (ac/search-for-groups (u/conn-context) {})
+             ;; Need to filter out admin group created by fixture
+             items (filter #(not (= "mock-admin-group-guid" (:legacy_guid %))) (:items response))]
+         (search-results-match? items [group-within-buffer group-after-date]))
+
+
        (are3 [expected-tags]
          (let [result-tags (update
                              (tags/search {})
@@ -144,23 +289,23 @@
          [tag-within-buffer tag-after-date]))
 
      (testing "When there are no concepts to index the date is not changed."
-       (j/db-do-prepared db stmt [(cr/to-sql-time (p/parse-datetime "2016-02-01T10:00:00.000Z"))])
+       (j/db-do-prepared db stmt [(cr/to-sql-time (p/parse-datetime "3016-02-01T10:00:00.000Z"))])
        (bootstrap/index-recently-replicated)
-       (is (= "2016-02-01T10:00:00.000Z" (get-last-replicated-revision-date db))))
+       (is (= "3016-02-01T10:00:00.000Z" (get-last-replicated-revision-date db))))
 
      (testing "Max revision dates are tracked correctly"
        (testing "for provider concepts"
-         (let [coll (save-collection 1 {:revision-date "2016-02-02T10:59:40Z"})]
-           (save-granule 1 coll {:revision-date "2016-02-01T11:59:40Z"})
-           (save-tag 1 {:revision-date "2016-02-01T18:59:40Z"})
+         (let [coll (save-collection 1 {:revision-date "3016-02-02T10:59:40Z"})]
+           (save-granule 1 coll {:revision-date "3016-02-01T11:59:40Z"})
+           (save-tag 1 {:revision-date "3016-02-01T18:59:40Z"})
            (bootstrap/index-recently-replicated))
-         (is (= "2016-02-02T10:59:40.000Z" (get-last-replicated-revision-date db))))
+         (is (= "3016-02-02T10:59:40.000Z" (get-last-replicated-revision-date db))))
        (testing "for system concepts"
-         (let [coll (save-collection 1 {:revision-date "2016-02-03T10:59:40Z"})]
-           (save-granule 1 coll {:revision-date "2016-03-01T11:59:40Z"})
-           (save-tag 1 {:revision-date "2016-03-01T12:10:47Z"})
+         (let [coll (save-collection 1 {:revision-date "3016-02-03T10:59:40Z"})]
+           (save-granule 1 coll {:revision-date "3016-03-01T11:59:40Z"})
+           (save-tag 1 {:revision-date "3016-03-01T12:10:47Z"})
            (bootstrap/index-recently-replicated))
-         (is (= "2016-03-01T12:10:47.000Z" (get-last-replicated-revision-date db))))))
+         (is (= "3016-03-01T12:10:47.000Z" (get-last-replicated-revision-date db))))))
 
    ;; Re-enable message publishing.
    (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! true))))
@@ -171,11 +316,23 @@
     (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! false))
     (let [;; saved but not indexed
           coll1 (save-collection 1)
-          coll2 (save-collection 2 {:revision-date "2016-01-01T10:00:00Z"})
+          coll2 (save-collection 2 {:revision-date "3016-01-01T10:00:00Z"})
           gran1 (save-granule 1 coll1)
-          gran2 (save-granule 2 coll2 {:revision-date "2016-01-01T10:00:00Z"})
+          gran2 (save-granule 2 coll2 {:revision-date "3016-01-01T10:00:00Z"})
           tag1 (save-tag 1)
-          tag2 (save-tag 2 {:revision-date "2016-01-01T10:00:00Z"})]
+          tag2 (save-tag 2 {:revision-date "3016-01-01T10:00:00Z"})
+          acl1 (save-acl 1
+                         {:revision-date "2000-01-01T09:59:40Z"
+                          :extra-fields {:acl-identity "system:token"
+                                         :target-provider-id "PROV1"}}
+                         "TOKEN")
+          acl2 (save-acl 2
+                         {:revision-date "3016-01-01T09:59:41Z"
+                          :extra-fields {:acl-identity "system:group"
+                                         :target-provider-id "PROV1"}}
+                         "GROUP")
+          group1 (save-group 1)
+          group2 (save-group 2 {:revision-date "3016-01-01T10:00:00Z"})]
 
       (bootstrap/bulk-index-after-date-time "2015-01-01T12:00:00Z")
       (index/wait-until-indexed)
@@ -189,6 +346,17 @@
 
           "Granules"
           :granule [gran2])
+
+        ;; ACLs
+        (let [response (ac/search-for-acls (u/conn-context) {})
+              items (:items response)]
+          (search-results-match? items [acl2]))
+
+        ;; Groups
+        (let [response (ac/search-for-groups (u/conn-context) {})
+              ;; Need to filter out admin group created by fixture
+              items (filter #(not (= "mock-admin-group-guid" (:legacy_guid %))) (:items response))]
+          (search-results-match? items [group2]))
 
         (are3 [expected-tags]
           (let [result-tags (update

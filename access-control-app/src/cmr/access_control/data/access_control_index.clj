@@ -53,7 +53,7 @@
    :number_of_replicas 1,
    :refresh_interval "1s"})
 
-(defn- group-concept-map->elastic-doc
+(defn group-concept-map->elastic-doc
   "Converts a concept map containing an access group into the elasticsearch document to index."
   [concept-map]
   (try
@@ -257,7 +257,7 @@
       {:collection-applicable true}
       {:collection-applicable false})))
 
-(defn- acl-concept-map->elastic-doc
+(defn acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."
   [concept-map]
   (let [acl (edn/read-string (:metadata concept-map))
@@ -338,3 +338,10 @@
   [elastic-store]
   (m/reset group-index-name group-index-settings group-type-name group-mappings elastic-store)
   (m/reset acl-index-name acl-index-settings acl-type-name acl-mappings elastic-store))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Support for bulk indexing
+
+(def concept-type->index-name
+  {:acl acl-index-name
+   :access-group group-index-name})

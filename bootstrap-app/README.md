@@ -115,6 +115,10 @@ NOTE from CMR-1908 that when reindexing a provider the collections are not reind
 
     curl -v XPOST http://localhost:3006/bulk_index/after_date_time?date_time=2015-02-02T10:00:00Z"
 
+### Bulk index all system concepts (tags/acls/access-groups)
+
+    curl -v XPOST http://localhost:3006/bulk_index/system_concepts
+
 ### Initialize Virtual Products
 
 Virtual collections contain granules derived from a source collection. Only granules specified in the source collections in the virtual product app configuration will be considered. Virtual granules will only be created in the configured destination virtual collections if they already exist. To initialize virtual granules from existing source granules, use the following command:
