@@ -41,9 +41,9 @@
   ONE_MB)
 
 (def MAX_REQUEST_BODY_SIZE
- "The maximum size of a request to body. This is set to 200KB prevent large requests coming in
+ "The maximum size of a request to body. This is set to 500KB prevent large requests coming in
   that cause out of memory exceptions. A large ISO document like AST_L1A can be 120K characters which
-  would take up about 240KB in Java. This value is set to 3 MB."
+  would take up about 240KB in Java. This value is set to 5 MB."
  (* 5 ONE_MB))
 
 (defn- routes-fn-verify-size
