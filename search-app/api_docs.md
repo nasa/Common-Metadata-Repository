@@ -1427,7 +1427,9 @@ When `has_granules` is set to "true" or "false", results will be restricted to c
 
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 
-Collection results are sorted by ascending entry title by default when a search does not result in a score. If a keyword search is performed then the search results will be sorted by relevance (score descending). One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` (Note: `+` must be URL encoded as %2B) can be used to explicitly request ascending.
+Collection results are sorted by ascending entry title by default when a search does not result in a score. If a keyword search is performed then the search results will be sorted by relevance (score descending) with the tie breaker being the EMS community usage score (also descending). The usage score comes from EMS metrics which contain access counts of the collections by short name and version. The metrics are ingested into the CMR.
+
+One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` (Note: `+` must be URL encoded as %2B) can be used to explicitly request ascending.
 
 ##### Valid Collection Sort Keys
 
@@ -1444,6 +1446,7 @@ Collection results are sorted by ascending entry title by default when a search 
   * `revision_date`
   * `score` - document relevance score, defaults to descending. See [Document Scoring](#document-scoring).
   * `has_granules` - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.
+  * `usage_score` - Sorts collection by usage. The usage score comes from the EMS metrics, which are ingested into the CMR.
 
 Examples of sorting by start_date in descending(Most recent data first) and ascending orders(Note: the `+` must be escaped with %2B):
 

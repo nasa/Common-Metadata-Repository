@@ -15,6 +15,7 @@
     [cmr.elastic-utils.index-util :as index-util]
     [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
     [cmr.indexer.data.concepts.attribute :as attrib]
+    [cmr.indexer.data.concepts.collection.community-usage-metrics :as metrics]
     [cmr.indexer.data.concepts.collection.data-center :as data-center]
     [cmr.indexer.data.concepts.collection.humanizer :as humanizer]
     [cmr.indexer.data.concepts.collection.instrument :as instrument]
@@ -286,7 +287,8 @@
            (spatial/collection-orbit-parameters->elastic-docs collection)
            (spatial->elastic collection)
            (sk/science-keywords->facet-fields collection)
-           (humanizer/collection-humanizers-elastic context collection))))
+           (humanizer/collection-humanizers-elastic context collection)
+           (metrics/collection-community-usage-score context collection))))
 
 (defn- get-elastic-doc-for-tombstone-collection
   "Get the subset of elastic field values that apply to a tombstone index operation."
