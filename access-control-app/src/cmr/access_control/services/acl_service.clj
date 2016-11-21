@@ -104,6 +104,7 @@
        (info (acl-log-message context (merge acl {:concept-id (:concept-id resp)}) :create))
        resp))
 
+
 (defn update-acl
   "Update the ACL with the given concept-id in Metadata DB. Returns map with concept and revision id of updated acl."
   [context concept-id acl]
@@ -113,7 +114,9 @@
   (let [existing-concept (fetch-acl-concept context concept-id)
         existing-legacy-guid (:legacy-guid (edn/read-string (:metadata existing-concept)))
         ;; An empty legacy guid can be passed in and we'll continue to use the same one
-        acl (update acl :legacy-guid #(or % existing-legacy-guid))
+        acl (if existing-legacy-guid
+              (update acl :legacy-guid #(or % existing-legacy-guid))
+              acl)
         legacy-guid (:legacy-guid acl)]
     (when-not (= existing-legacy-guid legacy-guid)
       (errors/throw-service-error

@@ -576,7 +576,8 @@
         resp (ac/update-acl (u/conn-context) concept-id (assoc-in single-instance-acl [:single_instance_identity :target_id] group2-concept-id) {:token token})]
     (is (= concept-id (:concept_id resp)))
     (is (= 2 (:revision_id resp)))
-    (is (= (assoc-in single-instance-acl [:single_instance_identity :target_id] group2-concept-id) (ac/get-acl (u/conn-context) concept-id {:token token})))))
+    (is (= (assoc-in single-instance-acl [:single_instance_identity :target_id] group2-concept-id)
+           (ac/get-acl (u/conn-context) concept-id {:token token})))))
 
 (deftest update-acl-errors-test
   (let [token (e/login (u/conn-context) "admin")
