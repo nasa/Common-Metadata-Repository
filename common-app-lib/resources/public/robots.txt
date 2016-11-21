@@ -2,10 +2,7 @@ User-agent: *
 Disallow: /ingest/health
 Disallow: /ingest/providers/
 Disallow: /ingest/translate/
-Disallow: /ingest/reindex-all-collections
-Disallow: /ingest/cleanup-expired-collections
-Disallow: /ingest/trigger-full-collection-granule-aggregate-cache-refresh
-Disallow: /ingest/trigger-partial-collection-granule-aggregate-cache-refresh
+Disallow: /ingest/jobs/
 
 Disallow: /search/health
 Disallow: /search/tiles/
@@ -20,5 +17,3 @@ Disallow: /access-control/groups/
 Disallow: /access-control/acls/
 Disallow: /access-control/permissions/
 Disallow: /access-control/health
-
-Disallow: /jobs/

@@ -2,9 +2,9 @@
   "This tests the health api for CMR applications."
   (:require
    [cheshire.core :as json]
-   [clojure.java.io :as io]
    [clj-http.client :as client]
    [clojure.test :refer :all]
+   [clojure.string :as str]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.time-keeper :as tk]
    [cmr.elastic-utils.connect :as es-util]
@@ -53,9 +53,12 @@
                   :indexer good-indexer-health}})
 
 (deftest robots-dot-txt-test
-  (let [robots (slurp (io/resource "public/robots.txt"))]
-   ;; Don't verify the contents of the file, as it's likely to change
-   (is (not= nil robots))))
+  (let [robots (client/get "http://localhost:3003/robots.txt"
+                           {:accept :text
+                            :throw-exceptions false
+                            :connection-manager (s/conn-mgr)})
+        body (str/split-lines (:body robots))]
+   (is (= "User-agent: *" (first body)))))
 
 (deftest index-set-health-test
   (is (= [200 {:elastic_search {:ok? true} :echo {:ok? true}}]
