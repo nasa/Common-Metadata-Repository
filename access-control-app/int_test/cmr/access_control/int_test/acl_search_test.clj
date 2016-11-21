@@ -690,12 +690,6 @@
    ;; collection concept id, acls granting permission to this collection by temporal
    ;; are returned.
   (let [token (e/login (u/conn-context) "user1")
-        save-access-value-collection (fn [short-name access-value]
-                                         (u/save-collection {:entry-title (str short-name " entry title")
-                                                             :short-name short-name
-                                                             :native-id short-name
-                                                             :provider-id "PROV1"
-                                                             :access-value access-value}))
 
         coll1 (u/save-collection {:entry-title "coll1 entry title"
                                   :short-name "coll1"

@@ -5,7 +5,6 @@
     [cmr.common-app.services.search.query-model :as common-qm]
     [cmr.elastic-utils.index-util :as index-util]
     [cmr.umm-spec.time :as spec-time]
-    [cmr.search.models.query :as q]
     [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
 (defn- create-generic-collection-applicable-condition
