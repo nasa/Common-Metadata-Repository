@@ -13,6 +13,8 @@ Disallow: /search/concepts/
 Disallow: /search/granules/
 Disallow: /search/collections/
 
+Disallow: /opensearch/granules/
+
 Disallow: /access-control/groups/
 Disallow: /access-control/acls/
 Disallow: /access-control/permissions/
