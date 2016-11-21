@@ -112,6 +112,8 @@
   ;; This fetch acl call also validates if the ACL with the concept id does not exist or is deleted
   (let [existing-concept (fetch-acl-concept context concept-id)
         existing-legacy-guid (:legacy-guid (edn/read-string (:metadata existing-concept)))
+        ;; An empty legacy guid can be passed in and we'll continue to use the same one
+        acl (update acl :legacy-guid #(or % existing-legacy-guid))
         legacy-guid (:legacy-guid acl)]
     (when-not (= existing-legacy-guid legacy-guid)
       (errors/throw-service-error
