@@ -80,7 +80,12 @@
                                     :version-id "2"}))
   (index/wait-until-indexed)
   (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
-    (is (= ["AST_05" "Relevancy 1" "Relevancy 2" "Relevancy 3"] (map :name results)))))
+    (is (= ["AST_05" "Relevancy 1" "Relevancy 2" "Relevancy 3"] (map :name results))))
+
+  (testing "Usage sort takes precedence over keyword Relevancy"
+    (let [results (:refs (search/find-refs :collection {:keyword "Relevancy" :sort-key "-usage-score"}))]
+      (is (= ["Relevancy 2" "Relevancy 3" "Relevancy 1" "AST_05"]
+             (map :name results))))))
 
 (deftest ingest-metrics-after-collections
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
