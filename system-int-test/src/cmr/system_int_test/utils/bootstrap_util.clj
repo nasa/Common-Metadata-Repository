@@ -127,6 +127,27 @@
     (is (= 202
            (:status (bulk-index-provider provider-id))))))
 
+(defn bulk-index-system-concepts
+  "Bulk index all the acls, access-groups, and tags."
+  []
+  (let [response (client/request
+                   {:method :post
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-system-concepts-url)
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
+(defn index-recently-replicated
+  "Calls the index-recently-replicated endpoint to index all recently replicated concepts."
+  []
+  (client/request {:method :post
+                   :url (url/bootstrap-index-recently-replicated-url)
+                   :throw-exceptions false
+                   :connection-manager (s/conn-mgr)}))
+
 (defn bootstrap-virtual-products
   "Call the bootstrap app to bulk index a collection."
   [provider-id entry-title]

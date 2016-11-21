@@ -137,6 +137,9 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Disassociating a Tag from Collections by query](#disassociating-collections-with-a-tag-by-query)
     * [Disassociating a Tag from Collections by collection concept ids](#disassociating-collections-with-a-tag-by-concept-ids)
     * [Searching for Tags](#searching-for-tags)
+  * [Community Usage Metrics](#community-usage-metrics)
+    * [Updating Community Usage Metrics](#updating-community-usage-metrics)
+    * [Retrieving Community Usage Metrics](#retrieving-community-usage-metrics)
   * [Administrative Tasks](#administrative-tasks)
     * [Clear the cache](#clear-the-cache)
     * [Reset the application to the initial state](#reset-the-application-to-the-initial-state)
@@ -1424,7 +1427,9 @@ When `has_granules` is set to "true" or "false", results will be restricted to c
 
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 
-Collection results are sorted by ascending entry title by default when a search does not result in a score. If a keyword search is performed then the search results will be sorted by relevance (score descending). One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` (Note: `+` must be URL encoded as %2B) can be used to explicitly request ascending.
+Collection results are sorted by ascending entry title by default when a search does not result in a score. If a keyword search is performed then the search results will be sorted by relevance (score descending) with the tie breaker being the EMS community usage score (also descending). The usage score comes from EMS metrics which contain access counts of the collections by short name and version. The metrics are ingested into the CMR.
+
+One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` (Note: `+` must be URL encoded as %2B) can be used to explicitly request ascending.
 
 ##### Valid Collection Sort Keys
 
@@ -1441,6 +1446,7 @@ Collection results are sorted by ascending entry title by default when a search 
   * `revision_date`
   * `score` - document relevance score, defaults to descending. See [Document Scoring](#document-scoring).
   * `has_granules` - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.
+  * `usage_score` - Sorts collection by usage. The usage score comes from the EMS metrics, which are ingested into the CMR.
 
 Examples of sorting by start_date in descending(Most recent data first) and ascending orders(Note: the `+` must be escaped with %2B):
 
@@ -2111,7 +2117,7 @@ Humanizers define the rules that are used by CMR to provide humanized values for
 
 ##### <a name="updating-humanizers"></a> Updating Humanizers
 
-Humanizers can be updated with a JSON representation of the humanizer rules to %CMR-ENDPOINT%/humanizers along with a valid ECHO token. The response will contain a concept id and revision id identifying the set of humanizer instructions.
+Humanizers can be updated with a JSON representation of the humanizer rules to `%CMR-ENDPOINT%/humanizers` along with a valid ECHO token. The response will contain a concept id and revision id identifying the set of humanizer instructions.
 
 ```
 curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/humanizers -d \
@@ -2857,6 +2863,48 @@ Content-Length: 292
   "took" : 5,
   "hits" : 1
 }
+```
+
+### <a name="community-usage-metrics"></a> Community Usage Metrics
+
+Community usage metrics are metrics showing how many times a particular version of a collection has been accessed. Storing these metrics offers improved relevancy based on collection popularity. The metrics are obtained from the ESDID Metrics System (EMS) and ingested into the system through this API.
+
+#### <a name="updating-community-usage-metrics"></a> Updating Community Usage Metrics
+
+Community usage metrics can be updated using the `%CMR-ENDPOINT%/community-usage-metrics` endpoint with a valid ECHO token. The content is a CSV file obtained from the EMS. The 'Product', 'Version', and 'Hosts' columns are parsed from the CSV file and stored as 'short-name', 'version', and 'access-count' respectively in the CMR. Entries with the same Product (short-name) and Version will have the access count aggregated to form a total access count for that collection and version, stored as one entry in the CMR.
+
+The response will contain a concept id and revision id identifying the set of community usage metrics.
+
+```
+curl -XPUT -i -H "Content-Type: text/csv" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/community-usage-metrics -d <csv-file-location>
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 48
+
+{"concept_id":"H1200000000-CMR","revision_id":2}
+```
+
+#### <a name="retrieving-community-usage-metrics"></a> Retrieving Community Usage Metrics
+
+The community usage metrics can be retrieved by sending a GET request to `%CMR-ENDPOINT%/community-usage-metrics`. The metrics are returned in JSON format.
+
+```
+curl -i %CMR-ENDPOINT%/community-usage-metrics?pretty=true
+
+HTTP/1.1 200 OK
+Content-Length: 224
+Content-Type: application/json; charset=UTF-8
+
+[ {
+  "short-name" : "AMSR-L1A",
+  "version" : "3",
+  "access-count" : 100
+}, {
+  "short-name" : "MAPSS_MOD04_L2",
+  "version" : "1",
+  "access-count" : 85
+} ]
 ```
 
 ### <a name="administrative-tasks"></a> Administrative Tasks

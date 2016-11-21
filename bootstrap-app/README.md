@@ -115,6 +115,10 @@ NOTE from CMR-1908 that when reindexing a provider the collections are not reind
 
     curl -v XPOST http://localhost:3006/bulk_index/after_date_time?date_time=2015-02-02T10:00:00Z"
 
+### Bulk index all system concepts (tags/acls/access-groups)
+
+    curl -v XPOST http://localhost:3006/bulk_index/system_concepts
+
 ### Initialize Virtual Products
 
 Virtual collections contain granules derived from a source collection. Only granules specified in the source collections in the virtual product app configuration will be considered. Virtual granules will only be created in the configured destination virtual collections if they already exist. To initialize virtual granules from existing source granules, use the following command:
@@ -122,6 +126,14 @@ Virtual collections contain granules derived from a source collection. Only gran
     curl -v -XPOST http://localhost:3006/virtual_products?provider-id=PROV1&entry-title=et1
 
 Note that provider-id and entry-title are required.
+
+### Index recently replicated concepts
+
+This endpoint should only be using in an AWS environment where the Database Migration Service (DMS)
+is being used to replicate changes from another database to this environment. This will index any
+concepts that have been replicated since the last replication run.
+
+    curl -v -XPOST http://localhost:3006/index_recently_replicated
 
 ### Check application health
 

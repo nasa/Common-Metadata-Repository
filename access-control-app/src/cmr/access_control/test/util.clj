@@ -94,7 +94,8 @@
   ([token concept-id group]
    (update-group token concept-id group nil))
   ([token concept-id group options]
-   (let [options (merge {:raw? true :token token} options)]
+   (let [options (merge {:raw? true :token token} options)
+         group (util/remove-nil-keys (dissoc group :concept_id :revision_id))]
      (process-response (ac/update-group (conn-context) concept-id group options)))))
 
 (defn delete-group
@@ -151,16 +152,19 @@
        group))))
 
 (defn ingest-group
- "Ingests the group and returns a group such that it can be matched with a search result."
- [token attributes members]
- (let [group (make-group attributes)
-       {:keys [concept_id status revision_id] :as resp} (create-group-with-members token group members)]
-   (when-not (= status 200)
-     (throw (Exception. (format "Unexpected status [%s] when creating group %s" status (pr-str resp)))))
-   (assoc group
-          :members members
-          :concept_id concept_id
-          :revision_id revision_id)))
+  "Ingests the group and returns a group such that it can be matched with a search result."
+  ([token attributes]
+   (ingest-group token attributes nil))
+  ([token attributes members]
+   (let [group (make-group attributes)
+         {:keys [concept_id status revision_id] :as resp} (create-group-with-members token group members)]
+     (when-not (= status 200)
+       (throw (Exception. (format "Unexpected status [%s] when creating group %s" status (pr-str resp)))))
+     (assoc group
+            :members members
+            :concept_id concept_id
+            :revision_id revision_id))))
+
 
 (defn disable-publishing-messages
   "Configures metadata db to not publish messages for new data."

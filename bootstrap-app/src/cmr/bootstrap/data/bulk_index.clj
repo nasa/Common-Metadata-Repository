@@ -7,9 +7,12 @@
     [clojure.core.async :as ca :refer [go go-loop alts!! <!! >!]]
     [clojure.java.jdbc :as j]
     [clojure.string :as str]
+    [cmr.access-control.data.access-control-index :as access-control-index]
+    [cmr.access-control.data.bulk-index :as ac-bulk-index]
     [cmr.bootstrap.data.bulk-migration :as bm]
     [cmr.bootstrap.embedded-system-helper :as helper]
     [cmr.common.log :refer (debug info warn error)]
+    [cmr.common.util :as util]
     [cmr.indexer.services.index-service :as index]
     [cmr.metadata-db.data.concepts :as db]
     [cmr.metadata-db.data.providers :as p]
@@ -116,6 +119,18 @@
             gran-count
             provider-id)))
 
+(defn- index-access-control-concepts
+  "Bulk index ACLs or access groups"
+  [system concept-batches]
+  (info "Indexing concepts")
+  (ac-bulk-index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches))
+
+(defn- index-concepts
+  "Bulk index the given concepts using the indexer-app"
+  [system concept-batches]
+  (info "Indexing concepts")
+  (index/bulk-index-with-revision-date {:system (helper/get-indexer system)} concept-batches))
+
 (defn- fetch-and-index-new-concepts
   "Get batches of concepts for a given provider/concept type that have a revision-date
   newer than the given date time and then index them."
@@ -127,39 +142,70 @@
                 :revision-date {:comparator `> :value (time-coerce/to-sql-time date-time)}}
         concept-batches (db/find-concepts-in-batches
                           db provider params (:db-batch-size system))
-        num-concepts (index/bulk-index
-                      {:system (helper/get-indexer system)}
-                      concept-batches
-                      {})]
-    (info "Indexed" num-concepts (str (name concept-type) "(s) for provider") provider-id
-     "with revision-date later than " date-time)
-    num-concepts))
+        {:keys [max-revision-date num-indexed]} (if (contains? #{:acl :access-group} concept-type)
+                                                 (index-access-control-concepts system concept-batches)
+                                                 (index-concepts system concept-batches))]
+
+    (info (format (str "Indexed %d %s(s) for provider %s with revision-date later than %s and max "
+                       "revision date was %s.")
+                  num-indexed
+                  (name concept-type)
+                  provider-id
+                  date-time
+                  max-revision-date))
+    {:max-revision-date max-revision-date
+     :num-indexed num-indexed}))
+
+(defn index-system-concepts
+  "Bulk index tags, acls, and access-groups."
+  [system start-index]
+  (let [db (helper/get-metadata-db-db system)
+        provider {:provider-id "CMR"}
+        total (apply + (for [concept-type [:tag :acl :access-group]
+                             :let [params {:concept-type concept-type
+                                           :provider-id (:provider-id provider)}
+                                   concept-batches (db/find-concepts-in-batches db
+                                                                                provider
+                                                                                params
+                                                                                (:db-batch-size system)
+                                                                                start-index)]]
+                         (:num-indexed (if (= concept-type :tag)
+                                         (index-concepts system concept-batches)
+                                         (index-access-control-concepts system concept-batches)))))]
+    (info "Indexed" total "system concepts.")
+    total))
 
 (defn index-data-later-than-date-time
-  "Index all concept revisions created later than the given date-time."
+  "Index all concept revisions created later than or equal to the given date-time."
   [system date-time]
-  (info "Indexing concepts.")
+  (info "Indexing concepts with revision-date later than " date-time "started.")
   (let [db (helper/get-metadata-db-db system)
-        providers (p/get-providers db)]
-
-    (let [non-system-concept-count (reduce + (for [provider providers
-                                                   concept-type [:collection :granule :service]]
-                                               (fetch-and-index-new-concepts
-                                                 system provider concept-type date-time)))
-          system-concept-count (reduce + (for [concept-type [:tag]]
-                                           (fetch-and-index-new-concepts
-                                             system {:provider-id "CMR"} concept-type date-time)))]
+        providers (p/get-providers db)
+        provider-response-map (for [provider providers
+                                    concept-type [:collection :granule :service]]
+                                (fetch-and-index-new-concepts
+                                  system provider concept-type date-time))
+        provider-concept-count (reduce + (map :num-indexed provider-response-map))
+        system-concept-response-map (for [concept-type [:tag :acl :access-group]]
+                                      (fetch-and-index-new-concepts
+                                        system {:provider-id "CMR"} concept-type date-time))
+        system-concept-count (reduce + (map :num-indexed system-concept-response-map))
+        indexing-complete-message (format "Indexed %d provider concepts and %d system concepts."
+                                          provider-concept-count
+                                          system-concept-count)]
       (info "Indexing concepts with revision-date later than" date-time "completed.")
-      (format "Indexed %d provider concepts and %d system concepts."
-              non-system-concept-count
-              system-concept-count))))
+      (info indexing-complete-message)
+      {:message indexing-complete-message
+       :max-revision-date (apply util/max-compare
+                           (map :max-revision-date
+                                (apply conj provider-response-map system-concept-response-map)))}))
 
 ;; Background task to handle bulk index requests
 (defn handle-bulk-index-requests
   "Handle any requests for bulk indexing. We use separate channels for each type of
   indexing request instead of a single channel to simplify the dispatch logic.
   Since we know at the time a request is made what function should be used, there
-  is no point in implementing separate code to determine what funciton to
+  is no point in implementing separate code to determine what function to call
   when an item comes off the channel."
   [system]
   (info "Starting background task for monitoring bulk provider indexing channels.")
@@ -182,5 +228,12 @@
                  (try ; catch any errors and log them, but don't let the thread die
                    (let [{:keys [provider-id collection-id] :as options} (<!! channel)]
                      (index-granules-for-collection system provider-id collection-id options))
+                   (catch Throwable e
+                     (error e (.getMessage e)))))))
+  (let [channel (:system-concept-channel system)]
+    (ca/thread (while true
+                 (try ; catch any errors and log them, but don't let the thread die
+                   (let [{:keys [start-index]} (<!! channel)]
+                     (index-system-concepts system start-index))
                    (catch Throwable e
                      (error e (.getMessage e))))))))

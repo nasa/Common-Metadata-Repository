@@ -413,4 +413,48 @@
         [whole-world polygon-with-holes polygon-with-holes-cart normal-line-cart normal-line
          normal-poly-cart]))))
 
+(deftest no-lr-spatial-search-test
+  (let [geodetic-coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial {:gsr :geodetic})}))
+        make-gran (fn [ur & shapes]
+                    (let [shapes (map (partial umm-s/set-coordinate-system :geodetic) shapes)]
+                      (d/ingest "PROV1" (dg/granule geodetic-coll
+                                                    {:granule-ur ur
+                                                     :spatial-coverage (apply dg/spatial shapes)}))))
+        no-lr (make-gran "no-lr" (polygon 0.0 0.0, -179.9998 -89.9999, 0.0 -89.9999, 0.0 0.0))]
+
+    ;; This particular polygon is problematic. We can't find an interial rectangle for it. So we
+    ;; are using one of the points in the polyson to create a mbr to replace it. 
+    (index/wait-until-indexed)
+    (are3 [ords items]
+      (let [found (search/find-refs :granule {:polygon (apply search-poly ords)
+                                              :provider "PROV1"})]
+        (d/assert-refs-match items found))
+ 
+      "search against the original polygon matching case" 
+      [0.0 0.0, -179.9998 -89.9999, 0.0 -89.9999, 0.0 0.0]
+      [no-lr]
+
+      "search against the box that covers one of the points (0.0 0.0) matching case"
+      [-10 -10, 10 -10, 10 10, -10 10, -10 -10]
+      [no-lr]
+
+      "search against the box that covers all three points matching case"
+      [-179.9998 0, -179.9998 -89.9999, 0 -89.9999, 0 0, -179.9998 0]
+      [no-lr])
+
+     (are3 [ords items]
+        (let [response (search/find-refs :granule {:polygon (apply search-poly ords)
+                                                   :provider "PROV1"})]
+          (is (= 0 (:hits response))
+              (pr-str response))) 
+
+       "search against the box that does not intersect with the polygon unmatching case"
+       [1 1, 2 1, 2 2, 1 2, 1 1]
+       [no-lr]
+
+       "search against the box that does not intersect with the polygon but intersect with the mbr of the polygon unmatching case"
+       [-179 0, -179 -1, -178 -1, -178 0, -179 0]
+       [no-lr])))
+
+
 

@@ -1,125 +1,124 @@
 [
-  "Humanizer configuration file.",
-  "For the time being, humanizers are configured using this file instead of being",
-  "ingested into MetadataDB. This file contains an array of humanizers in the",
-  "format that will be used by the ingest API. Order is not important. String",
-  "entries are treated as comments. For details on humanizers and the format, see",
-  "https://wiki.earthdata.nasa.gov/display/CMR/Humanizing+Facets+Design",
+      "Humanizer configuration file, used for testing and bookkeeping purposes",
+      "This file contains an array of humanizers in the",
+      "format that will be used by the ingest API. Order is not important. String",
+      "entries are treated as comments. For details on humanizers and the format, see",
+      "https://wiki.earthdata.nasa.gov/display/CMR/Humanizing+Facets+Design",
 
-  {"type": "trim_whitespace", "field": "platform", "order": -100},
-  {"type": "trim_whitespace", "field": "instrument", "order": -100},
-  {"type": "trim_whitespace", "field": "science_keyword", "order": -100},
-  {"type": "trim_whitespace", "field": "project", "order": -100},
-  {"type": "trim_whitespace", "field": "processing_level", "order": -100},
-  {"type": "trim_whitespace", "field": "organization", "order": -100},
+      {"type": "trim_whitespace", "field": "platform", "order": -100},
+      {"type": "trim_whitespace", "field": "instrument", "order": -100},
+      {"type": "trim_whitespace", "field": "science_keyword", "order": -100},
+      {"type": "trim_whitespace", "field": "project", "order": -100},
+      {"type": "trim_whitespace", "field": "processing_level", "order": -100},
+      {"type": "trim_whitespace", "field": "organization", "order": -100},
 
-  {"type": "capitalize", "field": "science_keyword", "order": -10},
+      {"type": "capitalize", "field": "science_keyword", "order": -10},
 
-  {
-    "type": "alias",
-    "field": "science_keyword",
-    "source_value": "Bioosphere",
-    "replacement_value": "Biosphere",
-    "reportable": true,
-    "order": 0
-  },
-  {
-    "type": "alias",
-    "field": "platform",
-    "source_value": "AM-1",
-    "replacement_value": "Terra",
-    "reportable": true,
-    "order": 0
-  },
-  {
-    "type": "ignore",
-    "field": "instrument",
-    "source_value": "NOT APPLICABLE",
-    "order": 0
-  },
-  {
-    "type": "ignore",
-    "field": "instrument",
-    "source_value": "Not provided",
-    "order": 0
-  },
-  {
-    "type": "alias",
-    "field": "instrument",
-    "source_value": "GPS",
-    "replacement_value": "GPS RECEIVERS",
-    "reportable": true,
-    "order": 0
-  },
-  {
-    "type": "alias",
-    "field": "instrument",
-    "source_value": "GPS RECEIVERS",
-    "replacement_value": "GPS Receivers",
-    "reportable": true,
-    "order": 0
-  },
-  {
-    "type": "alias",
-    "field": "project",
-    "source_value": "USGS_SOFIA",
-    "replacement_value": "USGS SOFIA",
-    "reportable": true,
-    "order": 0
-  },
-  {
-    "type": "alias",
-    "field": "processing_level",
-    "source_value": "L1T",
-    "replacement_value": "1T",
-    "reportable": true,
-    "order": 0
-  },
-  {
-    "type": "alias",
-    "field": "processing_level",
-    "source_value": "Level 1",
-    "replacement_value": "1",
-    "reportable": true,
-    "order": 0
-  },
-  {
-    "type": "alias",
-    "field": "processing_level",
-    "source_value": "Level 2",
-    "replacement_value": "2",
-    "reportable": true,
-    "order": 0
-  },
-  {
-    "type": "alias",
-    "field": "processing_level",
-    "source_value": "Level 3",
-    "replacement_value": "3",
-    "reportable": true,
-    "order": 0
-  },
-  {
-    "type": "ignore",
-    "field": "processing_level",
-    "source_value": "NA",
-    "order": 0
-  },
-  {
-    "type": "alias",
-    "field": "organization",
-    "source_value": "NASA/NSIDC_DAAC",
-    "replacement_value": "NSIDC",
-    "order": 0
-  },
+      {
+        "type": "alias",
+        "field": "science_keyword",
+        "source_value": "Bioosphere",
+        "replacement_value": "Biosphere",
+        "reportable": true,
+        "order": 0
+      },
+      {
+        "type": "alias",
+        "field": "platform",
+        "source_value": "AM-1",
+        "replacement_value": "Terra",
+        "reportable": true,
+        "order": 0
+      },
+      {
+        "type": "ignore",
+        "field": "instrument",
+        "source_value": "NOT APPLICABLE",
+        "order": 0
+      },
+      {
+        "type": "ignore",
+        "field": "instrument",
+        "source_value": "Not provided",
+        "order": 0
+      },
+      {
+        "type": "alias",
+        "field": "instrument",
+        "source_value": "GPS",
+        "replacement_value": "GPS RECEIVERS",
+        "reportable": true,
+        "order": 0
+      },
+      {
+        "type": "alias",
+        "field": "instrument",
+        "source_value": "GPS RECEIVERS",
+        "replacement_value": "GPS Receivers",
+        "reportable": true,
+        "order": 0
+      },
+      {
+        "type": "alias",
+        "field": "project",
+        "source_value": "USGS_SOFIA",
+        "replacement_value": "USGS SOFIA",
+        "reportable": true,
+        "order": 0
+      },
+      {
+        "type": "alias",
+        "field": "processing_level",
+        "source_value": "L1T",
+        "replacement_value": "1T",
+        "reportable": true,
+        "order": 0
+      },
+      {
+        "type": "alias",
+        "field": "processing_level",
+        "source_value": "Level 1",
+        "replacement_value": "1",
+        "reportable": true,
+        "order": 0
+      },
+      {
+        "type": "alias",
+        "field": "processing_level",
+        "source_value": "Level 2",
+        "replacement_value": "2",
+        "reportable": true,
+        "order": 0
+      },
+      {
+        "type": "alias",
+        "field": "processing_level",
+        "source_value": "Level 3",
+        "replacement_value": "3",
+        "reportable": true,
+        "order": 0
+      },
+      {
+        "type": "ignore",
+        "field": "processing_level",
+        "source_value": "NA",
+        "order": 0
+      },
+      {
+        "type": "alias",
+        "field": "organization",
+        "source_value": "NASA/NSIDC_DAAC",
+        "replacement_value": "NSIDC",
+        "order": 0
+      },
 
-  {"type": "capitalize", "field": "platform", "source_value": "TERRA", "order": 0},
-  {"type": "capitalize", "field": "platform", "source_value": "AQUA", "order": 0},
+      {"type": "capitalize", "field": "platform", "source_value": "TERRA", "order": 0},
+      {"type": "capitalize", "field": "platform", "source_value": "AQUA", "order": 0},
 
-  {"type": "ignore", "field": "platform", "source_value": "Aircraft", "order": 0},
+      {"type": "ignore", "field": "platform", "source_value": "Aircraft", "order": 0},
 
-  {"type": "priority", "field": "instrument", "source_value": "MODIS", "order": 10, "priority": 10},
-  {"type": "priority", "field": "instrument", "source_value": "ASTER", "order": 10, "priority": 10},
-  {"type": "priority", "field": "platform", "source_value": "Terra", "order": 10, "priority": 10},
-  {"type": "priority", "field": "platform", "source_value": "Aqua", "order": 10, "priority": 10}
+      {"type": "priority", "field": "instrument", "source_value": "MODIS", "order": 10, "priority": 10},
+      {"type": "priority", "field": "instrument", "source_value": "ASTER", "order": 10, "priority": 10},
+      {"type": "priority", "field": "platform", "source_value": "Terra", "order": 10, "priority": 10},
+      {"type": "priority", "field": "platform", "source_value": "Aqua", "order": 10, "priority": 10}
 ]

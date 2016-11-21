@@ -335,6 +335,10 @@
   []
   (format "http://localhost:%s/bulk_migration/providers" (transmit-config/bootstrap-port)))
 
+(defn bulk-index-system-concepts-url
+  []
+  (format "http://localhost:%s/bulk_index/system_concepts" (transmit-config/bootstrap-port)))
+
 (defn bootstrap-health-url
   "URL to check bootstrap health."
   []
@@ -349,6 +353,11 @@
   "Clear cache in bootstrap app."
   []
   (format "http://localhost:%s/caches/clear-cache" (transmit-config/bootstrap-port)))
+
+(defn bootstrap-index-recently-replicated-url
+  "URL to call the index recently replicated endpoint."
+  []
+  (format "http://localhost:%s/jobs/index_recently_replicated" (transmit-config/bootstrap-port)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Index Set URLs
