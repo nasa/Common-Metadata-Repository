@@ -1,25 +1,30 @@
 (ns cmr.system-int-test.ingest.granule-parent-dependency-test
   "CMR granule ingest with validation against parent collection integration tests"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.search-util :as search]
-            [clojure.string :as str]
-            [clojure.java.io :as io]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.util :as u :refer [are3]]
-            [cmr.spatial.mbr :as m]
-            [cmr.umm.umm-granule :as umm-g]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.indexer.system :as indexer-system]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+  (:require 
+    [clojure.java.io :as io]
+    [clojure.string :as str]
+    [clojure.test :refer :all]
+    [cmr.common.mime-types :as mt]
+    [cmr.common.util :as u :refer [are3]]
+    [cmr.indexer.system :as indexer-system]
+    [cmr.spatial.mbr :as m]
+    [cmr.system-int-test.data2.collection :as dc]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+    [cmr.system-int-test.utils.humanizer-util :as hu]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.metadata-db-util :as mdb]
+    [cmr.system-int-test.utils.search-util :as search]
+    [cmr.umm.umm-granule :as umm-g]
+    [cmr.umm.umm-spatial :as umm-s]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1"})
+                       hu/grant-all-humanizers-fixture
+                       hu/save-sample-humanizers-fixture]))
 
 ;; Ways in which a granule can refererence a parent collection:
 ;;
@@ -42,8 +47,9 @@
         gpsa (dg/psa "a-float" [7.0])
         i1 (dc/instrument {:short-name "instrument-Sn A"})
         ir1 (dg/instrument-ref {:short-name "instrument-Sn A"})
-        p1 (dc/platform {:short-name "platform-Sn A" :instruments [i1]})
-        pr1 (dg/platform-ref {:short-name "platform-Sn A" :instrument-refs [ir1]})
+        p1 (dc/platform {:short-name "Terra" :instruments [i1]})
+        pr1 (dg/platform-ref {:short-name "AM-1" :instrument-refs [ir1]})
+        pr2 (dg/platform-ref {:short-name "Terra" :instrument-refs [ir1]})
         projects (dc/projects "proj")
         mbr1 (umm-s/set-coordinate-system :geodetic (m/mbr 10 10 20 0))
         gran-spatial-rep (apply dg/spatial [mbr1])
@@ -79,6 +85,12 @@
                    :product-specific-attributes [gpsa]
                    :beginning-date-time "1966-12-12T07:00:00.000-05:00"
                    :ending-date-time "1967-10-12T07:00:00.000-05:00"}
+        gran-data2 {:platform-refs [pr2]
+                    :spatial-coverage gran-spatial-rep
+                    :two-d-coordinate-system g-two-d-cs
+                    :product-specific-attributes [gpsa]
+                    :beginning-date-time "1966-12-12T07:00:00.000-05:00"
+                    :ending-date-time "1967-10-12T07:00:00.000-05:00"}
         echo10-coll (dc/collection coll-data)
         _ (d/ingest "PROV1" echo10-coll {:format :echo10})
         dif-coll (dc/collection (assoc coll-data :entry-title "short_name2_version"
@@ -98,6 +110,7 @@
                                             :entry-id "short_name5_version"))
         _ (d/ingest "PROV1" iso-smap-coll {:format :iso-smap})
         gran-for-echo10-coll (dg/granule echo10-coll gran-data)
+        gran-for-echo10-coll2 (dg/granule echo10-coll gran-data2)
         gran-for-dif-coll (dg/granule dif-coll gran-data)
         gran-for-dif10-coll (dg/granule dif10-coll gran-data)
         gran-for-iso19115-coll (dg/granule iso19115-coll gran-data)
@@ -111,6 +124,10 @@
           "ECHO10 collection"
           []
           gran-for-echo10-coll
+
+          "ECHO10 collection-referencing the old platform"
+          []
+          gran-for-echo10-coll2
 
           "DIF collection"
           ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."]
