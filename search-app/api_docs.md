@@ -2873,10 +2873,12 @@ Community usage metrics are metrics showing how many times a particular version 
 
 Community usage metrics can be updated using the `%CMR-ENDPOINT%/community-usage-metrics` endpoint with a valid ECHO token. The content is a CSV file obtained from the EMS. The 'Product', 'Version', and 'Hosts' columns are parsed from the CSV file and stored as 'short-name', 'version', and 'access-count' respectively in the CMR. Entries with the same Product (short-name) and Version will have the access count aggregated to form a total access count for that collection and version, stored as one entry in the CMR.
 
+Note that when sending the data, use the --data-binary option so that the linebreaks in the CSV data are not removed. See the example below.
+
 The response will contain a concept id and revision id identifying the set of community usage metrics.
 
 ```
-curl -XPUT -i -H "Content-Type: text/csv" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/community-usage-metrics -d <csv-file-location>
+curl -XPUT -i -H "Content-Type: text/csv" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/community-usage-metrics --data-binary <csv-file-location>
 
 HTTP/1.1 200 OK
 Content-Type: application/json
