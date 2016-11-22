@@ -157,8 +157,6 @@
                                                                  (= (:replacement_value %) coll-plat-sn))
                                                      humanizer)))))
         updated-collection (update collection plat-key concat platform-aliases)]
-    (println "========humanizer is: " humanizer "===============")
-    (println "=====platform-aliases: " platform-aliases "===============")
     updated-collection ))
 
 (defn validate-granule-umm-spec
