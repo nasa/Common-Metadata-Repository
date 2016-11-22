@@ -1,13 +1,18 @@
 (ns cmr.access-control.data.acls
-  "Misc. functions for working with ACL structures.")
+  "Misc. functions for working with ACL structures."
+  (:require
+    [cmr.common.concepts :as concepts]))
 
 ;; TODO Does it make sense to have a namespace with one function?
 
-
-;; TODO if the ACL is a single instance identity then you should parse the target id which has the concept id
-;; If it's CMR don't return it otherwise return that.
 (defn acl->provider-id
-  "Returns the provider id which the acl explicitly targets, if any."
-  [acl]
-  (or (:provider-id (:catalog-item-identity acl))
-      (:provider-id (:provider-identity acl))))
+  "Returns the provider id which the acl explicitly targets. Returns nil for system objects."
+  [{:keys [catalog-item-identity provider-identity single-instance-identity]}]
+  (cond
+    catalog-item-identity (:provider-id catalog-item-identity)
+    provider-identity (:provider-id provider-identity)
+    single-instance-identity (let [provider-id (:provider-id
+                                                 (concepts/parse-concept-id
+                                                   (:target-id single-instance-identity)))]
+                               (when-not (= "CMR" provider-id)
+                                 provider-id))))

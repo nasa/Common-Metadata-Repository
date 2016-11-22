@@ -2,20 +2,18 @@
   (:require
     [clojure.edn :as edn]
     [cmr.access-control.services.auth-util :as auth-util]
+    [cmr.access-control.services.group-service :as group-service]
+    [cmr.access-control.data.access-control-index :as index]
+    [cmr.access-control.data.acl-schema :as schema]
     [cmr.acl.core :as acl]
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.query-execution :as qe]
     [cmr.common-app.services.search.query-model :as qm]
     [cmr.common.services.errors :as errors]
     [cmr.common.util :as util :refer [defn-timed]]
-    [cmr.transmit.config :as transmit-config]
-    [cmr.access-control.services.group-service :as group-service]
-    [cmr.transmit.config :as tc]))
+    [cmr.transmit.config :as transmit-config]))
 
 ;; TODO add timing everywhere
-
-;; TODO many of the functions here are likely no longer needed. See what can be removed.
-;; TODO replace System and Provider with constants
 
 (defn-timed get-acls-by-condition
   "Returns the acls found by executing given condition against ACL index"
@@ -33,70 +31,66 @@
   "Returns a sequences of acls granting ACL read to the current user"
   [context]
   (let [sids (auth-util/get-sids context)
-        system-condition (gc/and-conds (qm/string-condition :identity-type "System" true false)
-                                       (qm/string-condition :target "ANY_ACL"))
-        prov-condition (gc/and-conds
-                        (qm/string-condition :identity-type "Provider" true false)
-                        (gc/or-conds
-                         (qm/string-condition :target "CATALOG_ITEM_ACL")
-                         (qm/string-condition :target "PROVIDER_OBJECT_ACL")))
-        condition (gc/or-conds system-condition prov-condition)
+        system-condition (gc/and (qm/string-condition :identity-type index/system-identity-type-name true false)
+                                 (qm/string-condition :target schema/system-any-acl-target))
+        prov-condition (gc/and (qm/string-condition :identity-type index/provider-identity-type-name true false)
+                               (gc/or (qm/string-condition :target schema/provider-catalog-item-acl-target)
+                                      (qm/string-condition :target schema/provider-object-acl-target)))
+        condition (gc/or system-condition prov-condition)
         acls (get-acls-by-condition context condition)]
-    (filterv #(acl/acl-matches-sids-and-permission? sids "read" %) acls)))
+    (filterv #(acl/acl-matches-sids-and-permission? sids "read" (acl/echo-style-acl %)) acls)))
 
-;; TODO this won't quite work yet. Single instance identity ACLs don't reference a provider id.
-;; I added an idea of how to make that work. See TODO in cmr.access-control.data.acls
 (defn- provider-read-acl->condition
-  "TODO"
+  "Returns an elastic query condition that matches ACLs which the user has permission to read."
   [acl]
-  (let [target (get-in acl [:provider_identity :target])
-        ;; TODO constants for all these strings
-        target-cond (case target
-                      "CATALOG_ITEM_ACL"
-                      (qm/string-condition :identity-type "Catalog Item" true false)
-                      "PROVIDER_OBJECT_ACL"
-                      (gc/or-conds
-                       [(qm/string-condition :identity-type "Provider" true false)
-                        (qm/string-condition :identity-type "Single Instance Identity" true false)])
+  (let [target (get-in acl [:provider-identity :target])
+        target-cond (condp = target
+                      schema/provider-catalog-item-acl-target
+                      (qm/string-condition :identity-type index/catalog-item-identity-type-name true false)
+
+                      schema/provider-object-acl-target
+                      (gc/or
+                        (qm/string-condition :identity-type index/provider-identity-type-name true false)
+                        (qm/string-condition :identity-type index/single-instance-identity-type-name true false))
+
                       ;; else
                       (throw (Exception. (format "Unexpected target for acl [%s] of [%s]"
                                                  (pr-str acl) target))))
-        provider-id (get-in acl [:provider_identity :provider_id])
+        provider-id (get-in acl [:provider-identity :provider-id])
         provider-cond (qm/string-condition :target-provider-id provider-id)]
-    (gc/and-conds [provider-cond target-cond])))
+    (gc/and provider-cond target-cond)))
 
 (defmethod qe/add-acl-conditions-to-query :acl
   [context query]
-  (let [acls (acls-granting-acl-read context)]
-    ;; TODO ANY_ACL constant
-    (if (some #(= "ANY_ACL" (get-in % [:system_identity :target])) acls)
-      query
-      (if (seq acls)
-        (let [combined-condition (gc/group-conds :or (mapv provider-read-acl->condition acls))]
-          (update query :condition #(gc/and-conds combined-condition %)))
-        (assoc query :condition qm/match-none)))))
-
-;; TODO do we need the functions below this?
+  (if (transmit-config/echo-system-token? context)
+    query
+    (let [acls (acls-granting-acl-read context)]
+      (if (some #(= schema/system-any-acl-target (get-in % [:system-identity :target])) acls)
+        query
+        (if (seq acls)
+          (let [combined-condition (gc/or-conds (mapv provider-read-acl->condition acls))]
+            (update query :condition #(gc/and combined-condition %)))
+          (assoc query :condition qm/match-none))))))
 
 (defn has-system-access?
   "Returns true if system ACL matches sids for user in context for a given action"
   [context action target]
-  (let [condition (qm/string-condition :identity-type "System" true false)
+  (let [condition (qm/string-condition :identity-type index/system-identity-type-name true false)
         system-acls (get-acls-by-condition context condition)
         any-acl-system-acl (acl/echo-style-acl
-                             (first (filter #(= target (:target (:system-identity %))) (:acls system-acls))))
+                             (first (filter #(= target (:target (:system-identity %))) system-acls)))
         sids (auth-util/get-sids context)]
     (acl/acl-matches-sids-and-permission? sids (name action) any-acl-system-acl)))
 
 (defn- has-provider-access?
   "Returns true if provider ACL matches sids for user in context for a given action"
   [context action target provider-id]
-  (let [provider-identity-condition (qm/string-condition :identity-type "Provider" true false)
+  (let [provider-identity-condition (qm/string-condition :identity-type index/provider-identity-type-name true false)
         provider-id-condition (qm/string-condition :provider provider-id)
         conditions (gc/and-conds [provider-identity-condition provider-id-condition])
         provider-acls (get-acls-by-condition context conditions)
         prov-acl (acl/echo-style-acl
-                   (first (filter #(= target (:target (:provider-identity %))) (:acls provider-acls))))
+                   (first (filter #(= target (:target (:provider-identity %))) provider-acls)))
         sids (auth-util/get-sids context)]
     (acl/acl-matches-sids-and-permission? sids (name action) prov-acl)))
 
@@ -128,7 +122,7 @@
    (cond
      ;; system token or system-level ANY_ACL permission can do anything
      (or (transmit-config/echo-system-token? context)
-         (has-system-access? context permission "ANY_ACL")
+         (has-system-access? context permission schema/system-any-acl-target)
          (when concept-id
            (has-self-permission? context permission concept-id)))
      true
@@ -139,21 +133,21 @@
      false
 
      (:provider-identity acl)
-     (if (= (:target (:provider-identity acl)) "CATALOG_ITEM_ACL")
-       (has-provider-access? context permission "CATALOG_ITEM_ACL"
+     (if (= (:target (:provider-identity acl)) schema/provider-catalog-item-acl-target)
+       (has-provider-access? context permission schema/provider-catalog-item-acl-target
                              (:provider-id (:provider-identity acl)))
-       (has-provider-access? context permission "PROVIDER_OBJECT_ACL"
+       (has-provider-access? context permission schema/provider-object-acl-target
                              (:provider-id (:provider-identity acl))))
 
      (:catalog-item-identity acl)
-     (has-provider-access? context permission "CATALOG_ITEM_ACL"
+     (has-provider-access? context permission schema/provider-catalog-item-acl-target
                            (:provider-id (:catalog-item-identity acl)))
 
      (:single-instance-identity acl)
-     (let [target-group (group-service/get-group (tc/with-echo-system-token context)
+     (let [target-group (group-service/get-group (transmit-config/with-echo-system-token context)
                                                  (get-in acl [:single-instance-identity :target-id]))]
        (and (:provider-id target-group)
-            (has-provider-access? context permission "PROVIDER_OBJECT_ACL" (:provider-id target-group)))))))
+            (has-provider-access? context permission schema/provider-object-acl-target (:provider-id target-group)))))))
 
 (defn authorize-acl-action
   "Throws service error if user doesn't have permission to intiate a given action for a given acl.

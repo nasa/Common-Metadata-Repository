@@ -177,27 +177,32 @@
                                       [{:group_id group3-concept-id :permissions ["read"]}]))
         acl5 (ingest-acl token (provider-acl "OPTION_DEFINITION"))
         acl6 (ingest-acl token (assoc-in (provider-acl "OPTION_DEFINITION")
-                                         [:provider_identity :provider_id] "PROV2"))]
+                                         [:provider_identity :provider_id] "PROV2"))
+        ;; Create an ACL with a catalog item identity for PROV1
+        acl7 (ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
+                                :catalog_item_identity {:provider_id "PROV1"
+                                                        :name "PROV1 All Collections ACL"
+                                                        :collection_applicable true}})]
     (u/wait-until-indexed)
     (testing "Provider Object ACL permissions"
       (let [token (e/login (u/conn-context) "user3")
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {:provider "PROV1"})]
-        (is (= (acls->search-response 3 [fixtures/*fixture-provider-acl* acl4 acl5])
+        (is (= (acls->search-response 4 [fixtures/*fixture-provider-acl* acl4 acl5 acl7])
                (dissoc response :took)))))
     (testing "Guest search permission"
       (let [token (e/login-guest (u/conn-context))
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-        (is (= (acls->search-response 4 [fixtures/*fixture-provider-acl* acl3 acl5 acl6])
+        (is (= (acls->search-response 1 [acl7])
                (dissoc response :took)))))
     (testing "User search permission"
       (let [token (e/login (u/conn-context) "user1")
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-        (is (= (acls->search-response 8 [fixtures/*fixture-provider-acl* (assoc fixtures/*fixture-system-acl* :revision_id 2) acl1 acl2 acl3 acl4 acl5 acl6])
+        (is (= (acls->search-response 9 [fixtures/*fixture-provider-acl* (assoc fixtures/*fixture-system-acl* :revision_id 2) acl1 acl2 acl3 acl4 acl5 acl6 acl7])
                (dissoc response :took)))))
     (testing "Search permission without ANY_ACL read"
       (let [token (e/login (u/conn-context) "user2")
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-        (is (= (acls->search-response 2 [fixtures/*fixture-provider-acl* acl2])
+        (is (= (acls->search-response 1 [acl7])
                (dissoc response :took)))))))
 
 (deftest acl-search-test

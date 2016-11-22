@@ -214,14 +214,20 @@
       :else                    (errors/internal-error!
                                  (str "ACL was missing identity " (pr-str acl))))))
 
+;; values used to index identity type names in Elastic
+(def system-identity-type-name "System")
+(def single-instance-identity-type-name "Group")
+(def provider-identity-type-name "Provider")
+(def catalog-item-identity-type-name "Catalog Item")
+
 (defn acl->identity-type
   "Returns the identity type to index with the ACL."
   [acl]
   (cond
-    (:system-identity acl)          "System"
-    (:single-instance-identity acl) "Group"
-    (:provider-identity acl)        "Provider"
-    (:catalog-item-identity acl)    "Catalog Item"
+    (:system-identity acl)          system-identity-type-name
+    (:single-instance-identity acl) single-instance-identity-type-name
+    (:provider-identity acl)        provider-identity-type-name
+    (:catalog-item-identity acl)    catalog-item-identity-type-name
     :else                    (errors/internal-error!
                                (str "ACL was missing identity " (pr-str acl)))))
 
