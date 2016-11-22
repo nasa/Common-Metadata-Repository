@@ -157,7 +157,7 @@
       (is (= (set [(:concept-id acl1) (:concept-id acl2) (:concept-id acl3)])
              (set (map :concept_id
                        (:items
-                        (access-control/search-for-acls token {:provider "PROV1"}))))))
+                        (access-control/search-for-acls (transmit-config/echo-system-token) {:provider "PROV1"}))))))
 
       ;; delete provider PROV1
       (let [{:keys [status content-length]} (ingest/delete-ingest-provider "PROV1")]
