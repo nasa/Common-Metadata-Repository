@@ -55,7 +55,6 @@
 (deftest robots-dot-txt-test
   (let [robots (client/get "http://localhost:3003/robots.txt"
                            {:accept :text
-                            :throw-exceptions false
                             :connection-manager (s/conn-mgr)})
         body (str/split-lines (:body robots))]
    (is (= "User-agent: *" (first body)))))

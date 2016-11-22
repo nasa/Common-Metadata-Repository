@@ -333,8 +333,7 @@
          relative-root-url
          "public/index.html")
 
-        (GET "/robots.txt" req {:status 200
-                                :body (slurp (io/resource "public/robots.txt"))})
+        (compojure.route/resources "/")
 
         ;; This is a temporary inclusion of the swagger UI until the dev portal is done.
         (ring-swagger-ui/swagger-ui "/swagger_ui"
