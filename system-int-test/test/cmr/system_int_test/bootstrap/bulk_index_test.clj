@@ -194,7 +194,7 @@
      (index/wait-until-indexed)
 
      ;; ACLs
-     (let [response (ac/search-for-acls (u/conn-context) {:token (tc/echo-system-token)})
+     (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
            items (:items response)]
        (search-results-match? items [acl1 acl2]))
 
@@ -267,7 +267,7 @@
          :granule [gran-within-buffer gran-after-date])
 
        ;; ACLs
-       (let [response (ac/search-for-acls (u/conn-context) {:token (tc/echo-system-token)})
+       (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
              items (:items response)]
          (search-results-match? items [acl-within-buffer acl-after-date]))
 
@@ -349,7 +349,7 @@
           :granule [gran2])
 
         ;; ACLs
-        (let [response (ac/search-for-acls (u/conn-context) {:token (tc/echo-system-token)})
+        (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
               items (:items response)]
           (search-results-match? items [acl2]))
 
