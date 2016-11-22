@@ -1,15 +1,13 @@
 (ns cmr.umm-spec.validation.umm-spec-validation-core
   "Defines validations UMM concept types."
-  (:require 
-    [clj-time.core :as t]
-    [clojure.string :as str]
-    [cmr.common.services.errors :as e]
-    [cmr.common.validations.core :as v]
-    [cmr.search.services.humanizers.humanizer-service :as humanizer-service]
-    [cmr.umm-spec.additional-attribute :as aa]
-    [cmr.umm-spec.validation.granule :as vg]
-    [cmr.umm-spec.validation.parent-weaver :as pw]
-    [cmr.umm-spec.validation.umm-spec-collection-validation :as vc]))
+  (:require [clj-time.core :as t]
+            [cmr.common.validations.core :as v]
+            [cmr.umm-spec.validation.umm-spec-collection-validation :as vc]
+            [cmr.umm-spec.validation.granule :as vg]
+            [cmr.umm-spec.validation.parent-weaver :as pw]
+            [cmr.umm-spec.additional-attribute :as aa]
+            [cmr.common.services.errors :as e]
+            [clojure.string :as str]))
 
 (defmulti humanize-field-for-error-msg
   "Converts a field name into an easier to read field name.  This should only be used when
@@ -50,32 +48,8 @@
 (defn validate-granule
   "Validates the umm record returning a list of error maps containing a path through the
   UMM model and a list of errors at that path. Returns an empty sequence if it is valid."
-  ([collection granule]
-   (validate-granule nil collection granule))
-  ([context collection granule]
-   (let [humanizer (try 
-                     (humanizer-service/get-humanizers context)
-                     (catch Throwable e
-                       nil))
-         ;; if collection platform shortname = replacement_value in the humanizer, 
-         ;; we might need to validate against the old platform shortname value.
-         unhumanized-plat (when-not (nil? humanizer)
-                            (:source_value (first (filter #(and (= (:type %) "alias") 
-                                                                (= (:field %) "platform")
-                                                                (= (:replacement_value %)
-                                                                   (:ShortName (first (:Platforms collection))))) 
-                                                    humanizer))))
-         coll-unhumanized-plat (when-not (nil? unhumanized-plat)
-                                 (update-in (update-in (update-in collection [:Platforms] first) 
-                                              [:Platforms] assoc :ShortName unhumanized-plat)
-                                   [:Platforms] vector))
-         gran-with-parent-unhumanized-plat (when-not (nil? coll-unhumanized-plat) 
-                                             (pw/set-parent granule (aa/add-parsed-values coll-unhumanized-plat)))
-         gran-with-parent (pw/set-parent granule (aa/add-parsed-values collection))
-         gran-to-validate (if (or (not= nil (:parent (first (:platform-refs  gran-with-parent))))
-                                  (= nil gran-with-parent-unhumanized-plat))
-                            gran-with-parent
-                            gran-with-parent-unhumanized-plat)]
-     (validation-errors->path-errors
-       (v/validate vg/granule-validations gran-to-validate)))))
+  [collection granule]
+  (let [granule-with-parent (pw/set-parent granule (aa/add-parsed-values collection))]
+    (validation-errors->path-errors
+     (v/validate vg/granule-validations granule-with-parent))))
 

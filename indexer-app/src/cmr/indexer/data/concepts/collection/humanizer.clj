@@ -2,10 +2,10 @@
   "Contains functions to converting collection into elasticsearch humanized collection docs"
   (:require
     [clojure.string :as str]
-    [cmr.common.util :as util]
+    [cmr.common-app.cache.humanizer-fetcher :as humanizer-fetcher]
     [cmr.common-app.humanizer :as humanizer]
-    [cmr.indexer.data.concepts.collection.science-keyword :as sk]
-    [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]))
+    [cmr.common.util :as util]
+    [cmr.indexer.data.concepts.collection.science-keyword :as sk]))
 
 (defn- add-humanized-lowercase
   "Adds a :value.lowercase field to a humanized object"

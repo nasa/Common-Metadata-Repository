@@ -2,6 +2,7 @@
   "Provides functions to validate concept"
   (:require
    [clojure.string :as s]
+   [cmr.common-app.cache.humanizer-fetcher :as humanizer-fetcher]
    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.common.log :as log :refer (warn)]
@@ -140,11 +141,32 @@
   (seq (concat (validate-collection-umm-spec-schema collection validation-options)
                (umm-spec-validate-collection collection validation-options context))))
 
+(defn- add-platform-aliases-to-collection
+  "returns the updated collection with all the platform aliases added.
+   plat-key/plat-sn-key can be :Platforms/:ShortName or :platforms/:short-name
+   depending on if the collection is UMM-SPEC or UMM"
+  [context collection plat-key plat-sn-key]
+  ;; for each platform in the collection, find all its aliases from the humanizer and add to the collection platforms. 
+  (let [humanizer (humanizer-fetcher/get-humanizer-instructions context)
+        platform-aliases (apply concat (for [coll-plat (plat-key collection)
+                                             :let [coll-plat-sn (plat-sn-key coll-plat)]]
+                                         (map #(assoc coll-plat plat-sn-key %)    
+                                              (map :source_value 
+                                                   (filter #(and (= (:type %) "alias")
+                                                                 (= (:field %) "platform")
+                                                                 (= (:replacement_value %) coll-plat-sn))
+                                                     humanizer)))))
+        updated-collection (update collection plat-key concat platform-aliases)]
+    (println "========humanizer is: " humanizer "===============")
+    (println "=====platform-aliases: " platform-aliases "===============")
+    updated-collection ))
 
 (defn validate-granule-umm-spec
   "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record"
   [context collection granule]
-  (when-let [errors (seq (umm-spec-validation/validate-granule context collection granule))]
+  (when-let [errors (seq (umm-spec-validation/validate-granule 
+                           (add-platform-aliases-to-collection context collection :Platforms :ShortName) 
+                           granule))]
     (if (config/return-umm-spec-validation-errors)
       (if-errors-throw :invalid-data errors)
       (warn (format "Granule with Granule UR [%s] had the following UMM Spec validation errors: %s"
@@ -152,7 +174,9 @@
 
 (defn validate-granule-umm
   [context collection granule]
-  (if-errors-throw :invalid-data (umm-validation/validate-granule context collection granule)))
+  (if-errors-throw :invalid-data (umm-validation/validate-granule 
+                                   (add-platform-aliases-to-collection context collection :platforms :short-name) 
+                                   granule)))
 
 (defn validate-business-rules
   "Validates the concept against CMR ingest rules."
