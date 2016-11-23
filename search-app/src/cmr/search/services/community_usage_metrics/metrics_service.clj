@@ -4,6 +4,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.data.csv :as csv]
+   [clojure.string :as str]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
@@ -42,7 +43,7 @@
      :access-count (let [access-count (read-csv-column csv-line hosts-col)]
                      (if (seq access-count)
                        (try
-                         (Integer/parseInt access-count)
+                         (Integer/parseInt (str/replace access-count "," "")) ; Remove commas in large ints
                          (catch java.lang.NumberFormatException e
                            (errors/throw-service-error :invalid-data
                              (format (str "Error parsing 'Hosts' CSV Data for collection [%s], version "

@@ -37,6 +37,10 @@
   for details on the function score query."
   (:require [clojure.string :as str]))
 
+(def default-boost
+  "Field boost to use if not provided or not found in the default-boosts list"
+  1.0)
+
 (def default-boosts
   "Field boosts to use if not provided."
   {:short-name 1.4
@@ -122,7 +126,7 @@
                    (merge default-boosts specified-boosts)
                    specified-boosts)
                  default-boosts)]
-    (get boosts field 1.0)))
+    (get boosts field default-boost)))
 
 (defn keywords->boosted-elastic-filters
   "Create filters with boosting for the function score query used with keyword search"

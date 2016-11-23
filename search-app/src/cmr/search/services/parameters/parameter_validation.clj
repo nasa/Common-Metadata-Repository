@@ -173,7 +173,8 @@
     :sensor
     :revision-date
     :score
-    :has-granules})
+    :has-granules
+    :usage-score})
 
 (defmethod cpv/valid-sort-keys :granule
   [_]

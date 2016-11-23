@@ -424,7 +424,8 @@
         {:keyword (:category sk1) :boosts {:include-defaults false}} [1.0]
 
         "matches all fields, do not include defaults"
-        {:keyword "boost" :boosts {:short-name 5.0 :include-defaults false}} [5.0]
+        {:keyword "boost" :boosts {:short-name 5.0 :include-defaults false}}
+        [5.0]
 
         "matches all fields, use defaults, but override short-name boost"
         {:keyword "boost" :boosts {:short-name 5.0 :include-defaults true}}
@@ -590,7 +591,7 @@
           (d/assert-refs-match items json-refs))
         "testing json query search by shortname keyword in the collection whoes xml file contains no SpatialExtent content"
         "NSIDC-0705"
-        [coll3] 
+        [coll3]
 
         "testing json query search by existing ancillary keywords"
         "CMR2652AKW2"
