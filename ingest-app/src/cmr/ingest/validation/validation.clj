@@ -1,7 +1,7 @@
 (ns cmr.ingest.validation.validation
   "Provides functions to validate concept"
   (:require
-   [clojure.string :as s]
+   [clojure.string :as str]
    [cmr.common-app.cache.humanizer-map-fetcher :as humanizer-map-fetcher]
    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
@@ -37,7 +37,7 @@
     (when-not (contains? valid-types content-type)
       (errors/throw-service-error :invalid-content-type
                                   (format "Invalid content-type: %s. Valid content-types: %s."
-                                          content-type (s/join ", " valid-types))))))
+                                          content-type (str/join ", " valid-types))))))
 (defn- validate-metadata-length
   "Validates the metadata length is not unreasonable."
   [concept]
@@ -152,7 +152,7 @@
         platform-aliases (apply concat (for [coll-plat (plat-key collection)
                                              :let [coll-plat-sn (plat-sn-key coll-plat)]]
                                          (map #(assoc coll-plat plat-sn-key %)
-                                           (get plat-alias-map coll-plat-sn []))))     
+                                           (get plat-alias-map (str/upper-case coll-plat-sn) []))))     
         updated-collection (update collection plat-key concat platform-aliases)]
     updated-collection ))
 

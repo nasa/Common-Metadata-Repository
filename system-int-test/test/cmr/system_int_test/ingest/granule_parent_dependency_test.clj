@@ -47,9 +47,9 @@
         gpsa (dg/psa "a-float" [7.0])
         i1 (dc/instrument {:short-name "instrument-Sn A"})
         ir1 (dg/instrument-ref {:short-name "instrument-Sn A"})
-        p1 (dc/platform {:short-name "Terra" :instruments [i1]})
+        p1 (dc/platform {:short-name "teRRa" :instruments [i1]})
         pr1 (dg/platform-ref {:short-name "AM-1" :instrument-refs [ir1]})
-        pr2 (dg/platform-ref {:short-name "Terra" :instrument-refs [ir1]})
+        pr2 (dg/platform-ref {:short-name "teRRa" :instrument-refs [ir1]})
         projects (dc/projects "proj")
         mbr1 (umm-s/set-coordinate-system :geodetic (m/mbr 10 10 20 0))
         gran-spatial-rep (apply dg/spatial [mbr1])
@@ -121,11 +121,11 @@
                  (flatten (map (fn [error] (:errors error))
                                (:errors (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true}))))))
 
-          "ECHO10 collection"
+          "ECHO10 collection-referencing the platform alias"
           []
           gran-for-echo10-coll
 
-          "ECHO10 collection-referencing the old platform"
+          "ECHO10 collection"
           []
           gran-for-echo10-coll2
 

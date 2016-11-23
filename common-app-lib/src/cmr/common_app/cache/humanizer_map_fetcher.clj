@@ -1,6 +1,7 @@
 (ns cmr.common-app.cache.humanizer-map-fetcher
   "Stores the latest humanizer alias map in a cache."
   (:require
+   [clojure.string :as str]
    [cmr.common.cache :as c]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.jobs :refer [def-stateful-job]]
@@ -28,7 +29,7 @@
                         (map #(select-keys % [:replacement_value :source_value])
                           (filter #(and (= (:type %) "alias") (= (:field %) "platform"))
                             humanizer)))]
-            [k (mapcat vals (map #(select-keys % [:source_value]) v))]))))
+            [(str/upper-case k) (mapcat vals (map #(select-keys % [:source_value]) v))]))))
 
 (defn refresh-cache
   "Refreshes the humanizers in the cache."

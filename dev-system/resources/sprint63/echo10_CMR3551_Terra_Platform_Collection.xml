@@ -45,7 +45,7 @@
     </Contacts>
     <Platforms>
         <Platform>
-            <ShortName>Terra</ShortName>
+            <ShortName>teRRa</ShortName>
             <LongName>Cloud-Aerosol Lidar and Infrared Pathfinder Satellite Observations</LongName>
             <Type>Spacecraft</Type>
             <Instruments>
