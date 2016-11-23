@@ -232,7 +232,6 @@
  (let [[safe-params type-errors] (cpv/apply-type-validations
                                    params
                                    [(partial cpv/validate-map [:options])
-                                    (partial cpv/validate-map [:collection-concept-id])
                                     (partial cpv/validate-map [:options :permitted-group])
                                     (partial cpv/validate-map [:options :identity-type])
                                     (partial cpv/validate-map [:options :provider])
