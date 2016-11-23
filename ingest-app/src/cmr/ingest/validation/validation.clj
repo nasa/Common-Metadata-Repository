@@ -2,7 +2,7 @@
   "Provides functions to validate concept"
   (:require
    [clojure.string :as s]
-   [cmr.common-app.cache.humanizer-fetcher :as humanizer-fetcher]
+   [cmr.common-app.cache.humanizer-map-fetcher :as humanizer-map-fetcher]
    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.common.log :as log :refer (warn)]
@@ -146,16 +146,13 @@
    plat-key/plat-sn-key can be :Platforms/:ShortName or :platforms/:short-name
    depending on if the collection is UMM-SPEC or UMM"
   [context collection plat-key plat-sn-key]
-  ;; for each platform in the collection, find all its aliases from the humanizer and add to the collection platforms. 
-  (let [humanizer (humanizer-fetcher/get-humanizer-instructions context)
+  ;; for each platform in the collection, find all its aliases from the humanizer alias map
+  ;; and add to the collection platforms to be validated against. 
+  (let [plat-alias-map (humanizer-map-fetcher/get-humanizer-platform-alias-map context)
         platform-aliases (apply concat (for [coll-plat (plat-key collection)
                                              :let [coll-plat-sn (plat-sn-key coll-plat)]]
-                                         (map #(assoc coll-plat plat-sn-key %)    
-                                              (map :source_value 
-                                                   (filter #(and (= (:type %) "alias")
-                                                                 (= (:field %) "platform")
-                                                                 (= (:replacement_value %) coll-plat-sn))
-                                                     humanizer)))))
+                                         (map #(assoc coll-plat plat-sn-key %)
+                                           (get plat-alias-map coll-plat-sn []))))     
         updated-collection (update collection plat-key concat platform-aliases)]
     updated-collection ))
 

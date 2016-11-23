@@ -1,5 +1,5 @@
-(ns cmr.common-app.cache.humanizer-fetcher
-  "Stores the latest humanizer json in a cache."
+(ns cmr.indexer.data.humanizer-fetcher
+  "Stores the latest humanizer json in a consistent cache."
   (:require
    [cmr.common.cache :as c]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
