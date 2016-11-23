@@ -733,6 +733,17 @@
                                   :temporal-range {:BeginningDateTime (t/date-time 2009 12 31 12 59 59)
                                                    :EndingDateTime (t/date-time 2012 1 1 0 0 1)}})
 
+        coll7 (u/save-collection {:entry-title "coll7 entry title"
+                                  :short-name "coll7"
+                                  :native-id "coll7"
+                                  :provider-id "PROV1"
+                                  :temporal-range {:BeginningDateTime (t/date-time 2009 12 31 12 59 59)}})
+
+        coll8 (u/save-collection {:entry-title "coll8 entry title"
+                                  :short-name "coll8"
+                                  :native-id "coll8"
+                                  :provider-id "PROV1"
+                                  :temporal-singles #{(t/date-time 2012 1 1 0 0 1)}})
 
         acl1 (ingest-acl token (assoc (catalog-item-acl "Access value 1-10")
                                       :catalog_item_identity {:name "Access value 1-10"
@@ -792,8 +803,15 @@
 
         "coll6 test"
         {:permitted-concept-id coll6}
-        [acl2 acl5]))))
+        [acl2 acl5]
 
+        "coll7 test"
+        {:permitted-concept-id coll7}
+        [acl2 acl5]
+
+        "coll8 test"
+        {:permitted-concept-id coll8}
+        [acl2 acl6]))))
 
 (deftest acl-search-permitted-concept-id-access-value
   ;; This test is for searching ACLs by permitted concept id.  For a given

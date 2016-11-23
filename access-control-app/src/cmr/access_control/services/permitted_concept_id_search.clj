@@ -1,6 +1,7 @@
 (ns cmr.access-control.services.permitted-concept-id-search
   "Contains ACL search functions for permitted-concept-id searches"
   (:require
+    [clj-time.core :as t]
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.query-model :as common-qm]
     [cmr.elastic-utils.index-util :as index-util]
@@ -66,7 +67,10 @@
   "Constructs query condition for searching permitted_concept_ids by temporal"
   [parsed-metadata]
   (let [start-date (spec-time/collection-start-date parsed-metadata)
-        stop-date (spec-time/collection-end-date parsed-metadata)]
+        stop-date (spec-time/collection-end-date parsed-metadata)
+        stop-date (if (= :present stop-date)
+                    (t/now)
+                    stop-date)]
     (gc/and-conds
       [(common-qm/boolean-condition :collection-applicable true)
        (gc/or-conds
@@ -92,13 +96,10 @@
 (defn get-permitted-concept-id-conditions
   "Returns query to search for ACLs that could permit given concept"
   [context concept]
-  (let [parsed-metadata (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)
-        start-date (spec-time/collection-start-date parsed-metadata)
-        stop-date (spec-time/collection-end-date parsed-metadata)]
+  (let [parsed-metadata (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)]
     (gc/and-conds
      [(common-qm/string-condition :provider (:provider-id concept))
       (gc/or-conds
         [(create-generic-collection-applicable-condition)
          (create-access-value-condition parsed-metadata)
-         (when (and start-date stop-date)
-           (create-temporal-condition parsed-metadata))])])))
+         (create-temporal-condition parsed-metadata)])])))
