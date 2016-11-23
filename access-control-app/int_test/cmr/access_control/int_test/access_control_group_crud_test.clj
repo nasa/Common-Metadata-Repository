@@ -358,17 +358,17 @@
 
     (u/wait-until-indexed)
 
-    (testing "We should now successfully update groups with a legacy_guid, without specifying the legacy_guid in the updated group")
+    (testing "We should now successfully update groups with a legacy_guid, without specifying the legacy_guid in the updated group"
       (is (= {:status 200 :concept_id concept-id :revision_id 2}
              response-no-legacy))
-      (u/assert-group-saved (assoc no-legacy-group :legacy_guid "legacy_guid_1") "user1" concept-id 2)
+      (u/assert-group-saved (assoc no-legacy-group :legacy_guid "legacy_guid_1") "user1" concept-id 2))
 
-    (testing "Specifying the same legacy_guid should also successfully update the group")
+    (testing "Specifying the same legacy_guid should also successfully update the group"
       (is (= {:status 200 :concept_id concept-id :revision_id 3}
              response-same-legacy))
-      (u/assert-group-saved same-legacy-group "user1" concept-id 3)
+      (u/assert-group-saved same-legacy-group "user1" concept-id 3))
 
-    (testing "When specifying a different legacy_guid, an error message should be received")
+    (testing "When specifying a different legacy_guid, an error message should be received"
       (is (= {:status 400,
               :errors ["Legacy Guid cannot be modified. Attempted to change existing value [legacy_guid_1] to [wrong_legacy_guid]"]}
-             response-diff-legacy))))
+             response-diff-legacy)))))
