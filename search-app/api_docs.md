@@ -1427,7 +1427,9 @@ When `has_granules` is set to "true" or "false", results will be restricted to c
 
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 
-Collection results are sorted by ascending entry title by default when a search does not result in a score. If a keyword search is performed then the search results will be sorted by relevance (score descending). One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` (Note: `+` must be URL encoded as %2B) can be used to explicitly request ascending.
+Collection results are sorted by ascending entry title by default when a search does not result in a score. If a keyword search is performed then the search results will be sorted by relevance (score descending) with the tie breaker being the EMS community usage score (also descending). The usage score comes from EMS metrics which contain access counts of the collections by short name and version. The metrics are ingested into the CMR.
+
+One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` (Note: `+` must be URL encoded as %2B) can be used to explicitly request ascending.
 
 ##### Valid Collection Sort Keys
 
@@ -1444,6 +1446,7 @@ Collection results are sorted by ascending entry title by default when a search 
   * `revision_date`
   * `score` - document relevance score, defaults to descending. See [Document Scoring](#document-scoring).
   * `has_granules` - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.
+  * `usage_score` - Sorts collection by usage. The usage score comes from the EMS metrics, which are ingested into the CMR.
 
 Examples of sorting by start_date in descending(Most recent data first) and ascending orders(Note: the `+` must be escaped with %2B):
 
@@ -2870,10 +2873,12 @@ Community usage metrics are metrics showing how many times a particular version 
 
 Community usage metrics can be updated using the `%CMR-ENDPOINT%/community-usage-metrics` endpoint with a valid ECHO token. The content is a CSV file obtained from the EMS. The 'Product', 'Version', and 'Hosts' columns are parsed from the CSV file and stored as 'short-name', 'version', and 'access-count' respectively in the CMR. Entries with the same Product (short-name) and Version will have the access count aggregated to form a total access count for that collection and version, stored as one entry in the CMR.
 
+Note that when sending the data, use the --data-binary option so that the linebreaks in the CSV data are not removed. See the example below.
+
 The response will contain a concept id and revision id identifying the set of community usage metrics.
 
 ```
-curl -XPUT -i -H "Content-Type: text/csv" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/community-usage-metrics -d <csv-file-location>
+curl -XPUT -i -H "Content-Type: text/csv" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/community-usage-metrics --data-binary <csv-file-location>
 
 HTTP/1.1 200 OK
 Content-Type: application/json

@@ -335,6 +335,10 @@
   []
   (format "http://localhost:%s/bulk_migration/providers" (transmit-config/bootstrap-port)))
 
+(defn bulk-index-system-concepts-url
+  []
+  (format "http://localhost:%s/bulk_index/system_concepts" (transmit-config/bootstrap-port)))
+
 (defn bootstrap-health-url
   "URL to check bootstrap health."
   []
