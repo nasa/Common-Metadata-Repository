@@ -9,7 +9,7 @@
 
 (def humanizer-map-cache-key
   "The cache key to use when storing with caches in the system."
-  :humanizer-cache)
+  :humanizer-map-cache)
 
 (defn create-cache
   "Creates an instance of the cache."

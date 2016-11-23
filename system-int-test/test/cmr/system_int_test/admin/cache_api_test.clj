@@ -76,7 +76,7 @@
         (url/index-set-read-caches-url) ["token-imp" "health"]
         (url/mdb-read-caches-url) ["token-imp" "health"]
         (url/ingest-read-caches-url) ["token-imp" "providers" "acls" "token-user-ids" "kms"
-                                      "health"]
+                                      "health" "humanizer-map-cache"]
         (url/access-control-read-caches-url) ["acls" "health"]
         (url/search-read-caches-url) ["acls" "collections-for-gran-acls" "has-granules-map"
                                       "index-names" "token-imp" "token-sid" "health"
