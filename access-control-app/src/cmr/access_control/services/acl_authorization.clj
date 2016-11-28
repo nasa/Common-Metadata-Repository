@@ -13,8 +13,6 @@
     [cmr.common.util :as util :refer [defn-timed]]
     [cmr.transmit.config :as transmit-config]))
 
-;; TODO add timing everywhere
-
 (defn-timed get-acls-by-condition
   "Returns the acls found by executing given condition against ACL index"
   [context condition]
@@ -27,7 +25,7 @@
         response (qe/execute-query context query)]
     (mapv #(edn/read-string (util/gzip-base64->string (:acl-gzip-b64 %))) (:items response))))
 
-(defn- acls-granting-acl-read
+(defn-timed acls-granting-acl-read
   "Returns a sequences of acls granting ACL read to the current user"
   [context]
   (let [sids (auth-util/get-sids context)

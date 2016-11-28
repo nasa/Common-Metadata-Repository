@@ -3,8 +3,6 @@
   (:require
     [cmr.common.concepts :as concepts]))
 
-;; TODO Does it make sense to have a namespace with one function?
-
 (defn acl->provider-id
   "Returns the provider id which the acl explicitly targets. Returns nil for system objects."
   [{:keys [catalog-item-identity provider-identity single-instance-identity]}]
