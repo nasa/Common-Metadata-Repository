@@ -78,19 +78,21 @@
       (q/->ConditionGroup operation conditions))))
 
 (defn and-conds
-  "Combines conditions in an AND condition."
+  "Returns a condition representing conditions combined using a logical AND."
   [conditions]
   (group-conds :and conditions))
 
 (defn or-conds
-  "Combines conditions in an OR condition."
+  "Returns a condition representing conditions combined using a logical OR."
   [conditions]
   (group-conds :or conditions))
 
 (defn and
+  "Like and-conds but variadic."
   [& conds]
   (and-conds conds))
 
 (defn or
+  "Like or-conds but variadic."
   [& conds]
   (or-conds conds))
