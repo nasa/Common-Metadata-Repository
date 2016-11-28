@@ -39,12 +39,13 @@
          ancillary-keywords :AncillaryKeywords
          directory-names :DirectoryNames
          iso-topic-categories :ISOTopicCategories
-         version-description :VersionDescription} collection
+         version-description :VersionDescription
+         related-urls :RelatedUrls} collection
         processing-level-id (get-in collection [:ProcessingLevel :Id])
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
         spatial-keywords (lk/location-keywords->spatial-keywords
-                           (:LocationKeywords collection))
+                          (:LocationKeywords collection))
         projects (for [{:keys [ShortName LongName]} (:Projects collection)]
                    {:short-name ShortName :long-name LongName})
         provider-id (:provider-id (concepts/parse-concept-id concept-id))
@@ -74,6 +75,9 @@
         science-keywords (mapcat sk/science-keyword->keywords (:ScienceKeywords collection))
         attrib-keywords (mapcat #(attrib/psa->keywords (util/map-keys->kebab-case %))
                                 (:AdditionalAttributes collection))
+        related-url-urls (mapcat :URLs related-urls)
+        related-url-titles (map :Title related-urls)
+        related-url-descriptions (map :Description related-urls)
         all-fields (flatten (conj [concept-id]
                                   provider-id
                                   entry-title
@@ -105,6 +109,9 @@
                                   ancillary-keywords
                                   directory-long-names
                                   directory-short-names
-                                  iso-topic-categories))
+                                  iso-topic-categories
+                                  related-url-urls
+                                  related-url-titles
+                                  related-url-descriptions))
         split-fields (set (mapcat prepare-keyword-field all-fields))]
     (str/join " " split-fields)))
