@@ -149,10 +149,10 @@
   ;; for each platform in the collection, find all its aliases from the humanizer alias map
   ;; and add to the collection platforms to be validated against. 
   (let [plat-alias-map (humanizer-map-fetcher/get-humanizer-platform-alias-map context)
-        platform-aliases (apply concat (for [coll-plat (plat-key collection)
-                                             :let [coll-plat-sn (plat-sn-key coll-plat)]]
-                                         (map #(assoc coll-plat plat-sn-key %)
-                                           (get plat-alias-map (str/upper-case coll-plat-sn) []))))     
+        platform-aliases (for [coll-plat (plat-key collection)
+                               :let [coll-plat-sn (plat-sn-key coll-plat)]
+                               alias (get plat-alias-map (str/upper-case coll-plat-sn))]
+                           (assoc coll-plat plat-sn-key alias))
         updated-collection (update collection plat-key concat platform-aliases)]
     updated-collection ))
 
