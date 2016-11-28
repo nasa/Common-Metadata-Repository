@@ -3,15 +3,11 @@
    validation and user visibility permission checks"
   (:require
     [camel-snake-kebab.core :as csk]
-    [clojure.edn :as edn]
     [clojure.string :as str]
     [cmr.access-control.data.acl-schema :as schema]
-    [cmr.access-control.services.acl-authorization :as acl-auth]
-    [cmr.access-control.services.acl-service :as acl-service]
     [cmr.access-control.services.auth-util :as auth-util]
     [cmr.access-control.services.group-service :as groups]
     [cmr.access-control.services.permitted-concept-id-search :as pcs]
-    [cmr.acl.core :as acl]
     [cmr.common-app.services.search :as cs]
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.parameter-validation :as cpv]
@@ -21,7 +17,6 @@
     [cmr.common.log :refer [info debug]]
     [cmr.common.services.errors :as errors]
     [cmr.common.util :as util]
-    [cmr.transmit.echo.tokens :as tokens]
     [cmr.transmit.metadata-db2 :as mdb2]
     [cmr.umm.collection.product-specific-attribute :as psa]))
 
@@ -246,24 +241,6 @@
               (partial cpv/validate-boolean-param :include-full-acl)])
      type-errors))
  params)
-
-
-
-; ;; TODO Get rid of this function
-; (defn get-searchable-acls
-;   "Returns a lazy sequence of concept-ids for ACLs that are searchable for the given sids."
-;   [context acls-with-concept-id]
-;   (for [acl acls-with-concept-id
-;         :when (acl-auth/action-permitted-on-acl? context :read acl (:concept-id acl))]
-;     (:concept-id acl)))
-;
-; ;; TODO Get rid of this function
-; (defn make-acl-condition
-;   "Returns elastic condition to filter out ACLs that are not visible to the user."
-;   [context acls-with-concept-id]
-;   (let [concept-ids (get-searchable-acls context acls-with-concept-id)]
-;     (when (seq concept-ids)
-;       (common-qm/string-conditions :concept-id concept-ids true))))
 
 (defn search-for-acls
   "Searches for ACLs using given parameters. Returns result map from find-concepts
